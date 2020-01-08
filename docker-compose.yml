@@ -1,0 +1,28 @@
+version: '3.5'
+
+services:
+    database:
+        container_name: n4j-database
+        image: neo4j:latest
+        ports:
+            - "127.0.0.1:7474:7474"
+            - "127.0.0.1:7687:7687"
+        networks:
+            - backend
+
+    appserver:
+        container_name: n4j-appserver
+        build: ./appserver
+        ports:
+            - "127.0.0.1:5000:5000"
+        environment:
+            - FLASK_APP=app
+        networks:
+            - frontend
+            - backend
+        depends_on:
+            - database
+
+networks:
+    frontend:
+    backend:

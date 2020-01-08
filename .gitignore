@@ -1,0 +1,27 @@
+neo4j/
+
+# Python
+__pycache__/
+*.pyc
+env/
+.cache/
+.python_history
+
+# compiled output
+dist/
+/**/*.pyc
+
+# System Files
+.DS_Store
+Thumbs.db
+.bash_history
+
+# IDE - VSCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# .env Files (to protect secrets)
+*.env

@@ -1,0 +1,17 @@
+# local development overrides
+
+version: '3.5'
+
+services:
+    appserver:
+        command: ['bin/start-dev']
+        environment:
+            - FLASK_DEBUG=1
+            - FLASK_APP_CONFIG=Development
+        volumes:
+            # dev mode only: to pick up edits done in host
+            - ./appserver:/home/n4j
+    database:
+        volumes:
+            - ./neo4j/data:/data
+            - ./neo4j/logs:/logs
