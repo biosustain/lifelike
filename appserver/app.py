@@ -1,7 +1,10 @@
-from flask import Flask
+import os
+from flask import render_template
+from neo4japp.factory import create_app
 
-app = Flask(__name__)
+app_config = os.environ['FLASK_APP_CONFIG']
+app = create_app(config=f'config.{app_config}')
 
 @app.route('/')
 def home():
-    return 'Flask is running'
+    return render_template('index.html')
