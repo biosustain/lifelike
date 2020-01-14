@@ -11,6 +11,8 @@ To run the application, use ```docker-compose up```
   - *Angular 2 added as a client*
 - Compelely remove 'template' folders from application server
 - Handle neo4j transactions
+- Add Angular Material for styling
 
 ## Considerations
 - Adding GraphQL to the stack
+- Adding NgRx (Redux) to the stack
