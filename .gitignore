@@ -15,6 +15,7 @@ dist/
 .DS_Store
 Thumbs.db
 .bash_history
+.local/
 
 # IDE - VSCode
 .vscode/*

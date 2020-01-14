@@ -6,6 +6,8 @@ services:
     appserver:
         command: ['bin/start-dev']
         environment:
+            - NEO4J_HOST=bolt://n4j-database:7687
+            - NEO4J_USER=neo4j
             - FLASK_DEBUG=1
             - FLASK_APP_CONFIG=Development
         volumes:
