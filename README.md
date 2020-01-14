@@ -12,6 +12,7 @@ To run the application, use ```docker-compose up```
 - Compelely remove 'template' folders from application server
 - Handle neo4j transactions
 - Add Angular Material for styling
+- Middleware to translate ```vis.js``` data to be compatible with ```py2neo (neo4j)```
 
 ## Considerations
 - Adding GraphQL to the stack
