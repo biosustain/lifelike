@@ -8,6 +8,7 @@ def run_cypher():
     dao = get_neo4j_service_dao()
     query = request.get_json()
     # TODO: Sanitize the queries
-    dao.execute_cypher(query['query'])
-    return jsonify({'result': 'success'}), 200
+    result = dao.execute_cypher(query['query'])
+    print(result)
+    return jsonify({'result': result}), 200
 

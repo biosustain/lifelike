@@ -1,7 +1,6 @@
 from flask import json
 from py2neo import Node, Relationship
-from neo4japp.encoders import VISJSEncoder
-from neo4japp.services.models import NEO4JBase
+from neo4japp.models import NEO4JBase
 
 
 class GraphNode(NEO4JBase):
@@ -60,4 +59,4 @@ class GraphRelationship(NEO4JBase):
 
     @classmethod
     def from_py2neo(cls, rel: Relationship):
-        return cls(rel.id, type(rel).__name__, dict(rel), rel.start_node.identity, rel.end_node.identity)
+        return cls(rel.identity, type(rel).__name__, dict(rel), rel.start_node.identity, rel.end_node.identity)
