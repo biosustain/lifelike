@@ -3,6 +3,7 @@ from flask import g
 from py2neo import Graph
 
 # TODO: Set these in a more appropriate location
+# TODO: Handle database connection properly
 graph = Graph(
     uri=os.environ.get('NEO4J_HOST'),
     password=os.environ.get('NEO4J_USER')
