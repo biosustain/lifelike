@@ -1,10 +1,11 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
-
+import { HttpClientModule } from '@angular/common/http';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 
 import { VisualizationComponent } from './visualization/visualization.component';
+import { VisualizationService } from './visualization/visualization.service';
 
 @NgModule({
   declarations: [
@@ -13,9 +14,15 @@ import { VisualizationComponent } from './visualization/visualization.component'
   ],
   imports: [
     BrowserModule,
-    AppRoutingModule
+    AppRoutingModule,
+    HttpClientModule,
   ],
-  providers: [],
+  providers: [
+    VisualizationService,
+  ],
+  exports: [
+    HttpClientModule,
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

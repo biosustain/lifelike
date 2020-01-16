@@ -7,13 +7,12 @@ class Neo4JService(BaseDao):
 
     def execute_cypher(self, query):
         # TODO: Sanitize the queries
-        records = list(self.graph_session.run(query))
+        records = self.graph_session.run(query).data()
         if not records:
             return None
-        # TODO: Fix this parsing, it's only getting one record
+        node_dict = dict()
+        rel_dict = dict()
         for record in records:
-            node_dict = dict()
-            rel_dict = dict()
             graph_node = GraphNode.from_py2neo(record['node'])
             node_dict[graph_node.id] = graph_node
             graph_rel = GraphRelationship.from_py2neo(record['relationship'])
