@@ -9,6 +9,5 @@ def run_cypher():
     query = request.get_json()
     # TODO: Sanitize the queries
     result = dao.execute_cypher(query['query'])
-    print(result)
     return jsonify({'result': result}), 200
 
