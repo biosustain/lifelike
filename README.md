@@ -13,7 +13,9 @@ To run the application, use ```docker-compose up```
 - Handle neo4j transactions
 - Add Angular Material for styling
 - Middleware to translate ```vis.js``` data to be compatible with ```py2neo (neo4j)```
+- Implement DTU Navigation bar
+- Adding NgRx (Redux) to the stack
+- Handle saving vis.js data to Neo4J
 
 ## Considerations
 - Adding GraphQL to the stack
-- Adding NgRx (Redux) to the stack
