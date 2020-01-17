@@ -1,4 +1,5 @@
-# FLASK - NEO4J BOILERPLATE
+# KG-PROTOTYPES
+- An amalgamation of all protoypes hooked up into one another for a MVP
 
 Sets up a Dockerized Flask and Neo4j application using ```docker-compose``` for experimenting. Flask and Neo4j communication is done through **py2neo**.
 
@@ -16,6 +17,6 @@ To run the application, use ```docker-compose up```
 - Implement DTU Navigation bar
 - Adding NgRx (Redux) to the stack
 - Handle saving vis.js data to Neo4J
-
+- Add a seed database
 ## Considerations
 - Adding GraphQL to the stack
