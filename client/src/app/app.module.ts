@@ -7,6 +7,11 @@ import { AppComponent } from './app.component';
 import { VisualizationComponent } from './visualization/visualization.component';
 import { VisualizationService } from './visualization/visualization.service';
 
+import { Neo4jModule } from './upload/neo4j.module';
+
+import { RootStoreModule } from 'src/app/root-store';
+
+
 @NgModule({
   declarations: [
     AppComponent,
@@ -16,6 +21,9 @@ import { VisualizationService } from './visualization/visualization.service';
     BrowserModule,
     AppRoutingModule,
     HttpClientModule,
+    Neo4jModule,
+    // ngrx
+    RootStoreModule,
   ],
   providers: [
     VisualizationService,

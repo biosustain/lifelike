@@ -1,5 +1,3 @@
-neo4j/
-
 # Python
 __pycache__/
 *.pyc
@@ -26,3 +24,10 @@ Thumbs.db
 
 # .env Files (to protect secrets)
 *.env
+
+# ignore db files
+db/*/*
+
+# ignore node_modules
+
+client/node_modules
