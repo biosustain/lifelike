@@ -8,7 +8,10 @@ verify_ssl = true
 [packages]
 pycodestyle = "*"
 flask = "*"
-py2neo = "*"
+py2neo = "~=4.3.0"
+flask-caching = "~=1.8.0"
+openpyxl = "~=3.0.3"
+attrs = "~=18.1.0"
 
 [requires]
 python_version = "3.7"
