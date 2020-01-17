@@ -16,6 +16,6 @@ To run the application, use ```docker-compose up```
 - Implement DTU Navigation bar
 - Adding NgRx (Redux) to the stack
 - Handle saving vis.js data to Neo4J
-
+- Add a seed database
 ## Considerations
 - Adding GraphQL to the stack
