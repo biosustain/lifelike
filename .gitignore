@@ -29,5 +29,4 @@ Thumbs.db
 db/*/*
 
 # ignore node_modules
-
 client/node_modules
