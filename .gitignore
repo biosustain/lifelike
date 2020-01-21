@@ -29,5 +29,4 @@ Thumbs.db
 db/*/*
 
 # ignore node_modules
-neo4j/
 client/node_modules
