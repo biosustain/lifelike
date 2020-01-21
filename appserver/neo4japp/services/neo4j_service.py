@@ -1,11 +1,14 @@
-import attr
-
 from typing import Dict, List
 
+import attr
+
+from py2neo import NodeMatcher, RelationshipMatcher
 from werkzeug.datastructures import FileStorage
 
-from neo4japp.factory import cache
+from neo4japp.services.common import BaseDao
 from neo4japp.models import GraphNode, GraphRelationship
+from neo4japp.constants import *
+from neo4japp.factory import cache
 from neo4japp.util import CamelDictMixin, compute_hash
 from neo4japp.services.common import BaseDao
 
@@ -60,20 +63,172 @@ class Neo4JService(BaseDao):
     def __init__(self, graph):
         super().__init__(graph)
 
-    def execute_cypher(self, query):
-        # TODO: Sanitize the queries
+    def _query_neo4j(self, query: str):
         records = self.graph.run(query).data()
         if not records:
             return None
+        print(records)
         node_dict = dict()
         rel_dict = dict()
         for record in records:
-            graph_node = GraphNode.from_py2neo(record['node'])
-            node_dict[graph_node.id] = graph_node
-            graph_rel = GraphRelationship.from_py2neo(record['relationship'])
-            rel_dict[graph_rel.id] = graph_rel
+            nodes = record['nodes']
+            rels = record['relationships']
+            for node in nodes:
+                graph_node = GraphNode.from_py2neo(node)
+                node_dict[graph_node.id] = graph_node
+            for rel in rels:
+                graph_rel = GraphRelationship.from_py2neo(rel)
+                rel_dict[graph_rel.id] = graph_rel
         return dict(nodes=[n.to_dict() for n in node_dict.values()],
                     edges=[r.to_dict() for r in rel_dict.values()])
+
+    def get_organisms(self):
+        nodes = list(NodeMatcher(self.graph).match(NODE_SPECIES))
+        organism_nodes = [
+            GraphNode.from_py2neo(n, display_fn=lambda x: x.get('common_name'))
+                for n in nodes
+        ]
+        return dict(nodes=[n.to_dict() for n in organism_nodes], edges=[])
+
+    def get_biocyc_db(self, org_ids: [str]):
+        if org_ids:
+            query = f'match(n:Species) where n.biocyc_id in {str(org_ids)} return labels(n) as node_labels'
+            records = list(self.graph.run(query))
+            db_labels = []
+            for record in records:
+                labels = record['labels']
+                for label in labels:
+                    if label not in set(DB_BIOCYC, NODE_SPECIES):
+                        db_labels.append(label)
+            return db_labels
+        return None
+
+    def load_regulatory_graph(self, req):
+        db_filter = self.get_biocyc_db(req.org_ids)
+        if req.is_gene():
+            query = self.get_gene_regulatory_query(req, db_filter)
+            return self._query_neo4j(query)
+        return None
+
+    def expand_graph(self, node_id: str):
+        query = self.get_expand_query(node_id)
+        print(query)
+        return self._query_neo4j(query)
+
+    def load_reaction_graph(self, biocyc_id: str):
+        query = self.get_reaction_query(biocyc_id)
+        return self._query_neo4j(query)
+
+    def get_graph(self, req):
+        # TODO: Make this filter non-static
+        db_filter = self.get_biocyc_db(req.org_ids)
+        query = ''
+        if req.is_gene():
+            query = self.get_gene_gpr_query(req, db_filter)
+        elif req.is_protein():
+            query = self.get_protein_gpr_query(req, db_filter)
+        elif req.is_compound():
+            query = self.get_compound_query(req, db_filter)
+        elif req.is_pathway():
+            query = self.get_pathway_gpr_query(req, db_filter)
+        elif req.is_chemical():
+            query = self.get_chemical_query(req, db_filter)
+        return self._query_neo4j(query)
+
+    def get_gene_gpr_query(self, req, db_filter: [str]):
+        gene_label = req.node_label()
+        enz_label = req.get_node_label(TYPE_ENZREACTION, req.get_db_labels())
+        args = {PROP_BIOCYC_ID: req.id, 'gene_label': gene_label, 'enz_label': enz_label}
+        return """
+            match(g{gene_label}) where g.biocyc_id = '{biocyc_id}' with g
+            optional match p1 = (g)-[:ENCODES]-(:Protein)-[:HAS_COMPONENT*0..3]-(:Protein) unwind nodes(p1) as prot
+            optional match p2=(prot)-[:CATALYZES]->(:EnzReaction)-[:HAS_REACTION]->(r:Reaction)
+            optional match p3 = ({gene_label})-[:ENCODES]->(:Protein)<-[:HAS_COMPONENT*0..3]-(:Protein)
+            -[:CATALYZES]->(enz{enz_label})-[:HAS_REACTION]->(r)
+            return [g]+ COALESCE(nodes(p1), [])+ COALESCE(nodes(p2), []) + COALESCE(nodes(p3), []) as nodes,
+            COALESCE(relationships(p1), []) + COALESCE(relationships(p2), []) + COALESCE(relationships(p3), []) as relationships
+        """.format(**args)
+
+    def get_protein_gpr_query(self, req, db_filter):
+        enz_label = req.get_node_label(TYPE_ENZREACTION, req.get_db_labels())
+        args = {PROP_BIOCYC_ID: req.id, 'protein_label': req.node_label(), 'enz_label': enz_label}
+        return """
+            match p1 = ({protein_label})-[:HAS_COMPONENT*0..3]->(n:Protein)-[:HAS_COMPONENT*0..3]->(:Protein)
+            where n.biocyc_id = '{biocyc_id}'
+            unwind nodes(p1) as prot
+            optional match p2=(:Gene)-[:ENCODES]->(prot)
+            optional match rp=(prot)-[:CATALYZES]->(:EnzReaction)-[:HAS_REACTION]->(r)
+            optional match p3 = (:Gene:Ecocyc)-[:ENCODES]->({protein_label})<-[:HAS_COMPONENT*0..3]-
+            (:Protein)-[:CATALYZES]->(enz{enz_label})-[:HAS_REACTION]->(r)
+            return COALESCE(nodes(p1), [])+ COALESCE(nodes(p2), []) + COALESCE(nodes(p3), []) as nodes,
+            COALESCE(relationships(p1), []) + COALESCE(relationships(p2), []) + COALESCE(relationships(p3), []) as relationships
+        """.format(**args)
+
+    def get_pathway_gpr_query(self, req, db_filter:[str]):
+        args = {PROP_BIOCYC_ID: req.id}
+        query = """
+            match (n:Pathway) where n.biocyc_id = '{biocyc_id}'
+            with n
+            optional match p1 = (n)-[:CONTAINS]-(:Reaction)-[:HAS_REACTION]-(enz:EnzReaction)-[:CATALYZES]-(prot:Protein)
+            optional match p2 = (:Gene)-[:ENCODES]->(:Protein)<-[:HAS_COMPONENT*0..3]-(prot)
+            return [n]+ COALESCE(nodes(p1), [])+ COALESCE(nodes(p2), []) as nodes,
+            COALESCE(relationships(p1), []) + COALESCE(relationships(p2), []) as relationships
+        """.format(**args)
+        return query
+
+    def get_compound_query(self, req, db_filter:[str]):
+        args = {PROP_BIOCYC_ID: req.id}
+        return """
+            MATCH (c:Compound) where c.biocyc_id='{biocyc_id}'
+            with c
+            OPTIONAL MATCH p1=(c)-[:IS_CONSUMED_BY]->(:Reaction)
+            OPTIONAL Match p2=(c)-[:PRODUCES]-(:Reaction)
+            with [c]+ COALESCE(nodes(p1), [])+ COALESCE(nodes(p2), []) as n,
+            COALESCE(relationships(p1), []) + COALESCE(relationships(p2), []) as r
+            unwind n as allnodes
+            unwind r as allrels
+            return collect(distinct allnodes) as nodes, collect(distinct allrels) as relationships
+        """.format(**args)
+
+    def get_chemical_query(self, req, db_filter:[str]):
+        args = {PROP_CHEBI_ID: req.id}
+        return """
+            match(c:CHEBI) where c.chebi_id = '{chebi_id}' with c
+            optional match p1=(c)-[:IS_A]-(:CHEBI)
+            optional match p2=(c)-[:IS_CONJUGATE_ACID_OF]-(:CHEBI)
+            optional match p3=(c)-[:HAS_PART]-(:CHEBI)
+            return [c]+ COALESCE(nodes(p1), [])+ COALESCE(nodes(p2), []) + COALESCE(nodes(p3), []) as nodes,
+            COALESCE(relationships(p1), []) + COALESCE(relationships(p2), []) + COALESCE(relationships(p3), []) as relationships
+        """.format(**args)
+
+    def get_gene_regulatory_query(self, req, db_filter:[str]):
+        args = {PROP_BIOCYC_ID: req.id}
+        return """
+            match (n:Gene)-[:IS]-(:NCBI:Gene)-[:IS]-(g:Gene:RegulonDB) where n.biocyc_id = 'EG11530' with g
+            optional match p1= (:Gene)-[:ENCODES]->(:Product)-[:IS]-(:TranscriptionFactor)-[:REGULATES]->(g)
+            optional match p2 = (g)-[:ENCODES]->(:Product)-[:IS]-(:TranscriptionFactor)-[:REGULATES]->(:Gene)
+            return [g]+ COALESCE(nodes(p1), [])+ COALESCE(nodes(p2), []) as nodes,
+            COALESCE(relationships(p1), []) + COALESCE(relationships(p2), []) as relationships
+        """.format(**args)
+
+    def get_expand_query(self, node_id: str):
+        query = """
+            match(n) WHERE n.biocyc_id = '{}' with n
+            match p1 = (n)-[l]-(s)
+            return collect(n) + collect(s) as nodes, collect(l) as relationships
+        """.format(node_id)
+        return query
+
+    def get_reaction_query(self, biocyc_id: str):
+        query = """
+            match(n:Reaction) where n.biocyc_id = '{}' with n
+            optional match p1 = (n)-[]-(:EnzReaction)-[:CATALYZES]-(prot:Protein)
+            optional match p2 = (:Gene)-[:ENCODES]->(:Protein)<-[:HAS_COMPONENT*0..3]-(prot)
+            return [n]+ COALESCE(nodes(p1), [])+ COALESCE(nodes(p2), []) as nodes,
+            COALESCE(relationships(p1), []) + COALESCE(relationships(p2), []) as relationships
+        """.format(biocyc_id)
+        print(query)
+        return query
 
     def parse_file(self, f: FileStorage) -> Workbook:
         workbook = load_workbook(f)
