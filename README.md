@@ -16,6 +16,7 @@ __2. How do I seed the NEO4J Database?__
 Download the `.zip` file from https://github.com/SBRG/knowledge-graph/blob/master/neo4j/data/databases/graph.db.zip and add it to the `db` directory. The directory structure will be `db/graph.db`.
 
 __3. API Endpoint Documentation?__
+
 TODO
 
 ## TODO
