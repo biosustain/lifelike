@@ -28,11 +28,12 @@ TODO
   - *Angular 2 added as a client*
 - Compelely remove 'template' folders from application server
 - Handle neo4j transactions
-- Add Angular Material for styling
+- ~~Add Angular Material for styling~~
 - Middleware to translate ```vis.js``` data to be compatible with ```py2neo (neo4j)```
 - Implement DTU Navigation bar
 - ~~Adding NgRx (Redux) to the stack~~
 - Handle saving vis.js data to Neo4J
 - Add a seed database
+- Handle Elastic Search transactions
 ## Considerations
 - Adding GraphQL to the stack
