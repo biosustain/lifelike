@@ -23,6 +23,29 @@ services:
         depends_on:
             - database
 
+    elasticsearch:
+        container_name: n4j-elasticsearch
+        build:
+            ./elasticsearch
+        environment:
+            - discovery.type=single-node
+            - http.max_content_length=200mb
+            - bootstrap.memory_lock=true
+            - xpack.graph.enabled=false
+            - xpack.watcher.enabled=false
+            - xpack.license.self_generated.type=basic
+        ulimits:
+            memlock:
+                soft: -1
+                hard: -1
+        volumes:
+            - ./elasticsearch/esdata:/usr/share/elasticsearch/data
+        ports:
+            - "9200:9200"
+            - "9300:9300"
+        networks:
+            - backend
+
 networks:
     frontend:
     backend:
