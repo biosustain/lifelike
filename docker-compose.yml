@@ -22,6 +22,8 @@ services:
             - backend
         depends_on:
             - database
+        stdin_open: true
+        tty: true
 
     elasticsearch:
         container_name: n4j-elasticsearch
