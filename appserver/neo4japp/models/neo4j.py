@@ -1,6 +1,7 @@
 from flask import json
 from py2neo import Node, Relationship
 from neo4japp.models import NEO4JBase
+from neo4japp.util import snake_to_camel_dict
 
 
 class GraphNode(NEO4JBase):
@@ -32,6 +33,7 @@ class GraphNode(NEO4JBase):
         prop_filter_fn = prop_filter_fn or (lambda x: x)
         primary_label = labels[0] if not primary_label_fn else primary_label_fn(node)
         data = prop_filter_fn({k: v for k, v in dict(node).items()})
+        data = snake_to_camel_dict(data, {})
         display_name = None if not display_fn else display_fn(node)
         return cls(node.identity, primary_label, data, labels, display_name)
 
