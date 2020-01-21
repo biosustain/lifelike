@@ -242,7 +242,7 @@ class Neo4JService(BaseDao):
         workbook: Workbook,
     ) -> FileNameAndSheets:
         sheet_list = []
-        for i in range(0, 2):
+        for i in range(0, len(workbook.sheetnames)):
             workbook.active = i
             current_ws: Worksheet = workbook.active
 
