@@ -4,6 +4,7 @@ __pycache__/
 env/
 .cache/
 .python_history
+.ipython/
 
 # compiled output
 dist/
