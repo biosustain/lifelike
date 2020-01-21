@@ -25,6 +25,8 @@ DB_CHEBI = 'CHEBI'
 DB_GO = 'GO'
 DB_EC = 'EC'
 
+ELASTICSEARCH_URL = 'http://elasticsearch:9200'
+GRAPH_INDEX = 'graph'
 
 def is_db_name(s: str):
     """ check if a str is db name"""
