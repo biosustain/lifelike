@@ -5,6 +5,7 @@ Sets up a Dockerized Flask and Neo4j application using ```docker-compose``` for 
 
 ## DEV F.A.Q
 __1. How do I run the application?__
+
 To run the application, first create the docker images
 ```
 docker-compose build --no-cache
@@ -13,6 +14,7 @@ Then to spin up the server and bring it down use
 ```docker-compose up``` and ```docker-compose down``` respectively
 
 __2. How do I seed the NEO4J Database?__
+
 Download the `.zip` file from https://github.com/SBRG/knowledge-graph/blob/master/neo4j/data/databases/graph.db.zip and add it to the `db` directory. The directory structure will be `db/graph.db`.
 
 __3. API Endpoint Documentation?__
