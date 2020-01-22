@@ -10,6 +10,9 @@ To run the application, first create the docker images
 ```
 docker-compose build --no-cache
 ```
+
+Next, download the necessary NEO4J database and decompress the Elastic Search database. See FAQ for more information.
+
 Then to spin up the server and bring it down use
 ```docker-compose up``` and ```docker-compose down``` respectively
 
@@ -17,7 +20,11 @@ __2. How do I seed the NEO4J Database?__
 
 Download the `.zip` file from https://github.com/SBRG/knowledge-graph/blob/master/neo4j/data/databases/graph.db.zip and add it to the `db` directory. The directory structure will be `db/graph.db`.
 
-__3. API Endpoint Documentation?__
+__3. How do I seed the Elastic Search Database?__
+
+Decompress the file in elasticsearch/esdata_20191029.tar.gz
+
+__4. API Endpoint Documentation?__
 
 TODO
 
