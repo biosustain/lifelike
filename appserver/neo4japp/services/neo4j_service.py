@@ -232,7 +232,7 @@ class Neo4JService(BaseDao):
 
     def parse_file(self, f: FileStorage) -> Workbook:
         workbook = load_workbook(f)
-        print(f.filename)
+        print(f'caching {f.filename} as key')
         cache.set(f.filename, workbook)
         return workbook
 
@@ -267,6 +267,26 @@ class Neo4JService(BaseDao):
         self,
         column_mappings: Neo4jColumnMapping,
     ) -> dict:
+        def create_node(props, node_label):
+            node = {}  # type: ignore
+            node_props = {}
+
+            # value becomes the key representing property label
+            # key is used to get the value in excel
+            # e.g { prop_label_in_db: cell_value_in_excel_file }
+            for k, v in props.items():
+                if v:
+                    node_props[v] = row[k]
+                else:
+                    # if user did not select property label
+                    # use cell value to make a new one (?)
+                    node_props[row[k]] = row[k]
+
+            node['data'] = node_props
+            node['label'] = node_label  # type: ignore
+            node['hash'] = compute_hash(node)  # type: ignore
+            return node
+
         nodes = []
         edges = []
 
@@ -297,37 +317,21 @@ class Neo4JService(BaseDao):
 
         current_ws = workbook.active
 
+        # TODO: strip leading and trailing whitespaces
         for row in current_ws.iter_rows(
             min_row=2,
             max_row=len(list(current_ws.rows)) - 1,
             max_col=len(list(current_ws.columns)) - 1,
             values_only=True,
         ):
-            src_node = {}  # type: ignore
-            src_node_props = {}
-            src_node_label = list(source_col_idx_node_label.values())[0]
-
-            # source node
-            for k, v in source_col_idx_node_prop.items():
-                src_node_props[v] = row[k]
-
-            src_node['data'] = src_node_props
-            src_node['label'] = src_node_label  # type: ignore
-            src_node['hash'] = compute_hash(src_node)  # type: ignore
+            # # did user select a node label or not
+            src_node_label = list(source_col_idx_node_label.values())[0] or row[list(source_col_idx_node_label.keys())[0]]
+            src_node = create_node(props=source_col_idx_node_prop, node_label=src_node_label)
             nodes.append(src_node)
 
             if len(target_col_idx_node_label) > 0:
-                tgt_node = {}  # type: ignore
-                tgt_node_props = {}
-                tgt_node_label = list(target_col_idx_node_label.values())[0]
-
-                # target node
-                for k, v in target_col_idx_node_prop.items():
-                    tgt_node_props[v] = row[k]
-
-                tgt_node['data'] = tgt_node_props
-                tgt_node['label'] = tgt_node_label  # type: ignore
-                tgt_node['hash'] = compute_hash(tgt_node)  # type: ignore
+                tgt_node_label = list(target_col_idx_node_label.values())[0] or row[list(target_col_idx_node_label.keys())[0]]
+                tgt_node = create_node(props=target_col_idx_node_prop, node_label=tgt_node_label)
                 nodes.append(tgt_node)
 
                 # edge
