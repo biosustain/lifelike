@@ -1,8 +1,16 @@
 import { Component, Input, Output, EventEmitter, OnChanges } from '@angular/core';
-import { MatCheckboxChange } from '@angular/material';
+import { MatCheckboxChange, MatSelectChange } from '@angular/material';
 import { FormGroup, FormBuilder, FormArray } from '@angular/forms';
 
+import { Store, select } from '@ngrx/store';
+
 import { SheetNameAndColumnNames, Neo4jColumnMapping } from '../../interfaces/neo4j.interface';
+
+import { State } from '../../root-store';
+
+import { Neo4jSelectors as selectors } from '../store';
+import { Observable } from 'rxjs';
+import { getNodeProperties } from '../store/actions';
 
 enum ColumnType {
     EXCLUDE = 'EXCLUDE',
@@ -24,17 +32,21 @@ export class Neo4jUploadFileColumnsComponent implements OnChanges {
 
     columnMappingForm: FormGroup;
 
-    existingNodeLabels: string[];
-    existingPropertyLabels: string[];
+    nodeLabels$: Observable<string[]>;
+    nodeProperties$: Observable<{[key: string]: string[]}>;
 
     // TODO: add uniqueId column (used for indexing?)
     readonly columns = [
         'columnName', 'nodeLabel', 'propertyLabel', 'exclude', 'edge', 'source', 'target', 'nodeProperty'];      // table column headers
     readonly columnType = ColumnType;
 
-    constructor(private fb: FormBuilder) {
-        this.existingNodeLabels = ['Ecocyc', 'Drug'];
-        this.existingPropertyLabels = ['common_name', 'name', 'conservation', 'percent_strain'];
+    constructor(
+        private fb: FormBuilder,
+        private store: Store<State>,
+    ) {
+        this.nodeLabels$ = this.store.pipe(select(selectors.selectDbLabels));
+        this.nodeProperties$ = this.store.pipe(select(selectors.selectNodeProperties));
+
         this.columnMappingForm = this.fb.group({ columnMapping: this.fb.array([]) });
 
         this.emitter = new EventEmitter<any>();
@@ -59,6 +71,10 @@ export class Neo4jUploadFileColumnsComponent implements OnChanges {
                 );
             });
         }
+    }
+
+    selectionChange(event: MatSelectChange) {
+        this.store.dispatch(getNodeProperties({payload: event.value}));
     }
 
     updateColumnMapping(event: MatCheckboxChange, columnType: ColumnType, idx) {
@@ -137,7 +153,6 @@ export class Neo4jUploadFileColumnsComponent implements OnChanges {
     }
 
     createColumnMapping() {
-        // const nodeProperties = [];
         const columnMapping = {
             sourceNode: { nodeLabel: {}, nodeProperties: {} },
             targetNode: { nodeLabel: {}, nodeProperties: {} },
@@ -157,7 +172,6 @@ export class Neo4jUploadFileColumnsComponent implements OnChanges {
             }
 
             if (group.controls.nodeProperty.value) {
-                // nodeProperties.push(<number>Object.values(group.controls.columnName.value)[0]);
                 if (group.controls.target.value) {
                     columnMapping.targetNode.nodeProperties[
                         Object.values(group.controls.columnName.value)[0] as number] = group.controls.propertyLabel.value;

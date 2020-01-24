@@ -135,7 +135,20 @@ class Neo4JService(BaseDao):
             query = self.get_chemical_query(req, db_filter)
         return self._query_neo4j(query)
 
+    def get_db_labels(self) -> List[str]:
+        """Get all labels from database."""
+        labels = self.graph.run('call db.labels()').data()
+        return [label['label'] for label in labels]
+
+    def get_node_properties(self, node_label) -> Dict[str, List[str]]:
+        """Get all properties of a label."""
+        props = self.graph.run(f'match (n: {node_label}) unwind keys(n) as key return distinct key').data()
+        return { node_label: [prop['key'] for prop in props] }
+
     def get_gene_gpr_query(self, req, db_filter: [str]):
+        """NOTE: the `get_node_label` is not to get from the database,
+        but from the request object class SearchResult.
+        """
         gene_label = req.node_label()
         enz_label = req.get_node_label(TYPE_ENZREACTION, req.get_db_labels())
         args = {PROP_BIOCYC_ID: req.id, 'gene_label': gene_label, 'enz_label': enz_label}
@@ -267,7 +280,7 @@ class Neo4JService(BaseDao):
         self,
         column_mappings: Neo4jColumnMapping,
     ) -> dict:
-        def create_node(props, node_label):
+        def create_node(current_ws, row, props, node_label):
             node = {}  # type: ignore
             node_props = {}
 
@@ -280,7 +293,7 @@ class Neo4JService(BaseDao):
                 else:
                     # if user did not select property label
                     # use cell value to make a new one (?)
-                    node_props[row[k]] = row[k]
+                    node_props[current_ws.cell(1, k+1).value] = row[k]
 
             node['data'] = node_props
             node['label'] = node_label  # type: ignore
@@ -326,12 +339,14 @@ class Neo4JService(BaseDao):
         ):
             # # did user select a node label or not
             src_node_label = list(source_col_idx_node_label.values())[0] or row[list(source_col_idx_node_label.keys())[0]]
-            src_node = create_node(props=source_col_idx_node_prop, node_label=src_node_label)
+            src_node = create_node(
+                current_ws=current_ws, row=row, props=source_col_idx_node_prop, node_label=src_node_label)
             nodes.append(src_node)
 
             if len(target_col_idx_node_label) > 0:
                 tgt_node_label = list(target_col_idx_node_label.values())[0] or row[list(target_col_idx_node_label.keys())[0]]
-                tgt_node = create_node(props=target_col_idx_node_prop, node_label=tgt_node_label)
+                tgt_node = create_node(
+                    current_ws=current_ws, row=row, props=target_col_idx_node_prop, node_label=tgt_node_label)
                 nodes.append(tgt_node)
 
                 # edge
