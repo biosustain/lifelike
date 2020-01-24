@@ -10,6 +10,20 @@ import * as Neo4jActions from './actions';
 export const neo4jReducer = createReducer(
     initialState,
     on(
+        Neo4jActions.getDbLabelsSuccess,
+        (state, action) => ({
+            ...state,
+            dbLabels: action.payload,
+        }),
+    ),
+    on(
+        Neo4jActions.getNodePropertiesSuccess,
+        (state, action) => ({
+            ...state,
+            nodeProperties: {...state.nodeProperties, ...action.payload},
+        }),
+    ),
+    on(
         Neo4jActions.uploadNeo4jFileSuccess,
         (state, action) => ({
             ...state,
