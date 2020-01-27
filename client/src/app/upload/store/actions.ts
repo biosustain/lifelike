@@ -22,7 +22,30 @@ export const uploadNeo4jColumnMappingFileSuccess = createAction(
     '[Neo4j Prototype] Upload Neo4j Column Mapping File Success',
 );
 
+export const getDbLabels = createAction(
+    '[Neo4j Prototype] Get Database Labels',
+);
+
+export const getDbLabelsSuccess = createAction(
+    '[Neo4j Prototype] Get Database Labels Success',
+    props<{payload: string[]}>(),
+);
+
+export const getNodeProperties = createAction(
+    '[Neo4j Prototype] Get Node Properties',
+    props<{payload: string}>(),
+);
+
+export const getNodePropertiesSuccess = createAction(
+    '[Neo4j Prototype] Get Node Properties Success',
+    props<{payload: {[key: string]: string[]}}>(),
+);
+
 const all = union({
+    getDbLabels,
+    getDbLabelsSuccess,
+    getNodeProperties,
+    getNodePropertiesSuccess,
     uploadNeo4jFile,
     uploadNeo4jFileSuccess,
     uploadNeo4jColumnMappingFile,

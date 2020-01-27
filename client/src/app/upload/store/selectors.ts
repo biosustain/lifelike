@@ -13,3 +13,13 @@ export const selectFileNameAndSheets: MemoizedSelector<object, FileNameAndSheets
     neo4jState,
     (state: State): FileNameAndSheets => state.fileNameAndSheets,
 );
+
+export const selectDbLabels: MemoizedSelector<object, string[]> = createSelector(
+    neo4jState,
+    (state: State): string[] => state.dbLabels,
+);
+
+export const selectNodeProperties: MemoizedSelector<object, { [key: string]: string[] }> = createSelector(
+    neo4jState,
+    (state: State): { [key: string]: string[] } => state.nodeProperties,
+);
