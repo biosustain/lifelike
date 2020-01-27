@@ -3,7 +3,7 @@ version: '3.5'
 services:
     database:
         container_name: n4j-database
-        image: neo4j:latest
+        image: neo4j:3.5.14
         ports:
             - "7474:7474"
             - "7687:7687"
