@@ -15,6 +15,10 @@ import {
 import { EMPTY } from 'rxjs';
 
 import {
+    getDbLabels,
+    getDbLabelsSuccess,
+    getNodeProperties,
+    getNodePropertiesSuccess,
     uploadNeo4jFile,
     uploadNeo4jFileSuccess,
     uploadNeo4jColumnMappingFile,
@@ -32,6 +36,26 @@ export class Neo4jEffects {
         private actions$: Actions,
         private neo4jService: Neo4jService,
     ) {}
+
+    getDbLabels = createEffect(() => this.actions$.pipe(
+        ofType(getDbLabels),
+        map(action => action),
+        switchMap(() => this.neo4jService.getDbLabels()
+            .pipe(
+                map(labels => getDbLabelsSuccess({payload: labels})),
+            ),
+        ),
+    ));
+
+    getNodeProperties = createEffect(() => this.actions$.pipe(
+        ofType(getNodeProperties),
+        map(action => action.payload),
+        switchMap(nodeLabel => this.neo4jService.getNodeProperties(nodeLabel)
+            .pipe(
+                map(props => getNodePropertiesSuccess({payload: props})),
+            ),
+        ),
+    ));
 
     uploadNeo4jFile = createEffect(() => this.actions$.pipe(
         ofType(uploadNeo4jFile),
