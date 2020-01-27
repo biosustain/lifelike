@@ -28,9 +28,10 @@
             <mat-select
               placeholder="Select node label"
               formControlName="nodeLabel"
+              (selectionChange)="selectionChange($event)"
             >
               <mat-option
-                *ngFor="let label of existingNodeLabels"
+                *ngFor="let label of (nodeLabels$ | async)"
                 [value]="label"
               >{{ label }}</mat-option>
             </mat-select>
@@ -46,10 +47,12 @@
               placeholder="Select property label"
               formControlName="propertyLabel"
             >
-              <mat-option
-                *ngFor="let label of existingPropertyLabels"
-                [value]="label"
-              >{{ label }}</mat-option>
+              <span *ngIf="(nodeProperties$ | async)">
+                <mat-option
+                  *ngFor="let label of (nodeProperties$ | async)[columnMappingForm.get('columnMapping').controls[i].get('nodeLabel').value]"
+                  [value]="label"
+                >{{ label }}</mat-option>
+              </span>
             </mat-select>
           </mat-form-field>
         </mat-cell>

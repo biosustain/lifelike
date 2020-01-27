@@ -9,7 +9,7 @@ import { Observable, Subscription } from 'rxjs';
 import { State } from '../../root-store';
 
 import { Neo4jSelectors as selectors } from '../store';
-import { uploadNeo4jFile, uploadNeo4jColumnMappingFile } from '../store/actions';
+import { uploadNeo4jFile, uploadNeo4jColumnMappingFile, getDbLabels } from '../store/actions';
 
 import { FileNameAndSheets, SheetNameAndColumnNames, Neo4jColumnMapping } from '../../interfaces/neo4j.interface';
 
@@ -74,6 +74,7 @@ export class Neo4jUploadComponent implements OnInit, OnDestroy {
     }
 
     goToMapColumns() {
+        this.store.dispatch(getDbLabels());
         this.stepper.next();
     }
 
