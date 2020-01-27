@@ -4,6 +4,7 @@ from typing import Dict, List
 
 from flask import Blueprint
 from werkzeug.datastructures import FileStorage
+from neo4japp.blueprints import GraphRequest
 from neo4japp.constants import *
 from neo4japp.database import get_neo4j_service_dao
 from neo4japp.services import Neo4JService, Neo4jColumnMapping
@@ -11,67 +12,6 @@ from neo4japp.util import CamelDictMixin, SuccessResponse, jsonify_with_class
 
 bp = Blueprint('neo4j-api', __name__, url_prefix='/neo4j')
 
-@attr.s(frozen=True)
-class SearchResult(CamelDictMixin):
-    id: str = attr.ib()
-    score: float = attr.ib()
-    type: str = attr.ib()
-    labels: [str] = attr.ib()
-    data_source: str = attr.ib()
-    all_text: str = attr.ib()
-    common_name: str = attr.ib()
-    synonyms: str = attr.ib()
-    alt_ids: [str] = attr.ib()
-    conjugate: str = attr.ib()
-    organism: object = attr.ib()  # TODO: Make more specific
-
-    def get_db_labels(self):
-        return [l for l in self.labels
-                if l not in set(TYPE_COMPOUND, TYPE_GENE, TYPE_PROTEIN, TYPE_PATHWAY)]
-
-    def is_gene(self):
-        return TYPE_GENE == self.type or TYPE_GENE in self.labels
-
-    def is_protein(self):
-        return TYPE_PROTEIN == self.type or TYPE_PROTEIN in self.labels
-
-    def is_compound(self):
-        return TYPE_COMPOUND == self.type or TYPE_COMPOUND in self.labels
-
-    def is_chemical(self):
-        return TYPE_CHEMICAL == self.type or DB_CHEBI in self.labels
-
-    def is_pathway(self):
-        return TYPE_PATHWAY == self.type or TYPE_PATHWAY in self.labels
-
-    def node_label(self):
-        return ':' + ':'.join(self.labels)
-
-    def get_node_label(self, node_type: str, db_names: [str]):
-        labels = []
-        if node_type == TYPE_CHEMICAL:
-            labels = labels + db_names
-        else:
-            labels.append(node_type)
-            labels += db_names
-        return ':'.join(labels)
-
-    def get_graph_layout(self):
-        if self.is_compound():
-            # TODO: See what the equivalent is
-            # for vis.js
-            # {'layout': 'klay', 'rank_dir': 'TB'}
-            pass
-        else:
-            # TODO: See what the equivalent is
-            # for vis.js
-            # {'layout': 'dagre', 'rank_dir': 'TB'}
-            pass
-
-
-@attr.s(frozen=True)
-class GraphRequest(SearchResult):
-    org_ids: str = attr.ib()
 
 @attr.s(frozen=True)
 class ReactionRequest(CamelDictMixin):
