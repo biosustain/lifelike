@@ -32,3 +32,8 @@ export interface Neo4jColumnMapping {
   fileName: string;
   sheetName: string;
 }
+
+export interface Neo4jResults {
+  nodes: Array<{[key: string]: any}>;
+  edges: Array<{[key: string]: any}>;
+}
