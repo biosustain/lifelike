@@ -31,3 +31,4 @@ db/*/*
 
 # ignore node_modules
 client/node_modules
+esdata/
