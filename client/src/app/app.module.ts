@@ -3,6 +3,7 @@ import { NgModule } from '@angular/core';
 import { HttpClientModule } from '@angular/common/http';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
+import { ToolbarMenuModule } from 'toolbar-menu';
 
 import { VisualizationComponent } from './visualization/visualization.component';
 import { VisualizationService } from './visualization/visualization.service';
@@ -24,6 +25,7 @@ import { RootStoreModule } from 'src/app/***ARANGO_USERNAME***-store';
     Neo4jModule,
     // ngrx
     RootStoreModule,
+    ToolbarMenuModule,
   ],
   providers: [
     VisualizationService,
