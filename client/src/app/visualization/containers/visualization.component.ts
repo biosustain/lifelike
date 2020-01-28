@@ -5,7 +5,7 @@ import { VisualizationService } from '../services/visualization.service';
 @Component({
     selector: 'app-visualization',
     templateUrl: './visualization.component.html',
-    styleUrls: ['./visualization.component.sass'],
+    styleUrls: ['./visualization.component.scss'],
 })
 export class VisualizationComponent implements OnInit {
 
