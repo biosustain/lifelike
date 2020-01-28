@@ -12,9 +12,10 @@ ENV PATH $N4J_HOME/node_modules/.bin:$PATH
 # will be used to them together.
 COPY ./package.json $N4J_HOME/
 COPY ./yarn.lock $N4J_HOME/
+COPY ./toolbar-menu $N4J_HOME/
 
 WORKDIR $N4J_HOME
-RUN yarn install && rm package.json
+RUN yarn install && rm package.json && rm -f toolbar-menu
 
 COPY . $N4J_CLIENT
 WORKDIR $N4J_CLIENT

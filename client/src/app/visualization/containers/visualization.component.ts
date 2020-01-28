@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { DataSet, Edge, Network } from 'vis-network';
-import { VisualizationService } from './visualization.service';
+import { DataSet, Network } from 'vis-network';
+import { VisualizationService } from '../visualization.service';
 
 @Component({
     selector: 'app-visualization',
@@ -16,10 +16,7 @@ export class VisualizationComponent implements OnInit {
     constructor(private visService: VisualizationService) {}
 
     ngOnInit() {
-        // #TODO: Notice need to COALESCE the origin node or no connection
-        // # TODO: Remove me, don't allow users to perform cypher queries
-        const exampleQuery = 'MATCH paths=((person {name: "Tyrion-Lannister"})-[relationship:INTERACTS]->(node:Character)) RETURN paths, relationship, node'; /* tslint:disable */
-        this.visService.query(exampleQuery).subscribe((result: {nodes: any[], edges: any[]}) => {
+        this.visService.query('').subscribe((result: {nodes: any[], edges: any[]}) => {
             this.nodes = new DataSet(result.nodes);
             this.edges = new DataSet(result.edges);
 
