@@ -23,7 +23,7 @@ enum ColumnType {
 @Component({
     selector: 'app-neo4j-upload-file-columns',
     templateUrl: 'neo4j-upload-file-columns.component.html',
-    styleUrls: ['neo4j-upload-file-columns.component.sass'],
+    styleUrls: ['neo4j-upload-file-columns.component.scss'],
 })
 export class Neo4jUploadFileColumnsComponent implements OnChanges {
     @Input() chosenSheetToMap: SheetNameAndColumnNames;
