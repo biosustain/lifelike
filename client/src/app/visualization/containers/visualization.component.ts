@@ -1,7 +1,12 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { VisualizationService } from '../services/visualization.service';
-import { Neo4jResults, Neo4jGraphConfig } from '../../interfaces';
-import { Network, DataSet } from 'vis-network';
+import {
+    Neo4jResults,
+    Neo4jGraphConfig,
+    VisNode,
+    VisEdge,
+} from '../../interfaces';
+import { DataSet } from 'vis-network';
 import { VisualizationCanvasComponent } from '../components/visualization-canvas.component';
 
 @Component({
@@ -13,8 +18,8 @@ export class VisualizationComponent implements OnInit {
 
     networkGraphData: Neo4jResults;
     networkGraphConfig: Neo4jGraphConfig;
-    nodes: DataSet<any, any>;
-    edges: DataSet<any, any>;
+    nodes: DataSet<VisNode>;
+    edges: DataSet<VisEdge>;
 
     @ViewChild(VisualizationCanvasComponent, {static: false}) canvas: VisualizationCanvasComponent;
 
@@ -35,7 +40,7 @@ export class VisualizationComponent implements OnInit {
      * function to rearrange custom properties.
      * @param result - neo4j results from AP call
      */
-    setupInitialProperties(result: Neo4jResults) {
+    setupInitialProperties(result: Neo4jResults): Neo4jResults {
         // Sets the node expand state to initially be false
         // Used for collapse/expand
         const setExpandProperty = result.nodes.map((n) => {
