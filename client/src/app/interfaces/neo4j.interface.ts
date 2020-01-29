@@ -37,3 +37,7 @@ export interface Neo4jResults {
   nodes: Array<{[key: string]: any}>;
   edges: Array<{[key: string]: any}>;
 }
+
+export interface Neo4jGraphConfig {
+  [key: string]: any;
+}
