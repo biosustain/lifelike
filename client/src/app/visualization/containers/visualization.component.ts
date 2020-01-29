@@ -118,6 +118,8 @@ export class VisualizationComponent implements OnInit {
         const nodeRef = this.nodes.get(nodeId);
 
         if (nodeRef.expanded) {
+            // We only want to remove the edges that
+            // point to this selected node.
             const edgeIdsFiltered = edgeIds.filter((eid) => {
                 const edge = this.edges.get(eid);
                 return edge.to === nodeId;
