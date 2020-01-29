@@ -1,2 +1,7 @@
-<app-visualization-canvas [data]="networkGraphData"
-                          [config]="networkGraphConfig"></app-visualization-canvas>
+<app-visualization-canvas
+  *ngIf="networkGraphData"
+  [nodes]="nodes"
+  [edges]="edges"
+  [config]="networkGraphConfig"
+  (expandAndCollapseNodeId)="expandAndCollapseNode($event)"
+></app-visualization-canvas>
