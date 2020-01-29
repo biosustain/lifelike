@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { DataSet, Network } from 'vis-network';
 import { VisualizationService } from '../services/visualization.service';
+import { Neo4jResults } from '../../interfaces';
 
 @Component({
     selector: 'app-visualization',
@@ -9,36 +9,24 @@ import { VisualizationService } from '../services/visualization.service';
 })
 export class VisualizationComponent implements OnInit {
 
-    networkGraph: Network;
-    nodes: DataSet<any, any>;
-    edges: DataSet<any, any>;
+    networkGraphData: Neo4jResults;
+    networkGraphConfig: object;
 
     constructor(private visService: VisualizationService) {}
 
     ngOnInit() {
-        this.visService.getAllOrganisms().subscribe((result: {nodes: any[], edges: any[]}) => {
-            this.nodes = new DataSet(result.nodes);
-            this.edges = new DataSet(result.edges);
-
-            // create a network
-            let container = document.getElementById('network-viz');
-
-            // provide the data in the vis format
-            let data = {
-                nodes: this.nodes,
-                edges: this.edges,
-            };
-
-            let options = {
-                // This will disable the bouncing
-                physics: {
-                    enabled: true,
-                }
-            };
-
-            // initialize network
-            let network = new Network(container, data, options);
-            this.networkGraph = network
+        this.visService.getAllOrganisms().subscribe((result: Neo4jResults) => {
+            this.networkGraphData = result;
         });
+        this.networkGraphConfig = this.visualizationConfig();
+    }
+
+    visualizationConfig() {
+        const config = {
+            physics: {
+                enabled: true,
+            }
+        };
+        return config;
     }
 }
