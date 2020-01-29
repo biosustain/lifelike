@@ -6,20 +6,21 @@ import { NgModule } from '@angular/core';
 // Sort alphabetically
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { CommonModule } from '@angular/common';
+import { FlexLayoutModule } from '@angular/flex-layout';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { HttpClientModule, HttpClient } from '@angular/common/http';
 import { RouterModule } from '@angular/router';
-
 
 import { AngularMaterialModule } from './angular-material.module';
 
 @NgModule({
     imports: [
+        AngularMaterialModule,
         BrowserAnimationsModule,
         CommonModule,
+        FlexLayoutModule,
         FormsModule,
         HttpClientModule,
-        AngularMaterialModule,
         ReactiveFormsModule,
         RouterModule,
     ],
@@ -27,11 +28,12 @@ import { AngularMaterialModule } from './angular-material.module';
     providers: [],
     // exported modules are visible to modules that import this one
     exports: [
+        AngularMaterialModule,
         BrowserAnimationsModule,
         CommonModule,
+        FlexLayoutModule,
         FormsModule,
         HttpClientModule,
-        AngularMaterialModule,
         ReactiveFormsModule,
         RouterModule,
     ],

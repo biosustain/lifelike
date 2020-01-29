@@ -5,10 +5,10 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { ToolbarMenuModule } from 'toolbar-menu';
 
-import { VisualizationComponent } from './visualization/visualization.component';
-import { VisualizationService } from './visualization/visualization.service';
+import { VisualizationService } from './visualization/services/visualization.service';
 
 import { Neo4jModule } from './upload/neo4j.module';
+import { VisualizationModule } from './visualization/visualization.module';
 
 import { RootStoreModule } from 'src/app/***ARANGO_USERNAME***-store';
 
@@ -16,13 +16,13 @@ import { RootStoreModule } from 'src/app/***ARANGO_USERNAME***-store';
 @NgModule({
   declarations: [
     AppComponent,
-    VisualizationComponent,
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
     HttpClientModule,
     Neo4jModule,
+    VisualizationModule,
     // ngrx
     RootStoreModule,
     ToolbarMenuModule,
