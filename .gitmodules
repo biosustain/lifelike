@@ -1,0 +1,3 @@
+[submodule "toolbar-menu"]
+	path = client/toolbar-menu
+	url = https://github.com/biosustain/toolbar-menu
