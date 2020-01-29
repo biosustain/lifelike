@@ -5,6 +5,7 @@ Sets up a Dockerized Flask and Neo4j application using ```docker-compose``` for 
 
 ## DEV F.A.Q
 __1. How do I run the application?__
+
 You will first need to initialize and pull the toolbar-menu submodule if you have not already. To do so, run the following commands:
 
 ```bash
@@ -15,6 +16,13 @@ npm install
 ```
 
 More info on submodules: https://git-scm.com/book/en/v2/Git-Tools-Submodules
+
+(Optional) - Set up a `node_modules` folder for local development. This is used for autocomplete, but will not allow you to run Angular locally (e.g. you'll have to use Docker to run `ng serve`)
+
+To create a `node_module` folder locally for IDE autocompletes, run the command
+```
+docker-compose run client yarn install
+```
 
 To run the application, first create the docker images
 ```
