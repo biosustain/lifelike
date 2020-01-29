@@ -90,43 +90,30 @@ export class VisualizationComponent implements OnInit {
         return config;
     }
 
-    /**
-     * A helper method to clean up all nodes related
-     * to the edges in question.
-     * @param edgeIds - array of edge ids to remove
-     */
-    collapseAllChildren(edgeIds: Array<number>) {
-        if (edgeIds.length === 0) {
-            return;
-        } else {
-            const nodesToRemove = edgeIds.map((eid) => {
-                const edge = this.edges.get(eid);
-                const node = edge.from;
-                this.edges.remove(eid);
-                return node;
-            });
-            nodesToRemove.map((nid) => {
-                const edges = this.canvas.networkGraph.getConnectedEdges(nid) as Array<number>;
-                this.nodes.remove(nid);
-                this.collapseAllChildren(edges);
-            });
-        }
+    collapseChildren(rootNode: VisNode, edgeIds: Array<number>) {
+        const childNodes = edgeIds.map((eid: number) => {
+            const edge = this.edges.get(eid);
+            return edge.to !== rootNode.id ? edge.to : edge.from;
+        });
+        childNodes.map((childNodeId: number) => {
+            const childEdges = this.canvas.networkGraph.getConnectedEdges(childNodeId);
+            if (childEdges.length === 1) {
+                this.edges.remove(childEdges.pop());
+                this.nodes.remove(childNodeId);
+            }
+        });
     }
 
     expandAndCollapseNode(results: {nodeId: number, edgeIds: Array<number>}) {
         const { nodeId, edgeIds } = results;
-        const nodeRef = this.nodes.get(nodeId);
+        const nodeRef: VisNode = this.nodes.get(nodeId);
 
         if (nodeRef.expanded) {
-            // We only want to remove the edges that
-            // point to this selected node.
-            const edgeIdsFiltered = edgeIds.filter((eid) => {
-                const edge = this.edges.get(eid);
-                return edge.to === nodeId;
-            });
-            this.collapseAllChildren(edgeIdsFiltered );
+            // Updates node expand state
             const updatedNodeState = {...nodeRef, expanded: !nodeRef.expanded};
             this.nodes.update(updatedNodeState);
+            // 'Collapse' all children nodes that are not expanded themselves
+            this.collapseChildren(nodeRef, edgeIds);
         } else {
             this.visService.expandNode(nodeId).subscribe((r: Neo4jResults) => {
                 const visJSDataFormat = this.convertToVisJSFormat(r);
