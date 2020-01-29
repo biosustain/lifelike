@@ -2,7 +2,7 @@ import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 
 import { Neo4jUploadComponent } from 'src/app/upload/components/neo4j-upload.component';
-import { VisualizationComponent } from 'src/app/visualization/visualization.component';
+import { VisualizationComponent } from 'src/app/visualization/components/visualization.component';
 
 
 const routes: Routes = [
