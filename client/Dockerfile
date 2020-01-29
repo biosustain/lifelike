@@ -1,4 +1,4 @@
-FROM node:latest
+FROM node:slim
 
 ENV N4J_USER node
 ENV N4J_HOME /home/$N4J_USER
