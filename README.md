@@ -5,6 +5,16 @@ Sets up a Dockerized Flask and Neo4j application using ```docker-compose``` for 
 
 ## DEV F.A.Q
 __1. How do I run the application?__
+You will first need to initialize and pull the toolbar-menu submodule if you have not already. To do so, run the following commands:
+
+```bash
+git submodule init
+git submodule update
+cd client/toolbar-menu
+npm install
+```
+
+More info on submodules: https://git-scm.com/book/en/v2/Git-Tools-Submodules
 
 To run the application, first create the docker images
 ```
