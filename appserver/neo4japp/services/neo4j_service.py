@@ -228,12 +228,14 @@ class Neo4JService(BaseDao):
             COALESCE(relationships(p1), []) + COALESCE(relationships(p2), []) as relationships
         """.format(**args)
 
-    def get_expand_query(self, node_id: str):
+    # TODO: Allow flexible limits on nodes; enable this in the blueprints
+    def get_expand_query(self, node_id: str, limit: int = 50):
         query = """
-            match(n) WHERE ID(n) = {} with n
-            match p1 = (n)-[l]-(s)
+            match (n)-[l]-(s) WHERE ID(n) = {}
+            WITH n, s, l
+            LIMIT {}
             return collect(n) + collect(s) as nodes, collect(l) as relationships
-        """.format(node_id)
+        """.format(node_id, limit)
         print(query)
         return query
 
