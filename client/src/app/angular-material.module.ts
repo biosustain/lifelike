@@ -25,6 +25,7 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatTreeModule } from '@angular/material/tree';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 
 
 @NgModule({
@@ -45,6 +46,7 @@ import { MatTreeModule } from '@angular/material/tree';
         MatProgressSpinnerModule,
         MatRadioModule,
         MatSelectModule,
+        MatSlideToggleModule,
         MatSnackBarModule,
         MatSortModule,
         MatStepperModule,
@@ -74,6 +76,7 @@ import { MatTreeModule } from '@angular/material/tree';
         MatRadioModule,
         MatSelectModule,
         MatSnackBarModule,
+        MatSlideToggleModule,
         MatSortModule,
         MatStepperModule,
         MatTableModule,

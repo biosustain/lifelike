@@ -78,14 +78,20 @@ export class VisualizationComponent implements OnInit {
         const config = {
             interaction: {
                 hover: true,
+                navigationButtons: true,
             },
             physics: {
                 enabled: true,
+                barnesHut: {
+                    springConstant: 0.04,
+                    damping: 0.9,
+                    gravitationalConstant: -10000,
+                }
             },
             nodes: {
                 size: 25,
                 shape: 'dot',
-            }
+            },
         };
         return config;
     }
