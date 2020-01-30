@@ -2,6 +2,7 @@ import {
     Component,
     Input,
     EventEmitter,
+    OnChanges,
     OnInit,
     Output,
 } from '@angular/core';
@@ -37,6 +38,18 @@ export class VisualizationCanvasComponent implements OnInit {
     }
 
     /**
+     * Turns the physics (animation) on/off depending on the status
+     * @param animationOn - boolean to turn on/off the physics animation
+     */
+    toggleAnimation(animationOn: boolean) {
+        if (animationOn) {
+            this.networkGraph.setOptions({physics: true});
+        } else {
+            this.networkGraph.setOptions({physics: false});
+        }
+    }
+
+    /**
      * Contains all of the event handling features for the
      * network graph.
      */
@@ -56,13 +69,8 @@ export class VisualizationCanvasComponent implements OnInit {
             this.nodes.update(updateNode);
         });
 
-        this.networkGraph.on('stabilizationIterationsDone', () => {
-            // Disables the 'physics' engine after initial
-            // physics calculations.
-            this.networkGraph.setOptions({physics: false});
-        });
-
         this.networkGraph.on('doubleClick', (params) => {
+
             const nodeId = params.nodes[0];
             const edgeIds = params.edges;
             // Check if event is double clicking a node
