@@ -1,22 +1,24 @@
 import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
 
 import { SharedModule } from '../shared.module';
 
-import { VisualizationComponent } from './components/visualization/visualization.component';
+import { VisualizationService } from './services/visualization.service';
+import { VisualizationCanvasComponent } from './components/visualization-canvas/visualization-canvas.component';
+import { VisualizationQuickbarComponent } from './components/visualization-quickbar/visualization-quickbar.component';
+import { VisualizationComponent } from './containers/visualization.component';
 import { ContextMenuComponent } from './components/context-menu/context-menu.component';
 
 const components = [
-  ContextMenuComponent,
-  VisualizationComponent,
+    ContextMenuComponent,
+    VisualizationComponent,
+    VisualizationCanvasComponent,
+    VisualizationQuickbarComponent,
 ];
 
 @NgModule({
-  declarations: [...components],
-  imports: [
-    CommonModule,
-    SharedModule,
-  ],
-  exports: [...components],
+    imports: [SharedModule],
+    declarations: components,
+    providers: [VisualizationService],
+    exports: components,
 })
-export class VisualizationModule { }
+export class VisualizationModule {}
