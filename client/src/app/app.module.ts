@@ -5,10 +5,8 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { ToolbarMenuModule } from 'toolbar-menu';
 
-import { VisualizationComponent } from './visualization/visualization.component';
-import { VisualizationService } from './visualization/visualization.service';
-
 import { Neo4jModule } from './upload/neo4j.module';
+import { VisualizationModule } from './visualization/visualization.module';
 
 import { RootStoreModule } from 'src/app/root-store';
 
@@ -16,7 +14,6 @@ import { RootStoreModule } from 'src/app/root-store';
 @NgModule({
   declarations: [
     AppComponent,
-    VisualizationComponent,
   ],
   imports: [
     BrowserModule,
@@ -25,11 +22,10 @@ import { RootStoreModule } from 'src/app/root-store';
     Neo4jModule,
     // ngrx
     RootStoreModule,
+    VisualizationModule,
     ToolbarMenuModule,
   ],
-  providers: [
-    VisualizationService,
-  ],
+  providers: [],
   exports: [
     HttpClientModule,
   ],
