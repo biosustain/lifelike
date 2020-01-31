@@ -64,6 +64,11 @@ class Neo4JService(BaseDao):
         super().__init__(graph)
 
     def _query_neo4j(self, query: str):
+        # TODO: Can possibly use a dispatch method/injection
+        # of sorts to use custom labeling methods for
+        # different type of nodes/edges being converted.
+        # The default does not always set an appropriate label
+        # name.
         records = self.graph.run(query).data()
         if not records:
             return None
@@ -112,7 +117,6 @@ class Neo4JService(BaseDao):
 
     def expand_graph(self, node_id: str):
         query = self.get_expand_query(node_id)
-        print(query)
         return self._query_neo4j(query)
 
     def load_reaction_graph(self, biocyc_id: str):
@@ -224,12 +228,15 @@ class Neo4JService(BaseDao):
             COALESCE(relationships(p1), []) + COALESCE(relationships(p2), []) as relationships
         """.format(**args)
 
-    def get_expand_query(self, node_id: str):
+    # TODO: Allow flexible limits on nodes; enable this in the blueprints
+    def get_expand_query(self, node_id: str, limit: int = 50):
         query = """
-            match(n) WHERE n.biocyc_id = '{}' with n
-            match p1 = (n)-[l]-(s)
+            match (n)-[l]-(s) WHERE ID(n) = {}
+            WITH n, s, l
+            LIMIT {}
             return collect(n) + collect(s) as nodes, collect(l) as relationships
-        """.format(node_id)
+        """.format(node_id, limit)
+        print(query)
         return query
 
     def get_reaction_query(self, biocyc_id: str):
