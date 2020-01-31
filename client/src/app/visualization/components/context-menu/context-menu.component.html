@@ -1,0 +1,28 @@
+<!-- Root Context Menus -->
+<div id="***ARANGO_USERNAME***-menu">
+  <div *ngIf="selectedNodes.length > 0 || selectedEdges > 0; else defaultContextMenu" id="entity-selection-context-menu" class="context-menu" fxLayout="column">
+    <div class="context-menu-group">
+      <div id="group-by-rel-menu-item" class="context-menu-item" fxLayout="row" fxLayoutAlign="space-between center" (mouseenter)="showGroupByRelSubMenu()">
+        <div>Group relationship by</div>
+        <mat-icon>arrow_right</mat-icon>
+      </div>
+    </div>
+    <div class="context-menu-group">
+      <div class="context-menu-item" (mouseenter)="hideAllSubMenus()">Settings</div>
+    </div>
+  </div>
+  <ng-template #defaultContextMenu>
+    <div id="default-context-menu" class="context-menu" fxLayout="column">
+      <div class="context-menu-group">
+        <div class="context-menu-item" (mouseenter)="hideAllSubMenus()">Settings</div>
+      </div>
+    </div>
+  </ng-template>
+</div>
+
+<!-- Submenus-->
+<div id="group-1-submenu" class="context-menu">
+  <div class="context-menu-group">
+    <div class="context-menu-item" *ngFor="let rel of ['PRODUCES', 'CONSUMES']">{{ rel }}</div>
+  </div>
+</div>
