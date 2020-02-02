@@ -95,6 +95,14 @@ class Neo4JService(BaseDao):
         ]
         return dict(nodes=[n.to_dict() for n in organism_nodes], edges=[])
 
+    def get_some_diseases(self):
+        nodes = list(NodeMatcher(self.graph).match(TYPE_DISEASE).limit(4))
+        species_nodes = [
+            GraphNode.from_py2neo(n, display_fn=lambda x: x.get('name'))
+                for n in nodes
+        ]
+        return dict(nodes=[n.to_dict() for n in species_nodes], edges=[])
+
     def get_biocyc_db(self, org_ids: [str]):
         if org_ids:
             query = f'match(n:Species) where n.biocyc_id in {str(org_ids)} return labels(n) as node_labels'
