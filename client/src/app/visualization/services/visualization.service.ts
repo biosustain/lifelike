@@ -10,6 +10,9 @@ export class VisualizationService {
 
     constructor(private http: HttpClient) {}
 
+    // TODO: Remove me
+    /** Start Test Endpoints */
+
     /**
      * getAllOrganisms will fetch all available organisms
      * within the NEO4J database.
@@ -23,6 +26,17 @@ export class VisualizationService {
             `${this.visApi}/organisms`
         ).pipe(map(resp => resp.result));
     }
+
+    /**
+     * For use with the text-mining data set
+     */
+    getSomeDiseases() {
+        return this.http.get<{result: Neo4jResults}>(
+            `${this.visApi}/diseases`
+        ).pipe(map(resp => resp.result));
+    }
+
+    /** End Test Endpoints */
 
     /**
      * expandNode will take a node id and return all children

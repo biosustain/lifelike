@@ -44,6 +44,13 @@ def get_organisms():
     organisms = neo4j.get_organisms()
     return SuccessResponse(result=organisms, status_code=200)
 
+@bp.route('/diseases', methods=['GET'])
+@jsonify_with_class()
+def get_some_diseases():
+    neo4j = get_neo4j_service_dao()
+    diseases = neo4j.get_some_diseases()
+    return SuccessResponse(result=diseases, status_code=200)
+
 @bp.route('/regulatory', methods=['POST'])
 @jsonify_with_class(GraphRequest)
 def load_regulatory_graph(req: GraphRequest):
@@ -103,5 +110,3 @@ def upload_neo4j_mapping_file(req: Neo4jColumnMapping):
     neo4j.export_to_neo4j(req)
 
     return SuccessResponse(result='', status_code=200)
-
-

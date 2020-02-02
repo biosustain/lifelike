@@ -1,3 +1,4 @@
+# Start BioCyc, Regulon, Ecocyc Dataset
 TYPE_GENE = 'Gene'
 TYPE_PATHWAY = 'Pathway'
 TYPE_PROTEIN = 'Protein'
@@ -24,6 +25,15 @@ DB_NCBI = 'NCBI'
 DB_CHEBI = 'CHEBI'
 DB_GO = 'GO'
 DB_EC = 'EC'
+
+# End BioCyc, Regulon, Ecocyc Dataset
+
+# Start Text Mining Dataset
+
+TYPE_DISEASE = 'Disease'
+
+# Start Text Mining Dataset
+
 
 ELASTICSEARCH_URL = 'http://elasticsearch:9200'
 GRAPH_INDEX = 'graph'
