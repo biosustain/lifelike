@@ -1,4 +1,7 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
+
+import { DataSet, IdType } from 'vis-network';
+
 import { VisualizationService } from '../services/visualization.service';
 import {
     Neo4jResults,
@@ -6,7 +9,6 @@ import {
     VisNode,
     VisEdge,
 } from '../../interfaces';
-import { DataSet } from 'vis-network';
 import { VisualizationCanvasComponent } from '../components/visualization-canvas/visualization-canvas.component';
 
 @Component({
@@ -20,13 +22,14 @@ export class VisualizationComponent implements OnInit {
     networkGraphConfig: Neo4jGraphConfig;
     nodes: DataSet<VisNode>;
     edges: DataSet<VisEdge>;
+    // TODO KG-17: Add a 'clusters' object?
 
     @ViewChild(VisualizationCanvasComponent, {static: false}) canvas: VisualizationCanvasComponent;
 
     constructor(private visService: VisualizationService) {}
 
     ngOnInit() {
-        this.visService.getAllOrganisms().subscribe((results: Neo4jResults) => {
+        this.visService.getSomeDiseases().subscribe((results: Neo4jResults) => {
             this.networkGraphData = this.setupInitialProperties(results);
             this.nodes = new DataSet(this.networkGraphData.nodes);
             this.edges = new DataSet(this.networkGraphData.edges);
@@ -79,6 +82,8 @@ export class VisualizationComponent implements OnInit {
             interaction: {
                 hover: true,
                 navigationButtons: true,
+                multiselect: true,
+                selectConnectedEdges: false,
             },
             physics: {
                 enabled: true,
@@ -96,16 +101,21 @@ export class VisualizationComponent implements OnInit {
         return config;
     }
 
-    collapseChildren(***ARANGO_USERNAME***Node: VisNode, edgeIds: Array<number>) {
-        const childNodes = edgeIds.map((eid: number) => {
-            const edge = this.edges.get(eid);
-            return edge.to !== ***ARANGO_USERNAME***Node.id ? edge.to : edge.from;
-        });
-        childNodes.map((childNodeId: number) => {
-            const childEdges = this.canvas.networkGraph.getConnectedEdges(childNodeId);
-            if (childEdges.length === 1) {
-                this.edges.remove(childEdges.pop());
-                this.nodes.remove(childNodeId);
+    collapseNeighbors(***ARANGO_USERNAME***Node: VisNode) {
+        // Get all the nodes connected to the ***ARANGO_USERNAME*** node, before removing edges
+        const connectedNodes = this.canvas.networkGraph.getConnectedNodes(***ARANGO_USERNAME***Node.id) as IdType[];
+        (this.canvas.networkGraph.getConnectedEdges(***ARANGO_USERNAME***Node.id) as IdType[]).forEach(
+            connectedEdge => {
+                this.edges.remove(connectedEdge);
+            }
+        );
+
+        // If a previously connected node has no remaining edges (i.e. it is not connected
+        // to any other neighbor), remove it.
+        connectedNodes.forEach((connectedNodeId: number) => {
+            const connectedEdges = this.canvas.networkGraph.getConnectedEdges(connectedNodeId);
+            if (connectedEdges.length == 0) {
+                this.nodes.remove(connectedNodeId);
             }
         });
     }
@@ -118,8 +128,8 @@ export class VisualizationComponent implements OnInit {
             // Updates node expand state
             const updatedNodeState = {...nodeRef, expanded: !nodeRef.expanded};
             this.nodes.update(updatedNodeState);
-            // 'Collapse' all children nodes that are not expanded themselves
-            this.collapseChildren(nodeRef, edgeIds);
+            // 'Collapse' all neighbor nodes that do not themselves have neighbors
+            this.collapseNeighbors(nodeRef);
         } else {
             this.visService.expandNode(nodeId).subscribe((r: Neo4jResults) => {
                 const visJSDataFormat = this.convertToVisJSFormat(r);
