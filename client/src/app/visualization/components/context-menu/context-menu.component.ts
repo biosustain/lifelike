@@ -98,6 +98,7 @@ export class ContextMenuComponent implements OnInit, OnDestroy {
     }
 
     showGroupByRelSubMenu() {
+        // TODO KG-17: It would be very cool if only the edges of the hovered relationship were highlighted
         this.hideAllSubMenus();
 
         const contextMenuItem = document.querySelector('#group-by-rel-menu-item');
