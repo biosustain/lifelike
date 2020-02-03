@@ -19,6 +19,7 @@ services:
         volumes:
             - ./db/data:/data
             - ./db/logs:/logs
+            - ./db/plugins:/plugins
 
     client:
         container_name: n4j-client
