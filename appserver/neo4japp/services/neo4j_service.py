@@ -72,14 +72,16 @@ class Neo4JService(BaseDao):
         records = self.graph.run(query).data()
         if not records:
             return None
-        print(records)
         node_dict = dict()
         rel_dict = dict()
         for record in records:
             nodes = record['nodes']
             rels = record['relationships']
             for node in nodes:
-                graph_node = GraphNode.from_py2neo(node)
+                graph_node = GraphNode.from_py2neo(
+                    node,
+                    display_fn=lambda x: x.get(DISPLAY_NAME_MAP[next(iter(node.labels), set())])
+                )
                 node_dict[graph_node.id] = graph_node
             for rel in rels:
                 graph_rel = GraphRelationship.from_py2neo(rel)
@@ -98,7 +100,7 @@ class Neo4JService(BaseDao):
     def get_some_diseases(self):
         nodes = list(NodeMatcher(self.graph).match(TYPE_DISEASE).limit(4))
         species_nodes = [
-            GraphNode.from_py2neo(n, display_fn=lambda x: x.get('name'))
+            GraphNode.from_py2neo(n, display_fn=lambda x: x.get(DISPLAY_NAME_MAP[TYPE_DISEASE]))
                 for n in nodes
         ]
         return dict(nodes=[n.to_dict() for n in species_nodes], edges=[])
@@ -244,7 +246,6 @@ class Neo4JService(BaseDao):
             LIMIT {}
             return collect(n) + collect(s) as nodes, collect(l) as relationships
         """.format(node_id, limit)
-        print(query)
         return query
 
     def get_reaction_query(self, biocyc_id: str):

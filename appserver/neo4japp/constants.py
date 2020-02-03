@@ -30,7 +30,23 @@ DB_EC = 'EC'
 
 # Start Text Mining Dataset
 
+TYPE_ASSOCIATION = 'Association'
+TYPE_ASSOCIATION_TYPE = 'Association Type'
+TYPE_CHEMICAL = 'Chemical'
 TYPE_DISEASE = 'Disease'
+TYPE_GENE = 'Gene'
+TYPE_PUBLICATION = 'Publication'
+TYPE_REFERENCE = 'Reference'
+
+DISPLAY_NAME_MAP = {
+    TYPE_ASSOCIATION: 'description',
+    TYPE_ASSOCIATION_TYPE: 'name',
+    TYPE_CHEMICAL: 'name',
+    TYPE_DISEASE: 'name',
+    TYPE_GENE: 'name',
+    TYPE_PUBLICATION: 'title',  # NOTE: These tend to be long, might want to use a different attribute or consider truncating on the client
+    TYPE_REFERENCE: 'sentence',  # NOTE: Same here
+}
 
 # Start Text Mining Dataset
 
