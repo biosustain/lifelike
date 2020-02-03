@@ -1,5 +1,12 @@
 <app-visualization-quickbar (animationStatus)="toggleAnimation($event)"></app-visualization-quickbar>
 <div id="network-viz"></div>
+
+<!-- Not visible until the user hovers over a cluster node -->
+<app-reference-table
+  [tableNodes]="nodesInHoveredCluster"
+  (referenceTableRowClickEvent)="openMetadataSidebar($event)"
+></app-reference-table>
+
 <!-- This isn't visible unless the user has right-clicked to open the context menu -->
 <app-context-menu
   [selectedNodeEdgeLabels]="selectedNodeEdgeLabels"
