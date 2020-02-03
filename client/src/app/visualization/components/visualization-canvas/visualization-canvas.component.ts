@@ -95,6 +95,18 @@ export class VisualizationCanvasComponent implements OnInit {
     }
 
     /**
+     * Check that the input is a normal edge and that it isn't currently clustered.
+     * Normal edges are numbers, cluster edges are strings. `getClusteredEdges` is
+     * used here to deterimine if the input edge is currently clustered; The
+     * output of the function is the input edge + any cluster edges it is contained
+     * in if any.
+     * @param edge the id of the edge to check
+     */
+    isNotAClusterEdge(edge: IdType) {
+        return typeof edge !== 'string' && this.networkGraph.getClusteredEdges(edge).length === 1;
+    }
+
+    /**
      * Gets a set of labels from the edges connected to the input node.
      * @param selectedNode the ID of the node whose edge labels we want to get
      */
@@ -102,7 +114,9 @@ export class VisualizationCanvasComponent implements OnInit {
         this.selectedNodeEdgeLabels.clear();
         const connectedEdges = this.networkGraph.getConnectedEdges(selectedNode);
         connectedEdges.forEach((edge) => {
-            this.selectedNodeEdgeLabels.add(this.edges.get(edge).label);
+            if (this.isNotAClusterEdge(edge)) {
+                this.selectedNodeEdgeLabels.add(this.edges.get(edge).label);
+            }
         });
     }
 
@@ -143,7 +157,7 @@ export class VisualizationCanvasComponent implements OnInit {
     groupNeighborsWithRelationship(rel: string) {
         const rootNode = this.selectedNodes[0];
         const connectedEdgesWithRel = this.networkGraph.getConnectedEdges(rootNode).filter(
-            (edgeId) => this.edges.get(edgeId).label === rel
+            (edgeId) => this.isNotAClusterEdge(edgeId) && this.edges.get(edgeId).label === rel
         );
         const neighborNodesWithRel = connectedEdgesWithRel.map(
             connectedEdgeWithRel => (this.networkGraph.getConnectedNodes(connectedEdgeWithRel) as IdType[]).filter(
