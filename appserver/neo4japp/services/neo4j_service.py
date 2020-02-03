@@ -58,7 +58,7 @@ class Neo4jColumnMapping(CamelDictMixin):
             mapped_node_type: str = attr.ib()
             mapped_node_property: Dict[int, str] = attr.ib()
 
-        edge: int = attr.ib()
+        edge: str = attr.ib()
         edge_property: Dict[int, str] = attr.ib()
         source_node: ExistingGraphDBMapping = attr.ib()
         target_node: ExistingGraphDBMapping = attr.ib()
