@@ -1,0 +1,21 @@
+#reference-table {
+    display: none;
+    background: #D4E2F4;
+    border-radius: 2px;
+    border: thin solid #C9CACC;
+    height: 300px;
+    overflow: auto;
+}
+
+.reference-table-row {
+    border-bottom: thin solid #C9CACC;
+    color: #5B6A80;
+    font-size: 13px;
+    font-weight: bold;
+    padding: 5px 15px 5px 5px;
+    width: 100%
+}
+
+.reference-table-row:hover {
+    background: #C5C6C7;
+}
