@@ -12,6 +12,7 @@ py2neo = "~=4.3.0"
 flask-caching = "~=1.8.0"
 openpyxl = "~=3.0.3"
 attrs = "~=18.1.0"
+elasticsearch = "*"
 ipython = "==7.2.0"
 
 [requires]

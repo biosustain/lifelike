@@ -16,7 +16,7 @@ import { FileNameAndSheets, SheetNameAndColumnNames, Neo4jColumnMapping } from '
 @Component({
     selector: 'app-neo4j-upload',
     templateUrl: 'neo4j-upload.component.html',
-    styleUrls: ['neo4j-upload.component.sass'],
+    styleUrls: ['neo4j-upload.component.scss'],
 })
 export class Neo4jUploadComponent implements OnInit, OnDestroy {
     @ViewChild('fileInput', { static: true }) fileInput: ElementRef;
