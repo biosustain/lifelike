@@ -13,7 +13,7 @@ git submodule init
 git submodule update
 cd client/toolbar-menu
 npm install
-ng build
+npm run build
 ```
 
 More info on submodules: https://git-scm.com/book/en/v2/Git-Tools-Submodules
