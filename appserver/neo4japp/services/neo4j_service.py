@@ -1,6 +1,6 @@
-from typing import Dict, List
-
 import attr
+
+from typing import Dict, List, Optional
 
 from py2neo import NodeMatcher, RelationshipMatcher
 from werkzeug.datastructures import FileStorage
@@ -44,19 +44,29 @@ class Neo4jColumnMapping(CamelDictMixin):
     from the excel files."""
     @attr.s(frozen=True)
     class Neo4jNodeMapping(CamelDictMixin):
-        node_label: Dict[int, str] = attr.ib()
+        node_type: str = attr.ib()
         node_properties: Dict[int, str] = attr.ib()
+        mapped_node_type: str = attr.ib()
+        mapped_node_property: str = attr.ib()
+        # this will be used to match a node
+        unique_property: str = attr.ib()
 
-    # @attr.s(frozen=True)
-    # class Neo4jEdgeMapping(CamelDictMixin):
-    #     node_label: Dict[int, str] = attr.ib()
-    #     node_properties: Dict[int, str] = attr.ib()
+    @attr.s(frozen=True)
+    class Neo4jRelationshipMapping(CamelDictMixin):
+        @attr.s(frozen=True)
+        class ExistingGraphDBMapping(CamelDictMixin):
+            mapped_node_type: str = attr.ib()
+            mapped_node_property: Dict[int, str] = attr.ib()
 
-    source_node: Neo4jNodeMapping = attr.ib()
-    target_node: Neo4jNodeMapping = attr.ib()
-    edge: int = attr.ib()
+        edge: int = attr.ib()
+        edge_property: Dict[int, str] = attr.ib()
+        source_node: ExistingGraphDBMapping = attr.ib()
+        target_node: ExistingGraphDBMapping = attr.ib()
+
     file_name: str = attr.ib()
     sheet_name: str = attr.ib()
+    node: Optional[Neo4jNodeMapping] = attr.ib(default=None)
+    relationship: Optional[Neo4jRelationshipMapping] = attr.ib(default=None)
 
 
 class Neo4JService(BaseDao):
@@ -263,7 +273,7 @@ class Neo4JService(BaseDao):
             # loop through just the first row
             for i, cols in enumerate(current_ws.iter_cols(
                 max_row=1,
-                max_col=len(list(current_ws.columns)) - 1,
+                max_col=len(list(current_ws.columns)),
                 values_only=True,
             )):
                 if cols[0]:
@@ -276,11 +286,11 @@ class Neo4JService(BaseDao):
         sheets = FileNameAndSheets(sheets=sheet_list, filename=filename)
         return sheets
 
-    def create_neo4j_json_mapping(
+    def create_node_mapping(
         self,
         column_mappings: Neo4jColumnMapping,
     ) -> dict:
-        def create_node(current_ws, row, props, node_label):
+        def create_node(unique_prop, row, props, node_type):
             node = {}  # type: ignore
             node_props = {}
 
@@ -288,38 +298,24 @@ class Neo4JService(BaseDao):
             # key is used to get the value in excel
             # e.g { prop_label_in_db: cell_value_in_excel_file }
             for k, v in props.items():
-                if v:
-                    node_props[v] = row[k]
+                if type(row[k]) is str:
+                    node_props[v] = row[k].strip().lstrip()
                 else:
-                    # if user did not select property label
-                    # use cell value to make a new one (?)
-                    node_props[current_ws.cell(1, k+1).value] = row[k]
+                    node_props[v] = row[k]
 
             node['data'] = node_props
-            node['label'] = node_label  # type: ignore
+            node['label'] = node_type  # type: ignore
+            node['unique_property'] = {unique_prop: node_props[unique_prop]}
             node['hash'] = compute_hash(node)  # type: ignore
             return node
 
         nodes = []
-        edges = []
 
-        source_col_idx_node_label = {}
-        source_col_idx_node_prop = {}
-        target_col_idx_node_label = {}
-        target_col_idx_node_prop = {}
+        col_idx_node_prop = {}
 
         # TODO: why is the key changing to str?
-        for k, v in column_mappings.source_node.node_label.items():
-            source_col_idx_node_label[int(k)] = v
-
-        for k, v in column_mappings.source_node.node_properties.items():
-            source_col_idx_node_prop[int(k)] = v
-
-        for k, v in column_mappings.target_node.node_label.items():
-            target_col_idx_node_label[int(k)] = v
-
-        for k, v in column_mappings.target_node.node_properties.items():
-            target_col_idx_node_prop[int(k)] = v
+        for k, v in column_mappings.node.node_properties.items():
+            col_idx_node_prop[int(k)] = v
 
         workbook = cache.get(column_mappings.file_name)
 
@@ -330,33 +326,20 @@ class Neo4JService(BaseDao):
 
         current_ws = workbook.active
 
-        # TODO: strip leading and trailing whitespaces
         for row in current_ws.iter_rows(
             min_row=2,
-            max_row=len(list(current_ws.rows)) - 1,
-            max_col=len(list(current_ws.columns)) - 1,
+            max_row=len(list(current_ws.rows)),
+            max_col=len(list(current_ws.columns)),
             values_only=True,
         ):
-            # # did user select a node label or not
-            src_node_label = list(source_col_idx_node_label.values())[0] or row[list(source_col_idx_node_label.keys())[0]]
-            src_node = create_node(
-                current_ws=current_ws, row=row, props=source_col_idx_node_prop, node_label=src_node_label)
-            nodes.append(src_node)
-
-            if len(target_col_idx_node_label) > 0:
-                tgt_node_label = list(target_col_idx_node_label.values())[0] or row[list(target_col_idx_node_label.keys())[0]]
-                tgt_node = create_node(
-                    current_ws=current_ws, row=row, props=target_col_idx_node_prop, node_label=tgt_node_label)
-                nodes.append(tgt_node)
-
-                # edge
-                edge = {}  # type: ignore
-                edge['data'] = {}
-                edge['src'] = src_node['hash']
-                edge['dest'] = tgt_node['hash']
-                edge['label'] = row[column_mappings.edge]
-                edges.append(edge)
-        return {'edges': edges, 'nodes': nodes}
+            node_type = column_mappings.node.node_type
+            nodes.append(create_node(
+                unique_prop=column_mappings.node.unique_property,
+                row=row,
+                props=col_idx_node_prop,
+                node_type=node_type),
+            )
+        return {'nodes': nodes}
 
     def search_for_relationship_with_label_and_properties(
         self,
@@ -425,25 +408,93 @@ class Neo4JService(BaseDao):
             tx.create(new_node)
             return new_node
 
-    def export_to_neo4j(self, column_mappings: Neo4jColumnMapping) -> None:
+    def save_node_to_neo4j(self, column_mappings: Neo4jColumnMapping) -> None:
         print(column_mappings)
-        neo4j_mapping = self.create_neo4j_json_mapping(column_mappings)
+        node_mapping = self.create_node_mapping(column_mappings)
 
         tx = self.graph.begin()
-        # bar = Bar('Creating nodes...', max=len(neo4j_mapping['nodes']))
         node_hash_map = dict()
 
-        for node in neo4j_mapping['nodes']:
-            n = self.goc_node_from_data(node, tx)
-            node_hash_map[node['hash']] = n
-        #     bar.next()
-        # bar.finish()
+        # create the experimental nodes
+        tx.run(
+            'unwind {batch} as row ' \
+            'call apoc.merge.node([row.label], row.unique_property, row.data, row.data) ' \
+            'yield node ' \
+            'return count(*)',
+            {'batch': node_mapping['nodes']}
+        )
 
-        # bar = Bar('Creating edges...', max=len(neo4j_mapping['edges']))
-        for edge in neo4j_mapping['edges']:
-            _ = self.goc_relationship_from_data(node_hash_map, edge, tx)
-        #     bar.next()
-        # bar.finish()
+        print('Done creating nodes')
 
+        # create relationship from experimental nodes
+        # to universal source nodes
+        for row in node_mapping['nodes']:
+            filter_label = next(iter(row['unique_property']))
+            filter_prop = next(iter(row['unique_property'].values()))
+            row_label = row['label']
+
+            query = f'match (universal:`{column_mappings.node.mapped_node_type}` {{`{filter_label}`: "{filter_prop}"}}), '
+            query += f'(src:`{row_label}` {{`{filter_label}`: "{filter_prop}"}}) '
+            query += f'merge (src)-[:IS_A]->(universal)'
+            tx.run(query)
+
+        print('Done creating relationship of new nodes to existing KG')
         tx.commit()
         print('Done')
+
+    def save_relationship_to_neo4j(self, column_mappings: Neo4jColumnMapping) -> None:
+        workbook = cache.get(column_mappings.file_name)
+
+        col_idx_src_node_prop = {}
+        col_idx_tgt_node_prop = {}
+        col_idx_edge_prop = {}
+
+        for k, v in column_mappings.relationship.source_node.mapped_node_property.items():
+            col_idx_src_node_prop[int(k)] = v
+
+        for k, v in column_mappings.relationship.target_node.mapped_node_property.items():
+            col_idx_tgt_node_prop[int(k)] = v
+
+        for k, v in column_mappings.relationship.edge_property.items():
+            col_idx_edge_prop[int(k)] = v
+
+        for i, name in enumerate(workbook.sheetnames):
+            if name == column_mappings.sheet_name:
+                workbook.active = i
+                break
+
+        current_ws = workbook.active
+
+        tx = self.graph.begin()
+
+        for row in current_ws.iter_rows(
+            min_row=2,
+            max_row=len(list(current_ws.rows)),
+            max_col=len(list(current_ws.columns)),
+            values_only=True,
+        ):
+            src_label = column_mappings.relationship.source_node.mapped_node_type
+            src_prop_label = next(iter(col_idx_src_node_prop.values()))
+            src_prop_value = row[next(iter(col_idx_src_node_prop))].strip().lstrip()
+
+            tgt_label = column_mappings.relationship.target_node.mapped_node_type
+            tgt_prop_label = next(iter(col_idx_tgt_node_prop.values()))
+            tgt_prop_value = row[next(iter(col_idx_tgt_node_prop))].strip().lstrip()
+
+            edge_label = column_mappings.relationship.edge
+
+            query = f'match (s:`{src_label}` {{`{src_prop_label}`: "{src_prop_value}"}}), '
+            query += f'(t:`{tgt_label}` {{`{tgt_prop_label}`: "{tgt_prop_value}"}}) '
+
+            query += f'merge (s)-[:`{edge_label}` {{'
+            for k, v in col_idx_edge_prop.items():
+                prop_value = row[k]
+                if type(prop_value) is int:
+                    query += f'`{v}`: {prop_value}, '
+                else:
+                    query += f'`{v}`: "{prop_value}", '
+            # remove the comma at the end
+            query = query[:-2] + f'}}]->(t)'
+            tx.run(query)
+        tx.commit()
+        print('Done creating relationships between new nodes')

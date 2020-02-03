@@ -5,6 +5,15 @@
   fxLayout="column"
   fxLayoutGap="30px"
 >
+  <div>
+    <mat-form-field>
+      <input
+        type="text"
+        matInput
+        [(ngModel)]="nodeType"
+      />
+    </mat-form-field>
+  </div>
   <!-- column name table -->
   <div [formGroup]="columnMappingForm">
     <!-- <div>
@@ -21,17 +30,17 @@
         <mat-cell *matCellDef="let object; let i=index;">{{ (object | keyvalue)[0].key }}</mat-cell>
       </ng-container>
 
-      <ng-container matColumnDef="nodeLabel">
-        <mat-header-cell *matHeaderCellDef>Node Label</mat-header-cell>
+      <ng-container matColumnDef="mappedNodeType">
+        <mat-header-cell *matHeaderCellDef>Mapped Node Type</mat-header-cell>
         <mat-cell *matCellDef="let data; let i=index;" [formGroupName]="i">
           <mat-form-field>
             <mat-select
-              placeholder="Select node label"
-              formControlName="nodeLabel"
+              placeholder="Select node type"
+              formControlName="mappedNodeType"
               (selectionChange)="selectionChange($event)"
             >
               <mat-option
-                *ngFor="let label of (nodeLabels$ | async)"
+                *ngFor="let label of (dbNodeTypes$ | async)"
                 [value]="label"
               >{{ label }}</mat-option>
             </mat-select>
@@ -39,49 +48,23 @@
         </mat-cell>
       </ng-container>
 
-      <ng-container matColumnDef="propertyLabel">
-        <mat-header-cell *matHeaderCellDef>Property Label</mat-header-cell>
+      <ng-container matColumnDef="mappedNodeProperty">
+        <mat-header-cell *matHeaderCellDef>Mapped Node Property</mat-header-cell>
         <mat-cell *matCellDef="let data; let i=index;" [formGroupName]="i">
           <mat-form-field>
             <mat-select
-              placeholder="Select property label"
-              formControlName="propertyLabel"
+              placeholder="Select node property"
+              formControlName="mappedNodeProperty"
             >
-              <span *ngIf="(nodeProperties$ | async)">
+              <span *ngIf="(dbNodeProperties$ | async)">
                 <mat-option
-                  *ngFor="let label of (nodeProperties$ | async)[columnMappingForm.get('columnMapping').controls[i].get('nodeLabel').value]"
+                  *ngFor="let label of (dbNodeProperties$ | async)[columnMappingForm.get(
+                    'columnMapping').controls[i].get('mappedNodeType').value]"
                   [value]="label"
                 >{{ label }}</mat-option>
               </span>
             </mat-select>
           </mat-form-field>
-        </mat-cell>
-      </ng-container>
-
-      <ng-container matColumnDef="edge">
-        <mat-header-cell *matHeaderCellDef>Edge</mat-header-cell>
-        <mat-cell *matCellDef="let object; let i=index" [formGroupName]="i">
-          <mat-checkbox
-            formControlName="edge"
-            (change)="updateColumnMapping($event, columnType.EDGE, i)"></mat-checkbox>
-        </mat-cell>
-      </ng-container>
-
-      <ng-container matColumnDef="source">
-        <mat-header-cell *matHeaderCellDef>Source</mat-header-cell>
-        <mat-cell *matCellDef="let object; let i=index" [formGroupName]="i">
-          <mat-checkbox
-            formControlName="source"
-            (change)="updateColumnMapping($event, columnType.SOURCE, i)"></mat-checkbox>
-        </mat-cell>
-      </ng-container>
-
-      <ng-container matColumnDef="target">
-        <mat-header-cell *matHeaderCellDef>Target</mat-header-cell>
-        <mat-cell *matCellDef="let object; let i=index" [formGroupName]="i">
-          <mat-checkbox
-            formControlName="target"
-            (change)="updateColumnMapping($event, columnType.TARGET, i)"></mat-checkbox>
         </mat-cell>
       </ng-container>
 
@@ -100,6 +83,15 @@
           <mat-checkbox
             formControlName="exclude"
             (change)="updateColumnMapping($event, columnType.EXCLUDE, i)"></mat-checkbox>
+        </mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="unique">
+        <mat-header-cell *matHeaderCellDef>Unique</mat-header-cell>
+        <mat-cell *matCellDef="let object; let i=index" [formGroupName]="i">
+          <mat-checkbox
+            formControlName="unique"
+            (change)="updateColumnMapping($event, columnType.UNIQUE, i)"></mat-checkbox>
         </mat-cell>
       </ng-container>
     </mat-table>
