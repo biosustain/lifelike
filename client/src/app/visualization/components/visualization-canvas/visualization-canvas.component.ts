@@ -44,11 +44,6 @@ export class VisualizationCanvasComponent implements OnInit {
             nodes: this.nodes,
             edges: this.edges,
         };
-        // TODO KG-17: It seems the network graph automatically updates itself any time
-        // this.nodes or this.edges is edited...need to test this out.
-        // Likewise, this.nodes/edges are not copied when
-        // sent to the context-menu as inputs, so changing them there will change them
-        // here.
         this.networkGraph = new Network(container, data, this.config);
         this.visualizerSetupEventBinds();
     }
@@ -143,10 +138,7 @@ export class VisualizationCanvasComponent implements OnInit {
                 shape: 'database'
               }
         });
-        // TODO KG-17: Immediately removing nodes seems to also remove the cluster...might be related to the
-        // note I left in the visualization.canvas.component regarding updates/deletions of this.nodes/edges.
-
-        // TODO KG-17: Add a new node representing the cluster
+        // TODO KG-17: Add a new node representing the cluster (?)
     }
 
     /**
@@ -163,32 +155,48 @@ export class VisualizationCanvasComponent implements OnInit {
             // deselect everything). There may also be other behaviors we don't want.
         });
 
-        // TODO KG-17: These are currently causing new nodes to be created if the hovered node is a cluster.
-        // Most likely this is because we don't yet add a new node to the list when the cluster is created,
-        // this.networkGraph.on('hoverNode', (params) => {
-        //     // This produces an 'enlarge effect'
-        //     const node = this.nodes.get(params.node);
-        //     const updatedNode = {...node, size: this.config.nodes.size * 1.5};
-        //     this.nodes.update(updatedNode);
-        // });
+        this.networkGraph.on('hoverNode', (params) => {
+            if (this.networkGraph.isCluster(params.node)) {
+                return;
+            }
 
-        // this.networkGraph.on('blurNode', (params) => {
-        //     // This produces a 'shrink effect'
-        //     const node = this.nodes.get(params.node);
-        //     const updateNode = {...node, size: this.config.nodes.size};
-        //     this.nodes.update(updateNode);
-        // });
+            // This produces an 'enlarge effect'
+            const node = this.nodes.get(params.node);
+            const updatedNode = {...node, size: this.config.nodes.size * 1.5};
+            this.nodes.update(updatedNode);
+        });
+
+        this.networkGraph.on('blurNode', (params) => {
+            if (this.networkGraph.isCluster(params.node)) {
+                return;
+            }
+
+            // This produces a 'shrink effect'
+            const node = this.nodes.get(params.node);
+            const updateNode = {...node, size: this.config.nodes.size};
+            this.nodes.update(updateNode);
+        });
 
         this.networkGraph.on('doubleClick', (params) => {
+            const hoveredNode = this.networkGraph.getNodeAt(params.pointer.DOM);
 
-            const nodeId = params.nodes[0];
+            if (this.networkGraph.isCluster(hoveredNode)) {
+                this.networkGraph.openCluster(hoveredNode);
+                return;
+            }
+
             // Check if event is double clicking a node
-            if (nodeId) {
-                this.expandOrCollapseNode(nodeId);
+            if (hoveredNode) {
+                this.expandOrCollapseNode(hoveredNode as number);
             }
         });
 
         this.networkGraph.on('oncontext', (params) => {
+            const hoveredNode = this.networkGraph.getNodeAt(params.pointer.DOM);
+
+            if (this.networkGraph.isCluster(hoveredNode)) {
+                return;
+            }
             this.onContextCallback(params);
         });
     }
