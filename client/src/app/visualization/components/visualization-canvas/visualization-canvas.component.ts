@@ -8,14 +8,15 @@ import {
 
 import { Network, DataSet, IdType } from 'vis-network';
 
-import { Neo4jGraphConfig, VisNode } from '../../../interfaces';
+import { Neo4jGraphConfig, VisNode, ReferenceTableRow } from '../../../interfaces';
 import { ContextMenuControlService } from '../../services/context-menu-control.service';
+import { ReferenceTableControlService } from '../../services/reference-table-control.service';
 
 @Component({
     selector: 'app-visualization-canvas',
     templateUrl: './visualization-canvas.component.html',
     styleUrls: ['./visualization-canvas.component.scss'],
-    providers: [ContextMenuControlService],
+    providers: [ContextMenuControlService, ReferenceTableControlService],
 })
 export class VisualizationCanvasComponent implements OnInit {
     @Output() expandNode = new EventEmitter<number>();
@@ -29,13 +30,16 @@ export class VisualizationCanvasComponent implements OnInit {
     selectedNodes: IdType[];
     selectedNodeEdgeLabels: Set<string>;
     selectedEdges: IdType[];
+    nodesInHoveredCluster: ReferenceTableRow[];
 
     constructor(
         private contextMenuControlService: ContextMenuControlService,
+        private referenceTableControlService: ReferenceTableControlService,
     ) {
         this.selectedNodes = [];
         this.selectedEdges = [];
         this.selectedNodeEdgeLabels = new Set<string>();
+        this.nodesInHoveredCluster = [];
     }
 
     ngOnInit() {
@@ -122,14 +126,18 @@ export class VisualizationCanvasComponent implements OnInit {
 
     createClusterSvg(clusterDisplayNames: string[], totalClusteredNodes: number) {
         const svg =
-            '<svg xmlns="http://www.w3.org/2000/svg" width="225" height="120">' +
+            '<svg xmlns="http://www.w3.org/2000/svg" width="217" height="120">' +
                 '<style type="text/css">' +
                     '.cluster-node {' +
                         'background: #D4E2F4;' +
                         'border-radius: 2px;' +
                         'border: thin solid #C9CACC;' +
+                        'color: #5B6A80;' +
                         'display: inline-block;' +
+                        'font-family: "IBM Plex Sans", sans-serif;' +
                         'font-size: 12px;' +
+                        'font-weight: bold;' +
+                        'width: 200px' +
                     '}' +
                     '.cluster-node-row {' +
                         'border: thin solid #C9CACC; ' +
@@ -166,7 +174,13 @@ export class VisualizationCanvasComponent implements OnInit {
         );
 
         const clusterDisplayNames: string[] = neighborNodesWithRel.map(
-            (nodeId) => `<div class="cluster-node-row">${this.nodes.get(nodeId)['displayName']}</div>`
+            (nodeId) => {
+                let displayName = this.nodes.get(nodeId)['displayName'];
+                if (displayName.length > 31) {
+                    displayName = displayName.slice(0, 31) + '...';
+                }
+                return `<div class="cluster-node-row">${displayName}</div>`;
+            }
         ).slice(0, 3);
         const url = this.createClusterSvg(clusterDisplayNames, neighborNodesWithRel.length);
 
@@ -179,6 +193,15 @@ export class VisualizationCanvasComponent implements OnInit {
                 size: this.config.nodes.size * 4.5
               }
         });
+    }
+
+    /**
+     * Opens the metadata sidebar for with the input node's data
+     * TODO: the sidebar isn't implemented yet, so just printing the node data for now.
+     * @param node
+     */
+    openMetadataSidebar(nodeRef: ReferenceTableRow) {
+        console.log(this.nodes.get(nodeRef.nodeId));
     }
 
     /**
@@ -215,7 +238,22 @@ export class VisualizationCanvasComponent implements OnInit {
     // Begin Callback Functions
 
     onHoverNodeCallback(params: any) {
-        if (this.networkGraph.isCluster(params.node) || !this.nodes.get(params.node)) {
+        if (this.networkGraph.isCluster(params.node)) {
+            this.nodesInHoveredCluster = this.networkGraph.getNodesInCluster(params.node).map(
+                nodeId => {
+                    return {displayName: this.nodes.get(nodeId).displayName, nodeId: nodeId as number}
+                }
+            );
+
+            // Update the canvas location
+            const canvas = document.querySelector('canvas').getBoundingClientRect() as DOMRect;
+            const contextMenuXPos = params.pointer.DOM.x + canvas.x;
+            const contextMenuYPos = params.pointer.DOM.y + canvas.y;
+
+            this.referenceTableControlService.updatePopper(contextMenuXPos, contextMenuYPos);
+            this.referenceTableControlService.showReferenceTable();
+            return;
+        } else if (!this.nodes.get(params.node)) {
             return;
         }
 
@@ -296,6 +334,7 @@ export class VisualizationCanvasComponent implements OnInit {
 
       onClickCallback(params: any) {
         this.contextMenuControlService.hideContextMenu();
+        this.referenceTableControlService.hideReferenceTable();
       }
 
       // End Callback Functions
