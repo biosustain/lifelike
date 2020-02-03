@@ -17,35 +17,44 @@ enum ColumnType {
     EDGE = 'EDGE',
     SOURCE = 'SOURCE',
     TARGET = 'TARGET',
-    NODE_PROPERTY = 'NODE PROPERTY',
+    EDGE_PROPERTY = 'EDGE PROPERTY',
 }
 
 @Component({
-    selector: 'app-neo4j-upload-file-columns',
-    templateUrl: 'neo4j-upload-file-columns.component.html',
-    styleUrls: ['neo4j-upload-file-columns.component.sass'],
+    selector: 'app-neo4j-upload-relationship',
+    templateUrl: 'neo4j-upload-relationship.component.html',
+    styleUrls: ['neo4j-upload-relationship.component.sass'],
 })
-export class Neo4jUploadFileColumnsComponent implements OnChanges {
+export class Neo4jUploadRelationshipComponent implements OnChanges {
     @Input() chosenSheetToMap: SheetNameAndColumnNames;
 
-    @Output() emitter: EventEmitter<Neo4jColumnMapping>;
+    @Output() emitter: EventEmitter<{data: Neo4jColumnMapping, type: string}>;
 
     columnMappingForm: FormGroup;
+    nodeType: string;
 
-    nodeLabels$: Observable<string[]>;
-    nodeProperties$: Observable<{[key: string]: string[]}>;
+    dbNodeTypes$: Observable<string[]>;
+    dbNodeProperties$: Observable<{[key: string]: string[]}>;
 
     // TODO: add uniqueId column (used for indexing?)
     readonly columns = [
-        'columnName', 'nodeLabel', 'propertyLabel', 'exclude', 'edge', 'source', 'target', 'nodeProperty'];      // table column headers
+        'columnName',
+        'mappedNodeType',
+        'mappedNodeProperty',
+        'exclude',
+        'edge',
+        'source',
+        'target',
+        'edgeProperty',
+    ];
     readonly columnType = ColumnType;
 
     constructor(
         private fb: FormBuilder,
         private store: Store<State>,
     ) {
-        this.nodeLabels$ = this.store.pipe(select(selectors.selectDbLabels));
-        this.nodeProperties$ = this.store.pipe(select(selectors.selectNodeProperties));
+        this.dbNodeTypes$ = this.store.pipe(select(selectors.selectDbLabels));
+        this.dbNodeProperties$ = this.store.pipe(select(selectors.selectNodeProperties));
 
         this.columnMappingForm = this.fb.group({ columnMapping: this.fb.array([]) });
 
@@ -59,14 +68,13 @@ export class Neo4jUploadFileColumnsComponent implements OnChanges {
                 columnMappingFormArray.push(
                     this.fb.group({
                         columnName: [name],
-                        nodeLabel: [],
-                        propertyLabel: [],
-                        // uniqueId: [],
+                        mappedNodeType: [''],
+                        mappedNodeProperty: [''],
                         exclude: [false],
                         edge: [false],
                         source: [false],
                         target: [false],
-                        nodeProperty: [false],
+                        edgeProperty: [''],
                     }),
                 );
             });
@@ -87,103 +95,132 @@ export class Neo4jUploadFileColumnsComponent implements OnChanges {
             case ColumnType.EXCLUDE:
                 if (event.checked) {
                     currentRow.controls.exclude.patchValue(true);
+
+                    // clear entire row that's excluded
+                    currentRow.controls.mappedNodeType.patchValue(null);
+                    currentRow.controls.mappedNodeType.disable();
+                    currentRow.controls.mappedNodeProperty.patchValue(null);
+                    currentRow.controls.mappedNodeProperty.disable();
+                    currentRow.controls.edge.disable();
+                    currentRow.controls.source.disable();
+                    currentRow.controls.target.disable();
+                    currentRow.controls.edgeProperty.disable();
                 } else {
                     currentRow.controls.exclude.patchValue(false);
+
+                    currentRow.controls.mappedNodeType.enable();
+                    currentRow.controls.mappedNodeProperty.enable();
+                    currentRow.controls.edge.enable();
+                    currentRow.controls.source.enable();
+                    currentRow.controls.target.enable();
+                    currentRow.controls.edgeProperty.enable();
                 }
                 break;
             case ColumnType.EDGE:
                 if (event.checked) {
                     currentRow.controls.edge.patchValue(true);
-                    currentRow.controls.nodeLabel.patchValue(null);
-                    currentRow.controls.nodeLabel.disable();
+
+                    currentRow.controls.mappedNodeType.patchValue(null);
+                    currentRow.controls.mappedNodeType.disable();
+                    currentRow.controls.mappedNodeProperty.patchValue(null);
+                    currentRow.controls.mappedNodeProperty.disable();
+                    currentRow.controls.exclude.disable();
                     currentRow.controls.source.disable();
                     currentRow.controls.target.disable();
-                    currentRow.controls.nodeProperty.disable();
                 } else {
                     currentRow.controls.edge.patchValue(false);
-                    currentRow.controls.nodeLabel.enable();
+
+                    currentRow.controls.mappedNodeType.enable();
+                    currentRow.controls.mappedNodeProperty.enable();
+                    currentRow.controls.exclude.enable();
                     currentRow.controls.source.enable();
                     currentRow.controls.target.enable();
-                    currentRow.controls.nodeProperty.enable();
                 }
                 break;
             case ColumnType.SOURCE:
                 if (event.checked) {
                     currentRow.controls.source.patchValue(true);
+
+                    currentRow.controls.exclude.disable();
                     currentRow.controls.edge.disable();
                     currentRow.controls.target.disable();
-                    // currentRow.controls.nodeProperty.disable();
                 } else {
                     currentRow.controls.source.patchValue(false);
+
+                    currentRow.controls.exclude.enable();
                     currentRow.controls.edge.enable();
                     currentRow.controls.target.enable();
-                    // currentRow.controls.nodeProperty.enable();
                 }
                 break;
             case ColumnType.TARGET:
                 if (event.checked) {
                     currentRow.controls.target.patchValue(true);
+
+                    currentRow.controls.exclude.disable();
                     currentRow.controls.edge.disable();
                     currentRow.controls.source.disable();
-                    // currentRow.controls.nodeProperty.disable();
                 } else {
                     currentRow.controls.target.patchValue(false);
+
+                    currentRow.controls.exclude.enable();
                     currentRow.controls.edge.enable();
                     currentRow.controls.source.enable();
-                    // currentRow.controls.nodeProperty.enable();
                 }
                 break;
-            case ColumnType.NODE_PROPERTY:
+            case ColumnType.EDGE_PROPERTY:
                 if (event.checked) {
-                    // currentRow.controls.nodeProperty.patchValue(true);
-                    // currentRow.controls.nodeLabel.patchValue(null);
-                    // currentRow.controls.nodeLabel.disable();
-                    currentRow.controls.edge.disable();
-                    // currentRow.controls.source.disable();
-                    // currentRow.controls.target.disable();
+                    currentRow.controls.edgeProperty.patchValue(true);
+                    currentRow.controls.exclude.disable();
                 } else {
-                    // currentRow.controls.nodeProperty.patchValue(false);
-                    // currentRow.controls.nodeLabel.enable();
-                    currentRow.controls.edge.enable();
-                    // currentRow.controls.source.enable();
-                    // currentRow.controls.target.enable();
+                    currentRow.controls.edgeProperty.patchValue(false);
+                    currentRow.controls.exclude.enable();
                 }
                 break;
         }
     }
 
     createColumnMapping() {
-        const columnMapping = {
-            sourceNode: { nodeLabel: {}, nodeProperties: {} },
-            targetNode: { nodeLabel: {}, nodeProperties: {} },
-            edge: null,
+        const mapping = {
+            relationship: {
+                edge: {},
+                edgeProperty: {},
+                sourceNode: {
+                    mappedNodeType: null,
+                    mappedNodeProperty: {},
+                },
+                targetNode: {
+                    mappedNodeType: null,
+                    mappedNodeProperty: {},
+                },
+            }
         } as Neo4jColumnMapping;
+
         const columnMappingFormArray = this.columnMappingForm.get('columnMapping') as FormArray;
 
         columnMappingFormArray.controls.forEach((group: FormGroup) => {
             if (group.controls.source.value) {
-                columnMapping.sourceNode.nodeLabel[
-                    Object.values(group.controls.columnName.value)[0] as number] = group.controls.nodeLabel.value;
+                mapping.relationship.sourceNode.mappedNodeType = group.controls.mappedNodeType.value;
+                mapping.relationship.sourceNode.mappedNodeProperty[
+                    Object.values(group.controls.columnName.value)[0] as number
+                ] = group.controls.mappedNodeProperty.value;
             } else if (group.controls.target.value) {
-                columnMapping.targetNode.nodeLabel[
-                    Object.values(group.controls.columnName.value)[0] as number] = group.controls.nodeLabel.value;
+                mapping.relationship.targetNode.mappedNodeType = group.controls.mappedNodeType.value;
+                mapping.relationship.targetNode.mappedNodeProperty[
+                    Object.values(group.controls.columnName.value)[0] as number
+                ] = group.controls.mappedNodeProperty.value;
             } else if (group.controls.edge.value) {
-                columnMapping.edge = Object.values(group.controls.columnName.value)[0] as number;
+                mapping.relationship.edge = Object.keys(group.controls.columnName.value)[0] as string;
             }
 
-            if (group.controls.nodeProperty.value) {
-                if (group.controls.target.value) {
-                    columnMapping.targetNode.nodeProperties[
-                        Object.values(group.controls.columnName.value)[0] as number] = group.controls.propertyLabel.value;
-                } else {
-                    columnMapping.sourceNode.nodeProperties[
-                        Object.values(group.controls.columnName.value)[0] as number] = group.controls.propertyLabel.value;
-                }
+            if (group.controls.edgeProperty.value) {
+                mapping.relationship.edgeProperty[
+                    Object.values(group.controls.columnName.value)[0] as number
+                ] = Object.keys(group.controls.columnName.value)[0] as string;
             }
         });
 
-        console.log(columnMapping);
-        columnMapping.sheetName = this.chosenSheetToMap.sheetName;
-        this.emitter.emit(columnMapping);
+        console.log(mapping);
+        mapping.sheetName = this.chosenSheetToMap.sheetName;
+        this.emitter.emit({data: mapping, type: 'relationship'});
     }
 }
