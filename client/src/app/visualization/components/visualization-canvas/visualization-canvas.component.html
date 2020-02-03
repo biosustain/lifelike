@@ -2,6 +2,6 @@
 <div id="network-viz"></div>
 <!-- This isn't visible unless the user has right-clicked to open the context menu -->
 <app-context-menu
-  [selectedNodes]="selectedNodes"
-  [selectedEdges]="selectedEdges"
+  [selectedNodeEdgeLabels]="selectedNodeEdgeLabels"
+  (groupNeighborsWithRelationship)="groupNeighborsWithRelationship($event)"
 ></app-context-menu>

@@ -9,7 +9,6 @@ import {
     VisNode,
     VisEdge,
 } from '../../interfaces';
-import { VisualizationCanvasComponent } from '../components/visualization-canvas/visualization-canvas.component';
 
 @Component({
     selector: 'app-visualization',
@@ -24,8 +23,6 @@ export class VisualizationComponent implements OnInit {
     edges: DataSet<VisEdge>;
     // TODO KG-17: Add a 'clusters' object?
 
-    @ViewChild(VisualizationCanvasComponent, {static: false}) canvas: VisualizationCanvasComponent;
-
     constructor(private visService: VisualizationService) {}
 
     ngOnInit() {
@@ -34,7 +31,27 @@ export class VisualizationComponent implements OnInit {
             this.nodes = new DataSet(this.networkGraphData.nodes);
             this.edges = new DataSet(this.networkGraphData.edges);
         });
-        this.networkGraphConfig = this.visualizationConfig();
+
+        this.networkGraphConfig = {
+            interaction: {
+                hover: true,
+                navigationButtons: true,
+                multiselect: true,
+                selectConnectedEdges: false,
+            },
+            physics: {
+                enabled: true,
+                barnesHut: {
+                    springConstant: 0.04,
+                    damping: 0.9,
+                    gravitationalConstant: -10000,
+                }
+            },
+            nodes: {
+                size: 25,
+                shape: 'dot',
+            },
+        };
     }
 
     /**
@@ -73,78 +90,21 @@ export class VisualizationComponent implements OnInit {
         return {nodes, edges};
     }
 
-    /**
-     * A configuration from vis.js
-     * See the API for more information.
-     */
-    visualizationConfig(): Neo4jGraphConfig {
-        const config = {
-            interaction: {
-                hover: true,
-                navigationButtons: true,
-                multiselect: true,
-                selectConnectedEdges: false,
-            },
-            physics: {
-                enabled: true,
-                barnesHut: {
-                    springConstant: 0.04,
-                    damping: 0.9,
-                    gravitationalConstant: -10000,
+    expandNode(nodeId: number) {
+        this.visService.expandNode(nodeId).subscribe((r: Neo4jResults) => {
+            const nodeRef: VisNode = this.nodes.get(nodeId);
+            const visJSDataFormat = this.convertToVisJSFormat(r);
+            const { edges } = visJSDataFormat;
+            let { nodes } = visJSDataFormat;
+            // Sets the node expand state to true
+            nodes = nodes.map((n) => {
+                if (n.id === nodeId) {
+                    return {...n, expanded: !nodeRef.expanded};
                 }
-            },
-            nodes: {
-                size: 25,
-                shape: 'dot',
-            },
-        };
-        return config;
-    }
-
-    collapseNeighbors(rootNode: VisNode) {
-        // Get all the nodes connected to the root node, before removing edges
-        const connectedNodes = this.canvas.networkGraph.getConnectedNodes(rootNode.id) as IdType[];
-        (this.canvas.networkGraph.getConnectedEdges(rootNode.id) as IdType[]).forEach(
-            connectedEdge => {
-                this.edges.remove(connectedEdge);
-            }
-        );
-
-        // If a previously connected node has no remaining edges (i.e. it is not connected
-        // to any other neighbor), remove it.
-        connectedNodes.forEach((connectedNodeId: number) => {
-            const connectedEdges = this.canvas.networkGraph.getConnectedEdges(connectedNodeId);
-            if (connectedEdges.length == 0) {
-                this.nodes.remove(connectedNodeId);
-            }
-        });
-    }
-
-    expandAndCollapseNode(results: {nodeId: number, edgeIds: Array<number>}) {
-        const { nodeId, edgeIds } = results;
-        const nodeRef: VisNode = this.nodes.get(nodeId);
-
-        if (nodeRef.expanded) {
-            // Updates node expand state
-            const updatedNodeState = {...nodeRef, expanded: !nodeRef.expanded};
-            this.nodes.update(updatedNodeState);
-            // 'Collapse' all neighbor nodes that do not themselves have neighbors
-            this.collapseNeighbors(nodeRef);
-        } else {
-            this.visService.expandNode(nodeId).subscribe((r: Neo4jResults) => {
-                const visJSDataFormat = this.convertToVisJSFormat(r);
-                const { edges } = visJSDataFormat;
-                let { nodes } = visJSDataFormat;
-                // Sets the node expand state to true
-                nodes = nodes.map((n) => {
-                    if (n.id === nodeId) {
-                        return {...n, expanded: !nodeRef.expanded};
-                    }
-                    return n;
-                });
-                this.nodes.update(nodes);
-                this.edges.update(edges);
+                return n;
             });
-        }
+            this.nodes.update(nodes);
+            this.edges.update(edges);
+        });
     }
 }
