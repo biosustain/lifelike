@@ -99,10 +99,40 @@ export class VisualizationCanvasComponent implements OnInit {
      * @param selectedNode the ID of the node whose edge labels we want to get
      */
     getConnectedEdgeLabels(selectedNode: IdType) {
+        this.selectedNodeEdgeLabels.clear();
         const connectedEdges = this.networkGraph.getConnectedEdges(selectedNode);
         connectedEdges.forEach((edge) => {
             this.selectedNodeEdgeLabels.add(this.edges.get(edge).label);
         });
+    }
+
+    createClusterSvg(clusterDisplayNames: string[], totalClusteredNodes: number) {
+        const svg =
+            '<svg xmlns="http://www.w3.org/2000/svg" width="225" height="120">' +
+                '<style type="text/css">' +
+                    '.cluster-node {' +
+                        'background: #D4E2F4;' +
+                        'border-radius: 2px;' +
+                        'border: thin solid #C9CACC;' +
+                        'display: inline-block;' +
+                        'font-size: 12px;' +
+                    '}' +
+                    '.cluster-node-row {' +
+                        'border: thin solid #C9CACC; ' +
+                        'height: 15px; ' +
+                        'padding: 5px;' +
+                        'text-align: left; ' +
+                        'vertical-align: middle; ' +
+                    '}' +
+                '</style>' +
+                '<foreignObject x="15" y="10" width="100%" height="100%">' +
+                    `<div class="cluster-node" xmlns="http://www.w3.org/1999/xhtml">` +
+                        ''.concat(...clusterDisplayNames, `<div class="cluster-node-row">... (Showing 3 of ${totalClusteredNodes} total items)</div>`) +
+                    "</div>" +
+                "</foreignObject>" +
+            "</svg>";
+
+        return "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
     }
 
     /**
@@ -111,34 +141,30 @@ export class VisualizationCanvasComponent implements OnInit {
      * @param rel a string representing the relationship the neighbors will be clustered on
      */
     groupNeighborsWithRelationship(rel: string) {
-        const neighborNodesWithRel = [];
-        const connectedEdgesWithRel = [];
         const rootNode = this.selectedNodes[0];
-
-        this.networkGraph.getConnectedEdges(rootNode).filter((edgeId) => {
-            return this.edges.get(edgeId).label === rel;
-        }).map((connectedEdgeWithRel) => {
-            // TODO: Remove these edges from the list
-            connectedEdgesWithRel.push(connectedEdgeWithRel);
-            const connectedNodes  = this.networkGraph.getConnectedNodes(connectedEdgeWithRel) as IdType[];
-            connectedNodes.filter(
+        const connectedEdgesWithRel = this.networkGraph.getConnectedEdges(rootNode).filter(
+            (edgeId) => this.edges.get(edgeId).label === rel
+        );
+        const neighborNodesWithRel = connectedEdgesWithRel.map(
+            connectedEdgeWithRel => (this.networkGraph.getConnectedNodes(connectedEdgeWithRel) as IdType[]).filter(
                 nodeId => nodeId !== rootNode
-            ).map(
-                // TODO: Remove these nodes from the list
-                neighborNodeWithRel => neighborNodesWithRel.push(neighborNodeWithRel)
-            );
-        });
+            )[0]
+        );
+
+        const clusterDisplayNames: string[] = neighborNodesWithRel.map(
+            (nodeId) => `<div class="cluster-node-row">${this.nodes.get(nodeId)['displayName']}</div>`
+        ).slice(0, 3);
+        const url = this.createClusterSvg(clusterDisplayNames, neighborNodesWithRel.length);
+
         this.networkGraph.cluster({
             joinCondition: (node) => neighborNodesWithRel.includes(node.id),
             clusterNodeProperties: {
-                // id: 'my-cluster',
-                label: rel,
-                borderWidth: 3,
-                color: 'red',
-                shape: 'database'
+                image: url,
+                label: null,
+                shape: 'image',
+                size: this.config.nodes.size * 4.5
               }
         });
-        // TODO KG-17: Add a new node representing the cluster (?)
     }
 
     /**
@@ -156,52 +182,67 @@ export class VisualizationCanvasComponent implements OnInit {
         });
 
         this.networkGraph.on('hoverNode', (params) => {
-            if (this.networkGraph.isCluster(params.node)) {
-                return;
-            }
-
-            // This produces an 'enlarge effect'
-            const node = this.nodes.get(params.node);
-            const updatedNode = {...node, size: this.config.nodes.size * 1.5};
-            this.nodes.update(updatedNode);
+            this.onHoverNodeCallback(params);
         });
 
         this.networkGraph.on('blurNode', (params) => {
-            if (this.networkGraph.isCluster(params.node)) {
-                return;
-            }
-
-            // This produces a 'shrink effect'
-            const node = this.nodes.get(params.node);
-            const updateNode = {...node, size: this.config.nodes.size};
-            this.nodes.update(updateNode);
+            this.onBlurNodeCallback(params);
         });
 
         this.networkGraph.on('doubleClick', (params) => {
-            const hoveredNode = this.networkGraph.getNodeAt(params.pointer.DOM);
-
-            if (this.networkGraph.isCluster(hoveredNode)) {
-                this.networkGraph.openCluster(hoveredNode);
-                return;
-            }
-
-            // Check if event is double clicking a node
-            if (hoveredNode) {
-                this.expandOrCollapseNode(hoveredNode as number);
-            }
+            this.onDoubleClickCallback(params);
         });
 
         this.networkGraph.on('oncontext', (params) => {
-            const hoveredNode = this.networkGraph.getNodeAt(params.pointer.DOM);
-
-            if (this.networkGraph.isCluster(hoveredNode)) {
-                return;
-            }
             this.onContextCallback(params);
         });
     }
 
+    // Begin Callback Functions
+
+    onHoverNodeCallback(params: any) {
+        if (this.networkGraph.isCluster(params.node) || !this.nodes.get(params.node)) {
+            return;
+        }
+
+        // This produces an 'enlarge effect'
+        const node = this.nodes.get(params.node);
+        const updatedNode = {...node, size: this.config.nodes.size * 1.5};
+        this.nodes.update(updatedNode);
+    }
+
+    onBlurNodeCallback(params: any) {
+        if (this.networkGraph.isCluster(params.node) || !this.nodes.get(params.node)) {
+            return;
+        }
+
+        // This produces a 'shrink effect'
+        const node = this.nodes.get(params.node);
+        const updateNode = {...node, size: this.config.nodes.size};
+        this.nodes.update(updateNode);
+    }
+
+    onDoubleClickCallback(params: any) {
+        const hoveredNode = this.networkGraph.getNodeAt(params.pointer.DOM);
+
+        if (this.networkGraph.isCluster(hoveredNode)) {
+            this.networkGraph.openCluster(hoveredNode);
+            return;
+        }
+
+        // Check if event is double clicking a node
+        if (hoveredNode) {
+            this.expandOrCollapseNode(hoveredNode as number);
+        }
+    }
+
     onContextCallback(params: any) {
+        const hoveredNode = this.networkGraph.getNodeAt(params.pointer.DOM);
+
+        if (this.networkGraph.isCluster(hoveredNode)) {
+            return;
+        }
+
         // Stop the browser from showing the normal context
         params.event.preventDefault();
 
@@ -213,7 +254,6 @@ export class VisualizationCanvasComponent implements OnInit {
 
         this.contextMenuControlService.updatePopper(contextMenuXPos, contextMenuYPos);
 
-        const hoveredNode = this.networkGraph.getNodeAt(params.pointer.DOM);
         const hoveredEdge = this.networkGraph.getEdgeAt(params.pointer.DOM);
         this.selectedNodes = this.networkGraph.getSelectedNodes();
         this.selectedEdges = this.networkGraph.getSelectedEdges();
@@ -234,7 +274,6 @@ export class VisualizationCanvasComponent implements OnInit {
           this.networkGraph.unselectAll();
         }
 
-        this.selectedNodeEdgeLabels.clear();
         if (this.selectedNodes.length === 1) {
             this.getConnectedEdgeLabels(this.selectedNodes[0]);
         }
@@ -244,4 +283,6 @@ export class VisualizationCanvasComponent implements OnInit {
       onClickCallback(params: any) {
         this.contextMenuControlService.hideContextMenu();
       }
+
+      // End Callback Functions
 }
