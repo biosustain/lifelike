@@ -13,6 +13,8 @@ import { RouterModule } from '@angular/router';
 
 import { AngularMaterialModule } from './angular-material.module';
 
+import { TooltipComponent } from './components/tooltip/tooltip.component';
+
 @NgModule({
     imports: [
         AngularMaterialModule,
@@ -24,7 +26,7 @@ import { AngularMaterialModule } from './angular-material.module';
         ReactiveFormsModule,
         RouterModule,
     ],
-    declarations: [],
+    declarations: [TooltipComponent],
     providers: [],
     // exported modules are visible to modules that import this one
     exports: [

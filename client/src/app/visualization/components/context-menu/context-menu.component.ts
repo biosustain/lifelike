@@ -1,11 +1,12 @@
-import { Component, OnInit, Input, OnDestroy, Output, EventEmitter } from '@angular/core';
+import { Component, Input, OnDestroy, Output, EventEmitter } from '@angular/core';
 
-import { createPopper, VirtualElement, Instance } from '@popperjs/core';
+import { createPopper } from '@popperjs/core';
 
 import { Subscription } from 'rxjs';
 
 import { ContextMenuControlService } from '../../services/context-menu-control.service';
 import { TooltipDetails } from '../../../shared/services/tooltip-control-service';
+import { TooltipComponent } from 'src/app/shared/components/tooltip/tooltip.component';
 
 // TODO KG-17: Need to use Tippy so we can set a delay on the tooltip appearing for submenus
 @Component({
@@ -13,14 +14,11 @@ import { TooltipDetails } from '../../../shared/services/tooltip-control-service
     templateUrl: './context-menu.component.html',
     styleUrls: ['./context-menu.component.scss'],
 })
-export class ContextMenuComponent implements OnInit, OnDestroy {
+export class ContextMenuComponent extends TooltipComponent implements OnDestroy {
     @Input() selectedNodeEdgeLabels: Set<string>;
 
     @Output() groupNeighborsWithRelationship: EventEmitter<string> = new EventEmitter();
 
-    virtualElement: VirtualElement;
-    popper: Instance;
-    contextMenu: HTMLElement;
     subMenus: string[] = ['group-1-submenu'];
 
     hideContextMenuSubscription: Subscription;
@@ -29,11 +27,13 @@ export class ContextMenuComponent implements OnInit, OnDestroy {
     constructor(
         private contextMenuControlService: ContextMenuControlService,
     ) {
+        super();
+
         this.hideContextMenuSubscription = this.contextMenuControlService.hideTooltip$.subscribe(hideContextMenu => {
             if (hideContextMenu) {
-                this.hideMenu();
+                this.hideTooltip();
             } else {
-                this.showMenu();
+                this.showTooltip();
             }
         });
 
@@ -44,58 +44,20 @@ export class ContextMenuComponent implements OnInit, OnDestroy {
         this.selectedNodeEdgeLabels = new Set<string>();
     }
 
-    ngOnInit() {
-        this.contextMenu = document.querySelector('#root-menu');
-        this.setupPopper();
-    }
-
     ngOnDestroy() {
         this.hideContextMenuSubscription.unsubscribe();
         this.updatePopperSubscription.unsubscribe();
     }
 
-    generateRect(x = 0, y = 0) {
-        return () => ({
-            width: 0,
-            height: 0,
-            top: y,
-            right: x,
-            bottom: y,
-            left: x,
-        });
-    }
-
-    setupPopper() {
-        this.virtualElement = {
-            getBoundingClientRect: this.generateRect(),
-        };
-        this.popper = createPopper(this.virtualElement, this.contextMenu, {
-            modifiers: [
-                {
-                name: 'offset',
-                options: {
-                    offset: [0, 0],
-                },
-                },
-            ],
-            placement: 'right-start',
-        });
-    }
-
-    updatePopper(posX: number, posY: number) {
-        this.virtualElement.getBoundingClientRect = this.generateRect(posX, posY);
-        this.popper.update();
-    }
-
-    showMenu() {
+    showTooltip() {
         // First hide any submenus that might have been open (e.g. a user opened a context menu,
         // hovered over a submenu, then opened a new context menu)
         this.hideAllSubMenus();
-        this.contextMenu.style.display = 'block';
+        this.tooltip.style.display = 'block';
     }
 
-    hideMenu() {
-        this.contextMenu.style.display = 'none';
+    hideTooltip() {
+        this.tooltip.style.display = 'none';
         this.hideAllSubMenus();
     }
 
@@ -106,6 +68,7 @@ export class ContextMenuComponent implements OnInit, OnDestroy {
         const contextMenuItem = document.querySelector('#group-by-rel-menu-item');
         const tooltip = document.querySelector('#group-1-submenu') as HTMLElement;
         tooltip.style.display = 'block';
+        // TODO KG-17: Probably don't want to make a new one of these every time...
         createPopper(contextMenuItem, tooltip, {
             modifiers: [
                 {

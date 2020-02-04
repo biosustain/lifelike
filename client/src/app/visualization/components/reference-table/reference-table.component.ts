@@ -1,6 +1,4 @@
-import { Component, OnInit, Input, Output, EventEmitter, OnDestroy } from '@angular/core';
-
-import { VirtualElement, Instance, createPopper } from '@popperjs/core';
+import { Component, Input, Output, EventEmitter, OnDestroy } from '@angular/core';
 
 import { Subscription } from 'rxjs';
 
@@ -8,6 +6,7 @@ import { ReferenceTableRow } from 'src/app/interfaces';
 
 import { ReferenceTableControlService } from '../../services/reference-table-control.service';
 import { TooltipDetails } from '../../../shared/services/tooltip-control-service';
+import { TooltipComponent } from 'src/app/shared/components/tooltip/tooltip.component';
 
 // KG-17: Should consider creating a generalized parent class for tooltip menus,
 // as it stands, the context menu and reference table components share a lot of code
@@ -16,14 +15,10 @@ import { TooltipDetails } from '../../../shared/services/tooltip-control-service
   templateUrl: './reference-table.component.html',
   styleUrls: ['./reference-table.component.scss']
 })
-export class ReferenceTableComponent implements OnInit, OnDestroy {
+export class ReferenceTableComponent extends TooltipComponent implements OnDestroy {
     @Input() tableNodes: ReferenceTableRow[];
 
     @Output() referenceTableRowClickEvent: EventEmitter<ReferenceTableRow>;
-
-    virtualElement: VirtualElement;
-    popper: Instance;
-    referenceTable: HTMLElement;
 
     hideReferenceTableSubscription: Subscription;
     updatePopperSubscription: Subscription;
@@ -31,11 +26,13 @@ export class ReferenceTableComponent implements OnInit, OnDestroy {
     constructor(
         private referenceTableControlService: ReferenceTableControlService,
     ) {
+        super();
+
         this.hideReferenceTableSubscription = this.referenceTableControlService.hideTooltip$.subscribe(hideReferenceTable => {
             if (hideReferenceTable) {
-                this.hideMenu();
+                this.hideTooltip();
             } else {
-                this.showMenu();
+                this.showTooltip();
             }
         });
 
@@ -46,55 +43,9 @@ export class ReferenceTableComponent implements OnInit, OnDestroy {
         this.referenceTableRowClickEvent = new EventEmitter<ReferenceTableRow>();
     }
 
-    ngOnInit() {
-        this.referenceTable = document.querySelector('#reference-table');
-        this.setupPopper();
-    }
-
     ngOnDestroy() {
         this.hideReferenceTableSubscription.unsubscribe();
         this.updatePopperSubscription.unsubscribe();
-    }
-
-    generateRect(x = 0, y = 0) {
-        return () => ({
-            width: 0,
-            height: 0,
-            top: y,
-            right: x,
-            bottom: y,
-            left: x,
-        });
-    }
-
-    setupPopper() {
-        this.virtualElement = {
-            getBoundingClientRect: this.generateRect(),
-        };
-        this.popper = createPopper(this.virtualElement, this.referenceTable, {
-            modifiers: [
-                {
-                name: 'offset',
-                options: {
-                    offset: [0, 0],
-                },
-                },
-            ],
-            placement: 'right-start',
-        });
-    }
-
-    updatePopper(posX: number, posY: number) {
-        this.virtualElement.getBoundingClientRect = this.generateRect(posX, posY);
-        this.popper.update();
-    }
-
-    showMenu() {
-        this.referenceTable.style.display = 'block';
-    }
-
-    hideMenu() {
-        this.referenceTable.style.display = 'none';
     }
 
     openMetadataSidebarForNode(node: ReferenceTableRow) {
