@@ -10,7 +10,8 @@ import { Options } from '@popperjs/core';
 
 import { Network, DataSet, IdType } from 'vis-network';
 
-import { Neo4jGraphConfig, VisNode, ReferenceTableRow } from '../../../interfaces';
+import { Neo4jGraphConfig, VisNode, ReferenceTableRow } from 'app/interfaces';
+
 import { ContextMenuControlService } from '../../services/context-menu-control.service';
 import { ReferenceTableControlService } from '../../services/reference-table-control.service';
 

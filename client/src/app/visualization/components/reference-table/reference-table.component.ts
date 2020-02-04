@@ -2,14 +2,13 @@ import { Component, Input, Output, EventEmitter, OnDestroy } from '@angular/core
 
 import { Subscription } from 'rxjs';
 
-import { ReferenceTableRow } from 'src/app/interfaces';
+import { ReferenceTableRow } from 'app/interfaces';
+
+import { TooltipDetails } from 'app/shared/services/tooltip-control-service';
+import { TooltipComponent } from 'app/shared/components/tooltip/tooltip.component';
 
 import { ReferenceTableControlService } from '../../services/reference-table-control.service';
-import { TooltipDetails } from '../../../shared/services/tooltip-control-service';
-import { TooltipComponent } from 'src/app/shared/components/tooltip/tooltip.component';
 
-// KG-17: Should consider creating a generalized parent class for tooltip menus,
-// as it stands, the context menu and reference table components share a lot of code
 @Component({
   selector: 'app-reference-table',
   templateUrl: './reference-table.component.html',

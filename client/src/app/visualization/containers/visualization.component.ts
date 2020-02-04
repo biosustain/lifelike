@@ -1,6 +1,6 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 
-import { DataSet, IdType } from 'vis-network';
+import { DataSet } from 'vis-network';
 
 import { VisualizationService } from '../services/visualization.service';
 import {
@@ -8,7 +8,7 @@ import {
     Neo4jGraphConfig,
     VisNode,
     VisEdge,
-} from '../../interfaces';
+} from 'app/interfaces';
 
 @Component({
     selector: 'app-visualization',
