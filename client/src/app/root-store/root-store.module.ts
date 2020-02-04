@@ -1,19 +1,18 @@
 import { NgModule } from '@angular/core';
 import { EffectsModule } from '@ngrx/effects';
 import {
-    ActionReducer,
     ActionReducerMap,
-    MetaReducer,
     StoreModule,
 } from '@ngrx/store';
 
 import { StoreDevtoolsModule } from '@ngrx/store-devtools';
 
+import { Neo4jModule } from 'app/upload/neo4j.module';
+
 import { environment } from '../../environments/environment';
 
 import { State } from './state';
 
-import { Neo4jModule } from 'src/app/upload/neo4j.module';
 
 
 /**

@@ -12,7 +12,7 @@
       },
       "***ARANGO_USERNAME***": "",
       "sourceRoot": "src",
-      "prefix": "app",  // KG-17: Replace this with something descriptive
+      "prefix": "app",
       "architect": {
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
