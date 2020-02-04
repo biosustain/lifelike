@@ -6,6 +6,8 @@ import {
     Output,
 } from '@angular/core';
 
+import { Options } from '@popperjs/core';
+
 import { Network, DataSet, IdType } from 'vis-network';
 
 import { Neo4jGraphConfig, VisNode, ReferenceTableRow } from '../../../interfaces';
@@ -31,6 +33,10 @@ export class VisualizationCanvasComponent implements OnInit {
     selectedNodeEdgeLabels: Set<string>;
     selectedEdges: IdType[];
     nodesInHoveredCluster: ReferenceTableRow[];
+    contextMenuTooltipSelector: string;
+    contextMenuTooltipOptions: Partial<Options>;
+    referenceTableTooltipSelector: string;
+    referenceTableTooltipOptions: Partial<Options>;
 
     constructor(
         private contextMenuControlService: ContextMenuControlService,
@@ -40,6 +46,32 @@ export class VisualizationCanvasComponent implements OnInit {
         this.selectedEdges = [];
         this.selectedNodeEdgeLabels = new Set<string>();
         this.nodesInHoveredCluster = [];
+
+        this.contextMenuTooltipSelector = '#***ARANGO_USERNAME***-menu'
+        this.contextMenuTooltipOptions = {
+            modifiers: [
+                {
+                    name: 'offset',
+                    options: {
+                        offset: [0, 0],
+                    },
+                },
+            ],
+            placement: 'right-start',
+        }
+
+        this.referenceTableTooltipSelector = '#reference-table'
+        this.referenceTableTooltipOptions = {
+            modifiers: [
+                {
+                    name: 'offset',
+                    options: {
+                        offset: [0, 0],
+                    },
+                },
+            ],
+            placement: 'right-start',
+        }
     }
 
     ngOnInit() {
