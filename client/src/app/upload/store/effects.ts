@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { Router } from '@angular/router';
 import {
     Actions,
     ofType,
@@ -10,6 +11,7 @@ import {
     map,
     switchMap,
     mergeMap,
+    tap,
 } from 'rxjs/operators';
 
 import { EMPTY } from 'rxjs';
@@ -25,9 +27,8 @@ import {
     uploadNodeMappingSuccess,
     uploadRelationshipMapping,
     uploadRelationshipMappingSuccess,
+    resetStepper,
 } from './actions';
-
-// import * as SnackbarActions from 'recon/shared/actions/snackbar-display.actions';
 
 import { Neo4jService } from '../services/neo4j.service';
 
@@ -37,6 +38,7 @@ export class Neo4jEffects {
     constructor(
         private actions$: Actions,
         private neo4jService: Neo4jService,
+        private router: Router,
     ) {}
 
     getDbLabels = createEffect(() => this.actions$.pipe(
@@ -73,15 +75,11 @@ export class Neo4jEffects {
     uploadNodeMapping = createEffect(() => this.actions$.pipe(
         ofType(uploadNodeMapping),
         map(action => action.payload),
-        switchMap(data => this.neo4jService.uploadNodeMapping(data)
+        switchMap(data => this.neo4jService.uploadNodeMapping(data.mapping)
             .pipe(
                 mergeMap(() => [
                     uploadNodeMappingSuccess(),
-                    // new SnackbarActions.SnackbarOpen({
-                    //     message: 'Done',
-                    //     action: 'Dismiss',
-                    //     snackConfig: { duration: 1000 },
-                    // }),
+                    resetStepper({payload: data.stepper}),
                 ]),
                 catchError(() => EMPTY),
             ),
@@ -91,18 +89,20 @@ export class Neo4jEffects {
     uploadRelationshipMapping = createEffect(() => this.actions$.pipe(
         ofType(uploadRelationshipMapping),
         map(action => action.payload),
-        switchMap(data => this.neo4jService.uploadRelationshipMapping(data)
+        switchMap(data => this.neo4jService.uploadRelationshipMapping(data.mapping)
             .pipe(
                 mergeMap(() => [
                     uploadRelationshipMappingSuccess(),
-                    // new SnackbarActions.SnackbarOpen({
-                    //     message: 'Done',
-                    //     action: 'Dismiss',
-                    //     snackConfig: { duration: 1000 },
-                    // }),
+                    resetStepper({payload: data.stepper}),
                 ]),
                 catchError(() => EMPTY),
             ),
         ),
     ));
+
+    navigate = createEffect(() => this.actions$.pipe(
+        ofType(resetStepper),
+        map(action => action.payload),
+        tap(stepper => stepper.reset()),
+    ), {dispatch: false});
 }
