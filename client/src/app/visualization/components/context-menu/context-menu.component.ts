@@ -5,7 +5,7 @@ import { createPopper, VirtualElement, Instance } from '@popperjs/core';
 import { Subscription } from 'rxjs';
 
 import { ContextMenuControlService } from '../../services/context-menu-control.service';
-import { TooltipDetails } from '../../services/tooltip-control-service';
+import { TooltipDetails } from '../../../shared/services/tooltip-control-service';
 
 // TODO KG-17: Need to use Tippy so we can set a delay on the tooltip appearing for submenus
 @Component({

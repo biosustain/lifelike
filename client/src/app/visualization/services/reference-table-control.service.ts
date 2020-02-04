@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 
-import { TooltipControlService } from './tooltip-control-service';
+import { TooltipControlService } from '../../shared/services/tooltip-control-service';
 
 @Injectable()
 export class ReferenceTableControlService extends TooltipControlService {
