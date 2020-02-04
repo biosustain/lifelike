@@ -251,7 +251,7 @@ export class VisualizationCanvasComponent implements OnInit {
             const contextMenuYPos = params.pointer.DOM.y + canvas.y;
 
             this.referenceTableControlService.updatePopper(contextMenuXPos, contextMenuYPos);
-            this.referenceTableControlService.showReferenceTable();
+            this.referenceTableControlService.showTooltip();
             return;
         } else if (!this.nodes.get(params.node)) {
             return;
@@ -329,12 +329,12 @@ export class VisualizationCanvasComponent implements OnInit {
         if (this.selectedNodes.length === 1) {
             this.getConnectedEdgeLabels(this.selectedNodes[0]);
         }
-        this.contextMenuControlService.showContextMenu();
+        this.contextMenuControlService.showTooltip();
       }
 
       onClickCallback(params: any) {
-        this.contextMenuControlService.hideContextMenu();
-        this.referenceTableControlService.hideReferenceTable();
+        this.contextMenuControlService.hideTooltip();
+        this.referenceTableControlService.hideTooltip();
       }
 
       // End Callback Functions

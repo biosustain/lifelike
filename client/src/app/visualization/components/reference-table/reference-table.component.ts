@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, Input, Output, EventEmitter, OnDestroy } from '@angular/core';
 
 import { VirtualElement, Instance, createPopper } from '@popperjs/core';
 
@@ -6,7 +6,8 @@ import { Subscription } from 'rxjs';
 
 import { ReferenceTableRow } from 'src/app/interfaces';
 
-import { ReferenceTableControlService, ReferenceTableDetails } from '../../services/reference-table-control.service';
+import { ReferenceTableControlService } from '../../services/reference-table-control.service';
+import { TooltipDetails } from '../../services/tooltip-control-service';
 
 // KG-17: Should consider creating a generalized parent class for tooltip menus,
 // as it stands, the context menu and reference table components share a lot of code
@@ -15,7 +16,7 @@ import { ReferenceTableControlService, ReferenceTableDetails } from '../../servi
   templateUrl: './reference-table.component.html',
   styleUrls: ['./reference-table.component.scss']
 })
-export class ReferenceTableComponent implements OnInit {
+export class ReferenceTableComponent implements OnInit, OnDestroy {
     @Input() tableNodes: ReferenceTableRow[];
 
     @Output() referenceTableRowClickEvent: EventEmitter<ReferenceTableRow>;
@@ -30,7 +31,7 @@ export class ReferenceTableComponent implements OnInit {
     constructor(
         private referenceTableControlService: ReferenceTableControlService,
     ) {
-        this.hideReferenceTableSubscription = this.referenceTableControlService.hideReferenceTable$.subscribe(hideReferenceTable => {
+        this.hideReferenceTableSubscription = this.referenceTableControlService.hideTooltip$.subscribe(hideReferenceTable => {
             if (hideReferenceTable) {
                 this.hideMenu();
             } else {
@@ -38,7 +39,7 @@ export class ReferenceTableComponent implements OnInit {
             }
         });
 
-        this.updatePopperSubscription = this.referenceTableControlService.updatePopper$.subscribe((details: ReferenceTableDetails) => {
+        this.updatePopperSubscription = this.referenceTableControlService.updatePopper$.subscribe((details: TooltipDetails) => {
             this.updatePopper(details.posX, details.posY);
         });
 

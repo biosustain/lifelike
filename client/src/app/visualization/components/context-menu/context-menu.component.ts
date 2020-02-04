@@ -2,8 +2,10 @@ import { Component, OnInit, Input, OnDestroy, Output, EventEmitter } from '@angu
 
 import { createPopper, VirtualElement, Instance } from '@popperjs/core';
 
-import { ContextMenuControlService, ContextMenuDetails } from '../../services/context-menu-control.service';
 import { Subscription } from 'rxjs';
+
+import { ContextMenuControlService } from '../../services/context-menu-control.service';
+import { TooltipDetails } from '../../services/tooltip-control-service';
 
 // TODO KG-17: Need to use Tippy so we can set a delay on the tooltip appearing for submenus
 @Component({
@@ -27,7 +29,7 @@ export class ContextMenuComponent implements OnInit, OnDestroy {
     constructor(
         private contextMenuControlService: ContextMenuControlService,
     ) {
-        this.hideContextMenuSubscription = this.contextMenuControlService.hideContextMenu$.subscribe(hideContextMenu => {
+        this.hideContextMenuSubscription = this.contextMenuControlService.hideTooltip$.subscribe(hideContextMenu => {
             if (hideContextMenu) {
                 this.hideMenu();
             } else {
@@ -35,7 +37,7 @@ export class ContextMenuComponent implements OnInit, OnDestroy {
             }
         });
 
-        this.updatePopperSubscription = this.contextMenuControlService.updatePopper$.subscribe((details: ContextMenuDetails) => {
+        this.updatePopperSubscription = this.contextMenuControlService.updatePopper$.subscribe((details: TooltipDetails) => {
             this.updatePopper(details.posX, details.posY);
         });
 
@@ -127,4 +129,6 @@ export class ContextMenuComponent implements OnInit, OnDestroy {
     requestGroupByRelationship(rel: string) {
         this.groupNeighborsWithRelationship.emit(rel);
     }
+
+    // TODO KG-17: Would be cool to have a "Select Neighbors" feature on the context menu
 }
