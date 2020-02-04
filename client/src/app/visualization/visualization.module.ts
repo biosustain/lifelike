@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
 
-import { SharedModule } from '../shared.module';
+import { SharedModule } from '../shared/shared.module';
 
 import { ContextMenuComponent } from './components/context-menu/context-menu.component';
 import { ReferenceTableComponent } from './components/reference-table/reference-table.component';

@@ -7,7 +7,7 @@ import { Subscription } from 'rxjs';
 import { ReferenceTableRow } from 'src/app/interfaces';
 
 import { ReferenceTableControlService } from '../../services/reference-table-control.service';
-import { TooltipDetails } from '../../services/tooltip-control-service';
+import { TooltipDetails } from '../../../shared/services/tooltip-control-service';
 
 // KG-17: Should consider creating a generalized parent class for tooltip menus,
 // as it stands, the context menu and reference table components share a lot of code
