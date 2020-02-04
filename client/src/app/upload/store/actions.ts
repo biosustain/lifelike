@@ -1,6 +1,7 @@
 import { createAction, props, union } from '@ngrx/store';
 
 import { Neo4jColumnMapping, FileNameAndSheets } from '../../interfaces/neo4j.interface';
+import { MatStepper } from '@angular/material';
 
 
 export const uploadNeo4jFile = createAction(
@@ -15,7 +16,7 @@ export const uploadNeo4jFileSuccess = createAction(
 
 export const uploadNodeMapping = createAction(
     '[Neo4j Prototype] Upload Node Mapping',
-    props<{payload: Neo4jColumnMapping}>(),
+    props<{payload: {mapping: Neo4jColumnMapping, stepper: MatStepper}}>(),
 );
 
 export const uploadNodeMappingSuccess = createAction(
@@ -24,7 +25,7 @@ export const uploadNodeMappingSuccess = createAction(
 
 export const uploadRelationshipMapping = createAction(
     '[Neo4j Prototype] Upload Relationship Mapping',
-    props<{payload: Neo4jColumnMapping}>(),
+    props<{payload: {mapping: Neo4jColumnMapping, stepper: MatStepper}}>(),
 );
 
 export const uploadRelationshipMappingSuccess = createAction(
@@ -50,6 +51,11 @@ export const getNodePropertiesSuccess = createAction(
     props<{payload: {[key: string]: string[]}}>(),
 );
 
+export const resetStepper = createAction(
+    '[Neo4j Prototype] Reset Stepper',
+    props<{payload: MatStepper}>(),
+);
+
 const all = union({
     getDbLabels,
     getDbLabelsSuccess,
@@ -61,6 +67,7 @@ const all = union({
     uploadNodeMappingSuccess,
     uploadRelationshipMapping,
     uploadRelationshipMappingSuccess,
+    resetStepper,
 });
 
 export type Neo4jActions = typeof all;
