@@ -31,7 +31,7 @@ DB_EC = 'EC'
 # Start Text Mining Dataset
 
 TYPE_ASSOCIATION = 'Association'
-TYPE_ASSOCIATION_TYPE = 'Association Type'
+TYPE_ASSOCIATION_TYPE = 'AssociationType'
 TYPE_CHEMICAL = 'Chemical'
 TYPE_DISEASE = 'Disease'
 TYPE_GENE = 'Gene'

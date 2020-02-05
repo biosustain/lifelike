@@ -1,6 +1,6 @@
 import { Component, Input, OnDestroy, Output, EventEmitter } from '@angular/core';
 
-import { createPopper } from '@popperjs/core';
+import { createPopper, Instance } from '@popperjs/core';
 
 import { Subscription } from 'rxjs';
 
@@ -20,6 +20,14 @@ export class ContextMenuComponent extends TooltipComponent implements OnDestroy 
 
     @Output() groupNeighborsWithRelationship: EventEmitter<string> = new EventEmitter();
 
+    FADEOUT_STYLE = 'context-menu fade-out';
+    DEFAULT_STYLE = 'context-menu'
+
+    groupByRelSubmenuPopper: Instance;
+
+    contextMenuClass: string;
+    subMenuClass: string;
+
     subMenus: string[] = ['group-1-submenu'];
 
     hideContextMenuSubscription: Subscription;
@@ -30,9 +38,12 @@ export class ContextMenuComponent extends TooltipComponent implements OnDestroy 
     ) {
         super();
 
+        this.contextMenuClass = this.DEFAULT_STYLE;
+        this.subMenuClass = this.DEFAULT_STYLE;
+
         this.hideContextMenuSubscription = this.contextMenuControlService.hideTooltip$.subscribe(hideContextMenu => {
             if (hideContextMenu) {
-                this.hideTooltip();
+                this.beginContextMenuFade();
             } else {
                 this.showTooltip();
             }
@@ -48,6 +59,7 @@ export class ContextMenuComponent extends TooltipComponent implements OnDestroy 
     ngOnDestroy() {
         this.hideContextMenuSubscription.unsubscribe();
         this.updatePopperSubscription.unsubscribe();
+        this.popper.destroy();
     }
 
     showTooltip() {
@@ -55,22 +67,21 @@ export class ContextMenuComponent extends TooltipComponent implements OnDestroy 
         // hovered over a submenu, then opened a new context menu)
         this.hideAllSubMenus();
         this.tooltip.style.display = 'block';
-    }
-
-    hideTooltip() {
-        this.tooltip.style.display = 'none';
-        this.hideAllSubMenus();
+        this.contextMenuClass = this.DEFAULT_STYLE;
     }
 
     showGroupByRelSubMenu() {
-        // TODO KG-17: It would be very cool if only the edges of the hovered relationship were highlighted
+        // TODO KG-17: Would be nice to add some kind of delay here, but it also has to be interruptible.
+        // TODO KG-17: It would be very cool if the edges of the hovered relationship were highlighted
         this.hideAllSubMenus();
 
         const contextMenuItem = document.querySelector('#group-by-rel-menu-item');
         const tooltip = document.querySelector('#group-1-submenu') as HTMLElement;
         tooltip.style.display = 'block';
-        // TODO KG-17: Probably don't want to make a new one of these every time...
-        createPopper(contextMenuItem, tooltip, {
+        this.subMenuClass = this.DEFAULT_STYLE;
+
+        // TODO KG-17: Need to setup garbage collection for these
+        this.groupByRelSubmenuPopper = createPopper(contextMenuItem, tooltip, {
             modifiers: [
                 {
                 name: 'offset',
@@ -83,6 +94,11 @@ export class ContextMenuComponent extends TooltipComponent implements OnDestroy 
         });
     }
 
+    hideTooltip() {
+        this.tooltip.style.display = 'none';
+        this.hideAllSubMenus();
+    }
+
     hideAllSubMenus() {
         this.subMenus.forEach(subMenu => {
             const tooltip = document.querySelector(`#${subMenu}`) as HTMLElement;
@@ -90,9 +106,22 @@ export class ContextMenuComponent extends TooltipComponent implements OnDestroy 
         });
     }
 
+    beginContextMenuFade() {
+        this.contextMenuClass = this.FADEOUT_STYLE;
+        this.beginSubmenuFade();
+        setTimeout(() => {
+            this.hideTooltip()
+        }, 100);
+    }
+
+    beginSubmenuFade() {
+        this.subMenuClass = this.FADEOUT_STYLE;
+    }
+
     requestGroupByRelationship(rel: string) {
         this.groupNeighborsWithRelationship.emit(rel);
     }
 
     // TODO KG-17: Would be cool to have a "Select Neighbors" feature on the context menu
+    // (Though I suppose we can enable this by default with vis.js...)
 }

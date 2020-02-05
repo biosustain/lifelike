@@ -50,27 +50,11 @@ export class VisualizationCanvasComponent implements OnInit {
 
         this.contextMenuTooltipSelector = '#root-menu'
         this.contextMenuTooltipOptions = {
-            modifiers: [
-                {
-                    name: 'offset',
-                    options: {
-                        offset: [0, 0],
-                    },
-                },
-            ],
             placement: 'right-start',
         }
 
         this.referenceTableTooltipSelector = '#reference-table'
         this.referenceTableTooltipOptions = {
-            modifiers: [
-                {
-                    name: 'offset',
-                    options: {
-                        offset: [0, 0],
-                    },
-                },
-            ],
             placement: 'right-start',
         }
     }
@@ -182,7 +166,7 @@ export class VisualizationCanvasComponent implements OnInit {
                 '</style>' +
                 '<foreignObject x="15" y="10" width="100%" height="100%">' +
                     `<div class="cluster-node" xmlns="http://www.w3.org/1999/xhtml">` +
-                        ''.concat(...clusterDisplayNames, `<div class="cluster-node-row">... (Showing 3 of ${totalClusteredNodes} total items)</div>`) +
+                        ''.concat(...clusterDisplayNames, `<div class="cluster-node-row">... (Showing ${totalClusteredNodes > 3 ? '3' : totalClusteredNodes.toString()} of ${totalClusteredNodes} total items)</div>`) +
                     "</div>" +
                 "</foreignObject>" +
             "</svg>";
@@ -196,6 +180,7 @@ export class VisualizationCanvasComponent implements OnInit {
      * @param rel a string representing the relationship the neighbors will be clustered on
      */
     groupNeighborsWithRelationship(rel: string) {
+        // NOTE KG-17: It looks like vis.js does not create clusters of single nodes.
         const rootNode = this.selectedNodes[0];
         const connectedEdgesWithRel = this.networkGraph.getConnectedEdges(rootNode).filter(
             (edgeId) => this.isNotAClusterEdge(edgeId) && this.edges.get(edgeId).label === rel
@@ -366,6 +351,7 @@ export class VisualizationCanvasComponent implements OnInit {
       }
 
       onClickCallback(params: any) {
+        this.selectedNodeEdgeLabels.clear();
         this.contextMenuControlService.hideTooltip();
         this.referenceTableControlService.hideTooltip();
       }
