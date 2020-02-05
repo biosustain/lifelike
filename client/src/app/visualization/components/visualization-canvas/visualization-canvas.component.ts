@@ -236,6 +236,10 @@ export class VisualizationCanvasComponent implements OnInit {
             // deselect everything). There may also be other behaviors we don't want.
         });
 
+        this.networkGraph.on('dragStart', (params) => {
+            this.onDragStartCallback(params);
+        });
+
         this.networkGraph.on('hoverNode', (params) => {
             this.onHoverNodeCallback(params);
         });
@@ -253,7 +257,20 @@ export class VisualizationCanvasComponent implements OnInit {
         });
     }
 
+    hideAllTooltips() {
+        this.contextMenuControlService.hideTooltip();
+        this.referenceTableControlService.hideTooltip();
+    }
+
     // Begin Callback Functions
+
+    onClickCallback(params: any) {
+        this.hideAllTooltips()
+    }
+
+    onDragStartCallback(params: any) {
+        this.hideAllTooltips()
+    }
 
     onHoverNodeCallback(params: any) {
         if (this.networkGraph.isCluster(params.node)) {
@@ -307,6 +324,8 @@ export class VisualizationCanvasComponent implements OnInit {
     }
 
     onContextCallback(params: any) {
+        this.selectedNodeEdgeLabels.clear();
+
         const hoveredNode = this.networkGraph.getNodeAt(params.pointer.DOM);
 
         if (this.networkGraph.isCluster(hoveredNode)) {
@@ -348,12 +367,6 @@ export class VisualizationCanvasComponent implements OnInit {
             this.getConnectedEdgeLabels(this.selectedNodes[0]);
         }
         this.contextMenuControlService.showTooltip();
-      }
-
-      onClickCallback(params: any) {
-        this.selectedNodeEdgeLabels.clear();
-        this.contextMenuControlService.hideTooltip();
-        this.referenceTableControlService.hideTooltip();
       }
 
       // End Callback Functions
