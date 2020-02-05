@@ -4,6 +4,8 @@ import { createPopper, Instance } from '@popperjs/core';
 
 import { Subscription } from 'rxjs';
 
+import { isNullOrUndefined } from 'util';
+
 import { TooltipDetails } from 'app/shared/services/tooltip-control-service';
 import { TooltipComponent } from 'app/shared/components/tooltip/tooltip.component';
 
@@ -80,14 +82,17 @@ export class ContextMenuComponent extends TooltipComponent implements OnDestroy 
         tooltip.style.display = 'block';
         this.subMenuClass = this.DEFAULT_STYLE;
 
-        // TODO KG-17: Need to setup garbage collection for these
+        if (!isNullOrUndefined(this.groupByRelSubmenuPopper)) {
+            this.groupByRelSubmenuPopper.destroy()
+            this.groupByRelSubmenuPopper = null;
+        }
         this.groupByRelSubmenuPopper = createPopper(contextMenuItem, tooltip, {
             modifiers: [
                 {
-                name: 'offset',
-                options: {
-                    offset: [0, 0],
-                },
+                    name: 'offset',
+                    options: {
+                        offset: [0, 0],
+                    },
                 },
             ],
             placement: 'right-start',
