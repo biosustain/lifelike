@@ -1,12 +1,7 @@
-#***ARANGO_USERNAME***-menu {
-    display: none;
-}
-
 .context-menu {
     background: #D4E2F4;
     border-radius: 2px;
     border: thin solid #C9CACC;
-    display: none;
 }
 
 .context-menu-group {
@@ -15,7 +10,7 @@
     font-size: 13px;
     font-weight: bold;
     padding: 5px 0;
-    width: 100%
+    width: 100%;
 }
 
 .context-menu-item {
@@ -30,4 +25,56 @@
 
 #group-1-submenu {
     display: none;
+}
+
+.fade-out {
+    animation: fadeOut ease .2s forwards;
+    -webkit-animation: fadeOut ease .2s forwards;
+    -moz-animation: fadeOut ease .2s forwards;
+    -o-animation: fadeOut ease .2s forwards;
+    -ms-animation: fadeOut ease .2s forwards;
+  }
+  @keyframes fadeOut {
+    0% {
+      opacity:1;
+    }
+    100% {
+      opacity:0;
+    }
+  }
+
+  @-moz-keyframes fadeOut {
+    0% {
+      opacity:1;
+    }
+    100% {
+      opacity:0;
+    }
+  }
+
+  @-webkit-keyframes fadeOut {
+    0% {
+      opacity:1;
+    }
+    100% {
+      opacity:0;
+    }
+  }
+
+  @-o-keyframes fadeOut {
+    0% {
+      opacity:1;
+    }
+    100% {
+      opacity:0;
+    }
+  }
+
+  @-ms-keyframes fadeOut {
+    0% {
+      opacity:1;
+    }
+    100% {
+      opacity:0;
+  }
 }

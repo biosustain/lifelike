@@ -1,4 +1,4 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, OnInit, Input, OnDestroy } from '@angular/core';
 
 import { VirtualElement, Instance, createPopper, Options } from '@popperjs/core';
 
@@ -7,7 +7,7 @@ import { VirtualElement, Instance, createPopper, Options } from '@popperjs/core'
   template: '<div id="tooltip">I am a Tooltip</div>',
   styles: [],
 })
-export class TooltipComponent implements OnInit {
+export class TooltipComponent implements OnInit, OnDestroy {
     @Input() tooltipSelector: string;
     @Input() tooltipOptions: Partial<Options>;
 
@@ -20,6 +20,10 @@ export class TooltipComponent implements OnInit {
     ngOnInit() {
         this.tooltip = document.querySelector(this.tooltipSelector);
         this.setupPopper();
+    }
+
+    ngOnDestroy() {
+        this.popper.destroy();
     }
 
     generateRect(x = 0, y = 0) {
