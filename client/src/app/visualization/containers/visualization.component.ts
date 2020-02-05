@@ -23,7 +23,19 @@ export class VisualizationComponent implements OnInit {
     edges: DataSet<VisEdge>;
     // TODO KG-17: Add a 'clusters' object?
 
-    constructor(private visService: VisualizationService) {}
+    // KG-17 TEMP:
+    colorMap: Map<string, string>;
+
+    constructor(private visService: VisualizationService) {
+        this.colorMap = new Map<string, string>();
+        this.colorMap.set('Gene', 'red');
+        this.colorMap.set('Disease', 'blue');
+        this.colorMap.set('Chemical', 'green');
+        this.colorMap.set('Association', 'purple');
+        this.colorMap.set('AssociationType', 'orange');
+        this.colorMap.set('Reference', 'brown');
+        this.colorMap.set('Publication', 'cyan');
+    }
 
     ngOnInit() {
         this.visService.getSomeDiseases().subscribe((results: Neo4jResults) => {
@@ -81,7 +93,8 @@ export class VisualizationComponent implements OnInit {
             return {
                 ...n,
                 primaryLabel: n.label,
-                label: n.displayName,
+                color: this.colorMap.get(n.label),
+                label: n.displayName.length > 64 ? n.displayName.slice(0, 64) + '...'  : n.displayName,
             };
         });
         edges = edges.map((e) => {
