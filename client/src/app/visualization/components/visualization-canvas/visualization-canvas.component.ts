@@ -48,15 +48,15 @@ export class VisualizationCanvasComponent implements OnInit {
         this.selectedNodeEdgeLabels = new Set<string>();
         this.nodesInHoveredCluster = [];
 
-        this.contextMenuTooltipSelector = '#***ARANGO_USERNAME***-menu'
+        this.contextMenuTooltipSelector = '#***ARANGO_USERNAME***-menu';
         this.contextMenuTooltipOptions = {
             placement: 'right-start',
-        }
+        };
 
-        this.referenceTableTooltipSelector = '#reference-table'
+        this.referenceTableTooltipSelector = '#reference-table';
         this.referenceTableTooltipOptions = {
             placement: 'right-start',
-        }
+        };
     }
 
     ngOnInit() {
@@ -94,7 +94,7 @@ export class VisualizationCanvasComponent implements OnInit {
         // to any other neighbor), remove it.
         connectedNodes.forEach((connectedNodeId: number) => {
             const connectedEdges = this.networkGraph.getConnectedEdges(connectedNodeId);
-            if (connectedEdges.length == 0) {
+            if (connectedEdges.length === 0) {
                 this.nodes.remove(connectedNodeId);
             }
         });
@@ -143,7 +143,7 @@ export class VisualizationCanvasComponent implements OnInit {
 
     createClusterSvg(clusterDisplayNames: string[], totalClusteredNodes: number) {
         const svg =
-            '<svg xmlns="http://www.w3.org/2000/svg" width="217" height="120">' +
+            '<svg xmlns="http://www.w3.org/2000/svg" width="232" height="120">' +
                 '<style type="text/css">' +
                     '.cluster-node {' +
                         'background: #D4E2F4;' +
@@ -154,7 +154,7 @@ export class VisualizationCanvasComponent implements OnInit {
                         'font-family: "IBM Plex Sans", sans-serif;' +
                         'font-size: 12px;' +
                         'font-weight: bold;' +
-                        'width: 200px' +
+                        'width: 215px' +
                     '}' +
                     '.cluster-node-row {' +
                         'border: thin solid #C9CACC; ' +
@@ -166,12 +166,15 @@ export class VisualizationCanvasComponent implements OnInit {
                 '</style>' +
                 '<foreignObject x="15" y="10" width="100%" height="100%">' +
                     `<div class="cluster-node" xmlns="http://www.w3.org/1999/xhtml">` +
-                        ''.concat(...clusterDisplayNames, `<div class="cluster-node-row">... (Showing ${totalClusteredNodes > 3 ? '3' : totalClusteredNodes.toString()} of ${totalClusteredNodes} total items)</div>`) +
-                    "</div>" +
-                "</foreignObject>" +
-            "</svg>";
+                        ''.concat(...clusterDisplayNames,
+                            '<div class="cluster-node-row">... (Showing ' +
+                                `${totalClusteredNodes > 3 ? '3' : totalClusteredNodes.toString()} of ${totalClusteredNodes} total items)` +
+                            '</div>') +
+                    '</div>' +
+                '</foreignObject>' +
+            '</svg>';
 
-        return "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
+        return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
     }
 
     /**
@@ -193,7 +196,7 @@ export class VisualizationCanvasComponent implements OnInit {
 
         const clusterDisplayNames: string[] = neighborNodesWithRel.map(
             (nodeId) => {
-                let displayName = this.nodes.get(nodeId)['displayName'];
+                let displayName = this.nodes.get(nodeId).displayName;
                 if (displayName.length > 31) {
                     displayName = displayName.slice(0, 31) + '...';
                 }
@@ -216,7 +219,7 @@ export class VisualizationCanvasComponent implements OnInit {
     /**
      * Opens the metadata sidebar for with the input node's data
      * TODO: the sidebar isn't implemented yet, so just printing the node data for now.
-     * @param node
+     * @param nodeRef represents a row in the reference table, contains node data
      */
     openMetadataSidebar(nodeRef: ReferenceTableRow) {
         console.log(this.nodes.get(nodeRef.nodeId));
@@ -265,18 +268,18 @@ export class VisualizationCanvasComponent implements OnInit {
     // Begin Callback Functions
 
     onClickCallback(params: any) {
-        this.hideAllTooltips()
+        this.hideAllTooltips();
     }
 
     onDragStartCallback(params: any) {
-        this.hideAllTooltips()
+        this.hideAllTooltips();
     }
 
     onHoverNodeCallback(params: any) {
         if (this.networkGraph.isCluster(params.node)) {
             this.nodesInHoveredCluster = this.networkGraph.getNodesInCluster(params.node).map(
                 nodeId => {
-                    return {displayName: this.nodes.get(nodeId).displayName, nodeId: nodeId as number}
+                    return {displayName: this.nodes.get(nodeId).displayName, nodeId: nodeId as number};
                 }
             );
 
@@ -348,19 +351,19 @@ export class VisualizationCanvasComponent implements OnInit {
         this.selectedEdges = this.networkGraph.getSelectedEdges();
 
         if (hoveredNode !== undefined) {
-          if (!this.selectedNodes.includes(hoveredNode)) {
-            this.networkGraph.unselectAll();
-            this.selectedNodes = [hoveredNode];
-            this.networkGraph.selectNodes(this.selectedNodes);
-          }
+            if (!this.selectedNodes.includes(hoveredNode)) {
+                this.networkGraph.unselectAll();
+                this.selectedNodes = [hoveredNode];
+                this.networkGraph.selectNodes(this.selectedNodes);
+            }
         } else if (hoveredEdge !== undefined) {
-          if (!this.selectedEdges.includes(hoveredEdge)) {
-            this.networkGraph.unselectAll();
-            this.selectedEdges = [hoveredEdge];
-            this.networkGraph.selectEdges(this.selectedEdges);
-          }
+            if (!this.selectedEdges.includes(hoveredEdge)) {
+                this.networkGraph.unselectAll();
+                this.selectedEdges = [hoveredEdge];
+                this.networkGraph.selectEdges(this.selectedEdges);
+            }
         } else {
-          this.networkGraph.unselectAll();
+            this.networkGraph.unselectAll();
         }
 
         if (this.selectedNodes.length === 1) {

@@ -4,6 +4,7 @@
     border-radius: 2px;
     border: thin solid #C9CACC;
     height: 300px;
+    max-width: 500px;
     overflow: auto;
 }
 
@@ -13,7 +14,7 @@
     font-size: 13px;
     font-weight: bold;
     padding: 5px 15px 5px 5px;
-    width: 100%
+    width: 100%;
 }
 
 .reference-table-row:hover {
