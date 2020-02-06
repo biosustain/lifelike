@@ -333,6 +333,16 @@ class Neo4JService(BaseDao):
 
         current_ws = workbook.active
 
+        # unmerge any cells first
+        # and assign the value to them
+        for group in current_ws.merged_cell_ranges:
+            min_col, min_row, max_col, max_row = group.bounds
+            value_to_assign = current_ws.cell(row=min_row, column=min_col).value
+            current_ws.unmerged_cells(str(group))
+            for row in current_ws.iter_rows(min_col=min_col, min_row=min_row, max_col=max_col, max_row=max_row):
+                for cell in row:
+                    cell.value = value_to_assign
+
         for row in current_ws.iter_rows(
             min_row=2,
             max_row=len(list(current_ws.rows)),
