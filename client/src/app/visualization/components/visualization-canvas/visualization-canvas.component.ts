@@ -10,7 +10,8 @@ import { Options } from '@popperjs/core';
 
 import { Network, DataSet, IdType } from 'vis-network';
 
-import { Neo4jGraphConfig, VisNode, ReferenceTableRow } from 'app/interfaces';
+import { Neo4jGraphConfig, VisNode, ReferenceTableRow, AssociationData } from 'app/interfaces';
+import { uuidv4 } from 'app/shared/utils';
 
 import { ContextMenuControlService } from '../../services/context-menu-control.service';
 import { ReferenceTableControlService } from '../../services/reference-table-control.service';
@@ -23,17 +24,22 @@ import { ReferenceTableControlService } from '../../services/reference-table-con
 })
 export class VisualizationCanvasComponent implements OnInit {
     @Output() expandNode = new EventEmitter<number>();
+    @Output() getSentences = new EventEmitter<AssociationData>();
 
     @Input() nodes: DataSet<any, any>;
     @Input() edges: DataSet<any, any>;
     // Configuration for the graph view. See vis.js docs
     @Input() config: Neo4jGraphConfig;
+    // TODO KG-17: Can re-enable later, when we decide what to do with the legend
+    // @Input() legend: Map<string, string[]>;
 
     networkGraph: Network;
     selectedNodes: IdType[];
     selectedNodeEdgeLabels: Set<string>;
     selectedEdges: IdType[];
     nodesInHoveredCluster: ReferenceTableRow[];
+    clusters: Map<string, string>;
+
     contextMenuTooltipSelector: string;
     contextMenuTooltipOptions: Partial<Options>;
     referenceTableTooltipSelector: string;
@@ -57,6 +63,8 @@ export class VisualizationCanvasComponent implements OnInit {
         this.referenceTableTooltipOptions = {
             placement: 'right-start',
         };
+
+        this.clusters = new Map<string, string>();
     }
 
     ngOnInit() {
@@ -211,8 +219,17 @@ export class VisualizationCanvasComponent implements OnInit {
                 image: url,
                 label: null,
                 shape: 'image',
-                size: this.config.nodes.size * 4.5
-              }
+                size: this.config.nodes.size * 4.5,
+                // This setting is valid as described under 'clusterNodeProperties'
+                // here: https://visjs.github.io/vis-network/docs/network/index.html#optionsObject
+                // @ts-ignore
+                allowSingleNodeCluster: true,
+            },
+            processProperties: (clusterOptions) => {
+                const newClusterId = `cluster:${uuidv4()}`;
+                this.clusters.set(newClusterId, rel);
+                return {...clusterOptions, id: newClusterId};
+            }
         });
     }
 
@@ -222,7 +239,14 @@ export class VisualizationCanvasComponent implements OnInit {
      * @param nodeRef represents a row in the reference table, contains node data
      */
     openMetadataSidebar(nodeRef: ReferenceTableRow) {
-        console.log(this.nodes.get(nodeRef.nodeId));
+        const clusterId = this.networkGraph.findNode(nodeRef.nodeId)[0] as string;
+        const clusteredRelationship = this.clusters.get(clusterId);
+        const relatedTo = this.nodes.get(this.networkGraph.getConnectedNodes(clusterId)[0] as number).displayName;
+        this.getSentences.emit({
+                nodeId: nodeRef.nodeId,
+                entryText: relatedTo,
+                description: clusteredRelationship,
+        } as AssociationData);
     }
 
     /**
@@ -317,6 +341,7 @@ export class VisualizationCanvasComponent implements OnInit {
 
         if (this.networkGraph.isCluster(hoveredNode)) {
             this.networkGraph.openCluster(hoveredNode);
+            this.clusters.delete(hoveredNode as string);
             return;
         }
 

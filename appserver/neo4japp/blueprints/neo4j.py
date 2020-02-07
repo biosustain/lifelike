@@ -20,6 +20,13 @@ class ReactionRequest(CamelDictMixin):
 @attr.s(frozen=True)
 class ExpandNodeRequest(CamelDictMixin):
     node_id: int = attr.ib()
+    limit: int = attr.ib()
+
+@attr.s(frozen=True)
+class AssociationSentencesRequest(CamelDictMixin):
+    node_id: int = attr.ib()
+    description: str = attr.ib()
+    entry_text: str = attr.ib()
 
 @attr.s(frozen=True)
 class UploadFileRequest(CamelDictMixin):
@@ -44,6 +51,7 @@ def get_organisms():
     organisms = neo4j.get_organisms()
     return SuccessResponse(result=organisms, status_code=200)
 
+# NOTE KG-17: This is just a temp endpoint, may remove in the future
 @bp.route('/diseases', methods=['GET'])
 @jsonify_with_class()
 def get_some_diseases():
@@ -64,8 +72,19 @@ def load_regulatory_graph(req: GraphRequest):
 @jsonify_with_class(ExpandNodeRequest)
 def expand_graph_node(req: ExpandNodeRequest):
     neo4j = get_neo4j_service_dao()
-    node = neo4j.expand_graph(req.node_id)
+    node = neo4j.expand_graph(req.node_id, req.limit)
     return SuccessResponse(result=node, status_code=200)
+
+@bp.route('/get-sentences', methods=['POST'])
+@jsonify_with_class(AssociationSentencesRequest)
+def get_association_sentences(req: AssociationSentencesRequest):
+    neo4j = get_neo4j_service_dao()
+    sentences = neo4j.get_association_sentences(
+        req.node_id,
+        req.description,
+        req.entry_text
+    )
+    return SuccessResponse(result=sentences, status_code=200)
 
 @bp.route('/reaction', methods=['POST'])
 @jsonify_with_class(ReactionRequest)

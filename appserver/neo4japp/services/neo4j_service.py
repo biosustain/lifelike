@@ -98,12 +98,12 @@ class Neo4JService(BaseDao):
         return dict(nodes=[n.to_dict() for n in organism_nodes], edges=[])
 
     def get_some_diseases(self):
-        nodes = list(NodeMatcher(self.graph).match(TYPE_DISEASE).limit(4))
-        species_nodes = [
+        nodes = list(NodeMatcher(self.graph).match(TYPE_DISEASE).limit(10))
+        disease_nodes = [
             GraphNode.from_py2neo(n, display_fn=lambda x: x.get(DISPLAY_NAME_MAP[TYPE_DISEASE]))
                 for n in nodes
         ]
-        return dict(nodes=[n.to_dict() for n in species_nodes], edges=[])
+        return dict(nodes=[n.to_dict() for n in disease_nodes], edges=[])
 
     def get_biocyc_db(self, org_ids: [str]):
         if org_ids:
@@ -125,9 +125,14 @@ class Neo4JService(BaseDao):
             return self._query_neo4j(query)
         return None
 
-    def expand_graph(self, node_id: str):
-        query = self.get_expand_query(node_id)
+    def expand_graph(self, node_id: str, limit: int):
+        query = self.get_expand_query(node_id, limit)
         return self._query_neo4j(query)
+
+    def get_association_sentences(self, node_id: str, description: str, entry_text: str):
+        query = self.get_association_sentences_query(node_id, description, entry_text)
+        data = self.graph.run(query).data()
+        return [result['references'] for result in data]
 
     def load_reaction_graph(self, biocyc_id: str):
         query = self.get_reaction_query(biocyc_id)
@@ -240,12 +245,25 @@ class Neo4JService(BaseDao):
 
     # TODO: Allow flexible limits on nodes; enable this in the blueprints
     def get_expand_query(self, node_id: str, limit: int = 50):
+        # NOTE KG-17: Temporarily showing only "ASSOCIATED" relationships on nodes to
+        # experiment with the visualizer
         query = """
-            match (n)-[l]-(s) WHERE ID(n) = {}
+            MATCH (n)-[l:ASSOCIATED]-(s) WHERE ID(n) = {}
             WITH n, s, l
             LIMIT {}
             return collect(n) + collect(s) as nodes, collect(l) as relationships
         """.format(node_id, limit)
+        return query
+
+    # TODO KG-17: Maybe work with Robin to come up with a solid version of this query,
+    # not sure if this is going to work 100% of the time
+    def get_association_sentences_query(self, node_id: str, description: str, entry_text: str):
+        query = """
+            MATCH (n)-[:HAS_ASSOCIATION]-(s:Association)-[:HAS_REF]-(r:Reference)
+            WHERE ID(n) = {} AND s.description='{}' AND r.entry2_text=~'.*{}.*'
+            WITH r
+            return r as references
+        """.format(node_id, description, entry_text)
         return query
 
     def get_reaction_query(self, biocyc_id: str):
