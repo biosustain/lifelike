@@ -4,6 +4,7 @@ import { DataSet } from 'vis-network';
 
 import { VisualizationService } from '../services/visualization.service';
 import {
+    AssociationData,
     Neo4jResults,
     Neo4jGraphConfig,
     VisNode,
@@ -21,20 +22,15 @@ export class VisualizationComponent implements OnInit {
     networkGraphConfig: Neo4jGraphConfig;
     nodes: DataSet<VisNode>;
     edges: DataSet<VisEdge>;
-    // TODO KG-17: Add a 'clusters' object?
 
-    // KG-17 TEMP:
-    colorMap: Map<string, string>;
+    // NOTE KG-17: May use this as input to a legend component in the future.
+    legend: Map<string, string[]>;
 
     constructor(private visService: VisualizationService) {
-        this.colorMap = new Map<string, string>();
-        this.colorMap.set('Gene', 'red');
-        this.colorMap.set('Disease', 'blue');
-        this.colorMap.set('Chemical', 'green');
-        this.colorMap.set('Association', 'purple');
-        this.colorMap.set('AssociationType', 'orange');
-        this.colorMap.set('Reference', 'brown');
-        this.colorMap.set('Publication', 'cyan');
+        this.legend = new Map<string, string[]>();
+        this.legend.set('Gene', ['#78CDD7', '#247B7B']);
+        this.legend.set('Disease', ['#8FA6CB', '#7D84B2']);
+        this.legend.set('Chemical', ['#CD5D67', '#410B13']);
     }
 
     ngOnInit() {
@@ -59,9 +55,17 @@ export class VisualizationComponent implements OnInit {
                     gravitationalConstant: -10000,
                 }
             },
+            edges: {
+                font: {
+                    size: 12
+                },
+                widthConstraint: {
+                    maximum: 90
+                },
+            },
             nodes: {
                 size: 25,
-                shape: 'dot',
+                shape: 'box',
             },
         };
     }
@@ -93,18 +97,31 @@ export class VisualizationComponent implements OnInit {
             return {
                 ...n,
                 primaryLabel: n.label,
-                color: this.colorMap.get(n.label),
+                color: {
+                    background: this.legend.get(n.label)[0],
+                    border: this.legend.get(n.label)[1],
+                    hover: {
+                        background: this.legend.get(n.label)[0],
+                        border: this.legend.get(n.label)[1],
+                    },
+                    highlight: {
+                        background: this.legend.get(n.label)[0],
+                        border: this.legend.get(n.label)[1],
+                    }
+                },
                 label: n.displayName.length > 64 ? n.displayName.slice(0, 64) + '...'  : n.displayName,
             };
         });
         edges = edges.map((e) => {
-            return {...e, arrows: 'to'};
+            return {...e, label: e.data.description, arrows: 'from'};
         });
         return {nodes, edges};
     }
 
+    // TODO KG-17: Need to make sure that an even number of node types are returned
     expandNode(nodeId: number) {
-        this.visService.expandNode(nodeId).subscribe((r: Neo4jResults) => {
+        // TODO KG-17: Will want to use a constant for the limit in the future
+        this.visService.expandNode(nodeId, 10).subscribe((r: Neo4jResults) => {
             const nodeRef: VisNode = this.nodes.get(nodeId);
             const visJSDataFormat = this.convertToVisJSFormat(r);
             const { edges } = visJSDataFormat;
@@ -118,6 +135,19 @@ export class VisualizationComponent implements OnInit {
             });
             this.nodes.update(nodes);
             this.edges.update(edges);
+        });
+    }
+
+    getSentences(association: AssociationData) {
+        this.visService.getSentences(association).subscribe((result) => {
+            if (result.length === 0) {
+                console.log('No matching sentences found for this association');
+            }
+            result.forEach(associationSentence => {
+                if (associationSentence) {
+                    console.log(associationSentence.sentence);
+                }
+            });
         });
     }
 }
