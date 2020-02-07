@@ -5,6 +5,7 @@
     border: 1px solid #C0C0C0;
 }
 
+// TODO KG-17: Re-enable this when we re-enable the legend
 // #vis-legend {
 //     background: #F5F5F5;
 //     border: thin solid #C0C0C0;
@@ -12,6 +13,10 @@
 //     padding: 5px;
 //     position: absolute;
 //     text-align: center;
-//     width: 200px;
+//     width: 150px;
 //     z-index: 100;
+// }
+
+// .node-label-and-color {
+//     width: 100%;
 // }

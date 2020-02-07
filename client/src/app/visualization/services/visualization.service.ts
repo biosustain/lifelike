@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 
 import { map } from 'rxjs/operators';
 
-import { Neo4jResults } from 'app/interfaces';
+import { Neo4jResults, AssociationData, AssociationSentence } from 'app/interfaces';
 
 @Injectable()
 export class VisualizationService {
@@ -44,9 +44,16 @@ export class VisualizationService {
      * of the dept of 1.
      * @param nodeId the node id from the database
      */
-    expandNode(nodeId: number) {
+    // TODO KG-17: Should use a constant for the limit
+    expandNode(nodeId: number, limit: number = 50) {
         return this.http.post<{result: Neo4jResults}>(
-            `${this.visApi}/expand`, {nodeId},
+            `${this.visApi}/expand`, {nodeId, limit},
+        ).pipe(map(resp => resp.result));
+    }
+
+    getSentences(association: AssociationData) {
+        return this.http.post<{result: AssociationSentence[]}>(
+            `${this.visApi}/get-sentences`, {...association},
         ).pipe(map(resp => resp.result));
     }
 }

@@ -23,7 +23,7 @@ export class ContextMenuComponent extends TooltipComponent implements OnDestroy 
     @Output() groupNeighborsWithRelationship: EventEmitter<string> = new EventEmitter();
 
     FADEOUT_STYLE = 'context-menu fade-out';
-    DEFAULT_STYLE = 'context-menu'
+    DEFAULT_STYLE = 'context-menu';
 
     groupByRelSubmenuPopper: Instance;
 
@@ -83,7 +83,7 @@ export class ContextMenuComponent extends TooltipComponent implements OnDestroy 
         this.subMenuClass = this.DEFAULT_STYLE;
 
         if (!isNullOrUndefined(this.groupByRelSubmenuPopper)) {
-            this.groupByRelSubmenuPopper.destroy()
+            this.groupByRelSubmenuPopper.destroy();
             this.groupByRelSubmenuPopper = null;
         }
         this.groupByRelSubmenuPopper = createPopper(contextMenuItem, tooltip, {
@@ -115,7 +115,7 @@ export class ContextMenuComponent extends TooltipComponent implements OnDestroy 
         this.contextMenuClass = this.FADEOUT_STYLE;
         this.beginSubmenuFade();
         setTimeout(() => {
-            this.hideTooltip()
+            this.hideTooltip();
         }, 100);
     }
 
@@ -125,6 +125,7 @@ export class ContextMenuComponent extends TooltipComponent implements OnDestroy 
 
     requestGroupByRelationship(rel: string) {
         this.groupNeighborsWithRelationship.emit(rel);
+        this.selectedNodeEdgeLabels.delete(rel);
     }
 
     // TODO KG-17: Would be cool to have a "Select Neighbors" feature on the context menu
