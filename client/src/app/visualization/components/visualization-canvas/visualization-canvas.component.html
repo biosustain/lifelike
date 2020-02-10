@@ -1,7 +1,7 @@
 <app-visualization-quickbar (animationStatus)="toggleAnimation($event)"></app-visualization-quickbar>
 
-<!-- TODO KG-17: Re-enable this later, was used as reference for demo-->
-<!-- <div id="vis-legend">
+<!-- TODO: Turn this into a component? -->
+<div id="vis-legend">
   Legend
   <div id="node-colors-container" fxLayout="column" fxLayoutAlign="start start">
     <div *ngFor="let nodeType of legend | keyvalue" class="node-label-and-color" fxLayout="row" fxLayoutAlign="start center">
@@ -9,7 +9,7 @@
       <div>{{nodeType.key}}</div>
     </div>
   </div>
-</div> -->
+</div>
 
 <div id="network-viz"></div>
 
