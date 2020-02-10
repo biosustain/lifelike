@@ -350,12 +350,13 @@ class Neo4JService(BaseDao):
             values_only=True,
         ):
             node_type = column_mappings.node.node_type
-            nodes.append(create_node(
-                unique_prop=column_mappings.node.unique_property,
-                row=row,
-                props=col_idx_node_prop,
-                node_type=node_type),
-            )
+            if not all(cell is None for cell in row):
+                nodes.append(create_node(
+                    unique_prop=column_mappings.node.unique_property,
+                    row=row,
+                    props=col_idx_node_prop,
+                    node_type=node_type),
+                )
         return {'nodes': nodes}
 
     def search_for_relationship_with_label_and_properties(
@@ -433,6 +434,7 @@ class Neo4JService(BaseDao):
         node_hash_map = dict()
 
         # create the experimental nodes
+        # TODO: create index on unique_property
         tx.run(
             'unwind {batch} as row ' \
             'call apoc.merge.node([row.label], row.unique_property, row.data, row.data) ' \
@@ -502,27 +504,36 @@ class Neo4JService(BaseDao):
         ):
             # TODO: handle null otherwise strip() and lstrip() fails
             src_label = column_mappings.relationship.source_node.mapped_node_type
-            src_prop_label = next(iter(col_idx_src_node_prop.values()))
-            src_prop_value = row[next(iter(col_idx_src_node_prop))].strip().lstrip()
+            try:
+                src_prop_label = next(iter(col_idx_src_node_prop.values()))
+                src_prop_value = row[next(iter(col_idx_src_node_prop))].strip().lstrip()
 
-            tgt_label = column_mappings.relationship.target_node.mapped_node_type
-            tgt_prop_label = next(iter(col_idx_tgt_node_prop.values()))
-            tgt_prop_value = row[next(iter(col_idx_tgt_node_prop))].strip().lstrip()
+                tgt_label = column_mappings.relationship.target_node.mapped_node_type
+                tgt_prop_label = next(iter(col_idx_tgt_node_prop.values()))
+                tgt_prop_value = row[next(iter(col_idx_tgt_node_prop))].strip().lstrip()
 
-            edge_label = column_mappings.relationship.edge
+                edge_label = column_mappings.relationship.edge
 
-            query = f'match (s:`{src_label}` {{`{src_prop_label}`: "{src_prop_value}"}}), '
-            query += f'(t:`{tgt_label}` {{`{tgt_prop_label}`: "{tgt_prop_value}"}}) '
+                query = f'match (s:`{src_label}` {{`{src_prop_label}`: "{src_prop_value}"}}) '
+                query += f'match (t:`{tgt_label}` {{`{tgt_prop_label}`: "{tgt_prop_value}"}}) '
 
-            query += f'merge (s)-[:`{edge_label}` {{'
-            for k, v in col_idx_edge_prop.items():
-                prop_value = row[k]
-                if type(prop_value) is int:
-                    query += f'`{v}`: {prop_value}, '
-                else:
-                    query += f'`{v}`: "{prop_value}", '
-            # remove the comma at the end
-            query = query[:-2] + f'}}]->(t)'
-            tx.run(query)
+                query += f'merge (s)-[:`{edge_label}`'
+                if col_idx_edge_prop:
+                    query += f'{{'
+                    for k, v in col_idx_edge_prop.items():
+                        prop_value = row[k]
+                        if type(prop_value) is int:
+                            query += f'`{v}`: {prop_value}, '
+                        else:
+                            query += f'`{v}`: "{prop_value}", '
+                    # remove the comma at the end
+                    query = query[:-2] + f'}}'
+                query += f']->(t)'
+                tx.run(query)
+            except AttributeError:
+                # if this occur then the cell in the row
+                # was empty so strip() and lstrip() failed
+                # skip and don't create the relationship
+                continue
         tx.commit()
         print('Done creating relationships between new nodes')
