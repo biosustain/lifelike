@@ -30,8 +30,7 @@ export class VisualizationCanvasComponent implements OnInit {
     @Input() edges: DataSet<any, any>;
     // Configuration for the graph view. See vis.js docs
     @Input() config: Neo4jGraphConfig;
-    // TODO KG-17: Can re-enable later, when we decide what to do with the legend
-    // @Input() legend: Map<string, string[]>;
+    @Input() legend: Map<string, string[]>;
 
     networkGraph: Network;
     selectedNodes: IdType[];
@@ -191,7 +190,6 @@ export class VisualizationCanvasComponent implements OnInit {
      * @param rel a string representing the relationship the neighbors will be clustered on
      */
     groupNeighborsWithRelationship(rel: string) {
-        // NOTE KG-17: It looks like vis.js does not create clusters of single nodes.
         const rootNode = this.selectedNodes[0];
         const connectedEdgesWithRel = this.networkGraph.getConnectedEdges(rootNode).filter(
             (edgeId) => this.isNotAClusterEdge(edgeId) && this.edges.get(edgeId).label === rel
@@ -219,7 +217,7 @@ export class VisualizationCanvasComponent implements OnInit {
                 image: url,
                 label: null,
                 shape: 'image',
-                size: this.config.nodes.size * 4.5,
+                size: this.config.nodes.size * 1.5,
                 // This setting is valid as described under 'clusterNodeProperties'
                 // here: https://visjs.github.io/vis-network/docs/network/index.html#optionsObject
                 // @ts-ignore

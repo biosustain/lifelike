@@ -51,7 +51,7 @@ def get_organisms():
     organisms = neo4j.get_organisms()
     return SuccessResponse(result=organisms, status_code=200)
 
-# NOTE KG-17: This is just a temp endpoint, may remove in the future
+# NOTE: This is just a temp endpoint, may remove in the future
 @bp.route('/diseases', methods=['GET'])
 @jsonify_with_class()
 def get_some_diseases():
@@ -68,6 +68,8 @@ def load_regulatory_graph(req: GraphRequest):
         return SuccessResponse(result=result, status_code=200)
     return SuccessResponse(result='', status_code=200)
 
+# TODO: Should make sure that the results of expansion are balanced.
+# For example, if a node has 1000 Chemical neighbors, but only 1 Gene
 @bp.route('/expand', methods=['POST'])
 @jsonify_with_class(ExpandNodeRequest)
 def expand_graph_node(req: ExpandNodeRequest):

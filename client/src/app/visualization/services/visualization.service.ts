@@ -4,6 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { map } from 'rxjs/operators';
 
 import { Neo4jResults, AssociationData, AssociationSentence } from 'app/interfaces';
+import { NODE_EXPANSION_LIMIT } from 'app/shared/constants';
 
 @Injectable()
 export class VisualizationService {
@@ -44,8 +45,7 @@ export class VisualizationService {
      * of the dept of 1.
      * @param nodeId the node id from the database
      */
-    // TODO KG-17: Should use a constant for the limit
-    expandNode(nodeId: number, limit: number = 50) {
+    expandNode(nodeId: number, limit: number = NODE_EXPANSION_LIMIT) {
         return this.http.post<{result: Neo4jResults}>(
             `${this.visApi}/expand`, {nodeId, limit},
         ).pipe(map(resp => resp.result));

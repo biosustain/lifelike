@@ -2,7 +2,6 @@ import { Component, OnInit } from '@angular/core';
 
 import { DataSet } from 'vis-network';
 
-import { VisualizationService } from '../services/visualization.service';
 import {
     AssociationData,
     Neo4jResults,
@@ -10,6 +9,9 @@ import {
     VisNode,
     VisEdge,
 } from 'app/interfaces';
+import { NODE_EXPANSION_LIMIT } from 'app/shared/constants';
+
+import { VisualizationService } from '../services/visualization.service';
 
 @Component({
     selector: 'app-visualization',
@@ -23,7 +25,7 @@ export class VisualizationComponent implements OnInit {
     nodes: DataSet<VisNode>;
     edges: DataSet<VisEdge>;
 
-    // NOTE KG-17: May use this as input to a legend component in the future.
+    // NOTE: May use this as input to a legend component in the future.
     legend: Map<string, string[]>;
 
     constructor(private visService: VisualizationService) {
@@ -118,10 +120,8 @@ export class VisualizationComponent implements OnInit {
         return {nodes, edges};
     }
 
-    // TODO KG-17: Need to make sure that an even number of node types are returned
     expandNode(nodeId: number) {
-        // TODO KG-17: Will want to use a constant for the limit in the future
-        this.visService.expandNode(nodeId, 10).subscribe((r: Neo4jResults) => {
+        this.visService.expandNode(nodeId, NODE_EXPANSION_LIMIT).subscribe((r: Neo4jResults) => {
             const nodeRef: VisNode = this.nodes.get(nodeId);
             const visJSDataFormat = this.convertToVisJSFormat(r);
             const { edges } = visJSDataFormat;

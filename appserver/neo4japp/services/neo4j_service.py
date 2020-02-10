@@ -245,8 +245,6 @@ class Neo4JService(BaseDao):
 
     # TODO: Allow flexible limits on nodes; enable this in the blueprints
     def get_expand_query(self, node_id: str, limit: int = 50):
-        # NOTE KG-17: Temporarily showing only "ASSOCIATED" relationships on nodes to
-        # experiment with the visualizer
         query = """
             MATCH (n)-[l:ASSOCIATED]-(s) WHERE ID(n) = {}
             WITH n, s, l
@@ -255,8 +253,8 @@ class Neo4JService(BaseDao):
         """.format(node_id, limit)
         return query
 
-    # TODO KG-17: Maybe work with Robin to come up with a solid version of this query,
-    # not sure if this is going to work 100% of the time
+    # TODO: Need to make a solid version of this query, not sure the current
+    # iteration will work 100% of the time
     def get_association_sentences_query(self, node_id: str, description: str, entry_text: str):
         query = """
             MATCH (n)-[:HAS_ASSOCIATION]-(s:Association)-[:HAS_REF]-(r:Reference)
