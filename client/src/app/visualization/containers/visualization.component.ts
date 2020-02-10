@@ -115,7 +115,7 @@ export class VisualizationComponent implements OnInit {
             };
         });
         edges = edges.map((e) => {
-            return {...e, label: e.data.description, arrows: 'from'};
+            return {...e, label: e.data.description, arrows: 'to'};
         });
         return {nodes, edges};
     }
