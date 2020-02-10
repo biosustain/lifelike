@@ -13,7 +13,13 @@ import { RouterModule } from '@angular/router';
 
 import { AngularMaterialModule } from './angular-material.module';
 
+import { LegendComponent } from './components/legend/legend.component';
 import { TooltipComponent } from './components/tooltip/tooltip.component';
+
+const components = [
+    LegendComponent,
+    TooltipComponent,
+];
 
 @NgModule({
     imports: [
@@ -26,10 +32,11 @@ import { TooltipComponent } from './components/tooltip/tooltip.component';
         ReactiveFormsModule,
         RouterModule,
     ],
-    declarations: [TooltipComponent],
+    declarations: [TooltipComponent, LegendComponent],
     providers: [],
     // exported modules are visible to modules that import this one
     exports: [
+        // Modules
         AngularMaterialModule,
         BrowserAnimationsModule,
         CommonModule,
@@ -38,6 +45,9 @@ import { TooltipComponent } from './components/tooltip/tooltip.component';
         HttpClientModule,
         ReactiveFormsModule,
         RouterModule,
+
+        // Components
+        ...components,
     ],
 })
 
