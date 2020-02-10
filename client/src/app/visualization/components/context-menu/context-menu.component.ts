@@ -11,7 +11,6 @@ import { TooltipComponent } from 'app/shared/components/tooltip/tooltip.componen
 
 import { ContextMenuControlService } from '../../services/context-menu-control.service';
 
-// TODO KG-17: Need to use Tippy so we can set a delay on the tooltip appearing for submenus
 @Component({
     selector: 'app-context-menu',
     templateUrl: './context-menu.component.html',
@@ -73,8 +72,8 @@ export class ContextMenuComponent extends TooltipComponent implements OnDestroy 
     }
 
     showGroupByRelSubMenu() {
-        // TODO KG-17: Would be nice to add some kind of delay here, but it also has to be interruptible.
-        // TODO KG-17: It would be very cool if the edges of the hovered relationship were highlighted
+        // TODO: Would be nice to add some kind of delay here, but it also has to be interruptible.
+        // TODO: It would be very cool if the edges of the hovered relationship were highlighted
         this.hideAllSubMenus();
 
         const contextMenuItem = document.querySelector('#group-by-rel-menu-item');
@@ -128,6 +127,6 @@ export class ContextMenuComponent extends TooltipComponent implements OnDestroy 
         this.selectedNodeEdgeLabels.delete(rel);
     }
 
-    // TODO KG-17: Would be cool to have a "Select Neighbors" feature on the context menu
+    // TODO: Would be cool to have a "Select Neighbors" feature on the context menu
     // (Though I suppose we can enable this by default with vis.js...)
 }

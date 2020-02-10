@@ -2,8 +2,8 @@
   *ngIf="networkGraphData"
   [nodes]="nodes"
   [edges]="edges"
+  [legend]="legend"
   [config]="networkGraphConfig"
   (expandNode)="expandNode($event)"
   (getSentences)="getSentences($event)"
 ></app-visualization-canvas>
-<!-- KG-17: May re-enable a legend input later, but more likely that we'll create a legend component -->
