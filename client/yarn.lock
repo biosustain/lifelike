@@ -1042,6 +1042,11 @@
     tree-kill "1.2.2"
     webpack-sources "1.4.3"
 
+"@popperjs/core@^2.0.3":
+  version "2.0.4"
+  resolved "https://registry.yarnpkg.com/@popperjs/core/-/core-2.0.4.tgz#50fb4d10c712a7da4b64dc0add8d8ecaefa13bfa"
+  integrity sha512-uFsFsZjz/FyNpAW4pnbKBT50Jwe+5YwM0bYUfbArM1myDr7LtMrNScOFTxiwgf1TBNA2wFXW7/RRRlwjS+ILyQ==
+
 "@schematics/angular@8.3.23":
   version "8.3.23"
   resolved "https://registry.yarnpkg.com/@schematics/angular/-/angular-8.3.23.tgz#8f46c4673eca3fadc46b2d43c4367e5542be624e"
@@ -3592,7 +3597,7 @@ graceful-fs@^4.1.11, graceful-fs@^4.1.15, graceful-fs@^4.1.2, graceful-fs@^4.1.6
 
 hammerjs@^2.0.8:
   version "2.0.8"
-  resolved "https://registry.npmjs.org/hammerjs/-/hammerjs-2.0.8.tgz#04ef77862cff2bb79d30f7692095930222bf60f1"
+  resolved "https://registry.yarnpkg.com/hammerjs/-/hammerjs-2.0.8.tgz#04ef77862cff2bb79d30f7692095930222bf60f1"
   integrity sha1-BO93hiz/K7edMPdpIJWTAiK/YPE=
 
 handle-thing@^2.0.0:

@@ -5,7 +5,7 @@ import {
 } from '@ngrx/store';
 
 import { State } from './state';
-import { FileNameAndSheets } from '../../interfaces/neo4j.interface';
+import { FileNameAndSheets } from 'app/interfaces/neo4j.interface';
 
 export const neo4jState: MemoizedSelector<object, State> = createFeatureSelector<State>('neo4j');
 

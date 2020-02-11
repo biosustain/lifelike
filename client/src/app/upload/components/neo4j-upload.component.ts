@@ -6,12 +6,12 @@ import { Store, select } from '@ngrx/store';
 
 import { Observable, Subscription } from 'rxjs';
 
-import { State } from '../../***ARANGO_USERNAME***-store';
+import { FileNameAndSheets, SheetNameAndColumnNames, Neo4jColumnMapping } from 'app/interfaces/neo4j.interface';
+import { State } from 'app/***ARANGO_USERNAME***-store';
 
 import { Neo4jSelectors as selectors } from '../store';
 import { uploadNeo4jFile, uploadNeo4jColumnMappingFile, getDbLabels } from '../store/actions';
 
-import { FileNameAndSheets, SheetNameAndColumnNames, Neo4jColumnMapping } from '../../interfaces/neo4j.interface';
 
 @Component({
     selector: 'app-neo4j-upload',

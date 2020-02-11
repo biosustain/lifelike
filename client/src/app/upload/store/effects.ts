@@ -25,8 +25,6 @@ import {
     uploadNeo4jColumnMappingFileSuccess,
 } from './actions';
 
-// import * as SnackbarActions from 'recon/shared/actions/snackbar-display.actions';
-
 import { Neo4jService } from '../services/neo4j.service';
 
 
