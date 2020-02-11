@@ -10,7 +10,14 @@ import { Options } from '@popperjs/core';
 
 import { Network, DataSet, IdType } from 'vis-network';
 
-import { Neo4jGraphConfig, VisNode, ReferenceTableRow, AssociationData } from 'app/interfaces';
+import {
+    AssociationData,
+    GroupRequest,
+    Neo4jGraphConfig,
+    ReferenceTableRow,
+    VisNode,
+} from 'app/interfaces';
+
 import { uuidv4 } from 'app/shared/utils';
 
 import { ContextMenuControlService } from '../../services/context-menu-control.service';
@@ -135,17 +142,33 @@ export class VisualizationCanvasComponent implements OnInit {
     }
 
     /**
+     * Gets all the neighbors of the given node connected by the given relationship.
+     * @param relationship string representing the connecting relationship
+     * @param node id of the ***ARANGO_USERNAME*** node
+     */
+    getNeighborsWithRelationship(relationship: string, node: IdType) {
+        return this.networkGraph.getConnectedEdges(node).filter(
+            (edgeId) => this.isNotAClusterEdge(edgeId) && this.edges.get(edgeId).label === relationship
+        ).map(
+            connectedEdgeWithRel => (this.networkGraph.getConnectedNodes(connectedEdgeWithRel) as IdType[]).filter(
+                nodeId => nodeId !== node
+            )[0]
+        );
+    }
+
+    /**
      * Gets a set of labels from the edges connected to the input node.
      * @param selectedNode the ID of the node whose edge labels we want to get
      */
     getConnectedEdgeLabels(selectedNode: IdType) {
-        this.selectedNodeEdgeLabels.clear();
-        const connectedEdges = this.networkGraph.getConnectedEdges(selectedNode);
-        connectedEdges.forEach((edge) => {
-            if (this.isNotAClusterEdge(edge)) {
-                this.selectedNodeEdgeLabels.add(this.edges.get(edge).label);
-            }
-        });
+        // TODO: If one of our cluster candidates is connected to a node which ISN'T connected to all the other cluster candidates,
+        // DO NOT allow that relationship to be clustered. Probably want to add a tooltip or something to the context menu
+        // explaining why that relationship cannot be grouped.
+        return this.networkGraph.getConnectedEdges(selectedNode).filter(
+            edge => this.isNotAClusterEdge(edge)
+        ).map(
+            edge => this.edges.get(edge).label
+        );
     }
 
     createClusterSvg(clusterDisplayNames: string[], totalClusteredNodes: number) {
@@ -189,17 +212,9 @@ export class VisualizationCanvasComponent implements OnInit {
      * node cnonected by the input relationship.
      * @param rel a string representing the relationship the neighbors will be clustered on
      */
-    groupNeighborsWithRelationship(rel: string) {
-        const ***ARANGO_USERNAME***Node = this.selectedNodes[0];
-        const connectedEdgesWithRel = this.networkGraph.getConnectedEdges(***ARANGO_USERNAME***Node).filter(
-            (edgeId) => this.isNotAClusterEdge(edgeId) && this.edges.get(edgeId).label === rel
-        );
-        const neighborNodesWithRel = connectedEdgesWithRel.map(
-            connectedEdgeWithRel => (this.networkGraph.getConnectedNodes(connectedEdgeWithRel) as IdType[]).filter(
-                nodeId => nodeId !== ***ARANGO_USERNAME***Node
-            )[0]
-        );
-
+    groupNeighborsWithRelationship(groupRequest: GroupRequest) {
+        const { relationship, node} = groupRequest;
+        const neighborNodesWithRel = this.getNeighborsWithRelationship(relationship, node);
         const clusterDisplayNames: string[] = neighborNodesWithRel.map(
             (nodeId) => {
                 let displayName = this.nodes.get(nodeId).displayName;
@@ -212,7 +227,7 @@ export class VisualizationCanvasComponent implements OnInit {
         const url = this.createClusterSvg(clusterDisplayNames, neighborNodesWithRel.length);
 
         this.networkGraph.cluster({
-            joinCondition: (node) => neighborNodesWithRel.includes(node.id),
+            joinCondition: (n) => neighborNodesWithRel.includes(n.id),
             clusterNodeProperties: {
                 image: url,
                 label: null,
@@ -225,7 +240,7 @@ export class VisualizationCanvasComponent implements OnInit {
             },
             processProperties: (clusterOptions) => {
                 const newClusterId = `cluster:${uuidv4()}`;
-                this.clusters.set(newClusterId, rel);
+                this.clusters.set(newClusterId, relationship);
                 return {...clusterOptions, id: newClusterId};
             }
         });
@@ -237,7 +252,22 @@ export class VisualizationCanvasComponent implements OnInit {
      * @param nodeRef represents a row in the reference table, contains node data
      */
     openMetadataSidebar(nodeRef: ReferenceTableRow) {
+        console.log(nodeRef);
         const clusterId = this.networkGraph.findNode(nodeRef.nodeId)[0] as string;
+        this.networkGraph.getConnectedNodes(clusterId).forEach(node => {
+            // console.log(this.nodes.get(node));
+            // console.log(
+            //     `${node} is connected to ${nodeRef.nodeId} -- ${this.networkGraph.getConnectedNodes(nodeRef.nodeId).includes(node)}`
+            // );
+            this.networkGraph.getConnectedEdges(node).forEach(edge => {
+                const edgeData = this.edges.get(edge);
+                if (edgeData !== null && (edgeData.from === nodeRef.nodeId || edgeData.to === nodeRef.nodeId)) {
+                    console.log(edgeData);
+                }
+            });
+        });
+
+
         const clusteredRelationship = this.clusters.get(clusterId);
         const relatedTo = this.nodes.get(this.networkGraph.getConnectedNodes(clusterId)[0] as number).displayName;
         this.getSentences.emit({
