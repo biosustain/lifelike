@@ -389,7 +389,7 @@ export class VisualizationCanvasComponent implements OnInit {
             this.networkGraph.unselectAll();
         }
 
-        if (this.selectedNodes.length === 1) {
+        if (this.selectedNodes.length === 1 && this.selectedEdges.length === 0) {
             this.getConnectedEdgeLabels(this.selectedNodes[0]);
         }
         this.contextMenuControlService.showTooltip();
