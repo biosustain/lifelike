@@ -10,6 +10,7 @@ import { TooltipDetails } from 'app/shared/services/tooltip-control-service';
 import { TooltipComponent } from 'app/shared/components/tooltip/tooltip.component';
 
 import { ContextMenuControlService } from '../../services/context-menu-control.service';
+import { IdType } from 'vis-network';
 
 @Component({
     selector: 'app-context-menu',
@@ -17,6 +18,9 @@ import { ContextMenuControlService } from '../../services/context-menu-control.s
     styleUrls: ['./context-menu.component.scss'],
 })
 export class ContextMenuComponent extends TooltipComponent implements OnDestroy {
+    @Input() selectedNodeIds: IdType[];
+    @Input() selectedEdgeIds: IdType[];
+    // Expect this to be empty if there is not exactly one node selected
     @Input() selectedNodeEdgeLabels: Set<string>;
 
     @Output() groupNeighborsWithRelationship: EventEmitter<string> = new EventEmitter();
