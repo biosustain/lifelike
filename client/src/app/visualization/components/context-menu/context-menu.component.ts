@@ -24,6 +24,8 @@ export class ContextMenuComponent extends TooltipComponent implements OnDestroy 
     @Input() selectedNodeEdgeLabels: Set<string>;
 
     @Output() groupNeighborsWithRelationship: EventEmitter<string> = new EventEmitter();
+    @Output() removeNodes: EventEmitter<IdType[]> = new EventEmitter();
+    @Output() removeEdges: EventEmitter<IdType[]> = new EventEmitter();
 
     FADEOUT_STYLE = 'context-menu fade-out';
     DEFAULT_STYLE = 'context-menu';
@@ -33,7 +35,7 @@ export class ContextMenuComponent extends TooltipComponent implements OnDestroy 
     contextMenuClass: string;
     subMenuClass: string;
 
-    subMenus: string[] = ['group-1-submenu'];
+    subMenus: string[] = ['single-node-selection-group-1-submenu'];
 
     hideContextMenuSubscription: Subscription;
     updatePopperSubscription: Subscription;
@@ -81,7 +83,7 @@ export class ContextMenuComponent extends TooltipComponent implements OnDestroy 
         this.hideAllSubMenus();
 
         const contextMenuItem = document.querySelector('#group-by-rel-menu-item');
-        const tooltip = document.querySelector('#group-1-submenu') as HTMLElement;
+        const tooltip = document.querySelector('#single-node-selection-group-1-submenu') as HTMLElement;
         tooltip.style.display = 'block';
         this.subMenuClass = this.DEFAULT_STYLE;
 
@@ -129,6 +131,16 @@ export class ContextMenuComponent extends TooltipComponent implements OnDestroy 
     requestGroupByRelationship(rel: string) {
         this.groupNeighborsWithRelationship.emit(rel);
         this.selectedNodeEdgeLabels.delete(rel);
+    }
+
+    requestEdgeRemoval() {
+        this.removeEdges.emit(this.selectedEdgeIds);
+        this.beginContextMenuFade();
+    }
+
+    requestNodeRemoval() {
+        this.removeNodes.emit(this.selectedNodeIds);
+        this.beginContextMenuFade();
     }
 
     // TODO: Would be cool to have a "Select Neighbors" feature on the context menu
