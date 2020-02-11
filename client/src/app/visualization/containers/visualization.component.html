@@ -2,6 +2,8 @@
   *ngIf="networkGraphData"
   [nodes]="nodes"
   [edges]="edges"
+  [legend]="legend"
   [config]="networkGraphConfig"
-  (expandAndCollapseNodeId)="expandAndCollapseNode($event)"
+  (expandNode)="expandNode($event)"
+  (getSentences)="getSentences($event)"
 ></app-visualization-canvas>

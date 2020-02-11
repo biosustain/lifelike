@@ -72,14 +72,16 @@ class Neo4JService(BaseDao):
         records = self.graph.run(query).data()
         if not records:
             return None
-        print(records)
         node_dict = dict()
         rel_dict = dict()
         for record in records:
             nodes = record['nodes']
             rels = record['relationships']
             for node in nodes:
-                graph_node = GraphNode.from_py2neo(node)
+                graph_node = GraphNode.from_py2neo(
+                    node,
+                    display_fn=lambda x: x.get(DISPLAY_NAME_MAP[next(iter(node.labels), set())])
+                )
                 node_dict[graph_node.id] = graph_node
             for rel in rels:
                 graph_rel = GraphRelationship.from_py2neo(rel)
@@ -94,6 +96,14 @@ class Neo4JService(BaseDao):
                 for n in nodes
         ]
         return dict(nodes=[n.to_dict() for n in organism_nodes], edges=[])
+
+    def get_some_diseases(self):
+        nodes = list(NodeMatcher(self.graph).match(TYPE_DISEASE).limit(10))
+        disease_nodes = [
+            GraphNode.from_py2neo(n, display_fn=lambda x: x.get(DISPLAY_NAME_MAP[TYPE_DISEASE]))
+                for n in nodes
+        ]
+        return dict(nodes=[n.to_dict() for n in disease_nodes], edges=[])
 
     def get_biocyc_db(self, org_ids: [str]):
         if org_ids:
@@ -115,9 +125,14 @@ class Neo4JService(BaseDao):
             return self._query_neo4j(query)
         return None
 
-    def expand_graph(self, node_id: str):
-        query = self.get_expand_query(node_id)
+    def expand_graph(self, node_id: str, limit: int):
+        query = self.get_expand_query(node_id, limit)
         return self._query_neo4j(query)
+
+    def get_association_sentences(self, node_id: str, description: str, entry_text: str):
+        query = self.get_association_sentences_query(node_id, description, entry_text)
+        data = self.graph.run(query).data()
+        return [result['references'] for result in data]
 
     def load_reaction_graph(self, biocyc_id: str):
         query = self.get_reaction_query(biocyc_id)
@@ -231,12 +246,22 @@ class Neo4JService(BaseDao):
     # TODO: Allow flexible limits on nodes; enable this in the blueprints
     def get_expand_query(self, node_id: str, limit: int = 50):
         query = """
-            match (n)-[l]-(s) WHERE ID(n) = {}
+            MATCH (n)-[l:ASSOCIATED]-(s) WHERE ID(n) = {}
             WITH n, s, l
             LIMIT {}
             return collect(n) + collect(s) as nodes, collect(l) as relationships
         """.format(node_id, limit)
-        print(query)
+        return query
+
+    # TODO: Need to make a solid version of this query, not sure the current
+    # iteration will work 100% of the time
+    def get_association_sentences_query(self, node_id: str, description: str, entry_text: str):
+        query = """
+            MATCH (n)-[:HAS_ASSOCIATION]-(s:Association)-[:HAS_REF]-(r:Reference)
+            WHERE ID(n) = {} AND s.description='{}' AND r.entry2_text=~'.*{}.*'
+            WITH r
+            return r as references
+        """.format(node_id, description, entry_text)
         return query
 
     def get_reaction_query(self, biocyc_id: str):
