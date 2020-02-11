@@ -16,6 +16,8 @@
 <app-context-menu
   [tooltipSelector]="contextMenuTooltipSelector"
   [tooltipOptions]="contextMenuTooltipOptions"
+  [selectedNodeIds]="selectedNodes"
+  [selectedEdgeIds]="selectedEdges"
   [selectedNodeEdgeLabels]="selectedNodeEdgeLabels"
   (groupNeighborsWithRelationship)="groupNeighborsWithRelationship($event)"
 ></app-context-menu>
