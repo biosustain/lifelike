@@ -6,6 +6,9 @@ import { Subscription } from 'rxjs';
 
 import { isNullOrUndefined } from 'util';
 
+import { IdType } from 'vis-network';
+
+import { GroupRequest } from 'app/interfaces';
 import { TooltipDetails } from 'app/shared/services/tooltip-control-service';
 import { TooltipComponent } from 'app/shared/components/tooltip/tooltip.component';
 
@@ -18,8 +21,11 @@ import { ContextMenuControlService } from '../../services/context-menu-control.s
 })
 export class ContextMenuComponent extends TooltipComponent implements OnDestroy {
     @Input() selectedNodeEdgeLabels: Set<string>;
+    @Input() selectedNodeIds: IdType[];
 
-    @Output() groupNeighborsWithRelationship: EventEmitter<string> = new EventEmitter();
+    @Output() groupNeighborsWithRelationship: EventEmitter<GroupRequest> = new EventEmitter();
+    @Output() removeNodes: EventEmitter<IdType[]> = new EventEmitter();
+    @Output() removeEdges: EventEmitter<IdType[]> = new EventEmitter();
 
     FADEOUT_STYLE = 'context-menu fade-out';
     DEFAULT_STYLE = 'context-menu';
@@ -123,7 +129,7 @@ export class ContextMenuComponent extends TooltipComponent implements OnDestroy 
     }
 
     requestGroupByRelationship(rel: string) {
-        this.groupNeighborsWithRelationship.emit(rel);
+        this.groupNeighborsWithRelationship.emit({relationship: rel, node: this.selectedNodeIds[0]});
         this.selectedNodeEdgeLabels.delete(rel);
     }
 
