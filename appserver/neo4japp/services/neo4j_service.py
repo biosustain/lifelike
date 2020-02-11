@@ -433,6 +433,8 @@ class Neo4JService(BaseDao):
         tx = self.graph.begin()
         node_hash_map = dict()
 
+        # import IPython; IPython.embed()
+
         # create the experimental nodes
         # TODO: create index on unique_property
         tx.run(
@@ -442,6 +444,8 @@ class Neo4JService(BaseDao):
             'return count(*)',
             {'batch': node_mapping['nodes']}
         )
+
+        # import IPython; IPython.embed()
 
         print('Done creating nodes')
 
@@ -457,8 +461,20 @@ class Neo4JService(BaseDao):
             query += f'merge (src)-[:IS_A]->(universal)'
             tx.run(query)
 
+        # import IPython; IPython.embed()
+
         print('Done creating relationship of new nodes to existing KG')
         tx.commit()
+
+        # # create index on all properties
+        # # have to do this here because can't have same transaction
+        # # TODO: Jira KG-51
+        # for row in node_mapping['nodes']:
+        #     label = row['label']
+        #     for k, _ in row['data'].items():
+        #         tx.run(f'create index on :{label}({k})')
+        if column_mappings.relationship.edge:
+            self.save_relationship_to_neo4j(column_mappings)
         print('Done')
 
     def save_relationship_to_neo4j(self, column_mappings: Neo4jColumnMapping) -> None:
