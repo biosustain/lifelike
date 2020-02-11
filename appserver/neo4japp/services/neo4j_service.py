@@ -502,20 +502,27 @@ class Neo4JService(BaseDao):
             max_col=len(list(current_ws.columns)),
             values_only=True,
         ):
-            # TODO: handle null otherwise strip() and lstrip() fails
-            src_label = column_mappings.relationship.source_node.mapped_node_type
-            try:
+            if not all(cell is None for cell in row):
+                # TODO: handle null otherwise strip() and lstrip() fails
+                src_label = column_mappings.relationship.source_node.mapped_node_type
+                # try:
                 src_prop_label = next(iter(col_idx_src_node_prop.values()))
-                src_prop_value = row[next(iter(col_idx_src_node_prop))].strip().lstrip()
+                src_prop_value = row[next(iter(col_idx_src_node_prop))]
+                if type(src_prop_value) is str:
+                    src_prop_value = f'"{src_prop_value.strip().lstrip()}"'
 
                 tgt_label = column_mappings.relationship.target_node.mapped_node_type
                 tgt_prop_label = next(iter(col_idx_tgt_node_prop.values()))
-                tgt_prop_value = row[next(iter(col_idx_tgt_node_prop))].strip().lstrip()
+                tgt_prop_value = row[next(iter(col_idx_tgt_node_prop))]
+                if type(tgt_prop_value) is str:
+                    tgt_prop_value = f'"{tgt_prop_value.strip().lstrip()}"'
 
+                # TODO: instead of using column header
+                # use column values for edge
                 edge_label = column_mappings.relationship.edge
 
-                query = f'match (s:`{src_label}` {{`{src_prop_label}`: "{src_prop_value}"}}) '
-                query += f'match (t:`{tgt_label}` {{`{tgt_prop_label}`: "{tgt_prop_value}"}}) '
+                query = f'match (s:`{src_label}` {{`{src_prop_label}`: {src_prop_value}}}), '
+                query += f'(t:`{tgt_label}` {{`{tgt_prop_label}`: {tgt_prop_value}}}) '
 
                 query += f'merge (s)-[:`{edge_label}`'
                 if col_idx_edge_prop:
@@ -529,11 +536,12 @@ class Neo4JService(BaseDao):
                     # remove the comma at the end
                     query = query[:-2] + f'}}'
                 query += f']->(t)'
+                print(query)
                 tx.run(query)
-            except AttributeError:
-                # if this occur then the cell in the row
-                # was empty so strip() and lstrip() failed
-                # skip and don't create the relationship
-                continue
+                # except AttributeError:
+                    # if this occur then the cell in the row
+                    # was empty so strip() and lstrip() failed
+                    # skip and don't create the relationship
+                    # continue
         tx.commit()
         print('Done creating relationships between new nodes')
