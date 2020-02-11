@@ -1,0 +1,32 @@
+<!-- Root Context Menus -->
+<div id="root-menu" [ngClass]="contextMenuClass">
+  <div *ngIf="selectedNodeEdgeLabels.size > 0; else defaultContextMenu" id="entity-selection-context-menu" fxLayout="column">
+    <div id="group-1" class="context-menu-group">
+      <div id="group-by-rel-menu-item" class="context-menu-item" fxLayout="row" fxLayoutAlign="space-between center" (mouseenter)="showGroupByRelSubMenu()">
+        <div>Group neighbors by edge label</div>
+        <mat-icon>arrow_right</mat-icon>
+      </div>
+    </div>
+    <ng-template [ngTemplateOutlet]="settingsGroup"></ng-template>
+  </div>
+</div>
+
+<!-- Templates -->
+<ng-template #defaultContextMenu>
+  <div id="default-context-menu" [ngClass]="contextMenuClass" fxLayout="column">
+    <ng-template [ngTemplateOutlet]="settingsGroup"></ng-template>
+  </div>
+</ng-template>
+
+<ng-template #settingsGroup>
+  <div class="context-menu-group">
+    <div class="context-menu-item" (mouseenter)="hideAllSubMenus()">Settings</div>
+  </div>
+</ng-template>
+
+<!-- Submenus (these are tooltips, so they should be floating around -- invisible -- until their mouseover events are called -->
+<div id="group-1-submenu" [ngClass]="subMenuClass">
+  <div class="context-menu-group">
+    <div class="context-menu-item" *ngFor="let rel of selectedNodeEdgeLabels" (click)="requestGroupByRelationship(rel)">{{ rel }}</div>
+  </div>
+</div>
