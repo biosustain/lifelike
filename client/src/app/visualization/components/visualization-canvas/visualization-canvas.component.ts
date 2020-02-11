@@ -231,6 +231,21 @@ export class VisualizationCanvasComponent implements OnInit {
         });
     }
 
+    removeEdges(edges: IdType[]) {
+        edges.forEach(edge => {
+            this.edges.remove(edge);
+        });
+    }
+
+    removeNodes(nodes: IdType[]) {
+        nodes.forEach(node => {
+            this.networkGraph.getConnectedEdges(node).forEach(edge => {
+                this.edges.remove(edge);
+            });
+            this.nodes.remove(node);
+        });
+    }
+
     /**
      * Opens the metadata sidebar for with the input node's data
      * TODO: the sidebar isn't implemented yet, so just printing the node data for now.
