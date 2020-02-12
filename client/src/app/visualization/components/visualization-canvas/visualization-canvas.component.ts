@@ -42,7 +42,7 @@ export class VisualizationCanvasComponent implements OnInit {
 
     networkGraph: Network;
     selectedNodes: IdType[];
-    selectedNodeEdgeLabels: Set<string>;
+    selectedNodeEdgeLabels: GetLabelsResult;
     selectedEdges: IdType[];
     nodesInHoveredCluster: ReferenceTableRow[];
     clusters: Map<string, string>;
@@ -58,7 +58,7 @@ export class VisualizationCanvasComponent implements OnInit {
     ) {
         this.selectedNodes = [];
         this.selectedEdges = [];
-        this.selectedNodeEdgeLabels = new Set<string>();
+        this.selectedNodeEdgeLabels = {validLabels: new Set<string>(), invalidLabels: new Set<string>()};
         this.nodesInHoveredCluster = [];
 
         this.contextMenuTooltipSelector = '#***ARANGO_USERNAME***-menu';
@@ -94,6 +94,18 @@ export class VisualizationCanvasComponent implements OnInit {
         } else {
             this.networkGraph.setOptions({physics: false});
         }
+    }
+
+    clearSelectedNodeEdgeLabels() {
+        this.selectedNodeEdgeLabels.validLabels.clear();
+        this.selectedNodeEdgeLabels.invalidLabels.clear();
+    }
+
+    updateSelectedNodeEdgeLabels(selectedNode: IdType) {
+        this.clearSelectedNodeEdgeLabels();
+        const edgeLabelsResult = this.getConnectedEdgeLabels(selectedNode);
+        edgeLabelsResult.validLabels.forEach(label => this.selectedNodeEdgeLabels.validLabels.add(label));
+        edgeLabelsResult.invalidLabels.forEach(label => this.selectedNodeEdgeLabels.invalidLabels.add(label));
     }
 
     collapseNeighbors(***ARANGO_USERNAME***Node: VisNode) {
@@ -287,6 +299,8 @@ export class VisualizationCanvasComponent implements OnInit {
                 return {...clusterOptions, id: newClusterId};
             }
         });
+
+        this.updateSelectedNodeEdgeLabels(node);
     }
 
     removeEdges(edges: IdType[]) {
@@ -438,8 +452,6 @@ export class VisualizationCanvasComponent implements OnInit {
     }
 
     onContextCallback(params: any) {
-        this.selectedNodeEdgeLabels.clear();
-
         const hoveredNode = this.networkGraph.getNodeAt(params.pointer.DOM);
 
         if (this.networkGraph.isCluster(hoveredNode)) {
@@ -478,11 +490,7 @@ export class VisualizationCanvasComponent implements OnInit {
         }
 
         if (this.selectedNodes.length === 1 && this.selectedEdges.length === 0) {
-            const edgeLabelsResult = this.getConnectedEdgeLabels(this.selectedNodes[0]);
-            // TODO: Pass the edgeLabelResult to the context menu for it to sort out
-            edgeLabelsResult.validLabels.forEach(label => {
-                this.selectedNodeEdgeLabels.add(label);
-            });
+            this.updateSelectedNodeEdgeLabels(this.selectedNodes[0]);
         }
         this.contextMenuControlService.showTooltip();
       }
