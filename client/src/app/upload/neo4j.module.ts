@@ -7,6 +7,8 @@ import { SharedModule } from '../shared.module';
 import { Neo4jUploadComponent } from './components/neo4j-upload.component';
 import { Neo4jUploadNodeComponent } from './components/neo4j-upload-node.component';
 import { Neo4jUploadRelationshipComponent } from './components/neo4j-upload-relationship.component';
+import { ImportColumnMappingComponent } from './components/import-column-mapping.component';
+import { ImportColumnMappingRelationshipRowComponent } from './components/import-column-mapping-relationship-row.component';
 
 import { Neo4jService } from './services/neo4j.service';
 
@@ -18,6 +20,8 @@ const components = [
     Neo4jUploadComponent,
     Neo4jUploadNodeComponent,
     Neo4jUploadRelationshipComponent,
+    ImportColumnMappingComponent,
+    ImportColumnMappingRelationshipRowComponent,
 ];
 
 @NgModule({

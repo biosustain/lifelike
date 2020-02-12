@@ -4,10 +4,15 @@ export interface ColumnNameIndex {
   [key: string]: number;
 }
 
+export interface SheetRowPreview {
+  [key: string]: string;
+}
+
 // parsed worksheet sheet name and sheet column names
 export interface SheetNameAndColumnNames {
   sheetName: string;
   sheetColumnNames: ColumnNameIndex[];
+  sheetPreview: SheetRowPreview[];
 }
 
 export interface FileNameAndSheets {
