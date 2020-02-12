@@ -33,6 +33,7 @@ class FileNameAndSheets(CamelDictMixin):
         sheet_name: str = attr.ib()
         # key is column name, value is column index
         sheet_column_names: List[Dict[str, int]] = attr.ib()
+        sheet_preview: List[Dict[str, str]] = attr.ib()
 
     sheets: List[SheetNameAndColumnNames] = attr.ib()
     filename: str = attr.ib()
@@ -266,17 +267,33 @@ class Neo4JService(BaseDao):
         cache.set(f.filename, workbook)
         return workbook
 
+    def unmerge_cells(self, current_ws):
+        # unmerge any cells first
+        # and assign the value to them
+        for group in current_ws.merged_cell_ranges:
+            min_col, min_row, max_col, max_row = group.bounds
+            value_to_assign = current_ws.cell(row=min_row, column=min_col).value
+            current_ws.unmerge_cells(str(group))
+            for row in current_ws.iter_rows(min_col=min_col, min_row=min_row, max_col=max_col, max_row=max_row):
+                for cell in row:
+                    cell.value = value_to_assign
+        return current_ws
+
     def get_workbook_sheet_names_and_columns(
         self,
         filename: str,
         workbook: Workbook,
     ) -> FileNameAndSheets:
         sheet_list = []
+
         for i in range(0, len(workbook.sheetnames)):
             workbook.active = i
-            current_ws: Worksheet = workbook.active
+            current_ws: Worksheet = self.unmerge_cells(workbook.active)
 
             sheet_col_names = []
+            col_name_map = {}
+            sheet_preview = []
+
             # loop through just the first row
             for i, cols in enumerate(current_ws.iter_cols(
                 max_row=1,
@@ -285,10 +302,33 @@ class Neo4JService(BaseDao):
             )):
                 if cols[0]:
                     sheet_col_names.append({cols[0]: i})
+                    col_name_map[i] = cols[0]
+
+            # generate a small preview of the file
+            counter_for_ellipse = 2  # min_row
+
+            for row in current_ws.iter_rows(
+                min_row=2,
+                max_row=8,
+                max_col=len(list(current_ws.columns)),
+                values_only=True,
+            ):
+                if not all(cell is None for cell in row):
+                    col_row_mapping = {}
+                    for i, cell in enumerate(row):
+                        if cell:
+                            if counter_for_ellipse == 8:  # max_row
+                                col_row_mapping[col_name_map[i]] = '...'
+                            else:
+                                col_row_mapping[col_name_map[i]] = cell
+                    counter_for_ellipse += 1
+
+                    sheet_preview.append(col_row_mapping)
 
             sheet_list.append(FileNameAndSheets.SheetNameAndColumnNames(
                 sheet_name=current_ws.title,
                 sheet_column_names=sheet_col_names,
+                sheet_preview=sheet_preview,
             ))
         sheets = FileNameAndSheets(sheets=sheet_list, filename=filename)
         return sheets
@@ -332,16 +372,6 @@ class Neo4JService(BaseDao):
                 break
 
         current_ws = workbook.active
-
-        # unmerge any cells first
-        # and assign the value to them
-        for group in current_ws.merged_cell_ranges:
-            min_col, min_row, max_col, max_row = group.bounds
-            value_to_assign = current_ws.cell(row=min_row, column=min_col).value
-            current_ws.unmerge_cells(str(group))
-            for row in current_ws.iter_rows(min_col=min_col, min_row=min_row, max_col=max_col, max_row=max_row):
-                for cell in row:
-                    cell.value = value_to_assign
 
         for row in current_ws.iter_rows(
             min_row=2,
@@ -499,16 +529,6 @@ class Neo4JService(BaseDao):
                 break
 
         current_ws = workbook.active
-
-        # unmerge any cells first
-        # and assign the value to them
-        for group in current_ws.merged_cell_ranges:
-            min_col, min_row, max_col, max_row = group.bounds
-            value_to_assign = current_ws.cell(row=min_row, column=min_col).value
-            current_ws.unmerge_cells(str(group))
-            for row in current_ws.iter_rows(min_col=min_col, min_row=min_row, max_col=max_col, max_row=max_row):
-                for cell in row:
-                    cell.value = value_to_assign
 
         tx = self.graph.begin()
 

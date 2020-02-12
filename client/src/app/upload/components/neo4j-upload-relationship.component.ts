@@ -25,6 +25,9 @@ enum ColumnType {
     templateUrl: 'neo4j-upload-relationship.component.html',
     styleUrls: ['neo4j-upload-relationship.component.sass'],
 })
+//
+// TODO: NOT CURRENTLY USED
+//
 export class Neo4jUploadRelationshipComponent implements OnChanges {
     @Input() chosenSheetToMap: SheetNameAndColumnNames;
 
