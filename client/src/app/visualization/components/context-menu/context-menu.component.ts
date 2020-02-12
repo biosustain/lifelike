@@ -3,6 +3,7 @@ import { Component, Input, OnDestroy, Output, EventEmitter } from '@angular/core
 import { createPopper, Instance } from '@popperjs/core';
 
 import { Subscription } from 'rxjs';
+import { first, filter } from 'rxjs/operators';
 
 import { isNullOrUndefined } from 'util';
 
@@ -79,29 +80,33 @@ export class ContextMenuComponent extends TooltipComponent implements OnDestroy 
     }
 
     showGroupByRelSubMenu() {
-        // TODO: Would be nice to add some kind of delay here, but it also has to be interruptible.
         // TODO: It would be very cool if the edges of the hovered relationship were highlighted
         this.hideAllSubMenus();
+        this.contextMenuControlService.delayGroupByRel();
+        this.contextMenuControlService.showGroupByRelResult$.pipe(
+            first(),
+            filter(showGroupByRel => showGroupByRel)
+        ).subscribe(() => {
+            const contextMenuItem = document.querySelector('#group-by-rel-menu-item');
+            const tooltip = document.querySelector('#single-node-selection-group-1-submenu') as HTMLElement;
+            tooltip.style.display = 'block';
+            this.subMenuClass = this.DEFAULT_STYLE;
 
-        const contextMenuItem = document.querySelector('#group-by-rel-menu-item');
-        const tooltip = document.querySelector('#single-node-selection-group-1-submenu') as HTMLElement;
-        tooltip.style.display = 'block';
-        this.subMenuClass = this.DEFAULT_STYLE;
-
-        if (!isNullOrUndefined(this.groupByRelSubmenuPopper)) {
-            this.groupByRelSubmenuPopper.destroy();
-            this.groupByRelSubmenuPopper = null;
-        }
-        this.groupByRelSubmenuPopper = createPopper(contextMenuItem, tooltip, {
-            modifiers: [
-                {
-                    name: 'offset',
-                    options: {
-                        offset: [0, 0],
+            if (!isNullOrUndefined(this.groupByRelSubmenuPopper)) {
+                this.groupByRelSubmenuPopper.destroy();
+                this.groupByRelSubmenuPopper = null;
+            }
+            this.groupByRelSubmenuPopper = createPopper(contextMenuItem, tooltip, {
+                modifiers: [
+                    {
+                        name: 'offset',
+                        options: {
+                            offset: [0, 0],
+                        },
                     },
-                },
-            ],
-            placement: 'right-start',
+                ],
+                placement: 'right-start',
+            });
         });
     }
 
@@ -111,6 +116,7 @@ export class ContextMenuComponent extends TooltipComponent implements OnDestroy 
     }
 
     hideAllSubMenus() {
+        this.contextMenuControlService.interruptGroupByRel();
         this.subMenus.forEach(subMenu => {
             const tooltip = document.querySelector(`#${subMenu}`) as HTMLElement;
             tooltip.style.display = 'none';
