@@ -318,19 +318,18 @@ export class VisualizationCanvasComponent implements OnInit {
         });
     }
 
+    selectNeighbors(node: IdType) {
+        this.networkGraph.selectNodes(this.networkGraph.getConnectedNodes(node) as IdType[]);
+    }
+
     /**
      * Opens the metadata sidebar for with the input node's data
      * TODO: the sidebar isn't implemented yet, so just printing the node data for now.
      * @param nodeRef represents a row in the reference table, contains node data
      */
     openMetadataSidebar(nodeRef: ReferenceTableRow) {
-        console.log(nodeRef);
         const clusterId = this.networkGraph.findNode(nodeRef.nodeId)[0] as string;
         this.networkGraph.getConnectedNodes(clusterId).forEach(node => {
-            // console.log(this.nodes.get(node));
-            // console.log(
-            //     `${node} is connected to ${nodeRef.nodeId} -- ${this.networkGraph.getConnectedNodes(nodeRef.nodeId).includes(node)}`
-            // );
             this.networkGraph.getConnectedEdges(node).forEach(edge => {
                 const edgeData = this.edges.get(edge);
                 if (edgeData !== null && (edgeData.from === nodeRef.nodeId || edgeData.to === nodeRef.nodeId)) {

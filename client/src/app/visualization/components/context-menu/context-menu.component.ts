@@ -28,6 +28,7 @@ export class ContextMenuComponent extends TooltipComponent implements OnDestroy 
     @Output() groupNeighborsWithRelationship: EventEmitter<GroupRequest> = new EventEmitter();
     @Output() removeNodes: EventEmitter<IdType[]> = new EventEmitter();
     @Output() removeEdges: EventEmitter<IdType[]> = new EventEmitter();
+    @Output() selectNeighbors: EventEmitter<IdType> = new EventEmitter();
 
     FADEOUT_STYLE = 'context-menu fade-out';
     DEFAULT_STYLE = 'context-menu';
@@ -142,6 +143,12 @@ export class ContextMenuComponent extends TooltipComponent implements OnDestroy 
         this.beginContextMenuFade();
     }
 
-    // TODO: Would be cool to have a "Select Neighbors" feature on the context menu
-    // (Though I suppose we can enable this by default with vis.js...)
+    requestNeighborSelection() {
+        if (this.selectedNodeIds.length !== 1) {
+            alert('Can only select neighbor nodes if exactly one node is selected!');
+            return;
+        }
+        this.selectNeighbors.emit(this.selectedNodeIds[0]);
+        this.beginContextMenuFade();
+    }
 }
