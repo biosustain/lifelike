@@ -12,6 +12,7 @@ import { Network, DataSet, IdType } from 'vis-network';
 
 import {
     AssociationData,
+    GetLabelsResult,
     GroupRequest,
     Neo4jGraphConfig,
     ReferenceTableRow,
@@ -130,6 +131,15 @@ export class VisualizationCanvasComponent implements OnInit {
     }
 
     /**
+     * Gets the shared edges between the two input nodes.
+     */
+    getEdgesBetweenNodes(src: IdType, dest: IdType) {
+        return this.networkGraph.getConnectedEdges(src).filter(
+            edge => this.networkGraph.getConnectedEdges(dest).includes(edge)
+        );
+    }
+
+    /**
      * Check that the input is a normal edge and that it isn't currently clustered.
      * Normal edges are numbers, cluster edges are strings. `getClusteredEdges` is
      * used here to deterimine if the input edge is currently clustered; The
@@ -161,14 +171,44 @@ export class VisualizationCanvasComponent implements OnInit {
      * @param selectedNode the ID of the node whose edge labels we want to get
      */
     getConnectedEdgeLabels(selectedNode: IdType) {
-        // TODO: If one of our cluster candidates is connected to a node which ISN'T connected to all the other cluster candidates,
-        // DO NOT allow that relationship to be clustered. Probably want to add a tooltip or something to the context menu
-        // explaining why that relationship cannot be grouped.
-        return this.networkGraph.getConnectedEdges(selectedNode).filter(
-            edge => this.isNotAClusterEdge(edge)
-        ).map(
-            edge => this.edges.get(edge).label
+        const clusterNodeCandidates = (this.networkGraph.getConnectedNodes(selectedNode) as IdType[]).filter(
+            node => !this.networkGraph.isCluster(node)
         );
+        const candidateLabels = new Set<string>();
+        const invalidLabels = new Set<string>();
+        const validLabels = new Set<string>();
+
+        this.networkGraph.getConnectedEdges(selectedNode).filter(
+            edge => this.isNotAClusterEdge(edge)
+        ).forEach(
+            edge => candidateLabels.add(this.edges.get(edge).label)
+        );
+
+        // TODO: Possible performance (both space & time) improvement opportunity here
+        // Check that all the depth-2 neighbors of each cluster candidate node is connected to all other
+        // candidate nodes. Otherwise we might have nodes connected to the cluster that aren't associated with
+        // all of its component nodes
+        clusterNodeCandidates.forEach(clusterNodeCandidate => {
+            this.networkGraph.getConnectedNodes(clusterNodeCandidate).forEach(nodeConnectedToCandidate => {
+                if (!clusterNodeCandidates.every(
+                    candidate => (this.networkGraph.getConnectedNodes(nodeConnectedToCandidate) as IdType[]).includes(candidate))
+                ) {
+                    this.getEdgesBetweenNodes(clusterNodeCandidate, selectedNode).map(
+                        edgeId => this.edges.get(edgeId).label
+                    ).forEach(
+                        invalidLabel => invalidLabels.add(invalidLabel)
+                    );
+                }
+            });
+        });
+
+        candidateLabels.forEach(label => {
+            if (!invalidLabels.has(label)) {
+                validLabels.add(label);
+            }
+        });
+
+        return {validLabels, invalidLabels} as GetLabelsResult;
     }
 
     createClusterSvg(clusterDisplayNames: string[], totalClusteredNodes: number) {
@@ -237,6 +277,9 @@ export class VisualizationCanvasComponent implements OnInit {
                 // here: https://visjs.github.io/vis-network/docs/network/index.html#optionsObject
                 // @ts-ignore
                 allowSingleNodeCluster: true,
+            },
+            clusterEdgeProperties: {
+                label: null,
             },
             processProperties: (clusterOptions) => {
                 const newClusterId = `cluster:${uuidv4()}`;
@@ -435,7 +478,9 @@ export class VisualizationCanvasComponent implements OnInit {
         }
 
         if (this.selectedNodes.length === 1 && this.selectedEdges.length === 0) {
-            this.getConnectedEdgeLabels(this.selectedNodes[0]).forEach(label => {
+            const edgeLabelsResult = this.getConnectedEdgeLabels(this.selectedNodes[0]);
+            // TODO: Pass the edgeLabelResult to the context menu for it to sort out
+            edgeLabelsResult.validLabels.forEach(label => {
                 this.selectedNodeEdgeLabels.add(label);
             });
         }
