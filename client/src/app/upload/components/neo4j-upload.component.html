@@ -111,21 +111,12 @@
     </div>
   </mat-step>
 
-  <mat-step *ngIf="!relationshipFile; else relationshipColumnMapper">
+  <mat-step>
     <ng-template matStepLabel>Map columns</ng-template>
-    <app-neo4j-upload-node
+    <!-- <app-neo4j-upload-node
       [chosenSheetToMap]="chosenSheetToMap"
       (emitter)="saveColumnMapping($event)"
-    ></app-neo4j-upload-node>
+    ></app-neo4j-upload-node> -->
+    <app-import-column-mapping [chosenSheetToMap]="chosenSheetToMap"></app-import-column-mapping>
   </mat-step>
-  <ng-template #relationshipColumnMapper>
-    <mat-step>
-      <ng-template matStepLabel>Map relationship</ng-template>
-      <app-neo4j-upload-relationship
-        [chosenSheetToMap]="chosenSheetToMap"
-        (emitter)="saveColumnMapping($event)"
-      ></app-neo4j-upload-relationship>
-    </mat-step>
-  </ng-template>
-
 </mat-horizontal-stepper>
