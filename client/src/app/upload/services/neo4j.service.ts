@@ -4,7 +4,7 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
-import { FileNameAndSheets, Neo4jColumnMapping } from '../../interfaces/neo4j.interface';
+import { FileNameAndSheets, Neo4jColumnMapping } from 'app/interfaces/neo4j.interface';
 
 @Injectable()
 export class Neo4jService {

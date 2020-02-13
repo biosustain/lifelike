@@ -4,12 +4,12 @@ import { FormGroup, FormBuilder, FormArray } from '@angular/forms';
 
 import { Store, select } from '@ngrx/store';
 
-import { SheetNameAndColumnNames, Neo4jColumnMapping } from '../../interfaces/neo4j.interface';
+import { Observable } from 'rxjs';
 
-import { State } from '../../root-store';
+import { SheetNameAndColumnNames, Neo4jColumnMapping } from 'app/interfaces/neo4j.interface';
+import { State } from 'app/root-store';
 
 import { Neo4jSelectors as selectors } from '../store';
-import { Observable } from 'rxjs';
 import { getNodeProperties } from '../store/actions';
 
 enum ColumnType {

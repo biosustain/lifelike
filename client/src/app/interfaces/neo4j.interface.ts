@@ -85,3 +85,22 @@ export interface Neo4jResults {
 export interface Neo4jGraphConfig {
   [key: string]: any;
 }
+
+export interface ReferenceTableRow {
+    displayName: string;
+    nodeId: number;
+}
+
+export interface AssociationData {
+    nodeId: number;
+    description: string;
+    entryText: string;
+}
+
+export interface AssociationSentence {
+    entry1Text: string;
+    entry2Text: string;
+    id: string;
+    score: number;
+    sentence: string;
+}
