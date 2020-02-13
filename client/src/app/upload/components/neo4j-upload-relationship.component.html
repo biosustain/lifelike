@@ -21,17 +21,17 @@
         <mat-cell *matCellDef="let object; let i=index;">{{ (object | keyvalue)[0].key }}</mat-cell>
       </ng-container>
 
-      <ng-container matColumnDef="nodeLabel">
-        <mat-header-cell *matHeaderCellDef>Node Label</mat-header-cell>
+      <ng-container matColumnDef="mappedNodeType">
+        <mat-header-cell *matHeaderCellDef>Mapped Node Type</mat-header-cell>
         <mat-cell *matCellDef="let data; let i=index;" [formGroupName]="i">
           <mat-form-field>
             <mat-select
-              placeholder="Select node label"
-              formControlName="nodeLabel"
+              placeholder="Select node type"
+              formControlName="mappedNodeType"
               (selectionChange)="selectionChange($event)"
             >
               <mat-option
-                *ngFor="let label of (nodeLabels$ | async)"
+                *ngFor="let label of (dbNodeTypes$ | async)"
                 [value]="label"
               >{{ label }}</mat-option>
             </mat-select>
@@ -39,17 +39,18 @@
         </mat-cell>
       </ng-container>
 
-      <ng-container matColumnDef="propertyLabel">
-        <mat-header-cell *matHeaderCellDef>Property Label</mat-header-cell>
+      <ng-container matColumnDef="mappedNodeProperty">
+        <mat-header-cell *matHeaderCellDef>Mapped Node Property</mat-header-cell>
         <mat-cell *matCellDef="let data; let i=index;" [formGroupName]="i">
           <mat-form-field>
             <mat-select
-              placeholder="Select property label"
-              formControlName="propertyLabel"
+              placeholder="Select node property"
+              formControlName="mappedNodeProperty"
             >
-              <span *ngIf="(nodeProperties$ | async)">
+              <span *ngIf="(dbNodeProperties$ | async)">
                 <mat-option
-                  *ngFor="let label of (nodeProperties$ | async)[columnMappingForm.get('columnMapping').controls[i].get('nodeLabel').value]"
+                  *ngFor="let label of (dbNodeProperties$ | async)[columnMappingForm.get(
+                    'columnMapping').controls[i].get('mappedNodeType').value]"
                   [value]="label"
                 >{{ label }}</mat-option>
               </span>
@@ -85,11 +86,11 @@
         </mat-cell>
       </ng-container>
 
-      <ng-container matColumnDef="nodeProperty">
-        <mat-header-cell *matHeaderCellDef>Node Property</mat-header-cell>
+      <ng-container matColumnDef="edgeProperty">
+        <mat-header-cell *matHeaderCellDef>Edge Property</mat-header-cell>
         <mat-cell *matCellDef="let object; let i=index" [formGroupName]="i">
           <mat-checkbox
-            formControlName="nodeProperty"
+            formControlName="edgeProperty"
             (change)="updateColumnMapping($event, columnType.NODE_PROPERTY, i)"></mat-checkbox>
         </mat-cell>
       </ng-container>
