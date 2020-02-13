@@ -1,9 +1,68 @@
-<div [formGroup]="columnMappingForm">
-  <mat-form-field>
-    <mat-label>If column doesn't map to any existing node type, create a new one.</mat-label>
-    <input
-      matInput
-      type="text"
-      formControlName="newNodeLabel"/>
-  </mat-form-field>
+<div
+  [formGroup]="columnMappingForm"
+  fxLayout="column"
+  fxLayoutGap="15px"
+  fxLayoutAlign="start baseline"
+>
+  <div>If column doesn't map to any existing node type, create a new one, otherwise select from the dropdown.</div>
+  <div
+    fxLayout="row"
+    fxLayoutGap="30px"
+    fxLayoutAlign="start baseline"
+  >
+    <mat-form-field>
+      <mat-select
+        fxFlex="1 0"
+        placeholder="Select column to map"
+        formControlName="columnHeader"
+      >
+        <mat-option
+          *ngFor="let column of columnHeaders"
+          [value]="column"
+        >{{ (column | keyvalue)[0].key }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field>
+      <input
+        matInput
+        type="text"
+        placeholder="New node type"
+        formControlName="newNodeLabel"/>
+    </mat-form-field>
+
+    <mat-form-field>
+      <mat-select
+        fxFlex="1 0"
+        placeholder="Select existing node type"
+        formControlName="mappedNodeLabel"
+      >
+        <mat-option
+          *ngFor="let nodeType of existingNodeLabels"
+          [value]="nodeType"
+        >{{ nodeType }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field>
+      <mat-select
+        fxFlex="1 0"
+        placeholder="Select existing node property"
+        formControlName="mappedNodeLabel"
+      >
+        <mat-option
+          *ngFor="let nodeProp of existingNodeProperties"
+          [value]="nodeProp"
+        >{{ nodeProp }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <div>
+      <button
+        mat-stroked-button
+        type="button"
+        (click)="deleteMappingRow()"
+      >Delete</button>
+    </div>
+  </div>
 </div>

@@ -2,9 +2,6 @@
   <mat-step [stepControl]="fileForm">
     <ng-template matStepLabel>Upload data file</ng-template>
 
-    <!-- the fxLayout is inverted
-         because of the horizontal stepper (?)
-    -->
     <div
       fxLayout="column"
       fxLayoutGap="30px"
@@ -50,7 +47,7 @@
           <div><ng-template #noFileSelected>File Selected: None</ng-template></div>
         </div>
 
-        <div>Select the excel file to upload; allowed file extensions (.xlsx). Large files may take a minute or two to parse.</div>
+        <div class="redtext">Select the excel file to upload; allowed file extensions (.xlsx). Large files may take a minute or two to parse.</div>
 
         <div [formGroup]="fileForm">
           <mat-accordion>
@@ -98,8 +95,9 @@
             [value]="sheet"
           >{{sheet.sheetName}}</mat-option>
         </mat-select>
-        <mat-checkbox [(ngModel)]="relationshipFile">Relationship File</mat-checkbox>
       </div>
+
+      <mat-checkbox [(ngModel)]="relationshipFile">Relationship File</mat-checkbox>
 
       <div>
         <button
