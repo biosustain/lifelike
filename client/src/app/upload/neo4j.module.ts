@@ -2,7 +2,7 @@ import { NgModule } from '@angular/core';
 import { EffectsModule } from '@ngrx/effects';
 import { StoreModule } from '@ngrx/store';
 
-import { SharedModule } from '../shared.module';
+import { SharedModule } from 'app/shared/shared.module';
 
 import { Neo4jUploadComponent } from './components/neo4j-upload.component';
 import { Neo4jUploadNodeComponent } from './components/neo4j-upload-node.component';

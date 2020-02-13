@@ -1,4 +1,4 @@
-import { FileNameAndSheets } from '../../interfaces/neo4j.interface';
+import { FileNameAndSheets } from 'app/interfaces/neo4j.interface';
 
 export interface State {
     fileNameAndSheets: FileNameAndSheets;

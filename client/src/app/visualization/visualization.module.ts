@@ -1,13 +1,17 @@
 import { NgModule } from '@angular/core';
 
-import { SharedModule } from '../shared.module';
+import { SharedModule } from 'app/shared/shared.module';
 
+import { ContextMenuComponent } from './components/context-menu/context-menu.component';
+import { ReferenceTableComponent } from './components/reference-table/reference-table.component';
 import { VisualizationService } from './services/visualization.service';
-import { VisualizationCanvasComponent } from './components/visualization-canvas.component';
-import { VisualizationQuickbarComponent } from './components/visualization-quickbar.component';
+import { VisualizationCanvasComponent } from './components/visualization-canvas/visualization-canvas.component';
+import { VisualizationQuickbarComponent } from './components/visualization-quickbar/visualization-quickbar.component';
 import { VisualizationComponent } from './containers/visualization.component';
 
 const components = [
+    ContextMenuComponent,
+    ReferenceTableComponent,
     VisualizationComponent,
     VisualizationCanvasComponent,
     VisualizationQuickbarComponent,
