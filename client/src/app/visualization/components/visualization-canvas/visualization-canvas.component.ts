@@ -507,6 +507,10 @@ export class VisualizationCanvasComponent implements OnInit {
 
         if (this.selectedNodes.length === 1 && this.selectedEdges.length === 0) {
             this.updateSelectedNodeEdgeLabels(this.selectedNodes[0]);
+        } else {
+            // Clean up the selected node edge labels even if we selected more than one node, or any edges
+            // (this should prevent stale data in the context menu component)
+            this.clearSelectedNodeEdgeLabels();
         }
         this.contextMenuControlService.showTooltip();
       }
