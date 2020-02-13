@@ -1,6 +1,6 @@
 import { createAction, props, union } from '@ngrx/store';
 
-import { Neo4jColumnMapping, FileNameAndSheets } from '../../interfaces/neo4j.interface';
+import { Neo4jColumnMapping, FileNameAndSheets } from 'app/interfaces/neo4j.interface';
 
 
 export const uploadNeo4jFile = createAction(
