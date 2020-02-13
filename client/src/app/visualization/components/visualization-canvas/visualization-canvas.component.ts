@@ -8,6 +8,8 @@ import {
 
 import { Options } from '@popperjs/core';
 
+import { first, filter } from 'rxjs/operators';
+
 import { Network, DataSet, IdType } from 'vis-network';
 
 import {
@@ -396,6 +398,9 @@ export class VisualizationCanvasComponent implements OnInit {
 
     onDragStartCallback(params: any) {
         this.hideAllTooltips();
+        if (this.networkGraph.isCluster(params.nodes[0]) || !this.nodes.get(params.nodes[0])) {
+            this.referenceTableControlService.interruptReferenceTable();
+        }
     }
 
     onHoverNodeCallback(params: any) {
@@ -406,33 +411,45 @@ export class VisualizationCanvasComponent implements OnInit {
                 }
             );
 
-            // Update the canvas location
-            const canvas = document.querySelector('canvas').getBoundingClientRect() as DOMRect;
-            const contextMenuXPos = params.pointer.DOM.x + canvas.x;
-            const contextMenuYPos = params.pointer.DOM.y + canvas.y;
+            this.referenceTableControlService.delayReferenceTable();
+            this.referenceTableControlService.showReferenceTableResult$.pipe(
+                first(),
+                filter(showGroupByRel => showGroupByRel),
+            ).subscribe(() => {
+                // Update the canvas location
+                const clusterPosition = this.networkGraph.getPositions(params.node)[`${params.node}`]; // Cluster x and y
+                const clusterDOMPos = this.networkGraph.canvasToDOM(clusterPosition);
 
-            this.referenceTableControlService.updatePopper(contextMenuXPos, contextMenuYPos);
-            this.referenceTableControlService.showTooltip();
-            return;
+                const canvas = document.querySelector('canvas').getBoundingClientRect() as DOMRect;
+                const referenceTableXPos = clusterDOMPos.x + canvas.x;
+                const referenceTableYPos = clusterDOMPos.y + canvas.y;
+
+                this.referenceTableControlService.updatePopper(referenceTableXPos, referenceTableYPos);
+                this.referenceTableControlService.showTooltip();
+            });
         } else if (!this.nodes.get(params.node)) {
-            return;
+            // TODO: Add on-hover edge effects
+        } else {
+            // This produces an 'enlarge effect'
+            // TODO: Currently this does nothing, because the size property does not change 'box' shape nodes.
+            // May be able to use the 'scaling' property to produce the desired effect.
+            // const node = this.nodes.get(params.node);
+            // const updatedNode = {...node, size: this.config.nodes.size * 1.5};
+            // this.nodes.update(updatedNode);
         }
-
-        // This produces an 'enlarge effect'
-        const node = this.nodes.get(params.node);
-        const updatedNode = {...node, size: this.config.nodes.size * 1.5};
-        this.nodes.update(updatedNode);
     }
 
     onBlurNodeCallback(params: any) {
         if (this.networkGraph.isCluster(params.node) || !this.nodes.get(params.node)) {
-            return;
+            this.referenceTableControlService.interruptReferenceTable();
+        } else {
+            // This produces a 'shrink effect'
+            // TODO: Currently this does nothing, because the size property does not change 'box' shape nodes.
+            // May be able to use the 'scaling' property to produce the desired effect.
+            // const node = this.nodes.get(params.node);
+            // const updateNode = {...node, size: this.config.nodes.size};
+            // this.nodes.update(updateNode);
         }
-
-        // This produces a 'shrink effect'
-        const node = this.nodes.get(params.node);
-        const updateNode = {...node, size: this.config.nodes.size};
-        this.nodes.update(updateNode);
     }
 
     onDoubleClickCallback(params: any) {
