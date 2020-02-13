@@ -40,13 +40,14 @@
 
   <div [formGroup]="columnMappingRelationshipForm">
     <div formArrayName="columnMapping">
-      <div *ngFor="let row of columnMappingRelationshipForm.get('columnMapping')?.controls; let i=index">
+      <div *ngFor="let row of columnMappingRelationshipForm.get('columnMapping').controls; let i=index">
         <div [formGroupName]="i">
           <app-import-column-mapping-relationship-row
-            [columnHeaders]="columnsForFilePreview"
-            [columnMappingForm]="columnMappingRelationshipForm.controls.columnMapping.controls[i]"
+            [columnHeaders]="chosenSheetToMap?.sheetColumnNames"
+            [columnMappingForm]="columnMappingRelationshipForm.get('columnMapping').controls[i]"
             [existingNodeLabels]="dbNodeTypes$ | async"
             [existingNodeProperties]="dbNodeProperties$ | async"
+            (deleteMapping)="deleteMappingRow(i)"
           ></app-import-column-mapping-relationship-row>
         </div>
       </div>
@@ -57,7 +58,7 @@
     <button
       mat-stroked-button
       type="button"
-      (click)="goToMapRelationship()"
+      (click)="goToMapNodeProperties()"
     >Next</button>
   </div>
 </div>

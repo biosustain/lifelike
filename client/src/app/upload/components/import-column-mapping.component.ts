@@ -49,6 +49,7 @@ export class ImportColumnMappingComponent implements OnChanges {
     addMappingRow() {
         const form = this.columnMappingRelationshipForm.get('columnMapping') as FormArray;
         const row = this.fb.group({
+            columnHeader: [''],
             newNodeLabel: [''],
             mappedNodeLabel: [''],
             mappedNodeProperty: [''],
@@ -56,7 +57,11 @@ export class ImportColumnMappingComponent implements OnChanges {
         form.push(row);
     }
 
-    goToMapRelationship() {
-        
+    deleteMappingRow(idx) {
+        (this.columnMappingRelationshipForm.get('columnMapping') as FormArray).removeAt(idx);
+    }
+
+    goToMapNodeProperties() {
+        console.log(this.columnMappingRelationshipForm)
     }
 }
