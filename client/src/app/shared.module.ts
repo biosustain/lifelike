@@ -10,6 +10,8 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { HttpClientModule, HttpClient } from '@angular/common/http';
 import { RouterModule } from '@angular/router';
 
+import { FlexLayoutModule } from '@angular/flex-layout';
+
 
 import { AngularMaterialModule } from './angular-material.module';
 
@@ -19,6 +21,7 @@ import { AngularMaterialModule } from './angular-material.module';
         CommonModule,
         FormsModule,
         HttpClientModule,
+        FlexLayoutModule,
         AngularMaterialModule,
         ReactiveFormsModule,
         RouterModule,
@@ -31,6 +34,7 @@ import { AngularMaterialModule } from './angular-material.module';
         CommonModule,
         FormsModule,
         HttpClientModule,
+        FlexLayoutModule,
         AngularMaterialModule,
         ReactiveFormsModule,
         RouterModule,
