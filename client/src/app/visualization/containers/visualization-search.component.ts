@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Output } from '@angular/core';
 import { VisualizationService } from '../services/visualization.service';
 import { FormControl } from '@angular/forms';
-import { FTSearchResult, FTSNodeScore } from 'app/interfaces';
+import { FTSearchResult, FTSNodeScore, GraphNode } from 'app/interfaces';
 
 @Component({
     selector: 'app-visualization-search',
@@ -39,6 +39,19 @@ export class VisualizationSearchComponent {
 
     displayFn(n: FTSNodeScore) {
         return n ? n.node.displayName : undefined;
+    }
+
+    /**
+     * Used for displaying a node's data property
+     * in a string form.
+     * @param n - a graph node
+     */
+    stringifyData(n: GraphNode) {
+        const nodeToString = [];
+        for (const [key, value] of Object.entries(n.data)) {
+            nodeToString.push(`${key}: ${value}`);
+        }
+        return nodeToString.join(', ');
     }
 
     resultSelection(result: FTSNodeScore) {
