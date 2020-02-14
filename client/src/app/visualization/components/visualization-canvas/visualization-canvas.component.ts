@@ -4,7 +4,6 @@ import {
     EventEmitter,
     OnInit,
     Output,
-    ViewChild,
 } from '@angular/core';
 
 import { Options } from '@popperjs/core';
@@ -24,13 +23,14 @@ import {
     SidenavClusterEntity,
     SidenavNodeEntity,
     SidenavEdgeEntity,
+    GraphRelationship,
+    GraphNode,
 } from 'app/interfaces';
 
 import { uuidv4 } from 'app/shared/utils';
 
 import { ContextMenuControlService } from '../../services/context-menu-control.service';
 import { ReferenceTableControlService } from '../../services/reference-table-control.service';
-import { MatSidenavContainer } from '@angular/material';
 
 @Component({
     selector: 'app-visualization-canvas',
@@ -39,8 +39,6 @@ import { MatSidenavContainer } from '@angular/material';
     providers: [ContextMenuControlService, ReferenceTableControlService],
 })
 export class VisualizationCanvasComponent implements OnInit {
-    @ViewChild(MatSidenavContainer, {static: true}) matSidenavContainer: MatSidenavContainer;
-
     @Output() expandNode = new EventEmitter<number>();
     @Output() getSentences = new EventEmitter<AssociationData>();
 
@@ -389,17 +387,30 @@ export class VisualizationCanvasComponent implements OnInit {
     updateSidebarEntity() {
         if (this.selectedNodes.length === 1 && this.selectedEdges.length === 0) {
             if (this.networkGraph.isCluster(this.selectedNodes[0])) {
-                this.sidenavEntity = {data: null, includes: [], referencesMap: null} as SidenavClusterEntity;
+                const cluster = this.selectedNodes[0];
+                this.sidenavEntity = {
+                    data: null,
+                    includes: this.networkGraph.getNodesInCluster(cluster).map(nodeId => this.nodes.get(nodeId)),
+                    referencesMap: null
+                } as SidenavClusterEntity;
                 this.sidenavEntityType = 'cluster';
             } else {
-                this.sidenavEntity = {data: null, edges: []} as SidenavNodeEntity;
+                const node  = this.nodes.get(this.selectedNodes[0]) as GraphNode;
+                this.sidenavEntity = {
+                    data: node,
+                    edges: this.networkGraph.getConnectedEdges(node.id).map(edgeId => this.edges.get(edgeId))
+                } as SidenavNodeEntity;
                 this.sidenavEntityType = 'node';
             }
         } else if (this.selectedNodes.length === 0 && this.selectedEdges.length === 1) {
-            this.sidenavEntity = {data: null, to: null, from: null} as SidenavEdgeEntity;
+            const edge = this.edges.get(this.selectedEdges[0]) as GraphRelationship;
+            this.sidenavEntity = {
+                data: edge,
+                to: this.nodes.get(edge.to),
+                from: this.nodes.get(edge.from),
+            } as SidenavEdgeEntity;
             this.sidenavEntityType = 'edge';
         }
-        this.matSidenavContainer.updateContentMargins();
     }
 
     /**
@@ -576,23 +587,22 @@ export class VisualizationCanvasComponent implements OnInit {
         this.contextMenuControlService.updatePopper(contextMenuXPos, contextMenuYPos);
 
         const hoveredEdge = this.networkGraph.getEdgeAt(params.pointer.DOM);
-        this.updateSelectedNodesAndEdges(); // Update, just to be safe
+        const currentlySelectedNodes = this.networkGraph.getSelectedNodes();
+        const currentlySelectedEdges = this.networkGraph.getSelectedEdges();
 
         if (hoveredNode !== undefined) {
-            if (!this.selectedNodes.includes(hoveredNode)) {
-                this.networkGraph.unselectAll();
-                this.selectedNodes = [hoveredNode];
-                this.networkGraph.selectNodes(this.selectedNodes);
+            if (currentlySelectedNodes.length === 0 || !currentlySelectedNodes.includes(hoveredNode)) {
+                this.networkGraph.selectNodes([hoveredNode], false);
             }
         } else if (hoveredEdge !== undefined) {
-            if (!this.selectedEdges.includes(hoveredEdge)) {
-                this.networkGraph.unselectAll();
-                this.selectedEdges = [hoveredEdge];
-                this.networkGraph.selectEdges(this.selectedEdges);
+            if (currentlySelectedEdges.length === 0 || !currentlySelectedEdges.includes(hoveredEdge)) {
+                this.networkGraph.selectEdges([hoveredEdge]);
             }
         } else {
             this.networkGraph.unselectAll();
         }
+
+        this.updateSelectedNodesAndEdges();
 
         if (this.selectedNodes.length === 1 && this.selectedEdges.length === 0) {
             this.updateSelectedNodeEdgeLabels(this.selectedNodes[0]);
@@ -602,6 +612,7 @@ export class VisualizationCanvasComponent implements OnInit {
             this.clearSelectedNodeEdgeLabels();
         }
         this.contextMenuControlService.showTooltip();
+        this.updateSidebarEntity(); // oncontext does not select the hovered entity by default, so update
       }
 
       // End Callback Functions
