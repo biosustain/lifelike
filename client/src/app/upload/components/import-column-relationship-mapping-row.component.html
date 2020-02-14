@@ -1,0 +1,70 @@
+<div
+  [formGroup]="relationshipMappingForm"
+  fxLayout="column"
+  fxLayoutGap="15px"
+  fxLayoutAlign="start baseline"
+>
+  <div>Map a relationship between node columns. First dropdown is source node, second dropdown/input is for relationship, third dropdown is target node.<br>
+  If the relationship you're looking for is not available in the second dropdown, use the input to create a new relationship.</div>
+  <div
+    fxLayout="row"
+    fxLayoutGap="30px"
+    fxLayoutAlign="start baseline"
+  >
+    <mat-form-field>
+      <mat-select
+        fxFlex="1 0"
+        placeholder="Select source node column"
+        formControlName="source"
+      >
+        <mat-option
+          *ngFor="let column of columnHeaders"
+          [value]="column"
+        >{{ (column | keyvalue)[0].key }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <!-- TODO: if select relationship from dropdown, clear input and vice versa -->
+    <!-- <mat-form-field>
+      <mat-select
+        fxFlex="1 0"
+        placeholder="Select relationship column"
+        formControlName="edge"
+      >
+        <mat-option
+          *ngFor="let relationship of relationshipTypes"
+          [value]="relationship"
+        >{{ relationship }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field>
+      <input
+        matInput
+        type="text"
+        placeholder="New relationship"
+        formControlName="edge"/>
+    </mat-form-field> -->
+
+    <mat-form-field>
+      <mat-select
+        fxFlex="1 0"
+        placeholder="Select target node column"
+        formControlName="target"
+      >
+        <mat-option
+          *ngFor="let column of columnHeaders"
+          [value]="column"
+        >{{ (column | keyvalue)[0].key }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <div>
+      <button
+        mat-stroked-button
+        type="button"
+        (click)="deleteMappingRow()"
+      >Delete</button>
+    </div>
+  </div>
+</div>

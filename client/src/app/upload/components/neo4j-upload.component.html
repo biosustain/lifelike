@@ -117,7 +117,17 @@
     ></app-neo4j-upload-node> -->
     <app-import-column-mapping
       [chosenSheetToMap]="chosenSheetToMap"
-      (nextStep)="goToMapNodeProperties()"
+      [columnsForFilePreview]="columnsForFilePreview"
+      (nextStep)="goToMapRelationships()"
     ></app-import-column-mapping>
+  </mat-step>
+
+  <mat-step>
+    <ng-template matStepLabel>Map relationships</ng-template>
+    <app-import-column-relationship-mapping
+      [chosenSheetToMap]="chosenSheetToMap"
+      [columnsForFilePreview]="columnsForFilePreview"
+      [nodeMappingHelper]="nodeMappingHelper$ | async"
+    ></app-import-column-relationship-mapping>
   </mat-step>
 </mat-horizontal-stepper>

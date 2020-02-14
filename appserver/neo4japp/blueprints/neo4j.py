@@ -76,6 +76,14 @@ def get_db_labels():
     return SuccessResponse(result=labels, status_code=200)
 
 
+@bp.route('/get-db-relationship-types', methods=['GET'])
+@jsonify_with_class()
+def get_db_relationship_types():
+    neo4j = get_neo4j_service_dao()
+    relationship_types = neo4j.get_db_relationship_types()
+    return SuccessResponse(result=relationship_types, status_code=200)
+
+
 @bp.route('/get-node-properties', methods=['GET'])
 @jsonify_with_class(NodePropertiesRequest)
 def get_node_properties(req: NodePropertiesRequest):
