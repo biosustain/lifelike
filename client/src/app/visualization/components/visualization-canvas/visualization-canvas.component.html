@@ -38,12 +38,21 @@ we should be careful using 'autosize', as it may lead to performance problems.--
 
   <mat-sidenav class="sidenav" #sidenav position="end" mode="side" [(opened)]="sidenavOpened">
     <div id="mat-sidenav-container">
-      <h1>Canvas Data View</h1>
+      <!-- Each switch case appears to be lazy loaded, so switching between two cases will destroy the old case, and create the new case. -->
       <div [ngSwitch]="sidenavEntityType">
-        <h4 *ngSwitchCase="'node'">Oooooo! Some node data!</h4>
-        <h4 *ngSwitchCase="'edge'">Oooooo! Some edge data!</h4>
-        <h4 *ngSwitchCase="'cluster'">Oooooo! Some cluster data!</h4>
-        <h4 *ngSwitchCase="'null'">(Select something on the canvas to see some data!)</h4>
+        <div *ngSwitchCase="'node'">
+          <app-sidenav-node-view [nodeEntity]="sidenavEntity"></app-sidenav-node-view>
+        </div>
+        <div *ngSwitchCase="'edge'">
+          <app-sidenav-edge-view [edgeEntity]="sidenavEntity"></app-sidenav-edge-view>
+        </div>
+        <div *ngSwitchCase="'cluster'">
+          <app-sidenav-cluster-view [clusterEntity]="sidenavEntity"></app-sidenav-cluster-view>
+        </div>
+        <div *ngSwitchCase="'null'">
+          <h1>Canvas Data View</h1>
+          <h4>(Select something on the canvas to see some data!)</h4>
+        </div>
       </div>
     </div>
   </mat-sidenav>
