@@ -1,6 +1,9 @@
 .result-display-name {
   font-size: 16px;
 }
+.result-metadata {
+  color: rgba(128, 128, 128, 0.596);
+}
 .result-text {
   color: white;
   font-weight: bold;
