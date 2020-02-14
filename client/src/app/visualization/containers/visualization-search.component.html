@@ -17,8 +17,8 @@
       <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayFn" (optionSelected)="resultSelection($event.option.value)">
         <mat-option *ngFor="let node of autocompleteResults" [value]="node">
           <div [ngClass]="getStyling(node.node.label)"><span class="result-text">{{ node.node.label }}</span></div>&#160;
-          <span class="result-display-name">{{ node.node.displayName }}</span>
-          <mat-divider></mat-divider>
+          <span class="result-display-name">{{ node.node.displayName }}</span>&#160;
+          <small class="result-metadata">{{ stringifyData(node.node) }}</small>
         </mat-option>
       </mat-autocomplete>
     </mat-form-field>

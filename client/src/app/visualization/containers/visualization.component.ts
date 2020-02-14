@@ -6,6 +6,7 @@ import {
     AssociationData,
     FTSNodeScore,
     GraphNode,
+    GraphRelationship,
     Neo4jResults,
     Neo4jGraphConfig,
     VisNode,
@@ -97,29 +98,33 @@ export class VisualizationComponent implements OnInit {
      */
     convertToVisJSFormat(results: Neo4jResults): Neo4jResults {
         let { nodes, edges } = results;
-        nodes = nodes.map((n) => {
-            return {
-                ...n,
-                primaryLabel: n.label,
-                color: {
+        nodes = nodes.map((n: GraphNode) => this.convertNodeToVisJSFomart(n));
+        edges = edges.map((e: GraphRelationship) => this.convertEdgeToVisJSFormat(e));
+        return {nodes, edges};
+    }
+
+    convertNodeToVisJSFomart(n: GraphNode) {
+        return {
+            ...n,
+            primaryLabel: n.label,
+            color: {
+                background: this.legend.get(n.label)[0],
+                border: this.legend.get(n.label)[1],
+                hover: {
                     background: this.legend.get(n.label)[0],
                     border: this.legend.get(n.label)[1],
-                    hover: {
-                        background: this.legend.get(n.label)[0],
-                        border: this.legend.get(n.label)[1],
-                    },
-                    highlight: {
-                        background: this.legend.get(n.label)[0],
-                        border: this.legend.get(n.label)[1],
-                    }
                 },
-                label: n.displayName.length > 64 ? n.displayName.slice(0, 64) + '...'  : n.displayName,
-            };
-        });
-        edges = edges.map((e) => {
-            return {...e, label: e.data.description, arrows: 'to'};
-        });
-        return {nodes, edges};
+                highlight: {
+                    background: this.legend.get(n.label)[0],
+                    border: this.legend.get(n.label)[1],
+                }
+            },
+            label: n.displayName.length > 64 ? n.displayName.slice(0, 64) + '...'  : n.displayName,
+        };
+    }
+
+    convertEdgeToVisJSFormat(e: GraphRelationship) {
+        return {...e, label: e.data.description, arrows: 'to'};
     }
 
     expandNode(nodeId: number) {
@@ -156,7 +161,7 @@ export class VisualizationComponent implements OnInit {
     updateCanvasWithSingleNode(data: FTSNodeScore) {
         this.nodes.clear();
         this.edges.clear();
-        const node = data.node;
+        const node = this.convertNodeToVisJSFomart(data.node);
         this.nodes.add(node);
     }
 }
