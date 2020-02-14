@@ -1,6 +1,6 @@
 import { createAction, props, union } from '@ngrx/store';
 
-import { Neo4jColumnMapping, FileNameAndSheets } from '../../interfaces/neo4j.interface';
+import { Neo4jColumnMapping, FileNameAndSheets, Neo4jNodeMapping, NodeMappingHelper } from '../../interfaces/importer.interface';
 
 
 export const uploadNeo4jFile = createAction(
@@ -50,6 +50,11 @@ export const getNodePropertiesSuccess = createAction(
     props<{payload: {[key: string]: string[]}}>(),
 );
 
+export const saveNodeMapping = createAction(
+    '[Importer] Save Node Mapping Structure',
+    props<{payload: NodeMappingHelper}>(),
+);
+
 const all = union({
     getDbLabels,
     getDbLabelsSuccess,
@@ -61,6 +66,7 @@ const all = union({
     uploadNodeMappingSuccess,
     uploadRelationshipMapping,
     uploadRelationshipMappingSuccess,
+    saveNodeMapping,
 });
 
 export type Neo4jActions = typeof all;

@@ -38,17 +38,17 @@
     </div>
   </div>
 
-  <div [formGroup]="columnMappingRelationshipForm">
+  <div [formGroup]="columnMappingForm">
     <div formArrayName="columnMapping">
-      <div *ngFor="let row of columnMappingRelationshipForm.get('columnMapping').controls; let i=index">
+      <div *ngFor="let row of columnMappingForm.get('columnMapping').controls; let i=index">
         <div [formGroupName]="i">
-          <app-import-column-mapping-relationship-row
+          <app-import-column-mapping-row
             [columnHeaders]="chosenSheetToMap?.sheetColumnNames"
-            [columnMappingForm]="columnMappingRelationshipForm.get('columnMapping').controls[i]"
+            [columnMappingForm]="columnMappingForm.get('columnMapping').controls[i]"
             [existingNodeLabels]="dbNodeTypes$ | async"
             [existingNodeProperties]="dbNodeProperties$ | async"
             (deleteMapping)="deleteMappingRow(i)"
-          ></app-import-column-mapping-relationship-row>
+          ></app-import-column-mapping-row>
         </div>
       </div>
     </div>

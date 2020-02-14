@@ -36,6 +36,7 @@
         fxFlex="1 0"
         placeholder="Select existing node type"
         formControlName="mappedNodeLabel"
+        (selectionChange)="selectExistingNodeType($event)"
       >
         <mat-option
           *ngFor="let nodeType of existingNodeLabels"
@@ -48,12 +49,14 @@
       <mat-select
         fxFlex="1 0"
         placeholder="Select existing node property"
-        formControlName="mappedNodeLabel"
+        formControlName="mappedNodeProperty"
       >
-        <mat-option
-          *ngFor="let nodeProp of existingNodeProperties"
-          [value]="nodeProp"
-        >{{ nodeProp }}</mat-option>
+        <span *ngIf="existingNodeProperties">
+          <mat-option
+            *ngFor="let nodeProp of existingNodeProperties[columnMappingForm.get('mappedNodeLabel').value]"
+            [value]="nodeProp"
+          >{{ nodeProp }}</mat-option>
+        </span>
       </mat-select>
     </mat-form-field>
 

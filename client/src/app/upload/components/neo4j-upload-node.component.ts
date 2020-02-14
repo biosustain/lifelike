@@ -4,7 +4,7 @@ import { FormGroup, FormBuilder, FormArray } from '@angular/forms';
 
 import { Store, select } from '@ngrx/store';
 
-import { SheetNameAndColumnNames, Neo4jColumnMapping } from '../../interfaces/neo4j.interface';
+import { SheetNameAndColumnNames, Neo4jColumnMapping } from '../../interfaces/importer.interface';
 
 import { State } from '../../***ARANGO_USERNAME***-store';
 

@@ -11,7 +11,7 @@ import { State } from '../../***ARANGO_USERNAME***-store';
 import { Neo4jSelectors as selectors } from '../store';
 import { uploadNeo4jFile, uploadNodeMapping, getDbLabels, uploadRelationshipMapping } from '../store/actions';
 
-import { FileNameAndSheets, SheetNameAndColumnNames, Neo4jColumnMapping } from '../../interfaces/neo4j.interface';
+import { FileNameAndSheets, SheetNameAndColumnNames, Neo4jColumnMapping } from '../../interfaces/importer.interface';
 
 @Component({
     selector: 'app-neo4j-upload',
@@ -87,5 +87,9 @@ export class Neo4jUploadComponent implements OnInit, OnDestroy {
         } else if (mapping.type === 'relationship') {
             this.store.dispatch(uploadRelationshipMapping({payload: mapping.data}));
         }
+    }
+
+    goToMapNodeProperties() {
+        
     }
 }
