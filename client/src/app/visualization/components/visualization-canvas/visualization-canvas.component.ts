@@ -42,6 +42,8 @@ export class VisualizationCanvasComponent implements OnInit {
     @Input() config: Neo4jGraphConfig;
     @Input() legend: Map<string, string[]>;
 
+    sidenavOpened: boolean;
+
     networkGraph: Network;
     selectedNodes: IdType[];
     selectedNodeEdgeLabels: GetLabelsResult;
@@ -58,6 +60,8 @@ export class VisualizationCanvasComponent implements OnInit {
         private contextMenuControlService: ContextMenuControlService,
         private referenceTableControlService: ReferenceTableControlService,
     ) {
+        this.sidenavOpened = false;
+
         this.selectedNodes = [];
         this.selectedEdges = [];
         this.selectedNodeEdgeLabels = {validLabels: new Set<string>(), invalidLabels: new Set<string>()};
@@ -96,6 +100,10 @@ export class VisualizationCanvasComponent implements OnInit {
         } else {
             this.networkGraph.setOptions({physics: false});
         }
+    }
+
+    toggleSidenavOpened() {
+        this.sidenavOpened = !this.sidenavOpened;
     }
 
     clearSelectedNodeEdgeLabels() {
