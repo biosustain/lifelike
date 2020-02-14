@@ -91,3 +91,12 @@ export interface AssociationSentence {
     score: number;
     sentence: string;
 }
+
+export interface FTSNodeScore {
+  node: GraphNode;
+  score: number;
+}
+
+export interface FTSearchResult {
+  nodes: Array<FTSNodeScore>;
+}
