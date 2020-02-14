@@ -1,4 +1,6 @@
-<mat-sidenav-container class="sidenav-container">
+<!-- According to the Angular Material docs (https://material.angular.io/components/sidenav/api#MatSidenavContainer),
+we should be careful using 'autosize', as it may lead to performance problems.-->
+<mat-sidenav-container class="sidenav-container" autosize="true">
   <mat-sidenav-content class="sidenav-content">
     <div id="mat-sidenav-content-container">
       <app-visualization-quickbar (animationStatus)="toggleAnimation($event)"></app-visualization-quickbar>
@@ -37,7 +39,12 @@
   <mat-sidenav class="sidenav" #sidenav position="end" mode="side" [(opened)]="sidenavOpened">
     <div id="mat-sidenav-container">
       <h1>Canvas Data View</h1>
-      <h4>(Select something on the canvas to see some data!)</h4>
+      <div [ngSwitch]="sidenavEntityType">
+        <h4 *ngSwitchCase="'node'">Oooooo! Some node data!</h4>
+        <h4 *ngSwitchCase="'edge'">Oooooo! Some edge data!</h4>
+        <h4 *ngSwitchCase="'cluster'">Oooooo! Some cluster data!</h4>
+        <h4 *ngSwitchCase="'null'">(Select something on the canvas to see some data!)</h4>
+      </div>
     </div>
   </mat-sidenav>
 </mat-sidenav-container>
