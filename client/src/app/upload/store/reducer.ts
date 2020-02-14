@@ -30,6 +30,13 @@ export const neo4jReducer = createReducer(
             fileNameAndSheets: action.payload,
         }),
     ),
+    on(
+        Neo4jActions.saveNodeMapping,
+        (state, action) => ({
+            ...state,
+            nodeMappingHelper: action.payload,
+        }),
+    ),
 );
 
 export function reducer(state: State, action: Action) {

@@ -115,6 +115,9 @@
       [chosenSheetToMap]="chosenSheetToMap"
       (emitter)="saveColumnMapping($event)"
     ></app-neo4j-upload-node> -->
-    <app-import-column-mapping [chosenSheetToMap]="chosenSheetToMap"></app-import-column-mapping>
+    <app-import-column-mapping
+      [chosenSheetToMap]="chosenSheetToMap"
+      (nextStep)="goToMapNodeProperties()"
+    ></app-import-column-mapping>
   </mat-step>
 </mat-horizontal-stepper>
