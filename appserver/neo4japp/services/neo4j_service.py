@@ -98,10 +98,17 @@ class Neo4JService(BaseDao):
                     edges=[r.to_dict() for r in rel_dict.values()])
 
     def fulltext_search(self, term: str):
+        # cypher_escape requires empty strings to be escaped with backticks
+        if term.strip():
+            query_term = term
+        else:
+            query_term = '``'
+        # TODO: Find a better search algorithm
+        # The query uses fuzzy matching, denoted by the tidle '~'
         query = """
-            CALL db.index.fulltext.queryNodes("names", "{search_term}")
+            CALL db.index.fulltext.queryNodes("names", "{search_term}~0.5")
             YIELD node, score RETURN node, score
-        """.format(search_term=cypher.cypher_escape(term))
+        """.format(search_term=cypher.cypher_escape(query_term))
         records = self.graph.run(query).data()
 
         nodes = [FTSNodeScore(r['node'], r['score']) for r in records]
