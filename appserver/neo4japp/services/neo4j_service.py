@@ -155,6 +155,11 @@ class Neo4JService(BaseDao):
         labels = self.graph.run('call db.labels()').data()
         return [label['label'] for label in labels]
 
+    def get_db_relationship_types(self) -> List[str]:
+        """Get all relationship types from database."""
+        relationship_types = self.graph.run('call db.relationshipTypes()').data()
+        return [rt['relationshipType'] for rt in relationship_types]
+
     def get_node_properties(self, node_label) -> Dict[str, List[str]]:
         """Get all properties of a label."""
         props = self.graph.run(f'match (n: {node_label}) unwind keys(n) as key return distinct key').data()

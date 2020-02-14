@@ -1,21 +1,82 @@
-<!--
-  fxLayout is inverted due to the horizontal stepper
--->
 <div
   fxLayout="column"
   fxLayoutGap="30px"
 >
-  <!-- column name table -->
+  <div>
+    <div>Preview of Uploaded Worksheet</div>
+    <mat-table [dataSource]="chosenSheetToMap?.sheetPreview">
+      <mat-header-row *matHeaderRowDef="columnsForFilePreview"></mat-header-row>
+      <mat-row *matRowDef="let row; let i=index; columns: columnsForFilePreview;" [attr.id]="'file-preview-row-'+i"></mat-row>
+
+      <ng-container *ngFor="let col of columnsForFilePreview" [matColumnDef]="col">
+        <mat-header-cell *matHeaderCellDef>{{ col }}</mat-header-cell>
+        <mat-cell *matCellDef="let i=index;">{{ chosenSheetToMap?.sheetPreview[i][col] }}</mat-cell>
+      </ng-container>
+    </mat-table>
+  </div>
+
+  <div>
+    <div>Add Relationship Mapping</div>
+    <div>
+      <button
+        mat-stroked-button
+        type="button"
+        color="accent"
+        (click)="addRelationshipMappingRow()"
+      >Add Relationship Mapping Row</button>
+    </div>
+  </div>
+
+  <div [formGroup]="relationshipMappingForm">
+    <div formArrayName="relationshipMapping">
+      <div *ngFor="let row of relationshipMappingForm.get('relationshipMapping').controls; let i=index">
+        <div [formGroupName]="i">
+          <app-import-column-relationship-mapping-row
+            [columnHeaders]="chosenSheetToMap?.sheetColumnNames"
+            [relationshipMappingForm]="relationshipMappingForm.get('relationshipMapping').controls[i]"
+            (deleteMapping)="deleteRelationshipMappingRow(i)"
+          ></app-import-column-relationship-mapping-row>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <button
+      mat-stroked-button
+      type="button"
+      (click)="createRelationshipMapping()"
+    >Upload</button>
+  </div>
+</div>
+
+
+
+
+
+
+
+
+
+<!-- 
+
+
+
+
+
+
+
+
+
+<div
+  fxLayout="column"
+  fxLayoutGap="30px"
+>
   <div [formGroup]="columnMappingForm">
-    <!-- <div>
-      <strong>Unique ID</strong>: This is the column that is unique and used to identify a node (and for indexing). Usually the name column.<br>
-      <strong>Exclude</strong>: Excluded columns will not be included as node properties in the graph database.<br>
-    </div> -->
     <mat-table [dataSource]="chosenSheetToMap?.sheetColumnNames" formArrayName="columnMapping">
       <mat-header-row *matHeaderRowDef="columns"></mat-header-row>
       <mat-row *matRowDef="let row; let i=index; columns: columns;" [attr.id]="'file-column-name-row-'+i"></mat-row>
 
-      <!-- begin creating table -->
       <ng-container matColumnDef="columnName">
         <mat-header-cell *matHeaderCellDef>Column Name</mat-header-cell>
         <mat-cell *matCellDef="let object; let i=index;">{{ (object | keyvalue)[0].key }}</mat-cell>
@@ -105,7 +166,6 @@
       </ng-container>
     </mat-table>
   </div>
-  <!-- end column name table -->
 
   <div>
     <button
@@ -114,4 +174,4 @@
       (click)="createColumnMapping()"
     >Save</button>
   </div>
-</div>
+</div> -->

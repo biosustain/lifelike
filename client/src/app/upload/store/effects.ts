@@ -25,6 +25,8 @@ import {
     uploadNodeMappingSuccess,
     uploadRelationshipMapping,
     uploadRelationshipMappingSuccess,
+    getDbRelationshipTypes,
+    getDbRelationshipTypesSuccess,
 } from './actions';
 
 // import * as SnackbarActions from 'recon/shared/actions/snackbar-display.actions';
@@ -45,6 +47,16 @@ export class Neo4jEffects {
         switchMap(() => this.neo4jService.getDbLabels()
             .pipe(
                 map(labels => getDbLabelsSuccess({payload: labels})),
+            ),
+        ),
+    ));
+
+    getDbRelationshipTypes = createEffect(() => this.actions$.pipe(
+        ofType(getDbRelationshipTypes),
+        map(action => action),
+        switchMap(() => this.neo4jService.getDbRelationshipTypes()
+            .pipe(
+                map(relationshipTypes => getDbRelationshipTypesSuccess({payload: relationshipTypes})),
             ),
         ),
     ));

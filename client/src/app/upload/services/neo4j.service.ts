@@ -17,6 +17,11 @@ export class Neo4jService {
             `${this.neo4jAPI}/get-db-labels`).pipe(map(resp => resp.result));
     }
 
+    getDbRelationshipTypes(): Observable<string[]> {
+        return this.http.get<{result: string[]}>(
+            `${this.neo4jAPI}/get-db-relationship-types`).pipe(map(resp => resp.result));
+    }
+
     getNodeProperties(nodeLabel): Observable<{ [key: string]: string[] }> {
         return this.http.get<{result: { [key: string]: string[] }}>(
             `${this.neo4jAPI}/get-node-properties`,
