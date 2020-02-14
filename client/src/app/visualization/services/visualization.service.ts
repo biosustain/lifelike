@@ -3,7 +3,12 @@ import { HttpClient } from '@angular/common/http';
 
 import { map } from 'rxjs/operators';
 
-import { Neo4jResults, AssociationData, AssociationSentence } from 'app/interfaces';
+import {
+    AssociationData,
+    AssociationSentence,
+    FTSearchResult,
+    Neo4jResults,
+} from 'app/interfaces';
 import { NODE_EXPANSION_LIMIT } from 'app/shared/constants';
 
 @Injectable()
@@ -54,6 +59,12 @@ export class VisualizationService {
     getSentences(association: AssociationData) {
         return this.http.post<{result: AssociationSentence[]}>(
             `${this.visApi}/get-sentences`, {...association},
+        ).pipe(map(resp => resp.result));
+    }
+
+    searchGraphDatabase(query: string) {
+        return this.http.post<{result: FTSearchResult}>(
+            `${this.visApi}/search`, {query},
         ).pipe(map(resp => resp.result));
     }
 }

@@ -4,6 +4,8 @@ import { DataSet } from 'vis-network';
 
 import {
     AssociationData,
+    FTSNodeScore,
+    GraphNode,
     Neo4jResults,
     Neo4jGraphConfig,
     VisNode,
@@ -22,8 +24,8 @@ export class VisualizationComponent implements OnInit {
 
     networkGraphData: Neo4jResults;
     networkGraphConfig: Neo4jGraphConfig;
-    nodes: DataSet<VisNode>;
-    edges: DataSet<VisEdge>;
+    nodes: DataSet<VisNode | GraphNode>;
+    edges: DataSet<VisEdge | GraphNode>;
 
     // NOTE: May use this as input to a legend component in the future.
     legend: Map<string, string[]>;
@@ -149,5 +151,12 @@ export class VisualizationComponent implements OnInit {
                 }
             });
         });
+    }
+
+    updateCanvasWithSingleNode(data: FTSNodeScore) {
+        this.nodes.clear();
+        this.edges.clear();
+        const node = data.node;
+        this.nodes.add(node);
     }
 }
