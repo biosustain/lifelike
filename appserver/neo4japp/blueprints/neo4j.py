@@ -36,6 +36,10 @@ class UploadFileRequest(CamelDictMixin):
 class NodePropertiesRequest(CamelDictMixin):
     node_label: str = attr.ib()
 
+@attr.s(frozen=True)
+class SearchRequest(CamelDictMixin):
+    query: str = attr.ib()
+
 
 @bp.route('/', methods=['POST'])
 @jsonify_with_class(GraphRequest)
@@ -140,3 +144,11 @@ def upload_relationship_mapping(req: Neo4jColumnMapping):
     neo4j.save_relationship_to_neo4j(req)
 
     return SuccessResponse(result='', status_code=200)
+
+
+@bp.route('/search', methods=['POST'])
+@jsonify_with_class(SearchRequest)
+def fulltext_search(req: SearchRequest):
+    neo4j = get_neo4j_service_dao()
+    results = neo4j.fulltext_search(req.query)
+    return SuccessResponse(result=results, status_code=200)
