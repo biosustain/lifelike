@@ -19,6 +19,11 @@ export const selectDbLabels: MemoizedSelector<object, string[]> = createSelector
     (state: State): string[] => state.dbLabels,
 );
 
+export const selectDbRelationshipTypes: MemoizedSelector<object, string[]> = createSelector(
+    neo4jState,
+    (state: State): string[] => state.dbRelationshipTypes,
+);
+
 export const selectNodeProperties: MemoizedSelector<object, { [key: string]: string[] }> = createSelector(
     neo4jState,
     (state: State): { [key: string]: string[] } => state.nodeProperties,

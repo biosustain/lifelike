@@ -7,16 +7,18 @@ import { Store } from '@ngrx/store';
 import { State } from '../../root-store';
 
 import { getNodeProperties } from '../store/actions';
+import { ColumnNameIndex } from 'src/app/interfaces';
 
 @Component({
   selector: 'app-import-column-mapping-row',
   templateUrl: 'import-column-mapping-row.component.html'
 })
 export class ImportColumnMappingRowComponent {
-    @Input() columnHeaders: string[];
+    @Input() columnHeaders: ColumnNameIndex[];
     @Input() columnMappingForm: FormGroup;
     @Input() existingNodeLabels: string[];
     @Input() existingNodeProperties: string[];
+    @Input() relationshipTypes: string[];
 
     @Output() deleteMapping: EventEmitter<boolean>;
 

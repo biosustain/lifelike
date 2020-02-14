@@ -215,7 +215,7 @@ export class Neo4jUploadNodeComponent implements OnChanges {
                 mappedNodeType: null,
                 nodeProperties: {},
                 mappedNodeProperty: {},
-                uniqueProperty: null,
+                // uniqueProperty: null,
             },
             relationship: {
                 edge: null,
@@ -269,18 +269,18 @@ export class Neo4jUploadNodeComponent implements OnChanges {
                     }
                 }
 
-                if (group.controls.unique.value) {
-                    // unique property will be used to filter and get node in backend
-                    if (group.controls.mappedNodeProperty.value) {
-                        // if the property is from a column that was mapped
-                        // to a KG node property
-                        // then use that node property
-                        mapping.node.uniqueProperty = group.controls.mappedNodeProperty.value;
-                    } else {
-                        // use the column header as property
-                        mapping.node.uniqueProperty = Object.keys(group.controls.columnName.value)[0] as string;
-                    }
-                }
+                // if (group.controls.unique.value) {
+                //     // unique property will be used to filter and get node in backend
+                //     if (group.controls.mappedNodeProperty.value) {
+                //         // if the property is from a column that was mapped
+                //         // to a KG node property
+                //         // then use that node property
+                //         mapping.node.uniqueProperty = group.controls.mappedNodeProperty.value;
+                //     } else {
+                //         // use the column header as property
+                //         mapping.node.uniqueProperty = Object.keys(group.controls.columnName.value)[0] as string;
+                //     }
+                // }
             }
 
             // relationship mapping

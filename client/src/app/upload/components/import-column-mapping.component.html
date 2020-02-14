@@ -33,7 +33,7 @@
         mat-stroked-button
         type="button"
         color="accent"
-        (click)="addMappingRow()"
+        (click)="addColumnMappingRow()"
       >Add Mapping Row</button>
     </div>
   </div>
@@ -45,6 +45,7 @@
           <app-import-column-mapping-row
             [columnHeaders]="chosenSheetToMap?.sheetColumnNames"
             [columnMappingForm]="columnMappingForm.get('columnMapping').controls[i]"
+            [relationshipTypes]="dbRelationshipTypes$ | async"
             [existingNodeLabels]="dbNodeTypes$ | async"
             [existingNodeProperties]="dbNodeProperties$ | async"
             (deleteMapping)="deleteMappingRow(i)"
@@ -55,10 +56,36 @@
   </div>
 
   <div>
+    <div>Add Node Property Mapping</div>
+    <div>
+      <button
+        mat-stroked-button
+        type="button"
+        color="accent"
+        (click)="addNodePropertyMappingRow()"
+      >Add Node Property Mapping Row</button>
+    </div>
+  </div>
+
+  <div [formGroup]="nodePropertyMappingForm">
+    <div formArrayName="nodePropertyMapping">
+      <div *ngFor="let row of nodePropertyMappingForm.get('nodePropertyMapping').controls; let i=index">
+        <div [formGroupName]="i">
+          <app-import-column-node-property-mapping-row
+            [columnHeaders]="chosenSheetToMap?.sheetColumnNames"
+            [nodePropertyMappingForm]="nodePropertyMappingForm.get('nodePropertyMapping').controls[i]"
+            (deleteMapping)="deleteColumnNodePropertyMappingRow(i)"
+          ></app-import-column-node-property-mapping-row>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div>
     <button
       mat-stroked-button
       type="button"
-      (click)="goToMapNodeProperties()"
+      (click)="createNodeMappings()"
     >Next</button>
   </div>
 </div>
