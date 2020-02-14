@@ -1,14 +1,16 @@
-import { Component, Input, OnChanges } from '@angular/core';
+import { Component, Input, OnChanges, Output, EventEmitter } from '@angular/core';
+import { FormGroup, FormBuilder, FormArray } from '@angular/forms';
+
 import { Store, select } from '@ngrx/store';
 
 import { Observable } from 'rxjs';
 
 import { State } from '../../root-store';
 
-import { SheetNameAndColumnNames } from 'src/app/interfaces';
+import { SheetNameAndColumnNames, Neo4jNodeMapping, NodeMappingHelper } from 'src/app/interfaces';
 
 import { Neo4jSelectors as selectors } from '../store';
-import { FormGroup, FormBuilder, FormArray } from '@angular/forms';
+import { saveNodeMapping } from '../store/actions';
 
 @Component({
     selector: 'app-import-column-mapping',
@@ -17,6 +19,7 @@ import { FormGroup, FormBuilder, FormArray } from '@angular/forms';
 })
 export class ImportColumnMappingComponent implements OnChanges {
     @Input() chosenSheetToMap: SheetNameAndColumnNames;
+    @Output() nextStep: EventEmitter<boolean>;
 
     dbNodeTypes$: Observable<string[]>;
     dbNodeProperties$: Observable<{[key: string]: string[]}>;
@@ -24,7 +27,7 @@ export class ImportColumnMappingComponent implements OnChanges {
     columnsForFilePreview: string[];
     worksheetDomain: string;
 
-    columnMappingRelationshipForm: FormGroup;
+    columnMappingForm: FormGroup;
 
     constructor(
         private fb: FormBuilder,
@@ -35,7 +38,8 @@ export class ImportColumnMappingComponent implements OnChanges {
 
         this.columnsForFilePreview = [];
         this.worksheetDomain = '';
-        this.columnMappingRelationshipForm = this.fb.group({columnMapping: this.fb.array([])});
+        this.columnMappingForm = this.fb.group({columnMapping: this.fb.array([])});
+        this.nextStep = new EventEmitter();
     }
 
     ngOnChanges() {
@@ -47,7 +51,7 @@ export class ImportColumnMappingComponent implements OnChanges {
     }
 
     addMappingRow() {
-        const form = this.columnMappingRelationshipForm.get('columnMapping') as FormArray;
+        const form = this.columnMappingForm.get('columnMapping') as FormArray;
         const row = this.fb.group({
             columnHeader: [''],
             newNodeLabel: [''],
@@ -58,10 +62,23 @@ export class ImportColumnMappingComponent implements OnChanges {
     }
 
     deleteMappingRow(idx) {
-        (this.columnMappingRelationshipForm.get('columnMapping') as FormArray).removeAt(idx);
+        (this.columnMappingForm.get('columnMapping') as FormArray).removeAt(idx);
     }
 
     goToMapNodeProperties() {
-        console.log(this.columnMappingRelationshipForm)
+        const nodeMapping = {} as NodeMappingHelper;
+        const columnMappingFormArray = this.columnMappingForm.get('columnMapping') as FormArray;
+
+        columnMappingFormArray.controls.forEach((group: FormGroup) => {
+            nodeMapping[Object.values(group.controls.columnHeader.value)[0] as number] = {
+                nodeType: group.controls.newNodeLabel.value,
+                mappedNodeType: group.controls.mappedNodeLabel.value,
+                mappedNodeProperty: group.controls.mappedNodeProperty.value,
+            } as Neo4jNodeMapping;
+        });
+
+        nodeMapping.worksheetDomain = this.worksheetDomain;
+        this.store.dispatch(saveNodeMapping({payload: nodeMapping}));
+        this.nextStep.emit(true);
     }
 }
