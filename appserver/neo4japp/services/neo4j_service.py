@@ -1,8 +1,8 @@
 import attr
 
-from typing import Dict, List, Optional
+from typing import Dict, List, NamedTuple, Optional, Union
 
-from py2neo import NodeMatcher, RelationshipMatcher
+from py2neo import cypher, NodeMatcher, RelationshipMatcher
 from werkzeug.datastructures import FileStorage
 
 from neo4japp.services.common import BaseDao
@@ -25,6 +25,14 @@ from py2neo import (
     RelationshipMatcher,
 )
 
+@attr.s(frozen=True)
+class FTSNodeScore(CamelDictMixin):
+    node: Union[Node, GraphNode] = attr.ib()
+    score: float = attr.ib()
+
+@attr.s(frozen=True)
+class FTSearchResult(CamelDictMixin):
+    nodes: List[FTSNodeScore] = attr.ib()
 
 @attr.s(frozen=True)
 class FileNameAndSheets(CamelDictMixin):
@@ -98,6 +106,28 @@ class Neo4JService(BaseDao):
                 rel_dict[graph_rel.id] = graph_rel
         return dict(nodes=[n.to_dict() for n in node_dict.values()],
                     edges=[r.to_dict() for r in rel_dict.values()])
+
+    def fulltext_search(self, term: str):
+        # cypher_escape requires empty strings to be escaped with backticks
+        if term.strip():
+            query_term = term
+        else:
+            query_term = '``'
+        # TODO: Find a better search algorithm
+        # The query uses fuzzy matching, denoted by the tidle '~'
+        query = """
+            CALL db.index.fulltext.queryNodes("names", "{search_term}~0.5")
+            YIELD node, score RETURN node, score
+        """.format(search_term=cypher.cypher_escape(query_term))
+        records = self.graph.run(query).data()
+
+        nodes = [FTSNodeScore(r['node'], r['score']) for r in records]
+
+        record_nodes = [FTSNodeScore(
+            GraphNode.from_py2neo(
+                n.node, display_fn=lambda x: x.get('name')), n.score) for n in nodes]
+        sorted_nodes = sorted(record_nodes, key=lambda n: n.score, reverse=True)
+        return FTSearchResult(nodes=sorted_nodes)
 
     def get_organisms(self):
         nodes = list(NodeMatcher(self.graph).match(NODE_SPECIES))
