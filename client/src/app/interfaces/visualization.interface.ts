@@ -1,6 +1,20 @@
 import { IdType } from 'vis-network';
 
-import { GraphNode, GraphRelationship, AssociationSentence } from './neo4j.interface';
+import { GraphNode, GraphRelationship } from './neo4j.interface';
+
+export interface AssociationData {
+    fromNode: number;
+    toNode: number;
+    association: string;
+}
+
+export interface AssociationSnippet {
+    entry1Text: string;
+    entry2Text: string;
+    id: string;
+    score: number;
+    sentence: string;
+}
 
 export interface GroupRequest {
     relationship: string;
@@ -10,6 +24,23 @@ export interface GroupRequest {
 export interface GetLabelsResult {
     validLabels: Set<string>;
     invalidLabels: Set<string>;
+}
+
+export interface GetSnippetsResult {
+    references: AssociationSnippet[];
+    fromNode: number;
+    toNode: number;
+    association: string;
+}
+
+export interface ReferenceTableRow {
+    node: GraphNode;
+    edges: GraphRelationship[];
+}
+
+export interface ReferenceTableSelection {
+    referenceTableRow: ReferenceTableRow;
+    edgeLabel: string;
 }
 
 export interface SidenavEntity {
@@ -23,7 +54,8 @@ export interface SidenavNodeEntity extends SidenavEntity {
 export interface SidenavEdgeEntity extends SidenavEntity {
     to: GraphNode;
     from: GraphNode;
-    references: AssociationSentence;
+    association: string;
+    references: AssociationSnippet[];
 }
 
 export interface SidenavClusterEntity extends SidenavEntity {

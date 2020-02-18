@@ -2,8 +2,9 @@
   *ngIf="networkGraphData"
   [nodes]="nodes"
   [edges]="edges"
+  [getSnippetsResult]="getSnippetsResult"
   [legend]="legend"
   [config]="networkGraphConfig"
   (expandNode)="expandNode($event)"
-  (getSentences)="getSentences($event)"
+  (getSnippets)="getSnippets($event)"
 ></app-visualization-canvas>

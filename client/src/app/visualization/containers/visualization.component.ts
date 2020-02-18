@@ -4,6 +4,7 @@ import { DataSet } from 'vis-network';
 
 import {
     AssociationData,
+    GetSnippetsResult,
     Neo4jResults,
     Neo4jGraphConfig,
     VisNode,
@@ -19,13 +20,12 @@ import { VisualizationService } from '../services/visualization.service';
     styleUrls: ['./visualization.component.scss'],
 })
 export class VisualizationComponent implements OnInit {
-
     networkGraphData: Neo4jResults;
     networkGraphConfig: Neo4jGraphConfig;
     nodes: DataSet<VisNode>;
     edges: DataSet<VisEdge>;
+    getSnippetsResult: GetSnippetsResult;
 
-    // NOTE: May use this as input to a legend component in the future.
     legend: Map<string, string[]>;
 
     constructor(private visService: VisualizationService) {
@@ -41,6 +41,8 @@ export class VisualizationComponent implements OnInit {
             this.nodes = new DataSet(this.networkGraphData.nodes);
             this.edges = new DataSet(this.networkGraphData.edges);
         });
+
+        this.getSnippetsResult = null;
 
         this.networkGraphConfig = {
             interaction: {
@@ -139,16 +141,9 @@ export class VisualizationComponent implements OnInit {
         });
     }
 
-    getSentences(association: AssociationData) {
-        this.visService.getSentences(association).subscribe((result) => {
-            if (result.length === 0) {
-                console.log('No matching sentences found for this association');
-            }
-            result.forEach(associationSentence => {
-                if (associationSentence) {
-                    console.log(associationSentence.sentence);
-                }
-            });
+    getSnippets(association: AssociationData) {
+        this.visService.getSnippets(association).subscribe((result) => {
+            this.getSnippetsResult = result;
         });
     }
 }
