@@ -148,7 +148,7 @@ def upload_relationship_mapping(req: Neo4jColumnMapping):
 
 @bp.route('/search', methods=['POST'])
 @jsonify_with_class(SearchRequest)
-def fulltext_search(req: SearchRequest):
+def prefix_search(req: SearchRequest):
     neo4j = get_neo4j_service_dao()
-    results = neo4j.fulltext_search(req.query)
+    results = neo4j.prefix_search(req.query)
     return SuccessResponse(result=results, status_code=200)
