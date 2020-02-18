@@ -6,25 +6,26 @@ import { Store, select } from '@ngrx/store';
 
 import { Observable, Subscription } from 'rxjs';
 
-import { State } from '../../root-store';
+import { FileNameAndSheets, SheetNameAndColumnNames, Neo4jColumnMapping } from 'app/interfaces/neo4j.interface';
+import { State } from 'app/root-store';
 
 import { Neo4jSelectors as selectors } from '../store';
-import { uploadNeo4jFile, uploadNeo4jColumnMappingFile } from '../store/actions';
+import { uploadNeo4jFile, uploadNodeMapping, getDbLabels, uploadRelationshipMapping } from '../store/actions';
 
-import { FileNameAndSheets, SheetNameAndColumnNames, Neo4jColumnMapping } from '../../interfaces/neo4j.interface';
 
 @Component({
     selector: 'app-neo4j-upload',
     templateUrl: 'neo4j-upload.component.html',
-    styleUrls: ['neo4j-upload.component.sass'],
+    styleUrls: ['neo4j-upload.component.scss'],
 })
 export class Neo4jUploadComponent implements OnInit, OnDestroy {
     @ViewChild('fileInput', { static: true }) fileInput: ElementRef;
     @ViewChild(MatStepper, { static: true }) stepper: MatStepper;
 
+    chosenSheetToMap: SheetNameAndColumnNames;
     fileForm: FormGroup;
     fileName: string;
-    chosenSheetToMap: SheetNameAndColumnNames;
+    relationshipFile: boolean;
 
     fileNameAndSheets$: Observable<FileNameAndSheets>;
     fielNameAndSheetsSub: Subscription;
@@ -38,8 +39,9 @@ export class Neo4jUploadComponent implements OnInit, OnDestroy {
         this.fileName = null;
         this.fileForm = this.fb.group({
             fileInput: null,
-            crossRef: false,
+            crossRef: [false],
         });
+        this.relationshipFile = false;
     }
 
     ngOnInit() {
@@ -74,11 +76,16 @@ export class Neo4jUploadComponent implements OnInit, OnDestroy {
     }
 
     goToMapColumns() {
+        this.store.dispatch(getDbLabels());
         this.stepper.next();
     }
 
-    saveColumnMapping(mapping: Neo4jColumnMapping) {
-        mapping.fileName = this.fileName;
-        this.store.dispatch(uploadNeo4jColumnMappingFile({payload: mapping}));
+    saveColumnMapping(mapping: {data: Neo4jColumnMapping, type: string}) {
+        mapping.data.fileName = this.fileName;
+        if (mapping.type === 'node') {
+            this.store.dispatch(uploadNodeMapping({payload: mapping.data}));
+        } else if (mapping.type === 'relationship') {
+            this.store.dispatch(uploadRelationshipMapping({payload: mapping.data}));
+        }
     }
 }
