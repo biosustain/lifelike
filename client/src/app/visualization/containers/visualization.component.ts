@@ -4,7 +4,6 @@ import { DataSet } from 'vis-network';
 
 import {
     AssociationData,
-    FTSNodeScore,
     GraphNode,
     GraphRelationship,
     Neo4jResults,
@@ -158,10 +157,10 @@ export class VisualizationComponent implements OnInit {
         });
     }
 
-    updateCanvasWithSingleNode(data: FTSNodeScore) {
+    updateCanvasWithSingleNode(data: GraphNode) {
         this.nodes.clear();
         this.edges.clear();
-        const node = this.convertNodeToVisJSFomart(data.node);
+        const node = this.convertNodeToVisJSFomart(data);
         this.nodes.add(node);
     }
 }
