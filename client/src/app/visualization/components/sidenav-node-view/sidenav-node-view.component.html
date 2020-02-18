@@ -1,2 +1,14 @@
 <h1>Node Data View</h1>
-<label>Name:</label><p>{{ nodeEntity.data.displayName }}</p>
+<div>Data:</div>
+<ul>
+  <li>Display Name: {{ nodeEntity.data.displayName }}</li>
+  <li>Label: {{ nodeEntity.data.primaryLabel }}</li>
+  <li>Sublabels:
+    <ul *ngIf="nodeEntity.data.subLabels.length > 1; else noSubLabels">
+      <li *ngFor="let label of nodeEntity.data.subLabels">
+        <div *ngIf="label !== nodeEntity.data.primaryLabel">{{ label }}</div>
+      </li>
+    </ul>
+    <ng-template #noSubLabels>N/A</ng-template>
+  </li>
+</ul>
