@@ -68,6 +68,7 @@ export class VisualizationComponent implements OnInit {
             nodes: {
                 size: 25,
                 shape: 'box',
+                // TODO: Investigate the 'scaling' property for dynamic resizing of 'box' shape nodes
             },
         };
     }

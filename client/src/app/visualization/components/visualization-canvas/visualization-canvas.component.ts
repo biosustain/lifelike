@@ -8,9 +8,19 @@ import {
 
 import { Options } from '@popperjs/core';
 
+import { first, filter } from 'rxjs/operators';
+
 import { Network, DataSet, IdType } from 'vis-network';
 
-import { Neo4jGraphConfig, VisNode, ReferenceTableRow, AssociationData } from 'app/interfaces';
+import {
+    AssociationData,
+    GetLabelsResult,
+    GroupRequest,
+    Neo4jGraphConfig,
+    ReferenceTableRow,
+    VisNode,
+} from 'app/interfaces';
+
 import { uuidv4 } from 'app/shared/utils';
 
 import { ContextMenuControlService } from '../../services/context-menu-control.service';
@@ -34,7 +44,7 @@ export class VisualizationCanvasComponent implements OnInit {
 
     networkGraph: Network;
     selectedNodes: IdType[];
-    selectedNodeEdgeLabels: Set<string>;
+    selectedNodeEdgeLabels: GetLabelsResult;
     selectedEdges: IdType[];
     nodesInHoveredCluster: ReferenceTableRow[];
     clusters: Map<string, string>;
@@ -50,7 +60,7 @@ export class VisualizationCanvasComponent implements OnInit {
     ) {
         this.selectedNodes = [];
         this.selectedEdges = [];
-        this.selectedNodeEdgeLabels = new Set<string>();
+        this.selectedNodeEdgeLabels = {validLabels: new Set<string>(), invalidLabels: new Set<string>()};
         this.nodesInHoveredCluster = [];
 
         this.contextMenuTooltipSelector = '#***ARANGO_USERNAME***-menu';
@@ -88,6 +98,18 @@ export class VisualizationCanvasComponent implements OnInit {
         }
     }
 
+    clearSelectedNodeEdgeLabels() {
+        this.selectedNodeEdgeLabels.validLabels.clear();
+        this.selectedNodeEdgeLabels.invalidLabels.clear();
+    }
+
+    updateSelectedNodeEdgeLabels(selectedNode: IdType) {
+        this.clearSelectedNodeEdgeLabels();
+        const edgeLabelsResult = this.getConnectedEdgeLabels(selectedNode);
+        edgeLabelsResult.validLabels.forEach(label => this.selectedNodeEdgeLabels.validLabels.add(label));
+        edgeLabelsResult.invalidLabels.forEach(label => this.selectedNodeEdgeLabels.invalidLabels.add(label));
+    }
+
     collapseNeighbors(***ARANGO_USERNAME***Node: VisNode) {
         // Get all the nodes connected to the ***ARANGO_USERNAME*** node, before removing edges
         const connectedNodes = this.networkGraph.getConnectedNodes(***ARANGO_USERNAME***Node.id) as IdType[];
@@ -123,6 +145,15 @@ export class VisualizationCanvasComponent implements OnInit {
     }
 
     /**
+     * Gets the shared edges between the two input nodes.
+     */
+    getEdgesBetweenNodes(src: IdType, dest: IdType) {
+        return this.networkGraph.getConnectedEdges(src).filter(
+            edge => this.networkGraph.getConnectedEdges(dest).includes(edge)
+        );
+    }
+
+    /**
      * Check that the input is a normal edge and that it isn't currently clustered.
      * Normal edges are numbers, cluster edges are strings. `getClusteredEdges` is
      * used here to deterimine if the input edge is currently clustered; The
@@ -135,17 +166,63 @@ export class VisualizationCanvasComponent implements OnInit {
     }
 
     /**
+     * Gets all the neighbors of the given node connected by the given relationship.
+     * @param relationship string representing the connecting relationship
+     * @param node id of the ***ARANGO_USERNAME*** node
+     */
+    getNeighborsWithRelationship(relationship: string, node: IdType) {
+        return this.networkGraph.getConnectedEdges(node).filter(
+            (edgeId) => this.isNotAClusterEdge(edgeId) && this.edges.get(edgeId).label === relationship
+        ).map(
+            connectedEdgeWithRel => (this.networkGraph.getConnectedNodes(connectedEdgeWithRel) as IdType[]).filter(
+                nodeId => nodeId !== node
+            )[0]
+        );
+    }
+
+    /**
      * Gets a set of labels from the edges connected to the input node.
      * @param selectedNode the ID of the node whose edge labels we want to get
      */
     getConnectedEdgeLabels(selectedNode: IdType) {
-        this.selectedNodeEdgeLabels.clear();
-        const connectedEdges = this.networkGraph.getConnectedEdges(selectedNode);
-        connectedEdges.forEach((edge) => {
-            if (this.isNotAClusterEdge(edge)) {
-                this.selectedNodeEdgeLabels.add(this.edges.get(edge).label);
+        const clusterNodeCandidates = (this.networkGraph.getConnectedNodes(selectedNode) as IdType[]).filter(
+            node => !this.networkGraph.isCluster(node)
+        );
+        const candidateLabels = new Set<string>();
+        const invalidLabels = new Set<string>();
+        const validLabels = new Set<string>();
+
+        this.networkGraph.getConnectedEdges(selectedNode).filter(
+            edge => this.isNotAClusterEdge(edge)
+        ).forEach(
+            edge => candidateLabels.add(this.edges.get(edge).label)
+        );
+
+        // TODO: Possible performance (both space & time) improvement opportunity here
+        // Check that all the depth-2 neighbors of each cluster candidate node is connected to all other
+        // candidate nodes. Otherwise we might have nodes connected to the cluster that aren't associated with
+        // all of its component nodes
+        clusterNodeCandidates.forEach(clusterNodeCandidate => {
+            this.networkGraph.getConnectedNodes(clusterNodeCandidate).forEach(nodeConnectedToCandidate => {
+                if (!clusterNodeCandidates.every(
+                    candidate => (this.networkGraph.getConnectedNodes(nodeConnectedToCandidate) as IdType[]).includes(candidate))
+                ) {
+                    this.getEdgesBetweenNodes(clusterNodeCandidate, selectedNode).map(
+                        edgeId => this.edges.get(edgeId).label
+                    ).forEach(
+                        invalidLabel => invalidLabels.add(invalidLabel)
+                    );
+                }
+            });
+        });
+
+        candidateLabels.forEach(label => {
+            if (!invalidLabels.has(label)) {
+                validLabels.add(label);
             }
         });
+
+        return {validLabels, invalidLabels} as GetLabelsResult;
     }
 
     createClusterSvg(clusterDisplayNames: string[], totalClusteredNodes: number) {
@@ -189,17 +266,9 @@ export class VisualizationCanvasComponent implements OnInit {
      * node cnonected by the input relationship.
      * @param rel a string representing the relationship the neighbors will be clustered on
      */
-    groupNeighborsWithRelationship(rel: string) {
-        const ***ARANGO_USERNAME***Node = this.selectedNodes[0];
-        const connectedEdgesWithRel = this.networkGraph.getConnectedEdges(***ARANGO_USERNAME***Node).filter(
-            (edgeId) => this.isNotAClusterEdge(edgeId) && this.edges.get(edgeId).label === rel
-        );
-        const neighborNodesWithRel = connectedEdgesWithRel.map(
-            connectedEdgeWithRel => (this.networkGraph.getConnectedNodes(connectedEdgeWithRel) as IdType[]).filter(
-                nodeId => nodeId !== ***ARANGO_USERNAME***Node
-            )[0]
-        );
-
+    groupNeighborsWithRelationship(groupRequest: GroupRequest) {
+        const { relationship, node} = groupRequest;
+        const neighborNodesWithRel = this.getNeighborsWithRelationship(relationship, node);
         const clusterDisplayNames: string[] = neighborNodesWithRel.map(
             (nodeId) => {
                 let displayName = this.nodes.get(nodeId).displayName;
@@ -212,7 +281,7 @@ export class VisualizationCanvasComponent implements OnInit {
         const url = this.createClusterSvg(clusterDisplayNames, neighborNodesWithRel.length);
 
         this.networkGraph.cluster({
-            joinCondition: (node) => neighborNodesWithRel.includes(node.id),
+            joinCondition: (n) => neighborNodesWithRel.includes(n.id),
             clusterNodeProperties: {
                 image: url,
                 label: null,
@@ -223,12 +292,36 @@ export class VisualizationCanvasComponent implements OnInit {
                 // @ts-ignore
                 allowSingleNodeCluster: true,
             },
+            clusterEdgeProperties: {
+                label: null,
+            },
             processProperties: (clusterOptions) => {
                 const newClusterId = `cluster:${uuidv4()}`;
-                this.clusters.set(newClusterId, rel);
+                this.clusters.set(newClusterId, relationship);
                 return {...clusterOptions, id: newClusterId};
             }
         });
+
+        this.updateSelectedNodeEdgeLabels(node);
+    }
+
+    removeEdges(edges: IdType[]) {
+        edges.forEach(edge => {
+            this.edges.remove(edge);
+        });
+    }
+
+    removeNodes(nodes: IdType[]) {
+        nodes.forEach(node => {
+            this.networkGraph.getConnectedEdges(node).forEach(edge => {
+                this.edges.remove(edge);
+            });
+            this.nodes.remove(node);
+        });
+    }
+
+    selectNeighbors(node: IdType) {
+        this.networkGraph.selectNodes(this.networkGraph.getConnectedNodes(node) as IdType[]);
     }
 
     /**
@@ -238,6 +331,16 @@ export class VisualizationCanvasComponent implements OnInit {
      */
     openMetadataSidebar(nodeRef: ReferenceTableRow) {
         const clusterId = this.networkGraph.findNode(nodeRef.nodeId)[0] as string;
+        this.networkGraph.getConnectedNodes(clusterId).forEach(node => {
+            this.networkGraph.getConnectedEdges(node).forEach(edge => {
+                const edgeData = this.edges.get(edge);
+                if (edgeData !== null && (edgeData.from === nodeRef.nodeId || edgeData.to === nodeRef.nodeId)) {
+                    console.log(edgeData);
+                }
+            });
+        });
+
+
         const clusteredRelationship = this.clusters.get(clusterId);
         const relatedTo = this.nodes.get(this.networkGraph.getConnectedNodes(clusterId)[0] as number).displayName;
         this.getSentences.emit({
@@ -295,6 +398,9 @@ export class VisualizationCanvasComponent implements OnInit {
 
     onDragStartCallback(params: any) {
         this.hideAllTooltips();
+        if (this.networkGraph.isCluster(params.nodes[0]) || !this.nodes.get(params.nodes[0])) {
+            this.referenceTableControlService.interruptReferenceTable();
+        }
     }
 
     onHoverNodeCallback(params: any) {
@@ -305,33 +411,45 @@ export class VisualizationCanvasComponent implements OnInit {
                 }
             );
 
-            // Update the canvas location
-            const canvas = document.querySelector('canvas').getBoundingClientRect() as DOMRect;
-            const contextMenuXPos = params.pointer.DOM.x + canvas.x;
-            const contextMenuYPos = params.pointer.DOM.y + canvas.y;
+            this.referenceTableControlService.delayReferenceTable();
+            this.referenceTableControlService.showReferenceTableResult$.pipe(
+                first(),
+                filter(showGroupByRel => showGroupByRel),
+            ).subscribe(() => {
+                // Update the canvas location
+                const clusterPosition = this.networkGraph.getPositions(params.node)[`${params.node}`]; // Cluster x and y
+                const clusterDOMPos = this.networkGraph.canvasToDOM(clusterPosition);
 
-            this.referenceTableControlService.updatePopper(contextMenuXPos, contextMenuYPos);
-            this.referenceTableControlService.showTooltip();
-            return;
+                const canvas = document.querySelector('canvas').getBoundingClientRect() as DOMRect;
+                const referenceTableXPos = clusterDOMPos.x + canvas.x;
+                const referenceTableYPos = clusterDOMPos.y + canvas.y;
+
+                this.referenceTableControlService.updatePopper(referenceTableXPos, referenceTableYPos);
+                this.referenceTableControlService.showTooltip();
+            });
         } else if (!this.nodes.get(params.node)) {
-            return;
+            // TODO: Add on-hover edge effects
+        } else {
+            // This produces an 'enlarge effect'
+            // TODO: Currently this does nothing, because the size property does not change 'box' shape nodes.
+            // May be able to use the 'scaling' property to produce the desired effect.
+            // const node = this.nodes.get(params.node);
+            // const updatedNode = {...node, size: this.config.nodes.size * 1.5};
+            // this.nodes.update(updatedNode);
         }
-
-        // This produces an 'enlarge effect'
-        const node = this.nodes.get(params.node);
-        const updatedNode = {...node, size: this.config.nodes.size * 1.5};
-        this.nodes.update(updatedNode);
     }
 
     onBlurNodeCallback(params: any) {
         if (this.networkGraph.isCluster(params.node) || !this.nodes.get(params.node)) {
-            return;
+            this.referenceTableControlService.interruptReferenceTable();
+        } else {
+            // This produces a 'shrink effect'
+            // TODO: Currently this does nothing, because the size property does not change 'box' shape nodes.
+            // May be able to use the 'scaling' property to produce the desired effect.
+            // const node = this.nodes.get(params.node);
+            // const updateNode = {...node, size: this.config.nodes.size};
+            // this.nodes.update(updateNode);
         }
-
-        // This produces a 'shrink effect'
-        const node = this.nodes.get(params.node);
-        const updateNode = {...node, size: this.config.nodes.size};
-        this.nodes.update(updateNode);
     }
 
     onDoubleClickCallback(params: any) {
@@ -350,8 +468,6 @@ export class VisualizationCanvasComponent implements OnInit {
     }
 
     onContextCallback(params: any) {
-        this.selectedNodeEdgeLabels.clear();
-
         const hoveredNode = this.networkGraph.getNodeAt(params.pointer.DOM);
 
         if (this.networkGraph.isCluster(hoveredNode)) {
@@ -389,8 +505,12 @@ export class VisualizationCanvasComponent implements OnInit {
             this.networkGraph.unselectAll();
         }
 
-        if (this.selectedNodes.length === 1) {
-            this.getConnectedEdgeLabels(this.selectedNodes[0]);
+        if (this.selectedNodes.length === 1 && this.selectedEdges.length === 0) {
+            this.updateSelectedNodeEdgeLabels(this.selectedNodes[0]);
+        } else {
+            // Clean up the selected node edge labels even if we selected more than one node, or any edges
+            // (this should prevent stale data in the context menu component)
+            this.clearSelectedNodeEdgeLabels();
         }
         this.contextMenuControlService.showTooltip();
       }

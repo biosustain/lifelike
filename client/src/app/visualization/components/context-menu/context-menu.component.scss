@@ -2,6 +2,10 @@
     display: none;
 }
 
+#single-node-selection-group-1-submenu {
+    display: none;
+}
+
 .context-menu {
     background: #D4E2F4;
     border-radius: 2px;
@@ -27,8 +31,11 @@
     background: #C5C6C7;
 }
 
-#group-1-submenu {
-    display: none;
+.invalid-edge-label {
+    color: #A5B0C0;
+}
+.invalid-edge-label:hover {
+    background: #D4E2F4;
 }
 
 .fade-out {
