@@ -9,7 +9,7 @@ from neo4japp.services.common import BaseDao
 from neo4japp.models import GraphNode, GraphRelationship
 from neo4japp.constants import *
 from neo4japp.factory import cache
-from neo4japp.util import CamelDictMixin, compute_hash
+from neo4japp.util import CamelDictMixin, compute_hash, snake_to_camel_dict
 from neo4japp.services.common import BaseDao
 
 from openpyxl import load_workbook
@@ -132,12 +132,12 @@ class Neo4JService(BaseDao):
     def get_association_snippets(self, from_node: int, to_node: int, association: str):
         query = self.get_association_snippets_query(from_node, to_node, association)
         data = self.graph.run(query).data()
-        return {
-            'from_node': from_node,
-            'to_node': to_node,
-            'association': association,
-            'references': [result['references'] for result in data]
-        }
+        return snake_to_camel_dict(dict(
+            from_node=from_node,
+            to_node=to_node,
+            association=association,
+            references=[result['references'] for result in data]
+        ), {})
 
     def load_reaction_graph(self, biocyc_id: str):
         query = self.get_reaction_query(biocyc_id)
