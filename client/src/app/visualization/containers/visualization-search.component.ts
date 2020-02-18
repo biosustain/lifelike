@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Output } from '@angular/core';
 import { VisualizationService } from '../services/visualization.service';
 import { FormControl } from '@angular/forms';
-import { FTSearchResult, FTSNodeScore, GraphNode } from 'app/interfaces';
+import { GraphNode, Neo4jResults } from 'app/interfaces';
 
 @Component({
     selector: 'app-visualization-search',
@@ -10,9 +10,9 @@ import { FTSearchResult, FTSNodeScore, GraphNode } from 'app/interfaces';
 })
 export class VisualizationSearchComponent {
 
-    @Output() selectedResult = new EventEmitter<FTSNodeScore>();
+    @Output() selectedResult = new EventEmitter<GraphNode>();
 
-    autocompleteResults: Array<FTSNodeScore> = [];
+    autocompleteResults: Array<GraphNode> = [];
 
     search = new FormControl('');
 
@@ -37,8 +37,8 @@ export class VisualizationSearchComponent {
         }
     }
 
-    displayFn(n: FTSNodeScore) {
-        return n ? n.node.displayName : undefined;
+    displayFn(n: GraphNode) {
+        return n ? n.displayName : undefined;
     }
 
     /**
@@ -54,13 +54,14 @@ export class VisualizationSearchComponent {
         return nodeToString.join(', ');
     }
 
-    resultSelection(result: FTSNodeScore) {
+    resultSelection(result: GraphNode) {
         this.selectedResult.emit(result);
     }
 
     onInputChanges(query: string) {
         this.visService.searchGraphDatabase(query).subscribe(
-            (r: FTSearchResult) => {
+            (r: Neo4jResults) => {
+                console.log(r.nodes);
                 this.autocompleteResults = r.nodes;
             },
             error => {

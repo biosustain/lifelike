@@ -26,15 +26,6 @@ from py2neo import (
 )
 
 @attr.s(frozen=True)
-class FTSNodeScore(CamelDictMixin):
-    node: Union[Node, GraphNode] = attr.ib()
-    score: float = attr.ib()
-
-@attr.s(frozen=True)
-class FTSearchResult(CamelDictMixin):
-    nodes: List[FTSNodeScore] = attr.ib()
-
-@attr.s(frozen=True)
 class FileNameAndSheets(CamelDictMixin):
     @attr.s(frozen=True)
     class SheetNameAndColumnNames(CamelDictMixin):
@@ -107,27 +98,34 @@ class Neo4JService(BaseDao):
         return dict(nodes=[n.to_dict() for n in node_dict.values()],
                     edges=[r.to_dict() for r in rel_dict.values()])
 
-    def fulltext_search(self, term: str):
-        # cypher_escape requires empty strings to be escaped with backticks
+
+    def prefix_search(self, term: str):
         if term.strip():
             query_term = term
         else:
             query_term = '``'
-        # TODO: Find a better search algorithm
-        # The query uses fuzzy matching, denoted by the tidle '~'
         query = """
-            CALL db.index.fulltext.queryNodes("names", "{search_term}~0.5")
-            YIELD node, score RETURN node, score
-        """.format(search_term=cypher.cypher_escape(query_term))
+            MATCH (c:Chemical)
+            WHERE c.name STARTS WITH "{search_term}"
+            RETURN c AS node
+            UNION
+            MATCH (d:Disease)
+            WHERE d.name STARTS WITH "{search_term}"
+            RETURN d AS node
+            UNION
+            MATCH (g:Gene)
+            WHERE g.name STARTS WITH "{search_term}"
+            RETURN g AS node
+            UNION
+            MATCH (t:Taxonomy)
+            WHERE t.name STARTS WITH "{search_term}"
+            RETURN t as node
+        """.format(search_term=query_term)
+        print(query)
         records = self.graph.run(query).data()
+        nodes = [GraphNode.from_py2neo(n['node'], display_fn=lambda x: x.get('name')) for n in records]
+        return dict(nodes=[n.to_dict() for n in nodes], edges=[])
 
-        nodes = [FTSNodeScore(r['node'], r['score']) for r in records]
-
-        record_nodes = [FTSNodeScore(
-            GraphNode.from_py2neo(
-                n.node, display_fn=lambda x: x.get('name')), n.score) for n in nodes]
-        sorted_nodes = sorted(record_nodes, key=lambda n: n.score, reverse=True)
-        return FTSearchResult(nodes=sorted_nodes)
 
     def get_organisms(self):
         nodes = list(NodeMatcher(self.graph).match(NODE_SPECIES))

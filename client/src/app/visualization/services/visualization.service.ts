@@ -6,7 +6,6 @@ import { map } from 'rxjs/operators';
 import {
     AssociationData,
     AssociationSentence,
-    FTSearchResult,
     Neo4jResults,
 } from 'app/interfaces';
 import { NODE_EXPANSION_LIMIT } from 'app/shared/constants';
@@ -63,7 +62,7 @@ export class VisualizationService {
     }
 
     searchGraphDatabase(query: string) {
-        return this.http.post<{result: FTSearchResult}>(
+        return this.http.post<{result: Neo4jResults}>(
             `${this.visApi}/search`, {query},
         ).pipe(map(resp => resp.result));
     }
