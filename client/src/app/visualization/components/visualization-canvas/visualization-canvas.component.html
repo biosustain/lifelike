@@ -13,8 +13,8 @@ we should be careful using 'autosize', as it may lead to performance problems.--
       <app-reference-table
         [tooltipSelector]="referenceTableTooltipSelector"
         [tooltipOptions]="referenceTableTooltipOptions"
-        [tableNodes]="nodesInHoveredCluster"
-        (referenceTableRowClickEvent)="openMetadataSidebar($event)"
+        [nodeTable]="nodesInHoveredCluster"
+        (referenceTableRowClickEvent)="getAssociationsWithEdge($event)"
       ></app-reference-table>
 
       <!-- This isn't visible unless the user has right-clicked to open the context menu -->

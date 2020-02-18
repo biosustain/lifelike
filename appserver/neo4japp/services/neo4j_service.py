@@ -129,10 +129,15 @@ class Neo4JService(BaseDao):
         query = self.get_expand_query(node_id, limit)
         return self._query_neo4j(query)
 
-    def get_association_sentences(self, node_id: str, description: str, entry_text: str):
-        query = self.get_association_sentences_query(node_id, description, entry_text)
+    def get_association_snippets(self, from_node: int, to_node: int, association: str):
+        query = self.get_association_snippets_query(from_node, to_node, association)
         data = self.graph.run(query).data()
-        return [result['references'] for result in data]
+        return {
+            'from_node': from_node,
+            'to_node': to_node,
+            'association': association,
+            'references': [result['references'] for result in data]
+        }
 
     def load_reaction_graph(self, biocyc_id: str):
         query = self.get_reaction_query(biocyc_id)
@@ -255,13 +260,13 @@ class Neo4JService(BaseDao):
 
     # TODO: Need to make a solid version of this query, not sure the current
     # iteration will work 100% of the time
-    def get_association_sentences_query(self, node_id: str, description: str, entry_text: str):
+    def get_association_snippets_query(self, from_node: int, to_node: int, association: str):
         query = """
-            MATCH (n)-[:HAS_ASSOCIATION]-(s:Association)-[:HAS_REF]-(r:Reference)
-            WHERE ID(n) = {} AND s.description='{}' AND r.entry2_text=~'.*{}.*'
-            WITH r
-            return r as references
-        """.format(node_id, description, entry_text)
+            MATCH (f)-[:HAS_ASSOCIATION]->(a:Association)-[:HAS_ASSOCIATION]->(t)
+            WHERE ID(f)={} AND ID(t)={} AND a.description='{}'
+            WITH a AS association MATCH (association)-[:HAS_REF]-(r:Reference)
+            RETURN r AS references
+        """.format(from_node, to_node, association)
         return query
 
     def get_reaction_query(self, biocyc_id: str):
