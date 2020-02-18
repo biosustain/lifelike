@@ -541,6 +541,10 @@ export class VisualizationCanvasComponent implements OnInit {
     }
 
     onDeselectNodeCallback(params: any) {
+        // TODO: Minor bug: this is causing the context-menu to briefly show the
+        // "no selected entities" menu template during the fade-out animation. Could
+        // add a timeout here equal to the length of the animation, but maybe there's
+        // a better solution?
         this.updateSelectedNodes();
         this.updateSidebarEntity();
     }
@@ -551,6 +555,7 @@ export class VisualizationCanvasComponent implements OnInit {
     }
 
     onDeselectEdgeCallback(params: any) {
+        // TODO: Same bug as described in "onDeselectNodeCallback"
         this.updateSelectedEdges();
         this.updateSidebarEntity();
     }
