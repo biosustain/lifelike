@@ -23,7 +23,13 @@ export class ReferenceTableComponent extends TooltipComponent implements OnDestr
 
     @Output() referenceTableRowClickEvent: EventEmitter<GraphRelationship>;
 
+    FADEOUT_STYLE = 'reference-table fade-out';
+    DEFAULT_STYLE = 'reference-table';
+
     edgeLabelSubmenuPopper: Instance;
+
+    referenceTableClass: string;
+    subMenuClass: string;
 
     subMenus: string[] = ['selected-node-edge-labels-submenu'];
 
@@ -37,11 +43,14 @@ export class ReferenceTableComponent extends TooltipComponent implements OnDestr
     ) {
         super();
 
+        this.referenceTableClass = this.DEFAULT_STYLE;
+        this.subMenuClass = this.DEFAULT_STYLE;
+
         this.selectedNodeEdges = [];
 
         this.hideReferenceTableSubscription = this.referenceTableControlService.hideTooltip$.subscribe(hideReferenceTable => {
             if (hideReferenceTable) {
-                this.hideTooltip();
+                this.beginReferenceTableFade();
             } else {
                 this.showTooltip();
             }
@@ -68,6 +77,7 @@ export class ReferenceTableComponent extends TooltipComponent implements OnDestr
         // hovered over a submenu, then opened a new context menu)
         this.hideAllSubMenus();
         this.tooltip.style.display = 'block';
+        this.referenceTableClass = this.DEFAULT_STYLE;
     }
 
     // TODO: It seems like the "flipping" behavior handled by popper is somewhat inconsistent,
@@ -103,5 +113,17 @@ export class ReferenceTableComponent extends TooltipComponent implements OnDestr
             const tooltip = document.querySelector(`#${subMenu}`) as HTMLElement;
             tooltip.style.display = 'none';
         });
+    }
+
+    beginReferenceTableFade() {
+        this.referenceTableClass = this.FADEOUT_STYLE;
+        this.beginSubmenuFade();
+        setTimeout(() => {
+            this.hideTooltip();
+        }, 100);
+    }
+
+    beginSubmenuFade() {
+        this.subMenuClass = this.FADEOUT_STYLE;
     }
 }
