@@ -121,7 +121,6 @@ class Neo4JService(BaseDao):
             WHERE t.name STARTS WITH "{search_term}"
             RETURN t as node
         """.format(search_term=query_term)
-        print(query)
         records = self.graph.run(query).data()
         nodes = [GraphNode.from_py2neo(n['node'], display_fn=lambda x: x.get('name')) for n in records]
         return dict(nodes=[n.to_dict() for n in nodes], edges=[])
