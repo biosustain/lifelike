@@ -1,0 +1,9 @@
+<app-visualization-canvas
+  *ngIf="networkGraphData"
+  [nodes]="nodes"
+  [edges]="edges"
+  [legend]="legend"
+  [config]="networkGraphConfig"
+  (expandNode)="expandNode($event)"
+  (getSentences)="getSentences($event)"
+></app-visualization-canvas>
