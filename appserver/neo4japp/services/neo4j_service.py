@@ -1,8 +1,8 @@
 import attr
 
-from typing import Dict, List, Optional
+from typing import Dict, List, NamedTuple, Optional, Union
 
-from py2neo import NodeMatcher, RelationshipMatcher
+from py2neo import cypher, NodeMatcher, RelationshipMatcher
 from werkzeug.datastructures import FileStorage
 
 from neo4japp.services.common import BaseDao
@@ -24,7 +24,6 @@ from py2neo import (
     RelationshipMatch,
     RelationshipMatcher,
 )
-
 
 @attr.s(frozen=True)
 class FileNameAndSheets(CamelDictMixin):
@@ -98,6 +97,34 @@ class Neo4JService(BaseDao):
                 rel_dict[graph_rel.id] = graph_rel
         return dict(nodes=[n.to_dict() for n in node_dict.values()],
                     edges=[r.to_dict() for r in rel_dict.values()])
+
+
+    def prefix_search(self, term: str):
+        if term.strip():
+            query_term = term
+        else:
+            query_term = '``'
+        query = """
+            MATCH (c:Chemical)
+            WHERE c.name STARTS WITH "{search_term}"
+            RETURN c AS node
+            UNION
+            MATCH (d:Disease)
+            WHERE d.name STARTS WITH "{search_term}"
+            RETURN d AS node
+            UNION
+            MATCH (g:Gene)
+            WHERE g.name STARTS WITH "{search_term}"
+            RETURN g AS node
+            UNION
+            MATCH (t:Taxonomy)
+            WHERE t.name STARTS WITH "{search_term}"
+            RETURN t as node
+        """.format(search_term=query_term)
+        records = self.graph.run(query).data()
+        nodes = [GraphNode.from_py2neo(n['node'], display_fn=lambda x: x.get('name')) for n in records]
+        return dict(nodes=[n.to_dict() for n in nodes], edges=[])
+
 
     def get_organisms(self):
         nodes = list(NodeMatcher(self.graph).match(NODE_SPECIES))
