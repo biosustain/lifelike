@@ -13,6 +13,7 @@ flask-caching = "~=1.8.0"
 openpyxl = "~=3.0.3"
 attrs = "~=18.1.0"
 ipython = "==7.2.0"
+mypy = "*"
 
 [requires]
 python_version = "3.7"
