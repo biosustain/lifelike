@@ -3,6 +3,7 @@ import { Component, Input, Output, EventEmitter, OnDestroy } from '@angular/core
 import { Instance, createPopper } from '@popperjs/core';
 
 import { Subscription } from 'rxjs';
+import { filter, first } from 'rxjs/operators';
 
 import { isNullOrUndefined } from 'util';
 
@@ -89,17 +90,22 @@ export class ReferenceTableComponent extends TooltipComponent implements OnDestr
     showSelectedNodeEdgeLabels(referenceTableRow: ReferenceTableRow) {
         this.selectedNodeEdges = referenceTableRow.edges;
         this.hideAllSubMenus();
+        this.referenceTableControlService.delayEdgeMenu();
+        this.referenceTableControlService.showReferenceTableResult$.pipe(
+            first(),
+            filter(showReferenceTable => showReferenceTable),
+        ).subscribe(() => {
+            const referenceTableItem = document.querySelector(`#reference-table-node-${referenceTableRow.node.id}`);
+            const tooltip = document.querySelector('#selected-node-edge-labels-submenu') as HTMLElement;
+            tooltip.style.display = 'block';
 
-        const referenceTableItem = document.querySelector(`#reference-table-node-${referenceTableRow.node.id}`);
-        const tooltip = document.querySelector('#selected-node-edge-labels-submenu') as HTMLElement;
-        tooltip.style.display = 'block';
-
-        if (!isNullOrUndefined(this.edgeLabelSubmenuPopper)) {
-            this.edgeLabelSubmenuPopper.destroy();
-            this.edgeLabelSubmenuPopper = null;
-        }
-        this.edgeLabelSubmenuPopper = createPopper(referenceTableItem, tooltip, {
-            placement: 'right-start',
+            if (!isNullOrUndefined(this.edgeLabelSubmenuPopper)) {
+                this.edgeLabelSubmenuPopper.destroy();
+                this.edgeLabelSubmenuPopper = null;
+            }
+            this.edgeLabelSubmenuPopper = createPopper(referenceTableItem, tooltip, {
+                placement: 'right-start',
+            });
         });
     }
 
@@ -109,6 +115,7 @@ export class ReferenceTableComponent extends TooltipComponent implements OnDestr
     }
 
     hideAllSubMenus() {
+        this.referenceTableControlService.interruptEdgeMenu();
         this.subMenus.forEach(subMenu => {
             const tooltip = document.querySelector(`#${subMenu}`) as HTMLElement;
             tooltip.style.display = 'none';
@@ -125,5 +132,10 @@ export class ReferenceTableComponent extends TooltipComponent implements OnDestr
 
     beginSubmenuFade() {
         this.subMenuClass = this.FADEOUT_STYLE;
+    }
+
+    mouseLeaveNodeRow() {
+        // Interrupt showing the submenu if the user hovers away from a node
+        this.referenceTableControlService.interruptEdgeMenu();
     }
 }

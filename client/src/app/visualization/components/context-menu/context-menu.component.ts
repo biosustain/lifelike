@@ -127,6 +127,11 @@ export class ContextMenuComponent extends TooltipComponent implements OnDestroy 
         this.subMenuClass = this.FADEOUT_STYLE;
     }
 
+    mouseLeaveNodeRow() {
+        // Interrupt showing the submenu if the user hovers away from a node
+        this.contextMenuControlService.interruptGroupByRel();
+    }
+
     requestGroupByRelationship(rel: string) {
         this.groupNeighborsWithRelationship.emit({relationship: rel, node: this.selectedNodeIds[0]});
     }
