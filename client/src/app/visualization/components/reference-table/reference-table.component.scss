@@ -30,3 +30,55 @@
 .reference-table-row:hover {
     background: #C5C6C7;
 }
+
+.fade-out {
+    animation: fadeOut ease .2s forwards;
+    -webkit-animation: fadeOut ease .2s forwards;
+    -moz-animation: fadeOut ease .2s forwards;
+    -o-animation: fadeOut ease .2s forwards;
+    -ms-animation: fadeOut ease .2s forwards;
+  }
+  @keyframes fadeOut {
+    0% {
+      opacity:1;
+    }
+    100% {
+      opacity:0;
+    }
+  }
+
+  @-moz-keyframes fadeOut {
+    0% {
+      opacity:1;
+    }
+    100% {
+      opacity:0;
+    }
+  }
+
+  @-webkit-keyframes fadeOut {
+    0% {
+      opacity:1;
+    }
+    100% {
+      opacity:0;
+    }
+  }
+
+  @-o-keyframes fadeOut {
+    0% {
+      opacity:1;
+    }
+    100% {
+      opacity:0;
+    }
+  }
+
+  @-ms-keyframes fadeOut {
+    0% {
+      opacity:1;
+    }
+    100% {
+      opacity:0;
+  }
+}
