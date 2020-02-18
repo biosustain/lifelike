@@ -34,6 +34,7 @@ export class ContextMenuControlService extends TooltipControlService {
         this.delayGroupByRelSource.next(true);
     }
 
+    // TODO: Should probably also interrupt if the user hovers out of "Group by Relationship" row
     interruptGroupByRel() {
         this.interruptGroupByRelSource.next(true);
     }

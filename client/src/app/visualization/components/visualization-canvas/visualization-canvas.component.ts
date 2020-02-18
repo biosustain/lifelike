@@ -479,7 +479,7 @@ export class VisualizationCanvasComponent implements OnInit {
         this.updateSelectedNodes(); // Dragging a node doesn't fire node selection, but it is selected after dragging finishes, so update
 
         if (this.networkGraph.isCluster(params.nodes[0]) || !this.nodes.get(params.nodes[0])) {
-            this.referenceTableControlService.interruptReferenceTable();
+            this.referenceTableControlService.delayEdgeMenu();
         }
     }
 
@@ -494,7 +494,7 @@ export class VisualizationCanvasComponent implements OnInit {
                 }
             );
 
-            this.referenceTableControlService.delayReferenceTable();
+            this.referenceTableControlService.delayEdgeMenu();
             this.referenceTableControlService.showReferenceTableResult$.pipe(
                 first(),
                 filter(showGroupByRel => showGroupByRel),
@@ -524,7 +524,7 @@ export class VisualizationCanvasComponent implements OnInit {
 
     onBlurNodeCallback(params: any) {
         if (this.networkGraph.isCluster(params.node) || !this.nodes.get(params.node)) {
-            this.referenceTableControlService.interruptReferenceTable();
+            this.referenceTableControlService.delayEdgeMenu();
         } else {
             // This produces a 'shrink effect'
             // TODO: Currently this does nothing, because the size property does not change 'box' shape nodes.

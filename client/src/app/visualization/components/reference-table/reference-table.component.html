@@ -1,6 +1,6 @@
 <div id="***ARANGO_USERNAME***-table" [ngClass]="referenceTableClass">
   <div class="reference-table-group">
-    <div id="{{'reference-table-node-' + row.node.id }}" class="reference-table-row" *ngFor="let row of nodeTable" (mouseenter)="showSelectedNodeEdgeLabels(row)" fxLayout="row" fxLayoutAlign="space-between center">
+    <div id="{{'reference-table-node-' + row.node.id }}" class="reference-table-row" *ngFor="let row of nodeTable" (mouseenter)="showSelectedNodeEdgeLabels(row)" (mouseleave)="mouseLeaveNodeRow()" fxLayout="row" fxLayoutAlign="space-between center">
       <div>{{row.node.displayName}}</div>
       <mat-icon>arrow_right</mat-icon>
     </div>
