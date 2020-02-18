@@ -15,13 +15,17 @@ import {
 import { EMPTY } from 'rxjs';
 
 import {
+    getDbLabels,
+    getDbLabelsSuccess,
+    getNodeProperties,
+    getNodePropertiesSuccess,
     uploadNeo4jFile,
     uploadNeo4jFileSuccess,
-    uploadNeo4jColumnMappingFile,
-    uploadNeo4jColumnMappingFileSuccess,
+    uploadNodeMapping,
+    uploadNodeMappingSuccess,
+    uploadRelationshipMapping,
+    uploadRelationshipMappingSuccess,
 } from './actions';
-
-// import * as SnackbarActions from 'recon/shared/actions/snackbar-display.actions';
 
 import { Neo4jService } from '../services/neo4j.service';
 
@@ -32,6 +36,26 @@ export class Neo4jEffects {
         private actions$: Actions,
         private neo4jService: Neo4jService,
     ) {}
+
+    getDbLabels = createEffect(() => this.actions$.pipe(
+        ofType(getDbLabels),
+        map(action => action),
+        switchMap(() => this.neo4jService.getDbLabels()
+            .pipe(
+                map(labels => getDbLabelsSuccess({payload: labels})),
+            ),
+        ),
+    ));
+
+    getNodeProperties = createEffect(() => this.actions$.pipe(
+        ofType(getNodeProperties),
+        map(action => action.payload),
+        switchMap(nodeLabel => this.neo4jService.getNodeProperties(nodeLabel)
+            .pipe(
+                map(props => getNodePropertiesSuccess({payload: props})),
+            ),
+        ),
+    ));
 
     uploadNeo4jFile = createEffect(() => this.actions$.pipe(
         ofType(uploadNeo4jFile),
@@ -44,13 +68,31 @@ export class Neo4jEffects {
         ),
     ));
 
-    uploadColumnMapping = createEffect(() => this.actions$.pipe(
-        ofType(uploadNeo4jColumnMappingFile),
+    uploadNodeMapping = createEffect(() => this.actions$.pipe(
+        ofType(uploadNodeMapping),
         map(action => action.payload),
-        switchMap(data => this.neo4jService.uploadNeo4jColumnMappingFile(data)
+        switchMap(data => this.neo4jService.uploadNodeMapping(data)
             .pipe(
                 mergeMap(() => [
-                    uploadNeo4jColumnMappingFileSuccess(),
+                    uploadNodeMappingSuccess(),
+                    // new SnackbarActions.SnackbarOpen({
+                    //     message: 'Done',
+                    //     action: 'Dismiss',
+                    //     snackConfig: { duration: 1000 },
+                    // }),
+                ]),
+                catchError(() => EMPTY),
+            ),
+        ),
+    ));
+
+    uploadRelationshipMapping = createEffect(() => this.actions$.pipe(
+        ofType(uploadRelationshipMapping),
+        map(action => action.payload),
+        switchMap(data => this.neo4jService.uploadRelationshipMapping(data)
+            .pipe(
+                mergeMap(() => [
+                    uploadRelationshipMappingSuccess(),
                     // new SnackbarActions.SnackbarOpen({
                     //     message: 'Done',
                     //     action: 'Dismiss',
