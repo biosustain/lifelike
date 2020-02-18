@@ -19,7 +19,6 @@ import {
     GetLabelsResult,
     GetSnippetsResult,
     GraphRelationship,
-    GraphNode,
     GroupRequest,
     Neo4jGraphConfig,
     ReferenceTableRow,
@@ -53,8 +52,8 @@ export class VisualizationCanvasComponent implements OnInit {
             this.sidenavEntityType = 'edge';
             this.sidenavOpened = true;
             this.sidenavEntity = {
-                to: this.nodes.get(result.toNode) as GraphNode,
-                from: this.nodes.get(result.fromNode) as GraphNode,
+                to: this.nodes.get(result.toNode) as VisNode,
+                from: this.nodes.get(result.fromNode) as VisNode,
                 association: result.association,
                 references: result.references,
              } as SidenavEdgeEntity;
@@ -400,7 +399,7 @@ export class VisualizationCanvasComponent implements OnInit {
                 } as SidenavClusterEntity;
                 this.sidenavEntityType = 'cluster';
             } else {
-                const node  = this.nodes.get(this.selectedNodes[0]) as GraphNode;
+                const node  = this.nodes.get(this.selectedNodes[0]) as VisNode;
                 this.sidenavEntity = {
                     data: node,
                     edges: this.networkGraph.getConnectedEdges(node.id).map(edgeId => this.edges.get(edgeId))

@@ -1,2 +1,37 @@
 <h1>Edge Data View</h1>
-<label>Association:</label><p>{{ edgeEntity.association }}</p>
+
+<div>Association: {{ edgeEntity.association }}</div>
+
+<div>From:</div>
+<ul>
+  <li>Display Name: {{ edgeEntity.from.displayName }}</li>
+  <li>Label: {{ edgeEntity.from.primaryLabel }}</li>
+  <li>Sublabels:
+    <ul *ngIf="edgeEntity.from.subLabels.length > 1; else noSubLabels">
+      <li *ngFor="let label of edgeEntity.from.subLabels">
+        <div *ngIf="label !== edgeEntity.from.primaryLabel">{{ label }}</div>
+      </li>
+    </ul>
+    <ng-template #noSubLabels>N/A</ng-template>
+  </li>
+</ul>
+
+<div>To:</div>
+<ul>
+  <li>Display Name: {{ edgeEntity.to.displayName }}</li>
+  <li>Label: {{ edgeEntity.to.primaryLabel }}</li>
+  <li>Sublabels:
+    <ul *ngIf="edgeEntity.to.subLabels.length > 1; else noSubLabels">
+      <li *ngFor="let label of edgeEntity.to.subLabels">
+        <div *ngIf="label !== edgeEntity.to.primaryLabel">{{ label }}</div>
+      </li>
+    </ul>
+    <ng-template #noSubLabels>N/A</ng-template>
+  </li>
+</ul>
+
+<div>Sentence Snippets:</div>
+<ul *ngIf="edgeEntity.references.length > 0; else noReferences">
+  <li *ngFor="let snippet of edgeEntity.references">{{ snippet.sentence }}</li>
+</ul>
+<ng-template #noReferences>No Association Snippets Found!</ng-template>
