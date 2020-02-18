@@ -10,11 +10,16 @@ import { Options } from '@popperjs/core';
 
 import { first, filter } from 'rxjs/operators';
 
+import { isNullOrUndefined } from 'util';
+
 import { Network, DataSet, IdType } from 'vis-network';
 
 import {
     AssociationData,
     GetLabelsResult,
+    GetSnippetsResult,
+    GraphRelationship,
+    GraphNode,
     GroupRequest,
     Neo4jGraphConfig,
     ReferenceTableRow,
@@ -23,8 +28,7 @@ import {
     SidenavClusterEntity,
     SidenavNodeEntity,
     SidenavEdgeEntity,
-    GraphRelationship,
-    GraphNode,
+
 } from 'app/interfaces';
 
 import { uuidv4 } from 'app/shared/utils';
@@ -40,10 +44,22 @@ import { ReferenceTableControlService } from '../../services/reference-table-con
 })
 export class VisualizationCanvasComponent implements OnInit {
     @Output() expandNode = new EventEmitter<number>();
-    @Output() getSentences = new EventEmitter<AssociationData>();
+    @Output() getSnippets = new EventEmitter<AssociationData>();
 
     @Input() nodes: DataSet<any, any>;
     @Input() edges: DataSet<any, any>;
+    @Input() set getSnippetsResult(result: GetSnippetsResult) {
+        if (!isNullOrUndefined(result)) {
+            this.sidenavEntityType = 'edge';
+            this.sidenavOpened = true;
+            this.sidenavEntity = {
+                to: this.nodes.get(result.toNode) as GraphNode,
+                from: this.nodes.get(result.fromNode) as GraphNode,
+                association: result.association,
+                references: result.references,
+             } as SidenavEdgeEntity;
+        }
+    }
     // Configuration for the graph view. See vis.js docs
     @Input() config: Neo4jGraphConfig;
     @Input() legend: Map<string, string[]>;
@@ -82,7 +98,7 @@ export class VisualizationCanvasComponent implements OnInit {
             placement: 'right-start',
         };
 
-        this.referenceTableTooltipSelector = '#reference-table';
+        this.referenceTableTooltipSelector = '#***ARANGO_USERNAME***-table';
         this.referenceTableTooltipOptions = {
             placement: 'right-start',
         };
@@ -361,33 +377,22 @@ export class VisualizationCanvasComponent implements OnInit {
     /**
      * Opens the metadata sidebar for with the input node's data
      * TODO: the sidebar isn't implemented yet, so just printing the node data for now.
-     * @param nodeRef represents a row in the reference table, contains node data
+     * @param referenceTableSelection represents a row in the reference table, contains node data and edge label
      */
-    openMetadataSidebar(nodeRef: ReferenceTableRow) {
-        const clusterId = this.networkGraph.findNode(nodeRef.nodeId)[0] as string;
-        this.networkGraph.getConnectedNodes(clusterId).forEach(node => {
-            this.networkGraph.getConnectedEdges(node).forEach(edge => {
-                const edgeData = this.edges.get(edge);
-                if (edgeData !== null && (edgeData.from === nodeRef.nodeId || edgeData.to === nodeRef.nodeId)) {
-                    this.sidenavOpened = true;
-                }
-            });
-        });
-
-
-        const clusteredRelationship = this.clusters.get(clusterId);
-        const relatedTo = this.nodes.get(this.networkGraph.getConnectedNodes(clusterId)[0] as number).displayName;
-        this.getSentences.emit({
-                nodeId: nodeRef.nodeId,
-                entryText: relatedTo,
-                description: clusteredRelationship,
+    getAssociationsWithEdge(edge: GraphRelationship) {
+        this.getSnippets.emit({
+                fromNode: edge.from,
+                toNode: edge.to,
+                association: edge.label,
         } as AssociationData);
     }
 
     updateSidebarEntity() {
+        this.sidenavOpened = true;
         if (this.selectedNodes.length === 1 && this.selectedEdges.length === 0) {
             if (this.networkGraph.isCluster(this.selectedNodes[0])) {
                 const cluster = this.selectedNodes[0];
+                // TODO: Need a new API endpoint for getting association snippets for many edges at a time
                 this.sidenavEntity = {
                     data: null,
                     includes: this.networkGraph.getNodesInCluster(cluster).map(nodeId => this.nodes.get(nodeId)),
@@ -404,12 +409,7 @@ export class VisualizationCanvasComponent implements OnInit {
             }
         } else if (this.selectedNodes.length === 0 && this.selectedEdges.length === 1) {
             const edge = this.edges.get(this.selectedEdges[0]) as GraphRelationship;
-            this.sidenavEntity = {
-                data: edge,
-                to: this.nodes.get(edge.to),
-                from: this.nodes.get(edge.from),
-            } as SidenavEdgeEntity;
-            this.sidenavEntityType = 'edge';
+            this.getAssociationsWithEdge(edge);
         }
     }
 
@@ -488,7 +488,10 @@ export class VisualizationCanvasComponent implements OnInit {
         if (this.networkGraph.isCluster(params.node)) {
             this.nodesInHoveredCluster = this.networkGraph.getNodesInCluster(params.node).map(
                 nodeId => {
-                    return {displayName: this.nodes.get(nodeId).displayName, nodeId: nodeId as number};
+                    return {
+                        node: this.nodes.get(nodeId),
+                        edges: this.networkGraph.getConnectedEdges(nodeId).map(edgeId => this.edges.get(edgeId)),
+                    } as ReferenceTableRow;
                 }
             );
 

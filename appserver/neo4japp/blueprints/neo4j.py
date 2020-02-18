@@ -23,10 +23,10 @@ class ExpandNodeRequest(CamelDictMixin):
     limit: int = attr.ib()
 
 @attr.s(frozen=True)
-class AssociationSentencesRequest(CamelDictMixin):
-    node_id: int = attr.ib()
-    description: str = attr.ib()
-    entry_text: str = attr.ib()
+class AssociationSnippetsRequest(CamelDictMixin):
+    from_node: int = attr.ib()
+    to_node: int = attr.ib()
+    association: str = attr.ib()
 
 @attr.s(frozen=True)
 class UploadFileRequest(CamelDictMixin):
@@ -77,16 +77,16 @@ def expand_graph_node(req: ExpandNodeRequest):
     node = neo4j.expand_graph(req.node_id, req.limit)
     return SuccessResponse(result=node, status_code=200)
 
-@bp.route('/get-sentences', methods=['POST'])
-@jsonify_with_class(AssociationSentencesRequest)
-def get_association_sentences(req: AssociationSentencesRequest):
+@bp.route('/get-snippets', methods=['POST'])
+@jsonify_with_class(AssociationSnippetsRequest)
+def get_association_snippets(req: AssociationSnippetsRequest):
     neo4j = get_neo4j_service_dao()
-    sentences = neo4j.get_association_sentences(
-        req.node_id,
-        req.description,
-        req.entry_text
+    snippets_result = neo4j.get_association_snippets(
+        req.from_node,
+        req.to_node,
+        req.association
     )
-    return SuccessResponse(result=sentences, status_code=200)
+    return SuccessResponse(result=snippets_result, status_code=200)
 
 @bp.route('/reaction', methods=['POST'])
 @jsonify_with_class(ReactionRequest)

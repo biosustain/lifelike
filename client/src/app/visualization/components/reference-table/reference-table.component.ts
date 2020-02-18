@@ -1,8 +1,12 @@
 import { Component, Input, Output, EventEmitter, OnDestroy } from '@angular/core';
 
+import { Instance, createPopper } from '@popperjs/core';
+
 import { Subscription } from 'rxjs';
 
-import { ReferenceTableRow } from 'app/interfaces';
+import { isNullOrUndefined } from 'util';
+
+import { ReferenceTableRow, GraphRelationship } from 'app/interfaces';
 
 import { TooltipDetails } from 'app/shared/services/tooltip-control-service';
 import { TooltipComponent } from 'app/shared/components/tooltip/tooltip.component';
@@ -15,9 +19,15 @@ import { ReferenceTableControlService } from '../../services/reference-table-con
   styleUrls: ['./reference-table.component.scss']
 })
 export class ReferenceTableComponent extends TooltipComponent implements OnDestroy {
-    @Input() tableNodes: ReferenceTableRow[];
+    @Input() nodeTable: ReferenceTableRow[];
 
-    @Output() referenceTableRowClickEvent: EventEmitter<ReferenceTableRow>;
+    @Output() referenceTableRowClickEvent: EventEmitter<GraphRelationship>;
+
+    edgeLabelSubmenuPopper: Instance;
+
+    subMenus: string[] = ['selected-node-edge-labels-submenu'];
+
+    selectedNodeEdges: GraphRelationship[];
 
     hideReferenceTableSubscription: Subscription;
     updatePopperSubscription: Subscription;
@@ -26,6 +36,8 @@ export class ReferenceTableComponent extends TooltipComponent implements OnDestr
         private referenceTableControlService: ReferenceTableControlService,
     ) {
         super();
+
+        this.selectedNodeEdges = [];
 
         this.hideReferenceTableSubscription = this.referenceTableControlService.hideTooltip$.subscribe(hideReferenceTable => {
             if (hideReferenceTable) {
@@ -39,7 +51,7 @@ export class ReferenceTableComponent extends TooltipComponent implements OnDestr
             this.updatePopper(details.posX, details.posY);
         });
 
-        this.referenceTableRowClickEvent = new EventEmitter<ReferenceTableRow>();
+        this.referenceTableRowClickEvent = new EventEmitter<GraphRelationship>();
     }
 
     ngOnDestroy() {
@@ -47,7 +59,49 @@ export class ReferenceTableComponent extends TooltipComponent implements OnDestr
         this.updatePopperSubscription.unsubscribe();
     }
 
-    openMetadataSidebarForNode(node: ReferenceTableRow) {
-        this.referenceTableRowClickEvent.emit(node);
+    getAssociationsWithEdge(edge: GraphRelationship) {
+        this.referenceTableRowClickEvent.emit(edge);
+    }
+
+    showTooltip() {
+        // First hide any submenus that might have been open (e.g. a user opened a context menu,
+        // hovered over a submenu, then opened a new context menu)
+        this.hideAllSubMenus();
+        this.tooltip.style.display = 'block';
+    }
+
+    // TODO: It seems like the "flipping" behavior handled by popper is somewhat inconsistent,
+    // it should be flipping the edge label submenu when it first appears if it is too close to
+    // the right edge of the viewport, but it isn't. It does flip on subsequent renders, which is
+    // odd because we destroy the submenu popper before creating a new one, so I would expect
+    // consistent behavior. Could be a popper bug, but it is curious that this is not happening
+    // with the other tooltips (at least not consistently enough to be noticeable)
+    showSelectedNodeEdgeLabels(referenceTableRow: ReferenceTableRow) {
+        this.selectedNodeEdges = referenceTableRow.edges;
+        this.hideAllSubMenus();
+
+        const referenceTableItem = document.querySelector(`#reference-table-node-${referenceTableRow.node.id}`);
+        const tooltip = document.querySelector('#selected-node-edge-labels-submenu') as HTMLElement;
+        tooltip.style.display = 'block';
+
+        if (!isNullOrUndefined(this.edgeLabelSubmenuPopper)) {
+            this.edgeLabelSubmenuPopper.destroy();
+            this.edgeLabelSubmenuPopper = null;
+        }
+        this.edgeLabelSubmenuPopper = createPopper(referenceTableItem, tooltip, {
+            placement: 'right-start',
+        });
+    }
+
+    hideTooltip() {
+        this.tooltip.style.display = 'none';
+        this.hideAllSubMenus();
+    }
+
+    hideAllSubMenus() {
+        this.subMenus.forEach(subMenu => {
+            const tooltip = document.querySelector(`#${subMenu}`) as HTMLElement;
+            tooltip.style.display = 'none';
+        });
     }
 }

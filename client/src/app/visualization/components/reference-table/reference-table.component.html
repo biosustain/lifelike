@@ -1,3 +1,15 @@
-<div id="reference-table">
-  <div class="reference-table-row" *ngFor="let node of tableNodes" (click)="openMetadataSidebarForNode(node)">{{node.displayName}}</div>
+<div id="***ARANGO_USERNAME***-table" class="reference-table">
+  <div class="reference-table-group">
+    <div id="{{'reference-table-node-' + row.node.id }}" class="reference-table-row" *ngFor="let row of nodeTable" (mouseenter)="showSelectedNodeEdgeLabels(row)" fxLayout="row" fxLayoutAlign="space-between center">
+      <div>{{row.node.displayName}}</div>
+      <mat-icon>arrow_right</mat-icon>
+    </div>
+  </div>
+</div>
+
+<!-- Submenus (these are tooltips, so they should be floating around -- invisible -- until their mouseover events are called -->
+<div id="selected-node-edge-labels-submenu" class="reference-table">
+  <div class="reference-table-group">
+    <div class="reference-table-row" *ngFor="let edge of selectedNodeEdges" (click)="getAssociationsWithEdge(edge)">{{ edge.label }}</div>
+  </div>
 </div>

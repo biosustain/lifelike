@@ -97,14 +97,6 @@ export class ContextMenuComponent extends TooltipComponent implements OnDestroy 
                 this.groupByRelSubmenuPopper = null;
             }
             this.groupByRelSubmenuPopper = createPopper(contextMenuItem, tooltip, {
-                modifiers: [
-                    {
-                        name: 'offset',
-                        options: {
-                            offset: [0, 0],
-                        },
-                    },
-                ],
                 placement: 'right-start',
             });
         });
