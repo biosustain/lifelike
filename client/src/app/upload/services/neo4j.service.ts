@@ -39,8 +39,8 @@ export class Neo4jService {
             mappings).pipe(map(resp => resp.result));
     }
 
-    uploadRelationshipMapping(mappings: Neo4jColumnMapping): Observable<any> {
-        return this.http.post<{result: any}>(`${this.neo4jAPI}/upload-relationship-mapping`,
-            mappings).pipe(map(resp => resp.result));
-    }
+    // uploadRelationshipMapping(mappings: Neo4jColumnMapping): Observable<any> {
+    //     return this.http.post<{result: any}>(`${this.neo4jAPI}/upload-relationship-mapping`,
+    //         mappings).pipe(map(resp => resp.result));
+    // }
 }

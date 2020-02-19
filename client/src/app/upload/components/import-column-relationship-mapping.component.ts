@@ -4,13 +4,18 @@ import { FormGroup, FormBuilder, FormArray } from '@angular/forms';
 
 import { Store, select } from '@ngrx/store';
 
-import { SheetNameAndColumnNames, Neo4jColumnMapping, NodeMappingHelper } from '../../interfaces/importer.interface';
+import {
+    SheetNameAndColumnNames,
+    Neo4jRelationshipMapping,
+    NodeMappingHelper,
+    Neo4jColumnMapping,
+} from '../../interfaces/importer.interface';
 
 import { State } from '../../***ARANGO_USERNAME***-store';
 
 import { Neo4jSelectors as selectors } from '../store';
 import { Observable, Subscription } from 'rxjs';
-import { getNodeProperties } from '../store/actions';
+import { getNodeProperties, uploadNodeMapping } from '../store/actions';
 
 enum ColumnType {
     EXCLUDE = 'EXCLUDE',
@@ -27,6 +32,7 @@ enum ColumnType {
 })
 export class ImportColumnRelationshipMapperComponent {
     @Input() chosenSheetToMap: SheetNameAndColumnNames;
+    @Input() fileName: string;
     @Input() nodeMappingHelper: NodeMappingHelper;
     @Input() columnsForFilePreview: string[];
 
@@ -85,10 +91,51 @@ export class ImportColumnRelationshipMapperComponent {
     }
 
     createRelationshipMapping() {
-        console.log(this.nodeMappingHelper)
-        console.log(this.relationshipMappingForm)
+        // console.log(this.nodeMappingHelper)
+        // console.log(this.relationshipMappingForm)
 
+        const mappings = {
+            newNodes: {},
+            existingNodes: {},
+        } as Neo4jColumnMapping;
 
+        const relationshipMapper = [];
+
+        const relationshipMappingFormArray = this.relationshipMappingForm.get('relationshipMapping') as FormArray;
+
+        if (relationshipMappingFormArray) {
+            relationshipMappingFormArray.controls.forEach((group: FormGroup) => {
+                const currentRelationship = {} as Neo4jRelationshipMapping;
+                currentRelationship.edge = group.controls.edge.value;
+                currentRelationship.sourceNode = this.nodeMappingHelper[Object.values(group.controls.source.value)[0] as number];
+                currentRelationship.targetNode = this.nodeMappingHelper[Object.values(group.controls.target.value)[0] as number];
+
+                relationshipMapper.push(currentRelationship);
+            });
+            mappings.relationships = relationshipMapper;
+        }
+
+        mappings.domain = this.nodeMappingHelper.worksheetDomain;
+        delete this.nodeMappingHelper.worksheetDomain;
+
+        let nodeMapper = [];
+        for (const [key, value] of Object.entries(this.nodeMappingHelper.mapping.newMappings)) {
+            nodeMapper.push(value);
+        }
+
+        mappings.newNodes = nodeMapper;
+
+        nodeMapper = [];
+        for (const [key, value] of Object.entries(this.nodeMappingHelper.mapping.existingMappings)) {
+            nodeMapper.push(value);
+        }
+
+        mappings.existingNodes = nodeMapper;
+        mappings.sheetName = this.chosenSheetToMap.sheetName;
+        mappings.fileName = this.fileName;
+
+        console.log(mappings)
+        this.store.dispatch(uploadNodeMapping({payload: mappings}));
     }
 
     // selectionChange(event: MatSelectChange) {

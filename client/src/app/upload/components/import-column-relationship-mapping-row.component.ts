@@ -10,7 +10,6 @@ import { ColumnNameIndex } from 'src/app/interfaces';
 })
 export class ImportColumnRelationshipMappingRowComponent {
     @Input() columnHeaders: ColumnNameIndex[];
-    @Input() relationshipTypes: string[];
     @Input() relationshipMappingForm: FormGroup;
 
     @Output() deleteMapping: EventEmitter<boolean>;

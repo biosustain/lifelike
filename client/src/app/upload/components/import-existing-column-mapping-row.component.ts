@@ -10,15 +10,15 @@ import { getNodeProperties } from '../store/actions';
 import { ColumnNameIndex } from 'src/app/interfaces';
 
 @Component({
-  selector: 'app-import-column-mapping-row',
-  templateUrl: 'import-column-mapping-row.component.html'
+  selector: 'app-import-existing-column-mapping-row',
+  templateUrl: 'import-existing-column-mapping-row.component.html'
 })
-export class ImportColumnMappingRowComponent {
+export class ImportExistingColumnMappingRowComponent {
     @Input() columnHeaders: ColumnNameIndex[];
     @Input() columnMappingForm: FormGroup;
     @Input() existingNodeLabels: string[];
     @Input() existingNodeProperties: string[];
-    @Input() relationshipTypes: string[];
+    // @Input() relationshipTypes: string[];
 
     @Output() deleteMapping: EventEmitter<boolean>;
 
