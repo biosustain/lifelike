@@ -10,7 +10,10 @@ export interface SheetRowPreview {
 
 export interface NodeMappingHelper {
   worksheetDomain: string;
-  mapping: {[key: number]: Neo4jNodeMapping};
+  mapping: {
+    existingMappings: {[key: number]: Neo4jNodeMapping};
+    newMappings: {[key: number]: Neo4jNodeMapping};
+  };
 }
 
 // parsed worksheet sheet name and sheet column names
@@ -26,32 +29,39 @@ export interface FileNameAndSheets {
 }
 
 export interface Neo4jNodeMapping {
-  nodeType: string;
-  nodeProperties: { [key: number]: string };
+  edge?: string;
+  nodeType?: string;
+  nodeProperties?: { [key: number]: string };
   mappedNodeType: string;
-  mappedNodeProperty: string;  // also the unique prop to filter on in Neo4j  // { [key: number]: string };
-  // uniqueProperty: string;
+  mappedNodePropertyFrom: string;  // { [key: number]: string };
+  mappedNodePropertyTo: string;
+  uniqueProperty?: string;  // the unique prop to filter on in Neo4j to create relationship between
+  // newly created nodes
 }
 
 /**
  * The use of numbers represent the column index used to filter.
  */
 export interface Neo4jRelationshipMapping {
-  edge: string;
+  edge: string | { [key: number]: string };
   edgeProperty: { [key: number]: string };
-  sourceNode: {
-    mappedNodeType: string;
-    mappedNodeProperty: { [key: number]: string };
-  };
-  targetNode: {
-    mappedNodeType: string;
-    mappedNodeProperty: { [key: number]: string };
-  };
+  // sourceNode: {
+  //   mappedNodeType: string;
+  //   mappedNodeProperty: { [key: number]: string };
+  // };
+  // targetNode: {
+  //   mappedNodeType: string;
+  //   mappedNodeProperty: { [key: number]: string };
+  // };
+  sourceNode: Neo4jNodeMapping;
+  targetNode: Neo4jNodeMapping;
 }
 
 export interface Neo4jColumnMapping {
-  node: Neo4jNodeMapping;
-  relationship: Neo4jRelationshipMapping;
+  newNodes: Neo4jNodeMapping[];
+  existingNodes: Neo4jNodeMapping[];
+  relationships: Neo4jRelationshipMapping[];
+  domain: string;
   fileName: string;
   sheetName: string;
 }

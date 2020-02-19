@@ -100,21 +100,21 @@ export class Neo4jEffects {
         ),
     ));
 
-    uploadRelationshipMapping = createEffect(() => this.actions$.pipe(
-        ofType(uploadRelationshipMapping),
-        map(action => action.payload),
-        switchMap(data => this.neo4jService.uploadRelationshipMapping(data)
-            .pipe(
-                mergeMap(() => [
-                    uploadRelationshipMappingSuccess(),
-                    // new SnackbarActions.SnackbarOpen({
-                    //     message: 'Done',
-                    //     action: 'Dismiss',
-                    //     snackConfig: { duration: 1000 },
-                    // }),
-                ]),
-                catchError(() => EMPTY),
-            ),
-        ),
-    ));
+    // uploadRelationshipMapping = createEffect(() => this.actions$.pipe(
+    //     ofType(uploadRelationshipMapping),
+    //     map(action => action.payload),
+    //     switchMap(data => this.neo4jService.uploadRelationshipMapping(data)
+    //         .pipe(
+    //             mergeMap(() => [
+    //                 uploadRelationshipMappingSuccess(),
+    //                 // new SnackbarActions.SnackbarOpen({
+    //                 //     message: 'Done',
+    //                 //     action: 'Dismiss',
+    //                 //     snackConfig: { duration: 1000 },
+    //                 // }),
+    //             ]),
+    //             catchError(() => EMPTY),
+    //         ),
+    //     ),
+    // ));
 }
