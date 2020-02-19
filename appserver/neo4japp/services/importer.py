@@ -144,5 +144,59 @@ class ImporterService():
                     'edge': node.edge,
                 })
                 curr_row += 1
-        import IPython; IPython.embed()
-        return {'new_nodes': nodes}
+        # import IPython; IPython.embed()
+
+        relationships = []
+        for relation in column_mappings.relationships:
+            curr_row = 2    # openpyxl is 1-indexed based, so don't count header row
+            while curr_row <= max_row:
+                # TODO: if edge int key is negative that means user created a new edge
+                # TODO: edge property
+                edge_label = current_ws.cell(
+                    row=curr_row,
+                    column=int(next(iter(relation.edge)))+1).value
+
+                # need to use node_properties as filter
+                # because unique_property might not be unique
+                # TODO: how to handle this unique_property not being unique?
+                # user chooses the column...
+                # same issue with target_node - the mapped column might not be unique
+                source_node_properties = {}
+                for k, v in relation.source_node.node_properties.items():
+                    value = current_ws.cell(row=curr_row, column=int(k)+1).value
+                    if type(value) is str:
+                        value = value.strip().lstrip()
+                    source_node_properties[v] = value
+
+                # for source node, we know unique property
+                # and mapped_node_property_from, so use that as filter to find node
+                source_node_label = relation.source_node.node_type
+                source_node_prop_label = relation.source_node.unique_property
+                source_node_prop_value = current_ws.cell(
+                    row=curr_row,
+                    column=int(next(iter(relation.source_node.mapped_node_property_from)))+1).value
+
+                # for target node, mapped_node_property_to is the
+                # target node label, and the int key for
+                # mapped_node_property_from is the column to get value
+                target_node_label = relation.target_node.mapped_node_type
+                target_node_prop_label = relation.target_node.mapped_node_property_to
+                target_node_prop_value = current_ws.cell(
+                    row=curr_row,
+                    column=int(next(iter(relation.target_node.mapped_node_property_from)))+1).value
+
+                # TODO: make attrs class for this
+                relationships.append({
+                    'source_node_label': source_node_label,
+                    'source_node_prop_label': source_node_prop_label,
+                    'source_node_prop_value': source_node_prop_value,
+                    'source_node_properties': source_node_properties,
+                    'target_node_label': target_node_label,
+                    'target_node_prop_label': target_node_prop_label,
+                    'target_node_prop_value': target_node_prop_value,
+                    'edge_label': edge_label,
+                })
+                curr_row += 1
+            # print(relationships)
+            # import IPython; IPython.embed()
+        return {'new_nodes': nodes, 'relationships': relationships}

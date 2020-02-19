@@ -43,7 +43,7 @@ export interface Neo4jNodeMapping {
  * The use of numbers represent the column index used to filter.
  */
 export interface Neo4jRelationshipMapping {
-  edge: string | { [key: number]: string };
+  edge: { [key: number]: string };  // if newly created edge (i.e user input) set key to negative number
   edgeProperty: { [key: number]: string };
   // sourceNode: {
   //   mappedNodeType: string;
