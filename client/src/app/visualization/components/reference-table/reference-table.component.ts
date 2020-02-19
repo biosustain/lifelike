@@ -3,11 +3,11 @@ import { Component, Input, Output, EventEmitter, OnDestroy } from '@angular/core
 import { Instance, createPopper } from '@popperjs/core';
 
 import { Subscription } from 'rxjs';
-import { filter, first } from 'rxjs/operators';
+import { filter, first, switchMap } from 'rxjs/operators';
 
 import { isNullOrUndefined } from 'util';
 
-import { ReferenceTableRow, GraphRelationship } from 'app/interfaces';
+import { GetEdgeSnippetCountsResult, ReferenceTableRow, VisEdge } from 'app/interfaces';
 
 import { TooltipDetails } from 'app/shared/services/tooltip-control-service';
 import { TooltipComponent } from 'app/shared/components/tooltip/tooltip.component';
@@ -22,7 +22,7 @@ import { ReferenceTableControlService } from '../../services/reference-table-con
 export class ReferenceTableComponent extends TooltipComponent implements OnDestroy {
     @Input() nodeTable: ReferenceTableRow[];
 
-    @Output() referenceTableRowClickEvent: EventEmitter<GraphRelationship>;
+    @Output() referenceTableRowClickEvent: EventEmitter<VisEdge>;
 
     FADEOUT_STYLE = 'reference-table fade-out';
     DEFAULT_STYLE = 'reference-table';
@@ -34,7 +34,7 @@ export class ReferenceTableComponent extends TooltipComponent implements OnDestr
 
     subMenus: string[] = ['selected-node-edge-labels-submenu'];
 
-    selectedNodeEdges: GraphRelationship[];
+    getEdgeSnippetCountsResult: GetEdgeSnippetCountsResult;
 
     hideReferenceTableSubscription: Subscription;
     updatePopperSubscription: Subscription;
@@ -47,7 +47,7 @@ export class ReferenceTableComponent extends TooltipComponent implements OnDestr
         this.referenceTableClass = this.DEFAULT_STYLE;
         this.subMenuClass = this.DEFAULT_STYLE;
 
-        this.selectedNodeEdges = [];
+        this.getEdgeSnippetCountsResult = null;
 
         this.hideReferenceTableSubscription = this.referenceTableControlService.hideTooltip$.subscribe(hideReferenceTable => {
             if (hideReferenceTable) {
@@ -61,7 +61,7 @@ export class ReferenceTableComponent extends TooltipComponent implements OnDestr
             this.updatePopper(details.posX, details.posY);
         });
 
-        this.referenceTableRowClickEvent = new EventEmitter<GraphRelationship>();
+        this.referenceTableRowClickEvent = new EventEmitter<VisEdge>();
     }
 
     ngOnDestroy() {
@@ -69,7 +69,7 @@ export class ReferenceTableComponent extends TooltipComponent implements OnDestr
         this.updatePopperSubscription.unsubscribe();
     }
 
-    getAssociationsWithEdge(edge: GraphRelationship) {
+    getAssociationsWithEdge(edge: VisEdge) {
         this.referenceTableRowClickEvent.emit(edge);
     }
 
@@ -88,13 +88,20 @@ export class ReferenceTableComponent extends TooltipComponent implements OnDestr
     // consistent behavior. Could be a popper bug, but it is curious that this is not happening
     // with the other tooltips (at least not consistently enough to be noticeable)
     showSelectedNodeEdgeLabels(referenceTableRow: ReferenceTableRow) {
-        this.selectedNodeEdges = referenceTableRow.edges;
         this.hideAllSubMenus();
         this.referenceTableControlService.delayEdgeMenu();
         this.referenceTableControlService.showReferenceTableResult$.pipe(
             first(),
-            filter(showReferenceTable => showReferenceTable),
-        ).subscribe(() => {
+            filter((showReferenceTable) => {
+                if (showReferenceTable) {
+                    this.referenceTableControlService.getAssociationCountForEdges(referenceTableRow.edges);
+                }
+                return showReferenceTable;
+            }),
+            switchMap(() => this.referenceTableControlService.associationCountForEdges$)
+        ).subscribe((result) => {
+            this.getEdgeSnippetCountsResult = result;
+
             const referenceTableItem = document.querySelector(`#reference-table-node-${referenceTableRow.node.id}`);
             const tooltip = document.querySelector('#selected-node-edge-labels-submenu') as HTMLElement;
             tooltip.style.display = 'block';

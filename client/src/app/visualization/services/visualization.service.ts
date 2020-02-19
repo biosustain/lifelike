@@ -3,7 +3,13 @@ import { HttpClient } from '@angular/common/http';
 
 import { map } from 'rxjs/operators';
 
-import { AssociationData, GetSnippetsResult, Neo4jResults } from 'app/interfaces';
+import {
+    AssociationData,
+    GetSnippetsResult,
+    Neo4jResults,
+    VisEdge,
+    GetEdgeSnippetCountsResult ,
+} from 'app/interfaces';
 import { NODE_EXPANSION_LIMIT } from 'app/shared/constants';
 
 @Injectable()
@@ -54,6 +60,12 @@ export class VisualizationService {
     getSnippets(association: AssociationData) {
         return this.http.post<{result: GetSnippetsResult}>(
             `${this.visApi}/get-snippets`, {...association},
+        ).pipe(map(resp => resp.result));
+    }
+
+    getSnippetCountForEdges(edges: VisEdge[]) {
+        return this.http.post<{result: GetEdgeSnippetCountsResult}>(
+            `${this.visApi}/get-snippet-count-for-edges`, {edges},
         ).pipe(map(resp => resp.result));
     }
 }

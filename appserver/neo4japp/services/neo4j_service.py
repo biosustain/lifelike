@@ -139,6 +139,14 @@ class Neo4JService(BaseDao):
             references=[result['references'] for result in data]
         ), {})
 
+    def get_edge_snippet_counts(self, edges: List[GraphRelationship]):
+        result = {'edge_snippet_counts': []}
+        for edge in edges:
+            query = self.get_association_snippet_count_query(edge['from'], edge['to'], edge['label'])
+            count = self.graph.run(query).data()[0]['count']
+            result['edge_snippet_counts'].append({'edge': edge, 'count': count})
+        return snake_to_camel_dict(result, {})
+
     def load_reaction_graph(self, biocyc_id: str):
         query = self.get_reaction_query(biocyc_id)
         return self._query_neo4j(query)
@@ -266,6 +274,15 @@ class Neo4JService(BaseDao):
             WHERE ID(f)={} AND ID(t)={} AND a.description='{}'
             WITH a AS association MATCH (association)-[:HAS_REF]-(r:Reference)
             RETURN r AS references
+        """.format(from_node, to_node, association)
+        return query
+
+    def get_association_snippet_count_query(self, from_node: int, to_node: int, association: str):
+        query = """
+            MATCH (f)-[:HAS_ASSOCIATION]->(a:Association)-[:HAS_ASSOCIATION]->(t)
+            WHERE ID(f)={} AND ID(t)={} AND a.description='{}'
+            WITH a AS association MATCH (association)-[:HAS_REF]-(r:Reference)
+            RETURN COUNT(r) as count
         """.format(from_node, to_node, association)
         return query
 
