@@ -62,3 +62,6 @@ import 'web-animations-js';
 /***************************************************************************************************
  * APPLICATION IMPORTS
  */
+
+ // Enables chartist.js
+(window as any).global = window;
