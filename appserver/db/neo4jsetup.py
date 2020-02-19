@@ -29,7 +29,7 @@ def setup():
                 graph.evaluate(create_query)
         except GraphError:
             print('WARNING: Fulltext indexing failed.')
-
+        graph.commit()
         print('Fulltext search index setup complete.')
 
 if __name__ == '__main__':
