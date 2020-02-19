@@ -97,7 +97,7 @@
         </mat-select>
       </div>
 
-      <mat-checkbox [(ngModel)]="relationshipFile">Relationship File</mat-checkbox>
+      <!-- <mat-checkbox [(ngModel)]="relationshipFile">Relationship File</mat-checkbox> -->
 
       <div>
         <button
@@ -126,6 +126,7 @@
     <ng-template matStepLabel>Map relationships</ng-template>
     <app-import-column-relationship-mapping
       [chosenSheetToMap]="chosenSheetToMap"
+      [fileName]="fileName"
       [columnsForFilePreview]="columnsForFilePreview"
       [nodeMappingHelper]="nodeMappingHelper$ | async"
     ></app-import-column-relationship-mapping>

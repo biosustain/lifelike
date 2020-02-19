@@ -25,16 +25,16 @@
     </mat-form-field>
 
     <!-- TODO: if select relationship from dropdown, clear input and vice versa -->
-    <!-- <mat-form-field>
+    <mat-form-field>
       <mat-select
         fxFlex="1 0"
         placeholder="Select relationship column"
         formControlName="edge"
       >
         <mat-option
-          *ngFor="let relationship of relationshipTypes"
-          [value]="relationship"
-        >{{ relationship }}</mat-option>
+          *ngFor="let column of columnHeaders"
+          [value]="column"
+        >{{ (column | keyvalue)[0].key }}</mat-option>
       </mat-select>
     </mat-form-field>
 
@@ -44,7 +44,7 @@
         type="text"
         placeholder="New relationship"
         formControlName="edge"/>
-    </mat-form-field> -->
+    </mat-form-field>
 
     <mat-form-field>
       <mat-select

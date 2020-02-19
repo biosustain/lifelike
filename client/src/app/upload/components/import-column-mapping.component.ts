@@ -40,13 +40,18 @@ export class ImportColumnMappingComponent {
         this.dbRelationshipTypes$ = this.store.pipe(select(selectors.selectDbRelationshipTypes));
 
         this.worksheetDomain = '';
-        this.columnMappingForm = this.fb.group({columnMapping: this.fb.array([])});
+        this.columnMappingForm = this.fb.group({
+            // newColumnMapping is creating a new mapping to the knowledge graph
+            newColumnMapping: this.fb.array([]),
+            // existingColumnMapping is identifying any column that already had a mapping created/uploaded previously
+            existingColumnMapping: this.fb.array([]),
+        });
         this.nodePropertyMappingForm = this.fb.group({nodePropertyMapping: this.fb.array([])});
         this.nextStep = new EventEmitter();
     }
 
-    addColumnMappingRow() {
-        const form = this.columnMappingForm.get('columnMapping') as FormArray;
+    addNewColumnMappingRow() {
+        const form = this.columnMappingForm.get('newColumnMapping') as FormArray;
         const row = this.fb.group({
             columnNode: [],
             newNodeLabel: [],
@@ -57,17 +62,32 @@ export class ImportColumnMappingComponent {
         form.push(row);
     }
 
+    addExistingColumnMappingRow() {
+        const form = this.columnMappingForm.get('existingColumnMapping') as FormArray;
+        const row = this.fb.group({
+            columnNode: [],
+            mappedNodeLabel: [],
+            mappedNodeProperty: [],
+        });
+        form.push(row);
+    }
+
     addNodePropertyMappingRow() {
         const form = this.nodePropertyMappingForm.get('nodePropertyMapping') as FormArray;
         const row = this.fb.group({
             columnNode: [],
             nodeProperty: [],
+            unique: [],
         });
         form.push(row);
     }
 
-    deleteColumnMappingRow(idx) {
-        (this.columnMappingForm.get('columnMapping') as FormArray).removeAt(idx);
+    deleteNewColumnMappingRow(idx) {
+        (this.columnMappingForm.get('newColumnMapping') as FormArray).removeAt(idx);
+    }
+
+    deleteExistingColumnMappingRow(idx) {
+        (this.columnMappingForm.get('existingColumnMapping') as FormArray).removeAt(idx);
     }
 
     deleteColumnNodePropertyMappingRow(idx) {
@@ -75,28 +95,81 @@ export class ImportColumnMappingComponent {
     }
 
     createNodeMappings() {
-        const nodeMapping = {} as NodeMappingHelper;
-        const columnMappingFormArray = this.columnMappingForm.get('columnMapping') as FormArray;
+        /**
+         * first create mapping for new nodes to be created
+         */
+        const nodeMapping = {
+            mapping: {
+                existingMappings: {},
+                newMappings: {},
+            }
+        } as NodeMappingHelper;
+        let columnMappingFormArray = this.columnMappingForm.get('newColumnMapping') as FormArray;
 
         columnMappingFormArray.controls.forEach((group: FormGroup) => {
-            nodeMapping[Object.values(group.controls.columnNode.value)[0] as number] = {
+            // flip so {[key: number]: string}
+            const propMappingKey = Object.values(group.controls.columnNode.value)[0] as number;
+            const propMappingValue = Object.keys(group.controls.columnNode.value)[0];
+            const propMapping = {[propMappingKey]: propMappingValue};
+            nodeMapping.mapping.newMappings[Object.values(group.controls.columnNode.value)[0] as number] = {
                 nodeType: group.controls.newNodeLabel.value,
                 nodeProperties: null,
                 mappedNodeType: group.controls.mappedNodeLabel.value,
-                mappedNodeProperty: group.controls.mappedNodeProperty.value,
+                mappedNodePropertyFrom: propMapping,
+                mappedNodePropertyTo: group.controls.mappedNodeProperty.value,
                 edge: group.controls.edge.value,
+                uniqueProperty: '',
             } as Neo4jNodeMapping;
         });
 
         const nodePropertyMappingFormArray = this.nodePropertyMappingForm.get('nodePropertyMapping') as FormArray;
 
         nodePropertyMappingFormArray.controls.forEach((group: FormGroup) => {
-            nodeMapping[
+            const existingProps = nodeMapping.mapping.newMappings[
                 Object.values(group.controls.columnNode.value)[0] as number
-            ].nodeProperties = group.controls.nodeProperty.value;
+            ].nodeProperties;
+
+            // flip so {[key: number]: string}
+            const propMappingKey = Object.values(group.controls.nodeProperty.value)[0] as number;
+            const propMappingValue = Object.keys(group.controls.nodeProperty.value)[0];
+            const propMapping = {[propMappingKey]: propMappingValue};
+
+            nodeMapping.mapping.newMappings[
+                Object.values(group.controls.columnNode.value)[0] as number
+            ].nodeProperties = {...existingProps, ...propMapping};
+
+            if (group.controls.unique.value) {
+                nodeMapping.mapping.newMappings[
+                    Object.values(group.controls.columnNode.value)[0] as number
+                ].uniqueProperty = group.controls.unique.value;
+            }
+        });
+
+        /**
+         * now create mappings for any that were previously created/uploaded
+         */
+        columnMappingFormArray = this.columnMappingForm.get('existingColumnMapping') as FormArray;
+
+        columnMappingFormArray.controls.forEach((group: FormGroup) => {
+            // flip so {[key: number]: string}
+            const propMappingKey = Object.values(group.controls.columnNode.value)[0] as number;
+            const propMappingValue = Object.keys(group.controls.columnNode.value)[0];
+            const propMapping = {[propMappingKey]: propMappingValue};
+            nodeMapping.mapping.existingMappings[Object.values(group.controls.columnNode.value)[0] as number] = {
+                // nodeType: group.controls.newNodeLabel.value || '',
+                // nodeProperties: {},
+                mappedNodeType: group.controls.mappedNodeLabel.value || '',
+                mappedNodePropertyFrom: propMapping,
+                mappedNodePropertyTo: group.controls.mappedNodeProperty.value || '',
+                // edge: group.controls.edge.value || '',
+                // uniqueProperty: false,
+            } as Neo4jNodeMapping;
         });
 
         nodeMapping.worksheetDomain = this.worksheetDomain;
+
+        console.log(nodeMapping)
+
         this.store.dispatch(saveNodeMapping({payload: nodeMapping}));
         this.nextStep.emit(true);
     }

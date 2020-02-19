@@ -1,20 +1,17 @@
 import attr
 
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Union, Optional
 
+from flask import json
 from py2neo import NodeMatcher, RelationshipMatcher
-from werkzeug.datastructures import FileStorage
 
 from neo4japp.services.common import BaseDao
 from neo4japp.models import GraphNode, GraphRelationship
 from neo4japp.constants import *
-from neo4japp.factory import cache
+
 from neo4japp.util import CamelDictMixin, compute_hash
 from neo4japp.services.common import BaseDao
 
-from openpyxl import load_workbook
-from openpyxl import Workbook
-from openpyxl.worksheet.worksheet import Worksheet
 from py2neo import (
     Graph,
     Node,
@@ -25,49 +22,42 @@ from py2neo import (
     RelationshipMatcher,
 )
 
+@attr.s(frozen=True)
+class Neo4jNodeMapping(CamelDictMixin):
+    mapped_node_type: str = attr.ib()
+    mapped_node_property_to: str = attr.ib()
+    mapped_node_property_from: Dict[int, str] = attr.ib(default=attr.Factory(dict))
+    node_type: Optional[str] = attr.ib(default=None)
+    node_properties: Dict[int, str] = attr.ib(default=attr.Factory(dict))
+    # this will be used to match a node
+    unique_property: Optional[str] = attr.ib(default=None)
+    edge: Optional[str] = attr.ib(default=None)
+
 
 @attr.s(frozen=True)
-class FileNameAndSheets(CamelDictMixin):
-    @attr.s(frozen=True)
-    class SheetNameAndColumnNames(CamelDictMixin):
-        sheet_name: str = attr.ib()
-        # key is column name, value is column index
-        sheet_column_names: List[Dict[str, int]] = attr.ib()
-        sheet_preview: List[Dict[str, str]] = attr.ib()
-
-    sheets: List[SheetNameAndColumnNames] = attr.ib()
-    filename: str = attr.ib()
+class Neo4jRelationshipMapping(CamelDictMixin):
+    # @attr.s(frozen=True)
+    # class ExistingGraphDBMapping(CamelDictMixin):
+    #     mapped_node_type: str = attr.ib()
+    #     mapped_node_property: Dict[int, str] = attr.ib()
+    # here Any represent Union[str, Dict[int, str]]
+    # the jsonify_with_class can't handle that yet
+    edge: Any = attr.ib()
+    edge_property: Dict[int, str] = attr.ib()
+    source_node: Neo4jNodeMapping = attr.ib()
+    target_node: Neo4jNodeMapping = attr.ib()
 
 
 @attr.s(frozen=True)
 class Neo4jColumnMapping(CamelDictMixin):
     """The int values are the column index
     from the excel files."""
-    @attr.s(frozen=True)
-    class Neo4jNodeMapping(CamelDictMixin):
-        node_type: str = attr.ib()
-        node_properties: Dict[int, str] = attr.ib()
-        mapped_node_type: str = attr.ib()
-        mapped_node_property: str = attr.ib()
-        # this will be used to match a node
-        unique_property: str = attr.ib()
-
-    @attr.s(frozen=True)
-    class Neo4jRelationshipMapping(CamelDictMixin):
-        @attr.s(frozen=True)
-        class ExistingGraphDBMapping(CamelDictMixin):
-            mapped_node_type: str = attr.ib()
-            mapped_node_property: Dict[int, str] = attr.ib()
-
-        edge: str = attr.ib()
-        edge_property: Dict[int, str] = attr.ib()
-        source_node: ExistingGraphDBMapping = attr.ib()
-        target_node: ExistingGraphDBMapping = attr.ib()
-
+    domain: str = attr.ib()
     file_name: str = attr.ib()
     sheet_name: str = attr.ib()
-    node: Optional[Neo4jNodeMapping] = attr.ib(default=None)
-    relationship: Optional[Neo4jRelationshipMapping] = attr.ib(default=None)
+    new_nodes: List[Neo4jNodeMapping] = attr.ib(default=attr.Factory(list))
+    existing_nodes: List[Neo4jNodeMapping] = attr.ib(default=attr.Factory(list))
+    relationships: List[Neo4jRelationshipMapping] = attr.ib(default=attr.Factory(list))
 
 
 class Neo4JService(BaseDao):
@@ -266,134 +256,6 @@ class Neo4JService(BaseDao):
         print(query)
         return query
 
-    def parse_file(self, f: FileStorage) -> Workbook:
-        workbook = load_workbook(f)
-        print(f'caching {f.filename} as key')
-        cache.set(f.filename, workbook)
-        return workbook
-
-    def unmerge_cells(self, current_ws):
-        # unmerge any cells first
-        # and assign the value to them
-        for group in current_ws.merged_cell_ranges:
-            min_col, min_row, max_col, max_row = group.bounds
-            value_to_assign = current_ws.cell(row=min_row, column=min_col).value
-            current_ws.unmerge_cells(str(group))
-            for row in current_ws.iter_rows(min_col=min_col, min_row=min_row, max_col=max_col, max_row=max_row):
-                for cell in row:
-                    cell.value = value_to_assign
-        return current_ws
-
-    def get_workbook_sheet_names_and_columns(
-        self,
-        filename: str,
-        workbook: Workbook,
-    ) -> FileNameAndSheets:
-        sheet_list = []
-
-        for i in range(0, len(workbook.sheetnames)):
-            workbook.active = i
-            current_ws: Worksheet = self.unmerge_cells(workbook.active)
-
-            sheet_col_names = []
-            col_name_map = {}
-            sheet_preview = []
-
-            # loop through just the first row
-            for i, cols in enumerate(current_ws.iter_cols(
-                max_row=1,
-                max_col=len(list(current_ws.columns)),
-                values_only=True,
-            )):
-                if cols[0]:
-                    sheet_col_names.append({cols[0]: i})
-                    col_name_map[i] = cols[0]
-
-            # generate a small preview of the file
-            counter_for_ellipse = 2  # min_row
-
-            for row in current_ws.iter_rows(
-                min_row=2,
-                max_row=8,
-                max_col=len(list(current_ws.columns)),
-                values_only=True,
-            ):
-                if not all(cell is None for cell in row):
-                    col_row_mapping = {}
-                    for i, cell in enumerate(row):
-                        if cell:
-                            if counter_for_ellipse == 8:  # max_row
-                                col_row_mapping[col_name_map[i]] = '...'
-                            else:
-                                col_row_mapping[col_name_map[i]] = cell
-                    counter_for_ellipse += 1
-
-                    sheet_preview.append(col_row_mapping)
-
-            sheet_list.append(FileNameAndSheets.SheetNameAndColumnNames(
-                sheet_name=current_ws.title,
-                sheet_column_names=sheet_col_names,
-                sheet_preview=sheet_preview,
-            ))
-        sheets = FileNameAndSheets(sheets=sheet_list, filename=filename)
-        return sheets
-
-    def create_node_mapping(
-        self,
-        column_mappings: Neo4jColumnMapping,
-    ) -> dict:
-        def create_node(unique_prop, row, props, node_type):
-            node = {}  # type: ignore
-            node_props = {}
-
-            # value becomes the key representing property label
-            # key is used to get the value in excel
-            # e.g { prop_label_in_db: cell_value_in_excel_file }
-            for k, v in props.items():
-                if type(row[k]) is str:
-                    node_props[v] = row[k].strip().lstrip()
-                else:
-                    node_props[v] = row[k]
-
-            node['data'] = node_props
-            node['label'] = node_type  # type: ignore
-            node['unique_property'] = {unique_prop: node_props[unique_prop]}
-            node['hash'] = compute_hash(node)  # type: ignore
-            return node
-
-        nodes = []
-
-        col_idx_node_prop = {}
-
-        # TODO: why is the key changing to str?
-        for k, v in column_mappings.node.node_properties.items():
-            col_idx_node_prop[int(k)] = v
-
-        workbook = cache.get(column_mappings.file_name)
-
-        for i, name in enumerate(workbook.sheetnames):
-            if name == column_mappings.sheet_name:
-                workbook.active = i
-                break
-
-        current_ws = workbook.active
-
-        for row in current_ws.iter_rows(
-            min_row=2,
-            max_row=len(list(current_ws.rows)),
-            max_col=len(list(current_ws.columns)),
-            values_only=True,
-        ):
-            node_type = column_mappings.node.node_type
-            if not all(cell is None for cell in row):
-                nodes.append(create_node(
-                    unique_prop=column_mappings.node.unique_property,
-                    row=row,
-                    props=col_idx_node_prop,
-                    node_type=node_type),
-                )
-        return {'nodes': nodes}
-
     def search_for_relationship_with_label_and_properties(
         self,
         label: str,
@@ -461,45 +323,141 @@ class Neo4JService(BaseDao):
             tx.create(new_node)
             return new_node
 
-    def save_node_to_neo4j(self, column_mappings: Neo4jColumnMapping) -> None:
-        print(column_mappings)
-        node_mapping = self.create_node_mapping(column_mappings)
+    def save_node_to_neo4j(self, node_mappings) -> None:
+        # print(column_mappings)
+        print(node_mappings)
+        # node_mappings = self.create_node_mapping(column_mappings)
 
         tx = self.graph.begin()
-        node_hash_map = dict()
+        # node_hash_map = dict()
 
         # import IPython; IPython.embed()
 
         # create the experimental nodes
+
+
+
+        # TODO: consider switching back to py2neo OGM...
+        # might be easier because dynamic values make raw ciphers hard...
         # TODO: create index on unique_property
-        tx.run(
-            'unwind {batch} as row ' \
-            'call apoc.merge.node([row.label], row.unique_property, row.data, row.data) ' \
-            'yield node ' \
-            'return count(*)',
-            {'batch': node_mapping['nodes']}
-        )
+        # TODO: handle exception where match nodes but property is different (check JIRA)
+        domain_name = node_mappings['new_nodes'][0]['domain']    # just get the first domain because they'll be the same for newly created nodes (?)
+        # tx.run(f'merge (d:`{domain_name}` {{name: "{domain_name}"}})')
+        # # tx.run(f'create constraint unique_domain_name on (d:`{domain_name}`) assert d.name is unique')
+        # # tx.commit()
+        # # tx.run(f'create index on :`{domain_name}`(name)')
+        # # tx.commit()
+        domain_node = self.graph.nodes.match(domain_name, **{'name': domain_name}).first()
+        if not domain_node:
+            domain_node = Node(domain_name, **{'name': domain_name})
+            tx.create(domain_node)
+
+        # tx = self.graph.begin()
+
+        for node in node_mappings['new_nodes']:
+            # can't use cipher parameters due to the dynamic map keys in filtering
+            # e.g merge (n:TYPE {map...})
+            # neo4j guy: https://stackoverflow.com/a/28784921
+            node_type = node['node_type']
+            mapped_node_prop = node['mapped_node_prop']
+            mapped_node_prop_value = node['mapped_node_prop_value']
+            KG_mapped_node_prop = node['KG_mapped_node_prop']
+            node_properties = node['node_properties']
+            KG_mapped_node_type = node['KG_mapped_node_type']
+            edge = node['edge']
+
+            filter_property = {mapped_node_prop: mapped_node_prop_value}
+            KG_filter_property = {KG_mapped_node_prop: mapped_node_prop_value}
+
+            # user experimental data node
+            exp_node = self.graph.nodes.match(node_type, **filter_property).first()
+
+            if exp_node:
+                # TODO: check if node properties match incoming node_properties
+                # also do in frontend - keep set of values from unique column
+                # if see again, check if node_properties are different
+                # if not, throw exception to let user know (check JIRA issue)
+                continue
+            else:
+                exp_node = Node(node_type, **node_properties)
+                tx.create(exp_node)
+
+            # create relationship between user experiemental data node with
+            # domain node
+            relationship = Relationship(domain_node, 'CONTAINS', exp_node, **{})
+            tx.create(relationship)
+
+            # create relationship between user experiemental data node with
+            # existing nodes in knowledge graph
+            if KG_mapped_node_type:
+                kg_node = self.graph.nodes.match(KG_mapped_node_type, **KG_filter_property).first()
+                if kg_node:
+                    relationship = Relationship(exp_node, edge, kg_node, **{})
+                    tx.create(relationship)
+
+            # query = f'merge (n:`{node_type}` {{`{mapped_node_prop}`: '
+            # # neo4j requires quotes around string property value
+            # # but no quote if an int type
+            # if type(mapped_node_prop_value) is str:
+            #     query += f'"{mapped_node_prop_value}"}}) '
+            # else:
+            #     query += f'{mapped_node_prop_value}}}) '
+            # query += f'on create set n += {{'
+
+            # # need to do this because neo4j doesn't allow quotes for the property keys
+            # for k, v in node_properties.items():
+            #     if type(v) is str:
+            #         query += f'{k}: "{v}", '
+            #     else:
+            #         query += f'{k}: {v}, '
+            # # remove the comma and white space after last property
+            # query = query[:-2] + f'}} with n '
+            # query += f'match (universal:`{KG_mapped_node_type}` {{`{KG_mapped_node_prop}`: '
+
+            # if type(mapped_node_prop_value) is str:
+            #     query += f'"{mapped_node_prop_value}"}}), (d:`{domain_name}` {{name: "{domain_name}"}}) '
+            # else:
+            #     query += f'{mapped_node_prop_value}}}), (d:`{domain_name}` {{name: "{domain_name}"}}) '
+            # query += f'merge (n)-[:{edge}]->(universal) '
+            # query += f'merge (d)-[:CONTAINS]->(n)'
+
+            # tx.run(query)
+
+        # can't use cipher parameters due to the dynamic map keys in filtering
+        # e.g merge (n:TYPE {map...})
+        # neo4j guy: https://stackoverflow.com/a/28784921
+        # need to use APOC because the node properties are dynamic
+        # tx.run(
+        #     'unwind {batches} as batch ' \
+        #     'call apoc.merge.node([batch.node_type], row.unique_property, row.data, row.data) ' \
+        #     'yield node ' \
+        #     'return count(*)',
+        #     {'batches': node_mappings}
+        # )
 
         # import IPython; IPython.embed()
 
-        print('Done creating nodes')
+        # print('Done creating nodes')
 
         # create relationship from experimental nodes
         # to universal source nodes
-        for row in node_mapping['nodes']:
-            filter_label = next(iter(row['unique_property']))
-            filter_prop = next(iter(row['unique_property'].values()))
-            row_label = row['label']
+        # for row in node_mapping['nodes']:
+        #     filter_label = next(iter(row['unique_property']))
+        #     filter_prop = next(iter(row['unique_property'].values()))
+        #     row_label = row['label']
 
-            query = f'match (universal:`{column_mappings.node.mapped_node_type}` {{`{filter_label}`: "{filter_prop}"}}), '
-            query += f'(src:`{row_label}` {{`{filter_label}`: "{filter_prop}"}}) '
-            query += f'merge (src)-[:IS_A]->(universal)'
-            tx.run(query)
+        #     query = f'match (universal:`{column_mappings.node.mapped_node_type}` {{`{filter_label}`: "{filter_prop}"}}), '
+        #     query += f'(src:`{row_label}` {{`{filter_label}`: "{filter_prop}"}}) '
+        #     query += f'merge (src)-[:IS_A]->(universal)'
+        #     tx.run(query)
 
         # import IPython; IPython.embed()
 
-        print('Done creating relationship of new nodes to existing KG')
         tx.commit()
+        print('Done creating relationship of new nodes to existing KG')
+
+        # import IPython; IPython.embed()
+
 
         # # create index on all properties
         # # have to do this here because can't have same transaction
@@ -508,8 +466,8 @@ class Neo4JService(BaseDao):
         #     label = row['label']
         #     for k, _ in row['data'].items():
         #         tx.run(f'create index on :{label}({k})')
-        if column_mappings.relationship.edge:
-            self.save_relationship_to_neo4j(column_mappings)
+        # if column_mappings.relationship.edge:
+        #     self.save_relationship_to_neo4j(column_mappings)
         print('Done')
 
     def save_relationship_to_neo4j(self, column_mappings: Neo4jColumnMapping) -> None:

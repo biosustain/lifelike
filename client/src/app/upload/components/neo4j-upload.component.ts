@@ -90,14 +90,14 @@ export class Neo4jUploadComponent implements OnInit, OnDestroy {
         this.stepper.next();
     }
 
-    saveColumnMapping(mapping: {data: Neo4jColumnMapping, type: string}) {
-        mapping.data.fileName = this.fileName;
-        if (mapping.type === 'node') {
-            this.store.dispatch(uploadNodeMapping({payload: mapping.data}));
-        } else if (mapping.type === 'relationship') {
-            this.store.dispatch(uploadRelationshipMapping({payload: mapping.data}));
-        }
-    }
+    // saveColumnMapping(mapping: {data: Neo4jColumnMapping, type: string}) {
+    //     mapping.data.fileName = this.fileName;
+    //     if (mapping.type === 'node') {
+    //         this.store.dispatch(uploadNodeMapping({payload: mapping.data}));
+    //     } else if (mapping.type === 'relationship') {
+    //         this.store.dispatch(uploadRelationshipMapping({payload: mapping.data}));
+    //     }
+    // }
 
     goToMapRelationships() {
         this.stepper.next();

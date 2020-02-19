@@ -5,12 +5,12 @@ import { StoreModule } from '@ngrx/store';
 import { SharedModule } from '../shared.module';
 
 import { Neo4jUploadComponent } from './components/neo4j-upload.component';
-import { Neo4jUploadNodeComponent } from './components/neo4j-upload-node.component';
 import { ImportColumnMappingComponent } from './components/import-column-mapping.component';
-import { ImportColumnMappingRowComponent } from './components/import-column-mapping-row.component';
 import { ImportColumnNodePropertyMappingRowComponent } from './components/import-column-node-property-mapping-row.component';
 import { ImportColumnRelationshipMapperComponent } from './components/import-column-relationship-mapping.component';
 import { ImportColumnRelationshipMappingRowComponent } from './components/import-column-relationship-mapping-row.component';
+import { ImportExistingColumnMappingRowComponent } from './components/import-existing-column-mapping-row.component';
+import { ImportNewColumnMappingRowComponent } from './components/import-new-column-mapping-row.component';
 
 import { Neo4jService } from './services/neo4j.service';
 
@@ -20,12 +20,12 @@ import { Neo4jEffects } from './store/effects';
 
 const components = [
     Neo4jUploadComponent,
-    Neo4jUploadNodeComponent,
     ImportColumnMappingComponent,
-    ImportColumnMappingRowComponent,
     ImportColumnNodePropertyMappingRowComponent,
     ImportColumnRelationshipMapperComponent,
     ImportColumnRelationshipMappingRowComponent,
+    ImportNewColumnMappingRowComponent,
+    ImportExistingColumnMappingRowComponent,
 ];
 
 @NgModule({

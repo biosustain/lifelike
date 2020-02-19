@@ -36,6 +36,8 @@
       </mat-select>
     </mat-form-field>
 
+    <mat-checkbox formControlName="unique" (change)="setUnique($event)">Unique</mat-checkbox>
+
     <div>
       <button
         mat-stroked-button
