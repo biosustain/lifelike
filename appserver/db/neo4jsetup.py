@@ -8,7 +8,7 @@ def setup():
 
     with app.app_context():
         print('Dropping any previous full text search indexes.')
-        graph.begin()
+        tx = graph.begin()
         labels = [TYPE_CHEMICAL, TYPE_DISEASE, TYPE_GENE, TYPE_TAXONOMY]
         drop_index_queries = [f'DROP INDEX ON :{label}(name)' for label in labels]
 
@@ -29,7 +29,7 @@ def setup():
                 graph.evaluate(create_query)
         except GraphError:
             print('WARNING: Fulltext indexing failed.')
-        graph.commit()
+        tx.commit()
         print('Fulltext search index setup complete.')
 
 if __name__ == '__main__':
