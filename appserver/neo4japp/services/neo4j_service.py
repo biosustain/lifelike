@@ -100,28 +100,24 @@ class Neo4JService(BaseDao):
 
 
     def prefix_search(self, term: str):
-        if term.strip():
-            query_term = term
-        else:
-            query_term = '``'
         query = """
             MATCH (c:Chemical)
-            WHERE c.name STARTS WITH "{search_term}"
+            WHERE c.name STARTS WITH $search_term
             RETURN c AS node
             UNION
             MATCH (d:Disease)
-            WHERE d.name STARTS WITH "{search_term}"
+            WHERE d.name STARTS WITH $search_term
             RETURN d AS node
             UNION
             MATCH (g:Gene)
-            WHERE g.name STARTS WITH "{search_term}"
+            WHERE g.name STARTS WITH $search_term
             RETURN g AS node
             UNION
             MATCH (t:Taxonomy)
-            WHERE t.name STARTS WITH "{search_term}"
+            WHERE t.name STARTS WITH $search_term
             RETURN t as node
-        """.format(search_term=query_term)
-        records = self.graph.run(query).data()
+        """
+        records = self.graph.run(query, parameters={'search_term': term.strip()}).data()
         nodes = [GraphNode.from_py2neo(n['node'], display_fn=lambda x: x.get('name')) for n in records]
         return dict(nodes=[n.to_dict() for n in nodes], edges=[])
 
