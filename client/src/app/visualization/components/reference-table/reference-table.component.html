@@ -9,7 +9,7 @@
 
 <!-- Submenus (these are tooltips, so they should be floating around -- invisible -- until their mouseover events are called -->
 <div id="selected-node-edge-labels-submenu" [ngClass]="referenceTableClass">
-  <div class="reference-table-group">
-    <div class="reference-table-row" *ngFor="let edge of selectedNodeEdges" (click)="getAssociationsWithEdge(edge)">{{ edge.label }}</div>
+  <div *ngIf="getEdgeSnippetCountsResult !== null && getEdgeSnippetCountsResult !== undefined" class="reference-table-group">
+    <div class="reference-table-row" *ngFor="let edgeSnippetCount of getEdgeSnippetCountsResult.edgeSnippetCounts" (click)="getAssociationsWithEdge(edgeSnippetCount.edge)">{{ edgeSnippetCount.edge.label }} ({{ edgeSnippetCount.count }})</div>
   </div>
 </div>

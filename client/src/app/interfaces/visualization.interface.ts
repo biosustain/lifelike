@@ -1,6 +1,6 @@
 import { IdType } from 'vis-network';
 
-import { GraphRelationship, VisNode } from './neo4j.interface';
+import { VisEdge, VisNode } from './neo4j.interface';
 
 export interface AssociationData {
     fromNode: number;
@@ -33,9 +33,18 @@ export interface GetSnippetsResult {
     association: string;
 }
 
+export interface EdgeSnippetCount {
+    edge: VisEdge;
+    count: number;
+}
+
+export interface GetEdgeSnippetCountsResult {
+    edgeSnippetCounts: EdgeSnippetCount[];
+}
+
 export interface ReferenceTableRow {
     node: VisNode;
-    edges: GraphRelationship[];
+    edges: VisEdge[];
 }
 
 export interface ReferenceTableSelection {
@@ -44,11 +53,11 @@ export interface ReferenceTableSelection {
 }
 
 export interface SidenavEntity {
-    data: VisNode | GraphRelationship;
+    data: VisNode | VisEdge;
 }
 
 export interface SidenavNodeEntity extends SidenavEntity {
-    edges: GraphRelationship[];
+    edges: VisEdge[];
 }
 
 export interface SidenavEdgeEntity extends SidenavEntity {

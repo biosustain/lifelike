@@ -18,16 +18,15 @@ import {
     AssociationData,
     GetLabelsResult,
     GetSnippetsResult,
-    GraphRelationship,
     GroupRequest,
     Neo4jGraphConfig,
     ReferenceTableRow,
     SidenavEntity,
-    VisNode,
     SidenavClusterEntity,
     SidenavNodeEntity,
     SidenavEdgeEntity,
-
+    VisEdge,
+    VisNode,
 } from 'app/interfaces';
 
 import { uuidv4 } from 'app/shared/utils';
@@ -378,7 +377,7 @@ export class VisualizationCanvasComponent implements OnInit {
      * TODO: the sidebar isn't implemented yet, so just printing the node data for now.
      * @param referenceTableSelection represents a row in the reference table, contains node data and edge label
      */
-    getAssociationsWithEdge(edge: GraphRelationship) {
+    getAssociationsWithEdge(edge: VisEdge) {
         this.getSnippets.emit({
                 fromNode: edge.from,
                 toNode: edge.to,
@@ -407,7 +406,7 @@ export class VisualizationCanvasComponent implements OnInit {
                 this.sidenavEntityType = 'node';
             }
         } else if (this.selectedNodes.length === 0 && this.selectedEdges.length === 1) {
-            const edge = this.edges.get(this.selectedEdges[0]) as GraphRelationship;
+            const edge = this.edges.get(this.selectedEdges[0]) as VisEdge;
             this.getAssociationsWithEdge(edge);
         }
     }
