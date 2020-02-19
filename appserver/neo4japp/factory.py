@@ -3,6 +3,8 @@ from flask_caching import Cache
 
 from werkzeug.utils import find_modules, import_string
 
+from neo4japp.encoders import CustomJSONEncoder
+
 # Used for registering blueprints
 BLUEPRINT_PACKAGE = __package__ + '.blueprints'
 BLUEPRINT_OBJNAME = 'bp'
@@ -26,6 +28,9 @@ def create_app(name = 'neo4japp', config = 'config.Development'):
     # TODO: temp solution to a cache
     # (uses SimpleCache: https://flask-caching.readthedocs.io/en/latest/#simplecache)
     cache.init_app(app, config=cache_config)
+
+    app.json_encoder = CustomJSONEncoder
+
     return app
 
 
