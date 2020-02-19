@@ -115,10 +115,10 @@ def upload_node_mapping(req: Neo4jColumnMapping):
     return SuccessResponse(result='', status_code=200)
 
 
-@bp.route('/upload-relationship-mapping', methods=['POST'])
-@jsonify_with_class(Neo4jColumnMapping)
-def upload_relationship_mapping(req: Neo4jColumnMapping):
-    neo4j = get_neo4j_service_dao()
-    neo4j.save_relationship_to_neo4j(req)
+# @bp.route('/upload-relationship-mapping', methods=['POST'])
+# @jsonify_with_class(Neo4jColumnMapping)
+# def upload_relationship_mapping(req: Neo4jColumnMapping):
+#     neo4j = get_neo4j_service_dao()
+#     neo4j.save_relationship_to_neo4j(req)
 
-    return SuccessResponse(result='', status_code=200)
+#     return SuccessResponse(result='', status_code=200)

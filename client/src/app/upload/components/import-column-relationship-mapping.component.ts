@@ -106,9 +106,39 @@ export class ImportColumnRelationshipMapperComponent {
         if (relationshipMappingFormArray) {
             relationshipMappingFormArray.controls.forEach((group: FormGroup) => {
                 const currentRelationship = {} as Neo4jRelationshipMapping;
-                currentRelationship.edge = group.controls.edge.value;
-                currentRelationship.sourceNode = this.nodeMappingHelper[Object.values(group.controls.source.value)[0] as number];
-                currentRelationship.targetNode = this.nodeMappingHelper[Object.values(group.controls.target.value)[0] as number];
+                // TODO: handle user inpute for new edges
+                // set key to negative number in that case
+                // so backend can know when to just create a new edge
+
+                // flip so {[key: number]: string}
+                const edgeKey = Object.values(group.controls.edge.value)[0] as number;
+                const edgeValue = Object.keys(group.controls.edge.value)[0];
+                currentRelationship.edge = {[edgeKey]: edgeValue};
+
+                // console.log(this.nodeMappingHelper)
+                // console.log(Object.values(group.controls.source.value)[0] as number)
+                // console.log(Object.values(group.controls.target.value)[0] as number)
+
+                const sourceIdxKey = Object.values(group.controls.source.value)[0] as number;
+                const targetIdxKey = Object.values(group.controls.target.value)[0] as number;
+
+                if (sourceIdxKey in this.nodeMappingHelper.mapping.existingMappings) {
+                    currentRelationship.sourceNode = this.nodeMappingHelper.mapping.existingMappings[sourceIdxKey];
+                } else if (sourceIdxKey in this.nodeMappingHelper.mapping.newMappings) {
+                    currentRelationship.sourceNode = this.nodeMappingHelper.mapping.newMappings[sourceIdxKey];
+                } else {
+                    // TODO: handle error here
+                    // if no index mapping then something happened and no node was associated
+                }
+
+                if (targetIdxKey in this.nodeMappingHelper.mapping.existingMappings) {
+                    currentRelationship.targetNode = this.nodeMappingHelper.mapping.existingMappings[targetIdxKey];
+                } else if (targetIdxKey in this.nodeMappingHelper.mapping.newMappings) {
+                    currentRelationship.targetNode = this.nodeMappingHelper.mapping.newMappings[targetIdxKey];
+                } else {
+                    // TODO: handle error here
+                    // if no index mapping then something happened and no node was associated
+                }
 
                 relationshipMapper.push(currentRelationship);
             });
@@ -118,6 +148,7 @@ export class ImportColumnRelationshipMapperComponent {
         mappings.domain = this.nodeMappingHelper.worksheetDomain;
         delete this.nodeMappingHelper.worksheetDomain;
 
+        // add the nodes without index keys
         let nodeMapper = [];
         for (const [key, value] of Object.entries(this.nodeMappingHelper.mapping.newMappings)) {
             nodeMapper.push(value);

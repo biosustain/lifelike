@@ -36,16 +36,10 @@ class Neo4jNodeMapping(CamelDictMixin):
 
 @attr.s(frozen=True)
 class Neo4jRelationshipMapping(CamelDictMixin):
-    # @attr.s(frozen=True)
-    # class ExistingGraphDBMapping(CamelDictMixin):
-    #     mapped_node_type: str = attr.ib()
-    #     mapped_node_property: Dict[int, str] = attr.ib()
-    # here Any represent Union[str, Dict[int, str]]
-    # the jsonify_with_class can't handle that yet
-    edge: Any = attr.ib()
-    edge_property: Dict[int, str] = attr.ib()
+    edge: Dict[int, str] = attr.ib()
     source_node: Neo4jNodeMapping = attr.ib()
     target_node: Neo4jNodeMapping = attr.ib()
+    edge_property: Dict[int, str] = attr.ib(default=attr.Factory(dict))
 
 
 @attr.s(frozen=True)
@@ -453,7 +447,7 @@ class Neo4JService(BaseDao):
 
         # import IPython; IPython.embed()
 
-        tx.commit()
+
         print('Done creating relationship of new nodes to existing KG')
 
         # import IPython; IPython.embed()
@@ -468,79 +462,122 @@ class Neo4JService(BaseDao):
         #         tx.run(f'create index on :{label}({k})')
         # if column_mappings.relationship.edge:
         #     self.save_relationship_to_neo4j(column_mappings)
+        if node_mappings['relationships']:
+            self.save_relationship_to_neo4j(tx, node_mappings)
+        else:
+            tx.commit()
         print('Done')
 
-    def save_relationship_to_neo4j(self, column_mappings: Neo4jColumnMapping) -> None:
-        workbook = cache.get(column_mappings.file_name)
+    def save_relationship_to_neo4j(
+        self,
+        tx: Transaction,
+        node_mappings,  # TODO: create attrs class (in importer service)
+    ) -> None:
+        for relation in node_mappings['relationships']:
+            # relationships.append({
+            #         'source_node_label': source_node_label,
+            #         'source_node_prop_label': source_node_prop_label,
+            #         'source_node_prop_value': source_node_prop_value,
+            #         'target_node_label': target_node_label,
+            #         'target_node_prop_label': target_node_prop_label,
+            #         'target_node_prop_value': target_node_prop_value,
+            #         'edge': edge_label,
+            #     })
+            source_node_label = relation['source_node_label']
+            source_node_prop_label = relation['source_node_prop_label']
+            source_node_prop_value = relation['source_node_prop_value']
+            target_node_label = relation['target_node_label']
+            target_node_prop_label = relation['target_node_prop_label']
+            target_node_prop_value = relation['target_node_prop_value']
+            edge_label = relation['edge_label']
 
-        col_idx_src_node_prop = {}
-        col_idx_tgt_node_prop = {}
-        col_idx_edge_prop = {}
+            # source_filter_property = {source_node_prop_label: source_node_prop_value}
+            # TODO: need to use node_properties here because the filter
+            # might not be unique - see importer service for additional notes
+            source_filter_property = relation['source_node_properties']
+            target_filter_property = {target_node_prop_label: target_node_prop_value}
 
-        for k, v in column_mappings.relationship.source_node.mapped_node_property.items():
-            col_idx_src_node_prop[int(k)] = v
+            # TODO: if nodes not found throw exception or create?
+            source_node = self.graph.nodes.match(source_node_label, **source_filter_property).first()
+            if source_node:
+                target_node = self.graph.nodes.match(target_node_label, **target_filter_property).first()
+                if target_node:
+                    # TODO: the **{} should be edge properties
+                    tx.create(Relationship(source_node, edge_label, target_node, **{}))
 
-        for k, v in column_mappings.relationship.target_node.mapped_node_property.items():
-            col_idx_tgt_node_prop[int(k)] = v
 
-        for k, v in column_mappings.relationship.edge_property.items():
-            col_idx_edge_prop[int(k)] = v
 
-        for i, name in enumerate(workbook.sheetnames):
-            if name == column_mappings.sheet_name:
-                workbook.active = i
-                break
 
-        current_ws = workbook.active
+        # workbook = cache.get(column_mappings.file_name)
 
-        tx = self.graph.begin()
+        # col_idx_src_node_prop = {}
+        # col_idx_tgt_node_prop = {}
+        # col_idx_edge_prop = {}
 
-        for row in current_ws.iter_rows(
-            min_row=2,
-            max_row=len(list(current_ws.rows)),
-            max_col=len(list(current_ws.columns)),
-            values_only=True,
-        ):
-            if not all(cell is None for cell in row):
-                # TODO: handle null otherwise strip() and lstrip() fails
-                src_label = column_mappings.relationship.source_node.mapped_node_type
-                # try:
-                src_prop_label = next(iter(col_idx_src_node_prop.values()))
-                src_prop_value = row[next(iter(col_idx_src_node_prop))]
-                if type(src_prop_value) is str:
-                    src_prop_value = f'"{src_prop_value.strip().lstrip()}"'
+        # for k, v in column_mappings.relationship.source_node.mapped_node_property.items():
+        #     col_idx_src_node_prop[int(k)] = v
 
-                tgt_label = column_mappings.relationship.target_node.mapped_node_type
-                tgt_prop_label = next(iter(col_idx_tgt_node_prop.values()))
-                tgt_prop_value = row[next(iter(col_idx_tgt_node_prop))]
-                if type(tgt_prop_value) is str:
-                    tgt_prop_value = f'"{tgt_prop_value.strip().lstrip()}"'
+        # for k, v in column_mappings.relationship.target_node.mapped_node_property.items():
+        #     col_idx_tgt_node_prop[int(k)] = v
 
-                # TODO: instead of using column header
-                # use column values for edge
-                edge_label = column_mappings.relationship.edge
+        # for k, v in column_mappings.relationship.edge_property.items():
+        #     col_idx_edge_prop[int(k)] = v
 
-                query = f'match (s:`{src_label}` {{`{src_prop_label}`: {src_prop_value}}}), '
-                query += f'(t:`{tgt_label}` {{`{tgt_prop_label}`: {tgt_prop_value}}}) '
+        # for i, name in enumerate(workbook.sheetnames):
+        #     if name == column_mappings.sheet_name:
+        #         workbook.active = i
+        #         break
 
-                query += f'merge (s)-[:`{edge_label}`'
-                if col_idx_edge_prop:
-                    query += f'{{'
-                    for k, v in col_idx_edge_prop.items():
-                        prop_value = row[k]
-                        if type(prop_value) is int:
-                            query += f'`{v}`: {prop_value}, '
-                        else:
-                            query += f'`{v}`: "{prop_value}", '
-                    # remove the comma at the end
-                    query = query[:-2] + f'}}'
-                query += f']->(t)'
-                print(query)
-                tx.run(query)
-                # except AttributeError:
-                    # if this occur then the cell in the row
-                    # was empty so strip() and lstrip() failed
-                    # skip and don't create the relationship
-                    # continue
+        # current_ws = workbook.active
+
+        # tx = self.graph.begin()
+
+        # for row in current_ws.iter_rows(
+        #     min_row=2,
+        #     max_row=len(list(current_ws.rows)),
+        #     max_col=len(list(current_ws.columns)),
+        #     values_only=True,
+        # ):
+        #     if not all(cell is None for cell in row):
+        #         # TODO: handle null otherwise strip() and lstrip() fails
+        #         src_label = column_mappings.relationship.source_node.mapped_node_type
+        #         # try:
+        #         src_prop_label = next(iter(col_idx_src_node_prop.values()))
+        #         src_prop_value = row[next(iter(col_idx_src_node_prop))]
+        #         if type(src_prop_value) is str:
+        #             src_prop_value = f'"{src_prop_value.strip().lstrip()}"'
+
+        #         tgt_label = column_mappings.relationship.target_node.mapped_node_type
+        #         tgt_prop_label = next(iter(col_idx_tgt_node_prop.values()))
+        #         tgt_prop_value = row[next(iter(col_idx_tgt_node_prop))]
+        #         if type(tgt_prop_value) is str:
+        #             tgt_prop_value = f'"{tgt_prop_value.strip().lstrip()}"'
+
+        #         # TODO: instead of using column header
+        #         # use column values for edge
+        #         edge_label = column_mappings.relationship.edge
+
+        #         query = f'match (s:`{src_label}` {{`{src_prop_label}`: {src_prop_value}}}), '
+        #         query += f'(t:`{tgt_label}` {{`{tgt_prop_label}`: {tgt_prop_value}}}) '
+
+        #         query += f'merge (s)-[:`{edge_label}`'
+        #         if col_idx_edge_prop:
+        #             query += f'{{'
+        #             for k, v in col_idx_edge_prop.items():
+        #                 prop_value = row[k]
+        #                 if type(prop_value) is int:
+        #                     query += f'`{v}`: {prop_value}, '
+        #                 else:
+        #                     query += f'`{v}`: "{prop_value}", '
+        #             # remove the comma at the end
+        #             query = query[:-2] + f'}}'
+        #         query += f']->(t)'
+        #         print(query)
+        #         tx.run(query)
+        #         # except AttributeError:
+        #             # if this occur then the cell in the row
+        #             # was empty so strip() and lstrip() failed
+        #             # skip and don't create the relationship
+        #             # continue
         tx.commit()
         print('Done creating relationships between new nodes')
