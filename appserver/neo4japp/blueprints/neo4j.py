@@ -7,6 +7,7 @@ from werkzeug.datastructures import FileStorage
 from neo4japp.blueprints import GraphRequest
 from neo4japp.constants import *
 from neo4japp.database import get_neo4j_service_dao
+from neo4japp.models import GraphRelationship
 from neo4japp.services import Neo4JService, Neo4jColumnMapping
 from neo4japp.util import CamelDictMixin, SuccessResponse, jsonify_with_class
 
@@ -27,6 +28,10 @@ class AssociationSnippetsRequest(CamelDictMixin):
     from_node: int = attr.ib()
     to_node: int = attr.ib()
     association: str = attr.ib()
+
+@attr.s(frozen=True)
+class SnippetCountForEdgesRequest(CamelDictMixin):
+    edges: List[GraphRelationship] = attr.ib()
 
 @attr.s(frozen=True)
 class UploadFileRequest(CamelDictMixin):
@@ -87,6 +92,15 @@ def get_association_snippets(req: AssociationSnippetsRequest):
         req.association
     )
     return SuccessResponse(result=snippets_result, status_code=200)
+
+@bp.route('/get-snippet-count-for-edges', methods=['POST'])
+@jsonify_with_class(SnippetCountForEdgesRequest)
+def get_snippet_count_for_edges(req: SnippetCountForEdgesRequest):
+    neo4j = get_neo4j_service_dao()
+    edge_snippet_count_result = neo4j.get_edge_snippet_counts(
+        req.edges,
+    )
+    return SuccessResponse(edge_snippet_count_result, status_code=200)
 
 @bp.route('/reaction', methods=['POST'])
 @jsonify_with_class(ReactionRequest)
