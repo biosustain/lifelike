@@ -1,2 +1,14 @@
 <h1>Cluster Data View</h1>
-<label>Node Count:</label><p>{{ clusterEntity.includes.length }}</p>
+<label>Includes:</label>
+<ul *ngFor="let node of clusterEntity.includes">
+  <li>Display Name: {{ node.displayName }}</li>
+  <li>Label: {{ node.primaryLabel }}</li>
+  <li>Sublabels:
+    <ul *ngIf="node.subLabels.length > 1; else noSubLabels">
+      <li *ngFor="let label of node.subLabels">
+        <div *ngIf="label !== node.primaryLabel">{{ label }}</div>
+      </li>
+    </ul>
+    <ng-template #noSubLabels>N/A</ng-template>
+  </li>
+</ul>
