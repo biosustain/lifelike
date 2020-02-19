@@ -12,6 +12,7 @@ import { HttpClientModule } from '@angular/common/http';
 import { RouterModule } from '@angular/router';
 
 import { AngularMaterialModule } from './angular-material.module';
+import { SharedDirectivesModule } from './directives/shareddirectives.module';
 
 import { LegendComponent } from './components/legend/legend.component';
 import { TooltipComponent } from './components/tooltip/tooltip.component';
@@ -31,6 +32,7 @@ const components = [
         HttpClientModule,
         ReactiveFormsModule,
         RouterModule,
+        SharedDirectivesModule,
     ],
     declarations: [TooltipComponent, LegendComponent],
     providers: [],
@@ -45,7 +47,7 @@ const components = [
         HttpClientModule,
         ReactiveFormsModule,
         RouterModule,
-
+        SharedDirectivesModule ,
         // Components
         ...components,
     ],
