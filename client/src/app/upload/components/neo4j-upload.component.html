@@ -2,9 +2,6 @@
   <mat-step [stepControl]="fileForm">
     <ng-template matStepLabel>Upload data file</ng-template>
 
-    <!-- the fxLayout is inverted
-         because of the horizontal stepper (?)
-    -->
     <div
       fxLayout="column"
       fxLayoutGap="30px"
@@ -50,7 +47,7 @@
           <div><ng-template #noFileSelected>File Selected: None</ng-template></div>
         </div>
 
-        <div>Select the excel file to upload; allowed file extensions (.xlsx). Large files may take a minute or two to parse.</div>
+        <div class="redtext">Select the excel file to upload; allowed file extensions (.xlsx). Large files may take a minute or two to parse.</div>
 
         <div [formGroup]="fileForm">
           <mat-accordion>
@@ -98,8 +95,9 @@
             [value]="sheet"
           >{{sheet.sheetName}}</mat-option>
         </mat-select>
-        <mat-checkbox [(ngModel)]="relationshipFile">Relationship File</mat-checkbox>
       </div>
+
+      <!-- <mat-checkbox [(ngModel)]="relationshipFile">Relationship File</mat-checkbox> -->
 
       <div>
         <button
@@ -111,21 +109,26 @@
     </div>
   </mat-step>
 
-  <mat-step *ngIf="!relationshipFile; else relationshipColumnMapper">
+  <mat-step>
     <ng-template matStepLabel>Map columns</ng-template>
-    <app-neo4j-upload-node
+    <!-- <app-neo4j-upload-node
       [chosenSheetToMap]="chosenSheetToMap"
       (emitter)="saveColumnMapping($event)"
-    ></app-neo4j-upload-node>
+    ></app-neo4j-upload-node> -->
+    <app-import-column-mapping
+      [chosenSheetToMap]="chosenSheetToMap"
+      [columnsForFilePreview]="columnsForFilePreview"
+      (nextStep)="goToMapRelationships()"
+    ></app-import-column-mapping>
   </mat-step>
-  <ng-template #relationshipColumnMapper>
-    <mat-step>
-      <ng-template matStepLabel>Map relationship</ng-template>
-      <app-neo4j-upload-relationship
-        [chosenSheetToMap]="chosenSheetToMap"
-        (emitter)="saveColumnMapping($event)"
-      ></app-neo4j-upload-relationship>
-    </mat-step>
-  </ng-template>
 
+  <mat-step>
+    <ng-template matStepLabel>Map relationships</ng-template>
+    <app-import-column-relationship-mapping
+      [chosenSheetToMap]="chosenSheetToMap"
+      [fileName]="fileName"
+      [columnsForFilePreview]="columnsForFilePreview"
+      [nodeMappingHelper]="nodeMappingHelper$ | async"
+    ></app-import-column-relationship-mapping>
+  </mat-step>
 </mat-horizontal-stepper>
