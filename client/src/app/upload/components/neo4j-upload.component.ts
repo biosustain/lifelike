@@ -6,7 +6,7 @@ import { Store, select } from '@ngrx/store';
 
 import { Observable, Subscription } from 'rxjs';
 
-import { State } from '../../***ARANGO_USERNAME***-store';
+import { State } from 'app/***ARANGO_USERNAME***-store';
 
 import { Neo4jSelectors as selectors } from '../store';
 import { uploadNeo4jFile, uploadNodeMapping, getDbLabels, uploadRelationshipMapping, getDbRelationshipTypes } from '../store/actions';
