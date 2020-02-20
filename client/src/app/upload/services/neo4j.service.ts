@@ -4,7 +4,7 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
-import { FileNameAndSheets, Neo4jColumnMapping } from 'app/interfaces/neo4j.interface';
+import { FileNameAndSheets, Neo4jColumnMapping } from '../../interfaces/importer.interface';
 
 @Injectable()
 export class Neo4jService {
@@ -15,6 +15,11 @@ export class Neo4jService {
     getDbLabels(): Observable<string[]> {
         return this.http.get<{result: string[]}>(
             `${this.neo4jAPI}/get-db-labels`).pipe(map(resp => resp.result));
+    }
+
+    getDbRelationshipTypes(): Observable<string[]> {
+        return this.http.get<{result: string[]}>(
+            `${this.neo4jAPI}/get-db-relationship-types`).pipe(map(resp => resp.result));
     }
 
     getNodeProperties(nodeLabel): Observable<{ [key: string]: string[] }> {
@@ -34,8 +39,8 @@ export class Neo4jService {
             mappings).pipe(map(resp => resp.result));
     }
 
-    uploadRelationshipMapping(mappings: Neo4jColumnMapping): Observable<any> {
-        return this.http.post<{result: any}>(`${this.neo4jAPI}/upload-relationship-mapping`,
-            mappings).pipe(map(resp => resp.result));
-    }
+    // uploadRelationshipMapping(mappings: Neo4jColumnMapping): Observable<any> {
+    //     return this.http.post<{result: any}>(`${this.neo4jAPI}/upload-relationship-mapping`,
+    //         mappings).pipe(map(resp => resp.result));
+    // }
 }

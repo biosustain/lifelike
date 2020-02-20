@@ -6,12 +6,12 @@ import { Store, select } from '@ngrx/store';
 
 import { Observable, Subscription } from 'rxjs';
 
-import { FileNameAndSheets, SheetNameAndColumnNames, Neo4jColumnMapping } from 'app/interfaces/neo4j.interface';
 import { State } from 'app/***ARANGO_USERNAME***-store';
 
 import { Neo4jSelectors as selectors } from '../store';
-import { uploadNeo4jFile, uploadNodeMapping, getDbLabels, uploadRelationshipMapping } from '../store/actions';
+import { uploadNeo4jFile, uploadNodeMapping, getDbLabels, uploadRelationshipMapping, getDbRelationshipTypes } from '../store/actions';
 
+import { FileNameAndSheets, SheetNameAndColumnNames, Neo4jColumnMapping, NodeMappingHelper } from '../../interfaces/importer.interface';
 
 @Component({
     selector: 'app-neo4j-upload',
@@ -26,15 +26,19 @@ export class Neo4jUploadComponent implements OnInit, OnDestroy {
     fileForm: FormGroup;
     fileName: string;
     relationshipFile: boolean;
+    columnsForFilePreview: string[];
 
     fileNameAndSheets$: Observable<FileNameAndSheets>;
     fielNameAndSheetsSub: Subscription;
+    nodeMappingHelper$: Observable<NodeMappingHelper>;
+    nodeMappingHelperSub: Subscription;
 
     constructor(
         private fb: FormBuilder,
         private store: Store<State>,
     ) {
         this.fileNameAndSheets$ = this.store.pipe(select(selectors.selectFileNameAndSheets));
+        this.nodeMappingHelper$ = this.store.pipe(select(selectors.selectNodeMappingHelper));
 
         this.fileName = null;
         this.fileForm = this.fb.group({
@@ -42,6 +46,7 @@ export class Neo4jUploadComponent implements OnInit, OnDestroy {
             crossRef: [false],
         });
         this.relationshipFile = false;
+        this.columnsForFilePreview = [];
     }
 
     ngOnInit() {
@@ -56,6 +61,7 @@ export class Neo4jUploadComponent implements OnInit, OnDestroy {
 
     ngOnDestroy() {
         this.fielNameAndSheetsSub.unsubscribe();
+        this.nodeMappingHelperSub.unsubscribe();
     }
 
     onFileChange(event) {
@@ -76,16 +82,24 @@ export class Neo4jUploadComponent implements OnInit, OnDestroy {
     }
 
     goToMapColumns() {
+        this.chosenSheetToMap.sheetColumnNames.forEach(column => {
+            this.columnsForFilePreview.push(Object.keys(column)[0]);
+        });
+        this.store.dispatch(getDbRelationshipTypes());
         this.store.dispatch(getDbLabels());
         this.stepper.next();
     }
 
-    saveColumnMapping(mapping: {data: Neo4jColumnMapping, type: string}) {
-        mapping.data.fileName = this.fileName;
-        if (mapping.type === 'node') {
-            this.store.dispatch(uploadNodeMapping({payload: mapping.data}));
-        } else if (mapping.type === 'relationship') {
-            this.store.dispatch(uploadRelationshipMapping({payload: mapping.data}));
-        }
+    // saveColumnMapping(mapping: {data: Neo4jColumnMapping, type: string}) {
+    //     mapping.data.fileName = this.fileName;
+    //     if (mapping.type === 'node') {
+    //         this.store.dispatch(uploadNodeMapping({payload: mapping.data}));
+    //     } else if (mapping.type === 'relationship') {
+    //         this.store.dispatch(uploadRelationshipMapping({payload: mapping.data}));
+    //     }
+    // }
+
+    goToMapRelationships() {
+        this.stepper.next();
     }
 }
