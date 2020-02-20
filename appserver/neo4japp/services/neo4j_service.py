@@ -318,35 +318,18 @@ class Neo4JService(BaseDao):
             return new_node
 
     def save_node_to_neo4j(self, node_mappings) -> None:
-        # print(column_mappings)
-        print(node_mappings)
-        # node_mappings = self.create_node_mapping(column_mappings)
-
         tx = self.graph.begin()
-        # node_hash_map = dict()
 
-        # import IPython; IPython.embed()
-
-        # create the experimental nodes
-
-
-
-        # TODO: consider switching back to py2neo OGM...
-        # might be easier because dynamic values make raw ciphers hard...
-        # TODO: create index on unique_property
-        # TODO: handle exception where match nodes but property is different (check JIRA)
-        domain_name = node_mappings['new_nodes'][0]['domain']    # just get the first domain because they'll be the same for newly created nodes (?)
-        # tx.run(f'merge (d:`{domain_name}` {{name: "{domain_name}"}})')
-        # # tx.run(f'create constraint unique_domain_name on (d:`{domain_name}`) assert d.name is unique')
-        # # tx.commit()
-        # # tx.run(f'create index on :`{domain_name}`(name)')
-        # # tx.commit()
+        # just get the first domain because they'll be the same for newly created nodes (?)
+        domain_name = node_mappings['new_nodes'][0]['domain']
         domain_node = self.graph.nodes.match(domain_name, **{'name': domain_name}).first()
+
         if not domain_node:
             domain_node = Node(domain_name, **{'name': domain_name})
             tx.create(domain_node)
 
-        # tx = self.graph.begin()
+        # in case the filter property is not unique
+        created_nodes = set()
 
         for node in node_mappings['new_nodes']:
             # can't use cipher parameters due to the dynamic map keys in filtering
@@ -363,126 +346,50 @@ class Neo4JService(BaseDao):
             filter_property = {mapped_node_prop: mapped_node_prop_value}
             KG_filter_property = {KG_mapped_node_prop: mapped_node_prop_value}
 
-            # user experimental data node
-            exp_node = self.graph.nodes.match(node_type, **filter_property).first()
+            # needed because haven't committed yet
+            # so the match above would not return a node
+            if mapped_node_prop_value not in created_nodes:
+                # user experimental data node
+                exp_node = self.graph.nodes.match(node_type, **filter_property).first()
 
-            if exp_node:
-                # TODO: check if node properties match incoming node_properties
-                # also do in frontend - keep set of values from unique column
-                # if see again, check if node_properties are different
-                # if not, throw exception to let user know (check JIRA issue)
-                continue
-            else:
-                exp_node = Node(node_type, **node_properties)
-                tx.create(exp_node)
+                if exp_node:
+                    # TODO: check if node properties match incoming node_properties
+                    # also do in frontend - keep set of values from unique column
+                    # if see again, check if node_properties are different
+                    # if not, throw exception to let user know (check JIRA issue LL-81)
+                    continue
+                else:
+                    exp_node = Node(node_type, **node_properties)
+                    tx.create(exp_node)
+                    created_nodes.add(mapped_node_prop_value)
 
-            # create relationship between user experiemental data node with
-            # domain node
-            relationship = Relationship(domain_node, 'CONTAINS', exp_node, **{})
-            tx.create(relationship)
+                # create relationship between user experiemental data node with
+                # domain node
+                relationship = Relationship(domain_node, 'CONTAINS', exp_node, **{})
+                tx.create(relationship)
 
-            # create relationship between user experiemental data node with
-            # existing nodes in knowledge graph
-            if KG_mapped_node_type:
-                kg_node = self.graph.nodes.match(KG_mapped_node_type, **KG_filter_property).first()
-                if kg_node:
-                    relationship = Relationship(exp_node, edge, kg_node, **{})
-                    tx.create(relationship)
+                # create relationship between user experiemental data node with
+                # existing nodes in knowledge graph
+                if KG_mapped_node_type:
+                    kg_node = self.graph.nodes.match(KG_mapped_node_type, **KG_filter_property).first()
+                    if kg_node:
+                        relationship = Relationship(exp_node, edge, kg_node, **{})
+                        tx.create(relationship)
 
-            # query = f'merge (n:`{node_type}` {{`{mapped_node_prop}`: '
-            # # neo4j requires quotes around string property value
-            # # but no quote if an int type
-            # if type(mapped_node_prop_value) is str:
-            #     query += f'"{mapped_node_prop_value}"}}) '
-            # else:
-            #     query += f'{mapped_node_prop_value}}}) '
-            # query += f'on create set n += {{'
-
-            # # need to do this because neo4j doesn't allow quotes for the property keys
-            # for k, v in node_properties.items():
-            #     if type(v) is str:
-            #         query += f'{k}: "{v}", '
-            #     else:
-            #         query += f'{k}: {v}, '
-            # # remove the comma and white space after last property
-            # query = query[:-2] + f'}} with n '
-            # query += f'match (universal:`{KG_mapped_node_type}` {{`{KG_mapped_node_prop}`: '
-
-            # if type(mapped_node_prop_value) is str:
-            #     query += f'"{mapped_node_prop_value}"}}), (d:`{domain_name}` {{name: "{domain_name}"}}) '
-            # else:
-            #     query += f'{mapped_node_prop_value}}}), (d:`{domain_name}` {{name: "{domain_name}"}}) '
-            # query += f'merge (n)-[:{edge}]->(universal) '
-            # query += f'merge (d)-[:CONTAINS]->(n)'
-
-            # tx.run(query)
-
-        # can't use cipher parameters due to the dynamic map keys in filtering
-        # e.g merge (n:TYPE {map...})
-        # neo4j guy: https://stackoverflow.com/a/28784921
-        # need to use APOC because the node properties are dynamic
-        # tx.run(
-        #     'unwind {batches} as batch ' \
-        #     'call apoc.merge.node([batch.node_type], row.unique_property, row.data, row.data) ' \
-        #     'yield node ' \
-        #     'return count(*)',
-        #     {'batches': node_mappings}
-        # )
-
-        # import IPython; IPython.embed()
-
-        # print('Done creating nodes')
-
-        # create relationship from experimental nodes
-        # to universal source nodes
-        # for row in node_mapping['nodes']:
-        #     filter_label = next(iter(row['unique_property']))
-        #     filter_prop = next(iter(row['unique_property'].values()))
-        #     row_label = row['label']
-
-        #     query = f'match (universal:`{column_mappings.node.mapped_node_type}` {{`{filter_label}`: "{filter_prop}"}}), '
-        #     query += f'(src:`{row_label}` {{`{filter_label}`: "{filter_prop}"}}) '
-        #     query += f'merge (src)-[:IS_A]->(universal)'
-        #     tx.run(query)
-
-        # import IPython; IPython.embed()
-
-
+        tx.commit()
         print('Done creating relationship of new nodes to existing KG')
 
-        # import IPython; IPython.embed()
-
-
-        # # create index on all properties
-        # # have to do this here because can't have same transaction
-        # # TODO: Jira KG-51
-        # for row in node_mapping['nodes']:
-        #     label = row['label']
-        #     for k, _ in row['data'].items():
-        #         tx.run(f'create index on :{label}({k})')
-        # if column_mappings.relationship.edge:
-        #     self.save_relationship_to_neo4j(column_mappings)
         if node_mappings['relationships']:
-            self.save_relationship_to_neo4j(tx, node_mappings)
-        else:
-            tx.commit()
+            self.save_relationship_to_neo4j(node_mappings)
         print('Done')
 
     def save_relationship_to_neo4j(
         self,
-        tx: Transaction,
         node_mappings,  # TODO: create attrs class (in importer service)
     ) -> None:
+        tx = self.graph.begin()
+
         for relation in node_mappings['relationships']:
-            # relationships.append({
-            #         'source_node_label': source_node_label,
-            #         'source_node_prop_label': source_node_prop_label,
-            #         'source_node_prop_value': source_node_prop_value,
-            #         'target_node_label': target_node_label,
-            #         'target_node_prop_label': target_node_prop_label,
-            #         'target_node_prop_value': target_node_prop_value,
-            #         'edge': edge_label,
-            #     })
             source_node_label = relation['source_node_label']
             source_node_prop_label = relation['source_node_prop_label']
             source_node_prop_value = relation['source_node_prop_value']
@@ -504,80 +411,5 @@ class Neo4JService(BaseDao):
                 if target_node:
                     # TODO: the **{} should be edge properties
                     tx.create(Relationship(source_node, edge_label, target_node, **{}))
-
-
-
-
-        # workbook = cache.get(column_mappings.file_name)
-
-        # col_idx_src_node_prop = {}
-        # col_idx_tgt_node_prop = {}
-        # col_idx_edge_prop = {}
-
-        # for k, v in column_mappings.relationship.source_node.mapped_node_property.items():
-        #     col_idx_src_node_prop[int(k)] = v
-
-        # for k, v in column_mappings.relationship.target_node.mapped_node_property.items():
-        #     col_idx_tgt_node_prop[int(k)] = v
-
-        # for k, v in column_mappings.relationship.edge_property.items():
-        #     col_idx_edge_prop[int(k)] = v
-
-        # for i, name in enumerate(workbook.sheetnames):
-        #     if name == column_mappings.sheet_name:
-        #         workbook.active = i
-        #         break
-
-        # current_ws = workbook.active
-
-        # tx = self.graph.begin()
-
-        # for row in current_ws.iter_rows(
-        #     min_row=2,
-        #     max_row=len(list(current_ws.rows)),
-        #     max_col=len(list(current_ws.columns)),
-        #     values_only=True,
-        # ):
-        #     if not all(cell is None for cell in row):
-        #         # TODO: handle null otherwise strip() and lstrip() fails
-        #         src_label = column_mappings.relationship.source_node.mapped_node_type
-        #         # try:
-        #         src_prop_label = next(iter(col_idx_src_node_prop.values()))
-        #         src_prop_value = row[next(iter(col_idx_src_node_prop))]
-        #         if type(src_prop_value) is str:
-        #             src_prop_value = f'"{src_prop_value.strip().lstrip()}"'
-
-        #         tgt_label = column_mappings.relationship.target_node.mapped_node_type
-        #         tgt_prop_label = next(iter(col_idx_tgt_node_prop.values()))
-        #         tgt_prop_value = row[next(iter(col_idx_tgt_node_prop))]
-        #         if type(tgt_prop_value) is str:
-        #             tgt_prop_value = f'"{tgt_prop_value.strip().lstrip()}"'
-
-        #         # TODO: instead of using column header
-        #         # use column values for edge
-        #         edge_label = column_mappings.relationship.edge
-
-        #         query = f'match (s:`{src_label}` {{`{src_prop_label}`: {src_prop_value}}}), '
-        #         query += f'(t:`{tgt_label}` {{`{tgt_prop_label}`: {tgt_prop_value}}}) '
-
-        #         query += f'merge (s)-[:`{edge_label}`'
-        #         if col_idx_edge_prop:
-        #             query += f'{{'
-        #             for k, v in col_idx_edge_prop.items():
-        #                 prop_value = row[k]
-        #                 if type(prop_value) is int:
-        #                     query += f'`{v}`: {prop_value}, '
-        #                 else:
-        #                     query += f'`{v}`: "{prop_value}", '
-        #             # remove the comma at the end
-        #             query = query[:-2] + f'}}'
-        #         query += f']->(t)'
-        #         print(query)
-        #         tx.run(query)
-        #         # except AttributeError:
-        #             # if this occur then the cell in the row
-        #             # was empty so strip() and lstrip() failed
-        #             # skip and don't create the relationship
-        #             # continue
         tx.commit()
         print('Done creating relationships between new nodes')
