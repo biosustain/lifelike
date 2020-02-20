@@ -25,6 +25,8 @@ import {
     uploadNodeMappingSuccess,
     uploadRelationshipMapping,
     uploadRelationshipMappingSuccess,
+    getDbRelationshipTypes,
+    getDbRelationshipTypesSuccess,
 } from './actions';
 
 import { Neo4jService } from '../services/neo4j.service';
@@ -43,6 +45,16 @@ export class Neo4jEffects {
         switchMap(() => this.neo4jService.getDbLabels()
             .pipe(
                 map(labels => getDbLabelsSuccess({payload: labels})),
+            ),
+        ),
+    ));
+
+    getDbRelationshipTypes = createEffect(() => this.actions$.pipe(
+        ofType(getDbRelationshipTypes),
+        map(action => action),
+        switchMap(() => this.neo4jService.getDbRelationshipTypes()
+            .pipe(
+                map(relationshipTypes => getDbRelationshipTypesSuccess({payload: relationshipTypes})),
             ),
         ),
     ));
@@ -86,21 +98,21 @@ export class Neo4jEffects {
         ),
     ));
 
-    uploadRelationshipMapping = createEffect(() => this.actions$.pipe(
-        ofType(uploadRelationshipMapping),
-        map(action => action.payload),
-        switchMap(data => this.neo4jService.uploadRelationshipMapping(data)
-            .pipe(
-                mergeMap(() => [
-                    uploadRelationshipMappingSuccess(),
-                    // new SnackbarActions.SnackbarOpen({
-                    //     message: 'Done',
-                    //     action: 'Dismiss',
-                    //     snackConfig: { duration: 1000 },
-                    // }),
-                ]),
-                catchError(() => EMPTY),
-            ),
-        ),
-    ));
+    // uploadRelationshipMapping = createEffect(() => this.actions$.pipe(
+    //     ofType(uploadRelationshipMapping),
+    //     map(action => action.payload),
+    //     switchMap(data => this.neo4jService.uploadRelationshipMapping(data)
+    //         .pipe(
+    //             mergeMap(() => [
+    //                 uploadRelationshipMappingSuccess(),
+    //                 // new SnackbarActions.SnackbarOpen({
+    //                 //     message: 'Done',
+    //                 //     action: 'Dismiss',
+    //                 //     snackConfig: { duration: 1000 },
+    //                 // }),
+    //             ]),
+    //             catchError(() => EMPTY),
+    //         ),
+    //     ),
+    // ));
 }

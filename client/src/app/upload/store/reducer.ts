@@ -17,6 +17,13 @@ export const neo4jReducer = createReducer(
         }),
     ),
     on(
+        Neo4jActions.getDbRelationshipTypesSuccess,
+        (state, action) => ({
+            ...state,
+            dbRelationshipTypes: action.payload,
+        }),
+    ),
+    on(
         Neo4jActions.getNodePropertiesSuccess,
         (state, action) => ({
             ...state,
@@ -28,6 +35,13 @@ export const neo4jReducer = createReducer(
         (state, action) => ({
             ...state,
             fileNameAndSheets: action.payload,
+        }),
+    ),
+    on(
+        Neo4jActions.saveNodeMapping,
+        (state, action) => ({
+            ...state,
+            nodeMappingHelper: action.payload,
         }),
     ),
 );
