@@ -113,7 +113,7 @@ class ImporterService():
 
         nodes = []
         max_row = len(list(current_ws.rows))
-        # import IPython; IPython.embed()
+
         for node in column_mappings.new_nodes:
             curr_row = 2    # openpyxl is 1-indexed based, so don't count header row
             while curr_row <= max_row:
@@ -144,7 +144,6 @@ class ImporterService():
                     'edge': node.edge,
                 })
                 curr_row += 1
-        # import IPython; IPython.embed()
 
         relationships = []
         for relation in column_mappings.relationships:
@@ -197,6 +196,4 @@ class ImporterService():
                     'edge_label': edge_label,
                 })
                 curr_row += 1
-            # print(relationships)
-            # import IPython; IPython.embed()
         return {'new_nodes': nodes, 'relationships': relationships}
