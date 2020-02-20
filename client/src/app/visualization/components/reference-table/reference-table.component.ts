@@ -73,6 +73,7 @@ export class ReferenceTableComponent extends TooltipComponent implements OnDestr
         this.referenceTableRowClickEvent.emit(edge);
     }
 
+    // TODO: Need to have an interrupt event if a user hovers away from the cluster node before the reference table can be shown.
     showTooltip() {
         // First hide any submenus that might have been open (e.g. a user opened a context menu,
         // hovered over a submenu, then opened a new context menu)

@@ -1069,11 +1069,6 @@
     semver "6.3.0"
     semver-intersect "1.4.0"
 
-"@types/chartist@^0.9.47":
-  version "0.9.47"
-  resolved "https://registry.yarnpkg.com/@types/chartist/-/chartist-0.9.47.tgz#2c5e609b3900ebeb315be9dbb72847cf0f45371b"
-  integrity sha512-TXNsIb2xSmPIJm1B+8UQThWOIVBGWMHY3EM/EVQoQReaK03fzWsifqHVp+87KEwo3XPj2BdSXBnktmYkhL61oA==
-
 "@types/events@*":
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/@types/events/-/events-3.0.0.tgz#2862f3f58a9a7f7c3e78d79f130dd4d71c25c2a7"
@@ -2109,11 +2104,6 @@ chardet@^0.7.0:
   version "0.7.0"
   resolved "https://registry.yarnpkg.com/chardet/-/chardet-0.7.0.tgz#90094849f0937f2eedc2425d0d28a9e5f0cbad9e"
   integrity sha512-mT8iDcrh03qDGRRmoA2hmBJnxpllMR+0/0qlzjqZES6NdiWDcZkCNAk4rPFZ9Q85r27unkiNNg8ZOiwZXBHwcA==
-
-chartist@^0.11.4:
-  version "0.11.4"
-  resolved "https://registry.yarnpkg.com/chartist/-/chartist-0.11.4.tgz#e96e1c573d8b67478920a3a6ae52359d9fc8d8b7"
-  integrity sha512-H4AimxaUD738/u9Mq8t27J4lh6STsLi4BQHt65nOtpLk3xyrBPaLiLMrHw7/WV9CmsjGA02WihjuL5qpSagLYw==
 
 "chokidar@>=2.0.0 <4.0.0":
   version "3.3.1"
@@ -3711,6 +3701,11 @@ hash.js@^1.0.0, hash.js@^1.0.3:
     inherits "^2.0.3"
     minimalistic-assert "^1.0.1"
 
+highcharts@^8.0.0:
+  version "8.0.0"
+  resolved "https://registry.yarnpkg.com/highcharts/-/highcharts-8.0.0.tgz#fcf77a511d6ea477b9d8447afd9dedbfc85e2727"
+  integrity sha512-jRKLiP0i29zKSEgMDASyrfpivrM3e8V8yTv8YUZtRzB2mXR+hsBNHWZw2hNRZVxqq1QCVmW/9Z/BLFvYlJELqA==
+
 hmac-drbg@^1.0.0:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/hmac-drbg/-/hmac-drbg-1.0.1.tgz#d2745701025a6c775a6c545793ed502fc0c649a1"
@@ -5129,13 +5124,6 @@ neo-async@^2.5.0, neo-async@^2.6.1:
   version "2.6.1"
   resolved "https://registry.yarnpkg.com/neo-async/-/neo-async-2.6.1.tgz#ac27ada66167fa8849a6addd837f6b189ad2081c"
   integrity sha512-iyam8fBuCUpWeKPGpaNMetEocMt364qkCsfL9JuhjXX6dRnguRVOfk2GZaDpPjcOKiiXCPINZC1GczQ7iTq3Zw==
-
-ng-chartist@^4.1.0:
-  version "4.1.0"
-  resolved "https://registry.yarnpkg.com/ng-chartist/-/ng-chartist-4.1.0.tgz#d2077ec80ec401bd095a41d138fda46d03392cd9"
-  integrity sha512-mnVZS82RU1DaGuU57lq095nFn55kqJbbaZFUMbbAYsX5foZ5JmvXfaIvfr9y1PdBzkpc4UckaAWHxHF3qIriPA==
-  dependencies:
-    tslib "^1.9.0"
 
 nice-try@^1.0.4:
   version "1.0.5"

@@ -16,6 +16,18 @@ export interface AssociationSnippet {
     sentence: string;
 }
 
+export interface ClusteredNode {
+    nodeId: number;
+    edges: VisEdge[];
+}
+
+export interface GetClusterGraphDataResult {
+    labels: string[];
+    results: {
+        [key: string]: EdgeSnippetCount;
+    };
+}
+
 export interface GroupRequest {
     relationship: string;
     node: IdType;
@@ -69,5 +81,5 @@ export interface SidenavEdgeEntity extends SidenavEntity {
 
 export interface SidenavClusterEntity extends SidenavEntity {
     includes: VisNode[];
-    referencesMap: Map<IdType, number>;
+    clusterGraphData: GetClusterGraphDataResult;
 }

@@ -4,6 +4,8 @@ import { DataSet } from 'vis-network';
 
 import {
     AssociationData,
+    ClusteredNode,
+    GetClusterGraphDataResult,
     GetSnippetsResult,
     Neo4jResults,
     Neo4jGraphConfig,
@@ -25,6 +27,7 @@ export class VisualizationComponent implements OnInit {
     nodes: DataSet<VisNode>;
     edges: DataSet<VisEdge>;
     getSnippetsResult: GetSnippetsResult;
+    getClusterGraphDataResult: GetClusterGraphDataResult;
 
     legend: Map<string, string[]>;
 
@@ -144,6 +147,12 @@ export class VisualizationComponent implements OnInit {
     getSnippets(association: AssociationData) {
         this.visService.getSnippets(association).subscribe((result) => {
             this.getSnippetsResult = result;
+        });
+    }
+
+    getClusterGraphData(clusteredNodes: ClusteredNode[]) {
+        this.visService.getClusterGraphData(clusteredNodes).subscribe((result) => {
+            this.getClusterGraphDataResult = result;
         });
     }
 }

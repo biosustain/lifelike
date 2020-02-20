@@ -1,6 +1,8 @@
 <h1>Cluster Data View</h1>
-<label>Includes:</label>
-<ul *ngFor="let node of clusterEntity.includes">
+<!-- TODO: May end up showing this in one way or another, but right now it kind of distracts from the table view,
+which is what we really want the users to see. -->
+<!-- <label>Includes:</label> -->
+<!-- <ul *ngFor="let node of clusterEntity.includes">
   <li>Display Name: {{ node.displayName }}</li>
   <li>Label: {{ node.primaryLabel }}</li>
   <li>Sublabels:
@@ -11,4 +13,5 @@
     </ul>
     <ng-template #noSubLabels>N/A</ng-template>
   </li>
-</ul>
+</ul> -->
+<div id="container" style="width:100%; height:400px;"></div>
