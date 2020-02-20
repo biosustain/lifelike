@@ -6,7 +6,7 @@ import { Store, select } from '@ngrx/store';
 
 import { Observable, Subscription } from 'rxjs';
 
-import { State } from '../../root-store';
+import { State } from 'app/root-store';
 
 import { Neo4jSelectors as selectors } from '../store';
 import { uploadNeo4jFile, uploadNodeMapping, getDbLabels, uploadRelationshipMapping, getDbRelationshipTypes } from '../store/actions';
