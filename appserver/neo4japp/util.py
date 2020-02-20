@@ -4,7 +4,7 @@ import hashlib
 import itertools
 
 from decimal import Decimal, InvalidOperation
-from enum import EnumMeta
+from enum import EnumMeta, Enum
 from json import JSONDecodeError
 from typing import Any, List, Optional, Type
 
@@ -17,7 +17,7 @@ def encode_to_str(obj):
         return obj
     elif isinstance(obj, Enum):
         return obj.name
-    elif isinstance(obj, Decimal):
+    elif isinstance(obj, int) or isinstance(obj, Decimal):
         return str(obj)
     else:
         raise TypeError(f'No conversion definition for {obj}')

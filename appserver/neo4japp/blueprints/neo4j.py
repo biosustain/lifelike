@@ -34,6 +34,15 @@ class SnippetCountForEdgesRequest(CamelDictMixin):
     edges: List[GraphRelationship] = attr.ib()
 
 @attr.s(frozen=True)
+class ClusteredNode(CamelDictMixin):
+    node_id: int = attr.ib()
+    edges: List[GraphRelationship] = attr.ib()
+
+@attr.s(frozen=True)
+class GetGraphDataForClusterRequest(CamelDictMixin):
+    clustered_nodes: List[ClusteredNode] = attr.ib()
+
+@attr.s(frozen=True)
 class UploadFileRequest(CamelDictMixin):
     file_input: FileStorage = attr.ib()
 
@@ -101,6 +110,15 @@ def get_snippet_count_for_edges(req: SnippetCountForEdgesRequest):
         req.edges,
     )
     return SuccessResponse(edge_snippet_count_result, status_code=200)
+
+@bp.route('/get-cluster-graph-data', methods=['POST'])
+@jsonify_with_class(GetGraphDataForClusterRequest)
+def get_cluster_graph_data(req: GetGraphDataForClusterRequest):
+    neo4j = get_neo4j_service_dao()
+    cluster_graph_data_result = neo4j.get_cluster_graph_data(
+        req.clustered_nodes,
+    )
+    return SuccessResponse(cluster_graph_data_result, status_code=200)
 
 @bp.route('/reaction', methods=['POST'])
 @jsonify_with_class(ReactionRequest)

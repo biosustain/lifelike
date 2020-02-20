@@ -30,7 +30,7 @@
   </li>
 </ul>
 
-<div>Sentence Snippets:</div>
+<div>Snippets:</div>
 <ul *ngIf="edgeEntity.references.length > 0; else noReferences">
   <li *ngFor="let snippet of edgeEntity.references">{{ snippet.sentence }}</li>
 </ul>

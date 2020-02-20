@@ -147,6 +147,26 @@ class Neo4JService(BaseDao):
             result['edge_snippet_counts'].append({'edge': edge, 'count': count})
         return snake_to_camel_dict(result, {})
 
+    def get_cluster_graph_data(self, clusteredNodes):
+        retval = {
+            'labels': set(),
+            'results': dict()
+        }
+
+        for node in clusteredNodes:
+            for edge in node.edges:
+                retval['labels'].add(edge['label'])
+                query = self.get_association_snippet_count_query(edge['from'], edge['to'], edge['label'])
+                count = self.graph.run(query).data()[0]['count']
+
+                if (retval['results'].get(node.node_id, None) is not None):
+                    retval['results'][node.node_id][edge['label']] = count
+                else:
+                    retval['results'][node.node_id] = {edge['label']: count}
+
+        retval['labels'] = list(retval['labels'])
+        return snake_to_camel_dict(retval, {})
+
     def load_reaction_graph(self, biocyc_id: str):
         query = self.get_reaction_query(biocyc_id)
         return self._query_neo4j(query)
