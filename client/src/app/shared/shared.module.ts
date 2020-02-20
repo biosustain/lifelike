@@ -11,8 +11,6 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 import { RouterModule } from '@angular/router';
 
-import { ChartistModule } from 'ng-chartist';
-
 import { AngularMaterialModule } from './angular-material.module';
 
 import { LegendComponent } from './components/legend/legend.component';
@@ -27,7 +25,6 @@ const components = [
     imports: [
         AngularMaterialModule,
         BrowserAnimationsModule,
-        ChartistModule,
         CommonModule,
         FlexLayoutModule,
         FormsModule,
@@ -42,7 +39,6 @@ const components = [
         // Modules
         AngularMaterialModule,
         BrowserAnimationsModule,
-        ChartistModule,
         CommonModule,
         FlexLayoutModule,
         FormsModule,

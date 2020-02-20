@@ -5,10 +5,12 @@ import { map } from 'rxjs/operators';
 
 import {
     AssociationData,
+    ClusteredNode,
+    GetClusterGraphDataResult,
+    GetEdgeSnippetCountsResult,
     GetSnippetsResult,
     Neo4jResults,
     VisEdge,
-    GetEdgeSnippetCountsResult ,
 } from 'app/interfaces';
 import { NODE_EXPANSION_LIMIT } from 'app/shared/constants';
 
@@ -66,6 +68,12 @@ export class VisualizationService {
     getSnippetCountForEdges(edges: VisEdge[]) {
         return this.http.post<{result: GetEdgeSnippetCountsResult}>(
             `${this.visApi}/get-snippet-count-for-edges`, {edges},
+        ).pipe(map(resp => resp.result));
+    }
+
+    getClusterGraphData(clusteredNodes: ClusteredNode[]) {
+        return this.http.post<{result: GetClusterGraphDataResult}>(
+            `${this.visApi}/get-cluster-graph-data`, {clusteredNodes},
         ).pipe(map(resp => resp.result));
     }
 }

@@ -16,6 +16,8 @@ import { Network, DataSet, IdType } from 'vis-network';
 
 import {
     AssociationData,
+    ClusteredNode,
+    GetClusterGraphDataResult,
     GetLabelsResult,
     GetSnippetsResult,
     GroupRequest,
@@ -43,13 +45,13 @@ import { ReferenceTableControlService } from '../../services/reference-table-con
 export class VisualizationCanvasComponent implements OnInit {
     @Output() expandNode = new EventEmitter<number>();
     @Output() getSnippets = new EventEmitter<AssociationData>();
+    @Output() getClusterGraphData = new EventEmitter<ClusteredNode[]>();
 
     @Input() nodes: DataSet<any, any>;
     @Input() edges: DataSet<any, any>;
     @Input() set getSnippetsResult(result: GetSnippetsResult) {
         if (!isNullOrUndefined(result)) {
             this.sidenavEntityType = 'edge';
-            this.sidenavOpened = true;
             this.sidenavEntity = {
                 to: this.nodes.get(result.toNode) as VisNode,
                 from: this.nodes.get(result.fromNode) as VisNode,
@@ -58,11 +60,21 @@ export class VisualizationCanvasComponent implements OnInit {
              } as SidenavEdgeEntity;
         }
     }
+    @Input() set getClusterGraphDataResult(result: GetClusterGraphDataResult) {
+        if (!isNullOrUndefined(result)) {
+            this.sidenavEntityType = 'cluster';
+            this.sidenavEntity = {
+                data: null,
+                includes: Object.keys(result.results).map(nodeId => this.nodes.get(parseInt(nodeId, 10))),
+                clusterGraphData: result,
+            } as SidenavClusterEntity;
+        }
+    }
     // Configuration for the graph view. See vis.js docs
     @Input() config: Neo4jGraphConfig;
     @Input() legend: Map<string, string[]>;
 
-    sidenavOpened: boolean;
+    userOpenedSidenav: boolean;
     sidenavEntity: SidenavEntity;
     sidenavEntityType: string;
 
@@ -82,7 +94,7 @@ export class VisualizationCanvasComponent implements OnInit {
         private contextMenuControlService: ContextMenuControlService,
         private referenceTableControlService: ReferenceTableControlService,
     ) {
-        this.sidenavOpened = false;
+        this.userOpenedSidenav = false;
         this.sidenavEntity = null;
         this.sidenavEntityType = 'null';
 
@@ -127,7 +139,7 @@ export class VisualizationCanvasComponent implements OnInit {
     }
 
     toggleSidenavOpened() {
-        this.sidenavOpened = !this.sidenavOpened;
+        this.userOpenedSidenav = !this.userOpenedSidenav;
     }
 
     updateSelectedNodes() {
@@ -242,6 +254,9 @@ export class VisualizationCanvasComponent implements OnInit {
         ).forEach(
             edge => candidateLabels.add(this.edges.get(edge).label)
         );
+
+        // TODO: Looks like there is a bug here, for some reason clusters with only one node may cause the candidate relationship to be
+        // marked as invalid. See: gas gangrene <- INS -> AD Strain
 
         // TODO: Possible performance (both space & time) improvement opportunity here
         // Check that all the depth-2 neighbors of each cluster candidate node is connected to all other
@@ -358,6 +373,9 @@ export class VisualizationCanvasComponent implements OnInit {
         });
     }
 
+    // TODO: We need to consider flipping the 'expanded' property of any nodes where after this process finishes, the node
+    // no longer has any neighbors. Otherwise, if we remove all the connected nodes from a given node, the user will have to
+    // double click on that node twice to re-expand the node.
     removeNodes(nodes: IdType[]) {
         nodes.forEach(node => {
             this.networkGraph.getConnectedEdges(node).forEach(edge => {
@@ -386,18 +404,21 @@ export class VisualizationCanvasComponent implements OnInit {
     }
 
     updateSidebarEntity() {
-        this.sidenavOpened = true;
         if (this.selectedNodes.length === 1 && this.selectedEdges.length === 0) {
             if (this.networkGraph.isCluster(this.selectedNodes[0])) {
                 const cluster = this.selectedNodes[0];
-                // TODO: Need a new API endpoint for getting association snippets for many edges at a time
-                this.sidenavEntity = {
-                    data: null,
-                    includes: this.networkGraph.getNodesInCluster(cluster).map(nodeId => this.nodes.get(nodeId)),
-                    referencesMap: null
-                } as SidenavClusterEntity;
-                this.sidenavEntityType = 'cluster';
+                const clusteredNodes = this.networkGraph.getNodesInCluster(cluster).map(node => {
+                    return {
+                        nodeId: node,
+                        edges: this.networkGraph.getConnectedEdges(node).map(edgeId => this.edges.get(edgeId)),
+                    } as ClusteredNode;
+                });
+                this.getClusterGraphData.emit(clusteredNodes);
             } else {
+                // TODO: This is a bit distracting at the moment. I think it would be better to have a
+                // "hard close/open" boolean that tracks whether the user manually closed/opened the sidebar.
+                // If they opened it, then it will stay open until they manually close it. If they closed it
+                // (which by default it would start as closed), then it won't open until they manually open it.
                 const node  = this.nodes.get(this.selectedNodes[0]) as VisNode;
                 this.sidenavEntity = {
                     data: node,
