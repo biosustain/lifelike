@@ -1,13 +1,17 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
-import { VisualizationService } from '../services/visualization.service';
+import { Component, OnInit } from '@angular/core';
+
+import { DataSet } from 'vis-network';
+
 import {
+    AssociationData,
     Neo4jResults,
     Neo4jGraphConfig,
     VisNode,
     VisEdge,
-} from '../../interfaces';
-import { DataSet } from 'vis-network';
-import { VisualizationCanvasComponent } from '../components/visualization-canvas.component';
+} from 'app/interfaces';
+import { NODE_EXPANSION_LIMIT } from 'app/shared/constants';
+
+import { VisualizationService } from '../services/visualization.service';
 
 @Component({
     selector: 'app-visualization',
@@ -21,17 +25,51 @@ export class VisualizationComponent implements OnInit {
     nodes: DataSet<VisNode>;
     edges: DataSet<VisEdge>;
 
-    @ViewChild(VisualizationCanvasComponent, {static: false}) canvas: VisualizationCanvasComponent;
+    // NOTE: May use this as input to a legend component in the future.
+    legend: Map<string, string[]>;
 
-    constructor(private visService: VisualizationService) {}
+    constructor(private visService: VisualizationService) {
+        this.legend = new Map<string, string[]>();
+        this.legend.set('Gene', ['#78CDD7', '#247B7B']);
+        this.legend.set('Disease', ['#8FA6CB', '#7D84B2']);
+        this.legend.set('Chemical', ['#CD5D67', '#410B13']);
+    }
 
     ngOnInit() {
-        this.visService.getAllOrganisms().subscribe((results: Neo4jResults) => {
+        this.visService.getSomeDiseases().subscribe((results: Neo4jResults) => {
             this.networkGraphData = this.setupInitialProperties(results);
             this.nodes = new DataSet(this.networkGraphData.nodes);
             this.edges = new DataSet(this.networkGraphData.edges);
         });
-        this.networkGraphConfig = this.visualizationConfig();
+
+        this.networkGraphConfig = {
+            interaction: {
+                hover: true,
+                navigationButtons: true,
+                multiselect: true,
+                selectConnectedEdges: false,
+            },
+            physics: {
+                enabled: true,
+                barnesHut: {
+                    springConstant: 0.04,
+                    damping: 0.9,
+                    gravitationalConstant: -10000,
+                }
+            },
+            edges: {
+                font: {
+                    size: 12
+                },
+                widthConstraint: {
+                    maximum: 90
+                },
+            },
+            nodes: {
+                size: 25,
+                shape: 'box',
+            },
+        };
     }
 
     /**
@@ -61,80 +99,55 @@ export class VisualizationComponent implements OnInit {
             return {
                 ...n,
                 primaryLabel: n.label,
-                label: n.displayName,
+                color: {
+                    background: this.legend.get(n.label)[0],
+                    border: this.legend.get(n.label)[1],
+                    hover: {
+                        background: this.legend.get(n.label)[0],
+                        border: this.legend.get(n.label)[1],
+                    },
+                    highlight: {
+                        background: this.legend.get(n.label)[0],
+                        border: this.legend.get(n.label)[1],
+                    }
+                },
+                label: n.displayName.length > 64 ? n.displayName.slice(0, 64) + '...'  : n.displayName,
             };
         });
         edges = edges.map((e) => {
-            return {...e, arrows: 'to'};
+            return {...e, label: e.data.description, arrows: 'to'};
         });
         return {nodes, edges};
     }
 
-    /**
-     * A configuration from vis.js
-     * See the API for more information.
-     */
-    visualizationConfig(): Neo4jGraphConfig {
-        const config = {
-            interaction: {
-                hover: true,
-                navigationButtons: true,
-            },
-            physics: {
-                enabled: true,
-                barnesHut: {
-                    springConstant: 0.04,
-                    damping: 0.9,
-                    gravitationalConstant: -10000,
+    expandNode(nodeId: number) {
+        this.visService.expandNode(nodeId, NODE_EXPANSION_LIMIT).subscribe((r: Neo4jResults) => {
+            const nodeRef: VisNode = this.nodes.get(nodeId);
+            const visJSDataFormat = this.convertToVisJSFormat(r);
+            const { edges } = visJSDataFormat;
+            let { nodes } = visJSDataFormat;
+            // Sets the node expand state to true
+            nodes = nodes.map((n) => {
+                if (n.id === nodeId) {
+                    return {...n, expanded: !nodeRef.expanded};
                 }
-            },
-            nodes: {
-                size: 25,
-                shape: 'dot',
-            },
-        };
-        return config;
-    }
-
-    collapseChildren(rootNode: VisNode, edgeIds: Array<number>) {
-        const childNodes = edgeIds.map((eid: number) => {
-            const edge = this.edges.get(eid);
-            return edge.to !== rootNode.id ? edge.to : edge.from;
-        });
-        childNodes.map((childNodeId: number) => {
-            const childEdges = this.canvas.networkGraph.getConnectedEdges(childNodeId);
-            if (childEdges.length === 1) {
-                this.edges.remove(childEdges.pop());
-                this.nodes.remove(childNodeId);
-            }
-        });
-    }
-
-    expandAndCollapseNode(results: {nodeId: number, edgeIds: Array<number>}) {
-        const { nodeId, edgeIds } = results;
-        const nodeRef: VisNode = this.nodes.get(nodeId);
-
-        if (nodeRef.expanded) {
-            // Updates node expand state
-            const updatedNodeState = {...nodeRef, expanded: !nodeRef.expanded};
-            this.nodes.update(updatedNodeState);
-            // 'Collapse' all children nodes that are not expanded themselves
-            this.collapseChildren(nodeRef, edgeIds);
-        } else {
-            this.visService.expandNode(nodeId).subscribe((r: Neo4jResults) => {
-                const visJSDataFormat = this.convertToVisJSFormat(r);
-                const { edges } = visJSDataFormat;
-                let { nodes } = visJSDataFormat;
-                // Sets the node expand state to true
-                nodes = nodes.map((n) => {
-                    if (n.id === nodeId) {
-                        return {...n, expanded: !nodeRef.expanded};
-                    }
-                    return n;
-                });
-                this.nodes.update(nodes);
-                this.edges.update(edges);
+                return n;
             });
-        }
+            this.nodes.update(nodes);
+            this.edges.update(edges);
+        });
+    }
+
+    getSentences(association: AssociationData) {
+        this.visService.getSentences(association).subscribe((result) => {
+            if (result.length === 0) {
+                console.log('No matching sentences found for this association');
+            }
+            result.forEach(associationSentence => {
+                if (associationSentence) {
+                    console.log(associationSentence.sentence);
+                }
+            });
+        });
     }
 }
