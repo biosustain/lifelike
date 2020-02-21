@@ -1,57 +1,19 @@
-import attr
-
-from typing import Any, Dict, List, Union, Optional
-
-from flask import json
-from py2neo import NodeMatcher, RelationshipMatcher
-
-from neo4japp.services.common import BaseDao
-from neo4japp.models import GraphNode, GraphRelationship
-from neo4japp.constants import *
-
-from neo4japp.util import CamelDictMixin, compute_hash
-from neo4japp.services.common import BaseDao
+from typing import Dict, List
 
 from py2neo import (
     Graph,
     Node,
     Transaction,
     NodeMatch,
+    NodeMatcher,
     Relationship,
     RelationshipMatch,
     RelationshipMatcher,
 )
 
-@attr.s(frozen=True)
-class Neo4jNodeMapping(CamelDictMixin):
-    mapped_node_type: str = attr.ib()
-    mapped_node_property_to: str = attr.ib()
-    mapped_node_property_from: Dict[int, str] = attr.ib(default=attr.Factory(dict))
-    node_type: Optional[str] = attr.ib(default=None)
-    node_properties: Dict[int, str] = attr.ib(default=attr.Factory(dict))
-    # this will be used to match a node
-    unique_property: Optional[str] = attr.ib(default=None)
-    edge: Optional[str] = attr.ib(default=None)
-
-
-@attr.s(frozen=True)
-class Neo4jRelationshipMapping(CamelDictMixin):
-    edge: Dict[int, str] = attr.ib()
-    source_node: Neo4jNodeMapping = attr.ib()
-    target_node: Neo4jNodeMapping = attr.ib()
-    edge_property: Dict[int, str] = attr.ib(default=attr.Factory(dict))
-
-
-@attr.s(frozen=True)
-class Neo4jColumnMapping(CamelDictMixin):
-    """The int values are the column index
-    from the excel files."""
-    domain: str = attr.ib()
-    file_name: str = attr.ib()
-    sheet_name: str = attr.ib()
-    new_nodes: List[Neo4jNodeMapping] = attr.ib(default=attr.Factory(list))
-    existing_nodes: List[Neo4jNodeMapping] = attr.ib(default=attr.Factory(list))
-    relationships: List[Neo4jRelationshipMapping] = attr.ib(default=attr.Factory(list))
+from neo4japp.models import GraphNode, GraphRelationship
+from neo4japp.constants import *
+from neo4japp.services.common import BaseDao
 
 
 class Neo4JService(BaseDao):
@@ -341,100 +303,3 @@ class Neo4JService(BaseDao):
             new_node = Node(label, **props)
             tx.create(new_node)
             return new_node
-
-    def save_node_to_neo4j(self, node_mappings) -> None:
-        tx = self.graph.begin()
-
-        # just get the first domain because they'll be the same for newly created nodes (?)
-        domain_name = node_mappings['new_nodes'][0]['domain']
-        domain_node = self.graph.nodes.match(domain_name, **{'name': domain_name}).first()
-
-        if not domain_node:
-            domain_node = Node(domain_name, **{'name': domain_name})
-            tx.create(domain_node)
-
-        # in case the filter property is not unique
-        created_nodes = set()
-
-        for node in node_mappings['new_nodes']:
-            # can't use cipher parameters due to the dynamic map keys in filtering
-            # e.g merge (n:TYPE {map...})
-            # neo4j guy: https://stackoverflow.com/a/28784921
-            node_type = node['node_type']
-            mapped_node_prop = node['mapped_node_prop']
-            mapped_node_prop_value = node['mapped_node_prop_value']
-            KG_mapped_node_prop = node['KG_mapped_node_prop']
-            node_properties = node['node_properties']
-            KG_mapped_node_type = node['KG_mapped_node_type']
-            edge = node['edge']
-
-            filter_property = {mapped_node_prop: mapped_node_prop_value}
-            KG_filter_property = {KG_mapped_node_prop: mapped_node_prop_value}
-
-            # needed because haven't committed yet
-            # so the match above would not return a node
-            if mapped_node_prop_value not in created_nodes:
-                # user experimental data node
-                exp_node = self.graph.nodes.match(node_type, **filter_property).first()
-
-                if exp_node:
-                    # TODO: check if node properties match incoming node_properties
-                    # also do in frontend - keep set of values from unique column
-                    # if see again, check if node_properties are different
-                    # if not, throw exception to let user know (check JIRA issue LL-81)
-                    continue
-                else:
-                    exp_node = Node(node_type, **node_properties)
-                    tx.create(exp_node)
-                    created_nodes.add(mapped_node_prop_value)
-
-                # create relationship between user experiemental data node with
-                # domain node
-                relationship = Relationship(domain_node, 'CONTAINS', exp_node, **{})
-                tx.create(relationship)
-
-                # create relationship between user experiemental data node with
-                # existing nodes in knowledge graph
-                if KG_mapped_node_type:
-                    kg_node = self.graph.nodes.match(KG_mapped_node_type, **KG_filter_property).first()
-                    if kg_node:
-                        relationship = Relationship(exp_node, edge, kg_node, **{})
-                        tx.create(relationship)
-
-        tx.commit()
-        print('Done creating relationship of new nodes to existing KG')
-
-        if node_mappings['relationships']:
-            self.save_relationship_to_neo4j(node_mappings)
-        print('Done')
-
-    def save_relationship_to_neo4j(
-        self,
-        node_mappings,  # TODO: create attrs class (in importer service)
-    ) -> None:
-        tx = self.graph.begin()
-
-        for relation in node_mappings['relationships']:
-            source_node_label = relation['source_node_label']
-            source_node_prop_label = relation['source_node_prop_label']
-            source_node_prop_value = relation['source_node_prop_value']
-            target_node_label = relation['target_node_label']
-            target_node_prop_label = relation['target_node_prop_label']
-            target_node_prop_value = relation['target_node_prop_value']
-            edge_label = relation['edge_label']
-
-            # source_filter_property = {source_node_prop_label: source_node_prop_value}
-            # TODO: need to use node_properties here because the filter
-            # might not be unique - see importer service for additional notes
-            source_filter_property = relation['source_node_properties']
-            target_filter_property = {target_node_prop_label: target_node_prop_value}
-
-            # TODO: if nodes not found throw exception or create?
-            source_node = self.graph.nodes.match(source_node_label, **source_filter_property).first()
-            if source_node:
-                target_node = self.graph.nodes.match(target_node_label, **target_filter_property).first()
-                if target_node:
-                    # TODO: the **{} should be edge properties
-                    tx.create(Relationship(source_node, edge_label, target_node, **{}))
-        tx.commit()
-        print('Done creating relationships between new nodes')

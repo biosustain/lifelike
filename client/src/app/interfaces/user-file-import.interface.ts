@@ -45,14 +45,6 @@ export interface Neo4jNodeMapping {
 export interface Neo4jRelationshipMapping {
   edge: { [key: number]: string };  // if newly created edge (i.e user input) set key to negative number
   edgeProperty: { [key: number]: string };
-  // sourceNode: {
-  //   mappedNodeType: string;
-  //   mappedNodeProperty: { [key: number]: string };
-  // };
-  // targetNode: {
-  //   mappedNodeType: string;
-  //   mappedNodeProperty: { [key: number]: string };
-  // };
   sourceNode: Neo4jNodeMapping;
   targetNode: Neo4jNodeMapping;
 }
