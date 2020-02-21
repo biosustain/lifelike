@@ -7,17 +7,20 @@ import { Observable } from 'rxjs';
 
 import { State } from '../../root-store';
 
-import { SheetNameAndColumnNames, Neo4jNodeMapping, NodeMappingHelper } from 'src/app/interfaces';
+import {
+    SheetNameAndColumnNames,
+    Neo4jNodeMapping,
+    NodeMappingHelper,
+} from '../../interfaces/user-file-import.interface';
 
-import { Neo4jSelectors as selectors } from '../store';
+import { UserFileImportSelectors as selectors } from '../store';
 import { saveNodeMapping } from '../store/actions';
 
 @Component({
-    selector: 'app-import-column-mapping',
-    templateUrl: 'import-column-mapping.component.html',
-    styleUrls: ['import-column-mapping.component.scss'],
+    selector: 'app-user-file-import-column-mapping',
+    templateUrl: 'user-file-import-column-mapping.component.html',
 })
-export class ImportColumnMappingComponent {
+export class UserFileImportColumnMappingComponent {
     @Input() chosenSheetToMap: SheetNameAndColumnNames;
     @Input() columnsForFilePreview: string[];
     @Output() nextStep: EventEmitter<boolean>;
@@ -156,19 +159,13 @@ export class ImportColumnMappingComponent {
             const propMappingValue = Object.keys(group.controls.columnNode.value)[0];
             const propMapping = {[propMappingKey]: propMappingValue};
             nodeMapping.mapping.existingMappings[Object.values(group.controls.columnNode.value)[0] as number] = {
-                // nodeType: group.controls.newNodeLabel.value || '',
-                // nodeProperties: {},
                 mappedNodeType: group.controls.mappedNodeLabel.value || '',
                 mappedNodePropertyFrom: propMapping,
                 mappedNodePropertyTo: group.controls.mappedNodeProperty.value || '',
-                // edge: group.controls.edge.value || '',
-                // uniqueProperty: false,
             } as Neo4jNodeMapping;
         });
 
         nodeMapping.worksheetDomain = this.worksheetDomain;
-
-        console.log(nodeMapping)
 
         this.store.dispatch(saveNodeMapping({payload: nodeMapping}));
         this.nextStep.emit(true);

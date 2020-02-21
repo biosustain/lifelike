@@ -25,7 +25,7 @@ class FileNameAndSheets(CamelDictMixin):
     sheets: List[SheetNameAndColumnNames] = attr.ib()
     filename: str = attr.ib()
 
-class ImporterService():
+class UserFileImportService():
     def parse_file(self, f: FileStorage) -> Workbook:
         workbook = load_workbook(f)
         print(f'caching {f.filename} as key')

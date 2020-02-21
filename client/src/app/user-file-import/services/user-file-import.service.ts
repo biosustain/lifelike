@@ -4,11 +4,11 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
-import { FileNameAndSheets, Neo4jColumnMapping } from '../../interfaces/importer.interface';
+import { FileNameAndSheets, Neo4jColumnMapping } from '../../interfaces/user-file-import.interface';
 
 @Injectable()
-export class Neo4jService {
-    readonly neo4jAPI = '/api/neo4j';
+export class UserFileImportService {
+    readonly neo4jAPI = '/api/user-file-import';
 
     constructor(private http: HttpClient) {}
 
@@ -38,9 +38,4 @@ export class Neo4jService {
         return this.http.post<{result: any}>(`${this.neo4jAPI}/upload-node-mapping`,
             mappings).pipe(map(resp => resp.result));
     }
-
-    // uploadRelationshipMapping(mappings: Neo4jColumnMapping): Observable<any> {
-    //     return this.http.post<{result: any}>(`${this.neo4jAPI}/upload-relationship-mapping`,
-    //         mappings).pipe(map(resp => resp.result));
-    // }
 }

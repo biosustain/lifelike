@@ -7,7 +7,7 @@ import {
 
 import { StoreDevtoolsModule } from '@ngrx/store-devtools';
 
-import { Neo4jModule } from 'app/upload/neo4j.module';
+import { UserFileImportModule } from 'app/user-file-import/user-file-import.module';
 
 import { environment } from '../../environments/environment';
 
@@ -25,7 +25,7 @@ export const reducers: ActionReducerMap<State> = {};
 
 @NgModule({
     imports: [
-        Neo4jModule,
+        UserFileImportModule,
         /**
          * StoreModule.forRoot is imported once in the root module, accepting a reducer
          * function or object map of reducer functions. If passed an object of
