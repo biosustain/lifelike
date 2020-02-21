@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Output } from '@angular/core';
-import { VisualizationService } from '../services/visualization.service';
+import { SearchService } from '../services/search.service';
 import { FormControl } from '@angular/forms';
 import { GraphNode, Neo4jResults } from 'app/interfaces';
 
@@ -16,7 +16,7 @@ export class VisualizationSearchComponent {
 
     search = new FormControl('');
 
-    constructor(private visService: VisualizationService) {}
+    constructor(private searchService: SearchService) {}
 
     getStyling(label: string) {
         switch (label) {
@@ -59,7 +59,7 @@ export class VisualizationSearchComponent {
     }
 
     onInputChanges(query: string) {
-        this.visService.searchGraphDatabase(query).subscribe(
+        this.searchService.searchGraphDatabase(query).subscribe(
             (r: Neo4jResults) => {
                 console.log(r.nodes);
                 this.autocompleteResults = r.nodes;
