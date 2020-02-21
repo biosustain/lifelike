@@ -37,7 +37,7 @@ Then to spin up the server and bring it down use
 
 __2. How do I seed the NEO4J Database?__
 
-Download the `.zip` file from https://github.com/SBRG/knowledge-graph/blob/master/neo4j/data/databases/graph.db.zip and add it to the `db` directory. The directory structure will be `db/graph.db`.
+Download the `.zip` file from https://console.cloud.google.com/storage/browser/graphdb_backup?project=able-goods-221820 and add it to the `db` directory. The directory structure will be `db/graph.db`.
 
 **NOTE** The backup database currently only works with Neo4j version 3.x.x.
 
