@@ -29,20 +29,20 @@ import {
     getDbRelationshipTypesSuccess,
 } from './actions';
 
-import { Neo4jService } from '../services/neo4j.service';
+import { UserFileImportService } from '../services/user-file-import.service';
 
 
 @Injectable()
-export class Neo4jEffects {
+export class UserFileImportEffects {
     constructor(
         private actions$: Actions,
-        private neo4jService: Neo4jService,
+        private fileImportService: UserFileImportService,
     ) {}
 
     getDbLabels = createEffect(() => this.actions$.pipe(
         ofType(getDbLabels),
         map(action => action),
-        switchMap(() => this.neo4jService.getDbLabels()
+        switchMap(() => this.fileImportService.getDbLabels()
             .pipe(
                 map(labels => getDbLabelsSuccess({payload: labels})),
             ),
@@ -52,7 +52,7 @@ export class Neo4jEffects {
     getDbRelationshipTypes = createEffect(() => this.actions$.pipe(
         ofType(getDbRelationshipTypes),
         map(action => action),
-        switchMap(() => this.neo4jService.getDbRelationshipTypes()
+        switchMap(() => this.fileImportService.getDbRelationshipTypes()
             .pipe(
                 map(relationshipTypes => getDbRelationshipTypesSuccess({payload: relationshipTypes})),
             ),
@@ -62,7 +62,7 @@ export class Neo4jEffects {
     getNodeProperties = createEffect(() => this.actions$.pipe(
         ofType(getNodeProperties),
         map(action => action.payload),
-        switchMap(nodeLabel => this.neo4jService.getNodeProperties(nodeLabel)
+        switchMap(nodeLabel => this.fileImportService.getNodeProperties(nodeLabel)
             .pipe(
                 map(props => getNodePropertiesSuccess({payload: props})),
             ),
@@ -72,7 +72,7 @@ export class Neo4jEffects {
     uploadNeo4jFile = createEffect(() => this.actions$.pipe(
         ofType(uploadNeo4jFile),
         map(action => action.payload),
-        switchMap(data => this.neo4jService.uploadNeo4jFile(data)
+        switchMap(data => this.fileImportService.uploadNeo4jFile(data)
             .pipe(
                 map(parsed => uploadNeo4jFileSuccess({payload: parsed})),
                 catchError(() => EMPTY),
@@ -83,7 +83,7 @@ export class Neo4jEffects {
     uploadNodeMapping = createEffect(() => this.actions$.pipe(
         ofType(uploadNodeMapping),
         map(action => action.payload),
-        switchMap(data => this.neo4jService.uploadNodeMapping(data)
+        switchMap(data => this.fileImportService.uploadNodeMapping(data)
             .pipe(
                 mergeMap(() => [
                     uploadNodeMappingSuccess(),
@@ -97,22 +97,4 @@ export class Neo4jEffects {
             ),
         ),
     ));
-
-    // uploadRelationshipMapping = createEffect(() => this.actions$.pipe(
-    //     ofType(uploadRelationshipMapping),
-    //     map(action => action.payload),
-    //     switchMap(data => this.neo4jService.uploadRelationshipMapping(data)
-    //         .pipe(
-    //             mergeMap(() => [
-    //                 uploadRelationshipMappingSuccess(),
-    //                 // new SnackbarActions.SnackbarOpen({
-    //                 //     message: 'Done',
-    //                 //     action: 'Dismiss',
-    //                 //     snackConfig: { duration: 1000 },
-    //                 // }),
-    //             ]),
-    //             catchError(() => EMPTY),
-    //         ),
-    //     ),
-    // ));
 }

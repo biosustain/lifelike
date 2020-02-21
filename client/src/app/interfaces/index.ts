@@ -1,2 +1,2 @@
 export * from './neo4j.interface';
-export * from './importer.interface';
+export * from './user-file-import.interface';
