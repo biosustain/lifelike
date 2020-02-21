@@ -8,17 +8,25 @@ import { Observable, Subscription } from 'rxjs';
 
 import { State } from 'app/***ARANGO_USERNAME***-store';
 
-import { Neo4jSelectors as selectors } from '../store';
-import { uploadNeo4jFile, uploadNodeMapping, getDbLabels, uploadRelationshipMapping, getDbRelationshipTypes } from '../store/actions';
+import { UserFileImportSelectors as selectors } from '../store';
+import {
+    uploadNeo4jFile,
+    getDbLabels,
+    getDbRelationshipTypes,
+} from '../store/actions';
 
-import { FileNameAndSheets, SheetNameAndColumnNames, Neo4jColumnMapping, NodeMappingHelper } from '../../interfaces/importer.interface';
+import {
+    FileNameAndSheets,
+    SheetNameAndColumnNames,
+    NodeMappingHelper,
+} from '../../interfaces/user-file-import.interface';
 
 @Component({
-    selector: 'app-neo4j-upload',
-    templateUrl: 'neo4j-upload.component.html',
-    styleUrls: ['neo4j-upload.component.scss'],
+    selector: 'app-user-file-import',
+    templateUrl: 'user-file-import.component.html',
+    styleUrls: ['user-file-import.component.scss'],
 })
-export class Neo4jUploadComponent implements OnInit, OnDestroy {
+export class UserFileImportComponent implements OnInit, OnDestroy {
     @ViewChild('fileInput', { static: true }) fileInput: ElementRef;
     @ViewChild(MatStepper, { static: true }) stepper: MatStepper;
 
@@ -89,15 +97,6 @@ export class Neo4jUploadComponent implements OnInit, OnDestroy {
         this.store.dispatch(getDbLabels());
         this.stepper.next();
     }
-
-    // saveColumnMapping(mapping: {data: Neo4jColumnMapping, type: string}) {
-    //     mapping.data.fileName = this.fileName;
-    //     if (mapping.type === 'node') {
-    //         this.store.dispatch(uploadNodeMapping({payload: mapping.data}));
-    //     } else if (mapping.type === 'relationship') {
-    //         this.store.dispatch(uploadRelationshipMapping({payload: mapping.data}));
-    //     }
-    // }
 
     goToMapRelationships() {
         this.stepper.next();

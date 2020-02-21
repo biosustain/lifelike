@@ -16,8 +16,8 @@ def get_neo4j_service_dao():
     return g.neo4j_service_dao
 
 
-def get_importer_service_dao():
-    if 'importer_service' not in g:
-        from neo4japp.services import ImporterService
-        g.importer_service = ImporterService()
-    return g.importer_service
+def get_user_file_import_service():
+    if 'user_file_import_service' not in g:
+        from neo4japp.services import UserFileImportService
+        g.user_file_import_service = UserFileImportService()
+    return g.user_file_import_service

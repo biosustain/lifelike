@@ -5,40 +5,40 @@ import {
     State,
 } from './state';
 
-import * as Neo4jActions from './actions';
+import * as UserFileImportActions from './actions';
 
-export const neo4jReducer = createReducer(
+export const userFileImportReducer = createReducer(
     initialState,
     on(
-        Neo4jActions.getDbLabelsSuccess,
+        UserFileImportActions.getDbLabelsSuccess,
         (state, action) => ({
             ...state,
             dbLabels: action.payload,
         }),
     ),
     on(
-        Neo4jActions.getDbRelationshipTypesSuccess,
+        UserFileImportActions.getDbRelationshipTypesSuccess,
         (state, action) => ({
             ...state,
             dbRelationshipTypes: action.payload,
         }),
     ),
     on(
-        Neo4jActions.getNodePropertiesSuccess,
+        UserFileImportActions.getNodePropertiesSuccess,
         (state, action) => ({
             ...state,
             nodeProperties: {...state.nodeProperties, ...action.payload},
         }),
     ),
     on(
-        Neo4jActions.uploadNeo4jFileSuccess,
+        UserFileImportActions.uploadNeo4jFileSuccess,
         (state, action) => ({
             ...state,
             fileNameAndSheets: action.payload,
         }),
     ),
     on(
-        Neo4jActions.saveNodeMapping,
+        UserFileImportActions.saveNodeMapping,
         (state, action) => ({
             ...state,
             nodeMappingHelper: action.payload,
@@ -47,5 +47,5 @@ export const neo4jReducer = createReducer(
 );
 
 export function reducer(state: State, action: Action) {
-    return neo4jReducer(state, action);
+    return userFileImportReducer(state, action);
 }

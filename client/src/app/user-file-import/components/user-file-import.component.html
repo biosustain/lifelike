@@ -36,11 +36,6 @@
           </div>
 
           <!-- display file names -->
-          <!-- <div *ngIf="fileNames.length > 0; else noFileSelected">File(s) Selected: <span
-              *ngFor="let name of fileNames; let i = index"
-            >{{ name }} <button id="remove-attach-file-btn" type="button" (click)="clearFilesField(i)">x</button></span>
-          </div>
-          <div><ng-template #noFileSelected>File(s) Selected: None</ng-template></div> -->
           <div *ngIf="fileName; else noFileSelected">File Selected: <span
             >{{ fileName }} <button id="remove-attach-file-btn" type="button" (click)="clearFilesField()">x</button></span>
           </div>
@@ -97,8 +92,6 @@
         </mat-select>
       </div>
 
-      <!-- <mat-checkbox [(ngModel)]="relationshipFile">Relationship File</mat-checkbox> -->
-
       <div>
         <button
           mat-stroked-button
@@ -111,24 +104,20 @@
 
   <mat-step>
     <ng-template matStepLabel>Map columns</ng-template>
-    <!-- <app-neo4j-upload-node
-      [chosenSheetToMap]="chosenSheetToMap"
-      (emitter)="saveColumnMapping($event)"
-    ></app-neo4j-upload-node> -->
-    <app-import-column-mapping
+    <app-user-file-import-column-mapping
       [chosenSheetToMap]="chosenSheetToMap"
       [columnsForFilePreview]="columnsForFilePreview"
       (nextStep)="goToMapRelationships()"
-    ></app-import-column-mapping>
+    ></app-user-file-import-column-mapping>
   </mat-step>
 
   <mat-step>
     <ng-template matStepLabel>Map relationships</ng-template>
-    <app-import-column-relationship-mapping
+    <app-user-file-import-column-relationship-mapping
       [chosenSheetToMap]="chosenSheetToMap"
       [fileName]="fileName"
       [columnsForFilePreview]="columnsForFilePreview"
       [nodeMappingHelper]="nodeMappingHelper$ | async"
-    ></app-import-column-relationship-mapping>
+    ></app-user-file-import-column-relationship-mapping>
   </mat-step>
 </mat-horizontal-stepper>
