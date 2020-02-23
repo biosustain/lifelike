@@ -24,7 +24,7 @@ export class ContextMenuComponent extends TooltipComponent implements OnDestroy 
     @Input() selectedNodeIds: IdType[];
     @Input() selectedEdgeIds: IdType[];
     // Expect this to be null if there is not exactly one node selected
-    @Input() selectedNodeEdgeLabels: GetLabelsResult;
+    @Input() selectedNodeEdgeLabels: Set<string>;
 
     @Output() groupNeighborsWithRelationship: EventEmitter<GroupRequest> = new EventEmitter();
     @Output() removeNodes: EventEmitter<IdType[]> = new EventEmitter();
