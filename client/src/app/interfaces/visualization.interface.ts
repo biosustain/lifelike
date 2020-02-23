@@ -3,8 +3,8 @@ import { IdType } from 'vis-network';
 import { VisEdge, VisNode } from './neo4j.interface';
 
 export interface AssociationData {
-    fromNode: number;
-    toNode: number;
+    fromNode: VisNode;
+    toNode: VisNode;
     association: string;
 }
 
@@ -34,14 +34,13 @@ export interface GroupRequest {
 }
 
 export interface GetLabelsResult {
-    validLabels: Set<string>;
-    invalidLabels: Set<string>;
+    labels: Set<string>;
 }
 
 export interface GetSnippetsResult {
     references: AssociationSnippet[];
-    fromNode: number;
-    toNode: number;
+    fromNode: VisNode;
+    toNode: VisNode;
     association: string;
 }
 

@@ -129,8 +129,14 @@ class Neo4JService(BaseDao):
         query = self.get_expand_query(node_id, limit)
         return self._query_neo4j(query)
 
-    def get_association_snippets(self, from_node: int, to_node: int, association: str):
-        query = self.get_association_snippets_query(from_node, to_node, association)
+    def get_association_snippets(self, from_node: GraphNode, to_node: GraphNode, association: str):
+        if (from_node.get('duplicate_of', None) is not None):
+            query = self.get_association_snippets_query(from_node['duplicate_of'], to_node['id'], association)
+        elif (to_node.get('duplicate_of', None) is not None):
+            query = self.get_association_snippets_query(from_node['id'], to_node['duplicate_of'], association)
+        else:
+            query = self.get_association_snippets_query(from_node['id'], to_node['id'], association)
+
         data = self.graph.run(query).data()
         return snake_to_camel_dict(dict(
             from_node=from_node,
@@ -142,7 +148,11 @@ class Neo4JService(BaseDao):
     def get_edge_snippet_counts(self, edges: List[GraphRelationship]):
         result = {'edge_snippet_counts': []}
         for edge in edges:
-            query = self.get_association_snippet_count_query(edge['from'], edge['to'], edge['label'])
+            # Check if this is a duplicate edge, and get the original node ids if so
+            if (edge.get('duplicate_of', None) is not None):
+                query = self.get_association_snippet_count_query(edge['original_from'], edge['original_to'], edge['label'])
+            else:
+                query = self.get_association_snippet_count_query(edge['from'], edge['to'], edge['label'])
             count = self.graph.run(query).data()[0]['count']
             result['edge_snippet_counts'].append({'edge': edge, 'count': count})
         return snake_to_camel_dict(result, {})
@@ -156,7 +166,11 @@ class Neo4JService(BaseDao):
         for node in clusteredNodes:
             for edge in node.edges:
                 retval['labels'].add(edge['label'])
-                query = self.get_association_snippet_count_query(edge['from'], edge['to'], edge['label'])
+                # Check if this is a duplicate edge, and get the original node ids if so
+                if (edge.get('duplicate_of', None) is not None):
+                    query = self.get_association_snippet_count_query(edge['original_from'], edge['original_to'], edge['label'])
+                else:
+                    query = self.get_association_snippet_count_query(edge['from'], edge['to'], edge['label'])
                 count = self.graph.run(query).data()[0]['count']
 
                 if (retval['results'].get(node.node_id, None) is not None):
