@@ -28,6 +28,7 @@ export class VisualizationComponent implements OnInit {
     edges: DataSet<VisEdge>;
     getSnippetsResult: GetSnippetsResult;
     getClusterGraphDataResult: GetClusterGraphDataResult;
+    duplicatedEdges = new Set<number>();
 
     legend: Map<string, string[]>;
 
@@ -140,7 +141,11 @@ export class VisualizationComponent implements OnInit {
                 return n;
             });
             this.nodes.update(nodes);
-            this.edges.update(edges);
+            edges.forEach(candidateEdge => {
+                if (!this.duplicatedEdges.has(candidateEdge.id)) {
+                    this.edges.update(candidateEdge);
+                }
+            });
         });
     }
 
@@ -154,5 +159,13 @@ export class VisualizationComponent implements OnInit {
         this.visService.getClusterGraphData(clusteredNodes).subscribe((result) => {
             this.getClusterGraphDataResult = result;
         });
+    }
+
+    addDuplicatedEdge(edge: number) {
+        this.duplicatedEdges.add(edge);
+    }
+
+    removeDuplicatedEdge(edge: number) {
+        this.duplicatedEdges.delete(edge);
     }
 }

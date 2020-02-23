@@ -3,7 +3,7 @@ import { Component, Input, Output, EventEmitter, OnDestroy } from '@angular/core
 import { Instance, createPopper } from '@popperjs/core';
 
 import { Subscription } from 'rxjs';
-import { filter, first, switchMap } from 'rxjs/operators';
+import { filter, first, switchMap, take} from 'rxjs/operators';
 
 import { isNullOrUndefined } from 'util';
 
@@ -13,6 +13,16 @@ import { TooltipDetails } from 'app/shared/services/tooltip-control-service';
 import { TooltipComponent } from 'app/shared/components/tooltip/tooltip.component';
 
 import { ReferenceTableControlService } from '../../services/reference-table-control.service';
+
+/**
+ * TODO: Sometimes getting this error from Popper in the console:
+ *
+ * index.js:218 Popper: Invalid reference or popper argument provided to Popper,
+ * they must be either a valid DOM element, virtual element, or a jQuery-wrapped DOM element.
+ *
+ * The cause of this is unclear, but it seems to sometimes occur when the reference table has
+ * been shown multiple times.
+ */
 
 @Component({
   selector: 'app-reference-table',
@@ -100,7 +110,7 @@ export class ReferenceTableComponent extends TooltipComponent implements OnDestr
                 return showReferenceTable;
             }),
             switchMap(() => this.referenceTableControlService.associationCountForEdges$)
-        ).subscribe((result) => {
+        ).pipe(take(1)).subscribe((result) => {
             this.getEdgeSnippetCountsResult = result;
 
             const referenceTableItem = document.querySelector(`#reference-table-node-${referenceTableRow.node.id}`);
