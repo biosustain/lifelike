@@ -3,21 +3,15 @@ import attr
 from flask import Blueprint
 from werkzeug.datastructures import FileStorage
 
-from neo4japp.constants import *
 from neo4japp.database import get_neo4j_service_dao, get_user_file_import_service
-from neo4japp.services import Neo4JService, Neo4jColumnMapping
+from neo4japp.data_transfer_objects.user_file_import import (
+    Neo4jColumnMapping,
+    UploadFileRequest,
+    NodePropertiesRequest,
+)
 from neo4japp.util import CamelDictMixin, SuccessResponse, jsonify_with_class
 
 bp = Blueprint('user-file-import-api', __name__, url_prefix='/user-file-import')
-
-
-@attr.s(frozen=True)
-class UploadFileRequest(CamelDictMixin):
-    file_input: FileStorage = attr.ib()
-
-@attr.s(frozen=True)
-class NodePropertiesRequest(CamelDictMixin):
-    node_label: str = attr.ib()
 
 
 @bp.route('/get-db-labels', methods=['GET'])
@@ -59,9 +53,8 @@ def upload_neo4j_file(req: UploadFileRequest):
 @bp.route('/upload-node-mapping', methods=['POST'])
 @jsonify_with_class(Neo4jColumnMapping)
 def upload_node_mapping(req: Neo4jColumnMapping):
-    neo4j = get_neo4j_service_dao()
     importer = get_user_file_import_service()
     node_mappings = importer.create_node_mapping(req)
-    neo4j.save_node_to_neo4j(node_mappings)
+    importer.save_node_to_neo4j(node_mappings)
 
     return SuccessResponse(result='', status_code=200)

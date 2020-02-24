@@ -76,7 +76,7 @@
             [columnMappingForm]="columnMappingForm.get('existingColumnMapping').controls[i]"
             [existingNodeLabels]="dbNodeTypes$ | async"
             [existingNodeProperties]="dbNodeProperties$ | async"
-            (deleteMapping)="deleteColumnMappingRow(i)"
+            (deleteMapping)="deleteExistingColumnMappingRow(i)"
           ></app-user-file-import-existing-column-mapping-row>
         </div>
       </div>
