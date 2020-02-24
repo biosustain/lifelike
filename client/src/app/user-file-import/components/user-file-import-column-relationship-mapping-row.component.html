@@ -4,7 +4,7 @@
   fxLayoutGap="15px"
   fxLayoutAlign="start baseline"
 >
-  <div>Map a relationship between node columns. First dropdown is source node, second dropdown/input is for relationship, third dropdown is target node.<br>
+  <div>Map a relationship between node columns. First dropdown is source node, second dropdown/input is for relationship, third/fourth dropdown is target node.<br>
   If the relationship you're looking for is not available in the second dropdown, use the input to create a new relationship.</div>
   <div
     fxLayout="row"
@@ -56,6 +56,35 @@
           *ngFor="let column of columnHeaders"
           [value]="column"
         >{{ (column | keyvalue)[0].key }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field>
+      <mat-select
+        fxFlex="1 0"
+        placeholder="Select target node type"
+        formControlName="mappedNodeType"
+        (selectionChange)="selectExistingNodeType($event)"
+      >
+        <mat-option
+          *ngFor="let nodeType of dbNodeTypes"
+          [value]="nodeType"
+        >{{ nodeType }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field>
+      <mat-select
+        fxFlex="1 0"
+        placeholder="Select existing node property"
+        formControlName="mappedNodeProperty"
+      >
+        <span *ngIf="existingNodeProperties">
+          <mat-option
+            *ngFor="let nodeProp of existingNodeProperties[relationshipMappingForm.get('mappedNodeType').value]"
+            [value]="nodeProp"
+          >{{ nodeProp }}</mat-option>
+        </span>
       </mat-select>
     </mat-form-field>
 
