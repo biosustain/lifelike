@@ -17,5 +17,5 @@ class SearchRequest(CamelDictMixin):
 @jsonify_with_class(SearchRequest)
 def prefix_search(req: SearchRequest):
     search_dao = get_search_service_dao()
-    results = search_dao.prefix_search(req.query)
+    results = search_dao.predictive_search(req.query)
     return SuccessResponse(result=results, status_code=200)

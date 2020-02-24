@@ -9,24 +9,27 @@ def setup():
     with app.app_context():
         print('Dropping any previous full text search indexes.')
         tx = graph.begin()
-        labels = [TYPE_CHEMICAL, TYPE_DISEASE, TYPE_GENE, TYPE_TAXONOMY]
-        drop_index_queries = [f'DROP INDEX ON :{label}(name)' for label in labels]
-
+        drop_fts_index_query = 'CALL db.index.fulltext.drop("nameAndId")'
         try:
-            for drop_query in drop_index_queries:
-                graph.evaluate(drop_query)
+            graph.evaluate(drop_fts_index_query )
         except GraphError:
             print('WARNING: No previous indexes found. Continuing...')
 
-        print('Setting up full text search indexes.')
-        create_index_queries = [
-            f'CALL db.createIndex(":{label}(name)", "native-btree-1.0")'
-            for label in labels
-        ]
+        labels = [TYPE_GENE, TYPE_DISEASE, TYPE_TAXONOMY, TYPE_CHEMICAL]
+        indexed_properties = ['name', 'id']
+        create_fts_index_query = """
+            CALL db.index.fulltext.createNodeIndex(
+                "nameAndId", [{l}], [{p}]
+            )
+        """.format(
+            l=','.join([f'"{label}"' for label in labels]),
+            p=','.join([f'"{prop}"' for prop in indexed_properties])
+        )
+        print(create_fts_index_query)
 
+        print('Setting up full text search indexes.')
         try:
-            for create_query in create_index_queries:
-                graph.evaluate(create_query)
+            graph.evaluate(create_fts_index_query)
         except GraphError:
             print('WARNING: Fulltext indexing failed.')
         tx.commit()
