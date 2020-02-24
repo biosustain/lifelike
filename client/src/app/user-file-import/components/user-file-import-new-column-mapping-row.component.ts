@@ -32,5 +32,5 @@ export class UserFileImportNewColumnMappingRowComponent {
 
     selectExistingNodeType(event: MatSelectChange) {
       this.store.dispatch(getNodeProperties({payload: event.value}));
-  }
+    }
 }

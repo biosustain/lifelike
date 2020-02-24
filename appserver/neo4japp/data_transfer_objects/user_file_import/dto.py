@@ -31,14 +31,19 @@ class FileNameAndSheets(CamelDictMixin):
 
 @attr.s(frozen=True)
 class Neo4jNodeMapping(CamelDictMixin):
+    @attr.s(frozen=True)
+    class MappedToUniversalGraph(CamelDictMixin):
+        universal_graph_node_type: str = attr.ib()
+        universal_graph_node_property_label: str = attr.ib()
     mapped_node_type: str = attr.ib()
-    mapped_node_property_to: str = attr.ib()
+    mapped_node_property_to: Optional[str] = attr.ib(default=None)
     mapped_node_property_from: Dict[int, str] = attr.ib(default=attr.Factory(dict))
     node_type: Optional[str] = attr.ib(default=None)
     node_properties: Dict[int, str] = attr.ib(default=attr.Factory(dict))
     # this will be used to match a node
     unique_property: Optional[str] = attr.ib(default=None)
     edge: Optional[str] = attr.ib(default=None)
+    mapped_to_universal_graph: Optional[MappedToUniversalGraph] = attr.ib(default=None)
 
 
 @attr.s(frozen=True)

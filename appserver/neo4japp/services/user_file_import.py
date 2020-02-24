@@ -27,23 +27,47 @@ class UserFileImportService(BaseDao):
     def __init__(self, graph):
         super().__init__(graph)
 
-    def parse_file(self, f: FileStorage) -> Workbook:
-        workbook = load_workbook(f)
-        print(f'caching {f.filename} as key')
-        cache.set(f.filename, workbook)
-        return workbook
+    # def strip_leading_and_trailing_spaces(self, current_ws: Worksheet) -> Worksheet:
+    #     # remove leading and trailing space
+    #     curr_row = 1
+    #     max_row = len(list(current_ws.rows))
+    #     while curr_row <= max_row:
+    #         curr_col = 1
+    #         max_col = len(list(current_ws.columns))
 
-    def unmerge_cells(self, current_ws):
+    #         while curr_col <= max_col:
+    #             value = current_ws.cell(row=curr_row, column=curr_col).value
+    #             if type(value) is str:
+    #                 current_ws.cell(row=curr_row, column=curr_col).value = value.strip().lstrip()
+    #             curr_col += 1
+    #         curr_row += 1
+    #     return current_ws
+
+    def unmerge_cells(self, current_ws: Worksheet) -> Worksheet:
         # unmerge any cells first
         # and assign the value to them
         for group in current_ws.merged_cell_ranges:
             min_col, min_row, max_col, max_row = group.bounds
             value_to_assign = current_ws.cell(row=min_row, column=min_col).value
+
+            if type(value_to_assign) is str:
+                value_to_assign = value_to_assign.strip().lstrip()
             current_ws.unmerge_cells(str(group))
             for row in current_ws.iter_rows(min_col=min_col, min_row=min_row, max_col=max_col, max_row=max_row):
                 for cell in row:
                     cell.value = value_to_assign
         return current_ws
+
+    def parse_file(self, f: FileStorage) -> Workbook:
+        workbook = load_workbook(f)
+
+        for i in range(0, len(workbook.sheetnames)):
+            workbook.active = i
+            self.unmerge_cells(workbook.active)
+            # self.strip_leading_and_trailing_spaces(workbook.active)
+        print(f'caching {f.filename} as key')
+        cache.set(f.filename, workbook)
+        return workbook
 
     def get_workbook_sheet_names_and_columns(
         self,
@@ -54,7 +78,7 @@ class UserFileImportService(BaseDao):
 
         for i in range(0, len(workbook.sheetnames)):
             workbook.active = i
-            current_ws: Worksheet = self.unmerge_cells(workbook.active)
+            current_ws: Worksheet = workbook.active
 
             sheet_col_names = []
             col_name_map = {}
@@ -122,15 +146,19 @@ class UserFileImportService(BaseDao):
                 for k, v in node.node_properties.items():
                     value = current_ws.cell(row=curr_row, column=int(k)+1).value
                     if type(value) is str:
-                        value = value.strip().lstrip()
+                        if value.startswith(' ') or value.endswith(' '):
+                            value = value.strip().lstrip()
                     node_properties[v] = value
 
-                unstripped_value = current_ws.cell(
+                cell_value = current_ws.cell(
                     row=curr_row,
                     column=int(next(iter(node.mapped_node_property_from)))+1).value
-                if type(unstripped_value) is str:
-                    stripped_value = unstripped_value.strip().lstrip()
-                mapped_node_prop_value = stripped_value
+
+                if type(cell_value) is str:
+                    if cell_value.startswith(' ') or cell_value.endswith(' '):
+                        cell_value = cell_value.strip().lstrip()
+
+                mapped_node_prop_value = cell_value
                 mapped_node_prop = next(iter(node.mapped_node_property_from.values()))
 
                 nodes.append(GraphNodeCreationMapping(
@@ -164,25 +192,35 @@ class UserFileImportService(BaseDao):
                 for k, v in relation.source_node.node_properties.items():
                     value = current_ws.cell(row=curr_row, column=int(k)+1).value
                     if type(value) is str:
-                        value = value.strip().lstrip()
+                        if value.startswith(' ') or value.endswith(' '):
+                            value = value.strip().lstrip()
                     source_node_properties[v] = value
 
                 # for source node, we know unique property
                 # and mapped_node_property_from, so use that as filter to find node
                 source_node_label = relation.source_node.node_type
                 source_node_prop_label = relation.source_node.unique_property
-                source_node_prop_value = current_ws.cell(
+                cell_value = current_ws.cell(
                     row=curr_row,
                     column=int(next(iter(relation.source_node.mapped_node_property_from)))+1).value
+
+                if type(cell_value) is str:
+                    if cell_value.startswith(' ') or cell_value.endswith(' '):
+                        cell_value = cell_value.strip().lstrip()
+                source_node_prop_value = cell_value
 
                 # for target node, mapped_node_property_to is the
                 # target node label, and the int key for
                 # mapped_node_property_from is the column to get value
-                target_node_label = relation.target_node.mapped_node_type
-                target_node_prop_label = relation.target_node.mapped_node_property_to
+                if relation.target_node.mapped_to_universal_graph:
+                    # get the node label from mapped_to_universal_graph dict instead
+                    target_node_label = relation.target_node.mapped_to_universal_graph.universal_graph_node_type
+                    target_node_prop_label = relation.target_node.mapped_to_universal_graph.universal_graph_node_property_label
+                else:
+                    target_node_label = relation.target_node.mapped_node_type
+                    target_node_prop_label = relation.target_node.mapped_node_property_to
                 target_node_prop_value = current_ws.cell(
-                    row=curr_row,
-                    column=int(next(iter(relation.target_node.mapped_node_property_from)))+1).value
+                    row=curr_row, column=int(next(iter(relation.target_node.mapped_node_property_from)))+1).value
 
                 relationships.append(GraphRelationshipCreationMapping(
                     source_node_label=source_node_label,
@@ -287,6 +325,12 @@ class UserFileImportService(BaseDao):
             target_filter_property = {target_node_prop_label: target_node_prop_value}
 
             # TODO: if nodes not found throw exception or create?
+            # TODO: LL-81: if user selects a column to be a node property
+            # it is possible the node label appears multiple times in different rows
+            # and the column that is the node property have different values
+            # in that case, won't get a source_node here
+            # probably fix is to create new node
+            # referenced above already (search for LL-81)
             source_node = self.graph.nodes.match(source_node_label, **source_filter_property).first()
             if source_node:
                 target_node = self.graph.nodes.match(target_node_label, **target_filter_property).first()
