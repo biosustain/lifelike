@@ -19,5 +19,5 @@ def get_neo4j_service_dao():
 def get_user_file_import_service():
     if 'user_file_import_service' not in g:
         from neo4japp.services import UserFileImportService
-        g.user_file_import_service = UserFileImportService()
+        g.user_file_import_service = UserFileImportService(graph)
     return g.user_file_import_service

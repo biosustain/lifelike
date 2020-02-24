@@ -1,16 +1,20 @@
 import { Component, Input } from '@angular/core';
 import { FormGroup, FormBuilder, FormArray } from '@angular/forms';
 
-import { Store } from '@ngrx/store';
+import { Observable } from 'rxjs';
+
+import { Store, select } from '@ngrx/store';
 
 import {
     SheetNameAndColumnNames,
     Neo4jRelationshipMapping,
     NodeMappingHelper,
     Neo4jColumnMapping,
+    Neo4jNodeMapping,
 } from '../../interfaces/user-file-import.interface';
 
 import { State } from '../../root-store';
+import { UserFileImportSelectors as selectors } from '../store';
 
 import { uploadNodeMapping } from '../store/actions';
 
@@ -26,10 +30,15 @@ export class UserFileImportColumnRelationshipMapperComponent {
 
     relationshipMappingForm: FormGroup;
 
+    dbNodeTypes$: Observable<string[]>;
+    dbNodeProperties$: Observable<{[key: string]: string[]}>;
+
     constructor(
         private fb: FormBuilder,
         private store: Store<State>,
     ) {
+        this.dbNodeTypes$ = this.store.pipe(select(selectors.selectDbLabels));
+        this.dbNodeProperties$ = this.store.pipe(select(selectors.selectNodeProperties));
         this.relationshipMappingForm = this.fb.group({relationshipMapping: this.fb.array([])});
     }
 
@@ -39,6 +48,8 @@ export class UserFileImportColumnRelationshipMapperComponent {
             edge: [],
             source: [],
             target: [],
+            mappedNodeType: [],
+            mappedNodeProperty: [],
         });
         form.push(row);
     }
@@ -54,7 +65,6 @@ export class UserFileImportColumnRelationshipMapperComponent {
         } as Neo4jColumnMapping;
 
         const relationshipMapper = [];
-
         const relationshipMappingFormArray = this.relationshipMappingForm.get('relationshipMapping') as FormArray;
 
         if (relationshipMappingFormArray) {
@@ -90,13 +100,22 @@ export class UserFileImportColumnRelationshipMapperComponent {
                     // if no index mapping then something happened and no node was associated
                 }
 
+                // if user select from node type/node type property
+                // this means they want to create a relationship to
+                // an existing knowledge graph node
+                if (group.controls.mappedNodeType.value && group.controls.mappedNodeType.value) {
+                    // only for target node
+                    currentRelationship.targetNode.mappedToUniversalGraph = {
+                        universalGraphNodeType: group.controls.mappedNodeType.value,
+                        universalGraphNodePropertyLabel: group.controls.mappedNodeProperty.value,
+                    };
+                }
                 relationshipMapper.push(currentRelationship);
             });
             mappings.relationships = relationshipMapper;
         }
 
         mappings.domain = this.nodeMappingHelper.worksheetDomain;
-        delete this.nodeMappingHelper.worksheetDomain;
 
         // add the nodes without index keys
         let nodeMapper = [];
