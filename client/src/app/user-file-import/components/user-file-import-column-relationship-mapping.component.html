@@ -33,6 +33,8 @@
         <div [formGroupName]="i">
           <app-user-file-import-column-relationship-mapping-row
             [columnHeaders]="chosenSheetToMap?.sheetColumnNames"
+            [dbNodeTypes]="dbNodeTypes$ | async"
+            [existingNodeProperties]="dbNodeProperties$ | async"
             [relationshipMappingForm]="relationshipMappingForm.get('relationshipMapping').controls[i]"
             (deleteMapping)="deleteRelationshipMappingRow(i)"
           ></app-user-file-import-column-relationship-mapping-row>
