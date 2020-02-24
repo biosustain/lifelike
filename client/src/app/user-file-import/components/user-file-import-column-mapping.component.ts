@@ -114,7 +114,7 @@ export class UserFileImportColumnMappingComponent {
             const propMappingKey = Object.values(group.controls.columnNode.value)[0] as number;
             const propMappingValue = Object.keys(group.controls.columnNode.value)[0];
             const propMapping = {[propMappingKey]: propMappingValue};
-            nodeMapping.mapping.newMappings[Object.values(group.controls.columnNode.value)[0] as number] = {
+            nodeMapping.mapping.newMappings[propMappingKey] = {
                 nodeType: group.controls.newNodeLabel.value,
                 nodeProperties: null,
                 mappedNodeType: group.controls.mappedNodeLabel.value,
@@ -158,7 +158,7 @@ export class UserFileImportColumnMappingComponent {
             const propMappingKey = Object.values(group.controls.columnNode.value)[0] as number;
             const propMappingValue = Object.keys(group.controls.columnNode.value)[0];
             const propMapping = {[propMappingKey]: propMappingValue};
-            nodeMapping.mapping.existingMappings[Object.values(group.controls.columnNode.value)[0] as number] = {
+            nodeMapping.mapping.existingMappings[propMappingKey] = {
                 mappedNodeType: group.controls.mappedNodeLabel.value || '',
                 mappedNodePropertyFrom: propMapping,
                 mappedNodePropertyTo: group.controls.mappedNodeProperty.value || '',
