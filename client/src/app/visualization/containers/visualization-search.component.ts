@@ -1,22 +1,33 @@
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output, ViewChild } from '@angular/core';
 import { SearchService } from '../services/search.service';
-import { FormControl } from '@angular/forms';
-import { GraphNode, Neo4jResults } from 'app/interfaces';
+import { FormGroup, FormControl } from '@angular/forms';
+import { GraphNode, FTSResult, FTSQueryRecord } from 'app/interfaces';
+import { MatAutocompleteTrigger } from '@angular/material';
 
 @Component({
     selector: 'app-visualization-search',
     templateUrl: './visualization-search.component.html',
     styleUrls: ['./visualization-search.component.scss'],
 })
-export class VisualizationSearchComponent {
+export class VisualizationSearchComponent implements OnInit {
+
+    @ViewChild('autoCompleteSearch', {read: MatAutocompleteTrigger, static: true})
+    autoCompleteSearch: MatAutocompleteTrigger;
 
     @Output() selectedResult = new EventEmitter<GraphNode>();
 
-    autocompleteResults: Array<GraphNode> = [];
+    autocompleteResults: Array<FTSQueryRecord> = [];
 
-    search = new FormControl('');
+    searchForm = new FormGroup({
+        search: new FormControl(''),
+    });
 
     constructor(private searchService: SearchService) {}
+
+    ngOnInit() {
+        // TODO: Re-enable once we have a proper predictive/autocomplete implemented
+        this.autoCompleteSearch.autocompleteDisabled = true;
+    }
 
     getStyling(label: string) {
         switch (label) {
@@ -41,32 +52,31 @@ export class VisualizationSearchComponent {
         return n ? n.displayName : undefined;
     }
 
-    /**
-     * Used for displaying a node's data property
-     * in a string form.
-     * @param n - a graph node
-     */
-    stringifyData(n: GraphNode) {
-        const nodeToString = [];
-        for (const [key, value] of Object.entries(n.data)) {
-            nodeToString.push(`${key}: ${value}`);
-        }
-        return nodeToString.join(', ');
-    }
-
     resultSelection(result: GraphNode) {
         this.selectedResult.emit(result);
     }
 
-    onInputChanges(query: string) {
-        this.searchService.searchGraphDatabase(query).subscribe(
-            (r: Neo4jResults) => {
-                console.log(r.nodes);
+    onSubmit() {
+        const query = this.searchForm.value.search;
+        this.searchService.fullTextSearch(query).subscribe(
+            (r: FTSResult) => {
                 this.autocompleteResults = r.nodes;
             },
             error => {
                 // #TODO: Generic error handler
             }
         );
+    }
+
+    onInputChanges(query: string) {
+        // TODO: Re-enable once we have a proper predictive/autocomplete implemented
+        // this.searchService.predictiveSearch(query).subscribe(
+        //     (r: Neo4jResults) => {
+        //         this.autocompleteResults = r.nodes;
+        //     },
+        //     error => {
+        //         // #TODO: Generic error handler
+        //     }
+        // );
     }
 }
