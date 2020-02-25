@@ -98,6 +98,7 @@
             [value]="sheet"
           >{{sheet.sheetName}}</mat-option>
         </mat-select>
+        <mat-checkbox [(ngModel)]="relationshipFile">Relationship File</mat-checkbox>
       </div>
 
       <div>
@@ -110,12 +111,21 @@
     </div>
   </mat-step>
 
-  <mat-step>
+  <mat-step *ngIf="!relationshipFile; else relationshipColumnMapper">
     <ng-template matStepLabel>Map columns</ng-template>
-    <app-neo4j-upload-file-columns
+    <app-neo4j-upload-node
       [chosenSheetToMap]="chosenSheetToMap"
       (emitter)="saveColumnMapping($event)"
-    ></app-neo4j-upload-file-columns>
+    ></app-neo4j-upload-node>
   </mat-step>
+  <ng-template #relationshipColumnMapper>
+    <mat-step>
+      <ng-template matStepLabel>Map relationship</ng-template>
+      <app-neo4j-upload-relationship
+        [chosenSheetToMap]="chosenSheetToMap"
+        (emitter)="saveColumnMapping($event)"
+      ></app-neo4j-upload-relationship>
+    </mat-step>
+  </ng-template>
 
 </mat-horizontal-stepper>
