@@ -36,7 +36,7 @@ we should be careful using 'autosize', as it may lead to performance problems.--
     </button>
   </mat-sidenav-content>
 
-  <mat-sidenav class="sidenav" #sidenav position="end" mode="side" [(opened)]="userOpenedSidenav">
+  <mat-sidenav class="sidenav" #sidenav position="end" mode="over" [(opened)]="userOpenedSidenav">
     <div id="mat-sidenav-container">
       <!-- Each switch case appears to be lazy loaded, so switching between two cases will destroy the old case, and create the new case. -->
       <div [ngSwitch]="sidenavEntityType">
