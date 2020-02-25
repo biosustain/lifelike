@@ -53,14 +53,9 @@ export interface GetEdgeSnippetCountsResult {
     edgeSnippetCounts: EdgeSnippetCount[];
 }
 
-export interface ReferenceTableRow {
+export interface NodeEdgePair {
     node: VisNode;
-    edges: VisEdge[];
-}
-
-export interface ReferenceTableSelection {
-    referenceTableRow: ReferenceTableRow;
-    edgeLabel: string;
+    edge: VisEdge;
 }
 
 export interface SidenavEntity {

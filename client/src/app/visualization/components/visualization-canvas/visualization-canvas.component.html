@@ -13,7 +13,7 @@ we should be careful using 'autosize', as it may lead to performance problems.--
       <app-reference-table
         [tooltipSelector]="referenceTableTooltipSelector"
         [tooltipOptions]="referenceTableTooltipOptions"
-        [nodeTable]="nodesInHoveredCluster"
+        [referenceTableData]="referenceTableData"
         (referenceTableRowClickEvent)="getAssociationsWithEdge($event)"
       ></app-reference-table>
 
