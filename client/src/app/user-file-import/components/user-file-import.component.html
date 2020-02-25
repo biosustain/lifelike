@@ -92,6 +92,32 @@
         </mat-select>
       </div>
 
+      <div *ngIf="chosenSheetToMap">
+        <div>If a column has a delimiter in its cell values, set them here.</div>
+        <div>
+          <button
+            mat-stroked-button
+            type="button"
+            color="accent"
+            (click)="addColumnDelimiterRow()"
+          >Add Column Delimiter</button>
+        </div>
+
+        <div [formGroup]="columnDelimiterForm">
+          <div formArrayName="columnDelimiters">
+            <div *ngFor="let row of columnDelimiterForm.get('columnDelimiters').controls; let i=index">
+              <div [formGroupName]="i">
+                <app-user-file-import-column-delimiter-row
+                  [columnHeaders]="chosenSheetToMap?.sheetColumnNames"
+                  [columnDelimiterForm]="columnDelimiterForm.get('columnDelimiters').controls[i]"
+                  (deleteDelimiter)="deleteColumnDelimiterRow(i)"
+                ></app-user-file-import-column-delimiter-row>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div>
         <button
           mat-stroked-button
@@ -107,6 +133,7 @@
     <app-user-file-import-column-mapping
       [chosenSheetToMap]="chosenSheetToMap"
       [columnsForFilePreview]="columnsForFilePreview"
+      [columnDelimiterForm]="columnDelimiterForm"
       (nextStep)="goToMapRelationships()"
     ></app-user-file-import-column-mapping>
   </mat-step>
