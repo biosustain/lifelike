@@ -21,7 +21,7 @@ import {
     GetSnippetsResult,
     GroupRequest,
     Neo4jGraphConfig,
-    ReferenceTableRow,
+    NodeEdgePair,
     SidenavEntity,
     SidenavClusterEntity,
     SidenavNodeEntity,
@@ -83,7 +83,7 @@ export class VisualizationCanvasComponent implements OnInit {
     selectedNodes: IdType[];
     selectedNodeEdgeLabels: Set<string>;
     selectedEdges: IdType[];
-    nodesInHoveredCluster: ReferenceTableRow[];
+    referenceTableData: NodeEdgePair[];
     clusters: Map<string, string>;
 
     contextMenuTooltipSelector: string;
@@ -102,7 +102,7 @@ export class VisualizationCanvasComponent implements OnInit {
         this.selectedNodes = [];
         this.selectedEdges = [];
         this.selectedNodeEdgeLabels = new Set<string>();
-        this.nodesInHoveredCluster = [];
+        this.referenceTableData = [];
 
         this.contextMenuTooltipSelector = '#root-menu';
         this.contextMenuTooltipOptions = {
@@ -460,8 +460,7 @@ export class VisualizationCanvasComponent implements OnInit {
 
     /**
      * Opens the metadata sidebar for with the input node's data
-     * TODO: the sidebar isn't implemented yet, so just printing the node data for now.
-     * @param referenceTableSelection represents a row in the reference table, contains node data and edge label
+     * @param edge represents an edge on the canvas
      */
     getAssociationsWithEdge(edge: VisEdge) {
         this.getSnippets.emit({
@@ -577,15 +576,35 @@ export class VisualizationCanvasComponent implements OnInit {
             this.referenceTableControlService.delayReferenceTable();
             this.referenceTableControlService.showReferenceTableResult$.pipe(
                 first(),
-                filter(showGroupByRel => showGroupByRel),
+                filter(showRefTable => showRefTable),
             ).subscribe(() => {
                 // Update cluster data AFTER the delay has completed
-                this.nodesInHoveredCluster = this.networkGraph.getNodesInCluster(params.node).map(
+                const clusterEdgeRelationship = this.clusters.get(params.node);
+                this.referenceTableData = this.networkGraph.getNodesInCluster(params.node).map(
                     nodeId => {
-                        return {
-                            node: this.nodes.get(nodeId),
-                            edges: this.networkGraph.getConnectedEdges(nodeId).map(edgeId => this.edges.get(edgeId)),
-                        } as ReferenceTableRow;
+                        // Get each clustered node and edge. There should be EXACTLY
+                        // one edge connected to this node, and both the node and edge are
+                        // duplicates.
+                        try {
+                            if (this.networkGraph.getConnectedEdges(nodeId).length !== 1) {
+                                throw Error(
+                                    `Cluster node with id ${nodeId} has ` +
+                                    `${this.networkGraph.getConnectedEdges(nodeId).length} edges! Should be 1.`
+                                );
+                            }
+                            return {
+                                node: this.nodes.get(nodeId),
+                                edge: this.networkGraph.getConnectedEdges(
+                                    nodeId
+                                ).map(
+                                    edgeId => this.edges.get(edgeId) as VisEdge
+                                ).filter(
+                                    edge => edge.label === clusterEdgeRelationship
+                                ).pop(),
+                            } as NodeEdgePair;
+                        } catch (e) {
+                            console.log(e);
+                        }
                     }
                 );
 
