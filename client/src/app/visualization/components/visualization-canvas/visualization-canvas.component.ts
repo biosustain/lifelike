@@ -563,26 +563,28 @@ export class VisualizationCanvasComponent implements OnInit {
         this.updateSelectedNodes(); // Dragging a node doesn't fire node selection, but it is selected after dragging finishes, so update
 
         if (this.networkGraph.isCluster(params.nodes[0]) || !this.nodes.get(params.nodes[0])) {
-            this.referenceTableControlService.delayEdgeMenu();
+            this.referenceTableControlService.interruptReferenceTable();
         }
     }
 
     onHoverNodeCallback(params: any) {
         if (this.networkGraph.isCluster(params.node)) {
-            this.nodesInHoveredCluster = this.networkGraph.getNodesInCluster(params.node).map(
-                nodeId => {
-                    return {
-                        node: this.nodes.get(nodeId),
-                        edges: this.networkGraph.getConnectedEdges(nodeId).map(edgeId => this.edges.get(edgeId)),
-                    } as ReferenceTableRow;
-                }
-            );
-
-            this.referenceTableControlService.delayEdgeMenu();
+            // Begin the delay for showing the updated reference table for the hovered cluster
+            this.referenceTableControlService.delayReferenceTable();
             this.referenceTableControlService.showReferenceTableResult$.pipe(
                 first(),
                 filter(showGroupByRel => showGroupByRel),
             ).subscribe(() => {
+                // Update cluster data AFTER the delay has completed
+                this.nodesInHoveredCluster = this.networkGraph.getNodesInCluster(params.node).map(
+                    nodeId => {
+                        return {
+                            node: this.nodes.get(nodeId),
+                            edges: this.networkGraph.getConnectedEdges(nodeId).map(edgeId => this.edges.get(edgeId)),
+                        } as ReferenceTableRow;
+                    }
+                );
+
                 // Update the canvas location
                 const clusterPosition = this.networkGraph.getPositions(params.node)[`${params.node}`]; // Cluster x and y
                 const clusterDOMPos = this.networkGraph.canvasToDOM(clusterPosition);
@@ -608,7 +610,7 @@ export class VisualizationCanvasComponent implements OnInit {
 
     onBlurNodeCallback(params: any) {
         if (this.networkGraph.isCluster(params.node) || !this.nodes.get(params.node)) {
-            this.referenceTableControlService.delayEdgeMenu();
+            this.referenceTableControlService.interruptReferenceTable();
         } else {
             // This produces a 'shrink effect'
             // TODO: Currently this does nothing, because the size property does not change 'box' shape nodes.
