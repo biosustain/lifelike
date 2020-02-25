@@ -4,7 +4,7 @@ import { MatSelectChange } from '@angular/material';
 
 import { Store } from '@ngrx/store';
 
-import { ColumnNameIndex } from '../../interfaces/user-file-import.interface';
+import { ColumnNameIndex } from 'app/interfaces/user-file-import.interface';
 
 import { State } from '../../root-store';
 

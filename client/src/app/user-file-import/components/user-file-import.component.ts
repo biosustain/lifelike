@@ -1,5 +1,5 @@
 import { Component, ViewChild, ElementRef, OnInit, OnDestroy } from '@angular/core';
-import { FormGroup, FormBuilder } from '@angular/forms';
+import { FormGroup, FormBuilder, FormArray } from '@angular/forms';
 import { MatStepper } from '@angular/material';
 
 import { Store, select } from '@ngrx/store';
@@ -19,7 +19,7 @@ import {
     FileNameAndSheets,
     SheetNameAndColumnNames,
     NodeMappingHelper,
-} from '../../interfaces/user-file-import.interface';
+} from 'app/interfaces/user-file-import.interface';
 
 @Component({
     selector: 'app-user-file-import',
@@ -31,15 +31,17 @@ export class UserFileImportComponent implements OnInit, OnDestroy {
     @ViewChild(MatStepper, { static: true }) stepper: MatStepper;
 
     chosenSheetToMap: SheetNameAndColumnNames;
-    fileForm: FormGroup;
+
     fileName: string;
     relationshipFile: boolean;
     columnsForFilePreview: string[];
 
+    fileForm: FormGroup;
+    columnDelimiterForm: FormGroup;
+
     fileNameAndSheets$: Observable<FileNameAndSheets>;
-    fielNameAndSheetsSub: Subscription;
+    fileNameAndSheetsSub: Subscription;
     nodeMappingHelper$: Observable<NodeMappingHelper>;
-    nodeMappingHelperSub: Subscription;
 
     constructor(
         private fb: FormBuilder,
@@ -49,16 +51,18 @@ export class UserFileImportComponent implements OnInit, OnDestroy {
         this.nodeMappingHelper$ = this.store.pipe(select(selectors.selectNodeMappingHelper));
 
         this.fileName = null;
+        this.relationshipFile = false;
+        this.columnsForFilePreview = [];
+
         this.fileForm = this.fb.group({
             fileInput: null,
             crossRef: [false],
         });
-        this.relationshipFile = false;
-        this.columnsForFilePreview = [];
+        this.columnDelimiterForm = this.fb.group({columnDelimiters: this.fb.array([])});
     }
 
     ngOnInit() {
-        this.fielNameAndSheetsSub = this.fileNameAndSheets$.subscribe(data => {
+        this.fileNameAndSheetsSub = this.fileNameAndSheets$.subscribe(data => {
             // navigate to step 2 Select sheet
             // once server returns parsed data
             if (data) {
@@ -68,8 +72,7 @@ export class UserFileImportComponent implements OnInit, OnDestroy {
     }
 
     ngOnDestroy() {
-        this.fielNameAndSheetsSub.unsubscribe();
-        this.nodeMappingHelperSub.unsubscribe();
+        this.fileNameAndSheetsSub.unsubscribe();
     }
 
     onFileChange(event) {
@@ -87,6 +90,19 @@ export class UserFileImportComponent implements OnInit, OnDestroy {
         const formData = new FormData();
         formData.append('fileInput', this.fileForm.controls.fileInput.value);
         this.store.dispatch(uploadNeo4jFile({payload: formData}));
+    }
+
+    addColumnDelimiterRow() {
+        const form = this.columnDelimiterForm.get('columnDelimiters') as FormArray;
+        const row = this.fb.group({
+            column: [],
+            delimiter: [],
+        });
+        form.push(row);
+    }
+
+    deleteColumnDelimiterRow(idx) {
+        (this.columnDelimiterForm.get('columnDelimiters') as FormArray).removeAt(idx);
     }
 
     goToMapColumns() {
