@@ -10,8 +10,7 @@ import {
     Neo4jRelationshipMapping,
     NodeMappingHelper,
     Neo4jColumnMapping,
-    Neo4jNodeMapping,
-} from '../../interfaces/user-file-import.interface';
+} from 'app/interfaces/user-file-import.interface';
 
 import { State } from '../../***ARANGO_USERNAME***-store';
 import { UserFileImportSelectors as selectors } from '../store';
@@ -131,6 +130,7 @@ export class UserFileImportColumnRelationshipMapperComponent {
         }
 
         mappings.existingNodes = nodeMapper;
+        mappings.delimiters = this.nodeMappingHelper.mapping.delimiters;
         mappings.sheetName = this.chosenSheetToMap.sheetName;
         mappings.fileName = this.fileName;
 
