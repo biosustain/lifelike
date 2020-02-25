@@ -11,13 +11,19 @@ import { isNullOrUndefined } from 'util';
     styleUrls: ['./sidenav-cluster-view.component.scss']
 })
 export class SidenavClusterViewComponent implements OnInit {
-    @Input() clusterEntity: SidenavClusterEntity;
+    @Input() set clusterEntity(clusterEntity: SidenavClusterEntity) {
+        this.createChart(clusterEntity);
+    }
 
     clusterDataChart: Highcharts.Chart;
 
     constructor() {}
 
-    ngOnInit() {
+    ngOnInit() {}
+
+    // TODO: Noticed that sometimes there is a error occuring on line 52 ('name: node.displayName')
+    // where 'node' is null. Not sure what the cause of this is.
+    createChart(clusterEntity: SidenavClusterEntity) {
         this.clusterDataChart = Highcharts.chart({
             chart: {
                 renderTo: 'container',
@@ -28,7 +34,7 @@ export class SidenavClusterViewComponent implements OnInit {
                 text: 'Associations'
             },
             xAxis: {
-                categories: this.clusterEntity.clusterGraphData.labels
+                categories: clusterEntity.clusterGraphData.labels
             },
             yAxis: {
                 title: {
@@ -42,21 +48,21 @@ export class SidenavClusterViewComponent implements OnInit {
                     }
                 },
             },
-            series: this.clusterEntity.includes.map(node => {
+            series: clusterEntity.includes.map(node => {
                 return {
                     type: 'bar',
                     name: node.displayName,
-                    data: this.getDataForNode(node),
+                    data: this.getDataForNode(node, clusterEntity),
                 };
             })
         });
     }
 
-    getDataForNode(node: VisNode) {
-        const data = new Array<number>(this.clusterEntity.clusterGraphData.labels.length);
-        const countDataForNode = this.clusterEntity.clusterGraphData.results[node.id];
+    getDataForNode(node: VisNode, clusterEntity: SidenavClusterEntity) {
+        const data = new Array<number>(clusterEntity.clusterGraphData.labels.length);
+        const countDataForNode = clusterEntity.clusterGraphData.results[node.id];
 
-        this.clusterEntity.clusterGraphData.labels.forEach((label, index) => {
+        clusterEntity.clusterGraphData.labels.forEach((label, index) => {
             if (!isNullOrUndefined(countDataForNode[label])) {
                 data[index] = countDataForNode[label];
             } else {
