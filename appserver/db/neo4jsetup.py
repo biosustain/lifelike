@@ -9,17 +9,17 @@ def setup():
     with app.app_context():
         print('Dropping any previous full text search indexes.')
         tx = graph.begin()
-        drop_fts_index_query = 'CALL db.index.fulltext.drop("nameAndId")'
+        drop_fts_index_query = 'CALL db.index.fulltext.drop("namesEvidenceAndId")'
         try:
             graph.evaluate(drop_fts_index_query )
         except GraphError:
             print('WARNING: No previous indexes found. Continuing...')
 
-        labels = [TYPE_GENE, TYPE_DISEASE, TYPE_TAXONOMY, TYPE_CHEMICAL]
-        indexed_properties = ['name', 'id']
+        labels = [TYPE_GENE, TYPE_DISEASE, TYPE_TAXONOMY, TYPE_CHEMICAL, TYPE_REFERENCE]
+        indexed_properties = ['name', 'id', 'sentence']
         create_fts_index_query = """
             CALL db.index.fulltext.createNodeIndex(
-                "nameAndId", [{l}], [{p}]
+                "namesEvidenceAndId", [{l}], [{p}]
             )
         """.format(
             l=','.join([f'"{label}"' for label in labels]),
