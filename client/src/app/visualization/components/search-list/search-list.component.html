@@ -1,0 +1,16 @@
+<div>
+    <mat-card id="search-record" *ngFor="let node of displayResults">
+        <mat-card-title>
+            {{ node.label }}
+        </mat-card-title>
+        <mat-card-subtitle>
+            ID: {{ node.dataId }}
+        </mat-card-subtitle>
+        <mat-card-content>
+            {{ node.data }}
+        </mat-card-content>
+    </mat-card>
+    <div id="search-show-more-btn">
+        <button mat-raised-button>Show More</button>
+    </div>
+</div>

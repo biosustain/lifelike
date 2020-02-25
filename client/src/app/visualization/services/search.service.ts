@@ -4,7 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { map } from 'rxjs/operators';
 
 import {
-    Neo4jResults,
+    FTSResult,
 } from 'app/interfaces';
 
 @Injectable()
@@ -13,9 +13,16 @@ export class SearchService {
 
     constructor(private http: HttpClient) {}
 
-    searchGraphDatabase(query: string) {
-        return this.http.post<{result: Neo4jResults}>(
+    fullTextSearch(query: string) {
+        return this.http.post<{result: FTSResult}>(
             `${this.searchApi}/search`, {query},
         ).pipe(map(resp => resp.result));
     }
+
+    // TODO: Re-enable once we have a proper predictive/autocomplete implemented
+    // predictiveSearch(query: string) {
+    //     return this.http.post<{result: Neo4jResults}>(
+    //         `${this.searchApi}/search`, {query},
+    //     ).pipe(map(resp => resp.result));
+    // }
 }
