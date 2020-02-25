@@ -1,9 +1,9 @@
-import { Component, Input, Output, EventEmitter, OnDestroy } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnDestroy, OnInit } from '@angular/core';
 
 import { Instance, createPopper } from '@popperjs/core';
 
 import { Subscription } from 'rxjs';
-import { filter, first, switchMap, take} from 'rxjs/operators';
+import { filter, switchMap } from 'rxjs/operators';
 
 import { isNullOrUndefined } from 'util';
 
@@ -29,10 +29,12 @@ import { ReferenceTableControlService } from '../../services/reference-table-con
   templateUrl: './reference-table.component.html',
   styleUrls: ['./reference-table.component.scss']
 })
-export class ReferenceTableComponent extends TooltipComponent implements OnDestroy {
+export class ReferenceTableComponent extends TooltipComponent implements OnDestroy, OnInit {
     @Input() nodeTable: ReferenceTableRow[];
 
     @Output() referenceTableRowClickEvent: EventEmitter<VisEdge>;
+
+    selectedReferenceTableRow: ReferenceTableRow;
 
     FADEOUT_STYLE = 'reference-table fade-out';
     DEFAULT_STYLE = 'reference-table';
@@ -48,6 +50,7 @@ export class ReferenceTableComponent extends TooltipComponent implements OnDestr
 
     hideReferenceTableSubscription: Subscription;
     updatePopperSubscription: Subscription;
+    showEdgeMenuSubscription: Subscription;
 
     constructor(
         private referenceTableControlService: ReferenceTableControlService,
@@ -71,19 +74,61 @@ export class ReferenceTableComponent extends TooltipComponent implements OnDestr
             this.updatePopper(details.posX, details.posY);
         });
 
+        this.showEdgeMenuSubscription = this.referenceTableControlService.showEdgeMenuResult$.pipe(
+            filter((showEdgeMenu) => {
+                if (showEdgeMenu) {
+                    this.referenceTableControlService.getAssociationCountForEdges(this.selectedReferenceTableRow.edges);
+                }
+                return showEdgeMenu;
+            }),
+            switchMap(() => this.referenceTableControlService.associationCountForEdges$)
+        ).subscribe((result) => {
+            this.updateEdgeMenu(result);
+        });
+
         this.referenceTableRowClickEvent = new EventEmitter<VisEdge>();
     }
 
+    ngOnInit() {
+        super.ngOnInit();
+        this.setupFadeoutEndCallback();
+    }
+
     ngOnDestroy() {
+        super.ngOnDestroy();
         this.hideReferenceTableSubscription.unsubscribe();
         this.updatePopperSubscription.unsubscribe();
+        this.showEdgeMenuSubscription.unsubscribe();
+    }
+
+    setupFadeoutEndCallback() {
+        // Helper function to determine which event listener to use (dependent on browser)
+        function whichTransitionEvent() {
+            const el = document.createElement('fakeelement');
+            const transitions = {
+              animation: 'animationend',
+              OAnimation: 'oAnimationEnd',
+              MozAnimation: 'animationend',
+              WebkitAnimation: 'webkitAnimationEnd',
+            };
+
+            for (const t in transitions) {
+                if ( el.style[t] !== undefined ) {
+                    return transitions[t];
+                }
+            }
+        }
+        const element = document.getElementById('root-table');
+        const animationEnd = whichTransitionEvent();
+        element.addEventListener(animationEnd, () => {
+            this.hideTooltip();
+        }, false);
     }
 
     getAssociationsWithEdge(edge: VisEdge) {
         this.referenceTableRowClickEvent.emit(edge);
     }
 
-    // TODO: Need to have an interrupt event if a user hovers away from the cluster node before the reference table can be shown.
     showTooltip() {
         // First hide any submenus that might have been open (e.g. a user opened a context menu,
         // hovered over a submenu, then opened a new context menu)
@@ -99,31 +144,24 @@ export class ReferenceTableComponent extends TooltipComponent implements OnDestr
     // consistent behavior. Could be a popper bug, but it is curious that this is not happening
     // with the other tooltips (at least not consistently enough to be noticeable)
     showSelectedNodeEdgeLabels(referenceTableRow: ReferenceTableRow) {
+        this.selectedReferenceTableRow = referenceTableRow;
         this.hideAllSubMenus();
         this.referenceTableControlService.delayEdgeMenu();
-        this.referenceTableControlService.showReferenceTableResult$.pipe(
-            first(),
-            filter((showReferenceTable) => {
-                if (showReferenceTable) {
-                    this.referenceTableControlService.getAssociationCountForEdges(referenceTableRow.edges);
-                }
-                return showReferenceTable;
-            }),
-            switchMap(() => this.referenceTableControlService.associationCountForEdges$)
-        ).pipe(take(1)).subscribe((result) => {
-            this.getEdgeSnippetCountsResult = result;
+    }
 
-            const referenceTableItem = document.querySelector(`#reference-table-node-${referenceTableRow.node.id}`);
-            const tooltip = document.querySelector('#selected-node-edge-labels-submenu') as HTMLElement;
-            tooltip.style.display = 'block';
+    updateEdgeMenu(result: GetEdgeSnippetCountsResult) {
+        this.getEdgeSnippetCountsResult = result;
 
-            if (!isNullOrUndefined(this.edgeLabelSubmenuPopper)) {
-                this.edgeLabelSubmenuPopper.destroy();
-                this.edgeLabelSubmenuPopper = null;
-            }
-            this.edgeLabelSubmenuPopper = createPopper(referenceTableItem, tooltip, {
-                placement: 'right-start',
-            });
+        const referenceTableItem = document.querySelector(`#reference-table-node-${this.selectedReferenceTableRow.node.id}`);
+        const tooltip = document.querySelector('#selected-node-edge-labels-submenu') as HTMLElement;
+        tooltip.style.display = 'block';
+
+        if (!isNullOrUndefined(this.edgeLabelSubmenuPopper)) {
+            this.edgeLabelSubmenuPopper.destroy();
+            this.edgeLabelSubmenuPopper = null;
+        }
+        this.edgeLabelSubmenuPopper = createPopper(referenceTableItem, tooltip, {
+            placement: 'right-start',
         });
     }
 
@@ -141,11 +179,9 @@ export class ReferenceTableComponent extends TooltipComponent implements OnDestr
     }
 
     beginReferenceTableFade() {
+        // See setupFadeoutEndCallback for the fadeout animation end event
         this.referenceTableClass = this.FADEOUT_STYLE;
         this.beginSubmenuFade();
-        setTimeout(() => {
-            this.hideTooltip();
-        }, 100);
     }
 
     beginSubmenuFade() {
