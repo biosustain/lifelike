@@ -7,7 +7,7 @@ from werkzeug.datastructures import FileStorage
 from neo4japp.blueprints import GraphRequest
 from neo4japp.constants import *
 from neo4japp.database import get_neo4j_service_dao
-from neo4japp.models import GraphRelationship
+from neo4japp.models import GraphNode, GraphRelationship
 from neo4japp.services import Neo4JService, Neo4jColumnMapping
 from neo4japp.util import CamelDictMixin, SuccessResponse, jsonify_with_class
 
@@ -25,8 +25,9 @@ class ExpandNodeRequest(CamelDictMixin):
 
 @attr.s(frozen=True)
 class AssociationSnippetsRequest(CamelDictMixin):
-    from_node: int = attr.ib()
-    to_node: int = attr.ib()
+    # TODO: Create a VisNode class similar to what we have on the frontend
+    from_node: GraphNode = attr.ib()
+    to_node: GraphNode = attr.ib()
     association: str = attr.ib()
 
 @attr.s(frozen=True)

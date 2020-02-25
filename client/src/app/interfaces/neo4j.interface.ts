@@ -68,11 +68,15 @@ export interface GraphRelationship {
 export interface VisNode extends GraphNode {
   primaryLabel?: string; // Label to display in VisJS
   expanded?: boolean; // Whether a node has been expanded
+  duplicateOf?: number | null;
 }
 
 /** VisJS Edge Representations for Client */
 export interface VisEdge extends GraphRelationship {
   arrows?: string;
+  duplicateOf?: number | null;
+  originalFrom?: number | null;
+  originalTo?: number | null;
 }
 
 export interface Neo4jResults {

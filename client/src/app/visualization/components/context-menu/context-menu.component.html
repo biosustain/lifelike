@@ -13,7 +13,7 @@
     <div *ngIf="selectedNodeIds.length === 1; else singleSelectedEdge">
       <div id="single-node-selection-group-1" class="context-menu-group">
         <div class="context-menu-item" (mouseenter)="hideAllSubMenus()" (click)="requestNeighborSelection()">Select Neighbor Node(s)</div>
-        <div *ngIf="selectedNodeEdgeLabels.validLabels.size > 0" fxLayout="column">
+        <div *ngIf="selectedNodeEdgeLabels.size > 0" fxLayout="column">
             <div id="group-by-rel-menu-item" class="context-menu-item" fxLayout="row" fxLayoutAlign="space-between center" (mouseenter)="showGroupByRelSubMenu()" (mouseleave)="mouseLeaveNodeRow()">
               <div>Group neighbors by edge label</div>
               <mat-icon>arrow_right</mat-icon>
@@ -60,7 +60,6 @@
 <!-- Submenus (these are tooltips, so they should be floating around -- invisible -- until their mouseover events are called -->
 <div id="single-node-selection-group-1-submenu" [ngClass]="subMenuClass">
   <div class="context-menu-group">
-    <div class="context-menu-item" *ngFor="let rel of selectedNodeEdgeLabels.validLabels" (click)="requestGroupByRelationship(rel)">{{ rel }}</div>
-    <div class="context-menu-item invalid-edge-label" *ngFor="let rel of selectedNodeEdgeLabels.invalidLabels">{{ rel }}</div>
+    <div class="context-menu-item" *ngFor="let rel of selectedNodeEdgeLabels" (click)="requestGroupByRelationship(rel)">{{ rel }}</div>
   </div>
 </div>
