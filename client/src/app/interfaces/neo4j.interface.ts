@@ -104,3 +104,25 @@ export interface AssociationSentence {
     score: number;
     sentence: string;
 }
+
+export interface FTSQueryRecord {
+  node: GraphNode;
+  score: number;
+}
+
+export interface FTSResult {
+  query: string;
+  nodes: Array<FTSQueryRecord>;
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export interface SearchRecord {
+  nodeId: number;
+  label: string;
+  subLabels: Array<string>;
+  data: string;
+  dataId: string;
+}
+
