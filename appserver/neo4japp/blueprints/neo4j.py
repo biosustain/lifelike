@@ -50,6 +50,10 @@ class UploadFileRequest(CamelDictMixin):
 class NodePropertiesRequest(CamelDictMixin):
     node_label: str = attr.ib()
 
+@attr.s(frozen=True)
+class SearchRequest(CamelDictMixin):
+    query: str = attr.ib()
+
 
 @bp.route('/', methods=['POST'])
 @jsonify_with_class(GraphRequest)
@@ -156,10 +160,27 @@ def upload_neo4j_file(req: UploadFileRequest):
     return SuccessResponse(result=worksheet_names_and_cols, status_code=200)
 
 
-@bp.route('/upload-mapping-file', methods=['POST'])
+@bp.route('/upload-node-mapping', methods=['POST'])
 @jsonify_with_class(Neo4jColumnMapping)
-def upload_neo4j_mapping_file(req: Neo4jColumnMapping):
+def upload_node_mapping(req: Neo4jColumnMapping):
     neo4j = get_neo4j_service_dao()
-    neo4j.export_to_neo4j(req)
+    neo4j.save_node_to_neo4j(req)
 
     return SuccessResponse(result='', status_code=200)
+
+
+@bp.route('/upload-relationship-mapping', methods=['POST'])
+@jsonify_with_class(Neo4jColumnMapping)
+def upload_relationship_mapping(req: Neo4jColumnMapping):
+    neo4j = get_neo4j_service_dao()
+    neo4j.save_relationship_to_neo4j(req)
+
+    return SuccessResponse(result='', status_code=200)
+
+
+@bp.route('/search', methods=['POST'])
+@jsonify_with_class(SearchRequest)
+def prefix_search(req: SearchRequest):
+    neo4j = get_neo4j_service_dao()
+    results = neo4j.prefix_search(req.query)
+    return SuccessResponse(result=results, status_code=200)

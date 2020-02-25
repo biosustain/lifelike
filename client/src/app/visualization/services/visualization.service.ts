@@ -76,4 +76,10 @@ export class VisualizationService {
             `${this.visApi}/get-cluster-graph-data`, {clusteredNodes},
         ).pipe(map(resp => resp.result));
     }
+
+    searchGraphDatabase(query: string) {
+        return this.http.post<{result: Neo4jResults}>(
+            `${this.visApi}/search`, {query},
+        ).pipe(map(resp => resp.result));
+    }
 }

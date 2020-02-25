@@ -16,19 +16,32 @@ export interface FileNameAndSheets {
 }
 
 export interface Neo4jNodeMapping {
-  nodeLabel: { [key: number]: string};
-  nodeProperties: { [key: number]: string}[];
+  nodeType: string;
+  nodeProperties: { [key: number]: string };
+  mappedNodeType: string;
+  mappedNodeProperty: string;  // { [key: number]: string };
+  uniqueProperty: string;
 }
 
-export interface Neo4jEdgeMapping {
-  edgeLabel: { [key: number]: string};
-  edgeProperties?: { [key: number]: string}[];
+/**
+ * The use of numbers represent the column index used to filter.
+ */
+export interface Neo4jRelationshipMapping {
+  edge: string;
+  edgeProperty: { [key: number]: string };
+  sourceNode: {
+    mappedNodeType: string;
+    mappedNodeProperty: { [key: number]: string };
+  };
+  targetNode: {
+    mappedNodeType: string;
+    mappedNodeProperty: { [key: number]: string };
+  };
 }
 
 export interface Neo4jColumnMapping {
-  sourceNode: Neo4jNodeMapping;
-  targetNode: Neo4jNodeMapping;
-  edge: number; // just the column index for now // Neo4jEdgeMapping;
+  node: Neo4jNodeMapping;
+  relationship: Neo4jRelationshipMapping;
   fileName: string;
   sheetName: string;
 }

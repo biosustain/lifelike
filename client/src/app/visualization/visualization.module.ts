@@ -10,6 +10,7 @@ import { SidenavNodeViewComponent } from './components/sidenav-node-view/sidenav
 import { VisualizationService } from './services/visualization.service';
 import { VisualizationCanvasComponent } from './components/visualization-canvas/visualization-canvas.component';
 import { VisualizationQuickbarComponent } from './components/visualization-quickbar/visualization-quickbar.component';
+import { VisualizationSearchComponent } from './containers/visualization-search.component';
 import { VisualizationComponent } from './containers/visualization.component';
 
 const components = [
@@ -21,6 +22,7 @@ const components = [
     VisualizationComponent,
     VisualizationCanvasComponent,
     VisualizationQuickbarComponent,
+    VisualizationSearchComponent,
 ];
 
 @NgModule({
