@@ -55,7 +55,7 @@ class SearchService(BaseDao):
                 display_fn=lambda x: x.get('name', x.get('sentence'))
             )
 
-        nodes = [FTSQueryRecord(n['id'], to_graph_node(n), n['score']) for n in records]
+        nodes = [FTSQueryRecord(to_graph_node(n), n['score']) for n in records]
 
         total_query = """
             CALL db.index.fulltext.queryNodes("namesEvidenceAndId", $search_term)
