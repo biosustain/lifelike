@@ -65,6 +65,7 @@ export class VisualizationCanvasComponent implements OnInit {
                 association: result.association,
                 references: result.references,
              } as SidenavEdgeEntity;
+            this.toggleSidenavOpened();
         }
     }
     @Input() set getClusterGraphDataResult(result: GetClusterGraphDataResult) {
@@ -487,10 +488,6 @@ export class VisualizationCanvasComponent implements OnInit {
                 });
                 this.getClusterGraphData.emit(clusteredNodes);
             } else {
-                // TODO: This is a bit distracting at the moment. I think it would be better to have a
-                // "hard close/open" boolean that tracks whether the user manually closed/opened the sidebar.
-                // If they opened it, then it will stay open until they manually close it. If they closed it
-                // (which by default it would start as closed), then it won't open until they manually open it.
                 const node  = this.nodes.get(this.selectedNodes[0]) as VisNode;
                 this.sidenavEntity = {
                     data: node,
@@ -596,6 +593,8 @@ export class VisualizationCanvasComponent implements OnInit {
                                     `Cluster node with id ${nodeId} has ` +
                                     `${this.networkGraph.getConnectedEdges(nodeId).length} edges! Should be 1.`
                                 );
+                            } else if (typeof nodeId !== 'string') {
+                                throw Error(`Cluster node ID was of type ${typeof nodeId}! Should be 'string'`);
                             }
                             return {
                                 node: this.nodes.get(nodeId),

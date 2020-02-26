@@ -1,1 +1,1 @@
-from .models import SearchResult, GraphRequest
+from .models import SearchResult, GraphRequest, NodeEdgePair

@@ -56,6 +56,16 @@ export interface NodeEdgePair {
     edge: VisEdge;
 }
 
+export interface ReferenceTableRow {
+    nodeDisplayName: string;
+    snippetCount: number;
+    edge: VisEdge;
+}
+
+export interface GetReferenceTableDataResult {
+    referenceTableRows: ReferenceTableRow[];
+}
+
 export interface SidenavEntity {
     data: VisNode | VisEdge;
 }

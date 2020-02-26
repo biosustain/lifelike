@@ -1,10 +1,12 @@
 import { Injectable, OnDestroy } from '@angular/core';
 
 import { Subject, Observable, race, timer, Subscription } from 'rxjs';
-import { mapTo, switchMap } from 'rxjs/operators';
+import { mapTo, switchMap, first } from 'rxjs/operators';
 
+import { NodeEdgePair, GetReferenceTableDataResult } from 'app/interfaces';
 import { TooltipControlService } from 'app/shared/services/tooltip-control-service';
 
+import { VisualizationService } from './visualization.service';
 
 @Injectable()
 export class ReferenceTableControlService extends TooltipControlService implements OnDestroy {
@@ -12,19 +14,25 @@ export class ReferenceTableControlService extends TooltipControlService implemen
     interruptReferenceTableSource = new Subject<boolean>();
     showReferenceTableResultSource = new Subject<boolean>();
 
+    referenceTableRowDataSource = new Subject<GetReferenceTableDataResult>();
+
     delayReferenceTable$: Observable<boolean>;
     interruptReferenceTable$: Observable<boolean>;
     showReferenceTableResult$: Observable<boolean>;
 
+    referenceTableRowData$: Observable<GetReferenceTableDataResult>;
 
     delayReferenceTableSubscription: Subscription;
 
-    constructor() {
+    constructor(
+        private visService: VisualizationService,
+    ) {
         super();
 
         this.delayReferenceTable$ = this.delayReferenceTableSource.asObservable();
         this.interruptReferenceTable$ = this.interruptReferenceTableSource.asObservable();
         this.showReferenceTableResult$ = this.showReferenceTableResultSource.asObservable();
+        this.referenceTableRowData$ = this.referenceTableRowDataSource.asObservable();
 
         this.delayReferenceTableSubscription = this.delayReferenceTable$.pipe(
             switchMap(() =>
@@ -40,6 +48,8 @@ export class ReferenceTableControlService extends TooltipControlService implemen
         this.delayReferenceTableSource.complete();
         this.interruptReferenceTableSource.complete();
         this.showReferenceTableResultSource.complete();
+
+        this.delayReferenceTableSubscription.unsubscribe();
     }
 
     delayReferenceTable() {
@@ -48,5 +58,11 @@ export class ReferenceTableControlService extends TooltipControlService implemen
 
     interruptReferenceTable() {
         this.interruptReferenceTableSource.next(true);
+    }
+
+    getReferenceTableData(nodeEdgePair: NodeEdgePair[]) {
+        this.visService.getReferenceTableData(nodeEdgePair).pipe(
+            first()
+        ).subscribe(result => this.referenceTableRowDataSource.next(result));
     }
 }
