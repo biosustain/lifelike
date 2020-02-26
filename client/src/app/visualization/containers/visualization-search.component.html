@@ -23,5 +23,10 @@
       </mat-autocomplete>
     </mat-form-field>
   </form>
-  <app-search-list [searchResults]="autocompleteResults"></app-search-list>
+  <app-search-list (fetchMoreResults)="showMore($event)"
+                   [searchResults]="searchResultRecords"
+                   [showMoreVisible]="showMoreVisible"
+                   [totalResultsAmount]="totalResults"
+                   [searchTerm]="searchQuery"
+                   (navigateToViz)="navigateToVisualizer()"></app-search-list>
 </div>

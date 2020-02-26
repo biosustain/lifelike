@@ -22,6 +22,9 @@ import { VisualizationService } from '../services/visualization.service';
 })
 export class VisualizationComponent implements OnInit {
 
+    // Shows/Hide the component
+    hideDisplay = false;
+
     networkGraphData: Neo4jResults;
     networkGraphConfig: Neo4jGraphConfig;
     nodes: DataSet<VisNode | GraphNode>;
@@ -163,5 +166,9 @@ export class VisualizationComponent implements OnInit {
         this.edges.clear();
         const node = this.convertNodeToVisJSFomart(data);
         this.nodes.add(node);
+    }
+
+    hideCanvas(state: boolean) {
+        this.hideDisplay = state;
     }
 }

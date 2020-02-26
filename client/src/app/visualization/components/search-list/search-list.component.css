@@ -1,9 +1,12 @@
+#search-metadata-info {
+  margin-bottom: 15px;
+}
 #search-record {
   margin-top: 3px;
   margin-bottom: 3px;
 }
 #search-show-more-btn {
-  margin-top: 10px;
+  margin-top: 15px;
   display: flex;
   justify-content: center;
 }
