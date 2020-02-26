@@ -74,10 +74,15 @@ export class UserFileImportColumnRelationshipMapperComponent {
                 // set key to negative number in that case
                 // so backend can know when to just create a new edge
 
-                // flip so {[key: number]: string}
-                const edgeKey = Object.values(group.controls.edge.value)[0] as number;
-                const edgeValue = Object.keys(group.controls.edge.value)[0];
-                currentRelationship.edge = {[edgeKey]: edgeValue};
+                if (typeof group.controls.edge.value === 'string') {
+                    const edgeKey = -1;
+                    currentRelationship.edge = {[edgeKey]: group.controls.edge.value};
+                } else {
+                    // flip so {[key: number]: string}
+                    const edgeKey = Object.values(group.controls.edge.value)[0] as number;
+                    const edgeValue = Object.keys(group.controls.edge.value)[0];
+                    currentRelationship.edge = {[edgeKey]: edgeValue};
+                }
 
                 const sourceIdxKey = Object.values(group.controls.source.value)[0] as number;
                 const targetIdxKey = Object.values(group.controls.target.value)[0] as number;
