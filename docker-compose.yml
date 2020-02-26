@@ -8,7 +8,7 @@ services:
         networks:
             - backend
         ports:
-            - "127.0.0.1:5432:5432"
+            - "5432:5432"
         volumes: 
             -  ./postgres/db:/var/lib/postgresql/data
 
@@ -23,11 +23,13 @@ services:
 
     appserver:
         container_name: n4j-appserver
+        command: ['bin/wait-for-postgres', 'bin/start-dev']
         build: ./appserver
         ports:
-            - "127.0.0.1:5000:5000"
+            - "5000:5000"
         environment:
             - FLASK_APP=app
+            - FLASK_APP_CONFIG=Development
             - POSTGRES_HOST=pgdatabase
             # Postgres defaults
             - POSTGRES_PORT=5432
@@ -41,6 +43,8 @@ services:
             - database
             - pgdatabase
         stdin_open: true
+        volumes: 
+            - ./appserver:/home/n4j
         tty: true
 
     elasticsearch:

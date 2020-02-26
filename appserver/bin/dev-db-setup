@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+
+{ 
+    # Record output of psql into output
+    OUTPUT=$(PGPASSWORD=$POSTGRES_PASSWORD \
+    psql -h $POSTGRES_HOST -U $POSTGRES_USER \
+    -c 'SELECT email FROM appuser' $POSTGRES_DB) && SEED_DATA=true
+} || { 
+	# Else unsuccessful
+    SEED_DATA=false
+}
+
+if [[ $SEED_DATA && $OUTPUT == *"user@gmail.com"* ]]; then
+	echo "SEED DATA INTACT"
+else
+	flask drop_tables
+
+	echo "Initializing DB"
+	flask db init
+	echo "Migrating"
+	flask db migrate
+	flask db upgrade
+	echo "Seeding database"
+	flask seed
+fi
