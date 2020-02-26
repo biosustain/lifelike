@@ -106,9 +106,4 @@ export class ReferenceTableComponent extends TooltipComponent implements OnDestr
         // See setupFadeoutEndCallback for the fadeout animation end event
         this.referenceTableClass = this.FADEOUT_STYLE;
     }
-
-    mouseLeaveNodeRow() {
-        // Interrupt showing the submenu if the user hovers away from a node
-        this.referenceTableControlService.interruptEdgeMenu();
-    }
 }

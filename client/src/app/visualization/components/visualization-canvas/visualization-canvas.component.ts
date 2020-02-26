@@ -15,7 +15,6 @@ import { isNullOrUndefined } from 'util';
 import { Network, DataSet, IdType } from 'vis-network';
 
 import {
-    AssociationData,
     ClusteredNode,
     GetClusterGraphDataResult,
     GetSnippetsResult,
@@ -35,6 +34,13 @@ import { uuidv4 } from 'app/shared/utils';
 import { ContextMenuControlService } from '../../services/context-menu-control.service';
 import { ReferenceTableControlService } from '../../services/reference-table-control.service';
 
+enum SidenavEntityType {
+    EMPTY,
+    NODE,
+    EDGE,
+    CLUSTER,
+}
+
 @Component({
     selector: 'app-visualization-canvas',
     templateUrl: './visualization-canvas.component.html',
@@ -43,7 +49,7 @@ import { ReferenceTableControlService } from '../../services/reference-table-con
 })
 export class VisualizationCanvasComponent implements OnInit {
     @Output() expandNode = new EventEmitter<number>();
-    @Output() getSnippets = new EventEmitter<AssociationData>();
+    @Output() getSnippetsFromEdge = new EventEmitter<VisEdge>();
     @Output() getClusterGraphData = new EventEmitter<ClusteredNode[]>();
     @Output() addDuplicatedEdge = new EventEmitter<number>();
     @Output() removeDuplicatedEdge = new EventEmitter<number>();
@@ -52,10 +58,10 @@ export class VisualizationCanvasComponent implements OnInit {
     @Input() edges: DataSet<any, any>;
     @Input() set getSnippetsResult(result: GetSnippetsResult) {
         if (!isNullOrUndefined(result)) {
-            this.sidenavEntityType = 'edge';
+            this.sidenavEntityType = SidenavEntityType.EDGE;
             this.sidenavEntity = {
-                to: result.toNode as VisNode,
-                from: result.fromNode as VisNode,
+                to: this.nodes.get(result.toNodeId) as VisNode,
+                from: this.nodes.get(result.fromNodeId) as VisNode,
                 association: result.association,
                 references: result.references,
              } as SidenavEdgeEntity;
@@ -63,7 +69,7 @@ export class VisualizationCanvasComponent implements OnInit {
     }
     @Input() set getClusterGraphDataResult(result: GetClusterGraphDataResult) {
         if (!isNullOrUndefined(result)) {
-            this.sidenavEntityType = 'cluster';
+            this.sidenavEntityType = SidenavEntityType.CLUSTER;
             this.sidenavEntity = {
                 data: null,
                 includes: Object.keys(result.results).map(nodeId => this.nodes.get(nodeId)),
@@ -75,9 +81,12 @@ export class VisualizationCanvasComponent implements OnInit {
     @Input() config: Neo4jGraphConfig;
     @Input() legend: Map<string, string[]>;
 
+    // Need to create a reference to the enum so we can use it in the template
+    sidenavEntityTypeEnum = SidenavEntityType;
+
     userOpenedSidenav: boolean;
     sidenavEntity: SidenavEntity;
-    sidenavEntityType: string;
+    sidenavEntityType: SidenavEntityType;
 
     networkGraph: Network;
     selectedNodes: IdType[];
@@ -97,7 +106,7 @@ export class VisualizationCanvasComponent implements OnInit {
     ) {
         this.userOpenedSidenav = false;
         this.sidenavEntity = null;
-        this.sidenavEntityType = 'null';
+        this.sidenavEntityType = SidenavEntityType.EMPTY;
 
         this.selectedNodes = [];
         this.selectedEdges = [];
@@ -459,15 +468,11 @@ export class VisualizationCanvasComponent implements OnInit {
     }
 
     /**
-     * Opens the metadata sidebar for with the input node's data
-     * @param edge represents an edge on the canvas
+     * Opens the metadata sidebar with the input node's data
+     * @param edge represents a non-cluster edge on the canvas
      */
     getAssociationsWithEdge(edge: VisEdge) {
-        this.getSnippets.emit({
-            fromNode: this.nodes.get(edge.from),
-            toNode: this.nodes.get(edge.to),
-            association: edge.label,
-        } as AssociationData);
+        this.getSnippetsFromEdge.emit(edge);
     }
 
     updateSidebarEntity() {
@@ -491,7 +496,7 @@ export class VisualizationCanvasComponent implements OnInit {
                     data: node,
                     edges: this.networkGraph.getConnectedEdges(node.id).map(edgeId => this.edges.get(edgeId))
                 } as SidenavNodeEntity;
-                this.sidenavEntityType = 'node';
+                this.sidenavEntityType = SidenavEntityType.NODE;
             }
         } else if (this.selectedNodes.length === 0 && this.selectedEdges.length === 1) {
             const edge = this.edges.get(this.selectedEdges[0]) as VisEdge;

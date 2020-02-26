@@ -1,6 +1,6 @@
 <table id="***ARANGO_USERNAME***-table" [ngClass]="referenceTableClass">
   <!-- Showing TEMP data right now, will add actual data soon-->
-  <tr id="{{'reference-table-node-' + row.node.id }}" class="reference-table-row" *ngFor="let row of referenceTableData; let i = index" (click)="getAssociationsWithEdge(row.edge)" (mouseleave)="mouseLeaveNodeRow()">
+  <tr id="{{'reference-table-node-' + row.node.id }}" class="reference-table-row" *ngFor="let row of referenceTableData; let i = index" (click)="getAssociationsWithEdge(row.edge)">
     <td class="entity-name-container">{{row.node.displayName}}</td>
     <td class="snippet-count-container">({{i}})</td>
     <td><div class="snippet-bar-repr" style.width="{{i * 5}}px"></div></td>

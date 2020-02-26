@@ -23,22 +23,24 @@ class ExpandNodeRequest(CamelDictMixin):
     node_id: int = attr.ib()
     limit: int = attr.ib()
 
+# TODO: Add this to DTO file
 @attr.s(frozen=True)
-class AssociationSnippetsRequest(CamelDictMixin):
-    # TODO: Create a VisNode class similar to what we have on the frontend
-    from_node: GraphNode = attr.ib()
-    to_node: GraphNode = attr.ib()
-    association: str = attr.ib()
+class GetSnippetsFromEdgeRequest(CamelDictMixin):
+    # TODO: Create a VisNode/VisEdge class similar to what we have on the frontend
+    edge: GraphRelationship = attr.ib()
 
+# TODO: Add this to DTO file
 @attr.s(frozen=True)
-class SnippetCountForEdgesRequest(CamelDictMixin):
+class GetSnippetCountsFromEdgesRequest(CamelDictMixin):
     edges: List[GraphRelationship] = attr.ib()
 
+# TODO: Add this to DTO file
 @attr.s(frozen=True)
 class ClusteredNode(CamelDictMixin):
     node_id: int = attr.ib()
     edges: List[GraphRelationship] = attr.ib()
 
+# TODO: Add this to DTO file
 @attr.s(frozen=True)
 class GetGraphDataForClusterRequest(CamelDictMixin):
     clustered_nodes: List[ClusteredNode] = attr.ib()
@@ -96,22 +98,20 @@ def expand_graph_node(req: ExpandNodeRequest):
     node = neo4j.expand_graph(req.node_id, req.limit)
     return SuccessResponse(result=node, status_code=200)
 
-@bp.route('/get-snippets', methods=['POST'])
-@jsonify_with_class(AssociationSnippetsRequest)
-def get_association_snippets(req: AssociationSnippetsRequest):
+@bp.route('/get-snippets-from-edge', methods=['POST'])
+@jsonify_with_class(GetSnippetsFromEdgeRequest)
+def get_snippets_from_edge(req: GetSnippetsFromEdgeRequest):
     neo4j = get_neo4j_service_dao()
-    snippets_result = neo4j.get_association_snippets(
-        req.from_node,
-        req.to_node,
-        req.association
+    snippets_result = neo4j.get_snippets_from_edge(
+        req.edge,
     )
     return SuccessResponse(result=snippets_result, status_code=200)
 
-@bp.route('/get-snippet-count-for-edges', methods=['POST'])
-@jsonify_with_class(SnippetCountForEdgesRequest)
-def get_snippet_count_for_edges(req: SnippetCountForEdgesRequest):
+@bp.route('/get-snippet-counts-from-edges', methods=['POST'])
+@jsonify_with_class(GetSnippetCountsFromEdgesRequest)
+def get_snippet_count_for_edges(req: GetSnippetCountsFromEdgesRequest):
     neo4j = get_neo4j_service_dao()
-    edge_snippet_count_result = neo4j.get_edge_snippet_counts(
+    edge_snippet_count_result = neo4j.get_snippet_counts_from_edges(
         req.edges,
     )
     return SuccessResponse(edge_snippet_count_result, status_code=200)
