@@ -1,4 +1,4 @@
-from typing import List
+from typing import Dict, List
 
 from werkzeug.datastructures import FileStorage
 
@@ -64,6 +64,7 @@ class UserFileImportService(BaseDao):
         for i in range(0, len(workbook.sheetnames)):
             workbook.active = i
             self.unmerge_cells(workbook.active)
+            # slow doing it eagerly
             # self.strip_leading_and_trailing_spaces(workbook.active)
         print(f'caching {f.filename} as key')
         cache.set(f.filename, workbook)
@@ -123,6 +124,51 @@ class UserFileImportService(BaseDao):
         sheets = FileNameAndSheets(sheets=sheet_list, filename=filename)
         return sheets
 
+    def new_rows_for_delimiters(
+        self,
+        current_ws: Worksheet,
+        delimiters: Dict[int, str],
+    ) -> Worksheet:
+        for mapped_column_idx, delimiter in delimiters.items():
+            column_idx = int(mapped_column_idx)+1  # openpyxl is 1-index based, so add 1 to column index from excel
+            curr_row = 2  # openpyxl is 1-index based, skip header row
+            max_row = len(list(current_ws.rows))
+
+            while curr_row <= max_row:
+                cell_value = current_ws.cell(row=curr_row, column=column_idx).value
+                if cell_value and delimiter in cell_value:
+                    cell_values_splitted = cell_value.split(delimiter)
+                    # create a new row after current one
+                    # for each of the splitted up values
+                    new_row = curr_row+1
+                    for cell_value_split in cell_values_splitted:
+                        current_ws.insert_rows(new_row)
+
+                        # loop through each column and add the values
+                        # to new row using current row value
+                        for i, cell in enumerate(current_ws[new_row]):
+                            curr_working_idx = i+1
+                            if curr_working_idx == column_idx:
+                                cell.value = cell_value_split
+                            else:
+                                cell.value = current_ws.cell(row=curr_row, column=curr_working_idx).value
+                        new_row += 1
+                        # increment max_row for each new row added
+                        max_row += 1
+                    # delete current row since it's values are now copied
+                    # to the new rows
+                    current_ws.delete_rows(curr_row)
+                    # new_row is at next row to work on now
+                    # because it was incremented above
+                    # after last newly created row
+                    # but minus one because deleted current old row
+                    # after copying to new rows
+                    curr_row = new_row - 1
+                else:
+                    curr_row += 1
+        print('Done creating new rows for delimiters')
+        return current_ws
+
     def create_node_mapping(
         self,
         column_mappings: Neo4jColumnMapping,
@@ -135,6 +181,10 @@ class UserFileImportService(BaseDao):
                 break
 
         current_ws = workbook.active
+
+        if column_mappings.delimiters:
+            # delimiters are for current worksheet via column_mappings.sheet_name
+            current_ws = self.new_rows_for_delimiters(current_ws, column_mappings.delimiters)
 
         nodes = []
         max_row = len(list(current_ws.rows))
