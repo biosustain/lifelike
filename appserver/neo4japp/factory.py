@@ -1,7 +1,9 @@
 from flask import current_app, Flask
 from flask_caching import Cache
-
+from flask_httpauth import HTTPTokenAuth
 from werkzeug.utils import find_modules, import_string
+
+from database import db, ma
 
 # Used for registering blueprints
 BLUEPRINT_PACKAGE = __package__ + '.blueprints'
@@ -13,6 +15,10 @@ cache = Cache()
 def create_app(name = 'neo4japp', config = 'config.Development'):
     app = Flask(name)
     app.config.from_object(config)
+
+    db.init_app(app)
+    ma.init_app(app)
+
     register_blueprints(app, BLUEPRINT_PACKAGE)
 
     cache_config = {
