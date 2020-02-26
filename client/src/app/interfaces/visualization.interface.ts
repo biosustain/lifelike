@@ -2,11 +2,6 @@ import { IdType } from 'vis-network';
 
 import { VisEdge, VisNode } from './neo4j.interface';
 
-export interface AssociationData {
-    fromNode: VisNode;
-    toNode: VisNode;
-    association: string;
-}
 
 export interface AssociationSnippet {
     entry1Text: string;
@@ -22,9 +17,12 @@ export interface ClusteredNode {
 }
 
 export interface GetClusterGraphDataResult {
-    labels: string[];
     results: {
-        [key: string]: EdgeSnippetCount;
+        // Node ID
+        [key: number]: {
+            // Edge label : Snippet count
+            [key: string]: number
+        }
     };
 }
 
@@ -39,8 +37,8 @@ export interface GetLabelsResult {
 
 export interface GetSnippetsResult {
     references: AssociationSnippet[];
-    fromNode: VisNode;
-    toNode: VisNode;
+    fromNodeId: number;
+    toNodeId: number;
     association: string;
 }
 
@@ -49,7 +47,7 @@ export interface EdgeSnippetCount {
     count: number;
 }
 
-export interface GetEdgeSnippetCountsResult {
+export interface GetSnippetCountsFromEdgesResult {
     edgeSnippetCounts: EdgeSnippetCount[];
 }
 
