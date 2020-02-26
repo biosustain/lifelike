@@ -28,6 +28,8 @@ Thumbs.db
 
 # ignore db files
 db/*/*
+postgres/
+!postgres/.gitkeep
 
 # ignore node_modules
 client/node_modules

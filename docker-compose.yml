@@ -1,6 +1,17 @@
 version: '3.5'
 
 services:
+    pgdatabase:
+        command: postgres -c max_wal_size=2GB -c log_statement='all'
+        container_name: pg-database
+        image: postgres:10.2
+        networks:
+            - backend
+        ports:
+            - "127.0.0.1:5432:5432"
+        volumes: 
+            -  ./postgres/db:/var/lib/postgresql/data
+
     database:
         container_name: n4j-database
         image: neo4j:3.5.14
@@ -17,11 +28,18 @@ services:
             - "127.0.0.1:5000:5000"
         environment:
             - FLASK_APP=app
+            - POSTGRES_HOST=pgdatabase
+            # Postgres defaults
+            - POSTGRES_PORT=5432
+            - POSTGRES_USER=postgres
+            - POSTGRES_PASSWORD=postgres
+            - POSTGRES_DB=postgres
         networks:
             - frontend
             - backend
         depends_on:
             - database
+            - pgdatabase
         stdin_open: true
         tty: true
 
