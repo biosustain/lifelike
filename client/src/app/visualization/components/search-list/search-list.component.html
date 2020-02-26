@@ -1,5 +1,20 @@
 <div>
-    <mat-card id="search-record" *ngFor="let node of displayResults">
+    <mat-card id="search-metadata-info" *ngIf="totalResultsAmount !== 0; else noResults" class="mat-elevation-z0">
+        <mat-card-title>Displaying results for "{{ searchTerm }}"</mat-card-title>
+        <mat-card-subtitle>About {{ totalResultsAmount }} Results</mat-card-subtitle>
+        <mat-card-actions>
+            <button mat-raised-button color='basic' color='primary' (click)="navigateToVisualizer()">Back to Visualizer</button>
+        </mat-card-actions>
+    </mat-card>
+    <ng-template #noResults>
+        <mat-card *ngIf="showNoResultsWarning">
+            <mat-card-title>No results found for "{{ searchTerm }}"</mat-card-title>
+            <mat-card-actions>
+                <button mat-raised-button color='basic' color='primary' (click)="navigateToVisualizer()">Back to Visualizer</button>
+            </mat-card-actions>
+        </mat-card>
+    </ng-template>
+    <mat-card id="search-record" *ngFor="let node of displayResults" class="mat-elevation-z0">
         <mat-card-title>
             {{ node.label }}
         </mat-card-title>
@@ -11,6 +26,6 @@
         </mat-card-content>
     </mat-card>
     <div id="search-show-more-btn">
-        <button mat-raised-button>Show More</button>
+        <button *ngIf="showMoreVisible" mat-raised-button visClickDebounce (debounceClick)="showMore()">Show More</button>
     </div>
 </div>
