@@ -30,6 +30,7 @@
         fxFlex="1 0"
         placeholder="Select relationship column"
         formControlName="edge"
+        [disabled]="disableRelationshipDropdown"
       >
         <mat-option
           *ngFor="let column of columnHeaders"
@@ -40,10 +41,12 @@
 
     <mat-form-field>
       <input
+        #newRelationshipInput
         matInput
         type="text"
         placeholder="New relationship"
-        formControlName="edge"/>
+        formControlName="edge"
+        (input)="relationshipInputChange()"/>
     </mat-form-field>
 
     <mat-form-field>

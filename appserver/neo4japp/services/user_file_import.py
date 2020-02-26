@@ -227,11 +227,15 @@ class UserFileImportService(BaseDao):
         for relation in column_mappings.relationships:
             curr_row = 2    # openpyxl is 1-indexed based, so don't count header row
             while curr_row <= max_row:
-                # TODO: if edge int key is negative that means user created a new edge
+                # if edge int key is negative that means user created a new edge
                 # TODO: edge property
-                edge_label = current_ws.cell(
-                    row=curr_row,
-                    column=int(next(iter(relation.edge)))+1).value
+                edge_col_idx = int(next(iter(relation.edge)))
+                if edge_col_idx == -1:
+                    edge_label = next(iter(relation.edge.values()))
+                else:
+                    edge_label = current_ws.cell(
+                        row=curr_row,
+                        column=edge_col_idx+1).value
 
                 # need to use node_properties as filter
                 # because unique_property might not be unique
