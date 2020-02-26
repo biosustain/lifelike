@@ -1,5 +1,6 @@
 import attr
 from neo4japp.constants import *
+from neo4japp.models import GraphNode, GraphRelationship
 from neo4japp.util import CamelDictMixin
 
 @attr.s
@@ -63,3 +64,9 @@ class SearchResult(CamelDictMixin):
 @attr.s
 class GraphRequest(SearchResult):
     org_ids: str = attr.ib(default='')
+
+# TODO: Move this into a DTO!
+@attr.s(frozen=True)
+class NodeEdgePair(CamelDictMixin):
+    node: GraphNode = attr.ib()
+    edge: GraphRelationship = attr.ib()

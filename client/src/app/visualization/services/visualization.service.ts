@@ -10,6 +10,8 @@ import {
     GetSnippetsResult,
     Neo4jResults,
     VisEdge,
+    NodeEdgePair,
+    GetReferenceTableDataResult,
 } from 'app/interfaces';
 import { NODE_EXPANSION_LIMIT } from 'app/shared/constants';
 
@@ -67,6 +69,12 @@ export class VisualizationService {
     getSnippetCountsFromEdges(edges: VisEdge[]) {
         return this.http.post<{result: GetSnippetCountsFromEdgesResult}>(
             `${this.visApi}/get-snippet-counts-from-edges`, {edges},
+        ).pipe(map(resp => resp.result));
+    }
+
+    getReferenceTableData(nodeEdgePairs: NodeEdgePair[]) {
+        return this.http.post<{result: GetReferenceTableDataResult}>(
+            `${this.visApi}/get-reference-table-data`, {nodeEdgePairs},
         ).pipe(map(resp => resp.result));
     }
 
