@@ -75,6 +75,18 @@ class GetSnippetsFromEdgeResult(CamelDictMixin):
     association: str = attr.ib()
     references: List[str] = attr.ib()
 
+
+@attr.s(frozen=True)
+class EdgeSnippetCount(CamelDictMixin):
+    edge: GraphRelationship = attr.ib()
+    count: int = attr.ib()
+
+
+@attr.s(frozen=True)
+class GetSnippetCountsFromEdgesResult(CamelDictMixin):
+    edge_snippet_counts: List[EdgeSnippetCount] = attr.ib()
+
+
 class Neo4JService(BaseDao):
     def __init__(self, graph):
         super().__init__(graph)
@@ -180,13 +192,18 @@ class Neo4JService(BaseDao):
             references=[result['references'] for result in data]
         )
 
-    def get_edge_snippet_counts(self, edges: List[GraphRelationship]):
-        result = {'edge_snippet_counts': []}
+    def get_snippet_counts_from_edges(self, edges: List[GraphRelationship]):
+        edge_snippet_counts: List[EdgeSnippetCount] = []
         for edge in edges:
             query = self.get_association_snippet_count_query(edge['from'], edge['to'], edge['label'])
-            count = self.graph.run(query).data()[0]['count']
-            result['edge_snippet_counts'].append({'edge': edge, 'count': count})
-        return snake_to_camel_dict(result, {})
+            count = self.graph.run(query).evaluate()
+            edge_snippet_counts.append(EdgeSnippetCount(
+                edge=edge,
+                count=count,
+            ))
+        return GetSnippetCountsFromEdgesResult(
+            edge_snippet_counts=edge_snippet_counts,
+        )
 
     def get_cluster_graph_data(self, clusteredNodes):
         retval = {

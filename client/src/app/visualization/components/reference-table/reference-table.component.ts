@@ -7,7 +7,7 @@ import { filter, first, switchMap } from 'rxjs/operators';
 
 import { isNullOrUndefined } from 'util';
 
-import { GetEdgeSnippetCountsResult, ReferenceTableRow, VisEdge } from 'app/interfaces';
+import { GetSnippetCountsFromEdgesResult, ReferenceTableRow, VisEdge } from 'app/interfaces';
 
 import { TooltipDetails } from 'app/shared/services/tooltip-control-service';
 import { TooltipComponent } from 'app/shared/components/tooltip/tooltip.component';
@@ -34,7 +34,7 @@ export class ReferenceTableComponent extends TooltipComponent implements OnDestr
 
     subMenus: string[] = ['selected-node-edge-labels-submenu'];
 
-    getEdgeSnippetCountsResult: GetEdgeSnippetCountsResult;
+    getEdgeSnippetCountsResult: GetSnippetCountsFromEdgesResult;
 
     hideReferenceTableSubscription: Subscription;
     updatePopperSubscription: Subscription;
