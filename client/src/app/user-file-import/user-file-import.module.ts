@@ -5,6 +5,7 @@ import { StoreModule } from '@ngrx/store';
 import { SharedModule } from 'app/shared/shared.module';
 
 import { UserFileImportComponent } from './components/user-file-import.component';
+import { UserFileImportColumnDelimiterRowComponent } from './components/user-file-import-column-delimiter-row.component';
 import { UserFileImportColumnMappingComponent } from './components/user-file-import-column-mapping.component';
 import {
     UserFileImportColumnNodePropertyMappingRowComponent } from './components/user-file-import-column-node-property-mapping-row.component';
@@ -25,6 +26,7 @@ import { UserFileImportEffects } from './store/effects';
 
 const components = [
     UserFileImportComponent,
+    UserFileImportColumnDelimiterRowComponent,
     UserFileImportColumnMappingComponent,
     UserFileImportColumnNodePropertyMappingRowComponent,
     UserFileImportColumnRelationshipMapperComponent,

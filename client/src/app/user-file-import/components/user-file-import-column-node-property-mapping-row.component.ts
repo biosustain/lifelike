@@ -2,7 +2,7 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { FormGroup, FormArray } from '@angular/forms';
 import { MatCheckboxChange } from '@angular/material';
 
-import { ColumnNameIndex } from '../../interfaces/user-file-import.interface';
+import { ColumnNameIndex } from 'app/interfaces/user-file-import.interface';
 
 @Component({
   selector: 'app-user-file-import-column-node-property-mapping-row',
