@@ -97,14 +97,6 @@ export class ContextMenuComponent extends TooltipComponent implements OnDestroy 
                 this.groupByRelSubmenuPopper = null;
             }
             this.groupByRelSubmenuPopper = createPopper(contextMenuItem, tooltip, {
-                modifiers: [
-                    {
-                        name: 'offset',
-                        options: {
-                            offset: [0, 0],
-                        },
-                    },
-                ],
                 placement: 'right-start',
             });
         });
@@ -133,6 +125,11 @@ export class ContextMenuComponent extends TooltipComponent implements OnDestroy 
 
     beginSubmenuFade() {
         this.subMenuClass = this.FADEOUT_STYLE;
+    }
+
+    mouseLeaveNodeRow() {
+        // Interrupt showing the submenu if the user hovers away from a node
+        this.contextMenuControlService.interruptGroupByRel();
     }
 
     requestGroupByRelationship(rel: string) {

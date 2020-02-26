@@ -3,7 +3,9 @@ import { Component, OnInit } from '@angular/core';
 import { DataSet } from 'vis-network';
 
 import {
-    AssociationData,
+    ClusteredNode,
+    GetClusterGraphDataResult,
+    GetSnippetsResult,
     GraphNode,
     GraphRelationship,
     Neo4jResults,
@@ -21,13 +23,13 @@ import { VisualizationService } from '../services/visualization.service';
     styleUrls: ['./visualization.component.scss'],
 })
 export class VisualizationComponent implements OnInit {
-
     networkGraphData: Neo4jResults;
     networkGraphConfig: Neo4jGraphConfig;
+    getSnippetsResult: GetSnippetsResult;
+    getClusterGraphDataResult: GetClusterGraphDataResult;
     nodes: DataSet<VisNode | GraphNode>;
     edges: DataSet<VisEdge | GraphNode>;
 
-    // NOTE: May use this as input to a legend component in the future.
     legend: Map<string, string[]>;
 
     constructor(private visService: VisualizationService) {
@@ -43,6 +45,8 @@ export class VisualizationComponent implements OnInit {
             this.nodes = new DataSet(this.networkGraphData.nodes);
             this.edges = new DataSet(this.networkGraphData.edges);
         });
+
+        this.getSnippetsResult = null;
 
         this.networkGraphConfig = {
             interaction: {
@@ -145,16 +149,15 @@ export class VisualizationComponent implements OnInit {
         });
     }
 
-    getSentences(association: AssociationData) {
-        this.visService.getSentences(association).subscribe((result) => {
-            if (result.length === 0) {
-                console.log('No matching sentences found for this association');
-            }
-            result.forEach(associationSentence => {
-                if (associationSentence) {
-                    console.log(associationSentence.sentence);
-                }
-            });
+    getSnippetsFromEdge(edge: VisEdge) {
+        this.visService.getSnippetsFromEdge(edge).subscribe((result) => {
+            this.getSnippetsResult = result;
+        });
+    }
+
+    getClusterGraphData(clusteredNodes: ClusteredNode[]) {
+        this.visService.getClusterGraphData(clusteredNodes).subscribe((result) => {
+            this.getClusterGraphDataResult = result;
         });
     }
 
