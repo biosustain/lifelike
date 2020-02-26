@@ -64,6 +64,7 @@ class Neo4jColumnMapping(CamelDictMixin):
     new_nodes: List[Neo4jNodeMapping] = attr.ib(default=attr.Factory(list))
     existing_nodes: List[Neo4jNodeMapping] = attr.ib(default=attr.Factory(list))
     relationships: List[Neo4jRelationshipMapping] = attr.ib(default=attr.Factory(list))
+    delimiters: Dict[int, str] = attr.ib(default=attr.Factory(dict))
 
 
 @attr.s(frozen=True)
