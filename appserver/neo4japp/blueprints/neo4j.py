@@ -34,11 +34,13 @@ class GetSnippetsFromEdgeRequest(CamelDictMixin):
 class GetSnippetCountsFromEdgesRequest(CamelDictMixin):
     edges: List[GraphRelationship] = attr.ib()
 
+# TODO: Add this to DTO file
 @attr.s(frozen=True)
 class ClusteredNode(CamelDictMixin):
     node_id: int = attr.ib()
     edges: List[GraphRelationship] = attr.ib()
 
+# TODO: Add this to DTO file
 @attr.s(frozen=True)
 class GetGraphDataForClusterRequest(CamelDictMixin):
     clustered_nodes: List[ClusteredNode] = attr.ib()

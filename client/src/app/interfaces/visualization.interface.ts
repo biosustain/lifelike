@@ -17,9 +17,12 @@ export interface ClusteredNode {
 }
 
 export interface GetClusterGraphDataResult {
-    labels: string[];
     results: {
-        [key: string]: EdgeSnippetCount;
+        // Node ID
+        [key: number]: {
+            // Edge label : Snippet count
+            [key: string]: number
+        }
     };
 }
 

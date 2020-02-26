@@ -87,6 +87,11 @@ class GetSnippetCountsFromEdgesResult(CamelDictMixin):
     edge_snippet_counts: List[EdgeSnippetCount] = attr.ib()
 
 
+@attr.s(frozen=True)
+class GetClusterGraphDataResult(CamelDictMixin):
+    results: Dict[int, Dict[str, int]] = attr.ib()
+
+
 class Neo4JService(BaseDao):
     def __init__(self, graph):
         super().__init__(graph)
@@ -205,25 +210,22 @@ class Neo4JService(BaseDao):
             edge_snippet_counts=edge_snippet_counts,
         )
 
-    def get_cluster_graph_data(self, clusteredNodes):
-        retval = {
-            'labels': set(),
-            'results': dict()
-        }
+    def get_cluster_graph_data(self, clustered_nodes):
+        results: Dict[int, Dict[str, int]] = dict()
 
-        for node in clusteredNodes:
+        for node in clustered_nodes:
             for edge in node.edges:
-                retval['labels'].add(edge['label'])
                 query = self.get_association_snippet_count_query(edge['from'], edge['to'], edge['label'])
-                count = self.graph.run(query).data()[0]['count']
+                count = self.graph.run(query).evaluate()
 
-                if (retval['results'].get(node.node_id, None) is not None):
-                    retval['results'][node.node_id][edge['label']] = count
+                if (results.get(node.node_id, None) is not None):
+                    results[node.node_id][edge['label']] = count
                 else:
-                    retval['results'][node.node_id] = {edge['label']: count}
+                    results[node.node_id] = {edge['label']: count}
 
-        retval['labels'] = list(retval['labels'])
-        return snake_to_camel_dict(retval, {})
+        return GetClusterGraphDataResult(
+            results=results,
+        )
 
     def load_reaction_graph(self, biocyc_id: str):
         query = self.get_reaction_query(biocyc_id)

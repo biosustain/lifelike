@@ -13,11 +13,13 @@ import { isNullOrUndefined } from 'util';
 export class SidenavClusterViewComponent implements OnInit {
     @Input() clusterEntity: SidenavClusterEntity;
 
+    labels: string[] = [];
     clusterDataChart: Highcharts.Chart;
 
     constructor() {}
 
     ngOnInit() {
+        this.getAllLabels();
         this.clusterDataChart = Highcharts.chart({
             chart: {
                 renderTo: 'container',
@@ -28,7 +30,7 @@ export class SidenavClusterViewComponent implements OnInit {
                 text: 'Associations'
             },
             xAxis: {
-                categories: this.clusterEntity.clusterGraphData.labels
+                categories: this.labels,
             },
             yAxis: {
                 title: {
@@ -52,11 +54,19 @@ export class SidenavClusterViewComponent implements OnInit {
         });
     }
 
+    getAllLabels() {
+        Object.keys(this.clusterEntity.clusterGraphData.results).forEach(nodeId => {
+            this.labels = this.labels.concat(
+                Object.keys(this.clusterEntity.clusterGraphData.results[nodeId]).filter(edgeLabel => !this.labels.includes(edgeLabel))
+            );
+        });
+    }
+
     getDataForNode(node: VisNode) {
-        const data = new Array<number>(this.clusterEntity.clusterGraphData.labels.length);
+        const data = new Array<number>(this.labels.length);
         const countDataForNode = this.clusterEntity.clusterGraphData.results[node.id];
 
-        this.clusterEntity.clusterGraphData.labels.forEach((label, index) => {
+        this.labels.forEach((label, index) => {
             if (!isNullOrUndefined(countDataForNode[label])) {
                 data[index] = countDataForNode[label];
             } else {
