@@ -3,7 +3,7 @@ from flask import current_app, request, Response, json, Blueprint
 import jwt
 
 from neo4japp.database import db
-from neo4japp.models import AppUser
+from neo4japp.models.drawing_tool import AppUser
 
 bp = Blueprint('login', __name__)
 
