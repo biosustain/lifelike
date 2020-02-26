@@ -35,6 +35,13 @@ import { uuidv4 } from 'app/shared/utils';
 import { ContextMenuControlService } from '../../services/context-menu-control.service';
 import { ReferenceTableControlService } from '../../services/reference-table-control.service';
 
+enum SidenavEntityType {
+    EMPTY,
+    NODE,
+    EDGE,
+    CLUSTER,
+}
+
 @Component({
     selector: 'app-visualization-canvas',
     templateUrl: './visualization-canvas.component.html',
@@ -50,7 +57,7 @@ export class VisualizationCanvasComponent implements OnInit {
     @Input() edges: DataSet<any, any>;
     @Input() set getSnippetsResult(result: GetSnippetsResult) {
         if (!isNullOrUndefined(result)) {
-            this.sidenavEntityType = 'edge';
+            this.sidenavEntityType = SidenavEntityType.EDGE;
             this.sidenavEntity = {
                 to: this.nodes.get(result.toNodeId) as VisNode,
                 from: this.nodes.get(result.fromNodeId) as VisNode,
@@ -61,7 +68,7 @@ export class VisualizationCanvasComponent implements OnInit {
     }
     @Input() set getClusterGraphDataResult(result: GetClusterGraphDataResult) {
         if (!isNullOrUndefined(result)) {
-            this.sidenavEntityType = 'cluster';
+            this.sidenavEntityType = SidenavEntityType.CLUSTER;
             this.sidenavEntity = {
                 data: null,
                 includes: Object.keys(result.results).map(nodeId => this.nodes.get(parseInt(nodeId, 10))),
@@ -73,9 +80,12 @@ export class VisualizationCanvasComponent implements OnInit {
     @Input() config: Neo4jGraphConfig;
     @Input() legend: Map<string, string[]>;
 
+    // Need to create a reference to the enum so we can use it in the template
+    sidenavEntityTypeEnum = SidenavEntityType;
+
     userOpenedSidenav: boolean;
     sidenavEntity: SidenavEntity;
-    sidenavEntityType: string;
+    sidenavEntityType: SidenavEntityType;
 
     networkGraph: Network;
     selectedNodes: IdType[];
@@ -95,7 +105,7 @@ export class VisualizationCanvasComponent implements OnInit {
     ) {
         this.userOpenedSidenav = false;
         this.sidenavEntity = null;
-        this.sidenavEntityType = 'null';
+        this.sidenavEntityType = SidenavEntityType.EMPTY;
 
         this.selectedNodes = [];
         this.selectedEdges = [];
@@ -418,7 +428,7 @@ export class VisualizationCanvasComponent implements OnInit {
                     data: node,
                     edges: this.networkGraph.getConnectedEdges(node.id).map(edgeId => this.edges.get(edgeId))
                 } as SidenavNodeEntity;
-                this.sidenavEntityType = 'node';
+                this.sidenavEntityType = SidenavEntityType.NODE;
             }
         } else if (this.selectedNodes.length === 0 && this.selectedEdges.length === 1) {
             const edge = this.edges.get(this.selectedEdges[0]) as VisEdge;
