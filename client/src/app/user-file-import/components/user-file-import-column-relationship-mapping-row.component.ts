@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter} from '@angular/core';
+import { Component, Input, Output, EventEmitter, ViewChild, ElementRef} from '@angular/core';
 import { FormGroup } from '@angular/forms';
 import { MatSelectChange } from '@angular/material';
 
@@ -11,8 +11,8 @@ import { State } from '../../root-store';
 import { getNodeProperties } from '../store/actions';
 
 @Component({
-  selector: 'app-user-file-import-column-relationship-mapping-row',
-  templateUrl: 'user-file-import-column-relationship-mapping-row.component.html'
+    selector: 'app-user-file-import-column-relationship-mapping-row',
+    templateUrl: 'user-file-import-column-relationship-mapping-row.component.html'
 })
 export class UserFileImportColumnRelationshipMappingRowComponent {
     @Input() columnHeaders: ColumnNameIndex[];
@@ -22,16 +22,25 @@ export class UserFileImportColumnRelationshipMappingRowComponent {
 
     @Output() deleteMapping: EventEmitter<boolean>;
 
+    @ViewChild('newRelationshipInput', {static: false}) newRelationshipInput: ElementRef;
+
+    disableRelationshipDropdown: boolean;
+
     constructor(private store: Store<State>) {
-      this.deleteMapping = new EventEmitter<boolean>();
+        this.deleteMapping = new EventEmitter<boolean>();
+        this.disableRelationshipDropdown = false;
     }
 
     deleteMappingRow() {
-      this.deleteMapping.emit(true);
+        this.deleteMapping.emit(true);
     }
 
     selectExistingNodeType(event: MatSelectChange) {
-      this.store.dispatch(getNodeProperties({payload: event.value}));
+        this.store.dispatch(getNodeProperties({payload: event.value}));
+    }
+
+    relationshipInputChange() {
+        this.disableRelationshipDropdown = (this.newRelationshipInput.nativeElement as HTMLInputElement).value ? true : false;
     }
 }
 
