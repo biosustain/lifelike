@@ -23,11 +23,11 @@ class ExpandNodeRequest(CamelDictMixin):
     node_id: int = attr.ib()
     limit: int = attr.ib()
 
+# TODO: Add this to DTO file
 @attr.s(frozen=True)
-class AssociationSnippetsRequest(CamelDictMixin):
-    from_node: int = attr.ib()
-    to_node: int = attr.ib()
-    association: str = attr.ib()
+class GetSnippetsFromEdgeRequest(CamelDictMixin):
+    # TODO: Create a VisNode/VisEdge class similar to what we have on the frontend
+    edge: GraphRelationship = attr.ib()
 
 @attr.s(frozen=True)
 class SnippetCountForEdgesRequest(CamelDictMixin):
@@ -95,14 +95,12 @@ def expand_graph_node(req: ExpandNodeRequest):
     node = neo4j.expand_graph(req.node_id, req.limit)
     return SuccessResponse(result=node, status_code=200)
 
-@bp.route('/get-snippets', methods=['POST'])
-@jsonify_with_class(AssociationSnippetsRequest)
-def get_association_snippets(req: AssociationSnippetsRequest):
+@bp.route('/get-snippets-from-edge', methods=['POST'])
+@jsonify_with_class(GetSnippetsFromEdgeRequest)
+def get_snippets_from_edge(req: GetSnippetsFromEdgeRequest):
     neo4j = get_neo4j_service_dao()
-    snippets_result = neo4j.get_association_snippets(
-        req.from_node,
-        req.to_node,
-        req.association
+    snippets_result = neo4j.get_snippets_from_edge(
+        req.edge,
     )
     return SuccessResponse(result=snippets_result, status_code=200)
 

@@ -15,7 +15,6 @@ import { isNullOrUndefined } from 'util';
 import { Network, DataSet, IdType } from 'vis-network';
 
 import {
-    AssociationData,
     ClusteredNode,
     GetClusterGraphDataResult,
     GetLabelsResult,
@@ -44,7 +43,7 @@ import { ReferenceTableControlService } from '../../services/reference-table-con
 })
 export class VisualizationCanvasComponent implements OnInit {
     @Output() expandNode = new EventEmitter<number>();
-    @Output() getSnippets = new EventEmitter<AssociationData>();
+    @Output() getSnippetsFromEdge = new EventEmitter<VisEdge>();
     @Output() getClusterGraphData = new EventEmitter<ClusteredNode[]>();
 
     @Input() nodes: DataSet<any, any>;
@@ -53,8 +52,8 @@ export class VisualizationCanvasComponent implements OnInit {
         if (!isNullOrUndefined(result)) {
             this.sidenavEntityType = 'edge';
             this.sidenavEntity = {
-                to: this.nodes.get(result.toNode) as VisNode,
-                from: this.nodes.get(result.fromNode) as VisNode,
+                to: this.nodes.get(result.toNodeId) as VisNode,
+                from: this.nodes.get(result.fromNodeId) as VisNode,
                 association: result.association,
                 references: result.references,
              } as SidenavEdgeEntity;
@@ -391,16 +390,11 @@ export class VisualizationCanvasComponent implements OnInit {
     }
 
     /**
-     * Opens the metadata sidebar for with the input node's data
-     * TODO: the sidebar isn't implemented yet, so just printing the node data for now.
-     * @param referenceTableSelection represents a row in the reference table, contains node data and edge label
+     * Opens the metadata sidebar with the input node's data
+     * @param edge represents a non-cluster edge on the canvas
      */
     getAssociationsWithEdge(edge: VisEdge) {
-        this.getSnippets.emit({
-                fromNode: edge.from,
-                toNode: edge.to,
-                association: edge.label,
-        } as AssociationData);
+        this.getSnippetsFromEdge.emit(edge);
     }
 
     updateSidebarEntity() {
