@@ -32,6 +32,7 @@ class SearchService(BaseDao):
         return '{q}'.format(q=cypher.cypher_escape(query))
 
     def fulltext_search(self, term: str, page: int = 1, limit: int = 10) -> FTSResult:
+
         query_term = self._fulltext_query_sanitizer(term)
         if not query_term:
             return dict(nodes=[], edges=[])
@@ -39,12 +40,13 @@ class SearchService(BaseDao):
             CALL db.index.fulltext.queryNodes("namesEvidenceAndId", $search_term)
             YIELD node, score
             RETURN ID(node) as id, node, score
-            SKIP $page
+            SKIP $amount
             LIMIT $limit
         """
+
         records = self.graph.run(
             cypher_query,
-            parameters={'page': page - 1,
+            parameters={'amount': (page - 1) * limit,
                         'limit': limit,
                         'search_term': query_term,
                         }).data()

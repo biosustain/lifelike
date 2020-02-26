@@ -11,12 +11,14 @@ bp = Blueprint('search', __name__, url_prefix='/search')
 @attr.s(frozen=True)
 class SearchRequest(CamelDictMixin):
     query: str = attr.ib()
+    page: int = attr.ib()
+    limit: int = attr.ib()
 
 @bp.route('/search', methods=['POST'])
 @jsonify_with_class(SearchRequest)
 def fulltext_search(req: SearchRequest):
     search_dao = get_search_service_dao()
-    results = search_dao.fulltext_search(req.query)
+    results = search_dao.fulltext_search(req.query, req.page, req.limit)
     return SuccessResponse(result=results, status_code=200)
 
 # // TODO: Re-enable once we have a proper predictive/autocomplete implemented
