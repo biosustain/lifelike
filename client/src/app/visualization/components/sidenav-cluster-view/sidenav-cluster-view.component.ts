@@ -12,9 +12,11 @@ import { isNullOrUndefined } from 'util';
 })
 export class SidenavClusterViewComponent implements OnInit {
     @Input() set clusterEntity(clusterEntity: SidenavClusterEntity) {
+        this.getAllLabels();
         this.createChart(clusterEntity);
     }
 
+    labels: string[] = [];
     clusterDataChart: Highcharts.Chart;
 
     constructor() {}
@@ -34,7 +36,7 @@ export class SidenavClusterViewComponent implements OnInit {
                 text: 'Associations'
             },
             xAxis: {
-                categories: clusterEntity.clusterGraphData.labels
+                categories: this.labels,
             },
             yAxis: {
                 title: {
@@ -52,17 +54,25 @@ export class SidenavClusterViewComponent implements OnInit {
                 return {
                     type: 'bar',
                     name: node.displayName,
-                    data: this.getDataForNode(node, clusterEntity),
+                    data: this.getDataForNode(node),
                 };
             })
         });
     }
 
-    getDataForNode(node: VisNode, clusterEntity: SidenavClusterEntity) {
-        const data = new Array<number>(clusterEntity.clusterGraphData.labels.length);
-        const countDataForNode = clusterEntity.clusterGraphData.results[node.id];
+    getAllLabels() {
+        Object.keys(this.clusterEntity.clusterGraphData.results).forEach(nodeId => {
+            this.labels = this.labels.concat(
+                Object.keys(this.clusterEntity.clusterGraphData.results[nodeId]).filter(edgeLabel => !this.labels.includes(edgeLabel))
+            );
+        });
+    }
 
-        clusterEntity.clusterGraphData.labels.forEach((label, index) => {
+    getDataForNode(node: VisNode) {
+        const data = new Array<number>(this.labels.length);
+        const countDataForNode = this.clusterEntity.clusterGraphData.results[node.id];
+
+        this.labels.forEach((label, index) => {
             if (!isNullOrUndefined(countDataForNode[label])) {
                 data[index] = countDataForNode[label];
             } else {
