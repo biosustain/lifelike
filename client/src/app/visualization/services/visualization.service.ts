@@ -4,7 +4,6 @@ import { HttpClient } from '@angular/common/http';
 import { map } from 'rxjs/operators';
 
 import {
-    AssociationData,
     ClusteredNode,
     GetClusterGraphDataResult,
     GetEdgeSnippetCountsResult,
@@ -59,9 +58,9 @@ export class VisualizationService {
         ).pipe(map(resp => resp.result));
     }
 
-    getSnippets(association: AssociationData) {
+    getSnippetsFromEdge(edge: VisEdge) {
         return this.http.post<{result: GetSnippetsResult}>(
-            `${this.visApi}/get-snippets`, {...association},
+            `${this.visApi}/get-snippets-from-edge`, {edge},
         ).pipe(map(resp => resp.result));
     }
 

@@ -68,6 +68,13 @@ class Neo4jColumnMapping(CamelDictMixin):
     relationship: Optional[Neo4jRelationshipMapping] = attr.ib(default=None)
 
 
+@attr.s(frozen=True)
+class GetSnippetsFromEdgeResult(CamelDictMixin):
+    from_node_id: int = attr.ib()
+    to_node_id: int = attr.ib()
+    association: str = attr.ib()
+    references: List[str] = attr.ib()
+
 class Neo4JService(BaseDao):
     def __init__(self, graph):
         super().__init__(graph)
@@ -162,15 +169,16 @@ class Neo4JService(BaseDao):
         query = self.get_expand_query(node_id, limit)
         return self._query_neo4j(query)
 
-    def get_association_snippets(self, from_node: int, to_node: int, association: str):
-        query = self.get_association_snippets_query(from_node, to_node, association)
+    def get_snippets_from_edge(self, edge: GraphRelationship):
+        query = self.get_snippets_from_edge_query(edge['from'], edge['to'], edge['label'])
+
         data = self.graph.run(query).data()
-        return snake_to_camel_dict(dict(
-            from_node=from_node,
-            to_node=to_node,
-            association=association,
+        return GetSnippetsFromEdgeResult(
+            from_node_id=edge['from'],
+            to_node_id=edge['to'],
+            association=edge['label'],
             references=[result['references'] for result in data]
-        ), {})
+        )
 
     def get_edge_snippet_counts(self, edges: List[GraphRelationship]):
         result = {'edge_snippet_counts': []}
@@ -319,9 +327,7 @@ class Neo4JService(BaseDao):
         """.format(node_id, limit)
         return query
 
-    # TODO: Need to make a solid version of this query, not sure the current
-    # iteration will work 100% of the time
-    def get_association_snippets_query(self, from_node: int, to_node: int, association: str):
+    def get_snippets_from_edge_query(self, from_node: int, to_node: int, association: str):
         query = """
             MATCH (f)-[:HAS_ASSOCIATION]->(a:Association)-[:HAS_ASSOCIATION]->(t)
             WHERE ID(f)={} AND ID(t)={} AND a.description='{}'
