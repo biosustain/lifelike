@@ -1,6 +1,6 @@
-<app-visualization-search (selectedResult)="updateCanvasWithSingleNode($event)"></app-visualization-search>
+<app-visualization-search (selectedResult)="updateCanvasWithSingleNode($event)" (navigateBack)="hideCanvas($event)" (searchSubmitted)="hideCanvas($event)"></app-visualization-search>
 <app-visualization-canvas
-  *ngIf="networkGraphData"
+  *ngIf="networkGraphData && !hideDisplay"
   [nodes]="nodes"
   [edges]="edges"
   [legend]="legend"
@@ -8,3 +8,4 @@
   (expandNode)="expandNode($event)"
   (getSentences)="getSentences($event)"
 ></app-visualization-canvas>
+

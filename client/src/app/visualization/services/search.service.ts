@@ -13,9 +13,9 @@ export class SearchService {
 
     constructor(private http: HttpClient) {}
 
-    fullTextSearch(query: string) {
+    fullTextSearch(query: string, page: number = 1, limit: number = 10) {
         return this.http.post<{result: FTSResult}>(
-            `${this.searchApi}/search`, {query},
+            `${this.searchApi}/search`, {query, page, limit},
         ).pipe(map(resp => resp.result));
     }
 
