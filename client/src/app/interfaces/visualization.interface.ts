@@ -45,7 +45,7 @@ export interface EdgeSnippetCount {
     count: number;
 }
 
-export interface GetEdgeSnippetCountsResult {
+export interface GetSnippetCountsFromEdgesResult {
     edgeSnippetCounts: EdgeSnippetCount[];
 }
 

@@ -6,7 +6,7 @@ import { map } from 'rxjs/operators';
 import {
     ClusteredNode,
     GetClusterGraphDataResult,
-    GetEdgeSnippetCountsResult,
+    GetSnippetCountsFromEdgesResult,
     GetSnippetsResult,
     Neo4jResults,
     VisEdge,
@@ -64,9 +64,9 @@ export class VisualizationService {
         ).pipe(map(resp => resp.result));
     }
 
-    getSnippetCountForEdges(edges: VisEdge[]) {
-        return this.http.post<{result: GetEdgeSnippetCountsResult}>(
-            `${this.visApi}/get-snippet-count-for-edges`, {edges},
+    getSnippetCountsFromEdges(edges: VisEdge[]) {
+        return this.http.post<{result: GetSnippetCountsFromEdgesResult}>(
+            `${this.visApi}/get-snippet-counts-from-edges`, {edges},
         ).pipe(map(resp => resp.result));
     }
 

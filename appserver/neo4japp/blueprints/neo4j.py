@@ -29,8 +29,9 @@ class GetSnippetsFromEdgeRequest(CamelDictMixin):
     # TODO: Create a VisNode/VisEdge class similar to what we have on the frontend
     edge: GraphRelationship = attr.ib()
 
+# TODO: Add this to DTO file
 @attr.s(frozen=True)
-class SnippetCountForEdgesRequest(CamelDictMixin):
+class GetSnippetCountsFromEdgesRequest(CamelDictMixin):
     edges: List[GraphRelationship] = attr.ib()
 
 @attr.s(frozen=True)
@@ -104,11 +105,11 @@ def get_snippets_from_edge(req: GetSnippetsFromEdgeRequest):
     )
     return SuccessResponse(result=snippets_result, status_code=200)
 
-@bp.route('/get-snippet-count-for-edges', methods=['POST'])
-@jsonify_with_class(SnippetCountForEdgesRequest)
-def get_snippet_count_for_edges(req: SnippetCountForEdgesRequest):
+@bp.route('/get-snippet-counts-from-edges', methods=['POST'])
+@jsonify_with_class(GetSnippetCountsFromEdgesRequest)
+def get_snippet_count_for_edges(req: GetSnippetCountsFromEdgesRequest):
     neo4j = get_neo4j_service_dao()
-    edge_snippet_count_result = neo4j.get_edge_snippet_counts(
+    edge_snippet_count_result = neo4j.get_snippet_counts_from_edges(
         req.edges,
     )
     return SuccessResponse(edge_snippet_count_result, status_code=200)

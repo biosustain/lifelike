@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { Subject, Observable, race, interval } from 'rxjs';
 import { mapTo, first } from 'rxjs/operators';
 
-import { VisEdge, GetEdgeSnippetCountsResult } from 'app/interfaces';
+import { VisEdge, GetSnippetCountsFromEdgesResult } from 'app/interfaces';
 import { TooltipControlService } from 'app/shared/services/tooltip-control-service';
 
 import { VisualizationService } from './visualization.service';
@@ -13,12 +13,12 @@ export class ReferenceTableControlService extends TooltipControlService {
     delayEdgeMenuSource = new Subject<boolean>();
     interruptEdgeMenuSource = new Subject<boolean>();
     showReferenceTableResultSource = new Subject<boolean>();
-    associationCountForEdgesSource = new Subject<GetEdgeSnippetCountsResult>();
+    associationCountForEdgesSource = new Subject<GetSnippetCountsFromEdgesResult>();
 
     delayEdgeMenu$: Observable<boolean>;
     interruptEdgeMenu$: Observable<boolean>;
     showReferenceTableResult$: Observable<boolean>;
-    associationCountForEdges$: Observable<GetEdgeSnippetCountsResult>;
+    associationCountForEdges$: Observable<GetSnippetCountsFromEdgesResult>;
 
     constructor(
         private visService: VisualizationService,
@@ -49,6 +49,6 @@ export class ReferenceTableControlService extends TooltipControlService {
     }
 
     getAssociationCountForEdges(edges: VisEdge[]) {
-        this.visService.getSnippetCountForEdges(edges).subscribe(result => this.associationCountForEdgesSource.next(result));
+        this.visService.getSnippetCountsFromEdges(edges).subscribe(result => this.associationCountForEdgesSource.next(result));
     }
 }
