@@ -35,7 +35,7 @@ class SearchService(BaseDao):
 
         query_term = self._fulltext_query_sanitizer(term)
         if not query_term:
-            return dict(nodes=[], edges=[])
+             return FTSResult(query_term, [], 0, page, limit)
         cypher_query = """
             CALL db.index.fulltext.queryNodes("namesEvidenceAndId", $search_term)
             YIELD node, score
