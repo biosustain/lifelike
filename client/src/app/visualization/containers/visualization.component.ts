@@ -3,7 +3,6 @@ import { Component, OnInit } from '@angular/core';
 import { DataSet } from 'vis-network';
 
 import {
-    AssociationData,
     ClusteredNode,
     GetClusterGraphDataResult,
     GetSnippetsResult,
@@ -150,8 +149,8 @@ export class VisualizationComponent implements OnInit {
         });
     }
 
-    getSnippets(association: AssociationData) {
-        this.visService.getSnippets(association).subscribe((result) => {
+    getSnippetsFromEdge(edge: VisEdge) {
+        this.visService.getSnippetsFromEdge(edge).subscribe((result) => {
             this.getSnippetsResult = result;
         });
     }

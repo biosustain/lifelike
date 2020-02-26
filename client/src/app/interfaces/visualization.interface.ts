@@ -2,11 +2,6 @@ import { IdType } from 'vis-network';
 
 import { VisEdge, VisNode } from './neo4j.interface';
 
-export interface AssociationData {
-    fromNode: number;
-    toNode: number;
-    association: string;
-}
 
 export interface AssociationSnippet {
     entry1Text: string;
@@ -40,8 +35,8 @@ export interface GetLabelsResult {
 
 export interface GetSnippetsResult {
     references: AssociationSnippet[];
-    fromNode: number;
-    toNode: number;
+    fromNodeId: number;
+    toNodeId: number;
     association: string;
 }
 
