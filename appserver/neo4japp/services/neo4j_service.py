@@ -5,6 +5,7 @@ from typing import Dict, List, NamedTuple, Optional, Union
 from py2neo import cypher, NodeMatcher, RelationshipMatcher
 from werkzeug.datastructures import FileStorage
 
+from neo4japp.blueprints import NodeEdgePair
 from neo4japp.services.common import BaseDao
 from neo4japp.models import GraphNode, GraphRelationship
 from neo4japp.constants import *
@@ -91,6 +92,15 @@ class GetSnippetCountsFromEdgesResult(CamelDictMixin):
 class GetClusterGraphDataResult(CamelDictMixin):
     results: Dict[int, Dict[str, int]] = attr.ib()
 
+@attr.s(frozen=True)
+class ReferenceTableRow(CamelDictMixin):
+    node_display_name: str = attr.ib()
+    snippet_count: int = attr.ib()
+    edge: GraphRelationship = attr.ib()
+
+@attr.s(frozen=True)
+class GetReferenceTableDataResult(CamelDictMixin):
+    reference_table_rows: List[ReferenceTableRow] = attr.ib()
 
 class Neo4JService(BaseDao):
     def __init__(self, graph):
@@ -208,6 +218,24 @@ class Neo4JService(BaseDao):
             ))
         return GetSnippetCountsFromEdgesResult(
             edge_snippet_counts=edge_snippet_counts,
+        )
+
+    # TODO: Use DuplicateNodeEdgePair here (and with the other services that expect duplicates)?
+    def get_reference_table_data(self, node_edge_pairs: List[NodeEdgePair]):
+        reference_table_rows: List[ReferenceTableRow] = []
+        for pair in node_edge_pairs:
+            node = pair.node
+            edge = pair.edge
+
+            query = self.get_association_snippet_count_query(edge['original_from'], edge['original_to'], edge['label'])
+            count = self.graph.run(query).data()[0]['count']
+            reference_table_rows.append(ReferenceTableRow(
+                node_display_name=node['display_name'],
+                snippet_count=count,
+                edge=edge,
+            ))
+        return GetReferenceTableDataResult(
+            reference_table_rows=reference_table_rows
         )
 
     def get_cluster_graph_data(self, clustered_nodes):

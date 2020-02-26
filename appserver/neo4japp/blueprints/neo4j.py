@@ -4,7 +4,7 @@ from typing import Dict, List
 
 from flask import Blueprint
 from werkzeug.datastructures import FileStorage
-from neo4japp.blueprints import GraphRequest
+from neo4japp.blueprints import GraphRequest, NodeEdgePair
 from neo4japp.constants import *
 from neo4japp.database import get_neo4j_service_dao
 from neo4japp.models import GraphNode, GraphRelationship
@@ -35,6 +35,10 @@ class GetSnippetCountsFromEdgesRequest(CamelDictMixin):
     edges: List[GraphRelationship] = attr.ib()
 
 # TODO: Add this to DTO file
+@attr.s(frozen=True)
+class ReferenceTableDataRequest(CamelDictMixin):
+    node_edge_pairs: List[NodeEdgePair] = attr.ib()
+
 @attr.s(frozen=True)
 class ClusteredNode(CamelDictMixin):
     node_id: int = attr.ib()
@@ -115,6 +119,15 @@ def get_snippet_count_for_edges(req: GetSnippetCountsFromEdgesRequest):
         req.edges,
     )
     return SuccessResponse(edge_snippet_count_result, status_code=200)
+
+@bp.route('/get-reference-table-data', methods=['POST'])
+@jsonify_with_class(ReferenceTableDataRequest)
+def get_reference_table_data(req: ReferenceTableDataRequest):
+    neo4j = get_neo4j_service_dao()
+    reference_table_data = neo4j.get_reference_table_data(
+        req.node_edge_pairs,
+    )
+    return SuccessResponse(reference_table_data, status_code=200)
 
 @bp.route('/get-cluster-graph-data', methods=['POST'])
 @jsonify_with_class(GetGraphDataForClusterRequest)

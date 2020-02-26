@@ -64,6 +64,9 @@ export interface GraphRelationship {
   from: number;
 }
 
+// TODO: Could extend these into DuplicateVisNode and DuplicateVisEdge...would probably
+// be clearer, and we can extend this idea to the backend.
+
 /** VisJS Node Representations for Client */
 export interface VisNode extends GraphNode {
   primaryLabel?: string; // Label to display in VisJS

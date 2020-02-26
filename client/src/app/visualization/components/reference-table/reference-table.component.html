@@ -1,8 +1,13 @@
 <table id="root-table" [ngClass]="referenceTableClass">
-  <!-- Showing TEMP data right now, will add actual data soon-->
-  <tr id="{{'reference-table-node-' + row.node.id }}" class="reference-table-row" *ngFor="let row of referenceTableData; let i = index" (click)="getAssociationsWithEdge(row.edge)">
-    <td class="entity-name-container">{{row.node.displayName}}</td>
-    <td class="snippet-count-container">({{i}})</td>
-    <td><div class="snippet-bar-repr" style.width="{{i * 5}}px"></div></td>
+  <tr class="reference-table-row" *ngFor="let row of referenceTableRows; let i = index" (click)="getAssociationsWithEdge(row.edge)">
+    <td class="entity-name-container">{{row.nodeDisplayName}}</td>
+    <td class="snippet-count-container">
+      <div *ngIf="row.snippetCount <= 20">({{row.snippetCount}})</div>
+      <div *ngIf="row.snippetCount > 20">20+</div>
+    </td>
+    <td class="snippet-bar-container">
+      <div *ngIf="row.snippetCount <= 20" class="snippet-bar-repr" style.width="{{row.snippetCount * 5}}px"></div>
+      <div *ngIf="row.snippetCount > 20" class="snippet-bar-repr" style="width: 100px;"></div>
+    </td> <!-- Need to normalize this! -->
   </tr>
 </table>

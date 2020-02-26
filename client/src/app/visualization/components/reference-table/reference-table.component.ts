@@ -2,7 +2,9 @@ import { Component, Input, Output, EventEmitter, OnDestroy, OnInit } from '@angu
 
 import { Subscription } from 'rxjs';
 
-import { NodeEdgePair, VisEdge } from 'app/interfaces';
+import { isNullOrUndefined } from 'util';
+
+import { NodeEdgePair, VisEdge, ReferenceTableRow } from 'app/interfaces';
 
 import { TooltipDetails } from 'app/shared/services/tooltip-control-service';
 import { TooltipComponent } from 'app/shared/components/tooltip/tooltip.component';
@@ -15,9 +17,19 @@ import { ReferenceTableControlService } from '../../services/reference-table-con
   styleUrls: ['./reference-table.component.scss']
 })
 export class ReferenceTableComponent extends TooltipComponent implements OnDestroy, OnInit {
-    @Input() referenceTableData: NodeEdgePair[];
+    @Input() set referenceTableData(tableData: NodeEdgePair[]) {
+        if (!isNullOrUndefined(tableData) && tableData.length > 0) {
+            // Clear the table rows, because it is very likely that the on hover
+            // delay will be shorter than the time it takes to get new data. (If
+            // we don't do this we might see the old table for a brief moment).
+            this.referenceTableRows = [];
+            this.referenceTableControlService.getReferenceTableData(tableData);
+        }
+    }
 
     @Output() referenceTableRowClickEvent: EventEmitter<VisEdge>;
+
+    referenceTableRows: ReferenceTableRow[] = [];
 
     FADEOUT_STYLE = 'reference-table fade-out';
     DEFAULT_STYLE = 'reference-table';
@@ -27,6 +39,7 @@ export class ReferenceTableComponent extends TooltipComponent implements OnDestr
 
     hideReferenceTableSubscription: Subscription;
     updatePopperSubscription: Subscription;
+    referenceTableRowDataSubscription: Subscription;
 
     constructor(
         private referenceTableControlService: ReferenceTableControlService,
@@ -48,6 +61,9 @@ export class ReferenceTableComponent extends TooltipComponent implements OnDestr
             this.updatePopper(details.posX, details.posY);
         });
 
+        this.referenceTableRowDataSubscription = this.referenceTableControlService.referenceTableRowData$.subscribe(result => {
+            this.referenceTableRows = result.referenceTableRows.sort((a, b) => b.snippetCount - a.snippetCount);
+        });
 
         this.referenceTableRowClickEvent = new EventEmitter<VisEdge>();
     }
