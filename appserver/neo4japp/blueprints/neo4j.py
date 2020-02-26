@@ -7,6 +7,7 @@ from werkzeug.datastructures import FileStorage
 from neo4japp.blueprints import GraphRequest
 from neo4japp.constants import *
 from neo4japp.database import get_neo4j_service_dao
+from neo4japp.models import GraphRelationship
 from neo4japp.services import Neo4JService, Neo4jColumnMapping
 from neo4japp.util import CamelDictMixin, SuccessResponse, jsonify_with_class
 
@@ -22,11 +23,27 @@ class ExpandNodeRequest(CamelDictMixin):
     node_id: int = attr.ib()
     limit: int = attr.ib()
 
+# TODO: Add this to DTO file
 @attr.s(frozen=True)
-class AssociationSentencesRequest(CamelDictMixin):
+class GetSnippetsFromEdgeRequest(CamelDictMixin):
+    # TODO: Create a VisNode/VisEdge class similar to what we have on the frontend
+    edge: GraphRelationship = attr.ib()
+
+# TODO: Add this to DTO file
+@attr.s(frozen=True)
+class GetSnippetCountsFromEdgesRequest(CamelDictMixin):
+    edges: List[GraphRelationship] = attr.ib()
+
+# TODO: Add this to DTO file
+@attr.s(frozen=True)
+class ClusteredNode(CamelDictMixin):
     node_id: int = attr.ib()
-    description: str = attr.ib()
-    entry_text: str = attr.ib()
+    edges: List[GraphRelationship] = attr.ib()
+
+# TODO: Add this to DTO file
+@attr.s(frozen=True)
+class GetGraphDataForClusterRequest(CamelDictMixin):
+    clustered_nodes: List[ClusteredNode] = attr.ib()
 
 @attr.s(frozen=True)
 class UploadFileRequest(CamelDictMixin):
@@ -81,16 +98,32 @@ def expand_graph_node(req: ExpandNodeRequest):
     node = neo4j.expand_graph(req.node_id, req.limit)
     return SuccessResponse(result=node, status_code=200)
 
-@bp.route('/get-sentences', methods=['POST'])
-@jsonify_with_class(AssociationSentencesRequest)
-def get_association_sentences(req: AssociationSentencesRequest):
+@bp.route('/get-snippets-from-edge', methods=['POST'])
+@jsonify_with_class(GetSnippetsFromEdgeRequest)
+def get_snippets_from_edge(req: GetSnippetsFromEdgeRequest):
     neo4j = get_neo4j_service_dao()
-    sentences = neo4j.get_association_sentences(
-        req.node_id,
-        req.description,
-        req.entry_text
+    snippets_result = neo4j.get_snippets_from_edge(
+        req.edge,
     )
-    return SuccessResponse(result=sentences, status_code=200)
+    return SuccessResponse(result=snippets_result, status_code=200)
+
+@bp.route('/get-snippet-counts-from-edges', methods=['POST'])
+@jsonify_with_class(GetSnippetCountsFromEdgesRequest)
+def get_snippet_count_for_edges(req: GetSnippetCountsFromEdgesRequest):
+    neo4j = get_neo4j_service_dao()
+    edge_snippet_count_result = neo4j.get_snippet_counts_from_edges(
+        req.edges,
+    )
+    return SuccessResponse(edge_snippet_count_result, status_code=200)
+
+@bp.route('/get-cluster-graph-data', methods=['POST'])
+@jsonify_with_class(GetGraphDataForClusterRequest)
+def get_cluster_graph_data(req: GetGraphDataForClusterRequest):
+    neo4j = get_neo4j_service_dao()
+    cluster_graph_data_result = neo4j.get_cluster_graph_data(
+        req.clustered_nodes,
+    )
+    return SuccessResponse(cluster_graph_data_result, status_code=200)
 
 @bp.route('/reaction', methods=['POST'])
 @jsonify_with_class(ReactionRequest)

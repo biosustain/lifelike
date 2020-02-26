@@ -14,7 +14,7 @@
       <div id="single-node-selection-group-1" class="context-menu-group">
         <div class="context-menu-item" (mouseenter)="hideAllSubMenus()" (click)="requestNeighborSelection()">Select Neighbor Node(s)</div>
         <div *ngIf="selectedNodeEdgeLabels.validLabels.size > 0" fxLayout="column">
-            <div id="group-by-rel-menu-item" class="context-menu-item" fxLayout="row" fxLayoutAlign="space-between center" (mouseenter)="showGroupByRelSubMenu()">
+            <div id="group-by-rel-menu-item" class="context-menu-item" fxLayout="row" fxLayoutAlign="space-between center" (mouseenter)="showGroupByRelSubMenu()" (mouseleave)="mouseLeaveNodeRow()">
               <div>Group neighbors by edge label</div>
               <mat-icon>arrow_right</mat-icon>
             </div>

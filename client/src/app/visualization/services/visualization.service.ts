@@ -4,9 +4,12 @@ import { HttpClient } from '@angular/common/http';
 import { map } from 'rxjs/operators';
 
 import {
-    AssociationData,
-    AssociationSentence,
+    ClusteredNode,
+    GetClusterGraphDataResult,
+    GetSnippetCountsFromEdgesResult,
+    GetSnippetsResult,
     Neo4jResults,
+    VisEdge,
 } from 'app/interfaces';
 import { NODE_EXPANSION_LIMIT } from 'app/shared/constants';
 
@@ -55,9 +58,21 @@ export class VisualizationService {
         ).pipe(map(resp => resp.result));
     }
 
-    getSentences(association: AssociationData) {
-        return this.http.post<{result: AssociationSentence[]}>(
-            `${this.visApi}/get-sentences`, {...association},
+    getSnippetsFromEdge(edge: VisEdge) {
+        return this.http.post<{result: GetSnippetsResult}>(
+            `${this.visApi}/get-snippets-from-edge`, {edge},
+        ).pipe(map(resp => resp.result));
+    }
+
+    getSnippetCountsFromEdges(edges: VisEdge[]) {
+        return this.http.post<{result: GetSnippetCountsFromEdgesResult}>(
+            `${this.visApi}/get-snippet-counts-from-edges`, {edges},
+        ).pipe(map(resp => resp.result));
+    }
+
+    getClusterGraphData(clusteredNodes: ClusteredNode[]) {
+        return this.http.post<{result: GetClusterGraphDataResult}>(
+            `${this.visApi}/get-cluster-graph-data`, {clusteredNodes},
         ).pipe(map(resp => resp.result));
     }
 

@@ -9,7 +9,7 @@ from neo4japp.services.common import BaseDao
 from neo4japp.models import GraphNode, GraphRelationship
 from neo4japp.constants import *
 from neo4japp.factory import cache
-from neo4japp.util import CamelDictMixin, compute_hash
+from neo4japp.util import CamelDictMixin, compute_hash, snake_to_camel_dict
 from neo4japp.services.common import BaseDao
 
 from openpyxl import load_workbook
@@ -66,6 +66,30 @@ class Neo4jColumnMapping(CamelDictMixin):
     sheet_name: str = attr.ib()
     node: Optional[Neo4jNodeMapping] = attr.ib(default=None)
     relationship: Optional[Neo4jRelationshipMapping] = attr.ib(default=None)
+
+
+@attr.s(frozen=True)
+class GetSnippetsFromEdgeResult(CamelDictMixin):
+    from_node_id: int = attr.ib()
+    to_node_id: int = attr.ib()
+    association: str = attr.ib()
+    references: List[str] = attr.ib()
+
+
+@attr.s(frozen=True)
+class EdgeSnippetCount(CamelDictMixin):
+    edge: GraphRelationship = attr.ib()
+    count: int = attr.ib()
+
+
+@attr.s(frozen=True)
+class GetSnippetCountsFromEdgesResult(CamelDictMixin):
+    edge_snippet_counts: List[EdgeSnippetCount] = attr.ib()
+
+
+@attr.s(frozen=True)
+class GetClusterGraphDataResult(CamelDictMixin):
+    results: Dict[int, Dict[str, int]] = attr.ib()
 
 
 class Neo4JService(BaseDao):
@@ -162,10 +186,46 @@ class Neo4JService(BaseDao):
         query = self.get_expand_query(node_id, limit)
         return self._query_neo4j(query)
 
-    def get_association_sentences(self, node_id: str, description: str, entry_text: str):
-        query = self.get_association_sentences_query(node_id, description, entry_text)
+    def get_snippets_from_edge(self, edge: GraphRelationship):
+        query = self.get_snippets_from_edge_query(edge['from'], edge['to'], edge['label'])
+
         data = self.graph.run(query).data()
-        return [result['references'] for result in data]
+        return GetSnippetsFromEdgeResult(
+            from_node_id=edge['from'],
+            to_node_id=edge['to'],
+            association=edge['label'],
+            references=[result['references'] for result in data]
+        )
+
+    def get_snippet_counts_from_edges(self, edges: List[GraphRelationship]):
+        edge_snippet_counts: List[EdgeSnippetCount] = []
+        for edge in edges:
+            query = self.get_association_snippet_count_query(edge['from'], edge['to'], edge['label'])
+            count = self.graph.run(query).evaluate()
+            edge_snippet_counts.append(EdgeSnippetCount(
+                edge=edge,
+                count=count,
+            ))
+        return GetSnippetCountsFromEdgesResult(
+            edge_snippet_counts=edge_snippet_counts,
+        )
+
+    def get_cluster_graph_data(self, clustered_nodes):
+        results: Dict[int, Dict[str, int]] = dict()
+
+        for node in clustered_nodes:
+            for edge in node.edges:
+                query = self.get_association_snippet_count_query(edge['from'], edge['to'], edge['label'])
+                count = self.graph.run(query).evaluate()
+
+                if (results.get(node.node_id, None) is not None):
+                    results[node.node_id][edge['label']] = count
+                else:
+                    results[node.node_id] = {edge['label']: count}
+
+        return GetClusterGraphDataResult(
+            results=results,
+        )
 
     def load_reaction_graph(self, biocyc_id: str):
         query = self.get_reaction_query(biocyc_id)
@@ -286,15 +346,22 @@ class Neo4JService(BaseDao):
         """.format(node_id, limit)
         return query
 
-    # TODO: Need to make a solid version of this query, not sure the current
-    # iteration will work 100% of the time
-    def get_association_sentences_query(self, node_id: str, description: str, entry_text: str):
+    def get_snippets_from_edge_query(self, from_node: int, to_node: int, association: str):
         query = """
-            MATCH (n)-[:HAS_ASSOCIATION]-(s:Association)-[:HAS_REF]-(r:Reference)
-            WHERE ID(n) = {} AND s.description='{}' AND r.entry2_text=~'.*{}.*'
-            WITH r
-            return r as references
-        """.format(node_id, description, entry_text)
+            MATCH (f)-[:HAS_ASSOCIATION]->(a:Association)-[:HAS_ASSOCIATION]->(t)
+            WHERE ID(f)={} AND ID(t)={} AND a.description='{}'
+            WITH a AS association MATCH (association)-[:HAS_REF]-(r:Reference)
+            RETURN r AS references
+        """.format(from_node, to_node, association)
+        return query
+
+    def get_association_snippet_count_query(self, from_node: int, to_node: int, association: str):
+        query = """
+            MATCH (f)-[:HAS_ASSOCIATION]->(a:Association)-[:HAS_ASSOCIATION]->(t)
+            WHERE ID(f)={} AND ID(t)={} AND a.description='{}'
+            WITH a AS association MATCH (association)-[:HAS_REF]-(r:Reference)
+            RETURN COUNT(r) as count
+        """.format(from_node, to_node, association)
         return query
 
     def get_reaction_query(self, biocyc_id: str):
