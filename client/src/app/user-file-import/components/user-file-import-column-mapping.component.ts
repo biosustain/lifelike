@@ -11,7 +11,7 @@ import {
     SheetNameAndColumnNames,
     Neo4jNodeMapping,
     NodeMappingHelper,
-} from '../../interfaces/user-file-import.interface';
+} from 'app/interfaces/user-file-import.interface';
 
 import { UserFileImportSelectors as selectors } from '../store';
 import { saveNodeMapping } from '../store/actions';
@@ -23,6 +23,8 @@ import { saveNodeMapping } from '../store/actions';
 export class UserFileImportColumnMappingComponent {
     @Input() chosenSheetToMap: SheetNameAndColumnNames;
     @Input() columnsForFilePreview: string[];
+    @Input() columnDelimiterForm: FormGroup;
+
     @Output() nextStep: EventEmitter<boolean>;
 
     dbNodeTypes$: Observable<string[]>;
@@ -105,8 +107,19 @@ export class UserFileImportColumnMappingComponent {
             mapping: {
                 existingMappings: {},
                 newMappings: {},
+                delimiters: {},
             }
         } as NodeMappingHelper;
+
+        /**
+         * create the column delimiters
+         */
+        const columnDelimitersFormArray = this.columnDelimiterForm.get('columnDelimiters') as FormArray;
+        columnDelimitersFormArray.controls.forEach((group: FormGroup) => {
+            const propMappingKey = Object.values(group.controls.column.value)[0] as number;
+            nodeMapping.mapping.delimiters[propMappingKey] = group.controls.delimiter.value;
+        });
+
         let columnMappingFormArray = this.columnMappingForm.get('newColumnMapping') as FormArray;
 
         columnMappingFormArray.controls.forEach((group: FormGroup) => {

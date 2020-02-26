@@ -7,7 +7,7 @@ import { Store } from '@ngrx/store';
 import { State } from '../../***ARANGO_USERNAME***-store';
 
 import { getNodeProperties } from '../store/actions';
-import { ColumnNameIndex } from '../../interfaces/user-file-import.interface';
+import { ColumnNameIndex } from 'app/interfaces/user-file-import.interface';
 
 @Component({
   selector: 'app-user-file-import-existing-column-mapping-row',

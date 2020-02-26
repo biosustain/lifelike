@@ -8,14 +8,6 @@ export interface SheetRowPreview {
     [key: string]: string;
 }
 
-export interface NodeMappingHelper {
-    worksheetDomain: string;
-    mapping: {
-        existingMappings: {[key: number]: Neo4jNodeMapping};
-        newMappings: {[key: number]: Neo4jNodeMapping};
-    };
-}
-
 // parsed worksheet sheet name and sheet column names
 export interface SheetNameAndColumnNames {
     sheetName: string;
@@ -26,6 +18,19 @@ export interface SheetNameAndColumnNames {
 export interface FileNameAndSheets {
     sheets: SheetNameAndColumnNames[];
     filename: string;
+}
+
+export interface NodeMappingHelper {
+    worksheetDomain: string;
+    // the key is the column index
+    // meaning a column can represent a node
+    mapping: {
+        // any previously created mapping from previous uploads
+        existingMappings: {[key: number]: Neo4jNodeMapping};
+        // new node and it's mappings
+        newMappings: {[key: number]: Neo4jNodeMapping};
+        delimiters: {[key: number]: string};
+    };
 }
 
 export interface Neo4jNodeMapping {
@@ -62,6 +67,7 @@ export interface Neo4jColumnMapping {
     newNodes: Neo4jNodeMapping[];
     existingNodes: Neo4jNodeMapping[];
     relationships: Neo4jRelationshipMapping[];
+    delimiters: {[key: number]: string};
     domain: string;
     fileName: string;
     sheetName: string;
