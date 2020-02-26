@@ -3,7 +3,7 @@ from flask_caching import Cache
 from flask_httpauth import HTTPTokenAuth
 from werkzeug.utils import find_modules, import_string
 
-from database import db, ma
+from neo4japp.database import db, ma
 
 # Used for registering blueprints
 BLUEPRINT_PACKAGE = __package__ + '.blueprints'
