@@ -3,8 +3,11 @@
   *ngIf="networkGraphData"
   [nodes]="nodes"
   [edges]="edges"
+  [getSnippetsResult]="getSnippetsResult"
+  [getClusterGraphDataResult]="getClusterGraphDataResult"
   [legend]="legend"
   [config]="networkGraphConfig"
   (expandNode)="expandNode($event)"
-  (getSentences)="getSentences($event)"
+  (getSnippetsFromEdge)="getSnippetsFromEdge($event)"
+  (getClusterGraphData)="getClusterGraphData($event)"
 ></app-visualization-canvas>

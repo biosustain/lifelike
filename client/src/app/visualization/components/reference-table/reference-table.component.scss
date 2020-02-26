@@ -1,22 +1,84 @@
-#reference-table {
+#root-table {
     display: none;
+}
+
+#selected-node-edge-labels-submenu {
+    display: none;
+}
+
+.reference-table {
     background: #D4E2F4;
     border-radius: 2px;
     border: thin solid #C9CACC;
-    max-height: 300px;
-    max-width: 500px;
-    overflow: auto;
 }
 
-.reference-table-row {
+.reference-table-group {
     border-bottom: thin solid #C9CACC;
     color: #5B6A80;
     font-size: 13px;
     font-weight: bold;
-    padding: 5px 15px 5px 5px;
+    padding: 5px 0;
     width: 100%;
 }
 
+.reference-table-row {
+    height: 15px;
+    padding: 0 8px 0 20px;
+    text-align: left;
+    vertical-align: middle;
+}
 .reference-table-row:hover {
     background: #C5C6C7;
+}
+
+.fade-out {
+    animation: fadeOut ease .2s forwards;
+    -webkit-animation: fadeOut ease .2s forwards;
+    -moz-animation: fadeOut ease .2s forwards;
+    -o-animation: fadeOut ease .2s forwards;
+    -ms-animation: fadeOut ease .2s forwards;
+  }
+  @keyframes fadeOut {
+    0% {
+      opacity:1;
+    }
+    100% {
+      opacity:0;
+    }
+  }
+
+  @-moz-keyframes fadeOut {
+    0% {
+      opacity:1;
+    }
+    100% {
+      opacity:0;
+    }
+  }
+
+  @-webkit-keyframes fadeOut {
+    0% {
+      opacity:1;
+    }
+    100% {
+      opacity:0;
+    }
+  }
+
+  @-o-keyframes fadeOut {
+    0% {
+      opacity:1;
+    }
+    100% {
+      opacity:0;
+    }
+  }
+
+  @-ms-keyframes fadeOut {
+    0% {
+      opacity:1;
+    }
+    100% {
+      opacity:0;
+  }
 }
