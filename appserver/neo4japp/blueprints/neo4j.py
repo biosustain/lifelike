@@ -4,7 +4,7 @@ from typing import Dict, List
 
 from flask import Blueprint
 from werkzeug.datastructures import FileStorage
-from neo4japp.blueprints import GraphRequest, NodeEdgePair
+from neo4japp.blueprints import GraphRequest, DuplicateNodeEdgePair, DuplicateVisEdge, ClusteredNode
 from neo4japp.constants import *
 from neo4japp.database import get_neo4j_service_dao
 from neo4japp.models import GraphNode, GraphRelationship
@@ -31,18 +31,19 @@ class GetSnippetsFromEdgeRequest(CamelDictMixin):
 
 # TODO: Add this to DTO file
 @attr.s(frozen=True)
+class GetSnippetsFromDuplicateEdgeRequest(CamelDictMixin):
+    # TODO: Create a VisNode/VisEdge class similar to what we have on the frontend
+    edge: DuplicateVisEdge = attr.ib()
+
+# TODO: Add this to DTO file
+@attr.s(frozen=True)
 class GetSnippetCountsFromEdgesRequest(CamelDictMixin):
     edges: List[GraphRelationship] = attr.ib()
 
 # TODO: Add this to DTO file
 @attr.s(frozen=True)
 class ReferenceTableDataRequest(CamelDictMixin):
-    node_edge_pairs: List[NodeEdgePair] = attr.ib()
-
-@attr.s(frozen=True)
-class ClusteredNode(CamelDictMixin):
-    node_id: int = attr.ib()
-    edges: List[GraphRelationship] = attr.ib()
+    node_edge_pairs: List[DuplicateNodeEdgePair] = attr.ib()
 
 # TODO: Add this to DTO file
 @attr.s(frozen=True)
@@ -107,6 +108,15 @@ def expand_graph_node(req: ExpandNodeRequest):
 def get_snippets_from_edge(req: GetSnippetsFromEdgeRequest):
     neo4j = get_neo4j_service_dao()
     snippets_result = neo4j.get_snippets_from_edge(
+        req.edge,
+    )
+    return SuccessResponse(result=snippets_result, status_code=200)
+
+@bp.route('/get-snippets-from-duplicate-edge', methods=['POST'])
+@jsonify_with_class(GetSnippetsFromDuplicateEdgeRequest)
+def get_snippets_from_duplicate_edge(req: GetSnippetsFromDuplicateEdgeRequest):
+    neo4j = get_neo4j_service_dao()
+    snippets_result = neo4j.get_snippets_from_duplicate_edge(
         req.edge,
     )
     return SuccessResponse(result=snippets_result, status_code=200)

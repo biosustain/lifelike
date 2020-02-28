@@ -179,6 +179,16 @@ class CamelDictMixin:
             error = err.args[0].replace('__init__()', 'Server request')
             raise Exception(error)
 
+    def formatter(self, d: dict):
+        """Returns a formatted version of the input dictionary. Default
+        function definition simply returns the input without formatting.
+
+        Intended to be used by any attr.s classes that have attribute
+        names we want to format before sending to the client, e.g.
+        'from_' to 'from'.
+        """
+        return d
+
     def to_dict(self):
         """Convert an attr.s class into a dict with camel case key values for
         JSON serialization.
@@ -189,7 +199,7 @@ class CamelDictMixin:
         that are also attrs classes.
         """
 
-        return snake_to_camel_dict(attr.asdict(self), {})
+        return snake_to_camel_dict(self.formatter(attr.asdict(self)), {})
 
 
 @attr.s(frozen=True)

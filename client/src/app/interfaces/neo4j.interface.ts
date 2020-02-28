@@ -70,16 +70,25 @@ export interface GraphRelationship {
 /** VisJS Node Representations for Client */
 export interface VisNode extends GraphNode {
   primaryLabel?: string; // Label to display in VisJS
+  color: any; // VisJS color options
   expanded?: boolean; // Whether a node has been expanded
-  duplicateOf?: number | null;
+}
+
+export interface DuplicateVisNode extends VisNode {
+    id: any;
+    duplicateOf: number;
 }
 
 /** VisJS Edge Representations for Client */
 export interface VisEdge extends GraphRelationship {
   arrows?: string;
-  duplicateOf?: number | null;
-  originalFrom?: number | null;
-  originalTo?: number | null;
+}
+
+export interface DuplicateVisEdge extends VisEdge {
+    id: any;
+    duplicateOf: number | null;
+    originalFrom: number | null;
+    originalTo: number | null;
 }
 
 export interface Neo4jResults {
