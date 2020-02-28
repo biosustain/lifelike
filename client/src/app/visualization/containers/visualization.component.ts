@@ -1,7 +1,5 @@
 import { Component, OnInit } from '@angular/core';
 
-import { first } from 'rxjs/operators';
-
 import { DataSet } from 'vis-network';
 
 import {
@@ -159,13 +157,13 @@ export class VisualizationComponent implements OnInit {
     }
 
     getSnippetsFromEdge(edge: VisEdge) {
-        this.visService.getSnippetsFromEdge(edge).pipe(first()).subscribe((result) => {
+        this.visService.getSnippetsFromEdge(edge).subscribe((result) => {
             this.getSnippetsResult = result;
         });
     }
 
     getSnippetsFromDuplicateEdge(edge: DuplicateVisEdge) {
-        this.visService.getSnippetsFromDuplicateEdge(edge).pipe(first()).subscribe((result) => {
+        this.visService.getSnippetsFromDuplicateEdge(edge).subscribe((result) => {
             this.getSnippetsResult = result;
         });
     }
@@ -176,7 +174,7 @@ export class VisualizationComponent implements OnInit {
     // graph anymore. This can be fixed by creating some kind of interrupt event
     // on this subscription. Could use rxjs 'race' + an output from the child here.
     getClusterGraphData(clusteredNodes: ClusteredNode[]) {
-        this.visService.getClusterGraphData(clusteredNodes).pipe(first()).subscribe((result) => {
+        this.visService.getClusterGraphData(clusteredNodes).subscribe((result) => {
             this.getClusterGraphDataResult = result;
         });
     }
