@@ -118,6 +118,12 @@ export interface FTSResult {
   limit: number;
 }
 
+export interface SearchQuery {
+  query: string;
+  page: number;
+  limit: number;
+}
+
 export interface SearchRecord {
   nodeId: number;
   label: string;

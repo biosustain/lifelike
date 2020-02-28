@@ -66,7 +66,7 @@ class SearchService(BaseDao):
         """
         total_records = self.graph.run(
             total_query, parameters={'search_term': query_term}).evaluate()
-        return FTSResult(query_term, nodes, total_records, page, limit)
+        return FTSResult(term, nodes, total_records, page, limit)
 
     def predictive_search(self, term: str, limit: int = 5):
         """ Performs a predictive search; not necessarily a prefix based autocomplete.
