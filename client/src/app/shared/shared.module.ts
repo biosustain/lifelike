@@ -11,6 +11,8 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 import { RouterModule } from '@angular/router';
 
+import { httpInterceptorProviders } from '../http-interceptors';
+
 import { AngularMaterialModule } from './angular-material.module';
 
 import { LegendComponent } from './components/legend/legend.component';
@@ -33,7 +35,7 @@ const components = [
         RouterModule,
     ],
     declarations: [TooltipComponent, LegendComponent],
-    providers: [],
+    providers: [httpInterceptorProviders],
     // exported modules are visible to modules that import this one
     exports: [
         // Modules
