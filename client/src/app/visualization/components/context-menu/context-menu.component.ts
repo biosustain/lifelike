@@ -9,7 +9,7 @@ import { isNullOrUndefined } from 'util';
 
 import { IdType } from 'vis-network';
 
-import { GroupRequest, GetLabelsResult } from 'app/interfaces';
+import { GroupRequest } from 'app/interfaces';
 import { TooltipDetails } from 'app/shared/services/tooltip-control-service';
 import { TooltipComponent } from 'app/shared/components/tooltip/tooltip.component';
 
