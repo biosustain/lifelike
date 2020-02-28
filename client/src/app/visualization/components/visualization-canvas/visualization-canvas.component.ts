@@ -88,7 +88,7 @@ export class VisualizationCanvasComponent implements OnInit {
     // Need to create a reference to the enum so we can use it in the template
     sidenavEntityTypeEnum = SidenavEntityType;
 
-    userOpenedSidenav: boolean;
+    sidenavOpened: boolean;
     sidenavEntity: SidenavEntity;
     sidenavEntityType: SidenavEntityType;
 
@@ -108,7 +108,7 @@ export class VisualizationCanvasComponent implements OnInit {
         private contextMenuControlService: ContextMenuControlService,
         private referenceTableControlService: ReferenceTableControlService,
     ) {
-        this.userOpenedSidenav = false;
+        this.sidenavOpened = false;
         this.sidenavEntity = null;
         this.sidenavEntityType = SidenavEntityType.EMPTY;
 
@@ -153,7 +153,16 @@ export class VisualizationCanvasComponent implements OnInit {
     }
 
     toggleSidenavOpened() {
-        this.userOpenedSidenav = !this.userOpenedSidenav;
+        this.sidenavOpened = !this.sidenavOpened;
+    }
+
+    /**
+     * Sets `sidenavOpened` to the input boolean. Primarily used to update when the
+     * user closes the sidenav by focusing the sidenav content.
+     * @param opened boolean representing the status of the sidenav
+     */
+    setSidenavStatus(opened: boolean) {
+        this.sidenavOpened = opened;
     }
 
     updateSelectedNodes() {
@@ -713,7 +722,6 @@ export class VisualizationCanvasComponent implements OnInit {
         // add a timeout here equal to the length of the animation, but maybe there's
         // a better solution?
         this.updateSelectedNodes();
-        this.updateSidebarEntity();
     }
 
     onSelectEdgeCallback(params: any) {
@@ -724,7 +732,6 @@ export class VisualizationCanvasComponent implements OnInit {
     onDeselectEdgeCallback(params: any) {
         // TODO: Same bug as described in "onDeselectNodeCallback"
         this.updateSelectedEdges();
-        this.updateSidebarEntity();
     }
 
     onDoubleClickCallback(params: any) {
