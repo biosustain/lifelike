@@ -4,7 +4,6 @@ import { SharedModule } from 'app/shared/shared.module';
 
 import { ContextMenuComponent } from './components/context-menu/context-menu.component';
 import { ReferenceTableComponent } from './components/reference-table/reference-table.component';
-import { SearchService } from './services/search.service';
 import { SearchListComponent } from './components/search-list/search-list.component';
 import { VisualizationService } from './services/visualization.service';
 import { VisualizationCanvasComponent } from './components/visualization-canvas/visualization-canvas.component';
@@ -25,7 +24,7 @@ const components = [
 @NgModule({
     imports: [SharedModule],
     declarations: components,
-    providers: [SearchService, VisualizationService],
+    providers: [VisualizationService],
     exports: components,
 })
 export class VisualizationModule {}

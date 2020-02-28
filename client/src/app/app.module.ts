@@ -9,6 +9,7 @@ import { AppComponent } from './app.component';
 import { ToolbarMenuModule } from 'toolbar-menu';
 import { Neo4jModule } from './upload/neo4j.module';
 import { VisualizationModule } from './visualization/visualization.module';
+import { SearchModule } from './search/search.module';
 
 @NgModule({
   declarations: [
@@ -23,6 +24,7 @@ import { VisualizationModule } from './visualization/visualization.module';
     // ngrx
     RootStoreModule,
     VisualizationModule,
+    SearchModule,
     ToolbarMenuModule,
   ],
   providers: [],

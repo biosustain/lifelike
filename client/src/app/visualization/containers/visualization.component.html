@@ -1,4 +1,3 @@
-<app-visualization-search (selectedResult)="updateCanvasWithSingleNode($event)" (navigateBack)="hideCanvas($event)" (searchSubmitted)="hideCanvas($event)"></app-visualization-search>
 <app-visualization-canvas
   *ngIf="networkGraphData && !hideDisplay"
   [nodes]="nodes"
