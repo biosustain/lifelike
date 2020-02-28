@@ -15,6 +15,7 @@ from neo4japp.data_transfer_objects.visualization import (
     GetSnippetCountsFromEdgesResult,
     GetSnippetsFromEdgeResult,
     ReferenceTableRow,
+    VisEdge,
 )
 from neo4japp.services.common import BaseDao
 from neo4japp.models import GraphNode, GraphRelationship
@@ -173,14 +174,14 @@ class Neo4JService(BaseDao):
         query = self.get_expand_query(node_id, limit)
         return self._query_neo4j(query)
 
-    def get_snippets_from_edge(self, edge: GraphRelationship):
-        query = self.get_snippets_from_edge_query(edge['from'], edge['to'], edge['label'])
+    def get_snippets_from_edge(self, edge: VisEdge):
+        query = self.get_snippets_from_edge_query(edge.from_, edge.to, edge.label)
 
         data = self.graph.run(query).data()
         return GetSnippetsFromEdgeResult(
-            from_node_id=edge['from'],
-            to_node_id=edge['to'],
-            association=edge['label'],
+            from_node_id=edge.from_,
+            to_node_id=edge.to,
+            association=edge.label,
             references=[result['references'] for result in data]
         )
 
@@ -195,10 +196,10 @@ class Neo4JService(BaseDao):
             references=[result['references'] for result in data]
         )
 
-    def get_snippet_counts_from_edges(self, edges: List[GraphRelationship]):
+    def get_snippet_counts_from_edges(self, edges: List[VisEdge]):
         edge_snippet_counts: List[EdgeSnippetCount] = []
         for edge in edges:
-            query = self.get_association_snippet_count_query(edge['from'], edge['to'], edge['label'])
+            query = self.get_association_snippet_count_query(edge.from_, edge.to, edge.label)
             count = self.graph.run(query).evaluate()
             edge_snippet_counts.append(EdgeSnippetCount(
                 edge=edge,
