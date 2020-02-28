@@ -14,7 +14,6 @@ from neo4japp.data_transfer_objects.visualization import (
     GetSnippetsFromEdgeRequest,
     ReferenceTableDataRequest,
 )
-from neo4japp.models import GraphNode, GraphRelationship
 from neo4japp.services import Neo4JService, Neo4jColumnMapping
 from neo4japp.util import CamelDictMixin, SuccessResponse, jsonify_with_class
 
