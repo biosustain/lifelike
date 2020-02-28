@@ -21,19 +21,19 @@ services:
             - ./db/logs:/logs
             - ./db/plugins:/plugins
 
-    client:
-        container_name: n4j-client
-        # starts dev & moves the yarn.lock file so it can be committed
-        command: yarn dev-start
-        depends_on:
-            - appserver
-        volumes:
-            # dev mode only: mount src dir for container to pick up edits done on host
-            - ./client:/home/node/client
-        ports:
-            - "127.0.0.1:4200:4200"
-        build: ./client
-        networks:
-            - frontend
-        depends_on:
-            - appserver
+    # client:
+    #     container_name: n4j-client
+    #     # starts dev & moves the yarn.lock file so it can be committed
+    #     command: yarn dev-start
+    #     depends_on:
+    #         - appserver
+    #     volumes:
+    #         # dev mode only: mount src dir for container to pick up edits done on host
+    #         - ./client:/home/root/client
+    #     ports:
+    #         - "127.0.0.1:4200:4200"
+    #     build: ./client
+    #     networks:
+    #         - frontend
+    #     depends_on:
+    #         - appserver
