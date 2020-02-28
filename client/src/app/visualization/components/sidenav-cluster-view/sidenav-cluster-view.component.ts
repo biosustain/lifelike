@@ -24,7 +24,8 @@ export class SidenavClusterViewComponent implements OnInit {
     ngOnInit() {}
 
     // TODO: Noticed that sometimes there is a error occuring on line 52 ('name: node.displayName')
-    // where 'node' is null. Not sure what the cause of this is.
+    // where 'node' is null. Pretty sure this is caused by the bug mentioned in
+    // visualization.component.ts next to the getClusterGraphData method.
     createChart(clusterEntity: SidenavClusterEntity) {
         this.clusterDataChart = Highcharts.chart({
             chart: {
