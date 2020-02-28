@@ -1,7 +1,11 @@
-from flask import current_app, Flask
+from functools import partial
+
+from flask import current_app, Flask, jsonify
 from flask_caching import Cache
 
 from werkzeug.utils import find_modules, import_string
+
+from neo4japp.exceptions import BaseException
 
 # Used for registering blueprints
 BLUEPRINT_PACKAGE = __package__ + '.blueprints'
@@ -26,6 +30,9 @@ def create_app(name = 'neo4japp', config = 'config.Development'):
     # TODO: temp solution to a cache
     # (uses SimpleCache: https://flask-caching.readthedocs.io/en/latest/#simplecache)
     cache.init_app(app, config=cache_config)
+
+    app.register_error_handler(BaseException, partial(handle_error, 500))
+    # TODO: handle uncaught python errors
     return app
 
 
@@ -35,3 +42,7 @@ def register_blueprints(app, pkgname):
         if hasattr(mod, BLUEPRINT_OBJNAME):
             app.register_blueprint(mod.bp)
 
+
+def handle_error(code: int, ex: BaseException):
+    reterr = {'apiHttpError': ex.to_dict()}
+    return jsonify(reterr), code
