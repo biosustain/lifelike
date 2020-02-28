@@ -5,7 +5,7 @@ from typing import Dict, List, NamedTuple, Optional, Union
 from py2neo import cypher, NodeMatcher, RelationshipMatcher
 from werkzeug.datastructures import FileStorage
 
-from neo4japp.blueprints import NodeEdgePair
+from neo4japp.blueprints import DuplicateNodeEdgePair, DuplicateVisEdge, ClusteredNode
 from neo4japp.services.common import BaseDao
 from neo4japp.models import GraphNode, GraphRelationship
 from neo4japp.constants import *
@@ -92,15 +92,26 @@ class GetSnippetCountsFromEdgesResult(CamelDictMixin):
 class GetClusterGraphDataResult(CamelDictMixin):
     results: Dict[int, Dict[str, int]] = attr.ib()
 
+
 @attr.s(frozen=True)
 class ReferenceTableRow(CamelDictMixin):
     node_display_name: str = attr.ib()
     snippet_count: int = attr.ib()
-    edge: GraphRelationship = attr.ib()
+    edge: DuplicateVisEdge = attr.ib()
+
 
 @attr.s(frozen=True)
 class GetReferenceTableDataResult(CamelDictMixin):
     reference_table_rows: List[ReferenceTableRow] = attr.ib()
+
+    # Override the default formatter to convert 'from_' attribute of edges
+    def formatter(self, get_reference_table_data_result_dict: dict):
+        for row in get_reference_table_data_result_dict['reference_table_rows']:
+            edge = row['edge']
+            edge['from'] = edge['from_']
+            del edge['from_']
+        return get_reference_table_data_result_dict
+
 
 class Neo4JService(BaseDao):
     def __init__(self, graph):
@@ -207,6 +218,17 @@ class Neo4JService(BaseDao):
             references=[result['references'] for result in data]
         )
 
+    def get_snippets_from_duplicate_edge(self, edge: DuplicateVisEdge):
+        query = self.get_snippets_from_edge_query(edge.original_from, edge.original_to, edge.label)
+
+        data = self.graph.run(query).data()
+        return GetSnippetsFromEdgeResult(
+            from_node_id=edge.from_,
+            to_node_id=edge.to,
+            association=edge.label,
+            references=[result['references'] for result in data]
+        )
+
     def get_snippet_counts_from_edges(self, edges: List[GraphRelationship]):
         edge_snippet_counts: List[EdgeSnippetCount] = []
         for edge in edges:
@@ -220,17 +242,16 @@ class Neo4JService(BaseDao):
             edge_snippet_counts=edge_snippet_counts,
         )
 
-    # TODO: Use DuplicateNodeEdgePair here (and with the other services that expect duplicates)?
-    def get_reference_table_data(self, node_edge_pairs: List[NodeEdgePair]):
+    def get_reference_table_data(self, node_edge_pairs: List[DuplicateNodeEdgePair]):
         reference_table_rows: List[ReferenceTableRow] = []
         for pair in node_edge_pairs:
             node = pair.node
             edge = pair.edge
 
-            query = self.get_association_snippet_count_query(edge['original_from'], edge['original_to'], edge['label'])
-            count = self.graph.run(query).data()[0]['count']
+            query = self.get_association_snippet_count_query(edge.original_from, edge.original_to, edge.label)
+            count = self.graph.run(query).evaluate()
             reference_table_rows.append(ReferenceTableRow(
-                node_display_name=node['display_name'],
+                node_display_name=node.display_name,
                 snippet_count=count,
                 edge=edge,
             ))
@@ -238,18 +259,18 @@ class Neo4JService(BaseDao):
             reference_table_rows=reference_table_rows
         )
 
-    def get_cluster_graph_data(self, clustered_nodes):
+    def get_cluster_graph_data(self, clustered_nodes: List[ClusteredNode]):
         results: Dict[int, Dict[str, int]] = dict()
 
         for node in clustered_nodes:
             for edge in node.edges:
-                query = self.get_association_snippet_count_query(edge['from'], edge['to'], edge['label'])
+                query = self.get_association_snippet_count_query(edge.original_from, edge.original_to, edge.label)
                 count = self.graph.run(query).evaluate()
 
                 if (results.get(node.node_id, None) is not None):
-                    results[node.node_id][edge['label']] = count
+                    results[node.node_id][edge.label] = count
                 else:
-                    results[node.node_id] = {edge['label']: count}
+                    results[node.node_id] = {edge.label: count}
 
         return GetClusterGraphDataResult(
             results=results,

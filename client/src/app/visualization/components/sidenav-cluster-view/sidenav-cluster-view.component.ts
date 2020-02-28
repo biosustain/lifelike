@@ -12,7 +12,7 @@ import { isNullOrUndefined } from 'util';
 })
 export class SidenavClusterViewComponent implements OnInit {
     @Input() set clusterEntity(clusterEntity: SidenavClusterEntity) {
-        this.getAllLabels();
+        this.getAllLabels(clusterEntity);
         this.createChart(clusterEntity);
     }
 
@@ -54,23 +54,23 @@ export class SidenavClusterViewComponent implements OnInit {
                 return {
                     type: 'bar',
                     name: node.displayName,
-                    data: this.getDataForNode(node),
+                    data: this.getDataForNode(node, clusterEntity),
                 };
             })
         });
     }
 
-    getAllLabels() {
-        Object.keys(this.clusterEntity.clusterGraphData.results).forEach(nodeId => {
+    getAllLabels(clusterEntity: SidenavClusterEntity) {
+        Object.keys(clusterEntity.clusterGraphData.results).forEach(nodeId => {
             this.labels = this.labels.concat(
-                Object.keys(this.clusterEntity.clusterGraphData.results[nodeId]).filter(edgeLabel => !this.labels.includes(edgeLabel))
+                Object.keys(clusterEntity.clusterGraphData.results[nodeId]).filter(edgeLabel => !this.labels.includes(edgeLabel))
             );
         });
     }
 
-    getDataForNode(node: VisNode) {
+    getDataForNode(node: VisNode, clusterEntity: SidenavClusterEntity) {
         const data = new Array<number>(this.labels.length);
-        const countDataForNode = this.clusterEntity.clusterGraphData.results[node.id];
+        const countDataForNode = clusterEntity.clusterGraphData.results[node.id];
 
         this.labels.forEach((label, index) => {
             if (!isNullOrUndefined(countDataForNode[label])) {

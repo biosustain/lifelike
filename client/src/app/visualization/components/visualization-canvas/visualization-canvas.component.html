@@ -14,7 +14,7 @@ we should be careful using 'autosize', as it may lead to performance problems.--
         [tooltipSelector]="referenceTableTooltipSelector"
         [tooltipOptions]="referenceTableTooltipOptions"
         [referenceTableData]="referenceTableData"
-        (referenceTableRowClickEvent)="getAssociationsWithEdge($event)"
+        (referenceTableRowClickEvent)="getAssociationsWithDuplicateEdge($event)"
       ></app-reference-table>
 
       <!-- This isn't visible unless the user has right-clicked to open the context menu -->

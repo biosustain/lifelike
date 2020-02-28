@@ -1,6 +1,6 @@
 import { IdType } from 'vis-network';
 
-import { VisEdge, VisNode } from './neo4j.interface';
+import { VisEdge, VisNode, DuplicateVisNode, DuplicateVisEdge } from './neo4j.interface';
 
 
 export interface AssociationSnippet {
@@ -13,7 +13,7 @@ export interface AssociationSnippet {
 
 export interface ClusteredNode {
     nodeId: number;
-    edges: VisEdge[];
+    edges: DuplicateVisEdge[];
 }
 
 export interface GetClusterGraphDataResult {
@@ -54,6 +54,11 @@ export interface GetSnippetCountsFromEdgesResult {
 export interface NodeEdgePair {
     node: VisNode;
     edge: VisEdge;
+}
+
+export interface DuplicateNodeEdgePair {
+    node: DuplicateVisNode;
+    edge: DuplicateVisEdge;
 }
 
 export interface ReferenceTableRow {
