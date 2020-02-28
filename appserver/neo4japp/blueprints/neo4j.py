@@ -4,9 +4,16 @@ from typing import Dict, List
 
 from flask import Blueprint
 from werkzeug.datastructures import FileStorage
-from neo4japp.blueprints import GraphRequest, DuplicateNodeEdgePair, DuplicateVisEdge, ClusteredNode
+from neo4japp.blueprints import GraphRequest
 from neo4japp.constants import *
 from neo4japp.database import get_neo4j_service_dao
+from neo4japp.data_transfer_objects.visualization import (
+    GetGraphDataForClusterRequest,
+    GetSnippetCountsFromEdgesRequest,
+    GetSnippetsFromDuplicateEdgeRequest,
+    GetSnippetsFromEdgeRequest,
+    ReferenceTableDataRequest,
+)
 from neo4japp.models import GraphNode, GraphRelationship
 from neo4japp.services import Neo4JService, Neo4jColumnMapping
 from neo4japp.util import CamelDictMixin, SuccessResponse, jsonify_with_class
@@ -22,33 +29,6 @@ class ReactionRequest(CamelDictMixin):
 class ExpandNodeRequest(CamelDictMixin):
     node_id: int = attr.ib()
     limit: int = attr.ib()
-
-# TODO: Add this to DTO file
-@attr.s(frozen=True)
-class GetSnippetsFromEdgeRequest(CamelDictMixin):
-    # TODO: Create a VisNode/VisEdge class similar to what we have on the frontend
-    edge: GraphRelationship = attr.ib()
-
-# TODO: Add this to DTO file
-@attr.s(frozen=True)
-class GetSnippetsFromDuplicateEdgeRequest(CamelDictMixin):
-    # TODO: Create a VisNode/VisEdge class similar to what we have on the frontend
-    edge: DuplicateVisEdge = attr.ib()
-
-# TODO: Add this to DTO file
-@attr.s(frozen=True)
-class GetSnippetCountsFromEdgesRequest(CamelDictMixin):
-    edges: List[GraphRelationship] = attr.ib()
-
-# TODO: Add this to DTO file
-@attr.s(frozen=True)
-class ReferenceTableDataRequest(CamelDictMixin):
-    node_edge_pairs: List[DuplicateNodeEdgePair] = attr.ib()
-
-# TODO: Add this to DTO file
-@attr.s(frozen=True)
-class GetGraphDataForClusterRequest(CamelDictMixin):
-    clustered_nodes: List[ClusteredNode] = attr.ib()
 
 @attr.s(frozen=True)
 class UploadFileRequest(CamelDictMixin):
