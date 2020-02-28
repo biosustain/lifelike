@@ -13,7 +13,7 @@ import { map, tap } from 'rxjs/operators';
 import { displaySnackbar } from './snackbar-actions';
 
 @Injectable()
-export class UserFileImportEffects {
+export class SharedNgrxEffects {
     constructor(
         private actions$: Actions,
         private snackBar: MatSnackBar,
