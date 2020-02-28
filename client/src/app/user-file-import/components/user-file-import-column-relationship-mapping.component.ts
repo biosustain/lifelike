@@ -119,8 +119,6 @@ export class UserFileImportColumnRelationshipMapperComponent {
             mappings.relationships = relationshipMapper;
         }
 
-        mappings.domain = this.nodeMappingHelper.worksheetDomain;
-
         // add the nodes without index keys
         let nodeMapper = [];
         for (const [key, value] of Object.entries(this.nodeMappingHelper.mapping.newMappings)) {
