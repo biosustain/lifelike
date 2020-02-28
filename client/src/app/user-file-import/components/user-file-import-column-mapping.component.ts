@@ -31,8 +31,6 @@ export class UserFileImportColumnMappingComponent {
     dbNodeProperties$: Observable<{[key: string]: string[]}>;
     dbRelationshipTypes$: Observable<string[]>;
 
-    worksheetDomain: string;
-
     columnMappingForm: FormGroup;
     nodePropertyMappingForm: FormGroup;
 
@@ -44,7 +42,6 @@ export class UserFileImportColumnMappingComponent {
         this.dbNodeProperties$ = this.store.pipe(select(selectors.selectNodeProperties));
         this.dbRelationshipTypes$ = this.store.pipe(select(selectors.selectDbRelationshipTypes));
 
-        this.worksheetDomain = '';
         this.columnMappingForm = this.fb.group({
             // newColumnMapping is creating a new mapping to the knowledge graph
             newColumnMapping: this.fb.array([]),
@@ -58,6 +55,7 @@ export class UserFileImportColumnMappingComponent {
     addNewColumnMappingRow() {
         const form = this.columnMappingForm.get('newColumnMapping') as FormArray;
         const row = this.fb.group({
+            domain: [],
             columnNode: [],
             newNodeLabel: [],
             mappedNodeLabel: [],
@@ -128,6 +126,7 @@ export class UserFileImportColumnMappingComponent {
             const propMappingValue = Object.keys(group.controls.columnNode.value)[0];
             const propMapping = {[propMappingKey]: propMappingValue};
             nodeMapping.mapping.newMappings[propMappingKey] = {
+                domain: group.controls.domain.value,
                 nodeType: group.controls.newNodeLabel.value,
                 nodeProperties: null,
                 mappedNodeType: group.controls.mappedNodeLabel.value,
@@ -177,8 +176,6 @@ export class UserFileImportColumnMappingComponent {
                 mappedNodePropertyTo: group.controls.mappedNodeProperty.value || '',
             } as Neo4jNodeMapping;
         });
-
-        nodeMapping.worksheetDomain = this.worksheetDomain;
 
         this.store.dispatch(saveNodeMapping({payload: nodeMapping}));
         this.nextStep.emit(true);
