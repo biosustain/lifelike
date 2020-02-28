@@ -4,7 +4,7 @@ import { Subscription } from 'rxjs';
 
 import { isNullOrUndefined } from 'util';
 
-import { NodeEdgePair, VisEdge, ReferenceTableRow } from 'app/interfaces';
+import { VisEdge, ReferenceTableRow, DuplicateNodeEdgePair } from 'app/interfaces';
 
 import { TooltipDetails } from 'app/shared/services/tooltip-control-service';
 import { TooltipComponent } from 'app/shared/components/tooltip/tooltip.component';
@@ -17,7 +17,7 @@ import { ReferenceTableControlService } from '../../services/reference-table-con
   styleUrls: ['./reference-table.component.scss']
 })
 export class ReferenceTableComponent extends TooltipComponent implements OnDestroy, OnInit {
-    @Input() set referenceTableData(tableData: NodeEdgePair[]) {
+    @Input() set referenceTableData(tableData: DuplicateNodeEdgePair[]) {
         if (!isNullOrUndefined(tableData) && tableData.length > 0) {
             // Clear the table rows, because it is very likely that the on hover
             // delay will be shorter than the time it takes to get new data. (If

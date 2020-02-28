@@ -1,9 +1,9 @@
 import { Injectable, OnDestroy } from '@angular/core';
 
 import { Subject, Observable, race, timer, Subscription } from 'rxjs';
-import { mapTo, switchMap, first } from 'rxjs/operators';
+import { mapTo, switchMap, first, map } from 'rxjs/operators';
 
-import { NodeEdgePair, GetReferenceTableDataResult } from 'app/interfaces';
+import { GetReferenceTableDataResult, DuplicateNodeEdgePair } from 'app/interfaces';
 import { TooltipControlService } from 'app/shared/services/tooltip-control-service';
 
 import { VisualizationService } from './visualization.service';
@@ -60,7 +60,7 @@ export class ReferenceTableControlService extends TooltipControlService implemen
         this.interruptReferenceTableSource.next(true);
     }
 
-    getReferenceTableData(nodeEdgePair: NodeEdgePair[]) {
+    getReferenceTableData(nodeEdgePair: DuplicateNodeEdgePair[]) {
         this.visService.getReferenceTableData(nodeEdgePair).pipe(
             first()
         ).subscribe(result => this.referenceTableRowDataSource.next(result));
