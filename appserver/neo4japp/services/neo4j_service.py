@@ -5,7 +5,11 @@ from typing import Dict, List, NamedTuple, Optional, Union
 from py2neo import cypher, NodeMatcher, RelationshipMatcher
 from werkzeug.datastructures import FileStorage
 
-from neo4japp.blueprints import DuplicateNodeEdgePair, DuplicateVisEdge, ClusteredNode
+from neo4japp.data_transfer_objects.visualization import (
+    DuplicateNodeEdgePair,
+    DuplicateVisEdge,
+    ClusteredNode,
+)
 from neo4japp.services.common import BaseDao
 from neo4japp.models import GraphNode, GraphRelationship
 from neo4japp.constants import *
