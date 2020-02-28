@@ -1,6 +1,5 @@
 import attr
 
-from neo4japp.models import GraphNode, GraphRelationship
 from neo4japp.util import CamelDictMixin
 
 from typing import Dict, List, Optional
@@ -52,8 +51,8 @@ class DuplicateVisEdge(VisEdge):
 
 @attr.s(frozen=True)
 class NodeEdgePair(CamelDictMixin):
-    node: GraphNode = attr.ib()
-    edge: GraphRelationship = attr.ib()
+    node: VisNode = attr.ib()
+    edge: VisEdge = attr.ib()
 
 @attr.s(frozen=True)
 class DuplicateNodeEdgePair(CamelDictMixin):
@@ -67,7 +66,7 @@ class ClusteredNode(CamelDictMixin):
 
 @attr.s(frozen=True)
 class EdgeSnippetCount(CamelDictMixin):
-    edge: GraphRelationship = attr.ib()
+    edge: VisEdge = attr.ib()
     count: int = attr.ib()
 
 @attr.s(frozen=True)
@@ -80,7 +79,7 @@ class ReferenceTableRow(CamelDictMixin):
 
 @attr.s(frozen=True)
 class GetSnippetsFromEdgeRequest(CamelDictMixin):
-    edge: GraphRelationship = attr.ib()
+    edge: VisEdge = attr.ib()
 
 @attr.s(frozen=True)
 class GetSnippetsFromDuplicateEdgeRequest(CamelDictMixin):
@@ -88,7 +87,7 @@ class GetSnippetsFromDuplicateEdgeRequest(CamelDictMixin):
 
 @attr.s(frozen=True)
 class GetSnippetCountsFromEdgesRequest(CamelDictMixin):
-    edges: List[GraphRelationship] = attr.ib()
+    edges: List[VisEdge] = attr.ib()
 
 @attr.s(frozen=True)
 class ReferenceTableDataRequest(CamelDictMixin):
