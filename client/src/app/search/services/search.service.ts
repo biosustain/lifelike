@@ -18,11 +18,4 @@ export class SearchService {
             `${this.searchApi}/search`, {query, page, limit},
         ).pipe(map(resp => resp.result));
     }
-
-    // TODO: Re-enable once we have a proper predictive/autocomplete implemented
-    // predictiveSearch(query: string) {
-    //     return this.http.post<{result: Neo4jResults}>(
-    //         `${this.searchApi}/search`, {query},
-    //     ).pipe(map(resp => resp.result));
-    // }
 }

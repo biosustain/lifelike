@@ -1,5 +1,4 @@
 import { Component, EventEmitter, OnInit, Output, ViewChild } from '@angular/core';
-import { SearchService } from '../services/search.service';
 import { FormGroup, FormControl } from '@angular/forms';
 import { GraphNode, FTSResult, FTSQueryRecord } from 'app/interfaces';
 import { MatAutocompleteTrigger } from '@angular/material';
@@ -36,7 +35,7 @@ export class VisualizationSearchComponent implements OnInit {
     // Search Query
     searchQuery: string;
 
-    constructor(private searchService: SearchService) {}
+    constructor() {}
 
     ngOnInit() {
         // TODO: Re-enable once we have a proper predictive/autocomplete implemented
@@ -72,24 +71,24 @@ export class VisualizationSearchComponent implements OnInit {
 
     onSubmit() {
         const query = this.searchForm.value.search;
-        this.searchService.fullTextSearch(query).subscribe(
-            (r: FTSResult) => {
-                this.searchSubmitted.emit(true);
-                const { page, limit, total, nodes } = r;
-                this.totalResults = total;
-                this.searchQuery = query;
-                this.searchResults = r;
-                this.searchResultRecords = nodes;
-                if ((page * limit) < total) {
-                    this.showMoreVisible = true;
-                } else {
-                    this.showMoreVisible = false;
-                }
-            },
-            error => {
-                // #TODO: Generic error handler
-            }
-        );
+        // this.searchService.fullTextSearch(query).subscribe(
+        //     (r: FTSResult) => {
+        //         this.searchSubmitted.emit(true);
+        //         const { page, limit, total, nodes } = r;
+        //         this.totalResults = total;
+        //         this.searchQuery = query;
+        //         this.searchResults = r;
+        //         this.searchResultRecords = nodes;
+        //         if ((page * limit) < total) {
+        //             this.showMoreVisible = true;
+        //         } else {
+        //             this.showMoreVisible = false;
+        //         }
+        //     },
+        //     error => {
+        //         // #TODO: Generic error handler
+        //     }
+        // );
     }
 
     onInputChanges(query: string) {
@@ -105,19 +104,19 @@ export class VisualizationSearchComponent implements OnInit {
     }
 
     showMore() {
-        const { query, page, limit, total } = this.searchResults;
-        if (this.searchResultRecords.length <= total) {
-            this.searchService.fullTextSearch(query, page + 1, limit).subscribe(
-                (r: FTSResult) => {
-                    this.searchResults = r;
-                    this.searchResultRecords = [
-                        ...this.searchResultRecords, ...r.nodes];
-                    if ((total - this.searchResultRecords.length) === 0) {
-                        this.showMoreVisible = false;
-                    }
-                }
-            );
-        }
+        // const { query, page, limit, total } = this.searchResults;
+        // if (this.searchResultRecords.length <= total) {
+        //     this.searchService.fullTextSearch(query, page + 1, limit).subscribe(
+        //         (r: FTSResult) => {
+        //             this.searchResults = r;
+        //             this.searchResultRecords = [
+        //                 ...this.searchResultRecords, ...r.nodes];
+        //             if ((total - this.searchResultRecords.length) === 0) {
+        //                 this.showMoreVisible = false;
+        //             }
+        //         }
+        //     );
+        // }
     }
 
     navigateToVisualizer() {
