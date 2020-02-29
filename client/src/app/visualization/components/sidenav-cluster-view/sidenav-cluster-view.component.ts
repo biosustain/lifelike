@@ -62,6 +62,8 @@ export class SidenavClusterViewComponent implements OnInit {
     }
 
     getAllLabels(clusterEntity: SidenavClusterEntity) {
+        // First, clear the labels array
+        this.labels.length = 0;
         Object.keys(clusterEntity.clusterGraphData.results).forEach(nodeId => {
             this.labels = this.labels.concat(
                 Object.keys(clusterEntity.clusterGraphData.results[nodeId]).filter(edgeLabel => !this.labels.includes(edgeLabel))
