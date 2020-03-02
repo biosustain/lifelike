@@ -33,6 +33,9 @@ export class LoginComponent implements OnInit {
     });
   }
 
+  /**
+   * Call login API for jwt credential
+   */
   submit() {
     let credential_form = this.form.value;
 

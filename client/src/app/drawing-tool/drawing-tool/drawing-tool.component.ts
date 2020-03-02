@@ -436,6 +436,7 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
     }
     this.recordCommand(cmd);
   }
+  
   /**
    * Save the current representation of knowledge model
    */

@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
 import {
   FormGroup,
   FormControl,
@@ -109,6 +109,9 @@ export class SideBarUiComponent implements OnInit, OnDestroy {
   /** Prevent formgroup from firing needlessly */
   pauseForm = false;
 
+  /** FormField to focus on when a new node or edge is added */
+  @ViewChild('labelInput', {static: false}) labelField: ElementRef;
+
   get edgeForm() {
     return <FormArray>this.graph_data_form.get('edges');
   }
@@ -173,7 +176,7 @@ export class SideBarUiComponent implements OnInit, OnDestroy {
         }
       );
 
-    // Listen for when a node is clicked on and its data
+    // Listen for when a node and its data
     // is streamed .. 
     this.graphDataSubscription = this.dataFlow.graphDataSource.subscribe((data: GraphSelectionData) => {
       if (!data) return;
@@ -211,7 +214,6 @@ export class SideBarUiComponent implements OnInit, OnDestroy {
           label: this.graph_data.label,
           group: this.graph_data.group,
           edges: this.graph_data.edges.map((e:Edge) => {
-
             return {
               id: e.id,
               label: e.label,
@@ -219,7 +221,12 @@ export class SideBarUiComponent implements OnInit, OnDestroy {
             }
           })
         };
-        this.graph_data_form.setValue(form_data, {emitEvent: false});     
+        this.graph_data_form.setValue(form_data, {emitEvent: false});
+
+        setTimeout(
+          () => this.labelField.nativeElement.focus(),
+          100
+        );
         
         this.pauseForm = false;
       }
@@ -331,7 +338,7 @@ export class SideBarUiComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * 
+   * Add edge to through FormControl
    */
   addEdge() {
     this.pauseForm = true;
