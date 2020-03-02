@@ -12,7 +12,6 @@ describe('SidenavEdgeViewComponent', () => {
     let fixture: ComponentFixture<SidenavEdgeViewComponent>;
 
     const mockSidenavEdgeEntity: SidenavEdgeEntity = {
-        data: null,
         to: {
             data: {id: 'MOCK_NODE_1_ID', name: 'MockNode1'},
             displayName: 'Mock Node 1',
