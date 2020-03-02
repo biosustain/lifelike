@@ -15,9 +15,6 @@ import {
   PendingChangesGuard
 } from './guards/pending-changes.guard';
 
-import {
-  AuthenticationService
-} from './services/authentication.service';
 
 export {
   ProjectListViewComponent,
@@ -25,5 +22,4 @@ export {
   LoginComponent,
   PdfViewerComponent,
   PendingChangesGuard,
-  AuthenticationService
 }
