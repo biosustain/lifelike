@@ -51,21 +51,21 @@ describe('SidenavNodeViewComponent', () => {
     });
 
     it('should show the input node label', () => {
-        const nodeDisplayNameElement = document.querySelector('#sidenav-node-label');
-        expect(nodeDisplayNameElement.innerHTML).toEqual('Label: MockNode');
+        const nodeLabelElement = document.querySelector('#sidenav-node-label');
+        expect(nodeLabelElement.innerHTML).toEqual('Label: MockNode');
     });
 
     it('should not show sub labels for node with only one label', () => {
-        const nodeDisplayNameElement = document.querySelectorAll('.sidenav-node-sub-label');
-        expect(nodeDisplayNameElement.length).toEqual(0);
+        const nodeSubLabelElements = document.querySelectorAll('.sidenav-node-sub-label');
+        expect(nodeSubLabelElements.length).toEqual(0);
     });
 
     it('should show sub labels for node with more than one label', () => {
         component.nodeEntity.data.subLabels = ['MockNode', 'ExtraSubLabel'];
         fixture.detectChanges();
 
-        const nodeDisplayNameElement = document.querySelectorAll('.sidenav-node-sub-label');
-        expect(nodeDisplayNameElement.length).toEqual(1);
-        expect(nodeDisplayNameElement[0].innerHTML).toEqual('ExtraSubLabel');
+        const nodeSubLabelElements = document.querySelectorAll('.sidenav-node-sub-label');
+        expect(nodeSubLabelElements.length).toEqual(1);
+        expect(nodeSubLabelElements[0].innerHTML).toEqual('ExtraSubLabel');
     });
 });
