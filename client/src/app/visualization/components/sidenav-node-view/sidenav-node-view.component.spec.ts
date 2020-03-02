@@ -44,4 +44,28 @@ describe('SidenavNodeViewComponent', () => {
     it('should create', () => {
         expect(component).toBeTruthy();
     });
+
+    it('should show the input node display name', () => {
+        const nodeDisplayNameElement = document.querySelector('#sidenav-node-display-name');
+        expect(nodeDisplayNameElement.innerHTML).toEqual('Display Name: Mock Node');
+    });
+
+    it('should show the input node label', () => {
+        const nodeDisplayNameElement = document.querySelector('#sidenav-node-label');
+        expect(nodeDisplayNameElement.innerHTML).toEqual('Label: MockNode');
+    });
+
+    it('should not show sub labels for node with only one label', () => {
+        const nodeDisplayNameElement = document.querySelectorAll('.sidenav-node-sub-label');
+        expect(nodeDisplayNameElement.length).toEqual(0);
+    });
+
+    it('should show sub labels for node with more than one label', () => {
+        component.nodeEntity.data.subLabels = ['MockNode', 'ExtraSubLabel'];
+        fixture.detectChanges();
+
+        const nodeDisplayNameElement = document.querySelectorAll('.sidenav-node-sub-label');
+        expect(nodeDisplayNameElement.length).toEqual(1);
+        expect(nodeDisplayNameElement[0].innerHTML).toEqual('ExtraSubLabel');
+    });
 });

@@ -23,7 +23,6 @@ import {
     GetSnippetsResult,
     GroupRequest,
     Neo4jGraphConfig,
-    SidenavEntity,
     SidenavClusterEntity,
     SidenavNodeEntity,
     SidenavEdgeEntity,
@@ -75,7 +74,6 @@ export class VisualizationCanvasComponent implements OnInit {
         if (!isNullOrUndefined(result)) {
             this.sidenavEntityType = SidenavEntityType.CLUSTER;
             this.sidenavEntity = {
-                data: null,
                 includes: Object.keys(result.results).map(nodeId => this.nodes.get(nodeId)),
                 clusterGraphData: result,
             } as SidenavClusterEntity;
@@ -89,7 +87,7 @@ export class VisualizationCanvasComponent implements OnInit {
     sidenavEntityTypeEnum = SidenavEntityType;
 
     sidenavOpened: boolean;
-    sidenavEntity: SidenavEntity;
+    sidenavEntity: SidenavNodeEntity | SidenavEdgeEntity | SidenavClusterEntity;
     sidenavEntityType: SidenavEntityType;
 
     networkGraph: Network;
