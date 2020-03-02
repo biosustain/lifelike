@@ -34,6 +34,11 @@ export class ProjectsService {
     private route: Router
   ) { }
 
+  /**
+   * Create http options with authorization
+   * header if boolean set to true
+   * @param with_jwt 
+   */
   createHttpOptions(with_jwt=false) {
     const headers = {
       'Content-Type':  'application/json'
