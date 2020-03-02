@@ -5712,16 +5712,16 @@ pbkdf2@^3.0.3:
     safe-buffer "^5.0.1"
     sha.js "^2.4.8"
 
-"pdf-viewer-lib@github:biosustain/lib-pdf-viewer":
+"pdf-viewer-lib@git+https://8a6e387c4df4efe82b82790132da7efd7477ebce:x-oauth-basic@github.com/sbrg/lib-pdf-viewer":
   version "0.0.1"
-  resolved "git+ssh://git@github.com/biosustain/lib-pdf-viewer.git#027fe42de206758ac5584ff5a76858d422b62a74"
+  resolved "git+https://8a6e387c4df4efe82b82790132da7efd7477ebce:x-oauth-basic@github.com/sbrg/lib-pdf-viewer#a30f14ec1594fe3dd8754d32e7dd6a08a0210c39"
   dependencies:
-    pdfjs-dist "github:biosustain/pdf.js"
+    pdfjs-dist "git+https://8a6e387c4df4efe82b82790132da7efd7477ebce:x-oauth-basic@github.com/sbrg/pdf.js"
     tslib "^1.9.0"
 
-pdfjs-dist@2.2.228, "pdfjs-dist@github:biosustain/pdf.js":
+pdfjs-dist@2.2.228, "pdfjs-dist@git+https://8a6e387c4df4efe82b82790132da7efd7477ebce:x-oauth-basic@github.com/sbrg/pdf.js":
   version "2.2.228"
-  resolved "git+ssh://git@github.com/biosustain/pdf.js.git#78c300316d1fd3f27376038518510a60d16134a2"
+  resolved "git+https://8a6e387c4df4efe82b82790132da7efd7477ebce:x-oauth-basic@github.com/sbrg/pdf.js#78c300316d1fd3f27376038518510a60d16134a2"
   dependencies:
     node-ensure "^0.0.0"
     worker-loader "^2.0.0"
