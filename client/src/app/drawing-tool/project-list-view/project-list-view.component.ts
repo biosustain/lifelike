@@ -37,11 +37,17 @@ declare var $: any;
   styleUrls: ['./project-list-view.component.scss']
 })
 export class ProjectListViewComponent implements OnInit, AfterViewInit {
-
+  /**
+   * List of projects owned by user
+   */
   projects: Project[] = [];
 
+  /**
+   * Project in focus
+   */
   selectedProject = null;
 
+  
   vis_graph = null;
 
   @ViewChild('projectMenu', {static: false}) projectMenu: TemplateRef<any>;
@@ -76,13 +82,24 @@ export class ProjectListViewComponent implements OnInit, AfterViewInit {
       });
   }
 
+  /**
+   * Function handler for contextmenu click event
+   * to spin up rendered contextmenu for project actions
+   * @param event 
+   * @param project 
+   */
   open(event: MouseEvent, project) {
+    // prevent event bubbling
     event.preventDefault();
 
     let x = event.x,
       y = event.y;
 
+    // Close previous context menu if open
     this.close();
+
+    // Position overlay to top right corner
+    // of cursor context menu click
     const positionStrategy = this.overlay.position()
       .flexibleConnectedTo({ x, y })
       .withPositions([
@@ -93,7 +110,8 @@ export class ProjectListViewComponent implements OnInit, AfterViewInit {
           overlayY: 'top',
         }
       ]);
-
+    
+    // Create and render overlay near cursor position
     this.overlayRef = this.overlay.create({
       positionStrategy,
       scrollStrategy: this.overlay.scrollStrategies.close()
@@ -103,11 +121,14 @@ export class ProjectListViewComponent implements OnInit, AfterViewInit {
       $implicit: project
     }));
 
+    // Listen for click event after context menu has been
+    // render on project item
     this.sub = fromEvent<MouseEvent>(document, 'click')
       .pipe(
         filter(event => {
           const clickTarget = event.target as HTMLElement;
           
+          // Check if right click event
           let isRightClick = false;
           if ("which" in event) {
             isRightClick = event["which"] == 3;
@@ -115,11 +136,18 @@ export class ProjectListViewComponent implements OnInit, AfterViewInit {
             isRightClick = event["button"] == 2;
           }
 
+          // Return whether or not click event is on context menu or outside
           return !!this.overlayRef && !this.overlayRef.overlayElement.contains(clickTarget);
         }),
         take(1)
       ).subscribe(() => this.close())
   }
+
+  /**
+   * Close and remove the context menu
+   * while unsubscribing from click streams
+   * to it
+   */
   close() {
     this.sub && this.sub.unsubscribe();
     if (this.overlayRef) {
@@ -128,11 +156,19 @@ export class ProjectListViewComponent implements OnInit, AfterViewInit {
     }    
   }
 
+  /**
+   * Open project in drawing-tool view's canvas
+   */
   goToProject() {
     this.dataFlow.pushProject2Canvas(this.selectedProject);
     this.route.navigateByUrl('drawing-tool');
   }
 
+  /**
+   * Open right side-bar with project meta information 
+   * in view
+   * @param proj 
+   */
   pickProject(proj: Project) {
     if (this.overlayRef) return;
 
@@ -158,6 +194,11 @@ export class ProjectListViewComponent implements OnInit, AfterViewInit {
     )
   }
 
+  /**
+   * Make a duplicate of a project and its data with a new uid
+   * through a confirmation dialog, then call create API on project
+   * @param project 
+   */
   copyProject(project) {
     // TODO: Add project into data attr
     const dialogRef = this.dialog.open(CopyProjectDialogComponent, {
@@ -175,6 +216,10 @@ export class ProjectListViewComponent implements OnInit, AfterViewInit {
     });
   }
 
+  /**
+   * Spin up dialog to confirm creation of project with
+   * title and description, then call create API on project
+   */
   createProject() {
     const dialogRef = this.dialog.open(CreateProjectDialogComponent, {
       width: '40%',
@@ -200,6 +245,11 @@ export class ProjectListViewComponent implements OnInit, AfterViewInit {
     });    
   }
 
+  /**
+   * Spin up dialog to confirm if user wants to delete project,
+   * if so, call delete API on project
+   * @param project 
+   */
   deleteProject(project=null) {
     if (!project) project = this.selectedProject;
 
