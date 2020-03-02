@@ -23,14 +23,14 @@ services:
     client:
         container_name: n4j-client
         # starts dev & moves the yarn.lock file so it can be committed
-        command: yarn start
+        command: yarn dev-start
         depends_on:
             - appserver
         volumes:
             # dev mode only: mount src dir for container to pick up edits done on host
             - ./client:/home/***ARANGO_USERNAME***/client
         ports:
-            - "127.0.0.1:4200:4200"
+            - "4200:4200"
         build: ./client
         networks:
             - frontend
