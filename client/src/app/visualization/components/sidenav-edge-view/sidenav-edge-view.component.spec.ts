@@ -7,7 +7,7 @@ import { SharedModule } from 'app/shared/shared.module';
 import { SidenavEdgeViewComponent } from './sidenav-edge-view.component';
 import { SidenavEdgeEntity } from 'app/interfaces';
 
-fdescribe('SidenavEdgeViewComponent', () => {
+describe('SidenavEdgeViewComponent', () => {
     let component: SidenavEdgeViewComponent;
     let fixture: ComponentFixture<SidenavEdgeViewComponent>;
 

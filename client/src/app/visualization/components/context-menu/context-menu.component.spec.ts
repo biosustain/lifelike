@@ -1,25 +1,42 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+
+import { configureTestSuite } from 'ng-bullet';
+
+import { SharedModule } from 'app/shared/shared.module';
 
 import { ContextMenuComponent } from './context-menu.component';
 
+import { ContextMenuControlService } from '../../services/context-menu-control.service';
+
 describe('ContextMenuComponent', () => {
-  let component: ContextMenuComponent;
-  let fixture: ComponentFixture<ContextMenuComponent>;
+    let component: ContextMenuComponent;
+    let fixture: ComponentFixture<ContextMenuComponent>;
 
-  beforeEach(async(() => {
-    TestBed.configureTestingModule({
-      declarations: [ ContextMenuComponent ]
-    })
-    .compileComponents();
-  }));
+    configureTestSuite(() => {
+        TestBed.configureTestingModule({
+            imports: [SharedModule],
+            declarations: [ ContextMenuComponent ],
+            providers: [ContextMenuControlService],
+        })
+        .compileComponents();
+    });
 
-  beforeEach(() => {
-    fixture = TestBed.createComponent(ContextMenuComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-  });
+    beforeEach(() => {
+        fixture = TestBed.createComponent(ContextMenuComponent);
+        component = fixture.componentInstance;
+        component.selectedNodeIds = [];
+        component.selectedEdgeIds = [];
+        component.selectedNodeEdgeLabels = new Set<string>();
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
-  });
+        component.tooltipSelector = '#root-menu';
+        component.tooltipOptions = {
+            placement: 'right-start',
+        };
+
+        fixture.detectChanges();
+    });
+
+    it('should create', () => {
+        expect(component).toBeTruthy();
+    });
 });

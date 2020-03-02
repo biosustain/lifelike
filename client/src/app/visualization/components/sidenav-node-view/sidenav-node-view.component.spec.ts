@@ -7,7 +7,7 @@ import { SharedModule } from 'app/shared/shared.module';
 import { SidenavNodeViewComponent } from './sidenav-node-view.component';
 import { SidenavNodeEntity } from 'app/interfaces';
 
-fdescribe('SidenavNodeViewComponent', () => {
+describe('SidenavNodeViewComponent', () => {
     let component: SidenavNodeViewComponent;
     let fixture: ComponentFixture<SidenavNodeViewComponent>;
 
