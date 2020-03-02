@@ -34,6 +34,7 @@
     "highcharts": "^8.0.0",
     "keycharm": "^0.2.0",
     "moment": "^2.24.0",
+    "ng-bullet": "^1.0.3",
     "rxjs": "~6.4.0",
     "toolbar-menu": "file:toolbar-menu/dist/toolbar-menu",
     "tslib": "^1.10.0",
