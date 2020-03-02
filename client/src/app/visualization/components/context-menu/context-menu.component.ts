@@ -66,9 +66,9 @@ export class ContextMenuComponent extends TooltipComponent implements OnDestroy 
     }
 
     ngOnDestroy() {
+        super.ngOnDestroy();
         this.hideContextMenuSubscription.unsubscribe();
         this.updatePopperSubscription.unsubscribe();
-        this.popper.destroy();
     }
 
     showTooltip() {
