@@ -2,10 +2,10 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { configureTestSuite } from 'ng-bullet';
 
+import { SidenavNodeEntity } from 'app/interfaces';
 import { SharedModule } from 'app/shared/shared.module';
 
 import { SidenavNodeViewComponent } from './sidenav-node-view.component';
-import { SidenavNodeEntity } from 'app/interfaces';
 
 describe('SidenavNodeViewComponent', () => {
     let component: SidenavNodeViewComponent;
