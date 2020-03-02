@@ -1,25 +1,43 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+
+import { configureTestSuite } from 'ng-bullet';
+
+import { SharedModule } from 'app/shared/shared.module';
 
 import { ReferenceTableComponent } from './reference-table.component';
 
+import { ReferenceTableControlService } from '../../services/reference-table-control.service';
+import { VisualizationService } from '../../services/visualization.service';
+
 describe('ReferenceTableComponent', () => {
-  let component: ReferenceTableComponent;
-  let fixture: ComponentFixture<ReferenceTableComponent>;
+    let component: ReferenceTableComponent;
+    let fixture: ComponentFixture<ReferenceTableComponent>;
 
-  beforeEach(async(() => {
-    TestBed.configureTestingModule({
-      declarations: [ ReferenceTableComponent ]
-    })
-    .compileComponents();
-  }));
+    configureTestSuite(() => {
+        TestBed.configureTestingModule({
+            imports: [SharedModule],
+            declarations: [ ReferenceTableComponent ],
+            providers: [
+                ReferenceTableControlService,
+                VisualizationService,
+            ],
+        })
+        .compileComponents();
+    });
 
-  beforeEach(() => {
-    fixture = TestBed.createComponent(ReferenceTableComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-  });
+    beforeEach(() => {
+        fixture = TestBed.createComponent(ReferenceTableComponent);
+        component = fixture.componentInstance;
+        component.referenceTableData = [];
+        component.tooltipSelector = '#root-table';
+        component.tooltipOptions = {
+            placement: 'right-start',
+        };
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
-  });
+        fixture.detectChanges();
+    });
+
+    it('should create', () => {
+        expect(component).toBeTruthy();
+    });
 });
