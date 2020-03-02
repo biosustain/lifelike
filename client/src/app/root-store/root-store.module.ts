@@ -33,7 +33,14 @@ export const reducers: ActionReducerMap<State> = {};
          * meta-reducer. This returns all providers for an @ngrx/store
          * based application.
          */
-        StoreModule.forRoot(reducers),
+        StoreModule.forRoot(reducers, {
+            runtimeChecks: {
+                strictStateImmutability: true,
+                strictActionImmutability: true,
+                strictStateSerializability: true,
+                strictActionSerializability: true,
+              },
+        }),
 
         /**
          * Store devtools instrument the store retaining past versions of state
