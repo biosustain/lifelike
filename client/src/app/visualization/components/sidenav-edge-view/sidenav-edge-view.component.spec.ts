@@ -2,12 +2,12 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { configureTestSuite } from 'ng-bullet';
 
+import { SidenavEdgeEntity } from 'app/interfaces';
 import { SharedModule } from 'app/shared/shared.module';
 
 import { SidenavEdgeViewComponent } from './sidenav-edge-view.component';
-import { SidenavEdgeEntity } from 'app/interfaces';
 
-fdescribe('SidenavEdgeViewComponent', () => {
+describe('SidenavEdgeViewComponent', () => {
     let component: SidenavEdgeViewComponent;
     let fixture: ComponentFixture<SidenavEdgeViewComponent>;
 
