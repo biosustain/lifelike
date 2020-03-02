@@ -34,6 +34,13 @@ describe('ReferenceTableComponent', () => {
             placement: 'right-start',
         };
 
+        const mockElement = document.createElement('div');
+        mockElement.setAttribute('id', '***ARANGO_USERNAME***-table');
+
+        // Mock document.querySelector so we can create a valid tooltip in the component
+        // (querySelector is called once in the ngOnInit of the TooltipComponent)
+        document.querySelector = jasmine.createSpy('HTML Element').and.returnValue(mockElement);
+
         fixture.detectChanges();
     });
 
