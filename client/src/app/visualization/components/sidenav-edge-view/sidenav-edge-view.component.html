@@ -1,15 +1,15 @@
 <h1>Edge Data View</h1>
 
-<div>Association: {{ edgeEntity.association }}</div>
+<div id="sidenav-edge-association">Association: {{ edgeEntity.association }}</div>
 
 <div>From:</div>
 <ul>
-  <li>Display Name: {{ edgeEntity.from.displayName }}</li>
-  <li>Label: {{ edgeEntity.from.primaryLabel }}</li>
+  <li id="sidenav-from-node-display-name">Display Name: {{ edgeEntity.from.displayName }}</li>
+  <li id="sidenav-from-node-label">Label: {{ edgeEntity.from.primaryLabel }}</li>
   <li>Sublabels:
     <ul *ngIf="edgeEntity.from.subLabels.length > 1; else noSubLabels">
       <li *ngFor="let label of edgeEntity.from.subLabels">
-        <div *ngIf="label !== edgeEntity.from.primaryLabel">{{ label }}</div>
+        <div class="sidenav-from-node-sub-label" *ngIf="label !== edgeEntity.from.primaryLabel">{{ label }}</div>
       </li>
     </ul>
     <ng-template #noSubLabels>N/A</ng-template>
@@ -18,12 +18,12 @@
 
 <div>To:</div>
 <ul>
-  <li>Display Name: {{ edgeEntity.to.displayName }}</li>
-  <li>Label: {{ edgeEntity.to.primaryLabel }}</li>
+  <li id="sidenav-to-node-display-name">Display Name: {{ edgeEntity.to.displayName }}</li>
+  <li id="sidenav-to-node-label">Label: {{ edgeEntity.to.primaryLabel }}</li>
   <li>Sublabels:
     <ul *ngIf="edgeEntity.to.subLabels.length > 1; else noSubLabels">
       <li *ngFor="let label of edgeEntity.to.subLabels">
-        <div *ngIf="label !== edgeEntity.to.primaryLabel">{{ label }}</div>
+        <div class="sidenav-to-node-sub-label" *ngIf="label !== edgeEntity.to.primaryLabel">{{ label }}</div>
       </li>
     </ul>
     <ng-template #noSubLabels>N/A</ng-template>
@@ -32,6 +32,6 @@
 
 <div>Snippets:</div>
 <ul *ngIf="edgeEntity.references.length > 0; else noReferences">
-  <li *ngFor="let snippet of edgeEntity.references">{{ snippet.sentence }}</li>
+  <li class="sidenav-snippet" *ngFor="let snippet of edgeEntity.references">{{ snippet.sentence }}</li>
 </ul>
 <ng-template #noReferences>No Association Snippets Found!</ng-template>
