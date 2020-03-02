@@ -16,7 +16,7 @@ import {
 } from 'app/interfaces';
 import { NODE_EXPANSION_LIMIT } from 'app/shared/constants';
 
-import { VisualizationService } from '../services/visualization.service';
+import { VisualizationService } from '../../services/visualization.service';
 
 @Component({
     selector: 'app-visualization',
