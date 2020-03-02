@@ -5,6 +5,7 @@ env/
 .cache/
 .python_history
 .ipython/
+.mypy_cache/
 
 # compiled output
 dist/
@@ -35,3 +36,4 @@ postgres/
 client/node_modules
 esdata/
 node_modules/
+
