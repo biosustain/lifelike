@@ -6,7 +6,7 @@ import { SharedModule } from 'app/shared/shared.module';
 
 import { SidenavClusterViewComponent } from './sidenav-cluster-view.component';
 
-fdescribe('SidenavClusterViewComponent', () => {
+describe('SidenavClusterViewComponent', () => {
     let component: SidenavClusterViewComponent;
     let fixture: ComponentFixture<SidenavClusterViewComponent>;
 
