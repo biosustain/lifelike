@@ -13,6 +13,7 @@
 if [[ $SEED_DATA && $OUTPUT == *"user@gmail.com"* ]]; then
 	echo "SEED DATA INTACT"
 else
+	echo "Sanitizing DB"
 	flask drop_tables
 
 	echo "Initializing DB"

@@ -13,7 +13,7 @@ bp = Blueprint('drawing_tool', __name__)
 @auth.login_required
 def get_project():
     """
-
+        Return a list of all projects underneath user
     """
     user = pullUserFromAuthHead()
 
@@ -28,7 +28,7 @@ def get_project():
 @auth.login_required
 def add_project():
     """
-
+        Create a new projecrt under a user
     """
     data = request.get_json()
     user = pullUserFromAuthHead()
@@ -61,7 +61,7 @@ def add_project():
 @auth.login_required
 def update_project(project_id):
     """
-
+        Update the project's content and its metadata.
     """
     user = pullUserFromAuthHead()
     data = request.get_json()
@@ -88,6 +88,9 @@ def update_project(project_id):
 @bp.route('/projects/<string:project_id>', methods=['delete'])
 @auth.login_required
 def delete_project(project_id):
+    """ 
+        Delete object owned by user
+    """
     user = pullUserFromAuthHead()
 
     # Pull up project by id

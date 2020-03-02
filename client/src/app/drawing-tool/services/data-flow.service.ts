@@ -47,6 +47,10 @@ export class DataFlowService {
     this.pdf2Canvas.next(node);
   }
 
+  /**
+   * Load project onto drawing-tool view's canvas
+   * @param project 
+   */
   pushProject2Canvas(project: Project) {
     this.projectlist2Canvas.next(project);
   }

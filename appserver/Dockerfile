@@ -1,8 +1,5 @@
 FROM python:3.7.1
 
-RUN apt-get update
-RUN apt-get install netcat --yes
-
 # Install psql to check on postgres availability
 RUN apt-get update && apt-get install -y --no-install-recommends \
     postgresql-client \
