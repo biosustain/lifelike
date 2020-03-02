@@ -1,3 +1,4 @@
+import { APP_BASE_HREF } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
 import { TestBed, ComponentFixture } from '@angular/core/testing';
 import { BrowserModule } from '@angular/platform-browser';
@@ -34,6 +35,9 @@ describe('AppComponent', () => {
             declarations: [
                 AppComponent
             ],
+            providers: [
+                {provide: APP_BASE_HREF, useValue: '/'},
+            ]
         }).compileComponents();
     });
 

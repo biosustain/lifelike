@@ -96,9 +96,8 @@ export class ReferenceTableComponent extends TooltipComponent implements OnDestr
                 }
             }
         }
-        const element = document.getElementById('root-table');
         const animationEnd = whichTransitionEvent();
-        element.addEventListener(animationEnd, () => {
+        this.tooltip.addEventListener(animationEnd, () => {
             this.hideTooltip();
         }, false);
     }
