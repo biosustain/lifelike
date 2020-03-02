@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Output } from '@angular/core';
-import { VisualizationService } from '../services/visualization.service';
+import { VisualizationService } from '../../services/visualization.service';
 import { FormControl } from '@angular/forms';
 import { GraphNode, Neo4jResults } from 'app/interfaces';
 
