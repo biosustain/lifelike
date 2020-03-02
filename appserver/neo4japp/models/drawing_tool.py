@@ -3,6 +3,9 @@ import bcrypt
 from neo4japp.database import db, ma
 
 class AppUser(db.Model):
+    """
+        User models to tie ownership of resources to
+    """
     __tablename__ = "appuser"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -30,6 +33,11 @@ class AppUserSchema(ma.ModelSchema):
 
 
 class Project(db.Model):
+    """
+        Model representation of a project drawing in a
+        network graph networking tool
+
+    """
     id = db.Column(db.Integer, primary_key=True)
     label = db.Column(db.String(250), nullable=False)
     description = db.Column(db.Text)

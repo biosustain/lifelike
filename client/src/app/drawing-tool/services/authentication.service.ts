@@ -18,6 +18,12 @@ export class AuthenticationService implements HttpInterceptor {
     private route: Router
   ) { }
 
+  /**
+   * Intercept every request's response where
+   * jwt is expired, and renew access token
+   * @param req 
+   * @param next 
+   */
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<any> {
     return next.handle(req)
       .pipe(
@@ -39,6 +45,11 @@ export class AuthenticationService implements HttpInterceptor {
       );
   }
 
+  /**
+   * Create http options with authorization
+   * header if boolean set to true
+   * @param with_jwt 
+   */
   createHttpOptions(with_jwt=false) {
     const headers = {
       'Content-Type':  'application/json'
@@ -54,6 +65,10 @@ export class AuthenticationService implements HttpInterceptor {
     return httpOptions
   }
 
+  /**
+   * Allow auth header to be updated with new access jwt
+   * @param request - request with auth ehader your trying to modify
+   */
   updateAuthHeader(request: HttpRequest<any>) {
     return request.clone({
       setHeaders: {
@@ -100,6 +115,7 @@ export class AuthenticationService implements HttpInterceptor {
 
   /**
    * Logout user and return to logout page ..
+   * whle removing refresh and access jwt
    */
   public logout() {
     localStorage.removeItem('refresh_jwt');
