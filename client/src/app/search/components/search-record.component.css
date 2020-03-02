@@ -1,3 +1,15 @@
-.flat-record-card {
-  border: 1px solid #e5e9f5;
+#publication-container {
+  margin-top: 20px;
+}
+#pub-data-header {
+  font-size: 14px;
+  font-weight: bold;
+  margin-left: 0px;
+  margin-right: 5px;
+}
+#pubid-data-header {
+  font-size: 14px;
+  font-weight: bold;
+  margin-left: 10px;
+  margin-right: 5px;
 }

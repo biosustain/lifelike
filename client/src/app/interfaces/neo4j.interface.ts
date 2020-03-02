@@ -110,6 +110,15 @@ export interface FTSQueryRecord {
   score: number;
 }
 
+export interface FTSReferenceRecord extends FTSQueryRecord {
+  publicationTitle: string;
+  publicationYear: number;
+  publicationId: number;
+  relationship: string;
+  chemical?: GraphNode;
+  disease?: GraphNode;
+}
+
 export interface FTSResult {
   query: string;
   nodes: Array<FTSQueryRecord>;
