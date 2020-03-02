@@ -44,7 +44,7 @@
     "jquery": "3.3.1",
     "jquery-ui": "1.12.1",
     "jquery-ui-dist": "1.12.1",
-    "pdf-viewer-lib": "github:biosustain/lib-pdf-viewer",
+    "pdf-viewer-lib": "git+***REMOVED***/sbrg/lib-pdf-viewer",
     "pdfjs-dist": "2.2.228",
     "qtip2": "3.0.3",
     "tachyons": "4.10.0"

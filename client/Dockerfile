@@ -1,5 +1,8 @@
 FROM node:slim
 
+# Install psql to check on postgres availability
+RUN apt-get update && apt-get install -y git
+
 ENV N4J_USER ***ARANGO_USERNAME***
 ENV N4J_HOME /home/$N4J_USER
 ENV N4J_CLIENT $N4J_HOME/client
