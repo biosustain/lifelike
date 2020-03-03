@@ -52,16 +52,35 @@ class SearchService(BaseDao):
                     disease_node = GraphNode.from_py2neo(
                         result['disease'], display_fn=lambda x: x.get('name'))
                 publication = result['publication']
-                formatted_results.append(FTSReferenceRecord(
-                    node=graph_node,
-                    score=score,
-                    publication_title=publication['journal'],
-                    publication_year=publication['pub_year'],
-                    publication_id=publication['pmid'],
-                    relationship=result['association']['description'],
-                    chemical=chem_node,
-                    disease=disease_node,
-                ))
+                try:
+                    # See TODO about potential missing data; this needs to be
+                    # refactored once we have a better understanding of the
+                    # data source.
+                    pub_title = publication.get('journal', 'No publication found.')
+                    pub_year = publication.get('pub_year', '')
+                    pub_id = publication.get('pmid', '')
+                    relationship = result.get('association', None)
+                    if relationship is not None:
+                        relationship = result['association']['description']
+
+                    formatted_results.append(FTSReferenceRecord(
+                        node=graph_node,
+                        score=score,
+                        publication_title=pub_title,
+                        publication_year=pub_year,
+                        publication_id=pub_id,
+                        relationship=relationship,
+                        chemical=chem_node,
+                        disease=disease_node,
+                    ))
+                except KeyError as err:
+                    # TODO: Fix this data structure or data source.
+                    # Because we're using a prototype dataset, we
+                    # have the potential to have missing data, so
+                    # we can't assume the attributes listed above
+                    # always exist.
+                    print('Data is missing from record', result)
+                    raise
             else:
                 graph_node = GraphNode.from_py2neo(
                     node, display_fn=lambda x: x.get('name'))

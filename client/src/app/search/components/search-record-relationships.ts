@@ -1,5 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { FTSQueryRecord } from 'app/interfaces';
+import { PubMedURL } from 'app/shared/constants';
 
 @Component({
     selector: 'app-search-record-relationships',
@@ -8,14 +9,25 @@ import { FTSQueryRecord } from 'app/interfaces';
             <mat-card-title>Snippet: {{ node.node.displayName }}</mat-card-title>
             <mat-card-subtitle>ID: {{ node.node.data.id }}</mat-card-subtitle>
             <mat-card-content>
-                <div>{{ node.node.displayName }}</div>
+                <div id="pub-snippet-title">{{ node.node.displayName }}</div>
+                <i>This snippet genarated the following relationship</i>
+                <app-node-relationship
+                    [leftNode]="node.chemical"
+                    [rightNode]="node.disease"
+                    [edge]="node.relationship"
+                >
+                </app-node-relationship>
                 <div id="publication-container">
                     <div>
                         <span id="pub-data-header">Publication:</span>
-                        <span>{{ node.publicationTitle }}</span>
-                        <span *ngIf="node.publicationYear">({{ node.publicationYear }})</span>
+                        <a target="_blank" href="{{ PUBMEDURL }}/{{ node.publicationId }}">
+                            <span>{{ node.publicationTitle }}</span>
+                            <span *ngIf="node.publicationYear">({{ node.publicationYear }})</span>
+                        </a>
                         <span id="pubid-data-header">PubMed ID:</span>
-                        <span>{{ node.publicationId }}</span>
+                        <a target="_blank" href="{{ PUBMEDURL }}/{{ node.publicationId }}">
+                            <span>{{ node.publicationId }}</span>
+                        </a>
                     </div>
                 </div>
             </mat-card-content>
@@ -24,6 +36,9 @@ import { FTSQueryRecord } from 'app/interfaces';
     styleUrls: ['./search-record.component.scss']
 })
 export class SearchRecordRelationshipsComponent {
+
+    PUBMEDURL: string = PubMedURL;
+
     @Input() node: FTSQueryRecord;
 
     constructor() {}
