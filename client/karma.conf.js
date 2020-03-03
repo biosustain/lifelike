@@ -1,35 +1,6 @@
 // Karma configuration file, see link for more information
 // https://karma-runner.github.io/1.0/config/configuration-file.html
 
-// We need to disable sandbox when we are running in side docker,
-// because chrome's sandbox needs more permissions than docker
-// normally allows so won't work unless docker is run in privileged
-// mode.
-
-// Code below is taken from is-docker, nearbly verbatim
-// https://github.com/sindresorhus/is-docker/blob/master/index.js
-
-const fs = require('fs');
-
-function hasDockerEnv() {
-	try {
-		fs.statSync('/.dockerenv');
-		return true;
-	} catch (err) {
-		return false;
-	}
-}
-
-function hasDockerCGroup() {
-	try {
-		return fs.readFileSync('/proc/self/cgroup', 'utf8').indexOf('docker') !== -1;
-	} catch (err) {
-		return false;
-	}
-}
-
-const inDocker = hasDockerEnv() || hasDockerCGroup();
-
 module.exports = function (config) {
   config.set({
     basePath: '',
