@@ -81,12 +81,14 @@ export class ReferenceTableComponent extends TooltipComponent implements OnDestr
     }
 
     setupFadeoutEndCallback() {
-
         const element = document.getElementById('root-table');
         const animationEnd = whichTransitionEvent();
-        element.addEventListener(animationEnd, () => {
-            this.hideTooltip();
-        }, false);
+
+        if (animationEnd !== undefined) {
+            element.addEventListener(animationEnd, () => {
+                this.hideTooltip();
+            }, false);
+        }
     }
 
     getAssociationsWithEdge(edge: VisEdge) {
