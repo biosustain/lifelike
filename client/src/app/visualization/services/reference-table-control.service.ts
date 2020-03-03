@@ -1,54 +1,59 @@
-import { Injectable } from '@angular/core';
+import { Injectable, OnDestroy } from '@angular/core';
 
-import { Subject, Observable, race, interval } from 'rxjs';
-import { mapTo, first } from 'rxjs/operators';
+import { Subject, Observable, race, timer, Subscription } from 'rxjs';
+import { mapTo, switchMap, takeUntil } from 'rxjs/operators';
 
-import { VisEdge, GetSnippetCountsFromEdgesResult } from 'app/interfaces';
+import { GetReferenceTableDataResult, DuplicateNodeEdgePair } from 'app/interfaces';
 import { TooltipControlService } from 'app/shared/services/tooltip-control-service';
 
 import { VisualizationService } from './visualization.service';
 
 @Injectable()
-export class ReferenceTableControlService extends TooltipControlService {
-    delayEdgeMenuSource = new Subject<boolean>();
-    interruptEdgeMenuSource = new Subject<boolean>();
-    showReferenceTableResultSource = new Subject<boolean>();
-    associationCountForEdgesSource = new Subject<GetSnippetCountsFromEdgesResult>();
+export class ReferenceTableControlService extends TooltipControlService implements OnDestroy {
+    private delayReferenceTableSource = new Subject<boolean>();
+    private interruptReferenceTableSource = new Subject<boolean>();
+    private showReferenceTableResultSource = new Subject<boolean>();
+    private referenceTableRowDataSource = new Subject<GetReferenceTableDataResult>();
 
-    delayEdgeMenu$: Observable<boolean>;
-    interruptEdgeMenu$: Observable<boolean>;
+    private delayReferenceTableSubscription: Subscription;
+
+    interruptReferenceTable$: Observable<boolean>;
     showReferenceTableResult$: Observable<boolean>;
-    associationCountForEdges$: Observable<GetSnippetCountsFromEdgesResult>;
+    referenceTableRowData$: Observable<GetReferenceTableDataResult>;
 
     constructor(
         private visService: VisualizationService,
     ) {
         super();
 
-        this.delayEdgeMenu$ = this.delayEdgeMenuSource.asObservable();
-        this.interruptEdgeMenu$ = this.interruptEdgeMenuSource.asObservable();
-        this.showReferenceTableResult$ = this.showReferenceTableResultSource.asObservable();
-        this.associationCountForEdges$ = this.associationCountForEdgesSource.asObservable();
+        this.interruptReferenceTable$ = this.interruptReferenceTableSource.asObservable().pipe(takeUntil(this.completeSubjectsSource));
+        this.showReferenceTableResult$ = this.showReferenceTableResultSource.asObservable().pipe(takeUntil(this.completeSubjectsSource));
+        this.referenceTableRowData$ = this.referenceTableRowDataSource.asObservable().pipe(takeUntil(this.completeSubjectsSource));
 
-        this.delayEdgeMenu$.subscribe(() => {
-            const example = race(
-                this.interruptEdgeMenuSource.pipe(mapTo(false)),
-                interval(500).pipe(mapTo(true)),
-            ).pipe(first());
-            example.subscribe(val => this.showReferenceTableResultSource.next(val));
-        });
+        this.delayReferenceTableSubscription = this.delayReferenceTableSource.pipe(
+            switchMap(() =>
+                race(
+                    this.interruptReferenceTableSource.pipe(mapTo(false)),
+                    timer(500).pipe(mapTo(true)),
+                )
+            )
+        ).subscribe(val => this.showReferenceTableResultSource.next(val));
     }
 
-    delayEdgeMenu() {
-        this.delayEdgeMenuSource.next(true);
+    ngOnDestroy() {
+        super.ngOnDestroy();
+        this.delayReferenceTableSubscription.unsubscribe();
     }
 
-    // TODO: Should probably also interrupt if the user hovers out of the node table row
-    interruptEdgeMenu() {
-        this.interruptEdgeMenuSource.next(true);
+    delayReferenceTable() {
+        this.delayReferenceTableSource.next(true);
     }
 
-    getAssociationCountForEdges(edges: VisEdge[]) {
-        this.visService.getSnippetCountsFromEdges(edges).subscribe(result => this.associationCountForEdgesSource.next(result));
+    interruptReferenceTable() {
+        this.interruptReferenceTableSource.next(true);
+    }
+
+    getReferenceTableData(nodeEdgePair: DuplicateNodeEdgePair[]) {
+        this.visService.getReferenceTableData(nodeEdgePair).subscribe(result => this.referenceTableRowDataSource.next(result));
     }
 }

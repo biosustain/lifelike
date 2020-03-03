@@ -1,42 +1,50 @@
-#root-table {
-    display: none;
+table, td {
+    border: thin solid #C9CACC;
+    border-collapse: collapse;
 }
 
-#selected-node-edge-labels-submenu {
+td {
+    padding: 2.5px 3.5px;
+}
+
+#root-table {
     display: none;
 }
 
 .reference-table {
     background: #D4E2F4;
-    border-radius: 2px;
-    border: thin solid #C9CACC;
-}
-
-.reference-table-group {
-    border-bottom: thin solid #C9CACC;
-    color: #5B6A80;
-    font-size: 13px;
-    font-weight: bold;
-    padding: 5px 0;
-    width: 100%;
 }
 
 .reference-table-row {
+    color: #5B6A80;
+    font-size: 13px;
+    font-weight: bold;
+    width: 100%;
     height: 15px;
-    padding: 0 8px 0 20px;
-    text-align: left;
-    vertical-align: middle;
 }
 .reference-table-row:hover {
     background: #C5C6C7;
 }
 
+.entity-name-container {
+    text-align: right;
+}
+
+.snippet-bar-container {
+    width: 100px;
+}
+
+.snippet-bar-repr {
+    height: 10px;
+    background: #aaabad;
+}
+
 .fade-out {
-    animation: fadeOut ease .2s forwards;
-    -webkit-animation: fadeOut ease .2s forwards;
-    -moz-animation: fadeOut ease .2s forwards;
-    -o-animation: fadeOut ease .2s forwards;
-    -ms-animation: fadeOut ease .2s forwards;
+    animation: fadeOut ease .1s forwards;
+    -webkit-animation: fadeOut ease .1s forwards;
+    -moz-animation: fadeOut ease .1s forwards;
+    -o-animation: fadeOut ease .1s forwards;
+    -ms-animation: fadeOut ease .1s forwards;
   }
   @keyframes fadeOut {
     0% {

@@ -5,11 +5,14 @@ import { map } from 'rxjs/operators';
 
 import {
     ClusteredNode,
+    DuplicateNodeEdgePair,
+    DuplicateVisEdge,
     GetClusterGraphDataResult,
     GetSnippetCountsFromEdgesResult,
     GetSnippetsResult,
     Neo4jResults,
     VisEdge,
+    GetReferenceTableDataResult,
 } from 'app/interfaces';
 import { NODE_EXPANSION_LIMIT } from 'app/shared/constants';
 
@@ -64,9 +67,21 @@ export class VisualizationService {
         ).pipe(map(resp => resp.result));
     }
 
+    getSnippetsFromDuplicateEdge(edge: DuplicateVisEdge) {
+        return this.http.post<{result: GetSnippetsResult}>(
+            `${this.visApi}/get-snippets-from-duplicate-edge`, {edge},
+        ).pipe(map(resp => resp.result));
+    }
+
     getSnippetCountsFromEdges(edges: VisEdge[]) {
         return this.http.post<{result: GetSnippetCountsFromEdgesResult}>(
             `${this.visApi}/get-snippet-counts-from-edges`, {edges},
+        ).pipe(map(resp => resp.result));
+    }
+
+    getReferenceTableData(nodeEdgePairs: DuplicateNodeEdgePair[]) {
+        return this.http.post<{result: GetReferenceTableDataResult}>(
+            `${this.visApi}/get-reference-table-data`, {nodeEdgePairs},
         ).pipe(map(resp => resp.result));
     }
 
