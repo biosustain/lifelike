@@ -29,18 +29,15 @@ class VisEdge(CamelDictMixin):
     from_: int = attr.ib()
     arrows: Optional[str] = attr.ib()
 
-    @classmethod
-    def build_from_dict(cls, d):
-        copy = d.copy()
-        copy['from_'] = copy['from']
-        del copy['from']
-        return super().build_from_dict(copy)
+    def build_from_dict_formatter(self, vis_edge_input_dict: dict):
+        vis_edge_input_dict['from_'] = vis_edge_input_dict['from']
+        del vis_edge_input_dict['from']
+        return vis_edge_input_dict
 
-    def to_dict(self):
-        copy = self.__dict__.copy()
-        copy['from'] = copy['from_']
-        del copy['from_']
-        return copy
+    def to_dict_formatter(self, vis_edge_output_dict: dict):
+        vis_edge_output_dict['from'] = vis_edge_output_dict['from_']
+        del vis_edge_output_dict['from_']
+        return vis_edge_output_dict
 
 @attr.s(frozen=True)
 class DuplicateVisEdge(VisEdge):
@@ -124,7 +121,7 @@ class GetReferenceTableDataResult(CamelDictMixin):
     reference_table_rows: List[ReferenceTableRow] = attr.ib()
 
     # Override the default formatter to convert 'from_' attribute of edges
-    def formatter(self, get_reference_table_data_result_dict: dict):
+    def to_dict_formatter(self, get_reference_table_data_result_dict: dict):
         for row in get_reference_table_data_result_dict['reference_table_rows']:
             edge = row['edge']
             edge['from'] = edge['from_']
