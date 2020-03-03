@@ -1,15 +1,13 @@
-<div id="***ARANGO_USERNAME***-table" [ngClass]="referenceTableClass">
-  <div class="reference-table-group">
-    <div id="{{'reference-table-node-' + row.node.id }}" class="reference-table-row" *ngFor="let row of nodeTable" (mouseenter)="showSelectedNodeEdgeLabels(row)" (mouseleave)="mouseLeaveNodeRow()" fxLayout="row" fxLayoutAlign="space-between center">
-      <div>{{row.node.displayName}}</div>
-      <mat-icon>arrow_right</mat-icon>
-    </div>
-  </div>
-</div>
-
-<!-- Submenus (these are tooltips, so they should be floating around -- invisible -- until their mouseover events are called -->
-<div id="selected-node-edge-labels-submenu" [ngClass]="referenceTableClass">
-  <div *ngIf="getEdgeSnippetCountsResult !== null && getEdgeSnippetCountsResult !== undefined" class="reference-table-group">
-    <div class="reference-table-row" *ngFor="let edgeSnippetCount of getEdgeSnippetCountsResult.edgeSnippetCounts" (click)="getAssociationsWithEdge(edgeSnippetCount.edge)">{{ edgeSnippetCount.edge.label }} ({{ edgeSnippetCount.count }})</div>
-  </div>
-</div>
+<table id="***ARANGO_USERNAME***-table" [ngClass]="referenceTableClass">
+  <tr class="reference-table-row" *ngFor="let row of referenceTableRows; let i = index" (click)="getAssociationsWithEdge(row.edge)">
+    <td class="entity-name-container">{{row.nodeDisplayName}}</td>
+    <td class="snippet-count-container">
+      <div *ngIf="row.snippetCount <= 20">({{row.snippetCount}})</div>
+      <div *ngIf="row.snippetCount > 20">20+</div>
+    </td>
+    <td class="snippet-bar-container">
+      <div *ngIf="row.snippetCount <= 20" class="snippet-bar-repr" style.width="{{row.snippetCount * 5}}px"></div>
+      <div *ngIf="row.snippetCount > 20" class="snippet-bar-repr" style="width: 100px;"></div>
+    </td> <!-- Need to normalize this! -->
+  </tr>
+</table>

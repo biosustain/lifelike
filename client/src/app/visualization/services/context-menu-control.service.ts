@@ -1,14 +1,16 @@
-import { Injectable } from '@angular/core';
+import { Injectable, OnDestroy } from '@angular/core';
 
 import { TooltipControlService } from 'app/shared/services/tooltip-control-service';
-import { Subject, Observable, race, interval } from 'rxjs';
-import { mapTo, first } from 'rxjs/operators';
+import { Subject, Observable, race, interval, Subscription } from 'rxjs';
+import { mapTo, first, takeUntil } from 'rxjs/operators';
 
 @Injectable()
-export class ContextMenuControlService extends TooltipControlService {
-    delayGroupByRelSource = new Subject<boolean>();
-    interruptGroupByRelSource = new Subject<boolean>();
-    showGroupByRelResultSource = new Subject<boolean>();
+export class ContextMenuControlService extends TooltipControlService implements OnDestroy {
+    private delayGroupByRelSource = new Subject<boolean>();
+    private interruptGroupByRelSource = new Subject<boolean>();
+    private showGroupByRelResultSource = new Subject<boolean>();
+
+    private delayGroupByRelSourceSubscription: Subscription;
 
     delayGroupByRel$: Observable<boolean>;
     interruptGroupByRel$: Observable<boolean>;
@@ -17,11 +19,11 @@ export class ContextMenuControlService extends TooltipControlService {
     constructor() {
         super();
 
-        this.delayGroupByRel$ = this.delayGroupByRelSource.asObservable();
-        this.interruptGroupByRel$ = this.interruptGroupByRelSource.asObservable();
-        this.showGroupByRelResult$ = this.showGroupByRelResultSource.asObservable();
+        this.delayGroupByRel$ = this.delayGroupByRelSource.asObservable().pipe(takeUntil(this.completeSubjectsSource));
+        this.interruptGroupByRel$ = this.interruptGroupByRelSource.asObservable().pipe(takeUntil(this.completeSubjectsSource));
+        this.showGroupByRelResult$ = this.showGroupByRelResultSource.asObservable().pipe(takeUntil(this.completeSubjectsSource));
 
-        this.delayGroupByRel$.subscribe(() => {
+        this.delayGroupByRelSourceSubscription = this.delayGroupByRelSource.subscribe(() => {
             const example = race(
                 this.interruptGroupByRelSource.pipe(mapTo(false)),
                 interval(200).pipe(mapTo(true)),
@@ -30,11 +32,15 @@ export class ContextMenuControlService extends TooltipControlService {
         });
     }
 
+    ngOnDestroy() {
+        super.ngOnDestroy();
+        this.delayGroupByRelSourceSubscription.unsubscribe();
+    }
+
     delayGroupByRel() {
         this.delayGroupByRelSource.next(true);
     }
 
-    // TODO: Should probably also interrupt if the user hovers out of "Group by Relationship" row
     interruptGroupByRel() {
         this.interruptGroupByRelSource.next(true);
     }
