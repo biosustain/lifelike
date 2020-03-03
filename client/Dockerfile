@@ -1,9 +1,10 @@
 FROM node:slim
 
 # Install git to check for private git pkgs
-RUN apt-get update && apt-get install -y git
+RUN apt-get update && apt-get install -y git \
+    && rm -rf /var/lib/apt/lists/*
 
-ENV N4J_USER root
+ENV N4J_USER node
 ENV N4J_HOME /home/$N4J_USER
 ENV N4J_CLIENT $N4J_HOME/client
 
