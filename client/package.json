@@ -6,7 +6,7 @@
     "start": "ng serve",
     "dev-start": "ng serve --host=0.0.0.0 --disable-host-check --proxy-config=proxy.conf.json --source-map=true",
     "build": "ng build",
-    "test": "ng test",
+    "test": "ng test --watch=false --progress=false --browsers=ChromeCustom",
     "lint": "ng lint",
     "e2e": "ng e2e"
   },
@@ -34,6 +34,7 @@
     "hammerjs": "^2.0.8",
     "keycharm": "^0.2.0",
     "moment": "^2.24.0",
+    "ng-bullet": "^1.0.3",
     "rxjs": "~6.4.0",
     "tslib": "^1.10.0",
     "vis-data": "^6.2.1",
