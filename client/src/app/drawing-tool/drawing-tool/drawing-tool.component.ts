@@ -14,7 +14,8 @@ import {
 import {
   DataFlowService,
   ProjectsService,
-  node_templates
+  node_templates,
+  makeid
 } from '../services';
 import {
   Project
@@ -24,7 +25,6 @@ import {
 } from '../network-vis';
 
 declare var $: any;
-declare var makeid: any;
 
 interface Update {
 event: string,
@@ -350,7 +350,11 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
           },
           cmd.data.coord.x,
           cmd.data.coord.y
-        );        
+        );
+        // Toggle side-bar-ui for added node
+        let data = this.visjsNetworkGraph.getNode(addedNode.id);
+        this.dataFlow.pushGraphData(data);
+        this.sideBarUIToggle(true);
         break;
       case 'update node':
         // Update node

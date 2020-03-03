@@ -11,6 +11,7 @@
     <h3>Label</h3>
     <mat-form-field floatLabel="never" appearance="outline" class='w-100'>
       <input
+        #labelInput
         (keydown.enter)="blurInput($event)"
         matInput placeholder="Label" formControlName='label'>
     </mat-form-field>
