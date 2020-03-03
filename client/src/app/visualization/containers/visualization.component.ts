@@ -4,6 +4,7 @@ import { DataSet } from 'vis-network';
 
 import {
     ClusteredNode,
+    DuplicateVisEdge,
     GetClusterGraphDataResult,
     GetSnippetsResult,
     GraphNode,
@@ -29,6 +30,7 @@ export class VisualizationComponent implements OnInit {
     getClusterGraphDataResult: GetClusterGraphDataResult;
     nodes: DataSet<VisNode | GraphNode>;
     edges: DataSet<VisEdge | GraphNode>;
+    duplicatedEdges = new Set<number>();
 
     legend: Map<string, string[]>;
 
@@ -102,14 +104,15 @@ export class VisualizationComponent implements OnInit {
      */
     convertToVisJSFormat(results: Neo4jResults): Neo4jResults {
         let { nodes, edges } = results;
-        nodes = nodes.map((n: GraphNode) => this.convertNodeToVisJSFomart(n));
+        nodes = nodes.map((n: GraphNode) => this.convertNodeToVisJSFormat(n));
         edges = edges.map((e: GraphRelationship) => this.convertEdgeToVisJSFormat(e));
         return {nodes, edges};
     }
 
-    convertNodeToVisJSFomart(n: GraphNode) {
+    convertNodeToVisJSFormat(n: GraphNode) {
         return {
             ...n,
+            expanded: false,
             primaryLabel: n.label,
             color: {
                 background: this.legend.get(n.label)[0],
@@ -133,7 +136,7 @@ export class VisualizationComponent implements OnInit {
 
     expandNode(nodeId: number) {
         this.visService.expandNode(nodeId, NODE_EXPANSION_LIMIT).subscribe((r: Neo4jResults) => {
-            const nodeRef: VisNode = this.nodes.get(nodeId);
+            const nodeRef = this.nodes.get(nodeId) as VisNode;
             const visJSDataFormat = this.convertToVisJSFormat(r);
             const { edges } = visJSDataFormat;
             let { nodes } = visJSDataFormat;
@@ -145,7 +148,11 @@ export class VisualizationComponent implements OnInit {
                 return n;
             });
             this.nodes.update(nodes);
-            this.edges.update(edges);
+            edges.forEach(candidateEdge => {
+                if (!this.duplicatedEdges.has(candidateEdge.id)) {
+                    this.edges.update(candidateEdge);
+                }
+            });
         });
     }
 
@@ -155,6 +162,17 @@ export class VisualizationComponent implements OnInit {
         });
     }
 
+    getSnippetsFromDuplicateEdge(edge: DuplicateVisEdge) {
+        this.visService.getSnippetsFromDuplicateEdge(edge).subscribe((result) => {
+            this.getSnippetsResult = result;
+        });
+    }
+
+    // TODO: There is a bug here: If the user opens a cluster after clicking it
+    // but before the cluster graph data response is received, then the sidenav
+    // will error because the returned duplicate node ids will not exist on the
+    // graph anymore. This can be fixed by creating some kind of interrupt event
+    // on this subscription. Could use rxjs 'race' + an output from the child here.
     getClusterGraphData(clusteredNodes: ClusteredNode[]) {
         this.visService.getClusterGraphData(clusteredNodes).subscribe((result) => {
             this.getClusterGraphDataResult = result;
@@ -164,7 +182,15 @@ export class VisualizationComponent implements OnInit {
     updateCanvasWithSingleNode(data: GraphNode) {
         this.nodes.clear();
         this.edges.clear();
-        const node = this.convertNodeToVisJSFomart(data);
+        const node = this.convertNodeToVisJSFormat(data);
         this.nodes.add(node);
+    }
+
+    addDuplicatedEdge(edge: number) {
+        this.duplicatedEdges.add(edge);
+    }
+
+    removeDuplicatedEdge(edge: number) {
+        this.duplicatedEdges.delete(edge);
     }
 }

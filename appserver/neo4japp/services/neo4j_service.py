@@ -5,6 +5,18 @@ from typing import Dict, List, NamedTuple, Optional, Union
 from py2neo import cypher, NodeMatcher, RelationshipMatcher
 from werkzeug.datastructures import FileStorage
 
+from neo4japp.data_transfer_objects.visualization import (
+    ClusteredNode,
+    DuplicateNodeEdgePair,
+    DuplicateVisEdge,
+    EdgeSnippetCount,
+    GetClusterGraphDataResult,
+    GetReferenceTableDataResult,
+    GetSnippetCountsFromEdgesResult,
+    GetSnippetsFromEdgeResult,
+    ReferenceTableRow,
+    VisEdge,
+)
 from neo4japp.services.common import BaseDao
 from neo4japp.models import GraphNode, GraphRelationship
 from neo4japp.constants import *
@@ -66,30 +78,6 @@ class Neo4jColumnMapping(CamelDictMixin):
     sheet_name: str = attr.ib()
     node: Optional[Neo4jNodeMapping] = attr.ib(default=None)
     relationship: Optional[Neo4jRelationshipMapping] = attr.ib(default=None)
-
-
-@attr.s(frozen=True)
-class GetSnippetsFromEdgeResult(CamelDictMixin):
-    from_node_id: int = attr.ib()
-    to_node_id: int = attr.ib()
-    association: str = attr.ib()
-    references: List[str] = attr.ib()
-
-
-@attr.s(frozen=True)
-class EdgeSnippetCount(CamelDictMixin):
-    edge: GraphRelationship = attr.ib()
-    count: int = attr.ib()
-
-
-@attr.s(frozen=True)
-class GetSnippetCountsFromEdgesResult(CamelDictMixin):
-    edge_snippet_counts: List[EdgeSnippetCount] = attr.ib()
-
-
-@attr.s(frozen=True)
-class GetClusterGraphDataResult(CamelDictMixin):
-    results: Dict[int, Dict[str, int]] = attr.ib()
 
 
 class Neo4JService(BaseDao):
@@ -186,21 +174,32 @@ class Neo4JService(BaseDao):
         query = self.get_expand_query(node_id, limit)
         return self._query_neo4j(query)
 
-    def get_snippets_from_edge(self, edge: GraphRelationship):
-        query = self.get_snippets_from_edge_query(edge['from'], edge['to'], edge['label'])
+    def get_snippets_from_edge(self, edge: VisEdge):
+        query = self.get_snippets_from_edge_query(edge.from_, edge.to, edge.label)
 
         data = self.graph.run(query).data()
         return GetSnippetsFromEdgeResult(
-            from_node_id=edge['from'],
-            to_node_id=edge['to'],
-            association=edge['label'],
+            from_node_id=edge.from_,
+            to_node_id=edge.to,
+            association=edge.label,
             references=[result['references'] for result in data]
         )
 
-    def get_snippet_counts_from_edges(self, edges: List[GraphRelationship]):
+    def get_snippets_from_duplicate_edge(self, edge: DuplicateVisEdge):
+        query = self.get_snippets_from_edge_query(edge.original_from, edge.original_to, edge.label)
+
+        data = self.graph.run(query).data()
+        return GetSnippetsFromEdgeResult(
+            from_node_id=edge.from_,
+            to_node_id=edge.to,
+            association=edge.label,
+            references=[result['references'] for result in data]
+        )
+
+    def get_snippet_counts_from_edges(self, edges: List[VisEdge]):
         edge_snippet_counts: List[EdgeSnippetCount] = []
         for edge in edges:
-            query = self.get_association_snippet_count_query(edge['from'], edge['to'], edge['label'])
+            query = self.get_association_snippet_count_query(edge.from_, edge.to, edge.label)
             count = self.graph.run(query).evaluate()
             edge_snippet_counts.append(EdgeSnippetCount(
                 edge=edge,
@@ -210,18 +209,35 @@ class Neo4JService(BaseDao):
             edge_snippet_counts=edge_snippet_counts,
         )
 
-    def get_cluster_graph_data(self, clustered_nodes):
+    def get_reference_table_data(self, node_edge_pairs: List[DuplicateNodeEdgePair]):
+        reference_table_rows: List[ReferenceTableRow] = []
+        for pair in node_edge_pairs:
+            node = pair.node
+            edge = pair.edge
+
+            query = self.get_association_snippet_count_query(edge.original_from, edge.original_to, edge.label)
+            count = self.graph.run(query).evaluate()
+            reference_table_rows.append(ReferenceTableRow(
+                node_display_name=node.display_name,
+                snippet_count=count,
+                edge=edge,
+            ))
+        return GetReferenceTableDataResult(
+            reference_table_rows=reference_table_rows
+        )
+
+    def get_cluster_graph_data(self, clustered_nodes: List[ClusteredNode]):
         results: Dict[int, Dict[str, int]] = dict()
 
         for node in clustered_nodes:
             for edge in node.edges:
-                query = self.get_association_snippet_count_query(edge['from'], edge['to'], edge['label'])
+                query = self.get_association_snippet_count_query(edge.original_from, edge.original_to, edge.label)
                 count = self.graph.run(query).evaluate()
 
                 if (results.get(node.node_id, None) is not None):
-                    results[node.node_id][edge['label']] = count
+                    results[node.node_id][edge.label] = count
                 else:
-                    results[node.node_id] = {edge['label']: count}
+                    results[node.node_id] = {edge.label: count}
 
         return GetClusterGraphDataResult(
             results=results,

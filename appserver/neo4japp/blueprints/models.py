@@ -1,6 +1,9 @@
 import attr
 from neo4japp.constants import *
+from neo4japp.models import GraphNode, GraphRelationship
 from neo4japp.util import CamelDictMixin
+
+from typing import List, Optional
 
 @attr.s
 class SearchResult(CamelDictMixin):
