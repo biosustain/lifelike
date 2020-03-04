@@ -2,9 +2,10 @@ from functools import partial
 
 from flask import current_app, Flask, jsonify
 from flask_caching import Cache
-
+from flask_httpauth import HTTPTokenAuth
 from werkzeug.utils import find_modules, import_string
 
+from neo4japp.database import db, ma
 from neo4japp.exceptions import BaseException
 
 # Used for registering blueprints
@@ -17,6 +18,10 @@ cache = Cache()
 def create_app(name = 'neo4japp', config = 'config.Development'):
     app = Flask(name)
     app.config.from_object(config)
+
+    db.init_app(app)
+    ma.init_app(app)
+
     register_blueprints(app, BLUEPRINT_PACKAGE)
 
     cache_config = {
