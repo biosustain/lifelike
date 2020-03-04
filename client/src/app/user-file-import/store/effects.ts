@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+
 import {
     Actions,
     ofType,
@@ -12,7 +13,7 @@ import {
     mergeMap,
 } from 'rxjs/operators';
 
-import { EMPTY } from 'rxjs';
+import { EMPTY, of } from 'rxjs';
 
 import {
     getDbLabels,
@@ -23,14 +24,14 @@ import {
     uploadNeo4jFileSuccess,
     uploadNodeMapping,
     uploadNodeMappingSuccess,
-    uploadRelationshipMapping,
-    uploadRelationshipMappingSuccess,
     getDbRelationshipTypes,
     getDbRelationshipTypesSuccess,
 } from './actions';
 
-import { UserFileImportService } from '../services/user-file-import.service';
+import { displaySnackbar } from 'app/shared/store/snackbar-actions';
 
+import { UserFileImportService } from '../services/user-file-import.service';
+import { ServerError } from 'app/interfaces';
 
 @Injectable()
 export class UserFileImportEffects {
@@ -39,7 +40,7 @@ export class UserFileImportEffects {
         private fileImportService: UserFileImportService,
     ) {}
 
-    getDbLabels = createEffect(() => this.actions$.pipe(
+    getDbLabels$ = createEffect(() => this.actions$.pipe(
         ofType(getDbLabels),
         map(action => action),
         switchMap(() => this.fileImportService.getDbLabels()
@@ -49,7 +50,7 @@ export class UserFileImportEffects {
         ),
     ));
 
-    getDbRelationshipTypes = createEffect(() => this.actions$.pipe(
+    getDbRelationshipTypes$ = createEffect(() => this.actions$.pipe(
         ofType(getDbRelationshipTypes),
         map(action => action),
         switchMap(() => this.fileImportService.getDbRelationshipTypes()
@@ -59,7 +60,7 @@ export class UserFileImportEffects {
         ),
     ));
 
-    getNodeProperties = createEffect(() => this.actions$.pipe(
+    getNodeProperties$ = createEffect(() => this.actions$.pipe(
         ofType(getNodeProperties),
         map(action => action.payload),
         switchMap(nodeLabel => this.fileImportService.getNodeProperties(nodeLabel)
@@ -69,7 +70,7 @@ export class UserFileImportEffects {
         ),
     ));
 
-    uploadNeo4jFile = createEffect(() => this.actions$.pipe(
+    uploadNeo4jFile$ = createEffect(() => this.actions$.pipe(
         ofType(uploadNeo4jFile),
         map(action => action.payload),
         switchMap(data => this.fileImportService.uploadNeo4jFile(data)
@@ -80,20 +81,25 @@ export class UserFileImportEffects {
         ),
     ));
 
-    uploadNodeMapping = createEffect(() => this.actions$.pipe(
+    uploadNodeMapping$ = createEffect(() => this.actions$.pipe(
         ofType(uploadNodeMapping),
         map(action => action.payload),
         switchMap(data => this.fileImportService.uploadNodeMapping(data)
             .pipe(
                 mergeMap(() => [
                     uploadNodeMappingSuccess(),
-                    // new SnackbarActions.SnackbarOpen({
-                    //     message: 'Done',
-                    //     action: 'Dismiss',
-                    //     snackConfig: { duration: 1000 },
-                    // }),
+                    displaySnackbar({payload: {
+                        message: 'Upload success',
+                        action: 'Dismiss',
+                        config: {duration: 3000},
+                    }}),
+                    // TODO: redirect to show graph of uploaded data
                 ]),
-                catchError(() => EMPTY),
+                catchError((errors: ServerError) => of(displaySnackbar({payload: {
+                    message: errors.serverError.message,
+                    action: 'Dismiss',
+                    config: {duration: 3000},
+                }}))),
             ),
         ),
     ));
