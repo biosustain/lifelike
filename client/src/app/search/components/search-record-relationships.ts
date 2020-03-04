@@ -10,10 +10,11 @@ import { PubMedURL } from 'app/shared/constants';
             <mat-card-subtitle>ID: {{ node.node.data.id }}</mat-card-subtitle>
             <mat-card-content>
                 <div id="pub-snippet-title">{{ node.node.displayName }}</div>
-                <i>This snippet genarated the following relationship</i>
+                <i *ngIf="node.chemical || node.disease">This snippet genarated the following relationship</i>
                 <app-node-relationship
                     [leftNode]="node.chemical"
-                    [leftNodeColor]="blue"
+                    [leftNodeColor]="'rgb(143, 166, 203)'"
+                    [rightNodeColor]="'rgb(205, 93, 103)'"
                     [rightNode]="node.disease"
                     [edge]="node.relationship"
                 >
