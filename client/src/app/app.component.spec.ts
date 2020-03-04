@@ -1,6 +1,4 @@
-import { HttpClientModule } from '@angular/common/http';
 import { TestBed, ComponentFixture } from '@angular/core/testing';
-import { BrowserModule } from '@angular/platform-browser';
 import { RouterTestingModule } from '@angular/router/testing';
 
 import { configureTestSuite } from 'ng-bullet';
@@ -8,10 +6,7 @@ import { configureTestSuite } from 'ng-bullet';
 import { ToolbarMenuModule } from 'toolbar-menu';
 
 import { AppComponent } from './app.component';
-import { AppRoutingModule } from './app-routing.module';
 import { RootStoreModule } from './***ARANGO_USERNAME***-store';
-import { Neo4jModule } from './upload/neo4j.module';
-import { VisualizationModule } from './visualization/visualization.module';
 
 describe('AppComponent', () => {
     let fixture: ComponentFixture<AppComponent>;
@@ -21,14 +16,7 @@ describe('AppComponent', () => {
         TestBed.configureTestingModule({
             imports: [
                 RouterTestingModule,
-                BrowserModule,
-                AppRoutingModule,
-                HttpClientModule,
-                Neo4jModule,
-                VisualizationModule,
-                // ngrx
                 RootStoreModule,
-                VisualizationModule,
                 ToolbarMenuModule,
             ],
             declarations: [
