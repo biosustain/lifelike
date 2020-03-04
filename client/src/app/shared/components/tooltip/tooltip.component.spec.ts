@@ -11,8 +11,7 @@ describe('TooltipComponent', () => {
     configureTestSuite(() => {
         TestBed.configureTestingModule({
             declarations: [ TooltipComponent ]
-        })
-        .compileComponents();
+        });
     });
 
     beforeEach(() => {

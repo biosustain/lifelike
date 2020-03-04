@@ -40,7 +40,7 @@ describe('VisualizationCanvasComponent', () => {
                 ReferenceTableControlService,
                 VisualizationService,
             ],
-        }).compileComponents();
+        });
     });
 
     beforeEach(() => {

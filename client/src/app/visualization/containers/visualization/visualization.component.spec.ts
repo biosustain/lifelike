@@ -37,7 +37,7 @@ describe('VisualizationComponent', () => {
                 VisualizationSearchComponent,
             ],
             providers: [VisualizationService],
-        }).compileComponents();
+        });
     });
 
     beforeEach(() => {
