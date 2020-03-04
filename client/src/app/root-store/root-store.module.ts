@@ -40,7 +40,12 @@ export const reducers: ActionReducerMap<State> = {};
                 strictStateImmutability: true,
                 strictActionImmutability: true,
                 strictStateSerializability: true,
-                strictActionSerializability: true,
+                // setting to false because ngrx 8.6.0
+                // prevents FormData and File objects
+                // from being included in actions
+                // as they're non-serializable
+                // breaks file uploads
+                strictActionSerializability: false,
               },
         }),
 
