@@ -13,6 +13,7 @@ import { PubMedURL } from 'app/shared/constants';
                 <i>This snippet genarated the following relationship</i>
                 <app-node-relationship
                     [leftNode]="node.chemical"
+                    [leftNodeColor]="blue"
                     [rightNode]="node.disease"
                     [edge]="node.relationship"
                 >
