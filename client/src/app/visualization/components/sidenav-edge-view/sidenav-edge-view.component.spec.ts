@@ -41,8 +41,7 @@ describe('SidenavEdgeViewComponent', () => {
         TestBed.configureTestingModule({
             imports: [SharedModule],
             declarations: [ SidenavEdgeViewComponent ]
-        })
-        .compileComponents();
+        });
     });
 
     beforeEach(() => {

@@ -57,8 +57,7 @@ describe('SidenavClusterViewComponent', () => {
         TestBed.configureTestingModule({
             imports: [SharedModule],
             declarations: [ SidenavClusterViewComponent ]
-        })
-        .compileComponents();
+        });
     });
 
     beforeEach(() => {

@@ -11,8 +11,7 @@ describe('LegendComponent', () => {
     configureTestSuite(() => {
         TestBed.configureTestingModule({
             declarations: [ LegendComponent ]
-        })
-        .compileComponents();
+        });
     });
 
     beforeEach(() => {

@@ -20,7 +20,7 @@ describe('VisualizationSearchComponent', () => {
                 VisualizationSearchComponent,
             ],
             providers: [VisualizationService],
-        }).compileComponents();
+        });
     });
 
     beforeEach(() => {

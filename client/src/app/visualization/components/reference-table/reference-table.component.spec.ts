@@ -53,8 +53,7 @@ describe('ReferenceTableComponent', () => {
                 ReferenceTableControlService,
                 VisualizationService,
             ],
-        })
-        .compileComponents();
+        });
     });
 
     beforeEach(() => {

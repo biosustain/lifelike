@@ -29,8 +29,7 @@ describe('SidenavNodeViewComponent', () => {
         TestBed.configureTestingModule({
             imports: [SharedModule],
             declarations: [ SidenavNodeViewComponent ]
-        })
-        .compileComponents();
+        });
     });
 
     beforeEach(() => {
