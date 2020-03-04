@@ -2,7 +2,7 @@
 # enable installing Chrome for Karma testing
 FROM node:slim
 
-RUN apt-get update && apt-get install gnupg2 wget -y
+RUN apt-get update && apt-get install gnupg2 git wget -y
 
 # OPTIONAL: Install dumb-init (Very handy for easier signal handling of SIGINT/SIGTERM/SIGKILL etc.)
 RUN wget https://github.com/Yelp/dumb-init/releases/download/v1.2.0/dumb-init_1.2.0_amd64.deb
@@ -23,9 +23,9 @@ ENV N4J_USER node
 ENV N4J_HOME /home/$N4J_USER
 ENV N4J_CLIENT $N4J_HOME/client
 
-# Used for executables (i.e. angular-cli)
 ENV PATH $N4J_CLIENT/node_modules/.bin:$PATH
 
-COPY . $N4J_CLIENT
 WORKDIR $N4J_CLIENT
 USER $N4J_USER
+
+COPY . $N4J_CLIENT
