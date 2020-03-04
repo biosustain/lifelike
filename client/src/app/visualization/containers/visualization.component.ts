@@ -1,4 +1,7 @@
 import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
+
+import { filter, take, tap } from 'rxjs/operators';
 
 import { DataSet } from 'vis-network';
 
@@ -33,7 +36,10 @@ export class VisualizationComponent implements OnInit {
     // NOTE: May use this as input to a legend component in the future.
     legend: Map<string, string[]>;
 
-    constructor(private visService: VisualizationService) {
+    constructor(
+        private route: ActivatedRoute,
+        private visService: VisualizationService,
+    ) {
         this.legend = new Map<string, string[]>();
         this.legend.set('Gene', ['#78CDD7', '#247B7B']);
         this.legend.set('Disease', ['#8FA6CB', '#7D84B2']);
@@ -41,6 +47,16 @@ export class VisualizationComponent implements OnInit {
     }
 
     ngOnInit() {
+        this.route.queryParams.pipe(
+            filter(params => params.data),
+            tap((params) => {
+                const nodeData = {};
+                console.log(nodeData, params);
+            }),
+            take(1),
+        ).subscribe();
+
+
         this.visService.getSomeDiseases().subscribe((results: Neo4jResults) => {
             this.networkGraphData = this.setupInitialProperties(results);
             this.nodes = new DataSet(this.networkGraphData.nodes);

@@ -2,7 +2,7 @@ import attr
 
 from typing import Dict, List
 
-from flask import Blueprint
+from flask import Blueprint, request
 from werkzeug.datastructures import FileStorage
 from neo4japp.blueprints import GraphRequest
 from neo4japp.constants import *
@@ -43,6 +43,20 @@ def load_gpr_graph(req: GraphRequest):
     neo4j = get_neo4j_service_dao()
     graph = neo4j.get_graph(req)
     return SuccessResponse(result=graph, status_code=200)
+
+@bp.route('/batch', methods=['GET'])
+@jsonify_with_class()
+def get_batch():
+    """ Uses a home-brew query language
+    to get a batch of nodes and their
+    relationship
+    TODO: Document query language
+    """
+    neo4j = get_neo4j_service_dao()
+    data_query = request.args.get('data', '')
+    decoded_query = bytearray.fromhex(data_query).decode()
+    result = neo4j.query_multiple(decoded_query)
+    return SuccessResponse(result=result, status_code=200)
 
 @bp.route('/organisms', methods=['GET'])
 @jsonify_with_class()
