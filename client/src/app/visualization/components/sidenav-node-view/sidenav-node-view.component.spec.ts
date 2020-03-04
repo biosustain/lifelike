@@ -46,17 +46,17 @@ describe('SidenavNodeViewComponent', () => {
     });
 
     it('should show the input node display name', () => {
-        const nodeDisplayNameElement = document.querySelector('#sidenav-node-display-name');
-        expect(nodeDisplayNameElement.innerHTML).toEqual('Display Name: Mock Node');
+        const nodeDisplayNameElement = document.getElementById('sidenav-node-display-name');
+        expect(nodeDisplayNameElement.innerText).toEqual('Display Name: Mock Node');
     });
 
     it('should show the input node label', () => {
-        const nodeLabelElement = document.querySelector('#sidenav-node-label');
-        expect(nodeLabelElement.innerHTML).toEqual('Label: MockNode');
+        const nodeLabelElement = document.getElementById('sidenav-node-label');
+        expect(nodeLabelElement.innerText).toEqual('Label: MockNode');
     });
 
     it('should not show sub labels for node with only one label', () => {
-        const nodeSubLabelElements = document.querySelectorAll('.sidenav-node-sub-label');
+        const nodeSubLabelElements = document.getElementsByClassName('sidenav-node-sub-label');
         expect(nodeSubLabelElements.length).toEqual(0);
     });
 
@@ -64,8 +64,8 @@ describe('SidenavNodeViewComponent', () => {
         component.nodeEntity.data.subLabels = ['MockNode', 'ExtraSubLabel'];
         fixture.detectChanges();
 
-        const nodeSubLabelElements = document.querySelectorAll('.sidenav-node-sub-label');
+        const nodeSubLabelElements = document.getElementsByClassName('sidenav-node-sub-label');
         expect(nodeSubLabelElements.length).toEqual(1);
-        expect(nodeSubLabelElements[0].innerHTML).toEqual('ExtraSubLabel');
+        expect(nodeSubLabelElements[0].textContent).toEqual('ExtraSubLabel');
     });
 });
