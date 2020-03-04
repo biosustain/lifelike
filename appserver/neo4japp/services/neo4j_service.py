@@ -148,6 +148,47 @@ class Neo4JService(BaseDao):
         query = self.get_reaction_query(biocyc_id)
         return self._query_neo4j(query)
 
+    def query_multiple(self, data_query: str):
+        """
+        (from) node1 (to) node2
+        Format: 'node1,node2&node3,node4'
+        """
+        data_query = data_query.split('&')
+        data = [x.split(',') for x in data_query]
+        print(data)
+        query_generator = [
+            'MATCH (nodeA)-[relationship]->(nodeB) WHERE id(nodeA)={from_} '
+            'AND id(nodeB)={to} RETURN *'.format(
+                from_=int(from_),
+                to=int(to),
+            ) for from_, to in data]
+        cypher_query = ' UNION '.join(query_generator)
+        records = self.graph.run(cypher_query).data()
+        if not records:
+            return None
+        node_dict = dict()
+        rel_dict = dict()
+        for row in records:
+            nodeA = row['nodeA']
+            nodeB = row['nodeB']
+            relationship = row['relationship']
+            graph_nodeA = GraphNode.from_py2neo(
+                nodeA,
+                display_fn=lambda x: x.get(DISPLAY_NAME_MAP[next(iter(nodeA.labels), set())])
+            )
+            graph_nodeB = GraphNode.from_py2neo(
+                nodeB,
+                display_fn=lambda x: x.get(DISPLAY_NAME_MAP[next(iter(nodeB.labels), set())])
+            )
+            rel = GraphRelationship.from_py2neo(relationship)
+            node_dict[graph_nodeA.id] = graph_nodeA
+            node_dict[graph_nodeB.id] = graph_nodeB
+            rel_dict[rel.id] = rel
+        return dict(
+            nodes=[n.to_dict() for n in node_dict.values()],
+            edges=[r.to_dict() for r in rel_dict.values()],
+        )
+
     def get_graph(self, req):
         # TODO: Make this filter non-static
         db_filter = self.get_biocyc_db(req.org_ids)
