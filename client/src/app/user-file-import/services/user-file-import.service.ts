@@ -29,7 +29,7 @@ export class UserFileImportService {
         ).pipe(map(resp => resp.result));
     }
 
-    uploadNeo4jFile(file: FormData): Observable<FileNameAndSheets> {
+    uploadExperimentalDataFile(file: FormData): Observable<FileNameAndSheets> {
         return this.http.post<{result: FileNameAndSheets}>(`${this.neo4jAPI}/upload-file`,
             file).pipe(map(resp => resp.result));
     }
