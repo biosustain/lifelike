@@ -10,7 +10,7 @@ import { State } from 'app/***ARANGO_USERNAME***-store';
 
 import { UserFileImportSelectors as selectors } from '../store';
 import {
-    uploadNeo4jFile,
+    uploadExperimentalDataFile,
     getDbLabels,
     getDbRelationshipTypes,
 } from '../store/actions';
@@ -89,7 +89,7 @@ export class UserFileImportComponent implements OnInit, OnDestroy {
     uploadFile() {
         const formData = new FormData();
         formData.append('fileInput', this.fileForm.controls.fileInput.value);
-        this.store.dispatch(uploadNeo4jFile({payload: formData}));
+        this.store.dispatch(uploadExperimentalDataFile({payload: formData}));
     }
 
     addColumnDelimiterRow() {

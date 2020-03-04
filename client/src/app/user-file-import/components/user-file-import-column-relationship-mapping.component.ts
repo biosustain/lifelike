@@ -109,9 +109,12 @@ export class UserFileImportColumnRelationshipMapperComponent {
                 // an existing knowledge graph node
                 if (group.controls.mappedNodeType.value && group.controls.mappedNodeType.value) {
                     // only for target node
-                    currentRelationship.targetNode.mappedToUniversalGraph = {
-                        universalGraphNodeType: group.controls.mappedNodeType.value,
-                        universalGraphNodePropertyLabel: group.controls.mappedNodeProperty.value,
+                    currentRelationship.targetNode = {
+                        ...currentRelationship.targetNode,
+                        mappedToUniversalGraph: {
+                            universalGraphNodeType: group.controls.mappedNodeType.value,
+                            universalGraphNodePropertyLabel: group.controls.mappedNodeProperty.value,
+                        },
                     };
                 }
                 relationshipMapper.push(currentRelationship);

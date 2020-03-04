@@ -3,13 +3,13 @@ import { createAction, props, union } from '@ngrx/store';
 import { Neo4jColumnMapping, FileNameAndSheets, NodeMappingHelper } from 'app/interfaces/user-file-import.interface';
 
 
-export const uploadNeo4jFile = createAction(
-    '[Importer] Upload Neo4j File',
+export const uploadExperimentalDataFile = createAction(
+    '[Importer] Upload Experimental Data File',
     props<{payload: FormData}>(),
 );
 
-export const uploadNeo4jFileSuccess = createAction(
-    '[Importer] Upload Neo4j File Success',
+export const uploadExperimentalDataFileSuccess = createAction(
+    '[Importer] Upload Experimental Data File Success',
     props<{payload: FileNameAndSheets}>(),
 );
 
@@ -62,8 +62,8 @@ const all = union({
     getNodePropertiesSuccess,
     getDbRelationshipTypes,
     getDbRelationshipTypesSuccess,
-    uploadNeo4jFile,
-    uploadNeo4jFileSuccess,
+    uploadExperimentalDataFile,
+    uploadExperimentalDataFileSuccess,
     uploadNodeMapping,
     uploadNodeMappingSuccess,
     saveNodeMapping,

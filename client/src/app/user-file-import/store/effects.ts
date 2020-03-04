@@ -20,8 +20,8 @@ import {
     getDbLabelsSuccess,
     getNodeProperties,
     getNodePropertiesSuccess,
-    uploadNeo4jFile,
-    uploadNeo4jFileSuccess,
+    uploadExperimentalDataFile,
+    uploadExperimentalDataFileSuccess,
     uploadNodeMapping,
     uploadNodeMappingSuccess,
     getDbRelationshipTypes,
@@ -70,12 +70,12 @@ export class UserFileImportEffects {
         ),
     ));
 
-    uploadNeo4jFile$ = createEffect(() => this.actions$.pipe(
-        ofType(uploadNeo4jFile),
+    uploadExperimentalDataFile$ = createEffect(() => this.actions$.pipe(
+        ofType(uploadExperimentalDataFile),
         map(action => action.payload),
-        switchMap(data => this.fileImportService.uploadNeo4jFile(data)
+        switchMap(data => this.fileImportService.uploadExperimentalDataFile(data)
             .pipe(
-                map(parsed => uploadNeo4jFileSuccess({payload: parsed})),
+                map(parsed => uploadExperimentalDataFileSuccess({payload: parsed})),
                 catchError(() => EMPTY),
             ),
         ),
