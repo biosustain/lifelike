@@ -18,7 +18,7 @@ describe('VisualizationQuickbarComponent', () => {
             declarations: [
                 VisualizationQuickbarComponent,
             ],
-        }).compileComponents();
+        });
     });
 
     beforeEach(() => {

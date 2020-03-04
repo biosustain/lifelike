@@ -38,7 +38,7 @@ describe('AppComponent', () => {
             providers: [
                 {provide: APP_BASE_HREF, useValue: '/'},
             ]
-        }).compileComponents();
+        });
     });
 
     beforeEach(() => {
