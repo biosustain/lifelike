@@ -11,47 +11,7 @@ describe('SidenavClusterViewComponent', () => {
     let component: SidenavClusterViewComponent;
     let fixture: ComponentFixture<SidenavClusterViewComponent>;
 
-    const mockClusterEntity: SidenavClusterEntity = {
-        includes: [
-            {
-                id: 1,
-                displayName: 'Mock Node 1',
-                color: null,
-                label: null,
-                data: null,
-                subLabels: null,
-            },
-            {
-                id: 2,
-                displayName: 'Mock Node 2',
-                color: null,
-                label: null,
-                data: null,
-                subLabels: null,
-            },
-            {
-                id: 3,
-                displayName: 'Mock Node 3',
-                color: null,
-                label: null,
-                data: null,
-                subLabels: null,
-            },
-        ],
-        clusterGraphData: {
-            results: {
-                1: {
-                    'mock-edge-1': 1,
-                },
-                2: {
-                    'mock-edge-2': 4,
-                },
-                3: {
-                    'mock-edge-3': 2,
-                },
-            }
-        },
-    };
+    let mockClusterEntity: SidenavClusterEntity;
 
     configureTestSuite(() => {
         TestBed.configureTestingModule({
@@ -61,6 +21,49 @@ describe('SidenavClusterViewComponent', () => {
     });
 
     beforeEach(() => {
+        // Reset mock data before every test so changes don't carry over between tests
+        mockClusterEntity  = {
+            includes: [
+                {
+                    id: 1,
+                    displayName: 'Mock Node 1',
+                    color: null,
+                    label: null,
+                    data: null,
+                    subLabels: null,
+                },
+                {
+                    id: 2,
+                    displayName: 'Mock Node 2',
+                    color: null,
+                    label: null,
+                    data: null,
+                    subLabels: null,
+                },
+                {
+                    id: 3,
+                    displayName: 'Mock Node 3',
+                    color: null,
+                    label: null,
+                    data: null,
+                    subLabels: null,
+                },
+            ],
+            clusterGraphData: {
+                results: {
+                    1: {
+                        'mock-edge-1': 1,
+                    },
+                    2: {
+                        'mock-edge-2': 4,
+                    },
+                    3: {
+                        'mock-edge-3': 2,
+                    },
+                }
+            },
+        };
+
         fixture = TestBed.createComponent(SidenavClusterViewComponent);
         component = fixture.componentInstance;
         fixture.detectChanges();

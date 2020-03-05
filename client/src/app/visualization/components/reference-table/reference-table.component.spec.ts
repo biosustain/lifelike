@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, tick, fakeAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { configureTestSuite } from 'ng-bullet';
 
@@ -18,32 +18,9 @@ describe('ReferenceTableComponent', () => {
     let referenceTableControlService: ReferenceTableControlService;
     let visualizationService: VisualizationService;
 
-    // Actual data doesn't matter, just need a list with at least one element
-    const mockTableData: DuplicateNodeEdgePair[] = [
-        {
-            node: null,
-            edge: null,
-        }
-    ];
-
-    const mockVisEdge: VisEdge = {
-            id: 1,
-            label: 'Mock Edge',
-            from: null,
-            to: null,
-            data: null,
-            arrows: null,
-    };
-
-    const mockReferenceTableDataResult: GetReferenceTableDataResult = {
-        referenceTableRows: [
-            {
-                nodeDisplayName: 'Mock Node',
-                snippetCount: 3,
-                edge: mockVisEdge,
-            }
-        ],
-    };
+    let mockTableData: DuplicateNodeEdgePair[];
+    let mockVisEdge: VisEdge;
+    let mockReferenceTableDataResult: GetReferenceTableDataResult;
 
     configureTestSuite(() => {
         TestBed.configureTestingModule({
@@ -57,6 +34,33 @@ describe('ReferenceTableComponent', () => {
     });
 
     beforeEach(() => {
+        // Reset mock data before every test so changes don't carry over between tests
+        mockTableData = [
+            {
+                node: null,
+                edge: null,
+            }
+        ];
+
+        mockVisEdge = {
+            id: 1,
+            label: 'Mock Edge',
+            from: null,
+            to: null,
+            data: null,
+            arrows: null,
+        };
+
+        mockReferenceTableDataResult = {
+            referenceTableRows: [
+                {
+                    nodeDisplayName: 'Mock Node',
+                    snippetCount: 3,
+                    edge: mockVisEdge,
+                }
+            ],
+        };
+
         fixture = TestBed.createComponent(ReferenceTableComponent);
         referenceTableControlService = TestBed.get<ReferenceTableControlService>(ReferenceTableControlService);
         visualizationService = TestBed.get<VisualizationService>(VisualizationService);
