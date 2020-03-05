@@ -4,7 +4,7 @@ import hashlib
 import itertools
 
 from decimal import Decimal, InvalidOperation
-from enum import EnumMeta
+from enum import EnumMeta, Enum
 from json import JSONDecodeError
 from typing import Any, List, Optional, Type
 
@@ -17,7 +17,7 @@ def encode_to_str(obj):
         return obj
     elif isinstance(obj, Enum):
         return obj.name
-    elif isinstance(obj, Decimal):
+    elif isinstance(obj, int) or isinstance(obj, Decimal):
         return str(obj)
     else:
         raise TypeError(f'No conversion definition for {obj}')
@@ -124,6 +124,16 @@ def camel_to_snake_dict(d, new_dict: dict) -> dict:
 
 
 class CamelDictMixin:
+    def build_from_dict_formatter(self, d: dict):
+        """Returns a formatted version of the input dictionary. Default
+        function definition simply returns the input without formatting.
+
+        Intended to be used by any attr.s classes that have attribute
+        names we want to format when we get them from the client, e.g.
+        'from' to 'from_'. Used in build_from_dict.
+        """
+        return d
+
     @classmethod
     def build_from_dict(cls, json_dict):
         """Returns an instance of the class based on a
@@ -137,6 +147,8 @@ class CamelDictMixin:
         """
         cls_attrs = attr.fields(cls)
         attributes = {}
+
+        json_dict = cls.build_from_dict_formatter(cls, json_dict)
 
         for a in cls_attrs:
             if a.name in json_dict:
@@ -179,6 +191,16 @@ class CamelDictMixin:
             error = err.args[0].replace('__init__()', 'Server request')
             raise Exception(error)
 
+    def to_dict_formatter(self, d: dict):
+        """Returns a formatted version of the input dictionary. Default
+        function definition simply returns the input without formatting.
+
+        Intended to be used by any attr.s classes that have attribute
+        names we want to format before sending to the client, e.g.
+        'from_' to 'from'. Used in to_dict.
+        """
+        return d
+
     def to_dict(self):
         """Convert an attr.s class into a dict with camel case key values for
         JSON serialization.
@@ -189,7 +211,7 @@ class CamelDictMixin:
         that are also attrs classes.
         """
 
-        return snake_to_camel_dict(attr.asdict(self), {})
+        return snake_to_camel_dict(self.to_dict_formatter(attr.asdict(self)), {})
 
 
 @attr.s(frozen=True)

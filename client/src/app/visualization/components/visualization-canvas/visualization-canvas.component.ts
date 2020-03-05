@@ -10,14 +10,24 @@ import { Options } from '@popperjs/core';
 
 import { first, filter } from 'rxjs/operators';
 
+import { isNullOrUndefined } from 'util';
+
 import { Network, DataSet, IdType } from 'vis-network';
 
 import {
-    AssociationData,
-    GetLabelsResult,
+    ClusteredNode,
+    DuplicateNodeEdgePair,
+    DuplicateVisEdge,
+    DuplicateVisNode,
+    GetClusterGraphDataResult,
+    GetSnippetsResult,
     GroupRequest,
     Neo4jGraphConfig,
-    ReferenceTableRow,
+    SidenavEntity,
+    SidenavClusterEntity,
+    SidenavNodeEntity,
+    SidenavEdgeEntity,
+    VisEdge,
     VisNode,
 } from 'app/interfaces';
 
@@ -25,6 +35,13 @@ import { uuidv4 } from 'app/shared/utils';
 
 import { ContextMenuControlService } from '../../services/context-menu-control.service';
 import { ReferenceTableControlService } from '../../services/reference-table-control.service';
+
+enum SidenavEntityType {
+    EMPTY,
+    NODE,
+    EDGE,
+    CLUSTER,
+}
 
 @Component({
     selector: 'app-visualization-canvas',
@@ -34,19 +51,52 @@ import { ReferenceTableControlService } from '../../services/reference-table-con
 })
 export class VisualizationCanvasComponent implements OnInit {
     @Output() expandNode = new EventEmitter<number>();
-    @Output() getSentences = new EventEmitter<AssociationData>();
+    @Output() getSnippetsFromEdge = new EventEmitter<VisEdge>();
+    @Output() getSnippetsFromDuplicateEdge = new EventEmitter<DuplicateVisEdge>();
+    @Output() getClusterGraphData = new EventEmitter<ClusteredNode[]>();
+    @Output() addDuplicatedEdge = new EventEmitter<number>();
+    @Output() removeDuplicatedEdge = new EventEmitter<number>();
 
     @Input() nodes: DataSet<any, any>;
     @Input() edges: DataSet<any, any>;
+    @Input() set getSnippetsResult(result: GetSnippetsResult) {
+        if (!isNullOrUndefined(result)) {
+            this.sidenavEntityType = SidenavEntityType.EDGE;
+            this.sidenavEntity = {
+                to: this.nodes.get(result.toNodeId) as VisNode,
+                from: this.nodes.get(result.fromNodeId) as VisNode,
+                association: result.association,
+                references: result.references,
+             } as SidenavEdgeEntity;
+            this.toggleSidenavOpened();
+        }
+    }
+    @Input() set getClusterGraphDataResult(result: GetClusterGraphDataResult) {
+        if (!isNullOrUndefined(result)) {
+            this.sidenavEntityType = SidenavEntityType.CLUSTER;
+            this.sidenavEntity = {
+                data: null,
+                includes: Object.keys(result.results).map(nodeId => this.nodes.get(nodeId)),
+                clusterGraphData: result,
+            } as SidenavClusterEntity;
+        }
+    }
     // Configuration for the graph view. See vis.js docs
     @Input() config: Neo4jGraphConfig;
     @Input() legend: Map<string, string[]>;
 
+    // Need to create a reference to the enum so we can use it in the template
+    sidenavEntityTypeEnum = SidenavEntityType;
+
+    sidenavOpened: boolean;
+    sidenavEntity: SidenavEntity;
+    sidenavEntityType: SidenavEntityType;
+
     networkGraph: Network;
     selectedNodes: IdType[];
-    selectedNodeEdgeLabels: GetLabelsResult;
+    selectedNodeEdgeLabels: Set<string>;
     selectedEdges: IdType[];
-    nodesInHoveredCluster: ReferenceTableRow[];
+    referenceTableData: DuplicateNodeEdgePair[];
     clusters: Map<string, string>;
 
     contextMenuTooltipSelector: string;
@@ -58,17 +108,21 @@ export class VisualizationCanvasComponent implements OnInit {
         private contextMenuControlService: ContextMenuControlService,
         private referenceTableControlService: ReferenceTableControlService,
     ) {
+        this.sidenavOpened = false;
+        this.sidenavEntity = null;
+        this.sidenavEntityType = SidenavEntityType.EMPTY;
+
         this.selectedNodes = [];
         this.selectedEdges = [];
-        this.selectedNodeEdgeLabels = {validLabels: new Set<string>(), invalidLabels: new Set<string>()};
-        this.nodesInHoveredCluster = [];
+        this.selectedNodeEdgeLabels = new Set<string>();
+        this.referenceTableData = [];
 
         this.contextMenuTooltipSelector = '#***ARANGO_USERNAME***-menu';
         this.contextMenuTooltipOptions = {
             placement: 'right-start',
         };
 
-        this.referenceTableTooltipSelector = '#reference-table';
+        this.referenceTableTooltipSelector = '#***ARANGO_USERNAME***-table';
         this.referenceTableTooltipOptions = {
             placement: 'right-start',
         };
@@ -98,16 +152,44 @@ export class VisualizationCanvasComponent implements OnInit {
         }
     }
 
+    toggleSidenavOpened() {
+        this.sidenavOpened = !this.sidenavOpened;
+    }
+
+    /**
+     * Sets `sidenavOpened` to the input boolean. Primarily used to update when the
+     * user closes the sidenav by focusing the sidenav content.
+     * @param opened boolean representing the status of the sidenav
+     */
+    setSidenavStatus(opened: boolean) {
+        this.sidenavOpened = opened;
+    }
+
+    updateSelectedNodes() {
+        this.selectedNodes = this.networkGraph.getSelectedNodes();
+    }
+
+    updateSelectedEdges() {
+        this.selectedEdges = this.networkGraph.getSelectedEdges().filter(
+            // Cluster edges are strings, normal edges are numbers. We do NOT want to include cluster edges
+            // in our list of selected edges at the moment.
+            edgeId => typeof edgeId === 'number'
+        );
+    }
+
+    updateSelectedNodesAndEdges() {
+        this.updateSelectedNodes();
+        this.updateSelectedEdges();
+    }
+
     clearSelectedNodeEdgeLabels() {
-        this.selectedNodeEdgeLabels.validLabels.clear();
-        this.selectedNodeEdgeLabels.invalidLabels.clear();
+        this.selectedNodeEdgeLabels.clear();
     }
 
     updateSelectedNodeEdgeLabels(selectedNode: IdType) {
         this.clearSelectedNodeEdgeLabels();
         const edgeLabelsResult = this.getConnectedEdgeLabels(selectedNode);
-        edgeLabelsResult.validLabels.forEach(label => this.selectedNodeEdgeLabels.validLabels.add(label));
-        edgeLabelsResult.invalidLabels.forEach(label => this.selectedNodeEdgeLabels.invalidLabels.add(label));
+        edgeLabelsResult.forEach(label => this.selectedNodeEdgeLabels.add(label));
     }
 
     collapseNeighbors(***ARANGO_USERNAME***Node: VisNode) {
@@ -130,7 +212,14 @@ export class VisualizationCanvasComponent implements OnInit {
     }
 
     expandOrCollapseNode(nodeId: number) {
-        const nodeRef: VisNode = this.nodes.get(nodeId);
+        const nodeRef = this.nodes.get(nodeId) as VisNode;
+        const connectedNodes = this.networkGraph.getConnectedNodes(nodeId);
+
+        connectedNodes.forEach(connectedNode => {
+            if (this.networkGraph.isCluster(connectedNode)) {
+                this.safelyOpenCluster(connectedNode);
+            }
+        });
 
         if (nodeRef.expanded) {
             // Updates node expand state
@@ -185,44 +274,15 @@ export class VisualizationCanvasComponent implements OnInit {
      * @param selectedNode the ID of the node whose edge labels we want to get
      */
     getConnectedEdgeLabels(selectedNode: IdType) {
-        const clusterNodeCandidates = (this.networkGraph.getConnectedNodes(selectedNode) as IdType[]).filter(
-            node => !this.networkGraph.isCluster(node)
-        );
-        const candidateLabels = new Set<string>();
-        const invalidLabels = new Set<string>();
-        const validLabels = new Set<string>();
+        const labels = new Set<string>();
 
         this.networkGraph.getConnectedEdges(selectedNode).filter(
             edge => this.isNotAClusterEdge(edge)
         ).forEach(
-            edge => candidateLabels.add(this.edges.get(edge).label)
+            edge => labels.add(this.edges.get(edge).label)
         );
 
-        // TODO: Possible performance (both space & time) improvement opportunity here
-        // Check that all the depth-2 neighbors of each cluster candidate node is connected to all other
-        // candidate nodes. Otherwise we might have nodes connected to the cluster that aren't associated with
-        // all of its component nodes
-        clusterNodeCandidates.forEach(clusterNodeCandidate => {
-            this.networkGraph.getConnectedNodes(clusterNodeCandidate).forEach(nodeConnectedToCandidate => {
-                if (!clusterNodeCandidates.every(
-                    candidate => (this.networkGraph.getConnectedNodes(nodeConnectedToCandidate) as IdType[]).includes(candidate))
-                ) {
-                    this.getEdgesBetweenNodes(clusterNodeCandidate, selectedNode).map(
-                        edgeId => this.edges.get(edgeId).label
-                    ).forEach(
-                        invalidLabel => invalidLabels.add(invalidLabel)
-                    );
-                }
-            });
-        });
-
-        candidateLabels.forEach(label => {
-            if (!invalidLabels.has(label)) {
-                validLabels.add(label);
-            }
-        });
-
-        return {validLabels, invalidLabels} as GetLabelsResult;
+        return labels;
     }
 
     createClusterSvg(clusterDisplayNames: string[], totalClusteredNodes: number) {
@@ -261,14 +321,138 @@ export class VisualizationCanvasComponent implements OnInit {
         return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
     }
 
+    createOriginalNodeFromDuplicate(duplicateNode: DuplicateVisNode) {
+        return {
+            id: duplicateNode.duplicateOf,
+            label: duplicateNode.label,
+            data: duplicateNode.data,
+            subLabels: duplicateNode.subLabels,
+            displayName: duplicateNode.displayName,
+            primaryLabel: duplicateNode.primaryLabel,
+            expanded: duplicateNode.expanded,
+            color: duplicateNode.color,
+        } as VisNode;
+    }
+
+    createDuplicateNodeFromOriginal(originalNode: VisNode) {
+        const newDuplicateNodeId = 'duplicateNode:' + uuidv4();
+        return {
+            ...originalNode,
+            id: newDuplicateNodeId,
+            duplicateOf: originalNode.id,
+        } as DuplicateVisNode;
+    }
+
+    createOriginalEdgeFromDuplicate(duplicateEdge: DuplicateVisEdge) {
+        return {
+            id: duplicateEdge.duplicateOf,
+            label: duplicateEdge.label,
+            data: duplicateEdge.data,
+            to: duplicateEdge.originalTo,
+            from: duplicateEdge.originalFrom,
+            arrows: duplicateEdge.arrows,
+        } as VisEdge;
+    }
+
+    createDuplicateEdgeFromOriginal(originalEdge: VisEdge, clusterOrigin: number, duplicateNode: DuplicateVisNode) {
+        const newDuplicateEdgeId = 'duplicateEdge:' + uuidv4();
+        return {
+            ...originalEdge,
+            id: newDuplicateEdgeId,
+            duplicateOf: originalEdge.id,
+            from: originalEdge.from === clusterOrigin ? clusterOrigin : duplicateNode.id,
+            to: originalEdge.to === clusterOrigin ? clusterOrigin : duplicateNode.id,
+            originalFrom: originalEdge.from,
+            originalTo: originalEdge.to,
+        } as DuplicateVisEdge;
+    }
+
+    /**
+     * Helper method for cleaning up the canvas after a cluster is opened. All cluster
+     * nodes/edges are duplicates, so we have to remove them when a cluster is opened.
+     * We also redraw the originals if they are not already present on the canvas.
+     * @param nodesInCluster the list of duplicate node IDs in the opened cluster
+     */
+    cleanUpDuplicates(nodesInCluster: IdType[]) {
+        nodesInCluster.forEach(duplicateNodeId => {
+            const duplicateNode = this.nodes.get(duplicateNodeId) as DuplicateVisNode;
+            // If the original node is not currently drawn on the canvas, redraw it
+            if (isNullOrUndefined(this.nodes.get(duplicateNode.duplicateOf))) {
+                this.nodes.update(this.createOriginalNodeFromDuplicate(duplicateNode));
+            }
+
+            this.networkGraph.getConnectedEdges(duplicateNodeId).map(
+                duplicateEdgeId => this.edges.get(duplicateEdgeId)
+            ).forEach(duplicateEdge => {
+                this.removeDuplicatedEdge.emit(duplicateEdge.duplicateOf);
+                this.edges.remove(duplicateEdge.id);
+                this.edges.update(this.createOriginalEdgeFromDuplicate(duplicateEdge));
+            });
+
+            this.nodes.remove(duplicateNodeId);
+        });
+    }
+
+    /**
+     * Helper method for creating duplicate nodes and edges given clustering information. All
+     * nodes/edges within a cluster are duplicates of the original nodes. This is done so we
+     * can view the original node if it would still have some remaining edges after clustering.
+     * If a node would have no remaining edges after clustering, we remove it from the canvas
+     * entirely. It and its corresponding edge will be redrawn when the cluster is opened.
+     * @param neighborNodesWithRel the list of original node IDs to be clustered
+     * @param relationship the relationship which is being clustered
+     * @param node the source node for the cluster
+     */
+    createDuplicateNodesAndEdges(neighborNodesWithRel: IdType[], relationship: string, clusterOrigin: IdType) {
+        return neighborNodesWithRel.map((neighborNodeId) => {
+            const edges = this.networkGraph.getConnectedEdges(neighborNodeId);
+            const newDuplicateNode = this.createDuplicateNodeFromOriginal(this.nodes.get(neighborNodeId));
+            this.nodes.update(newDuplicateNode);
+
+            if (edges.length === 1) {
+                // If the original node is being clustered on its last unclustered edge,
+                // remove it entirely from the canvas.
+                this.nodes.remove(neighborNodeId);
+            }
+
+            edges.filter(
+                edgeId => {
+                    const edge = this.edges.get(edgeId);
+                    // Make sure the edges we duplicate have the grouped relationship and that they are connected to the cluster origin
+                    return edge.label === relationship && (edge.from === clusterOrigin || edge.to === clusterOrigin);
+                }
+            ).forEach(
+                edgeId => {
+                    const existingEdge = this.edges.get(edgeId);
+                    this.addDuplicatedEdge.emit(edgeId as number);
+                    this.edges.update(this.createDuplicateEdgeFromOriginal(existingEdge, clusterOrigin as number, newDuplicateNode));
+                    this.edges.remove(existingEdge);
+                }
+            );
+            return newDuplicateNode.id;
+        });
+    }
+
+    safelyOpenCluster(clusterNodeId) {
+        const nodesInCluster = this.networkGraph.getNodesInCluster(clusterNodeId);
+
+        // Clean up the cluster
+        this.networkGraph.openCluster(clusterNodeId);
+        this.clusters.delete(clusterNodeId as string);
+
+        this.cleanUpDuplicates(nodesInCluster);
+    }
+
     /**
      * Creates a cluster node of all the neighbors connected to the currently selected
-     * node cnonected by the input relationship.
+     * node connected by the input relationship.
      * @param rel a string representing the relationship the neighbors will be clustered on
      */
     groupNeighborsWithRelationship(groupRequest: GroupRequest) {
-        const { relationship, node} = groupRequest;
-        const neighborNodesWithRel = this.getNeighborsWithRelationship(relationship, node);
+        const { relationship, node } = groupRequest;
+        let neighborNodesWithRel = this.getNeighborsWithRelationship(relationship, node);
+        neighborNodesWithRel = this.createDuplicateNodesAndEdges(neighborNodesWithRel, relationship, node);
+
         const clusterDisplayNames: string[] = neighborNodesWithRel.map(
             (nodeId) => {
                 let displayName = this.nodes.get(nodeId).displayName;
@@ -280,6 +464,8 @@ export class VisualizationCanvasComponent implements OnInit {
         ).slice(0, 3);
         const url = this.createClusterSvg(clusterDisplayNames, neighborNodesWithRel.length);
 
+        // TODO: Would be nice to have some indication that the cluster has been selected.
+        // A bit tricky, since clusters are SVGs, but maybe this can be done.
         this.networkGraph.cluster({
             joinCondition: (n) => neighborNodesWithRel.includes(n.id),
             clusterNodeProperties: {
@@ -293,7 +479,7 @@ export class VisualizationCanvasComponent implements OnInit {
                 allowSingleNodeCluster: true,
             },
             clusterEdgeProperties: {
-                label: null,
+                label: relationship,
             },
             processProperties: (clusterOptions) => {
                 const newClusterId = `cluster:${uuidv4()}`;
@@ -311,8 +497,16 @@ export class VisualizationCanvasComponent implements OnInit {
         });
     }
 
+    // TODO: We need to consider flipping the 'expanded' property of any nodes where after this process finishes, the node
+    // no longer has any neighbors. Otherwise, if we remove all the connected nodes from a given node, the user will have to
+    // double click on that node twice to re-expand the node.
     removeNodes(nodes: IdType[]) {
         nodes.forEach(node => {
+            this.networkGraph.getConnectedNodes(node).forEach(connectedNode => {
+                if (this.networkGraph.isCluster(connectedNode)) {
+                    this.safelyOpenCluster(connectedNode);
+                }
+            });
             this.networkGraph.getConnectedEdges(node).forEach(edge => {
                 this.edges.remove(edge);
             });
@@ -322,32 +516,81 @@ export class VisualizationCanvasComponent implements OnInit {
 
     selectNeighbors(node: IdType) {
         this.networkGraph.selectNodes(this.networkGraph.getConnectedNodes(node) as IdType[]);
+        this.updateSelectedNodes();
     }
 
     /**
-     * Opens the metadata sidebar for with the input node's data
-     * TODO: the sidebar isn't implemented yet, so just printing the node data for now.
-     * @param nodeRef represents a row in the reference table, contains node data
+     * Opens the metadata sidebar with the input node's data
+     * @param edge represents a non-cluster edge on the canvas
      */
-    openMetadataSidebar(nodeRef: ReferenceTableRow) {
-        const clusterId = this.networkGraph.findNode(nodeRef.nodeId)[0] as string;
-        this.networkGraph.getConnectedNodes(clusterId).forEach(node => {
-            this.networkGraph.getConnectedEdges(node).forEach(edge => {
-                const edgeData = this.edges.get(edge);
-                if (edgeData !== null && (edgeData.from === nodeRef.nodeId || edgeData.to === nodeRef.nodeId)) {
-                    console.log(edgeData);
+    getAssociationsWithEdge(edge: VisEdge) {
+        this.getSnippetsFromEdge.emit(edge);
+    }
+
+    getAssociationsWithDuplicateEdge(edge: DuplicateVisEdge) {
+        this.getSnippetsFromDuplicateEdge.emit(edge);
+    }
+
+    updateSidebarEntity() {
+        if (this.selectedNodes.length === 1 && this.selectedEdges.length === 0) {
+            if (this.networkGraph.isCluster(this.selectedNodes[0])) {
+                const cluster = this.selectedNodes[0];
+                const clusteredNodes = this.networkGraph.getNodesInCluster(cluster).map(node => {
+                    return {
+                        nodeId: node,
+                        edges: this.networkGraph.getConnectedEdges(node).map(edgeId => this.edges.get(edgeId)),
+                    } as ClusteredNode;
+                });
+                this.getClusterGraphData.emit(clusteredNodes);
+            } else {
+                const node  = this.nodes.get(this.selectedNodes[0]) as VisNode;
+                this.sidenavEntity = {
+                    data: node,
+                    edges: this.networkGraph.getConnectedEdges(node.id).map(edgeId => this.edges.get(edgeId))
+                } as SidenavNodeEntity;
+                this.sidenavEntityType = SidenavEntityType.NODE;
+            }
+        } else if (this.selectedNodes.length === 0 && this.selectedEdges.length === 1) {
+            const edge = this.edges.get(this.selectedEdges[0]) as VisEdge;
+            this.getAssociationsWithEdge(edge);
+        }
+    }
+
+    getNodeEdgePairsInCluster(clusterNodeId: string) {
+        const clusterEdgeRelationship = this.clusters.get(clusterNodeId);
+        return this.networkGraph.getNodesInCluster(clusterNodeId).map(
+            duplicateNodeId => {
+                // Get each clustered node and edge. There should be EXACTLY
+                // one edge connected to this node, and both the node and edge are
+                // duplicates.
+                try {
+                    if (typeof duplicateNodeId !== 'string') {
+                        throw Error(`Cluster node ID was of type ${typeof duplicateNodeId}! Should be 'string'`);
+                    } else if (this.networkGraph.getConnectedEdges(duplicateNodeId).length !== 1) {
+                        throw Error(
+                            `Cluster node with id ${duplicateNodeId} has ` +
+                            `${this.networkGraph.getConnectedEdges(duplicateNodeId).length} edges! Should be 1.`
+                        );
+                    }
+
+                    const duplicateEdgeId = this.networkGraph.getConnectedEdges(duplicateNodeId).pop();
+
+                    if (this.edges.get(duplicateEdgeId).label !== clusterEdgeRelationship) {
+                        throw Error(
+                            `Edge ${duplicateEdgeId} of node ${duplicateNodeId} had label ` +
+                            `${this.edges.get(duplicateEdgeId).label}! Should be ${clusterEdgeRelationship}` +
+                            `Clustered edges should all have the same label.`
+                        );
+                    }
+                    return {
+                        node: this.nodes.get(duplicateNodeId),
+                        edge: this.edges.get(duplicateEdgeId),
+                    } as DuplicateNodeEdgePair;
+                } catch (e) {
+                    console.log(e);
                 }
-            });
-        });
-
-
-        const clusteredRelationship = this.clusters.get(clusterId);
-        const relatedTo = this.nodes.get(this.networkGraph.getConnectedNodes(clusterId)[0] as number).displayName;
-        this.getSentences.emit({
-                nodeId: nodeRef.nodeId,
-                entryText: relatedTo,
-                description: clusteredRelationship,
-        } as AssociationData);
+            }
+        );
     }
 
     /**
@@ -376,6 +619,22 @@ export class VisualizationCanvasComponent implements OnInit {
             this.onBlurNodeCallback(params);
         });
 
+        this.networkGraph.on('selectNode', (params) => {
+            this.onSelectNodeCallback(params);
+        });
+
+        this.networkGraph.on('deselectNode', (params) => {
+            this.onDeselectNodeCallback(params);
+        });
+
+        this.networkGraph.on('selectEdge', (params) => {
+            this.onSelectEdgeCallback(params);
+        });
+
+        this.networkGraph.on('deselectEdge', (params) => {
+            this.onDeselectEdgeCallback(params);
+        });
+
         this.networkGraph.on('doubleClick', (params) => {
             this.onDoubleClickCallback(params);
         });
@@ -398,6 +657,8 @@ export class VisualizationCanvasComponent implements OnInit {
 
     onDragStartCallback(params: any) {
         this.hideAllTooltips();
+        this.updateSelectedNodes(); // Dragging a node doesn't fire node selection, but it is selected after dragging finishes, so update
+
         if (this.networkGraph.isCluster(params.nodes[0]) || !this.nodes.get(params.nodes[0])) {
             this.referenceTableControlService.interruptReferenceTable();
         }
@@ -405,17 +666,15 @@ export class VisualizationCanvasComponent implements OnInit {
 
     onHoverNodeCallback(params: any) {
         if (this.networkGraph.isCluster(params.node)) {
-            this.nodesInHoveredCluster = this.networkGraph.getNodesInCluster(params.node).map(
-                nodeId => {
-                    return {displayName: this.nodes.get(nodeId).displayName, nodeId: nodeId as number};
-                }
-            );
-
+            // Begin the delay for showing the updated reference table for the hovered cluster
             this.referenceTableControlService.delayReferenceTable();
             this.referenceTableControlService.showReferenceTableResult$.pipe(
                 first(),
-                filter(showGroupByRel => showGroupByRel),
+                filter(showRefTable => showRefTable),
             ).subscribe(() => {
+                // Update cluster data AFTER the delay has completed
+                this.referenceTableData = this.getNodeEdgePairsInCluster(params.node);
+
                 // Update the canvas location
                 const clusterPosition = this.networkGraph.getPositions(params.node)[`${params.node}`]; // Cluster x and y
                 const clusterDOMPos = this.networkGraph.canvasToDOM(clusterPosition);
@@ -452,12 +711,34 @@ export class VisualizationCanvasComponent implements OnInit {
         }
     }
 
+    onSelectNodeCallback(params: any) {
+        this.updateSelectedNodes();
+        this.updateSidebarEntity();
+    }
+
+    onDeselectNodeCallback(params: any) {
+        // TODO: Minor bug: this is causing the context-menu to briefly show the
+        // "no selected entities" menu template during the fade-out animation. Could
+        // add a timeout here equal to the length of the animation, but maybe there's
+        // a better solution?
+        this.updateSelectedNodes();
+    }
+
+    onSelectEdgeCallback(params: any) {
+        this.updateSelectedEdges();
+        this.updateSidebarEntity();
+    }
+
+    onDeselectEdgeCallback(params: any) {
+        // TODO: Same bug as described in "onDeselectNodeCallback"
+        this.updateSelectedEdges();
+    }
+
     onDoubleClickCallback(params: any) {
         const hoveredNode = this.networkGraph.getNodeAt(params.pointer.DOM);
 
         if (this.networkGraph.isCluster(hoveredNode)) {
-            this.networkGraph.openCluster(hoveredNode);
-            this.clusters.delete(hoveredNode as string);
+            this.safelyOpenCluster(hoveredNode);
             return;
         }
 
@@ -486,24 +767,22 @@ export class VisualizationCanvasComponent implements OnInit {
         this.contextMenuControlService.updatePopper(contextMenuXPos, contextMenuYPos);
 
         const hoveredEdge = this.networkGraph.getEdgeAt(params.pointer.DOM);
-        this.selectedNodes = this.networkGraph.getSelectedNodes();
-        this.selectedEdges = this.networkGraph.getSelectedEdges();
+        const currentlySelectedNodes = this.networkGraph.getSelectedNodes();
+        const currentlySelectedEdges = this.networkGraph.getSelectedEdges();
 
         if (hoveredNode !== undefined) {
-            if (!this.selectedNodes.includes(hoveredNode)) {
-                this.networkGraph.unselectAll();
-                this.selectedNodes = [hoveredNode];
-                this.networkGraph.selectNodes(this.selectedNodes);
+            if (currentlySelectedNodes.length === 0 || !currentlySelectedNodes.includes(hoveredNode)) {
+                this.networkGraph.selectNodes([hoveredNode], false);
             }
         } else if (hoveredEdge !== undefined) {
-            if (!this.selectedEdges.includes(hoveredEdge)) {
-                this.networkGraph.unselectAll();
-                this.selectedEdges = [hoveredEdge];
-                this.networkGraph.selectEdges(this.selectedEdges);
+            if (currentlySelectedEdges.length === 0 || !currentlySelectedEdges.includes(hoveredEdge)) {
+                this.networkGraph.selectEdges([hoveredEdge]);
             }
         } else {
             this.networkGraph.unselectAll();
         }
+
+        this.updateSelectedNodesAndEdges();
 
         if (this.selectedNodes.length === 1 && this.selectedEdges.length === 0) {
             this.updateSelectedNodeEdgeLabels(this.selectedNodes[0]);
@@ -513,6 +792,7 @@ export class VisualizationCanvasComponent implements OnInit {
             this.clearSelectedNodeEdgeLabels();
         }
         this.contextMenuControlService.showTooltip();
+        this.updateSidebarEntity(); // oncontext does not select the hovered entity by default, so update
       }
 
       // End Callback Functions

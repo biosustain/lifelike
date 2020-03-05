@@ -5,11 +5,23 @@ from typing import Dict, List, NamedTuple, Optional, Union
 from py2neo import cypher, NodeMatcher, RelationshipMatcher
 from werkzeug.datastructures import FileStorage
 
+from neo4japp.data_transfer_objects.visualization import (
+    ClusteredNode,
+    DuplicateNodeEdgePair,
+    DuplicateVisEdge,
+    EdgeSnippetCount,
+    GetClusterGraphDataResult,
+    GetReferenceTableDataResult,
+    GetSnippetCountsFromEdgesResult,
+    GetSnippetsFromEdgeResult,
+    ReferenceTableRow,
+    VisEdge,
+)
 from neo4japp.services.common import BaseDao
 from neo4japp.models import GraphNode, GraphRelationship
 from neo4japp.constants import *
 from neo4japp.factory import cache
-from neo4japp.util import CamelDictMixin, compute_hash
+from neo4japp.util import CamelDictMixin, compute_hash, snake_to_camel_dict
 from neo4japp.services.common import BaseDao
 
 from openpyxl import load_workbook
@@ -139,10 +151,74 @@ class Neo4JService(BaseDao):
         query = self.get_expand_query(node_id, limit)
         return self._query_neo4j(query)
 
-    def get_association_sentences(self, node_id: str, description: str, entry_text: str):
-        query = self.get_association_sentences_query(node_id, description, entry_text)
+    def get_snippets_from_edge(self, edge: VisEdge):
+        query = self.get_snippets_from_edge_query(edge.from_, edge.to, edge.label)
+
         data = self.graph.run(query).data()
-        return [result['references'] for result in data]
+        return GetSnippetsFromEdgeResult(
+            from_node_id=edge.from_,
+            to_node_id=edge.to,
+            association=edge.label,
+            references=[result['references'] for result in data]
+        )
+
+    def get_snippets_from_duplicate_edge(self, edge: DuplicateVisEdge):
+        query = self.get_snippets_from_edge_query(edge.original_from, edge.original_to, edge.label)
+
+        data = self.graph.run(query).data()
+        return GetSnippetsFromEdgeResult(
+            from_node_id=edge.from_,
+            to_node_id=edge.to,
+            association=edge.label,
+            references=[result['references'] for result in data]
+        )
+
+    def get_snippet_counts_from_edges(self, edges: List[VisEdge]):
+        edge_snippet_counts: List[EdgeSnippetCount] = []
+        for edge in edges:
+            query = self.get_association_snippet_count_query(edge.from_, edge.to, edge.label)
+            count = self.graph.run(query).evaluate()
+            edge_snippet_counts.append(EdgeSnippetCount(
+                edge=edge,
+                count=count,
+            ))
+        return GetSnippetCountsFromEdgesResult(
+            edge_snippet_counts=edge_snippet_counts,
+        )
+
+    def get_reference_table_data(self, node_edge_pairs: List[DuplicateNodeEdgePair]):
+        reference_table_rows: List[ReferenceTableRow] = []
+        for pair in node_edge_pairs:
+            node = pair.node
+            edge = pair.edge
+
+            query = self.get_association_snippet_count_query(edge.original_from, edge.original_to, edge.label)
+            count = self.graph.run(query).evaluate()
+            reference_table_rows.append(ReferenceTableRow(
+                node_display_name=node.display_name,
+                snippet_count=count,
+                edge=edge,
+            ))
+        return GetReferenceTableDataResult(
+            reference_table_rows=reference_table_rows
+        )
+
+    def get_cluster_graph_data(self, clustered_nodes: List[ClusteredNode]):
+        results: Dict[int, Dict[str, int]] = dict()
+
+        for node in clustered_nodes:
+            for edge in node.edges:
+                query = self.get_association_snippet_count_query(edge.original_from, edge.original_to, edge.label)
+                count = self.graph.run(query).evaluate()
+
+                if (results.get(node.node_id, None) is not None):
+                    results[node.node_id][edge.label] = count
+                else:
+                    results[node.node_id] = {edge.label: count}
+
+        return GetClusterGraphDataResult(
+            results=results,
+        )
 
     def load_reaction_graph(self, biocyc_id: str):
         query = self.get_reaction_query(biocyc_id)
@@ -324,15 +400,22 @@ class Neo4JService(BaseDao):
         """.format(node_id, limit)
         return query
 
-    # TODO: Need to make a solid version of this query, not sure the current
-    # iteration will work 100% of the time
-    def get_association_sentences_query(self, node_id: str, description: str, entry_text: str):
+    def get_snippets_from_edge_query(self, from_node: int, to_node: int, association: str):
         query = """
-            MATCH (n)-[:HAS_ASSOCIATION]-(s:Association)-[:HAS_REF]-(r:Reference)
-            WHERE ID(n) = {} AND s.description='{}' AND r.entry2_text=~'.*{}.*'
-            WITH r
-            return r as references
-        """.format(node_id, description, entry_text)
+            MATCH (f)-[:HAS_ASSOCIATION]->(a:Association)-[:HAS_ASSOCIATION]->(t)
+            WHERE ID(f)={} AND ID(t)={} AND a.description='{}'
+            WITH a AS association MATCH (association)-[:HAS_REF]-(r:Reference)
+            RETURN r AS references
+        """.format(from_node, to_node, association)
+        return query
+
+    def get_association_snippet_count_query(self, from_node: int, to_node: int, association: str):
+        query = """
+            MATCH (f)-[:HAS_ASSOCIATION]->(a:Association)-[:HAS_ASSOCIATION]->(t)
+            WHERE ID(f)={} AND ID(t)={} AND a.description='{}'
+            WITH a AS association MATCH (association)-[:HAS_REF]-(r:Reference)
+            RETURN COUNT(r) as count
+        """.format(from_node, to_node, association)
         return query
 
     def get_reaction_query(self, biocyc_id: str):

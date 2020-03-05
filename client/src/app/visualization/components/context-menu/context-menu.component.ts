@@ -9,7 +9,7 @@ import { isNullOrUndefined } from 'util';
 
 import { IdType } from 'vis-network';
 
-import { GroupRequest, GetLabelsResult } from 'app/interfaces';
+import { GroupRequest } from 'app/interfaces';
 import { TooltipDetails } from 'app/shared/services/tooltip-control-service';
 import { TooltipComponent } from 'app/shared/components/tooltip/tooltip.component';
 
@@ -24,7 +24,7 @@ export class ContextMenuComponent extends TooltipComponent implements OnDestroy 
     @Input() selectedNodeIds: IdType[];
     @Input() selectedEdgeIds: IdType[];
     // Expect this to be null if there is not exactly one node selected
-    @Input() selectedNodeEdgeLabels: GetLabelsResult;
+    @Input() selectedNodeEdgeLabels: Set<string>;
 
     @Output() groupNeighborsWithRelationship: EventEmitter<GroupRequest> = new EventEmitter();
     @Output() removeNodes: EventEmitter<IdType[]> = new EventEmitter();
@@ -97,14 +97,6 @@ export class ContextMenuComponent extends TooltipComponent implements OnDestroy 
                 this.groupByRelSubmenuPopper = null;
             }
             this.groupByRelSubmenuPopper = createPopper(contextMenuItem, tooltip, {
-                modifiers: [
-                    {
-                        name: 'offset',
-                        options: {
-                            offset: [0, 0],
-                        },
-                    },
-                ],
                 placement: 'right-start',
             });
         });
@@ -133,6 +125,11 @@ export class ContextMenuComponent extends TooltipComponent implements OnDestroy 
 
     beginSubmenuFade() {
         this.subMenuClass = this.FADEOUT_STYLE;
+    }
+
+    mouseLeaveNodeRow() {
+        // Interrupt showing the submenu if the user hovers away from a node
+        this.contextMenuControlService.interruptGroupByRel();
     }
 
     requestGroupByRelationship(rel: string) {
