@@ -2,9 +2,15 @@
   *ngIf="networkGraphData && !hideDisplay"
   [nodes]="nodes"
   [edges]="edges"
+  [getSnippetsResult]="getSnippetsResult"
+  [getClusterGraphDataResult]="getClusterGraphDataResult"
   [legend]="legend"
   [config]="networkGraphConfig"
   (expandNode)="expandNode($event)"
-  (getSentences)="getSentences($event)"
+  (getSnippetsFromEdge)="getSnippetsFromEdge($event)"
+  (getSnippetsFromDuplicateEdge)="getSnippetsFromDuplicateEdge($event)"
+  (getClusterGraphData)="getClusterGraphData($event)"
+  (addDuplicatedEdge)="addDuplicatedEdge($event)"
+  (removeDuplicatedEdge)="removeDuplicatedEdge($event)"
 ></app-visualization-canvas>
 
