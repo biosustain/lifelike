@@ -1,13 +1,12 @@
 <!-- Root Context Menus -->
 <div id="***ARANGO_USERNAME***-menu" [ngClass]="contextMenuClass">
-  <div *ngIf="(selectedNodeIds.length > 1 || selectedEdgeIds.length > 1) || (selectedNodeIds.length === 1 && selectedEdgeIds.length === 1); else singleSelection">
+  <div *ngIf="!((selectedNodeIds.length === 1 && selectedEdgeIds.length === 0) || (selectedNodeIds.length === 0 && selectedEdgeIds.length === 1)); else singleSelection">
     <div *ngIf="selectedNodeIds.length > 0">
       <ng-template [ngTemplateOutlet]="nodeSelectionGroup"></ng-template>
     </div>
     <div *ngIf="selectedEdgeIds.length > 0">
       <ng-template [ngTemplateOutlet]="edgeSelectionGroup"></ng-template>
     </div>
-    <ng-template [ngTemplateOutlet]="settingsGroup"></ng-template>
   </div>
   <ng-template #singleSelection>
     <div *ngIf="selectedNodeIds.length === 1; else singleSelectedEdge">
@@ -21,38 +20,27 @@
         </div>
       </div>
       <ng-template [ngTemplateOutlet]="nodeSelectionGroup"></ng-template>
-      <ng-template [ngTemplateOutlet]="settingsGroup"></ng-template>
     </div>
     <ng-template #singleSelectedEdge>
-      <div *ngIf="selectedEdgeIds.length === 1; else noSelectionContextMenu">
+      <div *ngIf="selectedEdgeIds.length === 1">
         <ng-template [ngTemplateOutlet]="edgeSelectionGroup"></ng-template>
-        <ng-template [ngTemplateOutlet]="settingsGroup"></ng-template>
       </div>
     </ng-template>
   </ng-template>
+  <div id="settings-group" class="context-menu-group">
+    <div class="context-menu-item" (mouseenter)="hideAllSubMenus()">Settings</div>
+  </div>
 </div>
 
 <!-- Templates -->
-<ng-template #noSelectionContextMenu>
-  <div id="no-selection-context-menu" [ngClass]="contextMenuClass" fxLayout="column">
-    <ng-template [ngTemplateOutlet]="settingsGroup"></ng-template>
-  </div>
-</ng-template>
-
-<ng-template #settingsGroup>
-  <div class="context-menu-group">
-    <div class="context-menu-item" (mouseenter)="hideAllSubMenus()">Settings</div>
-  </div>
-</ng-template>
-
 <ng-template #nodeSelectionGroup>
-  <div class="context-menu-group">
+  <div id="node-selection-group" class="context-menu-group">
     <div class="context-menu-item" (mouseenter)="hideAllSubMenus()" (click)="requestNodeRemoval()">Remove Selected Node(s)</div>
   </div>
 </ng-template>
 
 <ng-template #edgeSelectionGroup>
-  <div class="context-menu-group">
+  <div id="edge-selection-group" class="context-menu-group">
     <div class="context-menu-item" (mouseenter)="hideAllSubMenus()" (click)="requestEdgeRemoval()">Remove Selected Edge(s)</div>
   </div>
 </ng-template>
