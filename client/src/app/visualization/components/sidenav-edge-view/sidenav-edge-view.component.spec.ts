@@ -11,31 +11,7 @@ describe('SidenavEdgeViewComponent', () => {
     let component: SidenavEdgeViewComponent;
     let fixture: ComponentFixture<SidenavEdgeViewComponent>;
 
-    const mockSidenavEdgeEntity: SidenavEdgeEntity = {
-        from: {
-            data: {id: 'MOCK_NODE_1_ID', name: 'Mock Node 1'},
-            displayName: 'Mock Node 1',
-            id: 1,
-            label: 'Mock Node 1',
-            subLabels: ['MockNode'],
-            expanded: true,
-            primaryLabel: 'MockNode',
-            color: null,
-        },
-        to:
-        {
-            data: {id: 'MOCK_NODE_2_ID', name: 'Mock Node 2'},
-            displayName: 'Mock Node 2',
-            id: 2,
-            label: 'Mock Node 2',
-            subLabels: ['MockNode'],
-            expanded: true,
-            primaryLabel: 'MockNode',
-            color: null,
-        },
-        association: 'Mock Association',
-        references: [],
-    };
+    let mockSidenavEdgeEntity: SidenavEdgeEntity;
 
     configureTestSuite(() => {
         TestBed.configureTestingModule({
@@ -45,8 +21,36 @@ describe('SidenavEdgeViewComponent', () => {
     });
 
     beforeEach(() => {
+        // Reset mock data before every test so changes don't carry over between tests
+        mockSidenavEdgeEntity  = {
+            from: {
+                data: {id: 'MOCK_NODE_1_ID', name: 'Mock Node 1'},
+                displayName: 'Mock Node 1',
+                id: 1,
+                label: 'Mock Node 1',
+                subLabels: ['MockNode'],
+                expanded: true,
+                primaryLabel: 'MockNode',
+                color: null,
+            },
+            to:
+            {
+                data: {id: 'MOCK_NODE_2_ID', name: 'Mock Node 2'},
+                displayName: 'Mock Node 2',
+                id: 2,
+                label: 'Mock Node 2',
+                subLabels: ['MockNode'],
+                expanded: true,
+                primaryLabel: 'MockNode',
+                color: null,
+            },
+            association: 'Mock Association',
+            references: [],
+        };
+
         fixture = TestBed.createComponent(SidenavEdgeViewComponent);
         component = fixture.componentInstance;
+        // Make a deep copy of the mock object so we get a brand new one for each test
         component.edgeEntity = mockSidenavEdgeEntity;
 
         fixture.detectChanges();
