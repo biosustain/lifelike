@@ -7,6 +7,7 @@ import { isNullOrUndefined } from 'util';
 import { VisEdge, ReferenceTableRow, DuplicateNodeEdgePair } from 'app/interfaces';
 
 import { TooltipDetails } from 'app/shared/services/tooltip-control-service';
+import { whichTransitionEvent } from 'app/shared/utils';
 import { TooltipComponent } from 'app/shared/components/tooltip/tooltip.component';
 
 import { ReferenceTableControlService } from '../../services/reference-table-control.service';
@@ -80,26 +81,14 @@ export class ReferenceTableComponent extends TooltipComponent implements OnDestr
     }
 
     setupFadeoutEndCallback() {
-        // Helper function to determine which event listener to use (dependent on browser)
-        function whichTransitionEvent() {
-            const el = document.createElement('fakeelement');
-            const transitions = {
-              animation: 'animationend',
-              OAnimation: 'oAnimationEnd',
-              MozAnimation: 'animationend',
-              WebkitAnimation: 'webkitAnimationEnd',
-            };
-
-            for (const t in transitions) {
-                if ( el.style[t] !== undefined ) {
-                    return transitions[t];
-                }
-            }
-        }
+        const element = document.getElementById('***ARANGO_USERNAME***-table');
         const animationEnd = whichTransitionEvent();
-        this.tooltip.addEventListener(animationEnd, () => {
-            this.hideTooltip();
-        }, false);
+
+        if (animationEnd !== undefined) {
+            element.addEventListener(animationEnd, () => {
+                this.hideTooltip();
+            }, false);
+        }
     }
 
     getAssociationsWithEdge(edge: VisEdge) {
