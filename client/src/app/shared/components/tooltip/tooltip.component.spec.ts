@@ -23,9 +23,9 @@ describe('TooltipComponent', () => {
         const mockElement = document.createElement('div');
         mockElement.setAttribute('id', 'mock-element');
 
-        // Mock document.querySelector so we can create a valid tooltip in the component
+        // Spy on document.querySelector so we can create a valid tooltip in the component
         // (querySelector is called once in the ngOnInit of the TooltipComponent)
-        document.querySelector = jasmine.createSpy('HTML Element').and.returnValue(mockElement);
+        spyOn(document, 'querySelector').and.returnValue(mockElement);
 
         fixture.detectChanges();
     });

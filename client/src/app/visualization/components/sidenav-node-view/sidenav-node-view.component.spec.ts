@@ -11,19 +11,7 @@ describe('SidenavNodeViewComponent', () => {
     let component: SidenavNodeViewComponent;
     let fixture: ComponentFixture<SidenavNodeViewComponent>;
 
-    const mockNodeEntity: SidenavNodeEntity = {
-        data: {
-            data: {id: 'MOCK_NODE_ID', name: 'Mock Node'},
-            displayName: 'Mock Node',
-            id: 1,
-            label: 'Mock Node',
-            subLabels: ['MockNode'],
-            expanded: false,
-            primaryLabel: 'MockNode',
-            color: null,
-        },
-        edges: [],
-    };
+    let mockNodeEntity: SidenavNodeEntity;
 
     configureTestSuite(() => {
         TestBed.configureTestingModule({
@@ -33,8 +21,24 @@ describe('SidenavNodeViewComponent', () => {
     });
 
     beforeEach(() => {
+        // Reset mock data before every test so changes don't carry over between tests
+        mockNodeEntity = {
+            data: {
+                data: {id: 'MOCK_NODE_ID', name: 'Mock Node'},
+                displayName: 'Mock Node',
+                id: 1,
+                label: 'Mock Node',
+                subLabels: ['MockNode'],
+                expanded: false,
+                primaryLabel: 'MockNode',
+                color: null,
+            },
+            edges: [],
+        };
+
         fixture = TestBed.createComponent(SidenavNodeViewComponent);
         component = fixture.componentInstance;
+        // Make a deep copy of the mock object so we get a brand new one for each test
         component.nodeEntity = mockNodeEntity;
 
         fixture.detectChanges();
