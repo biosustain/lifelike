@@ -1,12 +1,20 @@
 import { Component, Input } from '@angular/core';
-import { FTSQueryRecord } from 'app/interfaces';
+import { FTSReferenceRecord } from 'app/interfaces';
 import { PubMedURL } from 'app/shared/constants';
+import { stringToHex } from 'app/shared/utils';
 
 @Component({
     selector: 'app-search-record-relationships',
     template: `
         <mat-card class="mat-elevation-z1">
-            <mat-card-title>Snippet: {{ node.node.displayName }}</mat-card-title>
+            <mat-card-title>
+                <a class='node-url'
+                    [routerLink]="['/neo4j-visualizer']"
+                    [queryParams]="{ data: nodeURL }"
+                >
+                    Snippet: {{ node.node.displayName }}
+                </a>
+            </mat-card-title>
             <mat-card-subtitle>ID: {{ node.node.data.id }}</mat-card-subtitle>
             <mat-card-content>
                 <div id="pub-snippet-title">{{ node.node.displayName }}</div>
@@ -41,7 +49,29 @@ export class SearchRecordRelationshipsComponent {
 
     PUBMEDURL: string = PubMedURL;
 
-    @Input() node: FTSQueryRecord;
+    private _node: FTSReferenceRecord;
+    nodeURL: string;
+
+    @Input()
+    set node(n: FTSReferenceRecord) {
+        this._node = n;
+
+        const chemical = n.chemical;
+        const disease = n.disease;
+        let nodeQuery = '';
+        if (chemical && disease) {
+            nodeQuery += chemical.id + ',' + disease.id;
+        } else if (chemical) {
+            nodeQuery += chemical.id;
+        } else if (disease) {
+            nodeQuery += disease.id;
+        }
+        this.nodeURL = stringToHex(nodeQuery);
+    }
+
+    get node(): FTSReferenceRecord {
+        return this._node;
+    }
 
     constructor() {}
 }

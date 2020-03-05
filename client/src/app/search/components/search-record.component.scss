@@ -1,3 +1,13 @@
+a.node-url:link,
+a.node-url:visited,
+a.node-url:active  {
+    text-decoration: none;
+}
+
+a.node-url:hover {
+    text-decoration: underline;
+}
+
 #publication-container {
     margin-top: 20px;
 }
