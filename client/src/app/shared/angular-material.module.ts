@@ -18,6 +18,7 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatSelectModule } from '@angular/material/select';
+import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatSortModule } from '@angular/material/sort';
 import { MatStepperModule } from '@angular/material/stepper';
@@ -48,6 +49,7 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
         MatProgressSpinnerModule,
         MatRadioModule,
         MatSelectModule,
+        MatSidenavModule,
         MatSlideToggleModule,
         MatSnackBarModule,
         MatSortModule,
@@ -79,6 +81,7 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
         MatRadioModule,
         MatSelectModule,
         MatSnackBarModule,
+        MatSidenavModule,
         MatSlideToggleModule,
         MatSortModule,
         MatStepperModule,

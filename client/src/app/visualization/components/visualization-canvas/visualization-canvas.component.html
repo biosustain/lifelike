@@ -1,26 +1,59 @@
-<app-visualization-quickbar (animationStatus)="toggleAnimation($event)"></app-visualization-quickbar>
+<!-- According to the Angular Material docs (https://material.angular.io/components/sidenav/api#MatSidenavContainer),
+we should be careful using 'autosize', as it may lead to performance problems.-->
+<mat-sidenav-container class="sidenav-container" autosize="true">
+  <mat-sidenav-content class="sidenav-content">
+    <div id="mat-sidenav-content-container">
+      <app-visualization-quickbar (animationStatus)="toggleAnimation($event)"></app-visualization-quickbar>
 
-<app-legend [legend]="legend"></app-legend>
+      <app-legend [legend]="legend"></app-legend>
 
-<div id="network-viz"></div>
+      <div id="network-viz"></div>
 
-<!-- Not visible until the user hovers over a cluster node -->
-<app-reference-table
-  [tooltipSelector]="referenceTableTooltipSelector"
-  [tooltipOptions]="referenceTableTooltipOptions"
-  [tableNodes]="nodesInHoveredCluster"
-  (referenceTableRowClickEvent)="openMetadataSidebar($event)"
-></app-reference-table>
+      <!-- Not visible until the user hovers over a cluster node -->
+      <app-reference-table
+        [tooltipSelector]="referenceTableTooltipSelector"
+        [tooltipOptions]="referenceTableTooltipOptions"
+        [referenceTableData]="referenceTableData"
+        (referenceTableRowClickEvent)="getAssociationsWithDuplicateEdge($event)"
+      ></app-reference-table>
 
-<!-- This isn't visible unless the user has right-clicked to open the context menu -->
-<app-context-menu
-  [tooltipSelector]="contextMenuTooltipSelector"
-  [tooltipOptions]="contextMenuTooltipOptions"
-  [selectedNodeIds]="selectedNodes"
-  [selectedEdgeIds]="selectedEdges"
-  [selectedNodeEdgeLabels]="selectedNodeEdgeLabels"
-  (groupNeighborsWithRelationship)="groupNeighborsWithRelationship($event)"
-  (removeNodes)="removeNodes($event)"
-  (removeEdges)="removeEdges($event)"
-  (selectNeighbors)="selectNeighbors($event)"
-></app-context-menu>
+      <!-- This isn't visible unless the user has right-clicked to open the context menu -->
+      <app-context-menu
+        [tooltipSelector]="contextMenuTooltipSelector"
+        [tooltipOptions]="contextMenuTooltipOptions"
+        [selectedNodeIds]="selectedNodes"
+        [selectedEdgeIds]="selectedEdges"
+        [selectedNodeEdgeLabels]="selectedNodeEdgeLabels"
+        (groupNeighborsWithRelationship)="groupNeighborsWithRelationship($event)"
+        (removeNodes)="removeNodes($event)"
+        (removeEdges)="removeEdges($event)"
+        (selectNeighbors)="selectNeighbors($event)"
+      ></app-context-menu>
+    </div>
+    <button id="sidenav-toggle-button" mat-mini-fab (click)="toggleSidenavOpened()">
+      <mat-icon *ngIf="sidenavOpened">chevron_right</mat-icon>
+      <mat-icon *ngIf="!sidenavOpened">chevron_left</mat-icon>
+    </button>
+  </mat-sidenav-content>
+
+  <mat-sidenav class="sidenav" #sidenav position="end" mode="over" [(opened)]="sidenavOpened" (openedChange)="setSidenavStatus($event)">
+    <div id="mat-sidenav-container">
+      <!-- Each switch case appears to be lazy loaded, so switching between two cases will destroy the old case, and create the new case. -->
+      <div [ngSwitch]="sidenavEntityType">
+        <div *ngSwitchCase="sidenavEntityTypeEnum.NODE">
+          <app-sidenav-node-view [nodeEntity]="sidenavEntity"></app-sidenav-node-view>
+        </div>
+        <div *ngSwitchCase="sidenavEntityTypeEnum.EDGE">
+          <app-sidenav-edge-view [edgeEntity]="sidenavEntity"></app-sidenav-edge-view>
+        </div>
+        <div *ngSwitchCase="sidenavEntityTypeEnum.CLUSTER">
+          <app-sidenav-cluster-view [clusterEntity]="sidenavEntity"></app-sidenav-cluster-view>
+        </div>
+        <div *ngSwitchCase="sidenavEntityTypeEnum.EMPTY">
+          <h1>Canvas Data View</h1>
+          <h4>(Select something on the canvas to see some data!)</h4>
+        </div>
+      </div>
+    </div>
+  </mat-sidenav>
+</mat-sidenav-container>
