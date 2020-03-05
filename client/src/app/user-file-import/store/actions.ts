@@ -1,15 +1,15 @@
 import { createAction, props, union } from '@ngrx/store';
 
-import { Neo4jColumnMapping, FileNameAndSheets, NodeMappingHelper } from '../../interfaces/user-file-import.interface';
+import { Neo4jColumnMapping, FileNameAndSheets, NodeMappingHelper } from 'app/interfaces/user-file-import.interface';
 
 
-export const uploadNeo4jFile = createAction(
-    '[Importer] Upload Neo4j File',
+export const uploadExperimentalDataFile = createAction(
+    '[Importer] Upload Experimental Data File',
     props<{payload: FormData}>(),
 );
 
-export const uploadNeo4jFileSuccess = createAction(
-    '[Importer] Upload Neo4j File Success',
+export const uploadExperimentalDataFileSuccess = createAction(
+    '[Importer] Upload Experimental Data File Success',
     props<{payload: FileNameAndSheets}>(),
 );
 
@@ -20,15 +20,6 @@ export const uploadNodeMapping = createAction(
 
 export const uploadNodeMappingSuccess = createAction(
     '[Importer] Upload Node Mapping Success',
-);
-
-export const uploadRelationshipMapping = createAction(
-    '[Importer] Upload Relationship Mapping',
-    props<{payload: Neo4jColumnMapping}>(),
-);
-
-export const uploadRelationshipMappingSuccess = createAction(
-    '[Importer] Upload Relationship Mapping Success',
 );
 
 export const getDbLabels = createAction(
@@ -71,12 +62,10 @@ const all = union({
     getNodePropertiesSuccess,
     getDbRelationshipTypes,
     getDbRelationshipTypesSuccess,
-    uploadNeo4jFile,
-    uploadNeo4jFileSuccess,
+    uploadExperimentalDataFile,
+    uploadExperimentalDataFileSuccess,
     uploadNodeMapping,
     uploadNodeMappingSuccess,
-    uploadRelationshipMapping,
-    uploadRelationshipMappingSuccess,
     saveNodeMapping,
 });
 

@@ -33,7 +33,21 @@ export const reducers: ActionReducerMap<State> = {};
          * meta-reducer. This returns all providers for an @ngrx/store
          * based application.
          */
-        StoreModule.forRoot(reducers),
+        StoreModule.forRoot(reducers, {
+            // These are opt-in with NGRX 8, but will be on by default with the option to opt-out in future versions.
+            // Karma also logs a bunch of warnings if we don't have them turned on.
+            runtimeChecks: {
+                strictStateImmutability: true,
+                strictActionImmutability: true,
+                strictStateSerializability: true,
+                // setting to false because ngrx 8.6.0
+                // prevents FormData and File objects
+                // from being included in actions
+                // as they're non-serializable
+                // breaks file uploads
+                strictActionSerializability: false,
+              },
+        }),
 
         /**
          * Store devtools instrument the store retaining past versions of state
