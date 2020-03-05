@@ -31,11 +31,16 @@ class FileNameAndSheets(CamelDictMixin):
 
 @attr.s(frozen=True)
 class Neo4jNodeMapping(CamelDictMixin):
+    """Optional properties are allowed because
+    the class is shared between new nodes to create,
+    and existing nodes that were previously created.
+    """
     @attr.s(frozen=True)
     class MappedToUniversalGraph(CamelDictMixin):
         universal_graph_node_type: str = attr.ib()
         universal_graph_node_property_label: str = attr.ib()
     mapped_node_type: str = attr.ib()
+    domain: Optional[str] = attr.ib(default=None)
     mapped_node_property_to: Optional[str] = attr.ib(default=None)
     mapped_node_property_from: Dict[int, str] = attr.ib(default=attr.Factory(dict))
     node_type: Optional[str] = attr.ib(default=None)
@@ -58,7 +63,6 @@ class Neo4jRelationshipMapping(CamelDictMixin):
 class Neo4jColumnMapping(CamelDictMixin):
     """The int values are the column index
     from the excel files."""
-    domain: str = attr.ib()
     file_name: str = attr.ib()
     sheet_name: str = attr.ib()
     new_nodes: List[Neo4jNodeMapping] = attr.ib(default=attr.Factory(list))

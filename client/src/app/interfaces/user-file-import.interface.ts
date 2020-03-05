@@ -21,7 +21,6 @@ export interface FileNameAndSheets {
 }
 
 export interface NodeMappingHelper {
-    worksheetDomain: string;
     // the key is the column index
     // meaning a column can represent a node
     mapping: {
@@ -34,8 +33,9 @@ export interface NodeMappingHelper {
 }
 
 export interface Neo4jNodeMapping {
+    domain: string;
     edge?: string;
-    nodeType?: string;
+    nodeType: string;
     nodeProperties?: { [key: number]: string };
     // the mappedNode properties are for
     // mapping columns to previously created
@@ -68,7 +68,6 @@ export interface Neo4jColumnMapping {
     existingNodes: Neo4jNodeMapping[];
     relationships: Neo4jRelationshipMapping[];
     delimiters: {[key: number]: string};
-    domain: string;
     fileName: string;
     sheetName: string;
 }

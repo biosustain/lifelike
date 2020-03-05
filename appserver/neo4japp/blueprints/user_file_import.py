@@ -54,7 +54,9 @@ def upload_neo4j_file(req: UploadFileRequest):
 @jsonify_with_class(Neo4jColumnMapping)
 def upload_node_mapping(req: Neo4jColumnMapping):
     importer = get_user_file_import_service()
-    node_mappings = importer.create_node_mapping(req)
-    importer.save_node_to_neo4j(node_mappings)
+    graph_db_mappings = importer.create_graph_db_mappings(req)
+
+    importer.save_node_to_neo4j(graph_db_mappings)
+    importer.save_relationship_to_neo4j(graph_db_mappings)
 
     return SuccessResponse(result='', status_code=200)

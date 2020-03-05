@@ -53,7 +53,12 @@ class UserFileImportService(BaseDao):
             if type(value_to_assign) is str:
                 value_to_assign = value_to_assign.strip().lstrip()
             current_ws.unmerge_cells(str(group))
-            for row in current_ws.iter_rows(min_col=min_col, min_row=min_row, max_col=max_col, max_row=max_row):
+            for row in current_ws.iter_rows(
+                min_col=min_col,
+                min_row=min_row,
+                max_col=max_col,
+                max_row=max_row,
+            ):
                 for cell in row:
                     cell.value = value_to_assign
         return current_ws
@@ -158,6 +163,7 @@ class UserFileImportService(BaseDao):
                     # delete current row since it's values are now copied
                     # to the new rows
                     current_ws.delete_rows(curr_row)
+                    max_row -= 1
                     # new_row is at next row to work on now
                     # because it was incremented above
                     # after last newly created row
@@ -169,61 +175,61 @@ class UserFileImportService(BaseDao):
         print('Done creating new rows for delimiters')
         return current_ws
 
-    def create_node_mapping(
+    def create_node_mappings(
         self,
         column_mappings: Neo4jColumnMapping,
-    ) -> list:
-        workbook = cache.get(column_mappings.file_name)
-
-        for i, name in enumerate(workbook.sheetnames):
-            if name == column_mappings.sheet_name:
-                workbook.active = i
-                break
-
-        current_ws = workbook.active
-
-        if column_mappings.delimiters:
-            # delimiters are for current worksheet via column_mappings.sheet_name
-            current_ws = self.new_rows_for_delimiters(current_ws, column_mappings.delimiters)
-
+        current_ws: Worksheet,
+    ) -> List[GraphNodeCreationMapping]:
         nodes = []
         max_row = len(list(current_ws.rows))
 
         for node in column_mappings.new_nodes:
             curr_row = 2    # openpyxl is 1-indexed based, so don't count header row
             while curr_row <= max_row:
-                node_properties = {}
-                for k, v in node.node_properties.items():
-                    value = current_ws.cell(row=curr_row, column=int(k)+1).value
-                    if type(value) is str:
-                        if value.startswith(' ') or value.endswith(' '):
-                            value = value.strip().lstrip()
-                    node_properties[v] = value
+                # only create nodes that have content
+                # skip empty rows in user data file
+                if node.node_properties:
+                    node_properties = {}
+                    for k, v in node.node_properties.items():
+                        value = current_ws.cell(row=curr_row, column=int(k)+1).value
+                        if type(value) is str:
+                            if value.startswith(' ') or value.endswith(' '):
+                                value = value.strip().lstrip()
+                        if value:
+                            node_properties[v] = value
 
-                cell_value = current_ws.cell(
-                    row=curr_row,
-                    column=int(next(iter(node.mapped_node_property_from)))+1).value
+                    cell_value = current_ws.cell(
+                        row=curr_row,
+                        column=int(next(iter(node.mapped_node_property_from)))+1).value
 
-                if type(cell_value) is str:
-                    if cell_value.startswith(' ') or cell_value.endswith(' '):
-                        cell_value = cell_value.strip().lstrip()
+                    if type(cell_value) is str:
+                        if cell_value.startswith(' ') or cell_value.endswith(' '):
+                            cell_value = cell_value.strip().lstrip()
 
-                mapped_node_prop_value = cell_value
-                mapped_node_prop = next(iter(node.mapped_node_property_from.values()))
+                    mapped_node_prop_value = cell_value
+                    mapped_node_prop = next(iter(node.mapped_node_property_from.values()))
 
-                nodes.append(GraphNodeCreationMapping(
-                    domain=column_mappings.domain,
-                    node_type=node.node_type,
-                    node_properties=node_properties,
-                    mapped_node_prop=mapped_node_prop,
-                    mapped_node_prop_value=mapped_node_prop_value,
-                    kg_mapped_node_type=node.mapped_node_type,
-                    kg_mapped_node_prop=node.mapped_node_property_to,
-                    edge_label=node.edge,
-                ))
+                    nodes.append(GraphNodeCreationMapping(
+                        domain=node.domain,
+                        node_type=node.node_type,
+                        node_properties=node_properties,
+                        mapped_node_prop=mapped_node_prop,
+                        mapped_node_prop_value=mapped_node_prop_value,
+                        kg_mapped_node_type=node.mapped_node_type,
+                        kg_mapped_node_prop=node.mapped_node_property_to,
+                        edge_label=node.edge,
+                    ))
                 curr_row += 1
+        return nodes
 
+    def create_relationship_mappings(
+        self,
+        column_mappings: Neo4jColumnMapping,
+        current_ws: Worksheet,
+    ) -> List[GraphRelationshipCreationMapping]:
         relationships = []
+        max_row = len(list(current_ws.rows))
+
         for relation in column_mappings.relationships:
             curr_row = 2    # openpyxl is 1-indexed based, so don't count header row
             while curr_row <= max_row:
@@ -237,7 +243,7 @@ class UserFileImportService(BaseDao):
                         row=curr_row,
                         column=edge_col_idx+1).value
 
-                # need to use node_properties as filter
+                # need to use node_properties as filter for node
                 # because unique_property might not be unique
                 # TODO: how to handle this unique_property not being unique?
                 # user chooses the column...
@@ -287,21 +293,38 @@ class UserFileImportService(BaseDao):
                     edge_label=edge_label,
                 ))
                 curr_row += 1
-        return GraphCreationMapping(new_nodes=nodes, new_relationships=relationships)
+        return relationships
+
+    def create_graph_db_mappings(
+        self,
+        column_mappings: Neo4jColumnMapping,
+    ) -> GraphCreationMapping:
+        workbook = cache.get(column_mappings.file_name)
+
+        for i, name in enumerate(workbook.sheetnames):
+            if name == column_mappings.sheet_name:
+                workbook.active = i
+                break
+
+        current_ws = workbook.active
+
+        if column_mappings.delimiters:
+            # delimiters are for current worksheet via column_mappings.sheet_name
+            current_ws = self.new_rows_for_delimiters(current_ws, column_mappings.delimiters)
+
+        nodes_to_create = self.create_node_mappings(column_mappings, current_ws)
+        relationships_to_create = self.create_relationship_mappings(column_mappings, current_ws)
+
+        return GraphCreationMapping(
+            new_nodes=nodes_to_create, new_relationships=relationships_to_create)
 
     def save_node_to_neo4j(self, node_mappings: GraphCreationMapping) -> None:
         tx = self.graph.begin()
 
-        # just get the first domain because they'll be the same for newly created nodes (?)
-        domain_name = node_mappings.new_nodes[0].domain
-        domain_node = self.graph.nodes.match(domain_name, **{'name': domain_name}).first()
-
-        if not domain_node:
-            domain_node = Node(domain_name, **{'name': domain_name})
-            tx.create(domain_node)
-
-        # in case the filter property is not unique
+        # needed because haven't committed yet
+        # so the match would not return a node
         created_nodes = set()
+        created_domains = dict()
 
         for node in node_mappings.new_nodes:
             # can't use cipher parameters due to the dynamic map keys in filtering
@@ -318,12 +341,25 @@ class UserFileImportService(BaseDao):
             filter_property = {mapped_node_prop: mapped_node_prop_value}
             kg_filter_property = {kg_mapped_node_prop: mapped_node_prop_value}
 
-            # needed because haven't committed yet
-            # so the match would not return a node
-            # using mapped_node_prop_value because assuming it's unique
-            # for the property it's for
+            domain_name = node.domain
+
+            if domain_name not in created_domains:
+                domain_node = self.graph.nodes.match(domain_name, **{'name': domain_name}).first()
+
+                if not domain_node:
+                    domain_node = Node(domain_name, **{'name': domain_name})
+                    tx.create(domain_node)
+                created_domains[domain_name] = domain_node
+            else:
+                domain_node = created_domains[domain_name]
+
             if mapped_node_prop_value not in created_nodes:
+                created_nodes.add(mapped_node_prop_value)
                 # user experimental data node
+                # TODO: currently filter_property is all node properties
+                # of a node because there are no unique constraints
+                # and we can't tell which "column" a user expects to
+                # be unique versus what we have as unique in our database
                 exp_node = self.graph.nodes.match(node_type, **filter_property).first()
 
                 if exp_node:
@@ -331,18 +367,18 @@ class UserFileImportService(BaseDao):
                     # also do in frontend - keep set of values from unique column
                     # if see again, check if node_properties are different
                     # if not, throw exception to let user know (check JIRA issue LL-81)
+                    # but what if user wants to create duplicate - would they?
                     continue
                 else:
                     exp_node = Node(node_type, **node_properties)
                     tx.create(exp_node)
-                    created_nodes.add(mapped_node_prop_value)
 
-                # create relationship between user experiemental data node with
+                # create relationship between user experimental data node with
                 # domain node
                 relationship = Relationship(domain_node, 'CONTAINS', exp_node, **{})
                 tx.create(relationship)
 
-                # create relationship between user experiemental data node with
+                # create relationship between user experimental data node with
                 # existing nodes in knowledge graph
                 if kg_mapped_node_type:
                     kg_node = self.graph.nodes.match(kg_mapped_node_type, **kg_filter_property).first()
@@ -352,15 +388,9 @@ class UserFileImportService(BaseDao):
 
         tx.commit()
         print('Done creating relationship of new nodes to existing KG')
+        print('Done creating nodes')
 
-        if node_mappings.new_relationships:
-            self.save_relationship_to_neo4j(node_mappings)
-        print('Done')
-
-    def save_relationship_to_neo4j(
-        self,
-        node_mappings: GraphCreationMapping,
-    ) -> None:
+    def save_relationship_to_neo4j(self, node_mappings: GraphCreationMapping) -> None:
         tx = self.graph.begin()
 
         for relation in node_mappings.new_relationships:
@@ -374,7 +404,7 @@ class UserFileImportService(BaseDao):
 
             # source_filter_property = {source_node_prop_label: source_node_prop_value}
             # TODO: need to use node_properties here because the filter
-            # might not be unique (see create_node_mapping() when creating relationships list)
+            # might not be unique also see above in save_node_to_neo4j()
             source_filter_property = relation.source_node_properties
             target_filter_property = {target_node_prop_label: target_node_prop_value}
 

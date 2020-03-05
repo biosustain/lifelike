@@ -84,7 +84,12 @@
         style="max-width: 55%;"
       >
         <label>Choose which sheet to map:</label>
-        <mat-select fxFlex="1 0" placeholder="Select sheet to upload" [(value)]="chosenSheetToMap">
+        <mat-select
+          id="sheetname-dropdown"
+          fxFlex="1 0"
+          placeholder="Select sheet to upload"
+          [(value)]="chosenSheetToMap"
+        >
           <mat-option
             *ngFor="let sheet of (fileNameAndSheets$ | async)?.sheets"
             [value]="sheet"

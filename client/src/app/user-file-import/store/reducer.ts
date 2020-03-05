@@ -31,7 +31,7 @@ export const userFileImportReducer = createReducer(
         }),
     ),
     on(
-        UserFileImportActions.uploadNeo4jFileSuccess,
+        UserFileImportActions.uploadExperimentalDataFileSuccess,
         (state, action) => ({
             ...state,
             fileNameAndSheets: action.payload,
