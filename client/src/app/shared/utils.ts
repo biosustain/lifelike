@@ -7,4 +7,23 @@ export function uuidv4(): string {
         /* tslint:disable:no-bitwise*/
         (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
     );
-  }
+}
+
+/**
+ * Determines which event listener to use (dependent on browser)
+ */
+export function whichTransitionEvent() {
+    const el = document.createElement('fakeelement');
+    const transitions = {
+        animation: 'animationend',
+        OAnimation: 'oAnimationEnd',
+        MozAnimation: 'animationend',
+        WebkitAnimation: 'webkitAnimationEnd',
+    };
+
+    for (const t in transitions) {
+        if ( el.style[t] !== undefined ) {
+            return transitions[t];
+        }
+    }
+}
