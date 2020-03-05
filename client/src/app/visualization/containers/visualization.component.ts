@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
-import { filter, take, tap } from 'rxjs/operators';
+import { of, EMPTY as empty } from 'rxjs';
+import { filter, take, tap, switchMap, map } from 'rxjs/operators';
 
 import { DataSet } from 'vis-network';
 
@@ -49,18 +50,21 @@ export class VisualizationComponent implements OnInit {
     ngOnInit() {
         this.route.queryParams.pipe(
             filter(params => params.data),
-            tap((params) => {
-                const nodeData = {};
-                console.log(nodeData, params);
+            switchMap((params) => {
+                if (!params.data) {
+                    return empty;
+                }
+                return this.visService.getBatch(params.data).pipe(
+                    map((result: Neo4jResults) => result)
+                );
             }),
             take(1),
-        ).subscribe();
-
-
-        this.visService.getSomeDiseases().subscribe((results: Neo4jResults) => {
-            this.networkGraphData = this.setupInitialProperties(results);
-            this.nodes = new DataSet(this.networkGraphData.nodes);
-            this.edges = new DataSet(this.networkGraphData.edges);
+        ).subscribe((result) => {
+            if (result) {
+                this.networkGraphData = this.setupInitialProperties(result);
+                this.nodes = new DataSet(this.networkGraphData.nodes);
+                this.edges = new DataSet(this.networkGraphData.edges);
+            }
         });
 
         this.networkGraphConfig = {

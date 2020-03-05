@@ -33,6 +33,12 @@ export class VisualizationService {
         ).pipe(map(resp => resp.result));
     }
 
+    getBatch(query: string) {
+        return this.http.get<{result: Neo4jResults}>(
+            `${this.visApi}/batch`, {params: {data: query}}
+        ).pipe(map(resp => resp.result));
+    }
+
     /**
      * For use with the text-mining data set
      */

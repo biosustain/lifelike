@@ -55,7 +55,7 @@ def get_batch():
     neo4j = get_neo4j_service_dao()
     data_query = request.args.get('data', '')
     decoded_query = bytearray.fromhex(data_query).decode()
-    result = neo4j.query_multiple(decoded_query)
+    result = neo4j.query_batch(decoded_query)
     return SuccessResponse(result=result, status_code=200)
 
 @bp.route('/organisms', methods=['GET'])

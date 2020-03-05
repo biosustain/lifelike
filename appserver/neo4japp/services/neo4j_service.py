@@ -148,46 +148,66 @@ class Neo4JService(BaseDao):
         query = self.get_reaction_query(biocyc_id)
         return self._query_neo4j(query)
 
-    def query_multiple(self, data_query: str):
+    def query_batch(self, data_query: str):
+        """ query batch uses a custom query language (one we make up here)
+        for returning a list of nodes and their relationships.
+        It also works on single nodes with no relationship.
+
+        Example:
+            If we wanted all relationships between
+            the node pairs (node1, node2) and
+            (node3, node4), we will write the
+            query as follows:
+
+                node1,node2&node3,node4
         """
-        (from) node1 (to) node2
-        Format: 'node1,node2&node3,node4'
-        """
+
         data_query = data_query.split('&')
-        data = [x.split(',') for x in data_query]
-        print(data)
-        query_generator = [
-            'MATCH (nodeA)-[relationship]->(nodeB) WHERE id(nodeA)={from_} '
-            'AND id(nodeB)={to} RETURN *'.format(
-                from_=int(from_),
-                to=int(to),
-            ) for from_, to in data]
-        cypher_query = ' UNION '.join(query_generator)
-        records = self.graph.run(cypher_query).data()
-        if not records:
-            return None
-        node_dict = dict()
-        rel_dict = dict()
-        for row in records:
-            nodeA = row['nodeA']
-            nodeB = row['nodeB']
-            relationship = row['relationship']
-            graph_nodeA = GraphNode.from_py2neo(
-                nodeA,
-                display_fn=lambda x: x.get(DISPLAY_NAME_MAP[next(iter(nodeA.labels), set())])
+
+        if len(data_query) == 1 and data_query[0].find(',') == -1:
+            cypher_query = '''
+            MATCH (n) WHERE ID(n)={nid} RETURN n AS nodeA
+            '''.format(nid=int(data_query.pop()))
+            node = self.graph.evaluate(cypher_query)
+            graph_node = GraphNode.from_py2neo(
+                node,
+                display_fn=lambda x: x.get(DISPLAY_NAME_MAP[next(iter(node.labels), set())]),
             )
-            graph_nodeB = GraphNode.from_py2neo(
-                nodeB,
-                display_fn=lambda x: x.get(DISPLAY_NAME_MAP[next(iter(nodeB.labels), set())])
+            return dict(nodes=[graph_node.to_dict()], edges=[])
+        else:
+            data = [x.split(',') for x in data_query]
+            query_generator = [
+                'MATCH (nodeA)-[relationship]->(nodeB) WHERE id(nodeA)={from_} '
+                'AND id(nodeB)={to} RETURN *'.format(
+                    from_=int(from_),
+                    to=int(to),
+                ) for from_, to in data]
+            cypher_query = ' UNION '.join(query_generator)
+            records = self.graph.run(cypher_query).data()
+            if not records:
+                return None
+            node_dict = dict()
+            rel_dict = dict()
+            for row in records:
+                nodeA = row['nodeA']
+                nodeB = row['nodeB']
+                relationship = row['relationship']
+                graph_nodeA = GraphNode.from_py2neo(
+                    nodeA,
+                    display_fn=lambda x: x.get(DISPLAY_NAME_MAP[next(iter(nodeA.labels), set())])
+                )
+                graph_nodeB = GraphNode.from_py2neo(
+                    nodeB,
+                    display_fn=lambda x: x.get(DISPLAY_NAME_MAP[next(iter(nodeB.labels), set())])
+                )
+                rel = GraphRelationship.from_py2neo(relationship)
+                node_dict[graph_nodeA.id] = graph_nodeA
+                node_dict[graph_nodeB.id] = graph_nodeB
+                rel_dict[rel.id] = rel
+            return dict(
+                nodes=[n.to_dict() for n in node_dict.values()],
+                edges=[r.to_dict() for r in rel_dict.values()],
             )
-            rel = GraphRelationship.from_py2neo(relationship)
-            node_dict[graph_nodeA.id] = graph_nodeA
-            node_dict[graph_nodeB.id] = graph_nodeB
-            rel_dict[rel.id] = rel
-        return dict(
-            nodes=[n.to_dict() for n in node_dict.values()],
-            edges=[r.to_dict() for r in rel_dict.values()],
-        )
 
     def get_graph(self, req):
         # TODO: Make this filter non-static
