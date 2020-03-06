@@ -30,17 +30,12 @@ const routes: Routes = [
         path: 'drawing-tool',
         component: DrawingToolComponent,
         canDeactivate: [PendingChangesGuard]
-      },
-      {
-        path: 'pdf-viewer',
-        component: PdfViewerComponent
-      },
-      {
-        path: '',
-        redirectTo: 'project-list',
-        pathMatch: 'full'
-      },
+      }
     ],
+  },
+  {
+    path: 'pdf-viewer',
+    component: PdfViewerComponent
   },
   {
     path: '',
