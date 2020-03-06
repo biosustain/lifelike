@@ -1,12 +1,14 @@
-import { Component, OnInit, Inject } from '@angular/core';
+import { Component, OnInit, Inject, OnDestroy } from '@angular/core';
 import {
   FormGroup, FormControl, Validators
 } from '@angular/forms';
 import {
-  MatDialog,
   MatDialogRef,
   MAT_DIALOG_DATA
 } from '@angular/material/dialog';
+import {
+  Subscription
+} from 'rxjs';
 import {
   Project
 } from '../../services/interfaces';
@@ -16,13 +18,15 @@ import {
   templateUrl: './copy-project-dialog.component.html',
   styleUrls: ['./copy-project-dialog.component.scss']
 })
-export class CopyProjectDialogComponent implements OnInit {
+export class CopyProjectDialogComponent implements OnInit, OnDestroy {
   form: FormGroup = new FormGroup({
     label: new FormControl('', Validators.required),
     description: new FormControl()
   });
 
   project: Project = null;
+
+  formSubscription: Subscription;
 
   constructor(
     public dialogRef: MatDialogRef<CopyProjectDialogComponent>,
@@ -32,10 +36,15 @@ export class CopyProjectDialogComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.form.valueChanges.subscribe(val => {
+    this.formSubscription = this.form.valueChanges.subscribe(val => {
       this.form.setErrors({required: null});
     });
   }
+
+  ngOnDestroy() {
+    this.formSubscription.unsubscribe();
+  }
+
   onNoClick(): void {
     this.dialogRef.close();
   }
