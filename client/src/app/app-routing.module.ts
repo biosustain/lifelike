@@ -20,22 +20,27 @@ const routes: Routes = [
     component: LoginComponent
   },
   {
-    path: 'dt/project-list',
-    component: ProjectListViewComponent
-  },
-  {
-    path: 'dt/drawing-tool',
-    component: DrawingToolComponent,
-    canDeactivate: [PendingChangesGuard]
-  },
-  {
-    path: 'dt/pdf-viewer',
-    component: PdfViewerComponent
-  },
-  {
     path: 'dt',
-    redirectTo: '/dt/project-list',
-    pathMatch: 'full'
+    children: [
+      {
+        path: 'project-list',
+        component: ProjectListViewComponent
+      },
+      {
+        path: 'drawing-tool',
+        component: DrawingToolComponent,
+        canDeactivate: [PendingChangesGuard]
+      },
+      {
+        path: 'pdf-viewer',
+        component: PdfViewerComponent
+      },
+      {
+        path: '',
+        redirectTo: 'project-list',
+        pathMatch: 'full'
+      },
+    ],
   },
   {
     path: '',
