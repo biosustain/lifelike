@@ -1,15 +1,15 @@
 interface UniversalGraphNode {
   data: Object;
-  display_name: String;
-  hash: String;
-  label: String;
-  sub_labels: String[];
+  display_name: string;
+  hash: string;
+  label: string;
+  sub_labels: string[];
 }
 interface UniversalGraphEdge {
-  label: String;
+  label: string;
   data: Object;
-  from: String;
-  to: String;
+  from: string;
+  to: string;
 }
 interface UniversalGraph {
   nodes: UniversalGraphNode[];
@@ -17,17 +17,17 @@ interface UniversalGraph {
 }
 
 interface VisNetworkGraphNode {
-  label: String;
-  x: Number;
-  y: Number;
-  id: String;
-  group: String
+  label?: string;
+  x?: number;
+  y?: number;
+  id?: string;
+  group?: string
 }
 interface VisNetworkGraphEdge {
-  id: String;
-  from: String;
-  to: String;
-  label: String;
+  id?: string;
+  from?: string;
+  to?: string;
+  label?: string;
 }
 interface VisNetworkGraph {
   nodes: VisNetworkGraphNode[];

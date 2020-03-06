@@ -59,7 +59,7 @@ export class ProjectsService {
    */
   public pullProjects(): Observable<Object> {
     return this.http.get(
-      this.base_url + '/projects',
+      this.base_url + '/drawing-tool/projects',
       this.createHttpOptions(true)
     );
   }
@@ -70,7 +70,7 @@ export class ProjectsService {
    */
   public addProject(project: Project): Observable<Object> {
     return this.http.post(
-      this.base_url + '/projects',
+      this.base_url + '/drawing-tool/projects',
       project,
       this.createHttpOptions(true)
     );
@@ -82,7 +82,7 @@ export class ProjectsService {
    */
   public updateProject(project: Project): Observable<Object> {
     return this.http.put(
-      this.base_url + `/projects/${project.id}`,
+      this.base_url + `/drawing-tool/projects/${project.id}`,
       project,
       this.createHttpOptions(true)
     );
@@ -94,7 +94,7 @@ export class ProjectsService {
    */
   public deleteProject(project: Project): Observable<Object> {
     return this.http.delete(
-      this.base_url + `/projects/${project.id}`,
+      this.base_url + `/drawing-tool/projects/${project.id}`,
       this.createHttpOptions(true)
     );
   }

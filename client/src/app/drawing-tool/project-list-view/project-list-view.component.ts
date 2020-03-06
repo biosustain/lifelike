@@ -161,7 +161,7 @@ export class ProjectListViewComponent implements OnInit, AfterViewInit {
    */
   goToProject() {
     this.dataFlow.pushProject2Canvas(this.selectedProject);
-    this.route.navigateByUrl('drawing-tool');
+    this.route.navigateByUrl('dt/drawing-tool');
   }
 
   /**
@@ -284,6 +284,6 @@ export class ProjectListViewComponent implements OnInit, AfterViewInit {
    */
   openPDFViewer(project) {
     this.dataFlow.pushProject2Canvas(project);
-    this.route.navigateByUrl('pdf-viewer');
+    this.route.navigateByUrl('dt/pdf-viewer');
   }
 }

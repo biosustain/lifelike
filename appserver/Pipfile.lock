@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "1b4913b7eb17ee09e4a6b98e37240ed444e31b96f9747fa21701362eb8f9e193"
+            "sha256": "34ac75fdca582d75790d88dd5b90210cc6dc6b6943083f29af99c35c149afee7"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -21,13 +21,6 @@
                 "sha256:791a5686953c4b366d3228c5377196db2f534475bb38d26f70eb69668efd9028"
             ],
             "version": "==1.4.1"
-        },
-        "aniso8601": {
-            "hashes": [
-                "sha256:529dcb1f5f26ee0df6c0a1ee84b7b27197c3c50fc3a6321d66c544689237d072",
-                "sha256:c033f63d028b9a58e3ab0c2c7d0532ab4bfa7452bfc788fbfe3ddabd327b181a"
-            ],
-            "version": "==8.0.0"
         },
         "attrs": {
             "hashes": [
@@ -191,14 +184,6 @@
             "index": "pypi",
             "version": "==2.5.2"
         },
-        "flask-restful": {
-            "hashes": [
-                "sha256:5ea9a5991abf2cb69b4aac19793faac6c032300505b325687d7c305ffaa76915",
-                "sha256:d891118b951921f1cec80cabb4db98ea6058a35e6404788f9e70d5b243813ec2"
-            ],
-            "index": "pypi",
-            "version": "==0.3.8"
-        },
         "flask-sqlalchemy": {
             "hashes": [
                 "sha256:0078d8663330dc05a74bc72b3b6ddc441b9a744e2f56fe60af1a5bfc81334327",
@@ -305,10 +290,10 @@
         },
         "marshmallow": {
             "hashes": [
-                "sha256:3a94945a7461f2ab4df9576e51c97d66bee2c86155d3d3933fab752b31effab8",
-                "sha256:4b95c7735f93eb781dfdc4dded028108998cad759dda8dd9d4b5b4ac574cbf13"
+                "sha256:90854221bbb1498d003a0c3cc9d8390259137551917961c8b5258c64026b2f85",
+                "sha256:ac2e13b30165501b7d41fc0371b8df35944f5849769d136f20e2c5f6cdc6e665"
             ],
-            "version": "==3.5.0"
+            "version": "==3.5.1"
         },
         "marshmallow-sqlalchemy": {
             "hashes": [
@@ -454,9 +439,10 @@
         },
         "pycparser": {
             "hashes": [
-                "sha256:a988718abfad80b6b157acce7bf130a30876d27603738ac39f140993246b25b3"
+                "sha256:2d475327684562c3a96cc71adf7dc8c4f0565175cf86b6d7a404ff4c771f15f0",
+                "sha256:7582ad22678f0fcd81102833f60ef8d0e57288b6b5fb00323d101be910e35705"
             ],
-            "version": "==2.19"
+            "version": "==2.20"
         },
         "pygments": {
             "hashes": [

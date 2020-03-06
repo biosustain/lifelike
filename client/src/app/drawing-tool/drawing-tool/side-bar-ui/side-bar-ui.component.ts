@@ -12,6 +12,10 @@ import {
 } from '@angular/animations';
 import { filter } from 'rxjs/operators';
 
+import {
+  VisNetworkGraphNode,
+  VisNetworkGraphEdge
+} from '../../services/interfaces'
 import { 
   DataFlowService,
   node_templates,
@@ -20,39 +24,25 @@ import {
 import { Subscription } from 'rxjs';
 
 
-interface Edge {
-  id: number|string,
-  from: number|string,
-  to: number|string,
-  label: string
-};
-interface Node {
-  id: number|string,
-  group: string,
-  label: string
-};
 interface GraphData {
-  id: number|string;
-  label: string;
+  id?: string;
+  label?: string;
   group?: string;
-  edges?: Edge[];
+  edges?: VisNetworkGraphEdge[];
 }
 interface GraphSelectionData {
-  edge_data?: {
-    id: number|string,
-    label: string
-  };
+  edge_data?: VisNetworkGraphEdge;
   node_data?: {
-    id: number|string,
+    id: string,
     group: string,
     label: string,
-    edges: Edge[]
-  },
-  other_nodes?: Node[];
+    edges: VisNetworkGraphEdge[]
+  };
+  other_nodes?: VisNetworkGraphNode[];
 };
 
 @Component({
-  selector: 'side-bar-ui',
+  selector: 'app-side-bar-ui',
   templateUrl: './side-bar-ui.component.html',
   styleUrls: ['./side-bar-ui.component.scss'],
   animations: [
@@ -213,7 +203,7 @@ export class SideBarUiComponent implements OnInit, OnDestroy {
           id: this.graph_data.id,
           label: this.graph_data.label,
           group: this.graph_data.group,
-          edges: this.graph_data.edges.map((e:Edge) => {
+          edges: this.graph_data.edges.map((e:VisNetworkGraphEdge) => {
             return {
               id: e.id,
               label: e.label,

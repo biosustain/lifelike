@@ -1,8 +1,8 @@
-"""empty message
+"""Initial migration
 
-Revision ID: b032b46c803b
-Revises: 
-Create Date: 2020-02-26 23:35:20.141759
+Revision ID: 2afbf962ec75
+Revises: b032b46c803b
+Create Date: 2020-03-06 19:54:32.359988
 
 """
 from alembic import op
