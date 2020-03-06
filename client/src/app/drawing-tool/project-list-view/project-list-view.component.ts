@@ -284,6 +284,6 @@ export class ProjectListViewComponent implements OnInit, AfterViewInit {
    */
   openPDFViewer(project) {
     this.dataFlow.pushProject2Canvas(project);
-    this.route.navigateByUrl('dt/pdf-viewer');
+    this.route.navigateByUrl('pdf-viewer');
   }
 }
