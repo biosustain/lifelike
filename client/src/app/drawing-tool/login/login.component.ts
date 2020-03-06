@@ -11,7 +11,7 @@ import {
 } from '../services';
 
 @Component({
-  selector: 'login',
+  selector: 'app-login',
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss']
 })
@@ -42,7 +42,7 @@ export class LoginComponent implements OnInit {
     this.authService.login(credential_form)
       .subscribe(
         resp => {
-          this.route.navigateByUrl('project-list');
+          this.route.navigateByUrl('dt/project-list');
         },
         error => {
           this.form.controls['email_addr'].setErrors({required: true});

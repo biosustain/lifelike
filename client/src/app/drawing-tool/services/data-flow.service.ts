@@ -2,15 +2,9 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, Subject } from 'rxjs';
 
 import {
-  Project
+  Project,
+  VisNetworkGraphNode
 } from './interfaces';
-
-interface Node {
-  x: Number,
-  y: Number,
-  label: String,
-  group: String
-};
 
 /**
  * Handle communication between components
@@ -43,7 +37,7 @@ export class DataFlowService {
    * drawing-tool.component.ts
    * @param node 
    */
-  pushNode2Canvas(node: Node) {
+  pushNode2Canvas(node: VisNetworkGraphNode) {
     this.pdf2Canvas.next(node);
   }
 

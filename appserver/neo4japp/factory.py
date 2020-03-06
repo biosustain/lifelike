@@ -5,7 +5,7 @@ from flask_caching import Cache
 from flask_httpauth import HTTPTokenAuth
 from werkzeug.utils import find_modules, import_string
 
-from neo4japp.database import db, ma
+from neo4japp.database import db, ma, migrate
 from neo4japp.exceptions import BaseException
 
 # Used for registering blueprints
@@ -21,6 +21,7 @@ def create_app(name = 'neo4japp', config = 'config.Development'):
 
     db.init_app(app)
     ma.init_app(app)
+    migrate.init_app(app, db)
 
     register_blueprints(app, BLUEPRINT_PACKAGE)
 

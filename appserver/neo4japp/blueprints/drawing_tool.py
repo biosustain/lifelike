@@ -6,7 +6,7 @@ from neo4japp.database import db
 from neo4japp.models.drawing_tool import AppUser, Project, ProjectSchema
 from neo4japp.util import auth, pullUserFromAuthHead
 
-bp = Blueprint('drawing_tool', __name__)
+bp = Blueprint('drawing_tool', __name__, url_prefix='/drawing-tool')
 
 
 @bp.route('/projects', methods=['GET'])

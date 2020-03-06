@@ -1,10 +1,9 @@
 import {Component, Inject, OnInit} from '@angular/core';
 import {MatDialog, MatDialogRef, MAT_DIALOG_DATA} from '@angular/material/dialog';
 
-export interface ProjectData {
-  label: string,
-  description: string
-}
+import {
+  Project
+} from '../../services/interfaces'
 
 @Component({
   selector: 'app-delete-project-dialog',
@@ -13,11 +12,11 @@ export interface ProjectData {
 })
 export class DeleteProjectDialogComponent implements OnInit {
 
-  project: ProjectData;
+  project: Project;
 
   constructor(
     public dialogRef: MatDialogRef<DeleteProjectDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: ProjectData
+    @Inject(MAT_DIALOG_DATA) public data: Project
   ) {
     this.project = data;
   }

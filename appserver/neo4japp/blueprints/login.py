@@ -5,7 +5,7 @@ import jwt
 from neo4japp.database import db
 from neo4japp.models.drawing_tool import AppUser
 
-bp = Blueprint('login', __name__)
+bp = Blueprint('login', __name__, url_prefix='/auth')
 
 
 @bp.route('/refresh', methods=['POST'])

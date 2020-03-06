@@ -18,7 +18,9 @@ import {
   makeid
 } from '../services';
 import {
-  Project
+  Project,
+  VisNetworkGraphEdge,
+  VisNetworkGraphNode
 } from '../services/interfaces';
 import {
   NetworkVis
@@ -27,47 +29,32 @@ import {
 declare var $: any;
 
 interface Update {
-event: string,
-type: string,
-data: Object|string|number
-}
-interface Node {
-label: string,
-group: string,
-x: number,
-y: number
+  event: string,
+  type: string,
+  data: Object|string|number
 }
 interface Graph {
-edges: Object[],
-nodes: Object[]
+  edges: VisNetworkGraphEdge[],
+  nodes: VisNetworkGraphNode[]
 }
 interface Command {
-action: string,
-data: {
-  id?: number|string,
-  label?: string,
-  group?: string,
-  coord?: {
-    x: number,
-    y: number
-  },
-  node?: {
+  action: string,
+  data: {
     id?: string,
     label?: string,
-    group?: string
-  },
-  edges?: Object[],
-  edge?: {
-    to?: string,
-    from?: string,
-    label?: string,
-    id?: string
+    group?: string,
+    coord?: {
+      x: number,
+      y: number
+    },
+    node?: VisNetworkGraphNode,
+    edges?: VisNetworkGraphEdge[],
+    edge?: VisNetworkGraphEdge
   }
-}
 }
 
 @Component({
-selector: 'drawing-tool',
+selector: 'app-drawing-tool',
 templateUrl: './drawing-tool.component.html',
 styleUrls: ['./drawing-tool.component.scss']
 })
@@ -92,7 +79,7 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
   /** Render condition for dragging gesture of edge formation */
   addMode: boolean = false;
   /** Node part of draggign gesture for edge formation  */
-  node4AddingEdge2;
+  node4AddingEdge2: string;
 
   /** Build the palette ui with node templates defined */
   nodeTemplates = node_templates;
@@ -113,7 +100,7 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
     // Listen for node addition from pdf-viewer
     this.pdfDataSubscription = 
       this.dataFlow.$pdfDataSource.subscribe(
-        (node:Node) => {
+        (node:VisNetworkGraphNode) => {
           if (!node) return;
 
           // Convert DOM coordinate to canvas coordinate
@@ -149,28 +136,28 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
             // TODO REMOVE NODE
             const cmd = {
               action: 'delete node',
-              data: update.data as any
+              data: update.data as VisNetworkGraphNode
             }
             this.recordCommand(cmd);
           } else if (event === 'delete' &&  type === 'edge') {
             // TODO REMOVE EDGE
             const cmd = {
               action: 'delete edge',
-              data: update.data as any
+              data: update.data as VisNetworkGraphEdge
             };
             this.recordCommand(cmd);
           } else if (event === 'update' && type === 'node') {
             // TODO UPDATE NODE
             const cmd = {
               action: 'update node',
-              data: update.data as any
+              data: update.data as VisNetworkGraphNode
             };
             this.recordCommand(cmd);
           } else if (event === 'update' && type === 'edge') {
             // TODO UPDATE EDGE
             const cmd = {
               action: 'update edge',
-              data: update.data as any
+              data: update.data as VisNetworkGraphEdge
             };
             this.recordCommand(cmd);
           }
@@ -208,7 +195,7 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
             (properties) => {
               if (this.addMode) {
                 if (properties.nodes.length) {
-                  let target_id = properties.nodes[0];
+                  let target_id:string = properties.nodes[0];
 
                   // TODO ADD EDGE
                   const cmd = {
