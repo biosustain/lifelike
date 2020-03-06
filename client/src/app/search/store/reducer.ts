@@ -41,6 +41,7 @@ export const reducer = createReducer(
         limit: results.limit,
         loading: false,
     })),
+    on(SearchActions.searchReset, (_, {}) => (initialState)),
 );
 
 export const getNodes = (state: State) => state.nodes;

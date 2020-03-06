@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Observable } from 'rxjs';
 import { filter, tap, take } from 'rxjs/operators';
@@ -19,7 +19,7 @@ import { FTSQueryRecord, SearchQuery } from 'app/interfaces';
                     (showMore)="showMore($event)"
                 ></app-search-list>`,
 })
-export class SearchCollectionPageComponent implements OnInit {
+export class SearchCollectionPageComponent implements OnInit, OnDestroy {
     nodes$: Observable<FTSQueryRecord[]>;
     totalRecords$: Observable<number>;
     currentPage$: Observable<number>;
@@ -54,5 +54,9 @@ export class SearchCollectionPageComponent implements OnInit {
 
     showMore(searchQuery: {searchQuery: SearchQuery}) {
         this.store.dispatch(SearchActions.searchPaginate(searchQuery));
+    }
+
+    ngOnDestroy() {
+        this.store.dispatch(SearchActions.searchReset());
     }
 }
