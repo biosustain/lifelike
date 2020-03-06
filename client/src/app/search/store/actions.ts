@@ -21,3 +21,6 @@ export const searchPaginateSuccess = createAction(
     props<{results: FTSResult}>(),
 );
 
+export const searchReset = createAction(
+    '[Search] Search Reset',
+);
