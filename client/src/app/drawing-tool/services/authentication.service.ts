@@ -81,10 +81,10 @@ export class AuthenticationService implements HttpInterceptor {
    * Renew user access token with their refresh token
    */
   public refresh(): Observable<any> {
-    let jwt = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE1ODIzMjA5NTcsInN1YiI6InVzZXJAZ21haWwuY29tIiwiZXhwIjoxNTgyNDA3MzU3LCJ0eXBlIjoicmVmcmVzaCJ9.NwHyqsIlJssRIt2Oo5VRCIo6XKiJLbMnnAZy4lR0h7o'
+    let jwt = localStorage.getItem('refresh_jwt');
 
   	return this.http.post(
-    	this.base_url + '/refresh',
+    	this.base_url + '/auth/refresh',
       {jwt},
       this.createHttpOptions()
     ).pipe(
@@ -102,7 +102,7 @@ export class AuthenticationService implements HttpInterceptor {
    */
   public login(credential_form): Observable<Object> {
     return this.http.post(
-      this.base_url + '/login',
+      this.base_url + '/auth/login',
       credential_form,
       this.createHttpOptions()
     ).pipe(

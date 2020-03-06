@@ -3,7 +3,6 @@ import json
 import os
 from flask import render_template
 from flask_cors import CORS
-from flask_migrate import Migrate
 from sqlalchemy.sql.expression import text
 
 from neo4japp.database import db
@@ -13,7 +12,6 @@ from neo4japp.models.drawing_tool import AppUser, Project
 app_config = os.environ['FLASK_APP_CONFIG']
 app = create_app(config=f'config.{app_config}')
 
-migrate = Migrate(app, db)
 CORS(app)
 
 @app.route('/')
