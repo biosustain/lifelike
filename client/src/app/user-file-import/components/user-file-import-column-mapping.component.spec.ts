@@ -1,13 +1,8 @@
 import {
   ComponentFixture,
   TestBed,
-  fakeAsync,
-  flush,
 } from '@angular/core/testing';
-// import { OverlayContainer } from '@angular/cdk/overlay';
 import { FormBuilder, FormArray } from '@angular/forms';
-import { MatSelectChange } from '@angular/material';
-import { By } from '@angular/platform-browser';
 
 import { MemoizedSelector, Store } from '@ngrx/store';
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
@@ -23,10 +18,16 @@ import {
     UserFileImportSelectors as selectors,
 } from '../store';
 
-import { getNodeProperties } from '../store/actions';
+import { saveNodeMapping } from '../store/actions';
 
 import { UserFileImportColumnMappingComponent } from './user-file-import-column-mapping.component';
-import { SheetNameAndColumnNames, ColumnNameIndex, SheetRowPreview } from 'app/interfaces';
+import {
+    ColumnNameIndex,
+    Neo4jNodeMapping,
+    NodeMappingHelper,
+    SheetNameAndColumnNames,
+    SheetRowPreview,
+} from 'app/interfaces';
 
 const chosenSheetToMap = {
     sheetName: 'sheet1',
@@ -49,7 +50,6 @@ describe('UserFileImportColumnMappingComponent', () => {
     let component: UserFileImportColumnMappingComponent;
     let fixture: ComponentFixture<UserFileImportColumnMappingComponent>;
     let mockStore: MockStore<userFileImportState.State>;
-    // let overlayContainerElement: HTMLElement;
     let fb: FormBuilder;
 
     let dbNodeTypesSelector: MemoizedSelector<userFileImportState.State, string[]>;
@@ -60,11 +60,6 @@ describe('UserFileImportColumnMappingComponent', () => {
         TestBed.configureTestingModule({
             providers: [
                 provideMockStore(),
-                // {
-                //     provide: OverlayContainer, useFactory: () => {
-                //     overlayContainerElement = document.createElement('div');
-                //     return { getContainerElement: () => overlayContainerElement };
-                // }},
             ],
             imports: [
                 RootStoreModule,
@@ -81,8 +76,7 @@ describe('UserFileImportColumnMappingComponent', () => {
         fb = new FormBuilder();
 
         component.columnDelimiterForm = fb.group({
-            column: [],
-            delimiter: [],
+            columnDelimiters: fb.array([]),
         });
         component.chosenSheetToMap = chosenSheetToMap;
         component.columnsForFilePreview = columnsForFilePreview;
@@ -109,5 +103,84 @@ describe('UserFileImportColumnMappingComponent', () => {
         expect(
             (component.columnMappingForm.get('newColumnMapping') as FormArray).controls.length,
         ).toEqual(1);
+    });
+
+    it('should add existing column mapping form row', () => {
+        component.addExistingColumnMappingRow();
+        expect(
+            (component.columnMappingForm.get('existingColumnMapping') as FormArray).controls.length,
+        ).toEqual(1);
+    });
+
+    it('should add node property mapping form row', () => {
+        component.addNodePropertyMappingRow();
+        expect(
+            (component.nodePropertyMappingForm.get('nodePropertyMapping') as FormArray).controls.length,
+        ).toEqual(1);
+    });
+
+    it('should remove new column mapping form row', () => {
+        component.addNewColumnMappingRow();
+        component.deleteNewColumnMappingRow(0);
+        expect(
+            (component.columnMappingForm.get('newColumnMapping') as FormArray).controls.length,
+        ).toEqual(0);
+    });
+
+    it('should remove existing column mapping form row', () => {
+        component.addExistingColumnMappingRow();
+        component.deleteExistingColumnMappingRow(0);
+        expect(
+            (component.columnMappingForm.get('existingColumnMapping') as FormArray).controls.length,
+        ).toEqual(0);
+    });
+
+    it('should remove node property mapping form row', () => {
+        component.addNodePropertyMappingRow();
+        component.deleteColumnNodePropertyMappingRow(0);
+        expect(
+            (component.nodePropertyMappingForm.get('nodePropertyMapping') as FormArray).controls.length,
+        ).toEqual(0);
+    });
+
+    it('should create a node mapping helper', () => {
+        component.addNewColumnMappingRow();
+        const form1 = component.columnMappingForm.get('newColumnMapping') as FormArray;
+        form1.controls[0].patchValue({domain: 'Domain A'});
+        form1.controls[0].patchValue({columnNode: {id: 0}});
+        form1.controls[0].patchValue({newNodeLabel: 'LabelA'});
+        form1.controls[0].patchValue({mappedNodeLabel: 'LabelB'});
+        form1.controls[0].patchValue({mappedNodeProperty: 'propA'});
+        form1.controls[0].patchValue({edge: 'IS_A'});
+
+        component.addNodePropertyMappingRow();
+        const form2 = component.nodePropertyMappingForm.get('nodePropertyMapping') as FormArray;
+        form2.controls[0].patchValue({columnNode: {ColA: 0}});
+        form2.controls[0].patchValue({nodeProperty: {ColB: 1}});
+
+        const nodeMapper = {
+            mapping: {
+                existingMappings: {},
+                newMappings: {
+                    0: {
+                        domain: 'Domain A',
+                        nodeType: 'LabelA',
+                        nodeProperties: {
+                            1: 'ColB',
+                        },
+                        mappedNodeType: 'LabelB',
+                        mappedNodePropertyFrom: {0: 'id'},
+                        mappedNodePropertyTo: 'propA',
+                        edge: 'IS_A',
+                        uniqueProperty: '',
+                    } as Neo4jNodeMapping,
+                },
+                delimiters: {},
+            },
+        } as NodeMappingHelper;
+
+        const action = saveNodeMapping({payload: nodeMapper});
+        component.createNodeMappings();
+        expect(mockStore.dispatch).toHaveBeenCalledWith(action);
     });
 });
