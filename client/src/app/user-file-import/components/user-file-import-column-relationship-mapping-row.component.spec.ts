@@ -24,16 +24,16 @@ import {
 
 import { getNodeProperties } from '../store/actions';
 
-import { UserFileImportNewColumnMappingRowComponent } from './user-file-import-new-column-mapping-row.component';
+import { UserFileImportColumnRelationshipMappingRowComponent } from './user-file-import-column-relationship-mapping-row.component';
+import { DebugElement } from '@angular/core';
 
 const columnHeaders = [{colA: 1}];
 const existingNodeLabels = ['labelA', 'labelB'];
 const existingNodeProperties = {labelA: ['propA', 'propB']};
-const relationshipTypes = ['IS_A'];
 
-describe('UserFileImportNewColumnMappingRowComponent', () => {
-    let component: UserFileImportNewColumnMappingRowComponent;
-    let fixture: ComponentFixture<UserFileImportNewColumnMappingRowComponent>;
+describe('UserFileImportColumnRelationshipMappingRowComponent', () => {
+    let component: UserFileImportColumnRelationshipMappingRowComponent;
+    let fixture: ComponentFixture<UserFileImportColumnRelationshipMappingRowComponent>;
     let mockStore: MockStore<userFileImportState.State>;
     let overlayContainerElement: HTMLElement;
     let fb: FormBuilder;
@@ -58,22 +58,20 @@ describe('UserFileImportNewColumnMappingRowComponent', () => {
     });
 
     beforeEach(() => {
-        fixture = TestBed.createComponent(UserFileImportNewColumnMappingRowComponent);
+        fixture = TestBed.createComponent(UserFileImportColumnRelationshipMappingRowComponent);
         component = fixture.componentInstance;
         fb = new FormBuilder();
 
-        component.columnMappingForm = fb.group({
-            domain: [],
-            columnNode: [],
-            newNodeLabel: [],
-            mappedNodeLabel: [],
-            mappedNodeProperty: [],
+        component.relationshipMappingForm = fb.group({
             edge: [],
+            source: [],
+            target: [],
+            mappedNodeType: [],
+            mappedNodeProperty: [],
         });
         component.columnHeaders = columnHeaders;
-        component.existingNodeLabels = existingNodeLabels;
+        component.dbNodeTypes = existingNodeLabels;
         component.existingNodeProperties = existingNodeProperties;
-        component.relationshipTypes = relationshipTypes;
 
         mockStore = TestBed.get(Store);
 
@@ -87,7 +85,7 @@ describe('UserFileImportNewColumnMappingRowComponent', () => {
 
     it('should call selectExistingNodeType() on event', () => {
         const select: HTMLElement = fixture.debugElement.query(
-            By.css('#new-column-mapping-select-existing-node-type-dropdown')
+            By.css('#relationship-mapping-select-existing-node-type-dropdown')
         ).nativeElement;
 
         spyOn(component, 'selectExistingNodeType');
@@ -104,7 +102,7 @@ describe('UserFileImportNewColumnMappingRowComponent', () => {
 
     it('should display column headers', fakeAsync(() => {
         const select: HTMLElement = fixture.debugElement.query(
-            By.css('#new-column-mapping-select-column-header-dropdown .mat-select-trigger')
+            By.css('#relationship-mapping-select-column-header-dropdown .mat-select-trigger')
         ).nativeElement;
 
         select.click();
@@ -116,23 +114,9 @@ describe('UserFileImportNewColumnMappingRowComponent', () => {
         expect(option[0].innerText).toEqual(Object.keys(columnHeaders[0])[0]);
     }));
 
-    it('should display existing relationship labels', fakeAsync(() => {
-        const select: HTMLElement = fixture.debugElement.query(
-            By.css('#new-column-mapping-select-existing-relationship-dropdown .mat-select-trigger')
-        ).nativeElement;
-
-        select.click();
-        flush();
-        fixture.detectChanges();
-
-        const option: NodeListOf<HTMLElement> = overlayContainerElement.querySelectorAll('mat-option');
-
-        expect(option[0].innerText).toEqual(relationshipTypes[0]);
-    }));
-
     it('should display existing node labels', fakeAsync(() => {
         const select: HTMLElement = fixture.debugElement.query(
-            By.css('#new-column-mapping-select-existing-node-type-dropdown .mat-select-trigger')
+            By.css('#relationship-mapping-select-existing-node-type-dropdown .mat-select-trigger')
         ).nativeElement;
 
         select.click();
@@ -147,11 +131,11 @@ describe('UserFileImportNewColumnMappingRowComponent', () => {
 
     it('should display existing node properties labels', fakeAsync(() => {
         // simulate choosing labelA
-        component.columnMappingForm.controls.mappedNodeLabel.setValue('labelA');
+        component.relationshipMappingForm.controls.mappedNodeType.setValue('labelA');
         fixture.detectChanges();
 
         const select: HTMLElement = fixture.debugElement.query(
-            By.css('#new-column-mapping-select-existing-node-properties-dropdown .mat-select-trigger')
+            By.css('#relationship-mapping-select-existing-node-properties-dropdown .mat-select-trigger')
         ).nativeElement;
 
         select.click();
@@ -162,5 +146,20 @@ describe('UserFileImportNewColumnMappingRowComponent', () => {
 
         expect(option[0].innerText).toEqual(existingNodeProperties.labelA[0]);
         expect(option[1].innerText).toEqual(existingNodeProperties.labelA[1]);
+    }));
+
+    // TODO: disabled keeps coming back as undefined
+    xit('should disable relationship dropdown if input is used', fakeAsync(() => {
+        const select: DebugElement = fixture.debugElement.query(
+            By.css('#relationship-mapping-select-relationship-dropdown')
+        );
+
+        component.newRelationshipInput.nativeElement.value = 'new relationship';
+        component.relationshipInputChange();
+
+        flush();
+        fixture.detectChanges();
+
+        expect(select.nativeElement.disabled).toBe(true);
     }));
 });
