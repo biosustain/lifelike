@@ -17,7 +17,8 @@ export class UserFileImportExistingColumnMappingRowComponent {
     @Input() columnHeaders: ColumnNameIndex[];
     @Input() columnMappingForm: FormGroup;
     @Input() existingNodeLabels: string[];
-    @Input() existingNodeProperties: string[];
+    // key is node label, while values are the properties of that label
+    @Input() existingNodeProperties: { [key: string]: string[] };
 
     @Output() deleteMapping: EventEmitter<boolean>;
 
