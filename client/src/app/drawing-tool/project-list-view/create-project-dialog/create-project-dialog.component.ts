@@ -1,10 +1,11 @@
-import { Component, OnInit, Inject } from '@angular/core';
+import { Component, OnInit, Inject, OnDestroy } from '@angular/core';
 import {
   FormGroup, FormControl, Validators
 } from '@angular/forms';
-
 import {
-  MatDialog,
+  Subscription
+} from 'rxjs';
+import {
   MatDialogRef,
   MAT_DIALOG_DATA
 } from '@angular/material/dialog';
@@ -14,12 +15,14 @@ import {
   templateUrl: './create-project-dialog.component.html',
   styleUrls: ['./create-project-dialog.component.scss']
 })
-export class CreateProjectDialogComponent implements OnInit {
+export class CreateProjectDialogComponent implements OnInit, OnDestroy {
 
   form: FormGroup = new FormGroup({
     label: new FormControl('', Validators.required),
     description: new FormControl('')
   });
+
+  formSubscription: Subscription;
 
   constructor(
     public dialogRef: MatDialogRef<CreateProjectDialogComponent>,
@@ -27,10 +30,15 @@ export class CreateProjectDialogComponent implements OnInit {
   ) { }
 
   ngOnInit() {
-    this.form.valueChanges.subscribe(val => {
+    this.formSubscription = this.form.valueChanges.subscribe(val => {
       this.form.setErrors({required: null});
     });
   }
+
+  ngOnDestroy() {
+    this.formSubscription.unsubscribe();
+  }
+
   onNoClick(): void {
     this.dialogRef.close();
   }

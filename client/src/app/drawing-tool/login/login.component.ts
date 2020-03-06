@@ -1,10 +1,13 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import {
   Router
 } from '@angular/router';
 import { 
   FormGroup, FormControl, Validators
 } from '@angular/forms';
+import {
+  Subscription
+} from 'rxjs';
 
 import {
   AuthenticationService
@@ -15,12 +18,14 @@ import {
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss']
 })
-export class LoginComponent implements OnInit {
+export class LoginComponent implements OnInit, OnDestroy {
 
   form = new FormGroup({
     "email_addr": new FormControl(),
     "password": new FormControl()
   });
+
+  formSubscription: Subscription;
 
   constructor(
     private authService: AuthenticationService,
@@ -28,9 +33,13 @@ export class LoginComponent implements OnInit {
   ) { }
 
   ngOnInit() {
-    this.form.valueChanges.subscribe(val => {
+    this.formSubscription = this.form.valueChanges.subscribe(val => {
       this.form.controls['email_addr'].setErrors(null);
     });
+  }
+
+  ngOnDestroy() {
+    this.formSubscription.unsubscribe();
   }
 
   /**
