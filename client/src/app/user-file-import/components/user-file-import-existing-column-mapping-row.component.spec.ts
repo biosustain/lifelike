@@ -24,16 +24,15 @@ import {
 
 import { getNodeProperties } from '../store/actions';
 
-import { UserFileImportNewColumnMappingRowComponent } from './user-file-import-new-column-mapping-row.component';
+import { UserFileImportExistingColumnMappingRowComponent } from './user-file-import-existing-column-mapping-row.component';
 
 const columnHeaders = [{colA: 1}];
 const existingNodeLabels = ['labelA', 'labelB'];
 const existingNodeProperties = {labelA: ['propA', 'propB']};
-const relationshipTypes = ['IS_A'];
 
-describe('UserFileImportNewColumnMappingRowComponent', () => {
-    let component: UserFileImportNewColumnMappingRowComponent;
-    let fixture: ComponentFixture<UserFileImportNewColumnMappingRowComponent>;
+describe('UserFileImportExistingColumnMappingRowComponent', () => {
+    let component: UserFileImportExistingColumnMappingRowComponent;
+    let fixture: ComponentFixture<UserFileImportExistingColumnMappingRowComponent>;
     let mockStore: MockStore<userFileImportState.State>;
     let overlayContainerElement: HTMLElement;
     let fb: FormBuilder;
@@ -58,22 +57,18 @@ describe('UserFileImportNewColumnMappingRowComponent', () => {
     });
 
     beforeEach(() => {
-        fixture = TestBed.createComponent(UserFileImportNewColumnMappingRowComponent);
+        fixture = TestBed.createComponent(UserFileImportExistingColumnMappingRowComponent);
         component = fixture.componentInstance;
         fb = new FormBuilder();
 
         component.columnMappingForm = fb.group({
-            domain: [],
             columnNode: [],
-            newNodeLabel: [],
             mappedNodeLabel: [],
             mappedNodeProperty: [],
-            edge: [],
         });
         component.columnHeaders = columnHeaders;
         component.existingNodeLabels = existingNodeLabels;
         component.existingNodeProperties = existingNodeProperties;
-        component.relationshipTypes = relationshipTypes;
 
         mockStore = TestBed.get(Store);
 
@@ -87,7 +82,7 @@ describe('UserFileImportNewColumnMappingRowComponent', () => {
 
     it('should call selectExistingNodeType() on event', () => {
         const select: HTMLElement = fixture.debugElement.query(
-            By.css('#new-column-mapping-select-existing-node-type-dropdown')
+            By.css('#existing-column-mapping-select-existing-node-type-dropdown')
         ).nativeElement;
 
         spyOn(component, 'selectExistingNodeType');
@@ -104,7 +99,7 @@ describe('UserFileImportNewColumnMappingRowComponent', () => {
 
     it('should display column headers', fakeAsync(() => {
         const select: HTMLElement = fixture.debugElement.query(
-            By.css('#new-column-mapping-select-column-header-dropdown .mat-select-trigger')
+            By.css('#existing-column-mapping-select-column-header-dropdown .mat-select-trigger')
         ).nativeElement;
 
         select.click();
@@ -116,23 +111,9 @@ describe('UserFileImportNewColumnMappingRowComponent', () => {
         expect(option[0].innerText).toEqual(Object.keys(columnHeaders[0])[0]);
     }));
 
-    it('should display existing relationship labels', fakeAsync(() => {
-        const select: HTMLElement = fixture.debugElement.query(
-            By.css('#new-column-mapping-select-existing-relationship-dropdown .mat-select-trigger')
-        ).nativeElement;
-
-        select.click();
-        flush();
-        fixture.detectChanges();
-
-        const option: NodeListOf<HTMLElement> = overlayContainerElement.querySelectorAll('mat-option');
-
-        expect(option[0].innerText).toEqual(relationshipTypes[0]);
-    }));
-
     it('should display existing node labels', fakeAsync(() => {
         const select: HTMLElement = fixture.debugElement.query(
-            By.css('#new-column-mapping-select-existing-node-type-dropdown .mat-select-trigger')
+            By.css('#existing-column-mapping-select-existing-node-type-dropdown .mat-select-trigger')
         ).nativeElement;
 
         select.click();
@@ -151,7 +132,7 @@ describe('UserFileImportNewColumnMappingRowComponent', () => {
         fixture.detectChanges();
 
         const select: HTMLElement = fixture.debugElement.query(
-            By.css('#new-column-mapping-select-existing-node-properties-dropdown .mat-select-trigger')
+            By.css('#existing-column-mapping-select-existing-node-properties-dropdown .mat-select-trigger')
         ).nativeElement;
 
         select.click();
