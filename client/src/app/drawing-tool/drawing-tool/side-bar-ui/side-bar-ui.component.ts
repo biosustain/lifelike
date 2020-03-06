@@ -107,6 +107,7 @@ export class SideBarUiComponent implements OnInit, OnDestroy {
   }
 
   graphDataSubscription: Subscription = null;
+  formSubscription: Subscription;
 
   constructor(
     private dataFlow: DataFlowService
@@ -115,7 +116,7 @@ export class SideBarUiComponent implements OnInit, OnDestroy {
   ngOnInit() {
     // Listen for changes within the form
     // in edit mode
-    this.graph_data_form.valueChanges
+    this.formSubscription = this.graph_data_form.valueChanges
       .pipe(
         filter(_ => !this.pauseForm)
       )
@@ -251,6 +252,7 @@ export class SideBarUiComponent implements OnInit, OnDestroy {
     // Unsubscribe subscription to prevent transaction
     // with subject on accident when re-init next time
     this.graphDataSubscription.unsubscribe();
+    this.formSubscription.unsubscribe();
   }
 
   /**

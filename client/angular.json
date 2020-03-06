@@ -30,7 +30,6 @@
             "styles": [
               "node_modules/tachyons/css/tachyons.css",
               "node_modules/qtip2/dist/jquery.qtip.min.css",
-              "src/material.scss",
               "src/styles.scss"
             ],
             "scripts": [
