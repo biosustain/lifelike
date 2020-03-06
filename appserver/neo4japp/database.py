@@ -1,5 +1,8 @@
 import os
 from flask import g
+from flask_migrate import Migrate
+from flask_sqlalchemy import SQLAlchemy
+from flask_marshmallow import Marshmallow
 from py2neo import Graph
 
 # TODO: Set these in a more appropriate location
@@ -8,6 +11,10 @@ graph = Graph(
     uri=os.environ.get('NEO4J_HOST'),
     password=os.environ.get('NEO4J_USER')
 )
+
+db = SQLAlchemy()
+ma = Marshmallow()
+migrate = Migrate()
 
 def get_neo4j_service_dao():
     if 'neo4j_dao' not in g:
