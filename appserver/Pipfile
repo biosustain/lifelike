@@ -6,15 +6,25 @@ verify_ssl = true
 [dev-packages]
 
 [packages]
-pycodestyle = "*"
-flask = "*"
-py2neo = "~=4.3.0"
-flask-caching = "~=1.8.0"
-openpyxl = "~=3.0.3"
 attrs = "~=18.1.0"
+bcrypt = "~=3.1.7"
 elasticsearch = "*"
+flask-marshmallow = "~=0.11.0"
+Flask = "*"
+flask-caching = "~=1.8.0"
+Flask-Cors = "~=3.0.8"
+Flask-HTTPAuth = "~=3.3.0"
+Flask-Migrate = "~=2.5.2"
+Flask-SQLAlchemy = "~=2.4.1"
+gunicorn="*"
 ipython = "==7.2.0"
+marshmallow-sqlalchemy = "~=0.22.3"
 mypy = "*"
+openpyxl = "~=3.0.3"
+py2neo = "~=4.3.0"
+pycodestyle = "*"
+PyJWT = "~=1.7.1"
+psycopg2-binary = "==2.7.6.1"
 
 [requires]
 python_version = "3.7"
