@@ -1,5 +1,5 @@
 import re
-from neo4japp.dto import FTSQueryRecord, FTSReferenceRecord, FTSResult
+from neo4japp.data_transfer_objects import FTSQueryRecord, FTSReferenceRecord, FTSResult
 from neo4japp.services.common import BaseDao
 from neo4japp.models import GraphNode
 from py2neo import cypher

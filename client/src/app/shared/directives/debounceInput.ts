@@ -15,27 +15,34 @@ import {
     Input,
     OnInit,
     Output,
+    OnDestroy,
 } from '@angular/core';
 
-import { fromEvent } from 'rxjs';
+import { fromEvent, Subscription } from 'rxjs';
 import { map, debounceTime } from 'rxjs/operators';
 
 @Directive({
     selector: '[visDebounce]',
 })
-export class DebounceInputDirective implements OnInit {
+export class DebounceInputDirective implements OnInit, OnDestroy {
     @Input() delay = 500;
     @Output() debounceCallback: EventEmitter<string> = new EventEmitter();
 
     constructor(private el: ElementRef) { }
+
+    inputStreamSub: Subscription;
 
     ngOnInit() {
         const inputStream$ = fromEvent(this.el.nativeElement, 'keyup').pipe(
             map((e: any) => e.target.value),
             debounceTime(this.delay),
         );
-        inputStream$.subscribe((input: string) => {
+        this.inputStreamSub = inputStream$.subscribe((input: string) => {
             return this.debounceCallback.emit(input);
         });
+    }
+
+    ngOnDestroy() {
+        this.inputStreamSub.unsubscribe();
     }
 }
