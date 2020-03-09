@@ -1,5 +1,7 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { APP_BASE_HREF } from '@angular/common';
 
+import { AppModule } from '../../app.module';
 import { PdfViewerComponent } from './pdf-viewer.component';
 
 describe('PdfViewerComponent', () => {
@@ -8,7 +10,12 @@ describe('PdfViewerComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ PdfViewerComponent ]
+      imports: [
+        AppModule
+      ],
+      providers: [
+        {provide: APP_BASE_HREF, useValue : '/' }
+      ]
     })
     .compileComponents();
   }));
