@@ -1,0 +1,18 @@
+<div class='w-100 vh-100'>
+    <!-- PDF Viewer -->
+    <lib-pdf-viewer-lib
+        id='pdf-viewer'
+        *ngIf="annotations?.length > 0"
+        [pdfSrc]="'assets/pdfs/sample.pdf'"
+        [annotations]="annotations"
+        [dropAreaIdentifier]="'#dropme'"
+        [handleDropArea]="false"
+        (dropEvents)="drop($event)">
+    </lib-pdf-viewer-lib>
+    <!-- Drawing Tool -->
+    <div
+        id='dropme' 
+        class='w-50 h-100 fl bg-pink'>
+        <app-drawing-tool></app-drawing-tool>
+    </div>
+</div>

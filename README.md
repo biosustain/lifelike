@@ -39,7 +39,7 @@ Next, run ```docker-compose exec appserver python db/neo4jsetup.py``` to setup t
 
 __2. How do I seed the NEO4J Database?__
 
-Download the `.zip` file from https://github.com/SBRG/knowledge-graph/blob/master/neo4j/data/databases/graph.db.zip and add it to the `db` directory. The directory structure will be `db/graph.db`.
+Download the `.zip` file from https://console.cloud.google.com/storage/browser/graphdb_backup?project=able-goods-221820 and add it to the `db` directory. The directory structure will be `db/graph.db`.
 
 **NOTE** The backup database currently only works with Neo4j version 3.x.x.
 
