@@ -4,20 +4,7 @@ import { stringToHex } from 'app/shared/utils';
 
 @Component({
     selector: 'app-search-record-node',
-    template: `
-    <mat-card class="mat-elevation-z1">
-        <mat-card-title>
-            <a class='node-url'
-               [routerLink]="['/neo4j-visualizer']"
-               [queryParams]="{ data: nodeURL }"
-            >
-            {{ node.node.label }}
-            </a>
-        </mat-card-title>
-        <mat-card-subtitle>ID: {{ node.node.data.id }}</mat-card-subtitle>
-        <mat-card-content>{{ node.node.displayName }}</mat-card-content>
-    </mat-card>
-    `,
+    templateUrl: '/search-record-node.component.html',
     styleUrls: ['./search-record.component.scss']
 })
 export class SearchRecordNodeComponent {

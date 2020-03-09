@@ -1,4 +1,4 @@
-import { Component, Input, EventEmitter, Output, OnChanges } from '@angular/core';
+import { Component, Input, EventEmitter, Output } from '@angular/core';
 import { FTSQueryRecord, SearchQuery } from 'app/interfaces';
 
 @Component({
@@ -6,26 +6,15 @@ import { FTSQueryRecord, SearchQuery } from 'app/interfaces';
     templateUrl: './search-list.component.html',
     styleUrls: ['./search-list.component.scss'],
 })
-export class SearchListComponent implements OnChanges {
-    @Input() nodes: FTSQueryRecord[];
-    @Input() totalRecords: number;
+export class SearchListComponent {
+    @Input() nodes: FTSQueryRecord[] = [];
+    @Input() totalRecords = 0;
     @Input() currentPage: number;
     @Input() currentLimit: number;
     @Input() currentQuery: string;
     @Output() showMore = new EventEmitter<{searchQuery: SearchQuery}>();
 
-    // Shows/Hides the show more button
-    showMoreVisible: boolean;
-
     constructor() {}
-
-    ngOnChanges() {
-        if (this.nodes) {
-            this.showMoreVisible = this.nodes.length < this.totalRecords;
-        } else {
-            this.showMoreVisible = false;
-        }
-    }
 
     getMoreResults() {
         const searchQuery = {
