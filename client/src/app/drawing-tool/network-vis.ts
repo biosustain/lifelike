@@ -2,8 +2,7 @@ import {
   node_templates,
   uuidv4
 } from './services';
-
-declare var vis: any;
+import { Network, Options, DataSet } from 'vis-network';
 
 /**
  * A class wrapped around the instatiation of
@@ -17,7 +16,7 @@ export class NetworkVis {
   /** vis.js Dataset collection of edges */
   vis_edges = null;
   /**  */
-  network = null;
+  network: Network = null;
 
   /** Rendering options for network graph */
   options = {
@@ -46,10 +45,11 @@ export class NetworkVis {
   }
 
   /**
+   * 
    * @param {HTMLElement} container - 
    * The container DOM to inject graph in 
    */
-  constructor(container) {
+  constructor(container: HTMLElement) {
     this.container = container;
 
     // Pull in node template styling defs
@@ -69,7 +69,7 @@ export class NetworkVis {
   }
 
   /**
-   * Set viewport so that all nodes are visibile on canvas
+   * Set viewport so that all nodes are visibile on cavas
    */
   zoom2All() {
     this.network.fit({
@@ -89,9 +89,9 @@ export class NetworkVis {
     edges=[]
   ) {
     // create an array with nodes
-    this.vis_nodes = new vis.DataSet(nodes);
+    this.vis_nodes = new DataSet(nodes);
     // create an array with edges
-    this.vis_edges = new vis.DataSet(edges);
+    this.vis_edges = new DataSet(edges);
 
     // provide the data in the visjs format
     var data = {
@@ -100,10 +100,10 @@ export class NetworkVis {
     };
 
     // initialize your network!
-    this.network = new vis.Network(
+    this.network = new Network(
       this.container,
       data,
-      this.options
+      this.options as Options
     );
 
     this.zoom2All();
@@ -251,7 +251,7 @@ export class NetworkVis {
   /**
    * Return JSON representation of network graph
    */
-  export() {
+  export(): {edges: any[], nodes: any[]} {
     let nodePosDict = this.network.getPositions();
 
     return {
