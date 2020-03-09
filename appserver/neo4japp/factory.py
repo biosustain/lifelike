@@ -1,9 +1,13 @@
-from flask import current_app, Flask
-from flask_caching import Cache
+from functools import partial
 
+from flask import current_app, Flask, jsonify
+from flask_caching import Cache
+from flask_httpauth import HTTPTokenAuth
 from werkzeug.utils import find_modules, import_string
 
 from neo4japp.encoders import CustomJSONEncoder
+from neo4japp.database import db, ma, migrate
+from neo4japp.exceptions import BaseException
 
 # Used for registering blueprints
 BLUEPRINT_PACKAGE = __package__ + '.blueprints'
@@ -15,6 +19,11 @@ cache = Cache()
 def create_app(name = 'neo4japp', config = 'config.Development'):
     app = Flask(name)
     app.config.from_object(config)
+
+    db.init_app(app)
+    ma.init_app(app)
+    migrate.init_app(app, db)
+
     register_blueprints(app, BLUEPRINT_PACKAGE)
 
     cache_config = {
@@ -31,6 +40,8 @@ def create_app(name = 'neo4japp', config = 'config.Development'):
 
     app.json_encoder = CustomJSONEncoder
 
+    app.register_error_handler(BaseException, partial(handle_error, 500))
+    # TODO: handle uncaught python errors
     return app
 
 
@@ -40,3 +51,7 @@ def register_blueprints(app, pkgname):
         if hasattr(mod, BLUEPRINT_OBJNAME):
             app.register_blueprint(mod.bp)
 
+
+def handle_error(code: int, ex: BaseException):
+    reterr = {'apiHttpError': ex.to_dict()}
+    return jsonify(reterr), code

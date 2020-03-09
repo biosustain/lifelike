@@ -4,15 +4,34 @@ version: '3.5'
 
 services:
     appserver:
-        command: ['bin/start-dev']
+        container_name: n4j-appserver
+        command: ['bin/wait-for-postgres', 'bin/start-dev']
+        build: ./appserver
+        ports:
+            - "5000:5000"
         environment:
             - NEO4J_HOST=bolt://n4j-database:7687
             - NEO4J_USER=neo4j
             - FLASK_DEBUG=1
+            - FLASK_APP=app
             - FLASK_APP_CONFIG=Development
-        volumes:
-            # dev mode only: to pick up edits done in host
+            - POSTGRES_HOST=pgdatabase
+            # Postgres defaults
+            - POSTGRES_PORT=5432
+            - POSTGRES_USER=postgres
+            - POSTGRES_PASSWORD=postgres
+            - POSTGRES_DB=postgres
+        networks:
+            - frontend
+            - backend
+        depends_on:
+            - database
+            - pgdatabase
+        stdin_open: true
+        volumes: 
             - ./appserver:/home/n4j
+        tty: true
+    
     database:
         environment:
             - NEO4J_AUTH=none
@@ -20,7 +39,7 @@ services:
             - ./db/data:/data
             - ./db/logs:/logs
             - ./db/plugins:/plugins
-
+    
     client:
         container_name: n4j-client
         # starts dev & moves the yarn.lock file so it can be committed
@@ -31,7 +50,7 @@ services:
             # dev mode only: mount src dir for container to pick up edits done on host
             - ./client:/home/node/client
         ports:
-            - "127.0.0.1:4200:4200"
+            - "4200:4200"
         build: ./client
         networks:
             - frontend
