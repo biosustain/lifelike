@@ -37,6 +37,7 @@ TYPE_DISEASE = 'Disease'
 TYPE_GENE = 'Gene'
 TYPE_PUBLICATION = 'Publication'
 TYPE_REFERENCE = 'Reference'
+TYPE_TAXONOMY = 'Taxonomy'
 
 DISPLAY_NAME_MAP = {
     TYPE_ASSOCIATION: 'description',
