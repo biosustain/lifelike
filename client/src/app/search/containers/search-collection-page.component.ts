@@ -10,7 +10,9 @@ import { FTSQueryRecord, SearchQuery } from 'app/interfaces';
 
 @Component({
     selector: 'app-search-collection-page',
-    template: `<app-search-list
+    template: `
+                <app-search-graph></app-search-graph>
+                <app-search-list
                     [totalRecords]="totalRecords$ | async"
                     [nodes]="nodes$ | async"
                     [currentPage]="currentPage$ | async"
