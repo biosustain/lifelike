@@ -13,7 +13,7 @@
       </app-search-record-node>
     </div>
   </div>
-  <div id="search-show-more-btn" *ngIf="showMoreVisible">
+  <div id="search-show-more-btn" *ngIf="nodes.length < totalRecords">
     <button
       color="primary"
       mat-raised-button
