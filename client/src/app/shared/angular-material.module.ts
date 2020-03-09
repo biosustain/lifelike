@@ -8,6 +8,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatExpansionModule } from '@angular/material/expansion';
+import { MatGridListModule } from '@angular/material/grid-list';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatListModule } from '@angular/material/list';
@@ -17,6 +18,7 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatSelectModule } from '@angular/material/select';
+import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatSortModule } from '@angular/material/sort';
 import { MatStepperModule } from '@angular/material/stepper';
@@ -38,6 +40,7 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
         MatDialogModule,
         MatDividerModule,
         MatExpansionModule,
+        MatGridListModule,
         MatIconModule,
         MatInputModule,
         MatListModule,
@@ -46,6 +49,7 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
         MatProgressSpinnerModule,
         MatRadioModule,
         MatSelectModule,
+        MatSidenavModule,
         MatSlideToggleModule,
         MatSnackBarModule,
         MatSortModule,
@@ -66,6 +70,7 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
         MatDialogModule,
         MatDividerModule,
         MatExpansionModule,
+        MatGridListModule,
         MatIconModule,
         MatInputModule,
         MatListModule,
@@ -76,6 +81,7 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
         MatRadioModule,
         MatSelectModule,
         MatSnackBarModule,
+        MatSidenavModule,
         MatSlideToggleModule,
         MatSortModule,
         MatStepperModule,

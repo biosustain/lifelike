@@ -1,0 +1,32 @@
+<div id="vis-search-container">
+  <form [formGroup]="searchForm" (ngSubmit)="onSubmit()">
+    <mat-form-field class="vis-search-full-width">
+      <button mat-button matPrefix mat-icon-button>
+        <mat-icon>search</mat-icon>
+      </button>
+      <input
+        #autoCompleteSearch
+        placeholder="Search (e.g. Gas Gangrene)"
+        matInput
+        id="vis-search-input"
+        name="search"
+        visDebounce
+        (debounceCallback)="onInputChanges($event)"
+        formControlName="search"
+        [matAutocomplete]="auto"
+      />
+      <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayFn" (optionSelected)="resultSelection($event.option.value)">
+        <mat-option *ngFor="let node of autocompleteResults" [value]="node">
+          <div [ngClass]="getStyling(node.label)"><span class="result-text">{{ node.label }}</span></div>&#160;
+          <span class="result-display-name">{{ node.displayName }}</span>&#160;
+        </mat-option>
+      </mat-autocomplete>
+    </mat-form-field>
+  </form>
+  <app-search-list (fetchMoreResults)="showMore($event)"
+                   [searchResults]="searchResultRecords"
+                   [showMoreVisible]="showMoreVisible"
+                   [totalResultsAmount]="totalResults"
+                   [searchTerm]="searchQuery"
+                   (navigateToViz)="navigateToVisualizer()"></app-search-list>
+</div>
