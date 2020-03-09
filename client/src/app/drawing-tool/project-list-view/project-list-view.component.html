@@ -1,0 +1,69 @@
+<div id='project-list-view-container'>
+  <!-- List view -->
+  <div class='list-view'>
+    <h1 class='grey'>
+      Projects
+    </h1>
+    <div class='project-list'>
+      <!-- Project UI element -->
+      <div 
+        *ngFor='let project of projects'
+        (contextmenu)="open($event, project)"
+        (click)='pickProject(project)'
+        class='project shadow-4'>
+        <h2>
+          {{
+            project.label | truncate:['20']
+          }}
+        </h2>
+        <p>Modified {{project?.date_modified | friendlyDateStr}}</p>        
+      </div>
+    </div>
+    <button 
+      class='bottom-right-overlay add-project'
+      mat-fab
+      color='primary'
+      (click)='createProject()'
+      aria-label="Example icon-button with a heart icon">
+      <mat-icon>add</mat-icon>
+    </button>
+  </div>
+
+  <!-- Preview view -->
+  <div
+    [hidden]='!selectedProject'
+    class='preview-view'>
+    <div
+      id='canvas'>
+    </div>
+    <h1>{{selectedProject?.label}}</h1>
+    <p>
+      {{selectedProject?.description}}
+    </p>
+    <p class='date'>
+      Modified {{selectedProject?.date_modified | friendlyDateStr}}
+    </p>
+    <button
+      (click)='goToProject()'
+      mat-raised-button
+      color="primary">
+      Edit
+    </button>
+    <button
+      (click)='deleteProject()'
+      mat-raised-button
+      color="warn">
+      Delete
+    </button>
+  </div>
+</div>
+<!-- Context Menu -->
+<ng-template #projectMenu let-project>
+  <section 
+    (contextmenu)="$event.preventDefault()"
+    class="project-menu">
+    <div (click)='openPDFViewer(project)'>Open with PDF Viewer</div>    
+    <div (click)='copyProject(project)'>Make copy of</div>
+    <div (click)="deleteProject(project)">Delete</div>
+  </section>
+</ng-template>

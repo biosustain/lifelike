@@ -1,0 +1,45 @@
+<!-- Container -->
+<div 
+  cdkDropListGroup
+  id='drawing-tool-view-container'
+  class='w-100 relative'
+  style='overflow-y: hidden;'>
+  <!-- Canvas -->
+  <div
+    id='canvas'
+    class='w-100 fl vh-100'
+    (cdkDropListDropped)='drop($event)'
+    cdkDropList>
+  </div>
+  <!-- Save Button Overlay -->
+  <button
+    (click)='save()'
+    [color]='saveState ? "primary" : "warn"'
+    mat-fab class='save-fab-overlay'>
+    <i class="material-icons">
+      save
+    </i>
+  </button>
+  <!-- Title Overlay -->
+  <h1 id='dt-title-overlay'>{{project?.label}}</h1>
+  <!-- Palette Overlay -->
+  <div 
+    id='palette'
+    class='overlay ma4'
+    cdkDropList>
+    <!-- Template Nodes -->
+    <div
+      *ngFor='let n_t of nodeTemplates'
+      cdkDrag
+      [id]='n_t.label'
+      [ngStyle]='nodeStyleCompute(n_t)'
+      class='node-pill'>
+      {{n_t.label | titlecase}}
+    </div>
+  </div>
+  <!-- Node Sidebar Menu -->
+  <app-side-bar-ui
+    style='overflow-y: scroll;'
+    id='side-bar-ui'>
+  </app-side-bar-ui>
+</div>
