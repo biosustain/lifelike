@@ -9,6 +9,7 @@ import { AppComponent } from './app.component';
 import { ToolbarMenuModule } from 'toolbar-menu';
 import { UserFileImportModule } from './user-file-import/user-file-import.module';
 import { VisualizationModule } from './visualization/visualization.module';
+import { DrawingToolModule } from './drawing-tool/drawing-tool.module';
 
 @NgModule({
   declarations: [
@@ -24,6 +25,7 @@ import { VisualizationModule } from './visualization/visualization.module';
     RootStoreModule,
     VisualizationModule,
     ToolbarMenuModule,
+    DrawingToolModule
   ],
   providers: [],
   exports: [
