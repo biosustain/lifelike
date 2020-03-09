@@ -29,4 +29,20 @@ describe('VisualizationQuickbarComponent', () => {
     it('should create', () => {
         expect(fixture).toBeTruthy();
     });
+
+    it('should emit a request to toggle the animation setting when the slide toggle is clicked', async () => {
+        expect(instance.animationStatus).toBeTruthy();
+
+        const animationToggleSpy = spyOn(instance, 'animationToggle').and.callThrough();
+        const animationStatusSpy = spyOn(instance.animationStatus, 'emit');
+        const slideToggleElement = document.getElementById('animation-slide-toggle');
+
+        slideToggleElement.dispatchEvent(new Event('change'));
+
+        fixture.detectChanges();
+        await fixture.whenStable().then(() => {
+            expect(animationToggleSpy).toHaveBeenCalled();
+            expect(animationStatusSpy).toHaveBeenCalled();
+        });
+    });
 });
