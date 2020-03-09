@@ -1,6 +1,9 @@
 FROM python:3.7.1
 
-RUN apt-get update && rm -rf /var/lib/apt/lists/*
+# Install psql to check on postgres availability
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    postgresql-client \
+    && rm -rf /var/lib/apt/lists/*
 
 ENV N4J_USER n4j
 ENV N4J_HOME /home/$N4J_USER

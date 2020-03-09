@@ -1,0 +1,64 @@
+/**
+ * Sidebar UI
+ */
+#side-bar-ui {
+  right: 0;
+  top: 0;
+  position: absolute;
+  z-index: 2;
+  width: 0;
+  float: right;
+  height: 100%;
+  background: rgb(50, 50, 57);
+  color: white;
+  ;
+}
+
+/**
+ * Canvas UI
+ */
+#canvas {
+  background-color: rgb(251, 255, 255);
+}
+
+/**
+  * Palette UI
+  */
+.node-pill {
+  border-radius: 9999px;
+  text-align: center;
+
+  // mv2
+  margin-top: .5rem;
+  margin-bottom: .5rem;
+
+  padding: 0.5rem 2rem;
+}
+.node-pill:hover {
+  cursor: grab;
+}
+
+.cdk-drag-preview {
+  padding: 0.5rem 0.5rem !important;
+}
+
+.overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  z-index: 2;
+}
+#dt-title-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 2;
+  margin: 2rem;
+}
+.save-fab-overlay {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  z-index: 3;
+  margin: 2rem;  
+}
