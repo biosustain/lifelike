@@ -1,4 +1,21 @@
-from typing import Dict, List
+from typing import Dict, List, Optional, Union
+
+from neo4japp.data_transfer_objects.visualization import (
+    ClusteredNode,
+    DuplicateNodeEdgePair,
+    DuplicateVisEdge,
+    EdgeSnippetCount,
+    GetClusterGraphDataResult,
+    GetReferenceTableDataResult,
+    GetSnippetCountsFromEdgesResult,
+    GetSnippetsFromEdgeResult,
+    ReferenceTableRow,
+    VisEdge,
+)
+from neo4japp.services.common import BaseDao
+from neo4japp.models import GraphNode, GraphRelationship
+from neo4japp.constants import *
+from neo4japp.services.common import BaseDao
 
 from py2neo import (
     Graph,
@@ -10,11 +27,6 @@ from py2neo import (
     RelationshipMatch,
     RelationshipMatcher,
 )
-
-from neo4japp.models import GraphNode, GraphRelationship
-from neo4japp.constants import *
-from neo4japp.services.common import BaseDao
-
 
 class Neo4JService(BaseDao):
     def __init__(self, graph):
@@ -45,6 +57,7 @@ class Neo4JService(BaseDao):
                 rel_dict[graph_rel.id] = graph_rel
         return dict(nodes=[n.to_dict() for n in node_dict.values()],
                     edges=[r.to_dict() for r in rel_dict.values()])
+
 
     def get_organisms(self):
         nodes = list(NodeMatcher(self.graph).match(NODE_SPECIES))
@@ -86,14 +99,139 @@ class Neo4JService(BaseDao):
         query = self.get_expand_query(node_id, limit)
         return self._query_neo4j(query)
 
-    def get_association_sentences(self, node_id: str, description: str, entry_text: str):
-        query = self.get_association_sentences_query(node_id, description, entry_text)
+    def get_snippets_from_edge(self, edge: VisEdge):
+        query = self.get_snippets_from_edge_query(edge.from_, edge.to, edge.label)
+
         data = self.graph.run(query).data()
-        return [result['references'] for result in data]
+        return GetSnippetsFromEdgeResult(
+            from_node_id=edge.from_,
+            to_node_id=edge.to,
+            association=edge.label,
+            references=[result['references'] for result in data]
+        )
+
+    def get_snippets_from_duplicate_edge(self, edge: DuplicateVisEdge):
+        query = self.get_snippets_from_edge_query(edge.original_from, edge.original_to, edge.label)
+
+        data = self.graph.run(query).data()
+        return GetSnippetsFromEdgeResult(
+            from_node_id=edge.from_,
+            to_node_id=edge.to,
+            association=edge.label,
+            references=[result['references'] for result in data]
+        )
+
+    def get_snippet_counts_from_edges(self, edges: List[VisEdge]):
+        edge_snippet_counts: List[EdgeSnippetCount] = []
+        for edge in edges:
+            query = self.get_association_snippet_count_query(edge.from_, edge.to, edge.label)
+            count = self.graph.run(query).evaluate()
+            edge_snippet_counts.append(EdgeSnippetCount(
+                edge=edge,
+                count=count,
+            ))
+        return GetSnippetCountsFromEdgesResult(
+            edge_snippet_counts=edge_snippet_counts,
+        )
+
+    def get_reference_table_data(self, node_edge_pairs: List[DuplicateNodeEdgePair]):
+        reference_table_rows: List[ReferenceTableRow] = []
+        for pair in node_edge_pairs:
+            node = pair.node
+            edge = pair.edge
+
+            query = self.get_association_snippet_count_query(edge.original_from, edge.original_to, edge.label)
+            count = self.graph.run(query).evaluate()
+            reference_table_rows.append(ReferenceTableRow(
+                node_display_name=node.display_name,
+                snippet_count=count,
+                edge=edge,
+            ))
+        return GetReferenceTableDataResult(
+            reference_table_rows=reference_table_rows
+        )
+
+    def get_cluster_graph_data(self, clustered_nodes: List[ClusteredNode]):
+        results: Dict[int, Dict[str, int]] = dict()
+
+        for node in clustered_nodes:
+            for edge in node.edges:
+                query = self.get_association_snippet_count_query(edge.original_from, edge.original_to, edge.label)
+                count = self.graph.run(query).evaluate()
+
+                if (results.get(node.node_id, None) is not None):
+                    results[node.node_id][edge.label] = count
+                else:
+                    results[node.node_id] = {edge.label: count}
+
+        return GetClusterGraphDataResult(
+            results=results,
+        )
 
     def load_reaction_graph(self, biocyc_id: str):
         query = self.get_reaction_query(biocyc_id)
         return self._query_neo4j(query)
+
+    def query_batch(self, data_query: str):
+        """ query batch uses a custom query language (one we make up here)
+        for returning a list of nodes and their relationships.
+        It also works on single nodes with no relationship.
+
+        Example:
+            If we wanted all relationships between
+            the node pairs (node1, node2) and
+            (node3, node4), we will write the
+            query as follows:
+
+                node1,node2&node3,node4
+        """
+
+        data_query = data_query.split('&')
+
+        if len(data_query) == 1 and data_query[0].find(',') == -1:
+            cypher_query = '''
+            MATCH (n) WHERE ID(n)={nid} RETURN n AS nodeA
+            '''.format(nid=int(data_query.pop()))
+            node = self.graph.evaluate(cypher_query)
+            graph_node = GraphNode.from_py2neo(
+                node,
+                display_fn=lambda x: x.get(DISPLAY_NAME_MAP[next(iter(node.labels), set())]),
+            )
+            return dict(nodes=[graph_node.to_dict()], edges=[])
+        else:
+            data = [x.split(',') for x in data_query]
+            query_generator = [
+                'MATCH (nodeA)-[relationship]->(nodeB) WHERE id(nodeA)={from_} '
+                'AND id(nodeB)={to} RETURN *'.format(
+                    from_=int(from_),
+                    to=int(to),
+                ) for from_, to in data]
+            cypher_query = ' UNION '.join(query_generator)
+            records = self.graph.run(cypher_query).data()
+            if not records:
+                return None
+            node_dict = dict()
+            rel_dict = dict()
+            for row in records:
+                nodeA = row['nodeA']
+                nodeB = row['nodeB']
+                relationship = row['relationship']
+                graph_nodeA = GraphNode.from_py2neo(
+                    nodeA,
+                    display_fn=lambda x: x.get(DISPLAY_NAME_MAP[next(iter(nodeA.labels), set())])
+                )
+                graph_nodeB = GraphNode.from_py2neo(
+                    nodeB,
+                    display_fn=lambda x: x.get(DISPLAY_NAME_MAP[next(iter(nodeB.labels), set())])
+                )
+                rel = GraphRelationship.from_py2neo(relationship)
+                node_dict[graph_nodeA.id] = graph_nodeA
+                node_dict[graph_nodeB.id] = graph_nodeB
+                rel_dict[rel.id] = rel
+            return dict(
+                nodes=[n.to_dict() for n in node_dict.values()],
+                edges=[r.to_dict() for r in rel_dict.values()],
+            )
 
     def get_graph(self, req):
         # TODO: Make this filter non-static
@@ -215,15 +353,22 @@ class Neo4JService(BaseDao):
         """.format(node_id, limit)
         return query
 
-    # TODO: Need to make a solid version of this query, not sure the current
-    # iteration will work 100% of the time
-    def get_association_sentences_query(self, node_id: str, description: str, entry_text: str):
+    def get_snippets_from_edge_query(self, from_node: int, to_node: int, association: str):
         query = """
-            MATCH (n)-[:HAS_ASSOCIATION]-(s:Association)-[:HAS_REF]-(r:Reference)
-            WHERE ID(n) = {} AND s.description='{}' AND r.entry2_text=~'.*{}.*'
-            WITH r
-            return r as references
-        """.format(node_id, description, entry_text)
+            MATCH (f)-[:HAS_ASSOCIATION]->(a:Association)-[:HAS_ASSOCIATION]->(t)
+            WHERE ID(f)={} AND ID(t)={} AND a.description='{}'
+            WITH a AS association MATCH (association)-[:HAS_REF]-(r:Reference)
+            RETURN r AS references
+        """.format(from_node, to_node, association)
+        return query
+
+    def get_association_snippet_count_query(self, from_node: int, to_node: int, association: str):
+        query = """
+            MATCH (f)-[:HAS_ASSOCIATION]->(a:Association)-[:HAS_ASSOCIATION]->(t)
+            WHERE ID(f)={} AND ID(t)={} AND a.description='{}'
+            WITH a AS association MATCH (association)-[:HAS_REF]-(r:Reference)
+            RETURN COUNT(r) as count
+        """.format(from_node, to_node, association)
         return query
 
     def get_reaction_query(self, biocyc_id: str):

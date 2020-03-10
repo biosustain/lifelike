@@ -1,9 +1,18 @@
 import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
+
+import { of, EMPTY as empty } from 'rxjs';
+import { filter, take, tap, switchMap, map } from 'rxjs/operators';
 
 import { DataSet } from 'vis-network';
 
 import {
-    AssociationData,
+    ClusteredNode,
+    DuplicateVisEdge,
+    GetClusterGraphDataResult,
+    GetSnippetsResult,
+    GraphNode,
+    GraphRelationship,
     Neo4jResults,
     Neo4jGraphConfig,
     VisNode,
@@ -20,15 +29,23 @@ import { VisualizationService } from '../services/visualization.service';
 })
 export class VisualizationComponent implements OnInit {
 
+    // Shows/Hide the component
+    hideDisplay = false;
+
     networkGraphData: Neo4jResults;
     networkGraphConfig: Neo4jGraphConfig;
-    nodes: DataSet<VisNode>;
-    edges: DataSet<VisEdge>;
+    getSnippetsResult: GetSnippetsResult;
+    getClusterGraphDataResult: GetClusterGraphDataResult;
+    nodes: DataSet<VisNode | GraphNode>;
+    edges: DataSet<VisEdge | GraphNode>;
+    duplicatedEdges = new Set<number>();
 
-    // NOTE: May use this as input to a legend component in the future.
     legend: Map<string, string[]>;
 
-    constructor(private visService: VisualizationService) {
+    constructor(
+        private route: ActivatedRoute,
+        private visService: VisualizationService,
+    ) {
         this.legend = new Map<string, string[]>();
         this.legend.set('Gene', ['#78CDD7', '#247B7B']);
         this.legend.set('Disease', ['#8FA6CB', '#7D84B2']);
@@ -36,11 +53,26 @@ export class VisualizationComponent implements OnInit {
     }
 
     ngOnInit() {
-        this.visService.getSomeDiseases().subscribe((results: Neo4jResults) => {
-            this.networkGraphData = this.setupInitialProperties(results);
-            this.nodes = new DataSet(this.networkGraphData.nodes);
-            this.edges = new DataSet(this.networkGraphData.edges);
+        this.route.queryParams.pipe(
+            filter(params => params.data),
+            switchMap((params) => {
+                if (!params.data) {
+                    return empty;
+                }
+                return this.visService.getBatch(params.data).pipe(
+                    map((result: Neo4jResults) => result)
+                );
+            }),
+            take(1),
+        ).subscribe((result) => {
+            if (result) {
+                this.networkGraphData = this.setupInitialProperties(result);
+                this.nodes = new DataSet(this.networkGraphData.nodes);
+                this.edges = new DataSet(this.networkGraphData.edges);
+            }
         });
+
+        this.getSnippetsResult = null;
 
         this.networkGraphConfig = {
             interaction: {
@@ -68,6 +100,7 @@ export class VisualizationComponent implements OnInit {
             nodes: {
                 size: 25,
                 shape: 'box',
+                // TODO: Investigate the 'scaling' property for dynamic resizing of 'box' shape nodes
             },
         };
     }
@@ -95,34 +128,39 @@ export class VisualizationComponent implements OnInit {
      */
     convertToVisJSFormat(results: Neo4jResults): Neo4jResults {
         let { nodes, edges } = results;
-        nodes = nodes.map((n) => {
-            return {
-                ...n,
-                primaryLabel: n.label,
-                color: {
+        nodes = nodes.map((n: GraphNode) => this.convertNodeToVisJSFormat(n));
+        edges = edges.map((e: GraphRelationship) => this.convertEdgeToVisJSFormat(e));
+        return {nodes, edges};
+    }
+
+    convertNodeToVisJSFormat(n: GraphNode) {
+        return {
+            ...n,
+            expanded: false,
+            primaryLabel: n.label,
+            color: {
+                background: this.legend.get(n.label)[0],
+                border: this.legend.get(n.label)[1],
+                hover: {
                     background: this.legend.get(n.label)[0],
                     border: this.legend.get(n.label)[1],
-                    hover: {
-                        background: this.legend.get(n.label)[0],
-                        border: this.legend.get(n.label)[1],
-                    },
-                    highlight: {
-                        background: this.legend.get(n.label)[0],
-                        border: this.legend.get(n.label)[1],
-                    }
                 },
-                label: n.displayName.length > 64 ? n.displayName.slice(0, 64) + '...'  : n.displayName,
-            };
-        });
-        edges = edges.map((e) => {
-            return {...e, label: e.data.description, arrows: 'to'};
-        });
-        return {nodes, edges};
+                highlight: {
+                    background: this.legend.get(n.label)[0],
+                    border: this.legend.get(n.label)[1],
+                }
+            },
+            label: n.displayName.length > 64 ? n.displayName.slice(0, 64) + '...'  : n.displayName,
+        };
+    }
+
+    convertEdgeToVisJSFormat(e: GraphRelationship) {
+        return {...e, label: e.data.description, arrows: 'to'};
     }
 
     expandNode(nodeId: number) {
         this.visService.expandNode(nodeId, NODE_EXPANSION_LIMIT).subscribe((r: Neo4jResults) => {
-            const nodeRef: VisNode = this.nodes.get(nodeId);
+            const nodeRef = this.nodes.get(nodeId) as VisNode;
             const visJSDataFormat = this.convertToVisJSFormat(r);
             const { edges } = visJSDataFormat;
             let { nodes } = visJSDataFormat;
@@ -134,20 +172,53 @@ export class VisualizationComponent implements OnInit {
                 return n;
             });
             this.nodes.update(nodes);
-            this.edges.update(edges);
-        });
-    }
-
-    getSentences(association: AssociationData) {
-        this.visService.getSentences(association).subscribe((result) => {
-            if (result.length === 0) {
-                console.log('No matching sentences found for this association');
-            }
-            result.forEach(associationSentence => {
-                if (associationSentence) {
-                    console.log(associationSentence.sentence);
+            edges.forEach(candidateEdge => {
+                if (!this.duplicatedEdges.has(candidateEdge.id)) {
+                    this.edges.update(candidateEdge);
                 }
             });
         });
+    }
+
+    getSnippetsFromEdge(edge: VisEdge) {
+        this.visService.getSnippetsFromEdge(edge).subscribe((result) => {
+            this.getSnippetsResult = result;
+        });
+    }
+
+    getSnippetsFromDuplicateEdge(edge: DuplicateVisEdge) {
+        this.visService.getSnippetsFromDuplicateEdge(edge).subscribe((result) => {
+            this.getSnippetsResult = result;
+        });
+    }
+
+    // TODO: There is a bug here: If the user opens a cluster after clicking it
+    // but before the cluster graph data response is received, then the sidenav
+    // will error because the returned duplicate node ids will not exist on the
+    // graph anymore. This can be fixed by creating some kind of interrupt event
+    // on this subscription. Could use rxjs 'race' + an output from the child here.
+    getClusterGraphData(clusteredNodes: ClusteredNode[]) {
+        this.visService.getClusterGraphData(clusteredNodes).subscribe((result) => {
+            this.getClusterGraphDataResult = result;
+        });
+    }
+
+    updateCanvasWithSingleNode(data: GraphNode) {
+        this.nodes.clear();
+        this.edges.clear();
+        const node = this.convertNodeToVisJSFormat(data);
+        this.nodes.add(node);
+    }
+
+    hideCanvas(state: boolean) {
+        this.hideDisplay = state;
+    }
+
+    addDuplicatedEdge(edge: number) {
+        this.duplicatedEdges.add(edge);
+    }
+
+    removeDuplicatedEdge(edge: number) {
+        this.duplicatedEdges.delete(edge);
     }
 }
