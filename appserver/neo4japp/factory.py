@@ -5,6 +5,7 @@ from flask_caching import Cache
 from flask_httpauth import HTTPTokenAuth
 from werkzeug.utils import find_modules, import_string
 
+from neo4japp.encoders import CustomJSONEncoder
 from neo4japp.database import db, ma, migrate
 from neo4japp.exceptions import BaseException
 
@@ -36,6 +37,8 @@ def create_app(name = 'neo4japp', config = 'config.Development'):
     # TODO: temp solution to a cache
     # (uses SimpleCache: https://flask-caching.readthedocs.io/en/latest/#simplecache)
     cache.init_app(app, config=cache_config)
+
+    app.json_encoder = CustomJSONEncoder
 
     app.register_error_handler(BaseException, partial(handle_error, 500))
     # TODO: handle uncaught python errors
