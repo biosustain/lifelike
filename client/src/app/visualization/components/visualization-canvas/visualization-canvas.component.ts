@@ -143,11 +143,7 @@ export class VisualizationCanvasComponent implements OnInit {
      * @param animationOn - boolean to turn on/off the physics animation
      */
     toggleAnimation(animationOn: boolean) {
-        if (animationOn) {
-            this.networkGraph.setOptions({physics: true});
-        } else {
-            this.networkGraph.setOptions({physics: false});
-        }
+        this.networkGraph.setOptions({physics: animationOn});
     }
 
     toggleSidenavOpened() {
@@ -244,7 +240,7 @@ export class VisualizationCanvasComponent implements OnInit {
      * Check that the input is a normal edge and that it isn't currently clustered.
      * Normal edges are numbers, cluster edges are strings. `getClusteredEdges` is
      * used here to deterimine if the input edge is currently clustered; The
-     * output of the function is the input edge + any cluster edges it is contained
+     * output of getClusteredEdges is the input edge + any cluster edges it is contained
      * in if any.
      * @param edge the id of the edge to check
      */
