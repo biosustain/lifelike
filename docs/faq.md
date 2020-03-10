@@ -2,9 +2,15 @@
 
 ## Table of Contents
 - [How do I connect to the postgres container?](#how-do-I-connect-to-the-postgres-container)
+- [How do I connect to the neo4j container?](#how-do-I-connect-to-the-neo4j-container)
 - [How do I debug a running application locally?](#how-do-I-debug-a-running-application-locally)
 - [How do I remote ssh into a running container?](#how-do-I-remote-ssh-into-a-running-container)
 - [How do I update database with new changes?](#how-do-I-update-database-with-new-changes)
+
+## How do I connect to the neo4j container?
+```
+docker-compose exec database cypher-shell -u neo4j
+```
 
 ## How do I connect to the postgres container?
 ```
