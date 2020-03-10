@@ -5146,6 +5146,11 @@ ng-bullet@^1.0.3:
   dependencies:
     tslib "^1.9.0"
 
+ng-mocks@^9.0.0:
+  version "9.0.0"
+  resolved "https://registry.yarnpkg.com/ng-mocks/-/ng-mocks-9.0.0.tgz#2389e20a05e239053789f136d6b57e83558baa98"
+  integrity sha512-YGg7n7F0okLnOFO6ulSXfNWHXx6tlpim2hXC55bGtczLavfUdaCRTOQUOsb37E2l5iOCaMRf2CiFZ8/EEgC1mA==
+
 nice-try@^1.0.4:
   version "1.0.5"
   resolved "https://registry.yarnpkg.com/nice-try/-/nice-try-1.0.5.tgz#a3378a7696ce7d223e88fc9b764bd7ef1089e366"
