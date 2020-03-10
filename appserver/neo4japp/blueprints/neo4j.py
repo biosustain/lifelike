@@ -1,10 +1,18 @@
 import attr
 
-from flask import Blueprint
+from flask import Blueprint, request
 
 from neo4japp.blueprints import GraphRequest
 from neo4japp.constants import *
 from neo4japp.database import get_neo4j_service_dao
+
+from neo4japp.data_transfer_objects.visualization import (
+    GetGraphDataForClusterRequest,
+    GetSnippetCountsFromEdgesRequest,
+    GetSnippetsFromDuplicateEdgeRequest,
+    GetSnippetsFromEdgeRequest,
+    ReferenceTableDataRequest,
+)
 from neo4japp.util import CamelDictMixin, SuccessResponse, jsonify_with_class
 
 bp = Blueprint('neo4j-api', __name__, url_prefix='/neo4j')
@@ -19,12 +27,6 @@ class ExpandNodeRequest(CamelDictMixin):
     node_id: int = attr.ib()
     limit: int = attr.ib()
 
-@attr.s(frozen=True)
-class AssociationSentencesRequest(CamelDictMixin):
-    node_id: int = attr.ib()
-    description: str = attr.ib()
-    entry_text: str = attr.ib()
-
 
 @bp.route('/', methods=['POST'])
 @jsonify_with_class(GraphRequest)
@@ -32,6 +34,23 @@ def load_gpr_graph(req: GraphRequest):
     neo4j = get_neo4j_service_dao()
     graph = neo4j.get_graph(req)
     return SuccessResponse(result=graph, status_code=200)
+
+@bp.route('/batch', methods=['GET'])
+@jsonify_with_class()
+def get_batch():
+    """ Uses a home-brew query language
+    to get a batch of nodes and their
+    relationship
+    TODO: Document query language
+    """
+    neo4j = get_neo4j_service_dao()
+    data_query = request.args.get('data', '')
+    try:
+        decoded_query = bytearray.fromhex(data_query).decode()
+    except ValueError:
+        return SuccessResponse(result='No results found', status_code=200)
+    result = neo4j.query_batch(decoded_query)
+    return SuccessResponse(result=result, status_code=200)
 
 @bp.route('/organisms', methods=['GET'])
 @jsonify_with_class()
@@ -66,16 +85,50 @@ def expand_graph_node(req: ExpandNodeRequest):
     node = neo4j.expand_graph(req.node_id, req.limit)
     return SuccessResponse(result=node, status_code=200)
 
-@bp.route('/get-sentences', methods=['POST'])
-@jsonify_with_class(AssociationSentencesRequest)
-def get_association_sentences(req: AssociationSentencesRequest):
+@bp.route('/get-snippets-from-edge', methods=['POST'])
+@jsonify_with_class(GetSnippetsFromEdgeRequest)
+def get_snippets_from_edge(req: GetSnippetsFromEdgeRequest):
     neo4j = get_neo4j_service_dao()
-    sentences = neo4j.get_association_sentences(
-        req.node_id,
-        req.description,
-        req.entry_text
+    snippets_result = neo4j.get_snippets_from_edge(
+        req.edge,
     )
-    return SuccessResponse(result=sentences, status_code=200)
+    return SuccessResponse(result=snippets_result, status_code=200)
+
+@bp.route('/get-snippets-from-duplicate-edge', methods=['POST'])
+@jsonify_with_class(GetSnippetsFromDuplicateEdgeRequest)
+def get_snippets_from_duplicate_edge(req: GetSnippetsFromDuplicateEdgeRequest):
+    neo4j = get_neo4j_service_dao()
+    snippets_result = neo4j.get_snippets_from_duplicate_edge(
+        req.edge,
+    )
+    return SuccessResponse(result=snippets_result, status_code=200)
+
+@bp.route('/get-snippet-counts-from-edges', methods=['POST'])
+@jsonify_with_class(GetSnippetCountsFromEdgesRequest)
+def get_snippet_count_for_edges(req: GetSnippetCountsFromEdgesRequest):
+    neo4j = get_neo4j_service_dao()
+    edge_snippet_count_result = neo4j.get_snippet_counts_from_edges(
+        req.edges,
+    )
+    return SuccessResponse(edge_snippet_count_result, status_code=200)
+
+@bp.route('/get-reference-table-data', methods=['POST'])
+@jsonify_with_class(ReferenceTableDataRequest)
+def get_reference_table_data(req: ReferenceTableDataRequest):
+    neo4j = get_neo4j_service_dao()
+    reference_table_data = neo4j.get_reference_table_data(
+        req.node_edge_pairs,
+    )
+    return SuccessResponse(reference_table_data, status_code=200)
+
+@bp.route('/get-cluster-graph-data', methods=['POST'])
+@jsonify_with_class(GetGraphDataForClusterRequest)
+def get_cluster_graph_data(req: GetGraphDataForClusterRequest):
+    neo4j = get_neo4j_service_dao()
+    cluster_graph_data_result = neo4j.get_cluster_graph_data(
+        req.clustered_nodes,
+    )
+    return SuccessResponse(cluster_graph_data_result, status_code=200)
 
 @bp.route('/reaction', methods=['POST'])
 @jsonify_with_class(ReactionRequest)

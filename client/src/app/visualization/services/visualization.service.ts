@@ -3,7 +3,17 @@ import { HttpClient } from '@angular/common/http';
 
 import { map } from 'rxjs/operators';
 
-import { Neo4jResults, AssociationData, AssociationSentence } from 'app/interfaces';
+import {
+    ClusteredNode,
+    DuplicateNodeEdgePair,
+    DuplicateVisEdge,
+    GetClusterGraphDataResult,
+    GetSnippetCountsFromEdgesResult,
+    GetSnippetsResult,
+    Neo4jResults,
+    VisEdge,
+    GetReferenceTableDataResult,
+} from 'app/interfaces';
 import { NODE_EXPANSION_LIMIT } from 'app/shared/constants';
 
 @Injectable()
@@ -29,6 +39,12 @@ export class VisualizationService {
         ).pipe(map(resp => resp.result));
     }
 
+    getBatch(query: string) {
+        return this.http.get<{result: Neo4jResults}>(
+            `${this.visApi}/batch`, {params: {data: query}}
+        ).pipe(map(resp => resp.result));
+    }
+
     /**
      * For use with the text-mining data set
      */
@@ -51,9 +67,33 @@ export class VisualizationService {
         ).pipe(map(resp => resp.result));
     }
 
-    getSentences(association: AssociationData) {
-        return this.http.post<{result: AssociationSentence[]}>(
-            `${this.visApi}/get-sentences`, {...association},
+    getSnippetsFromEdge(edge: VisEdge) {
+        return this.http.post<{result: GetSnippetsResult}>(
+            `${this.visApi}/get-snippets-from-edge`, {edge},
+        ).pipe(map(resp => resp.result));
+    }
+
+    getSnippetsFromDuplicateEdge(edge: DuplicateVisEdge) {
+        return this.http.post<{result: GetSnippetsResult}>(
+            `${this.visApi}/get-snippets-from-duplicate-edge`, {edge},
+        ).pipe(map(resp => resp.result));
+    }
+
+    getSnippetCountsFromEdges(edges: VisEdge[]) {
+        return this.http.post<{result: GetSnippetCountsFromEdgesResult}>(
+            `${this.visApi}/get-snippet-counts-from-edges`, {edges},
+        ).pipe(map(resp => resp.result));
+    }
+
+    getReferenceTableData(nodeEdgePairs: DuplicateNodeEdgePair[]) {
+        return this.http.post<{result: GetReferenceTableDataResult}>(
+            `${this.visApi}/get-reference-table-data`, {nodeEdgePairs},
+        ).pipe(map(resp => resp.result));
+    }
+
+    getClusterGraphData(clusteredNodes: ClusteredNode[]) {
+        return this.http.post<{result: GetClusterGraphDataResult}>(
+            `${this.visApi}/get-cluster-graph-data`, {clusteredNodes},
         ).pipe(map(resp => resp.result));
     }
 }
