@@ -280,8 +280,8 @@ describe('VisualizationCanvasComponent', () => {
 
     });
 
-    it('groupNeighborsWithRelationship...', () => {
-        // TODO: Implement me!
+    it('groupNeighborsWithRelationship should cluster neighbors of the given node connected by the given relationship', () => {
+
     });
 
     it('collapseNeighbors should remove all edges connected to the given node', () => {
