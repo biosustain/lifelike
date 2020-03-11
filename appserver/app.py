@@ -7,7 +7,7 @@ from sqlalchemy.sql.expression import text
 
 from neo4japp.database import db
 from neo4japp.factory import create_app
-from neo4japp.models.drawing_tool import AppUser, Project
+from neo4japp.models.auth import AppUser, Project
 
 app_config = os.environ['FLASK_APP_CONFIG']
 app = create_app(config=f'config.{app_config}')
