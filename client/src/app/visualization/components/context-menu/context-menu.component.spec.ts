@@ -4,11 +4,13 @@ import { configureTestSuite } from 'ng-bullet';
 
 import { IdType } from 'vis-network';
 
+import { ToolbarMenuModule } from 'toolbar-menu';
+
 import { SharedModule } from 'app/shared/shared.module';
+import { RootStoreModule } from 'app/root-store';
+import { ContextMenuControlService } from 'app/visualization/services/context-menu-control.service';
 
 import { ContextMenuComponent } from './context-menu.component';
-
-import { ContextMenuControlService } from '../../services/context-menu-control.service';
 
 describe('ContextMenuComponent', () => {
     let component: ContextMenuComponent;
@@ -21,7 +23,11 @@ describe('ContextMenuComponent', () => {
 
     configureTestSuite(() => {
         TestBed.configureTestingModule({
-            imports: [SharedModule],
+            imports: [
+                RootStoreModule,
+                SharedModule,
+                ToolbarMenuModule,
+            ],
             declarations: [ ContextMenuComponent ],
             providers: [ContextMenuControlService],
         });

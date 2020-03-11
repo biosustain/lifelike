@@ -5,6 +5,8 @@ import { configureTestSuite } from 'ng-bullet';
 
 import { MockComponents } from 'ng-mocks';
 
+import { ToolbarMenuModule } from 'toolbar-menu';
+
 import { DataSet } from 'vis-network';
 
 import {
@@ -16,6 +18,7 @@ import {
     DuplicateVisNode,
     DuplicateVisEdge,
 } from 'app/interfaces';
+import { RootStoreModule } from 'app/root-store';
 import { SharedModule } from 'app/shared/shared.module';
 
 import { VisualizationService } from '../../services/visualization.service';
@@ -71,6 +74,8 @@ describe('VisualizationCanvasComponent', () => {
         TestBed.configureTestingModule({
             imports: [
                 SharedModule,
+                RootStoreModule,
+                ToolbarMenuModule,
             ],
             declarations: [
                 VisualizationCanvasComponent,

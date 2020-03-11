@@ -16,13 +16,13 @@ import {
     VisEdge,
     VisNode,
 } from 'app/interfaces';
+import { SearchGraphComponent } from 'app/search/containers/search-graph.component';
 import { SharedModule } from 'app/shared/shared.module';
 
 import { VisualizationComponent } from './visualization.component';
 
 import { VisualizationService } from '../../services/visualization.service';
 import { VisualizationCanvasComponent } from '../../components/visualization-canvas/visualization-canvas.component';
-import { VisualizationSearchComponent } from '../../containers/visualization-search/visualization-search.component';
 
 describe('VisualizationComponent', () => {
     let fixture: ComponentFixture<VisualizationComponent>;
@@ -44,7 +44,7 @@ describe('VisualizationComponent', () => {
                 VisualizationComponent,
                 MockComponents(
                     VisualizationCanvasComponent,
-                    VisualizationSearchComponent,
+                    SearchGraphComponent
                 ),
             ],
             providers: [VisualizationService],

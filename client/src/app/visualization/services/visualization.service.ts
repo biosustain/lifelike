@@ -39,6 +39,12 @@ export class VisualizationService {
         ).pipe(map(resp => resp.result));
     }
 
+    getBatch(query: string) {
+        return this.http.get<{result: Neo4jResults}>(
+            `${this.visApi}/batch`, {params: {data: query}}
+        ).pipe(map(resp => resp.result));
+    }
+
     /**
      * For use with the text-mining data set
      */
@@ -88,12 +94,6 @@ export class VisualizationService {
     getClusterGraphData(clusteredNodes: ClusteredNode[]) {
         return this.http.post<{result: GetClusterGraphDataResult}>(
             `${this.visApi}/get-cluster-graph-data`, {clusteredNodes},
-        ).pipe(map(resp => resp.result));
-    }
-
-    searchGraphDatabase(query: string) {
-        return this.http.post<{result: Neo4jResults}>(
-            `${this.visApi}/search`, {query},
         ).pipe(map(resp => resp.result));
     }
 }

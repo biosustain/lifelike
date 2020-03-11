@@ -2,7 +2,10 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { configureTestSuite } from 'ng-bullet';
 
+import { ToolbarMenuModule } from 'toolbar-menu';
+
 import { SidenavEdgeEntity } from 'app/interfaces';
+import { RootStoreModule } from 'app/root-store';
 import { SharedModule } from 'app/shared/shared.module';
 
 import { SidenavEdgeViewComponent } from './sidenav-edge-view.component';
@@ -15,7 +18,11 @@ describe('SidenavEdgeViewComponent', () => {
 
     configureTestSuite(() => {
         TestBed.configureTestingModule({
-            imports: [SharedModule],
+            imports: [
+                SharedModule,
+                RootStoreModule,
+                ToolbarMenuModule,
+            ],
             declarations: [ SidenavEdgeViewComponent ]
         });
     });

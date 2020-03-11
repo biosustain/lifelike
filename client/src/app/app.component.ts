@@ -1,7 +1,6 @@
 import { Component } from '@angular/core';
 import { MatIconRegistry } from '@angular/material';
 import { DomSanitizer } from '@angular/platform-browser';
-
 import { AppLink, MenuLink } from 'toolbar-menu';
 
 @Component({
@@ -10,6 +9,7 @@ import { AppLink, MenuLink } from 'toolbar-menu';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent {
+
   title = 'client';
 
   homeLink = '/home';
@@ -39,6 +39,7 @@ export class AppComponent {
   ];
 
   constructor(iconRegistry: MatIconRegistry, sanitizer: DomSanitizer) {
+
     for (const icon of this.icons) {
       iconRegistry.addSvgIcon(icon, sanitizer.bypassSecurityTrustResourceUrl(`assets/icons/${icon}.svg`));
     }
