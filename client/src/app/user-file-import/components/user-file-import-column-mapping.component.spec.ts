@@ -39,12 +39,6 @@ const chosenSheetToMap = {
         {colA: 'value1', colB: 'value2'},
     ] as SheetRowPreview[],
 } as SheetNameAndColumnNames;
-const columnsForFilePreview = ['colA', 'colB'];
-
-// mock store
-const mockDbNodeTypes = ['labelA', 'labelB'];
-const mockNodeProperties = {labelA: ['propA', 'propB']};
-const mockRelationshipTypes = ['IS_A'];
 
 describe('UserFileImportColumnMappingComponent', () => {
     let component: UserFileImportColumnMappingComponent;
@@ -74,6 +68,13 @@ describe('UserFileImportColumnMappingComponent', () => {
         fixture = TestBed.createComponent(UserFileImportColumnMappingComponent);
         component = fixture.componentInstance;
         fb = new FormBuilder();
+
+        const columnsForFilePreview = ['colA', 'colB'];
+
+        // mock store
+        const mockDbNodeTypes = ['labelA', 'labelB'];
+        const mockNodeProperties = {labelA: ['propA', 'propB']};
+        const mockRelationshipTypes = ['IS_A'];
 
         component.columnDelimiterForm = fb.group({
             columnDelimiters: fb.array([]),
