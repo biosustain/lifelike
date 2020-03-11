@@ -2,11 +2,13 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { configureTestSuite } from 'ng-bullet';
 
+import { ToolbarMenuModule } from 'toolbar-menu';
+
 import { SidenavNodeEntity } from 'app/interfaces';
+import { RootStoreModule } from 'app/***ARANGO_USERNAME***-store';
 import { SharedModule } from 'app/shared/shared.module';
 
 import { SidenavNodeViewComponent } from './sidenav-node-view.component';
-
 describe('SidenavNodeViewComponent', () => {
     let component: SidenavNodeViewComponent;
     let fixture: ComponentFixture<SidenavNodeViewComponent>;
@@ -15,7 +17,11 @@ describe('SidenavNodeViewComponent', () => {
 
     configureTestSuite(() => {
         TestBed.configureTestingModule({
-            imports: [SharedModule],
+            imports: [
+                SharedModule,
+                RootStoreModule,
+                ToolbarMenuModule,
+            ],
             declarations: [ SidenavNodeViewComponent ]
         });
     });

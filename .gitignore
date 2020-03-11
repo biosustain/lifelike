@@ -5,6 +5,7 @@ env/
 .cache/
 .python_history
 .ipython/
+.mypy_cache/
 
 # compiled output
 dist/
@@ -28,8 +29,11 @@ Thumbs.db
 
 # ignore db files
 db/*/*
+postgres/
+!postgres/.gitkeep
 
 # ignore node_modules
 client/node_modules
 esdata/
 node_modules/
+

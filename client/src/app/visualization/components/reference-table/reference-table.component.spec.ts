@@ -4,13 +4,15 @@ import { configureTestSuite } from 'ng-bullet';
 
 import { of } from 'rxjs';
 
+import { ToolbarMenuModule } from 'toolbar-menu';
+
 import { DuplicateNodeEdgePair, GetReferenceTableDataResult, VisEdge } from 'app/interfaces';
-import { SharedModule } from 'app/shared/shared.module';
+import { RootStoreModule } from 'app/***ARANGO_USERNAME***-store';
+import { ReferenceTableControlService } from 'app/visualization/services/reference-table-control.service';
+
+import { VisualizationService } from '../../services/visualization.service';
 
 import { ReferenceTableComponent } from './reference-table.component';
-
-import { ReferenceTableControlService } from '../../services/reference-table-control.service';
-import { VisualizationService } from '../../services/visualization.service';
 
 describe('ReferenceTableComponent', () => {
     let component: ReferenceTableComponent;
@@ -24,7 +26,10 @@ describe('ReferenceTableComponent', () => {
 
     configureTestSuite(() => {
         TestBed.configureTestingModule({
-            imports: [SharedModule],
+            imports: [
+                RootStoreModule,
+                ToolbarMenuModule,
+            ],
             declarations: [ ReferenceTableComponent ],
             providers: [
                 ReferenceTableControlService,
