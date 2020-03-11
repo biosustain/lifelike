@@ -1,4 +1,5 @@
 import { TestBed, ComponentFixture } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 
 import { configureTestSuite } from 'ng-bullet';
 
@@ -6,7 +7,15 @@ import { MockComponents } from 'ng-mocks';
 
 import { DataSet } from 'vis-network';
 
-import { Neo4jGraphConfig, GetSnippetsResult, GetClusterGraphDataResult, VisEdge, VisNode } from 'app/interfaces';
+import {
+    Neo4jGraphConfig,
+    GetSnippetsResult,
+    GetClusterGraphDataResult,
+    VisEdge,
+    VisNode,
+    DuplicateVisNode,
+    DuplicateVisEdge,
+} from 'app/interfaces';
 import { SharedModule } from 'app/shared/shared.module';
 
 import { VisualizationService } from '../../services/visualization.service';
@@ -20,11 +29,13 @@ import { SidenavEdgeViewComponent } from '../sidenav-edge-view/sidenav-edge-view
 import { SidenavNodeViewComponent } from '../sidenav-node-view/sidenav-node-view.component';
 import { VisualizationQuickbarComponent } from '../../components/visualization-quickbar/visualization-quickbar.component';
 import { VisualizationCanvasComponent } from '../visualization-canvas/visualization-canvas.component';
-import { By } from '@angular/platform-browser';
 
-fdescribe('VisualizationCanvasComponent', () => {
+describe('VisualizationCanvasComponent', () => {
     let fixture: ComponentFixture<VisualizationCanvasComponent>;
     let instance: VisualizationCanvasComponent;
+
+    let contextMenuControlService: ContextMenuControlService;
+    let referenceTableControlService: ReferenceTableControlService;
 
     let mockNodes: DataSet<VisNode>;
     let mockEdges: DataSet<VisEdge>;
@@ -127,6 +138,8 @@ fdescribe('VisualizationCanvasComponent', () => {
 
         fixture = TestBed.createComponent(VisualizationCanvasComponent);
         instance = fixture.debugElement.componentInstance;
+        contextMenuControlService = fixture.debugElement.injector.get(ContextMenuControlService);
+        referenceTableControlService = fixture.debugElement.injector.get(ReferenceTableControlService);
 
         instance.nodes = mockNodes;
         instance.edges = mockEdges;
@@ -208,15 +221,47 @@ fdescribe('VisualizationCanvasComponent', () => {
     });
 
     it('toggleSidenavOpened should flip the value of sidenavOpened', () => {
-
+        // instance.sidenavOpened defaults to 'false'
+        instance.toggleSidenavOpened();
+        expect(instance.sidenavOpened).toBeTrue();
     });
 
     it('clearSelectedNodeEdgeLabels should clear the selected edge labels set', () => {
+        instance.selectedNodeEdgeLabels.add('Mock Edge Label');
+        instance.clearSelectedNodeEdgeLabels();
 
+        expect(instance.selectedNodeEdgeLabels.size).toEqual(0);
+    });
+
+    it('getConnectedEdgeLabels should get the labels of every edge connected to the input node', () => {
+        const edgeLabelsOfMockedNode = instance.getConnectedEdgeLabels(1);
+
+        expect(edgeLabelsOfMockedNode.size).toEqual(1);
+        expect(edgeLabelsOfMockedNode.has('Mock Edge')).toBeTrue();
     });
 
     it('updateSelectedNodeEdgeLabels should update the selected edge labels with the edges of the given node', () => {
+        instance.selectedNodeEdgeLabels = new Set<string>('Fake Edge Label');
+        instance.updateSelectedNodeEdgeLabels(1);
 
+        expect(instance.selectedNodeEdgeLabels.size).toEqual(1);
+        expect(instance.selectedNodeEdgeLabels.has('Mock Edge')).toBeTrue();
+    });
+
+    it('isNotAClusterEdge should detect whether an edge is a cluster edge or not', () => {
+
+    });
+
+    it('getNeighborsWithRelationship should get all the neighbors of the given node connected by the given relationship', () => {
+
+    });
+
+    it('createDuplicateNodesAndEdges should duplicate the given nodes, and the edges connected to them with the given label', () => {
+
+    });
+
+    it('groupNeighborsWithRelationship...', () => {
+        // TODO: Implement me!
     });
 
     it('collapseNeighbors should remove all edges connected to the given node', () => {
@@ -243,28 +288,70 @@ fdescribe('VisualizationCanvasComponent', () => {
 
     });
 
-    it('getConnectedEdgeLabels should get the labels of every edge connected to the input node', () => {
+    it('createDuplicateNodeFromOriginal should create a DuplicateVisNode from a VisNode', () => {
+        spyOn(instance, 'createDuplicateNodeFromOriginal').and.callFake((originalNode: VisNode) => {
+            // Just replacing the id with a non-random value here
+            const newDuplicateNodeId = 'duplicateNode:1234';
+            return {
+                ...originalNode,
+                id: newDuplicateNodeId,
+                duplicateOf: originalNode.id,
+            } as DuplicateVisNode;
+        });
+        const mockDuplicateNode = instance.createDuplicateNodeFromOriginal(instance.nodes.get(1));
 
-    });
-
-    it('isNotAClusterEdge should detect whether an edge is a cluster edge or not', () => {
-
+        expect(mockDuplicateNode).toEqual({
+            ...instance.nodes.get(1),
+            id: 'duplicateNode:1234',
+            duplicateOf: 1,
+        });
     });
 
     it('createOriginalNodeFromDuplicate should create a normal VisNode from a DuplicateVisNode', () => {
+        const mockDuplicateNode = instance.createDuplicateNodeFromOriginal(instance.nodes.get(1));
 
-    });
-
-    it('createDuplicateNodeFromOriginal should create a DuplicateVisNode from a VisNode', () => {
-
-    });
-
-    it('createOriginalEdgeFromDuplicate should create a normal VisEdge from a DuplicateVisEdge', () => {
-
+        expect(instance.createOriginalNodeFromDuplicate(mockDuplicateNode)).toEqual(instance.nodes.get(1));
     });
 
     it('createDuplicateEdgeFromOriginal should create a normal DuplicateVisNode from a VisEdge', () => {
+        spyOn(instance, 'createDuplicateEdgeFromOriginal').and.callFake(
+            (originalEdge: VisEdge, clusterOrigin: number, duplicateNode: DuplicateVisNode) => {
+                // Just replacing the id with a non-random value here
+                const newDuplicateEdgeId = 'duplicateEdge:1234';
+                return {
+                    ...originalEdge,
+                    id: newDuplicateEdgeId,
+                    duplicateOf: originalEdge.id,
+                    from: originalEdge.from === clusterOrigin ? clusterOrigin : duplicateNode.id,
+                    to: originalEdge.to === clusterOrigin ? clusterOrigin : duplicateNode.id,
+                    originalFrom: originalEdge.from,
+                    originalTo: originalEdge.to,
+                } as DuplicateVisEdge;
+            }
+        );
+        const original = instance.edges.get(1);
+        const origin = 1;
+        const duplicateN = instance.createDuplicateNodeFromOriginal(instance.nodes.get(2));
+        const mockDuplicateEdge = instance.createDuplicateEdgeFromOriginal(original, origin, duplicateN);
 
+        expect(mockDuplicateEdge).toEqual({
+            ...original,
+            id: 'duplicateEdge:1234',
+            duplicateOf: original.id,
+            from: original.from === origin ? origin : duplicateN.id,
+            to: original.to === origin ? origin : duplicateN.id,
+            originalFrom: original.from,
+            originalTo: original.to,
+        });
+    });
+
+    it('createOriginalEdgeFromDuplicate should create a normal VisEdge from a DuplicateVisEdge', () => {
+        const originalEdge = instance.edges.get(1);
+        const clusterOrigin = 1;
+        const duplicateNode = instance.createDuplicateNodeFromOriginal(instance.nodes.get(2));
+        const mockDuplicateEdge = instance.createDuplicateEdgeFromOriginal(originalEdge, clusterOrigin, duplicateNode);
+
+        expect(instance.createOriginalEdgeFromDuplicate(mockDuplicateEdge)).toEqual(originalEdge);
     });
 
     it('cleanUpDuplicates should remove the given duplicate nodes and their duplicate edges from the canvas', () => {
@@ -275,16 +362,8 @@ fdescribe('VisualizationCanvasComponent', () => {
 
     });
 
-    it('createDuplicateNodesAndEdges should duplicate the given nodes, and the edges connected to them with the given label', () => {
-
-    });
-
     it('safelyOpenCluster should open and clean up a cluster', () => {
 
-    });
-
-    it('groupNeighborsWithRelationship...', () => {
-        // TODO: Implement me!
     });
 
     it('removeNodes should remove nodes from the canvas', () => {
@@ -308,30 +387,55 @@ fdescribe('VisualizationCanvasComponent', () => {
     });
 
     it('should tell all tooltips to hide if hideTooltips is called', () => {
+        const tooltipControlServiceHideTooltipSpy = spyOn(contextMenuControlService, 'hideTooltip');
+        const referenceTableControlServiceHideTooltipSpy = spyOn(referenceTableControlService, 'hideTooltip');
 
+        instance.hideAllTooltips();
+
+        expect(tooltipControlServiceHideTooltipSpy).toHaveBeenCalled();
+        expect(referenceTableControlServiceHideTooltipSpy).toHaveBeenCalled();
     });
 
     it('should hide all tooltips if a point on the canvas is clicked', () => {
+        const hideAllTooltipsSpy = spyOn(instance, 'hideAllTooltips');
+        instance.onClickCallback(null);
 
+        expect(hideAllTooltipsSpy).toHaveBeenCalled();
     });
 
     it('should hide all tooltips if a node is dragged', () => {
+        const hideAllTooltipsSpy = spyOn(instance, 'hideAllTooltips');
+        instance.onDragStartCallback(null);
 
+        expect(hideAllTooltipsSpy).toHaveBeenCalled();
     });
 
     it('should update selected nodes if a node is dragged', () => {
+        const updatedSelectedNodesSpy = spyOn(instance, 'updateSelectedNodes');
+        instance.onDragStartCallback(null);
 
-    });
-
-    it('should start the reference table delay if a cluster node is hovered', () => {
-
-    });
-
-    it('should interrupt showing the reference table if a node is blurred', () => {
-
+        expect(updatedSelectedNodesSpy).toHaveBeenCalled();
     });
 
     it('should interrupt showing the reference table if a cluster is dragged', () => {
+        const interruptReferenceTableSpy = spyOn(referenceTableControlService, 'interruptReferenceTable');
+        instance.onDragStartCallback(null);
+
+        expect(interruptReferenceTableSpy).toHaveBeenCalled();
+    });
+
+    it('should start the reference table delay if a cluster node is hovered', () => {
+        // mock the return value of isCluster because we don't actually need a cluster to exist for this test
+        spyOn(instance.networkGraph, 'isCluster').and.returnValue(true);
+        const delayReferenceTableSpy = spyOn(referenceTableControlService, 'delayReferenceTable');
+
+        instance.onHoverNodeCallback({node: null});
+        referenceTableControlService.interruptReferenceTable(); // Interrupt so the service doesn't emit true
+
+        expect(delayReferenceTableSpy).toHaveBeenCalled();
+    });
+
+    it('should interrupt showing the reference table if a node is blurred', () => {
 
     });
 
