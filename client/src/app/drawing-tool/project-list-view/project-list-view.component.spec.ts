@@ -2,7 +2,7 @@ import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { APP_BASE_HREF } from '@angular/common';
 
 import { ProjectListViewComponent } from './project-list-view.component';
-import { AppModule } from '../../app.module';
+import { MockupModule } from '../mockup.module';
 
 describe('ProjectListViewComponent', () => {
   let component: ProjectListViewComponent;
@@ -11,7 +11,7 @@ describe('ProjectListViewComponent', () => {
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       imports: [
-        AppModule
+        MockupModule
       ],
       providers: [
         {provide: APP_BASE_HREF, useValue : '/' }
