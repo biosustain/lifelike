@@ -11,18 +11,16 @@ import { CdkDragDrop } from '@angular/cdk/drag-drop';
 
 declare const viewport;
 
-let mockup = {
-  id: 'test',
-  label: '',
-  description: '',
-  graph: {
-    edges: [],
-    nodes: []
-  }
-}
-
-
 describe('DrawingToolComponent', () => {
+  let mockup = {
+    id: 'test',
+    label: '',
+    description: '',
+    graph: {
+      edges: [],
+      nodes: []
+    }
+  }
   let component: DrawingToolComponent;
   let fixture: ComponentFixture<DrawingToolComponent>;
 
