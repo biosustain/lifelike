@@ -1,4 +1,8 @@
 import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
+
+import { of, EMPTY as empty } from 'rxjs';
+import { filter, take, tap, switchMap, map } from 'rxjs/operators';
 
 import { DataSet } from 'vis-network';
 
@@ -24,6 +28,10 @@ import { VisualizationService } from '../../services/visualization.service';
     styleUrls: ['./visualization.component.scss'],
 })
 export class VisualizationComponent implements OnInit {
+
+    // Shows/Hide the component
+    hideDisplay = false;
+
     networkGraphData: Neo4jResults;
     networkGraphConfig: Neo4jGraphConfig;
     getSnippetsResult: GetSnippetsResult;
@@ -34,7 +42,10 @@ export class VisualizationComponent implements OnInit {
 
     legend: Map<string, string[]>;
 
-    constructor(private visService: VisualizationService) {
+    constructor(
+        private route: ActivatedRoute,
+        private visService: VisualizationService,
+    ) {
         this.legend = new Map<string, string[]>();
         this.legend.set('Gene', ['#78CDD7', '#247B7B']);
         this.legend.set('Disease', ['#8FA6CB', '#7D84B2']);
@@ -42,10 +53,23 @@ export class VisualizationComponent implements OnInit {
     }
 
     ngOnInit() {
-        this.visService.getSomeDiseases().subscribe((results: Neo4jResults) => {
-            this.networkGraphData = this.setupInitialProperties(results);
-            this.nodes = new DataSet(this.networkGraphData.nodes);
-            this.edges = new DataSet(this.networkGraphData.edges);
+        this.route.queryParams.pipe(
+            filter(params => params.data),
+            switchMap((params) => {
+                if (!params.data) {
+                    return empty;
+                }
+                return this.visService.getBatch(params.data).pipe(
+                    map((result: Neo4jResults) => result)
+                );
+            }),
+            take(1),
+        ).subscribe((result) => {
+            if (result) {
+                this.networkGraphData = this.setupInitialProperties(result);
+                this.nodes = new DataSet(this.networkGraphData.nodes);
+                this.edges = new DataSet(this.networkGraphData.edges);
+            }
         });
 
         this.getSnippetsResult = null;
@@ -184,6 +208,10 @@ export class VisualizationComponent implements OnInit {
         this.edges.clear();
         const node = this.convertNodeToVisJSFormat(data);
         this.nodes.add(node);
+    }
+
+    hideCanvas(state: boolean) {
+        this.hideDisplay = state;
     }
 
     addDuplicatedEdge(edge: number) {

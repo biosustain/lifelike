@@ -1,6 +1,6 @@
-<app-visualization-search (selectedResult)="updateCanvasWithSingleNode($event)"></app-visualization-search>
+<app-search-graph></app-search-graph>
 <app-visualization-canvas
-  *ngIf="networkGraphData"
+  *ngIf="networkGraphData && !hideDisplay"
   [nodes]="nodes"
   [edges]="edges"
   [getSnippetsResult]="getSnippetsResult"
@@ -14,3 +14,4 @@
   (addDuplicatedEdge)="addDuplicatedEdge($event)"
   (removeDuplicatedEdge)="removeDuplicatedEdge($event)"
 ></app-visualization-canvas>
+

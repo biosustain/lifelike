@@ -1,3 +1,14 @@
 #!/usr/bin/env bash
 
+__dir__="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# setup db
+${__dir__}/dev-db-setup
+
+# Start in server directory
+cd "${__dir__}/.."
+
+# Mark ready
+touch .READY
+
 flask run --host 0.0.0.0

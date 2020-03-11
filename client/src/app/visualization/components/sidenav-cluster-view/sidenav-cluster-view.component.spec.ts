@@ -2,8 +2,11 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { configureTestSuite } from 'ng-bullet';
 
+import { ToolbarMenuModule } from 'toolbar-menu';
+
 import { SidenavClusterEntity } from 'app/interfaces';
 import { SharedModule } from 'app/shared/shared.module';
+import { RootStoreModule } from 'app/root-store';
 
 import { SidenavClusterViewComponent } from './sidenav-cluster-view.component';
 
@@ -15,7 +18,11 @@ describe('SidenavClusterViewComponent', () => {
 
     configureTestSuite(() => {
         TestBed.configureTestingModule({
-            imports: [SharedModule],
+            imports: [
+                SharedModule,
+                RootStoreModule,
+                ToolbarMenuModule,
+            ],
             declarations: [ SidenavClusterViewComponent ]
         });
     });

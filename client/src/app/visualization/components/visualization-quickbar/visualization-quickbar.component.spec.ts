@@ -2,6 +2,9 @@ import { TestBed, ComponentFixture } from '@angular/core/testing';
 
 import { configureTestSuite } from 'ng-bullet';
 
+import { ToolbarMenuModule } from 'toolbar-menu';
+
+import { RootStoreModule } from 'app/root-store';
 import { SharedModule } from 'app/shared/shared.module';
 
 import { VisualizationQuickbarComponent } from './visualization-quickbar.component';
@@ -14,6 +17,8 @@ describe('VisualizationQuickbarComponent', () => {
         TestBed.configureTestingModule({
             imports: [
                 SharedModule,
+                RootStoreModule,
+                ToolbarMenuModule,
             ],
             declarations: [
                 VisualizationQuickbarComponent,
