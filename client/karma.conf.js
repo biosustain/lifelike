@@ -9,27 +9,6 @@
 // Code below is taken from is-docker, nearbly verbatim
 // https://github.com/sindresorhus/is-docker/blob/master/index.js
 
-const fs = require('fs');
-
-function hasDockerEnv() {
-	try {
-		fs.statSync('/.dockerenv');
-		return true;
-	} catch (err) {
-		return false;
-	}
-}
-
-function hasDockerCGroup() {
-	try {
-		return fs.readFileSync('/proc/self/cgroup', 'utf8').indexOf('docker') !== -1;
-	} catch (err) {
-		return false;
-	}
-}
-
-const inDocker = hasDockerEnv() || hasDockerCGroup();
-
 module.exports = function (config) {
   config.set({
     basePath: '',
