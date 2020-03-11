@@ -41,6 +41,7 @@ describe('VisualizationCanvasComponent', () => {
     let mockEdges: DataSet<VisEdge>;
     let mockConfig: Neo4jGraphConfig;
     let mockLegend: Map<string, string[]>;
+    let mockCallbackParams: any;
 
     function mockNodeGenerator(nodeId: number, nodeDisplayName: string, nodeData?: any): VisNode {
         return {
@@ -96,10 +97,12 @@ describe('VisualizationCanvasComponent', () => {
         mockNodes = new DataSet([
             mockNodeGenerator(1, 'Mock Node 1', {}),
             mockNodeGenerator(2, 'Mock Node 2', {}),
+            mockNodeGenerator(3, 'Mock Node 3', {}),
         ]);
 
         mockEdges = new DataSet([
             mockEdgeGenerator(1, 1, 'to', 2),
+            mockEdgeGenerator(2, 2, 'to', 3),
         ]);
 
         mockConfig = {
@@ -135,6 +138,18 @@ describe('VisualizationCanvasComponent', () => {
         mockLegend = new Map<string, string[]>([
             ['Chemical', ['#CD5D67', '#410B13']]
         ]);
+
+        mockCallbackParams = {
+            event: {
+            preventDefault() { /*Do nothing*/ },
+            },
+            pointer: {
+                DOM: {
+                    x: 0,
+                    y: 0,
+                }
+            }
+        };
 
         fixture = TestBed.createComponent(VisualizationCanvasComponent);
         instance = fixture.debugElement.componentInstance;
@@ -375,15 +390,41 @@ describe('VisualizationCanvasComponent', () => {
     });
 
     it('selectNeighbors should result in the neighbors of the input node being selected', () => {
+        const getConnectedNodesSpy = spyOn(instance.networkGraph, 'getConnectedNodes').and.callThrough();
+        const selectNodesSpy = spyOn(instance.networkGraph, 'selectNodes').and.callThrough();
 
+        // Start with the origin node selected. It will be deselected when its neighbors are selected.
+        instance.networkGraph.selectNodes([1]);
+        instance.updateSelectedNodes();
+        instance.selectNeighbors(1);
+
+        expect(getConnectedNodesSpy).toHaveBeenCalledWith(1);
+        expect(selectNodesSpy).toHaveBeenCalledWith([2]);
+        expect(instance.selectedNodes.length).toEqual(1);
+        expect(instance.selectedNodes.includes(2)).toBeTrue();
     });
 
     it('getAssociationsWithEdge should request association snippets for the given edge', () => {
+        const getSnippetsFromEdgeEmitSpy = spyOn(instance.getSnippetsFromEdge, 'emit');
 
+        instance.getAssociationsWithEdge(mockEdges.get(1));
+
+        expect(getSnippetsFromEdgeEmitSpy).toHaveBeenCalledWith(mockEdges.get(1));
     });
 
     it('getAssociationsWithDuplicateEdge should request association snippets for the given duplicate edge', () => {
+        const getAssociationSnippetsFromEdgeEmitSpy = spyOn(instance.getSnippetsFromDuplicateEdge, 'emit');
+        const mockDuplicateEdge = {
+            ...mockEdges.get(1),
+            id: 'duplicateEdge:1234',
+            duplicateOf: 1,
+            originalFrom: 1,
+            originalTo: 2,
+        } as DuplicateVisEdge;
 
+        instance.getAssociationsWithDuplicateEdge(mockDuplicateEdge);
+
+        expect(getAssociationSnippetsFromEdgeEmitSpy).toHaveBeenCalledWith(mockDuplicateEdge);
     });
 
     it('should tell all tooltips to hide if hideTooltips is called', () => {
@@ -417,13 +458,14 @@ describe('VisualizationCanvasComponent', () => {
         expect(updatedSelectedNodesSpy).toHaveBeenCalled();
     });
 
-    it('should interrupt showing the reference table if a cluster is dragged', () => {
+    it('should interrupt showing the reference table if something is dragged', () => {
         const interruptReferenceTableSpy = spyOn(referenceTableControlService, 'interruptReferenceTable');
         instance.onDragStartCallback(null);
 
         expect(interruptReferenceTableSpy).toHaveBeenCalled();
     });
 
+    // TODO: Create a real cluster
     it('should start the reference table delay if a cluster node is hovered', () => {
         // mock the return value of isCluster because we don't actually need a cluster to exist for this test
         spyOn(instance.networkGraph, 'isCluster').and.returnValue(true);
@@ -436,42 +478,212 @@ describe('VisualizationCanvasComponent', () => {
     });
 
     it('should interrupt showing the reference table if a node is blurred', () => {
+        const interruptReferenceTableSpy = spyOn(referenceTableControlService, 'interruptReferenceTable');
 
+        instance.onBlurNodeCallback({node: 1});
+
+        expect(interruptReferenceTableSpy).toHaveBeenCalled();
     });
 
     it('should update reference table data and location if it is not interrupted', () => {
 
     });
 
-    it('should update selected nodes when a node is selected', () => {
+    it('should update selected nodes and sidebar entity when a node is selected', () => {
+        const updateSelectedNodesSpy = spyOn(instance, 'updateSelectedNodes');
+        const updateSidebarEntitySpy = spyOn(instance, 'updateSidebarEntity');
 
+        instance.onSelectNodeCallback(null);
+
+        expect(updateSelectedNodesSpy).toHaveBeenCalled();
+        expect(updateSidebarEntitySpy).toHaveBeenCalled();
     });
 
     it('should update selected nodes when a node is deselected', () => {
+        const updateSelectedNodesSpy = spyOn(instance, 'updateSelectedNodes');
 
+        instance.onDeselectNodeCallback(null);
+
+        expect(updateSelectedNodesSpy).toHaveBeenCalled();
     });
 
-    it('should update selected edges when a node is selected', () => {
+    it('should update selected edges when an edge is selected', () => {
+        const updateSelectedEdgesSpy = spyOn(instance, 'updateSelectedEdges');
+        const updateSidebarEntitySpy = spyOn(instance, 'updateSidebarEntity');
 
+        instance.onSelectEdgeCallback(null);
+
+        expect(updateSelectedEdgesSpy).toHaveBeenCalled();
+        expect(updateSidebarEntitySpy).toHaveBeenCalled();
     });
 
-    it('should update selected edges when a node is deselected', () => {
+    it('should update selected edges when an edge is deselected', () => {
+        const updateSelectedEdgesSpy = spyOn(instance, 'updateSelectedEdges');
 
+        instance.onDeselectEdgeCallback(null);
+
+        expect(updateSelectedEdgesSpy).toHaveBeenCalled();
     });
 
+    // TODO: Should create a real cluster to test here
     it('should open a cluster if it is double clicked', () => {
+        const safelyOpenClusterSpy = spyOn(instance, 'safelyOpenCluster');
+        spyOn(instance.networkGraph, 'getNodeAt').and.returnValue(1);
+        // For now, pretend the retrieved node is a cluster to test without actually creating a cluster
+        spyOn(instance.networkGraph, 'isCluster').and.returnValue(true);
 
+        instance.onDoubleClickCallback(mockCallbackParams);
+
+        expect(safelyOpenClusterSpy).toHaveBeenCalledWith(1);
     });
 
     it('should expand/collapse a node if it is double clicked', () => {
+        const expandOrCollapseNodeSpy = spyOn(instance, 'expandOrCollapseNode');
+        spyOn(instance.networkGraph, 'getNodeAt').and.returnValue(1);
 
+        instance.onDoubleClickCallback(mockCallbackParams);
+
+        expect(expandOrCollapseNodeSpy).toHaveBeenCalledWith(1);
     });
 
+    // TODO: Create a real cluster
     it('should not open the context menu if a cluster is right-clicked', () => {
+        spyOn(instance.networkGraph, 'getNodeAt').and.returnValue(1);
+        spyOn(instance.networkGraph, 'isCluster').and.returnValue(true); // Faking the cluster for now
+        const preventDefaultSpy = spyOn(mockCallbackParams.event, 'preventDefault');
 
+        instance.onContextCallback(mockCallbackParams);
+
+        expect(preventDefaultSpy).not.toHaveBeenCalled();
     });
 
-    it('should open and update the context menu if something other than a cluster is right-clicked', () => {
+    it('should select the node, show tooltip, and update sidebar if an unselected node is right-clicked', () => {
+        spyOn(instance.networkGraph, 'getNodeAt').and.returnValue(1);
+        spyOn(instance.networkGraph, 'getEdgeAt').and.returnValue(undefined);
+        const networkGraphSelectNodesSpy = spyOn(instance.networkGraph, 'selectNodes').and.callThrough();
+        const updateSelectedNodesAndEdgesSpy = spyOn(instance, 'updateSelectedNodesAndEdges').and.callThrough();
+        const showTooltipSpy = spyOn(contextMenuControlService, 'showTooltip');
+        const updateSidebarEntitySpy = spyOn(instance, 'updateSidebarEntity');
 
+        instance.onContextCallback(mockCallbackParams);
+
+        expect(networkGraphSelectNodesSpy).toHaveBeenCalledWith([1], false);
+        expect(updateSelectedNodesAndEdgesSpy).toHaveBeenCalled();
+        expect(instance.selectedNodes.includes(1)).toBeTrue();
+        expect(showTooltipSpy).toHaveBeenCalled();
+        expect(updateSidebarEntitySpy).toHaveBeenCalled();
+    });
+
+    it('should not unselect selected nodes if a selected node is right-clicked', () => {
+        spyOn(instance.networkGraph, 'getNodeAt').and.returnValue(1);
+        spyOn(instance.networkGraph, 'getEdgeAt').and.returnValue(undefined);
+        // Select some nodes to begin with
+        instance.networkGraph.selectNodes([1, 2]);
+        instance.updateSelectedNodes();
+        instance.onContextCallback(mockCallbackParams);
+
+        expect(instance.selectedNodes).toEqual([1, 2]);
+    });
+
+    it('should select the edge, show tooltip, and update sidebar if an unselected edge is right-clicked', () => {
+        spyOn(instance.networkGraph, 'getNodeAt').and.returnValue(undefined);
+        spyOn(instance.networkGraph, 'getEdgeAt').and.returnValue(1);
+        const networkGraphSelectNodesSpy = spyOn(instance.networkGraph, 'selectEdges').and.callThrough();
+        const updateSelectedNodesAndEdgesSpy = spyOn(instance, 'updateSelectedNodesAndEdges').and.callThrough();
+        const showTooltipSpy = spyOn(contextMenuControlService, 'showTooltip');
+        const updateSidebarEntitySpy = spyOn(instance, 'updateSidebarEntity');
+
+        instance.onContextCallback(mockCallbackParams);
+
+        expect(networkGraphSelectNodesSpy).toHaveBeenCalledWith([1]);
+        expect(updateSelectedNodesAndEdgesSpy).toHaveBeenCalled();
+        expect(instance.selectedEdges.includes(1)).toBeTrue();
+        expect(showTooltipSpy).toHaveBeenCalled();
+        expect(updateSidebarEntitySpy).toHaveBeenCalled();
+    });
+
+    it('should not unselect selected edges if a selected edge is right-clicked', () => {
+        spyOn(instance.networkGraph, 'getNodeAt').and.returnValue(undefined);
+        spyOn(instance.networkGraph, 'getEdgeAt').and.returnValue(1);
+        // Select some edges to begin with
+        instance.networkGraph.selectEdges([1, 2]);
+        instance.updateSelectedEdges();
+        instance.onContextCallback(mockCallbackParams);
+
+        expect(instance.selectedEdges).toEqual([1, 2]);
+    });
+
+    it('should unselect all, show tooltip, and update sidebar if nothing is hovered when opening the context menu', () => {
+        spyOn(instance.networkGraph, 'getNodeAt').and.returnValue(undefined);
+        spyOn(instance.networkGraph, 'getEdgeAt').and.returnValue(undefined);
+        const networkGraphUnselectAllSpy = spyOn(instance.networkGraph, 'unselectAll').and.callThrough();
+        const updateSelectedNodesAndEdgesSpy = spyOn(instance, 'updateSelectedNodesAndEdges').and.callThrough();
+        const showTooltipSpy = spyOn(contextMenuControlService, 'showTooltip');
+        const updateSidebarEntitySpy = spyOn(instance, 'updateSidebarEntity');
+
+        // Select a node and edge to begin with
+        instance.networkGraph.selectEdges([1]);
+        instance.updateSelectedEdges();
+
+        instance.networkGraph.selectNodes([1]);
+        instance.updateSelectedNodes();
+
+        instance.onContextCallback(mockCallbackParams);
+
+        expect(networkGraphUnselectAllSpy).toHaveBeenCalled();
+        expect(updateSelectedNodesAndEdgesSpy).toHaveBeenCalled();
+        expect(instance.selectedEdges.length).toEqual(0);
+        expect(instance.selectedNodes.length).toEqual(0);
+        expect(showTooltipSpy).toHaveBeenCalled();
+        expect(updateSidebarEntitySpy).toHaveBeenCalled();
+    });
+
+    it('should update selected edge labels if exactly one node is selected and right-clicked', () => {
+        spyOn(instance.networkGraph, 'getNodeAt').and.returnValue(1);
+        spyOn(instance.networkGraph, 'getEdgeAt').and.returnValue(undefined);
+        const updateSelectedNodeEdgeLabelsSpy = spyOn(instance, 'updateSelectedNodeEdgeLabels').and.callThrough();
+
+        instance.onContextCallback(mockCallbackParams);
+
+        expect(updateSelectedNodeEdgeLabelsSpy).toHaveBeenCalledWith(1);
+        expect(instance.selectedNodeEdgeLabels.has('Mock Edge')).toBeTrue();
+    });
+
+    it('should clear selected edge labels if more than one node is selected and right-clicked', () => {
+        spyOn(instance.networkGraph, 'getNodeAt').and.returnValue(1);
+        spyOn(instance.networkGraph, 'getEdgeAt').and.returnValue(undefined);
+        const clearSelectedNodeEdgeLabelsSpy = spyOn(instance, 'clearSelectedNodeEdgeLabels').and.callThrough();
+        const updateSelectedNodeEdgeLabelsSpy = spyOn(instance, 'updateSelectedNodeEdgeLabels').and.callThrough();
+
+        // Select some nodes to begin with
+        instance.networkGraph.selectNodes([1, 2]);
+        instance.updateSelectedNodes();
+
+        expect(instance.selectedNodes.length).toEqual(2);
+        expect(instance.networkGraph.getSelectedNodes().length).toEqual(2);
+
+        instance.onContextCallback(mockCallbackParams);
+
+        expect(updateSelectedNodeEdgeLabelsSpy).not.toHaveBeenCalled();
+        expect(clearSelectedNodeEdgeLabelsSpy).toHaveBeenCalled();
+        expect(instance.selectedNodeEdgeLabels.size).toEqual(0);
+    });
+
+    it('should clear selected edge labels if any edges are selected and right-clicked', () => {
+        spyOn(instance.networkGraph, 'getNodeAt').and.returnValue(undefined);
+        spyOn(instance.networkGraph, 'getEdgeAt').and.returnValue(1);
+        const clearSelectedNodeEdgeLabelsSpy = spyOn(instance, 'clearSelectedNodeEdgeLabels').and.callThrough();
+
+        // Select some nodes to begin with and get the edge labels
+        instance.networkGraph.selectNodes([1]);
+        instance.updateSelectedNodes();
+        instance.updateSelectedNodeEdgeLabels(1);
+
+        instance.onContextCallback(mockCallbackParams);
+
+        expect(instance.selectedEdges.length).toEqual(1);
+        expect(instance.selectedEdges.includes(1)).toBeTrue();
+        expect(clearSelectedNodeEdgeLabelsSpy).toHaveBeenCalled();
+        expect(instance.selectedNodeEdgeLabels.size).toEqual(0);
     });
 });
