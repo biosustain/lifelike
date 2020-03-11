@@ -81,11 +81,11 @@ import {
     MaterialModule
   ],
   providers: [
-    {
-      provide: HTTP_INTERCEPTORS,
-      useClass: AuthenticationService,
-      multi: true
-    },
+    // {
+    //   provide: HTTP_INTERCEPTORS,
+    //   useClass: AuthenticationService,
+    //   multi: true
+    // },
     PendingChangesGuard
   ],
   exports: [
