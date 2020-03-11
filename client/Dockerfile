@@ -1,6 +1,6 @@
 # TODO: Consider using a smaller image for deployment, using the base image to
 # enable installing Chrome for Karma testing
-FROM node:slim
+FROM node:13.10
 
 RUN apt-get update && apt-get install gnupg2 wget -y
 
