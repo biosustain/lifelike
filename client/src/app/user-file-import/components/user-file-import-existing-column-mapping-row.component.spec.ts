@@ -26,16 +26,16 @@ import { getNodeProperties } from '../store/actions';
 
 import { UserFileImportExistingColumnMappingRowComponent } from './user-file-import-existing-column-mapping-row.component';
 
-const columnHeaders = [{colA: 1}];
-const existingNodeLabels = ['labelA', 'labelB'];
-const existingNodeProperties = {labelA: ['propA', 'propB']};
-
 describe('UserFileImportExistingColumnMappingRowComponent', () => {
     let component: UserFileImportExistingColumnMappingRowComponent;
     let fixture: ComponentFixture<UserFileImportExistingColumnMappingRowComponent>;
     let mockStore: MockStore<userFileImportState.State>;
     let overlayContainerElement: HTMLElement;
     let fb: FormBuilder;
+
+    let columnHeaders;
+    let existingNodeLabels;
+    let existingNodeProperties;
 
     configureTestSuite(() => {
         TestBed.configureTestingModule({
@@ -60,6 +60,10 @@ describe('UserFileImportExistingColumnMappingRowComponent', () => {
         fixture = TestBed.createComponent(UserFileImportExistingColumnMappingRowComponent);
         component = fixture.componentInstance;
         fb = new FormBuilder();
+
+        columnHeaders = [{colA: 1}];
+        existingNodeLabels = ['labelA', 'labelB'];
+        existingNodeProperties = {labelA: ['propA', 'propB']};
 
         component.columnMappingForm = fb.group({
             columnNode: [],
