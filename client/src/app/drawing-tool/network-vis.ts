@@ -69,7 +69,7 @@ export class NetworkVis {
   }
 
   /**
-   * Set viewport so that all nodes are visibile on cavas
+   * Set viewport so that all nodes are visibile on canvas
    */
   zoom2All() {
     this.network.fit({
