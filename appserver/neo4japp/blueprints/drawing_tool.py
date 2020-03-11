@@ -2,9 +2,9 @@ from datetime import datetime, timedelta
 from flask import current_app, request, Response, json, Blueprint
 import jwt
 
+from neo4japp.blueprints.login import auth, pullUserFromAuthHead
 from neo4japp.database import db
-from neo4japp.models.drawing_tool import AppUser, Project, ProjectSchema
-from neo4japp.util import auth, pullUserFromAuthHead
+from neo4japp.models.auth import AppUser, Project, ProjectSchema
 
 bp = Blueprint('drawing_tool', __name__, url_prefix='/drawing-tool')
 

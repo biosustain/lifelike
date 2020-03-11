@@ -17,12 +17,11 @@ from neo4japp.data_transfer_objects.visualization import (
     ReferenceTableRow,
     VisEdge,
 )
-from neo4japp.services.common import BaseDao
+from neo4japp.services.common import GraphBaseDao
 from neo4japp.models import GraphNode, GraphRelationship
 from neo4japp.constants import *
 from neo4japp.factory import cache
 from neo4japp.util import CamelDictMixin, compute_hash, snake_to_camel_dict
-from neo4japp.services.common import BaseDao
 
 from openpyxl import load_workbook
 from openpyxl import Workbook
@@ -80,7 +79,7 @@ class Neo4jColumnMapping(CamelDictMixin):
     relationship: Optional[Neo4jRelationshipMapping] = attr.ib(default=None)
 
 
-class Neo4JService(BaseDao):
+class Neo4JService(GraphBaseDao):
     def __init__(self, graph):
         super().__init__(graph)
 
