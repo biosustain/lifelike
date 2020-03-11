@@ -1,8 +1,6 @@
 # TODO: Consider using a smaller image for deployment, using the base image to
 # enable installing Chrome for Karma testing
-FROM node:slim
-
-RUN apt-get update && apt-get install gnupg2 wget -y
+FROM node:13.10.1
 
 # OPTIONAL: Install dumb-init (Very handy for easier signal handling of SIGINT/SIGTERM/SIGKILL etc.)
 RUN wget https://github.com/Yelp/dumb-init/releases/download/v1.2.0/dumb-init_1.2.0_amd64.deb
