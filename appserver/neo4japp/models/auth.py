@@ -1,8 +1,10 @@
 import bcrypt
 
 from neo4japp.database import db, ma
+from neo4japp.models import RDBMSBase
 
-class AppUser(db.Model):
+
+class AppUser(RDBMSBase):
     """
         User models to tie ownership of resources to
     """
@@ -12,9 +14,6 @@ class AppUser(db.Model):
     username = db.Column(db.String(64), index=True, unique=True)
     email = db.Column(db.String(120), index=True, unique=True)
     password_hash = db.Column(db.String(256))
-
-    def __repr__(self):
-        return '<AppUser {}>'.format(self.username)
 
     def set_password(self, password):
         pwhash = bcrypt.hashpw(password.encode('utf8'), bcrypt.gensalt())
@@ -32,7 +31,7 @@ class AppUserSchema(ma.ModelSchema):
         model = AppUser
 
 
-class Project(db.Model):
+class Project(RDBMSBase):
     """
         Model representation of a project drawing in a
         network graph networking tool

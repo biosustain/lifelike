@@ -1,12 +1,12 @@
 import re
 from neo4japp.data_transfer_objects import FTSQueryRecord, FTSReferenceRecord, FTSResult
-from neo4japp.services.common import BaseDao
+from neo4japp.services.common import GraphBaseDao
 from neo4japp.models import GraphNode
 from py2neo import cypher
 from typing import List
 
 
-class SearchService(BaseDao):
+class SearchService(GraphBaseDao):
 
     def __init__(self, graph):
         super().__init__(graph)
