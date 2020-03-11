@@ -27,16 +27,16 @@ import { getNodeProperties } from '../store/actions';
 import { UserFileImportColumnRelationshipMappingRowComponent } from './user-file-import-column-relationship-mapping-row.component';
 import { DebugElement } from '@angular/core';
 
-const columnHeaders = [{colA: 1}];
-const existingNodeLabels = ['labelA', 'labelB'];
-const existingNodeProperties = {labelA: ['propA', 'propB']};
-
 describe('UserFileImportColumnRelationshipMappingRowComponent', () => {
     let component: UserFileImportColumnRelationshipMappingRowComponent;
     let fixture: ComponentFixture<UserFileImportColumnRelationshipMappingRowComponent>;
     let mockStore: MockStore<userFileImportState.State>;
     let overlayContainerElement: HTMLElement;
     let fb: FormBuilder;
+
+    let columnHeaders;
+    let existingNodeLabels;
+    let existingNodeProperties;
 
     configureTestSuite(() => {
         TestBed.configureTestingModule({
@@ -61,6 +61,10 @@ describe('UserFileImportColumnRelationshipMappingRowComponent', () => {
         fixture = TestBed.createComponent(UserFileImportColumnRelationshipMappingRowComponent);
         component = fixture.componentInstance;
         fb = new FormBuilder();
+
+        columnHeaders = [{colA: 1}];
+        existingNodeLabels = ['labelA', 'labelB'];
+        existingNodeProperties = {labelA: ['propA', 'propB']};
 
         component.relationshipMappingForm = fb.group({
             edge: [],

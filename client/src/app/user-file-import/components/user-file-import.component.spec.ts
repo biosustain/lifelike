@@ -32,20 +32,6 @@ import {
     SheetRowPreview,
 } from 'app/interfaces';
 
-const mockFileNameAndSheets = {
-    filename: 'test_file.xlsx',
-    sheets: [
-        {
-            sheetColumnNames: [{colA: 0}, {colB: 1}],
-            sheetName: 'sheet1',
-            sheetPreview: [
-                {colA: 'colA'},
-                {colB: 'colB'},
-            ] as SheetRowPreview[],
-        } as SheetNameAndColumnNames,
-    ] as SheetNameAndColumnNames[],
-} as FileNameAndSheets;
-
 describe('UserFileImportComponent', () => {
     let component: UserFileImportComponent;
     let fixture: ComponentFixture<UserFileImportComponent>;
@@ -53,6 +39,8 @@ describe('UserFileImportComponent', () => {
     let mockFileNameAndSheetSelector: MemoizedSelector<userFileImportState.State, FileNameAndSheets>;
     let mockNodeMappingHelperSelector: MemoizedSelector<userFileImportState.State, NodeMappingHelper>;
     let overlayContainerElement: HTMLElement;
+
+    let mockFileNameAndSheets;
 
     configureTestSuite(() => {
         TestBed.configureTestingModule({
@@ -76,6 +64,20 @@ describe('UserFileImportComponent', () => {
     beforeEach(() => {
         fixture = TestBed.createComponent(UserFileImportComponent);
         component = fixture.componentInstance;
+
+        mockFileNameAndSheets = {
+            filename: 'test_file.xlsx',
+            sheets: [
+                {
+                    sheetColumnNames: [{colA: 0}, {colB: 1}],
+                    sheetName: 'sheet1',
+                    sheetPreview: [
+                        {colA: 'colA'},
+                        {colB: 'colB'},
+                    ] as SheetRowPreview[],
+                } as SheetNameAndColumnNames,
+            ] as SheetNameAndColumnNames[],
+        } as FileNameAndSheets;
 
         mockStore = TestBed.get(Store);
         mockFileNameAndSheetSelector = mockStore.overrideSelector(
