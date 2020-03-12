@@ -22,39 +22,11 @@ export class VisualizationService {
 
     constructor(private http: HttpClient) {}
 
-    // TODO: Remove me
-    /** Start Test Endpoints */
-
-    /**
-     * getAllOrganisms will fetch all available organisms
-     * within the NEO4J database.
-     * ** NOTE ** Use this as
-     * a test endpoint only as the database could potentially
-     * not have any organisms depending on which database
-     * is seeded.
-     */
-    getAllOrganisms() {
-        return this.http.get<{result: Neo4jResults}>(
-            `${this.visApi}/organisms`
-        ).pipe(map(resp => resp.result));
-    }
-
     getBatch(query: string) {
         return this.http.get<{result: Neo4jResults}>(
             `${this.visApi}/batch`, {params: {data: query}}
         ).pipe(map(resp => resp.result));
     }
-
-    /**
-     * For use with the text-mining data set
-     */
-    getSomeDiseases() {
-        return this.http.get<{result: Neo4jResults}>(
-            `${this.visApi}/diseases`
-        ).pipe(map(resp => resp.result));
-    }
-
-    /** End Test Endpoints */
 
     /**
      * expandNode will take a node id and return all children
