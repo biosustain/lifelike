@@ -52,21 +52,7 @@ def get_batch():
     result = neo4j.query_batch(decoded_query)
     return SuccessResponse(result=result, status_code=200)
 
-@bp.route('/organisms', methods=['GET'])
-@jsonify_with_class()
-def get_organisms():
-    neo4j = get_neo4j_service_dao()
-    organisms = neo4j.get_organisms()
-    return SuccessResponse(result=organisms, status_code=200)
-
-# NOTE: This is just a temp endpoint, may remove in the future
-@bp.route('/diseases', methods=['GET'])
-@jsonify_with_class()
-def get_some_diseases():
-    neo4j = get_neo4j_service_dao()
-    diseases = neo4j.get_some_diseases()
-    return SuccessResponse(result=diseases, status_code=200)
-
+# TODO: Is this in use by anything?
 @bp.route('/regulatory', methods=['POST'])
 @jsonify_with_class(GraphRequest)
 def load_regulatory_graph(req: GraphRequest):
@@ -130,6 +116,7 @@ def get_cluster_graph_data(req: GetGraphDataForClusterRequest):
     )
     return SuccessResponse(cluster_graph_data_result, status_code=200)
 
+# TODO: Is this in use by anything?
 @bp.route('/reaction', methods=['POST'])
 @jsonify_with_class(ReactionRequest)
 def load_reaction_graph(req: ReactionRequest):

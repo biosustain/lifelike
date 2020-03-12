@@ -28,6 +28,7 @@ from neo4japp.util import (
 def test_camel_to_snake(camel_input, expected_snake_output):
     assert camel_to_snake(camel_input) == expected_snake_output
 
+
 @pytest.mark.parametrize("camel_input, expected_snake_output", [
     ({'testData1': 'hello'}, {'test_data1': 'hello'}),
     ({'testData1': 'hello', 'testData2': 'hi'}, {'test_data1': 'hello', 'test_data2': 'hi'}),  # noqa
@@ -37,6 +38,7 @@ def test_camel_to_snake(camel_input, expected_snake_output):
 ])
 def test_camel_to_snake_dict(camel_input, expected_snake_output):
     assert camel_to_snake_dict(camel_input, {}) == expected_snake_output
+
 
 class MockEnum(Enum):
     PROPERTY1 = 'Property1'
