@@ -89,14 +89,15 @@ def get_snippets_from_duplicate_edge(req: GetSnippetsFromDuplicateEdgeRequest):
     )
     return SuccessResponse(result=snippets_result, status_code=200)
 
-@bp.route('/get-snippet-counts-from-edges', methods=['POST'])
-@jsonify_with_class(GetSnippetCountsFromEdgesRequest)
-def get_snippet_count_for_edges(req: GetSnippetCountsFromEdgesRequest):
-    neo4j = get_neo4j_service_dao()
-    edge_snippet_count_result = neo4j.get_snippet_counts_from_edges(
-        req.edges,
-    )
-    return SuccessResponse(edge_snippet_count_result, status_code=200)
+# Currently unused
+# @bp.route('/get-snippet-counts-from-edges', methods=['POST'])
+# @jsonify_with_class(GetSnippetCountsFromEdgesRequest)
+# def get_snippet_count_for_edges(req: GetSnippetCountsFromEdgesRequest):
+#     neo4j = get_neo4j_service_dao()
+#     edge_snippet_count_result = neo4j.get_snippet_counts_from_edges(
+#         req.edges,
+#     )
+#     return SuccessResponse(edge_snippet_count_result, status_code=200)
 
 @bp.route('/get-reference-table-data', methods=['POST'])
 @jsonify_with_class(ReferenceTableDataRequest)
