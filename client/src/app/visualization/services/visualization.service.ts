@@ -51,11 +51,12 @@ export class VisualizationService {
         ).pipe(map(resp => resp.result));
     }
 
-    getSnippetCountsFromEdges(edges: VisEdge[]) {
-        return this.http.post<{result: GetSnippetCountsFromEdgesResult}>(
-            `${this.visApi}/get-snippet-counts-from-edges`, {edges},
-        ).pipe(map(resp => resp.result));
-    }
+    // Currently unused
+    // getSnippetCountsFromEdges(edges: VisEdge[]) {
+    //     return this.http.post<{result: GetSnippetCountsFromEdgesResult}>(
+    //         `${this.visApi}/get-snippet-counts-from-edges`, {edges},
+    //     ).pipe(map(resp => resp.result));
+    // }
 
     getReferenceTableData(nodeEdgePairs: DuplicateNodeEdgePair[]) {
         return this.http.post<{result: GetReferenceTableDataResult}>(
