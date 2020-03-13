@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from flask import current_app, request, Response, json, Blueprint
+from flask import current_app, request, Response, json, Blueprint, g
 from flask_httpauth import HTTPTokenAuth
 import jwt
 
@@ -20,6 +20,8 @@ def verify_token(token):
             algorithms=['HS256']
         )
         if decoded['type'] == 'access':
+            user = pullUserFromAuthHead()
+            g.current_user = user
             return True
         else:
             return False
