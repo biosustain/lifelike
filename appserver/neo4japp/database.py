@@ -21,3 +21,17 @@ def get_neo4j_service_dao():
         from neo4japp.services import Neo4JService
         g.neo4j_service_dao = Neo4JService(graph)
     return g.neo4j_service_dao
+
+
+def get_user_file_import_service():
+    if 'user_file_import_service' not in g:
+        from neo4japp.services import UserFileImportService
+        g.user_file_import_service = UserFileImportService(graph)
+    return g.user_file_import_service
+
+
+def get_search_service_dao():
+    if 'search_dao' not in g:
+        from neo4japp.services import SearchService
+        g.search_service_dao = SearchService(graph)
+    return g.search_service_dao

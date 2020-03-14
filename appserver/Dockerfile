@@ -24,7 +24,7 @@ RUN pipenv install --deploy --system
 
 # Don't lose stdin, stdout and stderr output due to buffering
 ENV PYTHONUNBUFFERED 1
-ENV PYTHONPATH $RECON_HOME
+ENV PYTHONPATH $N4J_HOME
 
 USER $N4J_USER
 

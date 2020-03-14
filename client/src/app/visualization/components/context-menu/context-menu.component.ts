@@ -3,9 +3,13 @@ import { Component, Input, OnDestroy, Output, EventEmitter } from '@angular/core
 import { createPopper, Instance } from '@popperjs/core';
 
 import { Subscription } from 'rxjs';
+import { first, filter } from 'rxjs/operators';
 
 import { isNullOrUndefined } from 'util';
 
+import { IdType } from 'vis-network';
+
+import { GroupRequest } from 'app/interfaces';
 import { TooltipDetails } from 'app/shared/services/tooltip-control-service';
 import { TooltipComponent } from 'app/shared/components/tooltip/tooltip.component';
 
@@ -17,9 +21,15 @@ import { ContextMenuControlService } from '../../services/context-menu-control.s
     styleUrls: ['./context-menu.component.scss'],
 })
 export class ContextMenuComponent extends TooltipComponent implements OnDestroy {
+    @Input() selectedNodeIds: IdType[];
+    @Input() selectedEdgeIds: IdType[];
+    // Expect this to be null if there is not exactly one node selected
     @Input() selectedNodeEdgeLabels: Set<string>;
 
-    @Output() groupNeighborsWithRelationship: EventEmitter<string> = new EventEmitter();
+    @Output() groupNeighborsWithRelationship: EventEmitter<GroupRequest> = new EventEmitter();
+    @Output() removeNodes: EventEmitter<IdType[]> = new EventEmitter();
+    @Output() removeEdges: EventEmitter<IdType[]> = new EventEmitter();
+    @Output() selectNeighbors: EventEmitter<IdType> = new EventEmitter();
 
     FADEOUT_STYLE = 'context-menu fade-out';
     DEFAULT_STYLE = 'context-menu';
@@ -29,7 +39,7 @@ export class ContextMenuComponent extends TooltipComponent implements OnDestroy 
     contextMenuClass: string;
     subMenuClass: string;
 
-    subMenus: string[] = ['group-1-submenu'];
+    subMenus: string[] = ['single-node-selection-group-1-submenu'];
 
     hideContextMenuSubscription: Subscription;
     updatePopperSubscription: Subscription;
@@ -53,8 +63,6 @@ export class ContextMenuComponent extends TooltipComponent implements OnDestroy 
         this.updatePopperSubscription = this.contextMenuControlService.updatePopper$.subscribe((details: TooltipDetails) => {
             this.updatePopper(details.posX, details.posY);
         });
-
-        this.selectedNodeEdgeLabels = new Set<string>();
     }
 
     ngOnDestroy() {
@@ -72,29 +80,25 @@ export class ContextMenuComponent extends TooltipComponent implements OnDestroy 
     }
 
     showGroupByRelSubMenu() {
-        // TODO: Would be nice to add some kind of delay here, but it also has to be interruptible.
         // TODO: It would be very cool if the edges of the hovered relationship were highlighted
         this.hideAllSubMenus();
+        this.contextMenuControlService.delayGroupByRel();
+        this.contextMenuControlService.showGroupByRelResult$.pipe(
+            first(),
+            filter(showGroupByRel => showGroupByRel)
+        ).subscribe(() => {
+            const contextMenuItem = document.querySelector('#group-by-rel-menu-item');
+            const tooltip = document.querySelector('#single-node-selection-group-1-submenu') as HTMLElement;
+            tooltip.style.display = 'block';
+            this.subMenuClass = this.DEFAULT_STYLE;
 
-        const contextMenuItem = document.querySelector('#group-by-rel-menu-item');
-        const tooltip = document.querySelector('#group-1-submenu') as HTMLElement;
-        tooltip.style.display = 'block';
-        this.subMenuClass = this.DEFAULT_STYLE;
-
-        if (!isNullOrUndefined(this.groupByRelSubmenuPopper)) {
-            this.groupByRelSubmenuPopper.destroy();
-            this.groupByRelSubmenuPopper = null;
-        }
-        this.groupByRelSubmenuPopper = createPopper(contextMenuItem, tooltip, {
-            modifiers: [
-                {
-                    name: 'offset',
-                    options: {
-                        offset: [0, 0],
-                    },
-                },
-            ],
-            placement: 'right-start',
+            if (!isNullOrUndefined(this.groupByRelSubmenuPopper)) {
+                this.groupByRelSubmenuPopper.destroy();
+                this.groupByRelSubmenuPopper = null;
+            }
+            this.groupByRelSubmenuPopper = createPopper(contextMenuItem, tooltip, {
+                placement: 'right-start',
+            });
         });
     }
 
@@ -104,6 +108,7 @@ export class ContextMenuComponent extends TooltipComponent implements OnDestroy 
     }
 
     hideAllSubMenus() {
+        this.contextMenuControlService.interruptGroupByRel();
         this.subMenus.forEach(subMenu => {
             const tooltip = document.querySelector(`#${subMenu}`) as HTMLElement;
             tooltip.style.display = 'none';
@@ -122,11 +127,31 @@ export class ContextMenuComponent extends TooltipComponent implements OnDestroy 
         this.subMenuClass = this.FADEOUT_STYLE;
     }
 
-    requestGroupByRelationship(rel: string) {
-        this.groupNeighborsWithRelationship.emit(rel);
-        this.selectedNodeEdgeLabels.delete(rel);
+    mouseLeaveNodeRow() {
+        // Interrupt showing the submenu if the user hovers away from a node
+        this.contextMenuControlService.interruptGroupByRel();
     }
 
-    // TODO: Would be cool to have a "Select Neighbors" feature on the context menu
-    // (Though I suppose we can enable this by default with vis.js...)
+    requestGroupByRelationship(rel: string) {
+        this.groupNeighborsWithRelationship.emit({relationship: rel, node: this.selectedNodeIds[0]});
+    }
+
+    requestEdgeRemoval() {
+        this.removeEdges.emit(this.selectedEdgeIds);
+        this.beginContextMenuFade();
+    }
+
+    requestNodeRemoval() {
+        this.removeNodes.emit(this.selectedNodeIds);
+        this.beginContextMenuFade();
+    }
+
+    requestNeighborSelection() {
+        if (this.selectedNodeIds.length !== 1) {
+            alert('Can only select neighbor nodes if exactly one node is selected!');
+            return;
+        }
+        this.selectNeighbors.emit(this.selectedNodeIds[0]);
+        this.beginContextMenuFade();
+    }
 }
