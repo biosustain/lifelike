@@ -15,6 +15,7 @@ import { EffectsModule } from '@ngrx/effects';
 import { httpInterceptorProviders } from '../http-interceptors';
 
 import { AngularMaterialModule } from './angular-material.module';
+import { SharedDirectivesModule } from './directives/shareddirectives.module';
 
 import { LegendComponent } from './components/legend/legend.component';
 import { TooltipComponent } from './components/tooltip/tooltip.component';
@@ -36,6 +37,7 @@ const components = [
         HttpClientModule,
         ReactiveFormsModule,
         RouterModule,
+        SharedDirectivesModule,
 
         EffectsModule.forFeature([SharedNgrxEffects]),
     ],
@@ -52,7 +54,7 @@ const components = [
         HttpClientModule,
         ReactiveFormsModule,
         RouterModule,
-
+        SharedDirectivesModule ,
         // Components
         ...components,
     ],
