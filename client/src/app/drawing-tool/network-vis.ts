@@ -56,11 +56,12 @@ export class NetworkVis {
      const group_styling = {};
      for (let n_t of node_templates) {
        group_styling[n_t.label] = {
+         borderWidth: 0,
          color: {
-           background: '#fff'
+           background: n_t.color
          },
          font: {
-           color: n_t.color
+           color: '#fff'
          }
        }
      }
@@ -263,5 +264,20 @@ export class NetworkVis {
       }),
       "edges": this.vis_edges.get()
     }
+  }
+
+  /**
+   * Draw network graph from JSON representation
+   */
+  import(graph: {nodes: any[], edges: any[]}) {
+    this.vis_nodes = new vis.DataSet(graph.nodes);
+    this.vis_edges = new vis.DataSet(graph.edges);
+
+    this.network.setData({
+      nodes: this.vis_nodes,
+      edges: this.vis_edges
+    });
+
+    this.network.redraw()
   }
 }
