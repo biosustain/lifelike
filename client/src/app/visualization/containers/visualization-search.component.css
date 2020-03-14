@@ -1,0 +1,37 @@
+.result-display-name {
+  font-size: 16px;
+}
+.result-metadata {
+  color: rgba(128, 128, 128, 0.596);
+}
+.result-text {
+  color: white;
+  font-weight: bold;
+  margin: 10px;
+}
+.vis-search-result,
+.vis-search-result-gene,
+.vis-search-result-disease,
+.vis-search-result-taxonomy,
+.vis-search-result-chemical {
+  display: inline;
+}
+.vis-search-result-gene {
+  background: #78cdd7;
+}
+.vis-search-result-disease {
+  background: #8fa6cb;
+}
+.vis-search-result-taxonomy {
+  background: green;
+}
+.vis-search-result-chemical {
+  background: #cd5d67;
+}
+.vis-search-full-width {
+  width: 100%;
+}
+#vis-search-container {
+  margin: 10px 0px 0px 10px;
+  width: 95%;
+}

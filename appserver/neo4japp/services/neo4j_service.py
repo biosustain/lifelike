@@ -1,73 +1,32 @@
-import attr
+from typing import Dict, List, Optional, Union
 
-from typing import Dict, List, Optional
-
-from py2neo import NodeMatcher, RelationshipMatcher
-from werkzeug.datastructures import FileStorage
-
+from neo4japp.data_transfer_objects.visualization import (
+    ClusteredNode,
+    DuplicateNodeEdgePair,
+    DuplicateVisEdge,
+    EdgeSnippetCount,
+    GetClusterGraphDataResult,
+    GetReferenceTableDataResult,
+    GetSnippetCountsFromEdgesResult,
+    GetSnippetsFromEdgeResult,
+    ReferenceTableRow,
+    VisEdge,
+)
 from neo4japp.services.common import BaseDao
 from neo4japp.models import GraphNode, GraphRelationship
 from neo4japp.constants import *
-from neo4japp.factory import cache
-from neo4japp.util import CamelDictMixin, compute_hash
 from neo4japp.services.common import BaseDao
 
-from openpyxl import load_workbook
-from openpyxl import Workbook
-from openpyxl.worksheet.worksheet import Worksheet
 from py2neo import (
     Graph,
     Node,
     Transaction,
     NodeMatch,
+    NodeMatcher,
     Relationship,
     RelationshipMatch,
     RelationshipMatcher,
 )
-
-
-@attr.s(frozen=True)
-class FileNameAndSheets(CamelDictMixin):
-    @attr.s(frozen=True)
-    class SheetNameAndColumnNames(CamelDictMixin):
-        sheet_name: str = attr.ib()
-        # key is column name, value is column index
-        sheet_column_names: List[Dict[str, int]] = attr.ib()
-
-    sheets: List[SheetNameAndColumnNames] = attr.ib()
-    filename: str = attr.ib()
-
-
-@attr.s(frozen=True)
-class Neo4jColumnMapping(CamelDictMixin):
-    """The int values are the column index
-    from the excel files."""
-    @attr.s(frozen=True)
-    class Neo4jNodeMapping(CamelDictMixin):
-        node_type: str = attr.ib()
-        node_properties: Dict[int, str] = attr.ib()
-        mapped_node_type: str = attr.ib()
-        mapped_node_property: str = attr.ib()
-        # this will be used to match a node
-        unique_property: str = attr.ib()
-
-    @attr.s(frozen=True)
-    class Neo4jRelationshipMapping(CamelDictMixin):
-        @attr.s(frozen=True)
-        class ExistingGraphDBMapping(CamelDictMixin):
-            mapped_node_type: str = attr.ib()
-            mapped_node_property: Dict[int, str] = attr.ib()
-
-        edge: str = attr.ib()
-        edge_property: Dict[int, str] = attr.ib()
-        source_node: ExistingGraphDBMapping = attr.ib()
-        target_node: ExistingGraphDBMapping = attr.ib()
-
-    file_name: str = attr.ib()
-    sheet_name: str = attr.ib()
-    node: Optional[Neo4jNodeMapping] = attr.ib(default=None)
-    relationship: Optional[Neo4jRelationshipMapping] = attr.ib(default=None)
-
 
 class Neo4JService(BaseDao):
     def __init__(self, graph):
@@ -98,6 +57,7 @@ class Neo4JService(BaseDao):
                 rel_dict[graph_rel.id] = graph_rel
         return dict(nodes=[n.to_dict() for n in node_dict.values()],
                     edges=[r.to_dict() for r in rel_dict.values()])
+
 
     def get_organisms(self):
         nodes = list(NodeMatcher(self.graph).match(NODE_SPECIES))
@@ -139,14 +99,139 @@ class Neo4JService(BaseDao):
         query = self.get_expand_query(node_id, limit)
         return self._query_neo4j(query)
 
-    def get_association_sentences(self, node_id: str, description: str, entry_text: str):
-        query = self.get_association_sentences_query(node_id, description, entry_text)
+    def get_snippets_from_edge(self, edge: VisEdge):
+        query = self.get_snippets_from_edge_query(edge.from_, edge.to, edge.label)
+
         data = self.graph.run(query).data()
-        return [result['references'] for result in data]
+        return GetSnippetsFromEdgeResult(
+            from_node_id=edge.from_,
+            to_node_id=edge.to,
+            association=edge.label,
+            references=[result['references'] for result in data]
+        )
+
+    def get_snippets_from_duplicate_edge(self, edge: DuplicateVisEdge):
+        query = self.get_snippets_from_edge_query(edge.original_from, edge.original_to, edge.label)
+
+        data = self.graph.run(query).data()
+        return GetSnippetsFromEdgeResult(
+            from_node_id=edge.from_,
+            to_node_id=edge.to,
+            association=edge.label,
+            references=[result['references'] for result in data]
+        )
+
+    def get_snippet_counts_from_edges(self, edges: List[VisEdge]):
+        edge_snippet_counts: List[EdgeSnippetCount] = []
+        for edge in edges:
+            query = self.get_association_snippet_count_query(edge.from_, edge.to, edge.label)
+            count = self.graph.run(query).evaluate()
+            edge_snippet_counts.append(EdgeSnippetCount(
+                edge=edge,
+                count=count,
+            ))
+        return GetSnippetCountsFromEdgesResult(
+            edge_snippet_counts=edge_snippet_counts,
+        )
+
+    def get_reference_table_data(self, node_edge_pairs: List[DuplicateNodeEdgePair]):
+        reference_table_rows: List[ReferenceTableRow] = []
+        for pair in node_edge_pairs:
+            node = pair.node
+            edge = pair.edge
+
+            query = self.get_association_snippet_count_query(edge.original_from, edge.original_to, edge.label)
+            count = self.graph.run(query).evaluate()
+            reference_table_rows.append(ReferenceTableRow(
+                node_display_name=node.display_name,
+                snippet_count=count,
+                edge=edge,
+            ))
+        return GetReferenceTableDataResult(
+            reference_table_rows=reference_table_rows
+        )
+
+    def get_cluster_graph_data(self, clustered_nodes: List[ClusteredNode]):
+        results: Dict[int, Dict[str, int]] = dict()
+
+        for node in clustered_nodes:
+            for edge in node.edges:
+                query = self.get_association_snippet_count_query(edge.original_from, edge.original_to, edge.label)
+                count = self.graph.run(query).evaluate()
+
+                if (results.get(node.node_id, None) is not None):
+                    results[node.node_id][edge.label] = count
+                else:
+                    results[node.node_id] = {edge.label: count}
+
+        return GetClusterGraphDataResult(
+            results=results,
+        )
 
     def load_reaction_graph(self, biocyc_id: str):
         query = self.get_reaction_query(biocyc_id)
         return self._query_neo4j(query)
+
+    def query_batch(self, data_query: str):
+        """ query batch uses a custom query language (one we make up here)
+        for returning a list of nodes and their relationships.
+        It also works on single nodes with no relationship.
+
+        Example:
+            If we wanted all relationships between
+            the node pairs (node1, node2) and
+            (node3, node4), we will write the
+            query as follows:
+
+                node1,node2&node3,node4
+        """
+
+        data_query = data_query.split('&')
+
+        if len(data_query) == 1 and data_query[0].find(',') == -1:
+            cypher_query = '''
+            MATCH (n) WHERE ID(n)={nid} RETURN n AS nodeA
+            '''.format(nid=int(data_query.pop()))
+            node = self.graph.evaluate(cypher_query)
+            graph_node = GraphNode.from_py2neo(
+                node,
+                display_fn=lambda x: x.get(DISPLAY_NAME_MAP[next(iter(node.labels), set())]),
+            )
+            return dict(nodes=[graph_node.to_dict()], edges=[])
+        else:
+            data = [x.split(',') for x in data_query]
+            query_generator = [
+                'MATCH (nodeA)-[relationship]->(nodeB) WHERE id(nodeA)={from_} '
+                'AND id(nodeB)={to} RETURN *'.format(
+                    from_=int(from_),
+                    to=int(to),
+                ) for from_, to in data]
+            cypher_query = ' UNION '.join(query_generator)
+            records = self.graph.run(cypher_query).data()
+            if not records:
+                return None
+            node_dict = dict()
+            rel_dict = dict()
+            for row in records:
+                nodeA = row['nodeA']
+                nodeB = row['nodeB']
+                relationship = row['relationship']
+                graph_nodeA = GraphNode.from_py2neo(
+                    nodeA,
+                    display_fn=lambda x: x.get(DISPLAY_NAME_MAP[next(iter(nodeA.labels), set())])
+                )
+                graph_nodeB = GraphNode.from_py2neo(
+                    nodeB,
+                    display_fn=lambda x: x.get(DISPLAY_NAME_MAP[next(iter(nodeB.labels), set())])
+                )
+                rel = GraphRelationship.from_py2neo(relationship)
+                node_dict[graph_nodeA.id] = graph_nodeA
+                node_dict[graph_nodeB.id] = graph_nodeB
+                rel_dict[rel.id] = rel
+            return dict(
+                nodes=[n.to_dict() for n in node_dict.values()],
+                edges=[r.to_dict() for r in rel_dict.values()],
+            )
 
     def get_graph(self, req):
         # TODO: Make this filter non-static
@@ -168,6 +253,11 @@ class Neo4JService(BaseDao):
         """Get all labels from database."""
         labels = self.graph.run('call db.labels()').data()
         return [label['label'] for label in labels]
+
+    def get_db_relationship_types(self) -> List[str]:
+        """Get all relationship types from database."""
+        relationship_types = self.graph.run('call db.relationshipTypes()').data()
+        return [rt['relationshipType'] for rt in relationship_types]
 
     def get_node_properties(self, node_label) -> Dict[str, List[str]]:
         """Get all properties of a label."""
@@ -263,15 +353,22 @@ class Neo4JService(BaseDao):
         """.format(node_id, limit)
         return query
 
-    # TODO: Need to make a solid version of this query, not sure the current
-    # iteration will work 100% of the time
-    def get_association_sentences_query(self, node_id: str, description: str, entry_text: str):
+    def get_snippets_from_edge_query(self, from_node: int, to_node: int, association: str):
         query = """
-            MATCH (n)-[:HAS_ASSOCIATION]-(s:Association)-[:HAS_REF]-(r:Reference)
-            WHERE ID(n) = {} AND s.description='{}' AND r.entry2_text=~'.*{}.*'
-            WITH r
-            return r as references
-        """.format(node_id, description, entry_text)
+            MATCH (f)-[:HAS_ASSOCIATION]->(a:Association)-[:HAS_ASSOCIATION]->(t)
+            WHERE ID(f)={} AND ID(t)={} AND a.description='{}'
+            WITH a AS association MATCH (association)-[:HAS_REF]-(r:Reference)
+            RETURN r AS references
+        """.format(from_node, to_node, association)
+        return query
+
+    def get_association_snippet_count_query(self, from_node: int, to_node: int, association: str):
+        query = """
+            MATCH (f)-[:HAS_ASSOCIATION]->(a:Association)-[:HAS_ASSOCIATION]->(t)
+            WHERE ID(f)={} AND ID(t)={} AND a.description='{}'
+            WITH a AS association MATCH (association)-[:HAS_REF]-(r:Reference)
+            RETURN COUNT(r) as count
+        """.format(from_node, to_node, association)
         return query
 
     def get_reaction_query(self, biocyc_id: str):
@@ -284,105 +381,6 @@ class Neo4JService(BaseDao):
         """.format(biocyc_id)
         print(query)
         return query
-
-    def parse_file(self, f: FileStorage) -> Workbook:
-        workbook = load_workbook(f)
-        print(f'caching {f.filename} as key')
-        cache.set(f.filename, workbook)
-        return workbook
-
-    def get_workbook_sheet_names_and_columns(
-        self,
-        filename: str,
-        workbook: Workbook,
-    ) -> FileNameAndSheets:
-        sheet_list = []
-        for i in range(0, len(workbook.sheetnames)):
-            workbook.active = i
-            current_ws: Worksheet = workbook.active
-
-            sheet_col_names = []
-            # loop through just the first row
-            for i, cols in enumerate(current_ws.iter_cols(
-                max_row=1,
-                max_col=len(list(current_ws.columns)),
-                values_only=True,
-            )):
-                if cols[0]:
-                    sheet_col_names.append({cols[0]: i})
-
-            sheet_list.append(FileNameAndSheets.SheetNameAndColumnNames(
-                sheet_name=current_ws.title,
-                sheet_column_names=sheet_col_names,
-            ))
-        sheets = FileNameAndSheets(sheets=sheet_list, filename=filename)
-        return sheets
-
-    def create_node_mapping(
-        self,
-        column_mappings: Neo4jColumnMapping,
-    ) -> dict:
-        def create_node(unique_prop, row, props, node_type):
-            node = {}  # type: ignore
-            node_props = {}
-
-            # value becomes the key representing property label
-            # key is used to get the value in excel
-            # e.g { prop_label_in_db: cell_value_in_excel_file }
-            for k, v in props.items():
-                if type(row[k]) is str:
-                    node_props[v] = row[k].strip().lstrip()
-                else:
-                    node_props[v] = row[k]
-
-            node['data'] = node_props
-            node['label'] = node_type  # type: ignore
-            node['unique_property'] = {unique_prop: node_props[unique_prop]}
-            node['hash'] = compute_hash(node)  # type: ignore
-            return node
-
-        nodes = []
-
-        col_idx_node_prop = {}
-
-        # TODO: why is the key changing to str?
-        for k, v in column_mappings.node.node_properties.items():
-            col_idx_node_prop[int(k)] = v
-
-        workbook = cache.get(column_mappings.file_name)
-
-        for i, name in enumerate(workbook.sheetnames):
-            if name == column_mappings.sheet_name:
-                workbook.active = i
-                break
-
-        current_ws = workbook.active
-
-        # unmerge any cells first
-        # and assign the value to them
-        for group in current_ws.merged_cell_ranges:
-            min_col, min_row, max_col, max_row = group.bounds
-            value_to_assign = current_ws.cell(row=min_row, column=min_col).value
-            current_ws.unmerge_cells(str(group))
-            for row in current_ws.iter_rows(min_col=min_col, min_row=min_row, max_col=max_col, max_row=max_row):
-                for cell in row:
-                    cell.value = value_to_assign
-
-        for row in current_ws.iter_rows(
-            min_row=2,
-            max_row=len(list(current_ws.rows)),
-            max_col=len(list(current_ws.columns)),
-            values_only=True,
-        ):
-            node_type = column_mappings.node.node_type
-            if not all(cell is None for cell in row):
-                nodes.append(create_node(
-                    unique_prop=column_mappings.node.unique_property,
-                    row=row,
-                    props=col_idx_node_prop,
-                    node_type=node_type),
-                )
-        return {'nodes': nodes}
 
     def search_for_relationship_with_label_and_properties(
         self,
@@ -450,139 +448,3 @@ class Neo4JService(BaseDao):
             new_node = Node(label, **props)
             tx.create(new_node)
             return new_node
-
-    def save_node_to_neo4j(self, column_mappings: Neo4jColumnMapping) -> None:
-        print(column_mappings)
-        node_mapping = self.create_node_mapping(column_mappings)
-
-        tx = self.graph.begin()
-        node_hash_map = dict()
-
-        # import IPython; IPython.embed()
-
-        # create the experimental nodes
-        # TODO: create index on unique_property
-        tx.run(
-            'unwind {batch} as row ' \
-            'call apoc.merge.node([row.label], row.unique_property, row.data, row.data) ' \
-            'yield node ' \
-            'return count(*)',
-            {'batch': node_mapping['nodes']}
-        )
-
-        # import IPython; IPython.embed()
-
-        print('Done creating nodes')
-
-        # create relationship from experimental nodes
-        # to universal source nodes
-        for row in node_mapping['nodes']:
-            filter_label = next(iter(row['unique_property']))
-            filter_prop = next(iter(row['unique_property'].values()))
-            row_label = row['label']
-
-            query = f'match (universal:`{column_mappings.node.mapped_node_type}` {{`{filter_label}`: "{filter_prop}"}}), '
-            query += f'(src:`{row_label}` {{`{filter_label}`: "{filter_prop}"}}) '
-            query += f'merge (src)-[:IS_A]->(universal)'
-            tx.run(query)
-
-        # import IPython; IPython.embed()
-
-        print('Done creating relationship of new nodes to existing KG')
-        tx.commit()
-
-        # # create index on all properties
-        # # have to do this here because can't have same transaction
-        # # TODO: Jira KG-51
-        # for row in node_mapping['nodes']:
-        #     label = row['label']
-        #     for k, _ in row['data'].items():
-        #         tx.run(f'create index on :{label}({k})')
-        if column_mappings.relationship.edge:
-            self.save_relationship_to_neo4j(column_mappings)
-        print('Done')
-
-    def save_relationship_to_neo4j(self, column_mappings: Neo4jColumnMapping) -> None:
-        workbook = cache.get(column_mappings.file_name)
-
-        col_idx_src_node_prop = {}
-        col_idx_tgt_node_prop = {}
-        col_idx_edge_prop = {}
-
-        for k, v in column_mappings.relationship.source_node.mapped_node_property.items():
-            col_idx_src_node_prop[int(k)] = v
-
-        for k, v in column_mappings.relationship.target_node.mapped_node_property.items():
-            col_idx_tgt_node_prop[int(k)] = v
-
-        for k, v in column_mappings.relationship.edge_property.items():
-            col_idx_edge_prop[int(k)] = v
-
-        for i, name in enumerate(workbook.sheetnames):
-            if name == column_mappings.sheet_name:
-                workbook.active = i
-                break
-
-        current_ws = workbook.active
-
-        # unmerge any cells first
-        # and assign the value to them
-        for group in current_ws.merged_cell_ranges:
-            min_col, min_row, max_col, max_row = group.bounds
-            value_to_assign = current_ws.cell(row=min_row, column=min_col).value
-            current_ws.unmerge_cells(str(group))
-            for row in current_ws.iter_rows(min_col=min_col, min_row=min_row, max_col=max_col, max_row=max_row):
-                for cell in row:
-                    cell.value = value_to_assign
-
-        tx = self.graph.begin()
-
-        for row in current_ws.iter_rows(
-            min_row=2,
-            max_row=len(list(current_ws.rows)),
-            max_col=len(list(current_ws.columns)),
-            values_only=True,
-        ):
-            if not all(cell is None for cell in row):
-                # TODO: handle null otherwise strip() and lstrip() fails
-                src_label = column_mappings.relationship.source_node.mapped_node_type
-                # try:
-                src_prop_label = next(iter(col_idx_src_node_prop.values()))
-                src_prop_value = row[next(iter(col_idx_src_node_prop))]
-                if type(src_prop_value) is str:
-                    src_prop_value = f'"{src_prop_value.strip().lstrip()}"'
-
-                tgt_label = column_mappings.relationship.target_node.mapped_node_type
-                tgt_prop_label = next(iter(col_idx_tgt_node_prop.values()))
-                tgt_prop_value = row[next(iter(col_idx_tgt_node_prop))]
-                if type(tgt_prop_value) is str:
-                    tgt_prop_value = f'"{tgt_prop_value.strip().lstrip()}"'
-
-                # TODO: instead of using column header
-                # use column values for edge
-                edge_label = column_mappings.relationship.edge
-
-                query = f'match (s:`{src_label}` {{`{src_prop_label}`: {src_prop_value}}}), '
-                query += f'(t:`{tgt_label}` {{`{tgt_prop_label}`: {tgt_prop_value}}}) '
-
-                query += f'merge (s)-[:`{edge_label}`'
-                if col_idx_edge_prop:
-                    query += f'{{'
-                    for k, v in col_idx_edge_prop.items():
-                        prop_value = row[k]
-                        if type(prop_value) is int:
-                            query += f'`{v}`: {prop_value}, '
-                        else:
-                            query += f'`{v}`: "{prop_value}", '
-                    # remove the comma at the end
-                    query = query[:-2] + f'}}'
-                query += f']->(t)'
-                print(query)
-                tx.run(query)
-                # except AttributeError:
-                    # if this occur then the cell in the row
-                    # was empty so strip() and lstrip() failed
-                    # skip and don't create the relationship
-                    # continue
-        tx.commit()
-        print('Done creating relationships between new nodes')

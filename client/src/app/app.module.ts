@@ -7,8 +7,9 @@ import { RootStoreModule } from 'app/***ARANGO_USERNAME***-store';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { ToolbarMenuModule } from 'toolbar-menu';
-import { Neo4jModule } from './upload/neo4j.module';
+import { UserFileImportModule } from './user-file-import/user-file-import.module';
 import { VisualizationModule } from './visualization/visualization.module';
+import { SearchModule } from './search/search.module';
 import { DrawingToolModule } from './drawing-tool/drawing-tool.module';
 
 @NgModule({
@@ -19,11 +20,12 @@ import { DrawingToolModule } from './drawing-tool/drawing-tool.module';
     BrowserModule,
     AppRoutingModule,
     HttpClientModule,
-    Neo4jModule,
+    UserFileImportModule,
     VisualizationModule,
     // ngrx
     RootStoreModule,
     VisualizationModule,
+    SearchModule,
     ToolbarMenuModule,
     DrawingToolModule
   ],
