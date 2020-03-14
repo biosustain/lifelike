@@ -61,10 +61,15 @@ styleUrls: ['./drawing-tool.component.scss']
 export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
   @HostListener('window:beforeunload')
   canDeactivate(): Observable<boolean> | boolean {
-
-
     return this.saveState ? true : confirm('WARNING: You have unsaved changes. Press Cancel to go back and save these changes, or OK to lose these changes.');
   }
+  paletteMode: number = 1;
+
+  /** The current graph representation on canvas */
+  currentGraphState: {edges: any[], nodes: any[]} = null;
+
+  undoStack: {cmd: string, graph: {edges: any[], nodes: any[]}}[] = [];
+  redoStack: {cmd: string, graph: {edges: any[], nodes: any[]}}[] = [];
 
   /** Obj representation of knowledge model with metadata */
   project: Project = null;
@@ -72,9 +77,6 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
   visjsNetworkGraph = null;
   /** Whether or not graph is saved from modification */
   saveState: boolean = true;
-
-  /** The current graph representation on canvas */
-  currentGraphState: Graph = null;
 
   /** Render condition for dragging gesture of edge formation */
   addMode: boolean = false;
@@ -97,6 +99,8 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
     private _snackBar: MatSnackBar    
   ) {}
   ngOnInit() {
+    console.log(this);
+    
     // Listen for node addition from pdf-viewer
     this.pdfDataSubscription = 
       this.dataFlow.$pdfDataSource.subscribe(
@@ -312,20 +316,62 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
     this.dataFlow.pushNode2Canvas(null);
   }
 
+  undo() {
+    // Pop the action from undo stack
+    let undoAction = this.undoStack.pop();
+  
+    console.log(undoAction, 'undo')
+  
+    // Record the current state of graph into redo action
+    let redoAction = {
+      graph: Object.assign({}, this.visjsNetworkGraph.export()),
+      cmd: undoAction.cmd
+    }
+  
+    // Undo action
+    this.visjsNetworkGraph.import(
+      undoAction.graph
+    );
+  
+    // Push redo action into redo stack
+    this.redoStack.push(redoAction);
+  }
+  
+  redo() {
+    // Pop the action from redo stack
+    let redoAction = this.redoStack.pop();
+  
+    // Record the current state of graph into undo action
+    let undoAction = {
+      graph: Object.assign({}, this.visjsNetworkGraph.export()),
+      cmd: redoAction.cmd
+    }
+  
+    // Redo action
+    this.visjsNetworkGraph.import(
+      redoAction.graph
+    );
+  
+    // Push undo action into undo stack
+    this.undoStack.push(undoAction);
+  }
+
   /**
    * Process all modification cmd to the graph representation
    * @param cmd The cmd to execute and push to stack
    * @param push Whether or not to push to undo stack
    */
-  recordCommand(cmd: Command, push=false) {
+  recordCommand(cmd: Command) {
     this.saveState = false;
-
-    if (push) {
-      // push to undo stack
-      // empty redo stack
-    }
-
-    console.log(cmd);
+  
+    this.currentGraphState = this.visjsNetworkGraph.export();
+    
+    this.undoStack.push({
+      graph: Object.assign({}, this.currentGraphState),
+      cmd: cmd.action
+    });
+    this.redoStack = [];
+    
 
     switch(cmd.action) {
       case 'add node':
@@ -393,6 +439,8 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
    * @param event 
    */
   drop(event: CdkDragDrop<any>) {
+    console.log(event);
+
     const node_type = event.item.element.nativeElement.id;
     const label = `${node_type}-${makeid()}`;
 
@@ -408,10 +456,10 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
         .getBoundingClientRect() as DOMRect;
     const x = 
       node_coord.x - 
-      container_coord.x + 64 +
+      container_coord.x +
       event.distance.x;
     const y =
-      node_coord.y + event.distance.y;
+      node_coord.y + event.distance.y + 16;
 
     // Convert DOM coordinate to canvas coordinate
     const coord = this.visjsNetworkGraph.network.DOMtoCanvas({x: x, y: y});
@@ -490,5 +538,37 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
       color: node_template['color'],
       background: node_template['background']
     }
+  }
+
+  changeSize() {
+    switch (this.paletteMode) {
+      case 0:
+        $('#palette-panel').animate({
+          height: '20rem'
+        }, 500, () => {
+          this.paletteMode = 1;
+        });
+        break;        
+      case 1:
+        $('#palette-panel').animate({
+          height: '36rem'
+        }, 500, () => {
+          this.paletteMode = 2;
+        });         
+        break;
+      case 2:
+        $('#palette-panel').animate({
+          height: '52px'
+        }, 500, () => {
+          this.paletteMode = 0;
+        });    
+        break;
+      default:
+        break;
+    } 
+  }
+
+  fitAll() {
+    this.visjsNetworkGraph.zoom2All();
   }
 }

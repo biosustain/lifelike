@@ -1,45 +1,55 @@
-<!-- Container -->
 <div 
   cdkDropListGroup
-  id='drawing-tool-view-container'
-  class='w-100 relative'
-  style='overflow-y: hidden;'>
-  <!-- Canvas -->
+  id='drawing-tool-view-container'>
   <div
-    id='canvas'
-    class='w-100 fl vh-100'
+    cdkDropList
     (cdkDropListDropped)='drop($event)'
-    cdkDropList>
+    id='canvas'>
   </div>
-  <!-- Save Button Overlay -->
-  <button
-    (click)='save()'
-    [color]='saveState ? "primary" : "warn"'
-    mat-fab class='save-fab-overlay'>
-    <i class="material-icons">
-      save
-    </i>
-  </button>
-  <!-- Title Overlay -->
-  <h1 id='dt-title-overlay'>{{project?.label}}</h1>
-  <!-- Palette Overlay -->
-  <div 
-    id='palette'
-    class='overlay ma4'
-    cdkDropList>
-    <!-- Template Nodes -->
-    <div
-      *ngFor='let n_t of nodeTemplates'
-      cdkDrag
-      [id]='n_t.label'
-      [ngStyle]='nodeStyleCompute(n_t)'
-      class='node-pill'>
-      {{n_t.label | titlecase}}
+  <!-- Tool UI -->
+  <div id='tool-panel' class='shadow-4 ma3'>
+    <mat-icon
+      (click)='fitAll()'>
+      zoom_out_map
+    </mat-icon>
+    <mat-icon>
+      undo
+    </mat-icon>
+    <mat-icon>
+      undo
+    </mat-icon>
+  </div>
+  <!-- Palette UI -->
+  <div id='palette-panel' class='shadow-4 ma3'>
+    <div class='nav-bar'>
+      <mat-icon
+      (click)='undo()'
+      [ngClass]='{"inactive": !undoStack.length}'>
+        undo
+      </mat-icon>
+      <mat-icon
+        (click)='redo()'
+        [ngClass]='{"inactive": !redoStack.length}'>
+        redo
+      </mat-icon>
+      <mat-icon (click)='changeSize()' class='fr'>menu</mat-icon>
+    </div>
+    <div 
+      cdkDropList
+      class='node-palette'>
+      <div 
+        *ngFor='let n_t of nodeTemplates'
+        cdkDrag
+        [id]='n_t.label'
+        class='node-template'>
+        <div 
+          class='node-square shadow-4'
+          [ngStyle]="{'background': n_t.color}">
+        </div>
+        <p [ngStyle]="{'color': n_t.color}">
+          {{n_t.label | titlecase}}
+        </p>
+      </div>
     </div>
   </div>
-  <!-- Node Sidebar Menu -->
-  <app-side-bar-ui
-    style='overflow-y: scroll;'
-    id='side-bar-ui'>
-  </app-side-bar-ui>
 </div>

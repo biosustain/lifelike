@@ -1,64 +1,154 @@
-/**
- * Sidebar UI
- */
-#side-bar-ui {
-  right: 0;
-  top: 0;
+@mixin full {
+  width: 100%;
+  height: 100vh;
+  overflow-y: hidden;
+}
+@mixin overlay {
   position: absolute;
   z-index: 2;
-  width: 0;
-  float: right;
-  height: 100%;
-  background: rgb(50, 50, 57);
-  color: white;
-  ;
+  border-radius: 0.5rem 0.5rem 0.5rem 0.5rem;
+  background: #fff;
+  overflow-y: auto;
 }
-
-/**
- * Canvas UI
- */
-#canvas {
-  background-color: rgb(251, 255, 255);
-}
-
-/**
-  * Palette UI
-  */
-.node-pill {
-  border-radius: 9999px;
-  text-align: center;
-
-  // mv2
-  margin-top: .5rem;
-  margin-bottom: .5rem;
-
-  padding: 0.5rem 2rem;
-}
-.node-pill:hover {
-  cursor: grab;
+@mixin noselect {
+  -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+     -khtml-user-select: none; /* Konqueror HTML */
+       -moz-user-select: none; /* Old versions of Firefox */
+        -ms-user-select: none; /* Internet Explorer/Edge */
+            user-select: none; /* Non-prefixed version, currently
+                                  supported by Chrome, Opera and Firefox */
 }
 
 .cdk-drag-preview {
-  padding: 0.5rem 0.5rem !important;
+    margin: 1rem 1rem 0rem 1rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    cursor: grab;
+
+    .node-square {
+        background: #3797DB;
+        width: 4rem;
+        height: 4rem;
+        border-radius: 8px;
+    }
+    p {
+        font-size: .80rem;
+        color: #3797DB;
+        text-align: center;
+    }
 }
 
-.overlay {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  z-index: 2;
-}
-#dt-title-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  z-index: 2;
-  margin: 2rem;
-}
-.save-fab-overlay {
-  position: absolute;
-  bottom: 0;
-  right: 0;
-  z-index: 3;
-  margin: 2rem;  
+#drawing-tool-view-container {
+  position: relative;
+
+  #canvas {
+      @include full;
+
+      background: #F2F2F2;
+  }
+
+  #tool-panel {
+    @include overlay;
+    top: 0;
+    left: 0;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    mat-icon {
+      font-size: 30px;
+      width: 30px;
+      height: 30px;
+      margin: 0.75rem;
+      cursor: pointer;
+    }
+  }
+
+  #info-panel::-webkit-scrollbar {
+      display: none;
+  }
+  #info-panel {
+      @include overlay;
+      width: 16rem;
+      height: 20rem;
+      top: 0;
+      right: 0;
+
+      button.delete {
+          width: 100%;
+          margin-top: 0.5rem;
+          margin-bottom: 0.5rem;
+          margin-left: auto;
+          margin-right: auto;
+      }
+  }
+  #palette-panel::-webkit-scrollbar {
+      display: none;
+  }
+  #palette-panel {
+      @include overlay;
+      width: 16rem;
+      height: 20rem;
+      bottom: 0;
+      left: 0;
+
+      .nav-bar {
+          border-radius: 0.5rem 0.5rem 0rem 0rem;
+          background: #3797DB;
+          position: sticky;
+          top: 0;
+          width: 16rem;
+      }
+
+      mat-icon {
+          margin: 0.75rem;
+          width: 28px;
+          height: 28px;
+          color: white;
+          cursor: pointer;
+          @include noselect;
+      }
+      mat-icon.inactive {
+        color: rgba(255, 255, 255, 0.60);
+      }
+
+      .node-palette {
+          width: 100%;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          align-content: center;
+          flex-wrap: wrap;
+
+          margin: 1rem 0;
+
+          .node-template {
+              margin: 1rem 1rem 0rem 1rem;
+              display: flex;
+              flex-direction: column;
+              justify-content: center;
+              align-items: center;
+
+              cursor: grab;
+
+              .node-square {
+                  background: #3797DB;
+                  width: 4rem;
+                  height: 4rem;
+                  border-radius: 8px;
+              }
+              p {
+                  font-size: .80rem;
+                  color: #3797DB;
+                  text-align: center;
+              }
+          }
+      }
+  }
 }
