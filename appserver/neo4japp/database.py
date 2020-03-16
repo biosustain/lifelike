@@ -16,6 +16,7 @@ db = SQLAlchemy()
 ma = Marshmallow()
 migrate = Migrate()
 
+
 def get_neo4j_service_dao():
     if 'neo4j_dao' not in g:
         from neo4japp.services import Neo4JService
