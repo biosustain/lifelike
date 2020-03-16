@@ -10,6 +10,7 @@ bp = Blueprint('auth', __name__, url_prefix='/auth')
 
 auth = HTTPTokenAuth(scheme='Token')
 
+
 @auth.verify_token
 def verify_token(token):
     """ Verify JTW """
@@ -31,6 +32,7 @@ def verify_token(token):
     except jwt.exceptions.InvalidTokenError:
         return False
 
+
 def pullUserFromAuthHead():
     """
         Return user object from jwt in
@@ -48,9 +50,10 @@ def pullUserFromAuthHead():
     )['sub']
 
     # Pull user by email
-    user = AppUser.query.filter_by(email=email).first_or_404()
+    user = AppUser.query_by_email(email).first_or_404()
 
     return user
+
 
 @bp.route('/refresh', methods=['POST'])
 def refresh():
