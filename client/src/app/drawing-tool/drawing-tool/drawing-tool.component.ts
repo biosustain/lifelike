@@ -53,6 +53,11 @@ interface Command {
   }
 }
 
+export interface Action {
+  cmd: string;
+  graph: Graph;
+}
+
 @Component({
 selector: 'app-drawing-tool',
 templateUrl: './drawing-tool.component.html',
@@ -63,13 +68,12 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
   canDeactivate(): Observable<boolean> | boolean {
     return this.saveState ? true : confirm('WARNING: You have unsaved changes. Press Cancel to go back and save these changes, or OK to lose these changes.');
   }
-  paletteMode: number = 1;
 
   /** The current graph representation on canvas */
   currentGraphState: {edges: any[], nodes: any[]} = null;
 
-  undoStack: {cmd: string, graph: {edges: any[], nodes: any[]}}[] = [];
-  redoStack: {cmd: string, graph: {edges: any[], nodes: any[]}}[] = [];
+  undoStack: Action[] = [];
+  redoStack: Action[] = [];
 
   /** Obj representation of knowledge model with metadata */
   project: Project = null;
@@ -538,34 +542,6 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
       color: node_template['color'],
       background: node_template['background']
     }
-  }
-
-  changeSize() {
-    switch (this.paletteMode) {
-      case 0:
-        $('#palette-panel').animate({
-          height: '20rem'
-        }, 500, () => {
-          this.paletteMode = 1;
-        });
-        break;        
-      case 1:
-        $('#palette-panel').animate({
-          height: '36rem'
-        }, 500, () => {
-          this.paletteMode = 2;
-        });         
-        break;
-      case 2:
-        $('#palette-panel').animate({
-          height: '52px'
-        }, 500, () => {
-          this.paletteMode = 0;
-        });    
-        break;
-      default:
-        break;
-    } 
   }
 
   fitAll() {

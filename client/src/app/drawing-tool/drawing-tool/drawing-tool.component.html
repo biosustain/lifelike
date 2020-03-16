@@ -20,36 +20,11 @@
     </mat-icon>
   </div>
   <!-- Palette UI -->
-  <div id='palette-panel' class='shadow-4 ma3'>
-    <div class='nav-bar'>
-      <mat-icon
-      (click)='undo()'
-      [ngClass]='{"inactive": !undoStack.length}'>
-        undo
-      </mat-icon>
-      <mat-icon
-        (click)='redo()'
-        [ngClass]='{"inactive": !redoStack.length}'>
-        redo
-      </mat-icon>
-      <mat-icon (click)='changeSize()' class='fr'>menu</mat-icon>
-    </div>
-    <div 
-      cdkDropList
-      class='node-palette'>
-      <div 
-        *ngFor='let n_t of nodeTemplates'
-        cdkDrag
-        [id]='n_t.label'
-        class='node-template'>
-        <div 
-          class='node-square shadow-4'
-          [ngStyle]="{'background': n_t.color}">
-        </div>
-        <p [ngStyle]="{'color': n_t.color}">
-          {{n_t.label | titlecase}}
-        </p>
-      </div>
-    </div>
-  </div>
+  <app-palette
+    id='palette-panel'
+    [undoStack]='undoStack'
+    [redoStack]='redoStack'
+    (undo)='undo()'
+    (redo)='redo()'>
+  </app-palette>
 </div>
