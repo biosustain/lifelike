@@ -4,6 +4,18 @@ import { VisEdge, VisNode, DuplicateVisNode, DuplicateVisEdge } from './neo4j.in
 
 
 export interface AssociationSnippet {
+    reference: Reference;
+    publication: Publication;
+}
+
+export interface Publication {
+    journal: string;
+    title: string;
+    pmid: string;
+    pubYear: number;
+}
+
+export interface Reference {
     entry1Text: string;
     entry2Text: string;
     id: string;
@@ -36,7 +48,7 @@ export interface GetLabelsResult {
 }
 
 export interface GetSnippetsResult {
-    references: AssociationSnippet[];
+    snippets: AssociationSnippet[];
     fromNodeId: number;
     toNodeId: number;
     association: string;
@@ -83,7 +95,7 @@ export interface SidenavEdgeEntity extends SidenavEntity {
     to: VisNode;
     from: VisNode;
     association: string;
-    references: AssociationSnippet[];
+    snippets: AssociationSnippet[];
 }
 
 export interface SidenavClusterEntity extends SidenavEntity {

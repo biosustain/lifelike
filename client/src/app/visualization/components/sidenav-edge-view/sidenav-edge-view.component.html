@@ -31,7 +31,20 @@
 </ul>
 
 <div>Snippets:</div>
-<ul *ngIf="edgeEntity.references.length > 0; else noReferences">
-  <li *ngFor="let snippet of edgeEntity.references">{{ snippet.sentence }}</li>
-</ul>
-<ng-template #noReferences>No Association Snippets Found!</ng-template>
+
+<div *ngIf="edgeEntity.snippets.length > 0; else noSnippets">
+  <mat-expansion-panel *ngFor="let snippet of edgeEntity.snippets">
+    <mat-expansion-panel-header>
+      <mat-panel-title>
+        {{ snippet.publication.displayName }}
+      </mat-panel-title>
+      <mat-panel-description>
+        <i>{{ snippet.publication.data.journal }} ({{ snippet.publication.data.pubYear }})</i>
+      </mat-panel-description>
+    </mat-expansion-panel-header>
+
+    {{ snippet.reference.data.sentence }}
+
+  </mat-expansion-panel>
+</div>
+<ng-template #noSnippets>No Association Snippets Found!</ng-template>
