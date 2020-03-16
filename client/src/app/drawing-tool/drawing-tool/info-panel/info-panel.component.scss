@@ -1,0 +1,23 @@
+.nav-bar {
+    border-radius: 0.5rem 0.5rem 0rem 0rem;
+    position: sticky;
+    top: 0;
+    width: 16rem;
+    height: 52px;
+}
+
+mat-icon {
+    margin: 0.75rem;
+    width: 28px;
+    height: 28px;
+    color: #3797DB;
+    cursor: pointer;
+}
+
+button.delete {
+    width: 100%;
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+    margin-left: auto;
+    margin-right: auto;
+}
