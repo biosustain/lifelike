@@ -103,8 +103,6 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
     private _snackBar: MatSnackBar    
   ) {}
   ngOnInit() {
-    console.log(this);
-    
     // Listen for node addition from pdf-viewer
     this.pdfDataSubscription = 
       this.dataFlow.$pdfDataSource.subscribe(

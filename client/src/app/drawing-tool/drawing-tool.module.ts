@@ -51,6 +51,7 @@ import {
   PendingChangesGuard
 } from './guards';
 import { PaletteComponent } from './drawing-tool/palette/palette.component';
+import { InfoPanelComponent } from './drawing-tool/info-panel/info-panel.component';
 
 @NgModule({
   declarations: [
@@ -64,7 +65,8 @@ import { PaletteComponent } from './drawing-tool/palette/palette.component';
     LoginComponent,
     TruncatePipe,
     FriendlyDateStrPipe,
-    PaletteComponent
+    PaletteComponent,
+    InfoPanelComponent
   ],
   entryComponents: [
     CreateProjectDialogComponent,

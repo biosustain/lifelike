@@ -56,18 +56,13 @@
   #info-panel {
       @include overlay;
       width: 16rem;
-      height: 20rem;
+      height: 52px;
       top: 0;
       right: 0;
 
-      button.delete {
-          width: 100%;
-          margin-top: 0.5rem;
-          margin-bottom: 0.5rem;
-          margin-left: auto;
-          margin-right: auto;
-      }
+      background-color: #fff;
   }
+
   #palette-panel::-webkit-scrollbar {
       display: none;
   }
