@@ -18,12 +18,14 @@ import { AngularMaterialModule } from './angular-material.module';
 import { SharedDirectivesModule } from './directives/shareddirectives.module';
 
 import { LegendComponent } from './components/legend/legend.component';
+import { NodeRelationshipComponent } from './components/node-relationship-display/node-relationship-display.component';
 import { TooltipComponent } from './components/tooltip/tooltip.component';
 
 import { SharedNgrxEffects } from './store/effects';
 
 const components = [
     LegendComponent,
+    NodeRelationshipComponent,
     TooltipComponent,
 ];
 
@@ -41,7 +43,7 @@ const components = [
 
         EffectsModule.forFeature([SharedNgrxEffects]),
     ],
-    declarations: [TooltipComponent, LegendComponent],
+    declarations: components,
     providers: [httpInterceptorProviders, SharedNgrxEffects],
     // exported modules are visible to modules that import this one
     exports: [
