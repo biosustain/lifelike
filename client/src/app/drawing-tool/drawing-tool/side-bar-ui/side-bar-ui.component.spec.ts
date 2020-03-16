@@ -1,6 +1,8 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { APP_BASE_HREF } from '@angular/common';
 
 import { SideBarUiComponent } from './side-bar-ui.component';
+import { MockupModule } from '../../mockup.module';
 
 describe('SideBarUiComponent', () => {
   let component: SideBarUiComponent;
@@ -8,7 +10,12 @@ describe('SideBarUiComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ SideBarUiComponent ]
+      imports: [
+        MockupModule
+      ],
+      providers: [
+        {provide: APP_BASE_HREF, useValue : '/' }
+      ]
     })
     .compileComponents();
   }));
