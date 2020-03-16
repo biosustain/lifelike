@@ -1,5 +1,9 @@
 interface UniversalGraphNode {
-  data: Object;
+  data: {
+    x: number;
+    y: number;
+    hyperlink?: string;
+  };
   display_name: string;
   hash: string;
   label: string;
@@ -21,7 +25,10 @@ interface VisNetworkGraphNode {
   x?: number;
   y?: number;
   id?: string;
-  group?: string
+  group?: string,
+  data?: {
+    hyperlink?: string;
+  }
 }
 interface VisNetworkGraphEdge {
   id?: string;
