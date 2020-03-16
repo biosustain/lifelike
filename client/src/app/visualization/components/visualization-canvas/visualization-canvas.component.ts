@@ -68,7 +68,6 @@ export class VisualizationCanvasComponent implements OnInit {
                 association: result.association,
                 references: result.references,
              } as SidenavEdgeEntity;
-            this.toggleSidenavOpened();
         }
     }
     @Input() set getClusterGraphDataResult(result: GetClusterGraphDataResult) {
