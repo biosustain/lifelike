@@ -78,14 +78,14 @@
 
         <mat-divider></mat-divider>
 
-        <div>
-            <p class='blue'>Entity ID</p>
-            <p>CHEBI:105672</p>    
-        </div>
-        <div>
-            <p class='blue'>Source</p>
-            <p class='silver'>Prognosis of microbial metabolic pathways</p>    
-        </div>
+        <mat-form-field class="w-100 mt3">
+            <mat-label>Hyperlink</mat-label>
+            <input 
+                matInput
+                (keydown.enter)="blurInput($event)"
+                value='https://www.who.int'>
+            <mat-icon (click)='goToLink("https://www.who.int")' matSuffix>link</mat-icon>
+        </mat-form-field>
 
         <button mat-button color="warn" class='delete'>
             Delete
