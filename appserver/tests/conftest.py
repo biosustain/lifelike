@@ -7,6 +7,7 @@ from py2neo import (
     Relationship,
 )
 
+from neo4japp.constants import DISPLAY_NAME_MAP
 from neo4japp.data_transfer_objects.visualization import (
     ClusteredNode,
     DuplicateNodeEdgePair,
@@ -57,7 +58,6 @@ def graph(request, app):
     # Deletes all nodes and relationships at the conclusion of every test
     def teardown():
         graph.run("MATCH(n) DETACH DELETE n")
-        graph
 
     request.addfinalizer(teardown)
 
@@ -130,6 +130,12 @@ def pomc(graph):
 
 ### Begin Entity -> Entity Relationship Fixtures ###
 
+# NOTE: These must use Cypher directly, not the `create`
+# py2neo method. This is a py2neo limitiation:
+# https://github.com/technige/py2neo/issues/573
+# If we don't use Cypher, we can't create multiple
+# edges between two nodes.
+
 @pytest.fixture(scope='function')
 def pomc_to_gas_gangrene_pathogenesis_edge(
     graph,
@@ -138,16 +144,15 @@ def pomc_to_gas_gangrene_pathogenesis_edge(
 ):
     """Creates an ASSOCIATED relationship from pomc to gas gangrene and
     adds it to the graph."""
-    tx = graph.begin()
 
-    pomc_to_gas_gangrene_pathogenesis_edge = Relationship(
-            pomc, 'ASSOCIATED', gas_gangrene,
-            assoc_type='J',
-            description='role in disease pathogenesis',
-    )
-
-    tx.create(pomc_to_gas_gangrene_pathogenesis_edge)
-    tx.commit()
+    pomc_to_gas_gangrene_pathogenesis_edge = graph.run(
+        """
+            MATCH (d:Disease), (g:Gene)
+            WHERE d.name = 'gas gangrene' AND g.name = 'POMC'
+            CREATE (g)-[r:ASSOCIATED { assoc_type:'J', description:'role in disease pathogenesis'}]->(d)
+            RETURN r
+        """
+    ).evaluate()
 
     return pomc_to_gas_gangrene_pathogenesis_edge
 
@@ -159,16 +164,15 @@ def penicillins_to_gas_gangrene_alleviates_edge(
 ):
     """Creates an ASSOCIATED relationship from penicillins to gas
     gangrene and adds it to the graph."""
-    tx = graph.begin()
 
-    penicillins_to_gas_gangrene_alleviates_edge = Relationship(
-        penicillins, 'ASSOCIATED', gas_gangrene,
-        assoc_type='Pa',
-        description='alleviates, reduces',
-    )
-
-    tx.create(penicillins_to_gas_gangrene_alleviates_edge)
-    tx.commit()
+    penicillins_to_gas_gangrene_alleviates_edge = graph.run(
+        """
+            MATCH (d:Disease), (c:Chemical)
+            WHERE d.name = 'gas gangrene' AND c.name = 'Penicillins'
+            CREATE (c)-[r:ASSOCIATED { assoc_type:'Pa', description:'alleviates, reduces'}]->(d)
+            RETURN r
+        """
+    ).evaluate()
 
     return penicillins_to_gas_gangrene_alleviates_edge
 
@@ -181,15 +185,15 @@ def penicillins_to_gas_gangrene_treatment_edge(
 ):
     """Creates an ASSOCIATED relationship from penicillins to gas
     gangrene and adds it to the graph."""
-    tx = graph.begin()
 
-    penicillins_to_gas_gangrene_treatment_edge = Relationship(
-        penicillins, 'ASSOCIATED', gas_gangrene,
-        assoc_type='J',
-        description='treatment/therapy (including investigatory)' ,
-    )
-    tx.create(penicillins_to_gas_gangrene_treatment_edge)
-    tx.commit()
+    penicillins_to_gas_gangrene_treatment_edge = graph.run(
+        """
+            MATCH (d:Disease), (c:Chemical)
+            WHERE d.name = 'gas gangrene' AND c.name = 'Penicillins'
+            CREATE (c)-[r:ASSOCIATED { assoc_type:'J', description:'treatment/therapy (including investigatory)'}]->(d)
+            RETURN r
+        """
+    ).evaluate()
 
     return penicillins_to_gas_gangrene_treatment_edge
 
@@ -201,6 +205,7 @@ def gas_gangrene_with_associations_and_references(
     graph,
     gas_gangrene,
     penicillins,
+    pomc,
     pomc_to_gas_gangrene_pathogenesis_edge,
     penicillins_to_gas_gangrene_alleviates_edge,
     penicillins_to_gas_gangrene_treatment_edge,
@@ -301,7 +306,10 @@ def gas_gangrene_with_associations_and_references(
 @pytest.fixture(scope='function')
 def gas_gangrene_vis_node(gas_gangrene):
     """Creates a VisNode from gas gangrene"""
-    node_as_graph_node = GraphNode.from_py2neo(gas_gangrene)
+    node_as_graph_node = GraphNode.from_py2neo(
+        gas_gangrene,
+        display_fn=lambda x: x.get(DISPLAY_NAME_MAP[next(iter(gas_gangrene.labels), set())])
+    )
 
     gas_gangrene_vis_node = VisNode(
         id=node_as_graph_node.id,
@@ -320,7 +328,10 @@ def gas_gangrene_vis_node(gas_gangrene):
 @pytest.fixture(scope='function')
 def gas_gangrene_duplicate_vis_node(gas_gangrene):
     """Creates a DuplicateVisNode from gas gangrene"""
-    node_as_graph_node = GraphNode.from_py2neo(gas_gangrene)
+    node_as_graph_node = GraphNode.from_py2neo(
+        gas_gangrene,
+        display_fn=lambda x: x.get(DISPLAY_NAME_MAP[next(iter(gas_gangrene.labels), set())])
+    )
 
     gas_gangrene_duplicate_vis_node = DuplicateVisNode(
         id=f'duplicateNode:{node_as_graph_node.id}',
@@ -340,7 +351,10 @@ def gas_gangrene_duplicate_vis_node(gas_gangrene):
 @pytest.fixture(scope='function')
 def penicillins_vis_node(penicillins):
     """Creates a VisNode from penicillins"""
-    node_as_graph_node = GraphNode.from_py2neo(penicillins)
+    node_as_graph_node = GraphNode.from_py2neo(
+        penicillins,
+        display_fn=lambda x: x.get(DISPLAY_NAME_MAP[next(iter(penicillins.labels), set())])
+    )
 
     penicillins_vis_node = VisNode(
         id=node_as_graph_node.id,
@@ -359,7 +373,10 @@ def penicillins_vis_node(penicillins):
 @pytest.fixture(scope='function')
 def penicillins_duplicate_vis_node(penicillins):
     """Creates a DuplicateVisNode from penicillins"""
-    node_as_graph_node = GraphNode.from_py2neo(penicillins)
+    node_as_graph_node = GraphNode.from_py2neo(
+        penicillins,
+        display_fn=lambda x: x.get(DISPLAY_NAME_MAP[next(iter(penicillins.labels), set())])
+    )
 
     penicillins_duplicate_vis_node = DuplicateVisNode(
         id=f'duplicateNode:{node_as_graph_node.id}',
@@ -379,7 +396,10 @@ def penicillins_duplicate_vis_node(penicillins):
 @pytest.fixture(scope='function')
 def pomc_vis_node(pomc):
     """Creates a VisNode from pomc"""
-    node_as_graph_node = GraphNode.from_py2neo(pomc)
+    node_as_graph_node = GraphNode.from_py2neo(
+        pomc,
+        display_fn=lambda x: x.get(DISPLAY_NAME_MAP[next(iter(pomc.labels), set())])
+    )
 
     pomc_vis_node = VisNode(
         id=node_as_graph_node.id,
@@ -398,7 +418,10 @@ def pomc_vis_node(pomc):
 @pytest.fixture(scope='function')
 def pomc_duplicate_vis_node(pomc):
     """Creates a DuplicateVisNode from pomc"""
-    node_as_graph_node = GraphNode.from_py2neo(pomc)
+    node_as_graph_node = GraphNode.from_py2neo(
+        pomc,
+        display_fn=lambda x: x.get(DISPLAY_NAME_MAP[next(iter(pomc.labels), set())])
+    )
 
     pomc_duplicate_vis_node = DuplicateVisNode(
         id=f'duplicateNode:{node_as_graph_node.id}',
@@ -416,6 +439,53 @@ def pomc_duplicate_vis_node(pomc):
 
 
 @pytest.fixture(scope='function')
+def pomc_to_gas_gangrene_pathogenesis_as_vis_edge(
+    pomc_to_gas_gangrene_pathogenesis_edge,
+):
+    """Creates a VisEdge from the pomc to gas gangrene
+    role in disease pathogenesis relationship."""
+    edge_as_graph_relationship = GraphRelationship.from_py2neo(
+        pomc_to_gas_gangrene_pathogenesis_edge,
+    )
+
+    pomc_to_gas_gangrene_pathogenesis_as_vis_edge = VisEdge(
+        id=edge_as_graph_relationship.id,
+        label=edge_as_graph_relationship.data['description'],
+        data=edge_as_graph_relationship.data,
+        to=edge_as_graph_relationship.to,
+        from_=edge_as_graph_relationship._from,
+        arrows='to',
+    )
+
+    return pomc_to_gas_gangrene_pathogenesis_as_vis_edge
+
+
+@pytest.fixture(scope='function')
+def pomc_to_gas_gangrene_pathogenesis_as_duplicate_vis_edge(
+    pomc_to_gas_gangrene_pathogenesis_edge,
+):
+    """Creates a DuplicateVisEdge from the pomc to gas_gangrene
+    role in disease pathogenesis relationship."""
+    edge_as_graph_relationship = GraphRelationship.from_py2neo(
+        pomc_to_gas_gangrene_pathogenesis_edge,
+    )
+
+    pomc_to_gas_gangrene_pathogenesis_as_duplicate_vis_edge = DuplicateVisEdge(
+        id=edge_as_graph_relationship.id,
+        label=edge_as_graph_relationship.data['description'],
+        data=edge_as_graph_relationship.data,
+        to=f'duplicateNode:{edge_as_graph_relationship.to}',
+        from_=f'duplicateNode:{edge_as_graph_relationship._from}',
+        arrows='to',
+        duplicate_of=edge_as_graph_relationship.id,
+        original_from=edge_as_graph_relationship._from,
+        original_to=edge_as_graph_relationship.to,
+    )
+
+    return pomc_to_gas_gangrene_pathogenesis_as_duplicate_vis_edge
+
+
+@pytest.fixture(scope='function')
 def penicillins_to_gas_gangrene_alleviates_as_vis_edge(
     penicillins_to_gas_gangrene_alleviates_edge,
 ):
@@ -427,7 +497,7 @@ def penicillins_to_gas_gangrene_alleviates_as_vis_edge(
 
     penicillins_to_gas_gangrene_alleviates_as_vis_edge = VisEdge(
         id=edge_as_graph_relationship.id,
-        label=edge_as_graph_relationship.label,
+        label=edge_as_graph_relationship.data['description'],
         data=edge_as_graph_relationship.data,
         to=edge_as_graph_relationship.to,
         from_=edge_as_graph_relationship._from,
@@ -449,14 +519,14 @@ def penicillins_to_gas_gangrene_alleviates_as_duplicate_vis_edge(
 
     penicillins_to_gas_gangrene_alleviates_as_duplicate_vis_edge = DuplicateVisEdge(
         id=edge_as_graph_relationship.id,
-        label=edge_as_graph_relationship.label,
+        label=edge_as_graph_relationship.data['description'],
         data=edge_as_graph_relationship.data,
         to=f'duplicateNode:{edge_as_graph_relationship.to}',
         from_=f'duplicateNode:{edge_as_graph_relationship._from}',
         arrows='to',
         duplicate_of=edge_as_graph_relationship.id,
-        original_from=edge_as_graph_relationship.to,
-        original_to=edge_as_graph_relationship._from,
+        original_from=edge_as_graph_relationship._from,
+        original_to=edge_as_graph_relationship.to,
     )
 
     return penicillins_to_gas_gangrene_alleviates_as_duplicate_vis_edge
@@ -474,7 +544,7 @@ def penicillins_to_gas_gangrene_treatment_as_vis_edge(
 
     penicillins_to_gas_gangrene_treatment_as_vis_edge = VisEdge(
         id=edge_as_graph_relationship.id,
-        label=edge_as_graph_relationship.label,
+        label=edge_as_graph_relationship.data['description'],
         data=edge_as_graph_relationship.data,
         to=edge_as_graph_relationship.to,
         from_=edge_as_graph_relationship._from,
@@ -496,14 +566,14 @@ def penicillins_to_gas_gangrene_treatment_as_duplicate_vis_edge(
 
     penicillins_to_gas_gangrene_treatment_as_duplicate_vis_edge = DuplicateVisEdge(
         id=f'duplicateEdge:{edge_as_graph_relationship.id}',
-        label=edge_as_graph_relationship.label,
+        label=edge_as_graph_relationship.data['description'],
         data=edge_as_graph_relationship.data,
         to=f'duplicateNode:{edge_as_graph_relationship.to}',
         from_=f'duplicateNode:{edge_as_graph_relationship._from}',
         arrows='to',
         duplicate_of=edge_as_graph_relationship.id,
-        original_from=edge_as_graph_relationship.to,
-        original_to=edge_as_graph_relationship._from,
+        original_from=edge_as_graph_relationship._from,
+        original_to=edge_as_graph_relationship.to,
     )
 
     return penicillins_to_gas_gangrene_treatment_as_duplicate_vis_edge
