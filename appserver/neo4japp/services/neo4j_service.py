@@ -126,13 +126,22 @@ class Neo4JService(BaseDao):
         query = self.get_snippets_from_edge_query(edge.original_from, edge.original_to, edge.label)
 
         data = self.graph.run(query).data()
+        snippets = [Snippet(
+            reference=GraphNode.from_py2neo(
+                result['reference'],
+                display_fn=lambda x: x.get(DISPLAY_NAME_MAP[next(iter(result['reference'].labels), set())]),
+            ),
+            publication=GraphNode.from_py2neo(
+                result['publication'],
+                display_fn=lambda x: x.get(DISPLAY_NAME_MAP[next(iter(result['publication'].labels), set())]),
+            )
+        ) for result in data]
+
         return GetSnippetsFromEdgeResult(
             from_node_id=edge.from_,
             to_node_id=edge.to,
             association=edge.label,
-            snippets=[
-                result['reference'] for result in data
-            ]
+            snippets=snippets
         )
 
     def get_snippet_counts_from_edges(self, edges: List[VisEdge]):

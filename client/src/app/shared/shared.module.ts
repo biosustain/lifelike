@@ -17,6 +17,7 @@ import { httpInterceptorProviders } from '../http-interceptors';
 import { AngularMaterialModule } from './angular-material.module';
 import { SharedDirectivesModule } from './directives/shareddirectives.module';
 
+import { HighlightSnippetComponent } from './components/highlight-snippet/highlight-snippet.component';
 import { LegendComponent } from './components/legend/legend.component';
 import { NodeRelationshipComponent } from './components/node-relationship-display/node-relationship-display.component';
 import { TooltipComponent } from './components/tooltip/tooltip.component';
@@ -24,6 +25,7 @@ import { TooltipComponent } from './components/tooltip/tooltip.component';
 import { SharedNgrxEffects } from './store/effects';
 
 const components = [
+    HighlightSnippetComponent,
     LegendComponent,
     NodeRelationshipComponent,
     TooltipComponent,
@@ -56,7 +58,7 @@ const components = [
         HttpClientModule,
         ReactiveFormsModule,
         RouterModule,
-        SharedDirectivesModule ,
+        SharedDirectivesModule,
         // Components
         ...components,
     ],
