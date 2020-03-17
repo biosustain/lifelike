@@ -1,5 +1,4 @@
 import { Component, Input } from '@angular/core';
-import { GraphNode } from 'app/interfaces';
 
 @Component({
     selector: 'app-node-relationship',
@@ -7,8 +6,10 @@ import { GraphNode } from 'app/interfaces';
     styleUrls: ['./node-relationship-display.component.scss']
 })
 export class NodeRelationshipComponent {
-    @Input() leftNode: GraphNode;
-    @Input() rightNode: GraphNode;
+    @Input() leftNodeName: string;
+    @Input() leftNodeLabel: string;
+    @Input() rightNodeName: string;
+    @Input() rightNodeLabel: string;
     @Input() leftNodeColor = 'automatic';
     @Input() rightNodeColor = 'automatic';
     @Input() edge: string;
