@@ -1,6 +1,6 @@
 import { IdType } from 'vis-network';
 
-import { VisEdge, VisNode, DuplicateVisNode, DuplicateVisEdge } from './neo4j.interface';
+import { GraphNode, VisEdge, VisNode, DuplicateVisNode, DuplicateVisEdge } from './neo4j.interface';
 
 
 export interface AssociationSnippet {
@@ -8,19 +8,23 @@ export interface AssociationSnippet {
     publication: Publication;
 }
 
-export interface Publication {
-    journal: string;
-    title: string;
-    pmid: string;
-    pubYear: number;
+export interface Publication extends GraphNode {
+    data: {
+        journal: string;
+        title: string;
+        pmid: string;
+        pubYear: number;
+    };
 }
 
-export interface Reference {
-    entry1Text: string;
-    entry2Text: string;
-    id: string;
-    score: number;
-    sentence: string;
+export interface Reference extends GraphNode {
+    data: {
+        entry1Text: string;
+        entry2Text: string;
+        id: string;
+        score: number;
+        sentence: string;
+    };
 }
 
 export interface ClusteredNode {
