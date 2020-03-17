@@ -1,14 +1,14 @@
+import jwt
 from datetime import datetime, timedelta
 from flask import current_app, request, Response, json, Blueprint, g
 from flask_httpauth import HTTPTokenAuth
-import jwt
 
 from neo4japp.database import db
 from neo4japp.models.auth import AppUser
 
 bp = Blueprint('auth', __name__, url_prefix='/auth')
 
-auth = HTTPTokenAuth(scheme='Token')
+auth = HTTPTokenAuth('Bearer')
 
 
 @auth.verify_token
@@ -38,20 +38,19 @@ def pullUserFromAuthHead():
         Return user object from jwt in
         auth header of request
     """
+    print('enter this method')
     # Pull the JWT
     token = request.headers.get('Authorization')
-    token = token.replace("Token ", "")
+    token = token.split(' ')[-1].strip()
 
-    # Decode it to email
     email = jwt.decode(
         token,
         current_app.config['SECRET_KEY'],
-        algorithms='HS256'
+        algorithms=['HS256']
     )['sub']
 
     # Pull user by email
     user = AppUser.query_by_email(email).first_or_404()
-
     return user
 
 
