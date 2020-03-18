@@ -10,6 +10,7 @@ from typing import Any, List, Optional, Type
 
 from flask import json, jsonify, request
 
+
 def encode_to_str(obj):
     """Converts different types into a string representation. """
     if isinstance(obj, str):
