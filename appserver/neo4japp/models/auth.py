@@ -71,6 +71,13 @@ class AppUser(RDBMSBase):
     def query_by_username(cls, username: str) -> Query:
         return cls.query.filter(cls.username == username)
 
+    def to_dict(self, exclude=None, include=None, only=None, keyfn=None):
+        original_dict = super().to_dict(exclude='password_hash')
+        return {
+            **original_dict,
+            **{'roles': [role.to_dict()['name'] for role in self.roles]}
+        }
+
 class AppUserSchema(ma.ModelSchema):
     class Meta:
         model = AppUser

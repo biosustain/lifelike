@@ -14,8 +14,10 @@ import {
   PendingChangesGuard
 } from './drawing-tool';
 
+import { AdminGuard } from 'app/admin/services/admin-guard.service';
+
 const routes: Routes = [
-  { path: 'admin', component: AdminPanelComponent},
+  { path: 'admin', component: AdminPanelComponent, canActivate: [AdminGuard]},
   { path: 'neo4j-upload', component: UserFileImportComponent },
   { path: 'neo4j-visualizer', component: VisualizationComponent },
   {
