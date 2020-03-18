@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
-import { of, EMPTY as empty } from 'rxjs';
-import { filter, take, tap, switchMap, map } from 'rxjs/operators';
+import { EMPTY as empty } from 'rxjs';
+import { filter, take, switchMap, map } from 'rxjs/operators';
 
 import { DataSet } from 'vis-network';
 
