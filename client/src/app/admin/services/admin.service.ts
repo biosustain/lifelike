@@ -16,6 +16,12 @@ export class AdminService {
         ).pipe(map(resp => resp.result));
     }
 
+    currentUser() {
+        return this.http.get<{result: AppUser}>(
+            `${this.adminApi}/user`
+        ).pipe(map(resp => resp.result));
+    }
+
     listOfUsers() {
         return this.http.get<{result: AppUser[]}>(
             `${this.adminApi}/`,

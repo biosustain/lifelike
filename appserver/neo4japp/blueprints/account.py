@@ -23,12 +23,19 @@ def create_user(req: UserCreationRequest):
     )
 
     yield SuccessResponse(
-        result=new_user.to_dict(exclude='password_hash'), status_code=201)
+        result=new_user.to_dict(), status_code=201)
 
 
 @bp.route('/', methods=['GET'])
 @auth.login_required
 def list_users():
     account_dao = get_account_service()
-    users = [user.to_dict(exclude='password_hash') for user in account_dao.get_user_list()]
+    users = [user.to_dict() for user in account_dao.get_user_list()]
     return jsonify(result=users, status_code=200)
+
+
+@bp.route('/user', methods=['GET'])
+@auth.login_required
+def current_user():
+    """ Returns the current user """
+    return jsonify(result=g.current_user.to_dict(), status_code=200)
