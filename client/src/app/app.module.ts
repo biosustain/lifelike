@@ -4,6 +4,7 @@ import { HttpClientModule } from '@angular/common/http';
 
 import { RootStoreModule } from 'app/root-store';
 
+import { AdminModule } from 'app/admin/admin.module';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { ToolbarMenuModule } from 'toolbar-menu';
@@ -17,6 +18,7 @@ import { DrawingToolModule } from './drawing-tool/drawing-tool.module';
     AppComponent,
   ],
   imports: [
+    AdminModule,
     BrowserModule,
     AppRoutingModule,
     HttpClientModule,

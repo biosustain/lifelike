@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 
+import { AdminPanelComponent } from 'app/admin/containers/admin-panel-page.component';
 import { UserFileImportComponent } from 'app/user-file-import/components/user-file-import.component';
 import { VisualizationComponent } from 'app/visualization/containers/visualization.component';
 import { SearchCollectionPageComponent } from 'app/search/containers/search-collection-page.component';
@@ -14,6 +15,7 @@ import {
 } from './drawing-tool';
 
 const routes: Routes = [
+  { path: 'admin', component: AdminPanelComponent},
   { path: 'neo4j-upload', component: UserFileImportComponent },
   { path: 'neo4j-visualizer', component: VisualizationComponent },
   {

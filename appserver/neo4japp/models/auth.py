@@ -67,6 +67,9 @@ class AppUser(RDBMSBase):
     def query_by_email(cls, email: str) -> Query:
         return cls.query.filter(cls.email == email)
 
+    @classmethod
+    def query_by_username(cls, username: str) -> Query:
+        return cls.query.filter(cls.username == username)
 
 class AppUserSchema(ma.ModelSchema):
     class Meta:

@@ -1,10 +1,8 @@
-from werkzeug.local import LocalProxy
-
 from sqlalchemy import and_
 from sqlalchemy.orm.session import Session
 
-from neo4app.services.common import RDBMSBaseDao
-from neo4app.models import (
+from neo4japp.services.common import RDBMSBaseDao
+from neo4japp.models import (
     RDBMSBase,
     AccessActionType,
     AccessControlPolicy,
@@ -16,7 +14,7 @@ from neo4app.models import (
 from typing import Iterable, Sequence, Union
 
 
-class AuthDao(RDBMSBaseDao):
+class AuthService(RDBMSBaseDao):
     def __init__(self, session: Session):
         super().__init__(session)
 
@@ -25,6 +23,7 @@ class AuthDao(RDBMSBaseDao):
         permission: str,
         asset: RDBMSBase,
         user: AppUser,
+        commit_now: bool = True,
     ) -> Sequence[AccessControlPolicy]:
         """ Grant a permission, or priviledge on an asset to a user
 
@@ -69,8 +68,7 @@ class AuthDao(RDBMSBaseDao):
                     rule_type=AccessRuleType.ALLOW,
                 )
                 self.session.add(p2)
-                self.s
-                ession.commit()
+                self.commit_or_flush(commit_now)
                 retval.append(p2)
         return retval
 
@@ -79,6 +77,7 @@ class AuthDao(RDBMSBaseDao):
         permission: str,
         asset: RDBMSBase,
         user: AppUser,
+        commit_now: bool = True,
     ) -> None:
         """ Revokes a permission, or priviledge on an asset to a user """
         # only removes the write permission on the specific asset
@@ -88,7 +87,7 @@ class AuthDao(RDBMSBaseDao):
                     AccessControlPolicy.action == 'write',
                     AccessControlPolicy.asset_id == asset.id,
                     AccessControlPolicy.principal_id == user.id,
-                    AccessControlPolicy.rule_type == AccessActionType.ALLOW,
+                    AccessControlPolicy.rule_type == AccessRuleType.ALLOW,
                 )
             ).delete()
         elif permission == 'read':
@@ -99,6 +98,7 @@ class AuthDao(RDBMSBaseDao):
                     AccessControlPolicy.rule_type == AccessRuleType.ALLOW,
                 )
             ).delete()
+        self.commit_or_flush(commit_now)
 
     def has_role(
         self,
@@ -107,7 +107,6 @@ class AuthDao(RDBMSBaseDao):
     ) -> bool:
         # TODO: Add other principal types
         if isinstance(principal, AppUser):
-            principal = AppUser
             return role in [r.name for r in principal.roles]
         raise NotImplementedError
 
