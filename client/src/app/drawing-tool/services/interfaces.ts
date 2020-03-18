@@ -25,7 +25,8 @@ interface VisNetworkGraphNode {
   x?: number;
   y?: number;
   id?: string;
-  group?: string,
+  group?: string;
+  size?: number;
   data?: {
     hyperlink?: string;
   }

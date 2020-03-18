@@ -96,6 +96,13 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
   formDataSubscription: Subscription = null;
   pdfDataSubscription: Subscription = null;
 
+  get saveStyle() {
+    return {
+      saved: this.saveState,
+      not_saved: !this.saveState
+    }
+  }
+
   constructor(
     private dataFlow: DataFlowService,
     private projectService: ProjectsService,
@@ -155,7 +162,10 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
             // TODO UPDATE NODE
             const cmd = {
               action: 'update node',
-              data: update.data as VisNetworkGraphNode
+              data: update.data as {
+                node: VisNetworkGraphNode,
+                edges: VisNetworkGraphEdge[]
+              }
             };
             this.recordCommand(cmd);
           } else if (event === 'update' && type === 'edge') {
@@ -293,9 +303,9 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
           {
             label: cmd.data.label,
             group: cmd.data.group,
-          },
-          cmd.data.coord.x,
-          cmd.data.coord.y
+            x: cmd.data.coord.x,
+            y: cmd.data.coord.y
+          }
         );
         // Toggle side-bar-ui for added node
         let data = this.visjsNetworkGraph.getNode(addedNode.id);
@@ -455,10 +465,10 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
       {
         "size": 0,
         "shape": "dot",
-        "id": "EDGE_FORMATION_DRAGGING"
-      },
-      coord.x - 5,
-      coord.y - 5
+        "id": "EDGE_FORMATION_DRAGGING",
+        "x": coord.x - 5,
+        "y": coord.y - 5
+      }
     );
 
     // Add edge from selected node to placeholder node
