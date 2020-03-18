@@ -55,11 +55,8 @@ def graph(request, app):
         password=os.environ.get('NEO4J_USER')
     )
 
-    # Deletes all nodes and relationships at the conclusion of every test
-    def teardown():
-        graph.run("MATCH(n) DETACH DELETE n")
-
-    request.addfinalizer(teardown)
+    # Ensure a clean graph state before every test
+    graph.run("MATCH(n) DETACH DELETE n")
 
     return graph
 
