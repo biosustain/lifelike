@@ -37,10 +37,10 @@ export class PaletteComponent implements OnInit {
   }
 
   _undo() {
-    this.undo.emit();
+    if (this.undoStack.length) this.undo.emit();
   }
   _redo() {
-    this.redo.emit();
+    if (this.redoStack.length) this.redo.emit();
   }
 
   changeSize() {

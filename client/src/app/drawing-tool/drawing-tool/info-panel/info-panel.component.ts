@@ -17,12 +17,14 @@ import {
   VisNetworkGraphNode
 } from '../../services/interfaces'
 import { Subscription } from 'rxjs';
+import { filter } from 'rxjs/operators';
 
 interface GraphData {
   id?: string;
   label?: string;
   group?: string;
   edges?: VisNetworkGraphEdge[];
+  hyperlink?: string;
 }
 interface GraphSelectionData {
   edge_data?: VisNetworkGraphEdge;
@@ -30,7 +32,10 @@ interface GraphSelectionData {
     id: string,
     group: string,
     label: string,
-    edges: VisNetworkGraphEdge[]
+    edges: VisNetworkGraphEdge[],
+    data: {
+      hyperlink: string;
+    }
   };
   other_nodes?: VisNetworkGraphNode[];
 };
@@ -44,7 +49,7 @@ export class InfoPanelComponent implements OnInit {
   /** Build the palette ui with node templates defined */
   nodeTemplates = node_templates;
 
-  paletteMode: number = 0;
+  paletteMode: string = 'minimized';
 
   /**
    * The information of the node clicked
@@ -54,7 +59,8 @@ export class InfoPanelComponent implements OnInit {
     id: '',
     label: '',
     group: '',
-    edges: []
+    edges: [],
+    hyperlink: ''
   };
 
   /**
@@ -64,7 +70,8 @@ export class InfoPanelComponent implements OnInit {
     id: new FormControl(),
     label: new FormControl('Untitled'),
     group: new FormControl('Unknown'),
-    edges: new FormArray([])
+    edges: new FormArray([]),
+    hyperlink: new FormControl()
   },{
     updateOn: 'blur'
   });
@@ -74,6 +81,9 @@ export class InfoPanelComponent implements OnInit {
 
   /** Type of data we're dealing with, node or edge */
   entity_type: string = 'node';
+
+  node_bank: VisNetworkGraphNode[] = [];
+  node_bank_dict: {[hash: string]: Object} = {};
 
   /**
    * Return true or false if any edges exist
@@ -96,10 +106,68 @@ export class InfoPanelComponent implements OnInit {
   ) { }
 
   ngOnInit() {
+    // Listen for changes within the form
+    // in edit mode
+    this.formSubscription = this.entity_form.valueChanges
+      .pipe(
+        filter(_ => !this.pauseForm)
+      )
+      .subscribe(
+        val => {
+          if (!val) return;
+
+          console.log(val);
+
+          let data;
+
+          if (this.entity_type === "node") {
+            // Get node data
+            let edges = val['edges'].map(e => {
+              return {
+                id: e['id'],
+                label: e['label'],
+                from: val['id'],
+                to: e['to']
+              }
+            });
+            
+            data = {
+              node: {
+                id: this.graph_data.id,
+                label: val['label'],
+                group: val['group'],
+                hyperlink: val['hyperlink']
+              },
+              edges
+            }
+          } else {
+            // Get edge data
+            data = {
+              edge: {
+                id: this.graph_data.id,
+                label: val['label']
+              }
+            }
+          }
+
+          // Push graph update to drawing-tool view
+          this.dataFlow.pushGraphUpdate({
+            type: this.entity_type,
+            event: 'update',
+            data
+          });
+
+          // Update graph_data ..
+          this.graph_data = val;
+        }
+      );
+
     // Listen for when a node and its data
     // is streamed .. 
     this.graphDataSubscription = this.dataFlow.graphDataSource.subscribe((data: GraphSelectionData) => {
       if (!data) return;
+
+      console.log(data);
 
       // If a node is clicked on ..
       if (data.node_data) {
@@ -107,10 +175,10 @@ export class InfoPanelComponent implements OnInit {
 
         // Record the data .. 
         this.graph_data = data.node_data;
-        // data.other_nodes.map(n => {
-        //   this.other_nodes_dict[n.id] = n;
-        // });
-        // this.other_nodes = data.other_nodes;
+        data.other_nodes.map(n => {
+          this.node_bank_dict[n.id] = n;
+        });
+        this.node_bank = data.other_nodes;
 
         this.pauseForm = true;
 
@@ -139,7 +207,8 @@ export class InfoPanelComponent implements OnInit {
               label: e.label,
               to: e.to
             }
-          })
+          }),
+          hyperlink: data.node_data.data.hyperlink
         };
         this.entity_form.setValue(form_data, {emitEvent: false});
         
@@ -169,7 +238,7 @@ export class InfoPanelComponent implements OnInit {
         this.entity_form.setValue(form_data, {emitEvent: false});
       }
 
-      if (this.paletteMode === 0) this.changeSize();
+      if (this.paletteMode === 'minimized') this.changeSize();
     });
   }
 
@@ -178,6 +247,47 @@ export class InfoPanelComponent implements OnInit {
     // with subject on accident when re-init next time
     this.graphDataSubscription.unsubscribe();
     this.formSubscription.unsubscribe();    
+  }
+
+  reset() {
+    // reset everything of component's members
+    this.graph_data = {
+      id: '',
+      label: '',
+      group: '',
+      edges: [],
+      hyperlink: ''
+    };
+
+    this.pauseForm = true;
+    this.entity_form.setControl(
+      'edges',
+      new FormArray([])
+    );
+    this.entity_form.reset();
+    this.pauseForm = false;
+
+    this.changeSize('maximized');
+  }
+
+  /**
+   * Either delete the node or edge that the side-bar-ui
+   * is showcasing ..
+   */
+  delete() {
+    const id = this.graph_data.id;
+
+    // push changes to app.component.ts
+    this.dataFlow.pushGraphUpdate({
+      event: 'delete',
+      type: this.entity_type,
+      data: {
+        id
+      }
+    });
+
+    // reset everything of component's members
+    this.reset();
   }
 
   /**
@@ -229,27 +339,30 @@ export class InfoPanelComponent implements OnInit {
     });
   }
 
-  changeSize() {
+  changeSize(paletteMode=null) {
+
+    if (paletteMode) this.paletteMode = paletteMode;
+
     switch (this.paletteMode) {
-      case 0:
+      case 'minimized':
         $('#info-panel').animate({
           height: '36rem'
         }, 500, () => {
-          this.paletteMode = 1;
+          this.paletteMode = 'normal';
         });
         break;        
-      case 1:
+      case 'normal':
         $('#info-panel').animate({
           height: '80vh'
         }, 500, () => {
-          this.paletteMode = 2;
+          this.paletteMode = 'maximized';
         });         
         break;
-      case 2:
+      case 'maximized':
         $('#info-panel').animate({
           height: '52px'
         }, 500, () => {
-          this.paletteMode = 0;
+          this.paletteMode = 'minimized';
         });    
         break;
       default:
@@ -261,4 +374,7 @@ export class InfoPanelComponent implements OnInit {
     window.open(url, "_blank");
   }
 
+  blurInput(e: Event) {
+    (e.srcElement as HTMLElement).blur();
+  }
 }

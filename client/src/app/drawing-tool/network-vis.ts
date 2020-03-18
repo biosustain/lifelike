@@ -2,6 +2,7 @@ import {
   node_templates,
   uuidv4
 } from './services';
+import { VisNetworkGraphNode } from './services/interfaces';
 
 declare var vis: any;
 
@@ -157,7 +158,8 @@ export class NetworkVis {
    * @param x 
    * @param y 
    */
-  addNode(data={}, x=10, y=10) {
+  addNode(data={}, x=10, y=10): VisNetworkGraphNode {
+
     var n = {
       ...data
     };
@@ -167,6 +169,9 @@ export class NetworkVis {
     n['x'] = n['x'] || x;
     n['y'] = n['y'] || y;
     n['size'] = 5;
+    n['data'] = {
+      'hyperlink': n['hyperlink'] || ''
+    }
     
     var updated = this.vis_nodes.add([n]);
     
@@ -202,7 +207,8 @@ export class NetworkVis {
     this.vis_nodes.update({
       id: id,
       label: data['label'],
-      group: data['group']
+      group: data['group'],
+      data: data['data']
     });
   }
 
@@ -223,7 +229,8 @@ export class NetworkVis {
       id: node.id,
       group: node.group,
       label: node.label,
-      edges: edges
+      edges: edges,
+      data: node.data
     };
     var other_nodes = this.vis_nodes.get({
       filter: (item) => {
@@ -231,6 +238,8 @@ export class NetworkVis {
       }
     });
     
+    console.log(node);
+
     return {
       node_data,
       other_nodes
@@ -261,8 +270,10 @@ export class NetworkVis {
         n.y = nodePosDict[n.id].y;
 
         return n;
-      }),
-      "edges": this.vis_edges.get()
+      }).filter(e => e['id'] !== "EDGE_FORMATION_DRAGGING"),
+      "edges": this.vis_edges.get().filter(
+        e => e['to'] !== "EDGE_FORMATION_DRAGGING"
+      )
     }
   }
 
