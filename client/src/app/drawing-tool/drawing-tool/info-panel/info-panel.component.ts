@@ -68,8 +68,8 @@ export class InfoPanelComponent implements OnInit {
    */
   entity_form = new FormGroup({
     id: new FormControl(),
-    label: new FormControl('Untitled'),
-    group: new FormControl('Unknown'),
+    label: new FormControl(),
+    group: new FormControl(),
     edges: new FormArray([]),
     hyperlink: new FormControl()
   },{
@@ -97,6 +97,9 @@ export class InfoPanelComponent implements OnInit {
   get edgeFormArr() {
     return <FormArray>this.entity_form.get('edges');
   }
+  get isNode() {
+    return this.entity_type === 'node';
+  }
 
   graphDataSubscription: Subscription = null;
   formSubscription: Subscription = null;
@@ -113,30 +116,31 @@ export class InfoPanelComponent implements OnInit {
         filter(_ => !this.pauseForm)
       )
       .subscribe(
-        val => {
+        (val:GraphData) => {
           if (!val) return;
-
-          console.log(val);
 
           let data;
 
           if (this.entity_type === "node") {
             // Get node data
-            let edges = val['edges'].map(e => {
+            let edges = val['edges'].map((e:VisNetworkGraphEdge) => {
+
               return {
-                id: e['id'],
-                label: e['label'],
-                from: val['id'],
-                to: e['to']
+                id: e.id,
+                label: e.label,
+                from: val.id,
+                to: e.to
               }
             });
             
             data = {
               node: {
                 id: this.graph_data.id,
-                label: val['label'],
-                group: val['group'],
-                hyperlink: val['hyperlink']
+                label: val.label,
+                group: val.group,
+                data: {
+                  hyperlink: val.hyperlink
+                }
               },
               edges
             }
@@ -145,7 +149,7 @@ export class InfoPanelComponent implements OnInit {
             data = {
               edge: {
                 id: this.graph_data.id,
-                label: val['label']
+                label: val.label
               }
             }
           }
@@ -166,8 +170,6 @@ export class InfoPanelComponent implements OnInit {
     // is streamed .. 
     this.graphDataSubscription = this.dataFlow.graphDataSource.subscribe((data: GraphSelectionData) => {
       if (!data) return;
-
-      console.log(data);
 
       // If a node is clicked on ..
       if (data.node_data) {
@@ -233,7 +235,8 @@ export class InfoPanelComponent implements OnInit {
           id: this.graph_data.id,
           label: this.graph_data.label,
           group: null,
-          edges: []
+          edges: [],
+          hyperlink: null
         };
         this.entity_form.setValue(form_data, {emitEvent: false});
       }
@@ -370,8 +373,9 @@ export class InfoPanelComponent implements OnInit {
     } 
   }
 
-  goToLink(url: string){
-    window.open(url, "_blank");
+  goToLink(){
+    let hyperlink:string = this.entity_form.value['hyperlink'];
+    if (hyperlink) window.open(hyperlink, "_blank");
   }
 
   blurInput(e: Event) {

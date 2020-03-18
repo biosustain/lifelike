@@ -160,16 +160,16 @@ export class NetworkVis {
    */
   addNode(data={}, x=10, y=10): VisNetworkGraphNode {
 
-    var n = {
+    var n: VisNetworkGraphNode = {
       ...data
     };
 
     // Handle values for attribute that might be missing
-    n['id'] = n['id'] || uuidv4();
-    n['x'] = n['x'] || x;
-    n['y'] = n['y'] || y;
-    n['size'] = 5;
-    n['data'] = {
+    n.id = n['id'] || uuidv4();
+    n.x = n['x'] || x;
+    n.y = n['y'] || y;
+    n.size = 5;
+    n.data = {
       'hyperlink': n['hyperlink'] || ''
     }
     
@@ -238,8 +238,6 @@ export class NetworkVis {
       }
     });
     
-    console.log(node);
-
     return {
       node_data,
       other_nodes
@@ -281,8 +279,8 @@ export class NetworkVis {
    * Draw network graph from JSON representation
    */
   import(graph: {nodes: any[], edges: any[]}) {
-    this.vis_nodes = new vis.DataSet(graph.nodes);
-    this.vis_edges = new vis.DataSet(graph.edges);
+    this.vis_nodes = new DataSet(graph.nodes);
+    this.vis_edges = new DataSet(graph.edges);
 
     this.network.setData({
       nodes: this.vis_nodes,

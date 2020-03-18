@@ -47,6 +47,18 @@
       height: 30px;
       margin: 0.75rem;
       cursor: pointer;
+      transition: color .2s ease-in;
+    }
+
+    mat-icon.fit:hover {
+      color: #3797DB;
+    }
+
+    mat-icon.saved {
+      color: #3797DB
+    }
+    mat-icon.not_saved {
+      color: #e74c3c;
     }
   }
 
