@@ -12,10 +12,9 @@ from typing import Any, List, Optional, Type
 from flask import json, jsonify, request, current_app
 from flask_httpauth import HTTPTokenAuth
 
-from neo4japp.models.drawing_tool import AppUser
-
 auth = HTTPTokenAuth(scheme='Token')
 
+# TODO: Do these auth utilities belong here...? Should we create an AuthDao?
 @auth.verify_token
 def verify_token(token):
     """
@@ -43,6 +42,10 @@ def pullUserFromAuthHead():
         Return user object from jwt in
         auth header of request
     """
+    # Have to do this import here, since putting it at the top of the file will cause
+    # a circular dependency on utils (because other submodules in .models use .utils!)
+    from neo4japp.models.drawing_tool import AppUser
+
     # Pull the JWT
     token = request.headers.get('Authorization')
     token = token.replace("Token ", "")
