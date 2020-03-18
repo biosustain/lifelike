@@ -18,8 +18,6 @@ Thumbs.db
 .local/
 
 # IDE - VSCode
-.vscode/*
-!.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
@@ -36,4 +34,3 @@ postgres/
 client/node_modules
 esdata/
 node_modules/
-

@@ -7396,8 +7396,9 @@ toidentifier@1.0.0:
   resolved "https://registry.yarnpkg.com/toidentifier/-/toidentifier-1.0.0.tgz#7e1be3470f1e77948bc43d94a3c8f4d7752ba553"
   integrity sha512-yaOH/Pk/VEhBWWTlhI+qXxDFXlejDGcQipMlyxda9nthulaxLZUNcUqFxokp0vcYnvteJln5FNQDRrxj3YcbVw==
 
-"toolbar-menu@file:toolbar-menu/dist/toolbar-menu":
+"toolbar-menu@git+https://8a6e387c4df4efe82b82790132da7efd7477ebce:x-oauth-basic@github.com/SBRG/toolbar-menu":
   version "0.0.6"
+  resolved "git+https://8a6e387c4df4efe82b82790132da7efd7477ebce:x-oauth-basic@github.com/SBRG/toolbar-menu#5503adb2847cab9d9644cb3005880969c840123e"
   dependencies:
     tslib "^1.9.0"
 
