@@ -27,3 +27,8 @@ class Development(Base):
 
     ASSETS_DEBUG = True
     WTF_CSRF_ENABLED = False
+
+class Testing(Base):
+    """Functional test configuration"""
+    TESTING = True
+    WTF_CSRF_ENABLED = False

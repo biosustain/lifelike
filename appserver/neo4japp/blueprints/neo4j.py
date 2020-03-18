@@ -52,21 +52,7 @@ def get_batch():
     result = neo4j.query_batch(decoded_query)
     return SuccessResponse(result=result, status_code=200)
 
-@bp.route('/organisms', methods=['GET'])
-@jsonify_with_class()
-def get_organisms():
-    neo4j = get_neo4j_service_dao()
-    organisms = neo4j.get_organisms()
-    return SuccessResponse(result=organisms, status_code=200)
-
-# NOTE: This is just a temp endpoint, may remove in the future
-@bp.route('/diseases', methods=['GET'])
-@jsonify_with_class()
-def get_some_diseases():
-    neo4j = get_neo4j_service_dao()
-    diseases = neo4j.get_some_diseases()
-    return SuccessResponse(result=diseases, status_code=200)
-
+# TODO: Is this in use by anything?
 @bp.route('/regulatory', methods=['POST'])
 @jsonify_with_class(GraphRequest)
 def load_regulatory_graph(req: GraphRequest):
@@ -103,14 +89,15 @@ def get_snippets_from_duplicate_edge(req: GetSnippetsFromDuplicateEdgeRequest):
     )
     return SuccessResponse(result=snippets_result, status_code=200)
 
-@bp.route('/get-snippet-counts-from-edges', methods=['POST'])
-@jsonify_with_class(GetSnippetCountsFromEdgesRequest)
-def get_snippet_count_for_edges(req: GetSnippetCountsFromEdgesRequest):
-    neo4j = get_neo4j_service_dao()
-    edge_snippet_count_result = neo4j.get_snippet_counts_from_edges(
-        req.edges,
-    )
-    return SuccessResponse(edge_snippet_count_result, status_code=200)
+# Currently unused
+# @bp.route('/get-snippet-counts-from-edges', methods=['POST'])
+# @jsonify_with_class(GetSnippetCountsFromEdgesRequest)
+# def get_snippet_count_for_edges(req: GetSnippetCountsFromEdgesRequest):
+#     neo4j = get_neo4j_service_dao()
+#     edge_snippet_count_result = neo4j.get_snippet_counts_from_edges(
+#         req.edges,
+#     )
+#     return SuccessResponse(edge_snippet_count_result, status_code=200)
 
 @bp.route('/get-reference-table-data', methods=['POST'])
 @jsonify_with_class(ReferenceTableDataRequest)
@@ -130,6 +117,7 @@ def get_cluster_graph_data(req: GetGraphDataForClusterRequest):
     )
     return SuccessResponse(cluster_graph_data_result, status_code=200)
 
+# TODO: Is this in use by anything?
 @bp.route('/reaction', methods=['POST'])
 @jsonify_with_class(ReactionRequest)
 def load_reaction_graph(req: ReactionRequest):
