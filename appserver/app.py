@@ -24,7 +24,7 @@ def seed():
         Seed the postgres db for development
     """
     with open("fixtures/seed.json", "r") as f:
-        
+
         fixtures = json.load(f)
 
         for fix in fixtures:
