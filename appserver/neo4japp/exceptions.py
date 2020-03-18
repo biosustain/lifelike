@@ -26,3 +26,10 @@ class NotAuthorizedException(BaseException):
     """Signals that the client does not sufficient privilege"""
     def __init__(self, message, additional_msgs=[]):
         super().__init__('Unauthorized Action', message, additional_msgs)
+
+
+class FormatterException(BaseException):
+    """Signals that a CamelDictMixin object was not formatted to/from
+    dict correctly."""
+    def __init__(self, message):
+        super().__init__('Formatter Error', message)
