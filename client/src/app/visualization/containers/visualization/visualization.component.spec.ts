@@ -1,5 +1,6 @@
 import { TestBed, ComponentFixture } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
+import { RouterTestingModule } from '@angular/router/testing';
 
 import { configureTestSuite } from 'ng-bullet';
 
@@ -16,6 +17,7 @@ import {
     VisEdge,
     VisNode,
 } from 'app/interfaces';
+import { RootStoreModule } from 'app/***ARANGO_USERNAME***-store';
 import { SearchGraphComponent } from 'app/search/containers/search-graph.component';
 import { SharedModule } from 'app/shared/shared.module';
 
@@ -38,6 +40,8 @@ describe('VisualizationComponent', () => {
     configureTestSuite(() => {
         TestBed.configureTestingModule({
             imports: [
+                RootStoreModule,
+                RouterTestingModule,
                 SharedModule,
             ],
             declarations: [
