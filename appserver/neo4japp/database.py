@@ -36,3 +36,17 @@ def get_search_service_dao():
         from neo4japp.services import SearchService
         g.search_service_dao = SearchService(graph)
     return g.search_service_dao
+
+
+def get_authorization_service():
+    if 'authorization_service' not in g:
+        from neo4japp.services import AuthService
+        g.authorization_service = AuthService(db.session)
+    return g.authorization_service
+
+
+def get_account_service():
+    if 'account_service' not in g:
+        from neo4japp.services import AccountService
+        g.account_service = AccountService(db.session)
+    return g.account_service

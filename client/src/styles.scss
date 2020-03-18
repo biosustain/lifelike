@@ -1,6 +1,10 @@
 @import "assets/dtu-styles.scss";
 @import "assets/dtu-theme.scss";
 
+.field-width {
+  width: 100%;
+}
+
 .mat-cell {
   margin: 0 10px 0 10px;
 }

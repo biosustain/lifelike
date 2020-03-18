@@ -3,6 +3,7 @@ from .auth import (
     AccessActionType,
     AccessControlPolicy,
     AccessRuleType,
+    AppRole,
     AppUser,
     AppUserSchema,
 )
