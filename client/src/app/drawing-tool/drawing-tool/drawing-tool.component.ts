@@ -10,6 +10,7 @@ import { CdkDragDrop } from '@angular/cdk/drag-drop';
 import {
   Subscription, Observable
 } from 'rxjs';
+import * as $ from 'jquery'
 
 import {
   DataFlowService,
@@ -25,8 +26,6 @@ import {
 import {
   NetworkVis
 } from '../network-vis';
-
-declare var $: any;
 
 interface Update {
   event: string,
@@ -198,79 +197,11 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
            */
           this.visjsNetworkGraph.network.on(
             'click',
-            (properties) => {
-              if (this.addMode) {
-                if (properties.nodes.length) {
-                  let target_id:string = properties.nodes[0];
-
-                  // TODO ADD EDGE
-                  const cmd = {
-                    action: 'add edge',
-                    data: {
-                      edge: {
-                        from: this.node4AddingEdge2,
-                        to: target_id
-                      }
-                    }
-                  };
-                  this.recordCommand(cmd);
-                }
-
-                // Reset dragging gesture rendering
-                this.visjsNetworkGraph.removeNode(
-                  "EDGE_FORMATION_DRAGGING"
-                );
-                this.addMode = false;
-              } else {
-                if (properties.nodes.length) {
-                  // If a node is clicked on
-                  let node_id = properties.nodes[0];
-                  let data = this.visjsNetworkGraph.getNode(node_id);
-                  this.dataFlow.pushGraphData(data);
-                } else if (properties.edges.length) {
-                  // If an edge is clicked on
-                  let edge_id = properties.edges[0];
-                  let data = this.visjsNetworkGraph.getEdge(edge_id);
-                  this.dataFlow.pushGraphData(data);
-                }
-              }
-            }
+            (properties) => this.networkClickHandler(properties)
           );
           this.visjsNetworkGraph.network.on(
             'doubleClick',
-            (properties) => {
-              if (!properties.nodes.length) return;
-
-              // Set up rendering gesture for the node
-              this.node4AddingEdge2 = properties.nodes[0];
-              this.addMode = true;
-
-              var e = properties.event.srcEvent;
-              var canvasOffset = $('#canvas > div > canvas').offset();
-
-              // Convert DOM coordinate to canvas coordinate
-              let coord = this.visjsNetworkGraph.network.DOMtoCanvas({
-                x: e.pageX - canvasOffset.left,
-                y: e.pageY - canvasOffset.top
-              });
-
-              // Place placeholder node near mouse cursor
-              let addedNode = this.visjsNetworkGraph.addNode(
-                {
-                  "size": 0,
-                  "shape": "dot",
-                  "id": "EDGE_FORMATION_DRAGGING"
-                },
-                coord.x - 5,
-                coord.y - 5
-              );
-
-              // Add edge from selected node to placeholder node
-              this.visjsNetworkGraph.addEdge(
-                this.node4AddingEdge2,
-                addedNode['id']
-              );
-            }
+            (properties) => this.networkDoubleClickHandler(properties)
           );
           // Listen for nodes moving on canvas
           this.visjsNetworkGraph.network.on(
@@ -279,31 +210,13 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
               if (properties.nodes.length) this.saveState = false;
             }
           );
-          // Listen for mouse movement on canvas to render
-          // edge formation gesture during addMode
+          // Listen for mouse movement on canvas to feed to handler
           $('#canvas > div > canvas').mousemove(
-            (e) => {
-              if (!this.addMode) return;
-
-              var canvasOffset = $('#canvas > div > canvas').offset();
-
-              // Convert DOM coordinate to canvas coordinate
-              let coord = this.visjsNetworkGraph.network.DOMtoCanvas({
-                x: e.pageX - canvasOffset.left,
-                y: e.pageY - canvasOffset.top
-              });
-
-              // Render placeholder node near mouse cursor
-              this.visjsNetworkGraph.network.moveNode(
-                "EDGE_FORMATION_DRAGGING",
-                coord.x - 5,
-                coord.y - 5
-              );
-            }
+            (e) => this.edgeFormationRenderer(e)
           );
         }
       );
-    }, 250);
+    });
   }
   ngOnDestroy() {
     // Unsubscribe from subscriptions
@@ -510,8 +423,117 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
       background: node_template['background']
     }
   }
-
   fitAll() {
     this.visjsNetworkGraph.zoom2All();
+  }
+
+  // -- Event Handlers --
+  /**
+   * Listen for double click event from vis.js Network
+   * to handle
+   * - initating addMode for drawing edges from source node
+   * @param properties 
+   */
+  networkDoubleClickHandler(properties) {
+    if (!properties.nodes.length) return;
+
+    // Set up rendering gesture for the node
+    this.node4AddingEdge2 = properties.nodes[0];
+    this.addMode = true;
+
+    var e = properties.event.srcEvent;
+    var canvasOffset = $('#canvas > div > canvas').offset();
+
+    // Convert DOM coordinate to canvas coordinate
+    let coord = this.visjsNetworkGraph.network.DOMtoCanvas({
+      x: e.pageX - canvasOffset.left,
+      y: e.pageY - canvasOffset.top
+    });
+
+    // Place placeholder node near mouse cursor
+    let addedNode = this.visjsNetworkGraph.addNode(
+      {
+        "size": 0,
+        "shape": "dot",
+        "id": "EDGE_FORMATION_DRAGGING"
+      },
+      coord.x - 5,
+      coord.y - 5
+    );
+
+    // Add edge from selected node to placeholder node
+    this.visjsNetworkGraph.addEdge(
+      this.node4AddingEdge2,
+      addedNode['id']
+    );    
+  }
+  /**
+   * Listen for click events from vis.js network
+   * to handle certain events ..
+   * - if a node is clicked on 
+   * - if a edge is clicked on 
+   * - if a node is clicked on during addMode
+   * @param properties 
+   */
+  networkClickHandler(properties) {
+    if (this.addMode) {
+      if (properties.nodes.length) {
+        let target_id = properties.nodes[0];
+
+        // TODO ADD EDGE
+        const cmd = {
+          action: 'add edge',
+          data: {
+            edge: {
+              from: this.node4AddingEdge2,
+              to: target_id
+            }
+          }
+        };
+        this.recordCommand(cmd);
+      }
+
+      // Reset dragging gesture rendering
+      this.visjsNetworkGraph.removeNode(
+        "EDGE_FORMATION_DRAGGING"
+      );
+      this.addMode = false;
+    } else {
+      if (properties.nodes.length) {
+        // If a node is clicked on
+        let node_id = properties.nodes[0];
+        let data = this.visjsNetworkGraph.getNode(node_id);
+        this.dataFlow.pushGraphData(data);
+      } else if (properties.edges.length) {
+        // If an edge is clicked on
+        let edge_id = properties.edges[0];
+        let data = this.visjsNetworkGraph.getEdge(edge_id);
+        this.dataFlow.pushGraphData(data);
+      }
+    }    
+  }
+
+  /**
+   * Handler for mouse movement on canvas
+   * to render edge formation gesture in addMode
+   * @param e - used to pull vent coordinate
+   */
+  edgeFormationRenderer(e: JQuery.Event) {
+    if (!this.addMode) return;
+
+    var canvasOffset = $('#canvas > div > canvas').offset();
+
+    // Convert DOM coordinate to canvas coordinate
+    let coord = this.visjsNetworkGraph.network.DOMtoCanvas({
+      x: e.pageX - canvasOffset.left,
+      y: e.pageY - canvasOffset.top
+    });
+
+    // Render placeholder node near mouse cursor
+    this.visjsNetworkGraph.network.moveNode(
+      "EDGE_FORMATION_DRAGGING",
+      coord.x - 5,
+      coord.y - 5
+    );    
   }
 }

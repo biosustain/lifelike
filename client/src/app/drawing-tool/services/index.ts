@@ -13,6 +13,10 @@ import {
 import {
     PdfAnnotationsService,
 } from './pdf-annotations.service';
+import {
+    DragDropEventFactory,
+    ContainerModel
+} from './event-factory';
 
 /**
  * universally unique identitifer generator
@@ -44,5 +48,7 @@ export {
     PdfAnnotationsService,
     node_templates,
     uuidv4,
-    makeid
+    makeid,
+    DragDropEventFactory,
+    ContainerModel
 }
