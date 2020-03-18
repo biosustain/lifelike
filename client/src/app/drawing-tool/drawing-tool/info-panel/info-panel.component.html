@@ -3,6 +3,7 @@
         <mat-icon (click)='changeSize()' class='fr'>menu</mat-icon>
     </div>
     <form 
+        *ngIf='graph_data.id!==""'
         class='w-90 center'
         [formGroup]='entity_form'>
         <mat-form-field class="w-100 mt3">
@@ -62,9 +63,9 @@
                         <mat-select
                             formControlName='to'>
                             <mat-option
-                                *ngFor="let type of nodeTemplates"
-                                [value]='type.label'>
-                                {{type.label | titlecase}}
+                                *ngFor="let n of node_bank"
+                                [value]='n.id'>
+                                {{n.label | titlecase}}
                             </mat-option>
                         </mat-select>
                     </mat-form-field>
@@ -83,11 +84,11 @@
             <input 
                 matInput
                 (keydown.enter)="blurInput($event)"
-                value='https://www.who.int'>
+                formControlName='hyperlink'>
             <mat-icon (click)='goToLink("https://www.who.int")' matSuffix>link</mat-icon>
         </mat-form-field>
 
-        <button mat-button color="warn" class='delete'>
+        <button (click)='delete()' mat-button color="warn" class='delete'>
             Delete
         </button>
     </form>

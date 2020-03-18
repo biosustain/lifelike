@@ -227,13 +227,11 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
                   let node_id = properties.nodes[0];
                   let data = this.visjsNetworkGraph.getNode(node_id);
                   this.dataFlow.pushGraphData(data);
-                  this.sideBarUIToggle(true);
                 } else if (properties.edges.length) {
                   // If an edge is clicked on
                   let edge_id = properties.edges[0];
                   let data = this.visjsNetworkGraph.getEdge(edge_id);
                   this.dataFlow.pushGraphData(data);
-                  this.sideBarUIToggle(true);
                 }
               }
             }
@@ -380,8 +378,8 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
         // Add node to network graph
         let addedNode = this.visjsNetworkGraph.addNode(
           {
-          label: cmd.data.label,
-          group: cmd.data.group,
+            label: cmd.data.label,
+            group: cmd.data.group,
           },
           cmd.data.coord.x,
           cmd.data.coord.y
@@ -389,7 +387,6 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
         // Toggle side-bar-ui for added node
         let data = this.visjsNetworkGraph.getNode(addedNode.id);
         this.dataFlow.pushGraphData(data);
-        this.sideBarUIToggle(true);
         break;
       case 'update node':
         // Update node
@@ -397,7 +394,8 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
           cmd.data.node.id,
           {
             label: cmd.data.node.label,
-            group: cmd.data.node.group
+            group: cmd.data.node.group,
+            data: cmd.data.node.data
           }
         );
         // Update edges of node
@@ -414,7 +412,6 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
         break;
       case 'delete node':
         this.visjsNetworkGraph.removeNode(cmd.data.id);
-        this.sideBarUIToggle();
         break;
       case 'add edge':
         this.visjsNetworkGraph.addEdge(
@@ -502,34 +499,6 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   // -- Helpers -- 
-
-  /**
-   * Controls expanding/decompressing the side-bar-ui
-   * @param open - if true, will open regardless
-   */
-  sideBarUIToggle(open: boolean = false) {
-    let w = $('#side-bar-ui').width();
-
-    if (!w || open) {
-      // Expand sidebar ui
-      $('#side-bar-ui').animate({
-        width: '20rem'
-      }, 500, () => {
-        $('#side-bar-ui > #side-bar-ui-container ')
-        .children()
-        .css('width', 'auto');
-      });
-    } else {
-      // Compress sidebar ui
-      $('#side-bar-ui').animate({
-        width: '0rem'
-      }, 500, () => {
-        $('#side-bar-ui > #side-bar-ui-container ')
-        .children()
-        .css('width', '0rem');
-      });
-    }    
-  }
   /**
    * Build key,value pair style dict
    * from node_template
