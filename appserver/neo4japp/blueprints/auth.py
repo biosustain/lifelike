@@ -38,7 +38,6 @@ def pullUserFromAuthHead():
         Return user object from jwt in
         auth header of request
     """
-    print('enter this method')
     # Pull the JWT
     token = request.headers.get('Authorization')
     token = token.split(' ')[-1].strip()
