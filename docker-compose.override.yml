@@ -28,10 +28,10 @@ services:
             - database
             - pgdatabase
         stdin_open: true
-        volumes: 
+        volumes:
             - ./appserver:/home/n4j
         tty: true
-    
+
     database:
         environment:
             - NEO4J_AUTH=none
@@ -39,7 +39,7 @@ services:
             - ./db/data:/data
             - ./db/logs:/logs
             - ./db/plugins:/plugins
-    
+
     client:
         container_name: n4j-client
         # starts dev & moves the yarn.lock file so it can be committed

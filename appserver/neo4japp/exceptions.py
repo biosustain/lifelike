@@ -9,3 +9,10 @@ class BaseException(Exception):
         retval['name'] = self.name
         retval['message'] = self.message
         return retval
+
+
+class FormatterException(BaseException):
+    """Signals that a CamelDictMixin object was not formatted to/from
+    dict correctly."""
+    def __init__(self, message):
+        super().__init__('Formatter Error', message)

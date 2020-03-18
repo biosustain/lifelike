@@ -1,13 +1,11 @@
 import { NgModule } from '@angular/core';
-import { 
-  HTTP_INTERCEPTORS
-} from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { BrowserModule } from '@angular/platform-browser';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { RouterModule } from '@angular/router';
 
 import { PdfViewerLibModule } from 'pdf-viewer-lib';
 import { MaterialModule } from './material.module';
@@ -37,19 +35,10 @@ import {
   LoginComponent
 } from './login/login.component';
 
-
 import { 
   TruncatePipe,
   FriendlyDateStrPipe
 } from './pipes';
-
-import {
-  AuthenticationService
-} from './services'
-
-import {
-  PendingChangesGuard
-} from './guards';
 
 @NgModule({
   declarations: [
@@ -77,27 +66,9 @@ import {
     FormsModule,
     ReactiveFormsModule,
     DragDropModule,
+    RouterModule.forRoot([]),
     PdfViewerLibModule,
     MaterialModule
-  ],
-  providers: [
-    // {
-    //   provide: HTTP_INTERCEPTORS,
-    //   useClass: AuthenticationService,
-    //   multi: true
-    // },
-    PendingChangesGuard
-  ],
-  exports: [
-    CommonModule,
-    BrowserModule,
-    HttpClientModule,
-    BrowserAnimationsModule,
-    FormsModule,
-    ReactiveFormsModule,
-    DragDropModule,
-    PdfViewerLibModule,
-    MaterialModule    
   ]
 })
-export class DrawingToolModule { }
+export class MockupModule { }
