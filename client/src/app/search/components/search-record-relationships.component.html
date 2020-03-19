@@ -12,10 +12,12 @@
         <div id="pub-snippet-title">{{ node.node.displayName }}</div>
         <i *ngIf="node.chemical || node.disease">This snippet genarated the following relationship</i>
         <app-node-relationship
-            [leftNode]="node.chemical"
+            [leftNodeName]="chemicalDisplayName"
+            [leftNodeLabel]="chemicalLabel"
             [leftNodeColor]="'rgb(143, 166, 203)'"
             [rightNodeColor]="'rgb(205, 93, 103)'"
-            [rightNode]="node.disease"
+            [rightNodeName]="diseaseDisplayName"
+            [rightNodeLabel]="diseaseLabel"
             [edge]="node.relationship"
         >
         </app-node-relationship>
