@@ -30,6 +30,10 @@ __2. How do I seed the NEO4J Database?__
 
 Download the `.zip` file from https://console.cloud.google.com/storage/browser/graphdb_backup?project=able-goods-221820 and add it to the `db` directory. The directory structure will be `db/graph.db`.
 
+OR
+
+Visit the backup in the repository https://github.com/SBRG/kg-prototypes/blob/master/db/text-mining-subset-graphdb.tar.gz
+
 **NOTE** The backup database currently only works with Neo4j version 3.x.x.
 
 __3. How do I seed the Elastic Search Database?__

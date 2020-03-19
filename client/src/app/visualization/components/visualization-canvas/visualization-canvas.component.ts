@@ -66,9 +66,8 @@ export class VisualizationCanvasComponent implements OnInit {
                 to: this.nodes.get(result.toNodeId) as VisNode,
                 from: this.nodes.get(result.fromNodeId) as VisNode,
                 association: result.association,
-                references: result.references,
+                snippets: result.snippets,
              } as SidenavEdgeEntity;
-            this.toggleSidenavOpened();
         }
     }
     @Input() set getClusterGraphDataResult(result: GetClusterGraphDataResult) {

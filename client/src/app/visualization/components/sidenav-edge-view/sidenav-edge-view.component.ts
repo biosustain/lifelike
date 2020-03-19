@@ -9,6 +9,7 @@ import { SidenavEdgeEntity } from 'app/interfaces';
 })
 export class SidenavEdgeViewComponent implements OnInit {
     @Input() edgeEntity: SidenavEdgeEntity;
+    @Input() legend: Map<string, string[]>;
 
     constructor() { }
 
