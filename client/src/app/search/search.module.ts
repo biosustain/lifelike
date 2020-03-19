@@ -1,7 +1,6 @@
 import { NgModule } from '@angular/core';
 import { SharedModule } from 'app/shared/shared.module';
 
-import { NodeRelationshipComponent } from './components/node-relationship-display.component';
 import { SearchBarComponent } from './components/search-bar.component';
 import { SearchGraphComponent } from './containers/search-graph.component';
 import { SearchCollectionPageComponent } from './containers/search-collection-page.component';
@@ -16,7 +15,6 @@ import { reducer } from './store/reducer';
 import { SearchEffects } from './store/effects';
 
 const components = [
-    NodeRelationshipComponent,
     SearchBarComponent,
     SearchRecordNodeComponent,
     SearchRecordRelationshipsComponent,

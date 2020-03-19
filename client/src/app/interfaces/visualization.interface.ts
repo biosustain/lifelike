@@ -1,14 +1,30 @@
 import { IdType } from 'vis-network';
 
-import { VisEdge, VisNode, DuplicateVisNode, DuplicateVisEdge } from './neo4j.interface';
+import { GraphNode, VisEdge, VisNode, DuplicateVisNode, DuplicateVisEdge } from './neo4j.interface';
 
 
 export interface AssociationSnippet {
-    entry1Text: string;
-    entry2Text: string;
-    id: string;
-    score: number;
-    sentence: string;
+    reference: Reference;
+    publication: Publication;
+}
+
+export interface Publication extends GraphNode {
+    data: {
+        journal: string;
+        title: string;
+        pmid: string;
+        pubYear: number;
+    };
+}
+
+export interface Reference extends GraphNode {
+    data: {
+        entry1Text: string;
+        entry2Text: string;
+        id: string;
+        score: number;
+        sentence: string;
+    };
 }
 
 export interface ClusteredNode {
@@ -36,7 +52,7 @@ export interface GetLabelsResult {
 }
 
 export interface GetSnippetsResult {
-    references: AssociationSnippet[];
+    snippets: AssociationSnippet[];
     fromNodeId: number;
     toNodeId: number;
     association: string;
@@ -83,7 +99,7 @@ export interface SidenavEdgeEntity extends SidenavEntity {
     to: VisNode;
     from: VisNode;
     association: string;
-    references: AssociationSnippet[];
+    snippets: AssociationSnippet[];
 }
 
 export interface SidenavClusterEntity extends SidenavEntity {
