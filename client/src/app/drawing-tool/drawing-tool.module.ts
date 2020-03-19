@@ -52,6 +52,7 @@ import {
 } from './guards';
 import { PaletteComponent } from './drawing-tool/palette/palette.component';
 import { InfoPanelComponent } from './drawing-tool/info-panel/info-panel.component';
+import { PdfViewerDirective } from './pdf-viewer/pdf-viewer.directive';
 
 @NgModule({
   declarations: [
@@ -66,7 +67,8 @@ import { InfoPanelComponent } from './drawing-tool/info-panel/info-panel.compone
     TruncatePipe,
     FriendlyDateStrPipe,
     PaletteComponent,
-    InfoPanelComponent
+    InfoPanelComponent,
+    PdfViewerDirective
   ],
   entryComponents: [
     CreateProjectDialogComponent,

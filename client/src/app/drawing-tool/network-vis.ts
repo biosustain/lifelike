@@ -170,7 +170,7 @@ export class NetworkVis {
     n.y = n['y'] || y;
     n.size = 5;
     n.data = {
-      'hyperlink': n['hyperlink'] || ''
+      hyperlink: n['hyperlink'] || ''
     }
     
     var updated = this.vis_nodes.add([n]);

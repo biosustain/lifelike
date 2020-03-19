@@ -6,7 +6,8 @@ import {
 } from '../services';
 
 import {
-  Annotation
+  Annotation,
+  GraphData
 } from '../services/interfaces';
 
 @Component({
@@ -54,13 +55,27 @@ export class PdfViewerComponent implements OnInit, AfterViewInit {
     const ann_id = node_dom.getAttribute('annotation-id');
     const ann_def: Annotation = this.pdfAnnService.searchForAnnotation(ann_id);
     
-    let pay_load = {
+    let pay_load: GraphData = {
       x: mouseEvent.clientX - container_coord.x,
       y: mouseEvent.clientY,
       label: node_dom.innerText,
-      group: (ann_def.type as String).toLocaleLowerCase()
+      group: (ann_def.type as String).toLocaleLowerCase(),
+      hyperlink: this.generateHyperlink(ann_def)
     };
 
     this.dataFlow.pushNode2Canvas(pay_load);
+  }
+
+  generateHyperlink(ann_def: Annotation): string {
+
+    switch (ann_def.type) {
+      case 'Chemical':
+        let id = ann_def.id.match(/(\d+)/g)[0];
+        return `https://www.ebi.ac.uk/chebi/searchId.do?chebiId=${id}`;
+      case 'Gene':
+        return `https://www.ncbi.nlm.nih.gov/gene/?term=${ann_def.id}`;
+      default:
+        return '';
+    }
   }
 }
