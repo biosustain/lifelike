@@ -14,18 +14,12 @@ import {
 } from '../../services'
 import {
   VisNetworkGraphEdge,
-  VisNetworkGraphNode
+  VisNetworkGraphNode,
+  GraphData
 } from '../../services/interfaces'
 import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
 
-interface GraphData {
-  id?: string;
-  label?: string;
-  group?: string;
-  edges?: VisNetworkGraphEdge[];
-  hyperlink?: string;
-}
 interface GraphSelectionData {
   edge_data?: VisNetworkGraphEdge;
   node_data?: {

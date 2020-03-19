@@ -43,6 +43,20 @@ interface VisNetworkGraph {
 }
 
 /**
+ * Interface for carring data relative
+ * to either node or edge
+ */
+interface GraphData {
+  id?: string;
+  label?: string;
+  group?: string;
+  edges?: VisNetworkGraphEdge[];
+  hyperlink?: string;
+  x?: number;
+  y?: number;
+}
+
+/**
  * Schema for annoations added in pdf-viewer
  */
 interface Annotation {
@@ -77,5 +91,6 @@ export {
   UniversalGraph,
   UniversalGraphEdge,
   UniversalGraphNode,
-  Annotation
+  Annotation,
+  GraphData
 }
