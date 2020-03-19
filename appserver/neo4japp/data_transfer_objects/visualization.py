@@ -1,5 +1,6 @@
 import attr
 
+from neo4japp.exceptions import FormatterException
 from neo4japp.models import GraphNode
 from neo4japp.util import CamelDictMixin
 
@@ -31,14 +32,27 @@ class VisEdge(CamelDictMixin):
     arrows: Optional[str] = attr.ib()
 
     def build_from_dict_formatter(self, vis_edge_input_dict: dict):
-        vis_edge_input_dict['from_'] = vis_edge_input_dict['from']
-        del vis_edge_input_dict['from']
-        return vis_edge_input_dict
+        # Error if both 'from' and 'from_' are in the dict, or if neither of them are
+        if vis_edge_input_dict.get('from_', None) is None and vis_edge_input_dict.get('from', None) is None:
+            raise FormatterException("Must have either 'from' or 'from_' in a VisEdge dict!")
+        elif vis_edge_input_dict.get('from_', None) is not None and vis_edge_input_dict.get('from', None) is not None:
+            raise FormatterException("Cannot have both 'from' and 'from_' in a VisEdge dict!")
+
+        if vis_edge_input_dict.get('from', None) is not None:
+            vis_edge_input_dict['from_'] = vis_edge_input_dict['from']
+            del vis_edge_input_dict['from']
+            return vis_edge_input_dict
+        else:
+            # 'from_' already exists in the dict, so nothing needs to be done
+            return vis_edge_input_dict
+
 
     def to_dict_formatter(self, vis_edge_output_dict: dict):
         vis_edge_output_dict['from'] = vis_edge_output_dict['from_']
         del vis_edge_output_dict['from_']
         return vis_edge_output_dict
+
+
 
 @attr.s(frozen=True)
 class DuplicateVisEdge(VisEdge):
