@@ -21,7 +21,8 @@ import {
 import {
   Project,
   VisNetworkGraphEdge,
-  VisNetworkGraphNode
+  VisNetworkGraphNode,
+  GraphData
 } from '../services/interfaces';
 import {
   NetworkVis
@@ -42,16 +43,13 @@ interface Command {
     id?: string,
     label?: string,
     group?: string,
-    coord?: {
-      x: number,
-      y: number
-    },
+    x?: number,
+    y?: number,
     node?: VisNetworkGraphNode,
     edges?: VisNetworkGraphEdge[],
     edge?: VisNetworkGraphEdge
   }
 }
-
 export interface Action {
   cmd: string;
   graph: Graph;
@@ -112,23 +110,23 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
     // Listen for node addition from pdf-viewer
     this.pdfDataSubscription = 
       this.dataFlow.$pdfDataSource.subscribe(
-        (node:VisNetworkGraphNode) => {
+        (node:GraphData) => {
           if (!node) return;
 
           // Convert DOM coordinate to canvas coordinate
           const coord = 
             this.visjsNetworkGraph
               .network.DOMtoCanvas({x: node.x, y: node.y});
-          const label = node.label;
-          const group = node.group;
 
           // TODO ADD NODE
           const cmd = {
             action: 'add node',
             data: {
-              label,
-              group,
-              coord
+              label: node.label,
+              group: node.group,
+              x: coord.x,
+              y: coord.y,
+              hyperlink: node.hyperlink
             }
           };
           this.recordCommand(cmd);
@@ -301,10 +299,7 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
         // Add node to network graph
         let addedNode = this.visjsNetworkGraph.addNode(
           {
-            label: cmd.data.label,
-            group: cmd.data.group,
-            x: cmd.data.coord.x,
-            y: cmd.data.coord.y
+            ...cmd.data
           }
         );
         // Toggle side-bar-ui for added node
@@ -392,7 +387,7 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
       data: {
         group: node_type,
         label,
-        coord
+        ...coord
       }
     }
     this.recordCommand(cmd);
