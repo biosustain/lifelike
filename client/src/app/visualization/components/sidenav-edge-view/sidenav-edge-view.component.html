@@ -12,9 +12,7 @@
   <div id="association-snippet-container" *ngIf="edgeEntity.snippets.length > 0; else noSnippets">
     <mat-expansion-panel class="association-snippet-panel" *ngFor="let snippet of edgeEntity.snippets">
       <mat-expansion-panel-header [collapsedHeight]="'80px'" [expandedHeight]="'80px'">
-        <mat-panel-title class="association-snippet-title">
-          {{ snippet.publication.displayName }}
-        </mat-panel-title>
+        <mat-panel-title class="association-snippet-title">{{ snippet.publication.data.title }}</mat-panel-title>
         <mat-panel-description class="association-snippet-pub-data">
           <i>{{ snippet.publication.data.journal }} ({{ snippet.publication.data.pubYear }})</i>
         </mat-panel-description>

@@ -18,6 +18,7 @@ import {
     DuplicateVisNode,
     DuplicateVisEdge,
     GroupRequest,
+    SidenavEdgeEntity,
 } from 'app/interfaces';
 import { RootStoreModule } from 'app/root-store';
 import { SharedModule } from 'app/shared/shared.module';
@@ -186,10 +187,9 @@ describe('VisualizationCanvasComponent', () => {
         expect(fixture).toBeTruthy();
     });
 
-    it('should update sidenav entity data and toggle the sidenav when getSnippetsResult changes', () => {
-        const toggleSidenavOpenedSpy = spyOn(instance, 'toggleSidenavOpened');
+    it('should update sidenav entity data when getSnippetsResult changes', () => {
         const mockGetSnippetsResult = {
-            references: [],
+            snippets: [],
             fromNodeId: 1,
             toNodeId: 2,
             association: 'HAS A',
@@ -203,12 +203,11 @@ describe('VisualizationCanvasComponent', () => {
             to: instance.nodes.get(mockGetSnippetsResult.toNodeId) as VisNode,
             from: instance.nodes.get(mockGetSnippetsResult.fromNodeId) as VisNode,
             association: mockGetSnippetsResult.association,
-            references: mockGetSnippetsResult.references,
-        });
-        expect(toggleSidenavOpenedSpy).toHaveBeenCalled();
+            snippets: mockGetSnippetsResult.snippets,
+        } as SidenavEdgeEntity);
     });
 
-    it('should update sidenav entity data and toggle the sidenav when getClusterGraphDataResult changes', () => {
+    it('should update sidenav entity data when getClusterGraphDataResult changes', () => {
         const mockGetClusterGraphDataResult = {
             results: {
                 1: {
