@@ -9,7 +9,7 @@ services:
             - backend
         ports:
             - "5431:5432"
-        volumes: 
+        volumes:
             -  ./postgres/db:/var/lib/postgresql/data
 
     database:
@@ -33,7 +33,7 @@ services:
             - database
         stdin_open: true
         tty: true
-        
+
     elasticsearch:
         container_name: n4j-elasticsearch
         build:

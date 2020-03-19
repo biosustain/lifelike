@@ -6,17 +6,6 @@ Sets up a Dockerized Flask and Neo4j application using ```docker-compose``` for 
 ## DEV F.A.Q
 __1. How do I run the application?__
 
-You will first need to initialize and pull the toolbar-menu submodule if you have not already. To do so, run the following commands:
-
-```bash
-git submodule init
-git submodule update
-cd client/toolbar-menu
-npm install
-npm run build
-```
-
-More info on submodules: https://git-scm.com/book/en/v2/Git-Tools-Submodules
 
 To run the application, first create the docker images
 ```
@@ -41,6 +30,10 @@ __2. How do I seed the NEO4J Database?__
 
 Download the `.zip` file from https://console.cloud.google.com/storage/browser/graphdb_backup?project=able-goods-221820 and add it to the `db` directory. The directory structure will be `db/graph.db`.
 
+OR
+
+Visit the backup in the repository https://github.com/SBRG/kg-prototypes/blob/master/db/text-mining-subset-graphdb.tar.gz
+
 **NOTE** The backup database currently only works with Neo4j version 3.x.x.
 
 __3. How do I seed the Elastic Search Database?__
@@ -50,20 +43,3 @@ Decompress the file in elasticsearch/esdata_20191029.tar.gz
 __4. API Endpoint Documentation?__
 
 TODO
-
-## TODO
-- ~~Add an example API endpoint using py2neo~~
-  - *See blueprints directory*
-- ~~Add a JavaScript client~~
-  - *Angular 2 added as a client*
-- Compelely remove 'template' folders from application server
-- Handle neo4j transactions
-- ~~Add Angular Material for styling~~
-- Middleware to translate ```vis.js``` data to be compatible with ```py2neo (neo4j)```
-- Implement DTU Navigation bar
-- ~~Adding NgRx (Redux) to the stack~~
-- Handle saving vis.js data to Neo4J
-- Add a seed database
-- Handle Elastic Search transactions
-## Considerations
-- Adding GraphQL to the stack
