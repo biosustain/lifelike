@@ -12,6 +12,10 @@
 module.exports = function (config) {
   config.set({
     basePath: '',
+    // The threshold for this timeout is likely to increase as we add more code to the
+    // app; the time required here is directly proportional to the time it takes to
+    // compile the code
+    browserNoActivityTimeout: 90000,
     frameworks: ['jasmine', '@angular-devkit/build-angular', 'viewport'],
     plugins: [
       require('karma-jasmine'),
