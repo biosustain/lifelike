@@ -4,7 +4,7 @@ import { configureTestSuite } from 'ng-bullet';
 
 import { ToolbarMenuModule } from 'toolbar-menu';
 
-import { SidenavEdgeEntity } from 'app/interfaces';
+import { AssociationSnippet, Publication, Reference, SidenavEdgeEntity } from 'app/interfaces';
 import { RootStoreModule } from 'app/***ARANGO_USERNAME***-store';
 import { SharedModule } from 'app/shared/shared.module';
 
@@ -15,6 +15,11 @@ describe('SidenavEdgeViewComponent', () => {
     let fixture: ComponentFixture<SidenavEdgeViewComponent>;
 
     let mockSidenavEdgeEntity: SidenavEdgeEntity;
+    let mockAssociationSnippets: AssociationSnippet[];
+    let mockPublication: Publication;
+    let mockReference: Reference;
+
+    let mockLegend: Map<string, string[]>;
 
     configureTestSuite(() => {
         TestBed.configureTestingModule({
@@ -29,15 +34,49 @@ describe('SidenavEdgeViewComponent', () => {
 
     beforeEach(() => {
         // Reset mock data before every test so changes don't carry over between tests
+        mockPublication = {
+            id: 3,
+            label: 'Mock Publication',
+            data: {
+                journal: 'Mock Journal',
+                title: 'Mock Title',
+                pmid: '123456',
+                pubYear: 9999,
+            },
+            subLabels: [],
+            displayName: 'Mock Publication Display Name',
+         } as Publication;
+
+        mockReference = {
+            id: 4,
+            label: 'Mock Reference',
+            data: {
+                entry1Text: 'Mock Entry 1',
+                entry2Text: 'Mock Entry 2',
+                id: 'mockReferenceId1',
+                score: 0,
+                sentence: 'Mock Sentence',
+            },
+            subLabels: [],
+            displayName: 'Mock Reference Display Name',
+        } as Reference;
+
+        mockAssociationSnippets = [
+            {
+                publication: mockPublication,
+                reference: mockReference,
+            }
+        ];
+
         mockSidenavEdgeEntity  = {
             from: {
                 data: {id: 'MOCK_NODE_1_ID', name: 'Mock Node 1'},
                 displayName: 'Mock Node 1',
                 id: 1,
                 label: 'Mock Node 1',
-                subLabels: ['MockNode'],
+                subLabels: ['MockNode1'],
                 expanded: true,
-                primaryLabel: 'MockNode',
+                primaryLabel: 'MockNode1',
                 color: null,
             },
             to:
@@ -46,19 +85,26 @@ describe('SidenavEdgeViewComponent', () => {
                 displayName: 'Mock Node 2',
                 id: 2,
                 label: 'Mock Node 2',
-                subLabels: ['MockNode'],
+                subLabels: ['MockNode2'],
                 expanded: true,
-                primaryLabel: 'MockNode',
+                primaryLabel: 'MockNode2',
                 color: null,
             },
             association: 'Mock Association',
-            references: [],
+            snippets: mockAssociationSnippets,
         };
+
+        mockLegend = new Map<string, string[]>([
+            ['MockNode1', ['#CD5D67', '#410B13']],
+            ['MockNode2', ['#8FA6CB', '#7D84B2']],
+        ]);
 
         fixture = TestBed.createComponent(SidenavEdgeViewComponent);
         component = fixture.componentInstance;
+
         // Make a deep copy of the mock object so we get a brand new one for each test
         component.edgeEntity = mockSidenavEdgeEntity;
+        component.legend = mockLegend;
 
         fixture.detectChanges();
     });
@@ -67,72 +113,34 @@ describe('SidenavEdgeViewComponent', () => {
         expect(component).toBeTruthy();
     });
 
-    it('should show edge association', () => {
-        const edgeAssociationElement = document.getElementById('sidenav-edge-association');
-        expect(edgeAssociationElement.innerText).toEqual('Association: Mock Association');
+    it('should load snippet panels', () => {
+        const snippetPanels = document.getElementsByClassName('association-snippet-panel');
+
+        expect(snippetPanels.length).toEqual(1);
     });
 
-    // From node tests
+    it('should show publication data on snippet panels', () => {
+        const snippetPanelTitles = document.getElementsByClassName('association-snippet-title');
+        const snippetPanelPubData = document.getElementsByClassName('association-snippet-pub-data');
 
-    it('should show the input from node display name', () => {
-        const fromNodeDisplayNameElement = document.getElementById('sidenav-from-node-display-name');
-        expect(fromNodeDisplayNameElement.innerText).toEqual('Display Name: Mock Node 1');
+        expect(snippetPanelTitles.length).toEqual(1);
+        expect(snippetPanelPubData.length).toEqual(1);
+
+        const title = snippetPanelTitles[0];
+        const pubData = snippetPanelPubData[0];
+
+        expect(title.textContent).toEqual('Mock Title');
+        expect(pubData.textContent).toEqual('Mock Journal (9999)');
     });
 
-    it('should show the input from node label', () => {
-        const fromNodeLabelElement = document.getElementById('sidenav-from-node-label');
-        expect(fromNodeLabelElement.innerText).toEqual('Label: MockNode');
-    });
+    it('should link to pubmed', () => {
+        const pubmedLinks = document.getElementsByClassName('pubmed-link');
 
-    it('should not show sub labels for from node with only one label', () => {
-        component.edgeEntity.from.subLabels = ['MockNode'];
-        fixture.detectChanges();
+        expect(pubmedLinks.length).toEqual(1);
 
-        const fromNodeSubLabelElements = document.getElementsByClassName('sidenav-from-node-sub-label');
-        expect(fromNodeSubLabelElements.length).toEqual(0);
-    });
+        const link = pubmedLinks[0];
 
-    it('should show sub labels for from node with more than one label', () => {
-        component.edgeEntity.from.subLabels = ['MockNode', 'ExtraSubLabel'];
-        fixture.detectChanges();
-
-        const fromNodeSubLabelElements = document.getElementsByClassName('sidenav-from-node-sub-label');
-        expect(fromNodeSubLabelElements.length).toEqual(1);
-        expect(fromNodeSubLabelElements[0].textContent).toEqual('ExtraSubLabel');
-    });
-
-
-    // To node tests
-
-    it('should show the input to node display name', () => {
-        const toNodeDisplayNameElement = document.getElementById('sidenav-to-node-display-name');
-        expect(toNodeDisplayNameElement.innerText).toEqual('Display Name: Mock Node 2');
-    });
-
-    it('should show the input to node label', () => {
-        const toNodeLabelElement = document.getElementById('sidenav-to-node-label');
-        expect(toNodeLabelElement.innerText).toEqual('Label: MockNode');
-    });
-
-    it('should not show sub labels for to node with only one label', () => {
-        component.edgeEntity.to.subLabels = ['MockNode'];
-        fixture.detectChanges();
-
-        const toNodeSubLabelElements = document.getElementsByClassName('sidenav-to-node-sub-label');
-        expect(toNodeSubLabelElements.length).toEqual(0);
-    });
-
-    it('should show sub labels for to node with more than one label', () => {
-        component.edgeEntity.to.subLabels = ['MockNode', 'ExtraSubLabel'];
-        fixture.detectChanges();
-
-        const toNodeSubLabelElements = document.getElementsByClassName('sidenav-to-node-sub-label');
-        expect(toNodeSubLabelElements.length).toEqual(1);
-        expect(toNodeSubLabelElements[0].textContent).toEqual('ExtraSubLabel');
-    });
-
-    it('should not show snippets if edge has no references', () => {
-        const edgeAssociationSnippetElements = document.getElementsByClassName('sidenav-snippet');
-        expect(edgeAssociationSnippetElements.length).toEqual(0);
+        expect(link.getAttribute('href')).toEqual('https://pubmed.ncbi.nlm.nih.gov/123456/');
+        expect(link.textContent).toEqual('123456launch'); // 'launch' is here because of the mat-icon
     });
 });
