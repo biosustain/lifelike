@@ -10,6 +10,7 @@ from neo4japp.data_transfer_objects.visualization import (
     GetSnippetCountsFromEdgesResult,
     GetSnippetsFromEdgeResult,
     ReferenceTableRow,
+    Snippet,
     VisEdge,
 )
 from neo4japp.services.common import BaseDao
@@ -103,22 +104,44 @@ class Neo4JService(BaseDao):
         query = self.get_snippets_from_edge_query(edge.from_, edge.to, edge.label)
 
         data = self.graph.run(query).data()
+        snippets = [Snippet(
+            reference=GraphNode.from_py2neo(
+                result['reference'],
+                display_fn=lambda x: x.get(DISPLAY_NAME_MAP[next(iter(result['reference'].labels), set())]),
+            ),
+            publication=GraphNode.from_py2neo(
+                result['publication'],
+                display_fn=lambda x: x.get(DISPLAY_NAME_MAP[next(iter(result['publication'].labels), set())]),
+            )
+        ) for result in data]
+
         return GetSnippetsFromEdgeResult(
             from_node_id=edge.from_,
             to_node_id=edge.to,
             association=edge.label,
-            references=[result['references'] for result in data]
+            snippets=snippets,
         )
 
     def get_snippets_from_duplicate_edge(self, edge: DuplicateVisEdge):
         query = self.get_snippets_from_edge_query(edge.original_from, edge.original_to, edge.label)
 
         data = self.graph.run(query).data()
+        snippets = [Snippet(
+            reference=GraphNode.from_py2neo(
+                result['reference'],
+                display_fn=lambda x: x.get(DISPLAY_NAME_MAP[next(iter(result['reference'].labels), set())]),
+            ),
+            publication=GraphNode.from_py2neo(
+                result['publication'],
+                display_fn=lambda x: x.get(DISPLAY_NAME_MAP[next(iter(result['publication'].labels), set())]),
+            )
+        ) for result in data]
+
         return GetSnippetsFromEdgeResult(
             from_node_id=edge.from_,
             to_node_id=edge.to,
             association=edge.label,
-            references=[result['references'] for result in data]
+            snippets=snippets
         )
 
     # Currently unused
@@ -358,8 +381,9 @@ class Neo4JService(BaseDao):
         query = """
             MATCH (f)-[:HAS_ASSOCIATION]->(a:Association)-[:HAS_ASSOCIATION]->(t)
             WHERE ID(f)={} AND ID(t)={} AND a.description='{}'
-            WITH a AS association MATCH (association)-[:HAS_REF]-(r:Reference)
-            RETURN r AS references
+            WITH a AS association
+            MATCH (association)-[:HAS_REF]-(r:Reference)-[:HAS_PUBLICATION]-(p:Publication)
+            RETURN r AS reference, p AS publication
         """.format(from_node, to_node, association)
         return query
 
