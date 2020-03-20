@@ -1,0 +1,47 @@
+# This workflow will do a clean install of node dependencies, build the source code and run tests across different versions of node
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
+
+name: Node CI
+
+on: [push]
+
+jobs:
+  build:
+
+    needs: build
+
+    steps:
+      - uses: actions/checkout@v1
+      - name: yarn install and build webpack
+        run: |
+          yarn install
+      - uses: actions/upload-artifact@master
+        with:
+          name: webpack artifacts
+          path: public/
+
+  test:
+
+    - uses: actions/download-artifact@master
+      with:
+        name: webpack artifacts
+        path: public
+    - name: yarn install, and test
+
+    strategy:
+      matrix:
+        os: [ubuntu-lastest]
+        node-version: [13.x]
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+    - name: yarn install, and test
+      run: |
+        yarn install
+        yarn test
+      env:
+        CI: true
