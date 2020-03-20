@@ -11,10 +11,12 @@ import { VisualizationModule } from './visualization/visualization.module';
 import { SearchModule } from './search/search.module';
 import { DrawingToolModule } from './drawing-tool/drawing-tool.module';
 import { SharedModule } from './shared/shared.module';
+import { FileBrowserComponent } from './file-browser/file-browser.component';
 
 @NgModule({
   declarations: [
     AppComponent,
+    FileBrowserComponent,
   ],
   imports: [
     BrowserModule,
