@@ -16,7 +16,6 @@ import { configureTestSuite } from 'ng-bullet';
 
 import { RootStoreModule } from 'app/root-store';
 import { SharedModule } from 'app/shared/shared.module';
-import { ToolbarMenuModule } from 'toolbar-menu';
 
 import {
     UserFileImportState as userFileImportState,
@@ -50,7 +49,6 @@ describe('UserFileImportExistingColumnMappingRowComponent', () => {
             imports: [
                 RootStoreModule,
                 SharedModule,
-                ToolbarMenuModule,
             ],
         })
         .compileComponents();
