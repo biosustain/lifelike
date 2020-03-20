@@ -8,6 +8,7 @@ from py2neo import (
 )
 
 from neo4japp.constants import DISPLAY_NAME_MAP
+from neo4japp.database import db, reset_dao
 from neo4japp.data_transfer_objects.visualization import (
     ClusteredNode,
     DuplicateNodeEdgePair,
@@ -23,6 +24,7 @@ from neo4japp.models.neo4j import (
     GraphRelationship,
 )
 from neo4japp.services import (
+    AuthService,
     GraphBaseDao,
     Neo4JService,
     SearchService,
@@ -43,6 +45,30 @@ def app(request):
 
     request.addfinalizer(teardown)
     return app
+
+
+@pytest.fixture(scope='function')
+def session(app, request):
+    """ Creates a new database session """
+    connection = db.engine.connect()
+    transaction = connection.begin()
+    options = dict(bind=connection, binds={})
+    session = db.create_scoped_session(options=options)
+    db.session = session
+
+    def teardown():
+        transaction.rollback()
+        connection.close()
+        session.remove()
+        reset_dao()
+
+    request.addfinalizer(teardown)
+    return session
+
+
+@pytest.fixture(scope='function')
+def auth_service(app, session):
+    return AuthService(session)
 
 
 @pytest.fixture(scope='function')

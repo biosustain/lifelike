@@ -56,6 +56,7 @@ class AuthService(RDBMSBaseDao):
 
         if permission not in existing_permissions:
             self.session.add(policy)
+            retval.append(policy)
 
             # 'write' permission implies 'read' permission
             if permission == 'write' and 'read' not in existing_permissions:
@@ -68,8 +69,8 @@ class AuthService(RDBMSBaseDao):
                     rule_type=AccessRuleType.ALLOW,
                 )
                 self.session.add(p2)
-                self.commit_or_flush(commit_now)
                 retval.append(p2)
+        self.commit_or_flush(commit_now)
         return retval
 
     def revoke(
