@@ -3,6 +3,7 @@ import enum
 
 import sqlalchemy as sa
 
+from sqlalchemy import and_
 from sqlalchemy.orm.query import Query
 
 from neo4japp.database import db, ma
@@ -125,11 +126,13 @@ class AccessControlPolicy(RDBMSBase):
         action: str,
     ) -> Query:
         return cls.query.filter(
-            cls.action == action,
-            cls.asset_type == Project.__tablename__,
-            cls.asset_id == project_id,
-            cls.principal_type == AppUser.__tablename__,
-            cls.principal_id == user_id,
+            and_(
+                cls.action == action,
+                cls.asset_type == Project.__tablename__,
+                cls.asset_id == project_id,
+                cls.principal_type == AppUser.__tablename__,
+                cls.principal_id == user_id,
+            )
         )
 
 

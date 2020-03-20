@@ -45,6 +45,7 @@ export class CreateUserComponent {
             email: this.form.value.email,
         } as UserCreationRequest).subscribe(
                 (user: AppUser) => {
+                    this.adminService.getUserList();
                     this.formGroupDirective.resetForm();
                     this.snackBar.open(
                         `User ${user.username} created!`,
@@ -53,7 +54,6 @@ export class CreateUserComponent {
                     );
                 },
                 err => {
-                    console.log(err);
                     const msg = err.error.apiHttpError.message;
                     this.snackBar.open(
                         `Error: ${msg}`,

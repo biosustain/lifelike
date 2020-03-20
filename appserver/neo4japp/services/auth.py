@@ -118,9 +118,9 @@ class AuthService(RDBMSBaseDao):
     ) -> bool:
         # TODO: Add other principal types
         if isinstance(principal, AppUser):
-            principal = AppUser
             if (type(asset) is Project):
-                return
+                return self.user_is_allowed_project_action(
+                    principal, action, asset)
         raise NotImplementedError
 
     def user_is_allowed_project_action(
