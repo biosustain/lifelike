@@ -10,6 +10,7 @@ import { UserFileImportModule } from './user-file-import/user-file-import.module
 import { VisualizationModule } from './visualization/visualization.module';
 import { SearchModule } from './search/search.module';
 import { DrawingToolModule } from './drawing-tool/drawing-tool.module';
+import { SharedModule } from './shared/shared.module';
 
 @NgModule({
   declarations: [
@@ -17,6 +18,7 @@ import { DrawingToolModule } from './drawing-tool/drawing-tool.module';
   ],
   imports: [
     BrowserModule,
+    SharedModule,
     AppRoutingModule,
     HttpClientModule,
     UserFileImportModule,
