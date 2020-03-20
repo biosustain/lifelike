@@ -1,1 +1,29 @@
-<router-outlet></router-outlet>
+<div fxLayout="row" fxFlexFill>
+  <div class="vertical-nav" fxLayout="column" fxLayoutAlign="start center">
+    <a matTooltip="Home" matTooltipPosition="after" fxLayoutAlign="center center">
+      <mat-icon>home</mat-icon>
+    </a>
+    <div fxFlex></div>
+    <a matTooltip="Main Menu" matTooltipPosition="after" fxLayoutAlign="center center"
+       href="https://main.biosustain.dtu.dk" target="_blank">
+      <mat-icon>apps</mat-icon>
+    </a>
+    <a matTooltip="Main Menu" matTooltipPosition="after" fxLayoutAlign="center center"
+       [matMenuTriggerFor]="userMenu">
+      <mat-icon>account_circle</mat-icon>
+    </a>
+  </div>
+
+  <router-outlet></router-outlet>
+</div>
+
+<mat-menu #userMenu="matMenu" xPosition="after">
+  <button mat-menu-item disabled>
+    <mat-icon>person</mat-icon>
+    Bind username here
+  </button>
+  <button mat-menu-item>
+    <mat-icon>exit_to_app</mat-icon>
+    Logout
+  </button>
+</mat-menu>
