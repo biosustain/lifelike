@@ -26,7 +26,7 @@ Then to spin up the server and bring it down use
 
 Next, run ```docker-compose exec appserver python db/neo4jsetup.py``` to setup the database indexes for full text search
 
-**Note:** The application will be seeded with demo data, so the default login can be found under ```appserver/fixtures/seed.json``
+**Note:** The application will be seeded with demo data, so the default login can be found under ```appserver/fixtures/seed.json```
 
 __2. How do I seed the NEO4J Database?__
 
