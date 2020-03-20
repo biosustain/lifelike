@@ -7,13 +7,13 @@ on: [push]
 
 jobs:
   build:
-
-    needs: build
+    runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v1
       - name: yarn install and build webpack
         run: |
+          cd client
           yarn install
       - uses: actions/upload-artifact@master
         with:
@@ -21,12 +21,8 @@ jobs:
           path: public/
 
   test:
-
-    - uses: actions/download-artifact@master
-      with:
-        name: webpack artifacts
-        path: public
-    - name: yarn install, and test
+    needs: [build]
+    runs-on: ubuntu-latest
 
     strategy:
       matrix:
@@ -35,12 +31,17 @@ jobs:
 
     steps:
     - uses: actions/checkout@v1
+    - uses: actions/download-artifact@master
+      with:
+        name: webpack artifacts
+        path: public
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
     - name: yarn install, and test
       run: |
+        cd client
         yarn install
         yarn test
       env:
