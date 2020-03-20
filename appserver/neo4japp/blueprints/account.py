@@ -7,6 +7,7 @@ from neo4japp.util import jsonify_with_class, SuccessResponse
 
 bp = Blueprint('accounts', __name__, url_prefix='/accounts')
 
+
 @bp.route('/', methods=['POST'])
 @auth.login_required
 @jsonify_with_class(UserCreationRequest)

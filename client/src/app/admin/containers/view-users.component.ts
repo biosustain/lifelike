@@ -15,6 +15,7 @@ export class ViewUsersComponent implements OnInit {
     constructor(private adminService: AdminService) {}
 
     ngOnInit() {
-        this.adminService.listOfUsers().subscribe((users) => this.users = users);
+        this.adminService.getUserList();
+        this.adminService.userList.subscribe((users: AppUser[]) => this.users = users);
     }
 }
