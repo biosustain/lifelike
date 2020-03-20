@@ -3,6 +3,10 @@
     <a matTooltip="Home" matTooltipPosition="after" fxLayoutAlign="center center">
       <mat-icon>home</mat-icon>
     </a>
+    <a matTooltip="File Browser" matTooltipPosition="after" fxLayoutAlign="center center"
+       routerLink="/file-browser">
+      <mat-icon>picture_as_pdf</mat-icon>
+    </a>
     <div fxFlex></div>
     <a matTooltip="Main Menu" matTooltipPosition="after" fxLayoutAlign="center center"
        href="https://main.biosustain.dtu.dk" target="_blank">
@@ -14,7 +18,9 @@
     </a>
   </div>
 
-  <router-outlet></router-outlet>
+  <div fxFlex>
+    <router-outlet></router-outlet>
+  </div>
 </div>
 
 <mat-menu #userMenu="matMenu" xPosition="after">
