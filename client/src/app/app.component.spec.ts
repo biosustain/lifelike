@@ -3,8 +3,6 @@ import { RouterTestingModule } from '@angular/router/testing';
 
 import { configureTestSuite } from 'ng-bullet';
 
-import { ToolbarMenuModule } from 'toolbar-menu';
-
 import { AppComponent } from './app.component';
 import { RootStoreModule } from './***ARANGO_USERNAME***-store';
 
@@ -17,7 +15,6 @@ describe('AppComponent', () => {
             imports: [
                 RouterTestingModule,
                 RootStoreModule,
-                ToolbarMenuModule,
             ],
             declarations: [
                 AppComponent

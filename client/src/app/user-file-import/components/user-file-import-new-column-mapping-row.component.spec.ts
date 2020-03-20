@@ -16,7 +16,6 @@ import { configureTestSuite } from 'ng-bullet';
 
 import { RootStoreModule } from 'app/***ARANGO_USERNAME***-store';
 import { SharedModule } from 'app/shared/shared.module';
-import { ToolbarMenuModule } from 'toolbar-menu';
 
 import {
     UserFileImportState as userFileImportState,
@@ -51,7 +50,6 @@ describe('UserFileImportNewColumnMappingRowComponent', () => {
             imports: [
                 RootStoreModule,
                 SharedModule,
-                ToolbarMenuModule,
             ],
         })
         .compileComponents();

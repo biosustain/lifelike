@@ -6,7 +6,6 @@ import { RootStoreModule } from 'app/***ARANGO_USERNAME***-store';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
-import { ToolbarMenuModule } from 'toolbar-menu';
 import { UserFileImportModule } from './user-file-import/user-file-import.module';
 import { VisualizationModule } from './visualization/visualization.module';
 import { SearchModule } from './search/search.module';
@@ -26,7 +25,6 @@ import { DrawingToolModule } from './drawing-tool/drawing-tool.module';
     RootStoreModule,
     VisualizationModule,
     SearchModule,
-    ToolbarMenuModule,
     DrawingToolModule
   ],
   providers: [],
