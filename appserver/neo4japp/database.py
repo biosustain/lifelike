@@ -50,3 +50,20 @@ def get_account_service():
         from neo4japp.services import AccountService
         g.account_service = AccountService(db.session)
     return g.account_service
+
+
+def reset_dao():
+    """ Cleans up DAO bound to flask request context
+
+    Used in functional test fixture, but may come in
+    handy for production later.
+    """
+    for dao in [
+        'neo4j_dao',
+        'user_file_import_service',
+        'search_dao',
+        'authorization_service',
+        'account_service'
+    ]:
+        if dao in g:
+            g.pop(dao)
