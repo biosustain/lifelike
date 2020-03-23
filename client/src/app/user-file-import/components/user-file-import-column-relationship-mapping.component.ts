@@ -20,6 +20,10 @@ import { uploadNodeMapping } from '../store/actions';
 @Component({
     selector: 'app-user-file-import-column-relationship-mapping',
     templateUrl: 'user-file-import-column-relationship-mapping.component.html',
+    styles: [
+        '.mat-cell { margin: 0 10px 0 10px; }',
+        '.mat-header-cell { margin: 0 10px 0 10px; }',
+    ],
 })
 export class UserFileImportColumnRelationshipMapperComponent {
     @Input() chosenSheetToMap: SheetNameAndColumnNames;

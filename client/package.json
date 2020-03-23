@@ -43,7 +43,6 @@
     "qtip2": "3.0.3",
     "rxjs": "~6.4.0",
     "tachyons": "4.10.0",
-    "toolbar-menu": "git+***REMOVED***/SBRG/toolbar-menu",
     "tslib": "^1.10.0",
     "vis-data": "^6.2.1",
     "vis-network": "^6.5.2",
