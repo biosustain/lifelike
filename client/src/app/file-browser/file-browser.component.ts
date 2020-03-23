@@ -1,12 +1,5 @@
 import { Component } from '@angular/core';
-
-// TODO: find a better place for this interface
-export interface FileElement {
-  name: string;
-  modifiedAt: string;
-  modifiedBy: string;
-  annotation: string;
-}
+import { FileElement } from 'app/interfaces/file-browser.interface';
 
 // TODO: remove ELEMENT_DATA once the endpoint is ready
 const ELEMENT_DATA: FileElement[] = [
