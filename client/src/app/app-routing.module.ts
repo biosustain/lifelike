@@ -5,6 +5,7 @@ import { AdminPanelComponent } from 'app/admin/containers/admin-panel-page.compo
 import { UserFileImportComponent } from 'app/user-file-import/components/user-file-import.component';
 import { VisualizationComponent } from 'app/visualization/containers/visualization.component';
 import { SearchCollectionPageComponent } from 'app/search/containers/search-collection-page.component';
+import { FileBrowserComponent } from 'app/file-browser/file-browser.component';
 
 import {
   ProjectListViewComponent,
@@ -50,6 +51,10 @@ const routes: Routes = [
   {
     path: 'pdf-viewer',
     component: PdfViewerComponent
+  },
+  {
+    path: 'file-browser',
+    component: FileBrowserComponent,
   },
 ];
 
