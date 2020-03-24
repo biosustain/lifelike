@@ -6,18 +6,21 @@ import { RootStoreModule } from 'app/root-store';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
-import { ToolbarMenuModule } from 'toolbar-menu';
 import { UserFileImportModule } from './user-file-import/user-file-import.module';
 import { VisualizationModule } from './visualization/visualization.module';
 import { SearchModule } from './search/search.module';
 import { DrawingToolModule } from './drawing-tool/drawing-tool.module';
+import { SharedModule } from './shared/shared.module';
+import { FileBrowserComponent } from './file-browser/file-browser.component';
 
 @NgModule({
   declarations: [
     AppComponent,
+    FileBrowserComponent,
   ],
   imports: [
     BrowserModule,
+    SharedModule,
     AppRoutingModule,
     HttpClientModule,
     UserFileImportModule,
@@ -26,7 +29,6 @@ import { DrawingToolModule } from './drawing-tool/drawing-tool.module';
     RootStoreModule,
     VisualizationModule,
     SearchModule,
-    ToolbarMenuModule,
     DrawingToolModule
   ],
   providers: [],

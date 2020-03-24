@@ -4,8 +4,6 @@ import { configureTestSuite } from 'ng-bullet';
 
 import { of } from 'rxjs';
 
-import { ToolbarMenuModule } from 'toolbar-menu';
-
 import { DuplicateNodeEdgePair, GetReferenceTableDataResult, VisEdge } from 'app/interfaces';
 import { RootStoreModule } from 'app/root-store';
 import { ReferenceTableControlService } from 'app/visualization/services/reference-table-control.service';
@@ -28,7 +26,6 @@ describe('ReferenceTableComponent', () => {
         TestBed.configureTestingModule({
             imports: [
                 RootStoreModule,
-                ToolbarMenuModule,
             ],
             declarations: [ ReferenceTableComponent ],
             providers: [
