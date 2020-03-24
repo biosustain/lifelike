@@ -38,7 +38,8 @@ export class CreateUserComponent {
         private snackBar: MatSnackBar,
     ) { }
 
-    submit() {
+    submit(submitBtn: HTMLButtonElement) {
+        submitBtn.disabled = true;
         this.adminService.createUser({
             username: this.form.value.username,
             password: this.form.value.password,
@@ -52,6 +53,7 @@ export class CreateUserComponent {
                         'close',
                         {duration: 5000},
                     );
+                    submitBtn.disabled = false;
                 },
                 err => {
                     const msg = err.error.apiHttpError.message;

@@ -6,7 +6,7 @@
     <div class="create-user-container">
       <mat-card class="mat-elevation-z0">
         <mat-card-content>
-          <form [formGroup]="form" method="POST" (ngSubmit)="submit()">
+          <form [formGroup]="form" method="POST" (ngSubmit)="submit(submitBtn)">
             <mat-form-field class="field-width">
 							<input
 								type="text"
@@ -57,6 +57,7 @@
                 mat-raised-button
                 [disabled]="!form.valid"
                 type="submit"
+                #submitBtn
               >
                 Submit
               </button>
