@@ -8,8 +8,6 @@ import {
 
 import { Options } from '@popperjs/core';
 
-import { first, filter } from 'rxjs/operators';
-
 import { isNullOrUndefined } from 'util';
 
 import { Network, DataSet, IdType } from 'vis-network';
@@ -34,7 +32,6 @@ import {
 import { uuidv4 } from 'app/shared/utils';
 
 import { ContextMenuControlService } from '../../services/context-menu-control.service';
-import { ReferenceTableControlService } from '../../services/reference-table-control.service';
 
 enum SidenavEntityType {
     EMPTY,
@@ -47,7 +44,7 @@ enum SidenavEntityType {
     selector: 'app-visualization-canvas',
     templateUrl: './visualization-canvas.component.html',
     styleUrls: ['./visualization-canvas.component.scss'],
-    providers: [ContextMenuControlService, ReferenceTableControlService],
+    providers: [ContextMenuControlService],
 })
 export class VisualizationCanvasComponent implements OnInit {
     @Output() expandNode = new EventEmitter<number>();
@@ -105,7 +102,6 @@ export class VisualizationCanvasComponent implements OnInit {
 
     constructor(
         private contextMenuControlService: ContextMenuControlService,
-        private referenceTableControlService: ReferenceTableControlService,
     ) {
         this.sidenavOpened = false;
         this.sidenavEntity = null;
@@ -645,7 +641,6 @@ export class VisualizationCanvasComponent implements OnInit {
 
     hideAllTooltips() {
         this.contextMenuControlService.hideTooltip();
-        this.referenceTableControlService.hideTooltip();
     }
 
     // Begin Callback Functions
@@ -657,34 +652,11 @@ export class VisualizationCanvasComponent implements OnInit {
     onDragStartCallback(params: any) {
         this.hideAllTooltips();
         this.updateSelectedNodes(); // Dragging a node doesn't fire node selection, but it is selected after dragging finishes, so update
-
-        if (this.networkGraph.isCluster(params.nodes[0]) || !this.nodes.get(params.nodes[0])) {
-            this.referenceTableControlService.interruptReferenceTable();
-        }
     }
 
     onHoverNodeCallback(params: any) {
         if (this.networkGraph.isCluster(params.node)) {
-            // Begin the delay for showing the updated reference table for the hovered cluster
-            this.referenceTableControlService.delayReferenceTable();
-            this.referenceTableControlService.showReferenceTableResult$.pipe(
-                first(),
-                filter(showRefTable => showRefTable),
-            ).subscribe(() => {
-                // Update cluster data AFTER the delay has completed
-                this.referenceTableData = this.getNodeEdgePairsInCluster(params.node);
-
-                // Update the canvas location
-                const clusterPosition = this.networkGraph.getPositions(params.node)[`${params.node}`]; // Cluster x and y
-                const clusterDOMPos = this.networkGraph.canvasToDOM(clusterPosition);
-
-                const canvas = document.querySelector('canvas').getBoundingClientRect() as DOMRect;
-                const referenceTableXPos = clusterDOMPos.x + canvas.x;
-                const referenceTableYPos = clusterDOMPos.y + canvas.y;
-
-                this.referenceTableControlService.updatePopper(referenceTableXPos, referenceTableYPos);
-                this.referenceTableControlService.showTooltip();
-            });
+            // TODO: Add on-hover cluster effects
         } else if (!this.nodes.get(params.node)) {
             // TODO: Add on-hover edge effects
         } else {
@@ -698,8 +670,10 @@ export class VisualizationCanvasComponent implements OnInit {
     }
 
     onBlurNodeCallback(params: any) {
-        if (this.networkGraph.isCluster(params.node) || !this.nodes.get(params.node)) {
-            this.referenceTableControlService.interruptReferenceTable();
+        if (this.networkGraph.isCluster(params.node)) {
+            // TODO: Add on-blur cluster effects
+        } else if (!this.nodes.get(params.node)) {
+            // TODO: Add on-blur edge effects
         } else {
             // This produces a 'shrink effect'
             // TODO: Currently this does nothing, because the size property does not change 'box' shape nodes.
