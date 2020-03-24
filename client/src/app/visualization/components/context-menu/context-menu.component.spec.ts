@@ -4,8 +4,6 @@ import { configureTestSuite } from 'ng-bullet';
 
 import { IdType } from 'vis-network';
 
-import { ToolbarMenuModule } from 'toolbar-menu';
-
 import { SharedModule } from 'app/shared/shared.module';
 import { RootStoreModule } from 'app/root-store';
 import { ContextMenuControlService } from 'app/visualization/services/context-menu-control.service';
@@ -26,7 +24,6 @@ describe('ContextMenuComponent', () => {
             imports: [
                 RootStoreModule,
                 SharedModule,
-                ToolbarMenuModule,
             ],
             declarations: [ ContextMenuComponent ],
             providers: [ContextMenuControlService],
