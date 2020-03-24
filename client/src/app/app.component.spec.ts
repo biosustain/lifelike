@@ -5,6 +5,7 @@ import { configureTestSuite } from 'ng-bullet';
 
 import { AppComponent } from './app.component';
 import { RootStoreModule } from './***ARANGO_USERNAME***-store';
+import { SharedModule } from './shared/shared.module';
 
 describe('AppComponent', () => {
     let fixture: ComponentFixture<AppComponent>;
@@ -15,11 +16,12 @@ describe('AppComponent', () => {
             imports: [
                 RouterTestingModule,
                 RootStoreModule,
+                SharedModule,
             ],
             declarations: [
                 AppComponent
             ],
-        }).compileComponents();
+        });
     });
 
     beforeEach(() => {
@@ -29,9 +31,5 @@ describe('AppComponent', () => {
 
     it('should create the app', () => {
         expect(fixture).toBeTruthy();
-    });
-
-    it(`should have as title 'client'`, () => {
-        expect(instance.title).toEqual('client');
     });
 });
