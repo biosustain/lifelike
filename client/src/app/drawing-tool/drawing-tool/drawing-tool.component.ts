@@ -133,7 +133,7 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
         }
       );
 
-    // Listen for graph update from side-bar-ui
+    // Listen for graph update from info-panel-ui
     this.formDataSubscription =
       this.dataFlow.formDataSource.subscribe(
         (update: Update) => {
@@ -302,7 +302,7 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
             ...cmd.data
           }
         );
-        // Toggle side-bar-ui for added node
+        // Toggle info-panel-ui for added node
         let data = this.visjsNetworkGraph.getNode(addedNode.id);
         this.dataFlow.pushGraphData(data);
         break;
