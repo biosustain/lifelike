@@ -9,7 +9,7 @@ import { MatSlideToggleChange } from '@angular/material/slide-toggle';
     selector: 'app-visualization-quickbar',
     template: `
         <mat-toolbar id="vis-quickbar">
-            <mat-slide-toggle (change)="animationToggle($event)" [checked]="true">Animation</mat-slide-toggle>
+            <mat-slide-toggle id="animation-slide-toggle" (change)="animationToggle($event)" [checked]="true">Animation</mat-slide-toggle>
         </mat-toolbar>
     `,
     styleUrls: ['./visualization-quickbar.component.scss'],
