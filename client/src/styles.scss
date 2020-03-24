@@ -1,10 +1,5 @@
-@import "assets/dtu-styles.scss";
 @import "assets/dtu-theme.scss";
 
-.mat-cell {
-  margin: 0 10px 0 10px;
-}
-
-.mat-header-cell {
-  margin: 0 10px 0 10px;
-}
+// Default rules from Angular Material. Do not modify.
+html, body { height: 100%; }
+body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }

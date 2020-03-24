@@ -19,12 +19,14 @@ To create a `node_module` folder locally for IDE autocompletes, run the command
 docker-compose run client yarn install
 ```
 
-Next, download the necessary NEO4J database and decompress the Elastic Search database. See FAQ for more information.
+Next, download the necessary NEO4J database and __decompress__ the Elastic Search database. See FAQ for more information.
 
 Then to spin up the server and bring it down use
 ```docker-compose up``` and ```docker-compose down``` respectively
 
 Next, run ```docker-compose exec appserver python db/neo4jsetup.py``` to setup the database indexes for full text search
+
+**Note:** The application will be seeded with demo data, so the default login can be found under ```appserver/fixtures/seed.json```
 
 __2. How do I seed the NEO4J Database?__
 

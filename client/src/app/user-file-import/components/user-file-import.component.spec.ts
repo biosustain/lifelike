@@ -15,7 +15,6 @@ import { configureTestSuite } from 'ng-bullet';
 
 import { RootStoreModule } from 'app/***ARANGO_USERNAME***-store';
 import { SharedModule } from 'app/shared/shared.module';
-import { ToolbarMenuModule } from 'toolbar-menu';
 
 import {
     UserFileImportState as userFileImportState,
@@ -55,7 +54,6 @@ describe('UserFileImportComponent', () => {
             imports: [
                 RootStoreModule,
                 SharedModule,
-                ToolbarMenuModule,
             ],
         })
         .compileComponents();
