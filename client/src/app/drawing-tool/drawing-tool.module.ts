@@ -27,9 +27,6 @@ import {
 import { 
   DrawingToolComponent
 } from './drawing-tool/drawing-tool.component';
-import { 
-  SideBarUiComponent
-} from './drawing-tool/side-bar-ui/side-bar-ui.component';
 import {
   PdfViewerComponent
 } from './pdf-viewer/pdf-viewer.component';
@@ -61,7 +58,6 @@ import { PdfViewerDirective } from './pdf-viewer/pdf-viewer.directive';
     DeleteProjectDialogComponent,
     CopyProjectDialogComponent,
     DrawingToolComponent,
-    SideBarUiComponent,
     PdfViewerComponent,
     LoginComponent,
     TruncatePipe,

@@ -268,7 +268,7 @@ export class InfoPanelComponent implements OnInit {
   }
 
   /**
-   * Either delete the node or edge that the side-bar-ui
+   * Either delete the node or edge that the info-panel-ui
    * is showcasing ..
    */
   delete() {
