@@ -194,20 +194,18 @@ export class VisualizationCanvasComponent implements OnInit {
     collapseNeighbors(***ARANGO_USERNAME***Node: VisNode) {
         // Get all the nodes connected to the ***ARANGO_USERNAME*** node, before removing edges
         const connectedNodes = this.networkGraph.getConnectedNodes(***ARANGO_USERNAME***Node.id) as IdType[];
-        (this.networkGraph.getConnectedEdges(***ARANGO_USERNAME***Node.id) as IdType[]).forEach(
-            connectedEdge => {
-                this.edges.remove(connectedEdge);
-            }
-        );
+
+        this.edges.remove(this.networkGraph.getConnectedEdges(***ARANGO_USERNAME***Node.id) as IdType[]);
 
         // If a previously connected node has no remaining edges (i.e. it is not connected
         // to any other neighbor), remove it.
-        connectedNodes.forEach((connectedNodeId: number) => {
+        const nodesToRemove = connectedNodes.map((connectedNodeId: number) => {
             const connectedEdges = this.networkGraph.getConnectedEdges(connectedNodeId);
             if (connectedEdges.length === 0) {
-                this.nodes.remove(connectedNodeId);
+                return connectedNodeId;
             }
         });
+        this.nodes.remove(nodesToRemove);
     }
 
     expandOrCollapseNode(nodeId: number) {
@@ -373,23 +371,34 @@ export class VisualizationCanvasComponent implements OnInit {
      * @param nodesInCluster the list of duplicate node IDs in the opened cluster
      */
     cleanUpDuplicates(nodesInCluster: IdType[]) {
+        const edgesToRemove = [];
+        const nodesToRemove = [];
+        const edgesToAdd = [];
+        const nodesToAdd = [];
+
         nodesInCluster.forEach(duplicateNodeId => {
             const duplicateNode = this.nodes.get(duplicateNodeId) as DuplicateVisNode;
             // If the original node is not currently drawn on the canvas, redraw it
             if (isNullOrUndefined(this.nodes.get(duplicateNode.duplicateOf))) {
-                this.nodes.update(this.createOriginalNodeFromDuplicate(duplicateNode));
+                nodesToAdd.push(this.createOriginalNodeFromDuplicate(duplicateNode));
             }
 
             this.networkGraph.getConnectedEdges(duplicateNodeId).map(
                 duplicateEdgeId => this.edges.get(duplicateEdgeId)
             ).forEach(duplicateEdge => {
                 this.removeDuplicatedEdge.emit(duplicateEdge.duplicateOf);
-                this.edges.remove(duplicateEdge.id);
-                this.edges.update(this.createOriginalEdgeFromDuplicate(duplicateEdge));
+                edgesToRemove.push(duplicateEdge.id);
+                edgesToAdd.push(this.createOriginalEdgeFromDuplicate(duplicateEdge));
             });
 
-            this.nodes.remove(duplicateNodeId);
+            nodesToRemove.push(duplicateNodeId);
         });
+
+        this.nodes.remove(nodesToRemove);
+        this.edges.remove(edgesToRemove);
+
+        this.nodes.update(nodesToAdd);
+        this.edges.update(edgesToAdd);
     }
 
     /**
@@ -403,15 +412,18 @@ export class VisualizationCanvasComponent implements OnInit {
      * @param node the source node for the cluster
      */
     createDuplicateNodesAndEdges(neighborNodesWithRel: IdType[], relationship: string, clusterOrigin: IdType) {
-        return neighborNodesWithRel.map((neighborNodeId) => {
+        const edgesToRemove = [];
+        const nodesToRemove = [];
+        const edgesToAdd = [];
+
+        const nodesToAdd = neighborNodesWithRel.map((neighborNodeId) => {
             const edges = this.networkGraph.getConnectedEdges(neighborNodeId);
             const newDuplicateNode = this.createDuplicateNodeFromOriginal(this.nodes.get(neighborNodeId));
-            this.nodes.update(newDuplicateNode);
 
             if (edges.length === 1) {
                 // If the original node is being clustered on its last unclustered edge,
                 // remove it entirely from the canvas.
-                this.nodes.remove(neighborNodeId);
+                nodesToRemove.push(neighborNodeId);
             }
 
             edges.filter(
@@ -424,12 +436,20 @@ export class VisualizationCanvasComponent implements OnInit {
                 edgeId => {
                     const existingEdge = this.edges.get(edgeId);
                     this.addDuplicatedEdge.emit(edgeId as number);
-                    this.edges.update(this.createDuplicateEdgeFromOriginal(existingEdge, clusterOrigin as number, newDuplicateNode));
-                    this.edges.remove(existingEdge);
+                    edgesToAdd.push(this.createDuplicateEdgeFromOriginal(existingEdge, clusterOrigin as number, newDuplicateNode));
+                    edgesToRemove.push(existingEdge);
                 }
             );
-            return newDuplicateNode.id;
+            return newDuplicateNode;
         });
+
+        this.nodes.remove(nodesToRemove);
+        this.edges.remove(edgesToRemove);
+
+        this.nodes.update(nodesToAdd);
+        this.edges.update(edgesToAdd);
+
+        return nodesToAdd.map(node => node.id);
     }
 
     safelyOpenCluster(clusterNodeId) {
@@ -500,17 +520,21 @@ export class VisualizationCanvasComponent implements OnInit {
     // no longer has any neighbors. Otherwise, if we remove all the connected nodes from a given node, the user will have to
     // double click on that node twice to re-expand the node.
     removeNodes(nodes: IdType[]) {
-        nodes.forEach(node => {
+        const edgesToRemove = [];
+        const nodesToRemove = nodes.map(node => {
             this.networkGraph.getConnectedNodes(node).forEach(connectedNode => {
                 if (this.networkGraph.isCluster(connectedNode)) {
                     this.safelyOpenCluster(connectedNode);
                 }
             });
             this.networkGraph.getConnectedEdges(node).forEach(edge => {
-                this.edges.remove(edge);
+                edgesToRemove.push(edge);
             });
-            this.nodes.remove(node);
+            return node;
         });
+
+        this.nodes.remove(nodesToRemove);
+        this.edges.remove(edgesToRemove);
     }
 
     selectNeighbors(node: IdType) {
