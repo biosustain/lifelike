@@ -26,6 +26,7 @@ import {
     SidenavEdgeEntity,
     VisEdge,
     VisNode,
+    Direction,
 } from 'app/interfaces';
 
 import { uuidv4 } from 'app/shared/utils';
@@ -88,7 +89,7 @@ export class VisualizationCanvasComponent implements OnInit {
 
     networkGraph: Network;
     selectedNodes: IdType[];
-    selectedNodeEdgeLabels: Set<string>;
+    selectedNodeEdgeLabelData: Map<string, Direction[]>;
     selectedEdges: IdType[];
     referenceTableData: DuplicateNodeEdgePair[];
     clusters: Map<string, string>;
@@ -107,7 +108,7 @@ export class VisualizationCanvasComponent implements OnInit {
 
         this.selectedNodes = [];
         this.selectedEdges = [];
-        this.selectedNodeEdgeLabels = new Set<string>();
+        this.selectedNodeEdgeLabelData = new Map<string, Direction[]>();
         this.referenceTableData = [];
 
         this.contextMenuTooltipSelector = '#***ARANGO_USERNAME***-menu';
@@ -171,14 +172,13 @@ export class VisualizationCanvasComponent implements OnInit {
         this.updateSelectedEdges();
     }
 
-    clearSelectedNodeEdgeLabels() {
-        this.selectedNodeEdgeLabels.clear();
+    clearSelectedNodeEdgeLabelData() {
+        this.selectedNodeEdgeLabelData.clear();
     }
 
-    updateSelectedNodeEdgeLabels(selectedNode: IdType) {
-        this.clearSelectedNodeEdgeLabels();
-        const edgeLabelsResult = this.getConnectedEdgeLabels(selectedNode);
-        edgeLabelsResult.forEach(label => this.selectedNodeEdgeLabels.add(label));
+    updateSelectedNodeEdgeLabelData(selectedNode: IdType) {
+        this.clearSelectedNodeEdgeLabelData();
+        this.selectedNodeEdgeLabelData = this.getConnectedEdgeLabels(selectedNode);
     }
 
     collapseNeighbors(***ARANGO_USERNAME***Node: VisNode) {
@@ -248,9 +248,20 @@ export class VisualizationCanvasComponent implements OnInit {
      * @param relationship string representing the connecting relationship
      * @param node id of the ***ARANGO_USERNAME*** node
      */
-    getNeighborsWithRelationship(relationship: string, node: IdType) {
+    getNeighborsWithRelationship(relationship: string, node: IdType, direction: Direction) {
         return this.networkGraph.getConnectedEdges(node).filter(
-            (edgeId) => this.isNotAClusterEdge(edgeId) && this.edges.get(edgeId).label === relationship
+            (edgeId) => {
+                const edge = this.edges.get(edgeId) as VisEdge;
+                // First check if this is the correct relationship
+                if (this.isNotAClusterEdge(edgeId) && edge.label === relationship) {
+                    // Then, check that it is in the correct direction
+                    if (direction === Direction.FROM && edge.from === node) {
+                        return true;
+                    } else if (direction === Direction.TO && edge.to === node) {
+                        return true;
+                    }
+                }
+            }
         ).map(
             connectedEdgeWithRel => (this.networkGraph.getConnectedNodes(connectedEdgeWithRel) as IdType[]).filter(
                 nodeId => nodeId !== node
@@ -262,15 +273,32 @@ export class VisualizationCanvasComponent implements OnInit {
      * Gets a set of labels from the edges connected to the input node.
      * @param selectedNode the ID of the node whose edge labels we want to get
      */
-    getConnectedEdgeLabels(selectedNode: IdType) {
-        const labels = new Set<string>();
+    getConnectedEdgeLabels(selectedNode: IdType): Map<string, Direction[]> {
+        const labels = new Map<string, Direction[]>();
 
         this.networkGraph.getConnectedEdges(selectedNode).filter(
             edge => this.isNotAClusterEdge(edge)
         ).forEach(
-            edge => labels.add(this.edges.get(edge).label)
-        );
+            edgeId => {
+                const edge = this.edges.get(edgeId) as VisEdge;
+                const { label, from, to } = edge;
 
+                if (!isNullOrUndefined(labels.get(label))) {
+                    // Either `TO` or `FROM` is already in the direction list for this label, so check to see which one we need to add
+                    const shouldAddTo = (selectedNode === to && !labels.get(label).includes(Direction.TO));
+                    const shouldAddFrom = (selectedNode === from && !labels.get(label).includes(Direction.FROM));
+                    if (shouldAddTo || shouldAddFrom) {
+                        labels.set(label, [Direction.TO, Direction.FROM]);
+                    }
+                } else {
+                    if (selectedNode === to) {
+                        labels.set(label, [Direction.TO]);
+                    } else {
+                        labels.set(label, [Direction.FROM]);
+                    }
+                }
+            }
+        );
         return labels;
     }
 
@@ -438,8 +466,10 @@ export class VisualizationCanvasComponent implements OnInit {
      * @param rel a string representing the relationship the neighbors will be clustered on
      */
     groupNeighborsWithRelationship(groupRequest: GroupRequest) {
-        const { relationship, node } = groupRequest;
-        let neighborNodesWithRel = this.getNeighborsWithRelationship(relationship, node);
+        const { relationship, node, direction } = groupRequest;
+
+        let neighborNodesWithRel = this.getNeighborsWithRelationship(relationship, node, direction);
+
         neighborNodesWithRel = this.createDuplicateNodesAndEdges(neighborNodesWithRel, relationship, node);
 
         const clusterDisplayNames: string[] = neighborNodesWithRel.map(
@@ -477,7 +507,7 @@ export class VisualizationCanvasComponent implements OnInit {
             }
         });
 
-        this.updateSelectedNodeEdgeLabels(node);
+        this.updateSelectedNodeEdgeLabelData(node);
     }
 
     removeEdges(edges: IdType[]) {
@@ -752,11 +782,11 @@ export class VisualizationCanvasComponent implements OnInit {
         this.updateSelectedNodesAndEdges();
 
         if (this.selectedNodes.length === 1 && this.selectedEdges.length === 0) {
-            this.updateSelectedNodeEdgeLabels(this.selectedNodes[0]);
+            this.updateSelectedNodeEdgeLabelData(this.selectedNodes[0]);
         } else {
             // Clean up the selected node edge labels if we selected more than one node, or any edges
             // (this should prevent stale data in the context menu component)
-            this.clearSelectedNodeEdgeLabels();
+            this.clearSelectedNodeEdgeLabelData();
         }
         this.contextMenuControlService.showTooltip();
         this.updateSidebarEntity(); // oncontext does not select the hovered entity by default, so update
