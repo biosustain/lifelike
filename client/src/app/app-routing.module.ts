@@ -1,9 +1,11 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 
+import { AdminPanelComponent } from 'app/admin/containers/admin-panel-page.component';
 import { UserFileImportComponent } from 'app/user-file-import/components/user-file-import.component';
-import { VisualizationComponent } from 'app/visualization/containers/visualization.component';
+import { VisualizationComponent } from 'app/visualization/containers/visualization/visualization.component';
 import { SearchCollectionPageComponent } from 'app/search/containers/search-collection-page.component';
+import { FileBrowserComponent } from 'app/file-browser/file-browser.component';
 
 import {
   ProjectListViewComponent,
@@ -13,7 +15,10 @@ import {
   PendingChangesGuard
 } from './drawing-tool';
 
+import { AdminGuard } from 'app/admin/services/admin-guard.service';
+
 const routes: Routes = [
+  { path: 'admin', component: AdminPanelComponent, canActivate: [AdminGuard]},
   { path: 'neo4j-upload', component: UserFileImportComponent },
   { path: 'neo4j-visualizer', component: VisualizationComponent },
   {
@@ -46,6 +51,10 @@ const routes: Routes = [
   {
     path: 'pdf-viewer',
     component: PdfViewerComponent
+  },
+  {
+    path: 'file-browser',
+    component: FileBrowserComponent,
   },
 ];
 
