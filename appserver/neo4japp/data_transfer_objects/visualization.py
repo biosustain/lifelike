@@ -1,6 +1,7 @@
 import attr
 
 from neo4japp.exceptions import FormatterException
+from neo4japp.models import GraphNode
 from neo4japp.util import CamelDictMixin
 
 from typing import Dict, List, Optional
@@ -86,6 +87,11 @@ class ReferenceTableRow(CamelDictMixin):
     snippet_count: int = attr.ib()
     edge: DuplicateVisEdge = attr.ib()
 
+@attr.s(frozen=True)
+class Snippet(CamelDictMixin):
+    reference: GraphNode = attr.ib()
+    publication: GraphNode = attr.ib()
+
 ### Begin Request DTOs ###
 
 @attr.s(frozen=True)
@@ -117,7 +123,7 @@ class GetSnippetsFromEdgeResult(CamelDictMixin):
     from_node_id: int = attr.ib()
     to_node_id: int = attr.ib()
     association: str = attr.ib()
-    references: List[str] = attr.ib()
+    snippets: List[Snippet] = attr.ib()
 
 
 @attr.s(frozen=True)

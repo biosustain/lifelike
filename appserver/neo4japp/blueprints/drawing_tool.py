@@ -1,10 +1,10 @@
 from datetime import datetime, timedelta
-from flask import current_app, request, Response, json, Blueprint
+from flask import current_app, request, Response, json, Blueprint, g
 import jwt
 
+from neo4japp.blueprints.auth import auth
 from neo4japp.database import db
-from neo4japp.models.drawing_tool import AppUser, Project, ProjectSchema
-from neo4japp.util import auth, pullUserFromAuthHead
+from neo4japp.models import AppUser, Project, ProjectSchema
 
 bp = Blueprint('drawing_tool', __name__, url_prefix='/drawing-tool')
 
@@ -15,7 +15,7 @@ def get_project():
     """
         Return a list of all projects underneath user
     """
-    user = pullUserFromAuthHead()
+    user = g.current_user
 
     # Pull the projects tied to that user
     projects = Project.query.filter_by(user_id=user.id).all()
@@ -31,7 +31,7 @@ def add_project():
         Create a new projecrt under a user
     """
     data = request.get_json()
-    user = pullUserFromAuthHead()
+    user = g.current_user
 
     # Create new project
     project = Project(
@@ -63,7 +63,7 @@ def update_project(project_id):
     """
         Update the project's content and its metadata.
     """
-    user = pullUserFromAuthHead()
+    user = g.current_user
     data = request.get_json()
 
     # Pull up project by id
@@ -88,10 +88,10 @@ def update_project(project_id):
 @bp.route('/projects/<string:project_id>', methods=['delete'])
 @auth.login_required
 def delete_project(project_id):
-    """ 
+    """
         Delete object owned by user
     """
-    user = pullUserFromAuthHead()
+    user = g.current_user
 
     # Pull up project by id
     project = Project.query.filter_by(
