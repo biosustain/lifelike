@@ -241,8 +241,6 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
     // Pop the action from undo stack
     let undoAction = this.undoStack.pop();
   
-    console.log(undoAction, 'undo')
-  
     // Record the current state of graph into redo action
     let redoAction = {
       graph: Object.assign({}, this.visjsNetworkGraph.export()),
