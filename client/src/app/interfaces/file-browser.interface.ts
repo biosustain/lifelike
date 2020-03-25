@@ -1,6 +1,11 @@
-export interface FileElement {
-  name: string;
-  modifiedAt: string;
-  modifiedBy: string;
-  annotation: string;
+export interface PdfFiles {
+  files: PdfFile[];
+}
+
+export interface PdfFile {
+  id: string;
+  filename: string;
+  creationDate: string;
+  username: string;
+  annotation?: string;
 }
