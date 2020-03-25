@@ -10,7 +10,7 @@ import { HttpClientModule } from '@angular/common/http';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 import { PdfViewerLibModule } from 'pdf-viewer-lib';
-import { MaterialModule } from './material.module';
+import { AngularMaterialModule } from 'app/shared/angular-material.module';
 
 import {
   ProjectListViewComponent
@@ -78,7 +78,7 @@ import {
     ReactiveFormsModule,
     DragDropModule,
     PdfViewerLibModule,
-    MaterialModule
+    AngularMaterialModule,
   ],
   providers: [
     // {
@@ -89,15 +89,6 @@ import {
     PendingChangesGuard
   ],
   exports: [
-    CommonModule,
-    BrowserModule,
-    HttpClientModule,
-    BrowserAnimationsModule,
-    FormsModule,
-    ReactiveFormsModule,
-    DragDropModule,
-    PdfViewerLibModule,
-    MaterialModule    
   ]
 })
 export class DrawingToolModule { }
