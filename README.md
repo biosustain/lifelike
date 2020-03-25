@@ -30,11 +30,11 @@ Next, run ```docker-compose exec appserver python db/neo4jsetup.py``` to setup t
 
 __2. How do I seed the NEO4J Database?__
 
-Download the `.zip` file from https://console.cloud.google.com/storage/browser/graphdb_backup?project=able-goods-221820 and add it to the `db` directory. The directory structure will be `db/graph.db`.
+Download the `.zip` file from https://console.cloud.google.com/storage/browser/graphdb_backup?project=able-goods-221820 and add it to the `neo4j/database` directory. The directory structure will be `neo4j/database/graph.db`.
 
 OR
 
-Visit the backup in the repository https://github.com/SBRG/kg-prototypes/blob/master/db/text-mining-subset-graphdb.tar.gz
+See the backup in the repository under neo4j/data/databases/text-mining-subset-graphdb.tar
 
 **NOTE** The backup database currently only works with Neo4j version 3.x.x.
 
