@@ -1,5 +1,6 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
+import { MockupModule } from '../../mockup.module';
 import { PaletteComponent } from './palette.component';
 
 describe('PaletteComponent', () => {
@@ -8,7 +9,7 @@ describe('PaletteComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ PaletteComponent ]
+      imports: [ MockupModule ]
     })
     .compileComponents();
   }));
