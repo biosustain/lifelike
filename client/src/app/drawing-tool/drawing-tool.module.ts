@@ -8,6 +8,7 @@ import { DragDropModule } from '@angular/cdk/drag-drop';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { FlexLayoutModule } from '@angular/flex-layout';
 
 import { PdfViewerLibModule } from 'pdf-viewer-lib';
 import { AngularMaterialModule } from 'app/shared/angular-material.module';
@@ -79,6 +80,7 @@ import {
     DragDropModule,
     PdfViewerLibModule,
     AngularMaterialModule,
+    FlexLayoutModule,
   ],
   providers: [
     // {
