@@ -35,7 +35,6 @@ import { FileBrowserComponent } from './file-browser/file-browser.component';
   ],
   providers: [],
   exports: [
-    HttpClientModule,
   ],
   bootstrap: [AppComponent]
 })
