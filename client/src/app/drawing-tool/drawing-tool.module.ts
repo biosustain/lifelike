@@ -9,6 +9,8 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
+import { AngularSplitModule } from 'angular-split';
+
 import { PdfViewerLibModule } from 'pdf-viewer-lib';
 import { MaterialModule } from './material.module';
 
@@ -50,6 +52,7 @@ import {
 import { PaletteComponent } from './drawing-tool/palette/palette.component';
 import { InfoPanelComponent } from './drawing-tool/info-panel/info-panel.component';
 import { PdfViewerDirective } from './pdf-viewer/pdf-viewer.directive';
+import { SplitterComponent } from './splitter/splitter.component';
 
 @NgModule({
   declarations: [
@@ -64,14 +67,17 @@ import { PdfViewerDirective } from './pdf-viewer/pdf-viewer.directive';
     FriendlyDateStrPipe,
     PaletteComponent,
     InfoPanelComponent,
-    PdfViewerDirective
+    PdfViewerDirective,
+    SplitterComponent
   ],
   entryComponents: [
     CreateProjectDialogComponent,
     DeleteProjectDialogComponent,
-    CopyProjectDialogComponent
+    CopyProjectDialogComponent,
+    PdfViewerComponent
   ],
   imports: [
+    AngularSplitModule.forRoot(),
     CommonModule,
     BrowserModule,
     HttpClientModule,

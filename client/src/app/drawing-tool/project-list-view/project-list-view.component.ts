@@ -1,4 +1,11 @@
-import { Component, OnInit, AfterViewInit, ViewChild, TemplateRef, ViewContainerRef } from '@angular/core';
+import { 
+  Component,
+  OnInit,
+  AfterViewInit,
+  ViewChild,
+  TemplateRef,
+  ViewContainerRef
+} from '@angular/core';
 import {
   MatDialog
 } from '@angular/material/dialog';
@@ -276,14 +283,5 @@ export class ProjectListViewComponent implements OnInit, AfterViewInit {
           });
       }
     });      
-  }
-
-  /**
-   * Open the project in pdf-viewer view
-   * @param project 
-   */
-  openPDFViewer(project) {
-    this.dataFlow.pushProject2Canvas(project);
-    this.route.navigateByUrl('pdf-viewer');
   }
 }
