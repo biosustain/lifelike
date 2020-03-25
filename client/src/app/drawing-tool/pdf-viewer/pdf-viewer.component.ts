@@ -1,4 +1,4 @@
-import { Component, OnInit, AfterViewInit } from '@angular/core';
+import { Component, OnInit, AfterViewInit, Input } from '@angular/core';
 
 import {
   PdfAnnotationsService,
@@ -16,8 +16,13 @@ import {
   styleUrls: ['./pdf-viewer.component.scss']
 })
 export class PdfViewerComponent implements OnInit, AfterViewInit {
+  @Input() dropAreaIdentifier = 'canvas'
 
   annotations: Object[] = [];
+
+  get dropAreaID() {
+    return `#${this.dropAreaIdentifier}`;
+  }
 
   constructor(
     private pdfAnnService: PdfAnnotationsService,
@@ -34,7 +39,7 @@ export class PdfViewerComponent implements OnInit, AfterViewInit {
           this.annotations = ann;
         });
       },
-      200
+      500
     )
   }
 

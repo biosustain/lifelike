@@ -3,13 +3,25 @@ import {
   OnInit,
   AfterViewInit,
   OnDestroy,
-  HostListener
+  HostListener,
+  ComponentFactoryResolver,
+  ViewContainerRef,
+  Injector,
+  ViewChild,
+  Output,
+  EventEmitter
 } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { CdkDragDrop } from '@angular/cdk/drag-drop';
 import {
   Subscription, Observable
 } from 'rxjs';
+
+import { 
+  SplitComponent,
+  SplitAreaDirective
+} from 'angular-split';
+
 import * as $ from 'jquery'
 
 import {
@@ -66,8 +78,14 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
     return this.saveState ? true : confirm('WARNING: You have unsaved changes. Press Cancel to go back and save these changes, or OK to lose these changes.');
   }
 
+  @Output() openApp: EventEmitter<string> = new EventEmitter<string>();
+
+  @ViewChild('split', {static: false}) split: SplitComponent;
+  @ViewChild('area1', {static: false}) area1: SplitAreaDirective;
+  @ViewChild('area2', {static: false}) area2: SplitAreaDirective;
+
   /** The current graph representation on canvas */
-  currentGraphState: {edges: any[], nodes: any[]} = null;
+  currentGraphState: {edges: VisNetworkGraphEdge[], nodes: VisNetworkGraphNode[]} = null;
 
   undoStack: Action[] = [];
   redoStack: Action[] = [];
@@ -102,6 +120,8 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   constructor(
+    private injector: Injector,
+    private r: ComponentFactoryResolver,
     private dataFlow: DataFlowService,
     private projectService: ProjectsService,
     private _snackBar: MatSnackBar    
@@ -235,6 +255,10 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
     this.dataFlow.pushGraphData(null);
     this.dataFlow.pushGraphUpdate(null);
     this.dataFlow.pushNode2Canvas(null);
+  }
+
+  open(app:string) {
+    this.openApp.emit(app);
   }
 
   undo() {
