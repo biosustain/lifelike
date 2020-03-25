@@ -2,6 +2,8 @@ import { Component, OnInit, Input, OnDestroy } from '@angular/core';
 
 import { VirtualElement, Instance, createPopper, Options } from '@popperjs/core';
 
+import { isNullOrUndefined } from 'util';
+
 @Component({
   selector: 'app-tooltip',
   template: '<div id="tooltip">I am a Tooltip</div>',
@@ -23,7 +25,10 @@ export class TooltipComponent implements OnInit, OnDestroy {
     }
 
     ngOnDestroy() {
-        this.popper.destroy();
+        // Popper could be undefined if component view is not initialized before being destroyed
+        if (!isNullOrUndefined(this.popper)) {
+            this.popper.destroy();
+        }
     }
 
     generateRect(x = 0, y = 0) {
