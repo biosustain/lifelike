@@ -369,7 +369,14 @@ export class InfoPanelComponent implements OnInit {
 
   goToLink(){
     let hyperlink:string = this.entity_form.value['hyperlink'];
-    if (hyperlink) window.open(hyperlink, "_blank");
+
+    if (
+      hyperlink.includes('http')
+    ) {
+      window.open(hyperlink, "_blank");
+    } else {
+      window.open('http://' + hyperlink);
+    }
   }
 
   blurInput(e: Event) {
