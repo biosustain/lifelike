@@ -247,9 +247,13 @@ export class VisualizationCanvasComponent implements OnInit {
     }
 
     /**
-     * Gets all the neighbors of the given node connected by the given relationship.
+     * Gets all the neighbors of the given node, connected by the given relationship, in the given direction.
+     *
+     * If `direction` is Direction.TO, we only want to get the neighbors where the edge is coming to `node`.
+     * The opposite is true if `direction` is Direction.FROM.
      * @param relationship string representing the connecting relationship
      * @param node id of the ***ARANGO_USERNAME*** node
+     * @param direction represents the direction of the connecting relationship
      */
     getNeighborsWithRelationship(relationship: string, node: IdType, direction: Direction) {
         return this.networkGraph.getConnectedEdges(node).filter(

@@ -5,30 +5,35 @@ import { configureTestSuite } from 'ng-bullet';
 
 import { MockComponents } from 'ng-mocks';
 
+import { of } from 'rxjs';
+
 import { ToolbarMenuModule } from 'toolbar-menu';
 
 import { DataSet } from 'vis-network';
 
 import {
-    Neo4jGraphConfig,
-    GetSnippetsResult,
-    GetClusterGraphDataResult,
-    VisEdge,
-    VisNode,
+    Direction,
+    DuplicateNodeEdgePair,
     DuplicateVisNode,
     DuplicateVisEdge,
+    GetSnippetsResult,
+    GetClusterGraphDataResult,
     GroupRequest,
+    Neo4jGraphConfig,
     SidenavEdgeEntity,
+    VisEdge,
+    VisNode,
+    GetReferenceTableDataResult,
+    ReferenceTableRow,
 } from 'app/interfaces';
 import { RootStoreModule } from 'app/***ARANGO_USERNAME***-store';
 import { SharedModule } from 'app/shared/shared.module';
+import { uuidv4 } from 'app/shared/utils';
 
 import { VisualizationService } from '../../services/visualization.service';
 import { ContextMenuControlService } from '../../services/context-menu-control.service';
-import { ReferenceTableControlService } from '../../services/reference-table-control.service';
 
 import { ContextMenuComponent } from '../context-menu/context-menu.component';
-import { ReferenceTableComponent } from '../reference-table/reference-table.component';
 import { SidenavClusterViewComponent } from '../sidenav-cluster-view/sidenav-cluster-view.component';
 import { SidenavEdgeViewComponent } from '../sidenav-edge-view/sidenav-edge-view.component';
 import { SidenavNodeViewComponent } from '../sidenav-node-view/sidenav-node-view.component';
@@ -40,10 +45,13 @@ describe('VisualizationCanvasComponent', () => {
     let instance: VisualizationCanvasComponent;
 
     let contextMenuControlService: ContextMenuControlService;
-    let referenceTableControlService: ReferenceTableControlService;
+    let visualizationService: VisualizationService;
 
     let mockNodes: DataSet<VisNode>;
     let mockEdges: DataSet<VisEdge>;
+    let mockDuplicateNodeEdgePairs: DuplicateNodeEdgePair[];
+    let mockReferenceTableRows: ReferenceTableRow[];
+    let mockGetReferenceTableDataResult: GetReferenceTableDataResult;
     let mockGroupRequest: GroupRequest;
     let mockConfig: Neo4jGraphConfig;
     let mockLegend: Map<string, string[]>;
@@ -62,6 +70,14 @@ describe('VisualizationCanvasComponent', () => {
         } as VisNode;
     }
 
+    function mockDuplicateNodeGenerator(nodeId: number, nodeDisplayName: string, nodeData?: any): DuplicateVisNode {
+        return {
+            ...mockNodeGenerator(nodeId, nodeDisplayName, nodeData),
+            id: 'duplicateNode:' + uuidv4(),
+            duplicateOf: nodeId,
+        } as DuplicateVisNode;
+    }
+
     function mockEdgeGenerator(edgeId: number, fromNode: number, arrowDirection: string, toNode: number): VisEdge {
         return {
             id: edgeId,
@@ -71,6 +87,16 @@ describe('VisualizationCanvasComponent', () => {
             from: fromNode,
             arrows: arrowDirection,
         } as VisEdge;
+    }
+
+    function mockDuplicateEdgeGenerator(edgeId: number, fromNode: number, arrowDirection: string, toNode: number): DuplicateVisEdge {
+        return {
+            ...mockEdgeGenerator(edgeId, fromNode, arrowDirection, toNode),
+            id: 'duplicateEdge:' + uuidv4(),
+            duplicateOf: edgeId,
+            originalFrom: fromNode,
+            originalTo: toNode,
+        } as DuplicateVisEdge;
     }
 
     configureTestSuite(() => {
@@ -84,7 +110,6 @@ describe('VisualizationCanvasComponent', () => {
                 VisualizationCanvasComponent,
                 MockComponents(
                     ContextMenuComponent,
-                    ReferenceTableComponent,
                     SidenavClusterViewComponent,
                     SidenavEdgeViewComponent,
                     SidenavNodeViewComponent,
@@ -94,7 +119,6 @@ describe('VisualizationCanvasComponent', () => {
             ],
             providers: [
                 ContextMenuControlService,
-                ReferenceTableControlService,
                 VisualizationService,
             ],
         });
@@ -122,6 +146,7 @@ describe('VisualizationCanvasComponent', () => {
         mockGroupRequest = {
             relationship: 'Mock Edge',
             node: 1,
+            direction: Direction.FROM,
         } as GroupRequest;
 
         mockConfig = {
@@ -150,9 +175,31 @@ describe('VisualizationCanvasComponent', () => {
             nodes: {
                 size: 25,
                 shape: 'box',
-                // TODO: Investigate the 'scaling' property for dynamic resizing of 'box' shape nodes
             },
         };
+
+        mockDuplicateNodeEdgePairs = [
+            {
+                node: mockDuplicateNodeGenerator(2, 'Mock Node 2', {}),
+                edge: mockDuplicateEdgeGenerator(101, 1, 'to', 2),
+            } as DuplicateNodeEdgePair,
+            {
+                node: mockDuplicateNodeGenerator(3, 'Mock Node 3', {}),
+                edge: mockDuplicateEdgeGenerator(102, 1, 'to', 3),
+            } as DuplicateNodeEdgePair,
+        ];
+
+        mockReferenceTableRows = [
+            {
+                nodeDisplayName: 'Mock Node 1',
+                snippetCount: 1,
+                edge: mockEdgeGenerator(101, 1, 'to', 2),
+            } as ReferenceTableRow,
+        ];
+
+        mockGetReferenceTableDataResult = {
+            referenceTableRows: mockReferenceTableRows,
+        } as GetReferenceTableDataResult;
 
         mockLegend = new Map<string, string[]>([
             ['Chemical', ['#CD5D67', '#410B13']]
@@ -160,7 +207,7 @@ describe('VisualizationCanvasComponent', () => {
 
         mockCallbackParams = {
             event: {
-            preventDefault() { /*Do nothing*/ },
+                preventDefault() { /*Do nothing*/ },
             },
             pointer: {
                 DOM: {
@@ -173,7 +220,7 @@ describe('VisualizationCanvasComponent', () => {
         fixture = TestBed.createComponent(VisualizationCanvasComponent);
         instance = fixture.debugElement.componentInstance;
         contextMenuControlService = fixture.debugElement.injector.get(ContextMenuControlService);
-        referenceTableControlService = fixture.debugElement.injector.get(ReferenceTableControlService);
+        visualizationService = fixture.debugElement.injector.get(VisualizationService);
 
         instance.nodes = mockNodes;
         instance.edges = mockEdges;
@@ -258,11 +305,11 @@ describe('VisualizationCanvasComponent', () => {
         expect(instance.sidenavOpened).toBeTrue();
     });
 
-    it('clearSelectedNodeEdgeLabels should clear the selected edge labels set', () => {
-        instance.selectedNodeEdgeLabels.add('Mock Edge Label');
-        instance.clearSelectedNodeEdgeLabels();
+    it('clearSelectedNodeEdgeLabelData should clear the selected edge labels set', () => {
+        instance.selectedNodeEdgeLabelData.set('Mock Edge', [Direction.FROM]);
+        instance.clearSelectedNodeEdgeLabelData();
 
-        expect(instance.selectedNodeEdgeLabels.size).toEqual(0);
+        expect(instance.selectedNodeEdgeLabelData.size).toEqual(0);
     });
 
     it('getConnectedEdgeLabels should get the labels of every edge connected to the input node', () => {
@@ -270,14 +317,15 @@ describe('VisualizationCanvasComponent', () => {
 
         expect(edgeLabelsOfMockedNode.size).toEqual(1);
         expect(edgeLabelsOfMockedNode.has('Mock Edge')).toBeTrue();
+        expect(edgeLabelsOfMockedNode.get('Mock Edge')).toEqual([Direction.FROM]);
     });
 
-    it('updateSelectedNodeEdgeLabels should update the selected edge labels with the edges of the given node', () => {
-        instance.selectedNodeEdgeLabels = new Set<string>('Fake Edge Label');
-        instance.updateSelectedNodeEdgeLabels(1);
+    it('updateSelectedNodeEdgeLabelData should update the selected edge labels with the edges of the given node', () => {
+        instance.updateSelectedNodeEdgeLabelData(1);
 
-        expect(instance.selectedNodeEdgeLabels.size).toEqual(1);
-        expect(instance.selectedNodeEdgeLabels.has('Mock Edge')).toBeTrue();
+        expect(instance.selectedNodeEdgeLabelData.size).toEqual(1);
+        expect(instance.selectedNodeEdgeLabelData.has('Mock Edge')).toBeTrue();
+        expect(instance.selectedNodeEdgeLabelData.get('Mock Edge')).toEqual([Direction.FROM]);
     });
 
     it('getNeighborsWithRelationship should get all the neighbors of the given node connected by the given relationship', () => {
@@ -288,16 +336,25 @@ describe('VisualizationCanvasComponent', () => {
         expect(instance.networkGraph.getConnectedNodes(101)).toEqual([1, 2]);
         expect(instance.networkGraph.getConnectedNodes(102)).toEqual([1, 3]);
 
-        const neighbors = instance.getNeighborsWithRelationship('Mock Edge', 1);
+        const neighbors = instance.getNeighborsWithRelationship('Mock Edge', 1, Direction.FROM);
 
         expect(neighbors).toBeTruthy();
         expect(neighbors).toEqual([2, 3]);
     });
 
-    it('createDuplicateNodesAndEdges should duplicate the given nodes, and the edges connected to them with the given label', () => {
-        const duplicateNodeIds = instance.createDuplicateNodesAndEdges([2, 3], 'Mock Edge', 1);
+    it('createDuplicateNodesAndEdges should duplicate the given nodes, and their connected edges with the given label/direction', () => {
+        const duplicateNodeEdgePairs = instance.createDuplicateNodesAndEdges([2, 3], 'Mock Edge', 1, Direction.FROM);
 
-        expect(duplicateNodeIds.length).toEqual(2);
+        expect(duplicateNodeEdgePairs.length).toEqual(2);
+        expect(duplicateNodeEdgePairs[0].node.duplicateOf).toEqual(2);
+        expect(duplicateNodeEdgePairs[0].edge.duplicateOf).toEqual(101);
+        expect(duplicateNodeEdgePairs[1].node.duplicateOf).toEqual(3);
+        expect(duplicateNodeEdgePairs[1].edge.duplicateOf).toEqual(102);
+    });
+
+    it('update updateGraphWithDuplicates should update the network with the given duplicate node/edge pairs', () => {
+        instance.updateGraphWithDuplicates(mockDuplicateNodeEdgePairs);
+
         expect(instance.nodes.length).toEqual(3);
         expect(instance.edges.length).toEqual(2);
 
@@ -306,16 +363,23 @@ describe('VisualizationCanvasComponent', () => {
 
         expect(instance.edges.get(101)).toBeNull();
         expect(instance.edges.get(102)).toBeNull();
-
     });
 
-    it('groupNeighborsWithRelationship should cluster neighbors of the given node connected by the given relationship', () => {
+    it('groupNeighborsWithRelationship should cluster neighbors of the given node connected by the given relationship', async () => {
+        spyOn(visualizationService, 'getReferenceTableData').and.returnValue(
+            of(mockGetReferenceTableDataResult)
+        );
+
         instance.groupNeighborsWithRelationship(mockGroupRequest);
 
-        expect(instance.clusters.size).toEqual(1);
+        await expect(instance.clusters.size).toEqual(1);
     });
 
     it('isNotAClusterEdge should detect whether an edge is a cluster edge or not', () => {
+        spyOn(visualizationService, 'getReferenceTableData').and.returnValue(
+            of(mockGetReferenceTableDataResult)
+        );
+
         instance.groupNeighborsWithRelationship(mockGroupRequest);
 
         const clusterInfo = instance.clusters.entries().next();
@@ -377,6 +441,10 @@ describe('VisualizationCanvasComponent', () => {
     });
 
     it('expandOrCollapseNode should open any connected clusters of the given node', () => {
+        spyOn(visualizationService, 'getReferenceTableData').and.returnValue(
+            of(mockGetReferenceTableDataResult)
+        );
+
         const node1 = instance.nodes.get(1);
         node1.expanded = true;
 
@@ -476,6 +544,10 @@ describe('VisualizationCanvasComponent', () => {
     });
 
     it('cleanUpDuplicates should remove the given duplicate nodes and their duplicate edges from the canvas', () => {
+        spyOn(visualizationService, 'getReferenceTableData').and.returnValue(
+            of(mockGetReferenceTableDataResult)
+        );
+
         instance.groupNeighborsWithRelationship(mockGroupRequest);
 
         expect(instance.nodes.get(2)).toBeNull();
@@ -494,6 +566,10 @@ describe('VisualizationCanvasComponent', () => {
     });
 
     it('safelyOpenCluster should open and clean up a cluster', () => {
+        spyOn(visualizationService, 'getReferenceTableData').and.returnValue(
+            of(mockGetReferenceTableDataResult)
+        );
+
         const cleanUpDuplicatesSpy = spyOn(instance, 'cleanUpDuplicates').and.callThrough();
 
         instance.groupNeighborsWithRelationship(mockGroupRequest);
@@ -517,6 +593,10 @@ describe('VisualizationCanvasComponent', () => {
     });
 
     it('removeNodes should open clusters connected to removed nodes', () => {
+        spyOn(visualizationService, 'getReferenceTableData').and.returnValue(
+            of(mockGetReferenceTableDataResult)
+        );
+
         instance.groupNeighborsWithRelationship(mockGroupRequest);
         instance.removeNodes([1]);
 
@@ -749,19 +829,19 @@ describe('VisualizationCanvasComponent', () => {
     it('should update selected edge labels if exactly one node is selected and right-clicked', () => {
         spyOn(instance.networkGraph, 'getNodeAt').and.returnValue(1);
         spyOn(instance.networkGraph, 'getEdgeAt').and.returnValue(undefined);
-        const updateSelectedNodeEdgeLabelsSpy = spyOn(instance, 'updateSelectedNodeEdgeLabels').and.callThrough();
+        const updateSelectedNodeEdgeLabelDataSpy = spyOn(instance, 'updateSelectedNodeEdgeLabelData').and.callThrough();
 
         instance.onContextCallback(mockCallbackParams);
 
-        expect(updateSelectedNodeEdgeLabelsSpy).toHaveBeenCalledWith(1);
-        expect(instance.selectedNodeEdgeLabels.has('Mock Edge')).toBeTrue();
+        expect(updateSelectedNodeEdgeLabelDataSpy).toHaveBeenCalledWith(1);
+        expect(instance.selectedNodeEdgeLabelData.has('Mock Edge')).toBeTrue();
     });
 
     it('should clear selected edge labels if more than one node is selected and right-clicked', () => {
         spyOn(instance.networkGraph, 'getNodeAt').and.returnValue(1);
         spyOn(instance.networkGraph, 'getEdgeAt').and.returnValue(undefined);
-        const clearSelectedNodeEdgeLabelsSpy = spyOn(instance, 'clearSelectedNodeEdgeLabels').and.callThrough();
-        const updateSelectedNodeEdgeLabelsSpy = spyOn(instance, 'updateSelectedNodeEdgeLabels').and.callThrough();
+        const clearSelectedNodeEdgeLabelDataSpy = spyOn(instance, 'clearSelectedNodeEdgeLabelData').and.callThrough();
+        const updateSelectedNodeEdgeLabelDataSpy = spyOn(instance, 'updateSelectedNodeEdgeLabelData').and.callThrough();
 
         // Select some nodes to begin with
         instance.networkGraph.selectNodes([1, 2]);
@@ -772,26 +852,26 @@ describe('VisualizationCanvasComponent', () => {
 
         instance.onContextCallback(mockCallbackParams);
 
-        expect(updateSelectedNodeEdgeLabelsSpy).not.toHaveBeenCalled();
-        expect(clearSelectedNodeEdgeLabelsSpy).toHaveBeenCalled();
-        expect(instance.selectedNodeEdgeLabels.size).toEqual(0);
+        expect(updateSelectedNodeEdgeLabelDataSpy).not.toHaveBeenCalled();
+        expect(clearSelectedNodeEdgeLabelDataSpy).toHaveBeenCalled();
+        expect(instance.selectedNodeEdgeLabelData.size).toEqual(0);
     });
 
     it('should clear selected edge labels if any edges are selected and right-clicked', () => {
         spyOn(instance.networkGraph, 'getNodeAt').and.returnValue(undefined);
         spyOn(instance.networkGraph, 'getEdgeAt').and.returnValue(101);
-        const clearSelectedNodeEdgeLabelsSpy = spyOn(instance, 'clearSelectedNodeEdgeLabels').and.callThrough();
+        const clearSelectedNodeEdgeLabelDataSpy = spyOn(instance, 'clearSelectedNodeEdgeLabelData').and.callThrough();
 
         // Select some nodes to begin with and get the edge labels
         instance.networkGraph.selectNodes([1]);
         instance.updateSelectedNodes();
-        instance.updateSelectedNodeEdgeLabels(1);
+        instance.updateSelectedNodeEdgeLabelData(1);
 
         instance.onContextCallback(mockCallbackParams);
 
         expect(instance.selectedEdges.length).toEqual(2);
         expect(instance.selectedEdges.includes(101)).toBeTrue();
-        expect(clearSelectedNodeEdgeLabelsSpy).toHaveBeenCalled();
-        expect(instance.selectedNodeEdgeLabels.size).toEqual(0);
+        expect(clearSelectedNodeEdgeLabelDataSpy).toHaveBeenCalled();
+        expect(instance.selectedNodeEdgeLabelData.size).toEqual(0);
     });
 });
