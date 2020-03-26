@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { Observable } from 'rxjs';
+import { MatSnackBar } from '@angular/material';
 import { PdfFile, PdfFileUpload } from 'app/interfaces/pdf-files.interface';
 import { PdfFilesService } from 'app/shared/services/pdf-files.service';
-import { MatSnackBar } from '@angular/material';
 
 
 @Component({
