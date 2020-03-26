@@ -87,22 +87,20 @@ export interface GetReferenceTableDataResult {
     referenceTableRows: ReferenceTableRow[];
 }
 
-export interface SidenavEntity {
-    data: VisNode | VisEdge;
-}
 
-export interface SidenavNodeEntity extends SidenavEntity {
+export interface SidenavNodeEntity {
+    data: VisNode;
     edges: VisEdge[];
 }
 
-export interface SidenavEdgeEntity extends SidenavEntity {
+export interface SidenavEdgeEntity {
     to: VisNode;
     from: VisNode;
     association: string;
     snippets: AssociationSnippet[];
 }
 
-export interface SidenavClusterEntity extends SidenavEntity {
+export interface SidenavClusterEntity {
     includes: VisNode[];
     clusterGraphData: GetClusterGraphDataResult;
 }
