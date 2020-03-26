@@ -4,6 +4,7 @@ import { HttpClientModule } from '@angular/common/http';
 
 import { RootStoreModule } from 'app/***ARANGO_USERNAME***-store';
 
+import { AdminModule } from 'app/admin/admin.module';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { UserFileImportModule } from './user-file-import/user-file-import.module';
@@ -19,6 +20,7 @@ import { FileBrowserComponent } from './file-browser/file-browser.component';
     FileBrowserComponent,
   ],
   imports: [
+    AdminModule,
     BrowserModule,
     SharedModule,
     AppRoutingModule,
@@ -33,7 +35,6 @@ import { FileBrowserComponent } from './file-browser/file-browser.component';
   ],
   providers: [],
   exports: [
-    HttpClientModule,
   ],
   bootstrap: [AppComponent]
 })

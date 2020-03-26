@@ -1,11 +1,56 @@
-from datetime import datetime, timedelta
-from flask import current_app, request, Response, json, Blueprint
 import jwt
+from datetime import datetime, timedelta
+from flask import current_app, request, Response, json, Blueprint, g
+from flask_httpauth import HTTPTokenAuth
 
 from neo4japp.database import db
-from neo4japp.models.drawing_tool import AppUser
+from neo4japp.models.auth import AppUser
 
-bp = Blueprint('login', __name__, url_prefix='/auth')
+bp = Blueprint('auth', __name__, url_prefix='/auth')
+
+auth = HTTPTokenAuth('Bearer')
+
+
+@auth.verify_token
+def verify_token(token):
+    """ Verify JTW """
+    try:
+        decoded = jwt.decode(
+            token,
+            current_app.config['SECRET_KEY'],
+            algorithms=['HS256']
+        )
+        if decoded['type'] == 'access':
+            user = pullUserFromAuthHead()
+            g.current_user = user
+            return True
+        else:
+            return False
+    except jwt.exceptions.ExpiredSignatureError:
+        # Signature has expired
+        return False
+    except jwt.exceptions.InvalidTokenError:
+        return False
+
+
+def pullUserFromAuthHead():
+    """
+        Return user object from jwt in
+        auth header of request
+    """
+    # Pull the JWT
+    token = request.headers.get('Authorization')
+    token = token.split(' ')[-1].strip()
+
+    email = jwt.decode(
+        token,
+        current_app.config['SECRET_KEY'],
+        algorithms=['HS256']
+    )['sub']
+
+    # Pull user by email
+    user = AppUser.query_by_email(email).first_or_404()
+    return user
 
 
 @bp.route('/refresh', methods=['POST'])
@@ -22,11 +67,11 @@ def refresh():
             current_app.config['SECRET_KEY'],
             algorithms=['HS256']
         )
-        
+
         if decoded['type'] != 'refresh':
             # Wrong token type
             return {'status': 'wrong token type submitted'}, 401
-        
+
         # Create access & refresh token pair
         access_jwt_encoded = jwt.encode(
             {
