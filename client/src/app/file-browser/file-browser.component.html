@@ -1,25 +1,27 @@
 <mat-toolbar>File Browser</mat-toolbar>
 <div class="container" fxLayout="column" fxLayoutAlign="start start" fxLayoutGap="8px">
   <div fxLayoutGap="8px">
-    <button mat-raised-button>Upload</button>
+    <button mat-raised-button (click)="fileInput.click()">Upload</button>
+    <input #fileInput hidden type="file" accept="application/pdf"
+      (change)="onFileInput($event.target.files)">
     <button mat-raised-button>Open</button>
   </div>
 
 
-  <mat-table [dataSource]="dataSource" >
-    <ng-container matColumnDef="name">
+  <mat-table [dataSource]="dataSource">
+    <ng-container matColumnDef="filename">
       <mat-header-cell *matHeaderCellDef> Name </mat-header-cell>
-      <mat-cell *matCellDef="let element"> {{element.name}} </mat-cell>
+      <mat-cell *matCellDef="let element"> {{element.filename}} </mat-cell>
     </ng-container>
 
-    <ng-container matColumnDef="modifiedAt">
-      <mat-header-cell *matHeaderCellDef> Modified </mat-header-cell>
-      <mat-cell *matCellDef="let element"> {{element.modifiedAt}} </mat-cell>
+    <ng-container matColumnDef="creationDate">
+      <mat-header-cell *matHeaderCellDef> Created </mat-header-cell>
+      <mat-cell *matCellDef="let element"> {{element.creationDate}} </mat-cell>
     </ng-container>
 
-    <ng-container matColumnDef="modifiedBy">
-      <mat-header-cell *matHeaderCellDef> Modified By </mat-header-cell>
-      <mat-cell *matCellDef="let element"> {{element.modifiedBy}} </mat-cell>
+    <ng-container matColumnDef="username">
+      <mat-header-cell *matHeaderCellDef> Created By </mat-header-cell>
+      <mat-cell *matCellDef="let element"> {{element.username}} </mat-cell>
     </ng-container>
 
     <ng-container matColumnDef="annotation">

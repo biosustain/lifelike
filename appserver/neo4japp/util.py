@@ -2,65 +2,14 @@ import attr
 import functools
 import hashlib
 import itertools
-import jwt
 
 from decimal import Decimal, InvalidOperation
 from enum import EnumMeta, Enum
 from json import JSONDecodeError
 from typing import Any, List, Optional, Type
 
-from flask import json, jsonify, request, current_app
-from flask_httpauth import HTTPTokenAuth
+from flask import json, jsonify, request
 
-auth = HTTPTokenAuth(scheme='Token')
-
-# TODO: Do these auth utilities belong here...? Should we create an AuthDao?
-@auth.verify_token
-def verify_token(token):
-    """
-        Verify JWT
-    """
-    try:
-        decoded = jwt.decode(
-            token,
-            current_app.config['SECRET_KEY'],
-            algorithms=['HS256']
-        )
-        if decoded['type'] == 'access':
-            return True
-        else:
-            return False
-    except jwt.exceptions.ExpiredSignatureError:
-        # Signature has expired
-        return False
-    except jwt.exceptions.InvalidTokenError:
-        return False
-
-
-def pullUserFromAuthHead():
-    """
-        Return user object from jwt in
-        auth header of request
-    """
-    # Have to do this import here, since putting it at the top of the file will cause
-    # a circular dependency on utils (because other submodules in .models use .utils!)
-    from neo4japp.models.drawing_tool import AppUser
-
-    # Pull the JWT
-    token = request.headers.get('Authorization')
-    token = token.replace("Token ", "")
-
-    # Decode it to email
-    email = jwt.decode(
-        token,
-        current_app.config['SECRET_KEY'],
-        algorithms='HS256'
-    )['sub']
-
-    # Pull user by email
-    user = AppUser.query.filter_by(email=email).first_or_404()
-
-    return user
 
 def encode_to_str(obj):
     """Converts different types into a string representation. """
