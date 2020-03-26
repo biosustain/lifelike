@@ -1,0 +1,68 @@
+import { Component, ViewChild } from '@angular/core';
+import { MatSnackBar } from '@angular/material/snack-bar';
+
+import {
+    FormGroup,
+    FormGroupDirective,
+    FormControl,
+    Validators,
+} from '@angular/forms';
+
+import { AdminService } from '../services/admin.service';
+import { AppUser, UserCreationRequest } from 'app/interfaces';
+
+@Component({
+    selector: 'app-create-user',
+    templateUrl: 'create-user.component.html',
+    styleUrls: ['./create-user.component.scss']
+})
+export class CreateUserComponent {
+
+    @ViewChild(FormGroupDirective, {static: false}) formGroupDirective: FormGroupDirective;
+
+    MIN_PASSWORD_LENGTH = 8;
+
+    form: FormGroup = new FormGroup({
+        username: new FormControl('', Validators.required),
+        password: new FormControl(
+            '', [Validators.required, Validators.minLength(this.MIN_PASSWORD_LENGTH)]),
+        email: new FormControl('', [Validators.required, Validators.email]),
+    });
+
+    get username() { return this.form.get('username'); }
+    get password() { return this.form.get('password'); }
+    get email() { return this.form.get('email'); }
+
+    constructor(
+        private adminService: AdminService,
+        private snackBar: MatSnackBar,
+    ) { }
+
+    submit(submitBtn: HTMLButtonElement) {
+        submitBtn.disabled = true;
+        this.adminService.createUser({
+            username: this.form.value.username,
+            password: this.form.value.password,
+            email: this.form.value.email,
+        } as UserCreationRequest).subscribe(
+                (user: AppUser) => {
+                    this.adminService.getUserList();
+                    this.formGroupDirective.resetForm();
+                    this.snackBar.open(
+                        `User ${user.username} created!`,
+                        'close',
+                        {duration: 5000},
+                    );
+                    submitBtn.disabled = false;
+                },
+                err => {
+                    const msg = err.error.apiHttpError.message;
+                    this.snackBar.open(
+                        `Error: ${msg}`,
+                        'close',
+                        {duration: 10000},
+                    );
+                },
+            );
+    }
+}

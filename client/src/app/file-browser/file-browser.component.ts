@@ -1,20 +1,40 @@
-import { Component } from '@angular/core';
-import { FileElement } from 'app/interfaces/file-browser.interface';
+import { Component, OnInit } from '@angular/core';
+import { Observable } from 'rxjs';
+import { MatSnackBar } from '@angular/material';
+import { PdfFile, PdfFileUpload } from 'app/interfaces/pdf-files.interface';
+import { PdfFilesService } from 'app/shared/services/pdf-files.service';
 
-// TODO: remove ELEMENT_DATA once the endpoint is ready
-const ELEMENT_DATA: FileElement[] = [
-  {name: 'file1', modifiedAt: 'Yesterday', modifiedBy: 'User1', annotation: ''},
-  {name: 'file2', modifiedAt: 'Today', modifiedBy: 'User1', annotation: ''},
-  {name: 'file3', modifiedAt: 'Tomorrow', modifiedBy: 'User2', annotation: ''},
-  {name: 'file4', modifiedAt: 'Never', modifiedBy: 'User2', annotation: ''},
-];
 
 @Component({
   selector: 'app-file-browser',
   templateUrl: './file-browser.component.html',
   styleUrls: ['./file-browser.component.scss']
 })
-export class FileBrowserComponent {
-  displayedColumns: string[] = ['name', 'modifiedAt', 'modifiedBy', 'annotation'];
-  dataSource = ELEMENT_DATA;
+export class FileBrowserComponent implements OnInit {
+  displayedColumns: string[] = ['filename', 'creationDate', 'username', 'annotation'];
+  dataSource: Observable<PdfFile[]>;
+
+  constructor(
+    private pdf: PdfFilesService,
+    private snackBar: MatSnackBar,
+  ) {}
+
+  ngOnInit() {
+    // this.dataSource = this.pdf.getFiles(); // TODO: uncomment when backend is integrated
+  }
+
+  onFileInput(files: FileList) {
+    if (files.length === 0) {
+      return;
+    }
+    this.pdf.uploadFile(files[0]).subscribe(
+      (res: PdfFileUpload) => {
+        this.snackBar.open(`File uploaded: ${res.filename}`, 'Close', {duration: 5000});
+        this.dataSource = this.pdf.getFiles(); // update the list on successful upload
+      },
+      err => {
+        this.snackBar.open(`Error on upload: ${err}`, 'Close', {duration: 10000});
+      }
+    );
+  }
 }

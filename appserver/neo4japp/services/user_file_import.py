@@ -20,10 +20,10 @@ from neo4japp.data_transfer_objects.user_file_import import (
     GraphNodeCreationMapping,
     GraphRelationshipCreationMapping,
 )
-from neo4japp.services.common import BaseDao
+from neo4japp.services.common import GraphBaseDao
 
 
-class UserFileImportService(BaseDao):
+class UserFileImportService(GraphBaseDao):
     def __init__(self, graph):
         super().__init__(graph)
 
