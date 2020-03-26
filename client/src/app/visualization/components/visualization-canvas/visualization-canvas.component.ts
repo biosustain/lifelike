@@ -27,11 +27,13 @@ import {
     VisEdge,
     VisNode,
     Direction,
+    ReferenceTableRow,
 } from 'app/interfaces';
 
 import { uuidv4 } from 'app/shared/utils';
 
-import { ContextMenuControlService } from '../../services/context-menu-control.service';
+import { ContextMenuControlService } from 'app/visualization/services/context-menu-control.service';
+import { VisualizationService } from 'app/visualization/services/visualization.service';
 
 enum SidenavEntityType {
     EMPTY,
@@ -101,6 +103,7 @@ export class VisualizationCanvasComponent implements OnInit {
 
     constructor(
         private contextMenuControlService: ContextMenuControlService,
+        private visService: VisualizationService,
     ) {
         this.sidenavOpened = false;
         this.sidenavEntity = null;
@@ -302,39 +305,95 @@ export class VisualizationCanvasComponent implements OnInit {
         return labels;
     }
 
-    createClusterSvg(clusterDisplayNames: string[], totalClusteredNodes: number) {
-        const svg =
-            '<svg xmlns="http://www.w3.org/2000/svg" width="232" height="120">' +
-                '<style type="text/css">' +
-                    '.cluster-node {' +
-                        'background: #D4E2F4;' +
-                        'border-radius: 2px;' +
-                        'border: thin solid #C9CACC;' +
-                        'color: #5B6A80;' +
-                        'display: inline-block;' +
-                        'font-family: "IBM Plex Sans", sans-serif;' +
-                        'font-size: 12px;' +
-                        'font-weight: bold;' +
-                        'width: 215px' +
-                    '}' +
-                    '.cluster-node-row {' +
-                        'border: thin solid #C9CACC; ' +
-                        'height: 15px; ' +
-                        'padding: 5px;' +
-                        'text-align: left; ' +
-                        'vertical-align: middle; ' +
-                    '}' +
-                '</style>' +
-                '<foreignObject x="15" y="10" width="100%" height="100%">' +
-                    `<div class="cluster-node" xmlns="http://www.w3.org/1999/xhtml">` +
-                        ''.concat(...clusterDisplayNames,
-                            '<div class="cluster-node-row">... (Showing ' +
-                                `${totalClusteredNodes > 3 ? '3' : totalClusteredNodes.toString()} of ${totalClusteredNodes} total items)` +
-                            '</div>') +
-                    '</div>' +
-                '</foreignObject>' +
-            '</svg>';
+    createClusterSvg(referenceTableRows: ReferenceTableRow[]) {
+        referenceTableRows.sort((a, b) => b.snippetCount - a.snippetCount);
+        const rowsHTMLString = referenceTableRows.slice(0, 20).map((row, index) => {
+            const snippetCountString = row.snippetCount > 20 ? '20+' : row.snippetCount;
+            const snippetBarWidth = row.snippetCount > 20 ? 100 : row.snippetCount * 5;
 
+            let rowHTMLString = `
+            <tr class="reference-table-row">
+                <td class="entity-name-container">${row.nodeDisplayName}</td>
+                <td class="snippet-count-container">(${snippetCountString})</td>
+                <td class="snippet-bar-container">
+                    <div class="snippet-bar-repr" style="width: ${snippetBarWidth}px;"></div>
+                </td>
+            </tr>`;
+            if (index === 19) {
+                rowHTMLString += `
+                <tr class="reference-table-row">
+                    <td class="max-nodes-cell" colspan="3">Showing 20 of ${referenceTableRows.length} clustered nodes</td>
+                </tr>
+                `;
+                return rowHTMLString;
+            } else {
+                return rowHTMLString;
+            }
+        }).join('\n');
+        const ctx = document.getElementsByTagName('canvas')[0].getContext('2d');
+        const longestName = referenceTableRows.sort(
+            (a, b) => ctx.measureText(b.nodeDisplayName).width - ctx.measureText(a.nodeDisplayName).width
+        )[0].nodeDisplayName;
+        // width of biggest name + width of counts + max width of bars + padding width + border width
+        const svgWidth = Math.floor((ctx.measureText(longestName).width * 1.25) + (ctx.measureText('(20+)').width * 1.25) + 100 + 21 + 6);
+        // (height of rows + padding height + border height) * # of rows
+        const svgHeight = (15 + 5 + 4) * referenceTableRows.length;
+        const svg =
+        `<svg xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 ${svgWidth} ${svgHeight}" width="${svgWidth}" height="${svgHeight}" preserveAspectRatio="xMinYMin meet">
+            <style type="text/css">
+                table, td {
+                    border-collapse: collapse;
+                }
+
+                td {
+                    border: thin solid #C9CACC;
+                    padding: 2.5px 3.5px;
+                }
+
+                .reference-table {
+                    background: #D4E2F4;
+                    border: thin solid #C9CACC;
+                    border-radius: 2px;
+                    color: #5B6A80;
+                    font-family: "IBM Plex Sans", sans-serif;
+                    font-size: 12px;
+                    font-weight: bold;
+                    height: ${svgHeight}px;
+                    width: ${svgWidth}px;
+                }
+
+                .reference-table-row {
+                    height: 15px;
+                }
+
+                .entity-name-container {
+                    text-align: right;
+                }
+
+                .max-nodes-cell {
+                    text-align: center;
+                }
+
+                .snippet-count-container {
+                    text-align: center
+                }
+
+                .snippet-bar-container {
+                    width: 100px;
+                }
+
+                .snippet-bar-repr {
+                    height: 10px;
+                    background: #aaabad;
+                }
+            </style>
+            <foreignObject x="0" y="0" width="100%" height="100%">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    <table class="reference-table">${rowsHTMLString}</table>
+                </div>
+            </foreignObject>
+        </svg>`;
         return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
     }
 
@@ -414,40 +473,87 @@ export class VisualizationCanvasComponent implements OnInit {
      * Helper method for creating duplicate nodes and edges given clustering information. All
      * nodes/edges within a cluster are duplicates of the original nodes. This is done so we
      * can view the original node if it would still have some remaining edges after clustering.
-     * If a node would have no remaining edges after clustering, we remove it from the canvas
-     * entirely. It and its corresponding edge will be redrawn when the cluster is opened.
+     * This method does NOT alter the network data, it only creates duplicate node/edge objects.
      * @param neighborNodesWithRel the list of original node IDs to be clustered
      * @param relationship the relationship which is being clustered
      * @param node the source node for the cluster
      */
-    createDuplicateNodesAndEdges(neighborNodesWithRel: IdType[], relationship: string, clusterOrigin: IdType) {
+    createDuplicateNodesAndEdges(neighborNodesWithRel: IdType[], relationship: string, clusterOrigin: IdType, direction: Direction) {
         return neighborNodesWithRel.map((neighborNodeId) => {
-            const edges = this.networkGraph.getConnectedEdges(neighborNodeId);
+            let edges = this.networkGraph.getConnectedEdges(neighborNodeId);
             const newDuplicateNode = this.createDuplicateNodeFromOriginal(this.nodes.get(neighborNodeId));
-            this.nodes.update(newDuplicateNode);
+
+            edges = edges.filter(
+                id => {
+                    const edge = this.edges.get(id);
+                    // Make sure the edges we duplicate have the grouped relationship and that they are connected to the cluster origin
+                    if (this.isNotAClusterEdge(id) && edge.label === relationship) {
+                        // Then, check that it is in the correct direction
+                        if (direction === Direction.FROM && edge.from === clusterOrigin) {
+                            return true;
+                        } else if (direction === Direction.TO && edge.to === clusterOrigin) {
+                            return true;
+                        }
+                    }
+                    return false;
+                }
+            );
+
+            if (edges.length !== 1) {
+                throw Error(
+                    `Neighbor node should have exactly one edge between origin node ${clusterOrigin} ` +
+                    `with label ${relationship} and direction ${direction}. Found ${edges.length} instead`
+                );
+            }
+
+            const newDuplicateEdge = this.createDuplicateEdgeFromOriginal(
+                this.edges.get(edges[0]), clusterOrigin as number, newDuplicateNode
+            );
+
+            return {
+                node: newDuplicateNode,
+                edge: newDuplicateEdge,
+            } as DuplicateNodeEdgePair;
+        });
+    }
+
+    /**
+     * Helper function for updating the graph with duplicate nodes and edges. Used by groupNeighborsWithRelationship
+     * to prep for clustering.
+     *
+     * If a node would have no remaining edges after clustering, we remove it from the canvas
+     * entirely. It and its corresponding edge will be redrawn when the cluster is opened.
+     * @param duplicateNodeEdgePairs the list of duplicate node/edge pairs to update the network with
+     */
+    updateGraphWithDuplicates(duplicateNodeEdgePairs: DuplicateNodeEdgePair[]) {
+        const duplicateNodesToAdd = [];
+        const duplicateEdgesToAdd = [];
+        const nodesToRemove = [];
+        const edgesToRemove = [];
+
+        duplicateNodeEdgePairs.forEach(pair => {
+            const duplicateNode = pair.node;
+            const duplicateEdge = pair.edge;
+            const edges = this.networkGraph.getConnectedEdges(duplicateNode.duplicateOf);
+
+            duplicateNodesToAdd.push(duplicateNode);
+            duplicateEdgesToAdd.push(duplicateEdge);
 
             if (edges.length === 1) {
                 // If the original node is being clustered on its last unclustered edge,
                 // remove it entirely from the canvas.
-                this.nodes.remove(neighborNodeId);
+                nodesToRemove.push(duplicateNode.duplicateOf);
             }
 
-            edges.filter(
-                edgeId => {
-                    const edge = this.edges.get(edgeId);
-                    // Make sure the edges we duplicate have the grouped relationship and that they are connected to the cluster origin
-                    return edge.label === relationship && (edge.from === clusterOrigin || edge.to === clusterOrigin);
-                }
-            ).forEach(
-                edgeId => {
-                    const existingEdge = this.edges.get(edgeId);
-                    this.addDuplicatedEdge.emit(edgeId as number);
-                    this.edges.update(this.createDuplicateEdgeFromOriginal(existingEdge, clusterOrigin as number, newDuplicateNode));
-                    this.edges.remove(existingEdge);
-                }
-            );
-            return newDuplicateNode.id;
+            this.addDuplicatedEdge.emit(duplicateEdge.duplicateOf as number);
+            edgesToRemove.push(duplicateEdge.duplicateOf);
         });
+
+        this.edges.remove(edgesToRemove);
+        this.nodes.remove(nodesToRemove);
+
+        this.nodes.update(duplicateNodesToAdd);
+        this.edges.update(duplicateEdgesToAdd);
     }
 
     safelyOpenCluster(clusterNodeId) {
@@ -467,47 +573,55 @@ export class VisualizationCanvasComponent implements OnInit {
      */
     groupNeighborsWithRelationship(groupRequest: GroupRequest) {
         const { relationship, node, direction } = groupRequest;
+        const neighborNodesWithRel = this.getNeighborsWithRelationship(relationship, node, direction);
 
-        let neighborNodesWithRel = this.getNeighborsWithRelationship(relationship, node, direction);
+        let duplicateNodeEdgePairs: DuplicateNodeEdgePair[];
+        try {
+            duplicateNodeEdgePairs = this.createDuplicateNodesAndEdges(neighborNodesWithRel, relationship, node, direction);
+        } catch (e) {
+            console.log(e);
+            alert(
+                `An error occurred while trying to cluster node with ID ${node} on relationship ` +
+                `${relationship} in direction "${direction}". `
+            );
+            return;
+        }
 
-        neighborNodesWithRel = this.createDuplicateNodesAndEdges(neighborNodesWithRel, relationship, node);
+        this.visService.getReferenceTableData(duplicateNodeEdgePairs).subscribe(result => {
+            this.updateGraphWithDuplicates(duplicateNodeEdgePairs);
 
-        const clusterDisplayNames: string[] = neighborNodesWithRel.map(
-            (nodeId) => {
-                let displayName = this.nodes.get(nodeId).displayName;
-                if (displayName.length > 31) {
-                    displayName = displayName.slice(0, 31) + '...';
+            const referenceTableRows = result.referenceTableRows;
+            const url = this.createClusterSvg(referenceTableRows);
+
+            // TODO: Would be nice to have some indication that the cluster has been selected.
+            // A bit tricky, since clusters are SVGs, but maybe this can be done.
+            this.networkGraph.cluster({
+                joinCondition: (n) => duplicateNodeEdgePairs.map(pair => pair.node.id).includes(n.id),
+                clusterNodeProperties: {
+                    image: url,
+                    label: null,
+                    shape: 'image',
+                    shapeProperties: {
+                        useImageSize: true,
+                    },
+                    size: this.config.nodes.size,
+                    // This setting is valid as described under 'clusterNodeProperties'
+                    // here: https://visjs.github.io/vis-network/docs/network/index.html#optionsObject
+                    // @ts-ignore
+                    allowSingleNodeCluster: true,
+                },
+                clusterEdgeProperties: {
+                    label: relationship,
+                },
+                processProperties: (clusterOptions) => {
+                    const newClusterId = `cluster:${uuidv4()}`;
+                    this.clusters.set(newClusterId, relationship);
+                    return {...clusterOptions, id: newClusterId};
                 }
-                return `<div class="cluster-node-row">${displayName}</div>`;
-            }
-        ).slice(0, 3);
-        const url = this.createClusterSvg(clusterDisplayNames, neighborNodesWithRel.length);
+            });
 
-        // TODO: Would be nice to have some indication that the cluster has been selected.
-        // A bit tricky, since clusters are SVGs, but maybe this can be done.
-        this.networkGraph.cluster({
-            joinCondition: (n) => neighborNodesWithRel.includes(n.id),
-            clusterNodeProperties: {
-                image: url,
-                label: null,
-                shape: 'image',
-                size: this.config.nodes.size * 1.5,
-                // This setting is valid as described under 'clusterNodeProperties'
-                // here: https://visjs.github.io/vis-network/docs/network/index.html#optionsObject
-                // @ts-ignore
-                allowSingleNodeCluster: true,
-            },
-            clusterEdgeProperties: {
-                label: relationship,
-            },
-            processProperties: (clusterOptions) => {
-                const newClusterId = `cluster:${uuidv4()}`;
-                this.clusters.set(newClusterId, relationship);
-                return {...clusterOptions, id: newClusterId};
-            }
+            this.updateSelectedNodeEdgeLabelData(node);
         });
-
-        this.updateSelectedNodeEdgeLabelData(node);
     }
 
     removeEdges(edges: IdType[]) {
