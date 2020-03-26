@@ -8,7 +8,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { RouterModule } from '@angular/router';
 
 import { PdfViewerLibModule } from 'pdf-viewer-lib';
-import { MaterialModule } from './material.module';
+import { AngularMaterialModule } from 'app/shared/angular-material.module';
 
 import {
   ProjectListViewComponent
@@ -68,7 +68,7 @@ import {
     DragDropModule,
     RouterModule.forRoot([]),
     PdfViewerLibModule,
-    MaterialModule
+    AngularMaterialModule,
   ]
 })
 export class MockupModule { }
