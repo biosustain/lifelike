@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
-import { PdfFiles, PdfFile, PdfFileUpload } from 'app/interfaces/file-browser.interface';
+import { PdfFiles, PdfFile, PdfFileUpload } from 'app/interfaces/pdf-files.interface';
 
 @Injectable({
   providedIn: '***ARANGO_USERNAME***'
