@@ -4,3 +4,15 @@
     overflow-y: scroll;
     height: 100%;
 }
+
+mat-sidenav {
+  min-width: 320px;
+
+  .sidenav-title {
+    margin-left: 32px;
+  }
+
+  .drawer-content {
+    padding: 8px;
+  }
+}
