@@ -76,7 +76,7 @@ export class HttpErrorInterceptor implements HttpInterceptor {
     updateAuthHeader(request: HttpRequest<any>) {
         return request.clone({
             setHeaders: {
-                'Authorization': 'Token ' + localStorage.getItem('access_jwt')
+                'Authorization': 'Bearer ' + localStorage.getItem('access_jwt')
             }
         })
     }

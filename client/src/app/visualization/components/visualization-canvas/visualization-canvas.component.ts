@@ -23,7 +23,6 @@ import {
     GetSnippetsResult,
     GroupRequest,
     Neo4jGraphConfig,
-    SidenavEntity,
     SidenavClusterEntity,
     SidenavNodeEntity,
     SidenavEdgeEntity,
@@ -74,7 +73,6 @@ export class VisualizationCanvasComponent implements OnInit {
         if (!isNullOrUndefined(result)) {
             this.sidenavEntityType = SidenavEntityType.CLUSTER;
             this.sidenavEntity = {
-                data: null,
                 includes: Object.keys(result.results).map(nodeId => this.nodes.get(nodeId)),
                 clusterGraphData: result,
             } as SidenavClusterEntity;
@@ -88,7 +86,7 @@ export class VisualizationCanvasComponent implements OnInit {
     sidenavEntityTypeEnum = SidenavEntityType;
 
     sidenavOpened: boolean;
-    sidenavEntity: SidenavEntity;
+    sidenavEntity: SidenavNodeEntity | SidenavEdgeEntity | SidenavClusterEntity;
     sidenavEntityType: SidenavEntityType;
 
     networkGraph: Network;
@@ -144,11 +142,7 @@ export class VisualizationCanvasComponent implements OnInit {
      * @param animationOn - boolean to turn on/off the physics animation
      */
     toggleAnimation(animationOn: boolean) {
-        if (animationOn) {
-            this.networkGraph.setOptions({physics: true});
-        } else {
-            this.networkGraph.setOptions({physics: false});
-        }
+        this.networkGraph.setOptions({physics: animationOn});
     }
 
     toggleSidenavOpened() {
@@ -243,7 +237,7 @@ export class VisualizationCanvasComponent implements OnInit {
      * Check that the input is a normal edge and that it isn't currently clustered.
      * Normal edges are numbers, cluster edges are strings. `getClusteredEdges` is
      * used here to deterimine if the input edge is currently clustered; The
-     * output of the function is the input edge + any cluster edges it is contained
+     * output of getClusteredEdges is the input edge + any cluster edges it is contained
      * in if any.
      * @param edge the id of the edge to check
      */
@@ -681,10 +675,7 @@ export class VisualizationCanvasComponent implements OnInit {
     onDragStartCallback(params: any) {
         this.hideAllTooltips();
         this.updateSelectedNodes(); // Dragging a node doesn't fire node selection, but it is selected after dragging finishes, so update
-
-        if (this.networkGraph.isCluster(params.nodes[0]) || !this.nodes.get(params.nodes[0])) {
-            this.referenceTableControlService.interruptReferenceTable();
-        }
+        this.referenceTableControlService.interruptReferenceTable();
     }
 
     onHoverNodeCallback(params: any) {
@@ -722,9 +713,8 @@ export class VisualizationCanvasComponent implements OnInit {
     }
 
     onBlurNodeCallback(params: any) {
-        if (this.networkGraph.isCluster(params.node) || !this.nodes.get(params.node)) {
-            this.referenceTableControlService.interruptReferenceTable();
-        } else {
+        this.referenceTableControlService.interruptReferenceTable();
+        if (!this.networkGraph.isCluster(params.node)) {
             // This produces a 'shrink effect'
             // TODO: Currently this does nothing, because the size property does not change 'box' shape nodes.
             // May be able to use the 'scaling' property to produce the desired effect.
@@ -810,7 +800,7 @@ export class VisualizationCanvasComponent implements OnInit {
         if (this.selectedNodes.length === 1 && this.selectedEdges.length === 0) {
             this.updateSelectedNodeEdgeLabels(this.selectedNodes[0]);
         } else {
-            // Clean up the selected node edge labels even if we selected more than one node, or any edges
+            // Clean up the selected node edge labels if we selected more than one node, or any edges
             // (this should prevent stale data in the context menu component)
             this.clearSelectedNodeEdgeLabels();
         }
