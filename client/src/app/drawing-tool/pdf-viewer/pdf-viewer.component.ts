@@ -1,5 +1,6 @@
-import { Component, AfterViewInit } from '@angular/core';
+import { Component, AfterViewInit, OnDestroy } from '@angular/core';
 import { FormControl } from '@angular/forms';
+import { Subscription } from 'rxjs';
 
 import {
   PdfAnnotationsService,
@@ -29,18 +30,19 @@ const MOCK_FILES: string[] = [
   templateUrl: './pdf-viewer.component.html',
   styleUrls: ['./pdf-viewer.component.scss']
 })
-export class PdfViewerComponent implements AfterViewInit {
+export class PdfViewerComponent implements AfterViewInit, OnDestroy {
 
   annotations: Object[] = [];
   files: string[] = MOCK_FILES; // TODO: fetch from API endpoint
   filesFilter = new FormControl('');
+  filesFilterSub: Subscription;
   filteredFiles = this.files;
 
   constructor(
     private pdfAnnService: PdfAnnotationsService,
     private dataFlow: DataFlowService
   ) {
-    this.filesFilter.valueChanges.subscribe((value: string) => {
+    this.filesFilterSub = this.filesFilter.valueChanges.subscribe((value: string) => {
       this.filteredFiles = this.files.filter(
         (name: string) => name.includes(value.toLocaleLowerCase())
       );
@@ -84,5 +86,9 @@ export class PdfViewerComponent implements AfterViewInit {
     };
 
     this.dataFlow.pushNode2Canvas(pay_load);
+  }
+
+  ngOnDestroy() {
+    this.filesFilterSub.unsubscribe();
   }
 }
