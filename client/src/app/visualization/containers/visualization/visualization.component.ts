@@ -84,9 +84,11 @@ export class VisualizationComponent implements OnInit {
             physics: {
                 enabled: true,
                 barnesHut: {
-                    springConstant: 0.04,
+                    avoidOverlap: 0.2,
+                    centralGravity: 0.1,
                     damping: 0.9,
                     gravitationalConstant: -10000,
+                    springLength: 250,
                 }
             },
             edges: {
