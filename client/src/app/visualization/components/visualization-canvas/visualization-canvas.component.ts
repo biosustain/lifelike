@@ -339,7 +339,7 @@ export class VisualizationCanvasComponent implements OnInit {
         // width of biggest name + width of counts + max width of bars + padding width + border width
         const svgWidth = Math.floor((ctx.measureText(longestName).width * 1.25) + (ctx.measureText('(20+)').width * 1.25) + 100 + 21 + 6);
         // (height of rows + padding height + border height) * # of rows
-        const svgHeight = (15 + 5 + 4) * referenceTableRows.length;
+        const svgHeight = (15 + 5 + 4) * referenceTableRows.slice(0, 20).length;
         const svg =
         `<svg xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 ${svgWidth} ${svgHeight}" width="${svgWidth}" height="${svgHeight}" preserveAspectRatio="xMinYMin meet">
