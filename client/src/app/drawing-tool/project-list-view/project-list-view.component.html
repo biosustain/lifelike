@@ -1,68 +1,119 @@
-<div id='project-list-view-container'>
-  <!-- List view -->
-  <div class='list-view'>
-    <h1 class='grey'>
-      Projects
-    </h1>
-    <div class='project-list'>
-      <!-- Project UI element -->
-      <div 
-        *ngFor='let project of projects'
-        (contextmenu)="open($event, project)"
-        (click)='pickProject(project)'
-        class='project shadow-4'>
-        <h2>
-          {{
-            project.label | truncate:['20']
-          }}
-        </h2>
-        <p>Modified {{project?.date_modified | friendlyDateStr}}</p>        
+<div id='map-channel' class='w-100' style='overflow-y: hidden;'>
+  <div
+    id='map-list-container'
+    class=''>
+      <div id='map-list'>
+        <h1>Maps</h1>
+        <div 
+          class='map shadow'
+          *ngFor='let project of projects'
+          (click)='pickProject(project)'>
+          <h3>
+            {{
+              project.label | truncate:['40']
+            }}
+          </h3>
+          <p class='author'>
+            By Mustafa Khan 
+          </p>
+          <p class='date'>
+            Modified {{project?.date_modified | friendlyDateStr}}
+          </p> 
+        </div>
+      </div>
+      <button 
+        mat-fab
+        color='primary'
+        id='add-project'
+        aria-label="Example icon-button with a heart icon">
+        <mat-icon>add</mat-icon>
+      </button>
+  </div>
+  <div
+    id='map-preview'
+    class=''>
+    <div id='canvas-container'>
+      <div id='canvas'></div>
+      <div id='read-panel'>
+        <h3>{{node?.label}}</h3>
+        <p class='blue'>
+          Type
+        </p>
+        <p>
+          {{node?.group}}
+        </p>
+        <p class='blue'>
+          Hyperlink
+        </p>
+        <p>
+          {{node?.data?.hyperlink}}
+        </p>
+        <p class='blue'>Edges</p>
+        <div *ngFor='let edge of node?.edges'>
+          <p>
+            To {{getNode(edge)}}
+          </p>
+          <p>
+            Label {{edge?.label}}
+          </p>
+        </div>
+      </div>
+      <div id='tool-panel'>
+        <mat-icon
+          matTooltip="Fit Graph"
+          matTooltipPosition="right"
+          class='fit'
+          (click)='fit()'>
+          zoom_out_map
+        </mat-icon>
+        <mat-icon
+          *ngIf='screenMode==="shrink"'
+          matTooltip="Fit Graph"
+          matTooltipPosition="right"
+          class='Full Screen'
+          (click)='toggle()'>
+          fullscreen
+        </mat-icon>
+        <mat-icon
+          *ngIf='screenMode==="grow"'
+          matTooltip="Fit Graph"
+          matTooltipPosition="right"
+          class='Shrink'
+          (click)='toggle()'>
+          fullscreen_exit
+        </mat-icon>
       </div>
     </div>
-    <button 
-      class='bottom-right-overlay add-project'
-      mat-fab
-      color='primary'
-      (click)='createProject()'
-      aria-label="Example icon-button with a heart icon">
-      <mat-icon>add</mat-icon>
-    </button>
-  </div>
-
-  <!-- Preview view -->
-  <div
-    [hidden]='!selectedProject'
-    class='preview-view'>
-    <div
-      id='canvas'>
+    <div id='map-panel'>
+      <div id='details'>
+        <h2>{{selectedProject?.label}}</h2>
+        <p class='author'>
+          By Mustafa Khan
+        </p>
+        <p class='date'>
+          Modified {{selectedProject?.date_modified | friendlyDateStr}}
+        </p>
+        <p class='description'>
+          {{selectedProject?.description}}
+        </p>
+      </div>
+      <div id='actions'>
+        <button
+          mat-raised-button
+          color="primary">
+          EDIT
+        </button>
+        <button
+          mat-raised-button
+          color="accent">
+          PUBLISH
+        </button>
+        <button
+          mat-raised-button
+          color="warn">
+          DELETE
+        </button>
+      </div>
     </div>
-    <h1>{{selectedProject?.label}}</h1>
-    <p>
-      {{selectedProject?.description}}
-    </p>
-    <p class='date'>
-      Modified {{selectedProject?.date_modified | friendlyDateStr}}
-    </p>
-    <button
-      (click)='goToProject()'
-      mat-raised-button
-      color="primary">
-      Edit
-    </button>
-    <button
-      (click)='deleteProject()'
-      mat-raised-button
-      color="warn">
-      Delete
-    </button>
   </div>
 </div>
-<!-- Context Menu -->
-<ng-template #projectMenu let-project>
-  <section 
-    (contextmenu)="$event.preventDefault()"
-    class="project-menu">
-    <div (click)='copyProject(project)'>Make copy of</div>
-    <div (click)="deleteProject(project)">Delete</div>
-  </section>
-</ng-template>

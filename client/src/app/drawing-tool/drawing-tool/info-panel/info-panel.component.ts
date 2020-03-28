@@ -20,7 +20,7 @@ import {
 import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
 
-interface GraphSelectionData {
+export interface GraphSelectionData {
   edge_data?: VisNetworkGraphEdge;
   node_data?: {
     id: string,

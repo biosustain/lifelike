@@ -39,11 +39,10 @@ export class SplitterComponent implements OnInit {
   }
 
   openApp(app:string) {
-    console.log(app)
-    this.splitPanelLength = 50;
 
     let factory = this.r.resolveComponentFactory(PdfViewerComponent);
     const ref = this.leftPanel.createComponent(factory);
     ref.changeDetectorRef.detectChanges();
+
   }
 }
