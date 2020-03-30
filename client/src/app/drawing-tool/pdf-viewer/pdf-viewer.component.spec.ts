@@ -12,9 +12,6 @@ describe('PdfViewerComponent', () => {
     TestBed.configureTestingModule({
       imports: [
         MockupModule
-      ],
-      providers: [
-        {provide: APP_BASE_HREF, useValue : '/' }
       ]
     })
     .compileComponents();

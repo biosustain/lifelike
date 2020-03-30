@@ -28,9 +28,6 @@ import {
 import { 
   DrawingToolComponent
 } from './drawing-tool/drawing-tool.component';
-import { 
-  SideBarUiComponent
-} from './drawing-tool/side-bar-ui/side-bar-ui.component';
 import {
   PdfViewerComponent
 } from './pdf-viewer/pdf-viewer.component';
@@ -51,6 +48,9 @@ import {
 import {
   PendingChangesGuard
 } from './guards';
+import { PaletteComponent } from './drawing-tool/palette/palette.component';
+import { InfoPanelComponent } from './drawing-tool/info-panel/info-panel.component';
+import { PdfViewerDirective } from './pdf-viewer/pdf-viewer.directive';
 
 @NgModule({
   declarations: [
@@ -59,11 +59,13 @@ import {
     DeleteProjectDialogComponent,
     CopyProjectDialogComponent,
     DrawingToolComponent,
-    SideBarUiComponent,
     PdfViewerComponent,
     LoginComponent,
     TruncatePipe,
-    FriendlyDateStrPipe
+    FriendlyDateStrPipe,
+    PaletteComponent,
+    InfoPanelComponent,
+    PdfViewerDirective
   ],
   entryComponents: [
     CreateProjectDialogComponent,
