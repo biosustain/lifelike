@@ -63,7 +63,7 @@ export class ProjectListViewComponent implements OnInit, AfterViewInit {
 
   screenMode: string = 'shrink';
 
-  focusedEntity: GraphSelectionData;
+  focusedEntity: GraphSelectionData = null;
 
   get node() {
     if (!this.focusedEntity) return null;
@@ -179,6 +179,8 @@ export class ProjectListViewComponent implements OnInit, AfterViewInit {
       // let data = this.visGraph.getEdge(edge_id);
       // this.focusedEntity = data;
       // console.log(data);
+    } else {
+      this.focusedEntity = null;
     }
   }
 }

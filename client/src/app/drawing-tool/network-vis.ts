@@ -76,7 +76,10 @@ export class NetworkVis {
   zoom2All() {
     this.network.fit({
       nodes: [],
-      animation: false
+      animation: { 
+        duration: 1000,
+        easingFunction: "easeInOutQuad"
+      }
     })
   }
 
