@@ -18,7 +18,7 @@ export class DataFlowService {
   private pdf2Canvas = new BehaviorSubject<Object>(null);
   $pdfDataSource = this.pdf2Canvas.asObservable();
 
-  /** Communication route to side-bar-ui */
+  /** Communication route to info-panel-ui */
   private graph2Form = new BehaviorSubject<Object>(null);
   graphDataSource = this.graph2Form.asObservable();
 

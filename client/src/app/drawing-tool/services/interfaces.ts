@@ -1,5 +1,9 @@
 interface UniversalGraphNode {
-  data: Object;
+  data: {
+    x: number;
+    y: number;
+    hyperlink?: string;
+  };
   display_name: string;
   hash: string;
   label: string;
@@ -21,7 +25,11 @@ interface VisNetworkGraphNode {
   x?: number;
   y?: number;
   id?: string;
-  group?: string
+  group?: string;
+  size?: number;
+  data?: {
+    hyperlink?: string;
+  }
 }
 interface VisNetworkGraphEdge {
   id?: string;
@@ -32,6 +40,20 @@ interface VisNetworkGraphEdge {
 interface VisNetworkGraph {
   nodes: VisNetworkGraphNode[];
   edges: VisNetworkGraphEdge[];
+}
+
+/**
+ * Interface for carring data relative
+ * to either node or edge
+ */
+interface GraphData {
+  id?: string;
+  label?: string;
+  group?: string;
+  edges?: VisNetworkGraphEdge[];
+  hyperlink?: string;
+  x?: number;
+  y?: number;
 }
 
 /**
@@ -69,5 +91,6 @@ export {
   UniversalGraph,
   UniversalGraphEdge,
   UniversalGraphNode,
-  Annotation
+  Annotation,
+  GraphData
 }
