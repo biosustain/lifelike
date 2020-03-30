@@ -1,6 +1,8 @@
-import { HttpClient } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
-import { PdfFiles, PdfFile } from 'app/interfaces/file-browser.interface';
+import { Observable } from 'rxjs';
+import { MatSnackBar } from '@angular/material';
+import { PdfFile, PdfFileUpload } from 'app/interfaces/pdf-files.interface';
+import { PdfFilesService } from 'app/shared/services/pdf-files.service';
 
 
 @Component({
@@ -10,29 +12,29 @@ import { PdfFiles, PdfFile } from 'app/interfaces/file-browser.interface';
 })
 export class FileBrowserComponent implements OnInit {
   displayedColumns: string[] = ['filename', 'creationDate', 'username', 'annotation'];
-  dataSource: PdfFile[] = [];
+  dataSource: Observable<PdfFile[]>;
 
   constructor(
-    private http: HttpClient,
+    private pdf: PdfFilesService,
+    private snackBar: MatSnackBar,
   ) {}
 
   ngOnInit() {
-    this.http.get<PdfFiles>('/api/files/list').subscribe(
-      (res: PdfFiles) => this.dataSource = res.files,
-      err => console.log('error during fetch', err),
-    );
+    // this.dataSource = this.pdf.getFiles(); // TODO: uncomment when backend is integrated
   }
 
   onFileInput(files: FileList) {
     if (files.length === 0) {
       return;
     }
-    const formData: FormData = new FormData();
-    formData.append('file', files[0]);
-    // formData.append('username', this_should_be_found_somewhere);
-    this.http.post('/api/files/upload', formData).subscribe(
-      res => console.log('successful upload', res),
-      err => console.log('error during upload', err),
+    this.pdf.uploadFile(files[0]).subscribe(
+      (res: PdfFileUpload) => {
+        this.snackBar.open(`File uploaded: ${res.filename}`, 'Close', {duration: 5000});
+        this.dataSource = this.pdf.getFiles(); // update the list on successful upload
+      },
+      err => {
+        this.snackBar.open(`Error on upload: ${err}`, 'Close', {duration: 10000});
+      }
     );
   }
 }
