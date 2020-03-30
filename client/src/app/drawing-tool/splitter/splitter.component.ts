@@ -4,8 +4,7 @@ import {
   ComponentFactoryResolver,
   ViewContainerRef,
   Injector,
-  ViewChild,
-  ComponentFactory
+  ViewChild
 } from '@angular/core';
 
 import {
