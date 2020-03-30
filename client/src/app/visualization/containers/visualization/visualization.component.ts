@@ -17,6 +17,7 @@ import {
     Neo4jGraphConfig,
     VisNode,
     VisEdge,
+    ExpandNodeResult,
 } from 'app/interfaces';
 import { NODE_EXPANSION_LIMIT } from 'app/shared/constants';
 
@@ -34,6 +35,7 @@ export class VisualizationComponent implements OnInit {
 
     networkGraphData: Neo4jResults;
     networkGraphConfig: Neo4jGraphConfig;
+    expandNodeResult: ExpandNodeResult;
     getSnippetsResult: GetSnippetsResult;
     getClusterGraphDataResult: GetClusterGraphDataResult;
     nodes: DataSet<VisNode | GraphNode>;
@@ -178,6 +180,7 @@ export class VisualizationComponent implements OnInit {
 
             edges = edges.filter(candidateEdge => !this.duplicatedEdges.has(candidateEdge.id));
             this.edges.update(edges);
+            this.expandNodeResult = { nodes, edges, expandedNode: nodeId } as ExpandNodeResult;
         });
     }
 
