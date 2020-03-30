@@ -78,11 +78,8 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
     return this.saveState ? true : confirm('WARNING: You have unsaved changes. Press Cancel to go back and save these changes, or OK to lose these changes.');
   }
 
+  /** Communicate to parent component to open another app side by side */
   @Output() openApp: EventEmitter<string> = new EventEmitter<string>();
-
-  @ViewChild('split', {static: false}) split: SplitComponent;
-  @ViewChild('area1', {static: false}) area1: SplitAreaDirective;
-  @ViewChild('area2', {static: false}) area2: SplitAreaDirective;
 
   /** The current graph representation on canvas */
   currentGraphState: {edges: VisNetworkGraphEdge[], nodes: VisNetworkGraphNode[]} = null;
