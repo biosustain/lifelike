@@ -2,6 +2,7 @@ import {
   node_templates,
   uuidv4
 } from './services';
+import { VisNetworkGraphNode } from './services/interfaces';
 import { Network, Options, DataSet } from 'vis-network';
 
 /**
@@ -56,11 +57,12 @@ export class NetworkVis {
      const group_styling = {};
      for (let n_t of node_templates) {
        group_styling[n_t.label] = {
+         borderWidth: 0,
          color: {
-           background: '#fff'
+           background: n_t.color
          },
          font: {
-           color: n_t.color
+           color: '#fff'
          }
        }
      }
@@ -156,16 +158,20 @@ export class NetworkVis {
    * @param x 
    * @param y 
    */
-  addNode(data={}, x=10, y=10) {
-    var n = {
+  addNode(data={}, x=10, y=10): VisNetworkGraphNode {
+
+    var n: VisNetworkGraphNode = {
       ...data
     };
 
     // Handle values for attribute that might be missing
-    n['id'] = n['id'] || uuidv4();
-    n['x'] = n['x'] || x;
-    n['y'] = n['y'] || y;
-    n['size'] = 5;
+    n.id = n['id'] || uuidv4();
+    n.x = n['x'] || x;
+    n.y = n['y'] || y;
+    n.size = 5;
+    n.data = {
+      hyperlink: n['hyperlink'] || ''
+    }
     
     var updated = this.vis_nodes.add([n]);
     
@@ -201,7 +207,8 @@ export class NetworkVis {
     this.vis_nodes.update({
       id: id,
       label: data['label'],
-      group: data['group']
+      group: data['group'],
+      data: data['data']
     });
   }
 
@@ -222,7 +229,8 @@ export class NetworkVis {
       id: node.id,
       group: node.group,
       label: node.label,
-      edges: edges
+      edges: edges,
+      data: node.data
     };
     var other_nodes = this.vis_nodes.get({
       filter: (item) => {
@@ -260,8 +268,25 @@ export class NetworkVis {
         n.y = nodePosDict[n.id].y;
 
         return n;
-      }),
-      "edges": this.vis_edges.get()
+      }).filter(e => e['id'] !== "EDGE_FORMATION_DRAGGING"),
+      "edges": this.vis_edges.get().filter(
+        e => e['to'] !== "EDGE_FORMATION_DRAGGING"
+      )
     }
+  }
+
+  /**
+   * Draw network graph from JSON representation
+   */
+  import(graph: {nodes: any[], edges: any[]}) {
+    this.vis_nodes = new DataSet(graph.nodes);
+    this.vis_edges = new DataSet(graph.edges);
+
+    this.network.setData({
+      nodes: this.vis_nodes,
+      edges: this.vis_edges
+    });
+
+    this.network.redraw()
   }
 }
