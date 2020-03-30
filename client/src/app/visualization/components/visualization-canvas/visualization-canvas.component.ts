@@ -8,8 +8,6 @@ import {
 
 import { Options } from '@popperjs/core';
 
-import { first, filter } from 'rxjs/operators';
-
 import { isNullOrUndefined } from 'util';
 
 import { Network, DataSet, IdType } from 'vis-network';
@@ -28,12 +26,14 @@ import {
     SidenavEdgeEntity,
     VisEdge,
     VisNode,
+    Direction,
+    ReferenceTableRow,
 } from 'app/interfaces';
 
 import { uuidv4 } from 'app/shared/utils';
 
-import { ContextMenuControlService } from '../../services/context-menu-control.service';
-import { ReferenceTableControlService } from '../../services/reference-table-control.service';
+import { ContextMenuControlService } from 'app/visualization/services/context-menu-control.service';
+import { VisualizationService } from 'app/visualization/services/visualization.service';
 
 enum SidenavEntityType {
     EMPTY,
@@ -46,7 +46,7 @@ enum SidenavEntityType {
     selector: 'app-visualization-canvas',
     templateUrl: './visualization-canvas.component.html',
     styleUrls: ['./visualization-canvas.component.scss'],
-    providers: [ContextMenuControlService, ReferenceTableControlService],
+    providers: [ContextMenuControlService],
 })
 export class VisualizationCanvasComponent implements OnInit {
     @Output() expandNode = new EventEmitter<number>();
@@ -91,7 +91,7 @@ export class VisualizationCanvasComponent implements OnInit {
 
     networkGraph: Network;
     selectedNodes: IdType[];
-    selectedNodeEdgeLabels: Set<string>;
+    selectedNodeEdgeLabelData: Map<string, Direction[]>;
     selectedEdges: IdType[];
     referenceTableData: DuplicateNodeEdgePair[];
     clusters: Map<string, string>;
@@ -103,7 +103,7 @@ export class VisualizationCanvasComponent implements OnInit {
 
     constructor(
         private contextMenuControlService: ContextMenuControlService,
-        private referenceTableControlService: ReferenceTableControlService,
+        private visService: VisualizationService,
     ) {
         this.sidenavOpened = false;
         this.sidenavEntity = null;
@@ -111,7 +111,7 @@ export class VisualizationCanvasComponent implements OnInit {
 
         this.selectedNodes = [];
         this.selectedEdges = [];
-        this.selectedNodeEdgeLabels = new Set<string>();
+        this.selectedNodeEdgeLabelData = new Map<string, Direction[]>();
         this.referenceTableData = [];
 
         this.contextMenuTooltipSelector = '#root-menu';
@@ -175,14 +175,13 @@ export class VisualizationCanvasComponent implements OnInit {
         this.updateSelectedEdges();
     }
 
-    clearSelectedNodeEdgeLabels() {
-        this.selectedNodeEdgeLabels.clear();
+    clearSelectedNodeEdgeLabelData() {
+        this.selectedNodeEdgeLabelData.clear();
     }
 
-    updateSelectedNodeEdgeLabels(selectedNode: IdType) {
-        this.clearSelectedNodeEdgeLabels();
-        const edgeLabelsResult = this.getConnectedEdgeLabels(selectedNode);
-        edgeLabelsResult.forEach(label => this.selectedNodeEdgeLabels.add(label));
+    updateSelectedNodeEdgeLabelData(selectedNode: IdType) {
+        this.clearSelectedNodeEdgeLabelData();
+        this.selectedNodeEdgeLabelData = this.getConnectedEdgeLabels(selectedNode);
     }
 
     collapseNeighbors(rootNode: VisNode) {
@@ -246,13 +245,28 @@ export class VisualizationCanvasComponent implements OnInit {
     }
 
     /**
-     * Gets all the neighbors of the given node connected by the given relationship.
+     * Gets all the neighbors of the given node, connected by the given relationship, in the given direction.
+     *
+     * If `direction` is Direction.TO, we only want to get the neighbors where the edge is coming to `node`.
+     * The opposite is true if `direction` is Direction.FROM.
      * @param relationship string representing the connecting relationship
      * @param node id of the root node
+     * @param direction represents the direction of the connecting relationship
      */
-    getNeighborsWithRelationship(relationship: string, node: IdType) {
+    getNeighborsWithRelationship(relationship: string, node: IdType, direction: Direction) {
         return this.networkGraph.getConnectedEdges(node).filter(
-            (edgeId) => this.isNotAClusterEdge(edgeId) && this.edges.get(edgeId).label === relationship
+            (edgeId) => {
+                const edge = this.edges.get(edgeId) as VisEdge;
+                // First check if this is the correct relationship
+                if (this.isNotAClusterEdge(edgeId) && edge.label === relationship) {
+                    // Then, check that it is in the correct direction
+                    if (direction === Direction.FROM && edge.from === node) {
+                        return true;
+                    } else if (direction === Direction.TO && edge.to === node) {
+                        return true;
+                    }
+                }
+            }
         ).map(
             connectedEdgeWithRel => (this.networkGraph.getConnectedNodes(connectedEdgeWithRel) as IdType[]).filter(
                 nodeId => nodeId !== node
@@ -264,51 +278,124 @@ export class VisualizationCanvasComponent implements OnInit {
      * Gets a set of labels from the edges connected to the input node.
      * @param selectedNode the ID of the node whose edge labels we want to get
      */
-    getConnectedEdgeLabels(selectedNode: IdType) {
-        const labels = new Set<string>();
+    getConnectedEdgeLabels(selectedNode: IdType): Map<string, Direction[]> {
+        const labels = new Map<string, Direction[]>();
 
         this.networkGraph.getConnectedEdges(selectedNode).filter(
             edge => this.isNotAClusterEdge(edge)
         ).forEach(
-            edge => labels.add(this.edges.get(edge).label)
-        );
+            edgeId => {
+                const edge = this.edges.get(edgeId) as VisEdge;
+                const { label, from, to } = edge;
 
+                if (!isNullOrUndefined(labels.get(label))) {
+                    // Either `TO` or `FROM` is already in the direction list for this label, so check to see which one we need to add
+                    const shouldAddTo = (selectedNode === to && !labels.get(label).includes(Direction.TO));
+                    const shouldAddFrom = (selectedNode === from && !labels.get(label).includes(Direction.FROM));
+                    if (shouldAddTo || shouldAddFrom) {
+                        labels.set(label, [Direction.TO, Direction.FROM]);
+                    }
+                } else {
+                    if (selectedNode === to) {
+                        labels.set(label, [Direction.TO]);
+                    } else {
+                        labels.set(label, [Direction.FROM]);
+                    }
+                }
+            }
+        );
         return labels;
     }
 
-    createClusterSvg(clusterDisplayNames: string[], totalClusteredNodes: number) {
-        const svg =
-            '<svg xmlns="http://www.w3.org/2000/svg" width="232" height="120">' +
-                '<style type="text/css">' +
-                    '.cluster-node {' +
-                        'background: #D4E2F4;' +
-                        'border-radius: 2px;' +
-                        'border: thin solid #C9CACC;' +
-                        'color: #5B6A80;' +
-                        'display: inline-block;' +
-                        'font-family: "IBM Plex Sans", sans-serif;' +
-                        'font-size: 12px;' +
-                        'font-weight: bold;' +
-                        'width: 215px' +
-                    '}' +
-                    '.cluster-node-row {' +
-                        'border: thin solid #C9CACC; ' +
-                        'height: 15px; ' +
-                        'padding: 5px;' +
-                        'text-align: left; ' +
-                        'vertical-align: middle; ' +
-                    '}' +
-                '</style>' +
-                '<foreignObject x="15" y="10" width="100%" height="100%">' +
-                    `<div class="cluster-node" xmlns="http://www.w3.org/1999/xhtml">` +
-                        ''.concat(...clusterDisplayNames,
-                            '<div class="cluster-node-row">... (Showing ' +
-                                `${totalClusteredNodes > 3 ? '3' : totalClusteredNodes.toString()} of ${totalClusteredNodes} total items)` +
-                            '</div>') +
-                    '</div>' +
-                '</foreignObject>' +
-            '</svg>';
+    createClusterSvg(referenceTableRows: ReferenceTableRow[]) {
+        referenceTableRows.sort((a, b) => b.snippetCount - a.snippetCount);
+        const rowsHTMLString = referenceTableRows.slice(0, 20).map((row, index) => {
+            const snippetCountString = row.snippetCount > 20 ? '20+' : row.snippetCount;
+            const snippetBarWidth = row.snippetCount > 20 ? 100 : row.snippetCount * 5;
 
+            let rowHTMLString = `
+            <tr class="reference-table-row">
+                <td class="entity-name-container">${row.nodeDisplayName}</td>
+                <td class="snippet-count-container">(${snippetCountString})</td>
+                <td class="snippet-bar-container">
+                    <div class="snippet-bar-repr" style="width: ${snippetBarWidth}px;"></div>
+                </td>
+            </tr>`;
+            if (index === 19) {
+                rowHTMLString += `
+                <tr class="reference-table-row">
+                    <td class="max-nodes-cell" colspan="3">Showing 20 of ${referenceTableRows.length} clustered nodes</td>
+                </tr>
+                `;
+                return rowHTMLString;
+            } else {
+                return rowHTMLString;
+            }
+        }).join('\n');
+        const ctx = document.getElementsByTagName('canvas')[0].getContext('2d');
+        const longestName = referenceTableRows.sort(
+            (a, b) => ctx.measureText(b.nodeDisplayName).width - ctx.measureText(a.nodeDisplayName).width
+        )[0].nodeDisplayName;
+        // width of biggest name + width of counts + max width of bars + padding width + border width
+        const svgWidth = Math.floor((ctx.measureText(longestName).width * 1.25) + (ctx.measureText('(20+)').width * 1.25) + 100 + 21 + 6);
+        // (height of rows + padding height + border height) * # of rows
+        const svgHeight = (15 + 5 + 4) * referenceTableRows.slice(0, 20).length;
+        const svg =
+        `<svg xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 ${svgWidth} ${svgHeight}" width="${svgWidth}" height="${svgHeight}" preserveAspectRatio="xMinYMin meet">
+            <style type="text/css">
+                table, td {
+                    border-collapse: collapse;
+                }
+
+                td {
+                    border: thin solid #C9CACC;
+                    padding: 2.5px 3.5px;
+                }
+
+                .reference-table {
+                    background: #D4E2F4;
+                    border: thin solid #C9CACC;
+                    border-radius: 2px;
+                    color: #5B6A80;
+                    font-family: "IBM Plex Sans", sans-serif;
+                    font-size: 12px;
+                    font-weight: bold;
+                    height: ${svgHeight}px;
+                    width: ${svgWidth}px;
+                }
+
+                .reference-table-row {
+                    height: 15px;
+                }
+
+                .entity-name-container {
+                    text-align: right;
+                }
+
+                .max-nodes-cell {
+                    text-align: center;
+                }
+
+                .snippet-count-container {
+                    text-align: center
+                }
+
+                .snippet-bar-container {
+                    width: 100px;
+                }
+
+                .snippet-bar-repr {
+                    height: 10px;
+                    background: #aaabad;
+                }
+            </style>
+            <foreignObject x="0" y="0" width="100%" height="100%">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    <table class="reference-table">${rowsHTMLString}</table>
+                </div>
+            </foreignObject>
+        </svg>`;
         return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
     }
 
@@ -399,51 +486,87 @@ export class VisualizationCanvasComponent implements OnInit {
      * Helper method for creating duplicate nodes and edges given clustering information. All
      * nodes/edges within a cluster are duplicates of the original nodes. This is done so we
      * can view the original node if it would still have some remaining edges after clustering.
-     * If a node would have no remaining edges after clustering, we remove it from the canvas
-     * entirely. It and its corresponding edge will be redrawn when the cluster is opened.
+     * This method does NOT alter the network data, it only creates duplicate node/edge objects.
      * @param neighborNodesWithRel the list of original node IDs to be clustered
      * @param relationship the relationship which is being clustered
      * @param node the source node for the cluster
      */
-    createDuplicateNodesAndEdges(neighborNodesWithRel: IdType[], relationship: string, clusterOrigin: IdType) {
-        const edgesToRemove = [];
-        const nodesToRemove = [];
-        const edgesToAdd = [];
-
-        const nodesToAdd = neighborNodesWithRel.map((neighborNodeId) => {
-            const edges = this.networkGraph.getConnectedEdges(neighborNodeId);
+    createDuplicateNodesAndEdges(neighborNodesWithRel: IdType[], relationship: string, clusterOrigin: IdType, direction: Direction) {
+        return neighborNodesWithRel.map((neighborNodeId) => {
+            let edges = this.networkGraph.getConnectedEdges(neighborNodeId);
             const newDuplicateNode = this.createDuplicateNodeFromOriginal(this.nodes.get(neighborNodeId));
+
+            edges = edges.filter(
+                id => {
+                    const edge = this.edges.get(id);
+                    // Make sure the edges we duplicate have the grouped relationship and that they are connected to the cluster origin
+                    if (this.isNotAClusterEdge(id) && edge.label === relationship) {
+                        // Then, check that it is in the correct direction
+                        if (direction === Direction.FROM && edge.from === clusterOrigin) {
+                            return true;
+                        } else if (direction === Direction.TO && edge.to === clusterOrigin) {
+                            return true;
+                        }
+                    }
+                    return false;
+                }
+            );
+
+            if (edges.length !== 1) {
+                throw Error(
+                    `Neighbor node should have exactly one edge between origin node ${clusterOrigin} ` +
+                    `with label ${relationship} and direction ${direction}. Found ${edges.length} instead`
+                );
+            }
+
+            const newDuplicateEdge = this.createDuplicateEdgeFromOriginal(
+                this.edges.get(edges[0]), clusterOrigin as number, newDuplicateNode
+            );
+
+            return {
+                node: newDuplicateNode,
+                edge: newDuplicateEdge,
+            } as DuplicateNodeEdgePair;
+        });
+    }
+
+    /**
+     * Helper function for updating the graph with duplicate nodes and edges. Used by groupNeighborsWithRelationship
+     * to prep for clustering.
+     *
+     * If a node would have no remaining edges after clustering, we remove it from the canvas
+     * entirely. It and its corresponding edge will be redrawn when the cluster is opened.
+     * @param duplicateNodeEdgePairs the list of duplicate node/edge pairs to update the network with
+     */
+    updateGraphWithDuplicates(duplicateNodeEdgePairs: DuplicateNodeEdgePair[]) {
+        const duplicateNodesToAdd = [];
+        const duplicateEdgesToAdd = [];
+        const nodesToRemove = [];
+        const edgesToRemove = [];
+
+        duplicateNodeEdgePairs.forEach(pair => {
+            const duplicateNode = pair.node;
+            const duplicateEdge = pair.edge;
+            const edges = this.networkGraph.getConnectedEdges(duplicateNode.duplicateOf);
+
+            duplicateNodesToAdd.push(duplicateNode);
+            duplicateEdgesToAdd.push(duplicateEdge);
 
             if (edges.length === 1) {
                 // If the original node is being clustered on its last unclustered edge,
                 // remove it entirely from the canvas.
-                nodesToRemove.push(neighborNodeId);
+                nodesToRemove.push(duplicateNode.duplicateOf);
             }
 
-            edges.filter(
-                edgeId => {
-                    const edge = this.edges.get(edgeId);
-                    // Make sure the edges we duplicate have the grouped relationship and that they are connected to the cluster origin
-                    return edge.label === relationship && (edge.from === clusterOrigin || edge.to === clusterOrigin);
-                }
-            ).forEach(
-                edgeId => {
-                    const existingEdge = this.edges.get(edgeId);
-                    this.addDuplicatedEdge.emit(edgeId as number);
-                    edgesToAdd.push(this.createDuplicateEdgeFromOriginal(existingEdge, clusterOrigin as number, newDuplicateNode));
-                    edgesToRemove.push(existingEdge);
-                }
-            );
-            return newDuplicateNode;
+            this.addDuplicatedEdge.emit(duplicateEdge.duplicateOf as number);
+            edgesToRemove.push(duplicateEdge.duplicateOf);
         });
 
-        this.nodes.remove(nodesToRemove);
         this.edges.remove(edgesToRemove);
+        this.nodes.remove(nodesToRemove);
 
-        this.nodes.update(nodesToAdd);
-        this.edges.update(edgesToAdd);
-
-        return nodesToAdd.map(node => node.id);
+        this.nodes.update(duplicateNodesToAdd);
+        this.edges.update(duplicateEdgesToAdd);
     }
 
     safelyOpenCluster(clusterNodeId) {
@@ -462,46 +585,56 @@ export class VisualizationCanvasComponent implements OnInit {
      * @param rel a string representing the relationship the neighbors will be clustered on
      */
     groupNeighborsWithRelationship(groupRequest: GroupRequest) {
-        const { relationship, node } = groupRequest;
-        let neighborNodesWithRel = this.getNeighborsWithRelationship(relationship, node);
-        neighborNodesWithRel = this.createDuplicateNodesAndEdges(neighborNodesWithRel, relationship, node);
+        const { relationship, node, direction } = groupRequest;
+        const neighborNodesWithRel = this.getNeighborsWithRelationship(relationship, node, direction);
 
-        const clusterDisplayNames: string[] = neighborNodesWithRel.map(
-            (nodeId) => {
-                let displayName = this.nodes.get(nodeId).displayName;
-                if (displayName.length > 31) {
-                    displayName = displayName.slice(0, 31) + '...';
+        let duplicateNodeEdgePairs: DuplicateNodeEdgePair[];
+        try {
+            duplicateNodeEdgePairs = this.createDuplicateNodesAndEdges(neighborNodesWithRel, relationship, node, direction);
+        } catch (e) {
+            console.log(e);
+            alert(
+                `An error occurred while trying to cluster node with ID ${node} on relationship ` +
+                `${relationship} in direction "${direction}". `
+            );
+            return;
+        }
+
+        this.visService.getReferenceTableData(duplicateNodeEdgePairs).subscribe(result => {
+            this.updateGraphWithDuplicates(duplicateNodeEdgePairs);
+
+            const referenceTableRows = result.referenceTableRows;
+            const url = this.createClusterSvg(referenceTableRows);
+
+            // TODO: Would be nice to have some indication that the cluster has been selected.
+            // A bit tricky, since clusters are SVGs, but maybe this can be done.
+            this.networkGraph.cluster({
+                joinCondition: (n) => duplicateNodeEdgePairs.map(pair => pair.node.id).includes(n.id),
+                clusterNodeProperties: {
+                    image: url,
+                    label: null,
+                    shape: 'image',
+                    shapeProperties: {
+                        useImageSize: true,
+                    },
+                    size: this.config.nodes.size,
+                    // This setting is valid as described under 'clusterNodeProperties'
+                    // here: https://visjs.github.io/vis-network/docs/network/index.html#optionsObject
+                    // @ts-ignore
+                    allowSingleNodeCluster: true,
+                },
+                clusterEdgeProperties: {
+                    label: relationship,
+                },
+                processProperties: (clusterOptions) => {
+                    const newClusterId = `cluster:${uuidv4()}`;
+                    this.clusters.set(newClusterId, relationship);
+                    return {...clusterOptions, id: newClusterId};
                 }
-                return `<div class="cluster-node-row">${displayName}</div>`;
-            }
-        ).slice(0, 3);
-        const url = this.createClusterSvg(clusterDisplayNames, neighborNodesWithRel.length);
+            });
 
-        // TODO: Would be nice to have some indication that the cluster has been selected.
-        // A bit tricky, since clusters are SVGs, but maybe this can be done.
-        this.networkGraph.cluster({
-            joinCondition: (n) => neighborNodesWithRel.includes(n.id),
-            clusterNodeProperties: {
-                image: url,
-                label: null,
-                shape: 'image',
-                size: this.config.nodes.size * 1.5,
-                // This setting is valid as described under 'clusterNodeProperties'
-                // here: https://visjs.github.io/vis-network/docs/network/index.html#optionsObject
-                // @ts-ignore
-                allowSingleNodeCluster: true,
-            },
-            clusterEdgeProperties: {
-                label: relationship,
-            },
-            processProperties: (clusterOptions) => {
-                const newClusterId = `cluster:${uuidv4()}`;
-                this.clusters.set(newClusterId, relationship);
-                return {...clusterOptions, id: newClusterId};
-            }
+            this.updateSelectedNodeEdgeLabelData(node);
         });
-
-        this.updateSelectedNodeEdgeLabels(node);
     }
 
     removeEdges(edges: IdType[]) {
@@ -663,7 +796,6 @@ export class VisualizationCanvasComponent implements OnInit {
 
     hideAllTooltips() {
         this.contextMenuControlService.hideTooltip();
-        this.referenceTableControlService.hideTooltip();
     }
 
     // Begin Callback Functions
@@ -675,31 +807,11 @@ export class VisualizationCanvasComponent implements OnInit {
     onDragStartCallback(params: any) {
         this.hideAllTooltips();
         this.updateSelectedNodes(); // Dragging a node doesn't fire node selection, but it is selected after dragging finishes, so update
-        this.referenceTableControlService.interruptReferenceTable();
     }
 
     onHoverNodeCallback(params: any) {
         if (this.networkGraph.isCluster(params.node)) {
-            // Begin the delay for showing the updated reference table for the hovered cluster
-            this.referenceTableControlService.delayReferenceTable();
-            this.referenceTableControlService.showReferenceTableResult$.pipe(
-                first(),
-                filter(showRefTable => showRefTable),
-            ).subscribe(() => {
-                // Update cluster data AFTER the delay has completed
-                this.referenceTableData = this.getNodeEdgePairsInCluster(params.node);
-
-                // Update the canvas location
-                const clusterPosition = this.networkGraph.getPositions(params.node)[`${params.node}`]; // Cluster x and y
-                const clusterDOMPos = this.networkGraph.canvasToDOM(clusterPosition);
-
-                const canvas = document.querySelector('canvas').getBoundingClientRect() as DOMRect;
-                const referenceTableXPos = clusterDOMPos.x + canvas.x;
-                const referenceTableYPos = clusterDOMPos.y + canvas.y;
-
-                this.referenceTableControlService.updatePopper(referenceTableXPos, referenceTableYPos);
-                this.referenceTableControlService.showTooltip();
-            });
+            // TODO: Add on-hover cluster effects
         } else if (!this.nodes.get(params.node)) {
             // TODO: Add on-hover edge effects
         } else {
@@ -713,8 +825,11 @@ export class VisualizationCanvasComponent implements OnInit {
     }
 
     onBlurNodeCallback(params: any) {
-        this.referenceTableControlService.interruptReferenceTable();
-        if (!this.networkGraph.isCluster(params.node)) {
+        if (this.networkGraph.isCluster(params.node)) {
+            // TODO: Add on-blur cluster effects
+        } else if (!this.nodes.get(params.node)) {
+            // TODO: Add on-blur edge effects
+        } else {
             // This produces a 'shrink effect'
             // TODO: Currently this does nothing, because the size property does not change 'box' shape nodes.
             // May be able to use the 'scaling' property to produce the desired effect.
@@ -798,11 +913,11 @@ export class VisualizationCanvasComponent implements OnInit {
         this.updateSelectedNodesAndEdges();
 
         if (this.selectedNodes.length === 1 && this.selectedEdges.length === 0) {
-            this.updateSelectedNodeEdgeLabels(this.selectedNodes[0]);
+            this.updateSelectedNodeEdgeLabelData(this.selectedNodes[0]);
         } else {
             // Clean up the selected node edge labels if we selected more than one node, or any edges
             // (this should prevent stale data in the context menu component)
-            this.clearSelectedNodeEdgeLabels();
+            this.clearSelectedNodeEdgeLabelData();
         }
         this.contextMenuControlService.showTooltip();
         this.updateSidebarEntity(); // oncontext does not select the hovered entity by default, so update
