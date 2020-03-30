@@ -354,7 +354,6 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
    * @param event 
    */
   drop(event: CdkDragDrop<any>) {
-    console.log(event);
 
     const node_type = event.item.element.nativeElement.id;
     const label = `${node_type}-${makeid()}`;
@@ -405,7 +404,6 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
     // Push to backend to save
     this.projectService.updateProject(this.project)
       .subscribe(resp => {
-        console.log(resp);
 
         this.saveState = true;
         this._snackBar.open('Project is saved', null, {
