@@ -28,6 +28,7 @@ import {
     VisNode,
     Direction,
     ReferenceTableRow,
+    ExpandNodeResult,
 } from 'app/interfaces';
 
 import { uuidv4 } from 'app/shared/utils';
@@ -58,6 +59,43 @@ export class VisualizationCanvasComponent implements OnInit {
 
     @Input() nodes: DataSet<any, any>;
     @Input() edges: DataSet<any, any>;
+    @Input() set expandNodeResult(result: ExpandNodeResult) {
+        if (!isNullOrUndefined(result)) {
+            this.getConnectedEdgeLabels(result.expandedNode).forEach((directionList, relationship) => {
+                directionList.forEach(direction => {
+                    const neighborNodesWithRel = this.getNeighborsWithRelationship(relationship, result.expandedNode, direction);
+                    const duplicateNodeEdgePairs = this.createDuplicateNodesAndEdges(
+                        neighborNodesWithRel, relationship, result.expandedNode, direction
+                    );
+
+                    // This is very similar to the implementation of `updateGraphWithDuplicates`, except that here we only delete
+                    // the existing nodes/edges, and don't add the duplicates. We will add the duplicates later, in `createCluster`
+                    const nodesToRemove = [];
+                    const edgesToRemove = [];
+
+                    duplicateNodeEdgePairs.forEach(pair => {
+                        const duplicateNode = pair.node;
+                        const duplicateEdge = pair.edge;
+                        const edges = this.networkGraph.getConnectedEdges(duplicateNode.duplicateOf);
+
+                        if (edges.length === 1) {
+                            // If the original node is being clustered on its last unclustered edge,
+                            // remove it entirely from the canvas.
+                            nodesToRemove.push(duplicateNode.duplicateOf);
+                        }
+
+                        this.addDuplicatedEdge.emit(duplicateEdge.duplicateOf as number);
+                        edgesToRemove.push(duplicateEdge.duplicateOf);
+                    });
+
+                    this.edges.remove(edgesToRemove);
+                    this.nodes.remove(nodesToRemove);
+
+                    this.createCluster(result.expandedNode, relationship, duplicateNodeEdgePairs);
+                });
+            });
+        }
+    }
     @Input() set getSnippetsResult(result: GetSnippetsResult) {
         if (!isNullOrUndefined(result)) {
             this.sidenavEntityType = SidenavEntityType.EDGE;
@@ -339,7 +377,7 @@ export class VisualizationCanvasComponent implements OnInit {
         // width of biggest name + width of counts + max width of bars + padding width + border width
         const svgWidth = Math.floor((ctx.measureText(longestName).width * 1.25) + (ctx.measureText('(20+)').width * 1.25) + 100 + 21 + 6);
         // (height of rows + padding height + border height) * # of rows
-        const svgHeight = (15 + 5 + 4) * referenceTableRows.length;
+        const svgHeight = (15 + 5 + 4) * referenceTableRows.slice(0, 20).length;
         const svg =
         `<svg xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 ${svgWidth} ${svgHeight}" width="${svgWidth}" height="${svgHeight}" preserveAspectRatio="xMinYMin meet">
@@ -579,28 +617,9 @@ export class VisualizationCanvasComponent implements OnInit {
         this.cleanUpDuplicates(nodesInCluster);
     }
 
-    /**
-     * Creates a cluster node of all the neighbors connected to the currently selected
-     * node connected by the input relationship.
-     * @param rel a string representing the relationship the neighbors will be clustered on
-     */
-    groupNeighborsWithRelationship(groupRequest: GroupRequest) {
-        const { relationship, node, direction } = groupRequest;
-        const neighborNodesWithRel = this.getNeighborsWithRelationship(relationship, node, direction);
-
-        let duplicateNodeEdgePairs: DuplicateNodeEdgePair[];
-        try {
-            duplicateNodeEdgePairs = this.createDuplicateNodesAndEdges(neighborNodesWithRel, relationship, node, direction);
-        } catch (e) {
-            console.log(e);
-            alert(
-                `An error occurred while trying to cluster node with ID ${node} on relationship ` +
-                `${relationship} in direction "${direction}". `
-            );
-            return;
-        }
-
+    createCluster(originNode: IdType, relationship: string, duplicateNodeEdgePairs: DuplicateNodeEdgePair[]) {
         this.visService.getReferenceTableData(duplicateNodeEdgePairs).subscribe(result => {
+
             this.updateGraphWithDuplicates(duplicateNodeEdgePairs);
 
             const referenceTableRows = result.referenceTableRows;
@@ -633,8 +652,32 @@ export class VisualizationCanvasComponent implements OnInit {
                 }
             });
 
-            this.updateSelectedNodeEdgeLabelData(node);
+            this.updateSelectedNodeEdgeLabelData(originNode);
         });
+    }
+
+    /**
+     * Creates a cluster node of all the neighbors connected to the currently selected
+     * node connected by the input relationship.
+     * @param rel a string representing the relationship the neighbors will be clustered on
+     */
+    groupNeighborsWithRelationship(groupRequest: GroupRequest) {
+        const { relationship, node, direction } = groupRequest;
+        const neighborNodesWithRel = this.getNeighborsWithRelationship(relationship, node, direction);
+
+        let duplicateNodeEdgePairs: DuplicateNodeEdgePair[];
+        try {
+            duplicateNodeEdgePairs = this.createDuplicateNodesAndEdges(neighborNodesWithRel, relationship, node, direction);
+        } catch (e) {
+            console.log(e);
+            alert(
+                `An error occurred while trying to cluster node with ID ${node} on relationship ` +
+                `${relationship} in direction "${direction}". `
+            );
+            return;
+        }
+
+        this.createCluster(node, relationship, duplicateNodeEdgePairs);
     }
 
     removeEdges(edges: IdType[]) {
