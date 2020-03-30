@@ -1,4 +1,6 @@
-import { Component, OnInit, AfterViewInit } from '@angular/core';
+import { Component, AfterViewInit, OnDestroy } from '@angular/core';
+import { FormControl } from '@angular/forms';
+import { Subscription } from 'rxjs';
 
 import {
   PdfAnnotationsService,
@@ -10,22 +12,44 @@ import {
   GraphData
 } from '../services/interfaces';
 
+const MOCK_FILES: string[] = [
+  'pdf file number 1',
+  'pdf file number 2',
+  'pdf file number 3',
+  'pdf file number 4',
+  'pdf file number 5',
+  'pdf file number 6',
+  'pdf file number 7',
+  'pdf file number 8',
+  'pdf file number 9',
+  'pdf file number 10',
+];
+
+
 @Component({
   selector: 'app-pdf-viewer',
   templateUrl: './pdf-viewer.component.html',
   styleUrls: ['./pdf-viewer.component.scss']
 })
-export class PdfViewerComponent implements OnInit, AfterViewInit {
+export class PdfViewerComponent implements AfterViewInit, OnDestroy {
 
   annotations: Object[] = [];
+  files: string[] = MOCK_FILES; // TODO: fetch from API endpoint
+  filesFilter = new FormControl('');
+  filesFilterSub: Subscription;
+  filteredFiles = this.files;
 
   constructor(
     private pdfAnnService: PdfAnnotationsService,
     private dataFlow: DataFlowService
-  ) { }
-
-  ngOnInit() {
+  ) {
+    this.filesFilterSub = this.filesFilter.valueChanges.subscribe((value: string) => {
+      this.filteredFiles = this.files.filter(
+        (name: string) => name.includes(value.toLocaleLowerCase())
+      );
+    });
   }
+
   ngAfterViewInit() {
     setTimeout(
       () => {
@@ -36,6 +60,10 @@ export class PdfViewerComponent implements OnInit, AfterViewInit {
       },
       200
     )
+  }
+  
+  ngOnDestroy() {
+    this.filesFilterSub.unsubscribe();
   }
 
   /**
