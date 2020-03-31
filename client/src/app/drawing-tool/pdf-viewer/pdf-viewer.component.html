@@ -26,6 +26,7 @@
       <!-- PDF Viewer -->
       <lib-pdf-viewer-lib
         id='pdf-viewer'
+        appPdfViewer
         *ngIf="annotations?.length > 0"
         [pdfSrc]="pdfFileUrl"
         [annotations]="annotations"

@@ -109,7 +109,8 @@ export class ProjectsService {
         return {
           data: {
             x: n.x,
-            y: n.y
+            y: n.y,
+            hyperlink: Object.is(n.data.hyperlink, undefined) ? '' : n.data.hyperlink
           },
           display_name: n.label,
           hash: n.id,
@@ -151,7 +152,10 @@ export class ProjectsService {
           x: n.data['x'],
           y: n.data['y'],
           id: n.hash,
-          group: n.label
+          group: n.label,
+          data: {
+            hyperlink: Object.is(n.data.hyperlink, undefined) ? '' : n.data.hyperlink
+          }
         }
       }
     );
