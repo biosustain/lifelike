@@ -1,14 +1,11 @@
 import { NgModule } from '@angular/core';
-import {
-  HTTP_INTERCEPTORS
-} from '@angular/common/http';
-import { CommonModule } from '@angular/common';
+import { CommonModule, APP_BASE_HREF } from '@angular/common';
 import { BrowserModule } from '@angular/platform-browser';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { FlexLayoutModule } from '@angular/flex-layout';
+import { RouterModule } from '@angular/router';
 
 import { PdfViewerLibModule } from 'pdf-viewer-lib';
 import { AngularMaterialModule } from 'app/shared/angular-material.module';
@@ -25,7 +22,7 @@ import {
 import {
   CopyProjectDialogComponent
 } from './project-list-view/copy-project-dialog/copy-project-dialog.component';
-import {
+import { 
   DrawingToolComponent
 } from './drawing-tool/drawing-tool.component';
 import {
@@ -34,25 +31,20 @@ import {
 import {
   LoginComponent
 } from './login/login.component';
-
-
+import { 
+  InfoPanelComponent
+} from './drawing-tool/info-panel/info-panel.component';
 import {
+  PaletteComponent
+} from './drawing-tool/palette/palette.component';
+
+import { 
   TruncatePipe,
   FriendlyDateStrPipe
 } from './pipes';
 
-import {
-  AuthenticationService
-} from './services'
-
-import {
-  PendingChangesGuard
-} from './guards';
-import { PaletteComponent } from './drawing-tool/palette/palette.component';
-import { InfoPanelComponent } from './drawing-tool/info-panel/info-panel.component';
-import { PdfViewerDirective } from './pdf-viewer/pdf-viewer.directive';
-
 @NgModule({
+  providers: [{provide: APP_BASE_HREF, useValue : '/' }],
   declarations: [
     ProjectListViewComponent,
     CreateProjectDialogComponent,
@@ -63,9 +55,8 @@ import { PdfViewerDirective } from './pdf-viewer/pdf-viewer.directive';
     LoginComponent,
     TruncatePipe,
     FriendlyDateStrPipe,
-    PaletteComponent,
     InfoPanelComponent,
-    PdfViewerDirective
+    PaletteComponent
   ],
   entryComponents: [
     CreateProjectDialogComponent,
@@ -80,19 +71,9 @@ import { PdfViewerDirective } from './pdf-viewer/pdf-viewer.directive';
     FormsModule,
     ReactiveFormsModule,
     DragDropModule,
+    RouterModule.forRoot([]),
     PdfViewerLibModule,
     AngularMaterialModule,
-    FlexLayoutModule,
-  ],
-  providers: [
-    // {
-    //   provide: HTTP_INTERCEPTORS,
-    //   useClass: AuthenticationService,
-    //   multi: true
-    // },
-    PendingChangesGuard
-  ],
-  exports: [
   ]
 })
-export class DrawingToolModule { }
+export class MockupModule { }

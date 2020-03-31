@@ -115,4 +115,66 @@ describe('DrawingToolComponent', () => {
 
     expect(graph.edges.length).toEqual(3);
   });
+
+  it('should be able to undo properly after 1 click to bring only two nodes', () => {
+    addNode('gene', 100, -500);
+    addNode('chemical', 50, -400);
+    addNode('species', 150, -400);
+
+    component.undo();
+
+    let graph = component.visjsNetworkGraph.export();
+
+    expect(graph.nodes.length).toEqual(2);
+  });
+
+  it('should be able to undo 6 total draw actions to have empty graph', () => {
+    addNode('gene', 100, -500);
+    addNode('chemical', 50, -400);
+    addNode('species', 150, -400);
+
+    let graph = component.visjsNetworkGraph.export();
+
+    const node_ids = graph.nodes.map(n => n['id'])
+    let nodeA = node_ids[0],
+        nodeB = node_ids[1],
+        nodeC = node_ids[2];
+
+    addEdge(nodeA, nodeB);
+    addEdge(nodeB, nodeC);
+    addEdge(nodeA, nodeC);
+
+    for (var i = 0; i < 6; i++) component.undo();
+
+    graph = component.visjsNetworkGraph.export();
+
+    expect(graph.edges.length).toEqual(0);
+    expect(graph.nodes.length).toEqual(0);
+  });
+
+  it('should be able to have complex series of action with undo/redo mixed in and be accurate', () => {
+    addNode('gene', 100, -500);
+    addNode('chemical', 50, -400);
+    addNode('species', 150, -400);
+
+    component.undo();
+
+    addNode('entity', 200, -450);
+    addNode('observation', 150, -400);
+
+    let graph = component.visjsNetworkGraph.export();
+
+    expect(component.redoStack.length).toEqual(0);
+    expect(graph.nodes.length).toEqual(4);
+
+    // Undo to pop action into redoStack
+    component.undo();
+    expect(component.redoStack.length).toEqual(1);
+
+    // Apply redo action to have same graph state as previously
+    component.redo();
+    graph = component.visjsNetworkGraph.export();
+    expect(graph.nodes.length).toEqual(4);
+
+  });
 });

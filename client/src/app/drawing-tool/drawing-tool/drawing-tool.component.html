@@ -1,45 +1,35 @@
-<!-- Container -->
 <div 
   cdkDropListGroup
-  id='drawing-tool-view-container'
-  class='w-100 relative'
-  style='overflow-y: hidden;'>
-  <!-- Canvas -->
+  id='drawing-tool-view-container'>
   <div
-    id='canvas'
-    class='w-100 fl vh-100'
+    cdkDropList
     (cdkDropListDropped)='drop($event)'
-    cdkDropList>
+    id='canvas'>
   </div>
-  <!-- Save Button Overlay -->
-  <button
-    (click)='save()'
-    [color]='saveState ? "primary" : "warn"'
-    mat-fab class='save-fab-overlay'>
-    <i class="material-icons">
+  <!-- Tool UI -->
+  <div id='tool-panel' class='shadow-4 ma3'>
+    <mat-icon
+      class='fit'
+      (click)='fitAll()'>
+      zoom_out_map
+    </mat-icon>
+    <mat-icon 
+      [ngClass]='saveStyle'
+      (click)='save()'>
       save
-    </i>
-  </button>
-  <!-- Title Overlay -->
-  <h1 id='dt-title-overlay'>{{project?.label}}</h1>
-  <!-- Palette Overlay -->
-  <div 
-    id='palette'
-    class='overlay ma4'
-    cdkDropList>
-    <!-- Template Nodes -->
-    <div
-      *ngFor='let n_t of nodeTemplates'
-      cdkDrag
-      [id]='n_t.label'
-      [ngStyle]='nodeStyleCompute(n_t)'
-      class='node-pill'>
-      {{n_t.label | titlecase}}
-    </div>
+    </mat-icon>
   </div>
-  <!-- Node Sidebar Menu -->
-  <app-side-bar-ui
-    style='overflow-y: scroll;'
-    id='side-bar-ui'>
-  </app-side-bar-ui>
+  <!-- Info Panel UI -->
+  <app-info-panel
+    id='info-panel'>
+  </app-info-panel>
+  <!-- Palette UI -->
+  <app-palette
+    id='palette-panel'
+    [undoStack]='undoStack'
+    [redoStack]='redoStack'
+    (undo)='undo()'
+    (redo)='redo()'>
+  </app-palette>
+  <h3 id='title'>{{project?.label}}</h3>
 </div>
