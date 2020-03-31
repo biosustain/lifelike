@@ -18,6 +18,12 @@ export class UserFileImportColumnNodePropertyMappingRowComponent {
       this.deleteMapping = new EventEmitter<boolean>();
     }
 
+    getKey(c) {
+      if (c !== null) {
+          return c[0].key;
+      }
+    }
+
     deleteMappingRow() {
       this.deleteMapping.emit(true);
     }

@@ -29,13 +29,13 @@
 
   <div [formGroup]="relationshipMappingForm">
     <div formArrayName="relationshipMapping">
-      <div *ngFor="let row of relationshipMappingForm.get('relationshipMapping').controls; let i=index">
+      <div *ngFor="let row of relationshipMappingForm.get('relationshipMapping')['controls']; let i=index">
         <div [formGroupName]="i">
           <app-user-file-import-column-relationship-mapping-row
-            [columnHeaders]="chosenSheetToMap?.sheetColumnNames"
+            [columnHeaders]="chosenSheetToMap.sheetColumnNames"
             [dbNodeTypes]="dbNodeTypes$ | async"
             [existingNodeProperties]="dbNodeProperties$ | async"
-            [relationshipMappingForm]="relationshipMappingForm.get('relationshipMapping').controls[i]"
+            [relationshipMappingForm]="relationshipMappingForm.get('relationshipMapping')['controls'][i]"
             (deleteMapping)="deleteRelationshipMappingRow(i)"
           ></app-user-file-import-column-relationship-mapping-row>
         </div>
