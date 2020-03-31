@@ -37,3 +37,12 @@ node_modules/
 
 # ignore copy
 deployment/kg-prototypes
+# terraform files
+terraform.tfstate.*
+.terraform/
+# The terraform Gcloud service account
+terraform-gcloud.json
+
+# .env Files (to protect secrets)
+*.env
+*.env.*

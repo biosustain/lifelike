@@ -1,66 +1,50 @@
-import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import {
   FormGroup,
   FormControl,
   FormArray
 } from '@angular/forms';
+
+import * as $ from 'jquery';
+
 import {
-  trigger,
-  style,
-  animate,
-  transition
-} from '@angular/animations';
+  node_templates,
+  uuidv4,
+  DataFlowService
+} from '../../services'
+import {
+  VisNetworkGraphEdge,
+  VisNetworkGraphNode,
+  GraphData
+} from '../../services/interfaces'
+import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
 
-import {
-  VisNetworkGraphNode,
-  VisNetworkGraphEdge
-} from '../../services/interfaces'
-import { 
-  DataFlowService,
-  node_templates,
-  uuidv4
-} from '../../services';
-import { Subscription } from 'rxjs';
-
-
-interface GraphData {
-  id?: string;
-  label?: string;
-  group?: string;
-  edges?: VisNetworkGraphEdge[];
-}
 interface GraphSelectionData {
   edge_data?: VisNetworkGraphEdge;
   node_data?: {
     id: string,
     group: string,
     label: string,
-    edges: VisNetworkGraphEdge[]
+    edges: VisNetworkGraphEdge[],
+    data: {
+      hyperlink: string;
+    }
   };
   other_nodes?: VisNetworkGraphNode[];
 };
 
 @Component({
-  selector: 'app-side-bar-ui',
-  templateUrl: './side-bar-ui.component.html',
-  styleUrls: ['./side-bar-ui.component.scss'],
-  animations: [
-    trigger(
-      'enterAnimation', [
-        transition(':enter', [
-          style({opacity: 0}),
-          animate('500ms', style({opacity: 1}))
-        ]),
-        transition(':leave', [
-          style({opacity: 1}),
-          animate('500ms', style({transform: 'translateX(100%)', opacity: 0}))
-        ])
-      ]
-    )
-  ]
+  selector: 'app-info-panel',
+  templateUrl: './info-panel.component.html',
+  styleUrls: ['./info-panel.component.scss']
 })
-export class SideBarUiComponent implements OnInit, OnDestroy {
+export class InfoPanelComponent implements OnInit {
+  /** Build the palette ui with node templates defined */
+  nodeTemplates = node_templates;
+
+  paletteMode: string = 'minimized';
+
   /**
    * The information of the node clicked
    * on from the knowledge graph
@@ -69,45 +53,50 @@ export class SideBarUiComponent implements OnInit, OnDestroy {
     id: '',
     label: '',
     group: '',
-    edges: []
+    edges: [],
+    hyperlink: ''
   };
 
-  /** Type of data we're dealing with, node or edge */
-  data_type: string = 'node';
-  
-  /** Hold other nodes from graph by id */
-  other_nodes_dict = {};
-  other_nodes = [];
-
   /**
-   * Track modification of node properties
+   * Track modification of entity properties
    */
-  graph_data_form = new FormGroup({
+  entity_form = new FormGroup({
     id: new FormControl(),
-    label: new FormControl('Untitled'),
-    group: new FormControl('Unknown'),
-    edges: new FormArray([])
+    label: new FormControl(),
+    group: new FormControl(),
+    edges: new FormArray([]),
+    hyperlink: new FormControl()
   },{
     updateOn: 'blur'
   });
 
-  /** Control whether to show display or form ui */
-  edit_mode = true;
-
-  types = node_templates;
-
   /** Prevent formgroup from firing needlessly */
   pauseForm = false;
 
-  /** FormField to focus on when a new node or edge is added */
-  @ViewChild('labelInput', {static: false}) labelField: ElementRef;
+  /** Type of data we're dealing with, node or edge */
+  entity_type: string = 'node';
 
-  get edgeForm() {
-    return <FormArray>this.graph_data_form.get('edges');
+  node_bank: VisNetworkGraphNode[] = [];
+  node_bank_dict: {[hash: string]: Object} = {};
+
+  /**
+   * Return true or false if any edges exist
+   */
+  get edges() {
+    return this.entity_form.value.edges.length === 0 ? false : true;
+  }
+  /**
+   * 
+   */
+  get edgeFormArr() {
+    return <FormArray>this.entity_form.get('edges');
+  }
+  get isNode() {
+    return this.entity_type === 'node';
   }
 
   graphDataSubscription: Subscription = null;
-  formSubscription: Subscription;
+  formSubscription: Subscription = null;
 
   constructor(
     private dataFlow: DataFlowService
@@ -116,32 +105,36 @@ export class SideBarUiComponent implements OnInit, OnDestroy {
   ngOnInit() {
     // Listen for changes within the form
     // in edit mode
-    this.formSubscription = this.graph_data_form.valueChanges
+    this.formSubscription = this.entity_form.valueChanges
       .pipe(
         filter(_ => !this.pauseForm)
       )
       .subscribe(
-        val => {
+        (val:GraphData) => {
           if (!val) return;
 
           let data;
 
-          if (this.data_type === "node") {
+          if (this.entity_type === "node") {
             // Get node data
-            let edges = val['edges'].map(e => {
+            let edges = val['edges'].map((e:VisNetworkGraphEdge) => {
+
               return {
-                id: e['id'],
-                label: e['label'],
-                from: val['id'],
-                to: e['to']
+                id: e.id,
+                label: e.label,
+                from: val.id,
+                to: e.to
               }
             });
             
             data = {
               node: {
                 id: this.graph_data.id,
-                label: val['label'],
-                group: val['group']
+                label: val.label,
+                group: val.group,
+                data: {
+                  hyperlink: val.hyperlink
+                }
               },
               edges
             }
@@ -150,14 +143,14 @@ export class SideBarUiComponent implements OnInit, OnDestroy {
             data = {
               edge: {
                 id: this.graph_data.id,
-                label: val['label']
+                label: val.label
               }
             }
           }
 
           // Push graph update to drawing-tool view
           this.dataFlow.pushGraphUpdate({
-            type: this.data_type,
+            type: this.entity_type,
             event: 'update',
             data
           });
@@ -174,19 +167,19 @@ export class SideBarUiComponent implements OnInit, OnDestroy {
 
       // If a node is clicked on ..
       if (data.node_data) {
-        this.data_type = 'node';
+        this.entity_type = 'node';
 
         // Record the data .. 
         this.graph_data = data.node_data;
         data.other_nodes.map(n => {
-          this.other_nodes_dict[n.id] = n;
+          this.node_bank_dict[n.id] = n;
         });
-        this.other_nodes = data.other_nodes;
+        this.node_bank = data.other_nodes;
 
         this.pauseForm = true;
 
         // Set FormArray of FormControls to edges of node
-        this.graph_data_form.setControl(
+        this.entity_form.setControl(
           'edges',
           new FormArray(
             this.graph_data.edges.map(e => {
@@ -210,28 +203,24 @@ export class SideBarUiComponent implements OnInit, OnDestroy {
               label: e.label,
               to: e.to
             }
-          })
+          }),
+          hyperlink: data.node_data.data.hyperlink
         };
-        this.graph_data_form.setValue(form_data, {emitEvent: false});
-
-        setTimeout(
-          () => this.labelField.nativeElement.focus(),
-          100
-        );
+        this.entity_form.setValue(form_data, {emitEvent: false});
         
         this.pauseForm = false;
       }
 
       // Else if an edge is clicked on ..
       else if (data.edge_data) {
-        this.data_type = 'edge';
+        this.entity_type = 'edge';
 
         // Record the data ..
         this.graph_data = data.edge_data;
 
         // Setup FormGroup for Edge ..
         this.pauseForm = true;
-        this.graph_data_form.setControl(
+        this.entity_form.setControl(
           'edges',
           new FormArray([])
         );
@@ -240,11 +229,13 @@ export class SideBarUiComponent implements OnInit, OnDestroy {
           id: this.graph_data.id,
           label: this.graph_data.label,
           group: null,
-          edges: []
+          edges: [],
+          hyperlink: null
         };
-        this.graph_data_form.setValue(form_data, {emitEvent: false});
+        this.entity_form.setValue(form_data, {emitEvent: false});
       }
 
+      if (this.paletteMode === 'minimized') this.changeSize();
     });
   }
 
@@ -252,30 +243,32 @@ export class SideBarUiComponent implements OnInit, OnDestroy {
     // Unsubscribe subscription to prevent transaction
     // with subject on accident when re-init next time
     this.graphDataSubscription.unsubscribe();
-    this.formSubscription.unsubscribe();
+    this.formSubscription.unsubscribe();    
+  }
+
+  reset() {
+    // reset everything of component's members
+    this.graph_data = {
+      id: '',
+      label: '',
+      group: '',
+      edges: [],
+      hyperlink: ''
+    };
+
+    this.pauseForm = true;
+    this.entity_form.setControl(
+      'edges',
+      new FormArray([])
+    );
+    this.entity_form.reset();
+    this.pauseForm = false;
+
+    this.changeSize('maximized');
   }
 
   /**
-   * Return label
-   * @param id 
-   */
-  getOtherNodeLabel(id) {
-    if (Object.keys(this.other_nodes_dict).length) {
-      return this.other_nodes_dict[id].label;
-    } else {
-      return 'Untitled';
-    }
-  }
-
-  /**
-   * 
-   */
-  toggleEditMode() {
-    this.edit_mode = !this.edit_mode;
-  }
-
-  /**
-   * Either delete the node or edge that the side-bar-ui
+   * Either delete the node or edge that the info-panel-ui
    * is showcasing ..
    */
   delete() {
@@ -284,22 +277,36 @@ export class SideBarUiComponent implements OnInit, OnDestroy {
     // push changes to app.component.ts
     this.dataFlow.pushGraphUpdate({
       event: 'delete',
-      type: this.data_type,
+      type: this.entity_type,
       data: {
         id
       }
     });
 
     // reset everything of component's members
-    this.graph_data = {
-      id: '',
-      label: '',
-      group: '',
-      edges: []
-    };
+    this.reset();
+  }
 
+  /**
+   * Add edge to through FormControl
+   */
+  addEdge() {
     this.pauseForm = true;
-    this.graph_data_form.reset();
+
+    // add form control to modify edge
+    (this.entity_form.controls['edges'] as FormArray).push(
+      new FormGroup({
+        to: new FormControl(
+          null
+        ),
+        label: new FormControl(
+          null
+        ),
+        id: new FormControl(
+          uuidv4()
+        )
+      })
+    );
     this.pauseForm = false;
   }
 
@@ -312,7 +319,7 @@ export class SideBarUiComponent implements OnInit, OnDestroy {
     let edge = form.value;
 
     // remove form control
-    (this.graph_data_form.controls['edges'] as FormArray).removeAt(i);
+    (this.entity_form.controls['edges'] as FormArray).removeAt(i);
 
     // remove from information dislay
     this.graph_data.edges = this.graph_data.edges.filter(
@@ -329,27 +336,47 @@ export class SideBarUiComponent implements OnInit, OnDestroy {
     });
   }
 
-  /**
-   * Add edge to through FormControl
-   */
-  addEdge() {
-    this.pauseForm = true;
+  changeSize(paletteMode=null) {
 
-    // add form control to modify edge
-    (this.graph_data_form.controls['edges'] as FormArray).push(
-      new FormGroup({
-        to: new FormControl(
-          null
-        ),
-        label: new FormControl(
-          null
-        ),
-        id: new FormControl(
-          uuidv4()
-        )
-      })
-    );
-    this.pauseForm = false;
+    if (paletteMode) this.paletteMode = paletteMode;
+
+    switch (this.paletteMode) {
+      case 'minimized':
+        $('#info-panel').animate({
+          height: '36rem'
+        }, 500, () => {
+          this.paletteMode = 'normal';
+        });
+        break;        
+      case 'normal':
+        $('#info-panel').animate({
+          height: '80vh'
+        }, 500, () => {
+          this.paletteMode = 'maximized';
+        });         
+        break;
+      case 'maximized':
+        $('#info-panel').animate({
+          height: '52px'
+        }, 500, () => {
+          this.paletteMode = 'minimized';
+        });    
+        break;
+      default:
+        break;
+    } 
+  }
+
+  goToLink(){
+    let hyperlink:string = this.entity_form.value['hyperlink'];
+
+    if (
+      hyperlink.includes('http')
+    ) {
+      window.open(hyperlink, "_blank");
+    } else {
+      window.open('http://' + hyperlink);
+    }
   }
 
   blurInput(e: Event) {
