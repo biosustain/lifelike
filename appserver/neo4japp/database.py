@@ -15,7 +15,7 @@ migrate = Migrate()
 
 def _connect_to_neo4j():
     return Graph(
-        current_app.config.get('NEO4J_HOST'),
+        host=current_app.config.get("NEO4J_HOST"),
         auth=current_app.config.get('NEO4J_AUTH').split('/'),
     )
 

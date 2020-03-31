@@ -1,0 +1,111 @@
+#!/usr/bin/env bash
+
+print_usage() {
+    echo "
+        ================================= USAGE =================================
+        Builds and deploys appserver container to the target Google Cloud Compute
+        instance.
+
+        Options:
+            -m <string for migration flag>
+            -r <flag for whether to fetch latest master or not>
+
+        e.g. ->
+            ./deploy-appserver -m upgrade -r true
+
+            This will build the application server and update the database
+            for deploying into Google Cloud
+        =========================================================================
+    "
+}
+
+
+set -o errexit                  # exit on command failure; use <cmd> || true to allow for exception
+set -o nounset                  # exit when script tries to use undeclared variables
+set -o pipefail                 # catch failure in piped commands
+
+
+if [ $# -ne 4 ];
+then
+    echo "Illegal number of arguments -- you must include the following"
+    print_usage && exit 1
+fi
+
+# Typically this will be upgrade unless we're starting from scratch
+MIGRATION_FLAG="upgrade"
+# Typically this will be true unless we want to re-use what's already pulled from master.
+FETCH_FRESH_REPO="true"
+
+while getopts 'm:r:' flag; do
+    case "${flag}" in
+        m) MIGRATION_FLAG="${OPTARG}" ;;
+        r) FETCH_FRESH_REPO="${OPTARG}" ;;
+        *) print_usage && exit 1 ;;
+    esac
+done
+
+# Enable ssh access
+gcloud compute config-ssh && sleep 2
+
+# Current directory
+__dir__="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+__repo__="${__dir__}/kg-prototypes"
+
+if [ "$FETCH_FRESH_REPO" == "true" ]; then
+    echo "Fetching latest master from GitHub"
+    # Remove any old builds
+    rm -rf ./kg-prototypes
+    # Get the latest master
+    git clone --depth 1 https://github.com/SBRG/kg-prototypes.git
+fi
+
+cd "${__repo__}/appserver"
+
+# Get the latest secrets for deployment
+gsutil cp gs://kg-secrets/deploy.env ./deploy.env
+
+# Decrypt the secret file
+gcloud kms decrypt --location global --keyring kg-secrets --key kg-secrets-key --ciphertext-file deploy.env --plaintext-file deploy.env
+
+echo "Building appserver image"
+docker build --tag kg-appserver:prod .
+docker save -o kg-appserver.tar.gz kg-appserver:prod
+
+echo "Removing old appserver..."
+gcloud compute ssh kg-appserver --zone us-central1-c \
+    --command="sudo docker stop kg-appserver || true && \
+              sudo docker rm kg-appserver || true && \
+              sudo docker system prune -f -a && \
+              sudo rm -rf /srv/kg-appserver.tar.gz"
+
+echo "SCP new build into Google Cloud"
+gcloud compute scp kg-appserver.tar.gz ***ARANGO_USERNAME***@kg-appserver:/srv --zone us-central1-c
+
+echo "Cleaning up Docker image..."
+rm -rf kg-appserver.tar.gz
+
+echo "SCP deploy.env into Google Cloud"
+gcloud compute scp ./deploy.env ***ARANGO_USERNAME***@kg-appserver:/srv --zone us-central1-c
+
+if [ "$MIGRATION_FLAG" == "fresh" ]; then
+    echo "Creating fresh database."
+    migrate_db_arg="--fresh"
+elif [ "$MIGRATION_FLAG" == "upgrade" ]; then
+    echo "Upgrading existing database."
+    migrate_db_arg="--upgrade"
+fi
+
+# The script will perform the following
+# (1) Load the docker image
+# (2) Run the appserver docker image with gunicorn
+# (3) Run the alembic migration scripts
+# (4) Run the neo4j setup scripts
+echo "Loading and starting Docker container"
+gcloud compute ssh kg-appserver --zone us-central1-c \
+    --command="sudo docker load --input /srv/kg-appserver.tar.gz && \
+               sudo docker run -d -p 5000:5000 --env-file /srv/deploy.env --name kg-appserver kg-appserver:prod 'bin/start-prod' && \
+               sudo docker exec kg-appserver 'bin/migrate-db' ${migrate_db_arg-} && \
+               sudo docker exec kg-appserver python db/neo4jsetup.py"
+
+echo "Application loaded."

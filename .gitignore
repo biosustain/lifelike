@@ -34,3 +34,6 @@ postgres/
 client/node_modules
 esdata/
 node_modules/
+
+# ignore copy
+deployment/kg-prototypes
