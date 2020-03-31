@@ -1,9 +1,13 @@
-FROM python:3.7.1
+FROM python:3.7.1-slim
+
+# https://github.com/debuerreotype/debuerreotype/issues/10
+RUN for i in $(seq 1 8); do mkdir -p "/usr/share/man/man${i}"; done
 
 # Install psql to check on postgres availability
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    postgresql-client \
-    && rm -rf /var/lib/apt/lists/*
+RUN apt-get update \
+&& apt-get install gcc -y \
+&& apt-get install postgresql-client -y --no-install-recommends \
+&& apt-get clean
 
 ENV N4J_USER n4j
 ENV N4J_HOME /home/$N4J_USER
