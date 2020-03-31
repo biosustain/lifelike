@@ -12,14 +12,10 @@
         <mat-form-field>
           <input matInput placeholder="Search" [formControl]="filesFilter">
         </mat-form-field>
-        <div *ngFor="let file of filteredFiles"
-          fxLayout fxLayoutAlign="start center" fxLayoutGap="8px">
-          <mat-icon>description</mat-icon>
-          <span fxFlex>{{file.filename}}</span>
-          <button mat-icon-button (click)="openPdf(file.id)">
-            <mat-icon>launch</mat-icon>
-          </button>
-        </div>
+        <button mat-button fxLayoutAlign="start center"
+          *ngFor="let file of filteredFiles" (click)="openPdf(file.id)">
+          <mat-icon>description</mat-icon> {{file.filename}}
+        </button>
       </div>
     </div>
   </mat-sidenav>
