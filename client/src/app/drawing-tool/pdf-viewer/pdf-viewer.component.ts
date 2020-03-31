@@ -1,6 +1,9 @@
 import { Component, AfterViewInit, OnDestroy } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { Subscription } from 'rxjs';
+import { PdfFile } from 'app/interfaces/pdf-files.interface';
+import { PdfFilesService } from 'app/shared/services/pdf-files.service';
+import { environment } from 'environments/environment';
 
 import {
   PdfAnnotationsService,
@@ -12,17 +15,17 @@ import {
   GraphData
 } from '../services/interfaces';
 
-const MOCK_FILES: string[] = [
-  'pdf file number 1',
-  'pdf file number 2',
-  'pdf file number 3',
-  'pdf file number 4',
-  'pdf file number 5',
-  'pdf file number 6',
-  'pdf file number 7',
-  'pdf file number 8',
-  'pdf file number 9',
-  'pdf file number 10',
+const MOCK_FILES: PdfFile[] = [ // TODO: remove once backend is in place
+  {id: '0', filename: 'pdf file number 0', creationDate: '', username: ''},
+  {id: '1', filename: 'pdf file number 1', creationDate: '', username: ''},
+  {id: '2', filename: 'pdf file number 2', creationDate: '', username: ''},
+  {id: '3', filename: 'pdf file number 3', creationDate: '', username: ''},
+  {id: '4', filename: 'pdf file number 4', creationDate: '', username: ''},
+  {id: '5', filename: 'pdf file number 5', creationDate: '', username: ''},
+  {id: '6', filename: 'pdf file number 6', creationDate: '', username: ''},
+  {id: '7', filename: 'pdf file number 7', creationDate: '', username: ''},
+  {id: '8', filename: 'pdf file number 8', creationDate: '', username: ''},
+  {id: '9', filename: 'pdf file number 9', creationDate: '', username: ''},
 ];
 
 
@@ -34,19 +37,21 @@ const MOCK_FILES: string[] = [
 export class PdfViewerComponent implements AfterViewInit, OnDestroy {
 
   annotations: Object[] = [];
-  files: string[] = MOCK_FILES; // TODO: fetch from API endpoint
+  files: PdfFile[] = MOCK_FILES;
   filesFilter = new FormControl('');
   filesFilterSub: Subscription;
   filteredFiles = this.files;
+  pdfFileUrl = 'assets/pdfs/sample.pdf'; // TODO: remove asset once backend is in place
 
   constructor(
     private pdfAnnService: PdfAnnotationsService,
-    private dataFlow: DataFlowService
+    private dataFlow: DataFlowService,
+    private pdf: PdfFilesService,
   ) {
-    this.filesFilterSub = this.filesFilter.valueChanges.subscribe((value: string) => {
-      this.filteredFiles = this.files.filter(
-        (name: string) => name.includes(value.toLocaleLowerCase())
-      );
+    this.filesFilterSub = this.filesFilter.valueChanges.subscribe(this.updateFilteredFiles);
+    this.pdf.getFiles().subscribe((files: PdfFile[]) => {
+      this.files = files;
+      this.updateFilteredFiles(this.filesFilter.value);
     });
   }
 
@@ -60,10 +65,6 @@ export class PdfViewerComponent implements AfterViewInit, OnDestroy {
       },
       200
     )
-  }
-  
-  ngOnDestroy() {
-    this.filesFilterSub.unsubscribe();
   }
 
   /**
@@ -92,6 +93,21 @@ export class PdfViewerComponent implements AfterViewInit, OnDestroy {
     };
 
     this.dataFlow.pushNode2Canvas(pay_load);
+  }
+
+  private updateFilteredFiles = (name: string) => {
+    this.filteredFiles = this.files.filter(
+      (file: PdfFile) => file.filename.includes(name.toLocaleLowerCase())
+    );
+  }
+
+  openPdf(id: string) {
+    this.pdfFileUrl = `${environment.apiUrl}/api/files/${id}`;
+    console.log(`url passed to pdf viewer: ${this.pdfFileUrl}`);
+  }
+
+  ngOnDestroy() {
+    this.filesFilterSub.unsubscribe();
   }
 
   generateHyperlink(ann_def: Annotation): string {
