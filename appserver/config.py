@@ -1,8 +1,10 @@
 import os
 
+
 class Base():
     """Default values"""
-    SITE_NAME = 'neo4j example application'
+    SITE_NAME = 'Lifelike Knowledge Search'
+
     SECRET_KEY = os.environ.get('SECRET_KEY', 'secrets')
 
     POSTGRES_HOST = os.environ.get('POSTGRES_HOST')
@@ -10,6 +12,9 @@ class Base():
     POSTGRES_USER = os.environ.get('POSTGRES_USER')
     POSTGRES_PASSWORD = os.environ.get('POSTGRES_PASSWORD')
     POSTGRES_DB = os.environ.get('POSTGRES_DB')
+
+    NEO4J_HOST = os.environ.get('NEO4J_HOST')
+    NEO4J_AUTH = os.environ.get('NEO4J_AUTH')
 
     SQLALCHEMY_DATABASE_URI = 'postgresql://%s:%s@%s:%s/%s' % (
         POSTGRES_USER,
@@ -22,13 +27,19 @@ class Base():
 
     SUPPORTED_LOCALES = ['en']
 
+
 class Development(Base):
     """Development configurations"""
 
     ASSETS_DEBUG = True
     WTF_CSRF_ENABLED = False
 
+
 class Testing(Base):
     """Functional test configuration"""
     TESTING = True
     WTF_CSRF_ENABLED = False
+
+
+class Production(Base):
+    """ Production configuration """
