@@ -29,11 +29,11 @@
 
   <div [formGroup]="columnMappingForm">
     <div formArrayName="newColumnMapping">
-      <div *ngFor="let row of columnMappingForm.get('newColumnMapping').controls; let i=index">
+      <div *ngFor="let row of columnMappingForm.get('newColumnMapping')['controls']; let i=index">
         <div [formGroupName]="i">
           <app-user-file-import-new-column-mapping-row
             [columnHeaders]="chosenSheetToMap?.sheetColumnNames"
-            [columnMappingForm]="columnMappingForm.get('newColumnMapping').controls[i]"
+            [columnMappingForm]="columnMappingForm.get('newColumnMapping')['controls'][i]"
             [relationshipTypes]="dbRelationshipTypes$ | async"
             [existingNodeLabels]="dbNodeTypes$ | async"
             [existingNodeProperties]="dbNodeProperties$ | async"
@@ -58,11 +58,11 @@
 
   <div [formGroup]="columnMappingForm">
     <div formArrayName="existingColumnMapping">
-      <div *ngFor="let row of columnMappingForm.get('existingColumnMapping').controls; let i=index">
+      <div *ngFor="let row of columnMappingForm.get('existingColumnMapping')['controls']; let i=index">
         <div [formGroupName]="i">
           <app-user-file-import-existing-column-mapping-row
             [columnHeaders]="chosenSheetToMap?.sheetColumnNames"
-            [columnMappingForm]="columnMappingForm.get('existingColumnMapping').controls[i]"
+            [columnMappingForm]="columnMappingForm.get('existingColumnMapping')['controls'][i]"
             [existingNodeLabels]="dbNodeTypes$ | async"
             [existingNodeProperties]="dbNodeProperties$ | async"
             (deleteMapping)="deleteExistingColumnMappingRow(i)"
@@ -87,11 +87,11 @@
 
   <div [formGroup]="nodePropertyMappingForm">
     <div formArrayName="nodePropertyMapping">
-      <div *ngFor="let row of nodePropertyMappingForm.get('nodePropertyMapping').controls; let i=index">
+      <div *ngFor="let row of nodePropertyMappingForm.get('nodePropertyMapping')['controls']; let i=index">
         <div [formGroupName]="i">
           <app-user-file-import-column-node-property-mapping-row
             [columnHeaders]="chosenSheetToMap?.sheetColumnNames"
-            [nodePropertyMappingForm]="nodePropertyMappingForm.get('nodePropertyMapping').controls[i]"
+            [nodePropertyMappingForm]="nodePropertyMappingForm.get('nodePropertyMapping')['controls'][i]"
             (deleteMapping)="deleteColumnNodePropertyMappingRow(i)"
           ></app-user-file-import-column-node-property-mapping-row>
         </div>
