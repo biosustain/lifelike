@@ -1,8 +1,11 @@
 import { Component, OnInit } from '@angular/core';
+import { MatDialog } from '@angular/material';
 import { ActivatedRoute } from '@angular/router';
 
 import { EMPTY as empty } from 'rxjs';
 import { filter, take, switchMap, map } from 'rxjs/operators';
+
+import { isNullOrUndefined } from 'util';
 
 import { DataSet } from 'vis-network';
 
@@ -19,7 +22,12 @@ import {
     VisEdge,
     ExpandNodeResult,
 } from 'app/interfaces';
-import { NODE_EXPANSION_LIMIT } from 'app/shared/constants';
+import {
+    NODE_EXPANSION_LIMIT,
+    NODE_EXPANSION_CLUSTERING_RECOMMENDATION,
+} from 'app/shared/constants';
+import { AutoClusterDialogComponent } from 'app/visualization/components/auto-cluster-dialog/auto-cluster-dialog.component';
+
 
 import { VisualizationService } from '../../services/visualization.service';
 
@@ -44,7 +52,11 @@ export class VisualizationComponent implements OnInit {
 
     legend: Map<string, string[]>;
 
+    dontShowDialogAgain = false;
+    clusterExpandedNodes = false;
+
     constructor(
+        public dialog: MatDialog,
         private route: ActivatedRoute,
         private visService: VisualizationService,
     ) {
@@ -107,6 +119,27 @@ export class VisualizationComponent implements OnInit {
                 // TODO: Investigate the 'scaling' property for dynamic resizing of 'box' shape nodes
             },
         };
+    }
+
+    openAutoClusterDialog(expandResult: ExpandNodeResult): void {
+        const dialogRef = this.dialog.open(AutoClusterDialogComponent, {
+            disableClose: true,
+            width: '600px', height: '330px',
+            data: {...expandResult},
+        });
+
+        dialogRef.afterClosed().subscribe(result => {
+            if (!isNullOrUndefined(result)) {
+                this.nodes.update(result.data.nodes as VisNode[]);
+                this.edges.update(result.data.edges as VisEdge[]);
+                this.dontShowDialogAgain = result.dontAskAgain;
+                this.clusterExpandedNodes = result.clusterExpandedNodes;
+
+                if (this.clusterExpandedNodes) {
+                    this.expandNodeResult = result.data;
+                }
+            }
+        });
     }
 
     /**
@@ -175,12 +208,17 @@ export class VisualizationComponent implements OnInit {
                 }
                 return n;
             });
-
-            this.nodes.update(nodes);
-
             edges = edges.filter(candidateEdge => !this.duplicatedEdges.has(candidateEdge.id));
-            this.edges.update(edges);
-            this.expandNodeResult = { nodes, edges, expandedNode: nodeId } as ExpandNodeResult;
+
+            if (!this.dontShowDialogAgain || edges.length > NODE_EXPANSION_CLUSTERING_RECOMMENDATION) {
+                this.openAutoClusterDialog({ nodes, edges, expandedNode: nodeId } as ExpandNodeResult);
+            } else {
+                this.nodes.update(nodes);
+                this.edges.update(edges);
+                if (this.clusterExpandedNodes) {
+                    this.expandNodeResult = { nodes, edges, expandedNode: nodeId } as ExpandNodeResult;
+                }
+            }
         });
     }
 
