@@ -466,6 +466,8 @@ export class VisualizationCanvasComponent implements OnInit {
             data: duplicateEdge.data,
             to: duplicateEdge.originalTo,
             from: duplicateEdge.originalFrom,
+            toLabel: duplicateEdge.toLabel,
+            fromLabel: duplicateEdge.fromLabel,
             arrows: duplicateEdge.arrows,
         } as VisEdge;
     }
