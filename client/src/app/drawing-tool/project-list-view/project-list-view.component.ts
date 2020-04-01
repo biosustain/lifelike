@@ -106,7 +106,21 @@ export class ProjectListViewComponent implements OnInit, AfterViewInit {
         this.projects.reverse();
       });
   }
-  
+
+  /**
+   * Allow user to navigate to a link in a new tab
+   * @param hyperlink 
+   */
+  goToLink(hyperlink:string){
+    if (
+      hyperlink.includes('http')
+    ) {
+      window.open(hyperlink, "_blank");
+    } else {
+      window.open('http://' + hyperlink);
+    }
+  }
+
   /**
    * Spin up dialog to confirm if user wants to delete project,
    * if so, call delete API on project
@@ -335,7 +349,7 @@ export class ProjectListViewComponent implements OnInit, AfterViewInit {
    * Return other node connected to source in edge on a given edge
    * @param edge 
    */
-  getNodes(edge: VisNetworkGraphEdge) {
+  getNode(edge: VisNetworkGraphEdge) {
     return this.focusedEntity.other_nodes.filter(
       node => node.id === edge.to
     )[0].label;    

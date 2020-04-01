@@ -75,12 +75,15 @@ interface Annotation {
  */
 interface Project {
   id?: String|Number;
+  author?: String;
   label: String;
   description: String;
   /** JSON representation of graph */
   graph: UniversalGraph;
   /** ISO-8601 timestamp of when project was last updated */
   date_modified?: String;
+  /** Whether or not project is public to userbase */
+  public?: Boolean;
 }
 
 export {

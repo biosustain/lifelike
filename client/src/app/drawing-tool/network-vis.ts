@@ -77,7 +77,7 @@ export class NetworkVis {
     this.network.fit({
       nodes: [],
       animation: { 
-        duration: 1000,
+        duration: 400,
         easingFunction: "easeInOutQuad"
       }
     })

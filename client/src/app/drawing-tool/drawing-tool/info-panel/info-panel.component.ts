@@ -367,6 +367,10 @@ export class InfoPanelComponent implements OnInit {
     } 
   }
 
+  /**
+   * Allow user to navigate to a link in a new tab
+   * @param hyperlink 
+   */
   goToLink(){
     let hyperlink:string = this.entity_form.value['hyperlink'];
 
