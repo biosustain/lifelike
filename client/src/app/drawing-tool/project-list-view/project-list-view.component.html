@@ -34,6 +34,7 @@
   </div>
   <!-- Map Preview Panel -->
   <div
+    *ngIf='selectedProject else empty;'
     id='map-preview'
     class=''>
     <div id='canvas-container'>
@@ -121,8 +122,9 @@
         </button>
         <button
           mat-raised-button
-          color="accent">
-          PUBLISH
+          [color]="selectedProject?.public === false ? 'primary' : 'accent'"
+          (click)='togglePublic()'>
+          {{selectedProject?.public === false ? 'MAKE PUBLIC' : 'MAKE PRIVATE'}}
         </button>
         <button
           mat-raised-button
@@ -142,4 +144,10 @@
     <div (click)='copyProject(project)'>Make copy of</div>
     <div (click)="deleteProject(project)">Delete</div>
   </section>
+</ng-template>
+<!-- Empty Scene -->
+<ng-template #empty>
+  <div id='map-preview' class='empty'>
+    <p>Create or select a project</p>
+  </div>
 </ng-template>

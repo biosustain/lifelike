@@ -17,11 +17,6 @@ import {
   Subscription, Observable
 } from 'rxjs';
 
-import { 
-  SplitComponent,
-  SplitAreaDirective
-} from 'angular-split';
-
 import * as $ from 'jquery'
 
 import {

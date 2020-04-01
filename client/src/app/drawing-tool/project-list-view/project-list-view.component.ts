@@ -39,6 +39,7 @@ import {
 import {
   CopyProjectDialogComponent
 } from './copy-project-dialog/copy-project-dialog.component';
+import { MatSnackBar } from '@angular/material';
 
 declare var $: any;
 
@@ -88,7 +89,8 @@ export class ProjectListViewComponent implements OnInit, AfterViewInit {
     private projectService: ProjectsService,
     private dataFlow: DataFlowService,
     public overlay: Overlay,
-    public viewContainerRef: ViewContainerRef
+    public viewContainerRef: ViewContainerRef,
+    private _snackBar: MatSnackBar
   ) { }
 
   ngOnInit() {}
@@ -104,6 +106,22 @@ export class ProjectListViewComponent implements OnInit, AfterViewInit {
           }
         );
         this.projects.reverse();
+      });
+  }
+
+  /**
+   * Switch between public or private mode
+   * for the project
+   */
+  togglePublic() {
+    let published = this.selectedProject.public;
+    this.selectedProject.public = !published;
+    
+    this.projectService.updateProject(this.selectedProject)
+      .subscribe(resp => {
+        this._snackBar.open('Project is saved', null, {
+          duration: 2000,
+        });
       });
   }
 
@@ -214,22 +232,27 @@ export class ProjectListViewComponent implements OnInit, AfterViewInit {
 
     this.selectedProject = proj;
 
-    let container = document.getElementById('canvas');
-    this.visGraph = new NetworkVis(container);
-
-    let g = this.projectService.universe2Vis(proj.graph);
-
     setTimeout(
       () => {
-        this.visGraph.draw(
-          g.nodes,
-          g.edges
-        );
-
-        this.visGraph.network.on(
-          'click',
-          (properties) => this.networkClickHandler(properties)
-        );
+        let container = document.getElementById('canvas');
+        this.visGraph = new NetworkVis(container);
+    
+        let g = this.projectService.universe2Vis(proj.graph);
+    
+        setTimeout(
+          () => {
+            this.visGraph.draw(
+              g.nodes,
+              g.edges
+            );
+    
+            this.visGraph.network.on(
+              'click',
+              (properties) => this.networkClickHandler(properties)
+            );
+          },
+          100
+        )
       },
       100
     )
@@ -343,7 +366,6 @@ export class ProjectListViewComponent implements OnInit, AfterViewInit {
       this.overlayRef = null;
     }    
   }
-
 
   /**
    * Return other node connected to source in edge on a given edge
