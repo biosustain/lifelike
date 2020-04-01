@@ -100,4 +100,3 @@ export interface SearchRecord {
   data: string;
   dataId: string;
 }
-
