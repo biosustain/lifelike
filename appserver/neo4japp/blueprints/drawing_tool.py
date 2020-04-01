@@ -78,6 +78,7 @@ def update_project(project_id):
     project.label = data.get("label", "")
     project.graph = data.get("graph", {"edges": [], "nodes": []})
     project.date_modified = datetime.now()
+    project.public = data.get("public", False)
 
     # Commit to db
     db.session.add(project)
