@@ -7,7 +7,7 @@ print_usage() {
         instance.
 
         Options:
-            -r <flag for whether to fetch latest master or not>
+            -r <flag for whether to fetch latest master or not> (true or false)
 
         e.g. ->
             ./deploy-client -r true

@@ -7,8 +7,8 @@ print_usage() {
         instance.
 
         Options:
-            -m <string for migration flag>
-            -r <flag for whether to fetch latest master or not>
+            -m <string for migration flag> (fresh or upgrade)
+            -r <flag for whether to fetch latest master or not> (true or false)
 
         e.g. ->
             ./deploy-appserver -m upgrade -r true
