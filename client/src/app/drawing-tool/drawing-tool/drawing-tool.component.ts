@@ -9,7 +9,8 @@ import {
   Injector,
   ViewChild,
   Output,
-  EventEmitter
+  EventEmitter,
+  Input
 } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { CdkDragDrop } from '@angular/cdk/drag-drop';
@@ -63,9 +64,9 @@ export interface Action {
 }
 
 @Component({
-selector: 'app-drawing-tool',
-templateUrl: './drawing-tool.component.html',
-styleUrls: ['./drawing-tool.component.scss']
+  selector: 'app-drawing-tool',
+  templateUrl: './drawing-tool.component.html',
+  styleUrls: ['./drawing-tool.component.scss']
 })
 export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
   @HostListener('window:beforeunload')
@@ -75,6 +76,8 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
 
   /** Communicate to parent component to open another app side by side */
   @Output() openApp: EventEmitter<string> = new EventEmitter<string>();
+  /** Communicate which app is active for app icon presentation */
+  @Input() currentApp: string = '';
 
   /** The current graph representation on canvas */
   currentGraphState: {edges: VisNetworkGraphEdge[], nodes: VisNetworkGraphNode[]} = null;
@@ -249,8 +252,19 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
     this.dataFlow.pushNode2Canvas(null);
   }
 
-  open(app:string) {
-    this.openApp.emit(app);
+  /**
+   * Handle closing or opening apps
+   * @param app 
+   */
+  toggle(app:string) {
+
+    if (this.currentApp === app) {
+      // Shutdown app
+      this.openApp.emit(null);
+    } else {
+      // Open app
+      this.openApp.emit(app);
+    }
   }
 
   undo() {
