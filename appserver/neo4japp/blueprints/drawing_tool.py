@@ -8,6 +8,19 @@ from neo4japp.models import AppUser, Project, ProjectSchema
 
 bp = Blueprint('drawing_tool', __name__, url_prefix='/drawing-tool')
 
+@bp.route('/community', methods=['GET'])
+@auth.login_required
+def get_community_projects():
+    """
+        Return a list of all the projects made public by users
+    """
+
+    # Pull the projects that are made public
+    projects = Project.query.filter_by(public=True).all()
+    project_schema = ProjectSchema(many=True)
+
+    return {'projects': project_schema.dump(projects)}, 200    
+
 
 @bp.route('/projects', methods=['GET'])
 @auth.login_required
