@@ -29,6 +29,8 @@ class VisEdge(CamelDictMixin):
     data: dict = attr.ib()
     to: int = attr.ib()
     from_: int = attr.ib()
+    to_label: str = attr.ib()
+    from_label: str = attr.ib()
     arrows: Optional[str] = attr.ib()
 
     def build_from_dict_formatter(self, vis_edge_input_dict: dict):

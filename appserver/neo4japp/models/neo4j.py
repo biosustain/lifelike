@@ -39,12 +39,14 @@ class GraphNode(NEO4JBase):
 
 
 class GraphRelationship(NEO4JBase):
-    def __init__(self, id, label, data, to, _from):
+    def __init__(self, id, label, data, to, _from, to_label, from_label):
         self.id = id
         self.label = label
         self.data = data
         self.to = to
         self._from = _from
+        self.to_label = to_label
+        self.from_label = from_label
 
     @classmethod
     def from_dict(cls, d):
@@ -54,11 +56,19 @@ class GraphRelationship(NEO4JBase):
         return super().from_dict(copy)
 
     def to_dict(self):
-        copy = self.__dict__.copy()
-        copy['from'] = copy['_from']
-        del copy['_from']
+        copy = super().to_dict().copy()
+        copy['from'] = copy['From']
+        del copy['From']
         return copy
 
     @classmethod
     def from_py2neo(cls, rel: Relationship):
-        return cls(rel.identity, type(rel).__name__, dict(rel), rel.end_node.identity, rel.start_node.identity)
+        return cls(
+            id=rel.identity,
+            label=type(rel).__name__,
+            data=dict(rel),
+            to=rel.end_node.identity,
+            _from=rel.start_node.identity,
+            to_label=list(rel.end_node.labels)[0],
+            from_label=list(rel.start_node.labels)[0]
+        )
