@@ -4,7 +4,6 @@ import { SearchModule } from 'app/search/search.module';
 import { SharedModule } from 'app/shared/shared.module';
 
 import { ContextMenuComponent } from './components/context-menu/context-menu.component';
-import { ReferenceTableComponent } from './components/reference-table/reference-table.component';
 import { SidenavClusterViewComponent } from './components/sidenav-cluster-view/sidenav-cluster-view.component';
 import { SidenavEdgeViewComponent } from './components/sidenav-edge-view/sidenav-edge-view.component';
 import { SidenavNodeViewComponent } from './components/sidenav-node-view/sidenav-node-view.component';
@@ -15,7 +14,6 @@ import { VisualizationComponent } from './containers/visualization/visualization
 
 const components = [
     ContextMenuComponent,
-    ReferenceTableComponent,
     SidenavClusterViewComponent,
     SidenavEdgeViewComponent,
     SidenavNodeViewComponent,

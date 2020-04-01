@@ -84,9 +84,11 @@ export class VisualizationComponent implements OnInit {
             physics: {
                 enabled: true,
                 barnesHut: {
-                    springConstant: 0.04,
+                    avoidOverlap: 0.2,
+                    centralGravity: 0.1,
                     damping: 0.9,
                     gravitationalConstant: -10000,
+                    springLength: 250,
                 }
             },
             edges: {
@@ -162,8 +164,8 @@ export class VisualizationComponent implements OnInit {
         this.visService.expandNode(nodeId, NODE_EXPANSION_LIMIT).subscribe((r: Neo4jResults) => {
             const nodeRef = this.nodes.get(nodeId) as VisNode;
             const visJSDataFormat = this.convertToVisJSFormat(r);
-            const { edges } = visJSDataFormat;
-            let { nodes } = visJSDataFormat;
+            let { edges, nodes } = visJSDataFormat;
+
             // Sets the node expand state to true
             nodes = nodes.map((n) => {
                 if (n.id === nodeId) {
@@ -171,12 +173,11 @@ export class VisualizationComponent implements OnInit {
                 }
                 return n;
             });
+
             this.nodes.update(nodes);
-            edges.forEach(candidateEdge => {
-                if (!this.duplicatedEdges.has(candidateEdge.id)) {
-                    this.edges.update(candidateEdge);
-                }
-            });
+
+            edges = edges.filter(candidateEdge => !this.duplicatedEdges.has(candidateEdge.id));
+            this.edges.update(edges);
         });
     }
 
