@@ -292,4 +292,14 @@ export class NetworkVis {
 
     this.network.redraw()
   }
+
+  pullImage() {
+    if (!this.network) return null;
+
+    let context = this.network['canvas'].getContext();
+
+    console.log(context);
+
+    return context.canvas.toDataURL().replace(/^data:image\/(png|jpg);base64,/, '')
+  }
 }

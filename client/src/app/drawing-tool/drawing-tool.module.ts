@@ -53,6 +53,7 @@ import { PaletteComponent } from './drawing-tool/palette/palette.component';
 import { InfoPanelComponent } from './drawing-tool/info-panel/info-panel.component';
 import { PdfViewerDirective } from './pdf-viewer/pdf-viewer.directive';
 import { SplitterComponent } from './splitter/splitter.component';
+import { MapSearchChannelComponent } from './map-search-channel/map-search-channel.component';
 
 @NgModule({
   declarations: [
@@ -68,13 +69,15 @@ import { SplitterComponent } from './splitter/splitter.component';
     PaletteComponent,
     InfoPanelComponent,
     PdfViewerDirective,
-    SplitterComponent
+    SplitterComponent,
+    MapSearchChannelComponent
   ],
   entryComponents: [
     CreateProjectDialogComponent,
     DeleteProjectDialogComponent,
     CopyProjectDialogComponent,
-    PdfViewerComponent
+    PdfViewerComponent,
+    MapSearchChannelComponent
   ],
   imports: [
     AngularSplitModule.forRoot(),
