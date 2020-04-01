@@ -12,10 +12,59 @@
 }
 
 $blue: #3797DB;
+$dark-blue: #3177B8;
+
+.dark-silver {
+  color: #424242;
+}
+
+/** Styling for context menu on project ui item */
+.project-menu {
+  background-color: #fafafa;
+  padding: 4pt;
+  font-size: 10pt;
+  z-index: 1000;
+  box-shadow: 0 0 12pt rgba(0, 0, 0, 0.25);
+  border-radius: 4pt;
+  padding: 0.5em 0 0.5em 0;
+  animation: fadeIn 0.1s ease-out;
+  opacity:1.0;
+  display:block;
+
+  @include no-select;
+
+  hr {
+    border: none;
+    border-bottom: 1px solid #eee;    
+  }
+
+  div {
+    cursor: pointer;
+    display: block;
+    text-decoration: none;
+    color: #333;
+    padding: 0.5em 2em 0.5em 0.75em;
+    max-width: 18em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;    
+  }
+  div:hover {
+    background-color: #333;
+    color: #fff;    
+  }
+  div::before {
+    content: '';
+    float: left;
+    margin-right: 0.75em;
+    width: 0.5em;
+    height: 1em;
+    display: inline-block;    
+  }
+}
 
 #map-channel {
   #map-list-container {
-    // overflow-x: hidden;
 
     position: relative;
     background: #ECF0F1;
@@ -27,10 +76,6 @@ $blue: #3797DB;
       height: 100%;
       width: 100%;
       overflow-y: scroll;
-      
-      display: flex;
-      flex-direction: column;
-      align-items: center;
 
       h1 {
         align-self: flex-start;
@@ -40,13 +85,16 @@ $blue: #3797DB;
       }
 
       .map {
-        width: fit-content;
-        margin: 0.875rem;
+        width: 80%;
+        max-width: 300px;
         padding: 0.875rem;
+        margin: 1.25rem auto;
         background-color: white;
         border-radius: 0.5rem;
         box-shadow: 0 1px 2px rgba(0,0,0,0.15);
         transition: box-shadow 0.3s ease-in-out;
+
+        @include no-select;
 
         h3 {
           color: #3177B8;
@@ -92,14 +140,27 @@ $blue: #3797DB;
         @include overlay;
         top: 0;
         right: 0;
-        width: 200px;
-        height: 100%;
-        background-color: pink;
+        width: 300px;
+        background-color: #ECF0F1;
+        border-radius: 0.5rem 0.5rem 0.5rem 0.5rem;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.15);
         overflow-y: scroll;
-        padding: 1rem;
+        padding: 1.25rem;
+
+        h3 {
+          color: $dark-blue !important;
+        }
+
+        p.link {
+          transition: color 0.1s ease-in;
+        }
+        p.link:hover {
+          color: $blue;
+          cursor: pointer;
+        }
 
         p.blue {
-          color: $blue;
+          color: $blue !important;
         }
       }
       #tool-panel {

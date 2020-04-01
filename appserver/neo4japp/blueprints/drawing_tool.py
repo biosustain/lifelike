@@ -35,6 +35,7 @@ def add_project():
 
     # Create new project
     project = Project(
+        author="%s %s" % (user.first_name, user.last_name),
         label=data.get("label", ""),
         description=data.get("description", ""),
         date_modified=datetime.strptime(

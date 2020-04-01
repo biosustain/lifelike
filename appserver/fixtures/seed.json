@@ -5,7 +5,9 @@
             {
                 "username": "user@gmail.com",
                 "email": "user@gmail.com",
-                "password_hash": "hai_password"
+                "password_hash": "hai_password",
+                "first_name": "Petty",
+                "last_name": "Annoying"
             }
         ]
     },
@@ -13,6 +15,7 @@
         "table": "project",
         "records": [
             {
+                "author": "Petty Annoying",
                 "label": "Microbiome affect on weight",
                 "description": "A multi-omics approach to unraveling the Microbiome Mediated effects of Arabinoxylan Oligosaccharides in overweight humans.",
                 "graph": {

@@ -8,6 +8,7 @@
         <div 
           class='map shadow'
           *ngFor='let project of projects'
+          (contextmenu)="open($event, project)"
           (click)='pickProject(project)'>
           <h3>
             {{
@@ -15,7 +16,7 @@
             }}
           </h3>
           <p class='author'>
-            By Mustafa Khan 
+            By {{project?.author}} 
           </p>
           <p class='date'>
             Modified {{project?.date_modified | friendlyDateStr}}
@@ -41,28 +42,35 @@
       <!-- Read Panel -->
       <div id='read-panel'>
         <h3>{{node?.label}}</h3>
-        <p class='blue'>
-          Type
-        </p>
-        <p>
-          {{node?.group}}
-        </p>
-        <p class='blue'>
-          Hyperlink
-        </p>
-        <p>
-          {{node?.data?.hyperlink}}
-        </p>
-        <p class='blue'>Edges</p>
-        <div *ngFor='let edge of node?.edges'>
-          <p>
-            To {{getNode(edge)}}
+        <!-- Type -->
+        <div>
+          <p class='blue b'>
+            Type
           </p>
           <p>
-            Label {{edge?.label}}
+            {{node?.group}}
           </p>
         </div>
-      </div>
+        <!-- Link -->
+        <div *ngIf='node?.data?.hyperlink'>
+          <p class='blue b'>
+            Hyperlink
+          </p>
+          <p class='link'
+            (click)='goToLink(node.data.hyperlink)'>
+            {{node?.data?.hyperlink}}
+          </p>
+        </div>
+        <!-- Edges-->
+        <div *ngIf='node?.edges.length'>
+          <p class='blue b'>Edges</p>
+          <div *ngFor='let edge of node?.edges'>
+            <p>
+              <span class='dark-silver'>{{edge?.label}}</span>&nbsp;<span class='dark-blue'>{{getNode(edge)}}</span>
+            </p>
+          </div>
+        </div>
+        </div>
       <!-- Tool Panel -->
       <div id='tool-panel'>
         <mat-icon
@@ -74,7 +82,7 @@
         </mat-icon>
         <mat-icon
           *ngIf='screenMode==="shrink"'
-          matTooltip="Fit Graph"
+          matTooltip="Fullscreen"
           matTooltipPosition="right"
           class='Full Screen'
           (click)='toggle()'>
@@ -82,7 +90,7 @@
         </mat-icon>
         <mat-icon
           *ngIf='screenMode==="grow"'
-          matTooltip="Fit Graph"
+          matTooltip="Shrink"
           matTooltipPosition="right"
           class='Shrink'
           (click)='toggle()'>
@@ -95,7 +103,7 @@
       <div id='details'>
         <h2>{{selectedProject?.label}}</h2>
         <p class='author'>
-          By Mustafa Khan
+          By {{selectedProject?.author}}
         </p>
         <p class='date'>
           Modified {{selectedProject?.date_modified | friendlyDateStr}}
