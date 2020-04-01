@@ -31,7 +31,7 @@ export class DataFlowService {
   formDataSource = this.form2Graph.asObservable();
 
   /** Communication route from project-list to drawing-tool */
-  private projectlist2Canvas = new BehaviorSubject<Project>(coronavirus);
+  private projectlist2Canvas = new BehaviorSubject<Project>(null);
   $projectlist2Canvas = this.projectlist2Canvas.asObservable();
 
   constructor() { }

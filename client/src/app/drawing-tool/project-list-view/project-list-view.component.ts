@@ -247,6 +247,8 @@ export class ProjectListViewComponent implements OnInit, AfterViewInit {
               g.nodes,
               g.edges
             );
+
+            console.log(this.visGraph);
     
             this.visGraph.network.on(
               'click',
@@ -265,7 +267,7 @@ export class ProjectListViewComponent implements OnInit, AfterViewInit {
    */
   goToProject() {
     this.dataFlow.pushProject2Canvas(this.selectedProject);
-    this.route.navigateByUrl('dt/drawing-tool');
+    this.route.navigateByUrl('splitter');
   }
   
   /**

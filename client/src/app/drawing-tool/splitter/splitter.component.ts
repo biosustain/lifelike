@@ -10,6 +10,9 @@ import {
 import {
   PdfViewerComponent
 } from '../pdf-viewer/pdf-viewer.component';
+import {
+  MapSearchChannelComponent
+} from '../map-search-channel/map-search-channel.component';
 
 @Component({
   selector: 'app-splitter',
@@ -38,10 +41,22 @@ export class SplitterComponent implements OnInit {
   }
 
   openApp(app:string) {
+    let factory;
+    let ref;
 
-    let factory = this.r.resolveComponentFactory(PdfViewerComponent);
-    const ref = this.leftPanel.createComponent(factory);
-    ref.changeDetectorRef.detectChanges();
-
+    switch(app) {
+      case 'map-search':
+        factory = this.r.resolveComponentFactory(MapSearchChannelComponent);
+        ref = this.leftPanel.createComponent(factory);
+        ref.changeDetectorRef.detectChanges();
+        break;
+      case 'pdf-viewer':
+        factory = this.r.resolveComponentFactory(PdfViewerComponent);
+        ref = this.leftPanel.createComponent(factory);
+        ref.changeDetectorRef.detectChanges();
+        break;
+      default:
+        break;
+    }
   }
 }
