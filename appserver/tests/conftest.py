@@ -250,7 +250,7 @@ def gas_gangrene_with_associations_and_references(
     penicillins_to_gas_gangrene_association_node2 = Node(
         'Association',
         assoc_type='J',
-        description='treatment/therapy (including investigatory)' ,
+        description='treatment/therapy (including investigatory)',
         id=2771501,
     )
 
@@ -270,6 +270,16 @@ def gas_gangrene_with_associations_and_references(
         id=9810346,
         score=0.4300000071525574,
         sentence='Toxin suppression and rapid bacterial killing may...',
+    )
+
+    # Publication Nodes
+    penicillins_to_gas_gangrene_publication_node1 = Node(
+        'Publication',
+        id=1,
+    )
+    penicillins_to_gas_gangrene_publication_node2 = Node(
+        'Publication',
+        id=2,
     )
 
     # Entity -> Association Relationships
@@ -316,6 +326,17 @@ def gas_gangrene_with_associations_and_references(
     )
     tx.create(penicillins_alleviates_reduces_association_to_reference_edge)
     tx.create(penicillins_treatment_association_to_reference_edge)
+
+    # Reference -> Publication Relationships
+    penicillins_alleviates_reduces_reference_to_publication_edge = Relationship(
+        penicillins_to_gas_gangrene_reference_node1, 'HAS_PUBLICATION', penicillins_to_gas_gangrene_publication_node1
+    )
+
+    penicillins_treatment_reference_to_publication_edge = Relationship(
+        penicillins_to_gas_gangrene_reference_node2, 'HAS_PUBLICATION', penicillins_to_gas_gangrene_publication_node2
+    )
+    tx.create(penicillins_alleviates_reduces_reference_to_publication_edge)
+    tx.create(penicillins_treatment_reference_to_publication_edge)
 
     tx.commit()
 
@@ -476,6 +497,8 @@ def pomc_to_gas_gangrene_pathogenesis_as_vis_edge(
         data=edge_as_graph_relationship.data,
         to=edge_as_graph_relationship.to,
         from_=edge_as_graph_relationship._from,
+        to_label='Disease',
+        from_label='Gene',
         arrows='to',
     )
 
@@ -498,6 +521,8 @@ def pomc_to_gas_gangrene_pathogenesis_as_duplicate_vis_edge(
         data=edge_as_graph_relationship.data,
         to=f'duplicateNode:{edge_as_graph_relationship.to}',
         from_=f'duplicateNode:{edge_as_graph_relationship._from}',
+        to_label='Disease',
+        from_label='Gene',
         arrows='to',
         duplicate_of=edge_as_graph_relationship.id,
         original_from=edge_as_graph_relationship._from,
@@ -523,6 +548,8 @@ def penicillins_to_gas_gangrene_alleviates_as_vis_edge(
         data=edge_as_graph_relationship.data,
         to=edge_as_graph_relationship.to,
         from_=edge_as_graph_relationship._from,
+        to_label='Disease',
+        from_label='Chemical',
         arrows='to',
     )
 
@@ -545,6 +572,8 @@ def penicillins_to_gas_gangrene_alleviates_as_duplicate_vis_edge(
         data=edge_as_graph_relationship.data,
         to=f'duplicateNode:{edge_as_graph_relationship.to}',
         from_=f'duplicateNode:{edge_as_graph_relationship._from}',
+        to_label='Disease',
+        from_label='Chemical',
         arrows='to',
         duplicate_of=edge_as_graph_relationship.id,
         original_from=edge_as_graph_relationship._from,
@@ -570,6 +599,8 @@ def penicillins_to_gas_gangrene_treatment_as_vis_edge(
         data=edge_as_graph_relationship.data,
         to=edge_as_graph_relationship.to,
         from_=edge_as_graph_relationship._from,
+        to_label='Disease',
+        from_label='Chemical',
         arrows='to',
     )
 
@@ -592,6 +623,8 @@ def penicillins_to_gas_gangrene_treatment_as_duplicate_vis_edge(
         data=edge_as_graph_relationship.data,
         to=f'duplicateNode:{edge_as_graph_relationship.to}',
         from_=f'duplicateNode:{edge_as_graph_relationship._from}',
+        to_label='Disease',
+        from_label='Chemical',
         arrows='to',
         duplicate_of=edge_as_graph_relationship.id,
         original_from=edge_as_graph_relationship._from,
