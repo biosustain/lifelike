@@ -60,6 +60,11 @@ export class ProjectListViewComponent implements OnInit, AfterViewInit {
   projects: Project[] = [];
 
   /**
+   * List of projects made public
+   */
+  publicProjects: Project[] = [];
+
+  /**
    * Project in focus
    */
   selectedProject = null;
@@ -94,17 +99,36 @@ export class ProjectListViewComponent implements OnInit, AfterViewInit {
 
   ngOnInit() {}
   ngAfterViewInit() {
+    /**
+     * Sort project by most recent modified date
+     * @param a 
+     * @param b 
+     */
+    let sort = (a, b) => {
+      if (
+        a.date_modified < b.date_modified
+      ) {
+        return 1
+      } else if (
+        a.date_modified === b.date_modified
+      ) {
+        return 0;
+      } else {
+        return -1;
+      }
+    };
+
     this.projectService.pullProjects()
       .subscribe(data => {
-        this.projects = data['projects'] as Project[];
-
-        // Sort project by most recent modified date
-        this.projects.sort(
-          (a, b) => {
-            return (a.date_modified < b.date_modified) ? -1 : ((a.date_modified > b.date_modified) ? 1 : 0);
-          }
-        );
-        this.projects.reverse();
+        this.projects = (
+          data['projects'] as Project[]
+        ).sort(sort);
+      });
+    this.projectService.pullCommunityProjects()
+      .subscribe(data => {
+        this.publicProjects = (
+          data['projects'] as Project[]
+        ).sort(sort);
       });
   }
 
