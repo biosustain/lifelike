@@ -59,8 +59,16 @@
       transition: color .2s ease-in;
     }
 
-    mat-icon.fit:hover {
+    mat-icon:hover {
       color: #3797DB;
+    }
+
+    mat-icon.active {
+      color: #4caf50;
+    }
+    mat-icon.active:hover {
+      color: #e74c3c;
+      transition: color .2s ease-in;
     }
 
     mat-icon.saved {
