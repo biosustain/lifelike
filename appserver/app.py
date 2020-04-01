@@ -37,6 +37,8 @@ def seed():
                         email=r["email"],
                         password=r["password_hash"],
                         roles=["admin"],
+                        first_name=r["first_name"],
+                        last_name=r["last_name"]
                     )
 
             elif fix["table"] == "project":
