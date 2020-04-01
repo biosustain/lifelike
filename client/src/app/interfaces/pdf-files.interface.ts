@@ -9,3 +9,9 @@ export interface PdfFile {
   username: string;
   annotation?: string;
 }
+
+export interface PdfFileUpload {
+  id: string;
+  filename: string;
+  status: string;
+}
