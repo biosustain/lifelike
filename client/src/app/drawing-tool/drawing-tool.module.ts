@@ -8,11 +8,12 @@ import { DragDropModule } from '@angular/cdk/drag-drop';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { FlexLayoutModule } from '@angular/flex-layout';
 
 import { AngularSplitModule } from 'angular-split';
 
 import { PdfViewerLibModule } from 'pdf-viewer-lib';
-import { MaterialModule } from './material.module';
+import { AngularMaterialModule } from 'app/shared/angular-material.module';
 
 import {
   ProjectListViewComponent
@@ -89,7 +90,8 @@ import { MapSearchChannelComponent } from './map-search-channel/map-search-chann
     ReactiveFormsModule,
     DragDropModule,
     PdfViewerLibModule,
-    MaterialModule
+    AngularMaterialModule,
+    FlexLayoutModule,
   ],
   providers: [
     // {
@@ -100,15 +102,6 @@ import { MapSearchChannelComponent } from './map-search-channel/map-search-chann
     PendingChangesGuard
   ],
   exports: [
-    CommonModule,
-    BrowserModule,
-    HttpClientModule,
-    BrowserAnimationsModule,
-    FormsModule,
-    ReactiveFormsModule,
-    DragDropModule,
-    PdfViewerLibModule,
-    MaterialModule    
   ]
 })
 export class DrawingToolModule { }

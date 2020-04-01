@@ -4,6 +4,7 @@ import { configureTestSuite } from 'ng-bullet';
 
 import { IdType } from 'vis-network';
 
+import { Direction } from 'app/interfaces';
 import { SharedModule } from 'app/shared/shared.module';
 import { RootStoreModule } from 'app/root-store';
 import { ContextMenuControlService } from 'app/visualization/services/context-menu-control.service';
@@ -17,7 +18,7 @@ describe('ContextMenuComponent', () => {
 
     let mockSelectedNodeIds: IdType[];
     let mockSelectedEdgeIds: IdType[];
-    let mockSelectedNodeEdgeLabels: Set<string>;
+    let mockSelectedNodeEdgeLabelData: Map<string, Direction[]>;
 
     configureTestSuite(() => {
         TestBed.configureTestingModule({
@@ -34,7 +35,12 @@ describe('ContextMenuComponent', () => {
         // Reset mock data before every test so changes don't carry over between tests
         mockSelectedNodeIds = [1];
         mockSelectedEdgeIds = [1];
-        mockSelectedNodeEdgeLabels = new Set<string>(['Mock Edge 1', 'Mock Edge 2']);
+        mockSelectedNodeEdgeLabelData = new Map<string, Direction[]>(
+            [
+                ['Mock Edge 1', [Direction.FROM]],
+                ['Mock Edge 2', [Direction.FROM]]
+            ]
+        );
 
         fixture = TestBed.createComponent(ContextMenuComponent);
         component = fixture.componentInstance;
@@ -42,7 +48,7 @@ describe('ContextMenuComponent', () => {
 
         component.selectedNodeIds = [];
         component.selectedEdgeIds = [];
-        component.selectedNodeEdgeLabels = new Set<string>();
+        component.selectedNodeEdgeLabelData = new Map<string, Direction[]>();
 
         component.tooltipSelector = '#root-menu';
         component.tooltipOptions = {
@@ -90,7 +96,7 @@ describe('ContextMenuComponent', () => {
 
     it('should show \'Group by Relationship\' option if a single node with at least one connecting edge is selected', async () => {
         component.selectedNodeIds = mockSelectedNodeIds;
-        component.selectedNodeEdgeLabels = mockSelectedNodeEdgeLabels;
+        component.selectedNodeEdgeLabelData = mockSelectedNodeEdgeLabelData;
         component.showTooltip();
         fixture.detectChanges();
 
@@ -103,7 +109,7 @@ describe('ContextMenuComponent', () => {
     it('should show submenu when \'Group by Relationship\' is hovered', async () => {
         const showGroupByRelSubMenuSpy = spyOn(component, 'showGroupByRelSubMenu');
         component.selectedNodeIds = mockSelectedNodeIds;
-        component.selectedNodeEdgeLabels = mockSelectedNodeEdgeLabels;
+        component.selectedNodeEdgeLabelData = mockSelectedNodeEdgeLabelData;
         component.showTooltip();
         fixture.detectChanges();
 
@@ -119,7 +125,7 @@ describe('ContextMenuComponent', () => {
 
         const delayGroupByRelSpy = spyOn(contextMenuControlService, 'delayGroupByRel').and.callThrough();
         component.selectedNodeIds = mockSelectedNodeIds;
-        component.selectedNodeEdgeLabels = mockSelectedNodeEdgeLabels;
+        component.selectedNodeEdgeLabelData = mockSelectedNodeEdgeLabelData;
         component.showTooltip();
         fixture.detectChanges();
 
@@ -144,7 +150,7 @@ describe('ContextMenuComponent', () => {
         const mouseLeaveNodeRowSpy = spyOn(component, 'mouseLeaveNodeRow').and.callThrough();
         const interruptGroupByRelSpy = spyOn(contextMenuControlService, 'interruptGroupByRel');
         component.selectedNodeIds = mockSelectedNodeIds;
-        component.selectedNodeEdgeLabels = mockSelectedNodeEdgeLabels;
+        component.selectedNodeEdgeLabelData = mockSelectedNodeEdgeLabelData;
         component.showTooltip();
         fixture.detectChanges();
 
@@ -162,7 +168,7 @@ describe('ContextMenuComponent', () => {
 
         const delayGroupByRelSpy = spyOn(contextMenuControlService, 'delayGroupByRel').and.callThrough();
         component.selectedNodeIds = mockSelectedNodeIds;
-        component.selectedNodeEdgeLabels = mockSelectedNodeEdgeLabels;
+        component.selectedNodeEdgeLabelData = mockSelectedNodeEdgeLabelData;
         component.showTooltip();
         fixture.detectChanges();
 
