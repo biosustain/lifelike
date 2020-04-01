@@ -5,9 +5,7 @@ import {
   OnDestroy,
   HostListener,
   ComponentFactoryResolver,
-  ViewContainerRef,
   Injector,
-  ViewChild,
   Output,
   EventEmitter,
   Input

@@ -1,14 +1,10 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Subject } from 'rxjs';
+import { BehaviorSubject } from 'rxjs';
 
 import {
   Project,
   VisNetworkGraphNode
 } from './interfaces';
-
-import {
-   coronavirus
-} from './mock_data'
 
 /**
  * Handle communication between components

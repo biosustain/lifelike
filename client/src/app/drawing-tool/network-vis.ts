@@ -293,13 +293,15 @@ export class NetworkVis {
     this.network.redraw()
   }
 
+  /**
+   * Return a base64 png of the network map
+   * from the canvas 
+   */
   pullImage() {
     if (!this.network) return null;
 
     let context = this.network['canvas'].getContext();
 
-    console.log(context);
-
-    return context.canvas.toDataURL().replace(/^data:image\/(png|jpg);base64,/, '')
+    return context.canvas.toDataURL();
   }
 }

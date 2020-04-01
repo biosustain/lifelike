@@ -11,14 +11,13 @@ import {
 } from '@angular/material/dialog';
 import { Router } from '@angular/router';
 import { OverlayRef, Overlay } from '@angular/cdk/overlay';
-import { Subscription, Observable, fromEvent } from 'rxjs';
+import { Subscription, fromEvent } from 'rxjs';
 import { TemplatePortal } from '@angular/cdk/portal';
 import { filter, take } from 'rxjs/operators';
 
 import {
   ProjectsService,
   DataFlowService,
-  uuidv4
 } from '../services';
 import {
   Project,
@@ -41,7 +40,7 @@ import {
 } from './copy-project-dialog/copy-project-dialog.component';
 import { MatSnackBar } from '@angular/material';
 
-declare var $: any;
+import * as $ from 'jquery';
 
 @Component({
   selector: 'app-project-list-view',
