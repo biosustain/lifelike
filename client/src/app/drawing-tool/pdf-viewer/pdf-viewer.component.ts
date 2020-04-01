@@ -44,10 +44,6 @@ export class PdfViewerComponent implements AfterViewInit, OnDestroy {
   filteredFiles = this.files;
   pdfFileUrl = 'assets/pdfs/sample.pdf'; // TODO: remove asset once backend is in place
 
-  get dropAreaID() {
-    return `#${this.dropAreaIdentifier}`;
-  }
-
   constructor(
     private pdfAnnService: PdfAnnotationsService,
     private dataFlow: DataFlowService,

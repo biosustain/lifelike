@@ -69,7 +69,9 @@
           <p class='blue b'>Edges</p>
           <div *ngFor='let edge of node?.edges'>
             <p>
-              <span class='dark-silver'>{{edge?.label}}</span>&nbsp;<span class='dark-blue'>{{getNode(edge)}}</span>
+              <span class='dark-silver'>{{edge?.label}}</span>
+              &nbsp;
+              <span class='dark-blue'>{{getNode(edge)}}</span>
             </p>
           </div>
         </div>
