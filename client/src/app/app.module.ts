@@ -2,8 +2,6 @@ import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 import { HttpClientModule } from '@angular/common/http';
 
-import { AngularSplitModule } from 'angular-split';
-
 import { RootStoreModule } from 'app/root-store';
 
 import { AdminModule } from 'app/admin/admin.module';
@@ -22,7 +20,6 @@ import { FileBrowserComponent } from './file-browser/file-browser.component';
     FileBrowserComponent,
   ],
   imports: [
-    AngularSplitModule.forRoot(),
     AdminModule,
     BrowserModule,
     SharedModule,
