@@ -41,7 +41,9 @@
       <!-- Network Graph Canvas -->
       <div id='canvas'></div>
       <!-- Read Panel -->
-      <div id='read-panel'>
+      <div 
+        *ngIf='node'
+        id='read-panel'>
         <h3>{{node?.label}}</h3>
         <!-- Type -->
         <div>

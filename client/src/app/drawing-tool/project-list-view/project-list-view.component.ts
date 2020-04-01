@@ -119,7 +119,9 @@ export class ProjectListViewComponent implements OnInit, AfterViewInit {
     
     this.projectService.updateProject(this.selectedProject)
       .subscribe(resp => {
-        this._snackBar.open('Project is saved', null, {
+        const state = this.selectedProject.public ? 'published' : 'private'
+
+        this._snackBar.open(`Project is ${state}`, null, {
           duration: 2000,
         });
       });
