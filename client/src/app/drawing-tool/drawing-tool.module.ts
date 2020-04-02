@@ -8,9 +8,10 @@ import { DragDropModule } from '@angular/cdk/drag-drop';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { FlexLayoutModule } from '@angular/flex-layout';
 
 import { PdfViewerLibModule } from 'pdf-viewer-lib';
-import { MaterialModule } from './material.module';
+import { AngularMaterialModule } from 'app/shared/angular-material.module';
 
 import {
   ProjectListViewComponent
@@ -27,9 +28,6 @@ import {
 import { 
   DrawingToolComponent
 } from './drawing-tool/drawing-tool.component';
-import { 
-  SideBarUiComponent
-} from './drawing-tool/side-bar-ui/side-bar-ui.component';
 import {
   PdfViewerComponent
 } from './pdf-viewer/pdf-viewer.component';
@@ -50,6 +48,9 @@ import {
 import {
   PendingChangesGuard
 } from './guards';
+import { PaletteComponent } from './drawing-tool/palette/palette.component';
+import { InfoPanelComponent } from './drawing-tool/info-panel/info-panel.component';
+import { PdfViewerDirective } from './pdf-viewer/pdf-viewer.directive';
 
 @NgModule({
   declarations: [
@@ -58,11 +59,13 @@ import {
     DeleteProjectDialogComponent,
     CopyProjectDialogComponent,
     DrawingToolComponent,
-    SideBarUiComponent,
     PdfViewerComponent,
     LoginComponent,
     TruncatePipe,
-    FriendlyDateStrPipe
+    FriendlyDateStrPipe,
+    PaletteComponent,
+    InfoPanelComponent,
+    PdfViewerDirective
   ],
   entryComponents: [
     CreateProjectDialogComponent,
@@ -78,7 +81,8 @@ import {
     ReactiveFormsModule,
     DragDropModule,
     PdfViewerLibModule,
-    MaterialModule
+    AngularMaterialModule,
+    FlexLayoutModule,
   ],
   providers: [
     // {
@@ -89,15 +93,6 @@ import {
     PendingChangesGuard
   ],
   exports: [
-    CommonModule,
-    BrowserModule,
-    HttpClientModule,
-    BrowserAnimationsModule,
-    FormsModule,
-    ReactiveFormsModule,
-    DragDropModule,
-    PdfViewerLibModule,
-    MaterialModule    
   ]
 })
 export class DrawingToolModule { }

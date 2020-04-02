@@ -34,3 +34,16 @@ postgres/
 client/node_modules
 esdata/
 node_modules/
+
+# terraform files
+terraform.tfstate.*
+.terraform/
+# The terraform Gcloud service account
+terraform-gcloud.json
+
+# .env Files (to protect secrets)
+*.env
+*.env.*
+
+# .idea folder
+.idea/

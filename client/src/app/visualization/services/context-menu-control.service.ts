@@ -1,7 +1,7 @@
 import { Injectable, OnDestroy } from '@angular/core';
 
 import { TooltipControlService } from 'app/shared/services/tooltip-control-service';
-import { Subject, Observable, race, interval, Subscription } from 'rxjs';
+import { Subject, Observable, race, timer, Subscription } from 'rxjs';
 import { mapTo, first, takeUntil } from 'rxjs/operators';
 
 @Injectable()
@@ -26,7 +26,7 @@ export class ContextMenuControlService extends TooltipControlService implements 
         this.delayGroupByRelSourceSubscription = this.delayGroupByRelSource.subscribe(() => {
             const example = race(
                 this.interruptGroupByRelSource.pipe(mapTo(false)),
-                interval(200).pipe(mapTo(true)),
+                timer(200).pipe(mapTo(true)),
             ).pipe(first());
             example.subscribe(val => this.showGroupByRelResultSource.next(val));
         });

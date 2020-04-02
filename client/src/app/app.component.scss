@@ -1,0 +1,19 @@
+.vertical-nav {
+  background-color: #0c8caa;
+
+  a {
+    height: 54px;
+    width: 54px;
+    outline: none; /* no dotted line upon click */
+    text-decoration: none; /* no underline */
+
+    &:hover {
+      background: rgba(0, 0, 0, 0.16);
+      cursor: pointer; /* workaround to show pointer on last item, the menu */
+    }
+
+    mat-icon {
+      color: white;
+    }
+  }
+}
