@@ -25,8 +25,8 @@ marshmallow-sqlalchemy = "~=0.22.3"
 openpyxl = "~=3.0.3"
 py2neo = "~=4.3.0"
 PyJWT = "~=1.7.1"
-psycopg2-binary = "==2.7.6.1"
+psycopg2-binary = "==2.8.4"
 graphviz = "*"
 
 [requires]
-python_version = "3.7"
+python_version = "3.8"
