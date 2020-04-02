@@ -6,7 +6,7 @@
     </h1>
     <div class='project-list'>
       <!-- Project UI element -->
-      <div 
+      <div
         *ngFor='let project of projects'
         (contextmenu)="open($event, project)"
         (click)='pickProject(project)'
@@ -16,10 +16,10 @@
             project.label | truncate:['20']
           }}
         </h2>
-        <p>Modified {{project?.date_modified | friendlyDateStr}}</p>        
+        <p>Modified {{project?.date_modified | friendlyDateStr}}</p>
       </div>
     </div>
-    <button 
+    <button
       class='bottom-right-overlay add-project'
       mat-fab
       color='primary'
@@ -59,10 +59,10 @@
 </div>
 <!-- Context Menu -->
 <ng-template #projectMenu let-project>
-  <section 
+  <section
     (contextmenu)="$event.preventDefault()"
     class="project-menu">
-    <div (click)='openPDFViewer(project)'>Open with PDF Viewer</div>    
+    <div (click)='openPDFViewer(project)'>Open with PDF Viewer</div>
     <div (click)='copyProject(project)'>Make copy of</div>
     <div (click)="deleteProject(project)">Delete</div>
   </section>
