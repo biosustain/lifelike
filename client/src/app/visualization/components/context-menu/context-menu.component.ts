@@ -9,7 +9,7 @@ import { isNullOrUndefined } from 'util';
 
 import { IdType } from 'vis-network';
 
-import { GroupRequest } from 'app/interfaces';
+import { GroupRequest, Direction } from 'app/interfaces';
 import { TooltipDetails } from 'app/shared/services/tooltip-control-service';
 import { TooltipComponent } from 'app/shared/components/tooltip/tooltip.component';
 
@@ -24,7 +24,7 @@ export class ContextMenuComponent extends TooltipComponent implements OnDestroy 
     @Input() selectedNodeIds: IdType[];
     @Input() selectedEdgeIds: IdType[];
     // Expect this to be null if there is not exactly one node selected
-    @Input() selectedNodeEdgeLabels: Set<string>;
+    @Input() selectedNodeEdgeLabelData: Map<string, Direction[]>;
 
     @Output() groupNeighborsWithRelationship: EventEmitter<GroupRequest> = new EventEmitter();
     @Output() removeNodes: EventEmitter<IdType[]> = new EventEmitter();
@@ -66,9 +66,9 @@ export class ContextMenuComponent extends TooltipComponent implements OnDestroy 
     }
 
     ngOnDestroy() {
+        super.ngOnDestroy();
         this.hideContextMenuSubscription.unsubscribe();
         this.updatePopperSubscription.unsubscribe();
-        this.popper.destroy();
     }
 
     showTooltip() {
@@ -132,8 +132,12 @@ export class ContextMenuComponent extends TooltipComponent implements OnDestroy 
         this.contextMenuControlService.interruptGroupByRel();
     }
 
-    requestGroupByRelationship(rel: string) {
-        this.groupNeighborsWithRelationship.emit({relationship: rel, node: this.selectedNodeIds[0]});
+    requestGroupByRelationship(rel: string, direction: Direction) {
+        this.groupNeighborsWithRelationship.emit({
+            relationship: rel,
+            node: this.selectedNodeIds[0],
+            direction,
+        });
     }
 
     requestEdgeRemoval() {

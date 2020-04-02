@@ -16,6 +16,7 @@ db = SQLAlchemy()
 ma = Marshmallow()
 migrate = Migrate()
 
+
 def get_neo4j_service_dao():
     if 'neo4j_dao' not in g:
         from neo4japp.services import Neo4JService
@@ -35,3 +36,34 @@ def get_search_service_dao():
         from neo4japp.services import SearchService
         g.search_service_dao = SearchService(graph)
     return g.search_service_dao
+
+
+def get_authorization_service():
+    if 'authorization_service' not in g:
+        from neo4japp.services import AuthService
+        g.authorization_service = AuthService(db.session)
+    return g.authorization_service
+
+
+def get_account_service():
+    if 'account_service' not in g:
+        from neo4japp.services import AccountService
+        g.account_service = AccountService(db.session)
+    return g.account_service
+
+
+def reset_dao():
+    """ Cleans up DAO bound to flask request context
+
+    Used in functional test fixture, but may come in
+    handy for production later.
+    """
+    for dao in [
+        'neo4j_dao',
+        'user_file_import_service',
+        'search_dao',
+        'authorization_service',
+        'account_service'
+    ]:
+        if dao in g:
+            g.pop(dao)

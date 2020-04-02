@@ -1,18 +1,45 @@
-<div class='w-100 vh-100'>
-    <!-- PDF Viewer -->
-    <lib-pdf-viewer-lib
+<mat-sidenav-container>
+  <mat-sidenav #sidenav mode="side">
+    <div fxLayout="column">
+      <div fxLayout fxLayoutAlign="space-between center">
+        <p class="sidenav-title">Open PDF</p>
+        <button mat-icon-button (click)="sidenav.close()">
+          <mat-icon>menu_open</mat-icon>
+        </button>
+      </div>
+      <mat-divider></mat-divider>
+      <div class="drawer-content" fxLayout="column">
+        <mat-form-field>
+          <input matInput placeholder="Search" [formControl]="filesFilter">
+        </mat-form-field>
+        <button mat-button fxLayoutAlign="start center"
+          *ngFor="let file of filteredFiles" (click)="openPdf(file.id)">
+          <mat-icon>description</mat-icon> {{file.filename}}
+        </button>
+      </div>
+    </div>
+  </mat-sidenav>
+
+  <mat-sidenav-content>
+    <button mat-raised-button color="accent" (click)="sidenav.toggle()">Open PDF</button>
+    <div class='w-100 vh-100'>
+      <!-- PDF Viewer -->
+      <lib-pdf-viewer-lib
         id='pdf-viewer'
+        appPdfViewer
         *ngIf="annotations?.length > 0"
-        [pdfSrc]="'assets/pdfs/sample.pdf'"
+        [pdfSrc]="pdfFileUrl"
         [annotations]="annotations"
         [dropAreaIdentifier]="'#dropme'"
         [handleDropArea]="false"
         (dropEvents)="drop($event)">
-    </lib-pdf-viewer-lib>
-    <!-- Drawing Tool -->
-    <div
-        id='dropme' 
+      </lib-pdf-viewer-lib>
+      <!-- Drawing Tool -->
+      <div
+        id='dropme'
         class='w-50 h-100 fl bg-pink'>
         <app-drawing-tool></app-drawing-tool>
+      </div>
     </div>
-</div>
+  </mat-sidenav-content>
+</mat-sidenav-container>

@@ -2,6 +2,10 @@ import { IdType } from 'vis-network';
 
 import { GraphNode, VisEdge, VisNode, DuplicateVisNode, DuplicateVisEdge } from './neo4j.interface';
 
+export enum Direction {
+    TO = 'Incoming',
+    FROM = 'Outgoing',
+}
 
 export interface AssociationSnippet {
     reference: Reference;
@@ -45,6 +49,7 @@ export interface GetClusterGraphDataResult {
 export interface GroupRequest {
     relationship: string;
     node: IdType;
+    direction: Direction;
 }
 
 export interface GetLabelsResult {
@@ -87,22 +92,20 @@ export interface GetReferenceTableDataResult {
     referenceTableRows: ReferenceTableRow[];
 }
 
-export interface SidenavEntity {
-    data: VisNode | VisEdge;
-}
 
-export interface SidenavNodeEntity extends SidenavEntity {
+export interface SidenavNodeEntity {
+    data: VisNode;
     edges: VisEdge[];
 }
 
-export interface SidenavEdgeEntity extends SidenavEntity {
+export interface SidenavEdgeEntity {
     to: VisNode;
     from: VisNode;
     association: string;
     snippets: AssociationSnippet[];
 }
 
-export interface SidenavClusterEntity extends SidenavEntity {
+export interface SidenavClusterEntity {
     includes: VisNode[];
     clusterGraphData: GetClusterGraphDataResult;
 }
