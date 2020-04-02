@@ -1,5 +1,6 @@
 import os
 
+
 class Base():
     """Default values"""
     SITE_NAME = 'neo4j example application'
@@ -22,11 +23,13 @@ class Base():
 
     SUPPORTED_LOCALES = ['en']
 
+
 class Development(Base):
     """Development configurations"""
 
     ASSETS_DEBUG = True
     WTF_CSRF_ENABLED = False
+
 
 class Testing(Base):
     """Functional test configuration"""

@@ -79,6 +79,7 @@ class AppUser(RDBMSBase):
             **{'roles': [role.to_dict()['name'] for role in self.roles]}
         }
 
+
 class AppUserSchema(ma.ModelSchema):
     class Meta:
         model = AppUser
