@@ -11,12 +11,12 @@ class SearchResult(CamelDictMixin):
     id: str = attr.ib(default='')
     score: float = attr.ib(default=0.0)
     type: str = attr.ib(default='')
-    labels: [str] = attr.ib(default=[])
+    labels: List[str] = attr.ib(default=[])
     data_source: str = attr.ib(default='')
     all_text: str = attr.ib(default='')
     common_name: str = attr.ib(default='')
     synonyms: str = attr.ib(default='')
-    alt_ids: [str] = attr.ib(default=[])
+    alt_ids: List[str] = attr.ib(default=[])
     conjugate: str = attr.ib(default='')
     organism: object = attr.ib(default=None)  # TODO: Make more specific
 
@@ -42,8 +42,8 @@ class SearchResult(CamelDictMixin):
     def node_label(self):
         return ':' + ':'.join(self.labels)
 
-    def get_node_label(self, node_type: str, db_names: [str]):
-        labels = []
+    def get_node_label(self, node_type: str, db_names: List[str]):
+        labels: List[str] = []
         if node_type == TYPE_CHEMICAL:
             labels = labels + db_names
         else:

@@ -21,7 +21,7 @@ class VisNode(CamelDictMixin):
 
 @attr.s(frozen=True)
 class DuplicateVisNode(VisNode):
-    id: str = attr.ib()
+    id: str = attr.ib()  # type: ignore
     duplicate_of: int = attr.ib()
 
 
@@ -57,7 +57,7 @@ class VisEdge(CamelDictMixin):
 
 @attr.s(frozen=True)
 class DuplicateVisEdge(VisEdge):
-    id: str = attr.ib()
+    id: str = attr.ib()  # type: ignore
     duplicate_of: int = attr.ib()
     original_from: int = attr.ib()
     original_to: int = attr.ib()

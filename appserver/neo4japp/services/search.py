@@ -35,7 +35,7 @@ class SearchService(GraphBaseDao):
         return '{q}'.format(q=cypher.cypher_escape(query))
 
     def _fulltext_result_formatter(self, results) -> List[FTSQueryRecord]:
-        formatted_results = []
+        formatted_results: List[FTSQueryRecord] = []
         for result in results:
             node = result['node']
             score = result['score']
