@@ -176,13 +176,12 @@ class CamelDictMixin:
                         attributes[a.name] = cls_list
                     else:
                         attributes[a.name] = attr_type.build_from_dict(value)
-                elif (value and
-                      isinstance(attr_type, EnumMeta)):
-                        try:
-                            attributes[a.name] = attr_type[str.upper(value)]
-                        except TypeError:
-                            # probably already an enum
-                            attributes[a.name] = value
+                elif (value and isinstance(attr_type, EnumMeta)):
+                    try:
+                        attributes[a.name] = attr_type[str.upper(value)]
+                    except TypeError:
+                        # probably already an enum
+                        attributes[a.name] = value
                 else:
                     attributes[a.name] = value
         try:

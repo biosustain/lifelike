@@ -5,6 +5,7 @@ from neo4japp.util import CamelDictMixin
 
 from typing import List, Optional
 
+
 @attr.s
 class SearchResult(CamelDictMixin):
     id: str = attr.ib(default='')

@@ -87,7 +87,7 @@ def graph(request, app):
 
     return graph
 
-##### Begin DAO Fixtures #####
+# Begin DAO Fixtures #
 @pytest.fixture(scope='function')
 def base_dao(graph):
     """For testing methods in GraphBaseDao"""
@@ -105,11 +105,11 @@ def search_service_dao(graph):
     """SearchService using the test graph"""
     return SearchService(graph)
 
-##### End DAO Fixtures #####
+# End DAO Fixtures #
 
-##### Begin Graph Data Fixtures #####
+# Begin Graph Data Fixtures #
 
-### Begin Entity Node Fixtures ###
+# Begin Entity Node Fixtures #
 @pytest.fixture(scope='function')
 def gas_gangrene(graph):
     """Creates a disease node and adds it to the graph."""
@@ -148,15 +148,16 @@ def pomc(graph):
 
     return pomc
 
-### End Entity Nodes Fixtures ###
+# End Entity Nodes Fixtures #
 
-### Begin Entity -> Entity Relationship Fixtures ###
+# Begin Entity -> Entity Relationship Fixtures #
 
 # NOTE: These must use Cypher directly, not the `create`
 # py2neo method. This is a py2neo limitiation:
 # https://github.com/technige/py2neo/issues/573
 # If we don't use Cypher, we can't create multiple
 # edges between two nodes.
+
 
 @pytest.fixture(scope='function')
 def pomc_to_gas_gangrene_pathogenesis_edge(
@@ -171,12 +172,14 @@ def pomc_to_gas_gangrene_pathogenesis_edge(
         """
             MATCH (d:Disease), (g:Gene)
             WHERE d.name = 'gas gangrene' AND g.name = 'POMC'
-            CREATE (g)-[r:ASSOCIATED { assoc_type:'J', description:'role in disease pathogenesis'}]->(d)
+            CREATE
+            (g)-[r:ASSOCIATED { assoc_type:'J', description:'role in disease pathogenesis'}]->(d)
             RETURN r
         """
     ).evaluate()
 
     return pomc_to_gas_gangrene_pathogenesis_edge
+
 
 @pytest.fixture(scope='function')
 def penicillins_to_gas_gangrene_alleviates_edge(
@@ -212,16 +215,18 @@ def penicillins_to_gas_gangrene_treatment_edge(
         """
             MATCH (d:Disease), (c:Chemical)
             WHERE d.name = 'gas gangrene' AND c.name = 'Penicillins'
-            CREATE (c)-[r:ASSOCIATED { assoc_type:'J', description:'treatment/therapy (including investigatory)'}]->(d)
+            CREATE (c)-[r:ASSOCIATED {
+                assoc_type:'J', description:'treatment/therapy (including investigatory)'
+            }]->(d)
             RETURN r
         """
     ).evaluate()
 
     return penicillins_to_gas_gangrene_treatment_edge
 
-### End Entity -> Entity Relationship Fixtures ###
+# End Entity -> Entity Relationship Fixtures #
 
-### Start Misc. Fixtures ###
+# Start Misc. Fixtures #
 @pytest.fixture(scope='function')
 def gas_gangrene_with_associations_and_references(
     graph,
@@ -250,7 +255,7 @@ def gas_gangrene_with_associations_and_references(
     penicillins_to_gas_gangrene_association_node2 = Node(
         'Association',
         assoc_type='J',
-        description='treatment/therapy (including investigatory)' ,
+        description='treatment/therapy (including investigatory)',
         id=2771501,
     )
 
@@ -308,11 +313,11 @@ def gas_gangrene_with_associations_and_references(
 
     # Association -> Reference Relationships
     penicillins_alleviates_reduces_association_to_reference_edge = Relationship(
-        penicillins_to_gas_gangrene_association_node1, 'HAS_REF', penicillins_to_gas_gangrene_reference_node1
+        penicillins_to_gas_gangrene_association_node1, 'HAS_REF', penicillins_to_gas_gangrene_reference_node1  # noqa
     )
 
     penicillins_treatment_association_to_reference_edge = Relationship(
-        penicillins_to_gas_gangrene_association_node2, 'HAS_REF', penicillins_to_gas_gangrene_reference_node2
+        penicillins_to_gas_gangrene_association_node2, 'HAS_REF', penicillins_to_gas_gangrene_reference_node2  # noqa
     )
     tx.create(penicillins_alleviates_reduces_association_to_reference_edge)
     tx.create(penicillins_treatment_association_to_reference_edge)
@@ -321,9 +326,10 @@ def gas_gangrene_with_associations_and_references(
 
     return gas_gangrene
 
-##### End Graph Data Fixtures #####
+# End Graph Data Fixtures #
 
-##### Start DTO Fixtures #####
+# Start DTO Fixtures #
+
 
 @pytest.fixture(scope='function')
 def gas_gangrene_vis_node(gas_gangrene):
@@ -615,6 +621,7 @@ def gas_gangrene_treatment_cluster_node_edge_pairs(
         )
     ]
 
+
 @pytest.fixture(scope='function')
 def gas_gangrene_treatment_clustered_nodes(
     penicillins_duplicate_vis_node,
@@ -629,4 +636,4 @@ def gas_gangrene_treatment_clustered_nodes(
         )
     ]
 
-##### End DTO Fixtures #####
+# End DTO Fixtures #
