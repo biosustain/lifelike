@@ -8,6 +8,9 @@ import {
 
 import { Options } from '@popperjs/core';
 
+import { Subject } from 'rxjs';
+import { skip, first } from 'rxjs/operators';
+
 import { isNullOrUndefined } from 'util';
 
 import { Network, DataSet, IdType } from 'vis-network';
@@ -51,6 +54,7 @@ enum SidenavEntityType {
 })
 export class VisualizationCanvasComponent implements OnInit {
     @Output() expandNode = new EventEmitter<number>();
+    @Output() finishedPreClustering = new EventEmitter<boolean>();
     @Output() getSnippetsFromEdge = new EventEmitter<VisEdge>();
     @Output() getSnippetsFromDuplicateEdge = new EventEmitter<DuplicateVisEdge>();
     @Output() getClusterGraphData = new EventEmitter<ClusteredNode[]>();
@@ -61,7 +65,18 @@ export class VisualizationCanvasComponent implements OnInit {
     @Input() edges: DataSet<any, any>;
     @Input() set expandNodeResult(result: ExpandNodeResult) {
         if (!isNullOrUndefined(result)) {
-            this.getConnectedEdgeLabels(result.expandedNode).forEach((directionList, relationship) => {
+            const edgeLabelsOfExpandedNode = this.getConnectedEdgeLabels(result.expandedNode);
+            let newClusterCount = 0;
+            edgeLabelsOfExpandedNode.forEach(directionList => newClusterCount += directionList.length);
+
+            this.clusterCreatedSource.asObservable().pipe(
+                skip(this.openClusteringRequests + newClusterCount - 1),
+                first(),
+            ).subscribe(() => {
+                this.finishedPreClustering.emit(true);
+            });
+
+            edgeLabelsOfExpandedNode.forEach((directionList, relationship) => {
                 directionList.forEach(direction => {
                     const neighborNodesWithRel = this.getNeighborsWithRelationship(relationship, result.expandedNode, direction);
                     const duplicateNodeEdgePairs = this.createDuplicateNodesAndEdges(
@@ -133,6 +148,9 @@ export class VisualizationCanvasComponent implements OnInit {
     selectedEdges: IdType[];
     referenceTableData: DuplicateNodeEdgePair[];
     clusters: Map<string, string>;
+    openClusteringRequests: number;
+
+    clusterCreatedSource: Subject<boolean>;
 
     contextMenuTooltipSelector: string;
     contextMenuTooltipOptions: Partial<Options>;
@@ -163,6 +181,8 @@ export class VisualizationCanvasComponent implements OnInit {
         };
 
         this.clusters = new Map<string, string>();
+        this.openClusteringRequests = 0;
+        this.clusterCreatedSource = new Subject<boolean>();
     }
 
     ngOnInit() {
@@ -371,7 +391,7 @@ export class VisualizationCanvasComponent implements OnInit {
             }
         }).join('\n');
         const ctx = document.getElementsByTagName('canvas')[0].getContext('2d');
-        const longestName = referenceTableRows.sort(
+        const longestName = referenceTableRows.slice(0, 20).sort(
             (a, b) => ctx.measureText(b.nodeDisplayName).width - ctx.measureText(a.nodeDisplayName).width
         )[0].nodeDisplayName;
         // width of biggest name + width of counts + max width of bars + padding width + border width
@@ -620,6 +640,7 @@ export class VisualizationCanvasComponent implements OnInit {
     }
 
     createCluster(originNode: IdType, relationship: string, duplicateNodeEdgePairs: DuplicateNodeEdgePair[]) {
+        this.openClusteringRequests += 1;
         this.visService.getReferenceTableData(duplicateNodeEdgePairs).subscribe(result => {
 
             this.updateGraphWithDuplicates(duplicateNodeEdgePairs);
@@ -655,6 +676,8 @@ export class VisualizationCanvasComponent implements OnInit {
             });
 
             this.updateSelectedNodeEdgeLabelData(originNode);
+            this.openClusteringRequests -= 1;
+            this.clusterCreatedSource.next(true);
         });
     }
 
