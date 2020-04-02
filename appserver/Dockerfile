@@ -1,13 +1,7 @@
-FROM python:3.7.1-slim
+FROM fedora:32
 
-# https://github.com/debuerreotype/debuerreotype/issues/10
-RUN for i in $(seq 1 8); do mkdir -p "/usr/share/man/man${i}"; done
-
-# Install psql to check on postgres availability
-RUN apt-get update \
-&& apt-get install gcc -y \
-&& apt-get install postgresql-client -y --no-install-recommends \
-&& apt-get clean
+RUN dnf install postgresql graphviz python-pip which -y && \
+    ln -s /usr/bin/python3 /usr/bin/python
 
 ENV N4J_USER n4j
 ENV N4J_HOME /home/$N4J_USER
@@ -16,7 +10,7 @@ ENV UID 1000
 ENV GID 1000
 
 RUN groupadd -g $GID $N4J_USER && \
-    useradd -u $UID -g $GID -G sudo --create-home --home-dir $N4J_HOME --shell /bin/bash $N4J_USER
+    useradd -u $UID -g $GID -G wheel --create-home --home-dir $N4J_HOME --shell /bin/bash $N4J_USER
 
 COPY --chown=1000:1000 . $N4J_HOME
 
