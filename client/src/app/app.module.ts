@@ -5,6 +5,7 @@ import { HttpClientModule } from '@angular/common/http';
 import { RootStoreModule } from 'app/root-store';
 
 import { AdminModule } from 'app/admin/admin.module';
+import { AuthModule } from 'app/auth/auth.module';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { UserFileImportModule } from './user-file-import/user-file-import.module';
@@ -21,6 +22,7 @@ import { FileBrowserComponent } from './file-browser/file-browser.component';
   ],
   imports: [
     AdminModule,
+    AuthModule,
     BrowserModule,
     SharedModule,
     AppRoutingModule,

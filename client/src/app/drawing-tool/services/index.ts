@@ -5,9 +5,6 @@ import {
     ProjectsService
 } from './projects.service';
 import {
-    AuthenticationService
-} from './authentication.service';
-import {
     node_templates
 } from './nodes';
 import {
@@ -44,7 +41,6 @@ function makeid(length=3) {
 export {
     DataFlowService,
     ProjectsService,
-    AuthenticationService,
     PdfAnnotationsService,
     node_templates,
     uuidv4,
