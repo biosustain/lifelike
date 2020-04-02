@@ -5,6 +5,7 @@ from neo4japp.util import jsonify_with_class, SuccessResponse
 
 bp = Blueprint('elasticsearch', __name__, url_prefix='/search')
 
+
 @bp.route('/<term>')
 @jsonify_with_class()
 def es_search(term):

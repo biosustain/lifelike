@@ -17,11 +17,12 @@ class SearchService(GraphBaseDao):
         text search.
 
         Special characters in Lucene
-        + - && || ! ( ) { } [ ] ^ " ~ * ? : \ /
+        + - && || ! ( ) { } [ ] ^ " ~ * ? : \\ /
         See docs: http://lucene.apache.org/ for more information
-        We will escape these characters with a forward ( \ ) slash
+        We will escape these characters with a forward ( \\ ) slash
         """
         lucene_chars = re.compile(r'([\+\-\&\|!\(\)\{\}\[\]\^"~\*\?:\/])')
+
         def escape(m):
             """ Adds an escape '\' to reserved Lucene characters"""
             char = m.group(1)
@@ -90,7 +91,7 @@ class SearchService(GraphBaseDao):
     def fulltext_search(self, term: str, page: int = 1, limit: int = 10) -> FTSResult:
         query_term = self._fulltext_query_sanitizer(term)
         if not query_term:
-             return FTSResult(query_term, [], 0, page, limit)
+            return FTSResult(query_term, [], 0, page, limit)
         cypher_query = """
             CALL db.index.fulltext.queryNodes("namesEvidenceAndId", $search_term)
             YIELD node, score

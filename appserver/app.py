@@ -14,9 +14,11 @@ app = create_app(config=f'config.{app_config}')
 
 CORS(app)
 
+
 @app.route('/')
 def home():
     return render_template('index.html')
+
 
 @app.cli.command("seed")
 def seed():

@@ -9,13 +9,12 @@ class EsSearch():
     @classmethod
     def build_search_query(cls, term: str):
         query = {
-            "query":
-                {"bool":
-                    {"must":
-                        [{"bool":
-                            {"should": [
-                                {"multi_match":
-                                    {
+            "query": {
+                "bool": {
+                    "must": [{
+                        "bool": {
+                            "should": [{
+                                "multi_match": {
                                         "query": term,
                                         "fields": ["common_name^3", "conjugate^3", "all_text"],
                                         "operator": "AND"
