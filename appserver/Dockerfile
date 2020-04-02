@@ -2,7 +2,7 @@ FROM python:3.7.1
 
 # Install psql to check on postgres availability
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    postgresql-client \
+    postgresql-client graphviz \
     && rm -rf /var/lib/apt/lists/*
 
 ENV N4J_USER n4j

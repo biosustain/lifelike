@@ -44,3 +44,6 @@ terraform-gcloud.json
 # .env Files (to protect secrets)
 *.env
 *.env.*
+
+# .idea folder
+.idea/
