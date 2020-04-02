@@ -1,10 +1,12 @@
 from datetime import datetime, timedelta
-from flask import current_app, request, Response, json, Blueprint
+from flask import current_app, request, Response, json, Blueprint, g
 import jwt
 
+from neo4japp.blueprints.auth import auth
 from neo4japp.database import db
-from neo4japp.models.drawing_tool import AppUser, Project, ProjectSchema
-from neo4japp.util import auth, pullUserFromAuthHead
+from neo4japp.models import AppUser, Project, ProjectSchema
+
+import graphviz as gv
 
 bp = Blueprint('drawing_tool', __name__, url_prefix='/drawing-tool')
 
@@ -15,7 +17,7 @@ def get_project():
     """
         Return a list of all projects underneath user
     """
-    user = pullUserFromAuthHead()
+    user = g.current_user
 
     # Pull the projects tied to that user
     projects = Project.query.filter_by(user_id=user.id).all()
@@ -31,7 +33,7 @@ def add_project():
         Create a new projecrt under a user
     """
     data = request.get_json()
-    user = pullUserFromAuthHead()
+    user = g.current_user
 
     # Create new project
     project = Project(
@@ -63,7 +65,7 @@ def update_project(project_id):
     """
         Update the project's content and its metadata.
     """
-    user = pullUserFromAuthHead()
+    user = g.current_user
     data = request.get_json()
 
     # Pull up project by id
@@ -88,10 +90,10 @@ def update_project(project_id):
 @bp.route('/projects/<string:project_id>', methods=['delete'])
 @auth.login_required
 def delete_project(project_id):
-    """ 
+    """
         Delete object owned by user
     """
-    user = pullUserFromAuthHead()
+    user = g.current_user
 
     # Pull up project by id
     project = Project.query.filter_by(
@@ -104,3 +106,59 @@ def delete_project(project_id):
     db.session.commit()
 
     return {'status': 'success'}, 200
+
+
+@bp.route('/projects/<string:project_id>/pdf', methods=['get'])
+@auth.login_required
+def get_project_pdf(project_id):
+    """
+    Gets a PDF file from the project drawing
+    """
+
+    colormap = {
+        'disease': "#F3AB4A",
+        'species': '#3177B8',
+        'chemical': '#71B267',
+        'gene': '#563A9F',
+        'study': '#005662',
+        'observation': '#9A0007',
+        'entity': 'black'
+    }
+
+    user = g.current_user
+
+    # Pull up project by id
+    data_source = Project.query.filter_by(
+        id=project_id,
+        user_id=user.id
+    ).first_or_404()
+
+    json_graph = data_source.graph
+    graph = gv.Digraph('POC', comment=data_source.description, engine='neato', graph_attr=(('margin', '3'),))
+    for node in json_graph['nodes']:
+        params = {
+            'name': node['hash'],
+            'label': node['display_name'],
+            'pos': f"{node['data']['x'] / 55},{-node['data']['y'] / 55}!",
+            'shape': 'box',
+            'style': 'rounded,filled',
+            'color': colormap[node['label']],
+            'fontcolor': 'white',
+            'fontname': 'sans-serif',
+            'fillcolor': colormap[node['label']],
+            'margin': "0.2,0.0"
+        }
+        if 'hyperlink' in node['data'] and node['data']['hyperlink']:
+            params['href'] = node['data']['hyperlink']
+
+        graph.node(**params)
+
+    for edge in json_graph['edges']:
+        graph.edge(
+            edge['from'],
+            edge['to'],
+            edge['label'],
+            color='blue'
+        )
+
+    return graph.pipe()

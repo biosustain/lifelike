@@ -5,9 +5,9 @@ from flask import render_template
 from flask_cors import CORS
 from sqlalchemy.sql.expression import text
 
-from neo4japp.database import db
+from neo4japp.database import db, get_account_service
 from neo4japp.factory import create_app
-from neo4japp.models.drawing_tool import AppUser, Project
+from neo4japp.models import AppUser, Project
 
 app_config = os.environ['FLASK_APP_CONFIG']
 app = create_app(config=f'config.{app_config}')
@@ -23,6 +23,7 @@ def seed():
     """
         Seed the postgres db for development
     """
+    account_service = get_account_service()
     with open("fixtures/seed.json", "r") as f:
 
         fixtures = json.load(f)
@@ -31,13 +32,13 @@ def seed():
 
             if fix["table"] == "appuser":
                 for r in fix["records"]:
-                    user = AppUser(
+                    account_service.create_user(
                         username=r["username"],
                         email=r["email"],
-                        password_hash=r["password_hash"]
+                        password=r["password_hash"],
+                        roles=["admin"],
                     )
-                    db.session.add(user)
-                    db.session.commit()
+
             elif fix["table"] == "project":
                 for r in fix["records"]:
                     proj = Project(

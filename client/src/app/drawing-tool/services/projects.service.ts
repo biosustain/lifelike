@@ -37,9 +37,9 @@ export class ProjectsService {
   /**
    * Create http options with authorization
    * header if boolean set to true
-   * @param with_jwt 
+   * @param with_jwt
    */
-  createHttpOptions(with_jwt=false) {
+  createHttpOptions(with_jwt=false, blob=false) {
     const headers = {
       'Content-Type':  'application/json'
     }
@@ -47,11 +47,19 @@ export class ProjectsService {
     if (with_jwt) {
       headers['Authorization'] = 'Token ' + localStorage.getItem('access_jwt');
     }
+    var httpOptions: Object;
 
-    const httpOptions = {
-      headers: new HttpHeaders(headers)
-    };
-    return httpOptions
+    if (blob) {
+      httpOptions = {
+        headers: new HttpHeaders(headers),
+        responseType: 'blob'
+      };
+    } else {
+      httpOptions = {
+        headers: new HttpHeaders(headers)
+      };
+    }
+    return httpOptions;
   }
 
   /**
@@ -65,8 +73,19 @@ export class ProjectsService {
   }
 
   /**
+   * Return PDF version of the project
+   * @param project
+   */
+  public getPDF(project: Project): Observable<any> {
+    return this.http.get(
+      this.base_url + `/drawing-tool/projects/${project.id}/pdf`,
+      this.createHttpOptions(true, true)
+    );
+  }
+
+  /**
    * Add project to user's collection
-   * @param project 
+   * @param project
    */
   public addProject(project: Project): Observable<Object> {
     return this.http.post(
@@ -109,7 +128,8 @@ export class ProjectsService {
         return {
           data: {
             x: n.x,
-            y: n.y
+            y: n.y,
+            hyperlink: Object.is(n.data.hyperlink, undefined) ? '' : n.data.hyperlink
           },
           display_name: n.label,
           hash: n.id,
@@ -141,7 +161,7 @@ export class ProjectsService {
   /**
    * Convert a graph to Vis.js Network Representation
    * from Universal representation
-   * @param graph 
+   * @param graph
    */
   public universe2Vis(graph:UniversalGraph): VisNetworkGraph {
     let nodes: VisNetworkGraphNode[] = graph.nodes.map(
@@ -151,11 +171,14 @@ export class ProjectsService {
           x: n.data['x'],
           y: n.data['y'],
           id: n.hash,
-          group: n.label
+          group: n.label,
+          data: {
+            hyperlink: Object.is(n.data.hyperlink, undefined) ? '' : n.data.hyperlink
+          }
         }
       }
     );
-    
+
     let edges: VisNetworkGraphEdge[] = graph.edges.map(
       (e:UniversalGraphEdge): VisNetworkGraphEdge => {
         return {

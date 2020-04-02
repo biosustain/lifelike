@@ -1,5 +1,5 @@
 import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, APP_BASE_HREF } from '@angular/common';
 import { BrowserModule } from '@angular/platform-browser';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -8,7 +8,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { RouterModule } from '@angular/router';
 
 import { PdfViewerLibModule } from 'pdf-viewer-lib';
-import { MaterialModule } from './material.module';
+import { AngularMaterialModule } from 'app/shared/angular-material.module';
 
 import {
   ProjectListViewComponent
@@ -25,15 +25,18 @@ import {
 import { 
   DrawingToolComponent
 } from './drawing-tool/drawing-tool.component';
-import { 
-  SideBarUiComponent
-} from './drawing-tool/side-bar-ui/side-bar-ui.component';
 import {
   PdfViewerComponent
 } from './pdf-viewer/pdf-viewer.component';
 import {
   LoginComponent
 } from './login/login.component';
+import { 
+  InfoPanelComponent
+} from './drawing-tool/info-panel/info-panel.component';
+import {
+  PaletteComponent
+} from './drawing-tool/palette/palette.component';
 
 import { 
   TruncatePipe,
@@ -41,17 +44,19 @@ import {
 } from './pipes';
 
 @NgModule({
+  providers: [{provide: APP_BASE_HREF, useValue : '/' }],
   declarations: [
     ProjectListViewComponent,
     CreateProjectDialogComponent,
     DeleteProjectDialogComponent,
     CopyProjectDialogComponent,
     DrawingToolComponent,
-    SideBarUiComponent,
     PdfViewerComponent,
     LoginComponent,
     TruncatePipe,
-    FriendlyDateStrPipe
+    FriendlyDateStrPipe,
+    InfoPanelComponent,
+    PaletteComponent
   ],
   entryComponents: [
     CreateProjectDialogComponent,
@@ -68,7 +73,7 @@ import {
     DragDropModule,
     RouterModule.forRoot([]),
     PdfViewerLibModule,
-    MaterialModule
+    AngularMaterialModule,
   ]
 })
 export class MockupModule { }
