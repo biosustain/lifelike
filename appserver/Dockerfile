@@ -1,9 +1,6 @@
-FROM python:3.7.1
+FROM fedora:32
 
-# Install psql to check on postgres availability
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    postgresql-client graphviz \
-    && rm -rf /var/lib/apt/lists/*
+RUN dnf install postgresql graphviz python-pip which -y
 
 ENV N4J_USER n4j
 ENV N4J_HOME /home/$N4J_USER
@@ -12,7 +9,7 @@ ENV UID 1000
 ENV GID 1000
 
 RUN groupadd -g $GID $N4J_USER && \
-    useradd -u $UID -g $GID -G sudo --create-home --home-dir $N4J_HOME --shell /bin/bash $N4J_USER
+    useradd -u $UID -g $GID -G wheel --create-home --home-dir $N4J_HOME --shell /bin/bash $N4J_USER
 
 COPY --chown=1000:1000 . $N4J_HOME
 
