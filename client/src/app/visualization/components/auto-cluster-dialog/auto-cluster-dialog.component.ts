@@ -1,4 +1,4 @@
-import { Component, OnInit, Inject } from '@angular/core';
+import { Component, OnInit, Inject, EventEmitter } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
 import { ExpandNodeResult } from 'app/interfaces';
 
@@ -8,29 +8,24 @@ import { ExpandNodeResult } from 'app/interfaces';
     styleUrls: ['./auto-cluster-dialog.component.scss']
 })
 export class AutoClusterDialogComponent implements OnInit {
+    clickedActionButton = new EventEmitter<boolean>();
+    loadingClusters = false;
+    dontAskAgain = false;
 
     constructor(
         public dialogRef: MatDialogRef<AutoClusterDialogComponent>,
         @Inject(MAT_DIALOG_DATA) public data: ExpandNodeResult,
     ) {}
 
-    dontAskAgain: boolean;
 
     ngOnInit() {}
 
     onNoClick() {
-        this.dialogRef.close({
-            clusterExpandedNodes: false,
-            data: this.data,
-            dontAskAgain: this.dontAskAgain
-        });
+        this.clickedActionButton.emit(false);
     }
 
     onOkClick() {
-        this.dialogRef.close({
-            clusterExpandedNodes: true,
-            data: this.data,
-            dontAskAgain: this.dontAskAgain
-        });
+        this.clickedActionButton.emit(true);
+        this.loadingClusters = true;
     }
 }

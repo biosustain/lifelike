@@ -1,11 +1,9 @@
 import { Component, OnInit } from '@angular/core';
-import { MatDialog } from '@angular/material';
+import { MatDialog, MatDialogRef } from '@angular/material';
 import { ActivatedRoute } from '@angular/router';
 
 import { EMPTY as empty } from 'rxjs';
-import { filter, take, switchMap, map } from 'rxjs/operators';
-
-import { isNullOrUndefined } from 'util';
+import { filter, take, switchMap, map, first } from 'rxjs/operators';
 
 import { DataSet } from 'vis-network';
 
@@ -54,6 +52,8 @@ export class VisualizationComponent implements OnInit {
 
     dontShowDialogAgain = false;
     clusterExpandedNodes = false;
+
+    autoClusterDialogRef: MatDialogRef<AutoClusterDialogComponent>;
 
     constructor(
         public dialog: MatDialog,
@@ -122,24 +122,46 @@ export class VisualizationComponent implements OnInit {
     }
 
     openAutoClusterDialog(expandResult: ExpandNodeResult): void {
-        const dialogRef = this.dialog.open(AutoClusterDialogComponent, {
+        this.autoClusterDialogRef = this.dialog.open(AutoClusterDialogComponent, {
             disableClose: true,
             width: '600px', height: '330px',
             data: {...expandResult},
         });
+        const dialogInstance = this.autoClusterDialogRef.componentInstance;
 
-        dialogRef.afterClosed().subscribe(result => {
-            if (!isNullOrUndefined(result)) {
-                this.nodes.update(result.data.nodes as VisNode[]);
-                this.edges.update(result.data.edges as VisEdge[]);
-                this.dontShowDialogAgain = result.dontAskAgain;
-                this.clusterExpandedNodes = result.clusterExpandedNodes;
+        // Once the user clicks an action on the dialog, either pre-cluster the results or expand normally
+        this.autoClusterDialogRef.componentInstance.clickedActionButton.pipe(
+            first(),
+        ).subscribe((clickedOkButton) => {
+            this.nodes.update(dialogInstance.data.nodes);
+            this.edges.update(dialogInstance.data.edges);
 
-                if (this.clusterExpandedNodes) {
-                    this.expandNodeResult = result.data;
-                }
+            this.dontShowDialogAgain = dialogInstance.dontAskAgain;
+            this.clusterExpandedNodes = clickedOkButton;
+
+            // If the 'Yes' button was clicked, we update the dialog size and show a loading indicator while clustering is happening
+            if (clickedOkButton) {
+                this.autoClusterDialogRef.updateSize('200px', '100px');
+                this.expandNodeResult = dialogInstance.data;
+            } else {
+                // Otherwise we just close the dialog
+                this.autoClusterDialogRef.close();
             }
         });
+    }
+
+    openAutoClusterLoadingDialog() {
+        this.autoClusterDialogRef = this.dialog.open(AutoClusterDialogComponent, {
+            disableClose: true,
+            width: '200px', height: '100px',
+        });
+        const dialogInstance = this.autoClusterDialogRef.componentInstance;
+
+        dialogInstance.loadingClusters = true;
+    }
+
+    finishedPreClustering(event: boolean) {
+        this.autoClusterDialogRef.close();
     }
 
     /**
@@ -210,12 +232,18 @@ export class VisualizationComponent implements OnInit {
             });
             edges = edges.filter(candidateEdge => !this.duplicatedEdges.has(candidateEdge.id));
 
+            // If the user didn't manually disable the dialog, or if the expanded node has more relationships than the
+            // recommendation, re-open the dialog
             if (!this.dontShowDialogAgain || edges.length > NODE_EXPANSION_CLUSTERING_RECOMMENDATION) {
                 this.openAutoClusterDialog({ nodes, edges, expandedNode: nodeId } as ExpandNodeResult);
             } else {
                 this.nodes.update(nodes);
                 this.edges.update(edges);
+
+                // Otherwise, do what the user originally chose
                 if (this.clusterExpandedNodes) {
+                    // Manully re-open the loading dialog if the user chose to auto-cluster
+                    this.openAutoClusterLoadingDialog();
                     this.expandNodeResult = { nodes, edges, expandedNode: nodeId } as ExpandNodeResult;
                 }
             }
