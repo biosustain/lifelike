@@ -13,11 +13,13 @@ import { SearchModule } from './search/search.module';
 import { DrawingToolModule } from './drawing-tool/drawing-tool.module';
 import { SharedModule } from './shared/shared.module';
 import { FileBrowserComponent } from './file-browser/file-browser.component';
+import { KgStatisticsComponent } from './kg-statistics/kg-statistics.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     FileBrowserComponent,
+    KgStatisticsComponent,
   ],
   imports: [
     AdminModule,

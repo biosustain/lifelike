@@ -6,6 +6,7 @@ import { UserFileImportComponent } from 'app/user-file-import/components/user-fi
 import { VisualizationComponent } from 'app/visualization/containers/visualization/visualization.component';
 import { SearchCollectionPageComponent } from 'app/search/containers/search-collection-page.component';
 import { FileBrowserComponent } from 'app/file-browser/file-browser.component';
+import { KgStatisticsComponent } from './kg-statistics/kg-statistics.component';
 
 import {
   ProjectListViewComponent,
@@ -55,6 +56,10 @@ const routes: Routes = [
   {
     path: 'file-browser',
     component: FileBrowserComponent,
+  },
+  {
+    path: 'kg-statistics',
+    component: KgStatisticsComponent,
   },
 ];
 
