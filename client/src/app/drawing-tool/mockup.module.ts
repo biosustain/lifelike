@@ -28,9 +28,6 @@ import {
 import {
   PdfViewerComponent
 } from './pdf-viewer/pdf-viewer.component';
-import {
-  LoginComponent
-} from './login/login.component';
 import { 
   InfoPanelComponent
 } from './drawing-tool/info-panel/info-panel.component';
@@ -52,7 +49,6 @@ import {
     CopyProjectDialogComponent,
     DrawingToolComponent,
     PdfViewerComponent,
-    LoginComponent,
     TruncatePipe,
     FriendlyDateStrPipe,
     InfoPanelComponent,
