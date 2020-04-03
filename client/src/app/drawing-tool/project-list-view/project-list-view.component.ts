@@ -38,9 +38,28 @@ import {
 import {
   CopyProjectDialogComponent
 } from './copy-project-dialog/copy-project-dialog.component';
-import { MatSnackBar } from '@angular/material';
+import { MatSnackBar, MatTabChangeEvent } from '@angular/material';
 
 import * as $ from 'jquery';
+
+/**
+ * Sort project by most recent modified date
+ * @param a 
+ * @param b 
+ */
+const sort = (a:Project, b: Project) => {
+  if (
+    a.date_modified < b.date_modified
+  ) {
+    return 1
+  } else if (
+    a.date_modified === b.date_modified
+  ) {
+    return 0;
+  } else {
+    return -1;
+  }
+};
 
 @Component({
   selector: 'app-project-list-view',
@@ -81,6 +100,19 @@ export class ProjectListViewComponent implements OnInit, AfterViewInit {
   /** The edge or node focused on */
   focusedEntity: GraphSelectionData = null;
 
+  /** Whether to show community or personal maps */
+  _displayMode: string = 'personal';
+  displayIndex: number = 0;
+
+  get displayMode() {
+    return this._displayMode;
+  }
+  set displayMode(val) {
+    this._displayMode = val;
+    this.displayIndex = val === "personal" ? 0 : 1;
+    this.projects.sort(sort);
+  }
+
   get node() {
     if (!this.focusedEntity) return null;
     
@@ -99,25 +131,14 @@ export class ProjectListViewComponent implements OnInit, AfterViewInit {
 
   ngOnInit() {}
   ngAfterViewInit() {
-    /**
-     * Sort project by most recent modified date
-     * @param a 
-     * @param b 
-     */
-    let sort = (a, b) => {
-      if (
-        a.date_modified < b.date_modified
-      ) {
-        return 1
-      } else if (
-        a.date_modified === b.date_modified
-      ) {
-        return 0;
-      } else {
-        return -1;
-      }
-    };
+    this.refresh();
+  }
 
+  /**
+   * Pull projects from server both
+   * personal and community
+   */
+  refresh() {
     this.projectService.pullProjects()
       .subscribe(data => {
         this.projects = (
@@ -130,6 +151,14 @@ export class ProjectListViewComponent implements OnInit, AfterViewInit {
           data['projects'] as Project[]
         ).sort(sort);
       });
+  }
+
+  /**
+   * Switch between personal or community view
+   */
+  toggleView(tab: MatTabChangeEvent) {
+    this.selectedProject = null;
+    this.displayMode = tab.tab.textLabel.toLocaleLowerCase();
   }
 
   /**
@@ -221,6 +250,7 @@ export class ProjectListViewComponent implements OnInit, AfterViewInit {
 
         this.projectService.addProject(project)
           .subscribe((data) => {
+            this.displayMode = 'personal';
             this.projects.push(data['project']);
           });
       }
@@ -232,7 +262,9 @@ export class ProjectListViewComponent implements OnInit, AfterViewInit {
    * through a confirmation dialog, then call create API on project
    * @param project 
    */
-  copyProject(project: Project) {
+  copyProject(project: Project=null) {
+    if (!project) project = this.selectedProject;
+
     const dialogRef = this.dialog.open(CopyProjectDialogComponent, {
       width: '40%',
       data: project
@@ -243,6 +275,7 @@ export class ProjectListViewComponent implements OnInit, AfterViewInit {
 
       this.projectService.addProject(result)
         .subscribe((data) => {
+          this.displayMode = 'personal';
           this.projects.push(data['project']);
         });
     });
@@ -271,8 +304,6 @@ export class ProjectListViewComponent implements OnInit, AfterViewInit {
               g.edges
             );
 
-            console.log(this.visGraph);
-    
             this.visGraph.network.on(
               'click',
               (properties) => this.networkClickHandler(properties)

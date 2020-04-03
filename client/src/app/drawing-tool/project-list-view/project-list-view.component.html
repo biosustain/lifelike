@@ -3,34 +3,60 @@
   <div
     id='map-list-container'
     class=''>
-      <div id='map-list'>
-        <h1>Maps</h1>
-        <div 
-          class='map shadow'
-          *ngFor='let project of projects'
-          (contextmenu)="open($event, project)"
-          (click)='pickProject(project)'>
-          <h3>
-            {{
-              project.label | truncate:['40']
-            }}
-          </h3>
-          <p class='author'>
-            By {{project?.author}} 
-          </p>
-          <p class='date'>
-            Modified {{project?.date_modified | friendlyDateStr}}
-          </p> 
-        </div>
-      </div>
-      <button 
-        mat-fab
-        color='primary'
-        id='add-project'
-        aria-label="Example icon-button with a heart icon"
-        (click)='createProject()'>
-        <mat-icon>add</mat-icon>
-      </button>
+
+    <div id='map-list'>
+      <h1>Maps</h1>
+      <mat-tab-group 
+        [selectedIndex]="displayIndex"
+        (selectedTabChange)="toggleView($event)">
+        <mat-tab label="Personal">
+          <div 
+            class='map shadow'
+            *ngFor='let project of projects'
+            (contextmenu)="open($event, project)"
+            (click)='pickProject(project)'>
+            <h3>
+              {{
+                project.label | truncate:['40']
+              }}
+            </h3>
+            <p class='author'>
+              By {{project?.author}} 
+            </p>
+            <p class='date'>
+              Modified {{project?.date_modified | friendlyDateStr}}
+            </p> 
+          </div>
+        </mat-tab>
+        <mat-tab label="Community">
+          <div
+            class='map shadow'
+            *ngFor='let project of publicProjects'
+            (contextmenu)="open($event, project)"
+            (click)='pickProject(project)'>
+            <h3>
+              {{
+                project.label | truncate:['40']
+              }}
+            </h3>
+            <p class='author'>
+              By {{project?.author}} 
+            </p>
+            <p class='date'>
+              Modified {{project?.date_modified | friendlyDateStr}}
+            </p> 
+          </div>
+        </mat-tab>
+      </mat-tab-group>
+    </div>
+    <button 
+      mat-fab
+      color='primary'
+      id='add-project'
+      aria-label="Example icon-button with a heart icon"
+      (click)='createProject()'>
+      <mat-icon>add</mat-icon>
+    </button>
   </div>
   <!-- Map Preview Panel -->
   <div
@@ -118,24 +144,34 @@
         </p>
       </div>
       <div id='actions'>
-        <button
-          mat-raised-button
-          color="primary"
-          (click)='goToProject()'>
-          EDIT
-        </button>
-        <button
-          mat-raised-button
-          [color]="selectedProject?.public === false ? 'primary' : 'accent'"
-          (click)='togglePublic()'>
-          {{selectedProject?.public === false ? 'MAKE PUBLIC' : 'MAKE PRIVATE'}}
-        </button>
-        <button
-          mat-raised-button
-          color="warn"
-          (click)='deleteProject()'>
-          DELETE
-        </button>
+        <div *ngIf='displayMode==="personal"'>
+          <button
+            mat-raised-button
+            color="primary"
+            (click)='goToProject()'>
+            EDIT
+          </button>
+          <button
+            mat-raised-button
+            [color]="selectedProject?.public === false ? 'primary' : 'accent'"
+            (click)='togglePublic()'>
+            {{selectedProject?.public === false ? 'MAKE PUBLIC' : 'MAKE PRIVATE'}}
+          </button>
+          <button
+            mat-raised-button
+            color="warn"
+            (click)='deleteProject()'>
+            DELETE
+          </button>
+        </div>
+        <div *ngIf='displayMode==="community"'>
+          <button
+            mat-raised-button
+            color="primary"
+            (click)='copyProject()'>
+            MAKE COPY OF
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -146,7 +182,7 @@
     (contextmenu)="$event.preventDefault()"
     class="project-menu">
     <div (click)='copyProject(project)'>Make copy of</div>
-    <div (click)="deleteProject(project)">Delete</div>
+    <div *ngIf='displayMode==="personal"' (click)="deleteProject(project)">Delete</div>
   </section>
 </ng-template>
 <!-- Empty Scene -->
