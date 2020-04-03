@@ -1,5 +1,7 @@
 import { createAction, props } from '@ngrx/store';
+
 import { AppUser, Credential } from 'app/interfaces';
+import { LOGOUT_SUCCESS } from 'app/constants';
 
 export const login = createAction(
     '[Auth] Login',
@@ -11,6 +13,18 @@ export const loginSuccess = createAction(
     props<{user: AppUser}>(),
 );
 
+export const loginFailure = createAction(
+    '[Auth] Login Failure',
+);
+
+/** A login redirect carries the original requested url */
 export const loginRedirect = createAction(
     '[Auth] Login Redirect',
+    props<{url: string}>(),
 );
+
+export const logout = createAction(
+    '[Auth] Logout'
+);
+
+export const logoutSuccess = createAction(LOGOUT_SUCCESS);

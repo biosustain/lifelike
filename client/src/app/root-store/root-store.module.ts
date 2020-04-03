@@ -1,7 +1,9 @@
 import { NgModule } from '@angular/core';
 import { EffectsModule } from '@ngrx/effects';
 import {
+    ActionReducer,
     ActionReducerMap,
+    MetaReducer,
     StoreModule,
 } from '@ngrx/store';
 
@@ -13,6 +15,12 @@ import { environment } from '../../environments/environment';
 
 import { State } from './state';
 
+import { LOGOUT_SUCCESS } from 'app/constants';
+
+/**
+ * Syncs ngrx-store with local storage for persistent client state.
+ */
+import { localStorageSync } from 'ngrx-store-localstorage';
 
 
 /**
@@ -21,6 +29,32 @@ import { State } from './state';
  * and the current or initial state and return a new immutable state.
  */
 export const reducers: ActionReducerMap<State> = {};
+
+/** Sync ngrx sotre with local storage */
+export function syncWithLocalStorage(reducer: ActionReducer<State>): ActionReducer<State> {
+    return localStorageSync({
+        keys: ['auth'],
+        rehydrate: true,
+    })(reducer);
+}
+
+export function resetStateTree(reducer: ActionReducer<State>): ActionReducer<State> {
+    return (state, action) => {
+        if (action.type === LOGOUT_SUCCESS) {
+            state = undefined;
+        }
+        return reducer(state, action);
+    };
+}
+
+/**
+ * By default, @ngrx/store uses combineReducers with the reducer map to compose
+ * the root meta-reducer. To add more meta-reducers, provide an array of meta-reducers
+ * that will be composed to form the root meta-reducer.
+ */
+export const metaReducers: MetaReducer<State>[] = !environment.production
+   ? [syncWithLocalStorage, resetStateTree]
+ : [syncWithLocalStorage, resetStateTree];
 
 
 @NgModule({

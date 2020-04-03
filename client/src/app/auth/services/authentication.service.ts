@@ -48,7 +48,7 @@ export class AuthenticationService implements HttpInterceptor {
   /**
    * Create http options with authorization
    * header if boolean set to true
-   * @param with_jwt 
+   * @param with_jwt
    */
   createHttpOptions(with_jwt=false) {
     const headers = {
@@ -98,12 +98,11 @@ export class AuthenticationService implements HttpInterceptor {
 
   /**
    * Authenticate users to get a JWT
-   * @param credential_form 
    */
-  public login(credential_form): Observable<Object> {
+  public login(email: string, password: string): Observable<Object> {
     return this.http.post(
       this.base_url + '/auth/login',
-      credential_form,
+      {email, password},
       this.createHttpOptions()
     ).pipe(
       tap(resp => {
