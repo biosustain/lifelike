@@ -8,7 +8,7 @@ import {
     AuthenticationService
 } from './authentication.service';
 import {
-    node_templates
+    nodeTemplates
 } from './nodes';
 import {
     PdfAnnotationsService,
@@ -46,7 +46,7 @@ export {
     ProjectsService,
     AuthenticationService,
     PdfAnnotationsService,
-    node_templates,
+    nodeTemplates,
     uuidv4,
     makeid,
     DragDropEventFactory,
