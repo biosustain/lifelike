@@ -168,15 +168,14 @@ def pomc_to_gas_gangrene_pathogenesis_edge(
     """Creates an ASSOCIATED relationship from pomc to gas gangrene and
     adds it to the graph."""
 
-    pomc_to_gas_gangrene_pathogenesis_edge = graph.run(
-        """
-            MATCH (d:Disease), (g:Gene)
-            WHERE d.name = 'gas gangrene' AND g.name = 'POMC'
-            CREATE
-            (g)-[r:ASSOCIATED { assoc_type:'J', description:'role in disease pathogenesis'}]->(d)
-            RETURN r
-        """
-    ).evaluate()
+    tx = graph.begin()
+
+    pomc_to_gas_gangrene_pathogenesis_edge = Relationship(
+        pomc, 'ASSOCIATED', gas_gangrene, assoc_type='J', description='role in disease pathogenesis',  # noqa
+    )
+
+    tx.create(pomc_to_gas_gangrene_pathogenesis_edge)
+    tx.commit()
 
     return pomc_to_gas_gangrene_pathogenesis_edge
 
@@ -190,14 +189,14 @@ def penicillins_to_gas_gangrene_alleviates_edge(
     """Creates an ASSOCIATED relationship from penicillins to gas
     gangrene and adds it to the graph."""
 
-    penicillins_to_gas_gangrene_alleviates_edge = graph.run(
-        """
-            MATCH (d:Disease), (c:Chemical)
-            WHERE d.name = 'gas gangrene' AND c.name = 'Penicillins'
-            CREATE (c)-[r:ASSOCIATED { assoc_type:'Pa', description:'alleviates, reduces'}]->(d)
-            RETURN r
-        """
-    ).evaluate()
+    tx = graph.begin()
+
+    penicillins_to_gas_gangrene_alleviates_edge = Relationship(
+        penicillins, 'ASSOCIATED', gas_gangrene, assoc_type='Pa', description='alleviates, reduces',
+    )
+
+    tx.create(penicillins_to_gas_gangrene_alleviates_edge)
+    tx.commit()
 
     return penicillins_to_gas_gangrene_alleviates_edge
 
@@ -211,16 +210,14 @@ def penicillins_to_gas_gangrene_treatment_edge(
     """Creates an ASSOCIATED relationship from penicillins to gas
     gangrene and adds it to the graph."""
 
-    penicillins_to_gas_gangrene_treatment_edge = graph.run(
-        """
-            MATCH (d:Disease), (c:Chemical)
-            WHERE d.name = 'gas gangrene' AND c.name = 'Penicillins'
-            CREATE (c)-[r:ASSOCIATED {
-                assoc_type:'J', description:'treatment/therapy (including investigatory)'
-            }]->(d)
-            RETURN r
-        """
-    ).evaluate()
+    tx = graph.begin()
+
+    penicillins_to_gas_gangrene_treatment_edge = Relationship(
+        penicillins, 'ASSOCIATED', gas_gangrene, assoc_type='J', description='treatment/therapy (including investigatory)',  # noqa
+    )
+
+    tx.create(penicillins_to_gas_gangrene_treatment_edge)
+    tx.commit()
 
     return penicillins_to_gas_gangrene_treatment_edge
 
