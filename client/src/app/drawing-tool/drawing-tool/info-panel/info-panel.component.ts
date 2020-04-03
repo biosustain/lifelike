@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import {
   FormGroup,
   FormControl,
@@ -8,15 +8,15 @@ import {
 import * as $ from 'jquery';
 
 import {
-  node_templates,
+  nodeTemplates,
   uuidv4,
   DataFlowService
-} from '../../services'
+} from '../../services';
 import {
   VisNetworkGraphEdge,
   VisNetworkGraphNode,
   GraphData
-} from '../../services/interfaces'
+} from '../../services/interfaces';
 import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
 
@@ -32,24 +32,24 @@ interface GraphSelectionData {
     }
   };
   other_nodes?: VisNetworkGraphNode[];
-};
+}
 
 @Component({
   selector: 'app-info-panel',
   templateUrl: './info-panel.component.html',
   styleUrls: ['./info-panel.component.scss']
 })
-export class InfoPanelComponent implements OnInit {
+export class InfoPanelComponent implements OnInit, OnDestroy {
   /** Build the palette ui with node templates defined */
-  nodeTemplates = node_templates;
+  nodeTemplates = nodeTemplates;
 
-  paletteMode: string = 'minimized';
+  paletteMode = 'minimized';
 
   /**
    * The information of the node clicked
    * on from the knowledge graph
    */
-  graph_data: GraphData = {
+  graphData: GraphData = {
     id: '',
     label: '',
     group: '',
@@ -60,13 +60,13 @@ export class InfoPanelComponent implements OnInit {
   /**
    * Track modification of entity properties
    */
-  entity_form = new FormGroup({
+  entityForm = new FormGroup({
     id: new FormControl(),
     label: new FormControl(),
     group: new FormControl(),
     edges: new FormArray([]),
     hyperlink: new FormControl()
-  },{
+  }, {
     updateOn: 'blur'
   });
 
@@ -74,25 +74,25 @@ export class InfoPanelComponent implements OnInit {
   pauseForm = false;
 
   /** Type of data we're dealing with, node or edge */
-  entity_type: string = 'node';
+  entityType = 'node';
 
-  node_bank: VisNetworkGraphNode[] = [];
-  node_bank_dict: {[hash: string]: Object} = {};
+  nodeBank: VisNetworkGraphNode[] = [];
+  nodeBankDict: {[hash: string]: object} = {};
 
   /**
    * Return true or false if any edges exist
    */
   get edges() {
-    return this.entity_form.value.edges.length === 0 ? false : true;
+    return this.entityForm.value.edges.length === 0 ? false : true;
   }
   /**
-   * 
+   *
    */
   get edgeFormArr() {
-    return <FormArray>this.entity_form.get('edges');
+    return this.entityForm.get('edges') as FormArray;
   }
   get isNode() {
-    return this.entity_type === 'node';
+    return this.entityType === 'node';
   }
 
   graphDataSubscription: Subscription = null;
@@ -105,31 +105,31 @@ export class InfoPanelComponent implements OnInit {
   ngOnInit() {
     // Listen for changes within the form
     // in edit mode
-    this.formSubscription = this.entity_form.valueChanges
+    this.formSubscription = this.entityForm.valueChanges
       .pipe(
         filter(_ => !this.pauseForm)
       )
       .subscribe(
-        (val:GraphData) => {
-          if (!val) return;
+        (val: GraphData) => {
+          if (!val) { return; }
 
           let data;
 
-          if (this.entity_type === "node") {
+          if (this.entityType === 'node') {
             // Get node data
-            let edges = val['edges'].map((e:VisNetworkGraphEdge) => {
+            const edges = val.edges.map((e: VisNetworkGraphEdge) => {
 
               return {
                 id: e.id,
                 label: e.label,
                 from: val.id,
                 to: e.to
-              }
+              };
             });
-            
+
             data = {
               node: {
-                id: this.graph_data.id,
+                id: this.graphData.id,
                 label: val.label,
                 group: val.group,
                 data: {
@@ -137,52 +137,52 @@ export class InfoPanelComponent implements OnInit {
                 }
               },
               edges
-            }
+            };
           } else {
             // Get edge data
             data = {
               edge: {
-                id: this.graph_data.id,
+                id: this.graphData.id,
                 label: val.label
               }
-            }
+            };
           }
 
           // Push graph update to drawing-tool view
           this.dataFlow.pushGraphUpdate({
-            type: this.entity_type,
+            type: this.entityType,
             event: 'update',
             data
           });
 
-          // Update graph_data ..
-          this.graph_data = val;
+          // Update graphData ..
+          this.graphData = val;
         }
       );
 
     // Listen for when a node and its data
-    // is streamed .. 
+    // is streamed ..
     this.graphDataSubscription = this.dataFlow.graphDataSource.subscribe((data: GraphSelectionData) => {
-      if (!data) return;
+      if (!data) { return; }
 
       // If a node is clicked on ..
       if (data.node_data) {
-        this.entity_type = 'node';
+        this.entityType = 'node';
 
-        // Record the data .. 
-        this.graph_data = data.node_data;
+        // Record the data ..
+        this.graphData = data.node_data;
         data.other_nodes.map(n => {
-          this.node_bank_dict[n.id] = n;
+          this.nodeBankDict[n.id] = n;
         });
-        this.node_bank = data.other_nodes;
+        this.nodeBank = data.other_nodes;
 
         this.pauseForm = true;
 
         // Set FormArray of FormControls to edges of node
-        this.entity_form.setControl(
+        this.entityForm.setControl(
           'edges',
           new FormArray(
-            this.graph_data.edges.map(e => {
+            this.graphData.edges.map(e => {
               return new FormGroup({
                 to: new FormControl(),
                 label: new FormControl(),
@@ -193,49 +193,47 @@ export class InfoPanelComponent implements OnInit {
         );
 
         // Set FormGroup for node ..
-        let form_data = {
-          id: this.graph_data.id,
-          label: this.graph_data.label,
-          group: this.graph_data.group,
-          edges: this.graph_data.edges.map((e:VisNetworkGraphEdge) => {
+        const formData = {
+          id: this.graphData.id,
+          label: this.graphData.label,
+          group: this.graphData.group,
+          edges: this.graphData.edges.map((e: VisNetworkGraphEdge) => {
             return {
               id: e.id,
               label: e.label,
               to: e.to
-            }
+            };
           }),
           hyperlink: data.node_data.data.hyperlink
         };
-        this.entity_form.setValue(form_data, {emitEvent: false});
-        
-        this.pauseForm = false;
-      }
+        this.entityForm.setValue(formData, {emitEvent: false});
 
-      // Else if an edge is clicked on ..
-      else if (data.edge_data) {
-        this.entity_type = 'edge';
+        this.pauseForm = false;
+      } else if (data.edge_data) {
+        // Else if an edge is clicked on ..
+        this.entityType = 'edge';
 
         // Record the data ..
-        this.graph_data = data.edge_data;
+        this.graphData = data.edge_data;
 
         // Setup FormGroup for Edge ..
         this.pauseForm = true;
-        this.entity_form.setControl(
+        this.entityForm.setControl(
           'edges',
           new FormArray([])
         );
         this.pauseForm = false;
-        let form_data = {
-          id: this.graph_data.id,
-          label: this.graph_data.label,
+        const formData = {
+          id: this.graphData.id,
+          label: this.graphData.label,
           group: null,
           edges: [],
           hyperlink: null
         };
-        this.entity_form.setValue(form_data, {emitEvent: false});
+        this.entityForm.setValue(formData, {emitEvent: false});
       }
 
-      if (this.paletteMode === 'minimized') this.changeSize();
+      if (this.paletteMode === 'minimized') { this.changeSize(); }
     });
   }
 
@@ -243,12 +241,12 @@ export class InfoPanelComponent implements OnInit {
     // Unsubscribe subscription to prevent transaction
     // with subject on accident when re-init next time
     this.graphDataSubscription.unsubscribe();
-    this.formSubscription.unsubscribe();    
+    this.formSubscription.unsubscribe();
   }
 
   reset() {
     // reset everything of component's members
-    this.graph_data = {
+    this.graphData = {
       id: '',
       label: '',
       group: '',
@@ -257,11 +255,11 @@ export class InfoPanelComponent implements OnInit {
     };
 
     this.pauseForm = true;
-    this.entity_form.setControl(
+    this.entityForm.setControl(
       'edges',
       new FormArray([])
     );
-    this.entity_form.reset();
+    this.entityForm.reset();
     this.pauseForm = false;
 
     this.changeSize('maximized');
@@ -272,12 +270,12 @@ export class InfoPanelComponent implements OnInit {
    * is showcasing ..
    */
   delete() {
-    const id = this.graph_data.id;
+    const id = this.graphData.id;
 
     // push changes to app.component.ts
     this.dataFlow.pushGraphUpdate({
       event: 'delete',
-      type: this.entity_type,
+      type: this.entityType,
       data: {
         id
       }
@@ -294,7 +292,7 @@ export class InfoPanelComponent implements OnInit {
     this.pauseForm = true;
 
     // add form control to modify edge
-    (this.entity_form.controls['edges'] as FormArray).push(
+    (this.entityForm.controls.edges as FormArray).push(
       new FormGroup({
         to: new FormControl(
           null
@@ -312,17 +310,17 @@ export class InfoPanelComponent implements OnInit {
 
   /**
    * Delete the edge that is part of the node
-   * @param form 
-   * @param i 
+   * @param form the form control to manipulate
+   * @param i the index of the edge to remove
    */
   deleteEdge(form, i) {
-    let edge = form.value;
+    const edge = form.value;
 
     // remove form control
-    (this.entity_form.controls['edges'] as FormArray).removeAt(i);
+    (this.entityForm.controls.edges as FormArray).removeAt(i);
 
     // remove from information dislay
-    this.graph_data.edges = this.graph_data.edges.filter(
+    this.graphData.edges = this.graphData.edges.filter(
       e => e.id !== edge.id
     );
 
@@ -336,9 +334,9 @@ export class InfoPanelComponent implements OnInit {
     });
   }
 
-  changeSize(paletteMode=null) {
+  changeSize(paletteMode = null) {
 
-    if (paletteMode) this.paletteMode = paletteMode;
+    if (paletteMode) { this.paletteMode = paletteMode; }
 
     switch (this.paletteMode) {
       case 'minimized':
@@ -347,33 +345,33 @@ export class InfoPanelComponent implements OnInit {
         }, 500, () => {
           this.paletteMode = 'normal';
         });
-        break;        
+        break;
       case 'normal':
         $('#info-panel').animate({
           height: '80vh'
         }, 500, () => {
           this.paletteMode = 'maximized';
-        });         
+        });
         break;
       case 'maximized':
         $('#info-panel').animate({
           height: '52px'
         }, 500, () => {
           this.paletteMode = 'minimized';
-        });    
+        });
         break;
       default:
         break;
-    } 
+    }
   }
 
-  goToLink(){
-    let hyperlink:string = this.entity_form.value['hyperlink'];
+  goToLink() {
+    const hyperlink: string = this.entityForm.value.hyperlink;
 
     if (
       hyperlink.includes('http')
     ) {
-      window.open(hyperlink, "_blank");
+      window.open(hyperlink, '_blank');
     } else {
       window.open('http://' + hyperlink);
     }
