@@ -31,7 +31,7 @@ def upload_pdf():
             'status': 'Successfully uploaded'
         })
     except:
-        return abort(400, 'File was unable to upload. Make sure is an PDF and was sent to this endpoint')
+        return abort(400, 'File was unable to upload, please try again and make sure the file is a PDF.')
 
 
 @bp.route('/list', methods=['GET'])
