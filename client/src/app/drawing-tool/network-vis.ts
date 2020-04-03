@@ -22,7 +22,8 @@ export class NetworkVis {
   /** Rendering options for network graph */
   options = {
     interaction: {
-      hover: true
+      hover: true,
+      multiselect: true
     },
     edges: {
       arrows: {
@@ -59,10 +60,10 @@ export class NetworkVis {
        group_styling[n_t.label] = {
          borderWidth: 0,
          color: {
-           background: n_t.color
+           background: 'rgba(0, 0, 0, 0)'
          },
          font: {
-           color: '#fff'
+           color: n_t.color
          }
        }
      }
