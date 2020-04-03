@@ -1,22 +1,27 @@
 const node_templates = [
   {
     label: 'gene',
-    color: '#9467bd',
+    color: '#673ab7',
     background: '#8f7cbf'
   },
   {
     label: 'disease',
-    color: '#ff7f0e',
+    color: '#ff9800',
     background: '#FAE0B8'
   },
   {
     label: 'chemical',
-    color: '#2ca02c',
+    color: '#4caf50',
     background: '#CEE5CB'
   },
   {
+    label: 'mutation',
+    color: '#5d4037',
+    background: '#fff'
+  },
+  {
     label: 'species',
-    color: '#1f77b4',
+    color: '#0277bd',
     background: '#97badb'
   },
   {
@@ -46,11 +51,6 @@ const node_templates = [
   },
   {
     label: 'phenotype',
-    color: '#8c564b',
-    background: '#fff'
-  },
-  {
-    label: 'mutation',
     color: '#edc949',
     background: '#fff'
   }
