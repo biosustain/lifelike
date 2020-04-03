@@ -277,6 +277,16 @@ def gas_gangrene_with_associations_and_references(
         sentence='Toxin suppression and rapid bacterial killing may...',
     )
 
+    # Publication Nodes
+    penicillins_to_gas_gangrene_publication_node1 = Node(
+        'Publication',
+        id=1,
+    )
+    penicillins_to_gas_gangrene_publication_node2 = Node(
+        'Publication',
+        id=2,
+    )
+
     # Entity -> Association Relationships
     pomc_to_association_edge = Relationship(
         pomc, 'HAS_ASSOCIATION', pomc_to_gas_gangrene_association_node,
@@ -321,6 +331,17 @@ def gas_gangrene_with_associations_and_references(
     )
     tx.create(penicillins_alleviates_reduces_association_to_reference_edge)
     tx.create(penicillins_treatment_association_to_reference_edge)
+
+    # Reference -> Publication Relationships
+    penicillins_alleviates_reduces_reference_to_publication_edge = Relationship(
+        penicillins_to_gas_gangrene_reference_node1, 'HAS_PUBLICATION', penicillins_to_gas_gangrene_publication_node1  # noqa
+    )
+
+    penicillins_treatment_reference_to_publication_edge = Relationship(
+        penicillins_to_gas_gangrene_reference_node2, 'HAS_PUBLICATION', penicillins_to_gas_gangrene_publication_node2  # noqa
+    )
+    tx.create(penicillins_alleviates_reduces_reference_to_publication_edge)
+    tx.create(penicillins_treatment_reference_to_publication_edge)
 
     tx.commit()
 

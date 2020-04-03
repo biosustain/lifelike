@@ -1,7 +1,10 @@
 import pytest
 
 
-def test_expand_node_gets_no_results_for_node_with_no_relationships(neo4j_service_dao, gas_gangrene):  # noqa
+def test_expand_node_gets_no_results_for_node_with_no_relationships(
+    neo4j_service_dao,
+    gas_gangrene
+):
     expand_query_result = neo4j_service_dao.expand_graph(
         node_id=gas_gangrene.identity,
         limit=1,
@@ -40,7 +43,7 @@ def test_get_snippets_from_edge_returns_nothing_for_relationship_with_no_referen
 
     assert get_snippets_from_edge_result is not None
     assert get_snippets_from_edge_result.association == 'role in disease pathogenesis'
-    assert len(get_snippets_from_edge_result.references) == 0
+    assert len(get_snippets_from_edge_result.snippets) == 0
 
 
 def test_get_snippets_from_edge_can_get_references_for_relationship(
@@ -54,8 +57,11 @@ def test_get_snippets_from_edge_can_get_references_for_relationship(
 
     assert get_snippets_from_edge_result is not None
     assert get_snippets_from_edge_result.association == 'alleviates, reduces'
-    assert len(get_snippets_from_edge_result.references) == 1
-    assert 'In a mouse model' in get_snippets_from_edge_result.references[0]['sentence']
+    assert len(get_snippets_from_edge_result.snippets) == 1
+
+    reference_node = get_snippets_from_edge_result.snippets[0].reference.to_dict()
+
+    assert 'In a mouse model' in reference_node['data']['sentence']
 
 
 def test_get_snippets_from_duplicate_edge_returns_nothing_for_relationship_with_no_references(
@@ -69,7 +75,7 @@ def test_get_snippets_from_duplicate_edge_returns_nothing_for_relationship_with_
 
     assert get_snippets_from_duplicate_edge_result is not None
     assert get_snippets_from_duplicate_edge_result.association == 'role in disease pathogenesis'
-    assert len(get_snippets_from_duplicate_edge_result.references) == 0
+    assert len(get_snippets_from_duplicate_edge_result.snippets) == 0
 
 
 def test_get_snippets_from_duplicate_edge_can_get_references_for_relationship(
@@ -83,8 +89,11 @@ def test_get_snippets_from_duplicate_edge_can_get_references_for_relationship(
 
     assert get_snippets_from_duplicate_edge_result is not None
     assert get_snippets_from_duplicate_edge_result.association == 'alleviates, reduces'
-    assert len(get_snippets_from_duplicate_edge_result.references) == 1
-    assert 'In a mouse model' in get_snippets_from_duplicate_edge_result.references[0]['sentence']
+    assert len(get_snippets_from_duplicate_edge_result.snippets) == 1
+
+    reference_node = get_snippets_from_duplicate_edge_result.snippets[0].reference.to_dict()
+
+    assert 'In a mouse model' in reference_node['data']['sentence']
 
 
 def test_get_reference_table_data(
