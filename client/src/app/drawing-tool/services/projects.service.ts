@@ -15,8 +15,8 @@ import {
 } from './interfaces';
 
 import {
-  uti_project,
-  microbiome_project
+  utiProject,
+  microbiomeProject
 } from './mock_data';
 
 
@@ -25,7 +25,7 @@ import {
 })
 export class ProjectsService {
 
-  projects:Project[] = [uti_project, microbiome_project];
+  projects:Project[] = [utiProject, microbiomeProject];
 
   base_url = environment.apiUrl;
 

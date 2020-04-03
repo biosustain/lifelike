@@ -1,4 +1,4 @@
-const node_templates = [
+const nodeTemplates = [
   {
     label: 'gene',
     color: 'rgb(86,58,159)',
@@ -34,8 +34,8 @@ const node_templates = [
     color: '#000',
     background: '#bdbdbd'
   }
-]
+];
 
 export {
-  node_templates
-}
+  nodeTemplates
+};
