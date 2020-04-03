@@ -22,8 +22,6 @@ Thumbs.db
 !.vscode/launch.json
 !.vscode/extensions.json
 
-# .env Files (to protect secrets)
-*.env
 
 # ignore db files
 db/*/*
@@ -47,3 +45,6 @@ terraform-gcloud.json
 
 # .idea folder
 .idea/
+
+#virtual environments
+.venv/
