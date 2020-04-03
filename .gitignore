@@ -24,7 +24,10 @@ Thumbs.db
 
 
 # ignore db files
-db/*/*
+neo4j/data/databases/graph.db/*
+neo4j/data/databases/store_lock
+neo4j/data/dbms/*
+neo4j/logs/*
 postgres/
 !postgres/.gitkeep
 
