@@ -48,3 +48,4 @@ terraform-gcloud.json
 
 #virtual environments
 .venv/
+outputs/
