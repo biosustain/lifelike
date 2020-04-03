@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpRequest, HttpHandler } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { environment } from '../../../environments/environment';
-import { Observable } from 'rxjs';
+import { Observable, throwError } from 'rxjs';
 import { tap, catchError, switchMap } from 'rxjs/operators';
 import { HttpInterceptor} from '@angular/common/http';
 
@@ -39,7 +39,7 @@ export class AuthenticationService implements HttpInterceptor {
               );
             }
 
-            return Observable.throw(err);
+            return throwError(err);
           }
         )
       );
