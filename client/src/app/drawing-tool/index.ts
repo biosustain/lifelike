@@ -22,4 +22,4 @@ export {
   LoginComponent,
   PdfViewerComponent,
   PendingChangesGuard,
-}
+};

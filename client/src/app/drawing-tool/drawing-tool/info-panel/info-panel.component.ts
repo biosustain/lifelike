@@ -378,6 +378,6 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
   }
 
   blurInput(e: Event) {
-    (e.srcElement as HTMLElement).blur();
+    (e.target as HTMLElement).blur();
   }
 }
