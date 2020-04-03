@@ -9,7 +9,7 @@ import { DataFlowService, DragDropEventFactory } from '../services';
 
 declare const viewport;
 
-describe('DrawingToolComponent', () => {
+xdescribe('DrawingToolComponent', () => {
   const mockup = {
     id: 'test',
     label: '',
