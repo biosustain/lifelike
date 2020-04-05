@@ -1,9 +1,40 @@
+import hashlib
 import os
+
 from flask import g
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
 from py2neo import Graph
+from sqlalchemy import MetaData, Table, UniqueConstraint
+
+
+def trunc_long_constraint_name(name: str) -> str:
+    if (len(name) > 59):
+        truncated_name = name[:55] + '_' + \
+            hashlib.md5(name[55:].encode('utf-8')).hexdigest()[:4]
+        return truncated_name
+    return name
+
+
+def uq_trunc(unique_constraint: UniqueConstraint, table: Table):
+    tokens = [table.name] + [
+        column.name
+        for column in unique_constraint.columns
+    ]
+    return trunc_long_constraint_name('_'.join(tokens))
+
+
+convention = {
+    'uq_trunc': uq_trunc,
+    'ix': 'ix_%(column_0_label)s',
+    'uq': "uq_%(uq_trunc)s",
+    'ck': "ck_%(table_name)s_%(constraint_name)s",
+    'fk': "fk_%(table_name)s_%(column_0_name)s_%(referred_table_name)s",  # noqa
+    'pk': "pk_%(table_name)s"
+}
+
+metadata = MetaData(naming_convention=convention)
 
 # TODO: Set these in a more appropriate location
 # TODO: Handle database connection properly
@@ -12,9 +43,9 @@ graph = Graph(
     password=os.environ.get('NEO4J_USER')
 )
 
-db = SQLAlchemy()
+db = SQLAlchemy(metadata=metadata)
 ma = Marshmallow()
-migrate = Migrate()
+migrate = Migrate(compare_type=True)
 
 
 def get_neo4j_service_dao():
