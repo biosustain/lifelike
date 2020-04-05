@@ -1,4 +1,4 @@
-"""empty message
+"""Table schema for files.
 
 Revision ID: 59b6851c654e
 Revises: d9627f552779
