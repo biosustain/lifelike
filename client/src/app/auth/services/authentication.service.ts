@@ -2,9 +2,10 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpRequest, HttpHandler } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { environment } from '../../../environments/environment';
-import { Observable, throwError } from 'rxjs';
-import { tap, catchError, switchMap } from 'rxjs/operators';
+import { Observable } from 'rxjs';
+import { tap, map, catchError, switchMap } from 'rxjs/operators';
 import { HttpInterceptor} from '@angular/common/http';
+import { AppUser } from 'app/interfaces';
 
 
 @Injectable({
@@ -91,25 +92,26 @@ export class AuthenticationService implements HttpInterceptor {
       tap(resp => {
         localStorage.setItem('access_jwt', resp['access_jwt']);
         localStorage.setItem('refresh_jwt', resp['refresh_jwt']);
-      })    
+      })
     );
   }
-  
+
 
   /**
    * Authenticate users to get a JWT
    */
-  public login(email: string, password: string): Observable<Object> {
-    return this.http.post(
+  public login(email: string, password: string) {
+    return this.http.post<{user: AppUser, access_jwt: string, refresh_jwt: string}>(
       this.base_url + '/auth/login',
-      {email, password},
-      this.createHttpOptions()
+      {email_addr: email, password},
+      this.createHttpOptions(),
     ).pipe(
-      tap(resp => {
+      map((resp) => {
         localStorage.setItem('access_jwt', resp['access_jwt']);
         localStorage.setItem('refresh_jwt', resp['refresh_jwt']);
+        return resp;
       })
-    )
+    );
   }
 
   /**
@@ -119,6 +121,7 @@ export class AuthenticationService implements HttpInterceptor {
   public logout() {
     localStorage.removeItem('refresh_jwt');
     localStorage.removeItem('access_jwt');
-    this.route.navigateByUrl('/login');
+    // See ***ARANGO_USERNAME***-store module where this is set
+    localStorage.removeItem('auth');
   }
 }

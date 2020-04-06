@@ -5221,10 +5221,10 @@ ng-mocks@^9.0.0:
   resolved "https://registry.yarnpkg.com/ng-mocks/-/ng-mocks-9.0.0.tgz#2389e20a05e239053789f136d6b57e83558baa98"
   integrity sha512-YGg7n7F0okLnOFO6ulSXfNWHXx6tlpim2hXC55bGtczLavfUdaCRTOQUOsb37E2l5iOCaMRf2CiFZ8/EEgC1mA==
 
-ngrx-store-localstorage@8.0.0:
-  version "8.0.0"
-  resolved "https://registry.npmjs.org/ngrx-store-localstorage/-/ngrx-store-localstorage-8.0.0.tgz#da307a54188347803f68566ff927d20dcb9c810b"
-  integrity sha512-3AHqw1AeXDXU/Hgxlh5fjP/srgGuP8BJR2uQ6ViGLeKwMEQDZuQfwd8zu9+bPZcvIxbAcxjWoGCVJXYEkBlxmg==
+ngrx-store-localstorage@9.0.0:
+  version "9.0.0"
+  resolved "https://registry.yarnpkg.com/ngrx-store-localstorage/-/ngrx-store-localstorage-9.0.0.tgz#0d3652758065cc037507565bf05e7294aa1bc48c"
+  integrity sha512-F69yiNruZe9jgXcPykfbyKFuM/1JzL+wsBUM+TTfMDXIoaFO7xwuZF9yLG8zbvdglibtJ0OG2M8fy3oadWuV4A==
   dependencies:
     deepmerge "^3.2.0"
 
