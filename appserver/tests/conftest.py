@@ -31,7 +31,7 @@ from neo4japp.services import (
 )
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope='function')
 def app(request):
     """Session-wide test Flask application."""
     app = create_app('Functional Test Flask App', config='config.Testing')
