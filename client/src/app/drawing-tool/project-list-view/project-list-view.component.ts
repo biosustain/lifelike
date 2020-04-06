@@ -86,7 +86,7 @@ export class ProjectListViewComponent implements OnInit, AfterViewInit {
   /**
    * Project in focus
    */
-  selectedProject = null;
+  selectedProject: Project = null;
 
   /** vis ojbect to control network-graph vis */
   visGraph: NetworkVis = null;
@@ -117,6 +117,12 @@ export class ProjectListViewComponent implements OnInit, AfterViewInit {
     if (!this.focusedEntity) return null;
     
     return this.focusedEntity['node_data'];
+  }
+
+  get emptyGraph() {
+    if (!this.selectedProject) return true;
+
+    return this.selectedProject.graph.nodes.length ? false : true;
   }
   
   constructor(
