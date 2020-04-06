@@ -1,7 +1,4 @@
 import { NgModule } from '@angular/core';
-import {
-  HTTP_INTERCEPTORS
-} from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { BrowserModule } from '@angular/platform-browser';
 import { DragDropModule } from '@angular/cdk/drag-drop';
@@ -42,12 +39,9 @@ import {
 } from './pipes';
 
 import {
-  AuthenticationService
-} from './services'
-
-import {
   PendingChangesGuard
 } from './guards';
+import { DrawingToolContextMenuComponent } from './drawing-tool/drawing-tool-context-menu/drawing-tool-context-menu.component';
 import { PaletteComponent } from './drawing-tool/palette/palette.component';
 import { InfoPanelComponent } from './drawing-tool/info-panel/info-panel.component';
 import { PdfViewerDirective } from './pdf-viewer/pdf-viewer.directive';
@@ -59,6 +53,7 @@ import { PdfViewerDirective } from './pdf-viewer/pdf-viewer.directive';
     DeleteProjectDialogComponent,
     CopyProjectDialogComponent,
     DrawingToolComponent,
+    DrawingToolContextMenuComponent,
     PdfViewerComponent,
     LoginComponent,
     TruncatePipe,
