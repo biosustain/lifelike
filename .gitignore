@@ -22,11 +22,12 @@ Thumbs.db
 !.vscode/launch.json
 !.vscode/extensions.json
 
-# .env Files (to protect secrets)
-*.env
 
 # ignore db files
-db/*/*
+neo4j/data/databases/graph.db/*
+neo4j/data/databases/store_lock
+neo4j/data/dbms/*
+neo4j/logs/*
 postgres/
 !postgres/.gitkeep
 
@@ -49,3 +50,7 @@ terraform-gcloud.json
 
 # .idea folder
 .idea/
+
+#virtual environments
+.venv/
+outputs/
