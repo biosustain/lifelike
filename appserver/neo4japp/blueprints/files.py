@@ -16,17 +16,16 @@ OUTPUT_PATH = 'files/output/'
 
 @bp.route('/upload', methods=['POST'])
 def upload_pdf():
-    file = request.files['file'].read()
+    pdf = request.files['file'].read()
     username = request.form['user']
-    creation_date = datetime.now()
     filename = secure_filename(request.files['file'].filename)
-    id = str(uuid.uuid4())
+    file_id = str(uuid.uuid4())
     try:
-        files = Files(id, filename, file, username, creation_date)
-        db.session.add(files)
+        data = Files(file_id, filename, pdf, username, [])
+        db.session.add(data)
         db.session.commit()
         return jsonify({
-            'id': id,
+            'id': file_id,
             'filename': filename,
             'status': 'Successfully uploaded'
         })
@@ -38,17 +37,18 @@ def upload_pdf():
 def list_files():
     files = [{
         'id': row.id,
+        'file_id': row.file_id,
         'filename': row.filename,
         'username': row.username,
         'creation_date': row.creation_date,
-    } for row in db.session.query(Files.id, Files.filename, Files.username, Files.creation_date).all()]
+    } for row in db.session.query(Files.id, Files.file_id, Files.filename, Files.username, Files.creation_date).all()]
     return jsonify({'files': files})
 
 
 @bp.route('/get_pdf/<id>', methods=['GET'])
 def get_pdf(id):
     OUTPUT_PATH = os.path.abspath(os.getcwd()) + '/outputs/'
-    file, filename = db.session.query(Files.file, Files.filename).filter(Files.id == id).one()
+    file, filename = db.session.query(Files.raw_file, Files.filename).filter(Files.file_id == id).one()
     file_full_path = OUTPUT_PATH + filename
     #TODO: Remove writing in filesystem part, this is not needed should be tackle in next version
     write_file(file, file_full_path)
