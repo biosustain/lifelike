@@ -1,5 +1,5 @@
 import { NgModule } from '@angular/core';
-import { 
+import {
   HTTP_INTERCEPTORS
 } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
@@ -25,7 +25,7 @@ import {
 import {
   CopyProjectDialogComponent
 } from './project-list-view/copy-project-dialog/copy-project-dialog.component';
-import { 
+import {
   DrawingToolComponent
 } from './drawing-tool/drawing-tool.component';
 import {
@@ -36,7 +36,7 @@ import {
 } from './login/login.component';
 
 
-import { 
+import {
   TruncatePipe,
   FriendlyDateStrPipe
 } from './pipes';
