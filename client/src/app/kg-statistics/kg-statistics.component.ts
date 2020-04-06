@@ -4,6 +4,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { HttpClient } from '@angular/common/http';
 import { ChartOptions, ChartDataSets } from 'chart.js';
 import { SingleDataSet } from 'ng2-charts';
+import * as pluginDataLabels from 'chartjs-plugin-datalabels';
 
 interface StatisticsDataResponse {
   [domain: string]: {
@@ -83,6 +84,16 @@ export class KgStatisticsComponent implements OnInit, OnDestroy {
           fontSize: 14
         }
       }]
+    },
+    plugins: {
+      datalabels: {
+        anchor: 'end',
+        offset: -4,
+        align: 'end',
+        font: {
+          size: 14
+        }
+      }
     }
   };
   pieChartOptions: ChartOptions = {
@@ -92,8 +103,16 @@ export class KgStatisticsComponent implements OnInit, OnDestroy {
       labels: {
         fontSize: 16
       }
+    },
+    plugins: {
+      datalabels: {
+        font: {
+          size: 14
+        }
+      }
     }
   };
+  chartPlugins = [pluginDataLabels];
   subscription: Subscription;
   isLoading = true;
   hasFetchError = false;
