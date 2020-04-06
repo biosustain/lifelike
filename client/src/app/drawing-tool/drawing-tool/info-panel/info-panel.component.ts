@@ -79,6 +79,15 @@ export class InfoPanelComponent implements OnInit {
   node_bank: VisNetworkGraphNode[] = [];
   node_bank_dict: {[hash: string]: Object} = {};
 
+  /** Whether or not show all edges */
+  edgeCollapsed: boolean = false;
+
+  get edgeListStyle() {
+    return {
+      collapsed: this.edgeCollapsed
+    }
+  }
+
   /**
    * Return true or false if any edges exist
    */
@@ -246,6 +255,17 @@ export class InfoPanelComponent implements OnInit {
     this.formSubscription.unsubscribe();    
   }
 
+  /**
+   * 
+   */
+  toggleCollapsible() {
+    console.log('haha')
+    this.edgeCollapsed = !this.edgeCollapsed;
+  }
+
+  /**
+   * Reset info-panel to a clean state
+   */
   reset() {
     // reset everything of component's members
     this.graph_data = {
@@ -255,6 +275,8 @@ export class InfoPanelComponent implements OnInit {
       edges: [],
       hyperlink: ''
     };
+
+    this.edgeCollapsed = false;
 
     this.pauseForm = true;
     this.entity_form.setControl(
@@ -291,6 +313,8 @@ export class InfoPanelComponent implements OnInit {
    * Add edge to through FormControl
    */
   addEdge() {
+    this.edgeCollapsed = false;
+            
     this.pauseForm = true;
 
     // add form control to modify edge

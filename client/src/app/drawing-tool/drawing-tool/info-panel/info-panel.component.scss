@@ -14,10 +14,27 @@ mat-icon {
     cursor: pointer;
 }
 
+p.collapsible {
+    cursor: pointer;
+}
+
 button.delete {
     width: 100%;
     margin-top: auto;
     margin-bottom: 0.5rem;
     margin-left: auto;
     margin-right: auto;
+}
+
+#edge-list {
+    display: block;
+    margin-bottom: 1rem;
+    max-height: 600px;
+    overflow-y: scroll;
+    transition: max-height 0.4s ease;
+}
+
+#edge-list.collapsed {
+    max-height: 0px;
+    transition: max-height 0.3s ease-in-out;
 }

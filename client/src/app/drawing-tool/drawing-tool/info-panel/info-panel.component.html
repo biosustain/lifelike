@@ -43,7 +43,13 @@
         <div 
             *ngIf='isNode'
             class='flex' style="flex-wrap: wrap;">
-            <p class='blue'>Edges</p>
+            <p 
+                matTooltip='Click to collapse/uncollapse'
+                matTooltipPosition="right"
+                (click)='toggleCollapsible()'
+                class='blue dim collapsible'>
+                Edges
+            </p>
             <button 
                 (click)='addEdge()'
                 mat-button color="primary" 
@@ -57,7 +63,10 @@
             </p>
         </div>
 
-        <div *ngIf='isNode'>
+        <div 
+            *ngIf='isNode'
+            [ngClass]='edgeListStyle'
+            id='edge-list'>
             <div 
                 formArrayName='edges'
                 *ngFor="let edge of edgeFormArr.controls; let i = index;"
