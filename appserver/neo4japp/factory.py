@@ -16,7 +16,7 @@ BLUEPRINT_OBJNAME = 'bp'
 cache = Cache()
 
 
-def create_app(name = 'neo4japp', config = 'config.Development'):
+def create_app(name='neo4japp', config='config.Development'):
     app = Flask(name)
     app.config.from_object(config)
 
