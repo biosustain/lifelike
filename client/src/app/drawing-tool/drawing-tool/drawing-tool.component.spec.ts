@@ -2,7 +2,7 @@ import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { APP_BASE_HREF } from '@angular/common';
 import { DrawingToolComponent } from './drawing-tool.component';
 
-import { MockupModule } from '../mockup.module';
+import { DrawingToolModule } from '../drawing-tool.module';
 import { DataFlowService, DragDropEventFactory, ContainerModel } from '../services';
 import { Project } from '../services/interfaces'
 import { By } from 'protractor';
@@ -67,7 +67,7 @@ describe('DrawingToolComponent', () => {
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       imports: [
-        MockupModule
+        DrawingToolModule
       ],
       providers: [
         {provide: APP_BASE_HREF, useValue : '/' }

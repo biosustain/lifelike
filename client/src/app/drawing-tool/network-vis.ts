@@ -22,7 +22,8 @@ export class NetworkVis {
   /** Rendering options for network graph */
   options = {
     interaction: {
-      hover: true
+      hover: true,
+      multiselect: true,
     },
     edges: {
       arrows: {
@@ -46,9 +47,9 @@ export class NetworkVis {
   }
 
   /**
-   * 
-   * @param {HTMLElement} container - 
-   * The container DOM to inject graph in 
+   *
+   * @param {HTMLElement} container -
+   * The container DOM to inject graph in
    */
   constructor(container: HTMLElement) {
     this.container = container;
@@ -83,8 +84,8 @@ export class NetworkVis {
   /**
    * Draw network graph on canvas in container
    * with edges and nodes specified
-   * @param nodes 
-   * @param edges 
+   * @param nodes
+   * @param edges
    */
   draw(
     nodes=[],
@@ -113,9 +114,9 @@ export class NetworkVis {
 
   /**
    * Add edge to network graph
-   * @param source_id 
-   * @param target_id 
-   * @param label 
+   * @param source_id
+   * @param target_id
+   * @param label
    */
   addEdge(source_id, target_id, label='') {
     var e = {
@@ -124,9 +125,9 @@ export class NetworkVis {
       to: target_id,
       id: uuidv4()
     };
-    
+
     this.vis_edges.add([e]);
-    
+
     return e;
   }
 
@@ -150,13 +151,13 @@ export class NetworkVis {
       ...data
     });
   }
-  
+
   /**
    * Add node with initial data to network graph
    * at specific coordinate
-   * @param data 
-   * @param x 
-   * @param y 
+   * @param data
+   * @param x
+   * @param y
    */
   addNode(data={}, x=10, y=10): VisNetworkGraphNode {
 
@@ -172,16 +173,16 @@ export class NetworkVis {
     n.data = {
       hyperlink: n['hyperlink'] || ''
     }
-    
+
     var updated = this.vis_nodes.add([n]);
-    
+
     return n;
   }
 
   /**
    * Remove node from network graph along with
    * edges it connected to by its id
-   * @param id 
+   * @param id
    */
   removeNode(id) {
     this.vis_nodes.remove(id);
@@ -200,8 +201,8 @@ export class NetworkVis {
 
   /**
    * Update a node by it's id and data
-   * @param id 
-   * @param data 
+   * @param id
+   * @param data
    */
   updateNode(id, data) {
     this.vis_nodes.update({
@@ -237,7 +238,7 @@ export class NetworkVis {
         return item.id !== id;
       }
     });
-    
+
     return {
       node_data,
       other_nodes
@@ -246,7 +247,7 @@ export class NetworkVis {
 
   /**
    * Return an edge's detail by it's id
-   * @param id 
+   * @param id
    */
   getEdge(id) {
     var edge_data = this.vis_edges.get(id);
