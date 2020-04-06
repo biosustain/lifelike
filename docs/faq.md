@@ -26,7 +26,7 @@ docker-compose run client yarn install
 We could have also used `yarn install` locally, but this poses an issue when we go and mount our volume on Docker if our operating system is not Linux (e.g. if we're using Windows or Mac). Our client container will end up using the incorrect binaries, so by installing through Docker, we ensure we get the correct binaries.
 
 __Step 2__
-Extract the development Neo4j database found under [here](../db/text-mining-subset-graphdb.tar.gz).
+Extract the development Neo4j database found under [here](../neo4j/data/databases/text-mining-subset-graphdb.tar.gz).
 - Run `docker-compose up database`; you will now see some new folders such as `data`
 - Run `docker-compose down`
 - Go into `data/databases` and delete the `graph.db`
