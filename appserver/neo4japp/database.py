@@ -83,6 +83,28 @@ def get_account_service():
     return g.account_service
 
 
+def get_annotations_service():
+    if 'annotations_service' not in g:
+        from neo4japp.services.annotations import AnnotationsService, LMDBDao
+        lmdb_dao = LMDBDao()
+        g.annotations_service = AnnotationsService(lmdb_session=lmdb_dao)
+    return g.annotations_service
+
+
+def get_token_extractor_service():
+    if 'token_extractor_service' not in g:
+        from neo4japp.services.annotations import TokenExtractor
+        g.token_extractor_service = TokenExtractor()
+    return g.token_extractor_service
+
+
+def get_bioc_document_service():
+    if 'bioc_document_service' not in g:
+        from neo4japp.services.annotations import BiocDocumentService
+        g.bioc_document_service = BiocDocumentService()
+    return g.bioc_document_service
+
+
 def reset_dao():
     """ Cleans up DAO bound to flask request context
 
@@ -94,7 +116,10 @@ def reset_dao():
         'user_file_import_service',
         'search_dao',
         'authorization_service',
-        'account_service'
+        'account_service',
+        'annotations_service',
+        'token_extractor_service',
+        'bioc_document_service',
     ]:
         if dao in g:
             g.pop(dao)
