@@ -1,4 +1,4 @@
-<div class="container">
+<div class="container" fxFlexFill>
   <mat-progress-bar mode="indeterminate" *ngIf="isLoading; else dashboards"></mat-progress-bar>
   <ng-template #dashboards>
     <div *ngIf="!hasFetchError" fxLayout="column" fxLayoutGap="28px">
