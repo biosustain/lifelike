@@ -2,57 +2,57 @@ const node_templates = [
   {
     label: 'gene',
     color: '#673ab7',
-    background: '#8f7cbf'
+    background: '#d0c1eb'
   },
   {
     label: 'disease',
     color: '#ff9800',
-    background: '#FAE0B8'
+    background: '#ffe0b2'
   },
   {
     label: 'chemical',
     color: '#4caf50',
-    background: '#CEE5CB'
+    background: '#c8e7ca'
   },
   {
     label: 'mutation',
     color: '#5d4037',
-    background: '#fff'
+    background: '#d6c1ba'
   },
   {
     label: 'species',
     color: '#0277bd',
-    background: '#97badb'
+    background: '#a0dafd'
   },
   {
     label: 'observation',
     color: '#d62728',
-    background: '#ff6659'
+    background: '#f3bdbe'
   },
   {
     label: 'study',
     color: '#17becf',
-    background: '#4fb3bf'
+    background: '#b3f0f6'
   },
   {
     label: 'entity',
     color: '#7f7f7f',
-    background: '#bdbdbd'
+    background: '#d8d8d8'
   },
   {
     label: 'protein',
     color: '#bcbd22',
-    background: '#fff'
+    background: '#f1f1b6'
   },
   {
     label: 'pathway',
     color: '#e377c2',
-    background: '#fff'
+    background: '#f6d6ec'
   },
   {
     label: 'phenotype',
     color: '#edc949',
-    background: '#fff'
+    background: '#f9eec8'
   }
 ]
 export {
