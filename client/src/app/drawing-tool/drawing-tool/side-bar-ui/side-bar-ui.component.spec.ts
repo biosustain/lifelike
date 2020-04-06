@@ -1,12 +1,12 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { APP_BASE_HREF } from '@angular/common';
 
-import { DrawingToolModule } from '../drawing-tool.module';
-import { PdfViewerComponent } from './pdf-viewer.component';
+import { SideBarUiComponent } from './side-bar-ui.component';
+import { DrawingToolModule } from '../../drawing-tool.module';
 
-describe('PdfViewerComponent', () => {
-  let component: PdfViewerComponent;
-  let fixture: ComponentFixture<PdfViewerComponent>;
+describe('SideBarUiComponent', () => {
+  let component: SideBarUiComponent;
+  let fixture: ComponentFixture<SideBarUiComponent>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
@@ -21,7 +21,7 @@ describe('PdfViewerComponent', () => {
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(PdfViewerComponent);
+    fixture = TestBed.createComponent(SideBarUiComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

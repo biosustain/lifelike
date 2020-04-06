@@ -32,6 +32,12 @@ export class UserFileImportColumnRelationshipMappingRowComponent {
         this.disableRelationshipDropdown = false;
     }
 
+    getKey(c) {
+        if (c !== null) {
+            return c[0].key;
+        }
+    }
+
     deleteMappingRow() {
         this.deleteMapping.emit(true);
     }
