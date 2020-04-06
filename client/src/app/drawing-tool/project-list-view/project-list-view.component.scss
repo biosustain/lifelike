@@ -139,6 +139,22 @@ $dark-blue: #3177B8;
     width: 75%;
     height: 100vh;
 
+    #empty-graph {
+      width: 100%;
+      height: 70vh;
+      position: relative;
+
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+
+      p {
+        font-size: 2.25rem;
+        color: #707070;
+      }
+    }
+
     #canvas-container {
       width: 100%;
       height: 70vh;
