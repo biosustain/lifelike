@@ -6,3 +6,6 @@ Dockerfile
 **/services/annotations/lmdb/**/*.mdb
 **/services/annotations/datasets/*.csv
 **/services/annotations/datasets/*.tsv
+**/*.tar.ggz
+**/*.env
+*.git*
