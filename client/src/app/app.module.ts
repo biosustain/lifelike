@@ -8,6 +8,7 @@ import { AdminModule } from 'app/admin/admin.module';
 import { AuthModule } from 'app/auth/auth.module';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
+import { LifelikeHomeModule } from 'app/home/lifelike-home.module';
 import { UserFileImportModule } from './user-file-import/user-file-import.module';
 import { VisualizationModule } from './visualization/visualization.module';
 import { SearchModule } from './search/search.module';
@@ -29,6 +30,7 @@ import { FileBrowserComponent } from './file-browser/file-browser.component';
     HttpClientModule,
     UserFileImportModule,
     VisualizationModule,
+    LifelikeHomeModule,
     // ngrx
     RootStoreModule,
     VisualizationModule,
