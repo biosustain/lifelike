@@ -19,7 +19,7 @@
         <mat-option
           *ngFor="let column of columnHeaders"
           [value]="column"
-        >{{ (column | keyvalue)[0].key }}</mat-option>
+        >{{ getKey((column | keyvalue)) }}</mat-option>
       </mat-select>
     </mat-form-field>
 
@@ -32,7 +32,7 @@
         <mat-option
           *ngFor="let column of columnHeaders"
           [value]="column"
-        >{{ (column | keyvalue)[0].key }}</mat-option>
+        >{{ getKey((column | keyvalue)) }}</mat-option>
       </mat-select>
     </mat-form-field>
 
