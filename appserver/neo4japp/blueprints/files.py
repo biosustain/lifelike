@@ -7,6 +7,7 @@ from neo4japp.database import db
 from flask import jsonify
 import os
 import json
+from neo4japp.blueprints.auth import auth
 
 bp = Blueprint('files', __name__, url_prefix='/files')
 ALLOWED_EXTENSIONS = {'pdf'}
@@ -15,6 +16,7 @@ OUTPUT_PATH = 'files/output/'
 
 
 @bp.route('/upload', methods=['POST'])
+@auth.login_required
 def upload_pdf():
     pdf = request.files['file'].read()
     username = request.form['user']
@@ -34,6 +36,7 @@ def upload_pdf():
 
 
 @bp.route('/list', methods=['GET'])
+@auth.login_required
 def list_files():
     files = [{
         'id': row.id,
@@ -46,6 +49,7 @@ def list_files():
 
 
 @bp.route('/get_pdf/<id>', methods=['GET'])
+@auth.login_required
 def get_pdf(id):
     OUTPUT_PATH = os.path.abspath(os.getcwd()) + '/outputs/'
     file, filename = db.session.query(Files.raw_file, Files.filename).filter(Files.file_id == id).one()
