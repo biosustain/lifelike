@@ -1,26 +1,35 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { MockupModule } from '../../mockup.module';
+import { configureTestSuite } from 'ng-bullet';
+
+import { RootStoreModule } from 'app/root-store';
+import { SharedModule } from 'app/shared/shared.module';
+
 import { PaletteComponent } from './palette.component';
 
 describe('PaletteComponent', () => {
-  let component: PaletteComponent;
-  let fixture: ComponentFixture<PaletteComponent>;
+    let component: PaletteComponent;
+    let fixture: ComponentFixture<PaletteComponent>;
 
-  beforeEach(async(() => {
-    TestBed.configureTestingModule({
-      imports: [ MockupModule ]
-    })
-    .compileComponents();
-  }));
+    configureTestSuite(() => {
+        TestBed.configureTestingModule({
+            declarations: [
+                PaletteComponent,
+            ],
+            imports: [
+                RootStoreModule,
+                SharedModule,
+            ]
+        });
+    });
 
-  beforeEach(() => {
-    fixture = TestBed.createComponent(PaletteComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-  });
+    beforeEach(() => {
+        fixture = TestBed.createComponent(PaletteComponent);
+        component = fixture.componentInstance;
+        fixture.detectChanges();
+    });
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
-  });
+    it('should create', () => {
+        expect(component).toBeTruthy();
+    });
 });
