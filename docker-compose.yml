@@ -4,17 +4,17 @@ services:
     pgdatabase:
         command: postgres -c max_wal_size=2GB -c log_statement='all'
         container_name: pg-database
-        image: postgres:10.2
+        image: postgres:11
+        environment:
+            - POSTGRES_PASSWORD=postgres
         networks:
             - backend
         ports:
             - "5431:5432"
-        volumes:
-            -  ./postgres/db:/var/lib/postgresql/data
 
     database:
-        container_name: n4j-database
         image: neo4j:3.5.14
+        container_name: n4j-database
         ports:
             - "7474:7474"
             - "7687:7687"

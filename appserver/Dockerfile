@@ -1,6 +1,7 @@
 FROM fedora:32
 
-RUN dnf install postgresql graphviz python-pip which -y
+RUN dnf install postgresql graphviz python-pip which -y && \
+    ln -s /usr/bin/python3 /usr/bin/python
 
 ENV N4J_USER n4j
 ENV N4J_HOME /home/$N4J_USER
