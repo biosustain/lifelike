@@ -18,6 +18,7 @@ OUTPUT_PATH = 'files/output/'
 @bp.route('/upload', methods=['POST'])
 @auth.login_required
 def upload_pdf():
+
     pdf = request.files['file'].read()
     username = request.form['user']
     filename = secure_filename(request.files['file'].filename)
