@@ -57,13 +57,21 @@
       (click)='createProject()'>
       <mat-icon>add</mat-icon>
     </button>
-  </div>
+  </div>  
   <!-- Map Preview Panel -->
   <div
     *ngIf='selectedProject else empty;'
     id='map-preview'
     class=''>
-    <div id='canvas-container'>
+    <!-- Empty Graph -->
+    <div 
+      *ngIf='emptyGraph'
+      id='empty-graph'>
+      <p>Empty Graph</p>
+    </div>
+    <div 
+      [ngClass]='{"dn": emptyGraph}'
+      id='canvas-container'>
       <!-- Network Graph Canvas -->
       <div id='canvas'></div>
       <!-- Read Panel -->
