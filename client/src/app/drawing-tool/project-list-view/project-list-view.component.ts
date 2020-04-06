@@ -256,8 +256,8 @@ export class ProjectListViewComponent implements OnInit, AfterViewInit {
 
         this.projectService.addProject(project)
           .subscribe((data) => {
-            this.displayMode = 'personal';
             this.projects.push(data['project']);
+            this.displayMode = 'personal';
           });
       }
     }); 
@@ -281,8 +281,8 @@ export class ProjectListViewComponent implements OnInit, AfterViewInit {
 
       this.projectService.addProject(result)
         .subscribe((data) => {
-          this.displayMode = 'personal';
           this.projects.push(data['project']);
+          this.displayMode = 'personal';
         });
     });
   }
