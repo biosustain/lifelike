@@ -1,4 +1,5 @@
 import { Component, ViewChild } from '@angular/core';
+import { MatButton } from '@angular/material';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import {
@@ -38,7 +39,7 @@ export class CreateUserComponent {
         private snackBar: MatSnackBar,
     ) { }
 
-    submit(submitBtn: HTMLButtonElement) {
+    submit(submitBtn: MatButton) {
         submitBtn.disabled = true;
         this.adminService.createUser({
             username: this.form.value.username,
