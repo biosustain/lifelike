@@ -1,26 +1,39 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { MockupModule } from '../../mockup.module';
+import { configureTestSuite } from 'ng-bullet';
+
+import { DataFlowService } from 'app/drawing-tool/services';
+import { RootStoreModule } from 'app/root-store';
+import { SharedModule } from 'app/shared/shared.module';
+
 import { InfoPanelComponent } from './info-panel.component';
 
 describe('InfoPanelComponent', () => {
-  let component: InfoPanelComponent;
-  let fixture: ComponentFixture<InfoPanelComponent>;
+    let component: InfoPanelComponent;
+    let fixture: ComponentFixture<InfoPanelComponent>;
 
-  beforeEach(async(() => {
-    TestBed.configureTestingModule({
-      imports: [ MockupModule ]
-    })
-    .compileComponents();
-  }));
+    configureTestSuite(() => {
+        TestBed.configureTestingModule({
+            declarations: [
+                InfoPanelComponent,
+            ],
+            imports: [
+                RootStoreModule,
+                SharedModule,
+            ],
+            providers: [
+                DataFlowService,
+            ]
+        });
+    });
 
-  beforeEach(() => {
-    fixture = TestBed.createComponent(InfoPanelComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-  });
+    beforeEach(() => {
+        fixture = TestBed.createComponent(InfoPanelComponent);
+        component = fixture.componentInstance;
+        fixture.detectChanges();
+    });
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
-  });
+    it('should create', () => {
+        expect(component).toBeTruthy();
+    });
 });
