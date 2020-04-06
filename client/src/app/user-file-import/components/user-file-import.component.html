@@ -110,11 +110,11 @@
 
         <div [formGroup]="columnDelimiterForm">
           <div formArrayName="columnDelimiters">
-            <div *ngFor="let row of columnDelimiterForm.get('columnDelimiters').controls; let i=index">
+            <div *ngFor="let row of columnDelimiterForm.get('columnDelimiters')['controls']; let i=index">
               <div [formGroupName]="i">
                 <app-user-file-import-column-delimiter-row
-                  [columnHeaders]="chosenSheetToMap?.sheetColumnNames"
-                  [columnDelimiterForm]="columnDelimiterForm.get('columnDelimiters').controls[i]"
+                  [columnHeaders]="chosenSheetToMap.sheetColumnNames"
+                  [columnDelimiterForm]="columnDelimiterForm.get('columnDelimiters')['controls'][i]"
                   (deleteDelimiter)="deleteColumnDelimiterRow(i)"
                 ></app-user-file-import-column-delimiter-row>
               </div>
