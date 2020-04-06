@@ -30,7 +30,7 @@ import { localStorageSync } from 'ngrx-store-localstorage';
  */
 export const reducers: ActionReducerMap<State> = {};
 
-/** Sync ngrx sotre with local storage */
+/** Sync ngrx store with local storage */
 export function syncWithLocalStorage(reducer: ActionReducer<State>): ActionReducer<State> {
     return localStorageSync({
         keys: ['auth'],
@@ -68,6 +68,7 @@ export const metaReducers: MetaReducer<State>[] = !environment.production
          * based application.
          */
         StoreModule.forRoot(reducers, {
+            metaReducers,
             // These are opt-in with NGRX 8, but will be on by default with the option to opt-out in future versions.
             // Karma also logs a bunch of warnings if we don't have them turned on.
             runtimeChecks: {

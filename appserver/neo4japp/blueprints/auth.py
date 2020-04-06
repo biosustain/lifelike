@@ -147,8 +147,9 @@ def login():
 
         # Create response
         resp = {
-            "access_jwt": access_jwt_encoded.decode('utf-8'),
-            "refresh_jwt": refresh_jwt_encoded.decode('utf-8')
+            'user': user.to_dict(),
+            'access_jwt': access_jwt_encoded.decode('utf-8'),
+            'refresh_jwt': refresh_jwt_encoded.decode('utf-8')
         }
 
         return Response(

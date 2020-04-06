@@ -1,17 +1,12 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import {
-  Router
-} from '@angular/router';
-import {
-  FormGroup, FormControl, Validators
-} from '@angular/forms';
-import {
-  Subscription
-} from 'rxjs';
+import { FormGroup, FormControl } from '@angular/forms';
+import { Subscription } from 'rxjs';
 
-import {
-  AuthenticationService
-} from '../services/authentication.service';
+import { Store } from '@ngrx/store';
+import { State } from 'app/root-store';
+
+import * as AuthActions from '../store/actions';
+
 
 @Component({
   selector: 'app-login',
@@ -27,10 +22,7 @@ export class LoginComponent implements OnInit, OnDestroy {
 
   formSubscription: Subscription;
 
-  constructor(
-    private authService: AuthenticationService,
-    private route: Router
-  ) { }
+  constructor(private store: Store<State>) { }
 
   ngOnInit() {
     this.formSubscription = this.form.valueChanges.subscribe(val => {
@@ -46,15 +38,7 @@ export class LoginComponent implements OnInit, OnDestroy {
    * Call login API for jwt credential
    */
   submit() {
-    let credential_form = this.form.value;
-
-    this.authService.login(credential_form)
-      .subscribe(
-        resp => {
-          this.route.navigateByUrl('dt/project-list');
-        },
-        error => {
-          this.form.controls['email_addr'].setErrors({required: true});
-        });
+    const { email_addr, password } = this.form.value;
+    this.store.dispatch(AuthActions.login({credential: {email: email_addr, password}}));
   }
 }
