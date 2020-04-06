@@ -14,6 +14,7 @@ import { DrawingToolModule } from './drawing-tool/drawing-tool.module';
 import { SharedModule } from './shared/shared.module';
 import { FileBrowserComponent } from './file-browser/file-browser.component';
 import { KgStatisticsComponent } from './kg-statistics/kg-statistics.component';
+import { ChartsModule } from 'ng2-charts';
 
 @NgModule({
   declarations: [
@@ -33,7 +34,8 @@ import { KgStatisticsComponent } from './kg-statistics/kg-statistics.component';
     RootStoreModule,
     VisualizationModule,
     SearchModule,
-    DrawingToolModule
+    DrawingToolModule,
+    ChartsModule,
   ],
   providers: [],
   exports: [
