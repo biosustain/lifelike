@@ -78,8 +78,8 @@ def graph(request, app):
     Neo4J database is not cleared before running tests!
     """
     graph = Graph(
-        uri=os.environ.get('NEO4J_HOST'),
-        password=os.environ.get('NEO4J_USER')
+        host=os.environ.get('NEO4J_HOST'),
+        auth=os.environ.get('NEO4J_AUTH').split('/')
     )
 
     # Ensure a clean graph state before every test
