@@ -1,10 +1,10 @@
-import { createReducer, on } from '@ngrx/store';
+import { Action, createReducer, on } from '@ngrx/store';
 import { initialState, State } from './state';
 import * as SearchActions from './actions';
 
 export const searchFeatureKey = 'search';
 
-export const reducer = createReducer(
+const searchReducer = createReducer(
     initialState,
     on(SearchActions.search, (state, { searchQuery }) => {
         return searchQuery.query === '' ?
@@ -55,3 +55,7 @@ export const getTotal = (state: State) => state.total;
 export const getQuery = (state: State) => state.query;
 
 export const getLimit = (state: State) => state.limit;
+
+export function reducer(state: State, action: Action) {
+    return searchReducer(state, action);
+}

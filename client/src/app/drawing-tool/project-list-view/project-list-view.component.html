@@ -186,9 +186,10 @@
 </div>
 <!-- Context Menu -->
 <ng-template #projectMenu let-project>
-  <section 
+  <section
     (contextmenu)="$event.preventDefault()"
     class="project-menu">
+    <div (click)='openPDFViewer(project)'>Open with PDF Viewer</div>
     <div (click)='copyProject(project)'>Make copy of</div>
     <div *ngIf='displayMode==="personal"' (click)="deleteProject(project)">Delete</div>
   </section>

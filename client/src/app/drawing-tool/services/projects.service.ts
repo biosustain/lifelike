@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
-import { Observable, of } from 'rxjs';
+import { Observable } from 'rxjs';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 
@@ -15,9 +15,10 @@ import {
 } from './interfaces';
 
 import {
-  uti_project,
-  microbiome_project
+  utiProject,
+  microbiomeProject
 } from './mock_data';
+import { isNullOrUndefined } from 'util';
 
 
 @Injectable({
@@ -25,9 +26,9 @@ import {
 })
 export class ProjectsService {
 
-  projects:Project[] = [uti_project, microbiome_project];
+  projects: Project[] = [utiProject, microbiomeProject];
 
-  base_url = environment.apiUrl;
+  baseUrl = environment.apiUrl;
 
   constructor(
     private http: HttpClient,
@@ -37,21 +38,34 @@ export class ProjectsService {
   /**
    * Create http options with authorization
    * header if boolean set to true
-   * @param with_jwt 
+   * @param withJwt boolean representing whether to use jwt or not
    */
-  createHttpOptions(with_jwt=false) {
-    const headers = {
-      'Content-Type':  'application/json'
-    }
+  createHttpOptions(withJwt= false, blob= false) {
+    let headers;
 
-    if (with_jwt) {
-      headers['Authorization'] = 'Token ' + localStorage.getItem('access_jwt');
+    if (withJwt) {
+      headers = {
+            'Content-Type':  'application/json',
+            Authorization: 'Token ' + localStorage.getItem('access_jwt')
+          };
+    } else {
+      headers = {
+        'Content-Type':  'application/json'
+      };
     }
+    let httpOptions: any;
 
-    const httpOptions = {
-      headers: new HttpHeaders(headers)
-    };
-    return httpOptions
+    if (blob) {
+      httpOptions = {
+        headers: new HttpHeaders(headers),
+        responseType: 'blob'
+      };
+    } else {
+      httpOptions = {
+        headers: new HttpHeaders(headers)
+      };
+    }
+    return httpOptions;
   }
 
   /**
@@ -69,20 +83,31 @@ export class ProjectsService {
   /**
    * Return a list of projects owned by user
    */
-  public pullProjects(): Observable<Object> {
+  public pullProjects(): Observable<any> {
     return this.http.get(
-      this.base_url + '/drawing-tool/projects',
+      this.baseUrl + '/drawing-tool/projects',
       this.createHttpOptions(true)
     );
   }
 
   /**
-   * Add project to user's collection
-   * @param project 
+   * Return PDF version of the project
+   * @param project represents a Project
    */
-  public addProject(project: Project): Observable<Object> {
+  public getPDF(project: Project): Observable<any> {
+    return this.http.get(
+      this.baseUrl + `/drawing-tool/projects/${project.id}/pdf`,
+      this.createHttpOptions(true, true)
+    );
+  }
+
+  /**
+   * Add project to user's collection
+   * @param project represents a Project
+   */
+  public addProject(project: Project): Observable<any> {
     return this.http.post(
-      this.base_url + '/drawing-tool/projects',
+      this.baseUrl + '/drawing-tool/projects',
       project,
       this.createHttpOptions(true)
     );
@@ -90,11 +115,11 @@ export class ProjectsService {
 
   /**
    * Update a project owned by user
-   * @param project
+   * @param project represents a Project
    */
-  public updateProject(project: Project): Observable<Object> {
+  public updateProject(project: Project): Observable<any> {
     return this.http.put(
-      this.base_url + `/drawing-tool/projects/${project.id}`,
+      this.baseUrl + `/drawing-tool/projects/${project.id}`,
       project,
       this.createHttpOptions(true)
     );
@@ -102,11 +127,11 @@ export class ProjectsService {
 
   /**
    * Delete a project owned by user
-   * @param project
+   * @param project represents a Project
    */
-  public deleteProject(project: Project): Observable<Object> {
+  public deleteProject(project: Project): Observable<any> {
     return this.http.delete(
-      this.base_url + `/drawing-tool/projects/${project.id}`,
+      this.baseUrl + `/drawing-tool/projects/${project.id}`,
       this.createHttpOptions(true)
     );
   }
@@ -115,79 +140,79 @@ export class ProjectsService {
    * Convert a graph to universal representation
    * from Vis.js Network representation
    */
-  public vis2Universe(graph:VisNetworkGraph): UniversalGraph {
-    let nodes: UniversalGraphNode[] = graph.nodes.map(
-      (n:VisNetworkGraphNode): UniversalGraphNode => {
+  public vis2Universe(graph: VisNetworkGraph): UniversalGraph {
+    const nodes: UniversalGraphNode[] = graph.nodes.map(
+      (n: VisNetworkGraphNode): UniversalGraphNode => {
         return {
           data: {
             x: n.x,
             y: n.y,
-            hyperlink: Object.is(n.data.hyperlink, undefined) ? '' : n.data.hyperlink
+            hyperlink: isNullOrUndefined(n.data.hyperlink) ? '' : n.data.hyperlink
           },
           display_name: n.label,
           hash: n.id,
           label: n.group,
           sub_labels: []
-        }
+        };
       }
     );
 
-    let edges: UniversalGraphEdge[] = graph.edges.map(
-      (e:VisNetworkGraphEdge):UniversalGraphEdge => {
+    const edges: UniversalGraphEdge[] = graph.edges.map(
+      (e: VisNetworkGraphEdge): UniversalGraphEdge => {
         return {
           label: e.label,
           from: e.from,
           to: e.to,
           data: {}
-        }
+        };
       }
     );
 
-    let vis_graph: UniversalGraph = {
-      edges: edges,
-      nodes: nodes
-    }
+    const visGraph: UniversalGraph = {
+      edges,
+      nodes
+    };
 
-    return vis_graph;
+    return visGraph;
   }
 
   /**
    * Convert a graph to Vis.js Network Representation
    * from Universal representation
-   * @param graph 
+   * @param graph represents a UniversalGraph
    */
-  public universe2Vis(graph:UniversalGraph): VisNetworkGraph {
-    let nodes: VisNetworkGraphNode[] = graph.nodes.map(
-      (n:UniversalGraphNode): VisNetworkGraphNode => {
+  public universe2Vis(graph: UniversalGraph): VisNetworkGraph {
+    const nodes: VisNetworkGraphNode[] = graph.nodes.map(
+      (n: UniversalGraphNode): VisNetworkGraphNode => {
         return {
           label: n.display_name,
-          x: n.data['x'],
-          y: n.data['y'],
+          x: n.data.x,
+          y: n.data.y,
           id: n.hash,
           group: n.label,
           data: {
-            hyperlink: Object.is(n.data.hyperlink, undefined) ? '' : n.data.hyperlink
+            hyperlink: isNullOrUndefined(n.data.hyperlink) ? '' : n.data.hyperlink
           }
-        }
+        };
       }
     );
-    
-    let edges: VisNetworkGraphEdge[] = graph.edges.map(
-      (e:UniversalGraphEdge): VisNetworkGraphEdge => {
+
+    const edges: VisNetworkGraphEdge[] = graph.edges.map(
+      (e: UniversalGraphEdge): VisNetworkGraphEdge => {
         return {
           from: e.from,
           to: e.to,
           label: e.label,
-          id: e.data['hash']
-        }
+          id: e.data.hash,
+        };
       }
     );
 
-    let vis_graph:VisNetworkGraph = {
-      edges: edges,
-      nodes: nodes
-    }
+    const visGraph: VisNetworkGraph = {
+      edges,
+      nodes
+    };
 
-    return vis_graph;
+    return visGraph;
   }
 }

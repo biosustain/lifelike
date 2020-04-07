@@ -12,7 +12,7 @@ import { fromEvent, Subscription } from 'rxjs';
 import { map, debounceTime } from 'rxjs/operators';
 
 @Directive({
-    selector: '[visClickDebounce]',
+    selector: '[appVisClickDebounce]',
 })
 export class DebounceClickDirective implements OnInit, OnDestroy {
     @Input() delay = 250;
