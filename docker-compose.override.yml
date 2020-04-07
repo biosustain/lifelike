@@ -21,6 +21,8 @@ services:
             - POSTGRES_USER=postgres
             - POSTGRES_PASSWORD=postgres
             - POSTGRES_DB=postgres
+            - NEO4J_ENTITIES_HOST
+            - NEO4J_ENTITIES_PASS
         networks:
             - frontend
             - backend
