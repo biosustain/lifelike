@@ -16,7 +16,7 @@ import * as AuthActions from '../store/actions';
 export class LoginComponent implements OnInit, OnDestroy {
 
   form = new FormGroup({
-    emailAddr: new FormControl(),
+    email: new FormControl(),
     password: new FormControl()
   });
 
@@ -26,7 +26,7 @@ export class LoginComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.formSubscription = this.form.valueChanges.subscribe(val => {
-      this.form.controls.emailAddr.setErrors(null);
+      this.form.controls.email.setErrors(null);
     });
   }
 
@@ -38,7 +38,7 @@ export class LoginComponent implements OnInit, OnDestroy {
    * Call login API for jwt credential
    */
   submit() {
-    const { email_addr, password } = this.form.value;
-    this.store.dispatch(AuthActions.login({credential: {email: email_addr, password}}));
+    const { email, password } = this.form.value;
+    this.store.dispatch(AuthActions.login({credential: {email, password}}));
   }
 }

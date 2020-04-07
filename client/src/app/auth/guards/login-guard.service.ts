@@ -21,8 +21,8 @@ export class LoginGuard implements CanActivate {
   constructor(private store: Store<State>, private router: Router) {}
 
   canActivate(
-    _: ActivatedRouteSnapshot,
-    _state: RouterStateSnapshot
+    {}: ActivatedRouteSnapshot,
+    {}: RouterStateSnapshot,
   ): Observable<boolean> {
     return this.store.pipe(
       select(AuthSelectors.selectAuthLoginState),
