@@ -30,8 +30,11 @@ def upload_pdf():
             'filename': filename,
             'status': 'Successfully uploaded'
         })
-    except:
-        return abort(400, 'File was unable to upload, please try again and make sure the file is a PDF.')
+    except Exception:
+        return abort(
+            400,
+            'File was unable to upload, please try again and make sure the file is a PDF.'
+        )
 
 
 @bp.route('/list', methods=['GET'])
@@ -41,7 +44,12 @@ def list_files():
         'filename': row.filename,
         'username': row.username,
         'creation_date': row.creation_date,
-    } for row in db.session.query(Files.id, Files.filename, Files.username, Files.creation_date).all()]
+    } for row in db.session.query(
+        Files.id,
+        Files.filename,
+        Files.username,
+        Files.creation_date
+    ).all()]
     return jsonify({'files': files})
 
 
@@ -50,7 +58,7 @@ def get_pdf(id):
     OUTPUT_PATH = os.path.abspath(os.getcwd()) + '/outputs/'
     file, filename = db.session.query(Files.file, Files.filename).filter(Files.id == id).one()
     file_full_path = OUTPUT_PATH + filename
-    #TODO: Remove writing in filesystem part, this is not needed should be tackle in next version
+    # TODO: Remove writing in filesystem part, this is not needed should be tackle in next version
     write_file(file, file_full_path)
     return send_from_directory(OUTPUT_PATH, filename)
 
@@ -58,7 +66,7 @@ def get_pdf(id):
 @bp.route('/bioc', methods=['GET'])
 def transform_to_bioc():
     TEMPLATE_PATH = os.path.abspath(os.getcwd()) + '/templates/bioc.json'
-    with open(TEMPLATE_PATH , 'r') as file:
+    with open(TEMPLATE_PATH, 'r') as file:
         data = request.get_json()
         current_time = datetime.now()
         template = json.load(file)

@@ -16,8 +16,8 @@ import * as AuthActions from '../store/actions';
 export class LoginComponent implements OnInit, OnDestroy {
 
   form = new FormGroup({
-    "email_addr": new FormControl(),
-    "password": new FormControl()
+    emailAddr: new FormControl(),
+    password: new FormControl()
   });
 
   formSubscription: Subscription;
@@ -26,7 +26,7 @@ export class LoginComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.formSubscription = this.form.valueChanges.subscribe(val => {
-      this.form.controls['email_addr'].setErrors(null);
+      this.form.controls.emailAddr.setErrors(null);
     });
   }
 

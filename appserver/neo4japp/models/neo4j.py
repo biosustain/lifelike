@@ -61,4 +61,10 @@ class GraphRelationship(NEO4JBase):
 
     @classmethod
     def from_py2neo(cls, rel: Relationship):
-        return cls(rel.identity, type(rel).__name__, dict(rel), rel.end_node.identity, rel.start_node.identity)
+        return cls(
+            id=rel.identity,
+            label=type(rel).__name__,
+            data=dict(rel),
+            to=rel.end_node.identity,
+            _from=rel.start_node.identity
+        )
