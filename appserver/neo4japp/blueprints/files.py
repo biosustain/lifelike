@@ -58,8 +58,11 @@ def upload_pdf():
             'filename': filename,
             'status': 'Successfully uploaded'
         })
-    except:
-        return abort(400, 'File was unable to upload, please try again and make sure the file is a PDF.')
+    except Exception:
+        return abort(
+            400,
+            'File was unable to upload, please try again and make sure the file is a PDF.'
+        )
 
 
 @bp.route('/list', methods=['GET'])
@@ -71,7 +74,12 @@ def list_files():
         'filename': row.filename,
         'username': row.username,
         'creation_date': row.creation_date,
-    } for row in db.session.query(Files.file_id, Files.filename, Files.username, Files.creation_date).all()]
+    } for row in db.session.query(
+        Files.file_id,
+        Files.filename,
+        Files.username,
+        Files.creation_date,
+    ).all()]
     return jsonify({'files': files})
 
 

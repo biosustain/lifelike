@@ -14,6 +14,7 @@ class SearchRequest(CamelDictMixin):
     page: int = attr.ib()
     limit: int = attr.ib()
 
+
 @bp.route('/search', methods=['POST'])
 @jsonify_with_class(SearchRequest)
 def fulltext_search(req: SearchRequest):
