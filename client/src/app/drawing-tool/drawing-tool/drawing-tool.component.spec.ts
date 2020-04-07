@@ -1,11 +1,25 @@
-import { CdkDragDrop } from '@angular/cdk/drag-drop';
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { CdkDragDrop, DragDropModule } from '@angular/cdk/drag-drop';
 import { APP_BASE_HREF } from '@angular/common';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { MatSnackBar } from '@angular/material';
+import { RouterTestingModule } from '@angular/router/testing';
+
+import { configureTestSuite } from 'ng-bullet';
+
+import { MockComponents } from 'ng-mocks';
+
+import { SharedModule } from 'app/shared/shared.module';
+import { RootStoreModule } from 'app/***ARANGO_USERNAME***-store';
+
+import { DataFlowService, DragDropEventFactory, ProjectsService } from '../services';
+import { DrawingToolContextMenuControlService } from '../services/drawing-tool-context-menu-control.service';
 
 import { DrawingToolComponent } from './drawing-tool.component';
-
-import { DrawingToolModule } from '../drawing-tool.module';
-import { DataFlowService, DragDropEventFactory } from '../services';
+import { DrawingToolContextMenuComponent } from './drawing-tool-context-menu/drawing-tool-context-menu.component';
+import { InfoPanelComponent } from './info-panel/info-panel.component';
+import { PaletteComponent } from './palette/palette.component';
+import { BrowserModule } from '@angular/platform-browser';
+import { PdfViewerLibModule } from 'pdf-viewer-lib';
 
 declare const viewport;
 
@@ -62,17 +76,33 @@ xdescribe('DrawingToolComponent', () => {
     component.networkClickHandler(properties);
   }
 
-  beforeEach(async(() => {
+  configureTestSuite(() => {
     TestBed.configureTestingModule({
-      imports: [
-        DrawingToolModule
-      ],
-      providers: [
-        {provide: APP_BASE_HREF, useValue : '/' }
-      ]
-    })
-    .compileComponents();
-  }));
+        declarations: [
+            DrawingToolComponent,
+            PaletteComponent,
+            MockComponents(
+                DrawingToolContextMenuComponent,
+                InfoPanelComponent,
+            ),
+        ],
+        imports: [
+            RouterTestingModule,
+            RootStoreModule,
+            SharedModule,
+            BrowserModule,
+            DragDropModule,
+            PdfViewerLibModule,
+        ],
+        providers: [
+          DataFlowService,
+          ProjectsService,
+          MatSnackBar,
+          DrawingToolContextMenuControlService,
+          {provide: APP_BASE_HREF, useValue : '/' }
+        ]
+      });
+  });
 
   beforeEach((done) => {
     viewport.set(1920, 1080);

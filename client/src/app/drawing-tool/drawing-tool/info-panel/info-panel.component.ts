@@ -19,6 +19,7 @@ import {
 } from '../../services/interfaces';
 import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
+import { isNullOrUndefined } from 'util';
 
 interface GraphSelectionData {
   edge_data?: VisNetworkGraphEdge;
@@ -111,7 +112,7 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
       )
       .subscribe(
         (val: GraphData) => {
-          if (!val) { return; }
+          if (isNullOrUndefined(val)) { return; }
 
           let data;
 

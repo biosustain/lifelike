@@ -7,10 +7,18 @@ import {
 } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { CdkDragDrop } from '@angular/cdk/drag-drop';
+
+import { Options } from '@popperjs/core';
+
+import * as $ from 'jquery';
+
 import {
     Subscription, Observable
 } from 'rxjs';
-import * as $ from 'jquery';
+
+import { isNullOrUndefined } from 'util';
+
+import { IdType } from 'vis-network';
 
 import {
     DataFlowService,
@@ -27,8 +35,6 @@ import {
 import {
     NetworkVis
 } from '../network-vis';
-import { Options } from '@popperjs/core';
-import { IdType } from 'vis-network';
 import { DrawingToolContextMenuControlService } from '../services/drawing-tool-context-menu-control.service';
 
 interface Update {
@@ -130,7 +136,7 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
         this.pdfDataSubscription =
         this.dataFlow.$pdfDataSource.subscribe(
             (node: GraphData) => {
-                if (!node) { return; }
+                if (isNullOrUndefined(node)) { return; }
 
                 // Convert DOM coordinate to canvas coordinate
                 const coord =
@@ -338,55 +344,55 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
 
 
         switch (cmd.action) {
-        case 'add node':
-            // Add node to network graph
-            const addedNode = this.visjsNetworkGraph.addNode({...cmd.data});
-            // Toggle info-panel-ui for added node
-            const data = this.visjsNetworkGraph.getNode(addedNode.id);
-            this.dataFlow.pushGraphData(data);
-            break;
-        case 'update node':
-            // Update node
-            this.visjsNetworkGraph.updateNode(
-                cmd.data.node.id,
-                {
-                    label: cmd.data.node.label,
-                    group: cmd.data.node.group,
-                    data: cmd.data.node.data
-                }
-            );
-            // Update edges of node
-            cmd.data.edges.map(e => {
-                this.visjsNetworkGraph.updateEdge(
-                    e.id,
+            case 'add node':
+                // Add node to network graph
+                const addedNode = this.visjsNetworkGraph.addNode({...cmd.data});
+                // Toggle info-panel-ui for added node
+                const data = this.visjsNetworkGraph.getNode(addedNode.id);
+                this.dataFlow.pushGraphData(data);
+                break;
+            case 'update node':
+                // Update node
+                this.visjsNetworkGraph.updateNode(
+                    cmd.data.node.id,
                     {
-                        label: e.label,
-                        from: e.label,
-                        to: e.to
+                        label: cmd.data.node.label,
+                        group: cmd.data.node.group,
+                        data: cmd.data.node.data
                     }
                 );
-            });
-            break;
-        case 'delete node':
-            this.visjsNetworkGraph.removeNode(cmd.data.id);
-            break;
-        case 'add edge':
-            this.visjsNetworkGraph.addEdge(
-                cmd.data.edge.from,
-                cmd.data.edge.to
-            );
-            break;
-        case 'update edge':
-            this.visjsNetworkGraph.updateEdge(
-                cmd.data.edge.id,
-                cmd.data.edge
-            );
-            break;
-        case 'delete edge':
-            this.visjsNetworkGraph.removeEdge(cmd.data.id);
-            break;
-        default:
-            break;
+                // Update edges of node
+                cmd.data.edges.map(e => {
+                    this.visjsNetworkGraph.updateEdge(
+                        e.id,
+                        {
+                            label: e.label,
+                            from: e.label,
+                            to: e.to
+                        }
+                    );
+                });
+                break;
+            case 'delete node':
+                this.visjsNetworkGraph.removeNode(cmd.data.id);
+                break;
+            case 'add edge':
+                this.visjsNetworkGraph.addEdge(
+                    cmd.data.edge.from,
+                    cmd.data.edge.to
+                );
+                break;
+            case 'update edge':
+                this.visjsNetworkGraph.updateEdge(
+                    cmd.data.edge.id,
+                    cmd.data.edge
+                );
+                break;
+            case 'delete edge':
+                this.visjsNetworkGraph.removeEdge(cmd.data.id);
+                break;
+            default:
+                break;
         }
     }
 
