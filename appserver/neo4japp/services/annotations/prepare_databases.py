@@ -14,6 +14,7 @@ from os import path, remove, walk
 # reference to this directory
 directory = path.realpath(path.dirname(__file__))
 
+
 def prepare_lmdb_genes_database():
     with open(path.join(directory, 'datasets/genes.tsv'), 'r') as f:
         map_size = 1099511627776
@@ -43,7 +44,7 @@ def prepare_lmdb_genes_database():
 def prepare_lmdb_chemicals_database():
     with open(path.join(directory, 'datasets/chebi.csv'), 'r') as f:
         map_size = 1099511627776
-        db = lmdb.open(path.join(directory,'lmdb/chemicals'), map_size=map_size)
+        db = lmdb.open(path.join(directory, 'lmdb/chemicals'), map_size=map_size)
         with db.begin(write=True) as transaction:
             reader = csv.reader(f, delimiter=',', quotechar='"')
             # skip headers
@@ -80,12 +81,15 @@ def prepare_lmdb_chemicals_database():
                         entity = transaction.get(syn.lower().encode('utf-8'))
                         if entity:
                             entity = json.loads(entity)
-                            entity['common_name'] = {**entity['common_name'], **chemical['common_name']}
+                            entity['common_name'] = {
+                                **entity['common_name'],**chemical['common_name']}
                             transaction.put(
-                                syn.lower().encode('utf-8'), json.dumps(entity).encode('utf-8'))
+                                syn.lower().encode('utf-8'),
+                                json.dumps(entity).encode('utf-8'))
                         else:
                             transaction.put(
-                                syn.lower().encode('utf-8'), json.dumps(chemical).encode('utf-8'))
+                                syn.lower().encode('utf-8'),
+                                json.dumps(chemical).encode('utf-8'))
                 except lmdb.BadValsizeError:
                     continue
 
@@ -130,12 +134,15 @@ def prepare_lmdb_compounds_database():
                         entity = transaction.get(syn.lower().encode('utf-8'))
                         if entity:
                             entity = json.loads(entity)
-                            entity['common_name'] = {**entity['common_name'], **compound['common_name']}
+                            entity['common_name'] = {
+                                **entity['common_name'], **compound['common_name']}
                             transaction.put(
-                                syn.lower().encode('utf-8'), json.dumps(entity).encode('utf-8'))
+                                syn.lower().encode('utf-8'),
+                                json.dumps(entity).encode('utf-8'))
                         else:
                             transaction.put(
-                                syn.lower().encode('utf-8'), json.dumps(compound).encode('utf-8'))
+                                syn.lower().encode('utf-8'),
+                                json.dumps(compound).encode('utf-8'))
                 except lmdb.BadValsizeError:
                     continue
 
@@ -181,12 +188,15 @@ def prepare_lmdb_proteins_database():
                         entity = transaction.get(syn.lower().encode('utf-8'))
                         if entity:
                             entity = json.loads(entity)
-                            entity['common_name'] = {**entity['common_name'], **protein['common_name']}
+                            entity['common_name'] = {
+                                **entity['common_name'], **protein['common_name']}
                             transaction.put(
-                                syn.lower().encode('utf-8'), json.dumps(entity).encode('utf-8'))
+                                syn.lower().encode('utf-8'),
+                                json.dumps(entity).encode('utf-8'))
                         else:
                             transaction.put(
-                                syn.lower().encode('utf-8'), json.dumps(protein).encode('utf-8'))
+                                syn.lower().encode('utf-8'),
+                                json.dumps(protein).encode('utf-8'))
                 except lmdb.BadValsizeError:
                     continue
 
@@ -212,7 +222,8 @@ def prepare_lmdb_species_database():
                     try:
                         if line[3] != 'null':
                             transaction.put(
-                                line[3].lower().encode('utf-8'), json.dumps(species).encode('utf-8'))
+                                line[3].lower().encode('utf-8'),
+                                json.dumps(species).encode('utf-8'))
                     except lmdb.BadValsizeError:
                         # ignore any keys that are too large
                         # LMDB has max key size 512 bytes
@@ -244,7 +255,8 @@ def prepare_lmdb_diseases_database():
                 try:
                     if line[1] != 'null':
                         transaction.put(
-                            line[1].lower().encode('utf-8'), json.dumps(disease).encode('utf-8'))
+                            line[1].lower().encode('utf-8'),
+                            json.dumps(disease).encode('utf-8'))
                 except lmdb.BadValsizeError:
                     # ignore any keys that are too large
                     # LMDB has max key size 512 bytes
@@ -260,12 +272,15 @@ def prepare_lmdb_diseases_database():
                         entity = transaction.get(syn.lower().encode('utf-8'))
                         if entity:
                             entity = json.loads(entity)
-                            entity['common_name'] = {**entity['common_name'], **disease['common_name']}
+                            entity['common_name'] = {
+                                **entity['common_name'], **disease['common_name']}
                             transaction.put(
-                                syn.lower().encode('utf-8'), json.dumps(entity).encode('utf-8'))
+                                syn.lower().encode('utf-8'),
+                                json.dumps(entity).encode('utf-8'))
                         else:
                             transaction.put(
-                                syn.lower().encode('utf-8'), json.dumps(disease).encode('utf-8'))
+                                syn.lower().encode('utf-8'),
+                                json.dumps(disease).encode('utf-8'))
                 except lmdb.BadValsizeError:
                     continue
 
