@@ -4,6 +4,7 @@ from neo4japp.util import CamelDictMixin
 
 from typing import List
 
+
 @attr.s(frozen=True)
 class UserCreationRequest(CamelDictMixin):
     username: str = attr.ib()
