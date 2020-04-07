@@ -81,7 +81,8 @@ class AppUser(RDBMSBase):
             **{'roles': [role.to_dict()['name'] for role in self.roles]}
         }
 
-class AppUserSchema(ma.ModelSchema):
+
+class AppUserSchema(ma.ModelSchema):  # type: ignore
     class Meta:
         model = AppUser
 
@@ -138,6 +139,6 @@ class AccessControlPolicy(RDBMSBase):
         )
 
 
-class AccessControlPolicySchema(ma.ModelSchema):
+class AccessControlPolicySchema(ma.ModelSchema):  # type: ignore
     class Meta:
         model = AccessControlPolicy

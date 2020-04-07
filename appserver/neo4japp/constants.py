@@ -45,7 +45,7 @@ DISPLAY_NAME_MAP = {
     TYPE_CHEMICAL: 'name',
     TYPE_DISEASE: 'name',
     TYPE_GENE: 'name',
-    TYPE_PUBLICATION: 'title',  # NOTE: These tend to be long, might want to use a different attribute or consider truncating on the client
+    TYPE_PUBLICATION: 'title',  # NOTE: These tend to be long, might want to use a different attribute or consider truncating on the client  # noqa
     TYPE_REFERENCE: 'sentence',  # NOTE: Same here
 }
 
@@ -54,6 +54,7 @@ DISPLAY_NAME_MAP = {
 
 ELASTICSEARCH_URL = 'http://elasticsearch:9200'
 GRAPH_INDEX = 'graph'
+
 
 def is_db_name(s: str):
     """ check if a str is db name"""
