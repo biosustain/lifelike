@@ -3,9 +3,9 @@ Dockerfile
 **/*.pyc
 **/.cache
 **/.mypy_cache
-**/services/annotations/lmdb/**/*.mdb
-**/services/annotations/datasets/*.csv
-**/services/annotations/datasets/*.tsv
+neo4japp/services/annotations/lmdb/**/*.mdb
+neo4japp/services/annotations/datasets/*.csv
+neo4japp/services/annotations/datasets/*.tsv
 **/*.tar.ggz
 **/*.env
 *.git*
