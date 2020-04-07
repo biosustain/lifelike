@@ -86,7 +86,8 @@ def list_files():
 @bp.route('/get_pdf/<id>', methods=['GET'])
 def get_pdf(id):
     OUTPUT_PATH = os.path.abspath(os.getcwd()) + '/outputs/'
-    pdf_file, filename = db.session.query(Files.raw_file, Files.filename).filter(Files.file_id == id).one()
+    pdf_file, filename = db.session.query(
+        Files.raw_file, Files.filename).filter(Files.file_id == id).one()
     file_full_path = OUTPUT_PATH + filename
     # TODO: Remove writing in filesystem part, this is not needed should be tackle in next version
     write_file(pdf_file, file_full_path)
@@ -96,7 +97,7 @@ def get_pdf(id):
 @bp.route('/bioc', methods=['GET'])
 def transform_to_bioc():
     TEMPLATE_PATH = os.path.abspath(os.getcwd()) + '/templates/bioc.json'
-    with open(TEMPLATE_PATH , 'r') as f:
+    with open(TEMPLATE_PATH, 'r') as f:
         data = request.get_json()
         current_time = datetime.now()
         template = json.load(f)
