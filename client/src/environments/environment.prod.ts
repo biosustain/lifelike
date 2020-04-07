@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiUrl: 'http://35.192.68.74/api/v1'
+  apiUrl: 'https://kg.lifelike.bio/api'
 };
