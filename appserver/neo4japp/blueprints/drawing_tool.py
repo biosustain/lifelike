@@ -10,6 +10,7 @@ import graphviz as gv
 
 bp = Blueprint('drawing_tool', __name__, url_prefix='/drawing-tool')
 
+
 @bp.route('/community', methods=['GET'])
 @auth.login_required
 def get_community_projects():
@@ -21,7 +22,7 @@ def get_community_projects():
     projects = Project.query.filter_by(public=True).all()
     project_schema = ProjectSchema(many=True)
 
-    return {'projects': project_schema.dump(projects)}, 200    
+    return {'projects': project_schema.dump(projects)}, 200
 
 
 @bp.route('/projects', methods=['GET'])
