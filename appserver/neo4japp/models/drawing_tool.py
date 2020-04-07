@@ -14,6 +14,6 @@ class Project(RDBMSBase):
     user_id = db.Column(db.Integer, db.ForeignKey('appuser.id'), nullable=False)
 
 
-class ProjectSchema(ma.ModelSchema):
+class ProjectSchema(ma.ModelSchema):  # type: ignore
     class Meta:
         model = Project

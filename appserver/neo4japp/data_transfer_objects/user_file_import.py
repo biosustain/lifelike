@@ -11,6 +11,7 @@ from neo4japp.util import CamelDictMixin
 class UploadFileRequest(CamelDictMixin):
     file_input: FileStorage = attr.ib()
 
+
 @attr.s(frozen=True)
 class NodePropertiesRequest(CamelDictMixin):
     node_label: str = attr.ib()
@@ -97,5 +98,5 @@ class GraphRelationshipCreationMapping(CamelDictMixin):
 
 @attr.s(frozen=True)
 class GraphCreationMapping(CamelDictMixin):
-  new_nodes: List[GraphNodeCreationMapping] = attr.ib(default=attr.Factory(list))
-  new_relationships: List[GraphRelationshipCreationMapping] = attr.ib(default=attr.Factory(list))
+    new_nodes: List[GraphNodeCreationMapping] = attr.ib(default=attr.Factory(list))
+    new_relationships: List[GraphRelationshipCreationMapping] = attr.ib(default=attr.Factory(list))
