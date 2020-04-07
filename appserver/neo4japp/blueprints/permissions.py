@@ -50,7 +50,9 @@ def requires_role(role: str):
                 principal = next(gen)
                 auth = get_authorization_service()
                 if not auth.has_role(principal, role):
-                    raise NotAuthorizedException(f'{principal} does not have the required role: {role}')
+                    raise NotAuthorizedException(
+                        f'{principal} does not have the required role: {role}'
+                    )
                 retval = next(gen)
             finally:
                 gen.close()

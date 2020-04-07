@@ -1,9 +1,9 @@
-import { Directive, ElementRef } from '@angular/core';
+import { Directive, ElementRef, AfterViewInit } from '@angular/core';
 
 @Directive({
   selector: '[appPdfViewer]'
 })
-export class PdfViewerDirective {
+export class PdfViewerDirective implements AfterViewInit {
 
   constructor(
     private el: ElementRef
@@ -13,10 +13,6 @@ export class PdfViewerDirective {
     let dom = this.el.nativeElement as Element;
 
     dom = dom.getElementsByClassName('example-container mat-drawer-container')[0];
-
-    let sidebar = dom.getElementsByTagName('mat-drawer')[0];
-    let pdf = dom.getElementsByTagName('mat-drawer-content')[0];
-  
-    sidebar.remove();
+    dom.getElementsByTagName('mat-drawer')[0].remove();
   }
 }

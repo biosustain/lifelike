@@ -1,7 +1,4 @@
 import { NgModule } from '@angular/core';
-import {
-  HTTP_INTERCEPTORS
-} from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { BrowserModule } from '@angular/platform-browser';
 import { DragDropModule } from '@angular/cdk/drag-drop';
@@ -35,15 +32,10 @@ import {
   LoginComponent
 } from './login/login.component';
 
-
 import {
   TruncatePipe,
   FriendlyDateStrPipe
 } from './pipes';
-
-import {
-  AuthenticationService
-} from './services'
 
 import {
   PendingChangesGuard
