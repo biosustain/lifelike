@@ -88,7 +88,7 @@ class AnnotationsService:
 
                 if (token_normalized_whitespace not in COMMON_WORDS and
                         not re.match(self.regex_for_floats, token_normalized_whitespace) and
-                            token_normalized_whitespace not in ascii_lowercase):
+                        token_normalized_whitespace not in ascii_lowercase):
 
                     if token_normalized_whitespace in TYPO_SYNONYMS:
                         for correct_synonym in TYPO_SYNONYMS[token_normalized_whitespace]:
