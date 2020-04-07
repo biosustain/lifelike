@@ -7,6 +7,7 @@ bp = Blueprint('neo4j-entities-api', __name__, url_prefix='/neo4j-entities')
 
 graph = Graph(
     uri = os.environ.get('NEO4J_ENTITIES_HOST'),
+    user = os.environ.get('NEO4J_ENTITIES_USER'),
     password = os.environ.get('NEO4J_ENTITIES_PASS')
 )
 
@@ -20,7 +21,7 @@ def get_knowledge_graph_statistics():
         'Protein', 'Reaction', 'Regulon', 'Terminator', 'TranscriptionFactor', 'TranscriptionUnit'
     ])
     response = defaultdict(lambda: defaultdict(int))
-    result = graph.run(f"match (n) return labels(n) as labels, count(n) as count").data()
+    result = graph.run("match (n) return labels(n) as labels, count(n) as count").data()
     for row in result:
         labels = set(row["labels"])
         domain = domains & labels

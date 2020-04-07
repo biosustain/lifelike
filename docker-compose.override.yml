@@ -24,6 +24,7 @@ services:
             - POSTGRES_DB=postgres
             - NEO4J_ENTITIES_HOST
             - NEO4J_ENTITIES_PASS
+            - NEO4J_ENTITIES_USER
         networks:
             - frontend
             - backend
