@@ -4,7 +4,7 @@ import { APP_BASE_HREF } from '@angular/common';
 
 import { DrawingToolComponent } from './drawing-tool.component';
 
-import { MockupModule } from '../mockup.module';
+import { DrawingToolModule } from '../drawing-tool.module';
 import { DataFlowService, DragDropEventFactory } from '../services';
 
 declare const viewport;
@@ -65,7 +65,7 @@ xdescribe('DrawingToolComponent', () => {
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       imports: [
-        MockupModule
+        DrawingToolModule
       ],
       providers: [
         {provide: APP_BASE_HREF, useValue : '/' }
