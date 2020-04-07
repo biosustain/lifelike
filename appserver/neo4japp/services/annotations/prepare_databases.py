@@ -82,7 +82,7 @@ def prepare_lmdb_chemicals_database():
                         if entity:
                             entity = json.loads(entity)
                             entity['common_name'] = {
-                                **entity['common_name'],**chemical['common_name']}
+                                **entity['common_name'], **chemical['common_name']}
                             transaction.put(
                                 syn.lower().encode('utf-8'),
                                 json.dumps(entity).encode('utf-8'))
