@@ -1,9 +1,9 @@
 import {Component, Inject, OnInit} from '@angular/core';
-import {MatDialog, MatDialogRef, MAT_DIALOG_DATA} from '@angular/material/dialog';
+import {MatDialogRef, MAT_DIALOG_DATA} from '@angular/material/dialog';
 
 import {
   Project
-} from '../../services/interfaces'
+} from '../../services/interfaces';
 
 @Component({
   selector: 'app-delete-project-dialog',

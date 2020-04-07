@@ -3,3 +3,6 @@ Dockerfile
 **/*.pyc
 **/.cache
 **/.mypy_cache
+**/*.tar.ggz
+**/*.env
+*.git*

@@ -21,11 +21,9 @@ import {
 } from '../services';
 import {
   Project,
-  VisNetworkGraphEdge
-} from '../services/interfaces';
-import {
+  VisNetworkGraphEdge,
   GraphSelectionData
-} from '../drawing-tool/info-panel/info-panel.component';
+} from '../services/interfaces';
 import {
   NetworkVis
 } from '../network-vis';
@@ -60,6 +58,7 @@ const sort = (a:Project, b: Project) => {
     return -1;
   }
 };
+import { isNullOrUndefined } from 'util';
 
 @Component({
   selector: 'app-project-list-view',
@@ -202,8 +201,8 @@ export class ProjectListViewComponent implements OnInit, AfterViewInit {
   /**
    * Spin up dialog to confirm if user wants to delete project,
    * if so, call delete API on project
-   * @param project 
-   */  
+   * @param project represents a project object
+   */
   deleteProject(project=null) {
     if (!project) project = this.selectedProject;
 
@@ -245,7 +244,7 @@ export class ProjectListViewComponent implements OnInit, AfterViewInit {
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        let project = {
+        const project = {
           ...result,
           graph: {
             nodes: [],
@@ -255,9 +254,10 @@ export class ProjectListViewComponent implements OnInit, AfterViewInit {
         };
 
         this.projectService.addProject(project)
-          .subscribe((data) => {
-            this.projects.push(data['project']);
-            this.displayMode = 'personal';
+          .subscribe(
+            (data) => {
+              this.projects.push(data['project']);
+              this.displayMode = 'personal';
           });
       }
     }); 
@@ -266,7 +266,7 @@ export class ProjectListViewComponent implements OnInit, AfterViewInit {
   /**
    * Make a duplicate of a project and its data with a new uid
    * through a confirmation dialog, then call create API on project
-   * @param project 
+   * @param project represents a project object
    */
   copyProject(project: Project=null) {
     if (!project) project = this.selectedProject;
@@ -290,18 +290,19 @@ export class ProjectListViewComponent implements OnInit, AfterViewInit {
   /**
    * Display selected project with graph preview
    * and meta-data
-   * @param proj 
+   * @param proj represents a project object
    */
   pickProject(proj: Project) {
+    if (this.overlayRef) { return; }
 
     this.selectedProject = proj;
 
     setTimeout(
       () => {
-        let container = document.getElementById('canvas');
+        const container = document.getElementById('canvas');
         this.visGraph = new NetworkVis(container);
     
-        let g = this.projectService.universe2Vis(proj.graph);
+        const g = this.projectService.universe2Vis(proj.graph);
     
         setTimeout(
           () => {
@@ -321,6 +322,7 @@ export class ProjectListViewComponent implements OnInit, AfterViewInit {
       100
     )
   }
+
   
   /**
    * Open project in drawing-tool view's canvas
@@ -342,16 +344,10 @@ export class ProjectListViewComponent implements OnInit, AfterViewInit {
     if (properties.nodes.length) {
       // If a node is clicked on
       let node_id = properties.nodes[0];
-      let data = this.visGraph.getNode(node_id);
-      this.focusedEntity = data;
-      console.log(data);
+      this.focusedEntity = this.visGraph.getNode(node_id);
     } else if (properties.edges.length) {
       // If an edge is clicked on
       // do nothing .. 
-      // let edge_id = properties.edges[0];
-      // let data = this.visGraph.getEdge(edge_id);
-      // this.focusedEntity = data;
-      // console.log(data);
     } else {
       this.focusedEntity = null;
     }    
@@ -360,15 +356,14 @@ export class ProjectListViewComponent implements OnInit, AfterViewInit {
   /**
    * Function handler for contextmenu click event
    * to spin up rendered contextmenu for project actions
-   * @param event 
-   * @param project 
+   * @param event represents a oncontext event
+   * @param project represents a project object
    */
   open(event: MouseEvent, project) {
     // prevent event bubbling
     event.preventDefault();
 
-    let x = event.x,
-      y = event.y;
+    const {x, y} = event;
 
     // Close previous context menu if open
     this.close();
@@ -385,7 +380,7 @@ export class ProjectListViewComponent implements OnInit, AfterViewInit {
           overlayY: 'top',
         }
       ]);
-    
+
     // Create and render overlay near cursor position
     this.overlayRef = this.overlay.create({
       positionStrategy,
@@ -400,22 +395,23 @@ export class ProjectListViewComponent implements OnInit, AfterViewInit {
     // render on project item
     this.sub = fromEvent<MouseEvent>(document, 'click')
       .pipe(
-        filter(event => {
-          const clickTarget = event.target as HTMLElement;
-          
+        filter(mouseEvent => {
+          const clickTarget = mouseEvent.target as HTMLElement;
+
+          // TODO: Not sure what the purpose of this is?
           // Check if right click event
-          let isRightClick = false;
-          if ("which" in event) {
-            isRightClick = event["which"] == 3;
-          } else if ("button" in event) {
-            isRightClick = event["button"] == 2;
-          }
+          //   let isRightClick = false;
+          //   if ('which' in mouseEvent) {
+          //     isRightClick = mouseEvent.which === 3;
+          //   } else if ('button' in event) {
+          //     isRightClick = mouseEvent.button === 2;
+          //   }
 
           // Return whether or not click event is on context menu or outside
           return !!this.overlayRef && !this.overlayRef.overlayElement.contains(clickTarget);
         }),
         take(1)
-      ).subscribe(() => this.close())
+      ).subscribe(() => this.close());
   }
   
   /**
@@ -424,11 +420,13 @@ export class ProjectListViewComponent implements OnInit, AfterViewInit {
    * to it
    */
   close() {
-    this.sub && this.sub.unsubscribe();
+    if (!isNullOrUndefined(this.sub)) {
+        this.sub.unsubscribe();
+    }
     if (this.overlayRef) {
       this.overlayRef.dispose();
       this.overlayRef = null;
-    }    
+    }
   }
 
   /**
@@ -436,7 +434,7 @@ export class ProjectListViewComponent implements OnInit, AfterViewInit {
    * @param edge 
    */
   getNode(edge: VisNetworkGraphEdge) {
-    return this.focusedEntity.other_nodes.filter(
+    return this.focusedEntity.otherNodes.filter(
       node => node.id === edge.to
     )[0].label;    
   }

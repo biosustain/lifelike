@@ -1,4 +1,4 @@
-<div 
+<div
   cdkDropListGroup
   id='drawing-tool-view-container'>
   <div
@@ -35,6 +35,11 @@
       [ngClass]='saveStyle'
       (click)='save()'>
       save
+    </mat-icon>
+    <mat-icon
+      [ngClass]='saveStyle'
+      (click)='downloadPDF()'>
+      get_app
     </mat-icon>
   </div>
   <!-- Info Panel UI -->

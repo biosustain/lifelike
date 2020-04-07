@@ -2,7 +2,7 @@ import { Component, Input } from '@angular/core';
 
 @Component({
     selector: 'app-node-relationship',
-    templateUrl: '/node-relationship-display.component.html',
+    templateUrl: 'node-relationship-display.component.html',
     styleUrls: ['./node-relationship-display.component.scss']
 })
 export class NodeRelationshipComponent {
