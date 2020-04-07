@@ -22,7 +22,8 @@ export class NetworkVis {
   /** Rendering options for network graph */
   options = {
     interaction: {
-      hover: true
+      hover: true,
+      multiselect: true,
     },
     edges: {
       arrows: {
