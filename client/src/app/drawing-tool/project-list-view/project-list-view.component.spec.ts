@@ -2,7 +2,7 @@ import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { APP_BASE_HREF } from '@angular/common';
 
 import { ProjectListViewComponent } from './project-list-view.component';
-import { MockupModule } from '../mockup.module';
+import { DrawingToolModule } from '../drawing-tool.module';
 
 // TODO: Looks like this is throwing an http error when the spec is cleaned up in `afterAll`.
 // Could be that a service is being called with funky data, or maybe a service response isn't
@@ -14,7 +14,7 @@ xdescribe('ProjectListViewComponent', () => {
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       imports: [
-        MockupModule
+        DrawingToolModule
       ],
       providers: [
         {provide: APP_BASE_HREF, useValue : '/' }
