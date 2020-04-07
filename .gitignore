@@ -54,3 +54,8 @@ terraform-gcloud.json
 #virtual environments
 .venv/
 outputs/
+
+# LMDB files
+appserver/neo4japp/services/annotations/**/*.mdb
+appserver/neo4japp/services/annotations/**/*.csv
+appserver/neo4japp/services/annotations/**/*.tsv
