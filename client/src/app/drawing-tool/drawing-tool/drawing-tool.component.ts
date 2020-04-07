@@ -15,7 +15,7 @@ import * as $ from 'jquery';
 import {
     DataFlowService,
     ProjectsService,
-    node_templates,
+    nodeTemplates,
     makeid
 } from '../services';
 import {
@@ -88,7 +88,7 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
     node4AddingEdge2: string;
 
     /** Build the palette ui with node templates defined */
-    nodeTemplates = node_templates;
+    nodeTemplates = nodeTemplates;
 
     /**
      * Subscription for subjects

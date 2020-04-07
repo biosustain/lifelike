@@ -134,7 +134,7 @@ def get_project_pdf(project_id):
     ).first_or_404()
 
     json_graph = data_source.graph
-    graph = gv.Digraph('POC', comment=data_source.description, engine='neato', graph_attr=(('margin', '3'),))
+    graph = gv.Digraph('POC', comment=data_source.description, engine='neato', graph_attr=(('margin', '3'),))  # noqa
     for node in json_graph['nodes']:
         params = {
             'name': node['hash'],
