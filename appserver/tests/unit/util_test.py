@@ -9,6 +9,7 @@ from neo4japp.util import (
     encode_to_str,
 )
 
+
 @pytest.mark.parametrize("camel_input, expected_snake_output", [
     ('', ''),
     ('A', 'a'),
@@ -42,6 +43,7 @@ def test_camel_to_snake_dict(camel_input, expected_snake_output):
 
 class MockEnum(Enum):
     PROPERTY1 = 'Property1'
+
 
 @pytest.mark.parametrize('data_input, expected_output', [
     ('str', 'str'),

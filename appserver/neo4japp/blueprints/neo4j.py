@@ -22,6 +22,7 @@ bp = Blueprint('neo4j-api', __name__, url_prefix='/neo4j')
 class ReactionRequest(CamelDictMixin):
     biocyc_id: int = attr.ib()
 
+
 @attr.s(frozen=True)
 class ExpandNodeRequest(CamelDictMixin):
     node_id: int = attr.ib()
@@ -34,6 +35,7 @@ def load_gpr_graph(req: GraphRequest):
     neo4j = get_neo4j_service_dao()
     graph = neo4j.get_graph(req)
     return SuccessResponse(result=graph, status_code=200)
+
 
 @bp.route('/batch', methods=['GET'])
 @jsonify_with_class()
@@ -71,6 +73,7 @@ def expand_graph_node(req: ExpandNodeRequest):
     node = neo4j.expand_graph(req.node_id, req.limit)
     return SuccessResponse(result=node, status_code=200)
 
+
 @bp.route('/get-snippets-from-edge', methods=['POST'])
 @jsonify_with_class(GetSnippetsFromEdgeRequest)
 def get_snippets_from_edge(req: GetSnippetsFromEdgeRequest):
@@ -79,6 +82,7 @@ def get_snippets_from_edge(req: GetSnippetsFromEdgeRequest):
         req.edge,
     )
     return SuccessResponse(result=snippets_result, status_code=200)
+
 
 @bp.route('/get-snippets-from-duplicate-edge', methods=['POST'])
 @jsonify_with_class(GetSnippetsFromDuplicateEdgeRequest)
@@ -99,6 +103,7 @@ def get_snippets_from_duplicate_edge(req: GetSnippetsFromDuplicateEdgeRequest):
 #     )
 #     return SuccessResponse(edge_snippet_count_result, status_code=200)
 
+
 @bp.route('/get-reference-table-data', methods=['POST'])
 @jsonify_with_class(ReferenceTableDataRequest)
 def get_reference_table_data(req: ReferenceTableDataRequest):
@@ -107,6 +112,7 @@ def get_reference_table_data(req: ReferenceTableDataRequest):
         req.node_edge_pairs,
     )
     return SuccessResponse(reference_table_data, status_code=200)
+
 
 @bp.route('/get-cluster-graph-data', methods=['POST'])
 @jsonify_with_class(GetGraphDataForClusterRequest)
