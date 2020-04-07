@@ -135,7 +135,7 @@ class UserFileImportService(GraphBaseDao):
         delimiters: Dict[int, str],
     ) -> Worksheet:
         for mapped_column_idx, delimiter in delimiters.items():
-            column_idx = int(mapped_column_idx)+1  # openpyxl is 1-index based, so add 1 to column index from excel
+            column_idx = int(mapped_column_idx)+1  # openpyxl is 1-index based, so add 1 to column index from excel  # noqa
             curr_row = 2  # openpyxl is 1-index based, skip header row
             max_row = len(list(current_ws.rows))
 
@@ -156,7 +156,7 @@ class UserFileImportService(GraphBaseDao):
                             if curr_working_idx == column_idx:
                                 cell.value = cell_value_split
                             else:
-                                cell.value = current_ws.cell(row=curr_row, column=curr_working_idx).value
+                                cell.value = current_ws.cell(row=curr_row, column=curr_working_idx).value  # noqa
                         new_row += 1
                         # increment max_row for each new row added
                         max_row += 1
@@ -209,15 +209,16 @@ class UserFileImportService(GraphBaseDao):
                     mapped_node_prop_value = cell_value
                     mapped_node_prop = next(iter(node.mapped_node_property_from.values()))
 
+                    # TODO: Should the attributes of GraphNodeCreationMapping be made optional...?
                     nodes.append(GraphNodeCreationMapping(
-                        domain=node.domain,
-                        node_type=node.node_type,
+                        domain=node.domain,  # type: ignore
+                        node_type=node.node_type,  # type: ignore
                         node_properties=node_properties,
-                        mapped_node_prop=mapped_node_prop,
+                        mapped_node_prop=mapped_node_prop,  # type: ignore
                         mapped_node_prop_value=mapped_node_prop_value,
                         kg_mapped_node_type=node.mapped_node_type,
-                        kg_mapped_node_prop=node.mapped_node_property_to,
-                        edge_label=node.edge,
+                        kg_mapped_node_prop=node.mapped_node_property_to,  # type: ignore
+                        edge_label=node.edge,  # type: ignore
                     ))
                 curr_row += 1
         return nodes
@@ -274,17 +275,17 @@ class UserFileImportService(GraphBaseDao):
                 # mapped_node_property_from is the column to get value
                 if relation.target_node.mapped_to_universal_graph:
                     # get the node label from mapped_to_universal_graph dict instead
-                    target_node_label = relation.target_node.mapped_to_universal_graph.universal_graph_node_type
-                    target_node_prop_label = relation.target_node.mapped_to_universal_graph.universal_graph_node_property_label
+                    target_node_label = relation.target_node.mapped_to_universal_graph.universal_graph_node_type  # noqa
+                    target_node_prop_label = relation.target_node.mapped_to_universal_graph.universal_graph_node_property_label  # noqa
                 else:
                     target_node_label = relation.target_node.mapped_node_type
-                    target_node_prop_label = relation.target_node.mapped_node_property_to
+                    target_node_prop_label = relation.target_node.mapped_node_property_to   # type: ignore  # noqa
                 target_node_prop_value = current_ws.cell(
-                    row=curr_row, column=int(next(iter(relation.target_node.mapped_node_property_from)))+1).value
+                    row=curr_row, column=int(next(iter(relation.target_node.mapped_node_property_from)))+1).value  # noqa
 
                 relationships.append(GraphRelationshipCreationMapping(
-                    source_node_label=source_node_label,
-                    source_node_prop_label=source_node_prop_label,
+                    source_node_label=source_node_label,  # type: ignore
+                    source_node_prop_label=source_node_prop_label,  # type: ignore
                     source_node_prop_value=source_node_prop_value,
                     source_node_properties=source_node_properties,
                     target_node_label=target_node_label,
@@ -323,8 +324,8 @@ class UserFileImportService(GraphBaseDao):
 
         # needed because haven't committed yet
         # so the match would not return a node
-        created_nodes = set()
-        created_domains = dict()
+        created_nodes = set()  # type: ignore
+        created_domains = dict()  # type: ignore
 
         for node in node_mappings.new_nodes:
             # can't use cipher parameters due to the dynamic map keys in filtering
@@ -381,7 +382,7 @@ class UserFileImportService(GraphBaseDao):
                 # create relationship between user experimental data node with
                 # existing nodes in knowledge graph
                 if kg_mapped_node_type:
-                    kg_node = self.graph.nodes.match(kg_mapped_node_type, **kg_filter_property).first()
+                    kg_node = self.graph.nodes.match(kg_mapped_node_type, **kg_filter_property).first()  # noqa
                     if kg_node:
                         relationship = Relationship(exp_node, edge_label, kg_node, **{})
                         tx.create(relationship)
@@ -415,9 +416,9 @@ class UserFileImportService(GraphBaseDao):
             # in that case, won't get a source_node here
             # probably fix is to create new node
             # referenced above already (search for LL-81)
-            source_node = self.graph.nodes.match(source_node_label, **source_filter_property).first()
+            source_node = self.graph.nodes.match(source_node_label, **source_filter_property).first()  # noqa
             if source_node:
-                target_node = self.graph.nodes.match(target_node_label, **target_filter_property).first()
+                target_node = self.graph.nodes.match(target_node_label, **target_filter_property).first()  # noqa
                 if target_node:
                     # TODO: the **{} should be edge properties
                     tx.create(Relationship(source_node, edge_label, target_node, **{}))

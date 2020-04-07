@@ -18,4 +18,4 @@ export {
   DrawingToolComponent,
   PdfViewerComponent,
   PendingChangesGuard,
-}
+};
