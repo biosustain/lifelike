@@ -1,5 +1,5 @@
 """Update user model to include first_name/last_name
-and project to include author/public 
+and project to include author/public
 
 Revision ID: e3afdf1adbd2
 Revises: d9627f552779
