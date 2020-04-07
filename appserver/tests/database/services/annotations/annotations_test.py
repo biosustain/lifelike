@@ -94,7 +94,7 @@ def test_save_bioc_annotations_to_db(annotations_setup, session):
     'text',
     ['I really like coumarate, isobutyraldehyde, nucleotide and ethanol.' +
      ' But I don\'t really like glutarate or L-serine... valine',
-    ],
+     ],
 )
 def test_single_word_chebi_chemical_full_annotations(annotations_setup, text):
     annotator = get_annotations_service()
@@ -121,7 +121,7 @@ def test_single_word_chebi_chemical_full_annotations(annotations_setup, text):
     'text',
     ['Cyclohexane was talking to pyridoxal just yesterday before meeting Metolachlor.' +
      ' 4-hydroxybenzaldehyde --- Artemisinin has Artemis in its name',
-    ],
+     ],
 )
 def test_single_word_compound_full_annotations(annotations_setup, text):
     annotator = get_annotations_service()
@@ -146,7 +146,7 @@ def test_single_word_compound_full_annotations(annotations_setup, text):
     'text',
     ['Some proteins include: polymerase and ribosome.' +
      ' SucB-dihydrolipoate! Ribosome has the word some in it. Neat huh?\nBet you agree with that!',
-    ],
+     ],
 )
 def test_single_word_protein_full_annotations(annotations_setup, text):
     annotator = get_annotations_service()
@@ -170,7 +170,7 @@ def test_single_word_protein_full_annotations(annotations_setup, text):
     'text',
     ['Soybeans can be used to make soy milk and tofu.' +
      ' Here are some species that are one word: Bacteriophage, S. cerevisiae and of course Human!',
-    ],
+     ],
 )
 def test_single_word_species_full_annotations(annotations_setup, text):
     annotator = get_annotations_service()
@@ -195,7 +195,7 @@ def test_single_word_species_full_annotations(annotations_setup, text):
     ['The disease Spondylosis is related to disks in the spine.' +
      ' Meningism, is a syndrome characterized by headaches, neck stiffness and so on;;....' +
      ' etc... Gagging, is triggered by touching the roof of your mouth!',
-    ],
+     ],
 )
 def test_single_word_diseases_full_annotations(annotations_setup, text):
     annotator = get_annotations_service()
@@ -221,7 +221,7 @@ def test_single_word_diseases_full_annotations(annotations_setup, text):
     ['Histidine methyl ester is an irreversible inhibitor for histidine decarboxylase.' +
      ' HC Blue No. 2 is a dark blue microcrystalline powder.' +
      ' peptidyl-threonine',
-    ],
+     ],
 )
 def test_multi_word_chebi_chemical_full_annotations(annotations_setup, text):
     annotator = get_annotations_service()
@@ -251,7 +251,7 @@ def test_multi_word_chebi_chemical_full_annotations(annotations_setup, text):
     ['But, in should not map to an existing compound.' +
      ' Artemisinic alcohol has the word Artemis in it.' +
      ' 1,3-propanediol',
-    ],
+     ],
 )
 def test_multi_word_compound_full_annotations(annotations_setup, text):
     annotator = get_annotations_service()
@@ -276,7 +276,7 @@ def test_multi_word_compound_full_annotations(annotations_setup, text):
      'hydrogen peroxide to water and oxygen. ' +
      '- protein synthesis, is a biological process inside cells.' +
      ' B12-dependent glycerol dehydratase',
-    ],
+     ],
 )
 def test_multi_word_protein_full_annotations(annotations_setup, text):
     annotator = get_annotations_service()
@@ -301,7 +301,7 @@ def test_multi_word_protein_full_annotations(annotations_setup, text):
     ['At this rate, Salmonella  enterica, can be transmitted through food and water  .' +
      ' Escherichia coli lives in the intestines. E coli can be good and bad;' +
      ' Some strains of E.   coli help with digestion!',
-    ],
+     ],
 )
 def test_multi_word_species_full_annotations(annotations_setup, text):
     annotator = get_annotations_service()
@@ -326,7 +326,7 @@ def test_multi_word_species_full_annotations(annotations_setup, text):
     ['The disease Spondylosis is related to intervertebral disks.' +
      ' Meningism, is a syndrome characterized by headaches, neck stiffness and so on;;....' +
      ' Pharyngeal Reflex - a synonym for gagging. Triggered by touching roof of mouth!',
-    ],
+     ],
 )
 def test_multi_word_diseases_full_annotations(annotations_setup, text):
     annotator = get_annotations_service()
@@ -356,7 +356,7 @@ def test_multi_word_diseases_full_annotations(annotations_setup, text):
      ' Artemisinic alcohol has the word Artemis in it;' +
      ' Some strains of E.   coli help with digestion!\nRibosome is one of many proteins..' +
      ' Escherichia coli (E. coli for short)',
-    ],
+     ],
 )
 def test_correct_annotated_entity_recognition(annotations_setup, text):
     annotator = get_annotations_service()

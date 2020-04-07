@@ -37,8 +37,12 @@ def upgrade():
         sa.Column('raw_file', sa.LargeBinary(), nullable=False),
         sa.Column('username', sa.String(length=30), nullable=True),
         sa.Column('creation_date', sa.DateTime(), nullable=True),
-        sa.Column('annotations', postgresql.JSONB(astext_type=sa.Text()),
-            server_default='[]', nullable=False),
+        sa.Column(
+            'annotations',
+            postgresql.JSONB(astext_type=sa.Text()),
+            server_default='[]',
+            nullable=False,
+        ),
         sa.PrimaryKeyConstraint('id', name=op.f('pk_files')),
         sa.UniqueConstraint('file_id', name=op.f('uq_files_file_id')),
         sa.UniqueConstraint('filename', name=op.f('uq_files_filename'))
