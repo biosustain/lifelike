@@ -16,6 +16,7 @@ from neo4japp.models import Files
 directory = path.realpath(path.dirname(__file__))
 
 
+@pytest.mark.skip
 def test_generate_annotations(annotations_setup):
     annotator = get_annotations_service()
     token_extractor = get_token_extractor_service()
@@ -36,6 +37,7 @@ def test_generate_annotations(annotations_setup):
     assert 'mitochondrial disease' in keywords
 
 
+@pytest.mark.skip
 def test_generate_bioc_annotations_format(annotations_setup):
     annotator = get_annotations_service()
     bioc_service = get_bioc_document_service()
@@ -56,6 +58,7 @@ def test_generate_bioc_annotations_format(annotations_setup):
     assert uri == path.join(directory, 'pdf_samples/example3.pdf')
 
 
+@pytest.mark.skip
 def test_save_bioc_annotations_to_db(annotations_setup, session):
     annotator = get_annotations_service()
     bioc_service = get_bioc_document_service()
@@ -90,6 +93,7 @@ def test_save_bioc_annotations_to_db(annotations_setup, session):
     assert pdf_file_model.file_id == '123'
 
 
+@pytest.mark.skip
 @pytest.mark.parametrize(
     'text',
     ['I really like coumarate, isobutyraldehyde, nucleotide and ethanol.' +
@@ -117,6 +121,7 @@ def test_single_word_chebi_chemical_full_annotations(annotations_setup, text):
     assert keywords.issubset(full_keywords)
 
 
+@pytest.mark.skip
 @pytest.mark.parametrize(
     'text',
     ['Cyclohexane was talking to pyridoxal just yesterday before meeting Metolachlor.' +
@@ -142,6 +147,7 @@ def test_single_word_compound_full_annotations(annotations_setup, text):
     assert keywords.issubset(full_keywords)
 
 
+@pytest.mark.skip
 @pytest.mark.parametrize(
     'text',
     ['Some proteins include: polymerase and ribosome.' +
@@ -166,6 +172,7 @@ def test_single_word_protein_full_annotations(annotations_setup, text):
     assert keywords.issubset(full_keywords)
 
 
+@pytest.mark.skip
 @pytest.mark.parametrize(
     'text',
     ['Soybeans can be used to make soy milk and tofu.' +
@@ -190,6 +197,7 @@ def test_single_word_species_full_annotations(annotations_setup, text):
     assert keywords.issubset(full_keywords)
 
 
+@pytest.mark.skip
 @pytest.mark.parametrize(
     'text',
     ['The disease Spondylosis is related to disks in the spine.' +
@@ -216,6 +224,7 @@ def test_single_word_diseases_full_annotations(annotations_setup, text):
     assert keywords.issubset(full_keywords)
 
 
+@pytest.mark.skip
 @pytest.mark.parametrize(
     'text',
     ['Histidine methyl ester is an irreversible inhibitor for histidine decarboxylase.' +
@@ -246,6 +255,7 @@ def test_multi_word_chebi_chemical_full_annotations(annotations_setup, text):
     assert keywords.issubset(full_keywords)
 
 
+@pytest.mark.skip
 @pytest.mark.parametrize(
     'text',
     ['But, in should not map to an existing compound.' +
@@ -270,6 +280,7 @@ def test_multi_word_compound_full_annotations(annotations_setup, text):
     assert keywords.issubset(full_keywords)
 
 
+@pytest.mark.skip
 @pytest.mark.parametrize(
     'text',
     ['. Glutathione peroxidase help catalyzes the reduction of ' +
@@ -296,6 +307,7 @@ def test_multi_word_protein_full_annotations(annotations_setup, text):
     assert keywords.issubset(full_keywords)
 
 
+@pytest.mark.skip
 @pytest.mark.parametrize(
     'text',
     ['At this rate, Salmonella  enterica, can be transmitted through food and water  .' +
@@ -321,6 +333,7 @@ def test_multi_word_species_full_annotations(annotations_setup, text):
     assert keywords.issubset(full_keywords)
 
 
+@pytest.mark.skip
 @pytest.mark.parametrize(
     'text',
     ['The disease Spondylosis is related to intervertebral disks.' +
@@ -349,6 +362,7 @@ def test_multi_word_diseases_full_annotations(annotations_setup, text):
     assert keywords.issubset(full_keywords)
 
 
+@pytest.mark.skip
 @pytest.mark.parametrize(
     'text',
     ['At this rate, Salmonella  enterica, can be transmitted through food and water  .\n' +
@@ -405,6 +419,7 @@ def test_correct_annotated_entity_recognition(annotations_setup, text):
     assert diseases_keywords['strains'] == 'MESH:D013180'
 
 
+@pytest.mark.skip
 @pytest.mark.parametrize('text', ['Escherichia coli (E. coli for short)  3   \n\n'])
 def test_can_exit_sequential_walking_loop(annotations_setup, text):
     """Only increases the sequential count if the
@@ -425,6 +440,7 @@ def test_can_exit_sequential_walking_loop(annotations_setup, text):
     assert len(species_keywords) == 2
 
 
+@pytest.mark.skip
 @pytest.mark.parametrize(
     'text', ['headaches is a term used alternatively by multiple common names not included'])
 def test_can_drop_synonym_annotations_if_common_names_not_used(annotations_setup, text):
@@ -438,6 +454,7 @@ def test_can_drop_synonym_annotations_if_common_names_not_used(annotations_setup
     assert len(diseases_keywords) == 0
 
 
+@pytest.mark.skip
 @pytest.mark.parametrize('text', ['dihydrogen is a common name for hydrogen'])
 def test_can_annotate_synonym_if_one_of_common_names_is_used(annotations_setup, text):
     annotator = get_annotations_service()
@@ -451,6 +468,7 @@ def test_can_annotate_synonym_if_one_of_common_names_is_used(annotations_setup, 
     assert keywords == chemical_keywords
 
 
+@pytest.mark.skip
 @pytest.mark.parametrize('text', ['dihydrogen and hydrogen atom are a common names for hydrogen'])
 def test_can_drop_synonym_annotations_if_multiple_common_names_is_used(annotations_setup, text):
     annotator = get_annotations_service()
