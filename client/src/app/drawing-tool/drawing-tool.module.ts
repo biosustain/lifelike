@@ -1,7 +1,4 @@
 import { NgModule } from '@angular/core';
-import {
-  HTTP_INTERCEPTORS
-} from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { BrowserModule } from '@angular/platform-browser';
 import { DragDropModule } from '@angular/cdk/drag-drop';
@@ -31,7 +28,6 @@ import {
 import {
   PdfViewerComponent
 } from './pdf-viewer/pdf-viewer.component';
-
 
 import {
   TruncatePipe,

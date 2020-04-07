@@ -1,5 +1,5 @@
 import {
-  node_templates,
+  nodeTemplates,
   uuidv4
 } from './services';
 import { VisNetworkGraphNode } from './services/interfaces';
@@ -13,9 +13,9 @@ export class NetworkVis {
   /** The DOM container to inject HTML5 canvas in */
   container = null;
   /** vis.js Dataset collection of nodes */
-  vis_nodes = null;
+  visNodes = null;
   /** vis.js Dataset collection of edges */
-  vis_edges = null;
+  visEdges = null;
   /**  */
   network: Network = null;
 
@@ -44,31 +44,31 @@ export class NetworkVis {
     layout: {
       randomSeed: 1
     }
-  }
+  };
 
   /**
    *
-   * @param {HTMLElement} container -
+   * @param HTMLElement container -
    * The container DOM to inject graph in
    */
   constructor(container: HTMLElement) {
     this.container = container;
 
     // Pull in node template styling defs
-     const group_styling = {};
-     for (let n_t of node_templates) {
-       group_styling[n_t.label] = {
-         borderWidth: 0,
-         color: {
-           background: n_t.color
-         },
-         font: {
-           color: '#fff'
-         }
-       }
-     }
-     // And assign to vis network js styling
-     this.options.groups = group_styling;
+    const groupStyling = {};
+    for (const template of nodeTemplates) {
+      groupStyling[template.label] = {
+        borderWidth: 0,
+        color: {
+          background: template.color
+        },
+        font: {
+          color: '#fff'
+        }
+      };
+    }
+    // And assign to vis network js styling
+    this.options.groups = groupStyling;
   }
 
   /**
@@ -78,28 +78,25 @@ export class NetworkVis {
     this.network.fit({
       nodes: [],
       animation: false
-    })
+    });
   }
 
   /**
    * Draw network graph on canvas in container
    * with edges and nodes specified
-   * @param nodes
-   * @param edges
+   * @param nodes array of nodes
+   * @param edges array of edges
    */
-  draw(
-    nodes=[],
-    edges=[]
-  ) {
+  draw(nodes = [], edges = []) {
     // create an array with nodes
-    this.vis_nodes = new DataSet(nodes);
+    this.visNodes = new DataSet(nodes);
     // create an array with edges
-    this.vis_edges = new DataSet(edges);
+    this.visEdges = new DataSet(edges);
 
     // provide the data in the visjs format
-    var data = {
-      nodes: this.vis_nodes,
-      edges: this.vis_edges
+    const data = {
+      nodes: this.visNodes,
+      edges: this.visEdges
     };
 
     // initialize your network!
@@ -114,19 +111,19 @@ export class NetworkVis {
 
   /**
    * Add edge to network graph
-   * @param source_id
-   * @param target_id
-   * @param label
+   * @param sourceId id of the source node
+   * @param targetId id of the target node
+   * @param label string representing the edge label
    */
-  addEdge(source_id, target_id, label='') {
-    var e = {
-      label: label,
-      from: source_id,
-      to: target_id,
+  addEdge(sourceId, targetId, label = '') {
+    const e = {
+      label,
+      from: sourceId,
+      to: targetId,
       id: uuidv4()
     };
 
-    this.vis_edges.add([e]);
+    this.visEdges.add([e]);
 
     return e;
   }
@@ -136,7 +133,7 @@ export class NetworkVis {
    * @param id - id edge of edge to remove by
    */
   removeEdge(id) {
-    this.vis_edges.remove(id);
+    this.visEdges.remove(id);
   }
 
   /**
@@ -146,8 +143,8 @@ export class NetworkVis {
    */
   updateEdge(id, data) {
 
-    this.vis_edges.update({
-      id: id,
+    this.visEdges.update({
+      id,
       ...data
     });
   }
@@ -155,26 +152,26 @@ export class NetworkVis {
   /**
    * Add node with initial data to network graph
    * at specific coordinate
-   * @param data
-   * @param x
-   * @param y
+   * @param data object representing node data
+   * @param x x-coord of the node
+   * @param y y-coord of the node
    */
-  addNode(data={}, x=10, y=10): VisNetworkGraphNode {
+  addNode(data = {}, x = 10, y = 10): VisNetworkGraphNode {
 
-    var n: VisNetworkGraphNode = {
+    const n: VisNetworkGraphNode = {
       ...data
     };
 
     // Handle values for attribute that might be missing
-    n.id = n['id'] || uuidv4();
-    n.x = n['x'] || x;
-    n.y = n['y'] || y;
+    n.id = n.id || uuidv4();
+    n.x = n.x || x;
+    n.y = n.y || y;
     n.size = 5;
     n.data = {
-      hyperlink: n['hyperlink'] || ''
-    }
+      hyperlink: n.data.hyperlink || ''
+    };
 
-    var updated = this.vis_nodes.add([n]);
+    this.visNodes.add([n]);
 
     return n;
   }
@@ -182,34 +179,34 @@ export class NetworkVis {
   /**
    * Remove node from network graph along with
    * edges it connected to by its id
-   * @param id
+   * @param id represents the node id
    */
   removeNode(id) {
-    this.vis_nodes.remove(id);
+    this.visNodes.remove(id);
 
     // Pull the id of edges that node id
     // was connected to
-    let connectedEdges = this.vis_edges.get({
+    const connectedEdges = this.visEdges.get({
       filter: (item) => {
         return item.from === id || item.to === id;
       }
     });
 
     // Remove them from collection ...
-    this.vis_edges.remove(connectedEdges);
+    this.visEdges.remove(connectedEdges);
   }
 
   /**
    * Update a node by it's id and data
-   * @param id
-   * @param data
+   * @param id represents the node id
+   * @param data represents the data of the node
    */
   updateNode(id, data) {
-    this.vis_nodes.update({
-      id: id,
-      label: data['label'],
-      group: data['group'],
-      data: data['data']
+    this.visNodes.update({
+      id,
+      label: data.label,
+      group: data.group,
+      data: data.data
     });
   }
 
@@ -219,41 +216,41 @@ export class NetworkVis {
    * @param id - id of the node you want to info on
    */
   getNode(id) {
-    var node = this.vis_nodes.get(id);
-    var edges = this.vis_edges.get({
+    const node = this.visNodes.get(id);
+    const edges = this.visEdges.get({
       filter: (item) => {
         return item.from === id;
       }
     });
 
-    var node_data = {
+    const nodeData = {
       id: node.id,
       group: node.group,
       label: node.label,
-      edges: edges,
+      edges,
       data: node.data
     };
-    var other_nodes = this.vis_nodes.get({
+    const otherNodes = this.visNodes.get({
       filter: (item) => {
         return item.id !== id;
       }
     });
 
     return {
-      node_data,
-      other_nodes
+      nodeData,
+      otherNodes
     };
   }
 
   /**
    * Return an edge's detail by it's id
-   * @param id
+   * @param id represents an edge id
    */
   getEdge(id) {
-    var edge_data = this.vis_edges.get(id);
+    const edgeData = this.visEdges.get(id);
 
     return {
-      edge_data
+      edgeData
     };
   }
 
@@ -261,33 +258,33 @@ export class NetworkVis {
    * Return JSON representation of network graph
    */
   export(): {edges: any[], nodes: any[]} {
-    let nodePosDict = this.network.getPositions();
+    const nodePosDict = this.network.getPositions();
 
     return {
-      "nodes": this.vis_nodes.get().map(n => {
+      nodes: this.visNodes.get().map(n => {
         n.x = nodePosDict[n.id].x;
         n.y = nodePosDict[n.id].y;
 
         return n;
-      }).filter(e => e['id'] !== "EDGE_FORMATION_DRAGGING"),
-      "edges": this.vis_edges.get().filter(
-        e => e['to'] !== "EDGE_FORMATION_DRAGGING"
+      }).filter(e => e.id !== 'EDGE_FORMATION_DRAGGING'),
+      edges: this.visEdges.get().filter(
+        e => e.to !== 'EDGE_FORMATION_DRAGGING'
       )
-    }
+    };
   }
 
   /**
    * Draw network graph from JSON representation
    */
   import(graph: {nodes: any[], edges: any[]}) {
-    this.vis_nodes = new DataSet(graph.nodes);
-    this.vis_edges = new DataSet(graph.edges);
+    this.visNodes = new DataSet(graph.nodes);
+    this.visEdges = new DataSet(graph.edges);
 
     this.network.setData({
-      nodes: this.vis_nodes,
-      edges: this.vis_edges
+      nodes: this.visNodes,
+      edges: this.visEdges
     });
 
-    this.network.redraw()
+    this.network.redraw();
   }
 }

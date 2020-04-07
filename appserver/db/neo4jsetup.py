@@ -21,11 +21,11 @@ def setup():
         indexed_properties = ['name', 'id', 'sentence']
         create_fts_index_query = """
             CALL db.index.fulltext.createNodeIndex(
-                "namesEvidenceAndId", [{l}], [{p}]
+                "namesEvidenceAndId", [{}], [{}]
             )
         """.format(
-            l=','.join([f'"{label}"' for label in labels]),
-            p=','.join([f'"{prop}"' for prop in indexed_properties])
+            ','.join([f'"{label}"' for label in labels]),
+            ','.join([f'"{prop}"' for prop in indexed_properties])
         )
         print(create_fts_index_query)
 
