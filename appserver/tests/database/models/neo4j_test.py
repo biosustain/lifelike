@@ -8,6 +8,7 @@ from neo4japp.exceptions import (
     FormatterException,
 )
 
+
 @pytest.mark.parametrize('vis_edge_dict', [
     {
         'id': 1,

@@ -26,7 +26,7 @@ export class CreateProjectDialogComponent implements OnInit, OnDestroy {
 
   constructor(
     public dialogRef: MatDialogRef<CreateProjectDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: Object
+    @Inject(MAT_DIALOG_DATA) public data: any
   ) { }
 
   ngOnInit() {
@@ -43,10 +43,10 @@ export class CreateProjectDialogComponent implements OnInit, OnDestroy {
     this.dialogRef.close();
   }
   onSubmitClick(): void {
-    if (this.form.controls['label'].valid) {
+    if (this.form.controls.label.valid) {
       this.dialogRef.close(this.form.value);
     } else {
-      this.form.controls['label'].setErrors({required: true});
+      this.form.controls.label.setErrors({required: true});
     }
   }
 }
