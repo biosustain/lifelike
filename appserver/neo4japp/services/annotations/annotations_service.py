@@ -24,14 +24,14 @@ class AnnotationsService:
         self.lmdb_session = lmdb_session
 
         # for word tokens that are typos
-        self.correct_synonyms = dict()
+        self.correct_synonyms: Dict[str, str] = dict()
 
-        self.matched_genes = set()
-        self.matched_chemicals = set()
-        self.matched_compounds = set()
-        self.matched_proteins = set()
-        self.matched_species = set()
-        self.matched_diseases = set()
+        self.matched_genes: Set[str] = set()
+        self.matched_chemicals: Set[str] = set()
+        self.matched_compounds: Set[str] = set()
+        self.matched_proteins: Set[str] = set()
+        self.matched_species: Set[str] = set()
+        self.matched_diseases: Set[str] = set()
 
     def lmdb_validation(
         self,
@@ -87,8 +87,8 @@ class AnnotationsService:
                 token_normalized_whitespace = ' '.join(token_normalized_whitespace.split())
 
                 if (token_normalized_whitespace not in COMMON_WORDS and
-                    not re.match(self.regex_for_floats, token_normalized_whitespace) and
-                    token_normalized_whitespace not in ascii_lowercase):
+                        not re.match(self.regex_for_floats, token_normalized_whitespace) and
+                            token_normalized_whitespace not in ascii_lowercase):
 
                     if token_normalized_whitespace in TYPO_SYNONYMS:
                         for correct_synonym in TYPO_SYNONYMS[token_normalized_whitespace]:
@@ -155,7 +155,7 @@ class AnnotationsService:
 
             common_name_count = 0
             if len(entity['common_name']) > 1:
-                common_names = set([v for _,v in entity['common_name'].items()])
+                common_names = set([v for _, v in entity['common_name'].items()])
                 common_names_in_doc_text = [n in tokens_lowercased for n in common_names]
 
                 # skip if none of the common names appear
