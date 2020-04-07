@@ -16,6 +16,8 @@ import { DrawingToolModule } from './drawing-tool/drawing-tool.module';
 import { SharedModule } from './shared/shared.module';
 import { FileBrowserComponent } from './file-browser/file-browser.component';
 
+import { httpInterceptorProviders } from 'app/http-interceptors/index';
+
 @NgModule({
   declarations: [
     AppComponent,
@@ -37,7 +39,7 @@ import { FileBrowserComponent } from './file-browser/file-browser.component';
     SearchModule,
     DrawingToolModule
   ],
-  providers: [],
+  providers: [httpInterceptorProviders],
   exports: [
   ],
   bootstrap: [AppComponent]

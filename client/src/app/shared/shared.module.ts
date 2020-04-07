@@ -12,8 +12,6 @@ import { RouterModule } from '@angular/router';
 // ngrx
 import { EffectsModule } from '@ngrx/effects';
 
-import { httpInterceptorProviders } from '../http-interceptors';
-
 import { AngularMaterialModule } from './angular-material.module';
 import { SharedDirectivesModule } from './directives/shareddirectives.module';
 
@@ -46,7 +44,7 @@ const components = [
         EffectsModule.forFeature([SharedNgrxEffects]),
     ],
     declarations: components,
-    providers: [httpInterceptorProviders, SharedNgrxEffects],
+    providers: [SharedNgrxEffects],
     // exported modules are visible to modules that import this one
     exports: [
         // Modules
