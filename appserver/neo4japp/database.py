@@ -1,16 +1,47 @@
+import hashlib
 import os
+
 from flask import g, current_app
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
 from py2neo import Graph
+from sqlalchemy import MetaData, Table, UniqueConstraint
+
+
+def trunc_long_constraint_name(name: str) -> str:
+    if (len(name) > 59):
+        truncated_name = name[:55] + '_' + \
+            hashlib.md5(name[55:].encode('utf-8')).hexdigest()[:4]
+        return truncated_name
+    return name
+
+
+def uq_trunc(unique_constraint: UniqueConstraint, table: Table):
+    tokens = [table.name] + [
+        column.name
+        for column in unique_constraint.columns
+    ]
+    return trunc_long_constraint_name('_'.join(tokens))
+
+
+convention = {
+    'uq_trunc': uq_trunc,
+    'ix': 'ix_%(column_0_label)s',
+    'uq': "uq_%(uq_trunc)s",
+    'ck': "ck_%(table_name)s_%(constraint_name)s",
+    'fk': "fk_%(table_name)s_%(column_0_name)s_%(referred_table_name)s",  # noqa
+    'pk': "pk_%(table_name)s"
+}
+
+metadata = MetaData(naming_convention=convention)
 
 # TODO: Set these in a more appropriate location
 # TODO: Handle database connection properly
 
-db = SQLAlchemy()
+db = SQLAlchemy(metadata=metadata)
 ma = Marshmallow()
-migrate = Migrate()
+migrate = Migrate(compare_type=True)
 
 
 def _connect_to_neo4j():
@@ -65,6 +96,28 @@ def get_account_service():
     return g.account_service
 
 
+def get_annotations_service():
+    if 'annotations_service' not in g:
+        from neo4japp.services.annotations import AnnotationsService, LMDBDao
+        lmdb_dao = LMDBDao()
+        g.annotations_service = AnnotationsService(lmdb_session=lmdb_dao)
+    return g.annotations_service
+
+
+def get_token_extractor_service():
+    if 'token_extractor_service' not in g:
+        from neo4japp.services.annotations import TokenExtractor
+        g.token_extractor_service = TokenExtractor()
+    return g.token_extractor_service
+
+
+def get_bioc_document_service():
+    if 'bioc_document_service' not in g:
+        from neo4japp.services.annotations import BiocDocumentService
+        g.bioc_document_service = BiocDocumentService()
+    return g.bioc_document_service
+
+
 def reset_dao():
     """ Cleans up DAO bound to flask request context
 
@@ -76,7 +129,10 @@ def reset_dao():
         'user_file_import_service',
         'search_dao',
         'authorization_service',
-        'account_service'
+        'account_service',
+        'annotations_service',
+        'token_extractor_service',
+        'bioc_document_service',
     ]:
         if dao in g:
             g.pop(dao)

@@ -13,11 +13,10 @@ import { environment } from '../../environments/environment';
  */
 @Injectable()
 export class HttpErrorInterceptor implements HttpInterceptor {
-    base_url = environment.apiUrl;
+    baseUrl = environment.apiUrl;
 
     constructor(
         private http: HttpClient,
-        private route: Router
     ) {}
 
     intercept(req: HttpRequest<any>, next: HttpHandler): Observable<any> {
@@ -40,7 +39,7 @@ export class HttpErrorInterceptor implements HttpInterceptor {
                                   req = this.updateAuthHeader(req);
                                   return next.handle(req);
                                 })
-                              )
+                            );
                         }
                     }
 
@@ -52,21 +51,27 @@ export class HttpErrorInterceptor implements HttpInterceptor {
     /**
      * Create http options with authorization
      * header if boolean set to true
-     * @param with_jwt 
+     * @param withJwt boolean representing whether to use a jwt or not
      */
-    createHttpOptions(with_jwt=false) {
-        const headers = {
-            'Content-Type':  'application/json'
+    createHttpOptions(withJwt = false) {
+        if (withJwt) {
+            return {
+                headers: new HttpHeaders(
+                    {
+                        'Content-Type':  'application/json',
+                        Authorization: 'Token ' + localStorage.getItem('access_jwt')
+                    }
+                )
+            };
+        } else {
+            return {
+                headers: new HttpHeaders(
+                    {
+                        'Content-Type':  'application/json',
+                    }
+                )
+            };
         }
-
-        if (with_jwt) {
-            headers['Authorization'] = 'Token ' + localStorage.getItem('access_jwt');
-        }
-
-        const httpOptions = {
-            headers: new HttpHeaders(headers)
-        };
-        return httpOptions
     }
 
     /**
@@ -76,26 +81,26 @@ export class HttpErrorInterceptor implements HttpInterceptor {
     updateAuthHeader(request: HttpRequest<any>) {
         return request.clone({
             setHeaders: {
-                'Authorization': 'Bearer ' + localStorage.getItem('access_jwt')
+                Authorization: 'Bearer ' + localStorage.getItem('access_jwt')
             }
-        })
+        });
     }
 
     /**
      * Renew user access token with their refresh token
      */
     public refresh(): Observable<any> {
-        let jwt = localStorage.getItem('refresh_jwt');
+        const jwt = localStorage.getItem('refresh_jwt');
 
         return this.http.post(
-            this.base_url + '/auth/refresh',
+            this.baseUrl + '/auth/refresh',
             {jwt},
             this.createHttpOptions()
         ).pipe(
             tap(resp => {
-                localStorage.setItem('access_jwt', resp['access_jwt']);
-                localStorage.setItem('refresh_jwt', resp['refresh_jwt']);
-            })    
+                localStorage.setItem('access_jwt', resp.access_jwt);
+                localStorage.setItem('refresh_jwt', resp.refresh_jwt);
+            })
         );
-    }  
+    }
 }
