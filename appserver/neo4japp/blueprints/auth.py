@@ -118,7 +118,7 @@ def login():
     data = request.get_json()
 
     user = AppUser.query.filter_by(
-        email=data.get('email_addr')
+        email=data.get('email')
     ).first_or_404()
 
     if user.check_password(data.get('password')):
