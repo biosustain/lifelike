@@ -34,6 +34,8 @@ def get_project():
     user = g.current_user
 
     # Pull the projects tied to that user
+
+    # TODO - add pagination : LL-343 in Backlog
     projects = Project.query.filter_by(user_id=user.id).all()
     project_schema = ProjectSchema(many=True)
 
