@@ -1,7 +1,5 @@
 import {
   Component,
-  OnInit,
-  AfterViewInit,
   ViewChild,
   TemplateRef,
   ViewContainerRef
@@ -65,7 +63,7 @@ import { isNullOrUndefined } from 'util';
   templateUrl: './project-list-view.component.html',
   styleUrls: ['./project-list-view.component.scss']
 })
-export class ProjectListViewComponent implements OnInit, AfterViewInit {
+export class ProjectListViewComponent {
   /** Template to inject contextmenu in */
   @ViewChild('projectMenu', {static: false}) projectMenu: TemplateRef<any>;
   overlayRef: OverlayRef | null;
@@ -132,10 +130,7 @@ export class ProjectListViewComponent implements OnInit, AfterViewInit {
     public overlay: Overlay,
     public viewContainerRef: ViewContainerRef,
     private snackBar: MatSnackBar
-  ) { }
-
-  ngOnInit() {}
-  ngAfterViewInit() {
+  ) {
     this.refresh();
   }
 
