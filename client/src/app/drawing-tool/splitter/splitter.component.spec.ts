@@ -1,14 +1,26 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { APP_BASE_HREF } from '@angular/common';
+import {
+  async,
+  ComponentFixture,
+  TestBed
+} from '@angular/core/testing';
 
 import { SplitterComponent } from './splitter.component';
 
-describe('SplitterComponent', () => {
+import { DrawingToolModule } from '../drawing-tool.module';
+
+xdescribe('SplitterComponent', () => {
   let component: SplitterComponent;
   let fixture: ComponentFixture<SplitterComponent>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ SplitterComponent ]
+      imports: [
+        DrawingToolModule
+      ],
+      providers: [
+        {provide: APP_BASE_HREF, useValue : '/' }
+      ]
     })
     .compileComponents();
   }));
