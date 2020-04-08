@@ -4,14 +4,13 @@ import {
 } from '@angular/material/dialog';
 import { Router } from '@angular/router';
 import { OverlayRef, Overlay } from '@angular/cdk/overlay';
-import { Subscription, Observable, fromEvent } from 'rxjs';
+import { Subscription, fromEvent } from 'rxjs';
 import { TemplatePortal } from '@angular/cdk/portal';
 import { filter, take } from 'rxjs/operators';
 
 import {
   ProjectsService,
   DataFlowService,
-  uuidv4
 } from '../services';
 import {
   Project
@@ -28,6 +27,7 @@ import {
 import {
   CopyProjectDialogComponent
 } from './copy-project-dialog/copy-project-dialog.component';
+import { isNullOrUndefined } from 'util';
 
 declare var $: any;
 
@@ -47,8 +47,7 @@ export class ProjectListViewComponent implements OnInit, AfterViewInit {
    */
   selectedProject = null;
 
-  
-  vis_graph = null;
+  visGraph = null;
 
   @ViewChild('projectMenu', {static: false}) projectMenu: TemplateRef<any>;
   overlayRef: OverlayRef | null;
@@ -70,7 +69,7 @@ export class ProjectListViewComponent implements OnInit, AfterViewInit {
   ngAfterViewInit() {
     this.projectService.pullProjects()
       .subscribe(data => {
-        this.projects = data['projects'] as Project[];
+        this.projects = data.projects as Project[];
 
         // Sort project by most recent modified date
         this.projects.sort(
@@ -85,15 +84,14 @@ export class ProjectListViewComponent implements OnInit, AfterViewInit {
   /**
    * Function handler for contextmenu click event
    * to spin up rendered contextmenu for project actions
-   * @param event 
-   * @param project 
+   * @param event represents a oncontext event
+   * @param project represents a project object
    */
   open(event: MouseEvent, project) {
     // prevent event bubbling
     event.preventDefault();
 
-    let x = event.x,
-      y = event.y;
+    const {x, y} = event;
 
     // Close previous context menu if open
     this.close();
@@ -110,7 +108,7 @@ export class ProjectListViewComponent implements OnInit, AfterViewInit {
           overlayY: 'top',
         }
       ]);
-    
+
     // Create and render overlay near cursor position
     this.overlayRef = this.overlay.create({
       positionStrategy,
@@ -125,22 +123,23 @@ export class ProjectListViewComponent implements OnInit, AfterViewInit {
     // render on project item
     this.sub = fromEvent<MouseEvent>(document, 'click')
       .pipe(
-        filter(event => {
-          const clickTarget = event.target as HTMLElement;
-          
+        filter(mouseEvent => {
+          const clickTarget = mouseEvent.target as HTMLElement;
+
+          // TODO: Not sure what the purpose of this is?
           // Check if right click event
-          let isRightClick = false;
-          if ("which" in event) {
-            isRightClick = event["which"] == 3;
-          } else if ("button" in event) {
-            isRightClick = event["button"] == 2;
-          }
+          //   let isRightClick = false;
+          //   if ('which' in mouseEvent) {
+          //     isRightClick = mouseEvent.which === 3;
+          //   } else if ('button' in event) {
+          //     isRightClick = mouseEvent.button === 2;
+          //   }
 
           // Return whether or not click event is on context menu or outside
           return !!this.overlayRef && !this.overlayRef.overlayElement.contains(clickTarget);
         }),
         take(1)
-      ).subscribe(() => this.close())
+      ).subscribe(() => this.close());
   }
 
   /**
@@ -149,11 +148,13 @@ export class ProjectListViewComponent implements OnInit, AfterViewInit {
    * to it
    */
   close() {
-    this.sub && this.sub.unsubscribe();
+    if (!isNullOrUndefined(this.sub)) {
+        this.sub.unsubscribe();
+    }
     if (this.overlayRef) {
       this.overlayRef.dispose();
       this.overlayRef = null;
-    }    
+    }
   }
 
   /**
@@ -165,12 +166,12 @@ export class ProjectListViewComponent implements OnInit, AfterViewInit {
   }
 
   /**
-   * Open right side-bar with project meta information 
+   * Open right side-bar with project meta information
    * in view
-   * @param proj 
+   * @param proj represents a project object
    */
   pickProject(proj: Project) {
-    if (this.overlayRef) return;
+    if (this.overlayRef) { return; }
 
     this.selectedProject = proj;
 
@@ -178,26 +179,26 @@ export class ProjectListViewComponent implements OnInit, AfterViewInit {
       width: '60%'
     }, 400, () => {});
 
-    let container = document.getElementById('canvas');
-    this.vis_graph = new NetworkVis(container);
+    const container = document.getElementById('canvas');
+    this.visGraph = new NetworkVis(container);
 
-    let g = this.projectService.universe2Vis(proj.graph);
+    const g = this.projectService.universe2Vis(proj.graph);
 
     setTimeout(
       () => {
-        this.vis_graph.draw(
+        this.visGraph.draw(
           g.nodes,
           g.edges
         );
       },
       100
-    )
+    );
   }
 
   /**
    * Make a duplicate of a project and its data with a new uid
    * through a confirmation dialog, then call create API on project
-   * @param project 
+   * @param project represents a project object
    */
   copyProject(project) {
     // TODO: Add project into data attr
@@ -207,11 +208,11 @@ export class ProjectListViewComponent implements OnInit, AfterViewInit {
     });
 
     dialogRef.afterClosed().subscribe(result => {
-      if (!result) return;
+      if (!result) { return; }
 
       this.projectService.addProject(result)
         .subscribe((data) => {
-          this.projects.push(data['project']);
+          this.projects.push(data.project);
         });
     });
   }
@@ -228,7 +229,7 @@ export class ProjectListViewComponent implements OnInit, AfterViewInit {
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        let project = {
+        const project = {
           ...result,
           graph: {
             nodes: [],
@@ -239,19 +240,21 @@ export class ProjectListViewComponent implements OnInit, AfterViewInit {
 
         this.projectService.addProject(project)
           .subscribe((data) => {
-            this.projects.push(data['project']);
+            this.projects.push(data.project);
           });
       }
-    });    
+    });
   }
 
   /**
    * Spin up dialog to confirm if user wants to delete project,
    * if so, call delete API on project
-   * @param project 
+   * @param project represents a project object
    */
-  deleteProject(project=null) {
-    if (!project) project = this.selectedProject;
+  deleteProject(project = null) {
+    if (!project) {
+        project = this.selectedProject;
+    }
 
     const dialogRef = this.dialog.open(DeleteProjectDialogComponent, {
       width: '40%',
@@ -275,12 +278,12 @@ export class ProjectListViewComponent implements OnInit, AfterViewInit {
             }
           });
       }
-    });      
+    });
   }
 
   /**
    * Open the project in pdf-viewer view
-   * @param project 
+   * @param project represents a project object
    */
   openPDFViewer(project) {
     this.dataFlow.pushProject2Canvas(project);

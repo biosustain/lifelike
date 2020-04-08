@@ -4,22 +4,24 @@ import { stringToHex } from 'app/shared/utils';
 
 @Component({
     selector: 'app-search-record-node',
-    templateUrl: '/search-record-node.component.html',
+    templateUrl: 'search-record-node.component.html',
     styleUrls: ['./search-record.component.scss']
 })
 export class SearchRecordNodeComponent {
 
-    private _node: FTSQueryRecord;
+    // TODO: We should come up with a consistent way to mark variables as private without using '_', or
+    // just disable that check for tslint.
+    private prvNode: FTSQueryRecord;
     nodeURL: string;
 
     @Input()
     set node(n: FTSQueryRecord) {
-        this._node = n;
+        this.prvNode = n;
         this.nodeURL = stringToHex(n.node.id.toString());
     }
 
     get node(): FTSQueryRecord {
-        return this._node;
+        return this.prvNode;
     }
 
     constructor() {}

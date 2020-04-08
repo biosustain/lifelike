@@ -1,4 +1,14 @@
-"""empty message
+"""Table schema for files.
+
+Had to update migration file itself, rather
+than a new migration file... The reason was
+because changed the `id` column to Integer,
+and there wasn't an easy way to set a default
+value to autoincrement the primary key of an
+existing column with alembic.
+
+The `file_id` column replaced the original
+purpose of the `id` column.
 
 Revision ID: 59b6851c654e
 Revises: d9627f552779

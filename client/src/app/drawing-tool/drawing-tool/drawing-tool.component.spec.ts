@@ -1,18 +1,16 @@
+import { CdkDragDrop } from '@angular/cdk/drag-drop';
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { APP_BASE_HREF } from '@angular/common';
+
 import { DrawingToolComponent } from './drawing-tool.component';
 
-import { MockupModule } from '../mockup.module';
-import { DataFlowService, DragDropEventFactory, ContainerModel } from '../services';
-import { Project } from '../services/interfaces'
-import { By } from 'protractor';
-import { Data } from '@angular/router';
-import { CdkDragDrop } from '@angular/cdk/drag-drop';
+import { DrawingToolModule } from '../drawing-tool.module';
+import { DataFlowService, DragDropEventFactory } from '../services';
 
 declare const viewport;
 
-describe('DrawingToolComponent', () => {
-  let mockup = {
+xdescribe('DrawingToolComponent', () => {
+  const mockup = {
     id: 'test',
     label: '',
     description: '',
@@ -20,12 +18,12 @@ describe('DrawingToolComponent', () => {
       edges: [],
       nodes: []
     }
-  }
+  };
   let component: DrawingToolComponent;
   let fixture: ComponentFixture<DrawingToolComponent>;
 
-  let addNode = (type: string, x: number, y: number) => {
-    let dragDropEvent: CdkDragDrop<any[], any[]> = 
+  function addNode(type: string, x: number, y: number) {
+    const dragDropEvent: CdkDragDrop<any[], any[]> =
       new DragDropEventFactory()
         .createCrossContainerEvent(
           {
@@ -36,19 +34,19 @@ describe('DrawingToolComponent', () => {
           {
             id: 'palette',
             data: [],
-            index: 0 
+            index: 0
           },
           fixture.debugElement.nativeElement.querySelector(`#${type}`) as HTMLElement
         );
-    
+
     dragDropEvent.distance.x = x;
     dragDropEvent.distance.y = y;
 
-    component.drop(dragDropEvent);    
+    component.drop(dragDropEvent);
   }
 
-  let addEdge = (a, b) => {
-    let properties = {
+  function addEdge(a, b) {
+    const properties = {
       nodes: [
         a
       ],
@@ -58,7 +56,7 @@ describe('DrawingToolComponent', () => {
           pageY: 100
         }
       }
-    }
+    };
     component.networkDoubleClickHandler(properties);
     properties.nodes = [b];
     component.networkClickHandler(properties);
@@ -67,7 +65,7 @@ describe('DrawingToolComponent', () => {
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       imports: [
-        MockupModule
+        DrawingToolModule
       ],
       providers: [
         {provide: APP_BASE_HREF, useValue : '/' }
@@ -77,12 +75,12 @@ describe('DrawingToolComponent', () => {
   }));
 
   beforeEach((done) => {
-    viewport.set(1920, 1080)
+    viewport.set(1920, 1080);
 
     fixture = TestBed.createComponent(DrawingToolComponent);
     component = fixture.componentInstance;
 
-    let dataFlow: DataFlowService = TestBed.get(DataFlowService);
+    const dataFlow: DataFlowService = TestBed.get(DataFlowService);
     dataFlow.pushProject2Canvas(mockup);
 
     fixture.detectChanges();
@@ -102,10 +100,10 @@ describe('DrawingToolComponent', () => {
 
     expect(graph.nodes.length).toEqual(3);
 
-    const node_ids = graph.nodes.map(n => n['id'])
-    let nodeA = node_ids[0],
-        nodeB = node_ids[1],
-        nodeC = node_ids[2];
+    const nodeIds = graph.nodes.map(n => n.id);
+    const nodeA = nodeIds[0];
+    const nodeB = nodeIds[1];
+    const nodeC = nodeIds[2];
 
     addEdge(nodeA, nodeB);
     addEdge(nodeB, nodeC);
@@ -123,7 +121,7 @@ describe('DrawingToolComponent', () => {
 
     component.undo();
 
-    let graph = component.visjsNetworkGraph.export();
+    const graph = component.visjsNetworkGraph.export();
 
     expect(graph.nodes.length).toEqual(2);
   });
@@ -135,16 +133,16 @@ describe('DrawingToolComponent', () => {
 
     let graph = component.visjsNetworkGraph.export();
 
-    const node_ids = graph.nodes.map(n => n['id'])
-    let nodeA = node_ids[0],
-        nodeB = node_ids[1],
-        nodeC = node_ids[2];
+    const nodeIds = graph.nodes.map(n => n.id);
+    const nodeA = nodeIds[0];
+    const nodeB = nodeIds[1];
+    const nodeC = nodeIds[2];
 
     addEdge(nodeA, nodeB);
     addEdge(nodeB, nodeC);
     addEdge(nodeA, nodeC);
 
-    for (var i = 0; i < 6; i++) component.undo();
+    for (let i = 0; i < 6; i++) { component.undo(); }
 
     graph = component.visjsNetworkGraph.export();
 
