@@ -15,7 +15,9 @@ class AccountService(RDBMSBaseDao):
         email: str,
         password: str,
         roles: Sequence[str] = [],
-        commit_now=True,
+        first_name: str = '',
+        last_name: str = '',
+        commit_now=True
     ) -> AppUser:
         if self.exists(AppUser.query_by_email(email)):
             raise DuplicateRecord(f'E-mail {email} already taken')
@@ -25,6 +27,8 @@ class AccountService(RDBMSBaseDao):
         user = AppUser(
             username=username,
             email=email,
+            first_name=first_name,
+            last_name=last_name
         )
         user.set_password(password)
 

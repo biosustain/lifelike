@@ -57,6 +57,23 @@ interface GraphData {
 }
 
 /**
+ * Interface for handling data between canvas and panels
+ */
+interface GraphSelectionData {
+  edgeData?: VisNetworkGraphEdge;
+  nodeData?: {
+    id: string,
+    group: string,
+    label: string,
+    edges: VisNetworkGraphEdge[],
+    data: {
+      hyperlink: string;
+    }
+  };
+  otherNodes?: VisNetworkGraphNode[];
+}
+
+/**
  * Schema for annoations added in pdf-viewer
  */
 interface Annotation {
@@ -74,13 +91,16 @@ interface Annotation {
  * Project schema definition
  */
 interface Project {
-  id?: string|number;
+  id?: string | number;
+  author?: string;
   label: string;
   description: string;
   /** JSON representation of graph */
   graph: UniversalGraph;
   /** ISO-8601 timestamp of when project was last updated */
   date_modified?: string;
+  /** Whether or not project is public to userbase */
+  public?: boolean;
 }
 
 export {
@@ -92,5 +112,6 @@ export {
   UniversalGraphEdge,
   UniversalGraphNode,
   Annotation,
-  GraphData
+  GraphData,
+  GraphSelectionData
 };
