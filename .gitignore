@@ -36,6 +36,8 @@ client/node_modules
 esdata/
 node_modules/
 
+# ignore copy
+deployment/kg-prototypes
 # terraform files
 terraform.tfstate.*
 .terraform/
@@ -52,3 +54,8 @@ terraform-gcloud.json
 #virtual environments
 .venv/
 outputs/
+
+# LMDB files
+appserver/neo4japp/services/annotations/**/*.mdb
+appserver/neo4japp/services/annotations/**/*.csv
+appserver/neo4japp/services/annotations/**/*.tsv
