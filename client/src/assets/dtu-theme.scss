@@ -70,8 +70,8 @@ $md-secondary: (
 );
 
 
-$dtu-app-primary: mat-palette($md-primary);
-$dtu-app-accent: mat-palette($md-secondary, 500, 900, A100);
+$dtu-app-primary: mat-palette($mat-blue);
+$dtu-app-accent: mat-palette($md-secondary, A400);
 
 $dtu-app-theme: mat-light-theme($dtu-app-primary, $dtu-app-accent);
 

@@ -3,13 +3,20 @@ import {
   OnInit,
   AfterViewInit,
   OnDestroy,
-  HostListener
+  HostListener,
+  ComponentFactoryResolver,
+  Injector,
+  Output,
+  EventEmitter,
+  Input,
+  ViewChild
 } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { CdkDragDrop } from '@angular/cdk/drag-drop';
 import {
   Subscription, Observable
 } from 'rxjs';
+
 import * as $ from 'jquery';
 
 import {
@@ -22,11 +29,15 @@ import {
   Project,
   VisNetworkGraphEdge,
   VisNetworkGraphNode,
-  GraphData
+  GraphData,
+  VisNetworkGraph
 } from '../services/interfaces';
 import {
   NetworkVis
 } from '../network-vis';
+import {
+  InfoPanelComponent
+} from './info-panel/info-panel.component';
 
 interface Update {
   event: string;
@@ -56,13 +67,20 @@ export interface Action {
 }
 
 @Component({
-selector: 'app-drawing-tool',
-templateUrl: './drawing-tool.component.html',
-styleUrls: ['./drawing-tool.component.scss']
+  selector: 'app-drawing-tool',
+  templateUrl: './drawing-tool.component.html',
+  styleUrls: ['./drawing-tool.component.scss']
 })
 export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
+  /** Communicate to parent component to open another app side by side */
+  @Output() openApp: EventEmitter<string> = new EventEmitter<string>();
+  /** Communicate which app is active for app icon presentation */
+  @Input() currentApp = '';
+
+  @ViewChild(InfoPanelComponent, {static: false}) infoPanel: InfoPanelComponent;
+
   /** The current graph representation on canvas */
-  currentGraphState: {edges: any[], nodes: any[]} = null;
+  currentGraphState: {edges: VisNetworkGraphEdge[], nodes: VisNetworkGraphNode[]} = null;
 
   undoStack: Action[] = [];
   redoStack: Action[] = [];
@@ -77,7 +95,7 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
   /** Render condition for dragging gesture of edge formation */
   addMode = false;
   /** Node part of draggign gesture for edge formation  */
-  node4AddingEdge2: string;
+  node4AddingEdge2;
 
   /** Build the palette ui with node templates defined */
   nodeTemplates = nodeTemplates;
@@ -241,6 +259,51 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
     this.dataFlow.pushNode2Canvas(null);
   }
 
+  /**
+   * Handle closing or opening apps
+   * @param app - any app such as pdf-viewer, map-search, kg-visualizer
+   */
+  toggle(app) {
+
+    if (this.currentApp === app) {
+      // Shutdown app
+      this.openApp.emit(null);
+    } else {
+      // Open app
+      this.openApp.emit(app);
+    }
+  }
+
+  /**
+   * Checks if an undo or redo action contains a graph update
+   * affecting the focused entity and push update to info-panel
+   * @param graph - represent a network
+   */
+  shouldIUpdateInfoPanel(graph: VisNetworkGraph) {
+    if (!this.infoPanel.graphData.id) { return; }
+
+    const currentEntity = this.infoPanel.graphData;
+    const currentEntityType = this.infoPanel.entityType;
+
+    if (currentEntityType === 'node') {
+      const nodeIds = graph.nodes.map(n => n.id);
+      if (nodeIds.includes(currentEntity.id)) {
+        const data = this.visjsNetworkGraph.getNode(currentEntity.id);
+        this.dataFlow.pushGraphData(data);
+      } else {
+        this.infoPanel.reset();
+      }
+    } else {
+      const edgeIds = graph.edges.map(e => e.id);
+      if (edgeIds.includes(currentEntity.id)) {
+        const data = this.visjsNetworkGraph.getEdge(currentEntity.id);
+        this.dataFlow.pushGraphData(data);
+      } else {
+        this.infoPanel.reset();
+      }
+    }
+  }
+
   undo() {
     // Pop the action from undo stack
     const undoAction = this.undoStack.pop();
@@ -255,9 +318,12 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
     this.visjsNetworkGraph.import(
       undoAction.graph
     );
+    this.shouldIUpdateInfoPanel(undoAction.graph);
 
     // Push redo action into redo stack
     this.redoStack.push(redoAction);
+
+    this.saveState = false;
   }
 
   redo() {
@@ -274,9 +340,12 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
     this.visjsNetworkGraph.import(
       redoAction.graph
     );
+    this.shouldIUpdateInfoPanel(redoAction.graph);
 
     // Push undo action into undo stack
     this.undoStack.push(undoAction);
+
+    this.saveState = false;
   }
 
   /**
@@ -324,7 +393,7 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
             e.id,
             {
               label: e.label,
-              from: e.label,
+              from: e.from,
               to: e.to
             }
           );
