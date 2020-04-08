@@ -74,7 +74,12 @@ def list_files():
         'filename': row.filename,
         'username': row.username,
         'creation_date': row.creation_date,
-    } for row in db.session.query(Files.id, Files.file_id, Files.filename, Files.username, Files.creation_date).all()]
+    } for row in db.session.query(
+        Files.id,
+        Files.file_id,
+        Files.filename,
+        Files.username,
+        Files.creation_date).all()]
     return jsonify({'files': files})
 
 
@@ -82,7 +87,9 @@ def list_files():
 @auth.login_required
 def get_pdf(id):
     OUTPUT_PATH = os.path.abspath(os.getcwd()) + '/outputs/'
-    file, filename = db.session.query(Files.raw_file, Files.filename).filter(Files.file_id == id).one()
+    file, filename = db.session.query(Files.raw_file,
+                                      Files.filename)\
+        .filter(Files.file_id == id).one()
     file_full_path = OUTPUT_PATH + filename
     # TODO: Remove writing in filesystem part, this is not needed should be tackle in next version
     write_file(file, file_full_path)
