@@ -29,9 +29,7 @@ export class ProjectsService {
 
   baseUrl = environment.apiUrl;
 
-  constructor(
-    private http: HttpClient,
-  ) { }
+  constructor(private http: HttpClient) { }
 
   /**
    * Create http options with authorization
@@ -44,7 +42,7 @@ export class ProjectsService {
     if (withJwt) {
       headers = {
             'Content-Type':  'application/json',
-            Authorization: 'Token ' + localStorage.getItem('access_jwt')
+            Authorization: 'Bearer ' + localStorage.getItem('access_jwt')
           };
     } else {
       headers = {
@@ -72,7 +70,7 @@ export class ProjectsService {
   public pullProjects(): Observable<any> {
     return this.http.get(
       this.baseUrl + '/drawing-tool/projects',
-      this.createHttpOptions(true)
+      this.createHttpOptions(true),
     );
   }
 
