@@ -14,10 +14,3 @@ class Files(db.Model):  # type: ignore
     username = db.Column(db.String(30))
     creation_date = db.Column(db.DateTime, default=db.func.now())
     annotations = db.Column(postgresql.JSONB, nullable=False, server_default='[]')
-
-    def __init__(self, file_id, filename, raw_file, username, annotations):
-        self.file_id = file_id
-        self.filename = filename
-        self.raw_file = raw_file
-        self.username = username
-        self.annotations = annotations
