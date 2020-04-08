@@ -1,14 +1,9 @@
-from flask import Blueprint, request, abort, send_from_directory, g
-from neo4japp.models.files import Files
-from werkzeug.utils import secure_filename
 import uuid
 from datetime import datetime
-from neo4japp.database import db
-from flask import jsonify
 import os
 import json
 from neo4japp.blueprints.auth import auth
-from flask import Blueprint, request, abort, send_from_directory, jsonify
+from flask import Blueprint, request, abort, send_from_directory, jsonify, g
 from werkzeug.utils import secure_filename
 
 from neo4japp.database import (
@@ -51,7 +46,7 @@ def upload_pdf():
             file_id=file_id,
             filename=filename,
             raw_file=pdf,
-            username=username,
+            username=username.id,
             annotations=annotations_json,
         )
         db.session.add(files)
@@ -89,7 +84,7 @@ def get_pdf(id):
     OUTPUT_PATH = os.path.abspath(os.getcwd()) + '/outputs/'
     file, filename = db.session.query(Files.raw_file, Files.filename).filter(Files.file_id == id).one()
     file_full_path = OUTPUT_PATH + filename
-# TODO: Remove writing in filesystem part, this is not needed should be tackle in next version
+    # TODO: Remove writing in filesystem part, this is not needed should be tackle in next version
     write_file(file, file_full_path)
     return send_from_directory(OUTPUT_PATH, filename)
 
