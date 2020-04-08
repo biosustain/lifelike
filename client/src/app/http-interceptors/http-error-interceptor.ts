@@ -3,7 +3,9 @@ import { HttpInterceptor, HttpRequest, HttpHandler, HttpErrorResponse } from '@a
 import { catchError } from 'rxjs/operators';
 import { throwError, Observable } from 'rxjs';
 
-import { environment } from '../../environments/environment';
+import { Store } from '@ngrx/store';
+import { State } from 'app/root-store/state';
+import { SnackbarActions } from 'app/shared/store';
 
 /**
  * HttpErrorInterceptor is used to intercept a request/response
@@ -12,15 +14,19 @@ import { environment } from '../../environments/environment';
  */
 @Injectable()
 export class HttpErrorInterceptor implements HttpInterceptor {
-    baseUrl = environment.apiUrl;
 
-    constructor() {}
+    constructor(private store: Store<State>) {}
 
     intercept(req: HttpRequest<any>, next: HttpHandler): Observable<any> {
         return next.handle(req).pipe(
             catchError((res: HttpErrorResponse) => {
                 const statusCode = res.status;
                 if (statusCode === 0) {
+                    this.store.dispatch(SnackbarActions.displaySnackbar({payload: {
+                        message: 'No internet connection',
+                        action: 'Dismiss',
+                        config: { duration: 10000 },
+                    }}));
                     return throwError('No internet connection');
                     // TODO: Handle the following errors below
                 } else if (statusCode >= 400 && statusCode < 500) {
