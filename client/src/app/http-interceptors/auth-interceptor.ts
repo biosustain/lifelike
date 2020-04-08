@@ -5,10 +5,11 @@ import {
   HttpRequest,
   HttpErrorResponse,
 } from '@angular/common/http';
-import { environment } from 'environments/environment';
 
 import { AuthenticationService } from 'app/auth/services/authentication.service';
+import { throwError } from 'rxjs';
 import { catchError, switchMap } from 'rxjs/operators';
+
 
 /**
  * AuthenticationInterceptor is used to intercept all requests
@@ -17,7 +18,6 @@ import { catchError, switchMap } from 'rxjs/operators';
  */
 @Injectable()
 export class AuthenticationInterceptor implements HttpInterceptor {
-    baseUrl = environment.apiUrl;
 
     constructor(private auth: AuthenticationService) {}
 
@@ -26,12 +26,10 @@ export class AuthenticationInterceptor implements HttpInterceptor {
             catchError((res: HttpErrorResponse) => {
                 if (res.status === 401 && !res.url.includes('refresh')) {
                     return this.auth.refresh().pipe(
-                        switchMap(() => {
-                            return next.handle(this.updateAuthHeader(req));
-                        })
+                        switchMap(() => next.handle(this.updateAuthHeader(req))),
                     );
                 }
-                return next.handle(req);
+                return throwError(res);
             }),
         );
     }

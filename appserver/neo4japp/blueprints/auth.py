@@ -2,8 +2,10 @@ import jwt
 from datetime import datetime, timedelta
 from flask import current_app, request, Response, json, Blueprint, g
 from flask_httpauth import HTTPTokenAuth
+from sqlalchemy.orm.exc import NoResultFound
 
 from neo4japp.database import db
+from neo4japp.exceptions import RecordNotFoundException
 from neo4japp.models.auth import AppUser
 
 bp = Blueprint('auth', __name__, url_prefix='/auth')
@@ -49,7 +51,10 @@ def pullUserFromAuthHead():
     )['sub']
 
     # Pull user by email
-    user = AppUser.query_by_email(email).first_or_404()
+    try:
+        user = AppUser.query_by_email(email).one()
+    except NoResultFound:
+        raise RecordNotFoundException('Credentials not found or invalid.')
     return user
 
 
@@ -117,9 +122,13 @@ def login():
     """
     data = request.get_json()
 
-    user = AppUser.query.filter_by(
-        email=data.get('email')
-    ).first_or_404()
+    # Pull user by email
+    try:
+        user = AppUser.query.filter_by(
+            email=data.get('email')
+        ).one()
+    except NoResultFound:
+        raise RecordNotFoundException('Credentials not found or invalid.')
 
     if user.check_password(data.get('password')):
         # Issue access jwt

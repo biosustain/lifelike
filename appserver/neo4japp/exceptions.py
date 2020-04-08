@@ -28,6 +28,12 @@ class NotAuthorizedException(BaseException):
         super().__init__('Unauthorized Action', message, additional_msgs)
 
 
+class RecordNotFoundException(BaseException):
+    """Signals that no record is found in the database"""
+    def __init__(self, message, additional_msgs=[]):
+        super().__init__('Record not found', message)
+
+
 class FormatterException(BaseException):
     """Signals that a CamelDictMixin object was not formatted to/from
     dict correctly."""
