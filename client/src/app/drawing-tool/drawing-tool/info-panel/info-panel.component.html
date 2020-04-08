@@ -2,20 +2,20 @@
     <div class='nav-bar'>
         <mat-icon (click)='changeSize()' class='fr'>menu</mat-icon>
     </div>
-    <form 
-        *ngIf='graph_data.id!==""'
+    <form
+        *ngIf='graphData.id!==""'
         class='w-90 center'
-        [formGroup]='entity_form'>
-        
+        [formGroup]='entityForm'>
+
         <mat-form-field class="w-100 mt3">
             <mat-label>Label</mat-label>
-            <input 
+            <input
                 matInput
                 (keydown.enter)="blurInput($event)"
                 formControlName='label'>
         </mat-form-field>
 
-        <mat-form-field 
+        <mat-form-field
             *ngIf='isNode'
             class='w-100'>
             <mat-label>Type</mat-label>
@@ -28,17 +28,17 @@
                 </mat-option>
             </mat-select>
         </mat-form-field>
-        
-        <div 
+
+        <div
             *ngIf='isNode'
             class='flex' style="flex-wrap: wrap;">
             <p class='blue'>Edges</p>
-            <button 
+            <button
                 (click)='addEdge()'
-                mat-button color="primary" 
+                mat-button color="primary"
                 style="margin-left: auto;">
                 Add Edge
-            </button> 
+            </button>
             <p
                 *ngIf='!edges'
                 class='silver w-100 tc mv3'>
@@ -47,7 +47,7 @@
         </div>
 
         <div *ngIf='isNode'>
-            <div 
+            <div
                 formArrayName='edges'
                 *ngFor="let edge of edgeFormArr.controls; let i = index;"
                 class='db flex mb3'
@@ -68,7 +68,7 @@
                         <mat-select
                             formControlName='to'>
                             <mat-option
-                                *ngFor="let n of node_bank"
+                                *ngFor="let n of nodeBank"
                                 [value]='n.id'>
                                 {{n.label | titlecase}}
                             </mat-option>
@@ -84,11 +84,11 @@
 
         <mat-divider *ngIf='isNode'></mat-divider>
 
-        <mat-form-field 
+        <mat-form-field
             *ngIf='isNode'
             class="w-100 mt3">
             <mat-label>Hyperlink</mat-label>
-            <input 
+            <input
                 matInput
                 (keydown.enter)="blurInput($event)"
                 formControlName='hyperlink'>
