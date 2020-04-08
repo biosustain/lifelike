@@ -376,7 +376,6 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
 
   /**
    * Allow user to navigate to a link in a new tab
-   * @param hyperlink - url string to navigate to
    */
   goToLink() {
     const hyperlink: string = this.entityForm.value.hyperlink;
