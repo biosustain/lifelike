@@ -44,8 +44,8 @@ def seed():
                     )
 
             elif fix["table"] == "project":
-                for i in range(len(fix["records"])):
-                    r = fix["records"][i]
+                for idx, r in enumerate(fix["records"]):
+                    r = fix["records"][idx]
 
                     proj = Project(
                         label=r["label"],
@@ -55,7 +55,7 @@ def seed():
                         public=r["public"],
                         author=r["author"],
                         # temporary fix
-                        user_id=i+1
+                        user_id=idx+1
                     )
                     db.session.add(proj)
                     db.session.commit()

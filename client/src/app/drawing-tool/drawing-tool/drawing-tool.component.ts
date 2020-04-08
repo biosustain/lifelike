@@ -122,8 +122,6 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   constructor(
-    private injector: Injector,
-    private r: ComponentFactoryResolver,
     private dataFlow: DataFlowService,
     private projectService: ProjectsService,
     private snackBar: MatSnackBar
@@ -284,21 +282,21 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
   shouldIUpdateInfoPanel(graph: VisNetworkGraph) {
     if (!this.infoPanel.graphData.id) { return; }
 
-    const currenttEntity = this.infoPanel.graphData;
+    const currentEntity = this.infoPanel.graphData;
     const currentEntityType = this.infoPanel.entityType;
 
     if (currentEntityType === 'node') {
       const nodeIds = graph.nodes.map(n => n.id);
-      if (nodeIds.includes(currenttEntity.id)) {
-        const data = this.visjsNetworkGraph.getNode(currenttEntity.id);
+      if (nodeIds.includes(currentEntity.id)) {
+        const data = this.visjsNetworkGraph.getNode(currentEntity.id);
         this.dataFlow.pushGraphData(data);
       } else {
         this.infoPanel.reset();
       }
     } else {
       const edgeIds = graph.edges.map(e => e.id);
-      if (edgeIds.includes(currenttEntity.id)) {
-        const data = this.visjsNetworkGraph.getEdge(currenttEntity.id);
+      if (edgeIds.includes(currentEntity.id)) {
+        const data = this.visjsNetworkGraph.getEdge(currentEntity.id);
         this.dataFlow.pushGraphData(data);
       } else {
         this.infoPanel.reset();
