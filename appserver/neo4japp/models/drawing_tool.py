@@ -11,7 +11,7 @@ class Project(RDBMSBase):
     description = db.Column(db.Text)
     date_modified = db.Column(db.DateTime)
     graph = db.Column(db.JSON)
-    author = db.Column(db.String(240))
+    author = db.Column(db.String(240), nullable=False)
     public = db.Column(db.Boolean, default=False)
     user_id = db.Column(db.Integer, db.ForeignKey('appuser.id'), nullable=False)
 
