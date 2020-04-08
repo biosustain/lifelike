@@ -1,5 +1,4 @@
 import { Injectable } from '@angular/core';
-import { Router } from '@angular/router';
 import { Observable } from 'rxjs';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
@@ -30,10 +29,7 @@ export class ProjectsService {
 
   baseUrl = environment.apiUrl;
 
-  constructor(
-    private http: HttpClient,
-    private route: Router
-  ) { }
+  constructor(private http: HttpClient) { }
 
   /**
    * Create http options with authorization
@@ -46,7 +42,7 @@ export class ProjectsService {
     if (withJwt) {
       headers = {
             'Content-Type':  'application/json',
-            Authorization: 'Token ' + localStorage.getItem('access_jwt')
+            Authorization: 'Bearer ' + localStorage.getItem('access_jwt')
           };
     } else {
       headers = {
@@ -74,7 +70,7 @@ export class ProjectsService {
   public pullProjects(): Observable<any> {
     return this.http.get(
       this.baseUrl + '/drawing-tool/projects',
-      this.createHttpOptions(true)
+      this.createHttpOptions(true),
     );
   }
 

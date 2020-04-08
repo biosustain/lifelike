@@ -28,9 +28,6 @@ import {
 import {
   PdfViewerComponent
 } from './pdf-viewer/pdf-viewer.component';
-import {
-  LoginComponent
-} from './login/login.component';
 
 import {
   TruncatePipe,
@@ -52,7 +49,6 @@ import { PdfViewerDirective } from './pdf-viewer/pdf-viewer.directive';
     CopyProjectDialogComponent,
     DrawingToolComponent,
     PdfViewerComponent,
-    LoginComponent,
     TruncatePipe,
     FriendlyDateStrPipe,
     PaletteComponent,
