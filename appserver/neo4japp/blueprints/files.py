@@ -1,4 +1,4 @@
-from flask import Blueprint, request, abort, send_from_directory
+from flask import Blueprint, request, abort, send_from_directory, g
 from neo4japp.models.files import Files
 from werkzeug.utils import secure_filename
 import uuid
@@ -20,11 +20,11 @@ OUTPUT_PATH = 'files/output/'
 def upload_pdf():
 
     pdf = request.files['file'].read()
-    username = request.form['user']
+    username = g.current_user
     filename = secure_filename(request.files['file'].filename)
     file_id = str(uuid.uuid4())
     try:
-        data = Files(file_id, filename, pdf, username, [])
+        data = Files(file_id, filename, pdf, username.id, [])
         db.session.add(data)
         db.session.commit()
         return jsonify({
