@@ -47,11 +47,11 @@ const routes: Routes = [
         component: DrawingToolComponent,
         canDeactivate: [PendingChangesGuard]
       },
+      {
+        path: 'splitter',
+        component: SplitterComponent
+      }
     ],
-  },
-  {
-    path: 'splitter',
-    component: SplitterComponent
   },
   {
     path: 'pdf-viewer',
