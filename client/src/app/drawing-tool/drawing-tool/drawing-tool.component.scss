@@ -101,10 +101,6 @@
       color: #e74c3c;
     }
   }
-
-  // #info-panel::-webkit-scrollbar {
-  //     display: none;
-  // }
   
   #info-panel {
     @include scrollbars(.25em, #3797DB);

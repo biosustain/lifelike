@@ -3,9 +3,9 @@
         <mat-icon (click)='changeSize()' class='fr'>menu</mat-icon>
     </div>
     <form 
-        *ngIf='graph_data.id!==""'
+        *ngIf='graphData.id!==""'
         class='w-90 center'
-        [formGroup]='entity_form'>
+        [formGroup]='entityForm'>
         
         <mat-form-field class="w-100 mt3">
             <mat-label>Label</mat-label>
@@ -88,7 +88,7 @@
                         <mat-select
                             formControlName='to'>
                             <mat-option
-                                *ngFor="let n of node_bank"
+                                *ngFor="let n of nodeBank"
                                 [value]='n.id'>
                                 {{n.label | titlecase}}
                             </mat-option>

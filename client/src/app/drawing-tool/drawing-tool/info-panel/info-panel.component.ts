@@ -244,7 +244,6 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
    * 
    */
   toggleCollapsible() {
-    console.log('haha')
     this.edgeCollapsed = !this.edgeCollapsed;
   }
 
