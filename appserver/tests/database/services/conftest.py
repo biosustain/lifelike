@@ -15,6 +15,8 @@ def fix_owner(session) -> AppUser:
         username='admin',
         email='admin@lifelike.bio',
         password_hash='password',
+        first_name='Jim',
+        last_name='Melancholy'
     )
     session.add(user)
     session.flush()
@@ -28,6 +30,8 @@ def test_user(session) -> AppUser:
         username='test',
         email='test@lifelike.bio',
         password_hash='password',
+        first_name='Jim',
+        last_name='Melancholy'
     )
     session.add(user)
     session.flush()
@@ -40,6 +44,7 @@ def fix_project(fix_owner, session) -> Project:
         id=100,
         label='Project1',
         description='a test project',
+        author='Jim Melancholy',
         date_modified=str(date.today()),
         graph=json.dumps({'project': 'project 1'}),
         user_id=fix_owner.id,
