@@ -1,4 +1,5 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { configureTestSuite } from 'ng-bullet';
 
 import { MapSearchChannelComponent } from './map-search-channel.component';
 
@@ -6,12 +7,13 @@ describe('MapSearchChannelComponent', () => {
   let component: MapSearchChannelComponent;
   let fixture: ComponentFixture<MapSearchChannelComponent>;
 
-  beforeEach(async(() => {
+  configureTestSuite(() => {
     TestBed.configureTestingModule({
-      declarations: [ MapSearchChannelComponent ]
-    })
-    .compileComponents();
-  }));
+        declarations: [
+          MapSearchChannelComponent
+        ],
+    });
+  });
 
   beforeEach(() => {
     fixture = TestBed.createComponent(MapSearchChannelComponent);
