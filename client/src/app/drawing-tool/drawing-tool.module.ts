@@ -30,9 +30,6 @@ import {
 import {
   PdfViewerComponent
 } from './pdf-viewer/pdf-viewer.component';
-import {
-  LoginComponent
-} from './login/login.component';
 
 import {
   TruncatePipe,
@@ -56,7 +53,6 @@ import { MapSearchChannelComponent } from './map-search-channel/map-search-chann
     CopyProjectDialogComponent,
     DrawingToolComponent,
     PdfViewerComponent,
-    LoginComponent,
     TruncatePipe,
     FriendlyDateStrPipe,
     PaletteComponent,
