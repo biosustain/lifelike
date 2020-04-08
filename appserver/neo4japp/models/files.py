@@ -2,7 +2,6 @@ from sqlalchemy.dialects import postgresql
 from neo4japp.database import db
 
 
-
 class Files(db.Model):  # type: ignore
     __tablename__ = 'files'
     id = db.Column(db.Integer(), primary_key=True, autoincrement=True)
