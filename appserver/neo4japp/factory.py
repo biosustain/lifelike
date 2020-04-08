@@ -40,8 +40,8 @@ def create_app(name='neo4japp', config='config.Development'):
 
     app.json_encoder = CustomJSONEncoder
 
-    app.register_error_handler(BaseException, partial(handle_error, 500))
-    # TODO: handle uncaught python errors
+    app.register_error_handler(BaseException, partial(handle_error, 400))
+    app.register_error_handler(Exception, partial(handle_error, 500))
     return app
 
 
