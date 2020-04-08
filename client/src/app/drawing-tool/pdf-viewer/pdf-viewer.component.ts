@@ -42,7 +42,7 @@ export class PdfViewerComponent implements AfterViewInit, OnDestroy {
   filesFilter = new FormControl('');
   filesFilterSub: Subscription;
   filteredFiles = this.files;
-  pdfFileUrl = 'assets/pdfs/sample.pdf'; // TODO: remove asset once backend is in place
+  pdfFileUrl = '/assets/pdfs/sample.pdf'; // TODO: remove asset once backend is in place
 
   constructor(
     private pdfAnnService: PdfAnnotationsService,

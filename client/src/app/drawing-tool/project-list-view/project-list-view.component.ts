@@ -328,7 +328,7 @@ export class ProjectListViewComponent {
    */
   goToProject() {
     this.dataFlow.pushProject2Canvas(this.selectedProject);
-    this.route.navigateByUrl('splitter');
+    this.route.navigateByUrl('dt/splitter');
   }
 
   /**
