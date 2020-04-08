@@ -91,16 +91,16 @@ interface Annotation {
  * Project schema definition
  */
 interface Project {
-  id?: String | Number;
-  author?: String;
-  label: String;
-  description: String;
+  id?: string | number;
+  author?: string;
+  label: string;
+  description: string;
   /** JSON representation of graph */
   graph: UniversalGraph;
   /** ISO-8601 timestamp of when project was last updated */
-  date_modified?: String;
+  date_modified?: string;
   /** Whether or not project is public to userbase */
-  public?: Boolean;
+  public?: boolean;
 }
 
 export {
