@@ -205,4 +205,6 @@ xdescribe('DrawingToolComponent', () => {
     expect(graph.nodes.length).toEqual(4);
 
   });
+
+  // TODO LL-233: Add tests for context menu methods
 });

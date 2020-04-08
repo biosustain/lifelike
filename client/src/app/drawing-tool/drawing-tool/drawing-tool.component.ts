@@ -84,7 +84,7 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
     /** Obj representation of knowledge model with metadata */
     project: Project = null;
     /** vis.js network graph DOM instantiation */
-    visjsNetworkGraph = null;
+    visjsNetworkGraph: NetworkVis = null;
     /** Whether or not graph is saved from modification */
     saveState = true;
 
@@ -668,19 +668,20 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
 
     // TODO LL-233
     removeNodes(nodes: IdType[]) {
-        console.log('Implement me!');
-        nodes.forEach(nodeId => {
-            console.log(this.visjsNetworkGraph.getNode(nodeId));
-        });
+        nodes.map(nodeId => this.visjsNetworkGraph.removeNode(nodeId));
     }
 
     // TODO LL-233
     removeEdges(edges: IdType[]) {
-        console.log('Implement me!');
+        edges.map(nodeId => this.visjsNetworkGraph.removeEdge(nodeId));
     }
 
-    // TODO LL-233
+    /**
+     * Selects the neighbors of the currently selected node.
+     * @param node the ID of the node whose neighbors are being selected
+     */
     selectNeighbors(node: IdType) {
-        console.log('Implement me!');
+        this.visjsNetworkGraph.network.selectNodes(this.visjsNetworkGraph.network.getConnectedNodes(node) as IdType[]);
+        this.updateSelectedNodes();
     }
 }
