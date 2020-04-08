@@ -9,7 +9,7 @@ import { AppUser } from 'app/interfaces';
   providedIn: '***ARANGO_USERNAME***'
 })
 export class AuthenticationService {
-  baseUrl = environment.apiUrl;
+  baseUrl = '/api/auth';
 
   constructor(private http: HttpClient) { }
 
@@ -40,7 +40,7 @@ export class AuthenticationService {
    */
   public login(email: string, password: string) {
     return this.http.post<{user: AppUser, access_jwt: string, refresh_jwt: string}>(
-      this.baseUrl + '/auth/login',
+      this.baseUrl + '/login',
       {email, password},
       this.createHttpOptions(),
     ).pipe(
