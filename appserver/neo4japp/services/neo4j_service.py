@@ -31,6 +31,7 @@ from py2neo import (
     RelationshipMatcher,
 )
 
+
 @attr.s(frozen=True)
 class FileNameAndSheets(CamelDictMixin):
     @attr.s(frozen=True)
@@ -95,7 +96,7 @@ class Neo4JService(GraphBaseDao):
             for node in nodes:
                 graph_node = GraphNode.from_py2neo(
                     node,
-                    display_fn=lambda x: x.get(DISPLAY_NAME_MAP[next(iter(node.labels), set())])
+                    display_fn=lambda x: x.get(DISPLAY_NAME_MAP[next(iter(node.labels), set())])  # type: ignore  # noqa
                 )
                 node_dict[graph_node.id] = graph_node
             for rel in rels:
@@ -104,12 +105,11 @@ class Neo4JService(GraphBaseDao):
         return dict(nodes=[n.to_dict() for n in node_dict.values()],
                     edges=[r.to_dict() for r in rel_dict.values()])
 
-
     def get_organisms(self):
         nodes = list(NodeMatcher(self.graph).match(NODE_SPECIES))
         organism_nodes = [
             GraphNode.from_py2neo(n, display_fn=lambda x: x.get('common_name'))
-                for n in nodes
+            for n in nodes
         ]
         return dict(nodes=[n.to_dict() for n in organism_nodes], edges=[])
 
@@ -117,19 +117,19 @@ class Neo4JService(GraphBaseDao):
         nodes = list(NodeMatcher(self.graph).match(TYPE_DISEASE).limit(10))
         disease_nodes = [
             GraphNode.from_py2neo(n, display_fn=lambda x: x.get(DISPLAY_NAME_MAP[TYPE_DISEASE]))
-                for n in nodes
+            for n in nodes
         ]
         return dict(nodes=[n.to_dict() for n in disease_nodes], edges=[])
 
-    def get_biocyc_db(self, org_ids: [str]):
+    def get_biocyc_db(self, org_ids: List[str]):
         if org_ids:
-            query = f'match(n:Species) where n.biocyc_id in {str(org_ids)} return labels(n) as node_labels'
+            query = f'match(n:Species) where n.biocyc_id in {str(org_ids)} return labels(n) as node_labels'  # noqa
             records = list(self.graph.run(query))
             db_labels = []
             for record in records:
                 labels = record['labels']
                 for label in labels:
-                    if label not in set(DB_BIOCYC, NODE_SPECIES):
+                    if label not in set([DB_BIOCYC, NODE_SPECIES]):
                         db_labels.append(label)
             return db_labels
         return None
@@ -152,11 +152,11 @@ class Neo4JService(GraphBaseDao):
         snippets = [Snippet(
             reference=GraphNode.from_py2neo(
                 result['reference'],
-                display_fn=lambda x: x.get(DISPLAY_NAME_MAP[next(iter(result['reference'].labels), set())]),
+                display_fn=lambda x: x.get(DISPLAY_NAME_MAP[next(iter(result['reference'].labels), set())]),  # type: ignore  # noqa
             ),
             publication=GraphNode.from_py2neo(
                 result['publication'],
-                display_fn=lambda x: x.get(DISPLAY_NAME_MAP[next(iter(result['publication'].labels), set())]),
+                display_fn=lambda x: x.get(DISPLAY_NAME_MAP[next(iter(result['publication'].labels), set())]),  # type: ignore  # noqa
             )
         ) for result in data]
 
@@ -174,11 +174,11 @@ class Neo4JService(GraphBaseDao):
         snippets = [Snippet(
             reference=GraphNode.from_py2neo(
                 result['reference'],
-                display_fn=lambda x: x.get(DISPLAY_NAME_MAP[next(iter(result['reference'].labels), set())]),
+                display_fn=lambda x: x.get(DISPLAY_NAME_MAP[next(iter(result['reference'].labels), set())]),  # type: ignore  # noqa
             ),
             publication=GraphNode.from_py2neo(
                 result['publication'],
-                display_fn=lambda x: x.get(DISPLAY_NAME_MAP[next(iter(result['publication'].labels), set())]),
+                display_fn=lambda x: x.get(DISPLAY_NAME_MAP[next(iter(result['publication'].labels), set())]),  # type: ignore  # noqa
             )
         ) for result in data]
 
@@ -209,7 +209,7 @@ class Neo4JService(GraphBaseDao):
             node = pair.node
             edge = pair.edge
 
-            query = self.get_association_snippet_count_query(edge.original_from, edge.original_to, edge.label)
+            query = self.get_association_snippet_count_query(edge.original_from, edge.original_to, edge.label)  # noqa
             count = self.graph.run(query).evaluate()
             reference_table_rows.append(ReferenceTableRow(
                 node_display_name=node.display_name,
@@ -225,7 +225,7 @@ class Neo4JService(GraphBaseDao):
 
         for node in clustered_nodes:
             for edge in node.edges:
-                query = self.get_association_snippet_count_query(edge.original_from, edge.original_to, edge.label)
+                query = self.get_association_snippet_count_query(edge.original_from, edge.original_to, edge.label)  # noqa
                 count = self.graph.run(query).evaluate()
 
                 if (results.get(node.node_id, None) is not None):
@@ -255,20 +255,20 @@ class Neo4JService(GraphBaseDao):
                 node1,node2&node3,node4
         """
 
-        data_query = data_query.split('&')
+        split_data_query = data_query.split('&')
 
-        if len(data_query) == 1 and data_query[0].find(',') == -1:
+        if len(split_data_query) == 1 and split_data_query[0].find(',') == -1:
             cypher_query = '''
             MATCH (n) WHERE ID(n)={nid} RETURN n AS nodeA
-            '''.format(nid=int(data_query.pop()))
+            '''.format(nid=int(split_data_query.pop()))
             node = self.graph.evaluate(cypher_query)
             graph_node = GraphNode.from_py2neo(
                 node,
-                display_fn=lambda x: x.get(DISPLAY_NAME_MAP[next(iter(node.labels), set())]),
+                display_fn=lambda x: x.get(DISPLAY_NAME_MAP[next(iter(node.labels), set())]),  # type: ignore  # noqa
             )
             return dict(nodes=[graph_node.to_dict()], edges=[])
         else:
-            data = [x.split(',') for x in data_query]
+            data = [x.split(',') for x in split_data_query]
             query_generator = [
                 'MATCH (nodeA)-[relationship]->(nodeB) WHERE id(nodeA)={from_} '
                 'AND id(nodeB)={to} RETURN *'.format(
@@ -287,11 +287,11 @@ class Neo4JService(GraphBaseDao):
                 relationship = row['relationship']
                 graph_nodeA = GraphNode.from_py2neo(
                     nodeA,
-                    display_fn=lambda x: x.get(DISPLAY_NAME_MAP[next(iter(nodeA.labels), set())])
+                    display_fn=lambda x: x.get(DISPLAY_NAME_MAP[next(iter(nodeA.labels), set())])  # type: ignore  # noqa
                 )
                 graph_nodeB = GraphNode.from_py2neo(
                     nodeB,
-                    display_fn=lambda x: x.get(DISPLAY_NAME_MAP[next(iter(nodeB.labels), set())])
+                    display_fn=lambda x: x.get(DISPLAY_NAME_MAP[next(iter(nodeB.labels), set())])  # type: ignore  # noqa
                 )
                 rel = GraphRelationship.from_py2neo(relationship)
                 node_dict[graph_nodeA.id] = graph_nodeA
@@ -330,10 +330,10 @@ class Neo4JService(GraphBaseDao):
 
     def get_node_properties(self, node_label) -> Dict[str, List[str]]:
         """Get all properties of a label."""
-        props = self.graph.run(f'match (n: {node_label}) unwind keys(n) as key return distinct key').data()
-        return { node_label: [prop['key'] for prop in props] }
+        props = self.graph.run(f'match (n: {node_label}) unwind keys(n) as key return distinct key').data()  # noqa
+        return {node_label: [prop['key'] for prop in props]}
 
-    def get_gene_gpr_query(self, req, db_filter: [str]):
+    def get_gene_gpr_query(self, req, db_filter: List[str]):
         """NOTE: the `get_node_label` is not to get from the database,
         but from the request object class SearchResult.
         """
@@ -342,42 +342,52 @@ class Neo4JService(GraphBaseDao):
         args = {PROP_BIOCYC_ID: req.id, 'gene_label': gene_label, 'enz_label': enz_label}
         return """
             match(g{gene_label}) where g.biocyc_id = '{biocyc_id}' with g
-            optional match p1 = (g)-[:ENCODES]-(:Protein)-[:HAS_COMPONENT*0..3]-(:Protein) unwind nodes(p1) as prot
+            optional match
+            p1 = (g)-[:ENCODES]-(:Protein)-[:HAS_COMPONENT*0..3]-(:Protein)
+            unwind nodes(p1) as prot
             optional match p2=(prot)-[:CATALYZES]->(:EnzReaction)-[:HAS_REACTION]->(r:Reaction)
-            optional match p3 = ({gene_label})-[:ENCODES]->(:Protein)<-[:HAS_COMPONENT*0..3]-(:Protein)
+            optional match
+            p3 = ({gene_label})-[:ENCODES]->(:Protein)<-[:HAS_COMPONENT*0..3]-(:Protein)
             -[:CATALYZES]->(enz{enz_label})-[:HAS_REACTION]->(r)
-            return [g]+ COALESCE(nodes(p1), [])+ COALESCE(nodes(p2), []) + COALESCE(nodes(p3), []) as nodes,
-            COALESCE(relationships(p1), []) + COALESCE(relationships(p2), []) + COALESCE(relationships(p3), []) as relationships
+            return
+            [g]+ COALESCE(nodes(p1), [])+ COALESCE(nodes(p2), []) + COALESCE(nodes(p3), [])
+            as nodes,
+            COALESCE(relationships(p1), []) + COALESCE(relationships(p2), []) +
+            COALESCE(relationships(p3), []) as relationships
         """.format(**args)
 
     def get_protein_gpr_query(self, req, db_filter):
         enz_label = req.get_node_label(TYPE_ENZREACTION, req.get_db_labels())
         args = {PROP_BIOCYC_ID: req.id, 'protein_label': req.node_label(), 'enz_label': enz_label}
         return """
-            match p1 = ({protein_label})-[:HAS_COMPONENT*0..3]->(n:Protein)-[:HAS_COMPONENT*0..3]->(:Protein)
+            match p1 =
+            ({protein_label})-[:HAS_COMPONENT*0..3]->(n:Protein)-[:HAS_COMPONENT*0..3]->(:Protein)
             where n.biocyc_id = '{biocyc_id}'
             unwind nodes(p1) as prot
             optional match p2=(:Gene)-[:ENCODES]->(prot)
             optional match rp=(prot)-[:CATALYZES]->(:EnzReaction)-[:HAS_REACTION]->(r)
             optional match p3 = (:Gene:Ecocyc)-[:ENCODES]->({protein_label})<-[:HAS_COMPONENT*0..3]-
             (:Protein)-[:CATALYZES]->(enz{enz_label})-[:HAS_REACTION]->(r)
-            return COALESCE(nodes(p1), [])+ COALESCE(nodes(p2), []) + COALESCE(nodes(p3), []) as nodes,
-            COALESCE(relationships(p1), []) + COALESCE(relationships(p2), []) + COALESCE(relationships(p3), []) as relationships
+            return COALESCE(nodes(p1), [])+ COALESCE(nodes(p2), []) + COALESCE(nodes(p3), [])
+            as nodes,
+            COALESCE(relationships(p1), []) + COALESCE(relationships(p2), []) +
+            COALESCE(relationships(p3), []) as relationships
         """.format(**args)
 
-    def get_pathway_gpr_query(self, req, db_filter:[str]):
+    def get_pathway_gpr_query(self, req, db_filter: List[str]):
         args = {PROP_BIOCYC_ID: req.id}
         query = """
             match (n:Pathway) where n.biocyc_id = '{biocyc_id}'
             with n
-            optional match p1 = (n)-[:CONTAINS]-(:Reaction)-[:HAS_REACTION]-(enz:EnzReaction)-[:CATALYZES]-(prot:Protein)
+            optional match p1 =
+            (n)-[:CONTAINS]-(:Reaction)-[:HAS_REACTION]-(enz:EnzReaction)-[:CATALYZES]-(prot:Protein)
             optional match p2 = (:Gene)-[:ENCODES]->(:Protein)<-[:HAS_COMPONENT*0..3]-(prot)
             return [n]+ COALESCE(nodes(p1), [])+ COALESCE(nodes(p2), []) as nodes,
             COALESCE(relationships(p1), []) + COALESCE(relationships(p2), []) as relationships
         """.format(**args)
         return query
 
-    def get_compound_query(self, req, db_filter:[str]):
+    def get_compound_query(self, req, db_filter: List[str]):
         args = {PROP_BIOCYC_ID: req.id}
         return """
             MATCH (c:Compound) where c.biocyc_id='{biocyc_id}'
@@ -391,23 +401,28 @@ class Neo4JService(GraphBaseDao):
             return collect(distinct allnodes) as nodes, collect(distinct allrels) as relationships
         """.format(**args)
 
-    def get_chemical_query(self, req, db_filter:[str]):
+    def get_chemical_query(self, req, db_filter: List[str]):
         args = {PROP_CHEBI_ID: req.id}
         return """
             match(c:CHEBI) where c.chebi_id = '{chebi_id}' with c
             optional match p1=(c)-[:IS_A]-(:CHEBI)
             optional match p2=(c)-[:IS_CONJUGATE_ACID_OF]-(:CHEBI)
             optional match p3=(c)-[:HAS_PART]-(:CHEBI)
-            return [c]+ COALESCE(nodes(p1), [])+ COALESCE(nodes(p2), []) + COALESCE(nodes(p3), []) as nodes,
-            COALESCE(relationships(p1), []) + COALESCE(relationships(p2), []) + COALESCE(relationships(p3), []) as relationships
+            return [c]+ COALESCE(nodes(p1), [])+ COALESCE(nodes(p2), []) + COALESCE(nodes(p3), [])
+            as nodes,
+            COALESCE(relationships(p1), []) + COALESCE(relationships(p2), []) +
+            COALESCE(relationships(p3), []) as relationships
         """.format(**args)
 
-    def get_gene_regulatory_query(self, req, db_filter:[str]):
+    def get_gene_regulatory_query(self, req, db_filter: List[str]):
         args = {PROP_BIOCYC_ID: req.id}
         return """
-            match (n:Gene)-[:IS]-(:NCBI:Gene)-[:IS]-(g:Gene:RegulonDB) where n.biocyc_id = 'EG11530' with g
-            optional match p1= (:Gene)-[:ENCODES]->(:Product)-[:IS]-(:TranscriptionFactor)-[:REGULATES]->(g)
-            optional match p2 = (g)-[:ENCODES]->(:Product)-[:IS]-(:TranscriptionFactor)-[:REGULATES]->(:Gene)
+            match (n:Gene)-[:IS]-(:NCBI:Gene)-[:IS]-(g:Gene:RegulonDB) where n.biocyc_id = 'EG11530'
+            with g
+            optional match
+            p1= (:Gene)-[:ENCODES]->(:Product)-[:IS]-(:TranscriptionFactor)-[:REGULATES]->(g)
+            optional match
+            p2 = (g)-[:ENCODES]->(:Product)-[:IS]-(:TranscriptionFactor)-[:REGULATES]->(:Gene)
             return [g]+ COALESCE(nodes(p1), [])+ COALESCE(nodes(p2), []) as nodes,
             COALESCE(relationships(p1), []) + COALESCE(relationships(p2), []) as relationships
         """.format(**args)

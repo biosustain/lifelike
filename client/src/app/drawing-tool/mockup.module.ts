@@ -22,7 +22,7 @@ import {
 import {
   CopyProjectDialogComponent
 } from './project-list-view/copy-project-dialog/copy-project-dialog.component';
-import { 
+import {
   DrawingToolComponent
 } from './drawing-tool/drawing-tool.component';
 import {
@@ -31,14 +31,14 @@ import {
 import {
   LoginComponent
 } from './login/login.component';
-import { 
+import {
   InfoPanelComponent
 } from './drawing-tool/info-panel/info-panel.component';
 import {
   PaletteComponent
 } from './drawing-tool/palette/palette.component';
 
-import { 
+import {
   TruncatePipe,
   FriendlyDateStrPipe
 } from './pipes';

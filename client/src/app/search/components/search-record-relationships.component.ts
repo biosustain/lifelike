@@ -15,7 +15,9 @@ export class SearchRecordRelationshipsComponent {
 
     PUBMEDURL: string = PubMedURL;
 
-    private _node: FTSReferenceRecord;
+    // TODO: We should come up with a consistent way to mark variables as private without using '_', or
+    // just disable that check for tslint.
+    private prvNode: FTSReferenceRecord;
     nodeURL: string;
 
     chemicalDisplayName = '';
@@ -26,7 +28,7 @@ export class SearchRecordRelationshipsComponent {
 
     @Input()
     set node(n: FTSReferenceRecord) {
-        this._node = n;
+        this.prvNode = n;
 
         const chemical = n.chemical;
         const disease = n.disease;
@@ -47,7 +49,7 @@ export class SearchRecordRelationshipsComponent {
     }
 
     get node(): FTSReferenceRecord {
-        return this._node;
+        return this.prvNode;
     }
 
     constructor() {}
