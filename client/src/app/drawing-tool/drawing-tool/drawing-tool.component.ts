@@ -75,7 +75,7 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
   /** Communicate to parent component to open another app side by side */
   @Output() openApp: EventEmitter<string> = new EventEmitter<string>();
   /** Communicate which app is active for app icon presentation */
-  @Input() currentApp: string = '';
+  @Input() currentApp = '';
 
   @ViewChild(InfoPanelComponent, {static: false}) infoPanel: InfoPanelComponent;
 
@@ -95,7 +95,7 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
   /** Render condition for dragging gesture of edge formation */
   addMode = false;
   /** Node part of draggign gesture for edge formation  */
-  node4AddingEdge2: string;
+  node4AddingEdge2;
 
   /** Build the palette ui with node templates defined */
   nodeTemplates = nodeTemplates;
@@ -263,9 +263,9 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
 
   /**
    * Handle closing or opening apps
-   * @param app 
+   * @param app - any app such as pdf-viewer, map-search, kg-visualizer
    */
-  toggle(app:string) {
+  toggle(app) {
 
     if (this.currentApp === app) {
       // Shutdown app
@@ -279,7 +279,7 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
   /**
    * Checks if an undo or redo action contains a graph update
    * affecting the focused entity and push update to info-panel
-   * @param graph 
+   * @param graph - represent a network
    */
   shouldIUpdateInfoPanel(graph: VisNetworkGraph) {
     if (!this.infoPanel.graphData.id) { return; }
@@ -303,7 +303,7 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
       } else {
         this.infoPanel.reset();
       }
-    }    
+    }
   }
 
   undo() {

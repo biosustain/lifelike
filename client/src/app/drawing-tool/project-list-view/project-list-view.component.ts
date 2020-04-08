@@ -1,4 +1,4 @@
-import { 
+import {
   Component,
   OnInit,
   AfterViewInit,
@@ -42,14 +42,14 @@ import * as $ from 'jquery';
 
 /**
  * Sort project by most recent modified date
- * @param a 
- * @param b 
+ * @param a - item to sort
+ * @param b - item to sort against
  */
-const sort = (a:Project, b: Project) => {
+const sort = (a: Project, b: Project) => {
   if (
     a.date_modified < b.date_modified
   ) {
-    return 1
+    return 1;
   } else if (
     a.date_modified === b.date_modified
   ) {
@@ -90,40 +90,40 @@ export class ProjectListViewComponent implements OnInit, AfterViewInit {
   /** vis ojbect to control network-graph vis */
   visGraph: NetworkVis = null;
 
-  /** 
+  /**
    * Decide if network graph is visualized
    * in full-screen or preview mode
    */
-  screenMode: string = 'shrink';
+  screenMode = 'shrink';
 
   /** The edge or node focused on */
   focusedEntity: GraphSelectionData = null;
 
   /** Whether to show community or personal maps */
-  _displayMode: string = 'personal';
-  displayIndex: number = 0;
+  privateDisplayMode = 'personal';
+  displayIndex = 0;
 
   get displayMode() {
-    return this._displayMode;
+    return this.privateDisplayMode;
   }
   set displayMode(val) {
-    this._displayMode = val;
-    this.displayIndex = val === "personal" ? 0 : 1;
+    this.privateDisplayMode = val;
+    this.displayIndex = val === 'personal' ? 0 : 1;
     this.projects.sort(sort);
   }
 
   get node() {
-    if (!this.focusedEntity) return null;
-    
-    return this.focusedEntity['node_data'];
+    if (!this.focusedEntity) { return null; }
+
+    return this.focusedEntity.nodeData;
   }
 
   get emptyGraph() {
-    if (!this.selectedProject) return true;
+    if (!this.selectedProject) { return true; }
 
     return this.selectedProject.graph.nodes.length ? false : true;
   }
-  
+
   constructor(
     public dialog: MatDialog,
     private route: Router,
@@ -131,7 +131,7 @@ export class ProjectListViewComponent implements OnInit, AfterViewInit {
     private dataFlow: DataFlowService,
     public overlay: Overlay,
     public viewContainerRef: ViewContainerRef,
-    private _snackBar: MatSnackBar
+    private snackBar: MatSnackBar
   ) { }
 
   ngOnInit() {}
@@ -147,12 +147,13 @@ export class ProjectListViewComponent implements OnInit, AfterViewInit {
     this.projectService.pullProjects()
       .subscribe(data => {
         this.projects = (
-          data['projects'] as Project[]
+          data.projects as Project[]
         ).sort(sort);
       });
     this.projectService.pullCommunityProjects()
       .subscribe(data => {
         this.publicProjects = (
+          /* tslint:disable:no-string-literal */
           data['projects'] as Project[]
         ).sort(sort);
       });
@@ -171,14 +172,14 @@ export class ProjectListViewComponent implements OnInit, AfterViewInit {
    * for the project
    */
   togglePublic() {
-    let published = this.selectedProject.public;
+    const published = this.selectedProject.public;
     this.selectedProject.public = !published;
-    
+
     this.projectService.updateProject(this.selectedProject)
       .subscribe(resp => {
-        const state = this.selectedProject.public ? 'published' : 'private'
+        const state = this.selectedProject.public ? 'published' : 'private';
 
-        this._snackBar.open(`Project is ${state}`, null, {
+        this.snackBar.open(`Project is ${state}`, null, {
           duration: 2000,
         });
 
@@ -188,13 +189,13 @@ export class ProjectListViewComponent implements OnInit, AfterViewInit {
 
   /**
    * Allow user to navigate to a link in a new tab
-   * @param hyperlink 
+   * @param hyperlink - the linkto navigate to
    */
-  goToLink(hyperlink:string){
+  goToLink(hyperlink: string) {
     if (
       hyperlink.includes('http')
     ) {
-      window.open(hyperlink, "_blank");
+      window.open(hyperlink, '_blank');
     } else {
       window.open('http://' + hyperlink);
     }
@@ -205,8 +206,8 @@ export class ProjectListViewComponent implements OnInit, AfterViewInit {
    * if so, call delete API on project
    * @param project represents a project object
    */
-  deleteProject(project=null) {
-    if (!project) project = this.selectedProject;
+  deleteProject(project= null) {
+    if (!project) { project = this.selectedProject; }
 
     const dialogRef = this.dialog.open(DeleteProjectDialogComponent, {
       width: '40%',
@@ -232,9 +233,9 @@ export class ProjectListViewComponent implements OnInit, AfterViewInit {
           }
         );
       }
-    });    
+    });
   }
-  
+
   /**
    * Spin up dialog to confirm creation of project with
    * title and description, then call create API on project
@@ -259,20 +260,20 @@ export class ProjectListViewComponent implements OnInit, AfterViewInit {
         this.projectService.addProject(project)
           .subscribe(
             (data) => {
-              this.projects.push(data['project']);
+              this.projects.push(data.project);
               this.displayMode = 'personal';
           });
       }
-    }); 
+    });
   }
-  
+
   /**
    * Make a duplicate of a project and its data with a new uid
    * through a confirmation dialog, then call create API on project
    * @param project represents a project object
    */
-  copyProject(project: Project=null) {
-    if (!project) project = this.selectedProject;
+  copyProject(project: Project= null) {
+    if (!project) { project = this.selectedProject; }
 
     const dialogRef = this.dialog.open(CopyProjectDialogComponent, {
       width: '40%',
@@ -280,11 +281,11 @@ export class ProjectListViewComponent implements OnInit, AfterViewInit {
     });
 
     dialogRef.afterClosed().subscribe(result => {
-      if (!result) return;
+      if (!result) { return; }
 
       this.projectService.addProject(result)
         .subscribe((data) => {
-          this.projects.push(data['project']);
+          this.projects.push(data.project);
           this.displayMode = 'personal';
         });
     });
@@ -304,9 +305,9 @@ export class ProjectListViewComponent implements OnInit, AfterViewInit {
       () => {
         const container = document.getElementById('canvas');
         this.visGraph = new NetworkVis(container);
-    
+
         const g = this.projectService.universe2Vis(proj.graph);
-    
+
         setTimeout(
           () => {
             this.visGraph.draw(
@@ -320,13 +321,13 @@ export class ProjectListViewComponent implements OnInit, AfterViewInit {
             );
           },
           100
-        )
+        );
       },
       100
-    )
+    );
   }
 
-  
+
   /**
    * Open project in drawing-tool view's canvas
    */
@@ -334,26 +335,26 @@ export class ProjectListViewComponent implements OnInit, AfterViewInit {
     this.dataFlow.pushProject2Canvas(this.selectedProject);
     this.route.navigateByUrl('splitter');
   }
-  
+
   /**
    * Listen for click events from vis.js network
    * to handle certain events ..
-   * - if a node is clicked on 
-   * - if a edge is clicked on 
+   * - if a node is clicked on
+   * - if a edge is clicked on
    * - if a node is clicked on during addMode
    * @param properties - edge or node entity clicked on
    */
   networkClickHandler(properties) {
     if (properties.nodes.length) {
       // If a node is clicked on
-      let node_id = properties.nodes[0];
-      this.focusedEntity = this.visGraph.getNode(node_id);
+      const nodeId = properties.nodes[0];
+      this.focusedEntity = this.visGraph.getNode(nodeId);
     } else if (properties.edges.length) {
       // If an edge is clicked on
-      // do nothing .. 
+      // do nothing ..
     } else {
       this.focusedEntity = null;
-    }    
+    }
   }
 
   /**
@@ -416,7 +417,7 @@ export class ProjectListViewComponent implements OnInit, AfterViewInit {
         take(1)
       ).subscribe(() => this.close());
   }
-  
+
   /**
    * Close and remove the context menu
    * while unsubscribing from click streams
@@ -434,12 +435,12 @@ export class ProjectListViewComponent implements OnInit, AfterViewInit {
 
   /**
    * Return other node connected to source in edge on a given edge
-   * @param edge 
+   * @param edge - represent edge from vis.js network
    */
   getNode(edge: VisNetworkGraphEdge) {
     return this.focusedEntity.otherNodes.filter(
       node => node.id === edge.to
-    )[0].label;    
+    )[0].label;
   }
 
   /** Zoom to all the nodes on canvas  */
@@ -451,18 +452,18 @@ export class ProjectListViewComponent implements OnInit, AfterViewInit {
   toggle() {
     this.screenMode = this.screenMode === 'shrink' ? 'grow' : 'shrink';
 
-    // Calculate the parameters for our animation 
-    let list_width = this.screenMode === 'shrink' ? '25%' : '0%',
-    preview_width = this.screenMode === 'shrink' ? '75%' : '100%',
-    list_duration = this.screenMode === 'shrink' ? 500 : 400,
-    preview_duration = this.screenMode === 'shrink' ? 400 : 500,
-    container_height = this.screenMode === 'shrink' ? '70vh' : '100vh',
-    panel_height = this.screenMode === 'shrink' ? '30vh' : '0vh';
+    // Calculate the parameters for our animation
+    const listWidth = this.screenMode === 'shrink' ? '25%' : '0%';
+    const previewWidth = this.screenMode === 'shrink' ? '75%' : '100%';
+    const listDuration = this.screenMode === 'shrink' ? 500 : 400;
+    const previewDuration = this.screenMode === 'shrink' ? 400 : 500;
+    const containerHeight = this.screenMode === 'shrink' ? '70vh' : '100vh';
+    const panelHeight = this.screenMode === 'shrink' ? '30vh' : '0vh';
 
-    $('#map-list-container').animate({width: list_width}, list_duration);
-    $('#map-preview').animate({width: preview_width}, preview_duration);
+    $('#map-list-container').animate({width: listWidth}, listDuration);
+    $('#map-preview').animate({width: previewWidth}, previewDuration);
 
-    $('#canvas-container').animate({height: container_height}, 600)
-    $('#map-panel').animate({height: panel_height}, 600)    
+    $('#canvas-container').animate({height: containerHeight}, 600);
+    $('#map-panel').animate({height: panelHeight}, 600);
   }
 }

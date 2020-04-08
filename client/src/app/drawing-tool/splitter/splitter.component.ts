@@ -4,7 +4,8 @@ import {
   ComponentFactoryResolver,
   ViewContainerRef,
   Injector,
-  ViewChild
+  ViewChild,
+  AfterViewInit
 } from '@angular/core';
 
 import {
@@ -19,7 +20,7 @@ import {
   templateUrl: './splitter.component.html',
   styleUrls: ['./splitter.component.scss']
 })
-export class SplitterComponent implements OnInit {
+export class SplitterComponent implements OnInit, AfterViewInit {
   @ViewChild(
     'leftPanel',
     {static: false, read: ViewContainerRef}
@@ -27,7 +28,7 @@ export class SplitterComponent implements OnInit {
 
   splitPanelLength = 0;
 
-  currentApp: string = '';
+  currentApp = '';
 
   constructor(
     private injector: Injector,
@@ -43,19 +44,19 @@ export class SplitterComponent implements OnInit {
   }
 
   /**
-   * 
+   *
    */
   close() {
     this.currentApp = '';
     this.leftPanel.clear();
     this.splitPanelLength = 0;
-  }  
+  }
 
   /**
-   * 
-   * @param app 
+   *
+   * @param app - app such as pdf-viewer or kg-visualizer
    */
-  openApp(app:string) {
+  openApp(app: string) {
     if (!app) {
       this.close();
       return;
@@ -64,7 +65,7 @@ export class SplitterComponent implements OnInit {
     let factory;
     let ref;
 
-    switch(app) {
+    switch (app) {
       case 'map-search':
         factory = this.r.resolveComponentFactory(MapSearchChannelComponent);
         break;
