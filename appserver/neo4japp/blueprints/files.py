@@ -27,7 +27,8 @@ def upload_pdf():
     annotator = get_annotations_service()
     bioc_service = get_bioc_document_service()
     token_extractor = get_token_extractor_service()
-    pdf = request.files['file'].read()
+    pdf = request.files['file']
+    binary_pdf = pdf.read()
     username = g.current_user
     filename = secure_filename(request.files['file'].filename)
     file_id = str(uuid.uuid4())
@@ -45,7 +46,7 @@ def upload_pdf():
         files = Files(
             file_id=file_id,
             filename=filename,
-            raw_file=pdf,
+            raw_file=binary_pdf,
             username=username.id,
             annotations=annotations_json,
         )
