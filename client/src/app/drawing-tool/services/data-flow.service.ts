@@ -5,6 +5,7 @@ import {
   Project,
   VisNetworkGraphNode
 } from './interfaces';
+import { coronavirus } from './mock_data';
 
 /**
  * Handle communication between components
@@ -27,7 +28,7 @@ export class DataFlowService {
   formDataSource = this.form2Graph.asObservable();
 
   /** Communication route from project-list to drawing-tool */
-  private projectlist2Canvas = new BehaviorSubject<Project>(null);
+  private projectlist2Canvas = new BehaviorSubject<Project>(coronavirus);
   $projectlist2Canvas = this.projectlist2Canvas.asObservable();
 
   constructor() { }

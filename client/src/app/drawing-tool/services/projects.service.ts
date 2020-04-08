@@ -74,7 +74,7 @@ export class ProjectsService {
    */
   public pullCommunityProjects() {
     return this.http.get(
-      this.base_url + '/drawing-tool/community',
+      this.baseUrl + '/drawing-tool/community',
       this.createHttpOptions(true)
     );
   }

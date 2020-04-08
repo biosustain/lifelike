@@ -181,6 +181,8 @@ export class ProjectListViewComponent implements OnInit, AfterViewInit {
         this._snackBar.open(`Project is ${state}`, null, {
           duration: 2000,
         });
+
+        this.refresh();
       });
   }
 
@@ -217,6 +219,7 @@ export class ProjectListViewComponent implements OnInit, AfterViewInit {
           .subscribe(resp => {
 
             this.projects = this.projects.filter(p => p.id !== project.id);
+            this.publicProjects = this.publicProjects.filter(p => p.id !== project.id);
 
             if (project === this.selectedProject) {
               this.selectedProject = null;

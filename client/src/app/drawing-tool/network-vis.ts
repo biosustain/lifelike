@@ -7,6 +7,7 @@ import {
   GraphSelectionData
 } from './services/interfaces';
 import { Network, Options, DataSet } from 'vis-network';
+import { isNullOrUndefined } from 'util';
 
 /**
  * A class wrapped around the instatiation of
@@ -61,9 +62,9 @@ export class NetworkVis {
     const groupStyling = {};
     for (const template of nodeTemplates) {
       groupStyling[template.label] = {
-        borderWidth: 0,
+        borderWidth: 1,
         color: {
-          background: 'rgba(0, 0, 0, 0)'
+          background: '#fff'
         },
         font: {
           color: template.color
@@ -174,7 +175,7 @@ export class NetworkVis {
     n.y = n.y || y;
     n.size = 5;
     n.data = {
-      hyperlink: n.data.hyperlink || ''
+      hyperlink: (n.data || {}).hyperlink || ''
     };
 
     this.visNodes.add([n]);
