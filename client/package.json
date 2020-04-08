@@ -38,6 +38,7 @@
     "jquery-ui-dist": "1.12.1",
     "keycharm": "^0.2.0",
     "moment": "^2.24.0",
+    "ngrx-store-localstorage": "9.0.0",
     "pdf-viewer-lib": "git+***REMOVED***/sbrg/lib-pdf-viewer",
     "pdfjs-dist": "2.2.228",
     "qtip2": "3.0.3",

@@ -118,7 +118,7 @@ def login():
     data = request.get_json()
 
     user = AppUser.query.filter_by(
-        email=data.get('emailAddr')
+        email=data.get('email')
     ).first_or_404()
 
     if user.check_password(data.get('password')):
@@ -147,8 +147,9 @@ def login():
 
         # Create response
         resp = {
-            "access_jwt": access_jwt_encoded.decode('utf-8'),
-            "refresh_jwt": refresh_jwt_encoded.decode('utf-8')
+            'user': user.to_dict(),
+            'access_jwt': access_jwt_encoded.decode('utf-8'),
+            'refresh_jwt': refresh_jwt_encoded.decode('utf-8')
         }
 
         return Response(
