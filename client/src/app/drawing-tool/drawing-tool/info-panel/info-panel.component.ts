@@ -67,12 +67,12 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
   nodeBankDict: {[hash: string]: object} = {};
 
   /** Whether or not show all edges */
-  edgeCollapsed: boolean = false;
+  edgeCollapsed = false;
 
   get edgeListStyle() {
     return {
       collapsed: this.edgeCollapsed
-    }
+    };
   }
 
   /**
@@ -241,7 +241,7 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * 
+   * Hide or show the edges
    */
   toggleCollapsible() {
     this.edgeCollapsed = !this.edgeCollapsed;
@@ -298,7 +298,6 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
    */
   addEdge() {
     this.edgeCollapsed = false;
-            
     this.pauseForm = true;
 
     // add form control to modify edge
@@ -377,7 +376,7 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
 
   /**
    * Allow user to navigate to a link in a new tab
-   * @param hyperlink 
+   * @param hyperlink - url string to navigate to
    */
   goToLink() {
     const hyperlink: string = this.entityForm.value.hyperlink;

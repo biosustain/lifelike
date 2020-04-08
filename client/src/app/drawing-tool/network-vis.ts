@@ -2,7 +2,7 @@ import {
   nodeTemplates,
   uuidv4
 } from './services';
-import { 
+import {
   VisNetworkGraphNode,
   GraphSelectionData
 } from './services/interfaces';
@@ -81,11 +81,11 @@ export class NetworkVis {
   zoom2All() {
     this.network.fit({
       nodes: [],
-      animation: { 
+      animation: {
         duration: 400,
-        easingFunction: "easeInOutQuad"
+        easingFunction: 'easeInOutQuad'
       }
-    })
+    });
   }
 
   /**
@@ -222,7 +222,7 @@ export class NetworkVis {
    * other nodes
    * @param id - id of the node you want to info on
    */
-  getNode(id):GraphSelectionData {
+  getNode(id): GraphSelectionData {
     const node = this.visNodes.get(id);
     const edges = this.visEdges.get({
       filter: (item) => {
@@ -297,12 +297,13 @@ export class NetworkVis {
 
   /**
    * Return a base64 png of the network map
-   * from the canvas 
+   * from the canvas
    */
   pullImage() {
-    if (!this.network) return null;
+    if (!this.network) { return null; }
 
-    let context = this.network['canvas'].getContext();
+    /* tslint:disable:no-string-literal */
+    const context = this.network['canvas'].getContext();
 
     return context.canvas.toDataURL();
   }
