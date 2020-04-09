@@ -110,6 +110,7 @@ class AnnotationsPDFParser:
         token_objects: List[PDFTokenPositions] = []
 
         for page_idx, char_list in parsed_chars.str_per_pdf_page.items():
+            early_break = False
             curr_page = page_idx
             max_length = len(char_list)
             curr_idx = 0
@@ -121,7 +122,7 @@ class AnnotationsPDFParser:
                     whitespace_count = 0
                     char_idx_map: Dict[int, str] = {}
 
-                    while whitespace_count < curr_max_words and curr_idx< max_length:
+                    while whitespace_count < curr_max_words and curr_idx < max_length:
                         # ignore leading spaces
                         if (curr_keyword == '' and
                             (char_list[curr_idx] in whitespace or
@@ -153,9 +154,22 @@ class AnnotationsPDFParser:
                         ),
                     )
 
+                    # in case we're at the end of page
+                    # but the token word length hasn't been reached yet
+                    # e.g self.max_word_length is 4 - but the sequential
+                    # walking restarted at the last word on the page
+                    # so will enter an infinite loop since we'll never
+                    # be able to increment sequentially up to self.max_word_length
+                    if curr_idx == max_length:
+                        early_break = True
+                        break
+
                     curr_idx = new_start_idx
                     curr_keyword = ''
                     curr_max_words += 1
+
+                if early_break:
+                    break
                 curr_max_words = 1
                 whitespace_count = 0
                 curr_idx = first_whitespace_encountered_idx + 1
