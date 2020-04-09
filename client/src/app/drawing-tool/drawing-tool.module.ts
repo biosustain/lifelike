@@ -36,9 +36,12 @@ import {
   FriendlyDateStrPipe
 } from './pipes';
 
+import { CopyPasteMapsService } from './services/copy-paste-maps.service';
+
 import {
   PendingChangesGuard
 } from './guards';
+
 import { DrawingToolContextMenuComponent } from './drawing-tool/drawing-tool-context-menu/drawing-tool-context-menu.component';
 import { PaletteComponent } from './drawing-tool/palette/palette.component';
 import { InfoPanelComponent } from './drawing-tool/info-panel/info-panel.component';
@@ -84,6 +87,7 @@ import { MapSearchChannelComponent } from './map-search-channel/map-search-chann
     FlexLayoutModule,
   ],
   providers: [
+    CopyPasteMapsService,
     // {
     //   provide: HTTP_INTERCEPTORS,
     //   useClass: AuthenticationService,
