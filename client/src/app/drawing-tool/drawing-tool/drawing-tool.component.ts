@@ -23,6 +23,9 @@ import {
 import { IdType } from 'vis-network';
 
 import {
+    NetworkVis
+} from '../network-vis';
+import {
     DataFlowService,
     ProjectsService,
     nodeTemplates,
@@ -36,9 +39,7 @@ import {
     VisNetworkGraph
 } from '../services/interfaces';
 import { DrawingToolContextMenuControlService } from '../services/drawing-tool-context-menu-control.service';
-import {
-    NetworkVis
-} from '../network-vis';
+import { CopyPasteMapsService } from '../services/copy-paste-maps.service';
 
 import {
     InfoPanelComponent
@@ -137,7 +138,9 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
         private drawingToolContextMenuControlService: DrawingToolContextMenuControlService,
         private projectService: ProjectsService,
         private snackBar: MatSnackBar,
+        private copyPasteMapsService: CopyPasteMapsService,
     ) {}
+
     ngOnInit() {
         this.selectedNodes = [];
         this.selectedEdges = [];
@@ -742,5 +745,24 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
     selectNeighbors(node: IdType) {
         this.visjsNetworkGraph.network.selectNodes(this.visjsNetworkGraph.network.getConnectedNodes(node) as IdType[]);
         this.updateSelectedNodes();
+    }
+
+    /**
+     * Saves the selected nodes and edges to the CopyPaste service.
+     *
+     * For every edge, we check if both connected nodes have also been selected. If not, then we
+     * discard the edge.
+     */
+    copySelection() {
+        const copiedNodeIds = this.selectedNodes;
+        const copiedEdgeIds = this.selectedEdges.filter(edgeId => {
+            const connectedNodes = this.visjsNetworkGraph.network.getConnectedNodes(edgeId);
+            // If even one of the nodes connected to this edge is not in the list of copied nodes, abandon the edge
+            // (we don't want to draw edges that don't have a src/dest).
+            return connectedNodes.every(connectedNodeId => copiedNodeIds.includes(connectedNodeId));
+        });
+
+        this.copyPasteMapsService.copiedNodes = copiedNodeIds.map(nodeId => this.visjsNetworkGraph.getNode(nodeId).nodeData);
+        this.copyPasteMapsService.copiedEdges = copiedEdgeIds.map(edgeId => this.visjsNetworkGraph.getEdge(edgeId).edgeData);
     }
 }

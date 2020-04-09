@@ -22,6 +22,7 @@ export class DrawingToolContextMenuComponent extends TooltipComponent implements
     @Output() removeNodes: EventEmitter<IdType[]> = new EventEmitter();
     @Output() removeEdges: EventEmitter<IdType[]> = new EventEmitter();
     @Output() selectNeighbors: EventEmitter<IdType> = new EventEmitter();
+    @Output() copySelection: EventEmitter<boolean> = new EventEmitter();
 
     FADEOUT_STYLE = 'context-menu fade-out';
     DEFAULT_STYLE = 'context-menu';
@@ -111,6 +112,11 @@ export class DrawingToolContextMenuComponent extends TooltipComponent implements
             return;
         }
         this.selectNeighbors.emit(this.selectedNodeIds[0]);
+        this.beginContextMenuFade();
+    }
+
+    requestCopy() {
+        this.copySelection.emit(true);
         this.beginContextMenuFade();
     }
 }

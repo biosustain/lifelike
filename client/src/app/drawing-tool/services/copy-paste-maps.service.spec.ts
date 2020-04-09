@@ -4,8 +4,14 @@ import { configureTestSuite } from 'ng-bullet';
 
 import { CopyPasteMapsService } from './copy-paste-maps.service';
 
-fdescribe('CopyPasteMapsService', () => {
-    configureTestSuite(() => {});
+describe('CopyPasteMapsService', () => {
+    configureTestSuite(() => {
+        TestBed.configureTestingModule({
+            providers: [
+                CopyPasteMapsService,
+            ],
+        });
+    });
 
     it('should be created', () => {
         const service: CopyPasteMapsService = TestBed.get(CopyPasteMapsService);
