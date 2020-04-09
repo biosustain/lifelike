@@ -2,10 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { configureTestSuite } from 'ng-bullet';
 
-import { DataFlowService } from 'app/drawing-tool/services';
-import { RootStoreModule } from 'app/root-store';
-import { SharedModule } from 'app/shared/shared.module';
-
+import { DrawingToolModule } from '../../drawing-tool.module';
 import { InfoPanelComponent } from './info-panel.component';
 
 xdescribe('InfoPanelComponent', () => {
@@ -14,16 +11,7 @@ xdescribe('InfoPanelComponent', () => {
 
     configureTestSuite(() => {
         TestBed.configureTestingModule({
-            declarations: [
-                InfoPanelComponent,
-            ],
-            imports: [
-                RootStoreModule,
-                SharedModule,
-            ],
-            providers: [
-                DataFlowService,
-            ]
+            imports: [ DrawingToolModule ]
         });
     });
 

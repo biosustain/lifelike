@@ -1,3 +1,26 @@
+@mixin scrollbars($size, $foreground-color, $background-color: mix($foreground-color, white, 50%)) {
+
+  // For Google Chrome
+  &::-webkit-scrollbar {
+    width: $size;
+    height: $size;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: $foreground-color;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: $background-color;
+  }
+
+  // For Internet Explorer
+  & {
+    scrollbar-face-color: $foreground-color;
+    scrollbar-track-color: $background-color;
+  }
+}
+
 @mixin full {
   width: 100%;
   height: 100vh;
@@ -59,8 +82,16 @@
       transition: color .2s ease-in;
     }
 
-    mat-icon.fit:hover {
+    mat-icon:hover {
       color: #3797DB;
+    }
+
+    mat-icon.active {
+      color: #4caf50;
+    }
+    mat-icon.active:hover {
+      color: #e74c3c;
+      transition: color .2s ease-in;
     }
 
     mat-icon.saved {
@@ -70,10 +101,12 @@
       color: #e74c3c;
     }
   }
-
-  #info-panel::-webkit-scrollbar {
-      display: none;
+  
+  #info-panel {
+    @include scrollbars(.25em, #3797DB);
+    overflow-x: hidden;
   }
+
   #info-panel {
       @include overlay;
       width: 16rem;
