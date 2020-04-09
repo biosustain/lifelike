@@ -15,6 +15,9 @@ import {
   PdfViewerComponent,
   PendingChangesGuard
 } from './drawing-tool';
+import {
+  SplitterComponent
+} from './drawing-tool/splitter/splitter.component';
 
 import { AdminGuard } from 'app/admin/services/admin-guard.service';
 import { AuthGuard } from 'app/auth/guards/auth-guard.service';
@@ -43,6 +46,10 @@ const routes: Routes = [
         path: 'drawing-tool',
         component: DrawingToolComponent,
         canDeactivate: [PendingChangesGuard]
+      },
+      {
+        path: 'splitter',
+        component: SplitterComponent
       }
     ],
   },

@@ -36,17 +36,23 @@ def seed():
                         email=r["email"],
                         password=r["password_hash"],
                         roles=["admin"],
+                        first_name=r["first_name"],
+                        last_name=r["last_name"]
                     )
 
             elif fix["table"] == "project":
-                for r in fix["records"]:
+                for idx, r in enumerate(fix["records"]):
+                    r = fix["records"][idx]
+
                     proj = Project(
                         label=r["label"],
                         description=r["description"],
                         date_modified=r["date_modified"],
                         graph=r["graph"],
+                        public=r["public"],
+                        author=r["author"],
                         # temporary fix
-                        user_id=1
+                        user_id=idx+1
                     )
                     db.session.add(proj)
                     db.session.commit()

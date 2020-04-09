@@ -11,6 +11,20 @@ import graphviz as gv
 bp = Blueprint('drawing_tool', __name__, url_prefix='/drawing-tool')
 
 
+@bp.route('/community', methods=['GET'])
+@auth.login_required
+def get_community_projects():
+    """
+        Return a list of all the projects made public by users
+    """
+
+    # Pull the projects that are made public
+    projects = Project.query.filter_by(public=True).all()
+    project_schema = ProjectSchema(many=True)
+
+    return {'projects': project_schema.dump(projects)}, 200
+
+
 @bp.route('/projects', methods=['GET'])
 @auth.login_required
 def get_project():
@@ -20,6 +34,8 @@ def get_project():
     user = g.current_user
 
     # Pull the projects tied to that user
+
+    # TODO - add pagination : LL-343 in Backlog
     projects = Project.query.filter_by(user_id=user.id).all()
     project_schema = ProjectSchema(many=True)
 
@@ -37,6 +53,7 @@ def add_project():
 
     # Create new project
     project = Project(
+        author=f"{user.first_name} {user.last_name}",
         label=data.get("label", ""),
         description=data.get("description", ""),
         date_modified=datetime.strptime(
@@ -79,6 +96,7 @@ def update_project(project_id):
     project.label = data.get("label", "")
     project.graph = data.get("graph", {"edges": [], "nodes": []})
     project.date_modified = datetime.now()
+    project.public = data.get("public", False)
 
     # Commit to db
     db.session.add(project)
