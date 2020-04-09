@@ -28,14 +28,17 @@ export class HttpErrorInterceptor implements HttpInterceptor {
                         config: { duration: 10000 },
                     }}));
                     return throwError('No internet connection');
-                    // TODO: Handle the following errors below
                 } else if (statusCode >= 400 && statusCode < 500) {
                     return throwError(res);
                 } else if (statusCode >= 500) {
-                    return throwError(res);
-                } else {
+                    this.store.dispatch(SnackbarActions.displaySnackbar({payload: {
+                        message: 'Server error',
+                        action: 'Dismiss',
+                        config: { duration: 10000 },
+                    }}));
                     return throwError(res);
                 }
+                return throwError(res);
             }),
         );
     }

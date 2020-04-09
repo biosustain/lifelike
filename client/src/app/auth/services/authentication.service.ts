@@ -69,7 +69,7 @@ export class AuthenticationService {
     const jwt = localStorage.getItem('refresh_jwt');
 
     return this.http.post<{access_jwt: string, refresh_jwt: string}>(
-      this.baseUrl + '/auth/refresh',
+      this.baseUrl + '/refresh',
       { jwt },
       this.createHttpOptions()
     ).pipe(
