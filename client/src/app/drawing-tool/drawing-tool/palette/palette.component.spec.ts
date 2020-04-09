@@ -5,23 +5,18 @@ import { configureTestSuite } from 'ng-bullet';
 import { RootStoreModule } from 'app/***ARANGO_USERNAME***-store';
 import { SharedModule } from 'app/shared/shared.module';
 
+import { DrawingToolModule } from '../../drawing-tool.module';
 import { PaletteComponent } from './palette.component';
 
 describe('PaletteComponent', () => {
     let component: PaletteComponent;
     let fixture: ComponentFixture<PaletteComponent>;
 
-    configureTestSuite(() => {
+    configureTestSuite((() => {
         TestBed.configureTestingModule({
-            declarations: [
-                PaletteComponent,
-            ],
-            imports: [
-                RootStoreModule,
-                SharedModule,
-            ]
+            imports: [ DrawingToolModule ]
         });
-    });
+    }));
 
     beforeEach(() => {
         fixture = TestBed.createComponent(PaletteComponent);
