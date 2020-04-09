@@ -3,6 +3,7 @@ import json
 import os
 from flask import render_template
 from flask_cors import CORS
+from hashids import Hashids
 from sqlalchemy.sql.expression import text
 from neo4japp.factory import create_app
 from neo4japp.models import AppUser, Project
@@ -57,7 +58,17 @@ def seed():
                         # temporary fix
                         user_id=idx+1
                     )
+                    
                     db.session.add(proj)
+                    db.session.flush()
+
+                    # Assign hash_id to map
+                    hash_id = Hashids(
+                        min_length=16,
+                        salt='this is my salt 1'
+                    ).encode(proj.id)
+                    proj.hash_id = hash_id
+
                     db.session.commit()
 
 
