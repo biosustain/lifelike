@@ -5,7 +5,7 @@ from flask_httpauth import HTTPTokenAuth
 from sqlalchemy.orm.exc import NoResultFound
 
 from neo4japp.database import db
-from neo4japp.exceptions import RecordNotFoundException
+from neo4japp.exceptions import JWTTokenException, RecordNotFoundException, NotAuthorizedException
 from neo4japp.models.auth import AppUser
 
 bp = Blueprint('auth', __name__, url_prefix='/auth')
@@ -27,12 +27,12 @@ def verify_token(token):
             g.current_user = user
             return True
         else:
-            return False
+            raise NotAuthorizedException('no access found')
     except jwt.exceptions.ExpiredSignatureError:
         # Signature has expired
-        return False
+        raise JWTTokenException('refresh token has expired')
     except jwt.exceptions.InvalidTokenError:
-        return False
+        raise JWTTokenException('refresh token is invalid')
 
 
 def pullUserFromAuthHead():
@@ -105,13 +105,12 @@ def refresh():
             "refresh_jwt": refresh_jwt_encoded.decode('utf-8')
         }
         return resp, 200
-
     except jwt.exceptions.ExpiredSignatureError:
         # Signature has expired
-        return {'status': 'refresh token has expired'}, 401
+        raise JWTTokenException('refresh token has expired')
     except jwt.exceptions.InvalidTokenError:
         # Invalid token
-        return {'status': 'refresh token is invalid'}, 401
+        raise JWTTokenException('refresh token is invalid')
 
 
 @bp.route('/login', methods=['POST'])
