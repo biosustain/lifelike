@@ -8,6 +8,8 @@ from neo4japp.models import AppUser
 def user_factory(uid):
     return dict(
         username=f'AppUser-{uid}',
+        firstName=f'firstname-{uid}',
+        lastName=f'lastname-{uid}',
         email=f'appuser-{uid}@lifelike.bio',
         roles=['user'],
     )
