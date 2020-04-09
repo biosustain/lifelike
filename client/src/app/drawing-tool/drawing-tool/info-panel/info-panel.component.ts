@@ -15,24 +15,11 @@ import {
 import {
   VisNetworkGraphEdge,
   VisNetworkGraphNode,
-  GraphData
+  GraphData,
+  GraphSelectionData
 } from '../../services/interfaces';
 import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
-
-interface GraphSelectionData {
-  edge_data?: VisNetworkGraphEdge;
-  node_data?: {
-    id: string,
-    group: string,
-    label: string,
-    edges: VisNetworkGraphEdge[],
-    data: {
-      hyperlink: string;
-    }
-  };
-  other_nodes?: VisNetworkGraphNode[];
-}
 
 @Component({
   selector: 'app-info-panel',
@@ -78,6 +65,15 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
 
   nodeBank: VisNetworkGraphNode[] = [];
   nodeBankDict: {[hash: string]: object} = {};
+
+  /** Whether or not show all edges */
+  edgeCollapsed = false;
+
+  get edgeListStyle() {
+    return {
+      collapsed: this.edgeCollapsed
+    };
+  }
 
   /**
    * Return true or false if any edges exist
@@ -166,15 +162,15 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
       if (!data) { return; }
 
       // If a node is clicked on ..
-      if (data.node_data) {
+      if (data.nodeData) {
         this.entityType = 'node';
 
         // Record the data ..
-        this.graphData = data.node_data;
-        data.other_nodes.map(n => {
+        this.graphData = data.nodeData;
+        data.otherNodes.map(n => {
           this.nodeBankDict[n.id] = n;
         });
-        this.nodeBank = data.other_nodes;
+        this.nodeBank = data.otherNodes;
 
         this.pauseForm = true;
 
@@ -204,17 +200,17 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
               to: e.to
             };
           }),
-          hyperlink: data.node_data.data.hyperlink
+          hyperlink: data.nodeData.data.hyperlink
         };
         this.entityForm.setValue(formData, {emitEvent: false});
 
         this.pauseForm = false;
-      } else if (data.edge_data) {
+      } else if (data.edgeData) {
         // Else if an edge is clicked on ..
         this.entityType = 'edge';
 
         // Record the data ..
-        this.graphData = data.edge_data;
+        this.graphData = data.edgeData;
 
         // Setup FormGroup for Edge ..
         this.pauseForm = true;
@@ -244,6 +240,16 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
     this.formSubscription.unsubscribe();
   }
 
+  /**
+   * Hide or show the edges
+   */
+  toggleCollapsible() {
+    this.edgeCollapsed = !this.edgeCollapsed;
+  }
+
+  /**
+   * Reset info-panel to a clean state
+   */
   reset() {
     // reset everything of component's members
     this.graphData = {
@@ -253,6 +259,8 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
       edges: [],
       hyperlink: ''
     };
+
+    this.edgeCollapsed = false;
 
     this.pauseForm = true;
     this.entityForm.setControl(
@@ -289,6 +297,7 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
    * Add edge to through FormControl
    */
   addEdge() {
+    this.edgeCollapsed = false;
     this.pauseForm = true;
 
     // add form control to modify edge
@@ -365,6 +374,9 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * Allow user to navigate to a link in a new tab
+   */
   goToLink() {
     const hyperlink: string = this.entityForm.value.hyperlink;
 

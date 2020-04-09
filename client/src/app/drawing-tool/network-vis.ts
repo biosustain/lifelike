@@ -2,8 +2,12 @@ import {
   nodeTemplates,
   uuidv4
 } from './services';
-import { VisNetworkGraphNode } from './services/interfaces';
+import {
+  VisNetworkGraphNode,
+  GraphSelectionData
+} from './services/interfaces';
 import { Network, Options, DataSet } from 'vis-network';
+import { isNullOrUndefined } from 'util';
 
 /**
  * A class wrapped around the instatiation of
@@ -23,7 +27,7 @@ export class NetworkVis {
   options = {
     interaction: {
       hover: true,
-      multiselect: true,
+      multiselect: true
     },
     edges: {
       arrows: {
@@ -58,12 +62,12 @@ export class NetworkVis {
     const groupStyling = {};
     for (const template of nodeTemplates) {
       groupStyling[template.label] = {
-        borderWidth: 0,
+        borderWidth: 1,
         color: {
-          background: template.color
+          background: '#fff'
         },
         font: {
-          color: '#fff'
+          color: template.color
         }
       };
     }
@@ -77,7 +81,10 @@ export class NetworkVis {
   zoom2All() {
     this.network.fit({
       nodes: [],
-      animation: false
+      animation: {
+        duration: 400,
+        easingFunction: 'easeInOutQuad'
+      }
     });
   }
 
@@ -168,7 +175,7 @@ export class NetworkVis {
     n.y = n.y || y;
     n.size = 5;
     n.data = {
-      hyperlink: n.data.hyperlink || ''
+      hyperlink: (n.data || {}).hyperlink || ''
     };
 
     this.visNodes.add([n]);
@@ -215,7 +222,7 @@ export class NetworkVis {
    * other nodes
    * @param id - id of the node you want to info on
    */
-  getNode(id) {
+  getNode(id): GraphSelectionData {
     const node = this.visNodes.get(id);
     const edges = this.visEdges.get({
       filter: (item) => {
@@ -286,5 +293,18 @@ export class NetworkVis {
     });
 
     this.network.redraw();
+  }
+
+  /**
+   * Return a base64 png of the network map
+   * from the canvas
+   */
+  pullImage() {
+    if (!this.network) { return null; }
+
+    /* tslint:disable:no-string-literal */
+    const context = this.network['canvas'].getContext();
+
+    return context.canvas.toDataURL();
   }
 }
