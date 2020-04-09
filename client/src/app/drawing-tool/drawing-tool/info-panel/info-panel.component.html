@@ -29,10 +29,27 @@
             </mat-select>
         </mat-form-field>
 
+        <mat-form-field
+            *ngIf='isNode'
+            class="w-100 mt3">
+            <mat-label>Hyperlink</mat-label>
+            <input
+                matInput
+                (keydown.enter)="blurInput($event)"
+                formControlName='hyperlink'>
+            <mat-icon (click)='goToLink()' matSuffix>link</mat-icon>
+        </mat-form-field>
+
         <div
             *ngIf='isNode'
             class='flex' style="flex-wrap: wrap;">
-            <p class='blue'>Edges</p>
+            <p
+                matTooltip='Click to collapse/uncollapse'
+                matTooltipPosition="right"
+                (click)='toggleCollapsible()'
+                class='blue dim collapsible'>
+                Edges
+            </p>
             <button
                 (click)='addEdge()'
                 mat-button color="primary"
@@ -46,7 +63,10 @@
             </p>
         </div>
 
-        <div *ngIf='isNode'>
+        <div
+            *ngIf='isNode'
+            [ngClass]='edgeListStyle'
+            id='edge-list'>
             <div
                 formArrayName='edges'
                 *ngFor="let edge of edgeFormArr.controls; let i = index;"
@@ -81,19 +101,6 @@
                 </div>
             </div>
         </div>
-
-        <mat-divider *ngIf='isNode'></mat-divider>
-
-        <mat-form-field
-            *ngIf='isNode'
-            class="w-100 mt3">
-            <mat-label>Hyperlink</mat-label>
-            <input
-                matInput
-                (keydown.enter)="blurInput($event)"
-                formControlName='hyperlink'>
-            <mat-icon (click)='goToLink("https://www.who.int")' matSuffix>link</mat-icon>
-        </mat-form-field>
 
         <button (click)='delete()' mat-button color="warn" class='delete'>
             Delete

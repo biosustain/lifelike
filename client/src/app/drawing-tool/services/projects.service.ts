@@ -65,6 +65,18 @@ export class ProjectsService {
   }
 
   /**
+   * Return a list of projects made public within
+   * user base
+   */
+  public pullCommunityProjects() {
+    return this.http.get(
+      this.baseUrl + '/drawing-tool/community',
+      this.createHttpOptions(true)
+    );
+  }
+
+
+  /**
    * Return a list of projects owned by user
    */
   public pullProjects(): Observable<any> {

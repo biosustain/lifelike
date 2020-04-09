@@ -3,8 +3,12 @@ import {
     OnInit,
     AfterViewInit,
     OnDestroy,
-    HostListener
-} from '@angular/core';
+    HostListener,
+    Output,
+    EventEmitter,
+    Input,
+    ViewChild
+  } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { CdkDragDrop } from '@angular/cdk/drag-drop';
 
@@ -16,8 +20,6 @@ import {
     Subscription, Observable
 } from 'rxjs';
 
-import { isNullOrUndefined } from 'util';
-
 import { IdType } from 'vis-network';
 
 import {
@@ -27,15 +29,20 @@ import {
     makeid
 } from '../services';
 import {
+    GraphData,
     Project,
     VisNetworkGraphEdge,
     VisNetworkGraphNode,
-    GraphData
+    VisNetworkGraph
 } from '../services/interfaces';
+import { DrawingToolContextMenuControlService } from '../services/drawing-tool-context-menu-control.service';
 import {
     NetworkVis
 } from '../network-vis';
-import { DrawingToolContextMenuControlService } from '../services/drawing-tool-context-menu-control.service';
+
+import {
+    InfoPanelComponent
+} from './info-panel/info-panel.component';
 
 interface Update {
     event: string;
@@ -70,13 +77,21 @@ export interface Action {
     styleUrls: ['./drawing-tool.component.scss']
 })
 export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
+    /** Communicate to parent component to open another app side by side */
+    @Output() openApp: EventEmitter<string> = new EventEmitter<string>();
+    /** Communicate which app is active for app icon presentation */
+    @Input() currentApp = '';
+
+    @ViewChild(InfoPanelComponent, {static: false}) infoPanel: InfoPanelComponent;
+
     selectedNodes: IdType[];
     selectedEdges: IdType[];
 
     contextMenuTooltipSelector: string;
     contextMenuTooltipOptions: Partial<Options>;
+
     /** The current graph representation on canvas */
-    currentGraphState: {edges: any[], nodes: any[]} = null;
+    currentGraphState: {edges: VisNetworkGraphEdge[], nodes: VisNetworkGraphNode[]} = null;
 
     undoStack: Action[] = [];
     redoStack: Action[] = [];
@@ -90,8 +105,8 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
 
     /** Render condition for dragging gesture of edge formation */
     addMode = false;
-    /** Node part of draggign gesture for edge formation  */
-    node4AddingEdge2: string;
+    /** Node part of dragging gesture for edge formation  */
+    node4AddingEdge2;
 
     /** Build the palette ui with node templates defined */
     nodeTemplates = nodeTemplates;
@@ -133,34 +148,30 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
         };
 
         // Listen for node addition from pdf-viewer
-        this.pdfDataSubscription =
-        this.dataFlow.$pdfDataSource.subscribe(
-            (node: GraphData) => {
-                if (isNullOrUndefined(node)) { return; }
+        this.pdfDataSubscription = this.dataFlow.$pdfDataSource.subscribe((node: GraphData) => {
+            if (!node) { return; }
 
-                // Convert DOM coordinate to canvas coordinate
-                const coord =
-                    this.visjsNetworkGraph
-                    .network.DOMtoCanvas({x: node.x, y: node.y});
+            // Convert DOM coordinate to canvas coordinate
+            const coord =
+            this.visjsNetworkGraph
+                .network.DOMtoCanvas({x: node.x, y: node.y});
 
-                // TODO ADD NODE
-                const cmd = {
-                    action: 'add node',
-                    data: {
-                        label: node.label,
-                        group: node.group,
-                        x: coord.x,
-                        y: coord.y,
-                        hyperlink: node.hyperlink
-                    }
-                };
-                this.recordCommand(cmd);
-            }
-        );
+            // TODO ADD NODE
+            const cmd = {
+                action: 'add node',
+                data: {
+                    label: node.label,
+                    group: node.group,
+                    x: coord.x,
+                    y: coord.y,
+                    hyperlink: node.hyperlink
+                }
+            };
+            this.recordCommand(cmd);
+        });
 
         // Listen for graph update from info-panel-ui
-        this.formDataSubscription =
-        this.dataFlow.formDataSource.subscribe((update: Update) => {
+        this.formDataSubscription = this.dataFlow.formDataSource.subscribe((update: Update) => {
             if (!update) { return; }
 
             const event = update.event;
@@ -288,6 +299,50 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
         this.drawingToolContextMenuControlService.hideTooltip();
     }
 
+    /**
+     * Handle closing or opening apps
+     * @param app - any app such as pdf-viewer, map-search, kg-visualizer
+     */
+    toggle(app) {
+        if (this.currentApp === app) {
+            // Shutdown app
+            this.openApp.emit(null);
+        } else {
+            // Open app
+            this.openApp.emit(app);
+        }
+    }
+
+    /**
+     * Checks if an undo or redo action contains a graph update
+     * affecting the focused entity and push update to info-panel
+     * @param graph - represent a network
+     */
+    shouldIUpdateInfoPanel(graph: VisNetworkGraph) {
+        if (!this.infoPanel.graphData.id) { return; }
+
+        const currentEntity = this.infoPanel.graphData;
+        const currentEntityType = this.infoPanel.entityType;
+
+        if (currentEntityType === 'node') {
+            const nodeIds = graph.nodes.map(n => n.id);
+            if (nodeIds.includes(currentEntity.id)) {
+                const data = this.visjsNetworkGraph.getNode(currentEntity.id);
+                this.dataFlow.pushGraphData(data);
+            } else {
+                this.infoPanel.reset();
+            }
+        } else {
+            const edgeIds = graph.edges.map(e => e.id);
+            if (edgeIds.includes(currentEntity.id)) {
+                const data = this.visjsNetworkGraph.getEdge(currentEntity.id);
+                this.dataFlow.pushGraphData(data);
+            } else {
+                this.infoPanel.reset();
+            }
+        }
+    }
+
     undo() {
         // Pop the action from undo stack
         const undoAction = this.undoStack.pop();
@@ -302,9 +357,12 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
         this.visjsNetworkGraph.import(
             undoAction.graph
         );
+        this.shouldIUpdateInfoPanel(undoAction.graph);
 
         // Push redo action into redo stack
         this.redoStack.push(redoAction);
+
+        this.saveState = false;
     }
 
     redo() {
@@ -321,9 +379,12 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
         this.visjsNetworkGraph.import(
             redoAction.graph
         );
+        this.shouldIUpdateInfoPanel(redoAction.graph);
 
         // Push undo action into undo stack
         this.undoStack.push(undoAction);
+
+        this.saveState = false;
     }
 
     /**
@@ -367,7 +428,7 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
                         e.id,
                         {
                             label: e.label,
-                            from: e.label,
+                            from: e.from,
                             to: e.to
                         }
                     );
@@ -401,7 +462,6 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
      * @param event object representing a drag-and-drop event
      */
     drop(event: CdkDragDrop<any>) {
-
         const nodeType = event.item.element.nativeElement.id;
         const label = `${nodeType}-${makeid()}`;
 
@@ -450,8 +510,8 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
 
         // Push to backend to save
         this.projectService.updateProject(this.project).subscribe(() => {
-                this.saveState = true;
-                this.snackBar.open('Project is saved', null, {
+            this.saveState = true;
+            this.snackBar.open('Project is saved', null, {
                 duration: 2000,
             });
         });
@@ -550,7 +610,7 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
 
         // Add edge from selected node to placeholder node
         this.visjsNetworkGraph.addEdge(
-        this.node4AddingEdge2,
+            this.node4AddingEdge2,
             addedNode.id
         );
     }
@@ -574,8 +634,8 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
                     action: 'add edge',
                     data: {
                         edge: {
-                        from: this.node4AddingEdge2,
-                        to: targetId
+                            from: this.node4AddingEdge2,
+                            to: targetId
                         }
                     }
                 };
@@ -639,8 +699,7 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
         this.updateSelectedNodesAndEdges();
 
         this.drawingToolContextMenuControlService.showTooltip();
-      }
-
+    }
 
     /**
      * Handler for mouse movement on canvas
