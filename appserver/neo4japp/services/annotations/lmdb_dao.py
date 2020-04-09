@@ -35,7 +35,7 @@ class LMDBDao:
         )
 
         # https://lmdb.readthedocs.io/en/release/#transaction-management
-        # env should be closed at end of app context
+        # TODO: JIRA LL-330 env should be closed at end of app context
         self.genes_txn = self.genes_env.begin()
         self.chemicals_txn = self.chemicals_env.begin()
         self.compounds_txn = self.compounds_env.begin()
