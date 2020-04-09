@@ -7,6 +7,7 @@ import { Subscription } from 'rxjs';
 import { IdType } from 'vis-network';
 
 import { DrawingToolContextMenuControlService } from 'app/drawing-tool/services/drawing-tool-context-menu-control.service';
+import { CopyPasteMapsService } from 'app/drawing-tool/services/copy-paste-maps.service';
 import { TooltipComponent } from 'app/shared/components/tooltip/tooltip.component';
 import { TooltipDetails } from 'app/shared/services/tooltip-control-service';
 
@@ -23,6 +24,7 @@ export class DrawingToolContextMenuComponent extends TooltipComponent implements
     @Output() removeEdges: EventEmitter<IdType[]> = new EventEmitter();
     @Output() selectNeighbors: EventEmitter<IdType> = new EventEmitter();
     @Output() copySelection: EventEmitter<boolean> = new EventEmitter();
+    @Output() pasteSelection: EventEmitter<boolean> = new EventEmitter();
 
     FADEOUT_STYLE = 'context-menu fade-out';
     DEFAULT_STYLE = 'context-menu';
@@ -38,6 +40,7 @@ export class DrawingToolContextMenuComponent extends TooltipComponent implements
     updatePopperSubscription: Subscription;
 
     constructor(
+        private copyPasteMapsService: CopyPasteMapsService, // Used in the template to check if we've copied anything
         private drawingToolContextMenuControlService: DrawingToolContextMenuControlService,
     ) {
         super();
@@ -117,6 +120,11 @@ export class DrawingToolContextMenuComponent extends TooltipComponent implements
 
     requestCopy() {
         this.copySelection.emit(true);
+        this.beginContextMenuFade();
+    }
+
+    requestPaste() {
+        this.pasteSelection.emit(true);
         this.beginContextMenuFade();
     }
 }
