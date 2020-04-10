@@ -768,8 +768,6 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
 
     // TODO LL-233
     pasteSelection() {
-        console.log(this.copyPasteMapsService.copiedNodes);
-        console.log(this.copyPasteMapsService.copiedEdges);
         // Implement me!
     }
 }
