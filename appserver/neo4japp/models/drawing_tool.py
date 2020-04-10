@@ -1,3 +1,5 @@
+from hashids import Hashids
+
 from neo4japp.database import db, ma
 from neo4japp.models import RDBMSBase
 
@@ -15,6 +17,15 @@ class Project(RDBMSBase):
     public = db.Column(db.Boolean, default=False)
     user_id = db.Column(db.Integer, db.ForeignKey('appuser.id'), nullable=False)
     hash_id = db.Column(db.String(50), unique=True)
+
+    def set_hash_id(self):
+        """ Assign hash based on project id with salt
+        """
+        hash_id = Hashids(
+            min_length=16,
+            salt='this is my salt 1'
+        ).encode(self.id)
+        self.hash_id = hash_id
 
 
 class ProjectSchema(ma.ModelSchema):  # type: ignore
