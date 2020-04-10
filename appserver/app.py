@@ -58,7 +58,7 @@ def seed():
                         # temporary fix
                         user_id=idx+1
                     )
-                    
+
                     db.session.add(proj)
                     db.session.flush()
 
