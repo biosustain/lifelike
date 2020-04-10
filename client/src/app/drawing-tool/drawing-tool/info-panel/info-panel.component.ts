@@ -20,6 +20,7 @@ import {
 } from '../../services/interfaces';
 import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
+import { isNullOrUndefined } from 'util';
 
 @Component({
   selector: 'app-info-panel',
@@ -107,7 +108,7 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
       )
       .subscribe(
         (val: GraphData) => {
-          if (!val) { return; }
+          if (isNullOrUndefined(val)) { return; }
 
           let data;
 
