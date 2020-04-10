@@ -8,6 +8,7 @@ import { SearchCollectionPageComponent } from 'app/search/containers/search-coll
 import { FileBrowserComponent } from 'app/file-browser/file-browser.component';
 import { LoginComponent } from 'app/auth/components/login.component';
 import { LifelikeHomePageComponent } from 'app/home/components/lifelike-home.component';
+import { UserSettingsComponent } from 'app/users/components/user-settings.component';
 
 import {
   ProjectListViewComponent,
@@ -31,6 +32,7 @@ const routes: Routes = [
   { path: 'neo4j-visualizer', component: VisualizationComponent, canActivate: [AuthGuard]},
   { path: 'login', component: LoginComponent, canActivate: [LoginGuard] },
   { path: 'search', component: SearchCollectionPageComponent },
+  { path: 'users/:user', component: UserSettingsComponent, canActivate: [AuthGuard] },
   // Used as a work-around for navigation to work when navigating with
   // changing queries
   { path: 'search/:redirect', component: SearchCollectionPageComponent },
