@@ -93,11 +93,7 @@ def add_project():
     db.session.flush()
 
     # Assign hash_id to map
-    hash_id = Hashids(
-        min_length=16,
-        salt='this is my salt 1'
-    ).encode(project.id)
-    project.hash_id = hash_id
+    project.set_hash_id()
 
     db.session.commit()
 

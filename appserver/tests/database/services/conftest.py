@@ -51,6 +51,11 @@ def fix_project(fix_owner, session) -> Project:
     )
     session.add(project)
     session.flush()
+
+    project.set_hash_id()
+
+    session.flush()
+
     return project
 
 
