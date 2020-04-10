@@ -34,7 +34,7 @@
 
 <mat-menu #userMenu="matMenu" xPosition="after">
   <ng-container *ngIf="(loggedIn$ | async); else loggedOut">
-    <button mat-menu-item disabled>
+    <button mat-menu-item [routerLink]="['/users', (appuser$ | async)?.username]">
       <mat-icon>person</mat-icon>
       {{ (appuser$ | async)?.username }}
     </button>
