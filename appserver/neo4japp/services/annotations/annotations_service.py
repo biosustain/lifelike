@@ -4,14 +4,23 @@ import re
 from string import ascii_lowercase, punctuation
 from typing import Dict, List, Set, Tuple
 
+from pdfminer.layout import LTChar
+
 from .constants import (
     COMMON_WORDS,
     TYPO_SYNONYMS,
     EntityColor,
     EntityIdStr,
     EntityType,
+    PDF_LOWER_Y_THRESHOLD,
 )
 from .lmdb_dao import LMDBDao
+from .prepare_databases import normalize_str
+
+from neo4japp.data_transfer_objects import (
+    PDFTokenPositions,
+    PDFTokenPositionsList,
+)
 
 
 class AnnotationsService:
@@ -26,17 +35,18 @@ class AnnotationsService:
         # for word tokens that are typos
         self.correct_synonyms: Dict[str, str] = dict()
 
-        self.matched_genes: Set[str] = set()
-        self.matched_chemicals: Set[str] = set()
-        self.matched_compounds: Set[str] = set()
-        self.matched_proteins: Set[str] = set()
-        self.matched_species: Set[str] = set()
-        self.matched_diseases: Set[str] = set()
+        self.matched_genes: Dict[str, List[PDFTokenPositions]] = dict()
+        self.matched_chemicals: Dict[str, List[PDFTokenPositions]] = dict()
+        self.matched_compounds: Dict[str, List[PDFTokenPositions]] = dict()
+        self.matched_proteins: Dict[str, List[PDFTokenPositions]] = dict()
+        self.matched_species: Dict[str, List[PDFTokenPositions]] = dict()
+        self.matched_diseases: Dict[str, List[PDFTokenPositions]] = dict()
 
     def lmdb_validation(
         self,
         word: str,
-        synonym: str,
+        # synonym: str,
+        token: PDFTokenPositions,
     ):
         """Validate the lookup key exists in LMDB. If it
         does, then add it as a match.
@@ -45,76 +55,100 @@ class AnnotationsService:
             word: the token text
             synonym: the correct spelling (if word is misspelled) or normalized token
         """
-        lookup_key = synonym.lower().encode('utf-8')
+        lookup_key = word.encode('utf-8')
 
         gene_val = self.lmdb_session.genes_txn.get(lookup_key)
         if gene_val:
-            self.matched_genes.add(word)
+            if word in self.matched_genes:
+                self.matched_genes[word].append(token)
+            else:
+                self.matched_genes[word] = [token]
 
         chem_val = self.lmdb_session.chemicals_txn.get(lookup_key)
         if chem_val:
-            self.matched_chemicals.add(word)
+            if word in self.matched_chemicals:
+                self.matched_chemicals[word].append(token)
+            else:
+                self.matched_chemicals[word] = [token]
 
         comp_val = self.lmdb_session.compounds_txn.get(lookup_key)
         if comp_val:
-            self.matched_compounds.add(word)
+            if word in self.matched_compounds:
+                self.matched_compounds[word].append(token)
+            else:
+                self.matched_compounds[word] = [token]
 
         protein_val = self.lmdb_session.proteins_txn.get(lookup_key)
         if protein_val:
-            self.matched_proteins.add(word)
+            if word in self.matched_proteins:
+                self.matched_proteins[word].append(token)
+            else:
+                self.matched_proteins[word] = [token]
 
         species_val = self.lmdb_session.species_txn.get(lookup_key)
         if species_val:
-            self.matched_species.add(word)
+            if word in self.matched_species:
+                self.matched_species[word].append(token)
+            else:
+                self.matched_species[word] = [token]
 
         diseases_val = self.lmdb_session.diseases_txn.get(lookup_key)
         if diseases_val:
-            self.matched_diseases.add(word)
+            if word in self.matched_diseases:
+                self.matched_diseases[word].append(token)
+            else:
+                self.matched_diseases[word] = [token]
 
         return [gene_val, chem_val, comp_val, protein_val, species_val, diseases_val]
 
-    def _filter_tokens(self, tokens: Set[str]) -> None:
+    def _filter_tokens(self, tokens: List[PDFTokenPositions]) -> None:
         """Filter the tokens into separate matched sets in LMDB."""
-        for token in tokens:
-            # TODO: the order of stripping here will need to be looked at
-            # e.g 'sdfasdf()() ' vs 'sdfd  **&()'
-            token_normalized = token.strip(punctuation)
-            token_normalized = token_normalized.strip()
+        for token in tokens.token_positions:
+            # if token.keyword == 'Syn-drome':
+            #     import IPython; IPython.embed()
+            # # TODO: the order of stripping here will need to be looked at
+            # # e.g 'sdfasdf()() ' vs 'sdfd  **&()'
+            # token_normalized = token.keyword.strip(punctuation)
+            # token_normalized = token_normalized.strip()
+            token_normalized = normalize_str(token.keyword)
 
             if token_normalized:
                 # this is to normalize multiple spacings into single space
-                token_normalized_whitespace = token_normalized.lower()
-                token_normalized_whitespace = ' '.join(token_normalized_whitespace.split())
+                # token_normalized_whitespace = token_normalized.lower()
+                # token_normalized_whitespace = ' '.join(token_normalized_whitespace.split())
 
-                if (token_normalized_whitespace not in COMMON_WORDS and
-                        not re.match(self.regex_for_floats, token_normalized_whitespace) and
-                        token_normalized_whitespace not in ascii_lowercase):
+                if (token_normalized not in COMMON_WORDS and
+                        not re.match(self.regex_for_floats, token_normalized) and
+                        token_normalized not in ascii_lowercase):
 
-                    if token_normalized_whitespace in TYPO_SYNONYMS:
-                        for correct_synonym in TYPO_SYNONYMS[token_normalized_whitespace]:
-                            validations = self.lmdb_validation(
-                                word=token_normalized,
-                                synonym=correct_synonym,
-                            )
+                    # if token_normalized in TYPO_SYNONYMS:
+                    #     for correct_synonym in TYPO_SYNONYMS[token_normalized]:
+                    #         validations = self.lmdb_validation(
+                    #             word=token_normalized,
+                    #             synonym=correct_synonym,
+                    #             token=token,
+                    #         )
 
-                            # just get the first match is fine
-                            if any(validations):
-                                self.correct_synonyms[token_normalized] = correct_synonym
-                                break
-                    else:
-                        self.lmdb_validation(
-                            word=token_normalized,
-                            synonym=token_normalized_whitespace,
-                        )
+                    #         # just get the first match is fine
+                    #         if any(validations):
+                    #             self.correct_synonyms[token_normalized] = correct_synonym
+                    #             break
+                    # else:
+                    self.lmdb_validation(
+                        word=token_normalized,
+                        # synonym=token_normalized,
+                        token=token,
+                    )
 
     def _get_annotation(
         self,
-        tokens: Set[str],
+        tokens: Dict[str, List[PDFTokenPositions]],
         token_type: str,
         color: str,
         transaction,
         id_str: str,
         correct_synonyms: Dict[str, str],
+        coor_obj_per_pdf_page: Dict[int, List[LTChar]],
     ) -> Tuple[List[dict], Set[str]]:
         """Create annotation objects for tokens.
 
@@ -138,52 +172,126 @@ class AnnotationsService:
                 (1) A synonym that is also a common name, and the other common name appears
                     (1a) how to handle? Currently ignore synonym because can't infer (?)
         """
-        matches = []
-        unwanted_matches = set()
+        matches: List[dict] = []
+        unwanted_matches: Set[str] = set()
 
-        tokens_lowercased = {t.lower() for t in tokens}
+        tokens_lowercased = set(tokens.keys())
 
-        for word in tokens:
-            if word in correct_synonyms:
-                lookup_key = correct_synonyms[word]
-            else:
-                lookup_key = word
-
-            # normalize multiple spaces
-            lookup_key = ' '.join(lookup_key.split())
-            entity = json.loads(transaction.get(lookup_key.lower().encode('utf-8')))
-
-            common_name_count = 0
-            if len(entity['common_name']) > 1:
-                common_names = set([v for _, v in entity['common_name'].items()])
-                common_names_in_doc_text = [n in tokens_lowercased for n in common_names]
-
-                # skip if none of the common names appear
-                if not any(common_names_in_doc_text):
-                    continue
+        for word, token_positions_list in tokens.items():
+            for token_positions in token_positions_list:
+                if word in correct_synonyms:
+                    lookup_key = correct_synonyms[word]
                 else:
-                    for k, v in entity['common_name'].items():
-                        if v in tokens_lowercased:
-                            common_name_count += 1
-                            entity_id = k
-            else:
-                common_name_count = 1
-                entity_id = entity[id_str]
+                    lookup_key = word
 
-            if common_name_count == 1:
-                matches.append({
-                    'keyword': word,
-                    'type': token_type,
-                    'color': color,
-                    'id': entity_id,
-                    'id_type': entity['id_type'],
-                })
-            else:
-                unwanted_matches.add(word)
+                # normalize multiple spaces
+                lookup_key = ' '.join(lookup_key.split())
+                entity = json.loads(transaction.get(lookup_key.lower().encode('utf-8')))
 
+                common_name_count = 0
+                if len(entity['common_name']) > 1:
+                    common_names = set([v for _, v in entity['common_name'].items()])
+                    common_names_in_doc_text = [n in tokens_lowercased for n in common_names]
+
+                    # skip if none of the common names appear
+                    if not any(common_names_in_doc_text):
+                        continue
+                    else:
+                        for k, v in entity['common_name'].items():
+                            if v in tokens_lowercased:
+                                common_name_count += 1
+                                entity_id = k
+                else:
+                    common_name_count = 1
+                    entity_id = entity[id_str]
+
+                if common_name_count == 1:
+                    # create list of positions boxes
+                    curr_page_coor_obj = coor_obj_per_pdf_page[
+                        token_positions.page_number]
+
+                    keyword_positions = []
+                    char_indexes = list(token_positions.char_positions.keys())
+                    # done = False
+
+                    def _create_keywords(
+                        curr_page_coor_obj: List[LTChar],
+                        indexes: List[int],
+                        keyword_positions: List[dict] = [],
+                    ):
+                        start_lower_x = None
+                        start_lower_y = None
+                        end_upper_x = None
+                        end_upper_y = None
+
+                        keyword = ''
+                        for i, pos_idx in enumerate(indexes):
+                            lower_x, lower_y, upper_x, upper_y = curr_page_coor_obj[pos_idx].bbox
+                            if (start_lower_x is None and
+                                    start_lower_y is None and end_upper_y is None):
+                                start_lower_x = lower_x
+                                start_lower_y = lower_y
+                                end_upper_y = upper_y
+                            else:
+                                if upper_y > end_upper_y:
+                                    end_upper_y = upper_y
+
+                            end_upper_x = upper_x
+
+                            if lower_y != start_lower_y:
+                                diff = abs(lower_y - start_lower_y)
+
+                                if diff <= PDF_LOWER_Y_THRESHOLD:
+                                    keyword += curr_page_coor_obj[pos_idx].get_text()
+                                else:
+                                    _create_keywords(
+                                        curr_page_coor_obj=curr_page_coor_obj,
+                                        indexes=indexes[i:],
+                                        keyword_positions=keyword_positions,
+                                    )
+                            else:
+                                keyword += curr_page_coor_obj[pos_idx].get_text()
+
+                        keyword_positions.append({
+                            'value': keyword,
+                            'lower_left': {
+                                'x': start_lower_x,
+                                'y': start_lower_y,
+                            },
+                            'upper_right': {
+                                'x': end_upper_x,
+                                'y': end_upper_y,
+                            }
+                        })
+
+                    # import IPython; IPython.embed()
+                    _create_keywords(
+                        curr_page_coor_obj=curr_page_coor_obj,
+                        indexes=char_indexes,
+                        keyword_positions=keyword_positions
+                    )
+                    # import IPython; IPython.embed()
+
+
+                    matches.append({
+                        'page_number': token_positions.page_number,
+                        'keyword': keyword_positions,
+                        'type': token_type,
+                        'color': color,
+                        'id': entity_id,
+                        'id_type': entity['id_type'],
+                    })
+                    # import IPython; IPython.embed()
+                else:
+                    unwanted_matches.add(word)
+        # import IPython; IPython.embed()
         return matches, unwanted_matches
 
-    def _annotate_genes(self, entity_id_str: str) -> Tuple[List[dict], Set[str]]:
+    def _annotate_genes(
+        self,
+        entity_id_str: str,
+        coor_obj_per_pdf_page: Dict[int, List[LTChar]],
+    ) -> Tuple[List[dict], Set[str]]:
         return self._get_annotation(
             tokens=self.matched_genes,
             token_type=EntityType.Genes.value,
@@ -191,9 +299,14 @@ class AnnotationsService:
             transaction=self.lmdb_session.genes_txn,
             id_str=entity_id_str,
             correct_synonyms=self.correct_synonyms,
+            coor_obj_per_pdf_page=coor_obj_per_pdf_page,
         )
 
-    def _annotate_chemicals(self, entity_id_str: str) -> Tuple[List[dict], Set[str]]:
+    def _annotate_chemicals(
+        self,
+        entity_id_str: str,
+        coor_obj_per_pdf_page: Dict[int, List[LTChar]],
+    ) -> Tuple[List[dict], Set[str]]:
         return self._get_annotation(
             tokens=self.matched_chemicals,
             token_type=EntityType.Chemicals.value,
@@ -201,9 +314,14 @@ class AnnotationsService:
             transaction=self.lmdb_session.chemicals_txn,
             id_str=entity_id_str,
             correct_synonyms=self.correct_synonyms,
+            coor_obj_per_pdf_page=coor_obj_per_pdf_page,
         )
 
-    def _annotate_compounds(self, entity_id_str: str) -> Tuple[List[dict], Set[str]]:
+    def _annotate_compounds(
+        self,
+        entity_id_str: str,
+        coor_obj_per_pdf_page: Dict[int, List[LTChar]],
+    ) -> Tuple[List[dict], Set[str]]:
         return self._get_annotation(
             tokens=self.matched_compounds,
             token_type=EntityType.Compounds.value,
@@ -211,9 +329,14 @@ class AnnotationsService:
             transaction=self.lmdb_session.compounds_txn,
             id_str=entity_id_str,
             correct_synonyms=self.correct_synonyms,
+            coor_obj_per_pdf_page=coor_obj_per_pdf_page,
         )
 
-    def _annotate_proteins(self, entity_id_str: str) -> Tuple[List[dict], Set[str]]:
+    def _annotate_proteins(
+        self,
+        entity_id_str: str,
+        coor_obj_per_pdf_page: Dict[int, List[LTChar]],
+    ) -> Tuple[List[dict], Set[str]]:
         return self._get_annotation(
             tokens=self.matched_proteins,
             token_type=EntityType.Proteins.value,
@@ -221,9 +344,14 @@ class AnnotationsService:
             transaction=self.lmdb_session.proteins_txn,
             id_str=entity_id_str,
             correct_synonyms=self.correct_synonyms,
+            coor_obj_per_pdf_page=coor_obj_per_pdf_page,
         )
 
-    def _annotate_species(self, entity_id_str: str) -> Tuple[List[dict], Set[str]]:
+    def _annotate_species(
+        self,
+        entity_id_str: str,
+        coor_obj_per_pdf_page: Dict[int, List[LTChar]],
+    ) -> Tuple[List[dict], Set[str]]:
         return self._get_annotation(
             tokens=self.matched_species,
             token_type=EntityType.Species.value,
@@ -231,9 +359,14 @@ class AnnotationsService:
             transaction=self.lmdb_session.species_txn,
             id_str=entity_id_str,
             correct_synonyms=self.correct_synonyms,
+            coor_obj_per_pdf_page=coor_obj_per_pdf_page,
         )
 
-    def _annotate_diseases(self, entity_id_str: str) -> Tuple[List[dict], Set[str]]:
+    def _annotate_diseases(
+        self,
+        entity_id_str: str,
+        coor_obj_per_pdf_page: Dict[int, List[LTChar]],
+    ) -> Tuple[List[dict], Set[str]]:
         return self._get_annotation(
             tokens=self.matched_diseases,
             token_type=EntityType.Diseases.value,
@@ -241,12 +374,14 @@ class AnnotationsService:
             transaction=self.lmdb_session.diseases_txn,
             id_str=entity_id_str,
             correct_synonyms=self.correct_synonyms,
+            coor_obj_per_pdf_page=coor_obj_per_pdf_page,
         )
 
     def annotate(
         self,
         annotation_type: str,
         entity_id_str: str,
+        coor_obj_per_pdf_page: Dict[int, List[LTChar]],
     ) -> Tuple[List[dict], Set[str]]:
         funcs = {
             EntityType.Genes.value: self._annotate_genes,
@@ -258,63 +393,70 @@ class AnnotationsService:
         }
 
         annotate_entities = funcs[annotation_type]
-        return annotate_entities(entity_id_str=entity_id_str)
+        return annotate_entities(
+            entity_id_str=entity_id_str,
+            coor_obj_per_pdf_page=coor_obj_per_pdf_page,
+        )
 
     def _remove_unwanted_keywords(
         self,
-        matches,
-        unwanted_keywords,
+        matches: List[dict],
+        unwanted_keywords: Set[str],
     ) -> List[dict]:
         """Remove any unwanted keywords from annotations.
         """
         new_matches = []
         for obj in matches:
-            if obj['keyword'] not in unwanted_keywords:
+            keyword = ''
+            for keyword_obj in obj['keyword']:
+                keyword += keyword_obj['value']
+
+            if normalize_str(keyword) not in unwanted_keywords:
                 new_matches.append(obj)
         return new_matches
 
-    def create_annotations(self, tokens: Set[str]) -> List[dict]:
+    def create_annotations(
+        self,
+        tokens: PDFTokenPositionsList,
+    ) -> List[dict]:
         self._filter_tokens(tokens=tokens)
 
         matched_genes, unwanted_genes = self.annotate(
             annotation_type=EntityType.Genes.value,
             entity_id_str=EntityIdStr.Genes.value,
+            coor_obj_per_pdf_page=tokens.coor_obj_per_pdf_page,
         )
 
         matched_chemicals, unwanted_chemicals = self.annotate(
             annotation_type=EntityType.Chemicals.value,
             entity_id_str=EntityIdStr.Chemicals.value,
+            coor_obj_per_pdf_page=tokens.coor_obj_per_pdf_page,
         )
 
         matched_compounds, unwanted_compounds = self.annotate(
             annotation_type=EntityType.Compounds.value,
             entity_id_str=EntityIdStr.Compounds.value,
+            coor_obj_per_pdf_page=tokens.coor_obj_per_pdf_page,
         )
 
         matched_proteins, unwanted_proteins = self.annotate(
             annotation_type=EntityType.Proteins.value,
             entity_id_str=EntityIdStr.Proteins.value,
+            coor_obj_per_pdf_page=tokens.coor_obj_per_pdf_page,
         )
 
         matched_species, unwanted_species = self.annotate(
             annotation_type=EntityType.Species.value,
             entity_id_str=EntityIdStr.Species.value,
+            coor_obj_per_pdf_page=tokens.coor_obj_per_pdf_page,
         )
 
         matched_diseases, unwanted_diseases = self.annotate(
             annotation_type=EntityType.Diseases.value,
             entity_id_str=EntityIdStr.Diseases.value,
+            coor_obj_per_pdf_page=tokens.coor_obj_per_pdf_page,
         )
 
-        # TODO: considerations:
-        # do we want to remove unwanted keywords from a
-        # combined set like this?
-        # or remove them from their individual matched set?
-        #
-        # e.g 'somethingA' is in unwanted_genes but also in unwanted_chemicals
-        # remove from unwanted_genes because multiple common names appear
-        # but only one common name in unwanted_chemicals appeared
-        # so keep that one?
         unwanted_matches_set_list = [
             unwanted_genes,
             unwanted_chemicals,

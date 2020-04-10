@@ -1,5 +1,6 @@
 from enum import Enum
 
+PDF_LOWER_Y_THRESHOLD = .08
 
 COMMON_WORDS = {
     'not', 'the', 'in', 'or', 'and', 'by', 'to',

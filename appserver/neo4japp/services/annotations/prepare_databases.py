@@ -9,10 +9,17 @@ import lmdb
 import json
 
 from os import path, remove, walk
+from string import punctuation, whitespace
 
 
 # reference to this directory
 directory = path.realpath(path.dirname(__file__))
+
+
+def normalize_str(s) -> str:
+    normalized = s.lower()
+    normalized = normalized.translate(str.maketrans('', '', punctuation))
+    return normalized.translate(str.maketrans('', '', whitespace))
 
 
 def prepare_lmdb_genes_database():
@@ -28,12 +35,14 @@ def prepare_lmdb_genes_database():
                     'gene_id': line[1],
                     'id_type': 'NCBI',
                     'tax_id': line[2],
-                    'common_name': {line[1]: line[0].lower()},
+                    'common_name': {line[1]: normalize_str(line[0])},
                 }
 
                 try:
                     transaction.put(
-                        line[0].lower().encode('utf-8'), json.dumps(gene).encode('utf-8'))
+                        normalize_str(line[0]).encode('utf-8'),
+                        json.dumps(gene).encode('utf-8'),
+                    )
                 except lmdb.BadValsizeError:
                     # ignore any keys that are too large
                     # LMDB has max key size 512 bytes
@@ -55,17 +64,21 @@ def prepare_lmdb_chemicals_database():
                 chemical = {
                     'chemical_id': line[0],
                     'id_type': 'CHEBI',
-                    'common_name': {line[0]: line[1].lower()} if line[1] != 'null' else {},
+                    'common_name': {
+                        line[0]: normalize_str(line[1]),
+                    } if line[1] != 'null' else {},
                 }
 
                 if synonyms:
                     for syn in synonyms:
-                        synonyms_list.append((syn, chemical))
+                        synonyms_list.append((normalize_str(syn), chemical))
 
                 try:
                     if line[1] != 'null':
                         transaction.put(
-                            line[1].lower().encode('utf-8'), json.dumps(chemical).encode('utf-8'))
+                            normalize_str(line[1]).encode('utf-8'),
+                            json.dumps(chemical).encode('utf-8'),
+                        )
                 except lmdb.BadValsizeError:
                     # ignore any keys that are too large
                     # LMDB has max key size 512 bytes
@@ -78,17 +91,17 @@ def prepare_lmdb_chemicals_database():
             for syn, chemical in synonyms_list:
                 try:
                     if syn != 'null':
-                        entity = transaction.get(syn.lower().encode('utf-8'))
+                        entity = transaction.get(syn.encode('utf-8'))
                         if entity:
                             entity = json.loads(entity)
                             entity['common_name'] = {
                                 **entity['common_name'], **chemical['common_name']}
                             transaction.put(
-                                syn.lower().encode('utf-8'),
+                                syn.encode('utf-8'),
                                 json.dumps(entity).encode('utf-8'))
                         else:
                             transaction.put(
-                                syn.lower().encode('utf-8'),
+                                syn.encode('utf-8'),
                                 json.dumps(chemical).encode('utf-8'))
                 except lmdb.BadValsizeError:
                     continue
@@ -108,17 +121,21 @@ def prepare_lmdb_compounds_database():
                 compound = {
                     'compound_id': line[0],
                     'id_type': 'BIOCYC',
-                    'common_name': {line[0]: line[1].lower()} if line[1] != 'null' else {},
+                    'common_name': {
+                        line[0]: normalize_str(line[1]),
+                    } if line[1] != 'null' else {},
                 }
 
                 if synonyms:
                     for syn in synonyms:
-                        synonyms_list.append((syn, compound))
+                        synonyms_list.append((normalize_str(syn), compound))
 
                 try:
                     if line[1] != 'null':
                         transaction.put(
-                            line[1].lower().encode('utf-8'), json.dumps(compound).encode('utf-8'))
+                            normalize_str(line[1]).encode('utf-8'),
+                            json.dumps(compound).encode('utf-8'),
+                        )
                 except lmdb.BadValsizeError:
                     # ignore any keys that are too large
                     # LMDB has max key size 512 bytes
@@ -131,17 +148,17 @@ def prepare_lmdb_compounds_database():
             for syn, compound in synonyms_list:
                 try:
                     if syn != 'null':
-                        entity = transaction.get(syn.lower().encode('utf-8'))
+                        entity = transaction.get(syn.encode('utf-8'))
                         if entity:
                             entity = json.loads(entity)
                             entity['common_name'] = {
                                 **entity['common_name'], **compound['common_name']}
                             transaction.put(
-                                syn.lower().encode('utf-8'),
+                                syn.encode('utf-8'),
                                 json.dumps(entity).encode('utf-8'))
                         else:
                             transaction.put(
-                                syn.lower().encode('utf-8'),
+                                syn.encode('utf-8'),
                                 json.dumps(compound).encode('utf-8'))
                 except lmdb.BadValsizeError:
                     continue
@@ -162,17 +179,21 @@ def prepare_lmdb_proteins_database():
                 protein = {
                     'protein_id': line[0],
                     'id_type': 'BIOCYC',
-                    'common_name': {line[0]: line[1].lower()} if line[1] != 'null' else {},
+                    'common_name': {
+                        line[0]: normalize_str(line[1]),
+                    } if line[1] != 'null' else {},
                 }
 
                 if synonyms:
                     for syn in synonyms:
-                        synonyms_list.append((syn, protein))
+                        synonyms_list.append((normalize_str(syn), protein))
 
                 try:
                     if line[1] != 'null':
                         transaction.put(
-                            line[1].lower().encode('utf-8'), json.dumps(protein).encode('utf-8'))
+                            normalize_str(line[1]).encode('utf-8'),
+                            json.dumps(protein).encode('utf-8'),
+                        )
                 except lmdb.BadValsizeError:
                     # ignore any keys that are too large
                     # LMDB has max key size 512 bytes
@@ -185,17 +206,17 @@ def prepare_lmdb_proteins_database():
             for syn, protein in synonyms_list:
                 try:
                     if syn != 'null':
-                        entity = transaction.get(syn.lower().encode('utf-8'))
+                        entity = transaction.get(syn.encode('utf-8'))
                         if entity:
                             entity = json.loads(entity)
                             entity['common_name'] = {
                                 **entity['common_name'], **protein['common_name']}
                             transaction.put(
-                                syn.lower().encode('utf-8'),
+                                syn.encode('utf-8'),
                                 json.dumps(entity).encode('utf-8'))
                         else:
                             transaction.put(
-                                syn.lower().encode('utf-8'),
+                                syn.encode('utf-8'),
                                 json.dumps(protein).encode('utf-8'))
                 except lmdb.BadValsizeError:
                     continue
@@ -216,13 +237,13 @@ def prepare_lmdb_species_database():
                         'tax_id': line[0],
                         'id_type': 'NCBI',
                         'rank': line[1],
-                        'common_name': {line[0]: line[3].lower()},
+                        'common_name': {line[0]: normalize_str(line[3])},
                     }
 
                     try:
                         if line[3] != 'null':
                             transaction.put(
-                                line[3].lower().encode('utf-8'),
+                                normalize_str(line[3]).encode('utf-8'),
                                 json.dumps(species).encode('utf-8'))
                     except lmdb.BadValsizeError:
                         # ignore any keys that are too large
@@ -245,17 +266,19 @@ def prepare_lmdb_diseases_database():
                 disease = {
                     'disease_id': line[0],
                     'id_type': 'MESH',
-                    'common_name': {line[0]: line[1].lower()} if line[1] != 'null' else {},
+                    'common_name': {
+                        line[0]: normalize_str(line[1]),
+                    } if line[1] != 'null' else {},
                 }
 
                 if synonyms:
                     for syn in synonyms:
-                        synonyms_list.append((syn, disease))
+                        synonyms_list.append((normalize_str(syn), disease))
 
                 try:
                     if line[1] != 'null':
                         transaction.put(
-                            line[1].lower().encode('utf-8'),
+                            normalize_str(line[1]).encode('utf-8'),
                             json.dumps(disease).encode('utf-8'))
                 except lmdb.BadValsizeError:
                     # ignore any keys that are too large
@@ -269,17 +292,17 @@ def prepare_lmdb_diseases_database():
             for syn, disease in synonyms_list:
                 try:
                     if syn != 'null':
-                        entity = transaction.get(syn.lower().encode('utf-8'))
+                        entity = transaction.get(syn.encode('utf-8'))
                         if entity:
                             entity = json.loads(entity)
                             entity['common_name'] = {
                                 **entity['common_name'], **disease['common_name']}
                             transaction.put(
-                                syn.lower().encode('utf-8'),
+                                syn.encode('utf-8'),
                                 json.dumps(entity).encode('utf-8'))
                         else:
                             transaction.put(
-                                syn.lower().encode('utf-8'),
+                                syn.encode('utf-8'),
                                 json.dumps(disease).encode('utf-8'))
                 except lmdb.BadValsizeError:
                     continue
