@@ -1,4 +1,4 @@
-"""empty message
+""""Update project model to have URI hash_id
 
 Revision ID: ca616cde5e21
 Revises: 384e13b3ec54
