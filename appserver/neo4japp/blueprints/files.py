@@ -36,6 +36,7 @@ def upload_pdf():
 
     try:
         parsed_pdf_chars = pdf_parser.parse_pdf(pdf=pdf)
+        pdf_text = pdf_parser.parse_pdf_high_level(pdf=pdf)
         annotations = annotator.create_annotations(
             tokens=pdf_parser.extract_tokens(parsed_chars=parsed_pdf_chars))
 

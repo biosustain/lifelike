@@ -3,6 +3,7 @@ import re
 from string import whitespace
 from typing import Any, Dict, List, Set, Tuple
 
+from pdfminer import high_level
 from pdfminer.converter import PDFPageAggregator, TextConverter
 from pdfminer.layout import LAParams, LTChar, LTTextBox, LTTextLine
 from pdfminer.pdfdocument import PDFDocument
@@ -39,6 +40,9 @@ class AnnotationsPDFParser:
                     coor_obj_per_pdf_page[page_idx+1].append(lt_obj)
                 else:
                     coor_obj_per_pdf_page[page_idx+1] = [lt_obj]
+
+    def parse_pdf_high_level(self, pdf) -> str:
+        return high_level.extract_text(pdf)
 
     def parse_pdf(self, pdf) -> PDFParsedCharacters:
         """Parse a PDF and create two dictionaries; one
@@ -113,16 +117,22 @@ class AnnotationsPDFParser:
                                 char_idx_map[curr_idx] = char_list[curr_idx]
                                 curr_idx += 1
                             else:
-                                if whitespace_count == 0:
-                                    first_whitespace_encountered_idx = curr_idx
-
-                                # encountered whitespace
-                                # \xa0 is non-breaking whitespace
-                                if whitespace_count + 1 < curr_max_words:
-                                    curr_keyword += char_list[curr_idx]
-                                    char_idx_map[curr_idx] = char_list[curr_idx]
+                                # check if double spacing
+                                if (curr_idx+1 < max_length and
+                                        (char_list[curr_idx+1] in whitespace or
+                                            char_list[curr_idx+1] == '\xa0')):
                                     curr_idx += 1
-                                whitespace_count += 1
+                                else:
+                                    if whitespace_count == 0:
+                                        first_whitespace_encountered_idx = curr_idx
+
+                                    # encountered whitespace
+                                    # \xa0 is non-breaking whitespace
+                                    if whitespace_count + 1 < curr_max_words:
+                                        curr_keyword += char_list[curr_idx]
+                                        char_idx_map[curr_idx] = char_list[curr_idx]
+                                        curr_idx += 1
+                                    whitespace_count += 1
 
                     token_objects.append(
                         PDFTokenPositions(
@@ -139,6 +149,14 @@ class AnnotationsPDFParser:
                 curr_max_words = 1
                 whitespace_count = 0
                 curr_idx = first_whitespace_encountered_idx + 1
+                # setting first_whitespace_encountered_idx to curr_idx
+                # to avoid edge case that causes infinite loop
+                # if the sequential increment started over at the last word
+                # and there is no whitespace after it,
+                # it is possible for first_whitespace_encountered_idx
+                # to be an idx before the first character of the word
+                # meaning it'll be in an infinite loop
+                # since curr_idx will always reset to that idx
                 first_whitespace_encountered_idx = new_start_idx = curr_idx
 
         return PDFTokenPositionsList(
