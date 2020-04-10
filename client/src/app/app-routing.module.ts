@@ -32,7 +32,12 @@ const routes: Routes = [
   { path: 'neo4j-visualizer', component: VisualizationComponent, canActivate: [AuthGuard]},
   { path: 'login', component: LoginComponent, canActivate: [LoginGuard] },
   { path: 'search', component: SearchCollectionPageComponent },
-  { path: 'users/:user', component: UserSettingsComponent, canActivate: [AuthGuard] },
+  {
+    path: 'users/:user',
+    component: UserSettingsComponent,
+    canActivate: [AuthGuard],
+    data: { group: 'SELF' },
+  },
   // Used as a work-around for navigation to work when navigating with
   // changing queries
   { path: 'search/:redirect', component: SearchCollectionPageComponent },
