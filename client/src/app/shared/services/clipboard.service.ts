@@ -47,9 +47,14 @@ export class ClipboardService {
         const browser = this.getBrowser();
 
         switch (browser) {
+            // TODO: We should check for CF_HTML prefix data if the browser is MS Edge. Currently, they only way to do
+            // this would be to create a temp DOM element, register a paste event callback on the element, and then
+            // trigger a paste event by programmatically pasting into the element. We could then potentially get the
+            // CF_HTML formatted text. Obviously, this is a lot of hacky work for not a lot of payoff, so holding off on
+            // the implementation for now.
             case Browsers.BLINK:
             case Browsers.EDGE: {
-                // TS generates an error saying 'cliboard-read` does not exist as an option for the 'name'
+                // TS generates an error saying 'clipboard-read` does not exist as an option for the 'name'
                 // property, but in the context of Edge and Chromium browers, it does. So, we ignore the error.
                 // @ts-ignore
                 const permissionsResult = await navigator.permissions.query({name: 'clipboard-read'});
@@ -107,7 +112,7 @@ export class ClipboardService {
         switch (browser) {
             case Browsers.BLINK:
             case Browsers.EDGE: {
-                // TS generates an error saying 'cliboard-write` does not exist as an option for the 'name'
+                // TS generates an error saying 'clipboard-write` does not exist as an option for the 'name'
                 // property, but in the context of Edge and Chromium browers, it does. So, we ignore the error.
                 // @ts-ignore
                 const permissionsResult = await navigator.permissions.query({name: 'clipboard-write'});
