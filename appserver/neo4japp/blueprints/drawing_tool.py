@@ -1,6 +1,5 @@
 from datetime import datetime, timedelta
 from flask import current_app, request, Response, json, Blueprint, g
-from hashids import Hashids
 import jwt
 
 from neo4japp.blueprints.auth import auth

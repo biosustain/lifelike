@@ -1,4 +1,4 @@
-from hashids import Hashids
+import hashlib
 
 from neo4japp.database import db, ma
 from neo4japp.models import RDBMSBase
@@ -21,11 +21,12 @@ class Project(RDBMSBase):
     def set_hash_id(self):
         """ Assign hash based on project id with salt
         """
-        hash_id = Hashids(
-            min_length=16,
-            salt='this is my salt 1'
-        ).encode(self.id)
-        self.hash_id = hash_id
+        salt = "i am man"
+
+        h = hashlib.md5(
+            "{} {}".format(self.id, salt).encode()
+        )
+        self.hash_id = h.hexdigest()
 
 
 class ProjectSchema(ma.ModelSchema):  # type: ignore
