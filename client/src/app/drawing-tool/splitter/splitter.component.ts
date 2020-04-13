@@ -22,7 +22,7 @@ import { Observable } from 'rxjs';
   styleUrls: ['./splitter.component.scss']
 })
 export class SplitterComponent implements OnInit, AfterViewInit {
-  // TODO: Fix this .. 
+  // TODO: Fix this ..
   // @HostListener('window:beforeunload')
   // canDeactivate(): Observable<boolean> | boolean {
   //   return this.saveState ? true : confirm(
