@@ -1,9 +1,11 @@
 from datetime import datetime, timedelta
 from flask import current_app, request, Response, json, Blueprint, g
 import jwt
+from sqlalchemy.orm.exc import NoResultFound
 
 from neo4japp.blueprints.auth import auth
 from neo4japp.database import db
+from neo4japp.exceptions import RecordNotFoundException
 from neo4japp.models import AppUser, Project, ProjectSchema
 
 import graphviz as gv
@@ -20,7 +22,11 @@ def get_map_by_hash(hash_id):
     user = g.current_user
 
     # Pull up map by hash_id
-    project = Project.query.filter_by(hash_id=hash_id).first_or_404()
+    try:
+        project = Project.query.filter_by(hash_id=hash_id).one()
+    except NoResultFound:
+        raise RecordNotFoundException('not found :-( ')
+
     project_schema = ProjectSchema()
 
     # Send regardless if map is owned by user or public
@@ -28,10 +34,7 @@ def get_map_by_hash(hash_id):
         return {'project': project_schema.dump(project)}, 200
     # Else complain to user not fonud
     else:
-        return {
-            'status': 'error',
-            'message': 'not found'
-        }, 404
+        raise RecordNotFoundException('not found :-( ')
 
 
 @bp.route('/community', methods=['GET'])
