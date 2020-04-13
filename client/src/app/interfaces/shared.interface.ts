@@ -16,3 +16,8 @@ export enum OperatingSystems {
     WINDOWS = 'windows',
     UNKNOWN = 'unknown',
 }
+
+export interface Coords2D {
+    x: number;
+    y: number;
+}
