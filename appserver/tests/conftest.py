@@ -24,6 +24,7 @@ from neo4japp.models.neo4j import (
     GraphRelationship,
 )
 from neo4japp.services import (
+    AccountService,
     AuthService,
     GraphBaseDao,
     Neo4JService,
@@ -64,6 +65,11 @@ def session(app, request):
 
     request.addfinalizer(teardown)
     return session
+
+
+@pytest.fixture(scope='function')
+def account_service(app, session):
+    return AccountService(session)
 
 
 @pytest.fixture(scope='function')
