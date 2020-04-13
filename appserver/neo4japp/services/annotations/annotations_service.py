@@ -1,8 +1,8 @@
 import json
 import re
 
-from string import ascii_lowercase, punctuation
-from typing import Dict, List, Set, Tuple
+from string import ascii_lowercase, digits, punctuation
+from typing import Dict, List, Optional, Set, Tuple
 
 from pdfminer.layout import LTChar
 
@@ -12,15 +12,16 @@ from .constants import (
     EntityColor,
     EntityIdStr,
     EntityType,
-    PDF_LOWER_Y_THRESHOLD,
+    PDF_NEW_LINE_THRESHOLD,
 )
 from .lmdb_dao import LMDBDao
-from .prepare_databases import normalize_str
+from .util import normalize_str
 
 from neo4japp.data_transfer_objects import (
     PDFTokenPositions,
     PDFTokenPositionsList,
 )
+from neo4japp.util import compute_hash
 
 
 class AnnotationsService:
@@ -42,11 +43,18 @@ class AnnotationsService:
         self.matched_species: Dict[str, List[PDFTokenPositions]] = dict()
         self.matched_diseases: Dict[str, List[PDFTokenPositions]] = dict()
 
+        self.validated_genes_tokens: Set[PDFTokenPositions] = set()
+        self.validated_chemicals_tokens: Set[PDFTokenPositions] = set()
+        self.validated_compounds_tokens: Set[PDFTokenPositions] = set()
+        self.validated_proteins_tokens: Set[PDFTokenPositions] = set()
+        self.validated_species_tokens: Set[PDFTokenPositions] = set()
+        self.validated_diseases_tokens: Set[PDFTokenPositions] = set()
+
     def lmdb_validation(
         self,
         word: str,
-        # synonym: str,
         token: PDFTokenPositions,
+        synonym: Optional[str] = None,
     ):
         """Validate the lookup key exists in LMDB. If it
         does, then add it as a match.
@@ -55,90 +63,165 @@ class AnnotationsService:
             word: the token text
             synonym: the correct spelling (if word is misspelled) or normalized token
         """
-        lookup_key = word.encode('utf-8')
+        if synonym:
+            lookup_key = normalize_str(synonym).encode('utf-8')
+        else:
+            lookup_key = word.encode('utf-8')
+        hashval = compute_hash(token.to_dict())
 
         gene_val = self.lmdb_session.genes_txn.get(lookup_key)
-        if gene_val:
+        if gene_val and hashval not in self.validated_genes_tokens:
+            self.validated_genes_tokens.add(hashval)
             if word in self.matched_genes:
                 self.matched_genes[word].append(token)
             else:
                 self.matched_genes[word] = [token]
 
         chem_val = self.lmdb_session.chemicals_txn.get(lookup_key)
-        if chem_val:
+        if chem_val and hashval not in self.validated_chemicals_tokens:
+            self.validated_chemicals_tokens.add(hashval)
             if word in self.matched_chemicals:
                 self.matched_chemicals[word].append(token)
             else:
                 self.matched_chemicals[word] = [token]
 
         comp_val = self.lmdb_session.compounds_txn.get(lookup_key)
-        if comp_val:
+        if comp_val and hashval not in self.validated_compounds_tokens:
+            self.validated_compounds_tokens.add(hashval)
             if word in self.matched_compounds:
                 self.matched_compounds[word].append(token)
             else:
                 self.matched_compounds[word] = [token]
 
         protein_val = self.lmdb_session.proteins_txn.get(lookup_key)
-        if protein_val:
+        if protein_val and hashval not in self.validated_proteins_tokens:
+            self.validated_proteins_tokens.add(hashval)
             if word in self.matched_proteins:
                 self.matched_proteins[word].append(token)
             else:
                 self.matched_proteins[word] = [token]
 
         species_val = self.lmdb_session.species_txn.get(lookup_key)
-        if species_val:
+        if species_val and hashval not in self.validated_species_tokens:
+            self.validated_species_tokens.add(hashval)
             if word in self.matched_species:
                 self.matched_species[word].append(token)
             else:
                 self.matched_species[word] = [token]
 
         diseases_val = self.lmdb_session.diseases_txn.get(lookup_key)
-        if diseases_val:
+        if diseases_val and hashval not in self.validated_diseases_tokens:
+            self.validated_diseases_tokens.add(hashval)
             if word in self.matched_diseases:
                 self.matched_diseases[word].append(token)
             else:
                 self.matched_diseases[word] = [token]
 
-        return [gene_val, chem_val, comp_val, protein_val, species_val, diseases_val]
+        return [
+            gene_val, chem_val, comp_val,
+            protein_val, species_val, diseases_val,
+        ]
 
     def _filter_tokens(self, tokens: List[PDFTokenPositions]) -> None:
         """Filter the tokens into separate matched sets in LMDB."""
         for token in tokens.token_positions:
-            # if token.keyword == 'Syn-drome':
-            #     import IPython; IPython.embed()
-            # # TODO: the order of stripping here will need to be looked at
-            # # e.g 'sdfasdf()() ' vs 'sdfd  **&()'
-            # token_normalized = token.keyword.strip(punctuation)
-            # token_normalized = token_normalized.strip()
             token_normalized = normalize_str(token.keyword)
 
             if token_normalized:
-                # this is to normalize multiple spacings into single space
-                # token_normalized_whitespace = token_normalized.lower()
-                # token_normalized_whitespace = ' '.join(token_normalized_whitespace.split())
-
                 if (token_normalized not in COMMON_WORDS and
                         not re.match(self.regex_for_floats, token_normalized) and
-                        token_normalized not in ascii_lowercase):
+                        token_normalized not in ascii_lowercase and
+                        token_normalized not in digits):
 
-                    # if token_normalized in TYPO_SYNONYMS:
-                    #     for correct_synonym in TYPO_SYNONYMS[token_normalized]:
-                    #         validations = self.lmdb_validation(
-                    #             word=token_normalized,
-                    #             synonym=correct_synonym,
-                    #             token=token,
-                    #         )
+                    if token_normalized in TYPO_SYNONYMS:
+                        for correct_synonym in TYPO_SYNONYMS[token_normalized]:
+                            validations = self.lmdb_validation(
+                                word=token_normalized,
+                                token=token,
+                                synonym=correct_synonym,
+                            )
 
-                    #         # just get the first match is fine
-                    #         if any(validations):
-                    #             self.correct_synonyms[token_normalized] = correct_synonym
-                    #             break
-                    # else:
-                    self.lmdb_validation(
-                        word=token_normalized,
-                        # synonym=token_normalized,
-                        token=token,
+                            # just get the first match is fine
+                            if any(validations):
+                                self.correct_synonyms[token_normalized] = correct_synonym
+                                break
+                    else:
+                        self.lmdb_validation(
+                            word=token_normalized,
+                            token=token,
+                        )
+
+    def _create_keyword_objects(
+        self,
+        curr_page_coor_obj: List[LTChar],
+        indexes: List[int],
+        keyword_positions: List[dict] = [],
+    ) -> None:
+        """Creates the keyword objects with the keyword
+        text, along with their coordinate positions and
+        page number.
+
+        Determines whether a part of the keyword is on a
+        new line or not. If it is on a new line, then
+        create a new coordinate object for that part of the keyword.
+
+        E.g
+            E. \nColi -> [
+                {keyword: 'E.', x: ..., ...}, keyword: 'Coli', x: ..., ...}
+            ]
+
+            E. Coli -> [{keyword: 'E. Coli', x: ..., ...}]
+        """
+        start_lower_x = None
+        start_lower_y = None
+        end_upper_x = None
+        end_upper_y = None
+
+        keyword = ''
+        for i, pos_idx in enumerate(indexes):
+            lower_x, lower_y, upper_x, upper_y = curr_page_coor_obj[pos_idx].bbox  #noqa
+
+            if (start_lower_x is None and
+                    start_lower_y is None and end_upper_y is None):
+                start_lower_x = lower_x
+                start_lower_y = lower_y
+                end_upper_y = upper_y
+            else:
+                if upper_y > end_upper_y:
+                    end_upper_y = upper_y
+
+            end_upper_x = upper_x
+
+            if lower_y != start_lower_y:
+                diff = abs(lower_y - start_lower_y)
+                _, prev_lower_y, _, prev_upper_y = curr_page_coor_obj[pos_idx-1].bbox  # noqa
+                height = prev_upper_y - prev_lower_y
+
+                # if diff is greater than height ratio
+                # then part of keyword is on a new line
+                if diff > height * PDF_NEW_LINE_THRESHOLD:
+                    self._create_keyword_objects(
+                        curr_page_coor_obj=curr_page_coor_obj,
+                        indexes=indexes[i:],
+                        keyword_positions=keyword_positions,
                     )
+                    break
+                else:
+                    keyword += curr_page_coor_obj[pos_idx].get_text()
+            else:
+                keyword += curr_page_coor_obj[pos_idx].get_text()
+
+        keyword_positions.append({
+            'value': keyword,
+            'lower_left': {
+                'x': start_lower_x,
+                'y': start_lower_y,
+            },
+            'upper_right': {
+                'x': end_upper_x,
+                'y': end_upper_y,
+            }
+        })
 
     def _get_annotation(
         self,
@@ -184,14 +267,13 @@ class AnnotationsService:
                 else:
                     lookup_key = word
 
-                # normalize multiple spaces
-                lookup_key = ' '.join(lookup_key.split())
-                entity = json.loads(transaction.get(lookup_key.lower().encode('utf-8')))
+                lookup_key = normalize_str(lookup_key)
+                entity = json.loads(transaction.get(lookup_key.encode('utf-8')))
 
                 common_name_count = 0
                 if len(entity['common_name']) > 1:
                     common_names = set([v for _, v in entity['common_name'].items()])
-                    common_names_in_doc_text = [n in tokens_lowercased for n in common_names]
+                    common_names_in_doc_text = [n in tokens_lowercased for n in common_names]  # noqa
 
                     # skip if none of the common names appear
                     if not any(common_names_in_doc_text):
@@ -212,66 +294,12 @@ class AnnotationsService:
 
                     keyword_positions = []
                     char_indexes = list(token_positions.char_positions.keys())
-                    # done = False
 
-                    def _create_keywords(
-                        curr_page_coor_obj: List[LTChar],
-                        indexes: List[int],
-                        keyword_positions: List[dict] = [],
-                    ):
-                        start_lower_x = None
-                        start_lower_y = None
-                        end_upper_x = None
-                        end_upper_y = None
-
-                        keyword = ''
-                        for i, pos_idx in enumerate(indexes):
-                            lower_x, lower_y, upper_x, upper_y = curr_page_coor_obj[pos_idx].bbox
-                            if (start_lower_x is None and
-                                    start_lower_y is None and end_upper_y is None):
-                                start_lower_x = lower_x
-                                start_lower_y = lower_y
-                                end_upper_y = upper_y
-                            else:
-                                if upper_y > end_upper_y:
-                                    end_upper_y = upper_y
-
-                            end_upper_x = upper_x
-
-                            if lower_y != start_lower_y:
-                                diff = abs(lower_y - start_lower_y)
-
-                                if diff <= PDF_LOWER_Y_THRESHOLD:
-                                    keyword += curr_page_coor_obj[pos_idx].get_text()
-                                else:
-                                    _create_keywords(
-                                        curr_page_coor_obj=curr_page_coor_obj,
-                                        indexes=indexes[i:],
-                                        keyword_positions=keyword_positions,
-                                    )
-                            else:
-                                keyword += curr_page_coor_obj[pos_idx].get_text()
-
-                        keyword_positions.append({
-                            'value': keyword,
-                            'lower_left': {
-                                'x': start_lower_x,
-                                'y': start_lower_y,
-                            },
-                            'upper_right': {
-                                'x': end_upper_x,
-                                'y': end_upper_y,
-                            }
-                        })
-
-                    # import IPython; IPython.embed()
-                    _create_keywords(
+                    self._create_keyword_objects(
                         curr_page_coor_obj=curr_page_coor_obj,
                         indexes=char_indexes,
                         keyword_positions=keyword_positions
                     )
-                    # import IPython; IPython.embed()
-
 
                     matches.append({
                         'page_number': token_positions.page_number,
@@ -281,10 +309,8 @@ class AnnotationsService:
                         'id': entity_id,
                         'id_type': entity['id_type'],
                     })
-                    # import IPython; IPython.embed()
                 else:
                     unwanted_matches.add(word)
-        # import IPython; IPython.embed()
         return matches, unwanted_matches
 
     def _annotate_genes(
