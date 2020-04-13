@@ -3,7 +3,6 @@ import json
 import os
 from flask import render_template
 from flask_cors import CORS
-from hashids import Hashids
 from sqlalchemy.sql.expression import text
 from neo4japp.factory import create_app
 from neo4japp.models import AppUser, Project
