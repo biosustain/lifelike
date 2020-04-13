@@ -9,3 +9,10 @@ export enum Browsers {
     WEBKIT = 'webkit',
     UNKNOWN = 'unknown',
 }
+
+export enum OperatingSystems {
+    LINUX = 'linux',
+    MAC = 'mac',
+    WINDOWS = 'windows',
+    UNKNOWN = 'unknown',
+}
