@@ -3,6 +3,7 @@ import json
 import jwt
 from datetime import datetime, timedelta
 from neo4japp.models import AppUser
+from neo4japp.util import generate_jwt_token
 
 
 def user_factory(uid):
@@ -39,3 +40,31 @@ def test_can_authenticate_user(client, session, password, login_password):
         assert response.status_code == 200
     else:
         assert response.status_code == 401
+
+
+def test_can_authenticate_with_auth_token(client, session):
+
+    user_data = user_factory(2)
+    user = AppUser().from_dict(user_data)
+    user.set_password('password')
+    session.add(user)
+    session.flush()
+
+    data = json.dumps(dict(email=user.email, password='password'))
+
+    response = client.post(
+        '/auth/login',
+        data=data,
+        content_type='application/json',
+    )
+
+    response_data = response.get_json()
+    refresh_jwt = response_data['access_jwt']
+    headers = {'Authorization': f'Bearer {refresh_jwt}'}
+
+    response = client.get(
+        '/accounts/',
+        headers=headers,
+    )
+
+    assert response.status_code == 200

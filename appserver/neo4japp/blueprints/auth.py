@@ -5,8 +5,15 @@ from flask_httpauth import HTTPTokenAuth
 from sqlalchemy.orm.exc import NoResultFound
 
 from neo4japp.database import db
-from neo4japp.exceptions import JWTTokenException, RecordNotFoundException, NotAuthorizedException
+from neo4japp.exceptions import (
+    JWTTokenException,
+    JWTAuthTokenException,
+    RecordNotFoundException,
+    NotAuthorizedException,
+)
 from neo4japp.models.auth import AppUser
+from neo4japp.util import generate_jwt_token
+
 
 bp = Blueprint('auth', __name__, url_prefix='/auth')
 
@@ -30,9 +37,9 @@ def verify_token(token):
             raise NotAuthorizedException('no access found')
     except jwt.exceptions.ExpiredSignatureError:
         # Signature has expired
-        raise JWTTokenException('refresh token has expired')
+        raise JWTAuthTokenException('auth token has expired')
     except jwt.exceptions.InvalidTokenError:
-        raise JWTTokenException('refresh token is invalid')
+        raise JWTAuthTokenException('auth token is invalid')
 
 
 def pullUserFromAuthHead():
@@ -78,25 +85,19 @@ def refresh():
             return {'status': 'wrong token type submitted'}, 401
 
         # Create access & refresh token pair
-        access_jwt_encoded = jwt.encode(
-            {
-                'iat': datetime.utcnow(),
-                'sub': decoded['sub'],
-                'exp': datetime.utcnow() + timedelta(hours=1),
-                'type': 'access'
-            },
-            current_app.config['SECRET_KEY'],
-            algorithm='HS256'
+        access_jwt_encoded = generate_jwt_token(
+            sub=decoded['sub'],
+            secret=current_app.config['SECRET_KEY'],
+            token_type='access',
+            time_offset=1,
+            time_unit='hours',
         )
-        refresh_jwt_encoded = jwt.encode(
-            {
-                'iat': datetime.utcnow(),
-                'sub': decoded['sub'],
-                'exp': datetime.utcnow() + timedelta(days=1),
-                'type': 'refresh'
-            },
-            current_app.config['SECRET_KEY'],
-            algorithm='HS256'
+        refresh_jwt_encoded = generate_jwt_token(
+            sub=decoded['sub'],
+            secret=current_app.config['SECRET_KEY'],
+            token_type='refresh',
+            time_offset=1,
+            time_unit='days',
         )
 
         # Create response
@@ -130,27 +131,22 @@ def login():
         raise RecordNotFoundException('Credentials not found or invalid.')
 
     if user.check_password(data.get('password')):
+
         # Issue access jwt
-        access_jwt_encoded = jwt.encode(
-            {
-                'iat': datetime.utcnow(),
-                'sub': user.email,
-                'exp': datetime.utcnow() + timedelta(hours=1),
-                'type': 'access'
-            },
-            current_app.config['SECRET_KEY'],
-            algorithm='HS256'
+        access_jwt_encoded = generate_jwt_token(
+            sub=user.email,
+            secret=current_app.config['SECRET_KEY'],
+            token_type='access',
+            time_offset=1,
+            time_unit='hours',
         )
         # Issue refresh jwt
-        refresh_jwt_encoded = jwt.encode(
-            {
-                'iat': datetime.utcnow(),
-                'sub': user.email,
-                'exp': datetime.utcnow() + timedelta(days=1),
-                'type': 'refresh'
-            },
-            current_app.config['SECRET_KEY'],
-            algorithm='HS256'
+        refresh_jwt_encoded = generate_jwt_token(
+            sub=user.email,
+            secret=current_app.config['SECRET_KEY'],
+            token_type='refresh',
+            time_offset=1,
+            time_unit='days',
         )
 
         # Create response
