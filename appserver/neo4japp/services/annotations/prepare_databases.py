@@ -9,17 +9,12 @@ import lmdb
 import json
 
 from os import path, remove, walk
-from string import punctuation, whitespace
+
+from .util import normalize_str
 
 
 # reference to this directory
 directory = path.realpath(path.dirname(__file__))
-
-
-def normalize_str(s) -> str:
-    normalized = s.lower()
-    normalized = normalized.translate(str.maketrans('', '', punctuation))
-    return normalized.translate(str.maketrans('', '', whitespace))
 
 
 def prepare_lmdb_genes_database():
