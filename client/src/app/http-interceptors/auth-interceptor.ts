@@ -17,7 +17,10 @@ import { State } from 'app/root-store';
 import { ApiHttpError } from 'app/interfaces';
 import { AuthActions } from 'app/auth/store';
 import { SnackbarActions } from 'app/shared/store';
-import { JWT_TOKEN_EXPIRED, JWT_TOKEN_INVALID } from 'app/constants';
+import {
+    JWT_REFRESH_TOKEN_EXPIRED,
+    JWT_REFRESH_TOKEN_INVALID,
+} from 'app/constants';
 
 
 /**
@@ -40,7 +43,7 @@ export class AuthenticationInterceptor implements HttpInterceptor {
                 const statusCode = res.status;
                 const error: ApiHttpError = res.error.apiHttpError;
                 if (statusCode === 401) {
-                    if (error.message === JWT_TOKEN_EXPIRED || error.message === JWT_TOKEN_INVALID) {
+                    if (error.message === JWT_REFRESH_TOKEN_EXPIRED || error.message === JWT_REFRESH_TOKEN_INVALID) {
                         // Clear any previous login state which forces users to log out
                         // and log in again if token has been expired or invalid
                         this.store.dispatch(AuthActions.loginReset());

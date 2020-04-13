@@ -8,7 +8,7 @@ from werkzeug.utils import find_modules, import_string
 
 from neo4japp.encoders import CustomJSONEncoder
 from neo4japp.database import db, ma, migrate
-from neo4japp.exceptions import BaseException, JWTTokenException
+from neo4japp.exceptions import BaseException, JWTAuthTokenException, JWTTokenException
 
 # Used for registering blueprints
 BLUEPRINT_PACKAGE = __package__ + '.blueprints'
@@ -44,6 +44,7 @@ def create_app(name='neo4japp', config='config.Development'):
 
     app.json_encoder = CustomJSONEncoder
 
+    app.register_error_handler(JWTAuthTokenException, partial(handle_error, 401))
     app.register_error_handler(JWTTokenException, partial(handle_error, 401))
     app.register_error_handler(BaseException, partial(handle_error, 400))
     app.register_error_handler(Exception, partial(handle_error, 500))
