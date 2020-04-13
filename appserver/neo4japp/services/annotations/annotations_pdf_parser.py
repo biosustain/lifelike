@@ -16,11 +16,13 @@ from neo4japp.data_transfer_objects import (
     PDFTokenPositions,
     PDFTokenPositionsList,
 )
+from neo4japp.util import compute_hash
 
 
 class AnnotationsPDFParser:
     def __init__(self) -> None:
-        self.max_word_length = 4  # TODO: go into constants.py if used by other classes
+        # TODO: go into constants.py if used by other classes
+        self.max_word_length = 4
 
     def _get_lt_char(
         self,
@@ -84,13 +86,15 @@ class AnnotationsPDFParser:
         """Extract word tokens from the parsed characters.
 
         Returns a token list of sequentially concatentated
-        words up to the max word length.
+        words up to the @self.max_word_length.
 
         E.g ['A', 'B', 'C', 'D', 'E'] -> ['A', 'A B', 'A B C', 'B', 'B C', ...]
         """
         curr_max_words = 1
         new_start_idx = 0
         token_objects: List[PDFTokenPositions] = []
+
+        processed_tokens: Set[PDFTokenPositions] = set()
 
         for page_idx, char_list in parsed_chars.str_per_pdf_page.items():
             curr_page = page_idx
@@ -117,6 +121,9 @@ class AnnotationsPDFParser:
                                 char_idx_map[curr_idx] = char_list[curr_idx]
                                 curr_idx += 1
                             else:
+                                # encountered whitespace
+                                # \xa0 is non-breaking whitespace
+
                                 # check if double spacing
                                 if (curr_idx+1 < max_length and
                                         (char_list[curr_idx+1] in whitespace or
@@ -126,21 +133,23 @@ class AnnotationsPDFParser:
                                     if whitespace_count == 0:
                                         first_whitespace_encountered_idx = curr_idx
 
-                                    # encountered whitespace
-                                    # \xa0 is non-breaking whitespace
+                                    # each whitespace encountered means a
+                                    # whole word has been processed
                                     if whitespace_count + 1 < curr_max_words:
                                         curr_keyword += char_list[curr_idx]
                                         char_idx_map[curr_idx] = char_list[curr_idx]
                                         curr_idx += 1
                                     whitespace_count += 1
 
-                    token_objects.append(
-                        PDFTokenPositions(
-                            page_number=curr_page,
-                            keyword=curr_keyword,
-                            char_positions=char_idx_map,
-                        ),
+                    token = PDFTokenPositions(
+                        page_number=curr_page,
+                        keyword=curr_keyword,
+                        char_positions=char_idx_map,
                     )
+                    hashval = compute_hash(token.to_dict())
+                    if hashval not in processed_tokens:
+                        processed_tokens.add(hashval)
+                        token_objects.append(token)
 
                     curr_idx = new_start_idx
                     curr_keyword = ''
@@ -163,17 +172,3 @@ class AnnotationsPDFParser:
             token_positions=token_objects,
             coor_obj_per_pdf_page=parsed_chars.coor_obj_per_pdf_page,
         )
-
-
-
-
-
-
-
-
-
-
-
-
-
-
