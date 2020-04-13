@@ -32,3 +32,14 @@ class Project(RDBMSBase):
 class ProjectSchema(ma.ModelSchema):  # type: ignore
     class Meta:
         model = Project
+        fields = (
+            'id',
+            'label',
+            'description',
+            'graph',
+            'date_modified',
+            'author',
+            'public',
+            'user_id',
+            'hash_id'
+        )
