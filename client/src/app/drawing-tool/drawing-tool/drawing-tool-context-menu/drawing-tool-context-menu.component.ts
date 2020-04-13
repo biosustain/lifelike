@@ -8,6 +8,7 @@ import { IdType } from 'vis-network';
 
 import { DrawingToolContextMenuControlService } from 'app/drawing-tool/services/drawing-tool-context-menu-control.service';
 import { CopyPasteMapsService } from 'app/drawing-tool/services/copy-paste-maps.service';
+import { Coords2D } from 'app/interfaces/shared.interface';
 import { TooltipComponent } from 'app/shared/components/tooltip/tooltip.component';
 import { TooltipDetails } from 'app/shared/services/tooltip-control-service';
 
@@ -25,6 +26,7 @@ export class DrawingToolContextMenuComponent extends TooltipComponent implements
     @Output() selectNeighbors: EventEmitter<IdType> = new EventEmitter();
     @Output() copySelection: EventEmitter<boolean> = new EventEmitter();
     @Output() pasteSelection: EventEmitter<boolean> = new EventEmitter();
+    @Output() createLinkNodeFromClipboard: EventEmitter<Coords2D> = new EventEmitter();
 
     FADEOUT_STYLE = 'context-menu fade-out';
     DEFAULT_STYLE = 'context-menu';
@@ -125,6 +127,17 @@ export class DrawingToolContextMenuComponent extends TooltipComponent implements
 
     requestPaste() {
         this.pasteSelection.emit(true);
+        this.beginContextMenuFade();
+    }
+
+    requestCreateLinkNodeFromClipboard() {
+        const domRect = this.tooltip.getBoundingClientRect() as DOMRect;
+        this.createLinkNodeFromClipboard.emit(
+            {
+                x: domRect.x,
+                y: domRect.y,
+            } as Coords2D
+        );
         this.beginContextMenuFade();
     }
 }
