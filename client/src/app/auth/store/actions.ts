@@ -27,4 +27,9 @@ export const logout = createAction(
     '[Auth] Logout'
 );
 
+export const loginReset = createAction(
+    '[Auth] Login Reset'
+);
+
+
 export const logoutSuccess = createAction(LOGOUT_SUCCESS);
