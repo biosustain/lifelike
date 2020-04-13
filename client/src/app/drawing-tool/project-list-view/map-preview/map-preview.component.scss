@@ -1,0 +1,52 @@
+@import "../../../../styles.scss";
+
+#canvas {
+    width: 100%;
+    height: 100%;
+  }
+  #read-panel {
+    @include overlay;
+    top: 0;
+    right: 0;
+    width: 300px;
+    background-color: #ECF0F1;
+    border-radius: 0.5rem 0.5rem 0.5rem 0.5rem;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.15);
+    overflow-y: scroll;
+    padding: 1.25rem;
+
+    h3 {
+      color: $dark-blue !important;
+    }
+
+    p.link {
+      transition: color 0.1s ease-in;
+    }
+    p.link:hover {
+      color: $blue;
+      cursor: pointer;
+    }
+
+    p.blue {
+      color: $blue !important;
+    }
+  }
+  #tool-panel {
+    @include overlay;
+    top: 0;
+    left: 0;
+    display: flex;
+    flex-direction: column;
+
+    mat-icon {
+      font-size: 30px;
+      width: 30px;
+      height: 30px;
+      margin: 0.75rem;
+      cursor: pointer;
+      transition: color .2s ease-in;
+    }
+    mat-icon:hover {
+      color: $blue;
+    }
+}

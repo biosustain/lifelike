@@ -44,6 +44,8 @@ import { InfoPanelComponent } from './drawing-tool/info-panel/info-panel.compone
 import { PdfViewerDirective } from './pdf-viewer/pdf-viewer.directive';
 import { SplitterComponent } from './splitter/splitter.component';
 import { MapSearchChannelComponent } from './map-search-channel/map-search-channel.component';
+import { MapPreviewComponent } from './project-list-view/map-preview/map-preview.component';
+import { MapListComponent } from './project-list-view/map-list/map-list.component';
 
 @NgModule({
   declarations: [
@@ -59,7 +61,9 @@ import { MapSearchChannelComponent } from './map-search-channel/map-search-chann
     InfoPanelComponent,
     PdfViewerDirective,
     SplitterComponent,
-    MapSearchChannelComponent
+    MapSearchChannelComponent,
+    MapPreviewComponent,
+    MapListComponent
   ],
   entryComponents: [
     CreateProjectDialogComponent,

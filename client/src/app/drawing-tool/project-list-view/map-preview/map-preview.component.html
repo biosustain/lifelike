@@ -1,0 +1,49 @@
+  <!-- Network Graph Canvas -->
+  <div id='canvas'></div>
+  <!-- Read Panel -->
+  <div *ngIf='node' id='read-panel'>
+    <h3>{{node?.label}}</h3>
+    <!-- Type -->
+    <div>
+      <p class='blue b'>
+        Type
+      </p>
+      <p>
+        {{node?.group}}
+      </p>
+    </div>
+    <!-- Link -->
+    <div *ngIf='node?.data?.hyperlink'>
+      <p class='blue b'>
+        Hyperlink
+      </p>
+      <p class='link' (click)='goToLink(node.data.hyperlink)'>
+        {{node?.data?.hyperlink}}
+      </p>
+    </div>
+    <!-- Edges-->
+    <div *ngIf='node?.edges.length'>
+      <p class='blue b'>Edges</p>
+      <div *ngFor='let edge of node?.edges'>
+        <p>
+          <span class='dark-silver'>{{edge?.label}}</span>
+          &nbsp;
+          <span class='dark-blue'>{{getNode(edge)}}</span>
+        </p>
+      </div>
+    </div>
+  </div>
+  <!-- Tool Panel -->
+  <div id='tool-panel'>
+    <mat-icon matTooltip="Fit Graph" matTooltipPosition="right" class='fit' (click)='fit()'>
+      zoom_out_map
+    </mat-icon>
+    <mat-icon *ngIf='screenMode==="shrink"' matTooltip="Fullscreen" matTooltipPosition="right" class='Full Screen'
+      (click)='toggle()'>
+      fullscreen
+    </mat-icon>
+    <mat-icon *ngIf='screenMode==="grow"' matTooltip="Shrink" matTooltipPosition="right" class='Shrink'
+      (click)='toggle()'>
+      fullscreen_exit
+    </mat-icon>
+  </div>

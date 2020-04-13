@@ -1,0 +1,50 @@
+<div id='map-list'>
+  <h1>Maps</h1>
+  <mat-tab-group [selectedIndex]="displayIndex" (selectedTabChange)="toggleView($event)">
+    <mat-tab label="Personal">
+      <div 
+        class='map shadow'
+        *ngFor='let project of projects'
+        (contextmenu)="open($event, project)"
+        (click)='clickHandler("pick", project)'>
+        <h3>
+          {{
+              project.label | truncate:['40']
+            }}
+        </h3>
+        <p class='author'>
+          By {{project?.author}}
+        </p>
+        <p class='date'>
+          Modified {{project?.date_modified | friendlyDateStr}}
+        </p>
+      </div>
+    </mat-tab>
+    <mat-tab label="Community">
+      <div class='map shadow' *ngFor='let project of publicProjects'
+        (contextmenu)="open($event, project)"
+        (click)='clickHandler("pick", project)'>
+        <h3>
+          {{
+              project.label | truncate:['40']
+            }}
+        </h3>
+        <p class='author'>
+          By {{project?.author}}
+        </p>
+        <p class='date'>
+          Modified {{project?.date_modified | friendlyDateStr}}
+        </p>
+      </div>
+    </mat-tab>
+  </mat-tab-group>
+</div>
+<!-- Context Menu -->
+<ng-template #projectMenu let-project>
+    <section
+      (contextmenu)="$event.preventDefault()"
+      class="project-menu">
+      <div (click)='contextHandler("copy", project)'>Make copy of</div>
+      <div *ngIf='displayMode==="personal"' (click)='contextHandler("delete", project)'>Delete</div>
+    </section>
+</ng-template>
