@@ -17,10 +17,15 @@ import { Options } from '@popperjs/core';
 import * as $ from 'jquery';
 
 import {
-    Subscription, Observable
+    Subscription, Observable, fromEvent, Subject
 } from 'rxjs';
+import { filter, first, takeUntil, debounceTime } from 'rxjs/operators';
 
 import { IdType } from 'vis-network';
+
+import { Coords2D } from 'app/interfaces/shared.interface';
+import { ClipboardService } from 'app/shared/services/clipboard.service';
+import { keyCodeRepresentsPasteEvent } from 'app/shared/utils';
 
 import {
     NetworkVis
@@ -75,7 +80,8 @@ export interface Action {
 @Component({
     selector: 'app-drawing-tool',
     templateUrl: './drawing-tool.component.html',
-    styleUrls: ['./drawing-tool.component.scss']
+    styleUrls: ['./drawing-tool.component.scss'],
+    providers: [ClipboardService],
 })
 export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
     /** Communicate to parent component to open another app side by side */
@@ -84,6 +90,16 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
     @Input() currentApp = '';
 
     @ViewChild(InfoPanelComponent, {static: false}) infoPanel: InfoPanelComponent;
+
+    mouseMoveEventStream: Observable<MouseEvent>;
+    endMouseMoveEventSource: Subject<boolean>;
+    mouseMoveSub: Subscription;
+
+    pasteEventStream: Observable<KeyboardEvent>;
+    endPasteEventSource: Subject<boolean>;
+    pasteSub: Subscription;
+
+    cursorDocumentPos: Coords2D; // Represents the position of the cursor within the document { x: number; y: number }
 
     selectedNodes: IdType[];
     selectedEdges: IdType[];
@@ -139,9 +155,14 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
         private projectService: ProjectsService,
         private snackBar: MatSnackBar,
         private copyPasteMapsService: CopyPasteMapsService,
+        private clipboardService: ClipboardService,
     ) {}
 
     ngOnInit() {
+        this.endMouseMoveEventSource = new Subject();
+        this.endPasteEventSource = new Subject();
+        this.setupCtrlVPasteOnCanvas();
+
         this.selectedNodes = [];
         this.selectedEdges = [];
 
@@ -274,6 +295,7 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
             });
         });
     }
+
     ngOnDestroy() {
         // Unsubscribe from subscriptions
         this.formDataSubscription.unsubscribe();
@@ -283,6 +305,62 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
         this.dataFlow.pushGraphData(null);
         this.dataFlow.pushGraphUpdate(null);
         this.dataFlow.pushNode2Canvas(null);
+
+        // Complete the vis canvas element event listeners
+        this.endMouseMoveEventSource.complete();
+        this.endPasteEventSource.complete();
+    }
+
+    updateCursorDocumentPos(event: MouseEvent) {
+        this.cursorDocumentPos = {
+            x: event.clientX - 59, // The canvas is offset a bit by the toolbar menu, so we modify the x-pos a bit here
+            y: event.clientY,
+        };
+    }
+
+    setupCtrlVPasteOnCanvas() {
+        const visCanvas = document.querySelector('#canvas');
+
+        // We need to get the cursor coords the first time the user clicks the canvas (i.e. when they focus it for the first time).
+        // Otherwise they would be undefined if the user focused the canvas but didn't move the mouse at all and tried to paste.
+        (fromEvent(visCanvas, 'click') as Observable<MouseEvent>).pipe(
+            first(),
+        ).subscribe((event) => {
+            this.updateCursorDocumentPos(event);
+        });
+
+        // When the canvas is focused, keep track of where the mouse is so we know where to paste
+        visCanvas.addEventListener('focusin', () => {
+            // We should take great care with this listener, as it fires VERY often if we don't
+            // properly debounce it
+            this.mouseMoveEventStream = fromEvent(visCanvas, 'mousemove').pipe(
+                debounceTime(100),
+                takeUntil(this.endMouseMoveEventSource),
+            ) as Observable<MouseEvent>;
+
+            this.mouseMoveSub = this.mouseMoveEventStream.subscribe((event) => {
+                this.updateCursorDocumentPos(event);
+            });
+
+            // We also want to keep track of when the "Paste" command is issued by the user
+            this.pasteEventStream = (fromEvent(visCanvas, 'keydown') as Observable<KeyboardEvent>).pipe(
+                filter(event => keyCodeRepresentsPasteEvent(event)),
+                takeUntil(this.endPasteEventSource),
+            );
+
+            this.pasteSub = this.pasteEventStream.subscribe(() => {
+                this.createLinkNodeFromClipboard(this.cursorDocumentPos);
+            });
+        });
+
+        // If the canvas isn't focused, we don't care where the mouse is, nor do we care about catching paste events
+        visCanvas.addEventListener('focusout', () => {
+            // This will complete the mouseMoveEventStream observable, and the corresponding mouseMoveSub
+            this.endMouseMoveEventSource.next(true);
+
+            // Similar to above
+            this.endPasteEventSource.next(true);
+        });
     }
 
     updateSelectedNodes() {
@@ -769,5 +847,20 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
     // TODO LL-233
     pasteSelection() {
         // Implement me!
+    }
+
+    async createLinkNodeFromClipboard(coords: Coords2D) {
+        const clipboardContent = await this.clipboardService.readClipboard();
+        const canvasCoords = this.visjsNetworkGraph.network.DOMtoCanvas({x: coords.x, y: coords.y});
+        const cmd = {
+            action: 'add node',
+            data: {
+                // TODO: Add clipboard data here
+                group: 'link',
+                label: clipboardContent,
+                ...canvasCoords
+            }
+        };
+        this.recordCommand(cmd);
     }
 }
