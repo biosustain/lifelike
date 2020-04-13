@@ -43,6 +43,12 @@ class JWTTokenException(BaseException):
         super().__init__('JWT', message)
 
 
+class JWTAuthTokenException(JWTTokenException):
+    """Signals the JWT auth token has an issue"""
+    def __init__(self, message):
+        super().__init__(message)
+
+
 class FormatterException(BaseException):
     """Signals that a CamelDictMixin object was not formatted to/from
     dict correctly."""

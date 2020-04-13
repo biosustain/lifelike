@@ -4,5 +4,7 @@ export const LOGOUT_SUCCESS = '[Auth] Logout Success';
  * used as a flag to determine a user's course of action
  * within the auth-interceptors.
  */
-export const JWT_TOKEN_EXPIRED = 'refresh token has expired';
-export const JWT_TOKEN_INVALID = 'refresh token is invalid';
+export const JWT_AUTH_TOKEN_EXPIRED = 'auth token has expired';
+export const JWT_AUTH_TOKEN_INVALID = 'auth token is invalid';
+export const JWT_REFRESH_TOKEN_EXPIRED = 'refresh token has expired';
+export const JWT_REFRESH_TOKEN_INVALID = 'refresh token is invalid';
