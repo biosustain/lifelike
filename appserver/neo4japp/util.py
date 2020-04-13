@@ -2,7 +2,9 @@ import attr
 import functools
 import hashlib
 import itertools
+import jwt
 
+from datetime import datetime, timedelta
 from decimal import Decimal, InvalidOperation
 from enum import EnumMeta, Enum
 from json import JSONDecodeError
@@ -306,3 +308,31 @@ def compute_hash(data: dict, **kwargs) -> str:
     if 'limit' in kwargs:
         return hexdigest[:kwargs['limit']]
     return hexdigest
+
+
+def generate_jwt_token(
+    sub: str,
+    secret: str,
+    token_type: str = 'access',
+    time_offset: int = 1,
+    time_unit: str = 'hours',
+    algorithm: str = 'HS256'
+):
+    """
+    Generates an authentication or refresh JWT Token
+
+    Args:
+        sub - the subject of the token (e.g. user email)
+        secret - secret that should not be shared for encryption
+        token_type - one of 'access' or 'refresh'
+        time_offset - the difference in time before token expiration
+        time_unit - time offset for expiration (days, hours, etc) (see datetime docs)
+        algorithm - jwt.encode compatible algorithms (see docs)
+    """
+    time_now = datetime.utcnow()
+    return jwt.encode(dict(
+        iat=time_now,
+        sub=sub,
+        exp=time_now + timedelta(**{time_unit: time_offset}),
+        type=token_type,
+    ), secret, algorithm=algorithm)
