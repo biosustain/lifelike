@@ -2,13 +2,13 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { map } from 'rxjs/operators';
 import { AppUser } from 'app/interfaces';
-
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: '***ARANGO_USERNAME***'
 })
 export class AuthenticationService {
-  baseUrl = '/api/auth';
+  baseUrl = environment.apiUrl + '/auth';
 
   constructor(private http: HttpClient) { }
 
@@ -79,5 +79,13 @@ export class AuthenticationService {
           return resp;
         })
       );
+  }
+
+  public whoAmI() {
+    const auth = JSON.parse(localStorage.getItem('auth'));
+
+    if (!auth.user) { return; }
+
+    return auth.user.id;
   }
 }
