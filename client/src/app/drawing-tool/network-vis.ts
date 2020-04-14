@@ -175,7 +175,8 @@ export class NetworkVis {
     n.y = n.y || y;
     n.size = 5;
     n.data = {
-      hyperlink: (n.data || {}).hyperlink || ''
+      hyperlink: (n.data || {}).hyperlink || '',
+      detail: (n.data || {}).detail || ''
     };
 
     this.visNodes.add([n]);
