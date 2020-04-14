@@ -5,7 +5,7 @@
  * as they type.
  *
  *  Usage example:
- *      <input visDebounce (debounceCallback)="onChange($event)">
+ *      <input appVisDebounce (debounceCallback)="onChange($event)">
  *
  */
 import {
@@ -22,7 +22,7 @@ import { fromEvent, Subscription } from 'rxjs';
 import { map, debounceTime } from 'rxjs/operators';
 
 @Directive({
-    selector: '[visDebounce]',
+    selector: '[appVisDebounce]',
 })
 export class DebounceInputDirective implements OnInit, OnDestroy {
     @Input() delay = 500;

@@ -10,9 +10,10 @@ services:
         ports:
             - "5000:5000"
         environment:
-            - NEO4J_HOST=bolt://n4j-database:7687
-            - NEO4J_USER=neo4j
+            - NEO4J_HOST=n4j-database
+            - NEO4J_AUTH=neo4j/password
             - FLASK_DEBUG=1
+            - FLASK_ENV=development
             - FLASK_APP=app
             - FLASK_APP_CONFIG=Development
             - POSTGRES_HOST=pgdatabase
@@ -21,6 +22,9 @@ services:
             - POSTGRES_USER=postgres
             - POSTGRES_PASSWORD=postgres
             - POSTGRES_DB=postgres
+            - NEO4J_ENTITIES_HOST
+            - NEO4J_ENTITIES_PASS
+            - NEO4J_ENTITIES_USER
         networks:
             - frontend
             - backend
@@ -34,11 +38,11 @@ services:
 
     database:
         environment:
-            - NEO4J_AUTH=none
+            - NEO4J_AUTH=neo4j/password
         volumes:
-            - ./db/data:/data
-            - ./db/logs:/logs
-            - ./db/plugins:/plugins
+            - ./neo4j/data:/data
+            - ./neo4j/logs:/logs
+            - ./neo4j/plugins:/plugins
 
     client:
         container_name: n4j-client
