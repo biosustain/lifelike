@@ -89,7 +89,7 @@ def list_files():
 def get_pdf(id):
     OUTPUT_PATH = os.path.abspath(os.getcwd()) + '/outputs/'
     file, filename = db.session.query(Files.raw_file,
-                                      Files.filename)\
+                                      Files.filename) \
         .filter(Files.file_id == id).one()
     file_full_path = OUTPUT_PATH + filename
     # TODO: Remove writing in filesystem part, this is not needed should be tackle in next version
@@ -109,6 +109,7 @@ def transform_to_bioc():
         template['documents'][0]['passages'][0]['text'] = data['text']
         template['documents'][0]['passages'][0]['annotations'] = data['annotations']
         return jsonify(template)
+
 
 @bp.route('/get_annotations/<id>', methods=['GET'])
 @auth.login_required
