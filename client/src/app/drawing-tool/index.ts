@@ -5,9 +5,6 @@ import {
   DrawingToolComponent
 } from './drawing-tool/drawing-tool.component';
 import {
-  LoginComponent
-} from './login/login.component';
-import {
   PdfViewerComponent
 } from './pdf-viewer/pdf-viewer.component';
 
@@ -19,7 +16,6 @@ import {
 export {
   ProjectListViewComponent,
   DrawingToolComponent,
-  LoginComponent,
   PdfViewerComponent,
   PendingChangesGuard,
-}
+};

@@ -2,21 +2,20 @@ import jwt
 import json
 import os
 from flask import render_template
-from flask_cors import CORS
 from sqlalchemy.sql.expression import text
-
-from neo4japp.database import db, get_account_service
 from neo4japp.factory import create_app
 from neo4japp.models import AppUser, Project
+
+from neo4japp.database import db, get_account_service
 
 app_config = os.environ['FLASK_APP_CONFIG']
 app = create_app(config=f'config.{app_config}')
 
-CORS(app)
 
 @app.route('/')
 def home():
     return render_template('index.html')
+
 
 @app.cli.command("seed")
 def seed():
@@ -37,19 +36,31 @@ def seed():
                         email=r["email"],
                         password=r["password_hash"],
                         roles=["admin"],
+                        first_name=r["first_name"],
+                        last_name=r["last_name"]
                     )
 
             elif fix["table"] == "project":
-                for r in fix["records"]:
+                for idx, r in enumerate(fix["records"]):
+                    r = fix["records"][idx]
+
                     proj = Project(
                         label=r["label"],
                         description=r["description"],
                         date_modified=r["date_modified"],
                         graph=r["graph"],
+                        public=r["public"],
+                        author=r["author"],
                         # temporary fix
-                        user_id=1
+                        user_id=idx+1
                     )
+
                     db.session.add(proj)
+                    db.session.flush()
+
+                    # Assign hash_id to map
+                    proj.set_hash_id()
+
                     db.session.commit()
 
 

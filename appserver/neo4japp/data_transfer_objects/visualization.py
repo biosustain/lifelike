@@ -6,6 +6,7 @@ from neo4japp.util import CamelDictMixin
 
 from typing import Dict, List, Optional
 
+
 @attr.s(frozen=True)
 class VisNode(CamelDictMixin):
     id: int = attr.ib()
@@ -17,10 +18,12 @@ class VisNode(CamelDictMixin):
     color: dict = attr.ib()
     expanded: bool = attr.ib()
 
+
 @attr.s(frozen=True)
 class DuplicateVisNode(VisNode):
-    id: str = attr.ib()
+    id: str = attr.ib()  # type: ignore
     duplicate_of: int = attr.ib()
+
 
 @attr.s(frozen=True)
 class VisEdge(CamelDictMixin):
@@ -35,9 +38,9 @@ class VisEdge(CamelDictMixin):
 
     def build_from_dict_formatter(self, vis_edge_input_dict: dict):
         # Error if both 'from' and 'from_' are in the dict, or if neither of them are
-        if vis_edge_input_dict.get('from_', None) is None and vis_edge_input_dict.get('from', None) is None:
+        if vis_edge_input_dict.get('from_', None) is None and vis_edge_input_dict.get('from', None) is None:  # noqa
             raise FormatterException("Must have either 'from' or 'from_' in a VisEdge dict!")
-        elif vis_edge_input_dict.get('from_', None) is not None and vis_edge_input_dict.get('from', None) is not None:
+        elif vis_edge_input_dict.get('from_', None) is not None and vis_edge_input_dict.get('from', None) is not None:  # noqa
             raise FormatterException("Cannot have both 'from' and 'from_' in a VisEdge dict!")
 
         if vis_edge_input_dict.get('from', None) is not None:
@@ -48,40 +51,43 @@ class VisEdge(CamelDictMixin):
             # 'from_' already exists in the dict, so nothing needs to be done
             return vis_edge_input_dict
 
-
     def to_dict_formatter(self, vis_edge_output_dict: dict):
         vis_edge_output_dict['from'] = vis_edge_output_dict['from_']
         del vis_edge_output_dict['from_']
         return vis_edge_output_dict
 
 
-
 @attr.s(frozen=True)
 class DuplicateVisEdge(VisEdge):
-    id: str = attr.ib()
+    id: str = attr.ib()  # type: ignore
     duplicate_of: int = attr.ib()
     original_from: int = attr.ib()
     original_to: int = attr.ib()
+
 
 @attr.s(frozen=True)
 class NodeEdgePair(CamelDictMixin):
     node: VisNode = attr.ib()
     edge: VisEdge = attr.ib()
 
+
 @attr.s(frozen=True)
 class DuplicateNodeEdgePair(CamelDictMixin):
     node: DuplicateVisNode = attr.ib()
     edge: DuplicateVisEdge = attr.ib()
+
 
 @attr.s(frozen=True)
 class ClusteredNode(CamelDictMixin):
     node_id: int = attr.ib()
     edges: List[DuplicateVisEdge] = attr.ib()
 
+
 @attr.s(frozen=True)
 class EdgeSnippetCount(CamelDictMixin):
     edge: VisEdge = attr.ib()
     count: int = attr.ib()
+
 
 @attr.s(frozen=True)
 class ReferenceTableRow(CamelDictMixin):
@@ -89,36 +95,43 @@ class ReferenceTableRow(CamelDictMixin):
     snippet_count: int = attr.ib()
     edge: DuplicateVisEdge = attr.ib()
 
+
 @attr.s(frozen=True)
 class Snippet(CamelDictMixin):
     reference: GraphNode = attr.ib()
     publication: GraphNode = attr.ib()
 
-### Begin Request DTOs ###
+# Begin Request DTOs #
+
 
 @attr.s(frozen=True)
 class GetSnippetsFromEdgeRequest(CamelDictMixin):
     edge: VisEdge = attr.ib()
 
+
 @attr.s(frozen=True)
 class GetSnippetsFromDuplicateEdgeRequest(CamelDictMixin):
     edge: DuplicateVisEdge = attr.ib()
+
 
 @attr.s(frozen=True)
 class GetSnippetCountsFromEdgesRequest(CamelDictMixin):
     edges: List[VisEdge] = attr.ib()
 
+
 @attr.s(frozen=True)
 class ReferenceTableDataRequest(CamelDictMixin):
     node_edge_pairs: List[DuplicateNodeEdgePair] = attr.ib()
+
 
 @attr.s(frozen=True)
 class GetGraphDataForClusterRequest(CamelDictMixin):
     clustered_nodes: List[ClusteredNode] = attr.ib()
 
-### End Request DTOs ###
+# End Request DTOs #
 
-### Begin Respose DTOs
+# Begin Respose DTOs #
+
 
 @attr.s(frozen=True)
 class GetSnippetsFromEdgeResult(CamelDictMixin):
@@ -150,4 +163,4 @@ class GetReferenceTableDataResult(CamelDictMixin):
             del edge['from_']
         return get_reference_table_data_result_dict
 
-### End Response DTOs ###
+# End Response DTOs #

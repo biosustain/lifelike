@@ -7,8 +7,6 @@ import { MockComponents } from 'ng-mocks';
 
 import { of } from 'rxjs';
 
-import { ToolbarMenuModule } from 'toolbar-menu';
-
 import { DataSet } from 'vis-network';
 
 import {
@@ -106,7 +104,6 @@ describe('VisualizationCanvasComponent', () => {
             imports: [
                 SharedModule,
                 RootStoreModule,
-                ToolbarMenuModule,
             ],
             declarations: [
                 VisualizationCanvasComponent,

@@ -2,6 +2,7 @@ from flask.json import JSONEncoder
 
 from neo4japp.models import GraphNode, GraphRelationship
 
+
 class CustomJSONEncoder(JSONEncoder):
     def default(self, obj):
         try:

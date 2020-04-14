@@ -1,10 +1,11 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Subject } from 'rxjs';
+import { BehaviorSubject } from 'rxjs';
 
 import {
   Project,
   VisNetworkGraphNode
 } from './interfaces';
+import { coronavirus } from './mock_data';
 
 /**
  * Handle communication between components
@@ -15,19 +16,19 @@ import {
 export class DataFlowService {
 
   /** Communication route to canvas for node dropping */
-  private pdf2Canvas = new BehaviorSubject<Object>(null);
+  private pdf2Canvas = new BehaviorSubject<any>(null);
   $pdfDataSource = this.pdf2Canvas.asObservable();
 
-  /** Communication route to side-bar-ui */
-  private graph2Form = new BehaviorSubject<Object>(null);
+  /** Communication route to info-panel-ui */
+  private graph2Form = new BehaviorSubject<any>(null);
   graphDataSource = this.graph2Form.asObservable();
 
   /** Communication route to canvas component */
-  private form2Graph = new BehaviorSubject<Object>(null);
+  private form2Graph = new BehaviorSubject<any>(null);
   formDataSource = this.form2Graph.asObservable();
 
   /** Communication route from project-list to drawing-tool */
-  private projectlist2Canvas = new BehaviorSubject<Project>(null);
+  private projectlist2Canvas = new BehaviorSubject<Project>(coronavirus);
   $projectlist2Canvas = this.projectlist2Canvas.asObservable();
 
   constructor() { }
@@ -35,7 +36,7 @@ export class DataFlowService {
   /**
    * Send dropped node to be interecepted in
    * drawing-tool.component.ts
-   * @param node 
+   * @param node a VisNetworkGraphNode object
    */
   pushNode2Canvas(node: VisNetworkGraphNode) {
     this.pdf2Canvas.next(node);
@@ -43,7 +44,7 @@ export class DataFlowService {
 
   /**
    * Load project onto drawing-tool view's canvas
-   * @param project 
+   * @param project a Project object
    */
   pushProject2Canvas(project: Project) {
     this.projectlist2Canvas.next(project);
@@ -52,17 +53,17 @@ export class DataFlowService {
   /**
    * Send data representing node or edge
    * and its properties
-   * @param node_data 
+   * @param nodeData represents node data
    */
-  pushGraphData(node_data) {
-    this.graph2Form.next(node_data);
+  pushGraphData(nodeData) {
+    this.graph2Form.next(nodeData);
   }
 
   /**
    * Send update of node or edge's properties
-   * @param graph_data_change 
+   * @param graphDataChange represents a change to the graph data
    */
-  pushGraphUpdate(graph_data_change) {
-    this.form2Graph.next(graph_data_change);
+  pushGraphUpdate(graphDataChange) {
+    this.form2Graph.next(graphDataChange);
   }
 }
