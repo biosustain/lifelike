@@ -13,3 +13,4 @@ class Files(db.Model):  # type: ignore
     username = db.Column(db.String(30))
     creation_date = db.Column(db.DateTime, default=db.func.now())
     annotations = db.Column(postgresql.JSONB, nullable=False, server_default='[]')
+    project = db.Column(db.Integer(), nullable=False)
