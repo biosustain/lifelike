@@ -77,6 +77,6 @@ class AccountService(RDBMSBaseDao):
             if user.check_password(changes.password):
                 user.set_password(changes.new_password)
             else:
-                raise NotAuthorizedException('password is invalid')
+                raise NotAuthorizedException('Old password is invalid')
         self.commit_or_flush(commit_now)
         return user
