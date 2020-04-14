@@ -34,7 +34,7 @@
     </div>
   </div>
   <!-- Tool Panel -->
-  <div id='tool-panel'>
+  <div [ngClass]="{'childless': !childMode}" id='tool-panel'>
     <mat-icon matTooltip="Fit Graph" matTooltipPosition="right" class='fit' (click)='fit()'>
       zoom_out_map
     </mat-icon>

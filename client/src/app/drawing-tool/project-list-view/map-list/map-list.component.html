@@ -3,8 +3,9 @@
   <mat-tab-group [selectedIndex]="displayIndex" (selectedTabChange)="toggleView($event)">
     <mat-tab label="Personal">
       <div cdkDropList>
-        <div class='map shadow' *ngFor='let project of projects' (contextmenu)="open($event, project)"
-          (click)='clickHandler("pick", project)' cdkDrag [cdkDragDisabled]='childMode'>
+        <div class='map-template map shadow' *ngFor='let project of projects' [id]='project.hash_id'
+          (contextmenu)="open($event, project)" (click)='clickHandler("pick", project)' cdkDrag
+          [cdkDragDisabled]='childMode'>
           <h3>
             {{
               project.label | truncate:['40']
@@ -21,20 +22,21 @@
     </mat-tab>
     <mat-tab label="Community">
       <div cdkDropList>
-        <div class='map shadow' *ngFor='let project of publicProjects' (contextmenu)="open($event, project)"
-        (click)='clickHandler("pick", project)' cdkDrag [cdkDragDisabled]='childMode'>
-        <h3>
-          {{
+        <div [id]='project.hash_id' class='map-template map shadow' *ngFor='let project of publicProjects'
+          (contextmenu)="open($event, project)" (click)='clickHandler("pick", project)' cdkDrag
+          [cdkDragDisabled]='childMode'>
+          <h3>
+            {{
               project.label | truncate:['40']
             }}
-        </h3>
-        <p class='author'>
-          By {{project?.author}}
-        </p>
-        <p class='date'>
-          Modified {{project?.date_modified | friendlyDateStr}}
-        </p>
-      </div>
+          </h3>
+          <p class='author'>
+            By {{project?.author}}
+          </p>
+          <p class='date'>
+            Modified {{project?.date_modified | friendlyDateStr}}
+          </p>
+        </div>
       </div>
     </mat-tab>
   </mat-tab-group>
