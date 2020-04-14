@@ -2,7 +2,6 @@ import jwt
 import json
 import os
 from flask import render_template
-from flask_cors import CORS
 from sqlalchemy.sql.expression import text
 from neo4japp.factory import create_app
 from neo4japp.models import AppUser, Project
@@ -11,8 +10,6 @@ from neo4japp.database import db, get_account_service
 
 app_config = os.environ['FLASK_APP_CONFIG']
 app = create_app(config=f'config.{app_config}')
-
-CORS(app)
 
 
 @app.route('/')
@@ -57,7 +54,13 @@ def seed():
                         # temporary fix
                         user_id=idx+1
                     )
+
                     db.session.add(proj)
+                    db.session.flush()
+
+                    # Assign hash_id to map
+                    proj.set_hash_id()
+
                     db.session.commit()
 
 

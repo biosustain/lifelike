@@ -65,6 +65,18 @@ export class ProjectsService {
   }
 
   /**
+   * Pull map by hashId
+   * @param hashId - act as uri for map
+   */
+  public serveProject(hashId) {
+   return this.http.get(
+    this.baseUrl + `/drawing-tool/map/${hashId}`,
+    this.createHttpOptions(true)
+   );
+  }
+
+
+  /**
    * Return a list of projects made public within
    * user base
    */

@@ -1,11 +1,11 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
-import { FormGroup, FormControl } from '@angular/forms';
-import { Subscription } from 'rxjs';
+import { Component } from '@angular/core';
+import { FormGroup, FormControl, Validators } from '@angular/forms';
 
 import { Store } from '@ngrx/store';
 import { State } from 'app/***ARANGO_USERNAME***-store';
 
-import * as AuthActions from '../store/actions';
+import { AuthActions } from '../store';
+
 
 
 @Component({
@@ -13,26 +13,14 @@ import * as AuthActions from '../store/actions';
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss']
 })
-export class LoginComponent implements OnInit, OnDestroy {
+export class LoginComponent {
 
   form = new FormGroup({
-    email: new FormControl(),
-    password: new FormControl()
+    email: new FormControl('', [Validators.required, Validators.email]),
+    password: new FormControl('', [Validators.required])
   });
 
-  formSubscription: Subscription;
-
   constructor(private store: Store<State>) { }
-
-  ngOnInit() {
-    this.formSubscription = this.form.valueChanges.subscribe(val => {
-      this.form.controls.email.setErrors(null);
-    });
-  }
-
-  ngOnDestroy() {
-    this.formSubscription.unsubscribe();
-  }
 
   /**
    * Call login API for jwt credential
