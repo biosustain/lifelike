@@ -1,11 +1,7 @@
 #!/usr/bin/env bash
 echo "SEED DATA INTACT"
 
-echo "Sanitizing DB"
-flask drop_tables
-
-echo "Migrating"
-flask db migrate
+echo "Upgrading"
 flask db upgrade
 echo "Seeding database"
 flask seed
