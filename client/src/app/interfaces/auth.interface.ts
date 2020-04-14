@@ -7,9 +7,8 @@ export interface AppUser {
     roles: string[];
 }
 
-export interface ChangePasswordRequest {
-    user: AppUser;
-    oldPassword: string;
+export interface UpdateUserRequest extends AppUser {
+    password: string;
     newPassword: string;
 }
 
