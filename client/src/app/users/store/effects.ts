@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
 import { Actions, ofType, createEffect } from '@ngrx/effects';
 import { AccountService } from '../services/account.service';
 
@@ -6,11 +7,15 @@ import * as UserActions from './actions';
 import { SnackbarActions } from 'app/shared/store';
 import { AuthActions } from 'app/auth/store';
 
+import { ApiHttpError } from 'app/interfaces';
+
 import {
+    catchError,
     map,
     switchMap,
     exhaustMap,
 } from 'rxjs/operators';
+import { from } from 'rxjs';
 
 @Injectable()
 export class UserEffects {
@@ -26,7 +31,17 @@ export class UserEffects {
                 switchMap(user => [
                     UserActions.updateUserSuccess(),
                     AuthActions.refreshUser({ user }),
-                ])
+                ]),
+                catchError((err: HttpErrorResponse) => {
+                    const error: ApiHttpError = err.error.apiHttpError;
+                    return from([
+                        SnackbarActions.displaySnackbar({payload: {
+                            message: error.message,
+                            action: 'Dismiss',
+                            config: { duration: 10000 },
+                        }})
+                    ]);
+                }),
             );
         })
     ));
@@ -39,6 +54,6 @@ export class UserEffects {
                 action: 'Dismiss',
                 config: { duration: 10000 },
             }}
-        ))
+        )),
     ));
 }

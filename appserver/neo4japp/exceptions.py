@@ -25,6 +25,12 @@ class DuplicateRecord(BaseException):
         super().__init__('Duplicate record', message, additional_msgs)
 
 
+class InvalidCredentialsException(BaseException):
+    """Signals invalid credentials used"""
+    def __init__(self, message, additional_msgs=[]):
+        super().__init__('Invalid credentials', message, additional_msgs)
+
+
 class NotAuthorizedException(BaseException):
     """Signals that the client does not sufficient privilege"""
     def __init__(self, message, additional_msgs=[]):
