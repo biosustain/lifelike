@@ -4,8 +4,6 @@ echo "SEED DATA INTACT"
 echo "Sanitizing DB"
 flask drop_tables
 
-echo "Initializing DB"
-flask db init
 echo "Migrating"
 flask db migrate
 flask db upgrade
