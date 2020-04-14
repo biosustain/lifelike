@@ -1,15 +1,14 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { environment } from '../../../environments/environment';
 import { map } from 'rxjs/operators';
 import { AppUser } from 'app/interfaces';
-
+import { environment } from 'environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthenticationService {
-  baseUrl = '/api/auth';
+  baseUrl = environment.apiUrl + '/auth';
 
   constructor(private http: HttpClient) { }
 
@@ -70,7 +69,7 @@ export class AuthenticationService {
     const jwt = localStorage.getItem('refresh_jwt');
 
     return this.http.post<{access_jwt: string, refresh_jwt: string}>(
-      this.baseUrl + '/auth/refresh',
+      this.baseUrl + '/refresh',
       { jwt },
       this.createHttpOptions()
     ).pipe(

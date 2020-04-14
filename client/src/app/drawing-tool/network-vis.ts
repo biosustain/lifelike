@@ -163,9 +163,9 @@ export class NetworkVis {
    * @param x x-coord of the node
    * @param y y-coord of the node
    */
-  addNode(data = {}, x = 10, y = 10): VisNetworkGraphNode {
+  addNode(data = null, x = 10, y = 10): VisNetworkGraphNode {
 
-    const n: VisNetworkGraphNode = {
+    const n = {
       ...data
     };
 
@@ -178,7 +178,7 @@ export class NetworkVis {
         maximum: 600,
     };
     n.data = {
-      hyperlink: (n.data || {}).hyperlink || ''
+      hyperlink: n.hyperlink || ''
     };
 
     this.visNodes.add([n]);
