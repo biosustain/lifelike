@@ -1,14 +1,40 @@
 from datetime import datetime, timedelta
 from flask import current_app, request, Response, json, Blueprint, g
 import jwt
+from sqlalchemy.orm.exc import NoResultFound
 
 from neo4japp.blueprints.auth import auth
 from neo4japp.database import db
+from neo4japp.exceptions import RecordNotFoundException
 from neo4japp.models import AppUser, Project, ProjectSchema
 
 import graphviz as gv
 
 bp = Blueprint('drawing_tool', __name__, url_prefix='/drawing-tool')
+
+
+@bp.route('/map/<string:hash_id>', methods=['GET'])
+@auth.login_required
+def get_map_by_hash(hash_id):
+    """
+        Serve map by hash_id lookup
+    """
+    user = g.current_user
+
+    # Pull up map by hash_id
+    try:
+        project = Project.query.filter_by(hash_id=hash_id).one()
+    except NoResultFound:
+        raise RecordNotFoundException('not found :-( ')
+
+    project_schema = ProjectSchema()
+
+    # Send regardless if map is owned by user or public
+    if (project.user_id == user.id or project.public):
+        return {'project': project_schema.dump(project)}, 200
+    # Else complain to user not fonud
+    else:
+        raise RecordNotFoundException('not found :-( ')
 
 
 @bp.route('/community', methods=['GET'])
@@ -64,8 +90,13 @@ def add_project():
         user_id=user.id
     )
 
-    # Commit it to database to that user
+    # Flush it to database to that user
     db.session.add(project)
+    db.session.flush()
+
+    # Assign hash_id to map
+    project.set_hash_id()
+
     db.session.commit()
 
     project_schema = ProjectSchema()

@@ -1,14 +1,27 @@
 import { Injectable } from '@angular/core';
+import { Router } from '@angular/router';
 import {
   HttpInterceptor,
   HttpHandler,
   HttpRequest,
   HttpErrorResponse,
 } from '@angular/common/http';
-import { environment } from 'environments/environment';
 
 import { AuthenticationService } from 'app/auth/services/authentication.service';
+import { throwError } from 'rxjs';
 import { catchError, switchMap } from 'rxjs/operators';
+
+import { Store } from '@ngrx/store';
+import { State } from 'app/root-store';
+
+import { ApiHttpError } from 'app/interfaces';
+import { AuthActions } from 'app/auth/store';
+import { SnackbarActions } from 'app/shared/store';
+import {
+    JWT_REFRESH_TOKEN_EXPIRED,
+    JWT_REFRESH_TOKEN_INVALID,
+} from 'app/constants';
+
 
 /**
  * AuthenticationInterceptor is used to intercept all requests
@@ -17,21 +30,38 @@ import { catchError, switchMap } from 'rxjs/operators';
  */
 @Injectable()
 export class AuthenticationInterceptor implements HttpInterceptor {
-    baseUrl = environment.apiUrl;
 
-    constructor(private auth: AuthenticationService) {}
+    constructor(
+        private auth: AuthenticationService,
+        private store: Store<State>,
+        private router: Router,
+    ) {}
 
     intercept(req: HttpRequest<any>, next: HttpHandler) {
         return next.handle(req).pipe(
             catchError((res: HttpErrorResponse) => {
-                if (res.status === 401 && !res.url.includes('refresh')) {
-                    return this.auth.refresh().pipe(
-                        switchMap(() => {
-                            return next.handle(this.updateAuthHeader(req));
-                        })
-                    );
+                const statusCode = res.status;
+                const error: ApiHttpError = res.error.apiHttpError;
+                if (statusCode === 401) {
+                    if (error.message === JWT_REFRESH_TOKEN_EXPIRED || error.message === JWT_REFRESH_TOKEN_INVALID) {
+                        // Clear any previous login state which forces users to log out
+                        // and log in again if token has been expired or invalid
+                        this.store.dispatch(AuthActions.loginReset());
+                        this.store.dispatch(SnackbarActions.displaySnackbar({payload: {
+                            message: 'Session expired. Please login again',
+                            action: 'Dismiss',
+                            config: { duration: 10000 },
+                        }}));
+                        this.router.navigate(['/login']);
+                        return throwError(res);
+                    } else {
+                        // Attempt to refresh the token
+                        return this.auth.refresh().pipe(
+                            switchMap(() => next.handle(this.updateAuthHeader(req))),
+                        );
+                    }
                 }
-                return next.handle(req);
+                return throwError(res);
             }),
         );
     }

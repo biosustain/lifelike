@@ -1,10 +1,13 @@
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { select, Store } from '@ngrx/store';
+import { HttpErrorResponse } from '@angular/common/http';
 
 import { AuthenticationService } from '../services/authentication.service';
 
+import { from } from 'rxjs';
 import {
+    catchError,
     exhaustMap,
     map,
     tap,
@@ -15,6 +18,7 @@ import { Actions, ofType, createEffect } from '@ngrx/effects';
 import * as AuthActions from './actions';
 import * as AuthSelectors from './selectors';
 import { State } from './state';
+import { ApiHttpError } from 'app/interfaces';
 
 import * as SnackbarActions from 'app/shared/store/snackbar-actions';
 
@@ -32,10 +36,18 @@ export class AuthEffects {
         exhaustMap(({ credential }) => {
             const { email, password } = credential;
             return this.authService.login(email, password).pipe(
-                map(user => {
-                    const appuser = user.user;
-                    return AuthActions.loginSuccess({user: appuser});
-                }),
+                map(user => AuthActions.loginSuccess({user: user.user})),
+                catchError((err: HttpErrorResponse) => {
+                    const error: ApiHttpError = err.error.apiHttpError;
+                    return from([
+                        SnackbarActions.displaySnackbar({payload: {
+                            message: error.message,
+                            action: 'Dismiss',
+                            config: { duration: 10000 },
+                        }})
+                    ]);
+                }
+                ),
             );
         })
     ));
