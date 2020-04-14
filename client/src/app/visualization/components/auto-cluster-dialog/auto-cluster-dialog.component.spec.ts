@@ -71,7 +71,7 @@ describe('AutoClusterDialogComponent', () => {
         const dontAskAgainCheckbox = document.getElementsByClassName('mat-checkbox-input')[0] as HTMLElement;
 
         // The checkbox is unchecked on page load
-        expect(instance.dontAskAgain).toBeUndefined();
+        expect(instance.dontAskAgain).toBeFalse();
 
         dontAskAgainCheckbox.click();
 

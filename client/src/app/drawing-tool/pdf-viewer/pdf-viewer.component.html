@@ -12,12 +12,10 @@
         <mat-form-field>
           <input matInput placeholder="Search" [formControl]="filesFilter">
         </mat-form-field>
-        <mat-list dense>
-          <mat-list-item *ngFor="let file of filteredFiles">
-            <mat-icon matListIcon>description</mat-icon>
-            <h3 matLine> {{file}} </h3>
-          </mat-list-item>
-        </mat-list>
+        <button mat-button fxLayoutAlign="start center"
+          *ngFor="let file of filteredFiles" (click)="openPdf(file.id)">
+          <mat-icon>description</mat-icon> {{file.filename}}
+        </button>
       </div>
     </div>
   </mat-sidenav>
@@ -28,19 +26,14 @@
       <!-- PDF Viewer -->
       <lib-pdf-viewer-lib
         id='pdf-viewer'
+        appPdfViewer
         *ngIf="annotations?.length > 0"
-        [pdfSrc]="'assets/pdfs/sample.pdf'"
+        [pdfSrc]="pdfFileUrl"
         [annotations]="annotations"
         [dropAreaIdentifier]="'#dropme'"
         [handleDropArea]="false"
         (dropEvents)="drop($event)">
       </lib-pdf-viewer-lib>
-      <!-- Drawing Tool -->
-      <div
-        id='dropme'
-        class='w-50 h-100 fl bg-pink'>
-        <app-drawing-tool></app-drawing-tool>
-      </div>
     </div>
   </mat-sidenav-content>
 </mat-sidenav-container>

@@ -8,9 +8,17 @@
        routerLink="/file-browser">
       <mat-icon>picture_as_pdf</mat-icon>
     </a>
-    <a matTooltip="Drawing Tool" matTooltipPosition="after" fxLayoutAlign="center center"
+    <a matTooltip="KG Visualizer" matTooltipPosition="after" fxLayoutAlign="center center"
+       routerLink="/neo4j-visualizer">
+      <mat-icon>linear_scale</mat-icon>
+    </a>
+    <a matTooltip="Projects for PDF Viewer and Drawing Tool" matTooltipPosition="after" fxLayoutAlign="center center"
        routerLink="/dt/project-list">
       <mat-icon>gesture</mat-icon>
+    </a>
+    <a matTooltip="Knowledge Graph statistics" matTooltipPosition="after" fxLayoutAlign="center center"
+       routerLink="kg-statistics">
+      <mat-icon>bar_chart</mat-icon>
     </a>
     <div fxFlex></div>
     <a matTooltip="Main Menu" matTooltipPosition="after" fxLayoutAlign="center center"
@@ -29,12 +37,20 @@
 </div>
 
 <mat-menu #userMenu="matMenu" xPosition="after">
-  <button mat-menu-item disabled>
-    <mat-icon>person</mat-icon>
-    Bind username here
-  </button>
-  <button mat-menu-item>
-    <mat-icon>lock</mat-icon>
-    Logout
-  </button>
+  <ng-container *ngIf="(loggedIn$ | async); else loggedOut">
+    <button mat-menu-item disabled>
+      <mat-icon>person</mat-icon>
+      {{ (appuser$ | async)?.username }}
+    </button>
+    <button mat-menu-item (click)="logout()">
+      <mat-icon>lock</mat-icon>
+      Logout
+    </button>
+  </ng-container>
+  <ng-template #loggedOut>
+    <button mat-menu-item (click)="login()">
+      <mat-icon>lock</mat-icon>
+      Login
+    </button>
+  </ng-template>
 </mat-menu>

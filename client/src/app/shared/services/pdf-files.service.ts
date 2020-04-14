@@ -22,6 +22,10 @@ export class PdfFilesService {
     );
   }
 
+  getFile(id: string): Observable<any> {
+    return this.http.get(`/api/files/${id}`);
+  }
+
   uploadFile(file: File): Observable<PdfFileUpload> {
     const formData: FormData = new FormData();
     formData.append('file', file);

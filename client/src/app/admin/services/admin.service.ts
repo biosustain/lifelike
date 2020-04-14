@@ -10,14 +10,14 @@ export class AdminService implements OnDestroy {
     readonly adminApi = '/api/accounts';
 
     private completedSubjectsSource = new Subject<boolean>();
-    private _userList = new BehaviorSubject<AppUser[]>([]);
-    readonly userList = this._userList.asObservable().pipe(takeUntil(this.completedSubjectsSource));
+    private userListSource = new BehaviorSubject<AppUser[]>([]);
+    readonly userList = this.userListSource.asObservable().pipe(takeUntil(this.completedSubjectsSource));
 
     constructor(private http: HttpClient) {}
 
     getUserList() {
         this.listOfUsers().subscribe((users: AppUser[]) => {
-            this._userList.next(users);
+            this.userListSource.next(users);
         });
     }
 
@@ -27,15 +27,15 @@ export class AdminService implements OnDestroy {
         ).pipe(map(resp => resp.result));
     }
 
-    currentUser() {
-        return this.http.get<{result: AppUser}>(
-            `${this.adminApi}/user`
-        ).pipe(map(resp => resp.result));
-    }
-
     listOfUsers() {
         return this.http.get<{result: AppUser[]}>(
             `${this.adminApi}/`,
+        ).pipe(map(resp => resp.result));
+    }
+
+    currentUser() {
+        return this.http.get<{result: AppUser}>(
+            `${this.adminApi}/user`
         ).pipe(map(resp => resp.result));
     }
 
