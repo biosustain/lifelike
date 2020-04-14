@@ -334,7 +334,7 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
             // We should take great care with this listener, as it fires VERY often if we don't
             // properly debounce it
             this.mouseMoveEventStream = fromEvent(visCanvas, 'mousemove').pipe(
-                debounceTime(100),
+                debounceTime(25),
                 takeUntil(this.endMouseMoveEventSource),
             ) as Observable<MouseEvent>;
 
