@@ -101,6 +101,8 @@ interface Project {
   date_modified?: string;
   /** Whether or not project is public to userbase */
   public?: boolean;
+  /** URI for project */
+  hash_id?: string;
 }
 
 export {
