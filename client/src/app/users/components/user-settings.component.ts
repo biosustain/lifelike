@@ -22,7 +22,6 @@ export class UserSettingsComponent {
     }
 
     changePassword(userUpdates: UpdateUserRequest) {
-        console.log('new updates:', userUpdates);
         this.store.dispatch(UserActions.updateUser({ userUpdates }));
     }
 }

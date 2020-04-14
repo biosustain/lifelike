@@ -4,6 +4,7 @@ import {
     EventEmitter,
     Input,
     Output,
+    ViewChild,
 } from '@angular/core';
 import {
     FormGroup,
@@ -21,6 +22,8 @@ import { AppUser, UpdateUserRequest } from 'app/interfaces';
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class UserSecurityComponent {
+
+    @ViewChild('ngSecurityForm', {static: false}) ngSecurityForm: FormGroupDirective;
 
     @Output() changePassReq: EventEmitter<UpdateUserRequest> = new EventEmitter();
 
@@ -54,6 +57,9 @@ export class UserSecurityComponent {
                 newPassword,
                 password,
             });
+            this.securityForm.reset();
+            // Used to reset the validation states
+            this.ngSecurityForm.resetForm();
         }
     }
 }
@@ -68,6 +74,5 @@ export class PasswordErrorStateMatcher implements ErrorStateMatcher {
         const invalidCtrl = (originalPassCtrl.touched && originalPassCtrl.dirty && !control.valid);
         return invalidCtrl;
     }
-
 }
 
