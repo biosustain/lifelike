@@ -110,6 +110,12 @@ def transform_to_bioc():
         template['documents'][0]['passages'][0]['annotations'] = data['annotations']
         return jsonify(template)
 
+@bp.route('/get_annotations/<id>', methods=['GET'])
+@auth.login_required
+def get_annotations(id):
+    annotations = db.session.query(Files.annotations).filter(Files.file_id == id).one()
+    return jsonify(annotations)
+
 
 def write_file(data, filename):
     # Convert binary data to proper format and write it on Hard Disk
