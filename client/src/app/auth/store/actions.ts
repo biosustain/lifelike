@@ -33,4 +33,9 @@ export const refreshUser = createAction(
     props<{user: AppUser}>(),
 );
 
+export const loginReset = createAction(
+    '[Auth] Login Reset'
+);
+
+
 export const logoutSuccess = createAction(LOGOUT_SUCCESS);
