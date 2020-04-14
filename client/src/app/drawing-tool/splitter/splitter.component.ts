@@ -14,6 +14,7 @@ import {
 import {
   MapSearchChannelComponent
 } from '../map-search-channel/map-search-channel.component';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-splitter',
@@ -21,6 +22,14 @@ import {
   styleUrls: ['./splitter.component.scss']
 })
 export class SplitterComponent implements OnInit, AfterViewInit {
+  // TODO: Fix this ..
+  // @HostListener('window:beforeunload')
+  // canDeactivate(): Observable<boolean> | boolean {
+  //   return this.saveState ? true : confirm(
+  //       'WARNING: You have unsaved changes. Press Cancel to go back and save these changes, or OK to lose these changes.'
+  //   );
+  // }
+
   @ViewChild(
     'leftPanel',
     {static: false, read: ViewContainerRef}
