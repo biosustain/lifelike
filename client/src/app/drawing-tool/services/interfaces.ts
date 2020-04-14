@@ -11,7 +11,7 @@ interface UniversalGraphNode {
 }
 interface UniversalGraphEdge {
   label: string;
-  data: Object;
+  data: any;
   from: string;
   to: string;
 }
@@ -29,7 +29,7 @@ interface VisNetworkGraphNode {
   size?: number;
   data?: {
     hyperlink?: string;
-  }
+  };
 }
 interface VisNetworkGraphEdge {
   id?: string;
@@ -57,30 +57,52 @@ interface GraphData {
 }
 
 /**
+ * Interface for handling data between canvas and panels
+ */
+interface GraphSelectionData {
+  edgeData?: VisNetworkGraphEdge;
+  nodeData?: {
+    id: string,
+    group: string,
+    label: string,
+    edges: VisNetworkGraphEdge[],
+    data: {
+      hyperlink: string;
+    }
+  };
+  otherNodes?: VisNetworkGraphNode[];
+}
+
+/**
  * Schema for annoations added in pdf-viewer
  */
 interface Annotation {
   /** The entity being annotated */
-  keyword: String;
+  keyword: string;
   /** The type of entity */
-  type: String;
+  type: string;
   /** Color to associate with entity */
-  color: String;
+  color: string;
   /** CHEBI id or some other id system */
-  id: String;
+  id: string;
 }
 
 /**
  * Project schema definition
  */
 interface Project {
-  id?: String|Number;
-  label: String;
-  description: String;
+  id?: string | number;
+  author?: string;
+  label: string;
+  description: string;
   /** JSON representation of graph */
   graph: UniversalGraph;
   /** ISO-8601 timestamp of when project was last updated */
-  date_modified?: String;
+  date_modified?: string;
+  /** Whether or not project is public to userbase */
+  public?: boolean;
+  /** URI for project */
+  hash_id?: string;
 }
 
 export {
@@ -92,5 +114,6 @@ export {
   UniversalGraphEdge,
   UniversalGraphNode,
   Annotation,
-  GraphData
-}
+  GraphData,
+  GraphSelectionData
+};

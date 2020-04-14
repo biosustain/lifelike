@@ -25,7 +25,7 @@ class NEO4JBase():
         return cls(**retval)
 
 
-class RDBMSBase(db.Model):
+class RDBMSBase(db.Model):  # type: ignore
     """ Base class for RDBMS database (e.g. Postgres)
 
         An unambiguous string representation of this object.
