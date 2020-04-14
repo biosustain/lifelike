@@ -12,11 +12,12 @@
     <as-split-area
       size="100"
       #area2="asSplitArea">
-			<!-- Drawing Tool -->
-      <app-drawing-tool
-        id='dropme'
+      <!-- Drawing Tool -->
+      <div id='dropme'>
+        <app-drawing-tool
         [currentApp]='currentApp'
         (openApp)='openApp($event)'>
       </app-drawing-tool>
+      </div>
     </as-split-area>
 </as-split>
