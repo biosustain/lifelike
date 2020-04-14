@@ -26,22 +26,12 @@ docker-compose run client yarn install
 We could have also used `yarn install` locally, but this poses an issue when we go and mount our volume on Docker if our operating system is not Linux (e.g. if we're using Windows or Mac). Our client container will end up using the incorrect binaries, so by installing through Docker, we ensure we get the correct binaries.
 
 __Step 2__
-Extract the development Neo4j database found under [here](../neo4j/data/databases/text-mining-subset-graphdb.tar.gz).
-- Run `docker-compose up database`; you will now see some new folders such as `data`
-- Run `docker-compose down`
-- Go into `data/databases` and delete the `graph.db`
-- Move the extracted `graph.db` to where the old one was
-
-__Step 3__
-Extract the database in the [elastic search directory](../elasticsearch/esdata_20191029.tar.gz); similar to what we did for the Neo4j setup.
-
-__Step 4__
 Run the application suite through
 ```
 docker-compose up -d
 ```
 
-__Step 5__
+__Step 3__
 Run the following to set up the Neo4J full text indexing
 ```
 docker-compose exec appserver python db/neo4jsetup.py
