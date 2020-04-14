@@ -66,11 +66,12 @@ class AccountService(RDBMSBaseDao):
         return AppUser.query.order_by(AppUser.username).all()
 
     def update_user(self, user: AppUser, changes: UserUpdateRequest, commit_now=True) -> AppUser:
+        # TODO: 'user roll' updates will have to be handled separately
+
         user.username = changes.username
         user.first_name = changes.first_name
         user.last_name = changes.last_name
         user.email = changes.email
-        user.roles = changes.roles
 
         if changes.new_password:
             if user.check_password(changes.password):

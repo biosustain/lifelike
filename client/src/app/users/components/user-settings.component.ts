@@ -5,7 +5,8 @@ import { AuthSelectors } from 'app/auth/store';
 import { Observable } from 'rxjs';
 
 import { State } from 'app/***ARANGO_USERNAME***-store';
-import { AppUser, ChangePasswordRequest } from 'app/interfaces';
+import { AppUser, UpdateUserRequest } from 'app/interfaces';
+import * as UserActions from '../store/actions';
 
 @Component({
     selector: 'app-user-settings',
@@ -20,7 +21,8 @@ export class UserSettingsComponent {
         this.currentUsers$ = this.store.pipe(select(AuthSelectors.selectAuthUser));
     }
 
-    changePassword(req: ChangePasswordRequest) {
-        console.log(req);
+    changePassword(userUpdates: UpdateUserRequest) {
+        console.log('new updates:', userUpdates);
+        this.store.dispatch(UserActions.updateUser({ userUpdates }));
     }
 }
