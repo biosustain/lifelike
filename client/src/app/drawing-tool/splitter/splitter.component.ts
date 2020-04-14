@@ -12,9 +12,8 @@ import {
   PdfViewerComponent
 } from '../pdf-viewer/pdf-viewer.component';
 import {
-  MapSearchChannelComponent
-} from '../map-search-channel/map-search-channel.component';
-import { Observable } from 'rxjs';
+  MapListComponent
+} from '../project-list-view/map-list/map-list.component';
 
 @Component({
   selector: 'app-splitter',
@@ -76,7 +75,7 @@ export class SplitterComponent implements OnInit, AfterViewInit {
 
     switch (app) {
       case 'map-search':
-        factory = this.r.resolveComponentFactory(MapSearchChannelComponent);
+        factory = this.r.resolveComponentFactory(MapListComponent);
         break;
       case 'pdf-viewer':
         factory = this.r.resolveComponentFactory(PdfViewerComponent);

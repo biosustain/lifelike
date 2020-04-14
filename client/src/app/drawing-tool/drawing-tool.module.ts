@@ -43,7 +43,6 @@ import { PaletteComponent } from './drawing-tool/palette/palette.component';
 import { InfoPanelComponent } from './drawing-tool/info-panel/info-panel.component';
 import { PdfViewerDirective } from './pdf-viewer/pdf-viewer.directive';
 import { SplitterComponent } from './splitter/splitter.component';
-import { MapSearchChannelComponent } from './map-search-channel/map-search-channel.component';
 import { MapPreviewComponent } from './project-list-view/map-preview/map-preview.component';
 import { MapListComponent } from './project-list-view/map-list/map-list.component';
 
@@ -61,7 +60,6 @@ import { MapListComponent } from './project-list-view/map-list/map-list.componen
     InfoPanelComponent,
     PdfViewerDirective,
     SplitterComponent,
-    MapSearchChannelComponent,
     MapPreviewComponent,
     MapListComponent
   ],
@@ -70,7 +68,7 @@ import { MapListComponent } from './project-list-view/map-list/map-list.componen
     DeleteProjectDialogComponent,
     CopyProjectDialogComponent,
     PdfViewerComponent,
-    MapSearchChannelComponent
+    MapListComponent
   ],
   imports: [
     AngularSplitModule.forRoot(),
