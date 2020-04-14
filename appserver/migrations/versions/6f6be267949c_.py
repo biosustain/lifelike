@@ -23,8 +23,8 @@ def upgrade():
     op.alter_column(
         'files',
         'filename',
-           existing_type=sa.VARCHAR(length=60),
-           nullable=False
+        existing_type=sa.VARCHAR(length=60),
+        nullable=False
     )
     # ### end Alembic commands ###
     if context.get_x_argument(as_dictionary=True).get('data_migrate', None):
@@ -36,8 +36,8 @@ def downgrade():
     op.alter_column(
         'files',
         'filename',
-            existing_type=sa.VARCHAR(length=60),
-            nullable=True
+        existing_type=sa.VARCHAR(length=60),
+        nullable=True
     )
     op.drop_column('files', 'project')
     # ### end Alembic commands ###
