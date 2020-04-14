@@ -31,7 +31,7 @@ export class CopyProjectDialogComponent implements OnInit, OnDestroy {
   constructor(
     public dialogRef: MatDialogRef<CopyProjectDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: Project
-  ) { 
+  ) {
     this.project = data;
   }
 
@@ -49,8 +49,8 @@ export class CopyProjectDialogComponent implements OnInit, OnDestroy {
     this.dialogRef.close();
   }
   onSubmitClick(): void {
-    if (this.form.controls['label'].valid) {
-      // Piece together former project def and 
+    if (this.form.controls.label.valid) {
+      // Piece together former project def and
       // new form value to send back
       this.dialogRef.close({
         ...this.project,
@@ -58,7 +58,7 @@ export class CopyProjectDialogComponent implements OnInit, OnDestroy {
         date_modified: new Date().toISOString()
       });
     } else {
-      this.form.controls['label'].setErrors({required: true});
+      this.form.controls.label.setErrors({required: true});
     }
   }
 }

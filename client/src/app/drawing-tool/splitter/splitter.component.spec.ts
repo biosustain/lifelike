@@ -1,12 +1,17 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { APP_BASE_HREF } from '@angular/common';
+import {
+  async,
+  ComponentFixture,
+  TestBed
+} from '@angular/core/testing';
 
-import { SideBarUiComponent } from './side-bar-ui.component';
-import { DrawingToolModule } from '../../drawing-tool.module';
+import { SplitterComponent } from './splitter.component';
 
-describe('SideBarUiComponent', () => {
-  let component: SideBarUiComponent;
-  let fixture: ComponentFixture<SideBarUiComponent>;
+import { DrawingToolModule } from '../drawing-tool.module';
+
+xdescribe('SplitterComponent', () => {
+  let component: SplitterComponent;
+  let fixture: ComponentFixture<SplitterComponent>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
@@ -21,7 +26,7 @@ describe('SideBarUiComponent', () => {
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(SideBarUiComponent);
+    fixture = TestBed.createComponent(SplitterComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

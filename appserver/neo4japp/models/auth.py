@@ -42,6 +42,8 @@ class AppUser(RDBMSBase):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(64), index=True, unique=True)
     email = db.Column(db.String(120), index=True, unique=True)
+    first_name = db.Column(db.String(120), nullable=False)
+    last_name = db.Column(db.String(120), nullable=False)
     password_hash = db.Column(db.String(256))
 
     # load all roles associated with the user eagerly using subquery
@@ -79,7 +81,8 @@ class AppUser(RDBMSBase):
             **{'roles': [role.to_dict()['name'] for role in self.roles]}
         }
 
-class AppUserSchema(ma.ModelSchema):
+
+class AppUserSchema(ma.ModelSchema):  # type: ignore
     class Meta:
         model = AppUser
 
@@ -136,6 +139,6 @@ class AccessControlPolicy(RDBMSBase):
         )
 
 
-class AccessControlPolicySchema(ma.ModelSchema):
+class AccessControlPolicySchema(ma.ModelSchema):  # type: ignore
     class Meta:
         model = AccessControlPolicy
