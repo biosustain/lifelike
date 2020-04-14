@@ -53,7 +53,7 @@ def update_user(req: UserUpdateRequest):
     account_dao = get_account_service()
     try:
         appuser = AppUser.query.filter_by(username=req.username).one()
-        account_dao.update_user(appuser, req)
+        updated_user = account_dao.update_user(appuser, req)
     except NoResultFound:
         raise NotAuthorizedException('user does not exist')
-    return SuccessResponse(result='', status_code=200)
+    return SuccessResponse(result=updated_user.to_dict(), status_code=200)
