@@ -1,7 +1,4 @@
 import { NgModule } from '@angular/core';
-import {
-  HTTP_INTERCEPTORS
-} from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { BrowserModule } from '@angular/platform-browser';
 import { DragDropModule } from '@angular/cdk/drag-drop';
@@ -9,6 +6,8 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { FlexLayoutModule } from '@angular/flex-layout';
+
+import { AngularSplitModule } from 'angular-split';
 
 import { PdfViewerLibModule } from 'pdf-viewer-lib';
 import { AngularMaterialModule } from 'app/shared/angular-material.module';
@@ -31,10 +30,6 @@ import {
 import {
   PdfViewerComponent
 } from './pdf-viewer/pdf-viewer.component';
-import {
-  LoginComponent
-} from './login/login.component';
-
 
 import {
   TruncatePipe,
@@ -42,15 +37,13 @@ import {
 } from './pipes';
 
 import {
-  AuthenticationService
-} from './services'
-
-import {
   PendingChangesGuard
 } from './guards';
 import { PaletteComponent } from './drawing-tool/palette/palette.component';
 import { InfoPanelComponent } from './drawing-tool/info-panel/info-panel.component';
 import { PdfViewerDirective } from './pdf-viewer/pdf-viewer.directive';
+import { SplitterComponent } from './splitter/splitter.component';
+import { MapSearchChannelComponent } from './map-search-channel/map-search-channel.component';
 
 @NgModule({
   declarations: [
@@ -60,19 +53,23 @@ import { PdfViewerDirective } from './pdf-viewer/pdf-viewer.directive';
     CopyProjectDialogComponent,
     DrawingToolComponent,
     PdfViewerComponent,
-    LoginComponent,
     TruncatePipe,
     FriendlyDateStrPipe,
     PaletteComponent,
     InfoPanelComponent,
-    PdfViewerDirective
+    PdfViewerDirective,
+    SplitterComponent,
+    MapSearchChannelComponent
   ],
   entryComponents: [
     CreateProjectDialogComponent,
     DeleteProjectDialogComponent,
-    CopyProjectDialogComponent
+    CopyProjectDialogComponent,
+    PdfViewerComponent,
+    MapSearchChannelComponent
   ],
   imports: [
+    AngularSplitModule.forRoot(),
     CommonModule,
     BrowserModule,
     HttpClientModule,

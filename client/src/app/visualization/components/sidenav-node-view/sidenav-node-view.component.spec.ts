@@ -2,8 +2,6 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { configureTestSuite } from 'ng-bullet';
 
-import { ToolbarMenuModule } from 'toolbar-menu';
-
 import { SidenavNodeEntity } from 'app/interfaces';
 import { RootStoreModule } from 'app/***ARANGO_USERNAME***-store';
 import { SharedModule } from 'app/shared/shared.module';
@@ -20,7 +18,6 @@ describe('SidenavNodeViewComponent', () => {
             imports: [
                 SharedModule,
                 RootStoreModule,
-                ToolbarMenuModule,
             ],
             declarations: [ SidenavNodeViewComponent ]
         });

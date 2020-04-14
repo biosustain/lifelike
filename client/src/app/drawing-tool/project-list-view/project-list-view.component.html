@@ -1,60 +1,187 @@
-<div id='project-list-view-container'>
-  <!-- List view -->
-  <div class='list-view'>
-    <h1 class='grey'>
-      Projects
-    </h1>
-    <div class='project-list'>
-      <!-- Project UI element -->
-      <div
-        *ngFor='let project of projects'
-        (contextmenu)="open($event, project)"
-        (click)='pickProject(project)'
-        class='project shadow-4'>
-        <h2>
-          {{
-            project.label | truncate:['20']
-          }}
-        </h2>
-        <p>Modified {{project?.date_modified | friendlyDateStr}}</p>
-      </div>
+<div id='map-channel' class='w-100' style='overflow-y: hidden;'>
+  <!-- Map Lists -->
+  <div
+    id='map-list-container'
+    class=''>
+
+    <div id='map-list'>
+      <h1>Maps</h1>
+      <mat-tab-group 
+        [selectedIndex]="displayIndex"
+        (selectedTabChange)="toggleView($event)">
+        <mat-tab label="Personal">
+          <div 
+            class='map shadow'
+            *ngFor='let project of projects'
+            (contextmenu)="open($event, project)"
+            (click)='pickProject(project)'>
+            <h3>
+              {{
+                project.label | truncate:['40']
+              }}
+            </h3>
+            <p class='author'>
+              By {{project?.author}} 
+            </p>
+            <p class='date'>
+              Modified {{project?.date_modified | friendlyDateStr}}
+            </p> 
+          </div>
+        </mat-tab>
+        <mat-tab label="Community">
+          <div
+            class='map shadow'
+            *ngFor='let project of publicProjects'
+            (contextmenu)="open($event, project)"
+            (click)='pickProject(project)'>
+            <h3>
+              {{
+                project.label | truncate:['40']
+              }}
+            </h3>
+            <p class='author'>
+              By {{project?.author}} 
+            </p>
+            <p class='date'>
+              Modified {{project?.date_modified | friendlyDateStr}}
+            </p> 
+          </div>
+        </mat-tab>
+      </mat-tab-group>
     </div>
-    <button
-      class='bottom-right-overlay add-project'
+    <button 
       mat-fab
       color='primary'
-      (click)='createProject()'
-      aria-label="Example icon-button with a heart icon">
+      id='add-project'
+      aria-label="Example icon-button with a heart icon"
+      (click)='createProject()'>
       <mat-icon>add</mat-icon>
     </button>
-  </div>
-
-  <!-- Preview view -->
+  </div>  
+  <!-- Map Preview Panel -->
   <div
-    [hidden]='!selectedProject'
-    class='preview-view'>
-    <div
-      id='canvas'>
+    *ngIf='selectedProject else empty;'
+    id='map-preview'
+    class=''>
+    <!-- Empty Graph -->
+    <div 
+      *ngIf='emptyGraph'
+      id='empty-graph'>
+      <p>Empty Graph</p>
     </div>
-    <h1>{{selectedProject?.label}}</h1>
-    <p>
-      {{selectedProject?.description}}
-    </p>
-    <p class='date'>
-      Modified {{selectedProject?.date_modified | friendlyDateStr}}
-    </p>
-    <button
-      (click)='goToProject()'
-      mat-raised-button
-      color="primary">
-      Edit
-    </button>
-    <button
-      (click)='deleteProject()'
-      mat-raised-button
-      color="warn">
-      Delete
-    </button>
+    <div 
+      [ngClass]='{"dn": emptyGraph}'
+      id='canvas-container'>
+      <!-- Network Graph Canvas -->
+      <div id='canvas'></div>
+      <!-- Read Panel -->
+      <div 
+        *ngIf='node'
+        id='read-panel'>
+        <h3>{{node?.label}}</h3>
+        <!-- Type -->
+        <div>
+          <p class='blue b'>
+            Type
+          </p>
+          <p>
+            {{node?.group}}
+          </p>
+        </div>
+        <!-- Link -->
+        <div *ngIf='node?.data?.hyperlink'>
+          <p class='blue b'>
+            Hyperlink
+          </p>
+          <p class='link'
+            (click)='goToLink(node.data.hyperlink)'>
+            {{node?.data?.hyperlink}}
+          </p>
+        </div>
+        <!-- Edges-->
+        <div *ngIf='node?.edges.length'>
+          <p class='blue b'>Edges</p>
+          <div *ngFor='let edge of node?.edges'>
+            <p>
+              <span class='dark-silver'>{{edge?.label}}</span>
+              &nbsp;
+              <span class='dark-blue'>{{getNode(edge)}}</span>
+            </p>
+          </div>
+        </div>
+        </div>
+      <!-- Tool Panel -->
+      <div id='tool-panel'>
+        <mat-icon
+          matTooltip="Fit Graph"
+          matTooltipPosition="right"
+          class='fit'
+          (click)='fit()'>
+          zoom_out_map
+        </mat-icon>
+        <mat-icon
+          *ngIf='screenMode==="shrink"'
+          matTooltip="Fullscreen"
+          matTooltipPosition="right"
+          class='Full Screen'
+          (click)='toggle()'>
+          fullscreen
+        </mat-icon>
+        <mat-icon
+          *ngIf='screenMode==="grow"'
+          matTooltip="Shrink"
+          matTooltipPosition="right"
+          class='Shrink'
+          (click)='toggle()'>
+          fullscreen_exit
+        </mat-icon>
+      </div>
+    </div>
+    <!-- Meta info about map -->
+    <div id='map-meta-panel'>
+      <div id='details'>
+        <h2>{{selectedProject?.label}}</h2>
+        <p class='author'>
+          By {{selectedProject?.author}}
+        </p>
+        <p class='date'>
+          Modified {{selectedProject?.date_modified | friendlyDateStr}}
+        </p>
+        <p class='description'>
+          {{selectedProject?.description}}
+        </p>
+      </div>
+      <div id='actions'>
+        <div *ngIf='displayMode==="personal"'>
+          <button
+            mat-raised-button
+            color="primary"
+            (click)='goToProject()'>
+            EDIT
+          </button>
+          <button
+            mat-raised-button
+            [color]="selectedProject?.public === false ? 'primary' : 'accent'"
+            (click)='togglePublic()'>
+            {{selectedProject?.public === false ? 'MAKE PUBLIC' : 'MAKE PRIVATE'}}
+          </button>
+          <button
+            mat-raised-button
+            color="warn"
+            (click)='deleteProject()'>
+            DELETE
+          </button>
+        </div>
+        <div *ngIf='displayMode==="community"'>
+          <button
+            mat-raised-button
+            color="primary"
+            (click)='copyProject()'>
+            MAKE COPY OF
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 <!-- Context Menu -->
@@ -62,8 +189,13 @@
   <section
     (contextmenu)="$event.preventDefault()"
     class="project-menu">
-    <div (click)='openPDFViewer(project)'>Open with PDF Viewer</div>
     <div (click)='copyProject(project)'>Make copy of</div>
-    <div (click)="deleteProject(project)">Delete</div>
+    <div *ngIf='displayMode==="personal"' (click)="deleteProject(project)">Delete</div>
   </section>
+</ng-template>
+<!-- Empty Scene -->
+<ng-template #empty>
+  <div id='map-preview' class='empty'>
+    <p>Create or select a project</p>
+  </div>
 </ng-template>
