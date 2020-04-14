@@ -5,6 +5,7 @@ from py2neo import Graph
 
 bp = Blueprint('neo4j-entities-api', __name__, url_prefix='/neo4j-entities')
 
+# establish connection to Robin's database which has data needed for the dashboards
 graph = Graph(
     uri = os.environ.get('NEO4J_ENTITIES_HOST'),
     user = os.environ.get('NEO4J_ENTITIES_USER'),
