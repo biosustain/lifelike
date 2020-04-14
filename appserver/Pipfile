@@ -32,4 +32,4 @@ graphviz = "==0.13.2"
 lmdb = "==0.98"
 
 [requires]
-python_version = "3.8.2"
+python_version = "3.7"
