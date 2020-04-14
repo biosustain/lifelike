@@ -28,6 +28,7 @@ def upload_pdf():
     bioc_service = get_bioc_document_service()
     token_extractor = get_token_extractor_service()
     pdf = request.files['file']
+    project = request.form['project']
     binary_pdf = pdf.read()
     username = g.current_user
     filename = secure_filename(request.files['file'].filename)
@@ -49,6 +50,7 @@ def upload_pdf():
             raw_file=binary_pdf,
             username=username.id,
             annotations=annotations_json,
+            project=project
         )
         db.session.add(files)
         db.session.commit()
@@ -69,6 +71,7 @@ def upload_pdf():
 def list_files():
     """TODO: See JIRA LL-322
     """
+    data = request.get_json()
     files = [{
         'id': row.id,
         'file_id': row.file_id,
@@ -80,17 +83,21 @@ def list_files():
         Files.file_id,
         Files.filename,
         Files.username,
-        Files.creation_date).all()]
+        Files.creation_date)
+        .filter(Files.project == data['project'])
+        .all()]
     return jsonify({'files': files})
 
 
 @bp.route('/get_pdf/<id>', methods=['GET'])
 @auth.login_required
 def get_pdf(id):
+    data = request.get_json()
     OUTPUT_PATH = os.path.abspath(os.getcwd()) + '/outputs/'
     file, filename = db.session.query(Files.raw_file,
                                       Files.filename) \
-        .filter(Files.file_id == id).one()
+        .filter(Files.file_id == id and Files.project == data['project'])\
+        .one()
     file_full_path = OUTPUT_PATH + filename
     # TODO: Remove writing in filesystem part, this is not needed should be tackle in next version
     write_file(file, file_full_path)
@@ -114,7 +121,10 @@ def transform_to_bioc():
 @bp.route('/get_annotations/<id>', methods=['GET'])
 @auth.login_required
 def get_annotations(id):
-    annotations = db.session.query(Files.annotations).filter(Files.file_id == id).one()
+    data = request.get_json()
+    annotations = db.session.query(Files.annotations)\
+        .filter(Files.file_id == id and Files.project == data['project'])\
+        .one()
     return jsonify(annotations)
 
 
