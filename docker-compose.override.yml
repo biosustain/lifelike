@@ -39,8 +39,9 @@ services:
         volumes:
             - ./neo4j/data:/data
             - ./neo4j/logs:/logs
+            - ./neo4j/import:/import
             - ./neo4j/plugins:/plugins
-
+            - ./neo4j/backups:/backups
     client:
         container_name: n4j-client
         # starts dev & moves the yarn.lock file so it can be committed
