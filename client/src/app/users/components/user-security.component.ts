@@ -13,7 +13,7 @@ import {
     Validators,
 } from '@angular/forms';
 import { ErrorStateMatcher } from '@angular/material';
-import { AppUser, ChangePasswordRequest } from 'app/interfaces';
+import { AppUser, UpdateUserRequest } from 'app/interfaces';
 
 @Component({
     selector: 'app-user-security',
@@ -22,7 +22,7 @@ import { AppUser, ChangePasswordRequest } from 'app/interfaces';
 })
 export class UserSecurityComponent {
 
-    @Output() changePassReq: EventEmitter<ChangePasswordRequest> = new EventEmitter();
+    @Output() changePassReq: EventEmitter<UpdateUserRequest> = new EventEmitter();
 
     @Input() user: AppUser;
 
@@ -47,12 +47,12 @@ export class UserSecurityComponent {
 
     changePassword() {
         if (!this.securityForm.invalid) {
-            const oldPassword = this.securityForm.get('oldPassword').value;
+            const password = this.securityForm.get('oldPassword').value;
             const newPassword = this.securityForm.get('password').value;
             this.changePassReq.emit({
-                user: this.user,
+                ...this.user,
                 newPassword,
-                oldPassword,
+                password,
             });
         }
     }
