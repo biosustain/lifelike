@@ -9,7 +9,7 @@ import * as pluginDataLabels from 'chartjs-plugin-datalabels';
 interface StatisticsDataResponse {
   [domain: string]: {
     [entity: string]: number
-  }
+  };
 }
 
 const ENTITY_COLORS = [
@@ -46,7 +46,7 @@ const DOMAIN_COLORS = [
   'rgba(174, 168, 211, 0.9)',
   'rgba(169, 109, 173, 0.9)',
   'rgba(83, 51, 237, 0.9)'
-]
+];
 
 @Component({
   selector: 'app-kg-statistics',
@@ -131,7 +131,7 @@ export class KgStatisticsComponent implements OnInit, OnDestroy {
         this.isLoading = false;
         this.hasFetchError = true;
       }
-    )
+    );
   }
 
   private _getChartDataEntitiesByDomain(statisticsData) {
@@ -140,9 +140,9 @@ export class KgStatisticsComponent implements OnInit, OnDestroy {
     for (const domainData of Object.values(statisticsData)) {
       Object.keys(domainData).forEach((entity, index) => {
         if (!entityToColor.hasOwnProperty(entity)) {
-          entityToColor[entity] = ENTITY_COLORS[index]
+          entityToColor[entity] = ENTITY_COLORS[index];
         }
-      })
+      });
     }
 
     this.chartDataEntitiesByDomain = {};
@@ -150,7 +150,7 @@ export class KgStatisticsComponent implements OnInit, OnDestroy {
     this.barChartColorsByDomain = {};
     for (const [domain, domainData] of Object.entries(statisticsData)) {
       this.chartLabelsEntitiesByDomain[domain] = [];
-      const dataset = { data: [] };
+      const dataset = { data: [], barPercentage: 0.9 };
       const colors = { backgroundColor: [] };
       for (const [entity, count] of Object.entries(domainData)) {
         dataset.data.push(count);
@@ -158,7 +158,7 @@ export class KgStatisticsComponent implements OnInit, OnDestroy {
         this.chartLabelsEntitiesByDomain[domain].push(entity);
       }
       if (Object.keys(domainData).length === 1) {
-        dataset['barPercentage'] = 0.12;
+        dataset.barPercentage = 0.12;
       }
       this.barChartColorsByDomain[domain] = [ colors ];
       this.chartDataEntitiesByDomain[domain] = [ dataset ];
