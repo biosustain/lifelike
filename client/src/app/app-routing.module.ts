@@ -22,6 +22,7 @@ import {
 import { AdminGuard } from 'app/admin/services/admin-guard.service';
 import { AuthGuard } from 'app/auth/guards/auth-guard.service';
 import { LoginGuard } from 'app/auth/guards/login-guard.service';
+import { MapPreviewComponent } from './drawing-tool/project-list-view/map-preview/map-preview.component';
 
 // TODO: Add an unprotected home page
 const routes: Routes = [
@@ -50,6 +51,10 @@ const routes: Routes = [
       {
         path: 'splitter',
         component: SplitterComponent
+      },
+      {
+        path: 'map/:hash_id',
+        component: MapPreviewComponent
       }
     ],
   },

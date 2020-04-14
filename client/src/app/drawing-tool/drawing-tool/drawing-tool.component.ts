@@ -422,12 +422,65 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
+
+  drop(event: CdkDragDrop<any>) {
+    if (
+      event.item.element.nativeElement.classList.contains('map-template')
+    ) {
+      this.dropMap(event);
+    } else {
+      this.dropNode(event);
+    }
+  }
+
+  dropMap(event: CdkDragDrop<any>) {
+    const nativeElement = event.item.element.nativeElement;
+    const getUrl = window.location;
+
+    const mapId = nativeElement.id;
+    const label = nativeElement.children[0].textContent;
+    const hyperlink = getUrl.protocol + '//' + getUrl.host + '/dt/map/' + mapId;
+
+    console.log(nativeElement);
+
+    // Get DOM coordinate of dropped node relative
+    // to container DOM
+    const nodeCoord: DOMRect =
+      document
+        .getElementById(mapId)
+        .getBoundingClientRect() as DOMRect;
+    const containerCoord: DOMRect =
+      document
+        .getElementById('drawing-tool-view-container')
+        .getBoundingClientRect() as DOMRect;
+    const x =
+      nodeCoord.x -
+      containerCoord.x +
+      event.distance.x + 100;
+    const y =
+      nodeCoord.y + event.distance.y + 80;
+
+    // Convert DOM coordinate to canvas coordinate
+    const coord = this.visjsNetworkGraph.network.DOMtoCanvas({x, y});
+
+    // TODO ADD NODE
+    const cmd = {
+      action: 'add node',
+      data: {
+        group: 'map',
+        label,
+        ...coord,
+        hyperlink
+      }
+    };
+    this.recordCommand(cmd);
+  }
+
   /**
    * Event handler for node template dropping onto canvas
    * @param event object representing a drag-and-drop event
    */
-  drop(event: CdkDragDrop<any>) {
-
+  dropNode(event: CdkDragDrop<any>) {
     const nodeType = event.item.element.nativeElement.id;
     const label = `${nodeType}-${makeid()}`;
 
