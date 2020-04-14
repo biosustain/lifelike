@@ -78,6 +78,11 @@ def auth_service(app, session):
 
 
 @pytest.fixture(scope='function')
+def account_user(app, session):
+    return AccountService(session)
+
+
+@pytest.fixture(scope='function')
 def graph(request, app):
     """Returns a graph connection to the Neo4J database.
     IMPORTANT: Tests may not behave as expected if the
