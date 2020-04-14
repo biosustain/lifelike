@@ -2,6 +2,7 @@ import { Component, OnInit, Input } from '@angular/core';
 import { GraphSelectionData, UniversalGraph, VisNetworkGraphEdge, Project } from 'app/drawing-tool/services/interfaces';
 import { NetworkVis } from 'app/drawing-tool/network-vis';
 import { ProjectsService } from 'app/drawing-tool/services';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-map-preview',
@@ -20,6 +21,8 @@ export class MapPreviewComponent implements OnInit {
    * in full-screen or preview mode
    */
   screenMode = 'shrink';
+
+  childMode = true;
 
   // tslint:disable-next-line: variable-name
   _project: Project = null;
@@ -59,8 +62,23 @@ export class MapPreviewComponent implements OnInit {
   }
 
   constructor(
-    private projectService: ProjectsService
-  ) { }
+    private projectService: ProjectsService,
+    private route: ActivatedRoute
+  ) {
+    if (this.project === null) {
+      this.projectService.serveProject(
+        this.route.snapshot.params.hash_id
+      ).subscribe(
+        resp => {
+          this.childMode = false;
+          this.project = resp['project'];
+        },
+        err => {
+          console.log(err);
+        }
+      )
+    }
+  }
 
   ngOnInit() {
 
