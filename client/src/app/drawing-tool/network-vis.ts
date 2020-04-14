@@ -174,6 +174,9 @@ export class NetworkVis {
     n.x = n.x || x;
     n.y = n.y || y;
     n.size = 5;
+    n.widthConstraint = {
+        maximum: 600,
+    };
     n.data = {
       hyperlink: (n.data || {}).hyperlink || ''
     };
