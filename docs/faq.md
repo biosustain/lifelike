@@ -9,6 +9,9 @@
   - [How do I debug a running application locally?](#how-do-i-debug-a-running-application-locally)
   - [How do I remote ssh into a running container?](#how-do-i-remote-ssh-into-a-running-container)
   - [How do I update database with new changes?](#how-do-i-update-database-with-new-changes)
+  - [How do I run unit tests for Flask?](#how-do-i-run-unit-tests-for-flask)
+  - [How do I run unit tests for Angular?](#how-do-i-run-unit-tests-for-angular)
+  - [How do I run linting checks?](#how-do-i-run-linting-checks)
 
 ## How do I set up my developer environment?
 To run the application, first create the docker images
@@ -99,3 +102,34 @@ apt-get install vim
 
 ## How do I update database with new changes?
 Database migration workflow can be found [here](https://github.com/SBRG/kg-prototypes/blob/master/appserver/migrations/README.md)
+
+## How do I run unit tests for Flask?
+To run the unit tests for Flask, use the following commands when Flask is running
+
+```bash
+docker-compose exec appserver pytest
+```
+
+To run a specific test
+```bash
+docker-compose exec appserver pytest -k <name of test or file>
+```
+
+## How do I run unit tests for Angular?
+```bash
+docker-compose exec client yarn test
+```
+
+## How do I run linting checks?
+For the client (Angular) application, use
+```bash
+docker-compose exec client yarn lint
+```
+
+For the server (Flask) application, use
+```bash
+docker-compose exec appserver pycodestyle .
+docker-compose exec appserver mypy .
+```
+
+The document located [HERE](./dev/linting.md) also has more tips on a shortcut for performing these linting tasks
