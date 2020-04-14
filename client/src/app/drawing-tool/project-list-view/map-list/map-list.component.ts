@@ -6,6 +6,7 @@ import { Subscription, fromEvent } from 'rxjs';
 import { isNullOrUndefined } from 'util';
 import { take, filter } from 'rxjs/operators';
 import { TemplatePortal } from '@angular/cdk/portal';
+import { ProjectsService } from 'app/drawing-tool/services';
 
 /**
  * Sort project by most recent modified date
@@ -61,12 +62,39 @@ export class MapListComponent implements OnInit {
 
   constructor(
     public overlay: Overlay,
-    public viewContainerRef: ViewContainerRef
-  ) { }
+    public viewContainerRef: ViewContainerRef,
+    private projService: ProjectsService
+  ) {
+    if (!this.childMode) {
+      this.refresh();
+    }
+  }
 
   ngOnInit() {
 
   }
+
+  /**
+   * Pull projects from server both
+   * personal and community
+   */
+  refresh() {
+    // TODO: Sort projects
+    this.projService.pullProjects()
+      .subscribe(data => {
+        this.projects = (
+          data.projects as Project[]
+        );
+      });
+    this.projService.pullCommunityProjects()
+      .subscribe(data => {
+        this.publicProjects = (
+          /* tslint:disable:no-string-literal */
+          data['projects'] as Project[]
+        );
+      });
+  }
+
 
   clickHandler(action: string, project: Project) {
     if (this.overlayRef) { return; }
