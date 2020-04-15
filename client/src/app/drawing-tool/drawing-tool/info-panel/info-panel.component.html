@@ -40,6 +40,20 @@
             <mat-icon (click)='goToLink()' matSuffix>link</mat-icon>
         </mat-form-field>
 
+        <mat-form-field
+            *ngIf='isNode'
+            class="w-100 mt3">
+            <mat-label>Detail</mat-label>
+            <textarea
+                id='textArea'
+                matInput
+                cdkTextareaAutosize
+                #autosize="cdkTextareaAutosize"
+                (keydown.enter)="blurInput($event)"
+                formControlName='detail'>
+            </textarea>
+        </mat-form-field>
+
         <div
             *ngIf='isNode'
             class='flex' style="flex-wrap: wrap;">
