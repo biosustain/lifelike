@@ -8,7 +8,6 @@ import {
     DuplicateNodeEdgePair,
     DuplicateVisEdge,
     GetClusterGraphDataResult,
-    GetSnippetCountsFromEdgesResult,
     GetSnippetsResult,
     Neo4jResults,
     VisEdge,
