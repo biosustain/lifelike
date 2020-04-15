@@ -1,12 +1,6 @@
 import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { BrowserModule } from '@angular/platform-browser';
-import { DragDropModule } from '@angular/cdk/drag-drop';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { FlexLayoutModule } from '@angular/flex-layout';
 
-
-import { PdfViewerLibModule } from 'pdf-viewer-lib';
+// import { PdfViewerLibModule } from 'pdf-viewer-lib';
 
 import {
   ProjectListViewComponent
@@ -24,10 +18,6 @@ import {
   DrawingToolComponent
 } from './drawing-tool/drawing-tool.component';
 import {
-  PdfViewerComponent
-} from './pdf-viewer/pdf-viewer.component';
-
-import {
   TruncatePipe,
   FriendlyDateStrPipe
 } from './pipes';
@@ -37,11 +27,31 @@ import {
 } from './guards';
 import { PaletteComponent } from './drawing-tool/palette/palette.component';
 import { InfoPanelComponent } from './drawing-tool/info-panel/info-panel.component';
-import { PdfViewerDirective } from './pdf-viewer/pdf-viewer.directive';
 import { SplitterComponent } from './splitter/splitter.component';
 import { MapPreviewComponent } from './project-list-view/map-preview/map-preview.component';
 import { MapListComponent } from './project-list-view/map-list/map-list.component';
 import { SharedModule } from 'app/shared/shared.module';
+import { RouterModule } from '@angular/router';
+
+const routes = [
+  {
+    path: 'project-list',
+    component: ProjectListViewComponent
+  },
+  {
+    path: 'drawing-tool',
+    component: DrawingToolComponent,
+    canDeactivate: [PendingChangesGuard]
+  },
+  {
+    path: 'splitter',
+    component: SplitterComponent
+  },
+  {
+    path: 'map/:hash_id',
+    component: MapPreviewComponent
+  }
+];
 
 @NgModule({
   declarations: [
@@ -50,12 +60,10 @@ import { SharedModule } from 'app/shared/shared.module';
     DeleteProjectDialogComponent,
     CopyProjectDialogComponent,
     DrawingToolComponent,
-    PdfViewerComponent,
     TruncatePipe,
     FriendlyDateStrPipe,
     PaletteComponent,
     InfoPanelComponent,
-    PdfViewerDirective,
     SplitterComponent,
     MapPreviewComponent,
     MapListComponent
@@ -64,12 +72,12 @@ import { SharedModule } from 'app/shared/shared.module';
     CreateProjectDialogComponent,
     DeleteProjectDialogComponent,
     CopyProjectDialogComponent,
-    PdfViewerComponent,
     MapListComponent
   ],
   imports: [
     SharedModule,
-    PdfViewerLibModule
+    // PdfViewerLibModule,
+    RouterModule.forChild(routes)
   ],
   providers: [
     // {
@@ -80,6 +88,7 @@ import { SharedModule } from 'app/shared/shared.module';
     PendingChangesGuard
   ],
   exports: [
+    RouterModule
   ]
 })
 export class DrawingToolModule { }

@@ -11,6 +11,7 @@ import { VisualizationService } from './services/visualization.service';
 import { VisualizationCanvasComponent } from './components/visualization-canvas/visualization-canvas.component';
 import { VisualizationQuickbarComponent } from './components/visualization-quickbar/visualization-quickbar.component';
 import { VisualizationComponent } from './containers/visualization/visualization.component';
+import { RouterModule } from '@angular/router';
 
 const components = [
     ContextMenuComponent,
@@ -22,10 +23,24 @@ const components = [
     VisualizationQuickbarComponent,
 ];
 
+const routes = [
+    {
+      path: '',
+      component: VisualizationComponent
+    }
+  ];
+
 @NgModule({
-    imports: [SearchModule, SharedModule],
+    imports: [
+        SearchModule,
+        SharedModule,
+        RouterModule.forChild(routes)
+    ],
     declarations: components,
     providers: [VisualizationService],
-    exports: components,
+    exports: [
+        ...components,
+        RouterModule
+    ],
 })
 export class VisualizationModule {}

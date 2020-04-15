@@ -8,9 +8,9 @@ import {
   AfterViewInit
 } from '@angular/core';
 
-import {
-  PdfViewerComponent
-} from '../pdf-viewer/pdf-viewer.component';
+// import {
+//   PdfViewerComponent
+// } from '../pdf-viewer/pdf-viewer.component';
 import {
   MapListComponent
 } from '../project-list-view/map-list/map-list.component';
@@ -77,9 +77,9 @@ export class SplitterComponent implements OnInit, AfterViewInit {
       case 'map-search':
         factory = this.r.resolveComponentFactory(MapListComponent);
         break;
-      case 'pdf-viewer':
-        factory = this.r.resolveComponentFactory(PdfViewerComponent);
-        break;
+      // case 'pdf-viewer':
+      //   factory = this.r.resolveComponentFactory(PdfViewerComponent);
+      //   break;
       default:
         break;
     }
