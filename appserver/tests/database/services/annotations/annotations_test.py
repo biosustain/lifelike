@@ -60,21 +60,28 @@ def test_generate_bioc_annotations_format(annotations_setup):
 
 
 @pytest.mark.skip
+# NOTE: Use this test to debug/test until the PDF upload
+# workflow is fully integrated
 def test_save_bioc_annotations_to_db(annotations_setup, session):
     annotator = get_annotations_service()
     bioc_service = get_bioc_document_service()
     token_extractor = get_annotations_pdf_parser()
 
-    pdf = path.join(directory, 'pdf_samples/example3.pdf')
+    pdf = path.join(directory, 'pdf_samples/554. salazar msystems 20.pdf')
 
     with open(pdf, 'rb') as f:
-        pdf_text = token_extractor.parse_pdf(pdf=f)
+        parsed_pdf_chars = token_extractor.parse_pdf(pdf=f)
+        pdf_text = token_extractor.parse_pdf_high_level(pdf=f)
         annotations = annotator.create_annotations(
-            tokens=token_extractor.extract_tokens(parsed_chars=pdf_text))
+            tokens=token_extractor.extract_tokens(parsed_chars=parsed_pdf_chars))
+
+        annotated_json_f = path.join(directory, 'pdf_samples/annotations-test.json')
+        with open(annotated_json_f, 'w') as a_f:
+            json.dump(annotations, a_f)
 
     bioc = bioc_service.read(
-        parsed_chars=pdf_text,
-        file_uri=path.join(directory, 'pdf_samples/example3.pdf'))
+        text=pdf_text,
+        file_uri=path.join(directory, 'pdf_samples/554. salazar msystems 20.pdf'))
     annotations_json = bioc_service.generate_bioc_json(annotations=annotations, bioc=bioc)
 
     with open(pdf, 'rb') as f:
