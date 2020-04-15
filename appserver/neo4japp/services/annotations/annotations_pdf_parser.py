@@ -94,7 +94,7 @@ class AnnotationsPDFParser:
 
         Returns a token list of sequentially concatentated
         words up to the @self.max_word_length. Each token object
-        in the list will contain the keyword, and the index of 
+        in the list will contain the keyword, and the index of
         each keyword.
 
         E.g ['A', 'B', 'C', 'D', 'E'] -> ['A', 'A B', 'A B C', 'B', 'B C', ...]
@@ -102,7 +102,7 @@ class AnnotationsPDFParser:
         curr_max_words = 1
         token_objects: List[PDFTokenPositions] = []
 
-        processed_tokens: Set[PDFTokenPositions] = set()
+        processed_tokens: Set[str] = set()
 
         for page_idx, char_list in parsed_chars.str_per_pdf_page.items():
             curr_page = page_idx
