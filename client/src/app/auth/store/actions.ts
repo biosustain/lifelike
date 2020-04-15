@@ -27,6 +27,12 @@ export const logout = createAction(
     '[Auth] Logout'
 );
 
+/** Used when an update is performed on a logged in user */
+export const refreshUser = createAction(
+    '[Auth] Refresh User',
+    props<{user: AppUser}>(),
+);
+
 export const loginReset = createAction(
     '[Auth] Login Reset'
 );

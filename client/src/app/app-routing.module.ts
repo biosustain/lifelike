@@ -6,8 +6,10 @@ import { UserFileImportComponent } from 'app/user-file-import/components/user-fi
 import { VisualizationComponent } from 'app/visualization/containers/visualization/visualization.component';
 import { SearchCollectionPageComponent } from 'app/search/containers/search-collection-page.component';
 import { FileBrowserComponent } from 'app/file-browser/file-browser.component';
+import { KgStatisticsComponent } from './kg-statistics/kg-statistics.component';
 import { LoginComponent } from 'app/auth/components/login.component';
 import { LifelikeHomePageComponent } from 'app/home/components/***ARANGO_DB_NAME***-home.component';
+import { UserSettingsComponent } from 'app/users/components/user-settings.component';
 
 import {
   ProjectListViewComponent,
@@ -31,6 +33,12 @@ const routes: Routes = [
   { path: 'neo4j-visualizer', component: VisualizationComponent, canActivate: [AuthGuard]},
   { path: 'login', component: LoginComponent, canActivate: [LoginGuard] },
   { path: 'search', component: SearchCollectionPageComponent },
+  {
+    path: 'users/:user',
+    component: UserSettingsComponent,
+    canActivate: [AuthGuard],
+    data: { group: 'SELF' },
+  },
   // Used as a work-around for navigation to work when navigating with
   // changing queries
   { path: 'search/:redirect', component: SearchCollectionPageComponent },
@@ -61,6 +69,10 @@ const routes: Routes = [
     path: 'file-browser',
     component: FileBrowserComponent,
     canActivate: [AuthGuard],
+  },
+  {
+    path: 'kg-statistics',
+    component: KgStatisticsComponent,
   },
 ];
 
