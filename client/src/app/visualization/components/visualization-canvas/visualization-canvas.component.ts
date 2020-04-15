@@ -36,6 +36,7 @@ import {
 
 import { uuidv4 } from 'app/shared/utils';
 
+import { MAX_CLUSTER_ROWS } from 'app/constants';
 import { ContextMenuControlService } from 'app/visualization/services/context-menu-control.service';
 import { VisualizationService } from 'app/visualization/services/visualization.service';
 
@@ -368,7 +369,7 @@ export class VisualizationCanvasComponent implements OnInit {
     createClusterSvg(referenceTableRows: ReferenceTableRow[]) {
         referenceTableRows.sort((a, b) => b.snippetCount - a.snippetCount);
         const maxSnippetCount = referenceTableRows[0].snippetCount;
-        const rowsHTMLString = referenceTableRows.slice(0, 20).map((row, index) => {
+        const rowsHTMLString = referenceTableRows.slice(0, MAX_CLUSTER_ROWS).map((row, index) => {
             const percentOfMax = row.snippetCount === 0 ? row.snippetCount : (row.snippetCount / maxSnippetCount) * 100;
 
             let rowHTMLString = `
@@ -379,7 +380,7 @@ export class VisualizationCanvasComponent implements OnInit {
                     <div class="snippet-bar-repr" style="width: ${percentOfMax}px;"></div>
                 </td>
             </tr>`;
-            if (index === 19) {
+            if (index === MAX_CLUSTER_ROWS - 1) {
                 rowHTMLString += `
                 <tr class="reference-table-row">
                     <td class="max-nodes-cell" colspan="3">Showing 20 of ${referenceTableRows.length} clustered nodes</td>
