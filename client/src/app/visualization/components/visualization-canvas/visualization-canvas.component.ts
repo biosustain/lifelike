@@ -367,16 +367,16 @@ export class VisualizationCanvasComponent implements OnInit {
 
     createClusterSvg(referenceTableRows: ReferenceTableRow[]) {
         referenceTableRows.sort((a, b) => b.snippetCount - a.snippetCount);
+        const maxSnippetCount = referenceTableRows[0].snippetCount;
         const rowsHTMLString = referenceTableRows.slice(0, 20).map((row, index) => {
-            const snippetCountString = row.snippetCount > 20 ? '20+' : row.snippetCount;
-            const snippetBarWidth = row.snippetCount > 20 ? 100 : row.snippetCount * 5;
+            const percentOfMax = row.snippetCount === 0 ? row.snippetCount : (row.snippetCount / maxSnippetCount) * 100;
 
             let rowHTMLString = `
             <tr class="reference-table-row">
                 <td class="entity-name-container">${row.nodeDisplayName}</td>
-                <td class="snippet-count-container">(${snippetCountString})</td>
+                <td class="snippet-count-container">(${row.snippetCount})</td>
                 <td class="snippet-bar-container">
-                    <div class="snippet-bar-repr" style="width: ${snippetBarWidth}px;"></div>
+                    <div class="snippet-bar-repr" style="width: ${percentOfMax}px;"></div>
                 </td>
             </tr>`;
             if (index === 19) {
