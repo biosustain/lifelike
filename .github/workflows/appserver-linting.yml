@@ -1,4 +1,4 @@
-name: Appserver Pycodestyle
+name: Appserver Linting
 
 on: [push]
 
