@@ -122,7 +122,7 @@ class AnnotationsService:
             protein_val, species_val, diseases_val,
         ]
 
-    def _filter_tokens(self, tokens: List[PDFTokenPositions]) -> None:
+    def _filter_tokens(self, tokens: PDFTokenPositionsList) -> None:
         """Filter the tokens into separate matched sets in LMDB."""
         for token in tokens.token_positions:
             token_normalized = normalize_str(token.keyword)
@@ -189,7 +189,7 @@ class AnnotationsService:
         keyword = ''
         for i, pos_idx in enumerate(indexes):
             if isinstance(curr_page_coor_obj[pos_idx], LTChar):
-                lower_x, lower_y, upper_x, upper_y = curr_page_coor_obj[pos_idx].bbox  #noqa
+                lower_x, lower_y, upper_x, upper_y = curr_page_coor_obj[pos_idx].bbox  # noqa
 
                 if (start_lower_x is None and
                         start_lower_y is None and
@@ -311,7 +311,7 @@ class AnnotationsService:
                     curr_page_coor_obj = coor_obj_per_pdf_page[
                         token_positions.page_number]
 
-                    keyword_positions = []
+                    keyword_positions: List[dict] = []
                     char_indexes = list(token_positions.char_positions.keys())
 
                     self._create_keyword_objects(
