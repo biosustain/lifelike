@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { map } from 'rxjs/operators';
 import { AppUser } from 'app/interfaces';
-import { environment } from '../../../environments/environment';
+import { environment } from 'environments/environment';
 
 @Injectable({
   providedIn: '***ARANGO_USERNAME***'

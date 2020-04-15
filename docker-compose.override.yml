@@ -22,6 +22,9 @@ services:
             - POSTGRES_USER=postgres
             - POSTGRES_PASSWORD=postgres
             - POSTGRES_DB=postgres
+            - NEO4J_ENTITIES_HOST
+            - NEO4J_ENTITIES_PASS
+            - NEO4J_ENTITIES_USER
         networks:
             - frontend
             - backend
@@ -39,8 +42,9 @@ services:
         volumes:
             - ./neo4j/data:/data
             - ./neo4j/logs:/logs
+            - ./neo4j/import:/import
             - ./neo4j/plugins:/plugins
-
+            - ./neo4j/backups:/backups
     client:
         container_name: n4j-client
         # starts dev & moves the yarn.lock file so it can be committed

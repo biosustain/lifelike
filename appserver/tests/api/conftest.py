@@ -26,7 +26,6 @@ def test_user(session) -> AppUser:
         id=200,
         username='test',
         email='test@***ARANGO_DB_NAME***.bio',
-        password_hash='password',
         first_name='Jim',
         last_name='Melancholy'
     )
