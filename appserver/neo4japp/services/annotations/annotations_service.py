@@ -43,12 +43,12 @@ class AnnotationsService:
         self.matched_species: Dict[str, List[PDFTokenPositions]] = dict()
         self.matched_diseases: Dict[str, List[PDFTokenPositions]] = dict()
 
-        self.validated_genes_tokens: Set[PDFTokenPositions] = set()
-        self.validated_chemicals_tokens: Set[PDFTokenPositions] = set()
-        self.validated_compounds_tokens: Set[PDFTokenPositions] = set()
-        self.validated_proteins_tokens: Set[PDFTokenPositions] = set()
-        self.validated_species_tokens: Set[PDFTokenPositions] = set()
-        self.validated_diseases_tokens: Set[PDFTokenPositions] = set()
+        self.validated_genes_tokens: Set[str] = set()
+        self.validated_chemicals_tokens: Set[str] = set()
+        self.validated_compounds_tokens: Set[str] = set()
+        self.validated_proteins_tokens: Set[str] = set()
+        self.validated_species_tokens: Set[str] = set()
+        self.validated_diseases_tokens: Set[str] = set()
 
     def lmdb_validation(
         self,
