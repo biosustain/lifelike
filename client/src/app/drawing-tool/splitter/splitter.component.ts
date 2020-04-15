@@ -5,7 +5,8 @@ import {
   ViewContainerRef,
   Injector,
   ViewChild,
-  AfterViewInit
+  AfterViewInit,
+  HostListener
 } from '@angular/core';
 
 // import {
@@ -14,6 +15,7 @@ import {
 import {
   MapListComponent
 } from '../project-list-view/map-list/map-list.component';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-splitter',
@@ -21,14 +23,6 @@ import {
   styleUrls: ['./splitter.component.scss']
 })
 export class SplitterComponent implements OnInit, AfterViewInit {
-  // TODO: Fix this ..
-  // @HostListener('window:beforeunload')
-  // canDeactivate(): Observable<boolean> | boolean {
-  //   return this.saveState ? true : confirm(
-  //       'WARNING: You have unsaved changes. Press Cancel to go back and save these changes, or OK to lose these changes.'
-  //   );
-  // }
-
   @ViewChild(
     'leftPanel',
     {static: false, read: ViewContainerRef}
@@ -37,6 +31,8 @@ export class SplitterComponent implements OnInit, AfterViewInit {
   splitPanelLength = 0;
 
   currentApp = '';
+
+  saveState = true;
 
   constructor(
     private injector: Injector,
@@ -49,6 +45,17 @@ export class SplitterComponent implements OnInit, AfterViewInit {
 
   ngAfterViewInit() {
 
+  }
+
+  @HostListener('window:beforeunload')
+  canDeactivate(): Observable<boolean> | boolean {
+    return this.saveState ? true : confirm(
+        'WARNING: You have unsaved changes. Press Cancel to go back and save these changes, or OK to lose these changes.'
+    );
+  }
+
+  resolveSaveState(saveState: boolean) {
+    this.saveState = saveState;
   }
 
   /**

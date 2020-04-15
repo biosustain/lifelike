@@ -1,4 +1,4 @@
-<div id='map-list'>
+<div [ngClass]='{"childless": !childMode}' id='map-list'>
   <h1>Maps</h1>
   <mat-tab-group [selectedIndex]="displayIndex" (selectedTabChange)="toggleView($event)">
     <mat-tab label="Personal">

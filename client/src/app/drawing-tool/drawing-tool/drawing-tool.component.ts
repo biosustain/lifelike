@@ -74,6 +74,8 @@ export interface Action {
 export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
   /** Communicate to parent component to open another app side by side */
   @Output() openApp: EventEmitter<string> = new EventEmitter<string>();
+  /** Communiacte save State to parent component */
+  @Output() saveStateListener: EventEmitter<boolean> = new EventEmitter<boolean>();
   /** Communicate which app is active for app icon presentation */
   @Input() currentApp = '';
 
@@ -89,8 +91,6 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
   project: Project = null;
   /** vis.js network graph DOM instantiation */
   visjsNetworkGraph = null;
-  /** Whether or not graph is saved from modification */
-  saveState = true;
 
   /** Render condition for dragging gesture of edge formation */
   addMode = false;
@@ -107,18 +107,21 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
   formDataSubscription: Subscription = null;
   pdfDataSubscription: Subscription = null;
 
-  @HostListener('window:beforeunload')
-  canDeactivate(): Observable<boolean> | boolean {
-    return this.saveState ? true : confirm(
-        'WARNING: You have unsaved changes. Press Cancel to go back and save these changes, or OK to lose these changes.'
-    );
-  }
-
   get saveStyle() {
     return {
       saved: this.saveState,
       not_saved: !this.saveState
     };
+  }
+
+  /** Whether or not graph is saved from modification */
+  SAVE_STATE = true;
+  get saveState() {
+    return this.SAVE_STATE;
+  }
+  set saveState(val) {
+    this.SAVE_STATE = val;
+    this.saveStateListener.emit(val);
   }
 
   constructor(
