@@ -14,13 +14,14 @@ import { EffectsModule } from '@ngrx/effects';
 
 import { AngularMaterialModule } from './angular-material.module';
 import { SharedDirectivesModule } from './directives/shareddirectives.module';
-
 import { HighlightSnippetComponent } from './components/highlight-snippet/highlight-snippet.component';
 import { LegendComponent } from './components/legend/legend.component';
 import { NodeRelationshipComponent } from './components/node-relationship-display/node-relationship-display.component';
 import { TooltipComponent } from './components/tooltip/tooltip.component';
 
 import { SharedNgrxEffects } from './store/effects';
+import { AngularSplitModule } from 'angular-split';
+import { DragDropModule } from '@angular/cdk/drag-drop';
 
 const components = [
     HighlightSnippetComponent,
@@ -40,7 +41,8 @@ const components = [
         ReactiveFormsModule,
         RouterModule,
         SharedDirectivesModule,
-
+        AngularSplitModule.forRoot(),
+        DragDropModule,
         EffectsModule.forFeature([SharedNgrxEffects]),
     ],
     declarations: components,
@@ -57,6 +59,8 @@ const components = [
         ReactiveFormsModule,
         RouterModule,
         SharedDirectivesModule,
+        AngularSplitModule,
+        DragDropModule,
         // Components
         ...components,
     ],
