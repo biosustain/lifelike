@@ -1,27 +1,25 @@
 <!-- According to the Angular Material docs (https://material.angular.io/components/sidenav/api#MatSidenavContainer),
 we should be careful using 'autosize', as it may lead to performance problems.-->
-<mat-sidenav-container class="sidenav-container" autosize="true">
-  <mat-sidenav-content class="sidenav-content">
-    <div id="mat-sidenav-content-container">
-      <app-visualization-quickbar (animationStatus)="toggleAnimation($event)"></app-visualization-quickbar>
+<mat-sidenav-container autosize="true" fxFlexFill>
+  <mat-sidenav-content class="sidenav-content" fxFlexFill>
+    <app-visualization-quickbar (animationStatus)="toggleAnimation($event)"></app-visualization-quickbar>
 
-      <app-legend [legend]="legend"></app-legend>
+    <app-legend [legend]="legend"></app-legend>
 
-      <div id="network-viz"></div>
+    <div id="network-viz"></div>
 
-      <!-- This isn't visible unless the user has right-clicked to open the context menu -->
-      <app-context-menu
-        [tooltipSelector]="contextMenuTooltipSelector"
-        [tooltipOptions]="contextMenuTooltipOptions"
-        [selectedNodeIds]="selectedNodes"
-        [selectedEdgeIds]="selectedEdges"
-        [selectedNodeEdgeLabelData]="selectedNodeEdgeLabelData"
-        (groupNeighborsWithRelationship)="groupNeighborsWithRelationship($event)"
-        (removeNodes)="removeNodes($event)"
-        (removeEdges)="removeEdges($event)"
-        (selectNeighbors)="selectNeighbors($event)"
-      ></app-context-menu>
-    </div>
+    <!-- This isn't visible unless the user has right-clicked to open the context menu -->
+    <app-context-menu
+      [tooltipSelector]="contextMenuTooltipSelector"
+      [tooltipOptions]="contextMenuTooltipOptions"
+      [selectedNodeIds]="selectedNodes"
+      [selectedEdgeIds]="selectedEdges"
+      [selectedNodeEdgeLabelData]="selectedNodeEdgeLabelData"
+      (groupNeighborsWithRelationship)="groupNeighborsWithRelationship($event)"
+      (removeNodes)="removeNodes($event)"
+      (removeEdges)="removeEdges($event)"
+      (selectNeighbors)="selectNeighbors($event)"
+    ></app-context-menu>
     <button id="sidenav-toggle-button" mat-mini-fab (click)="toggleSidenavOpened()">
       <mat-icon *ngIf="sidenavOpened">chevron_right</mat-icon>
       <mat-icon *ngIf="!sidenavOpened">chevron_left</mat-icon>

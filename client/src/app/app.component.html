@@ -16,6 +16,10 @@
        routerLink="/dt/project-list">
       <mat-icon>gesture</mat-icon>
     </a>
+    <a matTooltip="Knowledge Graph statistics" matTooltipPosition="after" fxLayoutAlign="center center"
+       routerLink="kg-statistics">
+      <mat-icon>bar_chart</mat-icon>
+    </a>
     <div fxFlex></div>
     <a matTooltip="Main Menu" matTooltipPosition="after" fxLayoutAlign="center center"
        href="https://main.biosustain.dtu.dk" target="_blank">
@@ -27,14 +31,14 @@
     </a>
   </div>
 
-  <div fxFlex>
+  <div fxFlex fxLayout="column" style="overflow-y: auto;">
     <router-outlet></router-outlet>
   </div>
 </div>
 
 <mat-menu #userMenu="matMenu" xPosition="after">
   <ng-container *ngIf="(loggedIn$ | async); else loggedOut">
-    <button mat-menu-item disabled>
+    <button mat-menu-item [routerLink]="['/users', (appuser$ | async)?.username]">
       <mat-icon>person</mat-icon>
       {{ (appuser$ | async)?.username }}
     </button>
