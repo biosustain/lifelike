@@ -1,0 +1,25 @@
+<mat-card>
+  <mat-card-title>Profile</mat-card-title>
+  <form [formGroup]="profileForm">
+    <mat-card-content>
+        <div class="container" fxLayout="column" fxLayoutAlign="start" fxLayoutGap="8px">
+          <mat-form-field appearance="fill">
+            <mat-label>Username</mat-label>
+            <input matInput formControlName="username">
+          </mat-form-field>
+          <mat-form-field appearance="fill">
+            <mat-label>First Name</mat-label>
+            <input matInput formControlName="firstName">
+          </mat-form-field>
+          <mat-form-field appearance="fill">
+            <mat-label>Last Name</mat-label>
+            <input matInput formControlName="lastName">
+          </mat-form-field>
+          <mat-form-field appearance="fill">
+            <mat-label>Email</mat-label>
+            <input matInput formControlName="email">
+          </mat-form-field>
+        </div>
+    </mat-card-content>
+  </form>
+</mat-card>
