@@ -17,7 +17,8 @@
       <app-drawing-tool
         id='dropme'
         [currentApp]='currentApp'
-        (openApp)='openApp($event)'>
+        (openApp)='openApp($event)'
+        (saveStateListener)='resolveSaveState($event)'>
       </app-drawing-tool>
     </as-split-area>
 </as-split>
