@@ -1,6 +1,8 @@
 from neo4japp.services.common import RDBMSBaseDao
 from neo4japp.models import AppRole, AppUser
+from sqlalchemy.orm.exc import NoResultFound
 from neo4japp.exceptions import DuplicateRecord, NotAuthorizedException
+from neo4japp.data_transfer_objects import UserUpdateRequest
 
 from typing import Sequence
 
@@ -62,3 +64,19 @@ class AccountService(RDBMSBaseDao):
 
     def get_user_list(self) -> Sequence[AppUser]:
         return AppUser.query.order_by(AppUser.username).all()
+
+    def update_user(self, user: AppUser, changes: UserUpdateRequest, commit_now=True) -> AppUser:
+        # TODO: 'user roll' updates will have to be handled separately
+
+        user.username = changes.username
+        user.first_name = changes.first_name
+        user.last_name = changes.last_name
+        user.email = changes.email
+
+        if changes.new_password:
+            if user.check_password(changes.password):
+                user.set_password(changes.new_password)
+            else:
+                raise NotAuthorizedException('Old password is invalid')
+        self.commit_or_flush(commit_now)
+        return user

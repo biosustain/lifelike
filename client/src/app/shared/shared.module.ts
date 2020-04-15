@@ -20,6 +20,7 @@ import { TooltipComponent } from './components/tooltip/tooltip.component';
 import { SharedNgrxEffects } from './store/effects';
 import { AngularSplitModule } from 'angular-split';
 import { DragDropModule } from '@angular/cdk/drag-drop';
+import { TextFieldModule } from '@angular/cdk/text-field';
 
 const components = [
     HighlightSnippetComponent,
@@ -40,6 +41,7 @@ const components = [
         AngularSplitModule.forRoot(),
         DragDropModule,
         EffectsModule.forFeature([SharedNgrxEffects]),
+        TextFieldModule
     ],
     declarations: components,
     providers: [SharedNgrxEffects],
@@ -55,6 +57,7 @@ const components = [
         SharedDirectivesModule,
         AngularSplitModule,
         DragDropModule,
+        TextFieldModule,
         // Components
         ...components,
     ],
