@@ -93,7 +93,9 @@ class AnnotationsPDFParser:
         """Extract word tokens from the parsed characters.
 
         Returns a token list of sequentially concatentated
-        words up to the @self.max_word_length.
+        words up to the @self.max_word_length. Each token object
+        in the list will contain the keyword, and the index of 
+        each keyword.
 
         E.g ['A', 'B', 'C', 'D', 'E'] -> ['A', 'A B', 'A B C', 'B', 'B C', ...]
         """
