@@ -1,5 +1,7 @@
 <app-search-graph></app-search-graph>
 <app-visualization-canvas
+  fxFlex
+  fxLayout
   *ngIf="networkGraphData && !hideDisplay"
   [nodes]="nodes"
   [edges]="edges"

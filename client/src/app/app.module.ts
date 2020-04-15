@@ -15,6 +15,7 @@ import { SearchModule } from './search/search.module';
 import { DrawingToolModule } from './drawing-tool/drawing-tool.module';
 import { SharedModule } from './shared/shared.module';
 import { FileBrowserComponent } from './file-browser/file-browser.component';
+import { UserModule } from 'app/users/users.module';
 import { KgStatisticsComponent } from './kg-statistics/kg-statistics.component';
 import { ChartsModule } from 'ng2-charts';
 
@@ -36,6 +37,7 @@ import { httpInterceptorProviders } from 'app/http-interceptors/index';
     UserFileImportModule,
     VisualizationModule,
     LifelikeHomeModule,
+    UserModule,
     // ngrx
     RootStoreModule,
     VisualizationModule,
