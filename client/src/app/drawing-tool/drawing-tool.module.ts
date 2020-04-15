@@ -3,14 +3,10 @@ import { CommonModule } from '@angular/common';
 import { BrowserModule } from '@angular/platform-browser';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { HttpClientModule } from '@angular/common/http';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { FlexLayoutModule } from '@angular/flex-layout';
 
-import { AngularSplitModule } from 'angular-split';
 
 import { PdfViewerLibModule } from 'pdf-viewer-lib';
-import { AngularMaterialModule } from 'app/shared/angular-material.module';
 
 import {
   ProjectListViewComponent
@@ -45,6 +41,7 @@ import { PdfViewerDirective } from './pdf-viewer/pdf-viewer.directive';
 import { SplitterComponent } from './splitter/splitter.component';
 import { MapPreviewComponent } from './project-list-view/map-preview/map-preview.component';
 import { MapListComponent } from './project-list-view/map-list/map-list.component';
+import { SharedModule } from 'app/shared/shared.module';
 
 @NgModule({
   declarations: [
@@ -71,17 +68,8 @@ import { MapListComponent } from './project-list-view/map-list/map-list.componen
     MapListComponent
   ],
   imports: [
-    AngularSplitModule.forRoot(),
-    CommonModule,
-    BrowserModule,
-    HttpClientModule,
-    BrowserAnimationsModule,
-    FormsModule,
-    ReactiveFormsModule,
-    DragDropModule,
-    PdfViewerLibModule,
-    AngularMaterialModule,
-    FlexLayoutModule,
+    SharedModule,
+    PdfViewerLibModule
   ],
   providers: [
     // {
