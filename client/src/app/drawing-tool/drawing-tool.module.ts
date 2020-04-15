@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 
 // import { PdfViewerLibModule } from 'pdf-viewer-lib';
+// import { PdfViewerComponent } from './pdf-viewer/pdf-viewer.component';
 
 import {
   ProjectListViewComponent
@@ -40,12 +41,12 @@ const routes = [
   },
   {
     path: 'drawing-tool',
-    component: DrawingToolComponent,
-    canDeactivate: [PendingChangesGuard]
+    component: DrawingToolComponent
   },
   {
     path: 'splitter',
-    component: SplitterComponent
+    component: SplitterComponent,
+    canDeactivate: [PendingChangesGuard]
   },
   {
     path: 'map/:hash_id',
