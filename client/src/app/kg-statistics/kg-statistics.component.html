@@ -1,0 +1,36 @@
+<div class="container" fxFlexFill>
+  <mat-progress-bar mode="indeterminate" *ngIf="isLoading; else dashboards"></mat-progress-bar>
+  <ng-template #dashboards>
+    <div *ngIf="!hasFetchError" fxLayout="column" fxLayoutGap="28px">
+      <h1 class="mat-headline" fxFlexAlign="center">Knowledge graph statistics</h1>
+      <div fxLayout="row wrap" fxLayoutGap="28px grid" fxLayoutAlign="space-evenly">
+        <div *ngFor="let data of chartDataEntitiesByDomain | keyvalue" fxLayout="column" fxLayoutAlign="center center">
+          <h2 class="mat-title">{{data.key}}</h2>
+          <div class="chart-container">
+            <canvas baseChart 
+                    [datasets]="data.value"
+                    [labels]="chartLabelsEntitiesByDomain[data.key]"
+                    [options]="barChartOptions"
+                    [plugins]="chartPlugins"
+                    [colors]="barChartColorsByDomain[data.key]"
+                    [legend]="false"
+                    chartType="bar">
+            </canvas>
+          </div>
+        </div>
+      </div>
+      <div fxLayoutAlign="center" fxLayoutGap="28px">
+        <div class="chart-container">
+          <canvas baseChart
+                  [data]="chartDataAllDomains"
+                  [labels]="chartLabelsDomains"
+                  [colors]="pieChartColors"
+                  [options]="pieChartOptions"
+                  [plugins]="chartPlugins"
+                  chartType="pie">
+          </canvas>
+        </div>
+      </div>   
+    </div>
+  </ng-template>
+</div>
