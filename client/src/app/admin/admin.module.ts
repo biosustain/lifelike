@@ -2,7 +2,7 @@ import { NgModule } from '@angular/core';
 
 import { SharedModule } from 'app/shared/shared.module';
 
-import { AdminService } from './services/admin.service';
+import { AccountService } from 'app/users/services/account.service';
 import { AdminGuard } from './services/admin-guard.service';
 
 import { AdminPanelComponent } from './containers/admin-panel-page.component';
@@ -18,7 +18,7 @@ const components = [
 @NgModule({
     imports: [SharedModule],
     declarations: components,
-    providers: [AdminGuard, AdminService],
+    providers: [AdminGuard, AccountService],
     exports: components,
 })
 export class AdminModule {}

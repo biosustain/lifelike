@@ -178,7 +178,8 @@ export class NetworkVis {
         maximum: 600,
     };
     n.data = {
-      hyperlink: n.hyperlink || ''
+      hyperlink: n.hyperlink || '',
+      detail: n.detail || '',
     };
 
     this.visNodes.add([n]);
