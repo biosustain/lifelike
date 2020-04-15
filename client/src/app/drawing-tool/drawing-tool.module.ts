@@ -6,6 +6,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { FlexLayoutModule } from '@angular/flex-layout';
+import {TextFieldModule} from '@angular/cdk/text-field';
 
 import { AngularSplitModule } from 'angular-split';
 
@@ -80,6 +81,7 @@ import { MapSearchChannelComponent } from './map-search-channel/map-search-chann
     PdfViewerLibModule,
     AngularMaterialModule,
     FlexLayoutModule,
+    TextFieldModule
   ],
   providers: [
     // {
