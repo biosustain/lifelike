@@ -3,14 +3,14 @@
         "table": "appuser",
         "records": [
             {
-                "username": "user@gmail.com",
+                "username": "user",
                 "email": "user@gmail.com",
                 "password_hash": ***REMOVED***,
                 "first_name": "Petty",
                 "last_name": "Annoying"
             },
             {
-              "username": "user@hotmail.com",
+              "username": "user2",
               "email": "user@hotmail.com",
               "password_hash": ***REMOVED***,
               "first_name": "Jim",

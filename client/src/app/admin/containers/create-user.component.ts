@@ -9,7 +9,7 @@ import {
     Validators,
 } from '@angular/forms';
 
-import { AdminService } from '../services/admin.service';
+import { AccountService } from 'app/users/services/account.service';
 import { AppUser, UserCreationRequest } from 'app/interfaces';
 
 @Component({
@@ -35,19 +35,19 @@ export class CreateUserComponent {
     get email() { return this.form.get('email'); }
 
     constructor(
-        private adminService: AdminService,
+        private accountService: AccountService,
         private snackBar: MatSnackBar,
     ) { }
 
     submit(submitBtn: MatButton) {
         submitBtn.disabled = true;
-        this.adminService.createUser({
+        this.accountService.createUser({
             username: this.form.value.username,
             password: this.form.value.password,
             email: this.form.value.email,
         } as UserCreationRequest).subscribe(
                 (user: AppUser) => {
-                    this.adminService.getUserList();
+                    this.accountService.getUserList();
                     this.formGroupDirective.resetForm();
                     this.snackBar.open(
                         `User ${user.username} created!`,

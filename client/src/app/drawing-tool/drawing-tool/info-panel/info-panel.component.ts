@@ -1,9 +1,10 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, NgZone } from '@angular/core';
 import {
   FormGroup,
   FormControl,
   FormArray
 } from '@angular/forms';
+import {CdkTextareaAutosize} from '@angular/cdk/text-field';
 
 import * as $ from 'jquery';
 
@@ -19,7 +20,7 @@ import {
   GraphSelectionData
 } from '../../services/interfaces';
 import { Subscription } from 'rxjs';
-import { filter } from 'rxjs/operators';
+import { filter, take } from 'rxjs/operators';
 
 @Component({
   selector: 'app-info-panel',
@@ -27,6 +28,8 @@ import { filter } from 'rxjs/operators';
   styleUrls: ['./info-panel.component.scss']
 })
 export class InfoPanelComponent implements OnInit, OnDestroy {
+  @ViewChild('autosize', {static: true}) autosize: CdkTextareaAutosize;
+
   /** Build the palette ui with node templates defined */
   nodeTemplates = nodeTemplates;
 
@@ -41,7 +44,8 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
     label: '',
     group: '',
     edges: [],
-    hyperlink: ''
+    hyperlink: '',
+    detail: ''
   };
 
   /**
@@ -52,7 +56,8 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
     label: new FormControl(),
     group: new FormControl(),
     edges: new FormArray([]),
-    hyperlink: new FormControl()
+    hyperlink: new FormControl(),
+    detail: new FormControl()
   }, {
     updateOn: 'blur'
   });
@@ -95,7 +100,8 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
   formSubscription: Subscription = null;
 
   constructor(
-    private dataFlow: DataFlowService
+    private dataFlow: DataFlowService,
+    private ngZone: NgZone
   ) { }
 
   ngOnInit() {
@@ -129,7 +135,8 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
                 label: val.label,
                 group: val.group,
                 data: {
-                  hyperlink: val.hyperlink
+                  hyperlink: val.hyperlink,
+                  detail: val.detail
                 }
               },
               edges
@@ -200,7 +207,8 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
               to: e.to
             };
           }),
-          hyperlink: data.nodeData.data.hyperlink
+          hyperlink: data.nodeData.data.hyperlink,
+          detail: data.nodeData.data.detail
         };
         this.entityForm.setValue(formData, {emitEvent: false});
 
@@ -224,7 +232,8 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
           label: this.graphData.label,
           group: null,
           edges: [],
-          hyperlink: null
+          hyperlink: null,
+          detail: null
         };
         this.entityForm.setValue(formData, {emitEvent: false});
       }
@@ -250,14 +259,15 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
   /**
    * Reset info-panel to a clean state
    */
-  reset() {
+  reset(minimize= true) {
     // reset everything of component's members
     this.graphData = {
       id: '',
       label: '',
       group: '',
       edges: [],
-      hyperlink: ''
+      hyperlink: '',
+      detail: ''
     };
 
     this.edgeCollapsed = false;
@@ -270,7 +280,9 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
     this.entityForm.reset();
     this.pauseForm = false;
 
-    this.changeSize('maximized');
+    if (minimize) {
+      this.changeSize('maximized');
+    }
   }
 
   /**
