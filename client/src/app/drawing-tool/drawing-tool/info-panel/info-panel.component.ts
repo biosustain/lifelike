@@ -28,7 +28,7 @@ import { filter, take } from 'rxjs/operators';
   styleUrls: ['./info-panel.component.scss']
 })
 export class InfoPanelComponent implements OnInit, OnDestroy {
-  @ViewChild('autosize') autosize: CdkTextareaAutosize;
+  @ViewChild('autosize', {static: true}) autosize: CdkTextareaAutosize;
 
   /** Build the palette ui with node templates defined */
   nodeTemplates = nodeTemplates;
@@ -101,7 +101,7 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
 
   constructor(
     private dataFlow: DataFlowService,
-    private _ngZone: NgZone
+    private ngZone: NgZone
   ) { }
 
   ngOnInit() {
@@ -403,11 +403,5 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
 
   blurInput(e: Event) {
     (e.target as HTMLElement).blur();
-  }
-
-  triggerResize() {
-    // Wait for changes to be applied, then trigger textarea resize.
-    this._ngZone.onStable.pipe(take(1))
-      .subscribe(() => this.autosize.resizeToFitContent(true));
   }
 }
