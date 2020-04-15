@@ -2,9 +2,9 @@ import json
 import re
 
 from string import ascii_lowercase, digits, punctuation
-from typing import Dict, List, Optional, Set, Tuple
+from typing import Dict, List, Optional, Set, Tuple, Union
 
-from pdfminer.layout import LTChar
+from pdfminer.layout import LTAnno, LTChar
 
 from .constants import (
     COMMON_WORDS,
@@ -153,7 +153,7 @@ class AnnotationsService:
 
     def _create_keyword_objects(
         self,
-        curr_page_coor_obj: List[LTChar],
+        curr_page_coor_obj: List[Union[LTChar, LTAnno]],
         indexes: List[int],
         keyword_positions: List[dict] = [],
     ) -> None:
@@ -172,6 +172,15 @@ class AnnotationsService:
 
             E. Coli -> [{keyword: 'E. Coli', x: ..., ...}]
         """
+        def _skip_lt_anno(
+            curr_page_coor_obj: List[Union[LTChar, LTAnno]],
+            pos_idx: int,
+        ) -> int:
+            i = pos_idx
+            while isinstance(curr_page_coor_obj[i], LTAnno) and i >= 0:
+                i -= 1
+            return i
+
         start_lower_x = None
         start_lower_y = None
         end_upper_x = None
@@ -179,37 +188,47 @@ class AnnotationsService:
 
         keyword = ''
         for i, pos_idx in enumerate(indexes):
-            lower_x, lower_y, upper_x, upper_y = curr_page_coor_obj[pos_idx].bbox  #noqa
+            if isinstance(curr_page_coor_obj[pos_idx], LTChar):
+                lower_x, lower_y, upper_x, upper_y = curr_page_coor_obj[pos_idx].bbox  #noqa
 
-            if (start_lower_x is None and
-                    start_lower_y is None and end_upper_y is None):
-                start_lower_x = lower_x
-                start_lower_y = lower_y
-                end_upper_y = upper_y
-            else:
-                if upper_y > end_upper_y:
+                if (start_lower_x is None and
+                        start_lower_y is None and
+                        end_upper_x is None and
+                        end_upper_y is None):
+                    start_lower_x = lower_x
+                    start_lower_y = lower_y
+                    end_upper_x = upper_x
                     end_upper_y = upper_y
+                else:
+                    if upper_y > end_upper_y:
+                        end_upper_y = upper_y
 
-            end_upper_x = upper_x
+                    if upper_x > end_upper_x:
+                        end_upper_x = upper_x
 
-            if lower_y != start_lower_y:
-                diff = abs(lower_y - start_lower_y)
-                _, prev_lower_y, _, prev_upper_y = curr_page_coor_obj[pos_idx-1].bbox  # noqa
-                height = prev_upper_y - prev_lower_y
-
-                # if diff is greater than height ratio
-                # then part of keyword is on a new line
-                if diff > height * PDF_NEW_LINE_THRESHOLD:
-                    self._create_keyword_objects(
+                if lower_y != start_lower_y:
+                    diff = abs(lower_y - start_lower_y)
+                    prev_idx = _skip_lt_anno(
                         curr_page_coor_obj=curr_page_coor_obj,
-                        indexes=indexes[i:],
-                        keyword_positions=keyword_positions,
+                        pos_idx=pos_idx-1,
                     )
-                    break
+
+                    _, prev_lower_y, _, prev_upper_y = curr_page_coor_obj[prev_idx].bbox  # noqa
+                    height = prev_upper_y - prev_lower_y
+
+                    # if diff is greater than height ratio
+                    # then part of keyword is on a new line
+                    if diff > height * PDF_NEW_LINE_THRESHOLD:
+                        self._create_keyword_objects(
+                            curr_page_coor_obj=curr_page_coor_obj,
+                            indexes=indexes[i:],
+                            keyword_positions=keyword_positions,
+                        )
+                        break
+                    else:
+                        keyword += curr_page_coor_obj[pos_idx].get_text()
                 else:
                     keyword += curr_page_coor_obj[pos_idx].get_text()
-            else:
-                keyword += curr_page_coor_obj[pos_idx].get_text()
 
         keyword_positions.append({
             'value': keyword,
@@ -231,7 +250,7 @@ class AnnotationsService:
         transaction,
         id_str: str,
         correct_synonyms: Dict[str, str],
-        coor_obj_per_pdf_page: Dict[int, List[LTChar]],
+        coor_obj_per_pdf_page: Dict[int, List[Union[LTChar, LTAnno]]],
     ) -> Tuple[List[dict], Set[str]]:
         """Create annotation objects for tokens.
 
@@ -316,7 +335,7 @@ class AnnotationsService:
     def _annotate_genes(
         self,
         entity_id_str: str,
-        coor_obj_per_pdf_page: Dict[int, List[LTChar]],
+        coor_obj_per_pdf_page: Dict[int, List[Union[LTChar, LTAnno]]],
     ) -> Tuple[List[dict], Set[str]]:
         return self._get_annotation(
             tokens=self.matched_genes,
@@ -331,7 +350,7 @@ class AnnotationsService:
     def _annotate_chemicals(
         self,
         entity_id_str: str,
-        coor_obj_per_pdf_page: Dict[int, List[LTChar]],
+        coor_obj_per_pdf_page: Dict[int, List[Union[LTChar, LTAnno]]],
     ) -> Tuple[List[dict], Set[str]]:
         return self._get_annotation(
             tokens=self.matched_chemicals,
@@ -346,7 +365,7 @@ class AnnotationsService:
     def _annotate_compounds(
         self,
         entity_id_str: str,
-        coor_obj_per_pdf_page: Dict[int, List[LTChar]],
+        coor_obj_per_pdf_page: Dict[int, List[Union[LTChar, LTAnno]]],
     ) -> Tuple[List[dict], Set[str]]:
         return self._get_annotation(
             tokens=self.matched_compounds,
@@ -361,7 +380,7 @@ class AnnotationsService:
     def _annotate_proteins(
         self,
         entity_id_str: str,
-        coor_obj_per_pdf_page: Dict[int, List[LTChar]],
+        coor_obj_per_pdf_page: Dict[int, List[Union[LTChar, LTAnno]]],
     ) -> Tuple[List[dict], Set[str]]:
         return self._get_annotation(
             tokens=self.matched_proteins,
@@ -376,7 +395,7 @@ class AnnotationsService:
     def _annotate_species(
         self,
         entity_id_str: str,
-        coor_obj_per_pdf_page: Dict[int, List[LTChar]],
+        coor_obj_per_pdf_page: Dict[int, List[Union[LTChar, LTAnno]]],
     ) -> Tuple[List[dict], Set[str]]:
         return self._get_annotation(
             tokens=self.matched_species,
@@ -391,7 +410,7 @@ class AnnotationsService:
     def _annotate_diseases(
         self,
         entity_id_str: str,
-        coor_obj_per_pdf_page: Dict[int, List[LTChar]],
+        coor_obj_per_pdf_page: Dict[int, List[Union[LTChar, LTAnno]]],
     ) -> Tuple[List[dict], Set[str]]:
         return self._get_annotation(
             tokens=self.matched_diseases,
@@ -407,7 +426,7 @@ class AnnotationsService:
         self,
         annotation_type: str,
         entity_id_str: str,
-        coor_obj_per_pdf_page: Dict[int, List[LTChar]],
+        coor_obj_per_pdf_page: Dict[int, List[Union[LTChar, LTAnno]]],
     ) -> Tuple[List[dict], Set[str]]:
         funcs = {
             EntityType.Genes.value: self._annotate_genes,
