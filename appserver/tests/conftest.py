@@ -68,6 +68,11 @@ def session(app, request):
 
 
 @pytest.fixture(scope='function')
+def account_service(app, session):
+    return AccountService(session)
+
+
+@pytest.fixture(scope='function')
 def auth_service(app, session):
     return AuthService(session)
 
