@@ -1,11 +1,11 @@
 import re
 
 from string import whitespace
-from typing import Any, Dict, List, Set, Tuple
+from typing import Any, Dict, List, Set, Tuple, Union
 
 from pdfminer import high_level
 from pdfminer.converter import PDFPageAggregator, TextConverter
-from pdfminer.layout import LAParams, LTChar, LTTextBox, LTTextLine
+from pdfminer.layout import LAParams, LTAnno, LTChar, LTTextBox, LTTextLine
 from pdfminer.pdfdocument import PDFDocument
 from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
 from pdfminer.pdfpage import PDFPage
@@ -28,7 +28,7 @@ class AnnotationsPDFParser:
         self,
         layout: Any,
         page_idx: int,
-        coor_obj_per_pdf_page: Dict[int, List[LTChar]],
+        coor_obj_per_pdf_page: Dict[int, List[Union[LTChar, LTAnno]]],
     ) -> None:
         for lt_obj in layout:
             if isinstance(lt_obj, LTTextBox) or isinstance(lt_obj, LTTextLine):
@@ -37,7 +37,7 @@ class AnnotationsPDFParser:
                     page_idx=page_idx,
                     coor_obj_per_pdf_page=coor_obj_per_pdf_page,
                 )
-            elif isinstance(lt_obj, LTChar):
+            elif isinstance(lt_obj, LTChar) or isinstance(lt_obj, LTAnno):
                 if page_idx + 1 in coor_obj_per_pdf_page:
                     coor_obj_per_pdf_page[page_idx+1].append(lt_obj)
                 else:
@@ -57,8 +57,8 @@ class AnnotationsPDFParser:
         device = PDFPageAggregator(rsrcmgr=rsrcmgr, laparams=LAParams())
         interpreter = PDFPageInterpreter(rsrcmgr=rsrcmgr, device=device)
 
-        str_per_pdf_page: Dict[int, List[str]] = {}
-        coor_obj_per_pdf_page: Dict[int, List[LTChar]] = {}
+        str_per_pdf_page: Dict[int, List[str]] = dict()
+        coor_obj_per_pdf_page: Dict[int, List[Union[LTChar, LTAnno]]] = dict()
 
         for i, page in enumerate(PDFPage.create_pages(pdf_doc)):
             interpreter.process_page(page)
@@ -68,6 +68,13 @@ class AnnotationsPDFParser:
                 page_idx=i,
                 coor_obj_per_pdf_page=coor_obj_per_pdf_page,
             )
+
+        for page_idx, lt_char_list in coor_obj_per_pdf_page.items():
+            for lt_char in lt_char_list:
+                # LTAnno are 'virtual' characters inserted by the parser
+                # don't really care for \n so make them whitespace
+                if isinstance(lt_char, LTAnno) and lt_char.get_text() == '\n':
+                    lt_char._text = ' '
 
         for page_num, lt_char_list in coor_obj_per_pdf_page.items():
             str_per_pdf_page[page_num] = []
@@ -91,7 +98,6 @@ class AnnotationsPDFParser:
         E.g ['A', 'B', 'C', 'D', 'E'] -> ['A', 'A B', 'A B C', 'B', 'B C', ...]
         """
         curr_max_words = 1
-        new_start_idx = 0
         token_objects: List[PDFTokenPositions] = []
 
         processed_tokens: Set[PDFTokenPositions] = set()
@@ -100,6 +106,8 @@ class AnnotationsPDFParser:
             curr_page = page_idx
             max_length = len(char_list)
             curr_idx = 0
+            new_start_idx = 0
+            first_whitespace_encountered_idx = 0
 
             while curr_idx < max_length:
                 curr_keyword = ''
