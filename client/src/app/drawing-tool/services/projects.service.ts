@@ -126,7 +126,6 @@ export class ProjectsService {
    * @param project represents a Project
    */
   public updateProject(project: Project): Observable<any> {
-    console.log(project);
     return this.http.put(
       this.baseUrl + `/drawing-tool/projects/${project.id}`,
       project,

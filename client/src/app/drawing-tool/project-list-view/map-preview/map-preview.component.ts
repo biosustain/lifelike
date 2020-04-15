@@ -65,7 +65,7 @@ export class MapPreviewComponent implements OnInit {
     private projectService: ProjectsService,
     private route: ActivatedRoute
   ) {
-    if (this.project === null) {
+    if (this.route.snapshot.params.hash_id) {
       this.projectService.serveProject(
         this.route.snapshot.params.hash_id
       ).subscribe(
