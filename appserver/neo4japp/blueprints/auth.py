@@ -6,6 +6,7 @@ from sqlalchemy.orm.exc import NoResultFound
 
 from neo4japp.database import db
 from neo4japp.exceptions import (
+    InvalidCredentialsException,
     JWTTokenException,
     JWTAuthTokenException,
     RecordNotFoundException,
@@ -163,8 +164,4 @@ def login():
         )
     else:
         # Complain about invalid credentials
-        return Response(
-            "{'msg':'Invalid credentials', 'status': 'error'}",
-            status=401,
-            mimetype='application/json'
-        )
+        raise InvalidCredentialsException('Invalid credentials')

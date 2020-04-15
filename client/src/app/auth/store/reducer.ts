@@ -26,9 +26,16 @@ const authReducer = createReducer(
         () => initialState,
     ),
     on(
+        AuthActions.refreshUser,
+        (state, { user }) => ({
+            ...state,
+            user,
+        })
+    ),
+    on(
         AuthActions.loginReset,
         () => initialState,
-    )
+    ),
 );
 
 export function reducer(state: State, action: Action) {
