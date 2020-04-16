@@ -56,7 +56,7 @@ def seed():
                     )
 
                     db.session.add(proj)
-                    db.session.flush()
+                    db.session.commit()
 
                     # Assign hash_id to map
                     proj.set_hash_id()

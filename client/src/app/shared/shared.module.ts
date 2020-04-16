@@ -21,6 +21,8 @@ import { SharedNgrxEffects } from './store/effects';
 import { AngularSplitModule } from 'angular-split';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { TextFieldModule } from '@angular/cdk/text-field';
+import { HttpClientModule } from '@angular/common/http';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 const components = [
     HighlightSnippetComponent,
@@ -32,6 +34,8 @@ const components = [
 @NgModule({
     imports: [
         CommonModule,
+        BrowserAnimationsModule,
+        HttpClientModule,
         AngularMaterialModule,
         FlexLayoutModule,
         FormsModule,
@@ -49,6 +53,8 @@ const components = [
     exports: [
         // Modules
         CommonModule,
+        BrowserAnimationsModule,
+        HttpClientModule,
         AngularMaterialModule,
         FlexLayoutModule,
         FormsModule,
