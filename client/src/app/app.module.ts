@@ -19,6 +19,7 @@ import { ChartsModule } from 'ng2-charts';
 import { httpInterceptorProviders } from 'app/http-interceptors/index';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { BrowserModule } from '@angular/platform-browser';
+import { VisualizationModule } from './visualization/visualization.module';
 
 @NgModule({
   declarations: [
@@ -28,12 +29,14 @@ import { BrowserModule } from '@angular/platform-browser';
   ],
   imports: [
     BrowserModule,
+    BrowserAnimationsModule,
     AdminModule,
     AuthModule,
     SharedModule,
     AppRoutingModule,
     UserFileImportModule,
     LifelikeHomeModule,
+    VisualizationModule,
     UserModule,
     // ngrx
     RootStoreModule,

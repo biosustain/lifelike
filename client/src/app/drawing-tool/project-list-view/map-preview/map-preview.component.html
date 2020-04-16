@@ -2,41 +2,43 @@
   <div id='canvas'></div>
   <!-- Read Panel -->
   <div *ngIf='node' id='read-panel'>
-    <h3>{{node?.label}}</h3>
+    <div [ngClass]='nodeStyle'>
+      <h3 class='roboto'>{{node?.label}}</h3>
+    </div>
     <!-- Type -->
     <div>
-      <p class='blue b'>
+      <p [ngClass]='nodeStyle' class='b'>
         Type
       </p>
-      <p>
-        {{node?.group}}
+      <p class='attr'>
+        {{nodeStyle}}
       </p>
     </div>
     <!-- Detail -->
     <div *ngIf='node?.data?.detail'>
-      <p class='blue b'>
+      <p [ngClass]='nodeStyle' class='b'>
         Detail
       </p>
-      <p class='detail'>
+      <p class='attr detail'>
         {{node?.data?.detail}}
       </p>
     </div>
     <!-- Link -->
     <div *ngIf='node?.data?.hyperlink'>
-      <p class='blue b'>
+      <p [ngClass]='nodeStyle' class='b'>
         Hyperlink
       </p>
-      <p class='link' (click)='goToLink(node.data.hyperlink)'>
+      <p class='attr link' (click)='goToLink(node.data.hyperlink)'>
         {{node?.data?.hyperlink}}
       </p>
     </div>
     <!-- Edges-->
     <div *ngIf='node?.edges.length'>
-      <p class='blue b'>Edges</p>
+      <p [ngClass]='nodeStyle' class='b'>Edges</p>
       <div *ngFor='let edge of node?.edges'>
-        <p>
-          <span class='dark-silver'>{{edge?.label}}&nbsp;</span>
-          <span class='dark-blue'>{{getNode(edge)}}</span>
+        <p class='attr'>
+          <span [ngClass]='nodeStyle' class='edge-label'>{{edge?.label}}&nbsp;</span>
+          <span class='target-label'>{{getNode(edge)}}</span>
         </p>
       </div>
     </div>

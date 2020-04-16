@@ -7,7 +7,9 @@ import { ActivatedRoute } from '@angular/router';
 @Component({
   selector: 'app-map-preview',
   templateUrl: './map-preview.component.html',
-  styleUrls: ['./map-preview.component.scss']
+  styleUrls: [
+    './map-preview.component.scss'
+  ]
 })
 export class MapPreviewComponent implements OnInit {
   /** vis ojbect to control network-graph vis */
@@ -59,6 +61,10 @@ export class MapPreviewComponent implements OnInit {
     if (!this.focusedEntity) { return null; }
 
     return this.focusedEntity.nodeData;
+  }
+
+  get nodeStyle() {
+    return this.focusedEntity.nodeData.group || '';
   }
 
   constructor(
