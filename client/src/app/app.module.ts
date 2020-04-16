@@ -27,9 +27,7 @@ import { BrowserModule } from '@angular/platform-browser';
     KgStatisticsComponent,
   ],
   imports: [
-    HttpClientModule,
     BrowserModule,
-    BrowserAnimationsModule,
     AdminModule,
     AuthModule,
     SharedModule,
