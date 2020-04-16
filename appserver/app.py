@@ -4,7 +4,7 @@ import os
 from flask import render_template
 from sqlalchemy.sql.expression import text
 from neo4japp.factory import create_app
-from neo4japp.models import AppUser, Project
+from neo4japp.models import AppUser, Project, Projects
 
 from neo4japp.database import db, get_account_service
 
@@ -40,11 +40,23 @@ def seed():
                         last_name=r["last_name"]
                     )
 
+            elif fix["table"] == "projects":
+                for r in fix["records"]:
+                    proj = Projects(
+                        project_name=r["project_name"],
+                        description=r["description"],
+                        users=r["users"],
+                    )
+
+                    db.session.add(proj)
+                    db.session.flush()
+                    db.session.commit()
+
             elif fix["table"] == "project":
                 for idx, r in enumerate(fix["records"]):
                     r = fix["records"][idx]
 
-                    proj = Project(
+                    draw_proj = Project(
                         label=r["label"],
                         description=r["description"],
                         date_modified=r["date_modified"],
@@ -55,11 +67,11 @@ def seed():
                         user_id=idx+1
                     )
 
-                    db.session.add(proj)
+                    db.session.add(draw_proj)
                     db.session.flush()
 
                     # Assign hash_id to map
-                    proj.set_hash_id()
+                    draw_proj.set_hash_id()
 
                     db.session.commit()
 
