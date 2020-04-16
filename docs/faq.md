@@ -12,6 +12,7 @@
   - [How do I run unit tests for Flask?](#how-do-i-run-unit-tests-for-flask)
   - [How do I run unit tests for Angular?](#how-do-i-run-unit-tests-for-angular)
   - [How do I run linting checks?](#how-do-i-run-linting-checks)
+  - [How do I create a postgres schema diagram?](#how-do-i-create-a-postgres-schema-diagram)
 
 ## How do I set up my developer environment?
 To run the application, first create the docker images
@@ -123,3 +124,23 @@ docker-compose exec appserver mypy .
 ```
 
 The document located [HERE](./dev/linting.md) also has more tips on a shortcut for performing these linting tasks
+
+## How do I create a postgres schema diagram?
+1. To create a schema diagram, first run the application
+```bash
+docker-compose up -d
+```
+
+2. Install the `erlalchemy` locally. To see the various methods of installing it, please see https://github.com/Alexis-benoist/eralchemy
+
+For macOS users, use
+```bash
+brew install eralchemy
+```
+
+3. Run the following command to generate the schema
+```bash
+eralchemy -i 'postgresql+psycopg2://postgres:postgres@localhost:5431/postgres' -o docs/dev/schema-current.pdf
+```
+
+4. (Optional) Commit the schema update to the repository
