@@ -19,6 +19,16 @@
         ]
     },
     {
+        "table": "projects",
+        "records": [
+          {
+            "project_name": "beta-project",
+            "description": "beta project",
+            "users": []
+          }
+        ]
+    },
+    {
         "table": "project",
         "records": [
             {
