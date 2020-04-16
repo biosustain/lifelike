@@ -1,6 +1,27 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { MapListComponent } from './map-list.component';
+import { RouterModule } from '@angular/router';
+import { RootStoreModule } from 'app/root-store';
+import { DrawingToolModule } from 'app/drawing-tool/drawing-tool.module';
+import { AngularMaterialModule } from 'app/shared/angular-material.module';
+import { ProjectsService } from 'app/drawing-tool/services';
+import { Injectable } from '@angular/core';
+import { Project } from 'app/drawing-tool/services/interfaces';
+import { HttpClient } from '@angular/common/http';
+import { Observable, of } from 'rxjs';
+
+
+@Injectable()
+export class MockProjectsService extends ProjectsService {
+  pullCommunityProjects(): Observable<any> {
+    return of(this.projects);
+  }
+
+  pullProjects(): Observable<any> {
+    return of(this.projects);
+  }
+}
 
 describe('MapListComponent', () => {
   let component: MapListComponent;
@@ -8,9 +29,18 @@ describe('MapListComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ MapListComponent ]
+      imports: [
+        AngularMaterialModule,
+        DrawingToolModule,
+        RootStoreModule,
+        RouterModule
+      ],
+      providers: [
+        ProjectsService
+      ]
     })
     .compileComponents();
+    TestBed.overrideProvider(ProjectsService, {useValue: new MockProjectsService(null)});
   }));
 
   beforeEach(() => {

@@ -83,16 +83,17 @@ export class SplitterComponent implements OnInit, AfterViewInit {
     switch (app) {
       case 'map-search':
         factory = this.r.resolveComponentFactory(MapListComponent);
+        this.splitPanelLength = 30;
         break;
       // case 'pdf-viewer':
       //   factory = this.r.resolveComponentFactory(PdfViewerComponent);
+      //   this.splitPanelLength = 50;
       //   break;
       default:
         break;
     }
 
     this.leftPanel.clear();
-    this.splitPanelLength = 50;
     this.currentApp = app;
 
     ref = this.leftPanel.createComponent(factory);

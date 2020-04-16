@@ -6,6 +6,7 @@ import { APP_BASE_HREF } from '@angular/common';
 import { RootStoreModule } from 'app/root-store';
 import { AngularMaterialModule } from 'app/shared/angular-material.module';
 import { AppRoutingModule } from 'app/app-routing.module';
+import { RouterModule } from '@angular/router';
 
 describe('MapPreviewComponent', () => {
   let component: MapPreviewComponent;
@@ -16,7 +17,8 @@ describe('MapPreviewComponent', () => {
       imports: [
         AngularMaterialModule,
         DrawingToolModule,
-        RootStoreModule
+        RootStoreModule,
+        RouterModule
       ],
       providers: [
         {provide: APP_BASE_HREF, useValue : '/' }

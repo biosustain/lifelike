@@ -71,12 +71,13 @@ export class MapPreviewComponent implements OnInit {
       ).subscribe(
         resp => {
           this.childMode = false;
+          // tslint:disable-next-line: no-string-literal
           this.project = resp['project'];
         },
         err => {
           console.log(err);
         }
-      )
+      );
     }
   }
 

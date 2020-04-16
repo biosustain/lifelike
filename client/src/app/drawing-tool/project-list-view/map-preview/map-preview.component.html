@@ -12,6 +12,15 @@
         {{node?.group}}
       </p>
     </div>
+    <!-- Detail -->
+    <div *ngIf='node?.data?.detail'>
+      <p class='blue b'>
+        Detail
+      </p>
+      <p class='detail'>
+        {{node?.data?.detail}}
+      </p>
+    </div>
     <!-- Link -->
     <div *ngIf='node?.data?.hyperlink'>
       <p class='blue b'>
@@ -26,8 +35,7 @@
       <p class='blue b'>Edges</p>
       <div *ngFor='let edge of node?.edges'>
         <p>
-          <span class='dark-silver'>{{edge?.label}}</span>
-          &nbsp;
+          <span class='dark-silver'>{{edge?.label}}&nbsp;</span>
           <span class='dark-blue'>{{getNode(edge)}}</span>
         </p>
       </div>
