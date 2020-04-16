@@ -23,7 +23,7 @@ WORKDIR $N4J_HOME
 
 # Install pipenv and install all python packages, including dev.
 RUN pip install pipenv
-RUN pipenv install --dev --deploy --system --verbose
+RUN pipenv install --dev --deploy --system
 
 # Don't lose stdin, stdout and stderr output due to buffering
 ENV PYTHONUNBUFFERED 1

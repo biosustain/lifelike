@@ -2,9 +2,19 @@ import jwt
 from datetime import datetime, timedelta
 from flask import current_app, request, Response, json, Blueprint, g
 from flask_httpauth import HTTPTokenAuth
+from sqlalchemy.orm.exc import NoResultFound
 
 from neo4japp.database import db
+from neo4japp.exceptions import (
+    InvalidCredentialsException,
+    JWTTokenException,
+    JWTAuthTokenException,
+    RecordNotFoundException,
+    NotAuthorizedException,
+)
 from neo4japp.models.auth import AppUser
+from neo4japp.util import generate_jwt_token
+
 
 bp = Blueprint('auth', __name__, url_prefix='/auth')
 
@@ -25,12 +35,12 @@ def verify_token(token):
             g.current_user = user
             return True
         else:
-            return False
+            raise NotAuthorizedException('no access found')
     except jwt.exceptions.ExpiredSignatureError:
         # Signature has expired
-        return False
+        raise JWTAuthTokenException('auth token has expired')
     except jwt.exceptions.InvalidTokenError:
-        return False
+        raise JWTAuthTokenException('auth token is invalid')
 
 
 def pullUserFromAuthHead():
@@ -49,7 +59,10 @@ def pullUserFromAuthHead():
     )['sub']
 
     # Pull user by email
-    user = AppUser.query_by_email(email).first_or_404()
+    try:
+        user = AppUser.query_by_email(email).one()
+    except NoResultFound:
+        raise RecordNotFoundException('Credentials not found or invalid.')
     return user
 
 
@@ -73,25 +86,19 @@ def refresh():
             return {'status': 'wrong token type submitted'}, 401
 
         # Create access & refresh token pair
-        access_jwt_encoded = jwt.encode(
-            {
-                'iat': datetime.utcnow(),
-                'sub': decoded['sub'],
-                'exp': datetime.utcnow() + timedelta(hours=1),
-                'type': 'access'
-            },
-            current_app.config['SECRET_KEY'],
-            algorithm='HS256'
+        access_jwt_encoded = generate_jwt_token(
+            sub=decoded['sub'],
+            secret=current_app.config['SECRET_KEY'],
+            token_type='access',
+            time_offset=1,
+            time_unit='hours',
         )
-        refresh_jwt_encoded = jwt.encode(
-            {
-                'iat': datetime.utcnow(),
-                'sub': decoded['sub'],
-                'exp': datetime.utcnow() + timedelta(days=1),
-                'type': 'refresh'
-            },
-            current_app.config['SECRET_KEY'],
-            algorithm='HS256'
+        refresh_jwt_encoded = generate_jwt_token(
+            sub=decoded['sub'],
+            secret=current_app.config['SECRET_KEY'],
+            token_type='refresh',
+            time_offset=1,
+            time_unit='days',
         )
 
         # Create response
@@ -100,13 +107,12 @@ def refresh():
             "refresh_jwt": refresh_jwt_encoded.decode('utf-8')
         }
         return resp, 200
-
     except jwt.exceptions.ExpiredSignatureError:
         # Signature has expired
-        return {'status': 'refresh token has expired'}, 401
+        raise JWTTokenException('refresh token has expired')
     except jwt.exceptions.InvalidTokenError:
         # Invalid token
-        return {'status': 'refresh token is invalid'}, 401
+        raise JWTTokenException('refresh token is invalid')
 
 
 @bp.route('/login', methods=['POST'])
@@ -117,38 +123,38 @@ def login():
     """
     data = request.get_json()
 
-    user = AppUser.query.filter_by(
-        email=data.get('email_addr')
-    ).first_or_404()
+    # Pull user by email
+    try:
+        user = AppUser.query.filter_by(
+            email=data.get('email')
+        ).one()
+    except NoResultFound:
+        raise RecordNotFoundException('Credentials not found or invalid.')
 
     if user.check_password(data.get('password')):
+
         # Issue access jwt
-        access_jwt_encoded = jwt.encode(
-            {
-                'iat': datetime.utcnow(),
-                'sub': user.email,
-                'exp': datetime.utcnow() + timedelta(hours=1),
-                'type': 'access'
-            },
-            current_app.config['SECRET_KEY'],
-            algorithm='HS256'
+        access_jwt_encoded = generate_jwt_token(
+            sub=user.email,
+            secret=current_app.config['SECRET_KEY'],
+            token_type='access',
+            time_offset=1,
+            time_unit='hours',
         )
         # Issue refresh jwt
-        refresh_jwt_encoded = jwt.encode(
-            {
-                'iat': datetime.utcnow(),
-                'sub': user.email,
-                'exp': datetime.utcnow() + timedelta(days=1),
-                'type': 'refresh'
-            },
-            current_app.config['SECRET_KEY'],
-            algorithm='HS256'
+        refresh_jwt_encoded = generate_jwt_token(
+            sub=user.email,
+            secret=current_app.config['SECRET_KEY'],
+            token_type='refresh',
+            time_offset=1,
+            time_unit='days',
         )
 
         # Create response
         resp = {
-            "access_jwt": access_jwt_encoded.decode('utf-8'),
-            "refresh_jwt": refresh_jwt_encoded.decode('utf-8')
+            'user': user.to_dict(),
+            'access_jwt': access_jwt_encoded.decode('utf-8'),
+            'refresh_jwt': refresh_jwt_encoded.decode('utf-8')
         }
 
         return Response(
@@ -158,8 +164,4 @@ def login():
         )
     else:
         # Complain about invalid credentials
-        return Response(
-            "{'msg':'Invalid credentials', 'status': 'error'}",
-            status=401,
-            mimetype='application/json'
-        )
+        raise InvalidCredentialsException('Invalid credentials')

@@ -11,6 +11,16 @@
 .mat-header-cell {
   margin: 0 10px 0 10px;
 }
+
 // Default rules from Angular Material. Do not modify.
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+// Content placed dynamically by the Angular Router (i.e. sibling of
+// <router-outlet>) will be a flex container
+router-outlet + * {
+  box-sizing: border-box;
+  display: flex;
+  flex: 1 1 0%;
+  flex-direction: column;
+}
