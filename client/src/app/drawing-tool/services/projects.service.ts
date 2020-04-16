@@ -1,5 +1,4 @@
 import { Injectable } from '@angular/core';
-import { Router } from '@angular/router';
 import { Observable } from 'rxjs';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
@@ -30,10 +29,7 @@ export class ProjectsService {
 
   baseUrl = environment.apiUrl;
 
-  constructor(
-    private http: HttpClient,
-    private route: Router
-  ) { }
+  constructor(private http: HttpClient) { }
 
   /**
    * Create http options with authorization
@@ -46,7 +42,7 @@ export class ProjectsService {
     if (withJwt) {
       headers = {
             'Content-Type':  'application/json',
-            Authorization: 'Token ' + localStorage.getItem('access_jwt')
+            Authorization: 'Bearer ' + localStorage.getItem('access_jwt')
           };
     } else {
       headers = {
@@ -69,12 +65,36 @@ export class ProjectsService {
   }
 
   /**
+   * Pull map by hashId
+   * @param hashId - act as uri for map
+   */
+  public serveProject(hashId) {
+   return this.http.get(
+    this.baseUrl + `/drawing-tool/map/${hashId}`,
+    this.createHttpOptions(true)
+   );
+  }
+
+
+  /**
+   * Return a list of projects made public within
+   * user base
+   */
+  public pullCommunityProjects() {
+    return this.http.get(
+      this.baseUrl + '/drawing-tool/community',
+      this.createHttpOptions(true)
+    );
+  }
+
+
+  /**
    * Return a list of projects owned by user
    */
   public pullProjects(): Observable<any> {
     return this.http.get(
       this.baseUrl + '/drawing-tool/projects',
-      this.createHttpOptions(true)
+      this.createHttpOptions(true),
     );
   }
 
@@ -135,7 +155,8 @@ export class ProjectsService {
           data: {
             x: n.x,
             y: n.y,
-            hyperlink: isNullOrUndefined(n.data.hyperlink) ? '' : n.data.hyperlink
+            hyperlink: isNullOrUndefined(n.data.hyperlink) ? '' : n.data.hyperlink,
+            detail: isNullOrUndefined(n.data.detail) ? '' : n.data.detail
           },
           display_name: n.label,
           hash: n.id,
@@ -179,7 +200,8 @@ export class ProjectsService {
           id: n.hash,
           group: n.label,
           data: {
-            hyperlink: isNullOrUndefined(n.data.hyperlink) ? '' : n.data.hyperlink
+            hyperlink: isNullOrUndefined(n.data.hyperlink) ? '' : n.data.hyperlink,
+            detail: isNullOrUndefined(n.data.detail) ? '' : n.data.detail
           }
         };
       }

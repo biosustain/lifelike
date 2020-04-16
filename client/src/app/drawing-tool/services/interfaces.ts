@@ -3,6 +3,7 @@ interface UniversalGraphNode {
     x: number;
     y: number;
     hyperlink?: string;
+    detail?: string;
   };
   display_name: string;
   hash: string;
@@ -29,6 +30,7 @@ interface VisNetworkGraphNode {
   size?: number;
   data?: {
     hyperlink?: string;
+    detail?: string;
   };
 }
 interface VisNetworkGraphEdge {
@@ -52,8 +54,27 @@ interface GraphData {
   group?: string;
   edges?: VisNetworkGraphEdge[];
   hyperlink?: string;
+  detail?: string;
   x?: number;
   y?: number;
+}
+
+/**
+ * Interface for handling data between canvas and panels
+ */
+interface GraphSelectionData {
+  edgeData?: VisNetworkGraphEdge;
+  nodeData?: {
+    id: string,
+    group: string,
+    label: string,
+    edges: VisNetworkGraphEdge[],
+    data: {
+      hyperlink: string;
+      detail: string;
+    }
+  };
+  otherNodes?: VisNetworkGraphNode[];
 }
 
 /**
@@ -74,13 +95,18 @@ interface Annotation {
  * Project schema definition
  */
 interface Project {
-  id?: string|number;
+  id?: string | number;
+  author?: string;
   label: string;
   description: string;
   /** JSON representation of graph */
   graph: UniversalGraph;
   /** ISO-8601 timestamp of when project was last updated */
   date_modified?: string;
+  /** Whether or not project is public to userbase */
+  public?: boolean;
+  /** URI for project */
+  hash_id?: string;
 }
 
 export {
@@ -92,5 +118,6 @@ export {
   UniversalGraphEdge,
   UniversalGraphNode,
   Annotation,
-  GraphData
+  GraphData,
+  GraphSelectionData
 };

@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 
-import { AdminService } from '../services/admin.service';
+import { AccountService } from 'app/users/services/account.service';
 import { AppUser } from 'app/interfaces';
 
 @Component({
@@ -12,10 +12,10 @@ export class ViewUsersComponent implements OnInit {
 
     users: AppUser[];
 
-    constructor(private adminService: AdminService) {}
+    constructor(private accountService: AccountService) {}
 
     ngOnInit() {
-        this.adminService.getUserList();
-        this.adminService.userList.subscribe((users: AppUser[]) => this.users = users);
+        this.accountService.getUserList();
+        this.accountService.userList.subscribe((users: AppUser[]) => this.users = users);
     }
 }

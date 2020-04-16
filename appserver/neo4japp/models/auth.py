@@ -42,6 +42,8 @@ class AppUser(RDBMSBase):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(64), index=True, unique=True)
     email = db.Column(db.String(120), index=True, unique=True)
+    first_name = db.Column(db.String(120), nullable=False)
+    last_name = db.Column(db.String(120), nullable=False)
     password_hash = db.Column(db.String(256))
 
     # load all roles associated with the user eagerly using subquery
@@ -72,8 +74,8 @@ class AppUser(RDBMSBase):
     def query_by_username(cls, username: str) -> Query:
         return cls.query.filter(cls.username == username)
 
-    def to_dict(self, exclude=None, include=None, only=None, keyfn=None):
-        original_dict = super().to_dict(exclude='password_hash')
+    def to_dict(self, exclude=[], include=None, only=None, keyfn=None):
+        original_dict = super().to_dict(exclude=['password_hash'] + exclude)
         return {
             **original_dict,
             **{'roles': [role.to_dict()['name'] for role in self.roles]}

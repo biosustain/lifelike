@@ -9,6 +9,9 @@
   - [How do I debug a running application locally?](#how-do-i-debug-a-running-application-locally)
   - [How do I remote ssh into a running container?](#how-do-i-remote-ssh-into-a-running-container)
   - [How do I update database with new changes?](#how-do-i-update-database-with-new-changes)
+  - [How do I run unit tests for Flask?](#how-do-i-run-unit-tests-for-flask)
+  - [How do I run unit tests for Angular?](#how-do-i-run-unit-tests-for-angular)
+  - [How do I run linting checks?](#how-do-i-run-linting-checks)
 
 ## How do I set up my developer environment?
 To run the application, first create the docker images
@@ -26,22 +29,12 @@ docker-compose run client yarn install
 We could have also used `yarn install` locally, but this poses an issue when we go and mount our volume on Docker if our operating system is not Linux (e.g. if we're using Windows or Mac). Our client container will end up using the incorrect binaries, so by installing through Docker, we ensure we get the correct binaries.
 
 __Step 2__
-Extract the development Neo4j database found under [here](../neo4j/data/databases/text-mining-subset-graphdb.tar.gz).
-- Run `docker-compose up database`; you will now see some new folders such as `data`
-- Run `docker-compose down`
-- Go into `data/databases` and delete the `graph.db`
-- Move the extracted `graph.db` to where the old one was
-
-__Step 3__
-Extract the database in the [elastic search directory](../elasticsearch/esdata_20191029.tar.gz); similar to what we did for the Neo4j setup.
-
-__Step 4__
 Run the application suite through
 ```
 docker-compose up -d
 ```
 
-__Step 5__
+__Step 3__
 Run the following to set up the Neo4J full text indexing
 ```
 docker-compose exec appserver python db/neo4jsetup.py
@@ -99,3 +92,34 @@ apt-get install vim
 
 ## How do I update database with new changes?
 Database migration workflow can be found [here](https://github.com/SBRG/kg-prototypes/blob/master/appserver/migrations/README.md)
+
+## How do I run unit tests for Flask?
+To run the unit tests for Flask, use the following commands when Flask is running
+
+```bash
+docker-compose exec appserver pytest
+```
+
+To run a specific test
+```bash
+docker-compose exec appserver pytest -k <name of test or file>
+```
+
+## How do I run unit tests for Angular?
+```bash
+docker-compose exec client yarn test
+```
+
+## How do I run linting checks?
+For the client (Angular) application, use
+```bash
+docker-compose exec client yarn lint
+```
+
+For the server (Flask) application, use
+```bash
+docker-compose exec appserver pycodestyle .
+docker-compose exec appserver mypy .
+```
+
+The document located [HERE](./dev/linting.md) also has more tips on a shortcut for performing these linting tasks
