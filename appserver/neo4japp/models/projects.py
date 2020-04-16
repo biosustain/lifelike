@@ -1,7 +1,7 @@
-from neo4japp.database import db, ma
+from neo4japp.database import db
 
 
-class Projects(db.Model):
+class Projects(db.Model): # type: ignore
     __tablename__ = 'projects'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     project_name = db.Column(db.String(250), unique=True, nullable=False)
