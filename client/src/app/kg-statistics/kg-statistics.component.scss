@@ -1,0 +1,17 @@
+.container {
+  padding: 24px;
+}
+
+/* https://www.chartjs.org/docs/latest/general/responsive.html#important-note */
+.chart-container {
+  position: relative;
+  height: 35vh;
+  width: 40vw;
+}
+
+// TODO: fix vertical scroll issue (toolbar should not scroll) for all components in a centralized way
+:host {
+  height: 100%;
+  display: flex;
+  overflow: auto;
+}

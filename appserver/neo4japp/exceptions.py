@@ -4,6 +4,9 @@ class BaseException(Exception):
         self.message = message
         super().__init__(*args)
 
+    def __str__(self):
+        return f'<Exception> {self.name}:{self.message}'
+
     def to_dict(self):
         retval = {}
         retval['name'] = self.name
@@ -22,10 +25,34 @@ class DuplicateRecord(BaseException):
         super().__init__('Duplicate record', message, additional_msgs)
 
 
+class InvalidCredentialsException(BaseException):
+    """Signals invalid credentials used"""
+    def __init__(self, message, additional_msgs=[]):
+        super().__init__('Invalid credentials', message, additional_msgs)
+
+
 class NotAuthorizedException(BaseException):
     """Signals that the client does not sufficient privilege"""
     def __init__(self, message, additional_msgs=[]):
         super().__init__('Unauthorized Action', message, additional_msgs)
+
+
+class RecordNotFoundException(BaseException):
+    """Signals that no record is found in the database"""
+    def __init__(self, message, additional_msgs=[]):
+        super().__init__('Record not found', message)
+
+
+class JWTTokenException(BaseException):
+    """Signals JWT token issue"""
+    def __init__(self, message, additional_msgs=[]):
+        super().__init__('JWT', message)
+
+
+class JWTAuthTokenException(JWTTokenException):
+    """Signals the JWT auth token has an issue"""
+    def __init__(self, message):
+        super().__init__(message)
 
 
 class FormatterException(BaseException):

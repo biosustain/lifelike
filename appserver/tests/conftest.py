@@ -24,6 +24,7 @@ from neo4japp.models.neo4j import (
     GraphRelationship,
 )
 from neo4japp.services import (
+    AccountService,
     AuthService,
     GraphBaseDao,
     Neo4JService,
@@ -67,8 +68,18 @@ def session(app, request):
 
 
 @pytest.fixture(scope='function')
+def account_service(app, session):
+    return AccountService(session)
+
+
+@pytest.fixture(scope='function')
 def auth_service(app, session):
     return AuthService(session)
+
+
+@pytest.fixture(scope='function')
+def account_user(app, session):
+    return AccountService(session)
 
 
 @pytest.fixture(scope='function')
@@ -500,6 +511,8 @@ def pomc_to_gas_gangrene_pathogenesis_as_vis_edge(
         data=edge_as_graph_relationship.data,
         to=edge_as_graph_relationship.to,
         from_=edge_as_graph_relationship._from,
+        to_label='Disease',
+        from_label='Gene',
         arrows='to',
     )
 
@@ -522,6 +535,8 @@ def pomc_to_gas_gangrene_pathogenesis_as_duplicate_vis_edge(
         data=edge_as_graph_relationship.data,
         to=f'duplicateNode:{edge_as_graph_relationship.to}',
         from_=f'duplicateNode:{edge_as_graph_relationship._from}',
+        to_label='Disease',
+        from_label='Gene',
         arrows='to',
         duplicate_of=edge_as_graph_relationship.id,
         original_from=edge_as_graph_relationship._from,
@@ -547,6 +562,8 @@ def penicillins_to_gas_gangrene_alleviates_as_vis_edge(
         data=edge_as_graph_relationship.data,
         to=edge_as_graph_relationship.to,
         from_=edge_as_graph_relationship._from,
+        to_label='Disease',
+        from_label='Chemical',
         arrows='to',
     )
 
@@ -569,6 +586,8 @@ def penicillins_to_gas_gangrene_alleviates_as_duplicate_vis_edge(
         data=edge_as_graph_relationship.data,
         to=f'duplicateNode:{edge_as_graph_relationship.to}',
         from_=f'duplicateNode:{edge_as_graph_relationship._from}',
+        to_label='Disease',
+        from_label='Chemical',
         arrows='to',
         duplicate_of=edge_as_graph_relationship.id,
         original_from=edge_as_graph_relationship._from,
@@ -594,6 +613,8 @@ def penicillins_to_gas_gangrene_treatment_as_vis_edge(
         data=edge_as_graph_relationship.data,
         to=edge_as_graph_relationship.to,
         from_=edge_as_graph_relationship._from,
+        to_label='Disease',
+        from_label='Chemical',
         arrows='to',
     )
 
@@ -616,6 +637,8 @@ def penicillins_to_gas_gangrene_treatment_as_duplicate_vis_edge(
         data=edge_as_graph_relationship.data,
         to=f'duplicateNode:{edge_as_graph_relationship.to}',
         from_=f'duplicateNode:{edge_as_graph_relationship._from}',
+        to_label='Disease',
+        from_label='Chemical',
         arrows='to',
         duplicate_of=edge_as_graph_relationship.id,
         original_from=edge_as_graph_relationship._from,
