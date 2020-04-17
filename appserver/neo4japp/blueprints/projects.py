@@ -6,6 +6,24 @@ from neo4japp.models.projects import Projects
 bp = Blueprint('projects', __name__, url_prefix='/projects')
 
 
+@bp.route('/<name>', methods=['GET'])
+@auth.login_required
+def get_project(name):
+    user = g.current_user
+    # TODO: Remove hard coded Project here
+    project = Projects.query.one_or_none()
+
+    if not project:
+        project = Projects(
+            project_name='beta-project',
+            description='beta project',
+            users=[],
+        )
+        db.session.add(project)
+        db.session.commit()
+    return jsonify(dict(project=project.to_dict()))
+
+
 @bp.route('/list', methods=['GET'])
 @auth.login_required
 def get_projects():
