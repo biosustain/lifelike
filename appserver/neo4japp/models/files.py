@@ -1,8 +1,9 @@
 from sqlalchemy.dialects import postgresql
 from neo4japp.database import db
+from neo4japp.models.common import RDBMSBase
 
 
-class Files(db.Model):  # type: ignore
+class Files(RDBMSBase):  # type: ignore
     __tablename__ = 'files'
     id = db.Column(db.Integer(), primary_key=True, autoincrement=True)
     file_id = db.Column(db.String(36), unique=True, nullable=False)
