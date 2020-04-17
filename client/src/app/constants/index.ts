@@ -8,3 +8,5 @@ export const JWT_AUTH_TOKEN_EXPIRED = 'auth token has expired';
 export const JWT_AUTH_TOKEN_INVALID = 'auth token is invalid';
 export const JWT_REFRESH_TOKEN_EXPIRED = 'refresh token has expired';
 export const JWT_REFRESH_TOKEN_INVALID = 'refresh token is invalid';
+
+export const MAX_CLUSTER_ROWS = 20;

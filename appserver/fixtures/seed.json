@@ -10,11 +10,21 @@
                 "last_name": "Annoying"
             },
             {
-              "username": "user",
+              "username": "user2",
               "email": "user@hotmail.com",
               "password_hash": "hai_password",
               "first_name": "Jim",
               "last_name": "Meloncholy"
+          }
+        ]
+    },
+    {
+        "table": "projects",
+        "records": [
+          {
+            "project_name": "beta-project",
+            "description": "beta project",
+            "users": []
           }
         ]
     },
