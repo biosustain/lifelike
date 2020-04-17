@@ -155,7 +155,8 @@ export class ProjectsService {
           data: {
             x: n.x,
             y: n.y,
-            hyperlink: isNullOrUndefined(n.data.hyperlink) ? '' : n.data.hyperlink
+            hyperlink: isNullOrUndefined(n.data.hyperlink) ? '' : n.data.hyperlink,
+            detail: isNullOrUndefined(n.data.detail) ? '' : n.data.detail
           },
           display_name: n.label,
           hash: n.id,
@@ -199,7 +200,8 @@ export class ProjectsService {
           id: n.hash,
           group: n.label,
           data: {
-            hyperlink: isNullOrUndefined(n.data.hyperlink) ? '' : n.data.hyperlink
+            hyperlink: isNullOrUndefined(n.data.hyperlink) ? '' : n.data.hyperlink,
+            detail: isNullOrUndefined(n.data.detail) ? '' : n.data.detail
           }
         };
       }

@@ -14,6 +14,8 @@ export interface GraphRelationship {
   data: {[key: string]: any};
   to: number;
   from: number;
+  toLabel: string;
+  fromLabel: string;
 }
 
 /** VisJS Node Representations for Client */
