@@ -1,13 +1,17 @@
 <app-search-graph></app-search-graph>
 <app-visualization-canvas
+  fxFlex
+  fxLayout
   *ngIf="networkGraphData && !hideDisplay"
   [nodes]="nodes"
   [edges]="edges"
+  [expandNodeResult]="expandNodeResult"
   [getSnippetsResult]="getSnippetsResult"
   [getClusterGraphDataResult]="getClusterGraphDataResult"
   [legend]="legend"
   [config]="networkGraphConfig"
   (expandNode)="expandNode($event)"
+  (finishedPreClustering)="finishedPreClustering($event)"
   (getSnippetsFromEdge)="getSnippetsFromEdge($event)"
   (getSnippetsFromDuplicateEdge)="getSnippetsFromDuplicateEdge($event)"
   (getClusterGraphData)="getClusterGraphData($event)"
