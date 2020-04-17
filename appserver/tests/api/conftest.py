@@ -1,4 +1,5 @@
 import json
+import types
 from datetime import date
 import pytest
 
@@ -55,9 +56,27 @@ def private_fix_project(fix_owner, session) -> Project:
     return project
 
 
+def login_as_user(self, email, password):
+    """ Returns the authenticated JWT tokens """
+    credentials = dict(email=email, password=password)
+    login_resp = self.post(
+        '/auth/login',
+        data=json.dumps(credentials),
+        content_type='application/json',
+    )
+    return login_resp.get_json()
+
+
 @pytest.fixture(scope='function')
 def client(app):
     """Creates a HTTP client for REST actions for a test."""
     client = app.test_client()
-
+    client.login_as_user = types.MethodType(login_as_user, client)
     return client
+
+
+@pytest.fixture(scope='function')
+def user_client(client, test_user):
+    """ Returns an authenticated client as well as the JWT information """
+    auth = client.login_as_user('test@***ARANGO_DB_NAME***.bio', 'password')
+    return client, auth
