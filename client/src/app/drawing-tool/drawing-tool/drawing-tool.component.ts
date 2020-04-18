@@ -23,6 +23,7 @@ import { filter, first, takeUntil, debounceTime } from 'rxjs/operators';
 
 import { IdType } from 'vis-network';
 
+import { LINK_NODE_ICON_OBJECT } from 'app/constants';
 import { Coords2D } from 'app/interfaces/shared.interface';
 import { ClipboardService } from 'app/shared/services/clipboard.service';
 import { keyCodeRepresentsPasteEvent } from 'app/shared/utils';
@@ -500,6 +501,8 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
                     {
                         label: cmd.data.node.label,
                         group: cmd.data.node.group,
+                        shape: cmd.data.node.shape || 'box',
+                        icon: cmd.data.node.icon,
                         data: cmd.data.node.data
                     }
                 );
@@ -855,9 +858,11 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
         const cmd = {
             action: 'add node',
             data: {
-                // TODO: Add clipboard data here
+                shape: 'icon',
+                icon: LINK_NODE_ICON_OBJECT,
                 group: 'link',
-                label: clipboardContent,
+                label: '',
+                detail: clipboardContent,
                 ...canvasCoords
             }
         };

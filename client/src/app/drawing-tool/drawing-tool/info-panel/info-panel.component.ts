@@ -5,6 +5,7 @@ import {
   FormArray
 } from '@angular/forms';
 import {CdkTextareaAutosize} from '@angular/cdk/text-field';
+import { MatCheckboxChange } from '@angular/material';
 
 import * as $ from 'jquery';
 
@@ -24,6 +25,8 @@ import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
 
 import { isNullOrUndefined } from 'util';
+
+import { LINK_NODE_ICON_OBJECT } from 'app/constants';
 
 @Component({
   selector: 'app-info-panel',
@@ -50,6 +53,8 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
     hyperlink: '',
     detail: ''
   };
+
+  nodeIsIcon = false;
 
   /**
    * Track modification of entity properties
@@ -144,6 +149,20 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
               },
               edges
             };
+
+            switch (val.group) {
+                case 'link': {
+                    data.node.shape = this.nodeIsIcon ? 'icon' : 'box';
+                    data.node.icon = this.nodeIsIcon ? LINK_NODE_ICON_OBJECT : null;
+                    data.node.label = this.nodeIsIcon ? '' : val.detail;
+                    break;
+                }
+                default: {
+                    data.node.shape = 'box';
+                    data.node.icon = null;
+                    break;
+                }
+            }
           } else {
             // Get edge data
             data = {
@@ -174,6 +193,8 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
       // If a node is clicked on ..
       if (data.nodeData) {
         this.entityType = 'node';
+
+        this.nodeIsIcon = data.nodeData.shape === 'icon';
 
         // Record the data ..
         this.graphData = data.nodeData;
@@ -250,6 +271,18 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
     // with subject on accident when re-init next time
     this.graphDataSubscription.unsubscribe();
     this.formSubscription.unsubscribe();
+  }
+
+  linkNodeCheckboxChanged(event: MatCheckboxChange) {
+    const val = this.entityForm.value;
+
+    // When the checkbox is clicked we want to either show the detail as the label (if the node
+    // is in 'box' shape) or not show the label at all (if the node is in 'icon' shape). This
+    // will trigger the subscription above.
+    this.entityForm.setValue({
+        ...val,
+        label: event.checked ? '' : val.detail,
+    });
   }
 
   /**

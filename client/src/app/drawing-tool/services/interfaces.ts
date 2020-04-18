@@ -28,6 +28,8 @@ interface VisNetworkGraphNode {
   id?: string;
   group?: string;
   size?: number;
+  shape?: string;
+  icon?: any;
   widthConstraint?: any;
   data?: {
     hyperlink?: string;
@@ -67,6 +69,7 @@ interface GraphSelectionData {
   edgeData?: VisNetworkGraphEdge;
   nodeData?: {
     id: string,
+    shape?: string,
     group: string,
     label: string,
     edges: VisNetworkGraphEdge[],
