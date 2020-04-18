@@ -7,7 +7,6 @@ import {
   GraphSelectionData
 } from './services/interfaces';
 import { Network, Options, DataSet } from 'vis-network';
-import { isNullOrUndefined } from 'util';
 
 /**
  * A class wrapped around the instatiation of
@@ -213,12 +212,29 @@ export class NetworkVis {
    * @param data represents the data of the node
    */
   updateNode(id, data) {
-    this.visNodes.update({
-      id,
-      label: data.label,
-      group: data.group,
-      data: data.data
-    });
+    let updatedNode: any = {
+        id,
+        label: data.label,
+        group: data.group,
+        data: data.data,
+        icon: data.icon,
+        shape: data.shape,
+    };
+
+    switch (data.group) {
+        case 'link': {
+            updatedNode = {
+                ...updatedNode,
+                label: data.shape === 'icon' ? '' : data.data.detail,
+            };
+            this.visNodes.update(updatedNode);
+            break;
+        }
+        default: {
+            this.visNodes.update(updatedNode);
+            break;
+        }
+    }
   }
 
   /**
@@ -236,6 +252,7 @@ export class NetworkVis {
 
     const nodeData = {
       id: node.id,
+      shape: node.shape,
       group: node.group,
       label: node.label,
       edges,
