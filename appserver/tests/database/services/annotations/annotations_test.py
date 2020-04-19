@@ -92,6 +92,7 @@ def test_save_bioc_annotations_to_db(annotations_setup, session):
             raw_file=raw,
             username='username',
             annotations=annotations_json,
+            project=1,
         )
 
         session.add(pdf_file)

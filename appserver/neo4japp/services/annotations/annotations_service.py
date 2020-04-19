@@ -15,7 +15,7 @@ from .constants import (
     PDF_NEW_LINE_THRESHOLD,
 )
 from .lmdb_dao import LMDBDao
-from .util import normalize_str
+from neo4japp.services.annotations.util import normalize_str
 
 from neo4japp.data_transfer_objects import (
     PDFTokenPositions,
