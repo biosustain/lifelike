@@ -10,7 +10,7 @@ import json
 
 from os import path, remove, walk
 
-from .util import normalize_str
+from neo4japp.services.annotations.util import normalize_str
 
 
 # reference to this directory
@@ -24,18 +24,23 @@ def prepare_lmdb_genes_database():
         with db.begin(write=True) as transaction:
             reader = csv.reader(f, delimiter='\t', quotechar='"')
             # skip headers
+            # name	gene_id	tax_id
             headers = next(reader)
             for line in reader:
+                gene_id = line[1]
+                tax_id = line[2]
+                gene_name = line[0]
+
                 gene = {
-                    'gene_id': line[1],
+                    'gene_id': gene_id,
                     'id_type': 'NCBI',
-                    'tax_id': line[2],
-                    'common_name': {line[1]: normalize_str(line[0])},
+                    'tax_id': tax_id,
+                    'common_name': {gene_id: normalize_str(gene_name)},
                 }
 
                 try:
                     transaction.put(
-                        normalize_str(line[0]).encode('utf-8'),
+                        normalize_str(gene_name).encode('utf-8'),
                         json.dumps(gene).encode('utf-8'),
                     )
                 except lmdb.BadValsizeError:
@@ -52,16 +57,20 @@ def prepare_lmdb_chemicals_database():
         with db.begin(write=True) as transaction:
             reader = csv.reader(f, delimiter=',', quotechar='"')
             # skip headers
+            # n.chebi_id,n.common_name,n.synonyms
             headers = next(reader)
             synonyms_list = []
             for line in reader:
+                chemical_id = line[0]
+                chemical_name = line[1]
                 synonyms = line[2].split('|')
+
                 chemical = {
-                    'chemical_id': line[0],
+                    'chemical_id': chemical_id,
                     'id_type': 'CHEBI',
                     'common_name': {
-                        line[0]: normalize_str(line[1]),
-                    } if line[1] != 'null' else {},
+                        chemical_id: normalize_str(chemical_name),
+                    } if chemical_name != 'null' else {},
                 }
 
                 if synonyms:
@@ -69,9 +78,9 @@ def prepare_lmdb_chemicals_database():
                         synonyms_list.append((normalize_str(syn), chemical))
 
                 try:
-                    if line[1] != 'null':
+                    if chemical_name != 'null':
                         transaction.put(
-                            normalize_str(line[1]).encode('utf-8'),
+                            normalize_str(chemical_name).encode('utf-8'),
                             json.dumps(chemical).encode('utf-8'),
                         )
                 except lmdb.BadValsizeError:
@@ -109,16 +118,20 @@ def prepare_lmdb_compounds_database():
         with db.begin(write=True) as transaction:
             reader = csv.reader(f, delimiter=',', quotechar='"')
             # skip headers
+            # n.biocyc_id,n.common_name,n.synonyms
             headers = next(reader)
             synonyms_list = []
             for line in reader:
+                compound_id = line[0]
+                compound_name = line[1]
                 synonyms = line[2].split('|')
+
                 compound = {
-                    'compound_id': line[0],
+                    'compound_id': compound_id,
                     'id_type': 'BIOCYC',
                     'common_name': {
-                        line[0]: normalize_str(line[1]),
-                    } if line[1] != 'null' else {},
+                        compound_id: normalize_str(compound_name),
+                    } if compound_name != 'null' else {},
                 }
 
                 if synonyms:
@@ -126,9 +139,9 @@ def prepare_lmdb_compounds_database():
                         synonyms_list.append((normalize_str(syn), compound))
 
                 try:
-                    if line[1] != 'null':
+                    if compound_name != 'null':
                         transaction.put(
-                            normalize_str(line[1]).encode('utf-8'),
+                            normalize_str(compound_name).encode('utf-8'),
                             json.dumps(compound).encode('utf-8'),
                         )
                 except lmdb.BadValsizeError:
@@ -160,60 +173,36 @@ def prepare_lmdb_compounds_database():
 
 
 def prepare_lmdb_proteins_database():
-    with open(path.join(directory, 'datasets/proteins.csv'), 'r') as f:
+    with open(path.join(directory, 'datasets/proteins.tsv'), 'r') as f:
         map_size = 1099511627776
         db = lmdb.open(path.join(directory, 'lmdb/proteins'), map_size=map_size)
         with db.begin(write=True) as transaction:
-            reader = csv.reader(f, delimiter=',', quotechar='"')
+            reader = csv.reader(f, delimiter='\t', quotechar='"')
             # skip headers
+            # Accession	ID	Name	NameType	TaxID
             headers = next(reader)
-            synonyms_list = []
             for line in reader:
-                # n.biocyc_id,n.common_name,n.synonyms
-                synonyms = line[2].split('|')
+                # synonyms already have their own line in dataset
+                protein_id = line[1]
+                protein_name = line[2] if 'Uncharacterized protein' not in line[2] else line[0]  # noqa
                 protein = {
-                    'protein_id': line[0],
-                    'id_type': 'BIOCYC',
+                    'protein_id': protein_id,
+                    'id_type': 'UNIPROT',
                     'common_name': {
-                        line[0]: normalize_str(line[1]),
-                    } if line[1] != 'null' else {},
+                        protein_id: normalize_str(protein_name),
+                    } if protein_name != 'null' else {},
                 }
 
-                if synonyms:
-                    for syn in synonyms:
-                        synonyms_list.append((normalize_str(syn), protein))
-
                 try:
-                    if line[1] != 'null':
+                    if protein_name != 'null':
                         transaction.put(
-                            normalize_str(line[1]).encode('utf-8'),
+                            normalize_str(protein_name).encode('utf-8'),
                             json.dumps(protein).encode('utf-8'),
                         )
                 except lmdb.BadValsizeError:
                     # ignore any keys that are too large
                     # LMDB has max key size 512 bytes
                     # can change but larger keys mean performance issues
-                    continue
-
-            # add all synonyms into LMDB
-            # the reason is because a synonym could be a
-            # common name, so we add those first
-            for syn, protein in synonyms_list:
-                try:
-                    if syn != 'null':
-                        entity = transaction.get(syn.encode('utf-8'))
-                        if entity:
-                            entity = json.loads(entity)
-                            entity['common_name'] = {
-                                **entity['common_name'], **protein['common_name']}
-                            transaction.put(
-                                syn.encode('utf-8'),
-                                json.dumps(entity).encode('utf-8'))
-                        else:
-                            transaction.put(
-                                syn.encode('utf-8'),
-                                json.dumps(protein).encode('utf-8'))
-                except lmdb.BadValsizeError:
                     continue
 
 
@@ -224,21 +213,26 @@ def prepare_lmdb_species_database():
         with db.begin(write=True) as transaction:
             reader = csv.reader(f, delimiter='\t', quotechar='"')
             # skip headers
+            # tax_id	rank	parent_tax_id	name	name_class
             headers = next(reader)
             for line in reader:
                 if line[1] == 'species':
                     # synonyms already have their own line in dataset
+                    species_id = line[0]
+                    species_rank = line[1]
+                    species_name = line[3]
+
                     species = {
-                        'tax_id': line[0],
+                        'tax_id': species_id,
                         'id_type': 'NCBI',
-                        'rank': line[1],
-                        'common_name': {line[0]: normalize_str(line[3])},
+                        'rank': species_rank,
+                        'common_name': {species_id: normalize_str(species_name)},
                     }
 
                     try:
-                        if line[3] != 'null':
+                        if species_name != 'null':
                             transaction.put(
-                                normalize_str(line[3]).encode('utf-8'),
+                                normalize_str(species_name).encode('utf-8'),
                                 json.dumps(species).encode('utf-8'))
                     except lmdb.BadValsizeError:
                         # ignore any keys that are too large
@@ -254,16 +248,20 @@ def prepare_lmdb_diseases_database():
         with db.begin(write=True) as transaction:
             reader = csv.reader(f, delimiter=',', quotechar='"')
             # skip headers
+            # ID,DiseaseName,Synonym
             headers = next(reader)
             synonyms_list = []
             for line in reader:
+                disease_id = line[0]
+                disease_name = line[1]
                 synonyms = line[2].split(',')
+
                 disease = {
-                    'disease_id': line[0],
+                    'disease_id': disease_id,
                     'id_type': 'MESH',
                     'common_name': {
-                        line[0]: normalize_str(line[1]),
-                    } if line[1] != 'null' else {},
+                        disease_id: normalize_str(disease_name),
+                    } if disease_name != 'null' else {},
                 }
 
                 if synonyms:
@@ -271,9 +269,9 @@ def prepare_lmdb_diseases_database():
                         synonyms_list.append((normalize_str(syn), disease))
 
                 try:
-                    if line[1] != 'null':
+                    if disease_name != 'null':
                         transaction.put(
-                            normalize_str(line[1]).encode('utf-8'),
+                            normalize_str(disease_name).encode('utf-8'),
                             json.dumps(disease).encode('utf-8'))
                 except lmdb.BadValsizeError:
                     # ignore any keys that are too large
