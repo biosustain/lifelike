@@ -73,6 +73,9 @@ class AnnotationsPDFParser:
             for lt_char in lt_char_list:
                 # LTAnno are 'virtual' characters inserted by the parser
                 # don't really care for \n so make them whitespace
+                # cannot simply deleted because after being parsed, some
+                # PDFs use \n as a space between words
+                # consider this when extracting tokens in @extract_tokens()
                 if isinstance(lt_char, LTAnno) and lt_char.get_text() == '\n':
                     lt_char._text = ' '
 
@@ -140,16 +143,25 @@ class AnnotationsPDFParser:
                                             char_list[curr_idx+1] == '\xa0')):
                                     curr_idx += 1
                                 else:
-                                    if whitespace_count == 0:
-                                        first_whitespace_encountered_idx = curr_idx
-
-                                    # each whitespace encountered means a
-                                    # whole word has been processed
-                                    if whitespace_count + 1 < curr_max_words:
-                                        curr_keyword += char_list[curr_idx]
-                                        char_idx_map[curr_idx] = char_list[curr_idx]
+                                    # if whitespace encountered, but previous
+                                    # character is '-', then don't count the
+                                    # whitespace as likely word continues on
+                                    # new line
+                                    # this is to account turning '\n' into ' '
+                                    # in @parse_pdf()
+                                    if char_list[curr_idx - 1] == '-':
                                         curr_idx += 1
-                                    whitespace_count += 1
+                                    else:
+                                        if whitespace_count == 0:
+                                            first_whitespace_encountered_idx = curr_idx
+
+                                        # each whitespace encountered means a
+                                        # whole word has been processed
+                                        if whitespace_count + 1 < curr_max_words:
+                                            curr_keyword += char_list[curr_idx]
+                                            char_idx_map[curr_idx] = char_list[curr_idx]
+                                            curr_idx += 1
+                                        whitespace_count += 1
 
                     token = PDFTokenPositions(
                         page_number=curr_page,
