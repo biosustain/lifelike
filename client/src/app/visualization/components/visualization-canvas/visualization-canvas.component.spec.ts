@@ -84,6 +84,8 @@ describe('VisualizationCanvasComponent', () => {
             data: { description: 'Mock Edge'},
             to: toNode,
             from: fromNode,
+            toLabel: 'Mock Node',
+            fromLabel: 'Mock Node',
             arrows: arrowDirection,
         } as VisEdge;
     }

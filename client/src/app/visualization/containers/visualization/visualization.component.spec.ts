@@ -72,6 +72,8 @@ describe('VisualizationComponent', () => {
             data: { description: 'Mock Edge'},
             to: 1,
             from: 2,
+            toLabel: 'Mock Node',
+            fromLabel: 'Mock Node',
         };
         mockNeo4jResults = {
             nodes: [mockGraphNode],
