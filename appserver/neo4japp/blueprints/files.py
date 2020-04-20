@@ -9,8 +9,8 @@ from werkzeug.utils import secure_filename
 from neo4japp.database import (
     db,
     get_annotations_service,
+    get_annotations_pdf_parser,
     get_bioc_document_service,
-    get_token_extractor_service,
 )
 from neo4japp.models.files import Files
 
@@ -26,18 +26,21 @@ OUTPUT_PATH = 'files/output/'
 def upload_pdf():
     annotator = get_annotations_service()
     bioc_service = get_bioc_document_service()
-    token_extractor = get_token_extractor_service()
+    pdf_parser = get_annotations_pdf_parser()
+
     pdf = request.files['file']
     project = request.form['project']
     binary_pdf = pdf.read()
     username = g.current_user
+
     filename = secure_filename(request.files['file'].filename)
     file_id = str(uuid.uuid4())
 
     try:
-        pdf_text = token_extractor.parse_pdf(pdf=pdf)
+        parsed_pdf_chars = pdf_parser.parse_pdf(pdf=pdf)
+        pdf_text = pdf_parser.parse_pdf_high_level(pdf=pdf)
         annotations = annotator.create_annotations(
-            tokens=token_extractor.extract_tokens(text=pdf_text))
+            tokens=pdf_parser.extract_tokens(parsed_chars=parsed_pdf_chars))
 
         # TODO: Miguel: need to update file_uri with file path
         bioc = bioc_service.read(text=pdf_text, file_uri=filename)
