@@ -3,6 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { configureTestSuite } from 'ng-bullet';
 
 import { TooltipComponent } from './tooltip.component';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 describe('TooltipComponent', () => {
     let component: TooltipComponent;
@@ -10,7 +11,10 @@ describe('TooltipComponent', () => {
 
     configureTestSuite(() => {
         TestBed.configureTestingModule({
-            declarations: [ TooltipComponent ]
+            declarations: [ TooltipComponent ],
+            imports: [
+                BrowserAnimationsModule
+            ]
         });
     });
 
