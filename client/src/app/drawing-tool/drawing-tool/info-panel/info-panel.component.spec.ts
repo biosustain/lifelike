@@ -5,7 +5,7 @@ import { configureTestSuite } from 'ng-bullet';
 import { DrawingToolModule } from '../../drawing-tool.module';
 import { InfoPanelComponent } from './info-panel.component';
 
-xdescribe('InfoPanelComponent', () => {
+describe('InfoPanelComponent', () => {
     let component: InfoPanelComponent;
     let fixture: ComponentFixture<InfoPanelComponent>;
 
