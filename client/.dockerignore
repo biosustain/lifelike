@@ -1,5 +1,5 @@
 Dockerfile
+Dockerfile.prod
 node_modules/**/*
 node_modules
-build
 .gitignore
