@@ -1,1 +1,20 @@
-# TODO
+version: '3.5'
+
+services:
+    appserver:
+        command: ['bin/start-prod']
+        build:
+            context: ./appserver
+            dockerfile: Dockerfile.prod
+        ports:
+            - 5000:5000
+        env_file:
+            - ./staging.env
+
+    webserver:
+        build:
+            context: ./client
+            dockerfile: Dockerfile.staging
+        ports:
+            - 80:80
+
