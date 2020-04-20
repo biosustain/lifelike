@@ -131,7 +131,7 @@ The document located [HERE](./dev/linting.md) also has more tips on a shortcut f
 docker-compose up -d
 ```
 
-2. Install the `erlalchemy` locally. To see the various methods of installing it, please see https://github.com/Alexis-benoist/eralchemy
+2. Install the `eralchemy` locally. To see the various methods of installing it, please see https://github.com/Alexis-benoist/eralchemy
 
 For macOS users, use
 ```bash
