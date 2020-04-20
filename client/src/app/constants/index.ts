@@ -16,3 +16,5 @@ export const LINK_NODE_ICON_OBJECT = {
     size: 50,
     color: '#669999'
 };
+
+export const MAX_CLUSTER_ROWS = 20;

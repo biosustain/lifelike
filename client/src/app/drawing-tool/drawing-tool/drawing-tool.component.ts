@@ -8,7 +8,7 @@ import {
     EventEmitter,
     Input,
     ViewChild
-  } from '@angular/core';
+} from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { CdkDragDrop } from '@angular/cdk/drag-drop';
 

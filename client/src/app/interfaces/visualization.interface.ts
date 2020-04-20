@@ -36,6 +36,12 @@ export interface ClusteredNode {
     edges: DuplicateVisEdge[];
 }
 
+export interface ExpandNodeResult {
+    expandedNode: number;
+    nodes: VisNode[];
+    edges: VisEdge[];
+}
+
 export interface GetClusterGraphDataResult {
     results: {
         // Node ID

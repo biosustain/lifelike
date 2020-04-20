@@ -8,6 +8,9 @@ import {
 
 import { Options } from '@popperjs/core';
 
+import { Subject } from 'rxjs';
+import { skip, first } from 'rxjs/operators';
+
 import { isNullOrUndefined } from 'util';
 
 import { Network, DataSet, IdType } from 'vis-network';
@@ -28,10 +31,12 @@ import {
     VisNode,
     Direction,
     ReferenceTableRow,
+    ExpandNodeResult,
 } from 'app/interfaces';
 
 import { uuidv4 } from 'app/shared/utils';
 
+import { MAX_CLUSTER_ROWS } from 'app/constants';
 import { ContextMenuControlService } from 'app/visualization/services/context-menu-control.service';
 import { VisualizationService } from 'app/visualization/services/visualization.service';
 
@@ -50,6 +55,7 @@ enum SidenavEntityType {
 })
 export class VisualizationCanvasComponent implements OnInit {
     @Output() expandNode = new EventEmitter<number>();
+    @Output() finishedPreClustering = new EventEmitter<boolean>();
     @Output() getSnippetsFromEdge = new EventEmitter<VisEdge>();
     @Output() getSnippetsFromDuplicateEdge = new EventEmitter<DuplicateVisEdge>();
     @Output() getClusterGraphData = new EventEmitter<ClusteredNode[]>();
@@ -58,6 +64,54 @@ export class VisualizationCanvasComponent implements OnInit {
 
     @Input() nodes: DataSet<any, any>;
     @Input() edges: DataSet<any, any>;
+    @Input() set expandNodeResult(result: ExpandNodeResult) {
+        if (!isNullOrUndefined(result)) {
+            const edgeLabelsOfExpandedNode = this.getConnectedEdgeLabels(result.expandedNode);
+            let newClusterCount = 0;
+            edgeLabelsOfExpandedNode.forEach(directionList => newClusterCount += directionList.length);
+
+            this.clusterCreatedSource.asObservable().pipe(
+                skip(this.openClusteringRequests + newClusterCount - 1),
+                first(),
+            ).subscribe(() => {
+                this.finishedPreClustering.emit(true);
+            });
+
+            edgeLabelsOfExpandedNode.forEach((directionList, relationship) => {
+                directionList.forEach(direction => {
+                    const neighborNodesWithRel = this.getNeighborsWithRelationship(relationship, result.expandedNode, direction);
+                    const duplicateNodeEdgePairs = this.createDuplicateNodesAndEdges(
+                        neighborNodesWithRel, relationship, result.expandedNode, direction
+                    );
+
+                    // This is very similar to the implementation of `updateGraphWithDuplicates`, except that here we only delete
+                    // the existing nodes/edges, and don't add the duplicates. We will add the duplicates later, in `createCluster`
+                    const nodesToRemove = [];
+                    const edgesToRemove = [];
+
+                    duplicateNodeEdgePairs.forEach(pair => {
+                        const duplicateNode = pair.node;
+                        const duplicateEdge = pair.edge;
+                        const edges = this.networkGraph.getConnectedEdges(duplicateNode.duplicateOf);
+
+                        if (edges.length === 1) {
+                            // If the original node is being clustered on its last unclustered edge,
+                            // remove it entirely from the canvas.
+                            nodesToRemove.push(duplicateNode.duplicateOf);
+                        }
+
+                        this.addDuplicatedEdge.emit(duplicateEdge.duplicateOf as number);
+                        edgesToRemove.push(duplicateEdge.duplicateOf);
+                    });
+
+                    this.edges.remove(edgesToRemove);
+                    this.nodes.remove(nodesToRemove);
+
+                    this.createCluster(result.expandedNode, relationship, duplicateNodeEdgePairs);
+                });
+            });
+        }
+    }
     @Input() set getSnippetsResult(result: GetSnippetsResult) {
         if (!isNullOrUndefined(result)) {
             this.sidenavEntityType = SidenavEntityType.EDGE;
@@ -95,6 +149,9 @@ export class VisualizationCanvasComponent implements OnInit {
     selectedEdges: IdType[];
     referenceTableData: DuplicateNodeEdgePair[];
     clusters: Map<string, string>;
+    openClusteringRequests: number;
+
+    clusterCreatedSource: Subject<boolean>;
 
     contextMenuTooltipSelector: string;
     contextMenuTooltipOptions: Partial<Options>;
@@ -125,6 +182,8 @@ export class VisualizationCanvasComponent implements OnInit {
         };
 
         this.clusters = new Map<string, string>();
+        this.openClusteringRequests = 0;
+        this.clusterCreatedSource = new Subject<boolean>();
     }
 
     ngOnInit() {
@@ -309,19 +368,19 @@ export class VisualizationCanvasComponent implements OnInit {
 
     createClusterSvg(referenceTableRows: ReferenceTableRow[]) {
         referenceTableRows.sort((a, b) => b.snippetCount - a.snippetCount);
-        const rowsHTMLString = referenceTableRows.slice(0, 20).map((row, index) => {
-            const snippetCountString = row.snippetCount > 20 ? '20+' : row.snippetCount;
-            const snippetBarWidth = row.snippetCount > 20 ? 100 : row.snippetCount * 5;
+        const maxSnippetCount = referenceTableRows[0].snippetCount;
+        const rowsHTMLString = referenceTableRows.slice(0, MAX_CLUSTER_ROWS).map((row, index) => {
+            const percentOfMax = row.snippetCount === 0 ? row.snippetCount : (row.snippetCount / maxSnippetCount) * 100;
 
             let rowHTMLString = `
             <tr class="reference-table-row">
                 <td class="entity-name-container">${row.nodeDisplayName}</td>
-                <td class="snippet-count-container">(${snippetCountString})</td>
+                <td class="snippet-count-container">(${row.snippetCount})</td>
                 <td class="snippet-bar-container">
-                    <div class="snippet-bar-repr" style="width: ${snippetBarWidth}px;"></div>
+                    <div class="snippet-bar-repr" style="width: ${percentOfMax}px;"></div>
                 </td>
             </tr>`;
-            if (index === 19) {
+            if (index === MAX_CLUSTER_ROWS - 1) {
                 rowHTMLString += `
                 <tr class="reference-table-row">
                     <td class="max-nodes-cell" colspan="3">Showing 20 of ${referenceTableRows.length} clustered nodes</td>
@@ -333,7 +392,7 @@ export class VisualizationCanvasComponent implements OnInit {
             }
         }).join('\n');
         const ctx = document.getElementsByTagName('canvas')[0].getContext('2d');
-        const longestName = referenceTableRows.sort(
+        const longestName = referenceTableRows.slice(0, 20).sort(
             (a, b) => ctx.measureText(b.nodeDisplayName).width - ctx.measureText(a.nodeDisplayName).width
         )[0].nodeDisplayName;
         // width of biggest name + width of counts + max width of bars + padding width + border width
@@ -428,6 +487,8 @@ export class VisualizationCanvasComponent implements OnInit {
             data: duplicateEdge.data,
             to: duplicateEdge.originalTo,
             from: duplicateEdge.originalFrom,
+            toLabel: duplicateEdge.toLabel,
+            fromLabel: duplicateEdge.fromLabel,
             arrows: duplicateEdge.arrows,
         } as VisEdge;
     }
@@ -579,28 +640,10 @@ export class VisualizationCanvasComponent implements OnInit {
         this.cleanUpDuplicates(nodesInCluster);
     }
 
-    /**
-     * Creates a cluster node of all the neighbors connected to the currently selected
-     * node connected by the input relationship.
-     * @param rel a string representing the relationship the neighbors will be clustered on
-     */
-    groupNeighborsWithRelationship(groupRequest: GroupRequest) {
-        const { relationship, node, direction } = groupRequest;
-        const neighborNodesWithRel = this.getNeighborsWithRelationship(relationship, node, direction);
-
-        let duplicateNodeEdgePairs: DuplicateNodeEdgePair[];
-        try {
-            duplicateNodeEdgePairs = this.createDuplicateNodesAndEdges(neighborNodesWithRel, relationship, node, direction);
-        } catch (e) {
-            console.log(e);
-            alert(
-                `An error occurred while trying to cluster node with ID ${node} on relationship ` +
-                `${relationship} in direction "${direction}". `
-            );
-            return;
-        }
-
+    createCluster(originNode: IdType, relationship: string, duplicateNodeEdgePairs: DuplicateNodeEdgePair[]) {
+        this.openClusteringRequests += 1;
         this.visService.getReferenceTableData(duplicateNodeEdgePairs).subscribe(result => {
+
             this.updateGraphWithDuplicates(duplicateNodeEdgePairs);
 
             const referenceTableRows = result.referenceTableRows;
@@ -633,8 +676,34 @@ export class VisualizationCanvasComponent implements OnInit {
                 }
             });
 
-            this.updateSelectedNodeEdgeLabelData(node);
+            this.updateSelectedNodeEdgeLabelData(originNode);
+            this.openClusteringRequests -= 1;
+            this.clusterCreatedSource.next(true);
         });
+    }
+
+    /**
+     * Creates a cluster node of all the neighbors connected to the currently selected
+     * node connected by the input relationship.
+     * @param rel a string representing the relationship the neighbors will be clustered on
+     */
+    groupNeighborsWithRelationship(groupRequest: GroupRequest) {
+        const { relationship, node, direction } = groupRequest;
+        const neighborNodesWithRel = this.getNeighborsWithRelationship(relationship, node, direction);
+
+        let duplicateNodeEdgePairs: DuplicateNodeEdgePair[];
+        try {
+            duplicateNodeEdgePairs = this.createDuplicateNodesAndEdges(neighborNodesWithRel, relationship, node, direction);
+        } catch (e) {
+            console.log(e);
+            alert(
+                `An error occurred while trying to cluster node with ID ${node} on relationship ` +
+                `${relationship} in direction "${direction}". `
+            );
+            return;
+        }
+
+        this.createCluster(node, relationship, duplicateNodeEdgePairs);
     }
 
     removeEdges(edges: IdType[]) {
