@@ -20,7 +20,7 @@ export class FileBrowserComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    // this.dataSource = this.pdf.getFiles(); // TODO: uncomment when backend is integrated
+    this.dataSource = this.pdf.getFiles();
   }
 
   onFileInput(files: FileList) {
@@ -30,7 +30,7 @@ export class FileBrowserComponent implements OnInit {
     this.pdf.uploadFile(files[0]).subscribe(
       (res: PdfFileUpload) => {
         this.snackBar.open(`File uploaded: ${res.filename}`, 'Close', {duration: 5000});
-        this.dataSource = this.pdf.getFiles(); // update the list on successful upload
+        this.dataSource = this.pdf.getFiles(); // updates the list on successful upload
       },
       err => {
         this.snackBar.open(`Error on upload: ${err}`, 'Close', {duration: 10000});
