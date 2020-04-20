@@ -25,6 +25,7 @@ import { VisualizationComponent } from './visualization.component';
 
 import { VisualizationService } from '../../services/visualization.service';
 import { VisualizationCanvasComponent } from '../../components/visualization-canvas/visualization-canvas.component';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 describe('VisualizationComponent', () => {
     let fixture: ComponentFixture<VisualizationComponent>;
@@ -43,6 +44,7 @@ describe('VisualizationComponent', () => {
                 RootStoreModule,
                 RouterTestingModule,
                 SharedModule,
+                BrowserAnimationsModule
             ],
             declarations: [
                 VisualizationComponent,

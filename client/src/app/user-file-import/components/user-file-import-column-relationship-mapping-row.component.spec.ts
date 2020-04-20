@@ -25,6 +25,7 @@ import { getNodeProperties } from '../store/actions';
 
 import { UserFileImportColumnRelationshipMappingRowComponent } from './user-file-import-column-relationship-mapping-row.component';
 import { DebugElement } from '@angular/core';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 describe('UserFileImportColumnRelationshipMappingRowComponent', () => {
     let component: UserFileImportColumnRelationshipMappingRowComponent;
@@ -50,6 +51,7 @@ describe('UserFileImportColumnRelationshipMappingRowComponent', () => {
             imports: [
                 RootStoreModule,
                 SharedModule,
+                BrowserAnimationsModule
             ],
         })
         .compileComponents();

@@ -2,6 +2,7 @@ import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { DrawingToolModule } from '../../drawing-tool.module';
 import { PaletteComponent } from './palette.component';
+import { RootStoreModule } from 'app/***ARANGO_USERNAME***-store';
 
 describe('PaletteComponent', () => {
   let component: PaletteComponent;
@@ -9,7 +10,10 @@ describe('PaletteComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      imports: [ DrawingToolModule ]
+      imports: [
+        RootStoreModule,
+        DrawingToolModule
+      ]
     })
     .compileComponents();
   }));

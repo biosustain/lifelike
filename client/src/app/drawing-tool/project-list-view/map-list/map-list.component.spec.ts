@@ -7,9 +7,8 @@ import { DrawingToolModule } from 'app/drawing-tool/drawing-tool.module';
 import { AngularMaterialModule } from 'app/shared/angular-material.module';
 import { ProjectsService } from 'app/drawing-tool/services';
 import { Injectable } from '@angular/core';
-import { Project } from 'app/drawing-tool/services/interfaces';
-import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 
 @Injectable()
@@ -33,7 +32,8 @@ describe('MapListComponent', () => {
         AngularMaterialModule,
         DrawingToolModule,
         RootStoreModule,
-        RouterModule
+        RouterModule,
+        BrowserAnimationsModule
       ],
       providers: [
         ProjectsService
