@@ -160,6 +160,8 @@ export class ProjectsService {
           },
           display_name: n.label,
           hash: n.id,
+          shape: n.shape || 'box',
+          icon: n.icon,
           label: n.group,
           sub_labels: []
         };
@@ -195,6 +197,8 @@ export class ProjectsService {
       (n: UniversalGraphNode): VisNetworkGraphNode => {
         return {
           label: n.display_name,
+          shape: n.shape || 'box',
+          icon: n.icon,
           x: n.data.x,
           y: n.data.y,
           id: n.hash,

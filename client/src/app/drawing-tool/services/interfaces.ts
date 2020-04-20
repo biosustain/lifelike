@@ -7,6 +7,8 @@ interface UniversalGraphNode {
   };
   display_name: string;
   hash: string;
+  shape?: string;
+  icon?: any;
   label: string;
   sub_labels: string[];
 }
