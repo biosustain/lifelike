@@ -104,11 +104,11 @@ def get_annotations_service():
     return g.annotations_service
 
 
-def get_token_extractor_service():
-    if 'token_extractor_service' not in g:
-        from neo4japp.services.annotations import TokenExtractor
-        g.token_extractor_service = TokenExtractor()
-    return g.token_extractor_service
+def get_annotations_pdf_parser():
+    if 'annotations_pdf_parser' not in g:
+        from neo4japp.services.annotations import AnnotationsPDFParser
+        g.annotations_pdf_parser = AnnotationsPDFParser()
+    return g.annotations_pdf_parser
 
 
 def get_bioc_document_service():
@@ -131,7 +131,7 @@ def reset_dao():
         'authorization_service',
         'account_service',
         'annotations_service',
-        'token_extractor_service',
+        'annotations_pdf_parser',
         'bioc_document_service',
     ]:
         if dao in g:
