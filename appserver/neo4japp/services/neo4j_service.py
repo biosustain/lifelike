@@ -147,7 +147,6 @@ class Neo4JService(GraphBaseDao):
 
     def get_snippets_from_edge(self, edge: VisEdge):
         query = self.get_snippets_from_edge_query(edge.from_, edge.to, edge.label)
-
         data = self.graph.run(query).data()
         snippets = [Snippet(
             reference=GraphNode.from_py2neo(
@@ -209,8 +208,15 @@ class Neo4JService(GraphBaseDao):
             node = pair.node
             edge = pair.edge
 
-            query = self.get_association_snippet_count_query(edge.original_from, edge.original_to, edge.label)  # noqa
-            count = self.graph.run(query).evaluate()
+            query = self.get_association_snippet_count_query(edge.from_label, edge.to_label)
+            count = self.graph.run(
+                query,
+                {
+                    'from_id': edge.original_from,
+                    'to_id': edge.original_to,
+                    'description': edge.label,
+                }
+            ).evaluate()
             reference_table_rows.append(ReferenceTableRow(
                 node_display_name=node.display_name,
                 snippet_count=count,
@@ -225,8 +231,15 @@ class Neo4JService(GraphBaseDao):
 
         for node in clustered_nodes:
             for edge in node.edges:
-                query = self.get_association_snippet_count_query(edge.original_from, edge.original_to, edge.label)  # noqa
-                count = self.graph.run(query).evaluate()
+                query = self.get_association_snippet_count_query(edge.from_label, edge.to_label)
+                count = self.graph.run(
+                    query,
+                    {
+                        'from_id': edge.original_from,
+                        'to_id': edge.original_to,
+                        'description': edge.label
+                    }
+                ).evaluate()
 
                 if (results.get(node.node_id, None) is not None):
                     results[node.node_id][edge.label] = count
@@ -447,13 +460,15 @@ class Neo4JService(GraphBaseDao):
         """.format(from_node, to_node, association)
         return query
 
-    def get_association_snippet_count_query(self, from_node: int, to_node: int, association: str):
-        query = """
-            MATCH (f)-[:HAS_ASSOCIATION]->(a:Association)-[:HAS_ASSOCIATION]->(t)
-            WHERE ID(f)={} AND ID(t)={} AND a.description='{}'
-            WITH a AS association MATCH (association)-[:HAS_REF]-(r:Reference)
+    def get_association_snippet_count_query(self, from_label: str, to_label: str):
+        query = f"""
+            MATCH
+            (f:{from_label})-[:HAS_ASSOCIATION]->(a:Association)-[:HAS_ASSOCIATION]->(t:{to_label})
+            WHERE ID(f)=$from_id AND ID(t)=$to_id AND a.description=$description
+            WITH ID(a) AS association_id MATCH (a:Association)-[:HAS_REF]-(r:Reference)
+            WHERE ID(a)=association_id
             RETURN COUNT(r) as count
-        """.format(from_node, to_node, association)
+        """
         return query
 
     def get_reaction_query(self, biocyc_id: str):
