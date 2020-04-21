@@ -14,5 +14,4 @@ jobs:
       run: |
         docker-compose -f docker-compose.pytest-workflow.yml up --build -d
         ./appserver/bin/wait-for-flask
-        ./appserver/bin/wait-for-neo4j
         docker-compose exec -T appserver pytest tests
