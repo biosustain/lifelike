@@ -79,3 +79,11 @@ $***ARANGO_DB_NAME***-accent: mat-palette($***ARANGO_DB_NAME***-secondary-colors
 $***ARANGO_DB_NAME***-theme: mat-light-theme($***ARANGO_DB_NAME***-primary, $***ARANGO_DB_NAME***-accent);
 
 @include angular-material-theme($***ARANGO_DB_NAME***-theme);
+
+
+.vertical-nav {
+  background-color: mat-color($***ARANGO_DB_NAME***-primary);
+  a mat-icon {
+    color: $light-primary-text;
+  }
+}

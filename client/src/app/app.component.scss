@@ -1,19 +1,12 @@
-.vertical-nav {
-  background-color: #2196f3;
+.vertical-nav a {
+  // note: dtu-theme.scss also modifies .vertical-nav
+  height: 54px;
+  width: 54px;
+  outline: none; /* no dotted line upon click */
+  text-decoration: none; /* no underline */
 
-  a {
-    height: 54px;
-    width: 54px;
-    outline: none; /* no dotted line upon click */
-    text-decoration: none; /* no underline */
-
-    &:hover {
-      background: rgba(0, 0, 0, 0.16);
-      cursor: pointer; /* workaround to show pointer on last item, the menu */
-    }
-
-    mat-icon {
-      color: white;
-    }
+  &:hover {
+    background: rgba(0, 0, 0, 0.16);
+    cursor: pointer; /* workaround to show pointer on last item, the menu */
   }
 }
