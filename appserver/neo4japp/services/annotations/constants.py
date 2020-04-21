@@ -1,22 +1,44 @@
 from enum import Enum
 
-
-COMMON_WORDS = {
-    'not', 'the', 'in', 'or', 'and', 'by', 'to',
-    'with', 'can', 'for', 'was', 'at', 'if', 'end',
-    'be', 'min', 'we', 'link', 'up', 'far', 'set',
-    'but', 'as', 'ml', 'it', 'had', 'key', 'did',
-    'do', 'It', 'For', 'for', 'tag', 'how', 'old',
-    'kit', 'Low', 'an', 'jar', 'PDF', 'raw', 'patch',
-    'membrane', 'out', 'et', 'den', 'tor', 'rod', 'Med',
-    'Walker', 'Lin', 'Men', 'bond', 'group', 'acid', 'cluster',
-    'protein', 'transporter', 'role', 'toxin', 'molecule', 'vitamin', 'us',
-    'fit', 'light', 'mixture', 'solution', 'vs', 'this', 'other',
-    'none', 'not', 'unknown', 'is', 'no', 'has',
+PDF_NEW_LINE_THRESHOLD = .30
+COMMON_TWO_LETTER_WORDS = {
+    'of', 'to', 'in', 'it', 'is', 'be', 'as', 'at',
+    'so', 'we', 'he', 'by', 'or', 'on', 'do', 'if',
+    'me', 'my', 'up', 'an', 'go', 'no', 'us', 'am',
+    'et', 'vs',
+}
+COMMON_THREE_LETTER_WORDS = {
+    'the', 'and', 'for', 'are', 'but', 'not', 'you', 'all',
+    'any', 'can', 'had', 'her', 'was', 'one', 'our', 'out',
+    'day', 'get', 'has', 'him', 'his', 'how', 'man', 'new',
+    'now', 'old', 'see', 'two', 'way', 'who', 'boy', 'did',
+    'its', 'let', 'put', 'say', 'she', 'too', 'use', 'end',
+    'min', 'far', 'set', 'key', 'tag', 'pdf', 'raw', 'low',
+    'med', 'men',
+}
+COMMON_FOUR_LETTER_WORDS = {
+    'that', 'with', 'have', 'this', 'will', 'your', 'from',
+    'name', 'they', 'know', 'want', 'been', 'good', 'much',
+    'some', 'time', 'none', 'link', 'bond', 'acid', 'role',
+    'them',
 }
 
+COMMON_MISC_WORDS = {
+    'patch', 'membrane', 'walker', 'group', 'cluster',
+    'protein', 'transporter', 'toxin', 'molecule', 'vitamin',
+    'light', 'mixture', 'solution', 'other', 'unknown',
+}
+
+COMMON_WORDS = set.union(*[
+    COMMON_TWO_LETTER_WORDS,
+    COMMON_THREE_LETTER_WORDS,
+    COMMON_FOUR_LETTER_WORDS,
+    COMMON_MISC_WORDS,
+])
+
 TYPO_SYNONYMS = {
-    'e coli': ['E. coli', 'Escherichia coli', 'Enterococcus coli'],
+    # 'e coli': ['E. coli', 'Escherichia coli', 'Enterococcus coli'],
+    'multiplemitochondrialdysfunctionssyndromes': ['Multiple Mitochondrial Dysfunctions Syndrome'],  # noqa
 }
 
 
