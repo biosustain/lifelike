@@ -160,7 +160,7 @@ class AnnotationsService:
         self,
         curr_page_coor_obj: List[Union[LTChar, LTAnno]],
         indexes: List[int],
-        keyword_positions: List[dict] = [],
+        keyword_positions: List[Annotation.TextPosition] = [],
     ) -> None:
         """Creates the keyword objects with the keyword
         text, along with their coordinate positions and
@@ -239,12 +239,12 @@ class AnnotationsService:
             Annotation.TextPosition(
                 value=keyword,
                 lower_left={
-                    'x': start_lower_x,
-                    'y': start_lower_y,
+                    'x': start_lower_x,  # type: ignore
+                    'y': start_lower_y,  # type: ignore
                 },
                 upper_right={
-                    'x': end_upper_x,
-                    'y': end_upper_y,
+                    'x': end_upper_x,  # type: ignore
+                    'y': end_upper_y,  # type: ignore
                 },
             ),
         )
@@ -628,3 +628,4 @@ class AnnotationsService:
             )
 
         conflicts.extend(tree.split_overlaps())
+        return conflicts
