@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "1b0b05ec469958c76409addb1f48c8f3f0dbb6017cd5ff612fa84c91cf8a2d07"
+            "sha256": "538a9697c5237c481cc4dea2a43bade97951a34761a65dd4d279b818610f97a8"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -21,6 +21,14 @@
                 "sha256:035ab00497217628bf5d0be82d664d8713ab13d37b630084da8e1f98facf4dbf"
             ],
             "version": "==1.4.2"
+        },
+        "appnope": {
+            "hashes": [
+                "sha256:5b26757dc6f79a3b7dc9fab95359328d5747fcb2409d331ea66d0272b90ab2a0",
+                "sha256:8b995ffe925347a2138d7ac0fe77155e4311a0ea6d6da4f5128fe4b3cbe5ed71"
+            ],
+            "markers": "sys_platform == 'darwin'",
+            "version": "==0.1.0"
         },
         "attrs": {
             "hashes": [
@@ -230,6 +238,13 @@
             ],
             "index": "pypi",
             "version": "==20.0.4"
+        },
+        "intervaltree": {
+            "hashes": [
+                "sha256:cb4f61c81dcb4fea6c09903f3599015a83c9bdad1f0bbd232495e6681e19e273"
+            ],
+            "index": "pypi",
+            "version": "==3.0.2"
         },
         "ipython": {
             "hashes": [
