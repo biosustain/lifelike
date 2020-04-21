@@ -30,8 +30,10 @@ export class PdfViewerComponent implements AfterViewInit, OnDestroy {
   filesFilterSub: Subscription;
   filteredFiles = this.files;
 
-  // Type information coming from interface PDFSource at https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/pdfjs-dist/index.d.ts
-  pdfData: {url?: string, data?: Uint8Array} = {url:'/assets/pdfs/sample.pdf'}; // TODO: feel free to remove the sample.pdf when desired. In that case also mocked annotations should be removed
+  // Type information coming from interface PDFSource at:
+  // https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/pdfjs-dist/index.d.ts
+  // TODO: feel free to remove the sample.pdf when desired. In that case, also mocked annotations should be removed
+  pdfData: {url?: string, data?: Uint8Array} = {url: '/assets/pdfs/sample.pdf'};
 
   constructor(
     private pdfAnnService: PdfAnnotationsService,
