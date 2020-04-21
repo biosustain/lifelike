@@ -7,6 +7,7 @@
     <button mat-raised-button>Open</button>
   </div>
 
+  <mat-progress-bar mode="indeterminate" *ngIf="isUploading"></mat-progress-bar>
 
   <mat-table [dataSource]="dataSource">
     <ng-container matColumnDef="filename">
