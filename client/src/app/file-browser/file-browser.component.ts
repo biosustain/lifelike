@@ -13,6 +13,7 @@ import { PdfFilesService } from 'app/shared/services/pdf-files.service';
 export class FileBrowserComponent implements OnInit {
   displayedColumns: string[] = ['filename', 'creationDate', 'username', 'annotation'];
   dataSource: Observable<PdfFile[]>;
+  isUploading = false;
 
   constructor(
     private pdf: PdfFilesService,
@@ -27,12 +28,15 @@ export class FileBrowserComponent implements OnInit {
     if (files.length === 0) {
       return;
     }
+    this.isUploading = true;
     this.pdf.uploadFile(files[0]).subscribe(
       (res: PdfFileUpload) => {
+        this.isUploading = false;
         this.snackBar.open(`File uploaded: ${res.filename}`, 'Close', {duration: 5000});
         this.dataSource = this.pdf.getFiles(); // updates the list on successful upload
       },
       err => {
+        this.isUploading = false;
         this.snackBar.open(`Error on upload: ${err}`, 'Close', {duration: 10000});
       }
     );
