@@ -15,7 +15,7 @@ app = create_app(config=f'config.{app_config}')
 
 @app.route('/')
 def home():
-    return render_template('index.html')
+    return 'Ouch! You hit me.'
 
 
 @app.cli.command("seed")
