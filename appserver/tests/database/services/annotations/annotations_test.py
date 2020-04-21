@@ -67,7 +67,7 @@ def test_save_bioc_annotations_to_db(annotations_setup, session):
     bioc_service = get_bioc_document_service()
     token_extractor = get_annotations_pdf_parser()
 
-    pdf = path.join(directory, 'pdf_samples/554. salazar msystems 20.pdf')
+    pdf = path.join(directory, 'pdf_samples/example3.pdf')
 
     with open(pdf, 'rb') as f:
         parsed_pdf_chars = token_extractor.parse_pdf(pdf=f)
@@ -75,14 +75,14 @@ def test_save_bioc_annotations_to_db(annotations_setup, session):
         annotations = annotator.create_annotations(
             tokens=token_extractor.extract_tokens(parsed_chars=parsed_pdf_chars))
 
-        annotated_json_f = path.join(directory, 'pdf_samples/annotations-test.json')
-        with open(annotated_json_f, 'w') as a_f:
-            json.dump(annotations, a_f)
-
     bioc = bioc_service.read(
         text=pdf_text,
-        file_uri=path.join(directory, 'pdf_samples/554. salazar msystems 20.pdf'))
+        file_uri=path.join(directory, 'pdf_samples/example3.pdf'))
     annotations_json = bioc_service.generate_bioc_json(annotations=annotations, bioc=bioc)
+
+    annotated_json_f = path.join(directory, 'pdf_samples/annotations-test.json')
+    with open(annotated_json_f, 'w') as a_f:
+        json.dump(annotations_json, a_f)
 
     with open(pdf, 'rb') as f:
         raw = f.read()
