@@ -79,3 +79,11 @@ $lifelike-accent: mat-palette($lifelike-secondary-colors, 500, A100, 900, 50);
 $lifelike-theme: mat-light-theme($lifelike-primary, $lifelike-accent);
 
 @include angular-material-theme($lifelike-theme);
+
+
+.vertical-nav {
+  background-color: mat-color($lifelike-primary);
+  a mat-icon {
+    color: $light-primary-text;
+  }
+}
