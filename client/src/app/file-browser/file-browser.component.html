@@ -7,6 +7,7 @@
     <button mat-raised-button>Open</button>
   </div>
 
+  <mat-progress-bar mode="indeterminate" *ngIf="isUploading"></mat-progress-bar>
 
   <mat-table [dataSource]="dataSource">
     <ng-container matColumnDef="filename">
@@ -16,7 +17,7 @@
 
     <ng-container matColumnDef="creationDate">
       <mat-header-cell *matHeaderCellDef> Created </mat-header-cell>
-      <mat-cell *matCellDef="let element"> {{element.creationDate}} </mat-cell>
+      <mat-cell *matCellDef="let element"> {{element.creation_date}} </mat-cell>
     </ng-container>
 
     <ng-container matColumnDef="username">
@@ -26,7 +27,7 @@
 
     <ng-container matColumnDef="annotation">
       <mat-header-cell *matHeaderCellDef> Annotation </mat-header-cell>
-      <mat-cell *matCellDef="let element"> {{element.annotation}} </mat-cell>
+      <mat-cell *matCellDef="let element"> ✓ </mat-cell>
     </ng-container>
 
     <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
