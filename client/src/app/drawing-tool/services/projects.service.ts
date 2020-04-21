@@ -27,7 +27,7 @@ export class ProjectsService {
 
   projects: Project[] = [utiProject, microbiomeProject];
 
-  baseUrl = environment.apiUrl;
+  baseUrl = `${environment.apiUrl}`;
 
   constructor(private http: HttpClient) { }
 

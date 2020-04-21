@@ -103,7 +103,7 @@ export class PdfViewerComponent implements AfterViewInit, OnDestroy {
   }
 
   openPdf(id: string) {
-    this.pdfFileUrl = `${environment.apiUrl}/api/files/${id}`;
+    this.pdfFileUrl = `${environment.apiUrl}/files/${id}`;
     console.log(`url passed to pdf viewer: ${this.pdfFileUrl}`);
   }
 
