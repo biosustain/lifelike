@@ -5,6 +5,8 @@ import { Browsers } from 'app/interfaces/shared.interface';
 
 @Injectable()
 export class ClipboardService {
+    private userHasSeenWarnings = false;
+
     constructor(
         private platform: Platform
     ) { }
@@ -64,19 +66,25 @@ export class ClipboardService {
                 break;
             }
             case Browsers.FIREFOX: {
-                alert(
-                    'We would like to read some information from your clipboard, however at this time ' +
-                    'Firefox does not allow us to do so. For the best experience using our app, we highly ' +
-                    'recommend using Chrome or Microsoft Edge.'
-                );
+                if (!this.userHasSeenWarnings) {
+                    alert(
+                        'We would like to read some information from your clipboard, however at this time ' +
+                        'Firefox does not allow us to do so. For the best experience using our app, we highly ' +
+                        'recommend using Chrome or Microsoft Edge.'
+                    );
+                    this.userHasSeenWarnings = true;
+                }
                 break;
             }
             case Browsers.SAFARI: {
-                alert(
-                    'We would like to read some information from your clipboard. If the content of your ' +
-                    'clipboard was copied from a source other than Safari, you may see a "Paste" dialog appear ' +
-                    'after closing this dialog. Clicking on the "Paste" dialog will allow us to read your clipboard.'
-                );
+                if (!this.userHasSeenWarnings) {
+                    alert(
+                        'We would like to read some information from your clipboard. If the content of your ' +
+                        'clipboard was copied from a source other than Safari, you may see a "Paste" dialog appear ' +
+                        'after closing this dialog. Clicking on the "Paste" dialog will allow us to read your clipboard.'
+                    );
+                    this.userHasSeenWarnings = true;
+                }
 
                 try {
                     // At the time of writing, `navigator.permissions` does not exist in Safari,
