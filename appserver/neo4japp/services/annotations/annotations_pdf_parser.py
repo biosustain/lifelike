@@ -18,6 +18,11 @@ from neo4japp.data_transfer_objects import (
 )
 from neo4japp.util import compute_hash
 
+from .constants import (
+    PDF_CHARACTER_SPACING_THRESHOLD,
+    PDF_NEW_LINE_THRESHOLD,
+)
+
 
 class AnnotationsPDFParser:
     def __init__(self) -> None:
@@ -32,7 +37,10 @@ class AnnotationsPDFParser:
     ) -> None:
         def space_exists_between_lt_chars(a: LTChar, b: LTChar):
             """Determines if a space character exists between two LTChars."""
-            return (b.x0 - a.x1 > a.width * 0.325) or (abs(b.y0 - a.y0) > a.height * 0.3)
+            return (
+                (b.x0 - a.x1 > a.width * PDF_CHARACTER_SPACING_THRESHOLD) or
+                (abs(b.y0 - a.y0) > a.height * PDF_NEW_LINE_THRESHOLD)
+            )
 
         for lt_obj in layout:
             if isinstance(lt_obj, LTTextBox) or isinstance(lt_obj, LTTextLine) or isinstance(lt_obj, LTFigure):  # noqa
