@@ -1,6 +1,7 @@
 from enum import Enum
 
 PDF_NEW_LINE_THRESHOLD = .30
+PDF_CHARACTER_SPACING_THRESHOLD = .325
 COMMON_TWO_LETTER_WORDS = {
     'of', 'to', 'in', 'it', 'is', 'be', 'as', 'at',
     'so', 'we', 'he', 'by', 'or', 'on', 'do', 'if',
