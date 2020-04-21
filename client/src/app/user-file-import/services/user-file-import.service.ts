@@ -5,10 +5,11 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
 import { FileNameAndSheets, Neo4jColumnMapping } from '../../interfaces/user-file-import.interface';
+import { environment } from 'environments/environment';
 
 @Injectable()
 export class UserFileImportService {
-    readonly neo4jAPI = '/api/user-file-import';
+    readonly neo4jAPI = `${environment.apiUrl}/user-file-import`;
 
     constructor(private http: HttpClient) {}
 
