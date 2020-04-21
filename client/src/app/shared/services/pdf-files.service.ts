@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
+import { AuthenticationService } from 'app/auth/services/authentication.service';
 import { PdfFiles, PdfFile, PdfFileUpload } from 'app/interfaces/pdf-files.interface';
 import { environment } from 'environments/environment';
 
@@ -12,6 +13,7 @@ export class PdfFilesService {
   readonly baseUrl = `${environment.apiUrl}/files`;
 
   constructor(
+    private auth: AuthenticationService,
     private http: HttpClient,
   ) {}
 
@@ -32,7 +34,14 @@ export class PdfFilesService {
   uploadFile(file: File): Observable<PdfFileUpload> {
     const formData: FormData = new FormData();
     formData.append('file', file);
-    // formData.append('username', this_should_be_found_somewhere);
-    return this.http.post<PdfFileUpload>(`${this.baseUrl}/upload`, formData);
+    return this.http.post<PdfFileUpload>(`${this.baseUrl}/upload`, formData, this.buildHttpOptions());
+  }
+
+  private buildHttpOptions() {
+    return {
+      headers: new HttpHeaders({
+        Authorization: `Bearer ${this.auth.getAccessToken()}`
+      }),
+    };
   }
 }
