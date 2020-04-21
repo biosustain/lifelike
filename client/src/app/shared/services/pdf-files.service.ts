@@ -27,8 +27,9 @@ export class PdfFilesService {
     );
   }
 
-  getFile(id: string): Observable<any> {
-    return this.http.get(`${this.baseUrl}${id}`);
+  getFile(id: string): Observable<ArrayBuffer> {
+    const options = Object.assign(this.buildHttpOptions(), {responseType: 'arraybuffer'});
+    return this.http.get<ArrayBuffer>(`${this.baseUrl}${id}`, options);
   }
 
   uploadFile(file: File): Observable<PdfFileUpload> {
