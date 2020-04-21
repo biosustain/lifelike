@@ -4,13 +4,12 @@ import { Observable, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { AuthenticationService } from 'app/auth/services/authentication.service';
 import { PdfFiles, PdfFile, PdfFileUpload } from 'app/interfaces/pdf-files.interface';
-import { environment } from 'environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class PdfFilesService {
-  readonly baseUrl = `${environment.apiUrl}/files`;
+  readonly baseUrl = '/api/files';
 
   constructor(
     private auth: AuthenticationService,
