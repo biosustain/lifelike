@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { environment } from '../../../environments/environment';
 
 import {
   Project,
@@ -27,7 +26,7 @@ export class ProjectsService {
 
   projects: Project[] = [utiProject, microbiomeProject];
 
-  baseUrl = `${environment.apiUrl}`;
+  readonly baseUrl = '/api/drawing-tool';
 
   constructor(private http: HttpClient) { }
 
@@ -70,7 +69,7 @@ export class ProjectsService {
    */
   public serveProject(hashId) {
    return this.http.get(
-    this.baseUrl + `/drawing-tool/map/${hashId}`,
+    this.baseUrl + `/map/${hashId}`,
     this.createHttpOptions(true)
    );
   }
@@ -82,7 +81,7 @@ export class ProjectsService {
    */
   public pullCommunityProjects() {
     return this.http.get(
-      this.baseUrl + '/drawing-tool/community',
+      this.baseUrl + '/community',
       this.createHttpOptions(true)
     );
   }
@@ -93,7 +92,7 @@ export class ProjectsService {
    */
   public pullProjects(): Observable<any> {
     return this.http.get(
-      this.baseUrl + '/drawing-tool/projects',
+      this.baseUrl + '/projects',
       this.createHttpOptions(true),
     );
   }
@@ -104,7 +103,7 @@ export class ProjectsService {
    */
   public getPDF(project: Project): Observable<any> {
     return this.http.get(
-      this.baseUrl + `/drawing-tool/projects/${project.id}/pdf`,
+      this.baseUrl + `/projects/${project.id}/pdf`,
       this.createHttpOptions(true, true)
     );
   }
@@ -115,7 +114,7 @@ export class ProjectsService {
    */
   public addProject(project: Project): Observable<any> {
     return this.http.post(
-      this.baseUrl + '/drawing-tool/projects',
+      this.baseUrl + '/projects',
       project,
       this.createHttpOptions(true)
     );
@@ -127,7 +126,7 @@ export class ProjectsService {
    */
   public updateProject(project: Project): Observable<any> {
     return this.http.put(
-      this.baseUrl + `/drawing-tool/projects/${project.id}`,
+      this.baseUrl + `/projects/${project.id}`,
       project,
       this.createHttpOptions(true)
     );
@@ -139,7 +138,7 @@ export class ProjectsService {
    */
   public deleteProject(project: Project): Observable<any> {
     return this.http.delete(
-      this.baseUrl + `/drawing-tool/projects/${project.id}`,
+      this.baseUrl + `/projects/${project.id}`,
       this.createHttpOptions(true)
     );
   }
