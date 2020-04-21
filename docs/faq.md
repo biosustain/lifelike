@@ -44,7 +44,7 @@ __IMPORTANT NOTE!! READ ME__
 ## How do I add new packages to package.json?
 1. Run the following
 ```
-docker-compose exec yarn add <package name>
+docker-compose exec client yarn add <package name>
 ```
 
 2. Ensure the package has been installed in the `package.json` and `yarn.lock` file
