@@ -10,11 +10,10 @@ import {
 } from 'app/interfaces';
 import { map, takeUntil } from 'rxjs/operators';
 import { BehaviorSubject, Subject } from 'rxjs';
-import { environment } from 'environments/environment';
 
 @Injectable({providedIn: '***ARANGO_USERNAME***'})
 export class AccountService implements OnDestroy {
-    readonly accountApi = `${environment.apiUrl}/accounts`;
+    readonly accountApi = '/api/accounts';
 
     private completedSubjectsSource = new Subject<boolean>();
     private userListSource = new BehaviorSubject<AppUser[]>([]);

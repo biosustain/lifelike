@@ -14,11 +14,10 @@ import {
     GetReferenceTableDataResult,
 } from 'app/interfaces';
 import { NODE_EXPANSION_LIMIT } from 'app/shared/constants';
-import { environment } from 'environments/environment';
 
 @Injectable()
 export class VisualizationService {
-    readonly visApi = `${environment.apiUrl}/neo4j`;
+    readonly visApi = '/api/neo4j';
 
     constructor(private http: HttpClient) {}
 
