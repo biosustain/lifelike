@@ -7,6 +7,6 @@ until PGPASSWORD=$POSTGRES_PASSWORD psql -h $POSTGRES_HOST -U $POSTGRES_USER -c 
   sleep 1
 done
 
-# Run command
+# Run command | https://docs.docker.com/compose/startup-order/
 >&2 echo "PostgreSQL started - executing command"
 exec $@

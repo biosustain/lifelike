@@ -11,7 +11,6 @@ pycodestyle = "==2.5.0"
 [packages]
 attrs = "~=18.1.0"
 bcrypt = "~=3.1.7"
-elasticsearch = "*"
 flask-marshmallow = "~=0.11.0"
 Flask = "*"
 flask-caching = "~=1.8.0"
