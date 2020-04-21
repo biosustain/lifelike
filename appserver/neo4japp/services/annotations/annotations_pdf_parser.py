@@ -5,7 +5,7 @@ from typing import Any, Dict, List, Set, Tuple, Union
 
 from pdfminer import high_level
 from pdfminer.converter import PDFPageAggregator, TextConverter
-from pdfminer.layout import LAParams, LTAnno, LTChar, LTTextBox, LTTextLine
+from pdfminer.layout import LAParams, LTAnno, LTChar, LTTextBox, LTTextLine, LTFigure
 from pdfminer.pdfdocument import PDFDocument
 from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
 from pdfminer.pdfpage import PDFPage
@@ -30,8 +30,12 @@ class AnnotationsPDFParser:
         page_idx: int,
         coor_obj_per_pdf_page: Dict[int, List[Union[LTChar, LTAnno]]],
     ) -> None:
+        def space_exists_between_lt_chars(a: LTChar, b: LTChar):
+            """Determines if a space character exists between two LTChars."""
+            return (b.x0 - a.x1 > a.width * 0.325) or (abs(b.y0 - a.y0) > a.height * 0.3)
+
         for lt_obj in layout:
-            if isinstance(lt_obj, LTTextBox) or isinstance(lt_obj, LTTextLine):
+            if isinstance(lt_obj, LTTextBox) or isinstance(lt_obj, LTTextLine) or isinstance(lt_obj, LTFigure):  # noqa
                 self._get_lt_char(
                     layout=lt_obj,
                     page_idx=page_idx,
@@ -39,6 +43,11 @@ class AnnotationsPDFParser:
                 )
             elif isinstance(lt_obj, LTChar) or isinstance(lt_obj, LTAnno):
                 if page_idx + 1 in coor_obj_per_pdf_page:
+                    prev_char = coor_obj_per_pdf_page[page_idx+1][-1]
+                    if isinstance(prev_char, LTChar) and isinstance(lt_obj, LTChar) and space_exists_between_lt_chars(prev_char, lt_obj):  # noqa
+                        virtual_space_char = LTAnno(' ')
+                        coor_obj_per_pdf_page[page_idx+1].append(virtual_space_char)
+
                     coor_obj_per_pdf_page[page_idx+1].append(lt_obj)
                 else:
                     coor_obj_per_pdf_page[page_idx+1] = [lt_obj]
