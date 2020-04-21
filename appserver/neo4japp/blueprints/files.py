@@ -29,7 +29,7 @@ def upload_pdf():
     pdf_parser = get_annotations_pdf_parser()
 
     pdf = request.files['file']
-    project = request.form['project']
+    project = '1'  # TODO: remove hard coded project
     binary_pdf = pdf.read()
     username = g.current_user
 
@@ -74,9 +74,12 @@ def upload_pdf():
 def list_files():
     """TODO: See JIRA LL-322
     """
-    data = request.get_json()
+    # TODO: remove hard coded project
+    # Part of phase 1, as explained at https://github.com/SBRG/kg-prototypes/pull/85#issue-404823272
+    project = '1'
+
     files = [{
-        'id': row.id,
+        'id': row.id,  # TODO: is this of any use?
         'file_id': row.file_id,
         'filename': row.filename,
         'username': row.username,
@@ -87,7 +90,7 @@ def list_files():
         Files.filename,
         Files.username,
         Files.creation_date)
-        .filter(Files.project == data['project'])
+        .filter(Files.project == project)
         .all()]
     return jsonify({'files': files})
 
