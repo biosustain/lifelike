@@ -217,9 +217,7 @@ class AnnotationsService:
                         curr_page_coor_obj=curr_page_coor_obj,
                         pos_idx=pos_idx-1,
                     )
-
-                    _, prev_lower_y, _, prev_upper_y = curr_page_coor_obj[prev_idx].bbox  # noqa
-                    height = prev_upper_y - prev_lower_y
+                    height = curr_page_coor_obj[prev_idx].height
 
                     # if diff is greater than height ratio
                     # then part of keyword is on a new line
