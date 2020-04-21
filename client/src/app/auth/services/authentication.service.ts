@@ -80,4 +80,8 @@ export class AuthenticationService {
         })
       );
   }
+
+  public getAccessToken() {
+    return localStorage.getItem('access_jwt') || '';
+  }
 }
