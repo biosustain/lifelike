@@ -4,4 +4,7 @@ COPY --chown=neo4j:neo4j . /var/lib/neo4j
 
 USER neo4j
 
-RUN neo4j-admin load --from=./backups/dev-backup.dump --database=graph.db --force
+# Perform a backup before running the docker script
+ENTRYPOINT ["/sbin/tini", "-g", "--", "/var/lib/neo4j/seed-backup.sh"]
+
+CMD ["neo4j"]
