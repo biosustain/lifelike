@@ -17,4 +17,3 @@ services:
             dockerfile: Dockerfile.staging
         ports:
             - 80:80
-
