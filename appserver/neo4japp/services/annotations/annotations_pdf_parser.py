@@ -42,6 +42,16 @@ class AnnotationsPDFParser:
                 (abs(b.y0 - a.y0) > a.height * PDF_NEW_LINE_THRESHOLD)
             )
 
+        def should_add_virtual_space(
+            prev_char: Union[LTAnno, LTChar],
+            curr_char: Union[LTAnno, LTChar]
+        ):
+            return (
+                isinstance(prev_char, LTChar) and prev_char.get_text() != ' ' and
+                isinstance(curr_char, LTChar) and curr_char.get_text() != ' ' and
+                space_exists_between_lt_chars(prev_char, curr_char)
+            )
+
         for lt_obj in layout:
             if isinstance(lt_obj, LTTextBox) or isinstance(lt_obj, LTTextLine) or isinstance(lt_obj, LTFigure):  # noqa
                 self._get_lt_char(
@@ -52,7 +62,7 @@ class AnnotationsPDFParser:
             elif isinstance(lt_obj, LTChar) or isinstance(lt_obj, LTAnno):
                 if page_idx + 1 in coor_obj_per_pdf_page:
                     prev_char = coor_obj_per_pdf_page[page_idx+1][-1]
-                    if isinstance(prev_char, LTChar) and isinstance(lt_obj, LTChar) and space_exists_between_lt_chars(prev_char, lt_obj):  # noqa
+                    if should_add_virtual_space(prev_char, lt_obj):
                         virtual_space_char = LTAnno(' ')
                         coor_obj_per_pdf_page[page_idx+1].append(virtual_space_char)
 
