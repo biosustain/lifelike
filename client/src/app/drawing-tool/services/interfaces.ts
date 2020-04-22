@@ -78,7 +78,7 @@ interface GraphSelectionData {
 }
 
 interface Location {
-  pageNumber:number;
+  pageNumber: number;
   rect: Rect;
 }
 
@@ -90,9 +90,9 @@ interface Links {
 }
 
 interface Meta {
-  type:string;
-  color:string;
-  id?:string;
+  type: string;
+  color: string;
+  id?: string;
   idType?: string;
   isCustom?: boolean;
   allText?: string;
@@ -100,7 +100,7 @@ interface Meta {
 }
 
 interface Rect {
-  [index:number]: number
+  [index: number]: number;
 }
 
 interface Annotation {
