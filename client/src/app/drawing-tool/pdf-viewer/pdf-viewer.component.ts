@@ -11,7 +11,7 @@ import {
 } from '../services';
 
 import {
-  GraphData, Annotation, Location
+  GraphData, Annotation, Location, Meta
 } from '../services/interfaces';
 
 const MOCK_FILES: PdfFile[] = [ // TODO: remove once backend is in place
@@ -93,18 +93,27 @@ export class PdfViewerComponent implements AfterViewInit, OnDestroy {
         .getElementById('drawing-tool-view-container')
         .getBoundingClientRect() as DOMRect;
 
-    const annId = nodeDom.getAttribute('annotation-id');
-    const annDef: Annotation = this.pdfAnnService.searchForAnnotation(annId);
+    // everything that graphbuilder might need is under meta
+    const meta: Meta = JSON.parse(nodeDom.getAttribute('meta')) as Meta;
 
+    // use location object to scroll in the pdf.
+    const loc: Location = JSON.parse(nodeDom.getAttribute('location')) as Location;
+
+    // custom annotations dont have id yet.
+    // const annDef: Annotation = this.pdfAnnService.searchForAnnotation(annId);
+
+    /*
     const payload: GraphData = {
       x: mouseEvent.clientX - containerCoord.x,
       y: mouseEvent.clientY,
       label: nodeDom.innerText,
-      group: 'group1',
+      group: (meta.type as string).toLowerCase(),
       hyperlink: this.generateHyperlink(annDef)
     };
+    */
+    // hyperlink should be hyperlinks. Those are in Meta field called Links.
 
-    this.dataFlow.pushNode2Canvas(payload);
+    // this.dataFlow.pushNode2Canvas(payload);
   }
 
   private updateFilteredFiles = (name: string) => {
