@@ -13,10 +13,10 @@ export const ANNOTATIONS = [
       'BOLA3'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112114492',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112114492',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -33,10 +33,10 @@ export const ANNOTATIONS = [
       'BOLA3.'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112114492',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112114492',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -53,10 +53,10 @@ export const ANNOTATIONS = [
       'BOLA3'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112114492',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112114492',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -73,10 +73,10 @@ export const ANNOTATIONS = [
       'BOLA3'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112114492',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112114492',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -93,10 +93,10 @@ export const ANNOTATIONS = [
       'BOLA3'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112114492',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112114492',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -113,10 +113,10 @@ export const ANNOTATIONS = [
       'BOLA3'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112114492',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112114492',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -133,10 +133,10 @@ export const ANNOTATIONS = [
       'BOLA3,'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112114492',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112114492',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -153,10 +153,10 @@ export const ANNOTATIONS = [
       'BOLA3'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112114492',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112114492',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -173,10 +173,10 @@ export const ANNOTATIONS = [
       'BOLA3'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112114492',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112114492',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -193,10 +193,10 @@ export const ANNOTATIONS = [
       'BOLA3.'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112114492',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112114492',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -213,10 +213,10 @@ export const ANNOTATIONS = [
       'BOLA3'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112114492',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112114492',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -233,10 +233,10 @@ export const ANNOTATIONS = [
       'BOLA3'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112114492',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112114492',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -253,10 +253,10 @@ export const ANNOTATIONS = [
       'BOLA3'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112114492',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112114492',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -273,10 +273,10 @@ export const ANNOTATIONS = [
       'BOLA3'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112114492',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112114492',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -293,10 +293,10 @@ export const ANNOTATIONS = [
       'BOLA3'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112114492',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112114492',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -313,10 +313,10 @@ export const ANNOTATIONS = [
       'BOLA3'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112114492',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112114492',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -333,10 +333,10 @@ export const ANNOTATIONS = [
       'BOLA3'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112114492',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112114492',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -353,10 +353,10 @@ export const ANNOTATIONS = [
       'BOLA3'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112114492',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112114492',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -373,10 +373,10 @@ export const ANNOTATIONS = [
       'BOLA3'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112114492',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112114492',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -393,10 +393,10 @@ export const ANNOTATIONS = [
       'BOLA3'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112114492',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112114492',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -413,10 +413,10 @@ export const ANNOTATIONS = [
       'BOLA3'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112114492',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112114492',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -433,10 +433,10 @@ export const ANNOTATIONS = [
       'BOLA3'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112114492',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112114492',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -453,10 +453,10 @@ export const ANNOTATIONS = [
       'BOLA3'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112114492',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112114492',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -473,10 +473,10 @@ export const ANNOTATIONS = [
       'BOLA3'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112114492',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112114492',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -493,10 +493,10 @@ export const ANNOTATIONS = [
       'BOLA3'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112114492',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112114492',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -513,10 +513,10 @@ export const ANNOTATIONS = [
       'BOLA3.'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112114492',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112114492',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -533,10 +533,10 @@ export const ANNOTATIONS = [
       'BOLA3'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112114492',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112114492',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -553,10 +553,10 @@ export const ANNOTATIONS = [
       'BOLA3'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112114492',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112114492',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -573,10 +573,10 @@ export const ANNOTATIONS = [
       'BOLA3'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112114492',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112114492',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -593,10 +593,10 @@ export const ANNOTATIONS = [
       'BOLA3'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112114492',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112114492',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -613,10 +613,10 @@ export const ANNOTATIONS = [
       'BOLA3'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112114492',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112114492',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -633,10 +633,10 @@ export const ANNOTATIONS = [
       'BOLA3'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112114492',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112114492',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -653,10 +653,10 @@ export const ANNOTATIONS = [
       'BOLA3'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112114492',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112114492',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -673,10 +673,10 @@ export const ANNOTATIONS = [
       'BOLA3'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112114492',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112114492',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -693,10 +693,10 @@ export const ANNOTATIONS = [
       'BOLA3'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112114492',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112114492',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -713,10 +713,10 @@ export const ANNOTATIONS = [
       'BOLA3'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112114492',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112114492',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -733,10 +733,10 @@ export const ANNOTATIONS = [
       'BOLA3'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112114492',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112114492',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -753,10 +753,10 @@ export const ANNOTATIONS = [
       'BOLA3'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112114492',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112114492',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -773,10 +773,10 @@ export const ANNOTATIONS = [
       'BOLA3,'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112114492',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112114492',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -793,10 +793,10 @@ export const ANNOTATIONS = [
       'BOLA3'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112114492',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112114492',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -813,10 +813,10 @@ export const ANNOTATIONS = [
       'BOLA3'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112114492',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112114492',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -833,10 +833,10 @@ export const ANNOTATIONS = [
       'BOLA3'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112114492',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112114492',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -853,10 +853,10 @@ export const ANNOTATIONS = [
       'BOLA3'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112114492',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112114492',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -873,10 +873,10 @@ export const ANNOTATIONS = [
       'BOLA3'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112114492',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112114492',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -893,10 +893,10 @@ export const ANNOTATIONS = [
       'BOLA3'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112114492',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112114492',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -913,10 +913,10 @@ export const ANNOTATIONS = [
       'BOLA3'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112114492',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112114492',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -933,10 +933,10 @@ export const ANNOTATIONS = [
       'BOLA3'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112114492',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112114492',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -953,10 +953,10 @@ export const ANNOTATIONS = [
       'BOLA3'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112114492',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112114492',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -973,10 +973,10 @@ export const ANNOTATIONS = [
       'BOLA3'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112114492',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112114492',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -993,10 +993,10 @@ export const ANNOTATIONS = [
       'BOLA3,'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112114492',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112114492',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -1013,10 +1013,10 @@ export const ANNOTATIONS = [
       'BOLA3'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112114492',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112114492',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -1033,10 +1033,10 @@ export const ANNOTATIONS = [
       'BOLA3'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112114492',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112114492',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -1053,10 +1053,10 @@ export const ANNOTATIONS = [
       'BOLA3'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112114492',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112114492',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -1073,10 +1073,10 @@ export const ANNOTATIONS = [
       'BOLA3'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112114492',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112114492',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -1093,10 +1093,10 @@ export const ANNOTATIONS = [
       'BOLA3'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112114492',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112114492',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -1113,10 +1113,10 @@ export const ANNOTATIONS = [
       'BOLA3 '
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112114492',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112114492',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -1140,10 +1140,10 @@ export const ANNOTATIONS = [
       'Sen'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '34716797',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '34716797',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -1160,10 +1160,10 @@ export const ANNOTATIONS = [
       'mitochondrial'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '824395',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '824395',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -1180,10 +1180,10 @@ export const ANNOTATIONS = [
       'Mitochondrial'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '824395',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '824395',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -1200,10 +1200,10 @@ export const ANNOTATIONS = [
       'mitochondrial'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '824395',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '824395',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -1220,10 +1220,10 @@ export const ANNOTATIONS = [
       'mitochondrial'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '824395',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '824395',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -1240,10 +1240,10 @@ export const ANNOTATIONS = [
       'Mitochondrial'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '824395',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '824395',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -1260,10 +1260,10 @@ export const ANNOTATIONS = [
       'mitochondrial'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '824395',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '824395',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -1280,10 +1280,10 @@ export const ANNOTATIONS = [
       'mitochondrial'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '824395',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '824395',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -1300,10 +1300,10 @@ export const ANNOTATIONS = [
       'mitochondrial'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '824395',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '824395',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -1320,10 +1320,10 @@ export const ANNOTATIONS = [
       'mitochondrial'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '824395',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '824395',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -1340,10 +1340,10 @@ export const ANNOTATIONS = [
       'mitochondrial '
     ],
     meta: {
-      'type': 'Genes',
-      'id': '824395',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '824395',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -1367,10 +1367,10 @@ export const ANNOTATIONS = [
       'Syn-'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '252800',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '252800',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -1387,10 +1387,10 @@ export const ANNOTATIONS = [
       'point'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '6729221',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '6729221',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -1407,10 +1407,10 @@ export const ANNOTATIONS = [
       'MMDS2'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '388962',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '388962',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -1427,10 +1427,10 @@ export const ANNOTATIONS = [
       'putative'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '40525935',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '40525935',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -1447,10 +1447,10 @@ export const ANNOTATIONS = [
       'GLRX5'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112120303',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112120303',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -1467,10 +1467,10 @@ export const ANNOTATIONS = [
       '(GLRX5)'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112120303',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112120303',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -1487,10 +1487,10 @@ export const ANNOTATIONS = [
       'GLRX5'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112120303',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112120303',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -1507,10 +1507,10 @@ export const ANNOTATIONS = [
       'GLRX5'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112120303',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112120303',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -1527,10 +1527,10 @@ export const ANNOTATIONS = [
       'GLRX5'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112120303',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112120303',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -1547,10 +1547,10 @@ export const ANNOTATIONS = [
       'NFU.'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '27247',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '27247',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -1567,10 +1567,10 @@ export const ANNOTATIONS = [
       'binding'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '103650148',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '103650148',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -1587,10 +1587,10 @@ export const ANNOTATIONS = [
       'binding'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '103650148',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '103650148',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -1607,10 +1607,10 @@ export const ANNOTATIONS = [
       'binding'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '103650148',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '103650148',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -1627,10 +1627,10 @@ export const ANNOTATIONS = [
       'homodimer'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '6647',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '6647',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -1647,10 +1647,10 @@ export const ANNOTATIONS = [
       'homodimer'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '6647',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '6647',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -1667,10 +1667,10 @@ export const ANNOTATIONS = [
       'homodimer'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '6647',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '6647',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -1687,10 +1687,10 @@ export const ANNOTATIONS = [
       'homodimer.'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '6647',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '6647',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -1707,10 +1707,10 @@ export const ANNOTATIONS = [
       'FDX'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '42861999',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '42861999',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -1727,10 +1727,10 @@ export const ANNOTATIONS = [
       'GSH'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '23687505',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '23687505',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -1747,10 +1747,10 @@ export const ANNOTATIONS = [
       'GSH'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '23687505',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '23687505',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -1767,10 +1767,10 @@ export const ANNOTATIONS = [
       'GSH'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '23687505',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '23687505',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -1787,10 +1787,10 @@ export const ANNOTATIONS = [
       'GSH'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '23687505',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '23687505',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -1807,10 +1807,10 @@ export const ANNOTATIONS = [
       'GSH'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '23687505',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '23687505',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -1827,10 +1827,10 @@ export const ANNOTATIONS = [
       'GSH'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '23687505',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '23687505',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -1847,10 +1847,10 @@ export const ANNOTATIONS = [
       'Glutaredoxin'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '824655',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '824655',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -1867,10 +1867,10 @@ export const ANNOTATIONS = [
       'glutaredoxin'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '824655',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '824655',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -1887,10 +1887,10 @@ export const ANNOTATIONS = [
       'glutaredoxin)'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '824655',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '824655',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -1914,10 +1914,10 @@ export const ANNOTATIONS = [
       'glu-'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '824655',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '824655',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -1934,10 +1934,10 @@ export const ANNOTATIONS = [
       'Ferredoxin'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '111060150',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '111060150',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -1954,10 +1954,10 @@ export const ANNOTATIONS = [
       'ferredoxin'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '111060150',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '111060150',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -1974,10 +1974,10 @@ export const ANNOTATIONS = [
       'ferredoxin'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '111060150',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '111060150',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -1994,10 +1994,10 @@ export const ANNOTATIONS = [
       'ferredoxin'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '111060150',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '111060150',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -2014,10 +2014,10 @@ export const ANNOTATIONS = [
       'ferredoxin'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '111060150',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '111060150',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -2041,10 +2041,10 @@ export const ANNOTATIONS = [
       'ferre-'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '111060150',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '111060150',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -2061,10 +2061,10 @@ export const ANNOTATIONS = [
       'ferredoxin'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '111060150',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '111060150',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -2081,10 +2081,10 @@ export const ANNOTATIONS = [
       'ferredoxin'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '111060150',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '111060150',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -2101,10 +2101,10 @@ export const ANNOTATIONS = [
       'Rao'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '353257',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '353257',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -2121,10 +2121,10 @@ export const ANNOTATIONS = [
       'Rao'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '353257',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '353257',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -2148,10 +2148,10 @@ export const ANNOTATIONS = [
       '*'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '20741',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '20741',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -2168,10 +2168,10 @@ export const ANNOTATIONS = [
       'J. A.'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '20741',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '20741',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -2188,10 +2188,10 @@ export const ANNOTATIONS = [
       'JA'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '20741',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '20741',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -2208,10 +2208,10 @@ export const ANNOTATIONS = [
       'JA'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '20741',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '20741',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -2228,10 +2228,10 @@ export const ANNOTATIONS = [
       'JA'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '20741',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '20741',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -2248,10 +2248,10 @@ export const ANNOTATIONS = [
       'JA'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '20741',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '20741',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -2268,10 +2268,10 @@ export const ANNOTATIONS = [
       'JA'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '20741',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '20741',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -2288,10 +2288,10 @@ export const ANNOTATIONS = [
       'JA'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '20741',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '20741',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -2308,10 +2308,10 @@ export const ANNOTATIONS = [
       'JA'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '20741',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '20741',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -2328,10 +2328,10 @@ export const ANNOTATIONS = [
       'JA'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '20741',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '20741',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -2348,10 +2348,10 @@ export const ANNOTATIONS = [
       'JA'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '20741',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '20741',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -2368,10 +2368,10 @@ export const ANNOTATIONS = [
       'JA'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '20741',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '20741',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -2388,10 +2388,10 @@ export const ANNOTATIONS = [
       'JA'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '20741',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '20741',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -2408,10 +2408,10 @@ export const ANNOTATIONS = [
       'JA'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '20741',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '20741',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -2428,10 +2428,10 @@ export const ANNOTATIONS = [
       'JA'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '20741',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '20741',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -2448,10 +2448,10 @@ export const ANNOTATIONS = [
       'JA'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '20741',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '20741',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -2468,10 +2468,10 @@ export const ANNOTATIONS = [
       'JA'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '20741',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '20741',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -2488,10 +2488,10 @@ export const ANNOTATIONS = [
       'JA'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '20741',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '20741',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -2508,10 +2508,10 @@ export const ANNOTATIONS = [
       'JA'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '20741',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '20741',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -2528,10 +2528,10 @@ export const ANNOTATIONS = [
       'OH'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '18299',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '18299',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -2555,10 +2555,10 @@ export const ANNOTATIONS = [
       'USA'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '856570',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '856570',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -2582,10 +2582,10 @@ export const ANNOTATIONS = [
       'USA'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '852398',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '852398',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -2602,10 +2602,10 @@ export const ANNOTATIONS = [
       'for a'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '31359628',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '31359628',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -2622,10 +2622,10 @@ export const ANNOTATIONS = [
       'DNA'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '542060',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '542060',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -2642,10 +2642,10 @@ export const ANNOTATIONS = [
       'DNA'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '542060',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '542060',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -2662,10 +2662,10 @@ export const ANNOTATIONS = [
       'DNA'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '542060',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '542060',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -2682,10 +2682,10 @@ export const ANNOTATIONS = [
       'similar'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '655772',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '655772',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -2702,10 +2702,10 @@ export const ANNOTATIONS = [
       'Similar'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '655772',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '655772',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -2722,10 +2722,10 @@ export const ANNOTATIONS = [
       'similar'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '655772',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '655772',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -2742,10 +2742,10 @@ export const ANNOTATIONS = [
       'similar'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '655772',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '655772',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -2762,10 +2762,10 @@ export const ANNOTATIONS = [
       'similar'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '655772',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '655772',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -2782,10 +2782,10 @@ export const ANNOTATIONS = [
       'similar'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '655772',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '655772',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -2802,10 +2802,10 @@ export const ANNOTATIONS = [
       'similar'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '655772',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '655772',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -2822,10 +2822,10 @@ export const ANNOTATIONS = [
       'similar'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '655772',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '655772',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -2842,10 +2842,10 @@ export const ANNOTATIONS = [
       'similar'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '655772',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '655772',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -2862,10 +2862,10 @@ export const ANNOTATIONS = [
       'similar'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '655772',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '655772',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -2882,10 +2882,10 @@ export const ANNOTATIONS = [
       'similar'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '655772',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '655772',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -2902,10 +2902,10 @@ export const ANNOTATIONS = [
       'many'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '7152012',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '7152012',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -2922,10 +2922,10 @@ export const ANNOTATIONS = [
       'many'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '7152012',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '7152012',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -2942,10 +2942,10 @@ export const ANNOTATIONS = [
       'case'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '947226',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '947226',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -2962,10 +2962,10 @@ export const ANNOTATIONS = [
       'case'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '947226',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '947226',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -2982,10 +2982,10 @@ export const ANNOTATIONS = [
       'IBA57,'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112112370',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112112370',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -3002,10 +3002,10 @@ export const ANNOTATIONS = [
       'ISCA2,'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112101860',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112101860',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -3022,10 +3022,10 @@ export const ANNOTATIONS = [
       'NFU1'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112107518',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112107518',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -3042,10 +3042,10 @@ export const ANNOTATIONS = [
       'NFU1'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112107518',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112107518',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -3062,10 +3062,10 @@ export const ANNOTATIONS = [
       'NFU1'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112107518',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112107518',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -3082,10 +3082,10 @@ export const ANNOTATIONS = [
       'GE'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '4343840',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '4343840',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -3102,10 +3102,10 @@ export const ANNOTATIONS = [
       'double'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '248382',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '248382',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -3122,10 +3122,10 @@ export const ANNOTATIONS = [
       'double'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '248382',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '248382',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -3142,10 +3142,10 @@ export const ANNOTATIONS = [
       'double'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '248382',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '248382',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -3162,10 +3162,10 @@ export const ANNOTATIONS = [
       'PCR'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '38331764',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '38331764',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -3182,10 +3182,10 @@ export const ANNOTATIONS = [
       'polymerase'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '956582',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '956582',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -3202,10 +3202,10 @@ export const ANNOTATIONS = [
       'for 1'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '114330751',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '114330751',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -3222,10 +3222,10 @@ export const ANNOTATIONS = [
       'for 1'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '114330751',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '114330751',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -3242,10 +3242,10 @@ export const ANNOTATIONS = [
       'for 1'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '114330751',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '114330751',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -3262,10 +3262,10 @@ export const ANNOTATIONS = [
       'for 3'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '2539487',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '2539487',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -3282,10 +3282,10 @@ export const ANNOTATIONS = [
       'min at'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '57217',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '57217',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -3302,10 +3302,10 @@ export const ANNOTATIONS = [
       'mix'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '83881',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '83881',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -3322,10 +3322,10 @@ export const ANNOTATIONS = [
       'mix'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '83881',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '83881',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -3342,10 +3342,10 @@ export const ANNOTATIONS = [
       '(NEB)'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112112985',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112112985',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -3362,10 +3362,10 @@ export const ANNOTATIONS = [
       'for 2'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '105265589',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '105265589',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -3382,10 +3382,10 @@ export const ANNOTATIONS = [
       'h at'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '7200301',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '7200301',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -3402,10 +3402,10 @@ export const ANNOTATIONS = [
       'ISCU'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112104129',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112104129',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -3422,10 +3422,10 @@ export const ANNOTATIONS = [
       'ISCU)'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112104129',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112104129',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -3442,10 +3442,10 @@ export const ANNOTATIONS = [
       'ISCU'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112104129',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112104129',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -3462,10 +3462,10 @@ export const ANNOTATIONS = [
       'ISCU,'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112104129',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112104129',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -3482,10 +3482,10 @@ export const ANNOTATIONS = [
       'ISCU,'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112104129',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112104129',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -3502,10 +3502,10 @@ export const ANNOTATIONS = [
       'ISCU'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112104129',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112104129',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -3522,10 +3522,10 @@ export const ANNOTATIONS = [
       'ISCU'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112104129',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112104129',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -3542,10 +3542,10 @@ export const ANNOTATIONS = [
       'ISCU.'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112104129',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112104129',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -3562,10 +3562,10 @@ export const ANNOTATIONS = [
       'ISCU,'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112104129',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112104129',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -3582,10 +3582,10 @@ export const ANNOTATIONS = [
       'ISCU'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112104129',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112104129',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -3602,10 +3602,10 @@ export const ANNOTATIONS = [
       'ISCU'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112104129',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112104129',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -3622,10 +3622,10 @@ export const ANNOTATIONS = [
       'ISCU'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112104129',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112104129',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -3642,10 +3642,10 @@ export const ANNOTATIONS = [
       '(Hs'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '945803',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '945803',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -3662,10 +3662,10 @@ export const ANNOTATIONS = [
       '(Hs'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '945803',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '945803',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -3682,10 +3682,10 @@ export const ANNOTATIONS = [
       '(Hs'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '945803',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '945803',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -3702,10 +3702,10 @@ export const ANNOTATIONS = [
       'HS,'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '945803',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '945803',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -3722,10 +3722,10 @@ export const ANNOTATIONS = [
       'NifS'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '38331515',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '38331515',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -3742,10 +3742,10 @@ export const ANNOTATIONS = [
       'NifS)'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '38331515',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '38331515',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -3762,10 +3762,10 @@ export const ANNOTATIONS = [
       'NifS.'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '38331515',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '38331515',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -3782,10 +3782,10 @@ export const ANNOTATIONS = [
       'NifS'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '38331515',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '38331515',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -3802,10 +3802,10 @@ export const ANNOTATIONS = [
       '(Tm'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '40527143',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '40527143',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -3822,10 +3822,10 @@ export const ANNOTATIONS = [
       'Tm'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '40527143',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '40527143',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -3842,10 +3842,10 @@ export const ANNOTATIONS = [
       'Tm'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '40527143',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '40527143',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -3869,10 +3869,10 @@ export const ANNOTATIONS = [
       'ferre-'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '837639',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '837639',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -3889,10 +3889,10 @@ export const ANNOTATIONS = [
       'ferredoxin 1'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '837639',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '837639',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -3909,10 +3909,10 @@ export const ANNOTATIONS = [
       'ferredoxin 1'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '837639',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '837639',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -3936,10 +3936,10 @@ export const ANNOTATIONS = [
       'ferre-'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '837639',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '837639',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -3956,10 +3956,10 @@ export const ANNOTATIONS = [
       'FDX1)'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112118686',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112118686',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -3983,10 +3983,10 @@ export const ANNOTATIONS = [
       'ferre-'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '842386',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '842386',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -4003,10 +4003,10 @@ export const ANNOTATIONS = [
       'ferredoxin 2.'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '842386',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '842386',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -4023,10 +4023,10 @@ export const ANNOTATIONS = [
       'ferredoxin 2'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '842386',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '842386',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -4043,10 +4043,10 @@ export const ANNOTATIONS = [
       'FDX2)'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112125477',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112125477',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -4063,10 +4063,10 @@ export const ANNOTATIONS = [
       'FDX2'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112125477',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112125477',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -4083,10 +4083,10 @@ export const ANNOTATIONS = [
       'FDX2'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112125477',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112125477',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -4103,10 +4103,10 @@ export const ANNOTATIONS = [
       'FDX2'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112125477',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112125477',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -4123,10 +4123,10 @@ export const ANNOTATIONS = [
       'apo'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '109951515',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '109951515',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -4143,10 +4143,10 @@ export const ANNOTATIONS = [
       'apo'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '109951515',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '109951515',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -4163,10 +4163,10 @@ export const ANNOTATIONS = [
       'Apo'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '109951515',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '109951515',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -4183,10 +4183,10 @@ export const ANNOTATIONS = [
       'apo'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '109951515',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '109951515',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -4203,10 +4203,10 @@ export const ANNOTATIONS = [
       'apo'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '109951515',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '109951515',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -4223,10 +4223,10 @@ export const ANNOTATIONS = [
       'apo'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '109951515',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '109951515',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -4243,10 +4243,10 @@ export const ANNOTATIONS = [
       'Apo'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '109951515',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '109951515',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -4263,10 +4263,10 @@ export const ANNOTATIONS = [
       'apo'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '109951515',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '109951515',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -4283,10 +4283,10 @@ export const ANNOTATIONS = [
       'apo'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '109951515',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '109951515',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -4303,10 +4303,10 @@ export const ANNOTATIONS = [
       'apo'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '109951515',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '109951515',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -4323,10 +4323,10 @@ export const ANNOTATIONS = [
       'apo'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '109951515',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '109951515',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -4343,10 +4343,10 @@ export const ANNOTATIONS = [
       'apo'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '109951515',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '109951515',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -4363,10 +4363,10 @@ export const ANNOTATIONS = [
       'apo'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '109951515',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '109951515',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -4383,10 +4383,10 @@ export const ANNOTATIONS = [
       'apo'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '109951515',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '109951515',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -4403,10 +4403,10 @@ export const ANNOTATIONS = [
       'apo'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '109951515',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '109951515',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -4423,10 +4423,10 @@ export const ANNOTATIONS = [
       'apo'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '109951515',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '109951515',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -4443,10 +4443,10 @@ export const ANNOTATIONS = [
       'apo'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '109951515',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '109951515',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -4463,10 +4463,10 @@ export const ANNOTATIONS = [
       'apo'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '109951515',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '109951515',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -4483,10 +4483,10 @@ export const ANNOTATIONS = [
       'apo'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '109951515',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '109951515',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -4503,10 +4503,10 @@ export const ANNOTATIONS = [
       'apo'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '109951515',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '109951515',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -4523,10 +4523,10 @@ export const ANNOTATIONS = [
       'apo'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '109951515',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '109951515',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -4543,10 +4543,10 @@ export const ANNOTATIONS = [
       'apo'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '109951515',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '109951515',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -4563,10 +4563,10 @@ export const ANNOTATIONS = [
       'mM'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '17884',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '17884',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -4583,10 +4583,10 @@ export const ANNOTATIONS = [
       'mM'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '17884',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '17884',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -4603,10 +4603,10 @@ export const ANNOTATIONS = [
       'mM'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '17884',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '17884',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -4623,10 +4623,10 @@ export const ANNOTATIONS = [
       'mM'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '17884',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '17884',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -4643,10 +4643,10 @@ export const ANNOTATIONS = [
       'mM'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '17884',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '17884',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -4663,10 +4663,10 @@ export const ANNOTATIONS = [
       'mM'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '17884',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '17884',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -4683,10 +4683,10 @@ export const ANNOTATIONS = [
       'mM'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '17884',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '17884',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -4703,10 +4703,10 @@ export const ANNOTATIONS = [
       'mM'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '17884',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '17884',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -4723,10 +4723,10 @@ export const ANNOTATIONS = [
       'mM'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '17884',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '17884',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -4743,10 +4743,10 @@ export const ANNOTATIONS = [
       'mM'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '17884',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '17884',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -4763,10 +4763,10 @@ export const ANNOTATIONS = [
       'mM'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '17884',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '17884',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -4783,10 +4783,10 @@ export const ANNOTATIONS = [
       'mM'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '17884',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '17884',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -4803,10 +4803,10 @@ export const ANNOTATIONS = [
       'mM'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '17884',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '17884',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -4823,10 +4823,10 @@ export const ANNOTATIONS = [
       'mM'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '17884',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '17884',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -4843,10 +4843,10 @@ export const ANNOTATIONS = [
       'mM'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '17884',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '17884',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -4863,10 +4863,10 @@ export const ANNOTATIONS = [
       'mM'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '17884',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '17884',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -4883,10 +4883,10 @@ export const ANNOTATIONS = [
       'mM'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '17884',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '17884',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -4903,10 +4903,10 @@ export const ANNOTATIONS = [
       'mM'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '17884',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '17884',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -4923,10 +4923,10 @@ export const ANNOTATIONS = [
       'mM'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '17884',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '17884',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -4943,10 +4943,10 @@ export const ANNOTATIONS = [
       'mM'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '17884',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '17884',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -4963,10 +4963,10 @@ export const ANNOTATIONS = [
       'mM'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '17884',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '17884',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -4983,10 +4983,10 @@ export const ANNOTATIONS = [
       'mM'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '17884',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '17884',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -5003,10 +5003,10 @@ export const ANNOTATIONS = [
       'mM'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '17884',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '17884',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -5023,10 +5023,10 @@ export const ANNOTATIONS = [
       'mM'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '17884',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '17884',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -5043,10 +5043,10 @@ export const ANNOTATIONS = [
       'mM'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '17884',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '17884',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -5063,10 +5063,10 @@ export const ANNOTATIONS = [
       'mm)'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '17884',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '17884',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -5083,10 +5083,10 @@ export const ANNOTATIONS = [
       'mM'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '17884',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '17884',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -5103,10 +5103,10 @@ export const ANNOTATIONS = [
       'mM'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '17884',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '17884',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -5123,10 +5123,10 @@ export const ANNOTATIONS = [
       'mM)'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '17884',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '17884',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -5143,10 +5143,10 @@ export const ANNOTATIONS = [
       'mM)'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '17884',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '17884',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -5163,10 +5163,10 @@ export const ANNOTATIONS = [
       'mM'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '17884',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '17884',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -5183,10 +5183,10 @@ export const ANNOTATIONS = [
       'mM'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '17884',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '17884',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -5203,10 +5203,10 @@ export const ANNOTATIONS = [
       'mM'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '17884',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '17884',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -5223,10 +5223,10 @@ export const ANNOTATIONS = [
       'mM'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '17884',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '17884',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -5243,10 +5243,10 @@ export const ANNOTATIONS = [
       'mM)'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '17884',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '17884',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -5263,10 +5263,10 @@ export const ANNOTATIONS = [
       'urea'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '41595042',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '41595042',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -5283,10 +5283,10 @@ export const ANNOTATIONS = [
       'urea.'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '41595042',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '41595042',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -5303,10 +5303,10 @@ export const ANNOTATIONS = [
       'urea,'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '41595042',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '41595042',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -5323,10 +5323,10 @@ export const ANNOTATIONS = [
       'pH'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '14340099',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '14340099',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -5343,10 +5343,10 @@ export const ANNOTATIONS = [
       'pH'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '14340099',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '14340099',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -5363,10 +5363,10 @@ export const ANNOTATIONS = [
       'pH'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '14340099',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '14340099',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -5383,10 +5383,10 @@ export const ANNOTATIONS = [
       'pH'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '14340099',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '14340099',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -5403,10 +5403,10 @@ export const ANNOTATIONS = [
       'pH'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '14340099',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '14340099',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -5423,10 +5423,10 @@ export const ANNOTATIONS = [
       'pH'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '14340099',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '14340099',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -5443,10 +5443,10 @@ export const ANNOTATIONS = [
       'pH'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '14340099',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '14340099',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -5463,10 +5463,10 @@ export const ANNOTATIONS = [
       'pH'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '14340099',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '14340099',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -5483,10 +5483,10 @@ export const ANNOTATIONS = [
       'pH'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '14340099',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '14340099',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -5503,10 +5503,10 @@ export const ANNOTATIONS = [
       'pH'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '14340099',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '14340099',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -5523,10 +5523,10 @@ export const ANNOTATIONS = [
       'pH'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '14340099',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '14340099',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -5543,10 +5543,10 @@ export const ANNOTATIONS = [
       'Apo protein'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '394678',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '394678',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -5570,10 +5570,10 @@ export const ANNOTATIONS = [
       'apo '
     ],
     meta: {
-      'type': 'Genes',
-      'id': '394678',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '394678',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -5590,10 +5590,10 @@ export const ANNOTATIONS = [
       'apo protein'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '394678',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '394678',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -5610,10 +5610,10 @@ export const ANNOTATIONS = [
       'GLRX2'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112109634',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112109634',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -5630,10 +5630,10 @@ export const ANNOTATIONS = [
       'GLRX2'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112109634',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112109634',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -5650,10 +5650,10 @@ export const ANNOTATIONS = [
       'GLRX2'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112109634',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112109634',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -5670,10 +5670,10 @@ export const ANNOTATIONS = [
       'GLRX2'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112109634',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112109634',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -5690,10 +5690,10 @@ export const ANNOTATIONS = [
       '(GLRX2)'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112109634',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112109634',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -5710,10 +5710,10 @@ export const ANNOTATIONS = [
       'GLRX2'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112109634',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112109634',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -5730,10 +5730,10 @@ export const ANNOTATIONS = [
       'His6'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '42007118',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '42007118',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -5750,10 +5750,10 @@ export const ANNOTATIONS = [
       'Drs.'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '945829',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '945829',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -5770,10 +5770,10 @@ export const ANNOTATIONS = [
       'in 10'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '109180051',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '109180051',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -5790,10 +5790,10 @@ export const ANNOTATIONS = [
       'mL'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '4326471',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '4326471',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -5810,10 +5810,10 @@ export const ANNOTATIONS = [
       'mL'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '4326471',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '4326471',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -5830,10 +5830,10 @@ export const ANNOTATIONS = [
       'mL'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '4326471',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '4326471',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -5850,10 +5850,10 @@ export const ANNOTATIONS = [
       'mL'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '4326471',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '4326471',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -5870,10 +5870,10 @@ export const ANNOTATIONS = [
       'mL)'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '4326471',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '4326471',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -5890,10 +5890,10 @@ export const ANNOTATIONS = [
       '(LB)'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '42542',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '42542',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -5910,10 +5910,10 @@ export const ANNOTATIONS = [
       'LB'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '42542',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '42542',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -5930,10 +5930,10 @@ export const ANNOTATIONS = [
       'to 3'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112598213',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112598213',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -5950,10 +5950,10 @@ export const ANNOTATIONS = [
       'cell'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '1057',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '1057',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -5970,10 +5970,10 @@ export const ANNOTATIONS = [
       'Cell'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '1057',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '1057',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -5990,10 +5990,10 @@ export const ANNOTATIONS = [
       'for 15'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '101073534',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '101073534',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -6010,10 +6010,10 @@ export const ANNOTATIONS = [
       'in 30'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '109182406',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '109182406',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -6030,10 +6030,10 @@ export const ANNOTATIONS = [
       'of a'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '18290',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '18290',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -6050,10 +6050,10 @@ export const ANNOTATIONS = [
       'of a'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '18290',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '18290',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -6070,10 +6070,10 @@ export const ANNOTATIONS = [
       'of a'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '18290',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '18290',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -6090,10 +6090,10 @@ export const ANNOTATIONS = [
       'of a'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '18290',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '18290',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -6110,10 +6110,10 @@ export const ANNOTATIONS = [
       'a 12%'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '18826146',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '18826146',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -6130,10 +6130,10 @@ export const ANNOTATIONS = [
       'gel'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112592909',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112592909',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -6150,10 +6150,10 @@ export const ANNOTATIONS = [
       'Blue'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '726381',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '726381',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -6170,10 +6170,10 @@ export const ANNOTATIONS = [
       'S1).'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '41324498',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '41324498',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -6190,10 +6190,10 @@ export const ANNOTATIONS = [
       'S1)'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '41324498',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '41324498',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -6210,10 +6210,10 @@ export const ANNOTATIONS = [
       'at 4'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '385253',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '385253',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -6230,10 +6230,10 @@ export const ANNOTATIONS = [
       'nm,'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '50798',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '50798',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -6250,10 +6250,10 @@ export const ANNOTATIONS = [
       'nm'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '50798',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '50798',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -6270,10 +6270,10 @@ export const ANNOTATIONS = [
       'nm'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '50798',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '50798',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -6290,10 +6290,10 @@ export const ANNOTATIONS = [
       'nm'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '50798',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '50798',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -6310,10 +6310,10 @@ export const ANNOTATIONS = [
       'nm'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '50798',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '50798',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -6330,10 +6330,10 @@ export const ANNOTATIONS = [
       'nm'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '50798',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '50798',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -6350,10 +6350,10 @@ export const ANNOTATIONS = [
       'nm.'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '50798',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '50798',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -6370,10 +6370,10 @@ export const ANNOTATIONS = [
       'nm'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '50798',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '50798',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -6390,10 +6390,10 @@ export const ANNOTATIONS = [
       'nm'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '50798',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '50798',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -6410,10 +6410,10 @@ export const ANNOTATIONS = [
       'nm'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '50798',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '50798',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -6437,10 +6437,10 @@ export const ANNOTATIONS = [
       'Fe'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '44173',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '44173',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -6464,10 +6464,10 @@ export const ANNOTATIONS = [
       'Fe'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '44173',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '44173',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -6484,10 +6484,10 @@ export const ANNOTATIONS = [
       'to 1'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '108969922',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '108969922',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -6504,10 +6504,10 @@ export const ANNOTATIONS = [
       'and 1'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '218973',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '218973',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -6524,10 +6524,10 @@ export const ANNOTATIONS = [
       'total'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '543623',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '543623',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -6544,10 +6544,10 @@ export const ANNOTATIONS = [
       'iron'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '18252730',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '18252730',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -6564,10 +6564,10 @@ export const ANNOTATIONS = [
       'iron'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '18252730',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '18252730',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -6584,10 +6584,10 @@ export const ANNOTATIONS = [
       'iron'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '18252730',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '18252730',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -6604,10 +6604,10 @@ export const ANNOTATIONS = [
       'EPR'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '937332',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '937332',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -6624,10 +6624,10 @@ export const ANNOTATIONS = [
       'EPR'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '937332',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '937332',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -6644,10 +6644,10 @@ export const ANNOTATIONS = [
       'EPR'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '937332',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '937332',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -6664,10 +6664,10 @@ export const ANNOTATIONS = [
       'EPR'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '937332',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '937332',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -6684,10 +6684,10 @@ export const ANNOTATIONS = [
       'EPR'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '937332',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '937332',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -6704,10 +6704,10 @@ export const ANNOTATIONS = [
       'EPR'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '937332',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '937332',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -6724,10 +6724,10 @@ export const ANNOTATIONS = [
       'EPR'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '937332',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '937332',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -6744,10 +6744,10 @@ export const ANNOTATIONS = [
       'EPR'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '937332',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '937332',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -6764,10 +6764,10 @@ export const ANNOTATIONS = [
       'EPR'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '937332',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '937332',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -6784,10 +6784,10 @@ export const ANNOTATIONS = [
       'epr'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '937332',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '937332',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -6811,10 +6811,10 @@ export const ANNOTATIONS = [
       'K '
     ],
     meta: {
-      'type': 'Genes',
-      'id': '1062016',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '1062016',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -6838,10 +6838,10 @@ export const ANNOTATIONS = [
       'K '
     ],
     meta: {
-      'type': 'Genes',
-      'id': '13892577',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '13892577',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -6858,10 +6858,10 @@ export const ANNOTATIONS = [
       'at a'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '6386035',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '6386035',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -6878,10 +6878,10 @@ export const ANNOTATIONS = [
       'mW,'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '100532596',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '100532596',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -6898,10 +6898,10 @@ export const ANNOTATIONS = [
       'ms.'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '7201080',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '7201080',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -6918,10 +6918,10 @@ export const ANNOTATIONS = [
       'as a'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '7450869',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '7450869',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -6938,10 +6938,10 @@ export const ANNOTATIONS = [
       'as a'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '7450869',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '7450869',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -6958,10 +6958,10 @@ export const ANNOTATIONS = [
       'as a'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '7450869',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '7450869',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -6978,10 +6978,10 @@ export const ANNOTATIONS = [
       'fit'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '13890068',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '13890068',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -6998,10 +6998,10 @@ export const ANNOTATIONS = [
       'fit,'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '13890068',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '13890068',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -7018,10 +7018,10 @@ export const ANNOTATIONS = [
       'fit'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '13890068',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '13890068',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -7038,10 +7038,10 @@ export const ANNOTATIONS = [
       'Lamm'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '3908',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '3908',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -7058,10 +7058,10 @@ export const ANNOTATIONS = [
       'Lamm'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '3908',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '3908',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -7078,10 +7078,10 @@ export const ANNOTATIONS = [
       'per'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '108917073',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '108917073',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -7098,10 +7098,10 @@ export const ANNOTATIONS = [
       'to 10'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '108969485',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '108969485',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -7118,10 +7118,10 @@ export const ANNOTATIONS = [
       'BOLA2,'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '103595608',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '103595608',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -7138,10 +7138,10 @@ export const ANNOTATIONS = [
       'BOLA2'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '103595608',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '103595608',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -7158,10 +7158,10 @@ export const ANNOTATIONS = [
       'BOLA'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '42860173',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '42860173',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -7178,10 +7178,10 @@ export const ANNOTATIONS = [
       'BOLA'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '42860173',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '42860173',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -7198,10 +7198,10 @@ export const ANNOTATIONS = [
       '(Fig.'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '94221',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '94221',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -7218,10 +7218,10 @@ export const ANNOTATIONS = [
       '(Fig.'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '94221',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '94221',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -7238,10 +7238,10 @@ export const ANNOTATIONS = [
       'Fig.'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '94221',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '94221',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -7258,10 +7258,10 @@ export const ANNOTATIONS = [
       '(Fig.'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '94221',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '94221',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -7278,10 +7278,10 @@ export const ANNOTATIONS = [
       '(Fig.'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '94221',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '94221',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -7298,10 +7298,10 @@ export const ANNOTATIONS = [
       '(Fig.'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '94221',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '94221',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -7318,10 +7318,10 @@ export const ANNOTATIONS = [
       '(Fig.'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '94221',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '94221',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -7338,10 +7338,10 @@ export const ANNOTATIONS = [
       '(Fig.'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '94221',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '94221',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -7358,10 +7358,10 @@ export const ANNOTATIONS = [
       '(Fig.'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '94221',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '94221',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -7378,10 +7378,10 @@ export const ANNOTATIONS = [
       'bridged'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '250496',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '250496',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -7398,10 +7398,10 @@ export const ANNOTATIONS = [
       'in a'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112116265',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112116265',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -7418,10 +7418,10 @@ export const ANNOTATIONS = [
       'in a'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112116265',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112116265',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -7438,10 +7438,10 @@ export const ANNOTATIONS = [
       'in a'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112116265',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112116265',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -7458,10 +7458,10 @@ export const ANNOTATIONS = [
       'in a '
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112116265',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112116265',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -7478,10 +7478,10 @@ export const ANNOTATIONS = [
       'in a'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112116265',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112116265',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -7498,10 +7498,10 @@ export const ANNOTATIONS = [
       'in a'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112116265',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112116265',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -7518,10 +7518,10 @@ export const ANNOTATIONS = [
       'decay'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '42008',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '42008',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -7538,10 +7538,10 @@ export const ANNOTATIONS = [
       'decay,'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '42008',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '42008',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -7558,10 +7558,10 @@ export const ANNOTATIONS = [
       'a CD'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112117218',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112117218',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -7578,10 +7578,10 @@ export const ANNOTATIONS = [
       'a CD'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112117218',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112117218',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -7598,10 +7598,10 @@ export const ANNOTATIONS = [
       'even'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '36039',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '36039',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -7618,10 +7618,10 @@ export const ANNOTATIONS = [
       'yeast'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '424122',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '424122',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -7638,10 +7638,10 @@ export const ANNOTATIONS = [
       'Grx3'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '34715567',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '34715567',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -7658,10 +7658,10 @@ export const ANNOTATIONS = [
       'yield'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '101409888',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '101409888',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -7678,10 +7678,10 @@ export const ANNOTATIONS = [
       'yield'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '101409888',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '101409888',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -7698,10 +7698,10 @@ export const ANNOTATIONS = [
       'yield'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '101409888',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '101409888',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -7718,10 +7718,10 @@ export const ANNOTATIONS = [
       'yield'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '101409888',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '101409888',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -7738,10 +7738,10 @@ export const ANNOTATIONS = [
       'Fig. 1'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '34716843',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '34716843',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -7758,10 +7758,10 @@ export const ANNOTATIONS = [
       '(black)'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112044731',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112044731',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -7778,10 +7778,10 @@ export const ANNOTATIONS = [
       'black.'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112044731',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112044731',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -7798,10 +7798,10 @@ export const ANNOTATIONS = [
       '(red).'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '2658890',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '2658890',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -7818,10 +7818,10 @@ export const ANNOTATIONS = [
       '(red),'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '2658890',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '2658890',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -7845,10 +7845,10 @@ export const ANNOTATIONS = [
       '2 '
     ],
     meta: {
-      'type': 'Genes',
-      'id': '37620400',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '37620400',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -7865,10 +7865,10 @@ export const ANNOTATIONS = [
       'c EPR'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '3087500',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '3087500',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -7885,10 +7885,10 @@ export const ANNOTATIONS = [
       'S3).'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '11464243',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '11464243',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -7905,10 +7905,10 @@ export const ANNOTATIONS = [
       'vs 1820'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '7161385',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '7161385',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -7925,10 +7925,10 @@ export const ANNOTATIONS = [
       'S4'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '11464239',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '11464239',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -7945,10 +7945,10 @@ export const ANNOTATIONS = [
       'S5).'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '11464240',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '11464240',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -7965,10 +7965,10 @@ export const ANNOTATIONS = [
       'S6),'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '11464242',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '11464242',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -7985,10 +7985,10 @@ export const ANNOTATIONS = [
       'us to'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '41983800',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '41983800',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -8005,10 +8005,10 @@ export const ANNOTATIONS = [
       'via'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '20358',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '20358',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -8025,10 +8025,10 @@ export const ANNOTATIONS = [
       'ABC transporter'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '818031',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '818031',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -8045,10 +8045,10 @@ export const ANNOTATIONS = [
       'Atm1p'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '22',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '22',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -8065,10 +8065,10 @@ export const ANNOTATIONS = [
       'line'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '8926979',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '8926979',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -8085,10 +8085,10 @@ export const ANNOTATIONS = [
       'line'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '8926979',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '8926979',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -8105,10 +8105,10 @@ export const ANNOTATIONS = [
       'GLRX3'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112116009',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112116009',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -8125,10 +8125,10 @@ export const ANNOTATIONS = [
       'probable'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '778293',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '778293',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -8145,10 +8145,10 @@ export const ANNOTATIONS = [
       'large'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '110483795',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '110483795',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -8165,10 +8165,10 @@ export const ANNOTATIONS = [
       'nm. a'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '117226',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '117226',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -8185,10 +8185,10 @@ export const ANNOTATIONS = [
       'term'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '108974642',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '108974642',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -8205,10 +8205,10 @@ export const ANNOTATIONS = [
       'b The'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '108925328',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '108925328',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -8225,10 +8225,10 @@ export const ANNOTATIONS = [
       'd CD'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '41332921',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '41332921',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -8252,10 +8252,10 @@ export const ANNOTATIONS = [
       'glu-'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '818407',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '818407',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -8272,10 +8272,10 @@ export const ANNOTATIONS = [
       'Isa1'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '41981130',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '41981130',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -8292,10 +8292,10 @@ export const ANNOTATIONS = [
       'ISCU, a'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '100329201',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '100329201',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -8312,10 +8312,10 @@ export const ANNOTATIONS = [
       'Am J'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '938243',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '938243',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -8332,10 +8332,10 @@ export const ANNOTATIONS = [
       'Hum'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '45958',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '45958',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -8352,10 +8352,10 @@ export const ANNOTATIONS = [
       'Ann'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '42492',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '42492',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -8372,10 +8372,10 @@ export const ANNOTATIONS = [
       'Rev'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '1490011',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '1490011',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -8392,10 +8392,10 @@ export const ANNOTATIONS = [
       'Rev'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '1490011',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '1490011',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -8412,10 +8412,10 @@ export const ANNOTATIONS = [
       'TA'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '22072',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '22072',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -8432,10 +8432,10 @@ export const ANNOTATIONS = [
       'Acta'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '41984173',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '41984173',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -8452,10 +8452,10 @@ export const ANNOTATIONS = [
       'Del'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '7195220',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '7195220',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -8472,10 +8472,10 @@ export const ANNOTATIONS = [
       'Neri'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '7376',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '7376',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -8492,10 +8492,10 @@ export const ANNOTATIONS = [
       'Proc'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '42368945',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '42368945',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -8512,10 +8512,10 @@ export const ANNOTATIONS = [
       'Acad'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '38864',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '38864',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -8532,10 +8532,10 @@ export const ANNOTATIONS = [
       'Sci'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '14181358',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '14181358',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -8552,10 +8552,10 @@ export const ANNOTATIONS = [
       'J Am'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '16456',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '16456',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -8579,10 +8579,10 @@ export const ANNOTATIONS = [
       'J '
     ],
     meta: {
-      'type': 'Genes',
-      'id': '16456',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '16456',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -8599,10 +8599,10 @@ export const ANNOTATIONS = [
       'J Am'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '16456',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '16456',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -8619,10 +8619,10 @@ export const ANNOTATIONS = [
       'J Am'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '16456',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '16456',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -8639,10 +8639,10 @@ export const ANNOTATIONS = [
       'J Am'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '16456',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '16456',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -8659,10 +8659,10 @@ export const ANNOTATIONS = [
       'J Am'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '16456',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '16456',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -8679,10 +8679,10 @@ export const ANNOTATIONS = [
       'Chem'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '13977448',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '13977448',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -8699,10 +8699,10 @@ export const ANNOTATIONS = [
       'Chem'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '13977448',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '13977448',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -8719,10 +8719,10 @@ export const ANNOTATIONS = [
       'Chem'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '13977448',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '13977448',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -8739,10 +8739,10 @@ export const ANNOTATIONS = [
       'Chem'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '13977448',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '13977448',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -8759,10 +8759,10 @@ export const ANNOTATIONS = [
       'Chem'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '13977448',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '13977448',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -8779,10 +8779,10 @@ export const ANNOTATIONS = [
       'Chem'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '13977448',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '13977448',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -8799,10 +8799,10 @@ export const ANNOTATIONS = [
       'Chem'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '13977448',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '13977448',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -8819,10 +8819,10 @@ export const ANNOTATIONS = [
       'Chem'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '13977448',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '13977448',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -8839,10 +8839,10 @@ export const ANNOTATIONS = [
       'Chem'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '13977448',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '13977448',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -8859,10 +8859,10 @@ export const ANNOTATIONS = [
       'Chem'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '13977448',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '13977448',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -8879,10 +8879,10 @@ export const ANNOTATIONS = [
       'Chem'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '13977448',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '13977448',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -8899,10 +8899,10 @@ export const ANNOTATIONS = [
       'Chem'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '13977448',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '13977448',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -8919,10 +8919,10 @@ export const ANNOTATIONS = [
       'Chem'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '13977448',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '13977448',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -8939,10 +8939,10 @@ export const ANNOTATIONS = [
       'Chem'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '13977448',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '13977448',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -8959,10 +8959,10 @@ export const ANNOTATIONS = [
       'Chem'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '13977448',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '13977448',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -8979,10 +8979,10 @@ export const ANNOTATIONS = [
       'Chem'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '13977448',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '13977448',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -8999,10 +8999,10 @@ export const ANNOTATIONS = [
       'Chem'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '13977448',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '13977448',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -9019,10 +9019,10 @@ export const ANNOTATIONS = [
       'Chem'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '13977448',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '13977448',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -9039,10 +9039,10 @@ export const ANNOTATIONS = [
       'Chem'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '13977448',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '13977448',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -9059,10 +9059,10 @@ export const ANNOTATIONS = [
       'Chem'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '13977448',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '13977448',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -9079,10 +9079,10 @@ export const ANNOTATIONS = [
       'Soc'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '7803861',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '7803861',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -9099,10 +9099,10 @@ export const ANNOTATIONS = [
       'Soc'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '7803861',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '7803861',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -9119,10 +9119,10 @@ export const ANNOTATIONS = [
       'Soc'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '7803861',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '7803861',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -9139,10 +9139,10 @@ export const ANNOTATIONS = [
       'Soc'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '7803861',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '7803861',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -9159,10 +9159,10 @@ export const ANNOTATIONS = [
       'Soc'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '7803861',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '7803861',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -9179,10 +9179,10 @@ export const ANNOTATIONS = [
       'Soc'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '7803861',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '7803861',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -9199,10 +9199,10 @@ export const ANNOTATIONS = [
       'Li'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '109243305',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '109243305',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -9219,10 +9219,10 @@ export const ANNOTATIONS = [
       'Li'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '109243305',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '109243305',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -9239,10 +9239,10 @@ export const ANNOTATIONS = [
       'Li'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '109243305',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '109243305',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -9259,10 +9259,10 @@ export const ANNOTATIONS = [
       'Li'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '109243305',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '109243305',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -9279,10 +9279,10 @@ export const ANNOTATIONS = [
       'Li'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '109243305',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '109243305',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -9299,10 +9299,10 @@ export const ANNOTATIONS = [
       'Li'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '109243305',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '109243305',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -9319,10 +9319,10 @@ export const ANNOTATIONS = [
       'Li'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '109243305',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '109243305',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -9339,10 +9339,10 @@ export const ANNOTATIONS = [
       'Li'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '109243305',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '109243305',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -9359,10 +9359,10 @@ export const ANNOTATIONS = [
       'Li'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '109243305',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '109243305',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -9379,10 +9379,10 @@ export const ANNOTATIONS = [
       'CE'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '13034',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '13034',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -9399,10 +9399,10 @@ export const ANNOTATIONS = [
       'CE,'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '13034',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '13034',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -9419,10 +9419,10 @@ export const ANNOTATIONS = [
       'CE'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '13034',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '13034',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -9439,10 +9439,10 @@ export const ANNOTATIONS = [
       'CE,'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '13034',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '13034',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -9459,10 +9459,10 @@ export const ANNOTATIONS = [
       'Chen'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '5187003',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '5187003',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -9479,10 +9479,10 @@ export const ANNOTATIONS = [
       'Chen'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '5187003',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '5187003',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -9499,10 +9499,10 @@ export const ANNOTATIONS = [
       'Chen'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '5187003',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '5187003',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -9519,10 +9519,10 @@ export const ANNOTATIONS = [
       'OS,'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '4156584',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '4156584',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -9539,10 +9539,10 @@ export const ANNOTATIONS = [
       'Li L,'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '9687812',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '9687812',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -9559,10 +9559,10 @@ export const ANNOTATIONS = [
       'EM,'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '4338499',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '4338499',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -9579,10 +9579,10 @@ export const ANNOTATIONS = [
       'Lin'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '105267563',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '105267563',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -9599,10 +9599,10 @@ export const ANNOTATIONS = [
       'NN,'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '67405',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '67405',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -9619,10 +9619,10 @@ export const ANNOTATIONS = [
       'NN,'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '67405',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '67405',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -9639,10 +9639,10 @@ export const ANNOTATIONS = [
       'DM,'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '4815560',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '4815560',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -9659,10 +9659,10 @@ export const ANNOTATIONS = [
       'MA,'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '39734854',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '39734854',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -9679,10 +9679,10 @@ export const ANNOTATIONS = [
       'MA,'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '39734854',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '39734854',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -9699,10 +9699,10 @@ export const ANNOTATIONS = [
       'BD,'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '3878011',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '3878011',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -9719,10 +9719,10 @@ export const ANNOTATIONS = [
       'BD,'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '3878011',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '3878011',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -9739,10 +9739,10 @@ export const ANNOTATIONS = [
       'B. D.'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '3878011',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '3878011',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -9759,10 +9759,10 @@ export const ANNOTATIONS = [
       'MR,'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '113657460',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '113657460',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -9779,10 +9779,10 @@ export const ANNOTATIONS = [
       'MR,'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '113657460',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '113657460',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -9799,10 +9799,10 @@ export const ANNOTATIONS = [
       'DT,'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '13518',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '13518',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -9819,10 +9819,10 @@ export const ANNOTATIONS = [
       'DT,'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '13518',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '13518',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -9839,10 +9839,10 @@ export const ANNOTATIONS = [
       'SG,'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '19883',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '19883',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -9859,10 +9859,10 @@ export const ANNOTATIONS = [
       'SG,'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '19883',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '19883',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -9879,10 +9879,10 @@ export const ANNOTATIONS = [
       'SG,'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '19883',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '19883',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -9899,10 +9899,10 @@ export const ANNOTATIONS = [
       'NS,'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '36839046',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '36839046',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -9919,10 +9919,10 @@ export const ANNOTATIONS = [
       'BM,'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '23972',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '23972',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -9939,10 +9939,10 @@ export const ANNOTATIONS = [
       'PJ,'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '3678455',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '3678455',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -9959,10 +9959,10 @@ export const ANNOTATIONS = [
       'BH,'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '104184',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '104184',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -9979,10 +9979,10 @@ export const ANNOTATIONS = [
       'BH,'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '104184',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '104184',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -9999,10 +9999,10 @@ export const ANNOTATIONS = [
       'BH,'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '104184',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '104184',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -10019,10 +10019,10 @@ export const ANNOTATIONS = [
       'MK,'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '7196647',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '7196647',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -10039,10 +10039,10 @@ export const ANNOTATIONS = [
       'MK,'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '7196647',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '7196647',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -10059,10 +10059,10 @@ export const ANNOTATIONS = [
       'MK'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '7196647',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '7196647',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -10079,10 +10079,10 @@ export const ANNOTATIONS = [
       'MK'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '7196647',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '7196647',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -10099,10 +10099,10 @@ export const ANNOTATIONS = [
       'MK,'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '7196647',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '7196647',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -10119,10 +10119,10 @@ export const ANNOTATIONS = [
       'AG,'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '103325053',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '103325053',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -10139,10 +10139,10 @@ export const ANNOTATIONS = [
       'DJ,'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '6727029',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '6727029',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -10159,10 +10159,10 @@ export const ANNOTATIONS = [
       'JD,'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '16461',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '16461',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -10179,10 +10179,10 @@ export const ANNOTATIONS = [
       'CC'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '1043621',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '1043621',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -10199,10 +10199,10 @@ export const ANNOTATIONS = [
       'CC (2016)'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '14016309',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '14016309',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -10219,10 +10219,10 @@ export const ANNOTATIONS = [
       'A, Na'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '945837',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '945837',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -10239,10 +10239,10 @@ export const ANNOTATIONS = [
       'Na'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '23104238',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '23104238',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -10259,10 +10259,10 @@ export const ANNOTATIONS = [
       'NA,'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '23104238',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '23104238',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -10279,10 +10279,10 @@ export const ANNOTATIONS = [
       'Na U,'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '395753',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '395753',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -10299,10 +10299,10 @@ export const ANNOTATIONS = [
       'and R.'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '4241541',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '4241541',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -10319,10 +10319,10 @@ export const ANNOTATIONS = [
       'Sen'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '10934',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '10934',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -10339,10 +10339,10 @@ export const ANNOTATIONS = [
       'Sen'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '10934',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '10934',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -10359,10 +10359,10 @@ export const ANNOTATIONS = [
       'Sen'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '10934',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '10934',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -10379,10 +10379,10 @@ export const ANNOTATIONS = [
       'Sen S,'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112596515',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112596515',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -10399,10 +10399,10 @@ export const ANNOTATIONS = [
       'Sen S,'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112596515',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112596515',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -10419,10 +10419,10 @@ export const ANNOTATIONS = [
       'Sen S,'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112596515',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112596515',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -10439,10 +10439,10 @@ export const ANNOTATIONS = [
       'SS,'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '110113711',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '110113711',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -10459,10 +10459,10 @@ export const ANNOTATIONS = [
       'SS,'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '110113711',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '110113711',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -10486,10 +10486,10 @@ export const ANNOTATIONS = [
       'Soc'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '25769393',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '25769393',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -10506,10 +10506,10 @@ export const ANNOTATIONS = [
       'Xia'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '109215549',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '109215549',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -10526,10 +10526,10 @@ export const ANNOTATIONS = [
       'S-P,'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '7803754',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '7803754',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -10546,10 +10546,10 @@ export const ANNOTATIONS = [
       'KK,'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '251556',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '251556',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -10566,10 +10566,10 @@ export const ANNOTATIONS = [
       'Ark'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '3853071',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '3853071',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -10586,10 +10586,10 @@ export const ANNOTATIONS = [
       'Mat'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '31080706',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '31080706',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -10606,10 +10606,10 @@ export const ANNOTATIONS = [
       'Astr'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '11639372',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '11639372',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -10626,10 +10626,10 @@ export const ANNOTATIONS = [
       'P (2000)'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '5658040',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '5658040',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -10646,10 +10646,10 @@ export const ANNOTATIONS = [
       'J, Chain'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112117813',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112117813',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -10666,10 +10666,10 @@ export const ANNOTATIONS = [
       'J, Chain'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112117813',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112117813',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -10686,10 +10686,10 @@ export const ANNOTATIONS = [
       'CY,'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '13055',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '13055',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -10706,10 +10706,10 @@ export const ANNOTATIONS = [
       'CY,'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '13055',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '13055',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -10726,10 +10726,10 @@ export const ANNOTATIONS = [
       'GA,'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '105051862',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '105051862',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -10746,10 +10746,10 @@ export const ANNOTATIONS = [
       'GA,'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '105051862',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '105051862',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -10766,10 +10766,10 @@ export const ANNOTATIONS = [
       'AF,'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '407373',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '407373',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -10786,10 +10786,10 @@ export const ANNOTATIONS = [
       'AF,'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '407373',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '407373',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -10806,10 +10806,10 @@ export const ANNOTATIONS = [
       'IP,'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '933743',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '933743',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -10826,10 +10826,10 @@ export const ANNOTATIONS = [
       'DR,'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112594697',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112594697',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -10846,10 +10846,10 @@ export const ANNOTATIONS = [
       'Dos'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '11638749',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '11638749',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -10866,10 +10866,10 @@ export const ANNOTATIONS = [
       'PC'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112119189',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112119189',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -10886,10 +10886,10 @@ export const ANNOTATIONS = [
       'Gao'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '549749',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '549749',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -10906,10 +10906,10 @@ export const ANNOTATIONS = [
       'S-K,'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '111060391',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '111060391',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -10926,10 +10926,10 @@ export const ANNOTATIONS = [
       'DB,'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '16847',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '16847',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -10946,10 +10946,10 @@ export const ANNOTATIONS = [
       'H-C,'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '362119',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '362119',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -10966,10 +10966,10 @@ export const ANNOTATIONS = [
       'J-M,'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '100270782',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '100270782',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -10986,10 +10986,10 @@ export const ANNOTATIONS = [
       'Zhang'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '106603806',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '106603806',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -11006,10 +11006,10 @@ export const ANNOTATIONS = [
       'Zhang'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '106603806',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '106603806',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -11026,10 +11026,10 @@ export const ANNOTATIONS = [
       '(Camb,'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '50663',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '50663',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -11046,10 +11046,10 @@ export const ANNOTATIONS = [
       'Engl:'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '208194',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '208194',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -11066,10 +11066,10 @@ export const ANNOTATIONS = [
       'F (2010)'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '41826267',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '41826267',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -11086,10 +11086,10 @@ export const ANNOTATIONS = [
       '(eds)'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '100281754',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '100281754',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -11106,10 +11106,10 @@ export const ANNOTATIONS = [
       'York,'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '26797477',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '26797477',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -11126,10 +11126,10 @@ export const ANNOTATIONS = [
       'pp'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '20221668',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '20221668',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -11146,10 +11146,10 @@ export const ANNOTATIONS = [
       'CA,'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '8240934',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '8240934',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -11166,10 +11166,10 @@ export const ANNOTATIONS = [
       'FA,'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '24536',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '24536',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -11186,10 +11186,10 @@ export const ANNOTATIONS = [
       'Stout'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '45885',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '45885',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -11206,10 +11206,10 @@ export const ANNOTATIONS = [
       'BK'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '192189',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '192189',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -11226,10 +11226,10 @@ export const ANNOTATIONS = [
       'WV,'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '16522',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '16522',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -11246,10 +11246,10 @@ export const ANNOTATIONS = [
       'JC'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '109205',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '109205',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -11266,10 +11266,10 @@ export const ANNOTATIONS = [
       'Annu'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '108914721',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '108914721',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -11286,10 +11286,10 @@ export const ANNOTATIONS = [
       'Yu'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '10178789',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '10178789',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -11306,10 +11306,10 @@ export const ANNOTATIONS = [
       'Yu'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '10178789',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '10178789',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -11326,10 +11326,10 @@ export const ANNOTATIONS = [
       'L-K,'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '105218045',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '105218045',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -11346,10 +11346,10 @@ export const ANNOTATIONS = [
       'Y-H,'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '100532577',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '100532577',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -11366,10 +11366,10 @@ export const ANNOTATIONS = [
       'Y-H,'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '100532577',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '100532577',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -11386,10 +11386,10 @@ export const ANNOTATIONS = [
       'Y-C,'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '693001',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '693001',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -11406,10 +11406,10 @@ export const ANNOTATIONS = [
       'Ke'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '251554',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '251554',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -11426,10 +11426,10 @@ export const ANNOTATIONS = [
       'S-C,'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '40101789',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '40101789',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -11446,10 +11446,10 @@ export const ANNOTATIONS = [
       'C-J,'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '31800',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '31800',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -11466,10 +11466,10 @@ export const ANNOTATIONS = [
       'T-H'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '112112820',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '112112820',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -11486,10 +11486,10 @@ export const ANNOTATIONS = [
       'JN,'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '57471',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '57471',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -11506,10 +11506,10 @@ export const ANNOTATIONS = [
       'WK,'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '249889',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '249889',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -11526,10 +11526,10 @@ export const ANNOTATIONS = [
       'LE,'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '192232',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '192232',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -11546,10 +11546,10 @@ export const ANNOTATIONS = [
       'Cox'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '1457763',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '1457763',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -11566,10 +11566,10 @@ export const ANNOTATIONS = [
       'RM,'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '948867',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '948867',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -11586,10 +11586,10 @@ export const ANNOTATIONS = [
       'DH,'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '109698',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '109698',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -11606,10 +11606,10 @@ export const ANNOTATIONS = [
       'DP'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '8241411',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '8241411',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -11626,10 +11626,10 @@ export const ANNOTATIONS = [
       'Win-'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '14235',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '14235',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -11646,10 +11646,10 @@ export const ANNOTATIONS = [
       'Nat'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '9441851',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '9441851',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -11666,10 +11666,10 @@ export const ANNOTATIONS = [
       'Mol'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '108594366',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '108594366',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -11686,10 +11686,10 @@ export const ANNOTATIONS = [
       'AK,'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '17359640',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '17359640',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -11706,10 +11706,10 @@ export const ANNOTATIONS = [
       'SJ,'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '12292',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '12292',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -11726,10 +11726,10 @@ export const ANNOTATIONS = [
       'Roret'
     ],
     meta: {
-      'type': 'Genes',
-      'id': '10475',
-      'color': '#8f7cbf',
-      'idType': 'NCBI'
+      type: 'Genes',
+      id: '10475',
+      color: '#8f7cbf',
+      idType: 'NCBI'
     }
   },
   {
@@ -11746,10 +11746,10 @@ export const ANNOTATIONS = [
       'proteins'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:36080',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:36080',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -11766,10 +11766,10 @@ export const ANNOTATIONS = [
       'proteins'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:36080',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:36080',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -11786,10 +11786,10 @@ export const ANNOTATIONS = [
       'proteins'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:36080',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:36080',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -11806,10 +11806,10 @@ export const ANNOTATIONS = [
       'proteins'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:36080',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:36080',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -11826,10 +11826,10 @@ export const ANNOTATIONS = [
       'proteins'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:36080',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:36080',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -11846,10 +11846,10 @@ export const ANNOTATIONS = [
       'proteins,'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:36080',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:36080',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -11866,10 +11866,10 @@ export const ANNOTATIONS = [
       'proteins'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:36080',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:36080',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -11886,10 +11886,10 @@ export const ANNOTATIONS = [
       'proteins'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:36080',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:36080',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -11906,10 +11906,10 @@ export const ANNOTATIONS = [
       'proteins'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:36080',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:36080',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -11926,10 +11926,10 @@ export const ANNOTATIONS = [
       'proteins'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:36080',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:36080',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -11946,10 +11946,10 @@ export const ANNOTATIONS = [
       'proteins'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:36080',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:36080',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -11966,10 +11966,10 @@ export const ANNOTATIONS = [
       'proteins.'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:36080',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:36080',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -11986,10 +11986,10 @@ export const ANNOTATIONS = [
       'proteins,'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:36080',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:36080',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -12006,10 +12006,10 @@ export const ANNOTATIONS = [
       'proteins'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:36080',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:36080',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -12026,10 +12026,10 @@ export const ANNOTATIONS = [
       'proteins,'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:36080',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:36080',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -12046,10 +12046,10 @@ export const ANNOTATIONS = [
       'proteins'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:36080',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:36080',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -12066,10 +12066,10 @@ export const ANNOTATIONS = [
       'proteins'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:36080',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:36080',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -12086,10 +12086,10 @@ export const ANNOTATIONS = [
       'proteins.'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:36080',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:36080',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -12106,10 +12106,10 @@ export const ANNOTATIONS = [
       'proteins'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:36080',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:36080',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -12126,10 +12126,10 @@ export const ANNOTATIONS = [
       'proteins'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:36080',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:36080',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -12146,10 +12146,10 @@ export const ANNOTATIONS = [
       'proteins'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:36080',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:36080',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -12166,10 +12166,10 @@ export const ANNOTATIONS = [
       'proteins,'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:36080',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:36080',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -12186,10 +12186,10 @@ export const ANNOTATIONS = [
       'DTT'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:18320',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:18320',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -12206,10 +12206,10 @@ export const ANNOTATIONS = [
       'DTT,'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:18320',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:18320',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -12226,10 +12226,10 @@ export const ANNOTATIONS = [
       'DTT,'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:18320',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:18320',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -12246,10 +12246,10 @@ export const ANNOTATIONS = [
       'DTT,'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:18320',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:18320',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -12266,10 +12266,10 @@ export const ANNOTATIONS = [
       'DTT'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:18320',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:18320',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -12286,10 +12286,10 @@ export const ANNOTATIONS = [
       'DTT'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:18320',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:18320',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -12306,10 +12306,10 @@ export const ANNOTATIONS = [
       'DTT'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:18320',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:18320',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -12326,10 +12326,10 @@ export const ANNOTATIONS = [
       'DTT,'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:18320',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:18320',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -12346,10 +12346,10 @@ export const ANNOTATIONS = [
       'DTT.'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:18320',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:18320',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -12366,10 +12366,10 @@ export const ANNOTATIONS = [
       'DTT'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:18320',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:18320',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -12386,10 +12386,10 @@ export const ANNOTATIONS = [
       'DTT'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:18320',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:18320',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -12406,10 +12406,10 @@ export const ANNOTATIONS = [
       'DTT'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:18320',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:18320',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -12426,10 +12426,10 @@ export const ANNOTATIONS = [
       'DTT'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:18320',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:18320',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -12446,10 +12446,10 @@ export const ANNOTATIONS = [
       'DTT'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:18320',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:18320',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -12466,10 +12466,10 @@ export const ANNOTATIONS = [
       'GSH'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:16856',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:16856',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -12486,10 +12486,10 @@ export const ANNOTATIONS = [
       'GSH'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:16856',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:16856',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -12506,10 +12506,10 @@ export const ANNOTATIONS = [
       'GSH'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:16856',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:16856',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -12526,10 +12526,10 @@ export const ANNOTATIONS = [
       'GSH'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:16856',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:16856',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -12546,10 +12546,10 @@ export const ANNOTATIONS = [
       'GSH'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:16856',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:16856',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -12566,10 +12566,10 @@ export const ANNOTATIONS = [
       'GSH'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:16856',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:16856',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -12586,10 +12586,10 @@ export const ANNOTATIONS = [
       'Glutaredoxin'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:48465',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:48465',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -12606,10 +12606,10 @@ export const ANNOTATIONS = [
       'glutaredoxin'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:48465',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:48465',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -12626,10 +12626,10 @@ export const ANNOTATIONS = [
       'glutaredoxin)'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:48465',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:48465',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -12653,10 +12653,10 @@ export const ANNOTATIONS = [
       'glu-'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:48465',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:48465',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -12673,10 +12673,10 @@ export const ANNOTATIONS = [
       'Dithiothreitol'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:18320',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:18320',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -12693,10 +12693,10 @@ export const ANNOTATIONS = [
       'Ferredoxin'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:5017',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:5017',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -12713,10 +12713,10 @@ export const ANNOTATIONS = [
       'ferredoxin'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:5017',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:5017',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -12733,10 +12733,10 @@ export const ANNOTATIONS = [
       'ferredoxin'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:5017',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:5017',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -12753,10 +12753,10 @@ export const ANNOTATIONS = [
       'ferredoxin'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:5017',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:5017',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -12773,10 +12773,10 @@ export const ANNOTATIONS = [
       'ferredoxin'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:5017',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:5017',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -12800,10 +12800,10 @@ export const ANNOTATIONS = [
       'ferre-'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:5017',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:5017',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -12820,10 +12820,10 @@ export const ANNOTATIONS = [
       'ferredoxin'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:5017',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:5017',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -12840,10 +12840,10 @@ export const ANNOTATIONS = [
       'ferredoxin'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:5017',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:5017',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -12860,10 +12860,10 @@ export const ANNOTATIONS = [
       'cofactors'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:23357',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:23357',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -12880,10 +12880,10 @@ export const ANNOTATIONS = [
       'electron'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:10545',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:10545',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -12900,10 +12900,10 @@ export const ANNOTATIONS = [
       'DNA'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:16991',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:16991',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -12920,10 +12920,10 @@ export const ANNOTATIONS = [
       'DNA'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:16991',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:16991',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -12940,10 +12940,10 @@ export const ANNOTATIONS = [
       'DNA'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:16991',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:16991',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -12960,10 +12960,10 @@ export const ANNOTATIONS = [
       'cofactor'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:23357',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:23357',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -12980,10 +12980,10 @@ export const ANNOTATIONS = [
       'cofactor'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:23357',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:23357',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -13000,10 +13000,10 @@ export const ANNOTATIONS = [
       'cofactor.'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:23357',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:23357',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -13020,10 +13020,10 @@ export const ANNOTATIONS = [
       'lipoic acid,'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:16494',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:16494',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -13040,10 +13040,10 @@ export const ANNOTATIONS = [
       'lipoic acid'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:16494',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:16494',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -13060,10 +13060,10 @@ export const ANNOTATIONS = [
       'lipoic acid'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:16494',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:16494',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -13080,10 +13080,10 @@ export const ANNOTATIONS = [
       'clusters'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:33731',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:33731',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -13100,10 +13100,10 @@ export const ANNOTATIONS = [
       'clusters:'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:33731',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:33731',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -13120,10 +13120,10 @@ export const ANNOTATIONS = [
       'clusters'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:33731',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:33731',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -13140,10 +13140,10 @@ export const ANNOTATIONS = [
       'clusters'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:33731',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:33731',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -13160,10 +13160,10 @@ export const ANNOTATIONS = [
       'clusters.'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:33731',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:33731',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -13180,10 +13180,10 @@ export const ANNOTATIONS = [
       'Clusters'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:33731',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:33731',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -13200,10 +13200,10 @@ export const ANNOTATIONS = [
       'amino'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:46882',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:46882',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -13220,10 +13220,10 @@ export const ANNOTATIONS = [
       'acids'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:37527',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:37527',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -13240,10 +13240,10 @@ export const ANNOTATIONS = [
       'Ferric chloride,'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:30808',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:30808',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -13260,10 +13260,10 @@ export const ANNOTATIONS = [
       'ferric chloride'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:30808',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:30808',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -13280,10 +13280,10 @@ export const ANNOTATIONS = [
       'ferric chloride'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:30808',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:30808',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -13300,10 +13300,10 @@ export const ANNOTATIONS = [
       'ferric chloride,'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:30808',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:30808',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -13320,10 +13320,10 @@ export const ANNOTATIONS = [
       'chloride,'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:17996',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:17996',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -13340,10 +13340,10 @@ export const ANNOTATIONS = [
       'chloride'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:17996',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:17996',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -13360,10 +13360,10 @@ export const ANNOTATIONS = [
       'chloride'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:17996',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:17996',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -13380,10 +13380,10 @@ export const ANNOTATIONS = [
       'chloride,'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:17996',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:17996',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -13400,10 +13400,10 @@ export const ANNOTATIONS = [
       'chloride,'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:17996',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:17996',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -13420,10 +13420,10 @@ export const ANNOTATIONS = [
       'sodium'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:26708',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:26708',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -13440,10 +13440,10 @@ export const ANNOTATIONS = [
       'sodium'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:26708',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:26708',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -13460,10 +13460,10 @@ export const ANNOTATIONS = [
       'sodium'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:26708',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:26708',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -13480,10 +13480,10 @@ export const ANNOTATIONS = [
       'sodium'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:26708',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:26708',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -13500,10 +13500,10 @@ export const ANNOTATIONS = [
       'sulfide,'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:26822',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:26822',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -13520,10 +13520,10 @@ export const ANNOTATIONS = [
       'sulfide'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:26822',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:26822',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -13540,10 +13540,10 @@ export const ANNOTATIONS = [
       'sulfide,'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:26822',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:26822',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -13560,10 +13560,10 @@ export const ANNOTATIONS = [
       'l-cysteine'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:17561',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:17561',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -13580,10 +13580,10 @@ export const ANNOTATIONS = [
       'l-cysteine.'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:17561',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:17561',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -13600,10 +13600,10 @@ export const ANNOTATIONS = [
       'l-cysteine,'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:17561',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:17561',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -13620,10 +13620,10 @@ export const ANNOTATIONS = [
       'l-cysteine'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:17561',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:17561',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -13640,10 +13640,10 @@ export const ANNOTATIONS = [
       'h at'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:30418',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:30418',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -13660,10 +13660,10 @@ export const ANNOTATIONS = [
       'kanamycin'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:6104',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:6104',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -13680,10 +13680,10 @@ export const ANNOTATIONS = [
       'kanamycin'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:6104',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:6104',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -13700,10 +13700,10 @@ export const ANNOTATIONS = [
       'kanamycin'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:6104',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:6104',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -13720,10 +13720,10 @@ export const ANNOTATIONS = [
       'urea'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:16199',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:16199',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -13740,10 +13740,10 @@ export const ANNOTATIONS = [
       'urea.'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:16199',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:16199',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -13760,10 +13760,10 @@ export const ANNOTATIONS = [
       'urea,'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:16199',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:16199',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -13780,10 +13780,10 @@ export const ANNOTATIONS = [
       'HEPES'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:46756',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:46756',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -13800,10 +13800,10 @@ export const ANNOTATIONS = [
       'HEPES,'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:46756',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:46756',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -13820,10 +13820,10 @@ export const ANNOTATIONS = [
       'HEPES,'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:46756',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:46756',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -13840,10 +13840,10 @@ export const ANNOTATIONS = [
       'HEPES,'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:46756',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:46756',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -13860,10 +13860,10 @@ export const ANNOTATIONS = [
       'HEPES,'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:46756',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:46756',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -13880,10 +13880,10 @@ export const ANNOTATIONS = [
       'HEPES,'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:46756',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:46756',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -13900,10 +13900,10 @@ export const ANNOTATIONS = [
       'HEPES,'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:46756',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:46756',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -13920,10 +13920,10 @@ export const ANNOTATIONS = [
       'HEPES,'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:46756',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:46756',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -13940,10 +13940,10 @@ export const ANNOTATIONS = [
       'HEPES,'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:46756',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:46756',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -13960,10 +13960,10 @@ export const ANNOTATIONS = [
       'HEPES,'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:46756',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:46756',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -13980,10 +13980,10 @@ export const ANNOTATIONS = [
       'NaCl,'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:26710',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:26710',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -14000,10 +14000,10 @@ export const ANNOTATIONS = [
       'NaCl,'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:26710',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:26710',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -14020,10 +14020,10 @@ export const ANNOTATIONS = [
       'NaCl,'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:26710',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:26710',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -14040,10 +14040,10 @@ export const ANNOTATIONS = [
       'NaCl,'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:26710',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:26710',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -14060,10 +14060,10 @@ export const ANNOTATIONS = [
       'NaCl,'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:26710',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:26710',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -14080,10 +14080,10 @@ export const ANNOTATIONS = [
       'NaCl,'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:26710',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:26710',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -14100,10 +14100,10 @@ export const ANNOTATIONS = [
       'NaCl,'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:26710',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:26710',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -14120,10 +14120,10 @@ export const ANNOTATIONS = [
       'NaCl,'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:26710',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:26710',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -14140,10 +14140,10 @@ export const ANNOTATIONS = [
       'NaCl,'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:26710',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:26710',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -14160,10 +14160,10 @@ export const ANNOTATIONS = [
       'NaCl,'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:26710',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:26710',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -14180,10 +14180,10 @@ export const ANNOTATIONS = [
       'Apo protein'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:13850',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:13850',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -14207,10 +14207,10 @@ export const ANNOTATIONS = [
       'apo '
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:13850',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:13850',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -14227,10 +14227,10 @@ export const ANNOTATIONS = [
       'apo protein'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:13850',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:13850',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -14247,10 +14247,10 @@ export const ANNOTATIONS = [
       'mL'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:74705',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:74705',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -14267,10 +14267,10 @@ export const ANNOTATIONS = [
       'mL'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:74705',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:74705',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -14287,10 +14287,10 @@ export const ANNOTATIONS = [
       'mL'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:74705',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:74705',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -14307,10 +14307,10 @@ export const ANNOTATIONS = [
       'mL'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:74705',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:74705',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -14327,10 +14327,10 @@ export const ANNOTATIONS = [
       'mL)'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:74705',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:74705',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -14347,10 +14347,10 @@ export const ANNOTATIONS = [
       'isopropyl'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:30353',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:30353',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -14367,10 +14367,10 @@ export const ANNOTATIONS = [
       '(IPTG)'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:61448',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:61448',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -14387,10 +14387,10 @@ export const ANNOTATIONS = [
       'buffer'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:35225',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:35225',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -14407,10 +14407,10 @@ export const ANNOTATIONS = [
       'buffer.'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:35225',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:35225',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -14427,10 +14427,10 @@ export const ANNOTATIONS = [
       'imidazole,'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:14434',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:14434',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -14447,10 +14447,10 @@ export const ANNOTATIONS = [
       'nm,'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:141423',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:141423',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -14467,10 +14467,10 @@ export const ANNOTATIONS = [
       'nm'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:141423',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:141423',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -14487,10 +14487,10 @@ export const ANNOTATIONS = [
       'nm'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:141423',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:141423',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -14507,10 +14507,10 @@ export const ANNOTATIONS = [
       'nm'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:141423',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:141423',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -14527,10 +14527,10 @@ export const ANNOTATIONS = [
       'nm'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:141423',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:141423',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -14547,10 +14547,10 @@ export const ANNOTATIONS = [
       'nm'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:141423',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:141423',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -14567,10 +14567,10 @@ export const ANNOTATIONS = [
       'nm.'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:141423',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:141423',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -14587,10 +14587,10 @@ export const ANNOTATIONS = [
       'nm'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:141423',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:141423',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -14607,10 +14607,10 @@ export const ANNOTATIONS = [
       'nm'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:141423',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:141423',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -14627,10 +14627,10 @@ export const ANNOTATIONS = [
       'nm'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:141423',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:141423',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -14654,10 +14654,10 @@ export const ANNOTATIONS = [
       'Fe'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:29034',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:29034',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -14681,10 +14681,10 @@ export const ANNOTATIONS = [
       'Fe'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:29034',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:29034',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -14701,10 +14701,10 @@ export const ANNOTATIONS = [
       'reagents.'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:33893',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:33893',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -14721,10 +14721,10 @@ export const ANNOTATIONS = [
       'reagents'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:33893',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:33893',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -14741,10 +14741,10 @@ export const ANNOTATIONS = [
       'same'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:15414',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:15414',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -14761,10 +14761,10 @@ export const ANNOTATIONS = [
       'same'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:15414',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:15414',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -14781,10 +14781,10 @@ export const ANNOTATIONS = [
       'same'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:15414',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:15414',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -14801,10 +14801,10 @@ export const ANNOTATIONS = [
       'same'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:15414',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:15414',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -14821,10 +14821,10 @@ export const ANNOTATIONS = [
       'same'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:15414',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:15414',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -14841,10 +14841,10 @@ export const ANNOTATIONS = [
       'glutathione'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:16856',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:16856',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -14861,10 +14861,10 @@ export const ANNOTATIONS = [
       'glutathione'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:16856',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:16856',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -14881,10 +14881,10 @@ export const ANNOTATIONS = [
       'glutathione'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:16856',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:16856',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -14901,10 +14901,10 @@ export const ANNOTATIONS = [
       'glutathione,'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:16856',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:16856',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -14928,10 +14928,10 @@ export const ANNOTATIONS = [
       'glu-'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:16856',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:16856',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -14948,10 +14948,10 @@ export const ANNOTATIONS = [
       'glutathione'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:16856',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:16856',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -14968,10 +14968,10 @@ export const ANNOTATIONS = [
       'iron'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:18248',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:18248',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -14988,10 +14988,10 @@ export const ANNOTATIONS = [
       'iron'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:18248',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:18248',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -15008,10 +15008,10 @@ export const ANNOTATIONS = [
       'iron'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:18248',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:18248',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -15028,10 +15028,10 @@ export const ANNOTATIONS = [
       'sodium dithionite'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:66870',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:66870',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -15048,10 +15048,10 @@ export const ANNOTATIONS = [
       'dithionite'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:42160',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:42160',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -15068,10 +15068,10 @@ export const ANNOTATIONS = [
       'dithionite'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:42160',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:42160',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -15088,10 +15088,10 @@ export const ANNOTATIONS = [
       'dithionite'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:42160',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:42160',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -15108,10 +15108,10 @@ export const ANNOTATIONS = [
       'nitrogen.'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:29351',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:29351',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -15128,10 +15128,10 @@ export const ANNOTATIONS = [
       'mW,'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:74709',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:74709',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -15148,10 +15148,10 @@ export const ANNOTATIONS = [
       'ms.'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:73613',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:73613',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -15168,10 +15168,10 @@ export const ANNOTATIONS = [
       'as a'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:15365',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:15365',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -15188,10 +15188,10 @@ export const ANNOTATIONS = [
       'as a'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:15365',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:15365',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -15208,10 +15208,10 @@ export const ANNOTATIONS = [
       'as a'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:15365',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:15365',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -15228,10 +15228,10 @@ export const ANNOTATIONS = [
       'ethanol'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:16236',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:16236',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -15248,10 +15248,10 @@ export const ANNOTATIONS = [
       'in a'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:73179',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:73179',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -15268,10 +15268,10 @@ export const ANNOTATIONS = [
       'in a'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:73179',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:73179',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -15288,10 +15288,10 @@ export const ANNOTATIONS = [
       'in a'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:73179',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:73179',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -15308,10 +15308,10 @@ export const ANNOTATIONS = [
       'in a '
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:73179',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:73179',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -15328,10 +15328,10 @@ export const ANNOTATIONS = [
       'in a'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:73179',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:73179',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -15348,10 +15348,10 @@ export const ANNOTATIONS = [
       'in a'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:73179',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:73179',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -15368,10 +15368,10 @@ export const ANNOTATIONS = [
       'chromophore'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:23240',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:23240',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -15388,10 +15388,10 @@ export const ANNOTATIONS = [
       'chromophore'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:23240',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:23240',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -15408,10 +15408,10 @@ export const ANNOTATIONS = [
       'ligand'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:52214',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:52214',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -15428,10 +15428,10 @@ export const ANNOTATIONS = [
       'ligand'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:52214',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:52214',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -15448,10 +15448,10 @@ export const ANNOTATIONS = [
       'ligand'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:52214',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:52214',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -15468,10 +15468,10 @@ export const ANNOTATIONS = [
       'thiol'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:29256',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:29256',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -15488,10 +15488,10 @@ export const ANNOTATIONS = [
       'c EPR'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:554446',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:554446',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -15508,10 +15508,10 @@ export const ANNOTATIONS = [
       'S4'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:29401',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:29401',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -15528,10 +15528,10 @@ export const ANNOTATIONS = [
       'S5).'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:29386',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:29386',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -15548,10 +15548,10 @@ export const ANNOTATIONS = [
       'ligands'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:52214',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:52214',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -15568,10 +15568,10 @@ export const ANNOTATIONS = [
       'TCEP.'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:63213',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:63213',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -15588,10 +15588,10 @@ export const ANNOTATIONS = [
       'acceptor'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:15339',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:15339',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -15608,10 +15608,10 @@ export const ANNOTATIONS = [
       'acceptor'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:15339',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:15339',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -15628,10 +15628,10 @@ export const ANNOTATIONS = [
       'serine,'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:17822',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:17822',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -15648,10 +15648,10 @@ export const ANNOTATIONS = [
       'dithiol'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:23853',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:23853',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -15668,10 +15668,10 @@ export const ANNOTATIONS = [
       '6c'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:27594',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:27594',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -15688,10 +15688,10 @@ export const ANNOTATIONS = [
       'Neri'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:35640',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:35640',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -15708,10 +15708,10 @@ export const ANNOTATIONS = [
       'OS,'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:30687',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:30687',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -15728,10 +15728,10 @@ export const ANNOTATIONS = [
       'EM,'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:73507',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:73507',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -15748,10 +15748,10 @@ export const ANNOTATIONS = [
       'Lin'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:32386',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:32386',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -15768,10 +15768,10 @@ export const ANNOTATIONS = [
       'DM,'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:141426',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:141426',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -15788,10 +15788,10 @@ export const ANNOTATIONS = [
       'MR,'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:74698',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:74698',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -15808,10 +15808,10 @@ export const ANNOTATIONS = [
       'MR,'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:74698',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:74698',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -15828,10 +15828,10 @@ export const ANNOTATIONS = [
       'MK,'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:74706',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:74706',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -15848,10 +15848,10 @@ export const ANNOTATIONS = [
       'MK,'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:74706',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:74706',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -15868,10 +15868,10 @@ export const ANNOTATIONS = [
       'MK'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:74706',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:74706',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -15888,10 +15888,10 @@ export const ANNOTATIONS = [
       'MK'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:74706',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:74706',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -15908,10 +15908,10 @@ export const ANNOTATIONS = [
       'MK,'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:74706',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:74706',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -15928,10 +15928,10 @@ export const ANNOTATIONS = [
       'DJ,'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:111513',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:111513',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -15948,10 +15948,10 @@ export const ANNOTATIONS = [
       'CC'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:28940',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:28940',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -15968,10 +15968,10 @@ export const ANNOTATIONS = [
       'S-P,'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:74820',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:74820',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -15988,10 +15988,10 @@ export const ANNOTATIONS = [
       'KK,'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:74564',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:74564',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -16008,10 +16008,10 @@ export const ANNOTATIONS = [
       'GA,'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:5206',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:5206',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -16028,10 +16028,10 @@ export const ANNOTATIONS = [
       'GA,'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:5206',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:5206',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -16048,10 +16048,10 @@ export const ANNOTATIONS = [
       'AF,'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:73807',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:73807',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -16068,10 +16068,10 @@ export const ANNOTATIONS = [
       'AF,'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:73807',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:73807',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -16088,10 +16088,10 @@ export const ANNOTATIONS = [
       'Dean'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:63877',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:63877',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -16108,10 +16108,10 @@ export const ANNOTATIONS = [
       'DR,'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:73445',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:73445',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -16128,10 +16128,10 @@ export const ANNOTATIONS = [
       'DB,'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:33349',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:33349',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -16148,10 +16148,10 @@ export const ANNOTATIONS = [
       'J-M,'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:31739',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:31739',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -16168,10 +16168,10 @@ export const ANNOTATIONS = [
       'Metals'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:33521',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:33521',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -16188,10 +16188,10 @@ export const ANNOTATIONS = [
       'YS,'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:141457',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:141457',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -16208,10 +16208,10 @@ export const ANNOTATIONS = [
       'WV,'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:74877',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:74877',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -16228,10 +16228,10 @@ export const ANNOTATIONS = [
       'L-K,'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:73583',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:73583',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -16248,10 +16248,10 @@ export const ANNOTATIONS = [
       'Y-H,'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:73695',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:73695',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -16268,10 +16268,10 @@ export const ANNOTATIONS = [
       'Y-H,'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:73695',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:73695',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -16288,10 +16288,10 @@ export const ANNOTATIONS = [
       'Ke'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:74557',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:74557',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -16308,10 +16308,10 @@ export const ANNOTATIONS = [
       'S-C,'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:33330',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:33330',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -16328,10 +16328,10 @@ export const ANNOTATIONS = [
       'K-W,'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:74569',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:74569',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -16348,10 +16348,10 @@ export const ANNOTATIONS = [
       'WK,'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:74872',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:74872',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -16368,10 +16368,10 @@ export const ANNOTATIONS = [
       'LE,'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:74531',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:74531',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -16388,10 +16388,10 @@ export const ANNOTATIONS = [
       'RM,'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:73817',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:73817',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -16408,10 +16408,10 @@ export const ANNOTATIONS = [
       'DH,'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:73451',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:73451',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -16428,10 +16428,10 @@ export const ANNOTATIONS = [
       'DP'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:137245',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:137245',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -16448,10 +16448,10 @@ export const ANNOTATIONS = [
       'Nat'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:82508',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:82508',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -16468,10 +16468,10 @@ export const ANNOTATIONS = [
       'AK,'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:132403',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:132403',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -16488,10 +16488,10 @@ export const ANNOTATIONS = [
       'Guo'
     ],
     meta: {
-      'type': 'Chemicals',
-      'id': 'CHEBI:16750',
-      'color': '#cee5cb',
-      'idType': 'CHEBI'
+      type: 'Chemicals',
+      id: 'CHEBI:16750',
+      color: '#cee5cb',
+      idType: 'CHEBI'
     }
   },
   {
@@ -16508,10 +16508,10 @@ export const ANNOTATIONS = [
       'GSH'
     ],
     meta: {
-      'type': 'Compounds',
-      'id': 'GLUTATHIONE',
-      'color': '#cee5cb',
-      'idType': 'BIOCYC'
+      type: 'Compounds',
+      id: 'GLUTATHIONE',
+      color: '#cee5cb',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -16528,10 +16528,10 @@ export const ANNOTATIONS = [
       'GSH'
     ],
     meta: {
-      'type': 'Compounds',
-      'id': 'GLUTATHIONE',
-      'color': '#cee5cb',
-      'idType': 'BIOCYC'
+      type: 'Compounds',
+      id: 'GLUTATHIONE',
+      color: '#cee5cb',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -16548,10 +16548,10 @@ export const ANNOTATIONS = [
       'GSH'
     ],
     meta: {
-      'type': 'Compounds',
-      'id': 'GLUTATHIONE',
-      'color': '#cee5cb',
-      'idType': 'BIOCYC'
+      type: 'Compounds',
+      id: 'GLUTATHIONE',
+      color: '#cee5cb',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -16568,10 +16568,10 @@ export const ANNOTATIONS = [
       'GSH'
     ],
     meta: {
-      'type': 'Compounds',
-      'id': 'GLUTATHIONE',
-      'color': '#cee5cb',
-      'idType': 'BIOCYC'
+      type: 'Compounds',
+      id: 'GLUTATHIONE',
+      color: '#cee5cb',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -16588,10 +16588,10 @@ export const ANNOTATIONS = [
       'GSH'
     ],
     meta: {
-      'type': 'Compounds',
-      'id': 'GLUTATHIONE',
-      'color': '#cee5cb',
-      'idType': 'BIOCYC'
+      type: 'Compounds',
+      id: 'GLUTATHIONE',
+      color: '#cee5cb',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -16608,10 +16608,10 @@ export const ANNOTATIONS = [
       'GSH'
     ],
     meta: {
-      'type': 'Compounds',
-      'id': 'GLUTATHIONE',
-      'color': '#cee5cb',
-      'idType': 'BIOCYC'
+      type: 'Compounds',
+      id: 'GLUTATHIONE',
+      color: '#cee5cb',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -16628,10 +16628,10 @@ export const ANNOTATIONS = [
       'OH'
     ],
     meta: {
-      'type': 'Compounds',
-      'id': 'OH',
-      'color': '#cee5cb',
-      'idType': 'BIOCYC'
+      type: 'Compounds',
+      id: 'OH',
+      color: '#cee5cb',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -16648,10 +16648,10 @@ export const ANNOTATIONS = [
       'lipoic acid,'
     ],
     meta: {
-      'type': 'Compounds',
-      'id': 'LIPOIC-ACID',
-      'color': '#cee5cb',
-      'idType': 'BIOCYC'
+      type: 'Compounds',
+      id: 'LIPOIC-ACID',
+      color: '#cee5cb',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -16668,10 +16668,10 @@ export const ANNOTATIONS = [
       'lipoic acid'
     ],
     meta: {
-      'type': 'Compounds',
-      'id': 'LIPOIC-ACID',
-      'color': '#cee5cb',
-      'idType': 'BIOCYC'
+      type: 'Compounds',
+      id: 'LIPOIC-ACID',
+      color: '#cee5cb',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -16688,10 +16688,10 @@ export const ANNOTATIONS = [
       'lipoic acid'
     ],
     meta: {
-      'type': 'Compounds',
-      'id': 'LIPOIC-ACID',
-      'color': '#cee5cb',
-      'idType': 'BIOCYC'
+      type: 'Compounds',
+      id: 'LIPOIC-ACID',
+      color: '#cee5cb',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -16708,10 +16708,10 @@ export const ANNOTATIONS = [
       'Ferric chloride,'
     ],
     meta: {
-      'type': 'Compounds',
-      'id': 'CPD0-1693',
-      'color': '#cee5cb',
-      'idType': 'BIOCYC'
+      type: 'Compounds',
+      id: 'CPD0-1693',
+      color: '#cee5cb',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -16728,10 +16728,10 @@ export const ANNOTATIONS = [
       'ferric chloride'
     ],
     meta: {
-      'type': 'Compounds',
-      'id': 'CPD0-1693',
-      'color': '#cee5cb',
-      'idType': 'BIOCYC'
+      type: 'Compounds',
+      id: 'CPD0-1693',
+      color: '#cee5cb',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -16748,10 +16748,10 @@ export const ANNOTATIONS = [
       'ferric chloride'
     ],
     meta: {
-      'type': 'Compounds',
-      'id': 'CPD0-1693',
-      'color': '#cee5cb',
-      'idType': 'BIOCYC'
+      type: 'Compounds',
+      id: 'CPD0-1693',
+      color: '#cee5cb',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -16768,10 +16768,10 @@ export const ANNOTATIONS = [
       'ferric chloride,'
     ],
     meta: {
-      'type': 'Compounds',
-      'id': 'CPD0-1693',
-      'color': '#cee5cb',
-      'idType': 'BIOCYC'
+      type: 'Compounds',
+      id: 'CPD0-1693',
+      color: '#cee5cb',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -16788,10 +16788,10 @@ export const ANNOTATIONS = [
       'chloride,'
     ],
     meta: {
-      'type': 'Compounds',
-      'id': 'CL-',
-      'color': '#cee5cb',
-      'idType': 'BIOCYC'
+      type: 'Compounds',
+      id: 'CL-',
+      color: '#cee5cb',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -16808,10 +16808,10 @@ export const ANNOTATIONS = [
       'chloride'
     ],
     meta: {
-      'type': 'Compounds',
-      'id': 'CL-',
-      'color': '#cee5cb',
-      'idType': 'BIOCYC'
+      type: 'Compounds',
+      id: 'CL-',
+      color: '#cee5cb',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -16828,10 +16828,10 @@ export const ANNOTATIONS = [
       'chloride'
     ],
     meta: {
-      'type': 'Compounds',
-      'id': 'CL-',
-      'color': '#cee5cb',
-      'idType': 'BIOCYC'
+      type: 'Compounds',
+      id: 'CL-',
+      color: '#cee5cb',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -16848,10 +16848,10 @@ export const ANNOTATIONS = [
       'chloride,'
     ],
     meta: {
-      'type': 'Compounds',
-      'id': 'CL-',
-      'color': '#cee5cb',
-      'idType': 'BIOCYC'
+      type: 'Compounds',
+      id: 'CL-',
+      color: '#cee5cb',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -16868,10 +16868,10 @@ export const ANNOTATIONS = [
       'chloride,'
     ],
     meta: {
-      'type': 'Compounds',
-      'id': 'CL-',
-      'color': '#cee5cb',
-      'idType': 'BIOCYC'
+      type: 'Compounds',
+      id: 'CL-',
+      color: '#cee5cb',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -16888,10 +16888,10 @@ export const ANNOTATIONS = [
       'sodium'
     ],
     meta: {
-      'type': 'Compounds',
-      'id': 'NA+',
-      'color': '#cee5cb',
-      'idType': 'BIOCYC'
+      type: 'Compounds',
+      id: 'NA+',
+      color: '#cee5cb',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -16908,10 +16908,10 @@ export const ANNOTATIONS = [
       'sodium'
     ],
     meta: {
-      'type': 'Compounds',
-      'id': 'NA+',
-      'color': '#cee5cb',
-      'idType': 'BIOCYC'
+      type: 'Compounds',
+      id: 'NA+',
+      color: '#cee5cb',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -16928,10 +16928,10 @@ export const ANNOTATIONS = [
       'sodium'
     ],
     meta: {
-      'type': 'Compounds',
-      'id': 'NA+',
-      'color': '#cee5cb',
-      'idType': 'BIOCYC'
+      type: 'Compounds',
+      id: 'NA+',
+      color: '#cee5cb',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -16948,10 +16948,10 @@ export const ANNOTATIONS = [
       'sodium'
     ],
     meta: {
-      'type': 'Compounds',
-      'id': 'NA+',
-      'color': '#cee5cb',
-      'idType': 'BIOCYC'
+      type: 'Compounds',
+      id: 'NA+',
+      color: '#cee5cb',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -16968,10 +16968,10 @@ export const ANNOTATIONS = [
       'sulfide,'
     ],
     meta: {
-      'type': 'Compounds',
-      'id': 'HS',
-      'color': '#cee5cb',
-      'idType': 'BIOCYC'
+      type: 'Compounds',
+      id: 'HS',
+      color: '#cee5cb',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -16988,10 +16988,10 @@ export const ANNOTATIONS = [
       'sulfide'
     ],
     meta: {
-      'type': 'Compounds',
-      'id': 'HS',
-      'color': '#cee5cb',
-      'idType': 'BIOCYC'
+      type: 'Compounds',
+      id: 'HS',
+      color: '#cee5cb',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -17008,10 +17008,10 @@ export const ANNOTATIONS = [
       'sulfide,'
     ],
     meta: {
-      'type': 'Compounds',
-      'id': 'HS',
-      'color': '#cee5cb',
-      'idType': 'BIOCYC'
+      type: 'Compounds',
+      id: 'HS',
+      color: '#cee5cb',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -17028,10 +17028,10 @@ export const ANNOTATIONS = [
       'l-cysteine'
     ],
     meta: {
-      'type': 'Compounds',
-      'id': 'CYS',
-      'color': '#cee5cb',
-      'idType': 'BIOCYC'
+      type: 'Compounds',
+      id: 'CYS',
+      color: '#cee5cb',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -17048,10 +17048,10 @@ export const ANNOTATIONS = [
       'l-cysteine.'
     ],
     meta: {
-      'type': 'Compounds',
-      'id': 'CYS',
-      'color': '#cee5cb',
-      'idType': 'BIOCYC'
+      type: 'Compounds',
+      id: 'CYS',
+      color: '#cee5cb',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -17068,10 +17068,10 @@ export const ANNOTATIONS = [
       'l-cysteine,'
     ],
     meta: {
-      'type': 'Compounds',
-      'id': 'CYS',
-      'color': '#cee5cb',
-      'idType': 'BIOCYC'
+      type: 'Compounds',
+      id: 'CYS',
+      color: '#cee5cb',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -17088,10 +17088,10 @@ export const ANNOTATIONS = [
       'l-cysteine'
     ],
     meta: {
-      'type': 'Compounds',
-      'id': 'CYS',
-      'color': '#cee5cb',
-      'idType': 'BIOCYC'
+      type: 'Compounds',
+      id: 'CYS',
+      color: '#cee5cb',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -17108,10 +17108,10 @@ export const ANNOTATIONS = [
       '(Hs'
     ],
     meta: {
-      'type': 'Compounds',
-      'id': 'CPD-846',
-      'color': '#cee5cb',
-      'idType': 'BIOCYC'
+      type: 'Compounds',
+      id: 'CPD-846',
+      color: '#cee5cb',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -17128,10 +17128,10 @@ export const ANNOTATIONS = [
       '(Hs'
     ],
     meta: {
-      'type': 'Compounds',
-      'id': 'CPD-846',
-      'color': '#cee5cb',
-      'idType': 'BIOCYC'
+      type: 'Compounds',
+      id: 'CPD-846',
+      color: '#cee5cb',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -17148,10 +17148,10 @@ export const ANNOTATIONS = [
       '(Hs'
     ],
     meta: {
-      'type': 'Compounds',
-      'id': 'CPD-846',
-      'color': '#cee5cb',
-      'idType': 'BIOCYC'
+      type: 'Compounds',
+      id: 'CPD-846',
+      color: '#cee5cb',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -17168,10 +17168,10 @@ export const ANNOTATIONS = [
       'HS,'
     ],
     meta: {
-      'type': 'Compounds',
-      'id': 'CPD-846',
-      'color': '#cee5cb',
-      'idType': 'BIOCYC'
+      type: 'Compounds',
+      id: 'CPD-846',
+      color: '#cee5cb',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -17188,10 +17188,10 @@ export const ANNOTATIONS = [
       'EDTA,'
     ],
     meta: {
-      'type': 'Compounds',
-      'id': 'EDTA',
-      'color': '#cee5cb',
-      'idType': 'BIOCYC'
+      type: 'Compounds',
+      id: 'EDTA',
+      color: '#cee5cb',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -17208,10 +17208,10 @@ export const ANNOTATIONS = [
       'EDTA,'
     ],
     meta: {
-      'type': 'Compounds',
-      'id': 'EDTA',
-      'color': '#cee5cb',
-      'idType': 'BIOCYC'
+      type: 'Compounds',
+      id: 'EDTA',
+      color: '#cee5cb',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -17228,10 +17228,10 @@ export const ANNOTATIONS = [
       'urea'
     ],
     meta: {
-      'type': 'Compounds',
-      'id': 'UREA',
-      'color': '#cee5cb',
-      'idType': 'BIOCYC'
+      type: 'Compounds',
+      id: 'UREA',
+      color: '#cee5cb',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -17248,10 +17248,10 @@ export const ANNOTATIONS = [
       'urea.'
     ],
     meta: {
-      'type': 'Compounds',
-      'id': 'UREA',
-      'color': '#cee5cb',
-      'idType': 'BIOCYC'
+      type: 'Compounds',
+      id: 'UREA',
+      color: '#cee5cb',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -17268,10 +17268,10 @@ export const ANNOTATIONS = [
       'urea,'
     ],
     meta: {
-      'type': 'Compounds',
-      'id': 'UREA',
-      'color': '#cee5cb',
-      'idType': 'BIOCYC'
+      type: 'Compounds',
+      id: 'UREA',
+      color: '#cee5cb',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -17295,10 +17295,10 @@ export const ANNOTATIONS = [
       'Fe'
     ],
     meta: {
-      'type': 'Compounds',
-      'id': 'FE+3',
-      'color': '#cee5cb',
-      'idType': 'BIOCYC'
+      type: 'Compounds',
+      id: 'FE+3',
+      color: '#cee5cb',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -17322,10 +17322,10 @@ export const ANNOTATIONS = [
       'Fe'
     ],
     meta: {
-      'type': 'Compounds',
-      'id': 'FE+3',
-      'color': '#cee5cb',
-      'idType': 'BIOCYC'
+      type: 'Compounds',
+      id: 'FE+3',
+      color: '#cee5cb',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -17342,10 +17342,10 @@ export const ANNOTATIONS = [
       'glutathione'
     ],
     meta: {
-      'type': 'Compounds',
-      'id': 'GLUTATHIONE',
-      'color': '#cee5cb',
-      'idType': 'BIOCYC'
+      type: 'Compounds',
+      id: 'GLUTATHIONE',
+      color: '#cee5cb',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -17362,10 +17362,10 @@ export const ANNOTATIONS = [
       'glutathione'
     ],
     meta: {
-      'type': 'Compounds',
-      'id': 'GLUTATHIONE',
-      'color': '#cee5cb',
-      'idType': 'BIOCYC'
+      type: 'Compounds',
+      id: 'GLUTATHIONE',
+      color: '#cee5cb',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -17382,10 +17382,10 @@ export const ANNOTATIONS = [
       'glutathione'
     ],
     meta: {
-      'type': 'Compounds',
-      'id': 'GLUTATHIONE',
-      'color': '#cee5cb',
-      'idType': 'BIOCYC'
+      type: 'Compounds',
+      id: 'GLUTATHIONE',
+      color: '#cee5cb',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -17402,10 +17402,10 @@ export const ANNOTATIONS = [
       'glutathione,'
     ],
     meta: {
-      'type': 'Compounds',
-      'id': 'GLUTATHIONE',
-      'color': '#cee5cb',
-      'idType': 'BIOCYC'
+      type: 'Compounds',
+      id: 'GLUTATHIONE',
+      color: '#cee5cb',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -17429,10 +17429,10 @@ export const ANNOTATIONS = [
       'glu-'
     ],
     meta: {
-      'type': 'Compounds',
-      'id': 'GLUTATHIONE',
-      'color': '#cee5cb',
-      'idType': 'BIOCYC'
+      type: 'Compounds',
+      id: 'GLUTATHIONE',
+      color: '#cee5cb',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -17449,10 +17449,10 @@ export const ANNOTATIONS = [
       'glutathione'
     ],
     meta: {
-      'type': 'Compounds',
-      'id': 'GLUTATHIONE',
-      'color': '#cee5cb',
-      'idType': 'BIOCYC'
+      type: 'Compounds',
+      id: 'GLUTATHIONE',
+      color: '#cee5cb',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -17469,10 +17469,10 @@ export const ANNOTATIONS = [
       'sodium dithionite'
     ],
     meta: {
-      'type': 'Compounds',
-      'id': 'CPD-17695',
-      'color': '#cee5cb',
-      'idType': 'BIOCYC'
+      type: 'Compounds',
+      id: 'CPD-17695',
+      color: '#cee5cb',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -17489,10 +17489,10 @@ export const ANNOTATIONS = [
       'dithionite'
     ],
     meta: {
-      'type': 'Compounds',
-      'id': 'S2O4',
-      'color': '#cee5cb',
-      'idType': 'BIOCYC'
+      type: 'Compounds',
+      id: 'S2O4',
+      color: '#cee5cb',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -17509,10 +17509,10 @@ export const ANNOTATIONS = [
       'dithionite'
     ],
     meta: {
-      'type': 'Compounds',
-      'id': 'S2O4',
-      'color': '#cee5cb',
-      'idType': 'BIOCYC'
+      type: 'Compounds',
+      id: 'S2O4',
+      color: '#cee5cb',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -17529,10 +17529,10 @@ export const ANNOTATIONS = [
       'dithionite'
     ],
     meta: {
-      'type': 'Compounds',
-      'id': 'S2O4',
-      'color': '#cee5cb',
-      'idType': 'BIOCYC'
+      type: 'Compounds',
+      id: 'S2O4',
+      color: '#cee5cb',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -17549,10 +17549,10 @@ export const ANNOTATIONS = [
       'nitrogen.'
     ],
     meta: {
-      'type': 'Compounds',
-      'id': 'NITROGEN-MOLECULE',
-      'color': '#cee5cb',
-      'idType': 'BIOCYC'
+      type: 'Compounds',
+      id: 'NITROGEN-MOLECULE',
+      color: '#cee5cb',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -17569,10 +17569,10 @@ export const ANNOTATIONS = [
       'ethanol'
     ],
     meta: {
-      'type': 'Compounds',
-      'id': 'ETOH',
-      'color': '#cee5cb',
-      'idType': 'BIOCYC'
+      type: 'Compounds',
+      id: 'ETOH',
+      color: '#cee5cb',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -17589,10 +17589,10 @@ export const ANNOTATIONS = [
       'a CD'
     ],
     meta: {
-      'type': 'Compounds',
-      'id': 'CPD-3921',
-      'color': '#cee5cb',
-      'idType': 'BIOCYC'
+      type: 'Compounds',
+      id: 'CPD-3921',
+      color: '#cee5cb',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -17609,10 +17609,10 @@ export const ANNOTATIONS = [
       'a CD'
     ],
     meta: {
-      'type': 'Compounds',
-      'id': 'CPD-3921',
-      'color': '#cee5cb',
-      'idType': 'BIOCYC'
+      type: 'Compounds',
+      id: 'CPD-3921',
+      color: '#cee5cb',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -17629,10 +17629,10 @@ export const ANNOTATIONS = [
       'serine,'
     ],
     meta: {
-      'type': 'Compounds',
-      'id': 'SER',
-      'color': '#cee5cb',
-      'idType': 'BIOCYC'
+      type: 'Compounds',
+      id: 'SER',
+      color: '#cee5cb',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -17649,10 +17649,10 @@ export const ANNOTATIONS = [
       'Li'
     ],
     meta: {
-      'type': 'Compounds',
-      'id': 'LI+',
-      'color': '#cee5cb',
-      'idType': 'BIOCYC'
+      type: 'Compounds',
+      id: 'LI+',
+      color: '#cee5cb',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -17669,10 +17669,10 @@ export const ANNOTATIONS = [
       'Li'
     ],
     meta: {
-      'type': 'Compounds',
-      'id': 'LI+',
-      'color': '#cee5cb',
-      'idType': 'BIOCYC'
+      type: 'Compounds',
+      id: 'LI+',
+      color: '#cee5cb',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -17689,10 +17689,10 @@ export const ANNOTATIONS = [
       'Li'
     ],
     meta: {
-      'type': 'Compounds',
-      'id': 'LI+',
-      'color': '#cee5cb',
-      'idType': 'BIOCYC'
+      type: 'Compounds',
+      id: 'LI+',
+      color: '#cee5cb',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -17709,10 +17709,10 @@ export const ANNOTATIONS = [
       'Li'
     ],
     meta: {
-      'type': 'Compounds',
-      'id': 'LI+',
-      'color': '#cee5cb',
-      'idType': 'BIOCYC'
+      type: 'Compounds',
+      id: 'LI+',
+      color: '#cee5cb',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -17729,10 +17729,10 @@ export const ANNOTATIONS = [
       'Li'
     ],
     meta: {
-      'type': 'Compounds',
-      'id': 'LI+',
-      'color': '#cee5cb',
-      'idType': 'BIOCYC'
+      type: 'Compounds',
+      id: 'LI+',
+      color: '#cee5cb',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -17749,10 +17749,10 @@ export const ANNOTATIONS = [
       'Li'
     ],
     meta: {
-      'type': 'Compounds',
-      'id': 'LI+',
-      'color': '#cee5cb',
-      'idType': 'BIOCYC'
+      type: 'Compounds',
+      id: 'LI+',
+      color: '#cee5cb',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -17769,10 +17769,10 @@ export const ANNOTATIONS = [
       'Li'
     ],
     meta: {
-      'type': 'Compounds',
-      'id': 'LI+',
-      'color': '#cee5cb',
-      'idType': 'BIOCYC'
+      type: 'Compounds',
+      id: 'LI+',
+      color: '#cee5cb',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -17789,10 +17789,10 @@ export const ANNOTATIONS = [
       'Li'
     ],
     meta: {
-      'type': 'Compounds',
-      'id': 'LI+',
-      'color': '#cee5cb',
-      'idType': 'BIOCYC'
+      type: 'Compounds',
+      id: 'LI+',
+      color: '#cee5cb',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -17809,10 +17809,10 @@ export const ANNOTATIONS = [
       'Li'
     ],
     meta: {
-      'type': 'Compounds',
-      'id': 'LI+',
-      'color': '#cee5cb',
-      'idType': 'BIOCYC'
+      type: 'Compounds',
+      id: 'LI+',
+      color: '#cee5cb',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -17829,10 +17829,10 @@ export const ANNOTATIONS = [
       'AG,'
     ],
     meta: {
-      'type': 'Compounds',
-      'id': 'AG+',
-      'color': '#cee5cb',
-      'idType': 'BIOCYC'
+      type: 'Compounds',
+      id: 'AG+',
+      color: '#cee5cb',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -17849,10 +17849,10 @@ export const ANNOTATIONS = [
       'Na'
     ],
     meta: {
-      'type': 'Compounds',
-      'id': 'NA+',
-      'color': '#cee5cb',
-      'idType': 'BIOCYC'
+      type: 'Compounds',
+      id: 'NA+',
+      color: '#cee5cb',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -17869,10 +17869,10 @@ export const ANNOTATIONS = [
       'NA,'
     ],
     meta: {
-      'type': 'Compounds',
-      'id': 'NA+',
-      'color': '#cee5cb',
-      'idType': 'BIOCYC'
+      type: 'Compounds',
+      id: 'NA+',
+      color: '#cee5cb',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -17889,10 +17889,10 @@ export const ANNOTATIONS = [
       'IP,'
     ],
     meta: {
-      'type': 'Compounds',
-      'id': 'CPD-4209',
-      'color': '#cee5cb',
-      'idType': 'BIOCYC'
+      type: 'Compounds',
+      id: 'CPD-4209',
+      color: '#cee5cb',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -17909,10 +17909,10 @@ export const ANNOTATIONS = [
       '(eds)'
     ],
     meta: {
-      'type': 'Compounds',
-      'id': 'CPD-10431',
-      'color': '#cee5cb',
-      'idType': 'BIOCYC'
+      type: 'Compounds',
+      id: 'CPD-10431',
+      color: '#cee5cb',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -17929,10 +17929,10 @@ export const ANNOTATIONS = [
       'pp'
     ],
     meta: {
-      'type': 'Compounds',
-      'id': 'PPI',
-      'color': '#cee5cb',
-      'idType': 'BIOCYC'
+      type: 'Compounds',
+      id: 'PPI',
+      color: '#cee5cb',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -17949,10 +17949,10 @@ export const ANNOTATIONS = [
       'CA,'
     ],
     meta: {
-      'type': 'Compounds',
-      'id': 'CA+2',
-      'color': '#cee5cb',
-      'idType': 'BIOCYC'
+      type: 'Compounds',
+      id: 'CA+2',
+      color: '#cee5cb',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -17969,10 +17969,10 @@ export const ANNOTATIONS = [
       'Glutaredoxin'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'GIXO-1852-MONOMER',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'GIXO-1852-MONOMER',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -17989,10 +17989,10 @@ export const ANNOTATIONS = [
       'glutaredoxin'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'GIXO-1852-MONOMER',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'GIXO-1852-MONOMER',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -18009,10 +18009,10 @@ export const ANNOTATIONS = [
       'glutaredoxin)'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'GIXO-1852-MONOMER',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'GIXO-1852-MONOMER',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -18036,10 +18036,10 @@ export const ANNOTATIONS = [
       'glu-'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'GIXO-1852-MONOMER',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'GIXO-1852-MONOMER',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -18056,10 +18056,10 @@ export const ANNOTATIONS = [
       'Ferredoxin'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'MONOMER-13565',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'MONOMER-13565',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -18076,10 +18076,10 @@ export const ANNOTATIONS = [
       'ferredoxin'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'MONOMER-13565',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'MONOMER-13565',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -18096,10 +18096,10 @@ export const ANNOTATIONS = [
       'ferredoxin'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'MONOMER-13565',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'MONOMER-13565',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -18116,10 +18116,10 @@ export const ANNOTATIONS = [
       'ferredoxin'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'MONOMER-13565',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'MONOMER-13565',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -18136,10 +18136,10 @@ export const ANNOTATIONS = [
       'ferredoxin'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'MONOMER-13565',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'MONOMER-13565',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -18163,10 +18163,10 @@ export const ANNOTATIONS = [
       'ferre-'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'MONOMER-13565',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'MONOMER-13565',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -18183,10 +18183,10 @@ export const ANNOTATIONS = [
       'ferredoxin'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'MONOMER-13565',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'MONOMER-13565',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -18203,10 +18203,10 @@ export const ANNOTATIONS = [
       'ferredoxin'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'MONOMER-13565',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'MONOMER-13565',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -18223,10 +18223,10 @@ export const ANNOTATIONS = [
       'case'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'G7426-MONOMER',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'G7426-MONOMER',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -18243,10 +18243,10 @@ export const ANNOTATIONS = [
       'case'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'G7426-MONOMER',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'G7426-MONOMER',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -18263,10 +18263,10 @@ export const ANNOTATIONS = [
       'polymerase'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'G3O-28937-MONOMER',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'G3O-28937-MONOMER',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -18283,10 +18283,10 @@ export const ANNOTATIONS = [
       'h at'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'HS03036-MONOMER',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'HS03036-MONOMER',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -18303,10 +18303,10 @@ export const ANNOTATIONS = [
       'ISCU'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'G7324-MONOMER',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'G7324-MONOMER',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -18323,10 +18323,10 @@ export const ANNOTATIONS = [
       'ISCU)'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'G7324-MONOMER',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'G7324-MONOMER',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -18343,10 +18343,10 @@ export const ANNOTATIONS = [
       'ISCU'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'G7324-MONOMER',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'G7324-MONOMER',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -18363,10 +18363,10 @@ export const ANNOTATIONS = [
       'ISCU,'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'G7324-MONOMER',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'G7324-MONOMER',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -18383,10 +18383,10 @@ export const ANNOTATIONS = [
       'ISCU,'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'G7324-MONOMER',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'G7324-MONOMER',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -18403,10 +18403,10 @@ export const ANNOTATIONS = [
       'ISCU'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'G7324-MONOMER',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'G7324-MONOMER',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -18423,10 +18423,10 @@ export const ANNOTATIONS = [
       'ISCU'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'G7324-MONOMER',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'G7324-MONOMER',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -18443,10 +18443,10 @@ export const ANNOTATIONS = [
       'ISCU.'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'G7324-MONOMER',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'G7324-MONOMER',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -18463,10 +18463,10 @@ export const ANNOTATIONS = [
       'ISCU,'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'G7324-MONOMER',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'G7324-MONOMER',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -18483,10 +18483,10 @@ export const ANNOTATIONS = [
       'ISCU'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'G7324-MONOMER',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'G7324-MONOMER',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -18503,10 +18503,10 @@ export const ANNOTATIONS = [
       'ISCU'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'G7324-MONOMER',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'G7324-MONOMER',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -18523,10 +18523,10 @@ export const ANNOTATIONS = [
       'ISCU'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'G7324-MONOMER',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'G7324-MONOMER',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -18543,10 +18543,10 @@ export const ANNOTATIONS = [
       'NifS'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'HS01304-MONOMER',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'HS01304-MONOMER',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -18563,10 +18563,10 @@ export const ANNOTATIONS = [
       'NifS)'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'HS01304-MONOMER',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'HS01304-MONOMER',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -18583,10 +18583,10 @@ export const ANNOTATIONS = [
       'NifS.'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'HS01304-MONOMER',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'HS01304-MONOMER',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -18603,10 +18603,10 @@ export const ANNOTATIONS = [
       'NifS'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'HS01304-MONOMER',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'HS01304-MONOMER',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -18623,10 +18623,10 @@ export const ANNOTATIONS = [
       'mM'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'CPLX-7759',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'CPLX-7759',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -18643,10 +18643,10 @@ export const ANNOTATIONS = [
       'mM'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'CPLX-7759',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'CPLX-7759',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -18663,10 +18663,10 @@ export const ANNOTATIONS = [
       'mM'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'CPLX-7759',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'CPLX-7759',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -18683,10 +18683,10 @@ export const ANNOTATIONS = [
       'mM'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'CPLX-7759',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'CPLX-7759',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -18703,10 +18703,10 @@ export const ANNOTATIONS = [
       'mM'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'CPLX-7759',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'CPLX-7759',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -18723,10 +18723,10 @@ export const ANNOTATIONS = [
       'mM'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'CPLX-7759',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'CPLX-7759',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -18743,10 +18743,10 @@ export const ANNOTATIONS = [
       'mM'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'CPLX-7759',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'CPLX-7759',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -18763,10 +18763,10 @@ export const ANNOTATIONS = [
       'mM'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'CPLX-7759',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'CPLX-7759',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -18783,10 +18783,10 @@ export const ANNOTATIONS = [
       'mM'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'CPLX-7759',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'CPLX-7759',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -18803,10 +18803,10 @@ export const ANNOTATIONS = [
       'mM'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'CPLX-7759',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'CPLX-7759',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -18823,10 +18823,10 @@ export const ANNOTATIONS = [
       'mM'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'CPLX-7759',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'CPLX-7759',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -18843,10 +18843,10 @@ export const ANNOTATIONS = [
       'mM'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'CPLX-7759',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'CPLX-7759',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -18863,10 +18863,10 @@ export const ANNOTATIONS = [
       'mM'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'CPLX-7759',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'CPLX-7759',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -18883,10 +18883,10 @@ export const ANNOTATIONS = [
       'mM'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'CPLX-7759',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'CPLX-7759',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -18903,10 +18903,10 @@ export const ANNOTATIONS = [
       'mM'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'CPLX-7759',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'CPLX-7759',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -18923,10 +18923,10 @@ export const ANNOTATIONS = [
       'mM'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'CPLX-7759',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'CPLX-7759',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -18943,10 +18943,10 @@ export const ANNOTATIONS = [
       'mM'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'CPLX-7759',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'CPLX-7759',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -18963,10 +18963,10 @@ export const ANNOTATIONS = [
       'mM'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'CPLX-7759',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'CPLX-7759',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -18983,10 +18983,10 @@ export const ANNOTATIONS = [
       'mM'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'CPLX-7759',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'CPLX-7759',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -19003,10 +19003,10 @@ export const ANNOTATIONS = [
       'mM'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'CPLX-7759',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'CPLX-7759',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -19023,10 +19023,10 @@ export const ANNOTATIONS = [
       'mM'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'CPLX-7759',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'CPLX-7759',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -19043,10 +19043,10 @@ export const ANNOTATIONS = [
       'mM'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'CPLX-7759',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'CPLX-7759',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -19063,10 +19063,10 @@ export const ANNOTATIONS = [
       'mM'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'CPLX-7759',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'CPLX-7759',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -19083,10 +19083,10 @@ export const ANNOTATIONS = [
       'mM'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'CPLX-7759',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'CPLX-7759',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -19103,10 +19103,10 @@ export const ANNOTATIONS = [
       'mM'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'CPLX-7759',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'CPLX-7759',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -19123,10 +19123,10 @@ export const ANNOTATIONS = [
       'mm)'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'CPLX-7759',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'CPLX-7759',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -19143,10 +19143,10 @@ export const ANNOTATIONS = [
       'mM'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'CPLX-7759',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'CPLX-7759',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -19163,10 +19163,10 @@ export const ANNOTATIONS = [
       'mM'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'CPLX-7759',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'CPLX-7759',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -19183,10 +19183,10 @@ export const ANNOTATIONS = [
       'mM)'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'CPLX-7759',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'CPLX-7759',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -19203,10 +19203,10 @@ export const ANNOTATIONS = [
       'mM)'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'CPLX-7759',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'CPLX-7759',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -19223,10 +19223,10 @@ export const ANNOTATIONS = [
       'mM'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'CPLX-7759',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'CPLX-7759',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -19243,10 +19243,10 @@ export const ANNOTATIONS = [
       'mM'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'CPLX-7759',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'CPLX-7759',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -19263,10 +19263,10 @@ export const ANNOTATIONS = [
       'mM'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'CPLX-7759',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'CPLX-7759',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -19283,10 +19283,10 @@ export const ANNOTATIONS = [
       'mM'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'CPLX-7759',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'CPLX-7759',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -19303,10 +19303,10 @@ export const ANNOTATIONS = [
       'mM)'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'CPLX-7759',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'CPLX-7759',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -19323,10 +19323,10 @@ export const ANNOTATIONS = [
       'Drs.'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'PD00288',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'PD00288',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -19343,10 +19343,10 @@ export const ANNOTATIONS = [
       'made'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'MONOMER-14283',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'MONOMER-14283',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -19370,10 +19370,10 @@ export const ANNOTATIONS = [
       'K '
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'CPLX-7891',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'CPLX-7891',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -19390,10 +19390,10 @@ export const ANNOTATIONS = [
       'fit'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'EG10506-MONOMER',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'EG10506-MONOMER',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -19410,10 +19410,10 @@ export const ANNOTATIONS = [
       'fit,'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'EG10506-MONOMER',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'EG10506-MONOMER',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -19430,10 +19430,10 @@ export const ANNOTATIONS = [
       'fit'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'EG10506-MONOMER',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'EG10506-MONOMER',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -19450,10 +19450,10 @@ export const ANNOTATIONS = [
       'experimental'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'G3O-31811-MONOMER',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'G3O-31811-MONOMER',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -19470,10 +19470,10 @@ export const ANNOTATIONS = [
       'experimental'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'G3O-31811-MONOMER',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'G3O-31811-MONOMER',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -19490,10 +19490,10 @@ export const ANNOTATIONS = [
       'BOLA'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'EG10125-MONOMER',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'EG10125-MONOMER',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -19510,10 +19510,10 @@ export const ANNOTATIONS = [
       'BOLA'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'EG10125-MONOMER',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'EG10125-MONOMER',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -19530,10 +19530,10 @@ export const ANNOTATIONS = [
       'a CD'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'OCTAPRENYL-METHOXYPHENOL-OH-MONOMER',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'OCTAPRENYL-METHOXYPHENOL-OH-MONOMER',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -19550,10 +19550,10 @@ export const ANNOTATIONS = [
       'a CD'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'OCTAPRENYL-METHOXYPHENOL-OH-MONOMER',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'OCTAPRENYL-METHOXYPHENOL-OH-MONOMER',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -19570,10 +19570,10 @@ export const ANNOTATIONS = [
       'and a'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'MONOMER-19047',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'MONOMER-19047',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -19590,10 +19590,10 @@ export const ANNOTATIONS = [
       'to a'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'MONOMER-16211',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'MONOMER-16211',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -19610,10 +19610,10 @@ export const ANNOTATIONS = [
       'to a'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'MONOMER-16211',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'MONOMER-16211',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -19630,10 +19630,10 @@ export const ANNOTATIONS = [
       'to a'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'MONOMER-16211',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'MONOMER-16211',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -19657,10 +19657,10 @@ export const ANNOTATIONS = [
       'scaffold pro-'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'GIXO-866-MONOMER',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'GIXO-866-MONOMER',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -19677,10 +19677,10 @@ export const ANNOTATIONS = [
       'ABC transporter'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'GIXO-5235-MONOMER',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'GIXO-5235-MONOMER',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -19697,10 +19697,10 @@ export const ANNOTATIONS = [
       'line'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'LINEPSEPA-MONOMER',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'LINEPSEPA-MONOMER',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -19717,10 +19717,10 @@ export const ANNOTATIONS = [
       'line'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'LINEPSEPA-MONOMER',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'LINEPSEPA-MONOMER',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -19737,10 +19737,10 @@ export const ANNOTATIONS = [
       'Acta'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'MONOMER-19319',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'MONOMER-19319',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -19757,10 +19757,10 @@ export const ANNOTATIONS = [
       'Proc'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'PROCST-MONOMER',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'PROCST-MONOMER',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -19777,10 +19777,10 @@ export const ANNOTATIONS = [
       'Chem'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'TAR-MONOMER',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'TAR-MONOMER',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -19797,10 +19797,10 @@ export const ANNOTATIONS = [
       'Chem'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'TAR-MONOMER',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'TAR-MONOMER',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -19817,10 +19817,10 @@ export const ANNOTATIONS = [
       'Chem'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'TAR-MONOMER',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'TAR-MONOMER',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -19837,10 +19837,10 @@ export const ANNOTATIONS = [
       'Chem'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'TAR-MONOMER',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'TAR-MONOMER',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -19857,10 +19857,10 @@ export const ANNOTATIONS = [
       'Chem'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'TAR-MONOMER',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'TAR-MONOMER',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -19877,10 +19877,10 @@ export const ANNOTATIONS = [
       'Chem'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'TAR-MONOMER',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'TAR-MONOMER',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -19897,10 +19897,10 @@ export const ANNOTATIONS = [
       'Chem'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'TAR-MONOMER',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'TAR-MONOMER',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -19917,10 +19917,10 @@ export const ANNOTATIONS = [
       'Chem'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'TAR-MONOMER',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'TAR-MONOMER',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -19937,10 +19937,10 @@ export const ANNOTATIONS = [
       'Chem'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'TAR-MONOMER',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'TAR-MONOMER',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -19957,10 +19957,10 @@ export const ANNOTATIONS = [
       'Chem'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'TAR-MONOMER',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'TAR-MONOMER',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -19977,10 +19977,10 @@ export const ANNOTATIONS = [
       'Chem'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'TAR-MONOMER',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'TAR-MONOMER',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -19997,10 +19997,10 @@ export const ANNOTATIONS = [
       'Chem'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'TAR-MONOMER',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'TAR-MONOMER',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -20017,10 +20017,10 @@ export const ANNOTATIONS = [
       'Chem'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'TAR-MONOMER',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'TAR-MONOMER',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -20037,10 +20037,10 @@ export const ANNOTATIONS = [
       'Chem'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'TAR-MONOMER',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'TAR-MONOMER',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -20057,10 +20057,10 @@ export const ANNOTATIONS = [
       'Chem'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'TAR-MONOMER',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'TAR-MONOMER',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -20077,10 +20077,10 @@ export const ANNOTATIONS = [
       'Chem'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'TAR-MONOMER',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'TAR-MONOMER',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -20097,10 +20097,10 @@ export const ANNOTATIONS = [
       'Chem'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'TAR-MONOMER',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'TAR-MONOMER',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -20117,10 +20117,10 @@ export const ANNOTATIONS = [
       'Chem'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'TAR-MONOMER',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'TAR-MONOMER',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -20137,10 +20137,10 @@ export const ANNOTATIONS = [
       'Chem'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'TAR-MONOMER',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'TAR-MONOMER',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -20157,10 +20157,10 @@ export const ANNOTATIONS = [
       'Chem'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'TAR-MONOMER',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'TAR-MONOMER',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -20177,10 +20177,10 @@ export const ANNOTATIONS = [
       'DT,'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'CPLX-8048',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'CPLX-8048',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -20197,10 +20197,10 @@ export const ANNOTATIONS = [
       'DT,'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'CPLX-8048',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'CPLX-8048',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -20217,10 +20217,10 @@ export const ANNOTATIONS = [
       'A, Na'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'ADHE-MONOMER',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'ADHE-MONOMER',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -20237,10 +20237,10 @@ export const ANNOTATIONS = [
       'SS,'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'HS01329-MONOMER',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'HS01329-MONOMER',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -20257,10 +20257,10 @@ export const ANNOTATIONS = [
       'SS,'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'HS01329-MONOMER',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'HS01329-MONOMER',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -20277,10 +20277,10 @@ export const ANNOTATIONS = [
       'IP,'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'MONOMER-18285',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'MONOMER-18285',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -20297,10 +20297,10 @@ export const ANNOTATIONS = [
       'Dos'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'G6783-MONOMER',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'G6783-MONOMER',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -20317,10 +20317,10 @@ export const ANNOTATIONS = [
       'T-H'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'CPLX66-161',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'CPLX66-161',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -20337,10 +20337,10 @@ export const ANNOTATIONS = [
       'Cox'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'MONOMER-9454',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'MONOMER-9454',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -20357,10 +20357,10 @@ export const ANNOTATIONS = [
       'Nat'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'MONOMER-13594',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'MONOMER-13594',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -20377,10 +20377,10 @@ export const ANNOTATIONS = [
       'AK,'
     ],
     meta: {
-      'type': 'Proteins',
-      'id': 'HS08097-MONOMER',
-      'color': '#bcbd22',
-      'idType': 'BIOCYC'
+      type: 'Proteins',
+      id: 'HS08097-MONOMER',
+      color: '#bcbd22',
+      idType: 'BIOCYC'
     }
   },
   {
@@ -20397,10 +20397,10 @@ export const ANNOTATIONS = [
       'human'
     ],
     meta: {
-      'type': 'Species',
-      'id': '9606',
-      'color': '#3177b8',
-      'idType': 'NCBI'
+      type: 'Species',
+      id: '9606',
+      color: '#3177b8',
+      idType: 'NCBI'
     }
   },
   {
@@ -20417,10 +20417,10 @@ export const ANNOTATIONS = [
       'human'
     ],
     meta: {
-      'type': 'Species',
-      'id': '9606',
-      'color': '#3177b8',
-      'idType': 'NCBI'
+      type: 'Species',
+      id: '9606',
+      color: '#3177b8',
+      idType: 'NCBI'
     }
   },
   {
@@ -20437,10 +20437,10 @@ export const ANNOTATIONS = [
       'human'
     ],
     meta: {
-      'type': 'Species',
-      'id': '9606',
-      'color': '#3177b8',
-      'idType': 'NCBI'
+      type: 'Species',
+      id: '9606',
+      color: '#3177b8',
+      idType: 'NCBI'
     }
   },
   {
@@ -20457,10 +20457,10 @@ export const ANNOTATIONS = [
       'human'
     ],
     meta: {
-      'type': 'Species',
-      'id': '9606',
-      'color': '#3177b8',
-      'idType': 'NCBI'
+      type: 'Species',
+      id: '9606',
+      color: '#3177b8',
+      idType: 'NCBI'
     }
   },
   {
@@ -20477,10 +20477,10 @@ export const ANNOTATIONS = [
       'human'
     ],
     meta: {
-      'type': 'Species',
-      'id': '9606',
-      'color': '#3177b8',
-      'idType': 'NCBI'
+      type: 'Species',
+      id: '9606',
+      color: '#3177b8',
+      idType: 'NCBI'
     }
   },
   {
@@ -20497,10 +20497,10 @@ export const ANNOTATIONS = [
       'human'
     ],
     meta: {
-      'type': 'Species',
-      'id': '9606',
-      'color': '#3177b8',
-      'idType': 'NCBI'
+      type: 'Species',
+      id: '9606',
+      color: '#3177b8',
+      idType: 'NCBI'
     }
   },
   {
@@ -20517,10 +20517,10 @@ export const ANNOTATIONS = [
       'human'
     ],
     meta: {
-      'type': 'Species',
-      'id': '9606',
-      'color': '#3177b8',
-      'idType': 'NCBI'
+      type: 'Species',
+      id: '9606',
+      color: '#3177b8',
+      idType: 'NCBI'
     }
   },
   {
@@ -20537,10 +20537,10 @@ export const ANNOTATIONS = [
       'human'
     ],
     meta: {
-      'type': 'Species',
-      'id': '9606',
-      'color': '#3177b8',
-      'idType': 'NCBI'
+      type: 'Species',
+      id: '9606',
+      color: '#3177b8',
+      idType: 'NCBI'
     }
   },
   {
@@ -20557,10 +20557,10 @@ export const ANNOTATIONS = [
       'human'
     ],
     meta: {
-      'type': 'Species',
-      'id': '9606',
-      'color': '#3177b8',
-      'idType': 'NCBI'
+      type: 'Species',
+      id: '9606',
+      color: '#3177b8',
+      idType: 'NCBI'
     }
   },
   {
@@ -20577,10 +20577,10 @@ export const ANNOTATIONS = [
       'human'
     ],
     meta: {
-      'type': 'Species',
-      'id': '9606',
-      'color': '#3177b8',
-      'idType': 'NCBI'
+      type: 'Species',
+      id: '9606',
+      color: '#3177b8',
+      idType: 'NCBI'
     }
   },
   {
@@ -20597,10 +20597,10 @@ export const ANNOTATIONS = [
       'human'
     ],
     meta: {
-      'type': 'Species',
-      'id': '9606',
-      'color': '#3177b8',
-      'idType': 'NCBI'
+      type: 'Species',
+      id: '9606',
+      color: '#3177b8',
+      idType: 'NCBI'
     }
   },
   {
@@ -20617,10 +20617,10 @@ export const ANNOTATIONS = [
       'human'
     ],
     meta: {
-      'type': 'Species',
-      'id': '9606',
-      'color': '#3177b8',
-      'idType': 'NCBI'
+      type: 'Species',
+      id: '9606',
+      color: '#3177b8',
+      idType: 'NCBI'
     }
   },
   {
@@ -20637,10 +20637,10 @@ export const ANNOTATIONS = [
       'human'
     ],
     meta: {
-      'type': 'Species',
-      'id': '9606',
-      'color': '#3177b8',
-      'idType': 'NCBI'
+      type: 'Species',
+      id: '9606',
+      color: '#3177b8',
+      idType: 'NCBI'
     }
   },
   {
@@ -20657,10 +20657,10 @@ export const ANNOTATIONS = [
       'human'
     ],
     meta: {
-      'type': 'Species',
-      'id': '9606',
-      'color': '#3177b8',
-      'idType': 'NCBI'
+      type: 'Species',
+      id: '9606',
+      color: '#3177b8',
+      idType: 'NCBI'
     }
   },
   {
@@ -20677,10 +20677,10 @@ export const ANNOTATIONS = [
       'human'
     ],
     meta: {
-      'type': 'Species',
-      'id': '9606',
-      'color': '#3177b8',
-      'idType': 'NCBI'
+      type: 'Species',
+      id: '9606',
+      color: '#3177b8',
+      idType: 'NCBI'
     }
   },
   {
@@ -20697,10 +20697,10 @@ export const ANNOTATIONS = [
       'human'
     ],
     meta: {
-      'type': 'Species',
-      'id': '9606',
-      'color': '#3177b8',
-      'idType': 'NCBI'
+      type: 'Species',
+      id: '9606',
+      color: '#3177b8',
+      idType: 'NCBI'
     }
   },
   {
@@ -20717,10 +20717,10 @@ export const ANNOTATIONS = [
       'human'
     ],
     meta: {
-      'type': 'Species',
-      'id': '9606',
-      'color': '#3177b8',
-      'idType': 'NCBI'
+      type: 'Species',
+      id: '9606',
+      color: '#3177b8',
+      idType: 'NCBI'
     }
   },
   {
@@ -20737,10 +20737,10 @@ export const ANNOTATIONS = [
       'human'
     ],
     meta: {
-      'type': 'Species',
-      'id': '9606',
-      'color': '#3177b8',
-      'idType': 'NCBI'
+      type: 'Species',
+      id: '9606',
+      color: '#3177b8',
+      idType: 'NCBI'
     }
   },
   {
@@ -20757,10 +20757,10 @@ export const ANNOTATIONS = [
       'human'
     ],
     meta: {
-      'type': 'Species',
-      'id': '9606',
-      'color': '#3177b8',
-      'idType': 'NCBI'
+      type: 'Species',
+      id: '9606',
+      color: '#3177b8',
+      idType: 'NCBI'
     }
   },
   {
@@ -20777,10 +20777,10 @@ export const ANNOTATIONS = [
       'human'
     ],
     meta: {
-      'type': 'Species',
-      'id': '9606',
-      'color': '#3177b8',
-      'idType': 'NCBI'
+      type: 'Species',
+      id: '9606',
+      color: '#3177b8',
+      idType: 'NCBI'
     }
   },
   {
@@ -20797,10 +20797,10 @@ export const ANNOTATIONS = [
       'human'
     ],
     meta: {
-      'type': 'Species',
-      'id': '9606',
-      'color': '#3177b8',
-      'idType': 'NCBI'
+      type: 'Species',
+      id: '9606',
+      color: '#3177b8',
+      idType: 'NCBI'
     }
   },
   {
@@ -20817,10 +20817,10 @@ export const ANNOTATIONS = [
       'human'
     ],
     meta: {
-      'type': 'Species',
-      'id': '9606',
-      'color': '#3177b8',
-      'idType': 'NCBI'
+      type: 'Species',
+      id: '9606',
+      color: '#3177b8',
+      idType: 'NCBI'
     }
   },
   {
@@ -20837,10 +20837,10 @@ export const ANNOTATIONS = [
       'human'
     ],
     meta: {
-      'type': 'Species',
-      'id': '9606',
-      'color': '#3177b8',
-      'idType': 'NCBI'
+      type: 'Species',
+      id: '9606',
+      color: '#3177b8',
+      idType: 'NCBI'
     }
   },
   {
@@ -20857,10 +20857,10 @@ export const ANNOTATIONS = [
       'human'
     ],
     meta: {
-      'type': 'Species',
-      'id': '9606',
-      'color': '#3177b8',
-      'idType': 'NCBI'
+      type: 'Species',
+      id: '9606',
+      color: '#3177b8',
+      idType: 'NCBI'
     }
   },
   {
@@ -20877,10 +20877,10 @@ export const ANNOTATIONS = [
       'human'
     ],
     meta: {
-      'type': 'Species',
-      'id': '9606',
-      'color': '#3177b8',
-      'idType': 'NCBI'
+      type: 'Species',
+      id: '9606',
+      color: '#3177b8',
+      idType: 'NCBI'
     }
   },
   {
@@ -20897,10 +20897,10 @@ export const ANNOTATIONS = [
       'human'
     ],
     meta: {
-      'type': 'Species',
-      'id': '9606',
-      'color': '#3177b8',
-      'idType': 'NCBI'
+      type: 'Species',
+      id: '9606',
+      color: '#3177b8',
+      idType: 'NCBI'
     }
   },
   {
@@ -20917,10 +20917,10 @@ export const ANNOTATIONS = [
       'Homo sapiens'
     ],
     meta: {
-      'type': 'Species',
-      'id': '9606',
-      'color': '#3177b8',
-      'idType': 'NCBI'
+      type: 'Species',
+      id: '9606',
+      color: '#3177b8',
+      idType: 'NCBI'
     }
   },
   {
@@ -20937,10 +20937,10 @@ export const ANNOTATIONS = [
       'Fisher'
     ],
     meta: {
-      'type': 'Species',
-      'id': '76720',
-      'color': '#3177b8',
-      'idType': 'NCBI'
+      type: 'Species',
+      id: '76720',
+      color: '#3177b8',
+      idType: 'NCBI'
     }
   },
   {
@@ -20957,10 +20957,10 @@ export const ANNOTATIONS = [
       'primer'
     ],
     meta: {
-      'type': 'Species',
-      'id': '32630',
-      'color': '#3177b8',
-      'idType': 'NCBI'
+      type: 'Species',
+      id: '32630',
+      color: '#3177b8',
+      idType: 'NCBI'
     }
   },
   {
@@ -20977,10 +20977,10 @@ export const ANNOTATIONS = [
       'plasmid.'
     ],
     meta: {
-      'type': 'Species',
-      'id': '45202',
-      'color': '#3177b8',
-      'idType': 'NCBI'
+      type: 'Species',
+      id: '45202',
+      color: '#3177b8',
+      idType: 'NCBI'
     }
   },
   {
@@ -20997,10 +20997,10 @@ export const ANNOTATIONS = [
       'plasmid'
     ],
     meta: {
-      'type': 'Species',
-      'id': '45202',
-      'color': '#3177b8',
-      'idType': 'NCBI'
+      type: 'Species',
+      id: '45202',
+      color: '#3177b8',
+      idType: 'NCBI'
     }
   },
   {
@@ -21024,10 +21024,10 @@ export const ANNOTATIONS = [
       'E. '
     ],
     meta: {
-      'type': 'Species',
-      'id': '562',
-      'color': '#3177b8',
-      'idType': 'NCBI'
+      type: 'Species',
+      id: '562',
+      color: '#3177b8',
+      idType: 'NCBI'
     }
   },
   {
@@ -21044,10 +21044,10 @@ export const ANNOTATIONS = [
       'E. coli'
     ],
     meta: {
-      'type': 'Species',
-      'id': '562',
-      'color': '#3177b8',
-      'idType': 'NCBI'
+      type: 'Species',
+      id: '562',
+      color: '#3177b8',
+      idType: 'NCBI'
     }
   },
   {
@@ -21064,10 +21064,10 @@ export const ANNOTATIONS = [
       'expression vector'
     ],
     meta: {
-      'type': 'Species',
-      'id': '81076',
-      'color': '#3177b8',
-      'idType': 'NCBI'
+      type: 'Species',
+      id: '81076',
+      color: '#3177b8',
+      idType: 'NCBI'
     }
   },
   {
@@ -21084,10 +21084,10 @@ export const ANNOTATIONS = [
       'expression vector'
     ],
     meta: {
-      'type': 'Species',
-      'id': '81076',
-      'color': '#3177b8',
-      'idType': 'NCBI'
+      type: 'Species',
+      id: '81076',
+      color: '#3177b8',
+      idType: 'NCBI'
     }
   },
   {
@@ -21104,10 +21104,10 @@ export const ANNOTATIONS = [
       'tobacco'
     ],
     meta: {
-      'type': 'Species',
-      'id': '4097',
-      'color': '#3177b8',
-      'idType': 'NCBI'
+      type: 'Species',
+      id: '4097',
+      color: '#3177b8',
+      idType: 'NCBI'
     }
   },
   {
@@ -21124,10 +21124,10 @@ export const ANNOTATIONS = [
       'tobacco etch virus'
     ],
     meta: {
-      'type': 'Species',
-      'id': '12227',
-      'color': '#3177b8',
-      'idType': 'NCBI'
+      type: 'Species',
+      id: '12227',
+      color: '#3177b8',
+      idType: 'NCBI'
     }
   },
   {
@@ -21144,10 +21144,10 @@ export const ANNOTATIONS = [
       'at a'
     ],
     meta: {
-      'type': 'Species',
-      'id': '301693',
-      'color': '#3177b8',
-      'idType': 'NCBI'
+      type: 'Species',
+      id: '301693',
+      color: '#3177b8',
+      idType: 'NCBI'
     }
   },
   {
@@ -21164,10 +21164,10 @@ export const ANNOTATIONS = [
       'not shown),'
     ],
     meta: {
-      'type': 'Species',
-      'id': '32644',
-      'color': '#3177b8',
-      'idType': 'NCBI'
+      type: 'Species',
+      id: '32644',
+      color: '#3177b8',
+      idType: 'NCBI'
     }
   },
   {
@@ -21191,10 +21191,10 @@ export const ANNOTATIONS = [
       'not '
     ],
     meta: {
-      'type': 'Species',
-      'id': '32644',
-      'color': '#3177b8',
-      'idType': 'NCBI'
+      type: 'Species',
+      id: '32644',
+      color: '#3177b8',
+      idType: 'NCBI'
     }
   },
   {
@@ -21211,10 +21211,10 @@ export const ANNOTATIONS = [
       'synthetic'
     ],
     meta: {
-      'type': 'Species',
-      'id': '32630',
-      'color': '#3177b8',
-      'idType': 'NCBI'
+      type: 'Species',
+      id: '32630',
+      color: '#3177b8',
+      idType: 'NCBI'
     }
   },
   {
@@ -21231,10 +21231,10 @@ export const ANNOTATIONS = [
       'Li'
     ],
     meta: {
-      'type': 'Species',
-      'id': '11086',
-      'color': '#3177b8',
-      'idType': 'NCBI'
+      type: 'Species',
+      id: '11086',
+      color: '#3177b8',
+      idType: 'NCBI'
     }
   },
   {
@@ -21251,10 +21251,10 @@ export const ANNOTATIONS = [
       'Li'
     ],
     meta: {
-      'type': 'Species',
-      'id': '11086',
-      'color': '#3177b8',
-      'idType': 'NCBI'
+      type: 'Species',
+      id: '11086',
+      color: '#3177b8',
+      idType: 'NCBI'
     }
   },
   {
@@ -21271,10 +21271,10 @@ export const ANNOTATIONS = [
       'Li'
     ],
     meta: {
-      'type': 'Species',
-      'id': '11086',
-      'color': '#3177b8',
-      'idType': 'NCBI'
+      type: 'Species',
+      id: '11086',
+      color: '#3177b8',
+      idType: 'NCBI'
     }
   },
   {
@@ -21291,10 +21291,10 @@ export const ANNOTATIONS = [
       'Li'
     ],
     meta: {
-      'type': 'Species',
-      'id': '11086',
-      'color': '#3177b8',
-      'idType': 'NCBI'
+      type: 'Species',
+      id: '11086',
+      color: '#3177b8',
+      idType: 'NCBI'
     }
   },
   {
@@ -21311,10 +21311,10 @@ export const ANNOTATIONS = [
       'Li'
     ],
     meta: {
-      'type': 'Species',
-      'id': '11086',
-      'color': '#3177b8',
-      'idType': 'NCBI'
+      type: 'Species',
+      id: '11086',
+      color: '#3177b8',
+      idType: 'NCBI'
     }
   },
   {
@@ -21331,10 +21331,10 @@ export const ANNOTATIONS = [
       'Li'
     ],
     meta: {
-      'type': 'Species',
-      'id': '11086',
-      'color': '#3177b8',
-      'idType': 'NCBI'
+      type: 'Species',
+      id: '11086',
+      color: '#3177b8',
+      idType: 'NCBI'
     }
   },
   {
@@ -21351,10 +21351,10 @@ export const ANNOTATIONS = [
       'Li'
     ],
     meta: {
-      'type': 'Species',
-      'id': '11086',
-      'color': '#3177b8',
-      'idType': 'NCBI'
+      type: 'Species',
+      id: '11086',
+      color: '#3177b8',
+      idType: 'NCBI'
     }
   },
   {
@@ -21371,10 +21371,10 @@ export const ANNOTATIONS = [
       'Li'
     ],
     meta: {
-      'type': 'Species',
-      'id': '11086',
-      'color': '#3177b8',
-      'idType': 'NCBI'
+      type: 'Species',
+      id: '11086',
+      color: '#3177b8',
+      idType: 'NCBI'
     }
   },
   {
@@ -21391,10 +21391,10 @@ export const ANNOTATIONS = [
       'Li'
     ],
     meta: {
-      'type': 'Species',
-      'id': '11086',
-      'color': '#3177b8',
-      'idType': 'NCBI'
+      type: 'Species',
+      id: '11086',
+      color: '#3177b8',
+      idType: 'NCBI'
     }
   },
   {
@@ -21411,10 +21411,10 @@ export const ANNOTATIONS = [
       'Yu'
     ],
     meta: {
-      'type': 'Species',
-      'id': '37334',
-      'color': '#3177b8',
-      'idType': 'NCBI'
+      type: 'Species',
+      id: '37334',
+      color: '#3177b8',
+      idType: 'NCBI'
     }
   },
   {
@@ -21431,10 +21431,10 @@ export const ANNOTATIONS = [
       'Yu'
     ],
     meta: {
-      'type': 'Species',
-      'id': '37334',
-      'color': '#3177b8',
-      'idType': 'NCBI'
+      type: 'Species',
+      id: '37334',
+      color: '#3177b8',
+      idType: 'NCBI'
     }
   },
   {
@@ -21451,10 +21451,10 @@ export const ANNOTATIONS = [
       'mitochondrial disease'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D028361',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D028361',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -21471,10 +21471,10 @@ export const ANNOTATIONS = [
       'disease'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D004194',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D004194',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -21491,10 +21491,10 @@ export const ANNOTATIONS = [
       'disease'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D004194',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D004194',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -21511,10 +21511,10 @@ export const ANNOTATIONS = [
       'disease'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D004194',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D004194',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -21538,10 +21538,10 @@ export const ANNOTATIONS = [
       'Multiple Mitochondrial Dysfunctions Syn-'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:C565304',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:C565304',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -21565,10 +21565,10 @@ export const ANNOTATIONS = [
       'Syn-'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D013577',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D013577',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -21585,10 +21585,10 @@ export const ANNOTATIONS = [
       'proteins'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D018455',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D018455',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -21605,10 +21605,10 @@ export const ANNOTATIONS = [
       'proteins'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D018455',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D018455',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -21625,10 +21625,10 @@ export const ANNOTATIONS = [
       'proteins'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D018455',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D018455',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -21645,10 +21645,10 @@ export const ANNOTATIONS = [
       'proteins'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D018455',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D018455',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -21665,10 +21665,10 @@ export const ANNOTATIONS = [
       'proteins'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D018455',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D018455',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -21685,10 +21685,10 @@ export const ANNOTATIONS = [
       'proteins,'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D018455',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D018455',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -21705,10 +21705,10 @@ export const ANNOTATIONS = [
       'proteins'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D018455',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D018455',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -21725,10 +21725,10 @@ export const ANNOTATIONS = [
       'proteins'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D018455',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D018455',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -21745,10 +21745,10 @@ export const ANNOTATIONS = [
       'proteins'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D018455',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D018455',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -21765,10 +21765,10 @@ export const ANNOTATIONS = [
       'proteins'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D018455',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D018455',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -21785,10 +21785,10 @@ export const ANNOTATIONS = [
       'proteins'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D018455',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D018455',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -21805,10 +21805,10 @@ export const ANNOTATIONS = [
       'proteins.'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D018455',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D018455',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -21825,10 +21825,10 @@ export const ANNOTATIONS = [
       'proteins,'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D018455',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D018455',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -21845,10 +21845,10 @@ export const ANNOTATIONS = [
       'proteins'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D018455',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D018455',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -21865,10 +21865,10 @@ export const ANNOTATIONS = [
       'proteins,'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D018455',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D018455',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -21885,10 +21885,10 @@ export const ANNOTATIONS = [
       'proteins'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D018455',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D018455',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -21905,10 +21905,10 @@ export const ANNOTATIONS = [
       'proteins'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D018455',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D018455',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -21925,10 +21925,10 @@ export const ANNOTATIONS = [
       'proteins.'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D018455',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D018455',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -21945,10 +21945,10 @@ export const ANNOTATIONS = [
       'proteins'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D018455',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D018455',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -21965,10 +21965,10 @@ export const ANNOTATIONS = [
       'proteins'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D018455',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D018455',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -21985,10 +21985,10 @@ export const ANNOTATIONS = [
       'proteins'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D018455',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D018455',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -22005,10 +22005,10 @@ export const ANNOTATIONS = [
       'proteins,'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D018455',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D018455',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -22025,10 +22025,10 @@ export const ANNOTATIONS = [
       'complexes'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D005117',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D005117',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -22045,10 +22045,10 @@ export const ANNOTATIONS = [
       'complexes'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D005117',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D005117',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -22065,10 +22065,10 @@ export const ANNOTATIONS = [
       'complexes'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D005117',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D005117',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -22085,10 +22085,10 @@ export const ANNOTATIONS = [
       'discrete'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D021922',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D021922',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -22105,10 +22105,10 @@ export const ANNOTATIONS = [
       'State'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D000210',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D000210',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -22125,10 +22125,10 @@ export const ANNOTATIONS = [
       'State'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D000210',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D000210',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -22145,10 +22145,10 @@ export const ANNOTATIONS = [
       'State'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D000210',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D000210',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -22165,10 +22165,10 @@ export const ANNOTATIONS = [
       'State'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D000210',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D000210',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -22185,10 +22185,10 @@ export const ANNOTATIONS = [
       'state'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D000210',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D000210',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -22205,10 +22205,10 @@ export const ANNOTATIONS = [
       'state'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D000210',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D000210',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -22225,10 +22225,10 @@ export const ANNOTATIONS = [
       'West'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D013036',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D013036',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -22245,10 +22245,10 @@ export const ANNOTATIONS = [
       'transport,'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:C564766',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:C564766',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -22265,10 +22265,10 @@ export const ANNOTATIONS = [
       'DNA'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D004266',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D004266',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -22285,10 +22285,10 @@ export const ANNOTATIONS = [
       'DNA'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D004266',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D004266',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -22305,10 +22305,10 @@ export const ANNOTATIONS = [
       'DNA'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D004266',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D004266',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -22325,10 +22325,10 @@ export const ANNOTATIONS = [
       'metabolism'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D008661',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D008661',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -22345,10 +22345,10 @@ export const ANNOTATIONS = [
       'pathways'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D058606',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D058606',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -22365,10 +22365,10 @@ export const ANNOTATIONS = [
       'pathways'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D058606',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D058606',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -22385,10 +22385,10 @@ export const ANNOTATIONS = [
       'pathways '
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D058606',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D058606',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -22412,10 +22412,10 @@ export const ANNOTATIONS = [
       'mitochondrial dis-'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D028361',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D028361',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -22439,10 +22439,10 @@ export const ANNOTATIONS = [
       'Multiple Mitochondrial Dys-'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:C565304',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:C565304',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -22459,10 +22459,10 @@ export const ANNOTATIONS = [
       'Syndromes'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D013577',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D013577',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -22479,10 +22479,10 @@ export const ANNOTATIONS = [
       'impairment'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D020886',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D020886',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -22499,10 +22499,10 @@ export const ANNOTATIONS = [
       'impairment of'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:C566757',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:C566757',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -22519,10 +22519,10 @@ export const ANNOTATIONS = [
       'cellular'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D018329',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D018329',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -22539,10 +22539,10 @@ export const ANNOTATIONS = [
       'sites'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D009371',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D009371',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -22559,10 +22559,10 @@ export const ANNOTATIONS = [
       'Fisher'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D019846',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D019846',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -22586,10 +22586,10 @@ export const ANNOTATIONS = [
       'E. '
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D004927',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D004927',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -22606,10 +22606,10 @@ export const ANNOTATIONS = [
       'E. coli'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D004927',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D004927',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -22626,10 +22626,10 @@ export const ANNOTATIONS = [
       'cell'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D002471',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D002471',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -22646,10 +22646,10 @@ export const ANNOTATIONS = [
       'Cell'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D002471',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D002471',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -22666,10 +22666,10 @@ export const ANNOTATIONS = [
       'excess'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D015835',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D015835',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -22686,10 +22686,10 @@ export const ANNOTATIONS = [
       'excess'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D015835',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D015835',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -22706,10 +22706,10 @@ export const ANNOTATIONS = [
       'excess'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D015835',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D015835',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -22726,10 +22726,10 @@ export const ANNOTATIONS = [
       'excess'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D015835',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D015835',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -22746,10 +22746,10 @@ export const ANNOTATIONS = [
       'frozen'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D002062',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D002062',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -22766,10 +22766,10 @@ export const ANNOTATIONS = [
       'constant:'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D014717',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D014717',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -22786,10 +22786,10 @@ export const ANNOTATIONS = [
       'constant'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D014717',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D014717',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -22806,10 +22806,10 @@ export const ANNOTATIONS = [
       'constant'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D014717',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D014717',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -22826,10 +22826,10 @@ export const ANNOTATIONS = [
       'constant'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D014717',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D014717',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -22846,10 +22846,10 @@ export const ANNOTATIONS = [
       'constant'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D014717',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D014717',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -22873,10 +22873,10 @@ export const ANNOTATIONS = [
       'con-'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D014717',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D014717',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -22893,10 +22893,10 @@ export const ANNOTATIONS = [
       'constant'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D014717',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D014717',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -22913,10 +22913,10 @@ export const ANNOTATIONS = [
       'constant'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D014717',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D014717',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -22933,10 +22933,10 @@ export const ANNOTATIONS = [
       'constant'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D014717',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D014717',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -22953,10 +22953,10 @@ export const ANNOTATIONS = [
       'as a'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D056807',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D056807',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -22973,10 +22973,10 @@ export const ANNOTATIONS = [
       'as a'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D056807',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D056807',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -22993,10 +22993,10 @@ export const ANNOTATIONS = [
       'as a'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D056807',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D056807',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -23013,10 +23013,10 @@ export const ANNOTATIONS = [
       'cytosolic'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:C536654',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:C536654',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -23033,10 +23033,10 @@ export const ANNOTATIONS = [
       'bands'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D000652',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D000652',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -23053,10 +23053,10 @@ export const ANNOTATIONS = [
       'bands'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D000652',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D000652',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -23073,10 +23073,10 @@ export const ANNOTATIONS = [
       'spectrum'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D015211',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D015211',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -23093,10 +23093,10 @@ export const ANNOTATIONS = [
       'spectrum'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D015211',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D015211',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -23113,10 +23113,10 @@ export const ANNOTATIONS = [
       'spectrum'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D015211',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D015211',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -23133,10 +23133,10 @@ export const ANNOTATIONS = [
       'spectrum'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D015211',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D015211',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -23153,10 +23153,10 @@ export const ANNOTATIONS = [
       'spectrum'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D015211',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D015211',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -23173,10 +23173,10 @@ export const ANNOTATIONS = [
       'spectrum'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D015211',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D015211',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -23193,10 +23193,10 @@ export const ANNOTATIONS = [
       'spectrum'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D015211',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D015211',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -23213,10 +23213,10 @@ export const ANNOTATIONS = [
       'bridged'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:C566689',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:C566689',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -23233,10 +23233,10 @@ export const ANNOTATIONS = [
       'decay'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D003731',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D003731',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -23253,10 +23253,10 @@ export const ANNOTATIONS = [
       'decay,'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D003731',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D003731',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -23273,10 +23273,10 @@ export const ANNOTATIONS = [
       'coordination'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D001259',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D001259',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -23293,10 +23293,10 @@ export const ANNOTATIONS = [
       'coordination'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D001259',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D001259',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -23313,10 +23313,10 @@ export const ANNOTATIONS = [
       'coordination'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D001259',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D001259',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -23340,10 +23340,10 @@ export const ANNOTATIONS = [
       'coor-'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D001259',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D001259',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -23367,10 +23367,10 @@ export const ANNOTATIONS = [
       'coordina-'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D001259',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D001259',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -23387,10 +23387,10 @@ export const ANNOTATIONS = [
       'coordination'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D001259',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D001259',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -23407,10 +23407,10 @@ export const ANNOTATIONS = [
       'undefined'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:C566799',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:C566799',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -23427,10 +23427,10 @@ export const ANNOTATIONS = [
       'effect'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D007088',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D007088',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -23447,10 +23447,10 @@ export const ANNOTATIONS = [
       'effect'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D007088',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D007088',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -23467,10 +23467,10 @@ export const ANNOTATIONS = [
       'levels'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D006937',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D006937',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -23487,10 +23487,10 @@ export const ANNOTATIONS = [
       'chemical'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D002057',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D002057',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -23507,10 +23507,10 @@ export const ANNOTATIONS = [
       '(red).'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D003117',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D003117',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -23527,10 +23527,10 @@ export const ANNOTATIONS = [
       '(red),'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D003117',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D003117',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -23547,10 +23547,10 @@ export const ANNOTATIONS = [
       'in coordination'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D001259',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D001259',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -23567,10 +23567,10 @@ export const ANNOTATIONS = [
       'formation'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D058426',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D058426',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -23587,10 +23587,10 @@ export const ANNOTATIONS = [
       'formed'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D006212',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D006212',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -23607,10 +23607,10 @@ export const ANNOTATIONS = [
       'Direct'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D006552',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D006552',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -23627,10 +23627,10 @@ export const ANNOTATIONS = [
       'Frey'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D013547',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D013547',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -23647,10 +23647,10 @@ export const ANNOTATIONS = [
       'CC'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D020216',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D020216',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -23667,10 +23667,10 @@ export const ANNOTATIONS = [
       'Armstrong'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D008216',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D008216',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -23687,10 +23687,10 @@ export const ANNOTATIONS = [
       'Cox'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D030401',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D030401',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   },
   {
@@ -23707,10 +23707,10 @@ export const ANNOTATIONS = [
       'neutral'
     ],
     meta: {
-      'type': 'Diseases',
-      'id': 'MESH:D006250',
-      'color': '#fae0b8',
-      'idType': 'MESH'
+      type: 'Diseases',
+      id: 'MESH:D006250',
+      color: '#fae0b8',
+      idType: 'MESH'
     }
   }
 ]
