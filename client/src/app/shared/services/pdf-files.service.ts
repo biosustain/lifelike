@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
+import { AuthenticationService } from 'app/auth/services/authentication.service';
 import { PdfFiles, PdfFile, PdfFileUpload } from 'app/interfaces/pdf-files.interface';
 
 @Injectable({
@@ -9,11 +10,12 @@ import { PdfFiles, PdfFile, PdfFileUpload } from 'app/interfaces/pdf-files.inter
 })
 export class PdfFilesService {
   constructor(
+    private auth: AuthenticationService,
     private http: HttpClient,
   ) {}
 
   getFiles(): Observable<PdfFile[]> {
-    return this.http.get<PdfFiles>('/api/files/list').pipe(
+    return this.http.get<PdfFiles>('/api/files/list', this.buildHttpOptions()).pipe(
       map((res: PdfFiles) => res.files),
       catchError(err => {
         console.error(err);
@@ -22,14 +24,22 @@ export class PdfFilesService {
     );
   }
 
-  getFile(id: string): Observable<any> {
-    return this.http.get(`/api/files/${id}`);
+  getFile(id: string): Observable<ArrayBuffer> {
+    const options = Object.assign(this.buildHttpOptions(), {responseType: 'arraybuffer'});
+    return this.http.get<ArrayBuffer>(`/api/files/${id}`, options);
   }
 
   uploadFile(file: File): Observable<PdfFileUpload> {
     const formData: FormData = new FormData();
     formData.append('file', file);
-    // formData.append('username', this_should_be_found_somewhere);
-    return this.http.post<PdfFileUpload>('/api/files/upload', formData);
+    return this.http.post<PdfFileUpload>('/api/files/upload', formData, this.buildHttpOptions());
+  }
+
+  private buildHttpOptions() {
+    return {
+      headers: new HttpHeaders({
+        Authorization: `Bearer ${this.auth.getAccessToken()}`
+      }),
+    };
   }
 }

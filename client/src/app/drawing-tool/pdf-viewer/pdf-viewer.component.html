@@ -13,7 +13,7 @@
           <input matInput placeholder="Search" [formControl]="filesFilter">
         </mat-form-field>
         <button mat-button fxLayoutAlign="start center"
-          *ngFor="let file of filteredFiles" (click)="openPdf(file.id)">
+          *ngFor="let file of filteredFiles" (click)="openPdf(file.file_id)">
           <mat-icon>description</mat-icon> {{file.filename}}
         </button>
       </div>
@@ -27,8 +27,7 @@
       <lib-pdf-viewer-lib
         id='pdf-viewer'
         appPdfViewer
-        *ngIf="annotations?.length > 0"
-        [pdfSrc]="pdfFileUrl"
+        [pdfSrc]="pdfData"
         [annotations]="annotations"
         [dropAreaIdentifier]="'#dropme'"
         [handleDropArea]="false"

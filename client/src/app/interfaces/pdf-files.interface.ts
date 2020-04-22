@@ -3,15 +3,14 @@ export interface PdfFiles {
 }
 
 export interface PdfFile {
-  id: string;
+  file_id: string;
   filename: string;
-  creationDate: string;
+  creation_date: string;
   username: string;
-  annotation?: string;
 }
 
 export interface PdfFileUpload {
-  id: string;
+  file_id: string;
   filename: string;
   status: string;
 }
