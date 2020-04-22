@@ -104,7 +104,7 @@ export class PdfViewerComponent implements AfterViewInit, OnDestroy {
       x: mouseEvent.clientX - containerCoord.x,
       y: mouseEvent.clientY,
       label: nodeDom.innerText,
-      group: 'group1',//(annDef as string).toLocaleLowerCase(),
+      group: 'group1',
       hyperlink: this.generateHyperlink(annDef)
     };
 
@@ -118,13 +118,13 @@ export class PdfViewerComponent implements AfterViewInit, OnDestroy {
   }
 
   openPdf(id: string) {
-    //this.pdfFileUrl = `${environment.apiUrl}/api/files/${id}`;
-    //console.log(`url passed to pdf viewer: ${this.pdfFileUrl}`);
-    //this.pdf.getFile(id).subscribe((pdfData: ArrayBuffer) => {
-     // this.annotations = [];
-      // TODO: update annotations?
-      //this.pdfData = {data: new Uint8Array(pdfData)};
-    //});
+    // this.pdfFileUrl = `${environment.apiUrl}/api/files/${id}`;
+    // console.log(`url passed to pdf viewer: ${this.pdfFileUrl}`);
+    // this.pdf.getFile(id).subscribe((pdfData: ArrayBuffer) => {
+    // this.annotations = [];
+    // TODO: update annotations?
+    // this.pdfData = {data: new Uint8Array(pdfData)};
+    // });
   }
 
   ngOnDestroy() {
