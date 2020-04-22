@@ -3,7 +3,6 @@ import { FormControl } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { PdfFile } from 'app/interfaces/pdf-files.interface';
 import { PdfFilesService } from 'app/shared/services/pdf-files.service';
-import { environment } from 'environments/environment';
 
 import {
   PdfAnnotationsService,
