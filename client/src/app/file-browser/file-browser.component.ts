@@ -55,7 +55,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
 
   openFile() {
     const params: Params = {
-      'file_id': this.selection.selected[0].file_id
+      file_id: this.selection.selected[0].file_id
     };
     this.router.navigate(['/pdf-viewer', params]);
   }
