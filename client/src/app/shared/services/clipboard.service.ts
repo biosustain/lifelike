@@ -66,6 +66,8 @@ export class ClipboardService {
                 break;
             }
             case Browsers.FIREFOX: {
+                // Currently Firefox only allows read access to the clipboard in web extensions. See the compatibility
+                // documentation for readText(): https://developer.mozilla.org/en-US/docs/Web/API/Clipboard/readText
                 if (!this.userHasSeenWarnings) {
                     alert(
                         'We would like to read some information from your clipboard, however at this time ' +
