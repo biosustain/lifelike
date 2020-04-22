@@ -1,6 +1,6 @@
 import { Component, AfterViewInit, OnDestroy } from '@angular/core';
 import { FormControl } from '@angular/forms';
-import { Subscription } from 'rxjs';
+import { Subscription, Subject } from 'rxjs';
 import { PdfFile } from 'app/interfaces/pdf-files.interface';
 import { PdfFilesService } from 'app/shared/services/pdf-files.service';
 import { environment } from 'environments/environment';
@@ -11,9 +11,12 @@ import {
 } from '../services';
 
 import {
-  Annotation,
   GraphData
 } from '../services/interfaces';
+
+import {
+  Annotation
+} from '../services/types';
 
 const MOCK_FILES: PdfFile[] = [ // TODO: remove once backend is in place
   {id: '0', filename: 'pdf file number 0', creationDate: '', username: ''},
@@ -42,8 +45,8 @@ export class PdfViewerComponent implements AfterViewInit, OnDestroy {
   filesFilter = new FormControl('');
   filesFilterSub: Subscription;
   filteredFiles = this.files;
-  pdfFileUrl = '/assets/pdfs/sample.pdf'; // TODO: remove asset once backend is in place
-
+  pdfFileUrl = '/assets/pdfs/example3-test.pdf'; // TODO: remove asset once backend is in place
+  goToPosition =  new Subject<any>();
   constructor(
     private pdfAnnService: PdfAnnotationsService,
     private dataFlow: DataFlowService,
@@ -68,6 +71,10 @@ export class PdfViewerComponent implements AfterViewInit, OnDestroy {
     );
   }
 
+  annotationCreated(annotation) {
+    console.log('annotation is created', annotation);
+  }
+
   /**
    * Handle drop event from draggable annotations
    * of the pdf-viewer
@@ -89,7 +96,7 @@ export class PdfViewerComponent implements AfterViewInit, OnDestroy {
       x: mouseEvent.clientX - containerCoord.x,
       y: mouseEvent.clientY,
       label: nodeDom.innerText,
-      group: (annDef.type as string).toLocaleLowerCase(),
+      group: 'group1',//(annDef as string).toLocaleLowerCase(),
       hyperlink: this.generateHyperlink(annDef)
     };
 
@@ -103,8 +110,9 @@ export class PdfViewerComponent implements AfterViewInit, OnDestroy {
   }
 
   openPdf(id: string) {
-    this.pdfFileUrl = `${environment.apiUrl}/api/files/${id}`;
-    console.log(`url passed to pdf viewer: ${this.pdfFileUrl}`);
+    //this.pdfFileUrl = `${environment.apiUrl}/api/files/${id}`;
+    //console.log(`url passed to pdf viewer: ${this.pdfFileUrl}`);
+    console.log('eren commented out this');
   }
 
   ngOnDestroy() {
@@ -113,12 +121,12 @@ export class PdfViewerComponent implements AfterViewInit, OnDestroy {
 
   generateHyperlink(annDef: Annotation): string {
 
-    switch (annDef.type) {
+    switch (annDef.meta.type) {
       case 'Chemical':
-        const id = annDef.id.match(/(\d+)/g)[0];
+        const id = annDef.meta.id.match(/(\d+)/g)[0];
         return `https://www.ebi.ac.uk/chebi/searchId.do?chebiId=${id}`;
       case 'Gene':
-        return `https://www.ncbi.nlm.nih.gov/gene/?term=${annDef.id}`;
+        return `https://www.ncbi.nlm.nih.gov/gene/?term=${annDef.meta.id}`;
       default:
         return '';
     }
