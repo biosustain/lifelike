@@ -53,6 +53,11 @@ const nodeTemplates = [
     label: 'phenotype',
     color: '#edc949',
     background: '#f9eec8'
+  },
+  {
+      label: 'link',
+      color: '#669999',
+      background: '#d1e0e0',
   }
 ];
 

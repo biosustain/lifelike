@@ -672,6 +672,7 @@ describe('VisualizationCanvasComponent', () => {
     it('should update selected nodes if a node is dragged', () => {
         const updatedSelectedNodesSpy = spyOn(instance, 'updateSelectedNodes');
         instance.onDragStartCallback(null);
+        instance.onDragEndCallback(null);
 
         expect(updatedSelectedNodesSpy).toHaveBeenCalled();
     });
