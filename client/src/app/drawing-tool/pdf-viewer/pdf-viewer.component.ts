@@ -15,7 +15,7 @@ import {
 } from '../services/interfaces';
 
 import {
-  Annotation
+  Annotation, Location
 } from '../services/types';
 
 const MOCK_FILES: PdfFile[] = [ // TODO: remove once backend is in place
@@ -40,14 +40,14 @@ const MOCK_FILES: PdfFile[] = [ // TODO: remove once backend is in place
 
 export class PdfViewerComponent implements AfterViewInit, OnDestroy {
 
-  annotations: object[] = [];
+  annotations: Annotation[] = [];
   files: PdfFile[] = [];
   filesFilter = new FormControl('');
   filesFilterSub: Subscription;
   filteredFiles = this.files;
 
   pdfFileUrl = '/assets/pdfs/example3-test.pdf'; // TODO: remove asset once backend is in place
-  goToPosition =  new Subject<any>();
+  goToPosition: Subject<Location> =  new Subject<Location>();
 
   // Type information coming from interface PDFSource at:
   // https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/pdfjs-dist/index.d.ts
@@ -142,5 +142,9 @@ export class PdfViewerComponent implements AfterViewInit, OnDestroy {
       default:
         return '';
     }
+  }
+
+  scrollInPdf(loc: Location) {
+    this.goToPosition.next(loc);
   }
 }
