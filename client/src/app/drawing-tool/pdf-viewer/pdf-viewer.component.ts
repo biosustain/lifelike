@@ -1,9 +1,9 @@
 import { Component, AfterViewInit, OnDestroy } from '@angular/core';
 import { FormControl } from '@angular/forms';
+import { ActivatedRoute, ParamMap } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { PdfFile } from 'app/interfaces/pdf-files.interface';
 import { PdfFilesService } from 'app/shared/services/pdf-files.service';
-import { environment } from 'environments/environment';
 
 import {
   PdfAnnotationsService,
@@ -39,11 +39,19 @@ export class PdfViewerComponent implements AfterViewInit, OnDestroy {
     private pdfAnnService: PdfAnnotationsService,
     private dataFlow: DataFlowService,
     private pdf: PdfFilesService,
+    private route: ActivatedRoute,
   ) {
     this.filesFilterSub = this.filesFilter.valueChanges.subscribe(this.updateFilteredFiles);
     this.pdf.getFiles().subscribe((files: PdfFile[]) => {
       this.files = files;
       this.updateFilteredFiles(this.filesFilter.value);
+    });
+    // Handle route's optional parameters
+    this.route.paramMap.subscribe((params: ParamMap) => {
+      const fileId = params.get('file_id');
+      if (fileId) {
+        this.openPdf(fileId);
+      }
     });
   }
 
