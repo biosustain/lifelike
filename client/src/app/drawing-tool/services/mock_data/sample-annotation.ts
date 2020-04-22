@@ -1,7 +1,7 @@
 export const ANNOTATIONS = [
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         222.09560153100003,
         650.283081054,
@@ -9,19 +9,19 @@ export const ANNOTATIONS = [
         666.283081054
       ]
     ],
-    "keywords": [
-      "BOLA3"
+    'keywords': [
+      'BOLA3'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112114492",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112114492',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         425.5926015271801,
         501.780930175,
@@ -29,19 +29,19 @@ export const ANNOTATIONS = [
         511.780930175
       ]
     ],
-    "keywords": [
-      "BOLA3."
+    'keywords': [
+      'BOLA3.'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112114492",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112114492',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         205.45760154628002,
         476.780930175,
@@ -49,19 +49,19 @@ export const ANNOTATIONS = [
         486.780930175
       ]
     ],
-    "keywords": [
-      "BOLA3"
+    'keywords': [
+      'BOLA3'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112114492",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112114492',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         270.79360153100004,
         464.280930175,
@@ -69,19 +69,19 @@ export const ANNOTATIONS = [
         474.280930175
       ]
     ],
-    "keywords": [
-      "BOLA3"
+    'keywords': [
+      'BOLA3'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112114492",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112114492',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         150.37760153100004,
         451.780930175,
@@ -89,19 +89,19 @@ export const ANNOTATIONS = [
         461.780930175
       ]
     ],
-    "keywords": [
-      "BOLA3"
+    'keywords': [
+      'BOLA3'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112114492",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112114492',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         95.353601531,
         426.780930175,
@@ -109,19 +109,19 @@ export const ANNOTATIONS = [
         436.780930175
       ]
     ],
-    "keywords": [
-      "BOLA3"
+    'keywords': [
+      'BOLA3'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112114492",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112114492',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         469.22081367408,
         101.78089965800002,
@@ -129,19 +129,19 @@ export const ANNOTATIONS = [
         111.78089965800002
       ]
     ],
-    "keywords": [
-      "BOLA3,"
+    'keywords': [
+      'BOLA3,'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112114492",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112114492',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 2,
-    "rects": [
+    'pageNumber': 2,
+    'rects': [
       [
         403.6045930509999,
         620.750229492,
@@ -149,19 +149,19 @@ export const ANNOTATIONS = [
         630.750229492
       ]
     ],
-    "keywords": [
-      "BOLA3"
+    'keywords': [
+      'BOLA3'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112114492",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112114492',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 2,
-    "rects": [
+    'pageNumber': 2,
+    'rects': [
       [
         388.35869313216995,
         520.750229492,
@@ -169,19 +169,19 @@ export const ANNOTATIONS = [
         530.750229492
       ]
     ],
-    "keywords": [
-      "BOLA3"
+    'keywords': [
+      'BOLA3'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112114492",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112114492',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 2,
-    "rects": [
+    'pageNumber': 2,
+    'rects': [
       [
         317.031693115,
         333.250198974,
@@ -189,19 +189,19 @@ export const ANNOTATIONS = [
         343.250198974
       ]
     ],
-    "keywords": [
-      "BOLA3."
+    'keywords': [
+      'BOLA3.'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112114492",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112114492',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         80.98391113199997,
         509.13017333899995,
@@ -209,19 +209,19 @@ export const ANNOTATIONS = [
         519.130173339
       ]
     ],
-    "keywords": [
-      "BOLA3"
+    'keywords': [
+      'BOLA3'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112114492",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112114492',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         177.27780321817988,
         296.63020385699997,
@@ -229,19 +229,19 @@ export const ANNOTATIONS = [
         306.63020385699997
       ]
     ],
-    "keywords": [
-      "BOLA3"
+    'keywords': [
+      'BOLA3'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112114492",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112114492',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         388.20569311500003,
         580.904587402,
@@ -249,19 +249,19 @@ export const ANNOTATIONS = [
         590.904587402
       ]
     ],
-    "keywords": [
-      "BOLA3"
+    'keywords': [
+      'BOLA3'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112114492",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112114492',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         326.671693115,
         390.179093017,
@@ -269,19 +269,19 @@ export const ANNOTATIONS = [
         400.179093017
       ]
     ],
-    "keywords": [
-      "BOLA3"
+    'keywords': [
+      'BOLA3'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112114492",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112114492',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         387.57701,
         352.679093017,
@@ -289,19 +289,19 @@ export const ANNOTATIONS = [
         362.679093017
       ]
     ],
-    "keywords": [
-      "BOLA3"
+    'keywords': [
+      'BOLA3'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112114492",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112114492',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         512.3370866700001,
         211.95359863200002,
@@ -309,19 +309,19 @@ export const ANNOTATIONS = [
         221.95359863200002
       ]
     ],
-    "keywords": [
-      "BOLA3"
+    'keywords': [
+      'BOLA3'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112114492",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112114492',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         213.67960153099992,
         721.630173339,
@@ -329,19 +329,19 @@ export const ANNOTATIONS = [
         731.630173339
       ]
     ],
-    "keywords": [
-      "BOLA3"
+    'keywords': [
+      'BOLA3'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112114492",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112114492',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         72.71509685099998,
         621.630173339,
@@ -349,19 +349,19 @@ export const ANNOTATIONS = [
         631.630173339
       ]
     ],
-    "keywords": [
-      "BOLA3"
+    'keywords': [
+      'BOLA3'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112114492",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112114492',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         341.99150363699994,
         684.130173339,
@@ -369,19 +369,19 @@ export const ANNOTATIONS = [
         694.130173339
       ]
     ],
-    "keywords": [
-      "BOLA3"
+    'keywords': [
+      'BOLA3'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112114492",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112114492',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         306.13150562699997,
         546.630173339,
@@ -389,19 +389,19 @@ export const ANNOTATIONS = [
         556.630173339
       ]
     ],
-    "keywords": [
-      "BOLA3"
+    'keywords': [
+      'BOLA3'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112114492",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112114492',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         404.04950562700003,
         409.13017333899995,
@@ -409,19 +409,19 @@ export const ANNOTATIONS = [
         419.13017333899995
       ]
     ],
-    "keywords": [
-      "BOLA3"
+    'keywords': [
+      'BOLA3'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112114492",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112114492',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         439.69550991463007,
         359.13017333899995,
@@ -429,19 +429,19 @@ export const ANNOTATIONS = [
         369.13017333899995
       ]
     ],
-    "keywords": [
-      "BOLA3"
+    'keywords': [
+      'BOLA3'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112114492",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112114492',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         144.141101531,
         338.789196533,
@@ -449,19 +449,19 @@ export const ANNOTATIONS = [
         347.289196533
       ]
     ],
-    "keywords": [
-      "BOLA3"
+    'keywords': [
+      'BOLA3'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112114492",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112114492',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         236.72225153100004,
         338.789196533,
@@ -469,19 +469,19 @@ export const ANNOTATIONS = [
         347.289196533
       ]
     ],
-    "keywords": [
-      "BOLA3"
+    'keywords': [
+      'BOLA3'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112114492",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112114492',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         159.68760153099998,
         92.022198242,
@@ -489,19 +489,19 @@ export const ANNOTATIONS = [
         100.522198242
       ]
     ],
-    "keywords": [
-      "BOLA3"
+    'keywords': [
+      'BOLA3'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112114492",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112114492',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         98.547101531,
         72.03019824200001,
@@ -509,19 +509,19 @@ export const ANNOTATIONS = [
         80.53019824200001
       ]
     ],
-    "keywords": [
-      "BOLA3."
+    'keywords': [
+      'BOLA3.'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112114492",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112114492',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         335.144601531,
         72.03869824200002,
@@ -529,19 +529,19 @@ export const ANNOTATIONS = [
         80.53869824200002
       ]
     ],
-    "keywords": [
-      "BOLA3"
+    'keywords': [
+      'BOLA3'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112114492",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112114492',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 6,
-    "rects": [
+    'pageNumber': 6,
+    'rects': [
       [
         383.338601961,
         459.13017333899995,
@@ -549,19 +549,19 @@ export const ANNOTATIONS = [
         469.13017333899995
       ]
     ],
-    "keywords": [
-      "BOLA3"
+    'keywords': [
+      'BOLA3'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112114492",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112114492',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 6,
-    "rects": [
+    'pageNumber': 6,
+    'rects': [
       [
         447.44060196672007,
         409.13017333899995,
@@ -569,19 +569,19 @@ export const ANNOTATIONS = [
         419.13017333899995
       ]
     ],
-    "keywords": [
-      "BOLA3"
+    'keywords': [
+      'BOLA3'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112114492",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112114492',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 6,
-    "rects": [
+    'pageNumber': 6,
+    'rects': [
       [
         456.73371290145,
         346.63020385699997,
@@ -589,19 +589,19 @@ export const ANNOTATIONS = [
         356.63020385699997
       ]
     ],
-    "keywords": [
-      "BOLA3"
+    'keywords': [
+      'BOLA3'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112114492",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112114492',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 6,
-    "rects": [
+    'pageNumber': 6,
+    'rects': [
       [
         326.171790771,
         234.13020385699997,
@@ -609,19 +609,19 @@ export const ANNOTATIONS = [
         244.13020385699997
       ]
     ],
-    "keywords": [
-      "BOLA3"
+    'keywords': [
+      'BOLA3'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112114492",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112114492',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 6,
-    "rects": [
+    'pageNumber': 6,
+    'rects': [
       [
         411.9237907748201,
         121.63020385699998,
@@ -629,19 +629,19 @@ export const ANNOTATIONS = [
         131.63020385699997
       ]
     ],
-    "keywords": [
-      "BOLA3"
+    'keywords': [
+      'BOLA3'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112114492",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112114492',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 6,
-    "rects": [
+    'pageNumber': 6,
+    'rects': [
       [
         452.1307907710002,
         109.13020385699998,
@@ -649,19 +649,19 @@ export const ANNOTATIONS = [
         119.13020385699998
       ]
     ],
-    "keywords": [
-      "BOLA3"
+    'keywords': [
+      'BOLA3'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112114492",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112114492',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 6,
-    "rects": [
+    'pageNumber': 6,
+    'rects': [
       [
         476.61879077863,
         84.13020385699998,
@@ -669,19 +669,19 @@ export const ANNOTATIONS = [
         94.13020385699998
       ]
     ],
-    "keywords": [
-      "BOLA3"
+    'keywords': [
+      'BOLA3'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112114492",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112114492',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         78.97360153481999,
         671.630173339,
@@ -689,19 +689,19 @@ export const ANNOTATIONS = [
         681.630173339
       ]
     ],
-    "keywords": [
-      "BOLA3"
+    'keywords': [
+      'BOLA3'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112114492",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112114492',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         124.68790069699999,
         509.13017333899995,
@@ -709,19 +709,19 @@ export const ANNOTATIONS = [
         519.130173339
       ]
     ],
-    "keywords": [
-      "BOLA3"
+    'keywords': [
+      'BOLA3'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112114492",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112114492',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         186.75790298700016,
         471.63017333899995,
@@ -729,19 +729,19 @@ export const ANNOTATIONS = [
         481.63017333899995
       ]
     ],
-    "keywords": [
-      "BOLA3"
+    'keywords': [
+      'BOLA3'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112114492",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112114492',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         80.11790665700003,
         409.13017333899995,
@@ -749,19 +749,19 @@ export const ANNOTATIONS = [
         419.13017333899995
       ]
     ],
-    "keywords": [
-      "BOLA3"
+    'keywords': [
+      'BOLA3'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112114492",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112114492',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         72.05190665700002,
         346.63017333899995,
@@ -769,19 +769,19 @@ export const ANNOTATIONS = [
         356.63017333899995
       ]
     ],
-    "keywords": [
-      "BOLA3,"
+    'keywords': [
+      'BOLA3,'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112114492",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112114492',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         377.39789795699994,
         709.130173339,
@@ -789,19 +789,19 @@ export const ANNOTATIONS = [
         719.130173339
       ]
     ],
-    "keywords": [
-      "BOLA3"
+    'keywords': [
+      'BOLA3'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112114492",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112114492',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         385.68489903463,
         659.130173339,
@@ -809,19 +809,19 @@ export const ANNOTATIONS = [
         669.130173339
       ]
     ],
-    "keywords": [
-      "BOLA3"
+    'keywords': [
+      'BOLA3'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112114492",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112114492',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         364.33789902700005,
         609.130173339,
@@ -829,19 +829,19 @@ export const ANNOTATIONS = [
         619.130173339
       ]
     ],
-    "keywords": [
-      "BOLA3"
+    'keywords': [
+      'BOLA3'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112114492",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112114492',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         333.28827783199995,
         427.79199853499995,
@@ -849,19 +849,19 @@ export const ANNOTATIONS = [
         436.29199853499995
       ]
     ],
-    "keywords": [
-      "BOLA3"
+    'keywords': [
+      'BOLA3'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112114492",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112114492',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         333.28827783199995,
         415.313998535,
@@ -869,19 +869,19 @@ export const ANNOTATIONS = [
         423.813998535
       ]
     ],
-    "keywords": [
-      "BOLA3"
+    'keywords': [
+      'BOLA3'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112114492",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112114492',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         333.28827783199995,
         402.83599853499993,
@@ -889,19 +889,19 @@ export const ANNOTATIONS = [
         411.33599853499993
       ]
     ],
-    "keywords": [
-      "BOLA3"
+    'keywords': [
+      'BOLA3'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112114492",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112114492',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         333.28827783199995,
         390.357998535,
@@ -909,19 +909,19 @@ export const ANNOTATIONS = [
         398.857998535
       ]
     ],
-    "keywords": [
-      "BOLA3"
+    'keywords': [
+      'BOLA3'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112114492",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112114492',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         333.28827783199995,
         377.8799985349999,
@@ -929,19 +929,19 @@ export const ANNOTATIONS = [
         386.3799985349999
       ]
     ],
-    "keywords": [
-      "BOLA3"
+    'keywords': [
+      'BOLA3'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112114492",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112114492',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         199.335001531,
         111.426199768,
@@ -949,19 +949,19 @@ export const ANNOTATIONS = [
         119.926199768
       ]
     ],
-    "keywords": [
-      "BOLA3"
+    'keywords': [
+      'BOLA3'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112114492",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112114492',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 8,
-    "rects": [
+    'pageNumber': 8,
+    'rects': [
       [
         51.023601531,
         339.08021435500007,
@@ -969,19 +969,19 @@ export const ANNOTATIONS = [
         347.58021435500007
       ]
     ],
-    "keywords": [
-      "BOLA3"
+    'keywords': [
+      'BOLA3'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112114492",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112114492',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 8,
-    "rects": [
+    'pageNumber': 8,
+    'rects': [
       [
         220.13875153099997,
         319.0882143550001,
@@ -989,19 +989,19 @@ export const ANNOTATIONS = [
         327.5882143550001
       ]
     ],
-    "keywords": [
-      "BOLA3,"
+    'keywords': [
+      'BOLA3,'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112114492",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112114492',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 8,
-    "rects": [
+    'pageNumber': 8,
+    'rects': [
       [
         130.71560153099998,
         209.223190917,
@@ -1009,19 +1009,19 @@ export const ANNOTATIONS = [
         219.223190917
       ]
     ],
-    "keywords": [
-      "BOLA3"
+    'keywords': [
+      'BOLA3'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112114492",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112114492',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 8,
-    "rects": [
+    'pageNumber': 8,
+    'rects': [
       [
         327.079394376,
         234.22329772900002,
@@ -1029,19 +1029,19 @@ export const ANNOTATIONS = [
         244.22329772900002
       ]
     ],
-    "keywords": [
-      "BOLA3"
+    'keywords': [
+      'BOLA3'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112114492",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112114492',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 8,
-    "rects": [
+    'pageNumber': 8,
+    'rects': [
       [
         306.138995361,
         71.723297729,
@@ -1049,19 +1049,19 @@ export const ANNOTATIONS = [
         81.723297729
       ]
     ],
-    "keywords": [
-      "BOLA3"
+    'keywords': [
+      'BOLA3'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112114492",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112114492',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 9,
-    "rects": [
+    'pageNumber': 9,
+    'rects': [
       [
         306.1335999210001,
         71.72319091700003,
@@ -1069,19 +1069,19 @@ export const ANNOTATIONS = [
         81.72319091700003
       ]
     ],
-    "keywords": [
-      "BOLA3"
+    'keywords': [
+      'BOLA3'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112114492",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112114492',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 9,
-    "rects": [
+    'pageNumber': 9,
+    'rects': [
       [
         511.8335999133601,
         71.72319091700003,
@@ -1089,19 +1089,19 @@ export const ANNOTATIONS = [
         81.72319091700003
       ]
     ],
-    "keywords": [
-      "BOLA3"
+    'keywords': [
+      'BOLA3'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112114492",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112114492',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 9,
-    "rects": [
+    'pageNumber': 9,
+    'rects': [
       [
         511.8335999133601,
         71.72319091700003,
@@ -1109,19 +1109,19 @@ export const ANNOTATIONS = [
         81.72319091700003
       ]
     ],
-    "keywords": [
-      "BOLA3 "
+    'keywords': [
+      'BOLA3 '
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112114492",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112114492',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         291.671508789,
         626.742126464,
@@ -1135,20 +1135,20 @@ export const ANNOTATIONS = [
         633.742126464
       ]
     ],
-    "keywords": [
-      "1",
-      "Sen"
+    'keywords': [
+      '1',
+      'Sen'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "34716797",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '34716797',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         114.192601531,
         526.780930175,
@@ -1156,19 +1156,19 @@ export const ANNOTATIONS = [
         536.780930175
       ]
     ],
-    "keywords": [
-      "mitochondrial"
+    'keywords': [
+      'mitochondrial'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "824395",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '824395',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         407.9426015309998,
         526.780930175,
@@ -1176,19 +1176,19 @@ export const ANNOTATIONS = [
         536.780930175
       ]
     ],
-    "keywords": [
-      "Mitochondrial"
+    'keywords': [
+      'Mitochondrial'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "824395",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '824395',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         306.14181365499996,
         326.780899658,
@@ -1196,19 +1196,19 @@ export const ANNOTATIONS = [
         336.780899658
       ]
     ],
-    "keywords": [
-      "mitochondrial"
+    'keywords': [
+      'mitochondrial'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "824395",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '824395',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         466.67981365499986,
         176.780899658,
@@ -1216,19 +1216,19 @@ export const ANNOTATIONS = [
         186.780899658
       ]
     ],
-    "keywords": [
-      "mitochondrial"
+    'keywords': [
+      'mitochondrial'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "824395",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '824395',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         462.3628136473701,
         164.280899658,
@@ -1236,19 +1236,19 @@ export const ANNOTATIONS = [
         174.280899658
       ]
     ],
-    "keywords": [
-      "Mitochondrial"
+    'keywords': [
+      'Mitochondrial'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "824395",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '824395',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 2,
-    "rects": [
+    'pageNumber': 2,
+    'rects': [
       [
         488.4146931130899,
         508.250229492,
@@ -1256,19 +1256,19 @@ export const ANNOTATIONS = [
         518.250229492
       ]
     ],
-    "keywords": [
-      "mitochondrial"
+    'keywords': [
+      'mitochondrial'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "824395",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '824395',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 2,
-    "rects": [
+    'pageNumber': 2,
+    'rects': [
       [
         394.242693115,
         445.750229492,
@@ -1276,19 +1276,19 @@ export const ANNOTATIONS = [
         455.750229492
       ]
     ],
-    "keywords": [
-      "mitochondrial"
+    'keywords': [
+      'mitochondrial'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "824395",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '824395',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 4,
-    "rects": [
+    'pageNumber': 4,
+    'rects': [
       [
         401.490693115,
         83.336197509,
@@ -1296,19 +1296,19 @@ export const ANNOTATIONS = [
         93.336197509
       ]
     ],
-    "keywords": [
-      "mitochondrial"
+    'keywords': [
+      'mitochondrial'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "824395",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '824395',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 8,
-    "rects": [
+    'pageNumber': 8,
+    'rects': [
       [
         487.51899536100007,
         71.723297729,
@@ -1316,19 +1316,19 @@ export const ANNOTATIONS = [
         81.723297729
       ]
     ],
-    "keywords": [
-      "mitochondrial"
+    'keywords': [
+      'mitochondrial'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "824395",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '824395',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 8,
-    "rects": [
+    'pageNumber': 8,
+    'rects': [
       [
         487.51899536100007,
         71.723297729,
@@ -1336,19 +1336,19 @@ export const ANNOTATIONS = [
         81.723297729
       ]
     ],
-    "keywords": [
-      "mitochondrial "
+    'keywords': [
+      'mitochondrial '
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "824395",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '824395',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         51.023601531,
         514.280930175,
@@ -1362,20 +1362,20 @@ export const ANNOTATIONS = [
         536.780930175
       ]
     ],
-    "keywords": [
-      "drome",
-      "Syn-"
+    'keywords': [
+      'drome',
+      'Syn-'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "252800",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '252800',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         385.3336015271795,
         514.280930175,
@@ -1383,19 +1383,19 @@ export const ANNOTATIONS = [
         524.280930175
       ]
     ],
-    "keywords": [
-      "point"
+    'keywords': [
+      'point'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "6729221",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '6729221',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         238.51260152718007,
         501.780930175,
@@ -1403,19 +1403,19 @@ export const ANNOTATIONS = [
         511.780930175
       ]
     ],
-    "keywords": [
-      "MMDS2"
+    'keywords': [
+      'MMDS2'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "388962",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '388962',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         428.02360154627974,
         489.280930175,
@@ -1423,19 +1423,19 @@ export const ANNOTATIONS = [
         499.280930175
       ]
     ],
-    "keywords": [
-      "putative"
+    'keywords': [
+      'putative'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "40525935",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '40525935',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         88.79360153100001,
         476.780930175,
@@ -1443,19 +1443,19 @@ export const ANNOTATIONS = [
         486.780930175
       ]
     ],
-    "keywords": [
-      "GLRX5"
+    'keywords': [
+      'GLRX5'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112120303",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112120303',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 2,
-    "rects": [
+    'pageNumber': 2,
+    'rects': [
       [
         475.06869311691,
         483.250229492,
@@ -1463,19 +1463,19 @@ export const ANNOTATIONS = [
         493.250229492
       ]
     ],
-    "keywords": [
-      "(GLRX5)"
+    'keywords': [
+      '(GLRX5)'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112120303",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112120303',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         488.2915056346299,
         459.13017333899995,
@@ -1483,19 +1483,19 @@ export const ANNOTATIONS = [
         469.13017333899995
       ]
     ],
-    "keywords": [
-      "GLRX5"
+    'keywords': [
+      'GLRX5'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112120303",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112120303',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 6,
-    "rects": [
+    'pageNumber': 6,
+    'rects': [
       [
         335.11179077099996,
         209.13020385699997,
@@ -1503,19 +1503,19 @@ export const ANNOTATIONS = [
         219.13020385699997
       ]
     ],
-    "keywords": [
-      "GLRX5"
+    'keywords': [
+      'GLRX5'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112120303",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112120303',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         241.1039066589101,
         371.63017333899995,
@@ -1523,19 +1523,19 @@ export const ANNOTATIONS = [
         381.63017333899995
       ]
     ],
-    "keywords": [
-      "GLRX5"
+    'keywords': [
+      'GLRX5'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112120303",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112120303',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         140.25360153100002,
         476.780930175,
@@ -1543,19 +1543,19 @@ export const ANNOTATIONS = [
         486.780930175
       ]
     ],
-    "keywords": [
-      "NFU."
+    'keywords': [
+      'NFU.'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "27247",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '27247',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         435.5426015310002,
         464.280930175,
@@ -1563,19 +1563,19 @@ export const ANNOTATIONS = [
         474.280930175
       ]
     ],
-    "keywords": [
-      "binding"
+    'keywords': [
+      'binding'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "103650148",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '103650148',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         338.45950990891004,
         321.63017333899995,
@@ -1583,19 +1583,19 @@ export const ANNOTATIONS = [
         331.63017333899995
       ]
     ],
-    "keywords": [
-      "binding"
+    'keywords': [
+      'binding'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "103650148",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '103650148',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 6,
-    "rects": [
+    'pageNumber': 6,
+    'rects': [
       [
         306.141790771,
         284.13020385699997,
@@ -1603,19 +1603,19 @@ export const ANNOTATIONS = [
         294.13020385699997
       ]
     ],
-    "keywords": [
-      "binding"
+    'keywords': [
+      'binding'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "103650148",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '103650148',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         273.8806015309999,
         451.780930175,
@@ -1623,19 +1623,19 @@ export const ANNOTATIONS = [
         461.780930175
       ]
     ],
-    "keywords": [
-      "homodimer"
+    'keywords': [
+      'homodimer'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "6647",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '6647',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         241.8306015329099,
         684.130173339,
@@ -1643,19 +1643,19 @@ export const ANNOTATIONS = [
         694.130173339
       ]
     ],
-    "keywords": [
-      "homodimer"
+    'keywords': [
+      'homodimer'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "6647",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '6647',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         134.333906657,
         409.13017333899995,
@@ -1663,19 +1663,19 @@ export const ANNOTATIONS = [
         419.13017333899995
       ]
     ],
-    "keywords": [
-      "homodimer"
+    'keywords': [
+      'homodimer'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "6647",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '6647',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         412.22789795700004,
         709.130173339,
@@ -1683,19 +1683,19 @@ export const ANNOTATIONS = [
         719.130173339
       ]
     ],
-    "keywords": [
-      "homodimer."
+    'keywords': [
+      'homodimer.'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "6647",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '6647',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         51.023601531,
         351.780930175,
@@ -1703,19 +1703,19 @@ export const ANNOTATIONS = [
         361.780930175
       ]
     ],
-    "keywords": [
-      "FDX"
+    'keywords': [
+      'FDX'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "42861999",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '42861999',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         51.023601531,
         339.280930175,
@@ -1723,19 +1723,19 @@ export const ANNOTATIONS = [
         349.280930175
       ]
     ],
-    "keywords": [
-      "GSH"
+    'keywords': [
+      'GSH'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "23687505",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '23687505',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 6,
-    "rects": [
+    'pageNumber': 6,
+    'rects': [
       [
         501.53579076718,
         259.13020385699997,
@@ -1743,19 +1743,19 @@ export const ANNOTATIONS = [
         269.13020385699997
       ]
     ],
-    "keywords": [
-      "GSH"
+    'keywords': [
+      'GSH'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "23687505",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '23687505',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         202.27790068557005,
         559.130173339,
@@ -1763,19 +1763,19 @@ export const ANNOTATIONS = [
         569.130173339
       ]
     ],
-    "keywords": [
-      "GSH"
+    'keywords': [
+      'GSH'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "23687505",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '23687505',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         237.88275764293354,
         71.43419976800001,
@@ -1783,19 +1783,19 @@ export const ANNOTATIONS = [
         79.93419976800001
       ]
     ],
-    "keywords": [
-      "GSH"
+    'keywords': [
+      'GSH'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "23687505",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '23687505',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         527.270402587,
         101.422199768,
@@ -1803,19 +1803,19 @@ export const ANNOTATIONS = [
         109.922199768
       ]
     ],
-    "keywords": [
-      "GSH"
+    'keywords': [
+      'GSH'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "23687505",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '23687505',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         428.296401516,
         91.426199768,
@@ -1823,19 +1823,19 @@ export const ANNOTATIONS = [
         99.926199768
       ]
     ],
-    "keywords": [
-      "GSH"
+    'keywords': [
+      'GSH'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "23687505",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '23687505',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         93.893601531,
         389.280930175,
@@ -1843,19 +1843,19 @@ export const ANNOTATIONS = [
         399.280930175
       ]
     ],
-    "keywords": [
-      "Glutaredoxin"
+    'keywords': [
+      'Glutaredoxin'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "824655",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '824655',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 2,
-    "rects": [
+    'pageNumber': 2,
+    'rects': [
       [
         416.06769311690994,
         483.250229492,
@@ -1863,19 +1863,19 @@ export const ANNOTATIONS = [
         493.250229492
       ]
     ],
-    "keywords": [
-      "glutaredoxin"
+    'keywords': [
+      'glutaredoxin'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "824655",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '824655',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         446.2428979550901,
         684.130173339,
@@ -1883,19 +1883,19 @@ export const ANNOTATIONS = [
         694.130173339
       ]
     ],
-    "keywords": [
-      "glutaredoxin)"
+    'keywords': [
+      'glutaredoxin)'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "824655",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '824655',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 8,
-    "rects": [
+    'pageNumber': 8,
+    'rects': [
       [
         51.023601531,
         196.723190917,
@@ -1909,20 +1909,20 @@ export const ANNOTATIONS = [
         219.223190917
       ]
     ],
-    "keywords": [
-      "taredoxin",
-      "glu-"
+    'keywords': [
+      'taredoxin',
+      'glu-'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "824655",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '824655',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         93.89260055443,
         351.780930175,
@@ -1930,19 +1930,19 @@ export const ANNOTATIONS = [
         361.780930175
       ]
     ],
-    "keywords": [
-      "Ferredoxin"
+    'keywords': [
+      'Ferredoxin'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "111060150",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '111060150',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         379.75889902318,
         621.630173339,
@@ -1950,19 +1950,19 @@ export const ANNOTATIONS = [
         631.630173339
       ]
     ],
-    "keywords": [
-      "ferredoxin"
+    'keywords': [
+      'ferredoxin'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "111060150",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '111060150',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         349.66789902700003,
         596.630173339,
@@ -1970,19 +1970,19 @@ export const ANNOTATIONS = [
         606.630173339
       ]
     ],
-    "keywords": [
-      "ferredoxin"
+    'keywords': [
+      'ferredoxin'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "111060150",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '111060150',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         476.40951046018006,
         546.630173339,
@@ -1990,19 +1990,19 @@ export const ANNOTATIONS = [
         556.630173339
       ]
     ],
-    "keywords": [
-      "ferredoxin"
+    'keywords': [
+      'ferredoxin'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "111060150",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '111060150',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         306.146510464,
         534.130173339,
@@ -2010,19 +2010,19 @@ export const ANNOTATIONS = [
         544.130173339
       ]
     ],
-    "keywords": [
-      "ferredoxin"
+    'keywords': [
+      'ferredoxin'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "111060150",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '111060150',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 8,
-    "rects": [
+    'pageNumber': 8,
+    'rects': [
       [
         51.023601531,
         329.0842143550001,
@@ -2036,20 +2036,20 @@ export const ANNOTATIONS = [
         347.58021435500007
       ]
     ],
-    "keywords": [
-      "doxin",
-      "ferre-"
+    'keywords': [
+      'doxin',
+      'ferre-'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "111060150",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '111060150',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 8,
-    "rects": [
+    'pageNumber': 8,
+    'rects': [
       [
         369.18518794199997,
         339.08171435500003,
@@ -2057,19 +2057,19 @@ export const ANNOTATIONS = [
         347.58171435500003
       ]
     ],
-    "keywords": [
-      "ferredoxin"
+    'keywords': [
+      'ferredoxin'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "111060150",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '111060150',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 8,
-    "rects": [
+    'pageNumber': 8,
+    'rects': [
       [
         188.89460153100006,
         259.223190917,
@@ -2077,19 +2077,19 @@ export const ANNOTATIONS = [
         269.223190917
       ]
     ],
-    "keywords": [
-      "ferredoxin"
+    'keywords': [
+      'ferredoxin'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "111060150",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '111060150',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         168.23860153100009,
         232.387096923,
@@ -2097,19 +2097,19 @@ export const ANNOTATIONS = [
         240.887096923
       ]
     ],
-    "keywords": [
-      "Rao"
+    'keywords': [
+      'Rao'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "353257",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '353257',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         348.421601531,
         453.61983386100087,
@@ -2117,19 +2117,19 @@ export const ANNOTATIONS = [
         462.11983386100087
       ]
     ],
-    "keywords": [
-      "Rao"
+    'keywords': [
+      'Rao'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "353257",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '353257',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         60.00810153100001,
         171.289096923,
@@ -2143,20 +2143,20 @@ export const ANNOTATIONS = [
         183.044596923
       ]
     ],
-    "keywords": [
-      " J. A.",
-      "*"
+    'keywords': [
+      ' J. A.',
+      '*'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "20741",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '20741',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         65.19310153100001,
         171.289096923,
@@ -2164,19 +2164,19 @@ export const ANNOTATIONS = [
         179.789096923
       ]
     ],
-    "keywords": [
-      "J. A."
+    'keywords': [
+      'J. A.'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "20741",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '20741',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         462.28760153099995,
         453.61983386100087,
@@ -2184,19 +2184,19 @@ export const ANNOTATIONS = [
         462.11983386100087
       ]
     ],
-    "keywords": [
-      "JA"
+    'keywords': [
+      'JA'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "20741",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '20741',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         349.794351531,
         403.63983386100097,
@@ -2204,19 +2204,19 @@ export const ANNOTATIONS = [
         412.13983386100097
       ]
     ],
-    "keywords": [
-      "JA"
+    'keywords': [
+      'JA'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "20741",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '20741',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         431.249001543971,
         393.643833861001,
@@ -2224,19 +2224,19 @@ export const ANNOTATIONS = [
         402.143833861001
       ]
     ],
-    "keywords": [
-      "JA"
+    'keywords': [
+      'JA'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "20741",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '20741',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         390.628351531,
         353.65983386100106,
@@ -2244,19 +2244,19 @@ export const ANNOTATIONS = [
         362.15983386100106
       ]
     ],
-    "keywords": [
-      "JA"
+    'keywords': [
+      'JA'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "20741",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '20741',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         372.76985153100003,
         343.6638338610011,
@@ -2264,19 +2264,19 @@ export const ANNOTATIONS = [
         352.1638338610011
       ]
     ],
-    "keywords": [
-      "JA"
+    'keywords': [
+      'JA'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "20741",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '20741',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         457.3202015245144,
         333.6678338610011,
@@ -2284,19 +2284,19 @@ export const ANNOTATIONS = [
         342.1678338610011
       ]
     ],
-    "keywords": [
-      "JA"
+    'keywords': [
+      'JA'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "20741",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '20741',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         323.151101531,
         283.6878338610012,
@@ -2304,19 +2304,19 @@ export const ANNOTATIONS = [
         292.1878338610012
       ]
     ],
-    "keywords": [
-      "JA"
+    'keywords': [
+      'JA'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "20741",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '20741',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         439.5628515407495,
         273.6918338610012,
@@ -2324,19 +2324,19 @@ export const ANNOTATIONS = [
         282.1918338610012
       ]
     ],
-    "keywords": [
-      "JA"
+    'keywords': [
+      'JA'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "20741",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '20741',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         439.5628515407495,
         253.69983386100122,
@@ -2344,19 +2344,19 @@ export const ANNOTATIONS = [
         262.19983386100125
       ]
     ],
-    "keywords": [
-      "JA"
+    'keywords': [
+      'JA'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "20741",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '20741',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         323.151101531,
         163.73583386100114,
@@ -2364,19 +2364,19 @@ export const ANNOTATIONS = [
         172.23583386100114
       ]
     ],
-    "keywords": [
-      "JA"
+    'keywords': [
+      'JA'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "20741",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '20741',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         366.224001531,
         723.4202102660003,
@@ -2384,19 +2384,19 @@ export const ANNOTATIONS = [
         731.9202102660003
       ]
     ],
-    "keywords": [
-      "JA"
+    'keywords': [
+      'JA'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "20741",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '20741',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         388.48550153099995,
         713.4242102660003,
@@ -2404,19 +2404,19 @@ export const ANNOTATIONS = [
         721.9242102660003
       ]
     ],
-    "keywords": [
-      "JA"
+    'keywords': [
+      'JA'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "20741",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '20741',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         453.830951534247,
         703.4282102660003,
@@ -2424,19 +2424,19 @@ export const ANNOTATIONS = [
         711.9282102660003
       ]
     ],
-    "keywords": [
-      "JA"
+    'keywords': [
+      'JA'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "20741",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '20741',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         190.89705153100005,
         653.3802153320001,
@@ -2444,19 +2444,19 @@ export const ANNOTATIONS = [
         661.8802153320001
       ]
     ],
-    "keywords": [
-      "JA"
+    'keywords': [
+      'JA'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "20741",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '20741',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         457.3423015585656,
         643.4522102660004,
@@ -2464,19 +2464,19 @@ export const ANNOTATIONS = [
         651.9522102660004
       ]
     ],
-    "keywords": [
-      "JA"
+    'keywords': [
+      'JA'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "20741",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '20741',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         117.89650153099998,
         633.3882153320002,
@@ -2484,19 +2484,19 @@ export const ANNOTATIONS = [
         641.8882153320002
       ]
     ],
-    "keywords": [
-      "JA"
+    'keywords': [
+      'JA'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "20741",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '20741',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         218.4710515310425,
         623.3922153320002,
@@ -2504,19 +2504,19 @@ export const ANNOTATIONS = [
         631.8922153320002
       ]
     ],
-    "keywords": [
-      "JA"
+    'keywords': [
+      'JA'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "20741",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '20741',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         226.12620000000004,
         131.224196289,
@@ -2524,19 +2524,19 @@ export const ANNOTATIONS = [
         139.724196289
       ]
     ],
-    "keywords": [
-      "OH"
+    'keywords': [
+      'OH'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "18299",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '18299',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         51.023601531,
         110.828003766826,
@@ -2550,20 +2550,20 @@ export const ANNOTATIONS = [
         129.72819628899998
       ]
     ],
-    "keywords": [
-      "2",
-      "USA"
+    'keywords': [
+      '2',
+      'USA'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "856570",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '856570',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         51.023601531,
         85.796501996826,
@@ -2577,20 +2577,20 @@ export const ANNOTATIONS = [
         104.69270214800001
       ]
     ],
-    "keywords": [
-      "3",
-      "USA"
+    'keywords': [
+      '3',
+      'USA'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "852398",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '852398',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         445.56081518500014,
         376.780899658,
@@ -2598,19 +2598,19 @@ export const ANNOTATIONS = [
         386.780899658
       ]
     ],
-    "keywords": [
-      "for a"
+    'keywords': [
+      'for a'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "31359628",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '31359628',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         324.251815185,
         351.780899658,
@@ -2618,19 +2618,19 @@ export const ANNOTATIONS = [
         361.780899658
       ]
     ],
-    "keywords": [
-      "DNA"
+    'keywords': [
+      'DNA'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "542060",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '542060',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 2,
-    "rects": [
+    'pageNumber': 2,
+    'rects': [
       [
         407.258693115,
         233.250198974,
@@ -2638,19 +2638,19 @@ export const ANNOTATIONS = [
         243.250198974
       ]
     ],
-    "keywords": [
-      "DNA"
+    'keywords': [
+      'DNA'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "542060",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '542060',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 2,
-    "rects": [
+    'pageNumber': 2,
+    'rects': [
       [
         431.7716931150001,
         183.250198974,
@@ -2658,19 +2658,19 @@ export const ANNOTATIONS = [
         193.250198974
       ]
     ],
-    "keywords": [
-      "DNA"
+    'keywords': [
+      'DNA'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "542060",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '542060',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         489.07781367026996,
         264.280899658,
@@ -2678,19 +2678,19 @@ export const ANNOTATIONS = [
         274.280899658
       ]
     ],
-    "keywords": [
-      "similar"
+    'keywords': [
+      'similar'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "655772",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '655772',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 4,
-    "rects": [
+    'pageNumber': 4,
+    'rects': [
       [
         446.23169311500004,
         95.836197509,
@@ -2698,19 +2698,19 @@ export const ANNOTATIONS = [
         105.836197509
       ]
     ],
-    "keywords": [
-      "Similar"
+    'keywords': [
+      'Similar'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "655772",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '655772',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         244.9880968509999,
         671.630173339,
@@ -2718,19 +2718,19 @@ export const ANNOTATIONS = [
         681.630173339
       ]
     ],
-    "keywords": [
-      "similar"
+    'keywords': [
+      'similar'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "655772",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '655772',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         175.78109516336997,
         621.630173339,
@@ -2738,19 +2738,19 @@ export const ANNOTATIONS = [
         631.630173339
       ]
     ],
-    "keywords": [
-      "similar"
+    'keywords': [
+      'similar'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "655772",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '655772',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         520.6613515309999,
         92.03069824200001,
@@ -2758,19 +2758,19 @@ export const ANNOTATIONS = [
         100.53069824200001
       ]
     ],
-    "keywords": [
-      "similar"
+    'keywords': [
+      'similar'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "655772",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '655772',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 6,
-    "rects": [
+    'pageNumber': 6,
+    'rects': [
       [
         430.41560196482004,
         459.13017333899995,
@@ -2778,19 +2778,19 @@ export const ANNOTATIONS = [
         469.13017333899995
       ]
     ],
-    "keywords": [
-      "similar"
+    'keywords': [
+      'similar'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "655772",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '655772',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 6,
-    "rects": [
+    'pageNumber': 6,
+    'rects': [
       [
         480.64860195338997,
         384.13017333899995,
@@ -2798,19 +2798,19 @@ export const ANNOTATIONS = [
         394.13017333899995
       ]
     ],
-    "keywords": [
-      "similar"
+    'keywords': [
+      'similar'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "655772",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '655772',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 6,
-    "rects": [
+    'pageNumber': 6,
+    'rects': [
       [
         417.16779076908995,
         309.13020385699997,
@@ -2818,19 +2818,19 @@ export const ANNOTATIONS = [
         319.13020385699997
       ]
     ],
-    "keywords": [
-      "similar"
+    'keywords': [
+      'similar'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "655772",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '655772',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 6,
-    "rects": [
+    'pageNumber': 6,
+    'rects': [
       [
         460.495790771,
         171.63020385699997,
@@ -2838,19 +2838,19 @@ export const ANNOTATIONS = [
         181.63020385699997
       ]
     ],
-    "keywords": [
-      "similar"
+    'keywords': [
+      'similar'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "655772",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '655772',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         127.74860153100002,
         721.630173339,
@@ -2858,19 +2858,19 @@ export const ANNOTATIONS = [
         731.630173339
       ]
     ],
-    "keywords": [
-      "similar"
+    'keywords': [
+      'similar'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "655772",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '655772',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 8,
-    "rects": [
+    'pageNumber': 8,
+    'rects': [
       [
         51.029403075999994,
         146.72329772900002,
@@ -2878,19 +2878,19 @@ export const ANNOTATIONS = [
         156.72329772900002
       ]
     ],
-    "keywords": [
-      "similar"
+    'keywords': [
+      'similar'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "655772",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '655772',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         495.341813655,
         239.280899658,
@@ -2898,19 +2898,19 @@ export const ANNOTATIONS = [
         249.280899658
       ]
     ],
-    "keywords": [
-      "many"
+    'keywords': [
+      'many'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "7152012",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '7152012',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         452.87150562700015,
         521.630173339,
@@ -2918,19 +2918,19 @@ export const ANNOTATIONS = [
         531.630173339
       ]
     ],
-    "keywords": [
-      "many"
+    'keywords': [
+      'many'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "7152012",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '7152012',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         335.611813655,
         201.780899658,
@@ -2938,19 +2938,19 @@ export const ANNOTATIONS = [
         211.780899658
       ]
     ],
-    "keywords": [
-      "case"
+    'keywords': [
+      'case'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "947226",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '947226',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 8,
-    "rects": [
+    'pageNumber': 8,
+    'rects': [
       [
         341.947394376,
         171.72329772900002,
@@ -2958,19 +2958,19 @@ export const ANNOTATIONS = [
         181.72329772900002
       ]
     ],
-    "keywords": [
-      "case"
+    'keywords': [
+      'case'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "947226",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '947226',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         402.37481367408,
         101.78089965800002,
@@ -2978,19 +2978,19 @@ export const ANNOTATIONS = [
         111.78089965800002
       ]
     ],
-    "keywords": [
-      "IBA57,"
+    'keywords': [
+      'IBA57,'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112112370",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112112370',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         435.43281367407997,
         101.78089965800002,
@@ -2998,19 +2998,19 @@ export const ANNOTATIONS = [
         111.78089965800002
       ]
     ],
-    "keywords": [
-      "ISCA2,"
+    'keywords': [
+      'ISCA2,'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112101860",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112101860',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         518.9068136740802,
         101.78089965800002,
@@ -3018,19 +3018,19 @@ export const ANNOTATIONS = [
         111.78089965800002
       ]
     ],
-    "keywords": [
-      "NFU1"
+    'keywords': [
+      'NFU1'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112107518",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112107518',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 8,
-    "rects": [
+    'pageNumber': 8,
+    'rects': [
       [
         200.70760152909008,
         246.723190917,
@@ -3038,19 +3038,19 @@ export const ANNOTATIONS = [
         256.723190917
       ]
     ],
-    "keywords": [
-      "NFU1"
+    'keywords': [
+      'NFU1'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112107518",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112107518',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 8,
-    "rects": [
+    'pageNumber': 8,
+    'rects': [
       [
         161.70140307981998,
         134.22329772900002,
@@ -3058,19 +3058,19 @@ export const ANNOTATIONS = [
         144.22329772900002
       ]
     ],
-    "keywords": [
-      "NFU1"
+    'keywords': [
+      'NFU1'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112107518",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112107518',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 2,
-    "rects": [
+    'pageNumber': 2,
+    'rects': [
       [
         375.417693115,
         420.750229492,
@@ -3078,19 +3078,19 @@ export const ANNOTATIONS = [
         430.750229492
       ]
     ],
-    "keywords": [
-      "GE"
+    'keywords': [
+      'GE'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "4343840",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '4343840',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 2,
-    "rects": [
+    'pageNumber': 2,
+    'rects': [
       [
         482.32169311500013,
         345.750198974,
@@ -3098,19 +3098,19 @@ export const ANNOTATIONS = [
         355.750198974
       ]
     ],
-    "keywords": [
-      "double"
+    'keywords': [
+      'double'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "248382",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '248382',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 6,
-    "rects": [
+    'pageNumber': 6,
+    'rects': [
       [
         456.9807907671801,
         184.13020385699997,
@@ -3118,19 +3118,19 @@ export const ANNOTATIONS = [
         194.13020385699997
       ]
     ],
-    "keywords": [
-      "double"
+    'keywords': [
+      'double'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "248382",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '248382',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         158.59860152718005,
         621.630173339,
@@ -3138,19 +3138,19 @@ export const ANNOTATIONS = [
         631.630173339
       ]
     ],
-    "keywords": [
-      "double"
+    'keywords': [
+      'double'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "248382",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '248382',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 2,
-    "rects": [
+    'pageNumber': 2,
+    'rects': [
       [
         424.67769311691006,
         320.750198974,
@@ -3158,19 +3158,19 @@ export const ANNOTATIONS = [
         330.750198974
       ]
     ],
-    "keywords": [
-      "PCR"
+    'keywords': [
+      'PCR'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "38331764",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '38331764',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 2,
-    "rects": [
+    'pageNumber': 2,
+    'rects': [
       [
         306.141693115,
         308.250198974,
@@ -3178,19 +3178,19 @@ export const ANNOTATIONS = [
         318.250198974
       ]
     ],
-    "keywords": [
-      "polymerase"
+    'keywords': [
+      'polymerase'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "956582",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '956582',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 2,
-    "rects": [
+    'pageNumber': 2,
+    'rects': [
       [
         418.591693115,
         295.750198974,
@@ -3198,19 +3198,19 @@ export const ANNOTATIONS = [
         305.750198974
       ]
     ],
-    "keywords": [
-      "for 1"
+    'keywords': [
+      'for 1'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "114330751",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '114330751',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 2,
-    "rects": [
+    'pageNumber': 2,
+    'rects': [
       [
         505.0536931150001,
         283.250198974,
@@ -3218,19 +3218,19 @@ export const ANNOTATIONS = [
         293.250198974
       ]
     ],
-    "keywords": [
-      "for 1"
+    'keywords': [
+      'for 1'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "114330751",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '114330751',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         221.4053988640001,
         171.63020385700003,
@@ -3238,19 +3238,19 @@ export const ANNOTATIONS = [
         181.63020385700003
       ]
     ],
-    "keywords": [
-      "for 1"
+    'keywords': [
+      'for 1'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "114330751",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '114330751',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 2,
-    "rects": [
+    'pageNumber': 2,
+    'rects': [
       [
         393.86169311500004,
         270.750198974,
@@ -3258,19 +3258,19 @@ export const ANNOTATIONS = [
         280.750198974
       ]
     ],
-    "keywords": [
-      "for 3"
+    'keywords': [
+      'for 3'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "2539487",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '2539487',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 2,
-    "rects": [
+    'pageNumber': 2,
+    'rects': [
       [
         415.3396931302601,
         270.750198974,
@@ -3278,19 +3278,19 @@ export const ANNOTATIONS = [
         280.750198974
       ]
     ],
-    "keywords": [
-      "min at"
+    'keywords': [
+      'min at'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "57217",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '57217',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 2,
-    "rects": [
+    'pageNumber': 2,
+    'rects': [
       [
         361.521693115,
         258.250198974,
@@ -3298,19 +3298,19 @@ export const ANNOTATIONS = [
         268.250198974
       ]
     ],
-    "keywords": [
-      "mix"
+    'keywords': [
+      'mix'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "83881",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '83881',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 2,
-    "rects": [
+    'pageNumber': 2,
+    'rects': [
       [
         360.256693115,
         220.750198974,
@@ -3318,19 +3318,19 @@ export const ANNOTATIONS = [
         230.750198974
       ]
     ],
-    "keywords": [
-      "mix"
+    'keywords': [
+      'mix'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "83881",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '83881',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 2,
-    "rects": [
+    'pageNumber': 2,
+    'rects': [
       [
         379.05169311500003,
         258.250198974,
@@ -3338,19 +3338,19 @@ export const ANNOTATIONS = [
         268.250198974
       ]
     ],
-    "keywords": [
-      "(NEB)"
+    'keywords': [
+      '(NEB)'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112112985",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112112985',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 2,
-    "rects": [
+    'pageNumber': 2,
+    'rects': [
       [
         330.111693115,
         245.750198974,
@@ -3358,19 +3358,19 @@ export const ANNOTATIONS = [
         255.750198974
       ]
     ],
-    "keywords": [
-      "for 2"
+    'keywords': [
+      'for 2'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "105265589",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '105265589',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 2,
-    "rects": [
+    'pageNumber': 2,
+    'rects': [
       [
         351.018693115,
         245.750198974,
@@ -3378,19 +3378,19 @@ export const ANNOTATIONS = [
         255.750198974
       ]
     ],
-    "keywords": [
-      "h at"
+    'keywords': [
+      'h at'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "7200301",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '7200301',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 2,
-    "rects": [
+    'pageNumber': 2,
+    'rects': [
       [
         401.09269311500003,
         120.750198974,
@@ -3398,19 +3398,19 @@ export const ANNOTATIONS = [
         130.750198974
       ]
     ],
-    "keywords": [
-      "ISCU"
+    'keywords': [
+      'ISCU'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112104129",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112104129',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 2,
-    "rects": [
+    'pageNumber': 2,
+    'rects': [
       [
         445.462693115,
         120.750198974,
@@ -3418,19 +3418,19 @@ export const ANNOTATIONS = [
         130.750198974
       ]
     ],
-    "keywords": [
-      "ISCU)"
+    'keywords': [
+      'ISCU)'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112104129",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112104129',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         139.69040085400002,
         96.63020385700001,
@@ -3438,19 +3438,19 @@ export const ANNOTATIONS = [
         106.63020385700001
       ]
     ],
-    "keywords": [
-      "ISCU"
+    'keywords': [
+      'ISCU'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112104129",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112104129',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         68.657900697,
         534.130173339,
@@ -3458,19 +3458,19 @@ export const ANNOTATIONS = [
         544.130173339
       ]
     ],
-    "keywords": [
-      "ISCU,"
+    'keywords': [
+      'ISCU,'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112104129",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112104129',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         323.657897957,
         684.130173339,
@@ -3478,19 +3478,19 @@ export const ANNOTATIONS = [
         694.130173339
       ]
     ],
-    "keywords": [
-      "ISCU,"
+    'keywords': [
+      'ISCU,'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112104129",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112104129',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         333.28827783199995,
         352.87299853499997,
@@ -3498,19 +3498,19 @@ export const ANNOTATIONS = [
         361.37299853499997
       ]
     ],
-    "keywords": [
-      "ISCU"
+    'keywords': [
+      'ISCU'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112104129",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112104129',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 8,
-    "rects": [
+    'pageNumber': 8,
+    'rects': [
       [
         246.7276015290901,
         246.723190917,
@@ -3518,19 +3518,19 @@ export const ANNOTATIONS = [
         256.723190917
       ]
     ],
-    "keywords": [
-      "ISCU"
+    'keywords': [
+      'ISCU'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112104129",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112104129',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 8,
-    "rects": [
+    'pageNumber': 8,
+    'rects': [
       [
         180.305601531,
         196.723190917,
@@ -3538,19 +3538,19 @@ export const ANNOTATIONS = [
         206.723190917
       ]
     ],
-    "keywords": [
-      "ISCU."
+    'keywords': [
+      'ISCU.'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112104129",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112104129',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 8,
-    "rects": [
+    'pageNumber': 8,
+    'rects': [
       [
         440.6283943779099,
         171.72329772900002,
@@ -3558,19 +3558,19 @@ export const ANNOTATIONS = [
         181.72329772900002
       ]
     ],
-    "keywords": [
-      "ISCU,"
+    'keywords': [
+      'ISCU,'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112104129",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112104129',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 8,
-    "rects": [
+    'pageNumber': 8,
+    'rects': [
       [
         521.12639439889,
         159.22329772900002,
@@ -3578,19 +3578,19 @@ export const ANNOTATIONS = [
         169.22329772900002
       ]
     ],
-    "keywords": [
-      "ISCU"
+    'keywords': [
+      'ISCU'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112104129",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112104129',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 8,
-    "rects": [
+    'pageNumber': 8,
+    'rects': [
       [
         323.98201416,
         109.22329772900001,
@@ -3598,19 +3598,19 @@ export const ANNOTATIONS = [
         119.22329772900001
       ]
     ],
-    "keywords": [
-      "ISCU"
+    'keywords': [
+      'ISCU'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112104129",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112104129',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 8,
-    "rects": [
+    'pageNumber': 8,
+    'rects': [
       [
         306.14201416000003,
         96.72329772900001,
@@ -3618,19 +3618,19 @@ export const ANNOTATIONS = [
         106.72329772900001
       ]
     ],
-    "keywords": [
-      "ISCU"
+    'keywords': [
+      'ISCU'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112104129",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112104129',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 2,
-    "rects": [
+    'pageNumber': 2,
+    'rects': [
       [
         427.702693115,
         120.750198974,
@@ -3638,19 +3638,19 @@ export const ANNOTATIONS = [
         132.560198974
       ]
     ],
-    "keywords": [
-      "(Hs"
+    'keywords': [
+      '(Hs'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "945803",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '945803',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 2,
-    "rects": [
+    'pageNumber': 2,
+    'rects': [
       [
         342.045693115,
         83.250198974,
@@ -3658,19 +3658,19 @@ export const ANNOTATIONS = [
         95.060198974
       ]
     ],
-    "keywords": [
-      "(Hs"
+    'keywords': [
+      '(Hs'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "945803",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '945803',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         85.387601531,
         709.130173339,
@@ -3678,19 +3678,19 @@ export const ANNOTATIONS = [
         720.940173339
       ]
     ],
-    "keywords": [
-      "(Hs"
+    'keywords': [
+      '(Hs'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "945803",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '945803',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         236.99595153424704,
         723.352215332,
@@ -3698,19 +3698,19 @@ export const ANNOTATIONS = [
         731.852215332
       ]
     ],
-    "keywords": [
-      "HS,"
+    'keywords': [
+      'HS,'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "945803",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '945803',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 2,
-    "rects": [
+    'pageNumber': 2,
+    'rects': [
       [
         348.422693115,
         108.250198974,
@@ -3718,19 +3718,19 @@ export const ANNOTATIONS = [
         118.250198974
       ]
     ],
-    "keywords": [
-      "NifS"
+    'keywords': [
+      'NifS'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "38331515",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '38331515',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 2,
-    "rects": [
+    'pageNumber': 2,
+    'rects': [
       [
         392.10269311499997,
         108.250198974,
@@ -3738,19 +3738,19 @@ export const ANNOTATIONS = [
         118.250198974
       ]
     ],
-    "keywords": [
-      "NifS)"
+    'keywords': [
+      'NifS)'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "38331515",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '38331515',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         126.99009685099999,
         671.630173339,
@@ -3758,19 +3758,19 @@ export const ANNOTATIONS = [
         681.630173339
       ]
     ],
-    "keywords": [
-      "NifS."
+    'keywords': [
+      'NifS.'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "38331515",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '38331515',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         221.307297607,
         328.789196533,
@@ -3778,19 +3778,19 @@ export const ANNOTATIONS = [
         337.289196533
       ]
     ],
-    "keywords": [
-      "NifS"
+    'keywords': [
+      'NifS'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "38331515",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '38331515',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 2,
-    "rects": [
+    'pageNumber': 2,
+    'rects': [
       [
         372.042693115,
         108.250198974,
@@ -3798,19 +3798,19 @@ export const ANNOTATIONS = [
         120.060198974
       ]
     ],
-    "keywords": [
-      "(Tm"
+    'keywords': [
+      '(Tm'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "40527143",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '40527143',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         112.06509685099999,
         673.440173339,
@@ -3818,19 +3818,19 @@ export const ANNOTATIONS = [
         683.440173339
       ]
     ],
-    "keywords": [
-      "Tm"
+    'keywords': [
+      'Tm'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "40527143",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '40527143',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         207.42679760700003,
         330.32769653300005,
@@ -3838,19 +3838,19 @@ export const ANNOTATIONS = [
         338.82769653300005
       ]
     ],
-    "keywords": [
-      "Tm"
+    'keywords': [
+      'Tm'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "40527143",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '40527143',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 2,
-    "rects": [
+    'pageNumber': 2,
+    'rects': [
       [
         306.141693115,
         83.250198974,
@@ -3864,20 +3864,20 @@ export const ANNOTATIONS = [
         105.750198974
       ]
     ],
-    "keywords": [
-      "doxin-1",
-      "ferre-"
+    'keywords': [
+      'doxin-1',
+      'ferre-'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "837639",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '837639',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         349.66789902700003,
         596.630173339,
@@ -3885,19 +3885,19 @@ export const ANNOTATIONS = [
         606.630173339
       ]
     ],
-    "keywords": [
-      "ferredoxin 1"
+    'keywords': [
+      'ferredoxin 1'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "837639",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '837639',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         476.40951046018006,
         546.630173339,
@@ -3905,19 +3905,19 @@ export const ANNOTATIONS = [
         556.630173339
       ]
     ],
-    "keywords": [
-      "ferredoxin 1"
+    'keywords': [
+      'ferredoxin 1'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "837639",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '837639',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 8,
-    "rects": [
+    'pageNumber': 8,
+    'rects': [
       [
         51.023601531,
         329.0842143550001,
@@ -3931,20 +3931,20 @@ export const ANNOTATIONS = [
         347.58021435500007
       ]
     ],
-    "keywords": [
-      "doxin 1",
-      "ferre-"
+    'keywords': [
+      'doxin 1',
+      'ferre-'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "837639",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '837639',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 2,
-    "rects": [
+    'pageNumber': 2,
+    'rects': [
       [
         360.175693115,
         83.250198974,
@@ -3952,19 +3952,19 @@ export const ANNOTATIONS = [
         93.250198974
       ]
     ],
-    "keywords": [
-      "FDX1)"
+    'keywords': [
+      'FDX1)'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112118686",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112118686',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         51.023601531,
         709.130173339,
@@ -3978,20 +3978,20 @@ export const ANNOTATIONS = [
         731.630173339
       ]
     ],
-    "keywords": [
-      "doxin-2",
-      "ferre-"
+    'keywords': [
+      'doxin-2',
+      'ferre-'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "842386",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '842386',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         306.146510464,
         534.130173339,
@@ -3999,19 +3999,19 @@ export const ANNOTATIONS = [
         544.130173339
       ]
     ],
-    "keywords": [
-      "ferredoxin 2."
+    'keywords': [
+      'ferredoxin 2.'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "842386",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '842386',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 8,
-    "rects": [
+    'pageNumber': 8,
+    'rects': [
       [
         369.18518794199997,
         339.08171435500003,
@@ -4019,19 +4019,19 @@ export const ANNOTATIONS = [
         347.58171435500003
       ]
     ],
-    "keywords": [
-      "ferredoxin 2"
+    'keywords': [
+      'ferredoxin 2'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "842386",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '842386',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         102.757601531,
         709.130173339,
@@ -4039,19 +4039,19 @@ export const ANNOTATIONS = [
         719.130173339
       ]
     ],
-    "keywords": [
-      "FDX2)"
+    'keywords': [
+      'FDX2)'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112125477",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112125477',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 6,
-    "rects": [
+    'pageNumber': 6,
+    'rects': [
       [
         383.42560196100004,
         359.13017333899995,
@@ -4059,19 +4059,19 @@ export const ANNOTATIONS = [
         369.13017333899995
       ]
     ],
-    "keywords": [
-      "FDX2"
+    'keywords': [
+      'FDX2'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112125477",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112125477',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         415.301206457,
         571.630173339,
@@ -4079,19 +4079,19 @@ export const ANNOTATIONS = [
         581.630173339
       ]
     ],
-    "keywords": [
-      "FDX2"
+    'keywords': [
+      'FDX2'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112125477",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112125477',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 8,
-    "rects": [
+    'pageNumber': 8,
+    'rects': [
       [
         390.59939438362994,
         234.22329772900002,
@@ -4099,19 +4099,19 @@ export const ANNOTATIONS = [
         244.22329772900002
       ]
     ],
-    "keywords": [
-      "FDX2"
+    'keywords': [
+      'FDX2'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112125477",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112125477',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         176.67660153100007,
         684.130173339,
@@ -4119,19 +4119,19 @@ export const ANNOTATIONS = [
         694.130173339
       ]
     ],
-    "keywords": [
-      "apo"
+    'keywords': [
+      'apo'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "109951515",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '109951515',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         223.4676015271801,
         659.130173339,
@@ -4139,19 +4139,19 @@ export const ANNOTATIONS = [
         669.130173339
       ]
     ],
-    "keywords": [
-      "apo"
+    'keywords': [
+      'apo'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "109951515",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '109951515',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         185.44960153482995,
         634.130173339,
@@ -4159,19 +4159,19 @@ export const ANNOTATIONS = [
         644.130173339
       ]
     ],
-    "keywords": [
-      "Apo"
+    'keywords': [
+      'Apo'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "109951515",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '109951515',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         164.685501531,
         236.240203857,
@@ -4179,19 +4179,19 @@ export const ANNOTATIONS = [
         247.240203857
       ]
     ],
-    "keywords": [
-      "apo"
+    'keywords': [
+      'apo'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "109951515",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '109951515',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         274.5174008539999,
         96.63020385700001,
@@ -4199,19 +4199,19 @@ export const ANNOTATIONS = [
         106.63020385700001
       ]
     ],
-    "keywords": [
-      "apo"
+    'keywords': [
+      'apo'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "109951515",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '109951515',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         343.409693115,
         276.563598632,
@@ -4219,19 +4219,19 @@ export const ANNOTATIONS = [
         287.563598632
       ]
     ],
-    "keywords": [
-      "apo"
+    'keywords': [
+      'apo'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "109951515",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '109951515',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         403.41508667,
         211.95359863200002,
@@ -4239,19 +4239,19 @@ export const ANNOTATIONS = [
         221.95359863200002
       ]
     ],
-    "keywords": [
-      "Apo"
+    'keywords': [
+      'Apo'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "109951515",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '109951515',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         128.348101531,
         338.789196533,
@@ -4259,19 +4259,19 @@ export const ANNOTATIONS = [
         347.289196533
       ]
     ],
-    "keywords": [
-      "apo"
+    'keywords': [
+      'apo'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "109951515",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '109951515',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 6,
-    "rects": [
+    'pageNumber': 6,
+    'rects': [
       [
         529.5716019552802,
         371.63017333899995,
@@ -4279,19 +4279,19 @@ export const ANNOTATIONS = [
         381.63017333899995
       ]
     ],
-    "keywords": [
-      "apo"
+    'keywords': [
+      'apo'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "109951515",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '109951515',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 6,
-    "rects": [
+    'pageNumber': 6,
+    'rects': [
       [
         317.521790771,
         209.13020385699997,
@@ -4299,19 +4299,19 @@ export const ANNOTATIONS = [
         219.13020385699997
       ]
     ],
-    "keywords": [
-      "apo"
+    'keywords': [
+      'apo'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "109951515",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '109951515',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 6,
-    "rects": [
+    'pageNumber': 6,
+    'rects': [
       [
         396.0877907710001,
         96.63020385699998,
@@ -4319,19 +4319,19 @@ export const ANNOTATIONS = [
         106.63020385699998
       ]
     ],
-    "keywords": [
-      "apo"
+    'keywords': [
+      'apo'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "109951515",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '109951515',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         331.577899027,
         596.630173339,
@@ -4339,19 +4339,19 @@ export const ANNOTATIONS = [
         606.630173339
       ]
     ],
-    "keywords": [
-      "apo"
+    'keywords': [
+      'apo'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "109951515",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '109951515',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         397.551206457,
         571.630173339,
@@ -4359,19 +4359,19 @@ export const ANNOTATIONS = [
         581.630173339
       ]
     ],
-    "keywords": [
-      "apo"
+    'keywords': [
+      'apo'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "109951515",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '109951515',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 8,
-    "rects": [
+    'pageNumber': 8,
+    'rects': [
       [
         92.112601531,
         339.08021435500007,
@@ -4379,19 +4379,19 @@ export const ANNOTATIONS = [
         347.58021435500007
       ]
     ],
-    "keywords": [
-      "apo"
+    'keywords': [
+      'apo'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "109951515",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '109951515',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 8,
-    "rects": [
+    'pageNumber': 8,
+    'rects': [
       [
         254.47960153099987,
         339.08021435500007,
@@ -4399,19 +4399,19 @@ export const ANNOTATIONS = [
         347.58021435500007
       ]
     ],
-    "keywords": [
-      "apo"
+    'keywords': [
+      'apo'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "109951515",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '109951515',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 8,
-    "rects": [
+    'pageNumber': 8,
+    'rects': [
       [
         354.522687942,
         339.08171435500003,
@@ -4419,19 +4419,19 @@ export const ANNOTATIONS = [
         347.58171435500003
       ]
     ],
-    "keywords": [
-      "apo"
+    'keywords': [
+      'apo'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "109951515",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '109951515',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 8,
-    "rects": [
+    'pageNumber': 8,
+    'rects': [
       [
         140.88060153100005,
         259.223190917,
@@ -4439,19 +4439,19 @@ export const ANNOTATIONS = [
         269.223190917
       ]
     ],
-    "keywords": [
-      "apo"
+    'keywords': [
+      'apo'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "109951515",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '109951515',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 8,
-    "rects": [
+    'pageNumber': 8,
+    'rects': [
       [
         253.88260154245017,
         209.223190917,
@@ -4459,19 +4459,19 @@ export const ANNOTATIONS = [
         219.223190917
       ]
     ],
-    "keywords": [
-      "apo"
+    'keywords': [
+      'apo'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "109951515",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '109951515',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 8,
-    "rects": [
+    'pageNumber': 8,
+    'rects': [
       [
         161.25060153099997,
         196.723190917,
@@ -4479,19 +4479,19 @@ export const ANNOTATIONS = [
         206.723190917
       ]
     ],
-    "keywords": [
-      "apo"
+    'keywords': [
+      'apo'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "109951515",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '109951515',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 8,
-    "rects": [
+    'pageNumber': 8,
+    'rects': [
       [
         51.023601531,
         184.223190917,
@@ -4499,19 +4499,19 @@ export const ANNOTATIONS = [
         194.223190917
       ]
     ],
-    "keywords": [
-      "apo"
+    'keywords': [
+      'apo'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "109951515",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '109951515',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 8,
-    "rects": [
+    'pageNumber': 8,
+    'rects': [
       [
         373.08939438362995,
         234.22329772900002,
@@ -4519,19 +4519,19 @@ export const ANNOTATIONS = [
         244.22329772900002
       ]
     ],
-    "keywords": [
-      "apo"
+    'keywords': [
+      'apo'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "109951515",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '109951515',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 8,
-    "rects": [
+    'pageNumber': 8,
+    'rects': [
       [
         306.14201416000003,
         109.22329772900001,
@@ -4539,19 +4539,19 @@ export const ANNOTATIONS = [
         119.22329772900001
       ]
     ],
-    "keywords": [
-      "apo"
+    'keywords': [
+      'apo'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "109951515",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '109951515',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         67.84960153482,
         671.630173339,
@@ -4559,19 +4559,19 @@ export const ANNOTATIONS = [
         681.630173339
       ]
     ],
-    "keywords": [
-      "mM"
+    'keywords': [
+      'mM'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "17884",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '17884',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         123.66160153864001,
         671.630173339,
@@ -4579,19 +4579,19 @@ export const ANNOTATIONS = [
         681.630173339
       ]
     ],
-    "keywords": [
-      "mM"
+    'keywords': [
+      'mM'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "17884",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '17884',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         240.3726015386399,
         671.630173339,
@@ -4599,19 +4599,19 @@ export const ANNOTATIONS = [
         681.630173339
       ]
     ],
-    "keywords": [
-      "mM"
+    'keywords': [
+      'mM'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "17884",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '17884',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         86.30760152718,
         659.130173339,
@@ -4619,19 +4619,19 @@ export const ANNOTATIONS = [
         669.130173339
       ]
     ],
-    "keywords": [
-      "mM"
+    'keywords': [
+      'mM'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "17884",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '17884',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         76.61280322199998,
         396.63020385699997,
@@ -4639,19 +4639,19 @@ export const ANNOTATIONS = [
         406.63020385699997
       ]
     ],
-    "keywords": [
-      "mM"
+    'keywords': [
+      'mM'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "17884",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '17884',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         153.194803222,
         396.63020385699997,
@@ -4659,19 +4659,19 @@ export const ANNOTATIONS = [
         406.63020385699997
       ]
     ],
-    "keywords": [
-      "mM"
+    'keywords': [
+      'mM'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "17884",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '17884',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         94.90980321817997,
         346.63020385699997,
@@ -4679,19 +4679,19 @@ export const ANNOTATIONS = [
         356.63020385699997
       ]
     ],
-    "keywords": [
-      "mM"
+    'keywords': [
+      'mM'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "17884",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '17884',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         168.53880321436003,
         346.63020385699997,
@@ -4699,19 +4699,19 @@ export const ANNOTATIONS = [
         356.63020385699997
       ]
     ],
-    "keywords": [
-      "mM"
+    'keywords': [
+      'mM'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "17884",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '17884',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         235.0538032448999,
         309.13020385699997,
@@ -4719,19 +4719,19 @@ export const ANNOTATIONS = [
         319.13020385699997
       ]
     ],
-    "keywords": [
-      "mM"
+    'keywords': [
+      'mM'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "17884",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '17884',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         68.06980322199998,
         296.63020385699997,
@@ -4739,19 +4739,19 @@ export const ANNOTATIONS = [
         306.63020385699997
       ]
     ],
-    "keywords": [
-      "mM"
+    'keywords': [
+      'mM'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "17884",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '17884',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         128.63080322199994,
         284.13020385699997,
@@ -4759,19 +4759,19 @@ export const ANNOTATIONS = [
         294.13020385699997
       ]
     ],
-    "keywords": [
-      "mM"
+    'keywords': [
+      'mM'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "17884",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '17884',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         203.30480321818,
         284.13020385699997,
@@ -4779,19 +4779,19 @@ export const ANNOTATIONS = [
         294.13020385699997
       ]
     ],
-    "keywords": [
-      "mM"
+    'keywords': [
+      'mM'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "17884",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '17884',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         222.84760153673005,
         196.63020385700003,
@@ -4799,19 +4799,19 @@ export const ANNOTATIONS = [
         206.63020385700003
       ]
     ],
-    "keywords": [
-      "mM"
+    'keywords': [
+      'mM'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "17884",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '17884',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         231.68560154053998,
         184.13020385700003,
@@ -4819,19 +4819,19 @@ export const ANNOTATIONS = [
         194.13020385700003
       ]
     ],
-    "keywords": [
-      "mM"
+    'keywords': [
+      'mM'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "17884",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '17884',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         66.421611328,
         171.63020385700003,
@@ -4839,19 +4839,19 @@ export const ANNOTATIONS = [
         181.63020385700003
       ]
     ],
-    "keywords": [
-      "mM"
+    'keywords': [
+      'mM'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "17884",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '17884',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         137.25739886399995,
         146.63020385700003,
@@ -4859,19 +4859,19 @@ export const ANNOTATIONS = [
         156.63020385700003
       ]
     ],
-    "keywords": [
-      "mM"
+    'keywords': [
+      'mM'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "17884",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '17884',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         211.92439886400004,
         146.63020385700003,
@@ -4879,19 +4879,19 @@ export const ANNOTATIONS = [
         156.63020385700003
       ]
     ],
-    "keywords": [
-      "mM"
+    'keywords': [
+      'mM'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "17884",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '17884',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         223.81539887735013,
         121.63020385700001,
@@ -4899,19 +4899,19 @@ export const ANNOTATIONS = [
         131.63020385700003
       ]
     ],
-    "keywords": [
-      "mM"
+    'keywords': [
+      'mM'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "17884",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '17884',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         184.41640087306996,
         84.13020385700001,
@@ -4919,19 +4919,19 @@ export const ANNOTATIONS = [
         94.13020385700001
       ]
     ],
-    "keywords": [
-      "mM"
+    'keywords': [
+      'mM'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "17884",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '17884',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         251.10340087880013,
         71.63020385700001,
@@ -4939,19 +4939,19 @@ export const ANNOTATIONS = [
         81.63020385700001
       ]
     ],
-    "keywords": [
-      "mM"
+    'keywords': [
+      'mM'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "17884",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '17884',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         330.767911132,
         721.630196228,
@@ -4959,19 +4959,19 @@ export const ANNOTATIONS = [
         731.630196228
       ]
     ],
-    "keywords": [
-      "mM"
+    'keywords': [
+      'mM'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "17884",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '17884',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         489.95969311500016,
         580.904587402,
@@ -4979,19 +4979,19 @@ export const ANNOTATIONS = [
         590.904587402
       ]
     ],
-    "keywords": [
-      "mM"
+    'keywords': [
+      'mM'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "17884",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '17884',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         324.45569311118,
         568.404587402,
@@ -4999,19 +4999,19 @@ export const ANNOTATIONS = [
         578.404587402
       ]
     ],
-    "keywords": [
-      "mM"
+    'keywords': [
+      'mM'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "17884",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '17884',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         320.34400999999997,
         365.179093017,
@@ -5019,19 +5019,19 @@ export const ANNOTATIONS = [
         375.179093017
       ]
     ],
-    "keywords": [
-      "mM"
+    'keywords': [
+      'mM'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "17884",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '17884',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         398.99900999999994,
         365.179093017,
@@ -5039,19 +5039,19 @@ export const ANNOTATIONS = [
         375.179093017
       ]
     ],
-    "keywords": [
-      "mM"
+    'keywords': [
+      'mM'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "17884",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '17884',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         346.41469310737,
         224.45359863200002,
@@ -5059,19 +5059,19 @@ export const ANNOTATIONS = [
         234.45359863200002
       ]
     ],
-    "keywords": [
-      "mm)"
+    'keywords': [
+      'mm)'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "17884",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '17884',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         425.95769309973997,
         224.45359863200002,
@@ -5079,19 +5079,19 @@ export const ANNOTATIONS = [
         234.45359863200002
       ]
     ],
-    "keywords": [
-      "mM"
+    'keywords': [
+      'mM'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "17884",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '17884',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         500.4916930959199,
         224.45359863200002,
@@ -5099,19 +5099,19 @@ export const ANNOTATIONS = [
         234.45359863200002
       ]
     ],
-    "keywords": [
-      "mM"
+    'keywords': [
+      'mM'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "17884",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '17884',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         442.02869312643,
         108.728096618,
@@ -5119,19 +5119,19 @@ export const ANNOTATIONS = [
         118.728096618
       ]
     ],
-    "keywords": [
-      "mM)"
+    'keywords': [
+      'mM)'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "17884",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '17884',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         322.14569311500003,
         96.228096618,
@@ -5139,19 +5139,19 @@ export const ANNOTATIONS = [
         106.228096618
       ]
     ],
-    "keywords": [
-      "mM)"
+    'keywords': [
+      'mM)'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "17884",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '17884',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         456.50269311500017,
         96.228096618,
@@ -5159,19 +5159,19 @@ export const ANNOTATIONS = [
         106.228096618
       ]
     ],
-    "keywords": [
-      "mM"
+    'keywords': [
+      'mM'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "17884",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '17884',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         220.41525764293357,
         71.43419976800001,
@@ -5179,19 +5179,19 @@ export const ANNOTATIONS = [
         79.93419976800001
       ]
     ],
-    "keywords": [
-      "mM"
+    'keywords': [
+      'mM'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "17884",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '17884',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 8,
-    "rects": [
+    'pageNumber': 8,
+    'rects': [
       [
         104.72745158287549,
         329.0842143550001,
@@ -5199,19 +5199,19 @@ export const ANNOTATIONS = [
         337.5842143550001
       ]
     ],
-    "keywords": [
-      "mM"
+    'keywords': [
+      'mM'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "17884",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '17884',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 8,
-    "rects": [
+    'pageNumber': 8,
+    'rects': [
       [
         171.130301634751,
         329.0842143550001,
@@ -5219,19 +5219,19 @@ export const ANNOTATIONS = [
         337.5842143550001
       ]
     ],
-    "keywords": [
-      "mM"
+    'keywords': [
+      'mM'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "17884",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '17884',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 8,
-    "rects": [
+    'pageNumber': 8,
+    'rects': [
       [
         421.73339437217993,
         246.72329772900002,
@@ -5239,19 +5239,19 @@ export const ANNOTATIONS = [
         256.723297729
       ]
     ],
-    "keywords": [
-      "mM)"
+    'keywords': [
+      'mM)'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "17884",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '17884',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         199.8176015386401,
         671.630173339,
@@ -5259,19 +5259,19 @@ export const ANNOTATIONS = [
         681.630173339
       ]
     ],
-    "keywords": [
-      "urea"
+    'keywords': [
+      'urea'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "41595042",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '41595042',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         163.63260153482997,
         634.130173339,
@@ -5279,19 +5279,19 @@ export const ANNOTATIONS = [
         644.130173339
       ]
     ],
-    "keywords": [
-      "urea."
+    'keywords': [
+      'urea.'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "41595042",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '41595042',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         268.55740090548994,
         84.13020385700001,
@@ -5299,19 +5299,19 @@ export const ANNOTATIONS = [
         94.13020385700001
       ]
     ],
-    "keywords": [
-      "urea,"
+    'keywords': [
+      'urea,'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "41595042",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '41595042',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         132.29760152718,
         659.130173339,
@@ -5319,19 +5319,19 @@ export const ANNOTATIONS = [
         669.130173339
       ]
     ],
-    "keywords": [
-      "pH"
+    'keywords': [
+      'pH'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "14340099",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '14340099',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         201.122803222,
         396.63020385699997,
@@ -5339,19 +5339,19 @@ export const ANNOTATIONS = [
         406.63020385699997
       ]
     ],
-    "keywords": [
-      "pH"
+    'keywords': [
+      'pH'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "14340099",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '14340099',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         51.02080322199998,
         334.13020385699997,
@@ -5359,19 +5359,19 @@ export const ANNOTATIONS = [
         344.13020385699997
       ]
     ],
-    "keywords": [
-      "pH"
+    'keywords': [
+      'pH'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "14340099",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '14340099',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         112.21880322199999,
         296.63020385699997,
@@ -5379,19 +5379,19 @@ export const ANNOTATIONS = [
         306.63020385699997
       ]
     ],
-    "keywords": [
-      "pH"
+    'keywords': [
+      'pH'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "14340099",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '14340099',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         249.98980321818004,
         284.13020385699997,
@@ -5399,19 +5399,19 @@ export const ANNOTATIONS = [
         294.13020385699997
       ]
     ],
-    "keywords": [
-      "pH"
+    'keywords': [
+      'pH'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "14340099",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '14340099',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         258.60139887163007,
         146.63020385700003,
@@ -5419,19 +5419,19 @@ export const ANNOTATIONS = [
         156.63020385700003
       ]
     ],
-    "keywords": [
-      "pH"
+    'keywords': [
+      'pH'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "14340099",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '14340099',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         371.30869311118,
         568.404587402,
@@ -5439,19 +5439,19 @@ export const ANNOTATIONS = [
         578.404587402
       ]
     ],
-    "keywords": [
-      "pH"
+    'keywords': [
+      'pH'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "14340099",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '14340099',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         448.2890099999999,
         365.179093017,
@@ -5459,19 +5459,19 @@ export const ANNOTATIONS = [
         375.179093017
       ]
     ],
-    "keywords": [
-      "pH"
+    'keywords': [
+      'pH'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "14340099",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '14340099',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         306.141693115,
         211.95359863200002,
@@ -5479,19 +5479,19 @@ export const ANNOTATIONS = [
         221.95359863200002
       ]
     ],
-    "keywords": [
-      "pH"
+    'keywords': [
+      'pH'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "14340099",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '14340099',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         328.086693115,
         83.728096618,
@@ -5499,19 +5499,19 @@ export const ANNOTATIONS = [
         93.728096618
       ]
     ],
-    "keywords": [
-      "pH"
+    'keywords': [
+      'pH'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "14340099",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '14340099',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 8,
-    "rects": [
+    'pageNumber': 8,
+    'rects': [
       [
         212.797301634751,
         329.0842143550001,
@@ -5519,19 +5519,19 @@ export const ANNOTATIONS = [
         337.5842143550001
       ]
     ],
-    "keywords": [
-      "pH"
+    'keywords': [
+      'pH'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "14340099",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '14340099',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         185.44960153482995,
         634.130173339,
@@ -5539,19 +5539,19 @@ export const ANNOTATIONS = [
         644.130173339
       ]
     ],
-    "keywords": [
-      "Apo protein"
+    'keywords': [
+      'Apo protein'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "394678",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '394678',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         51.020400854,
         84.13020385700001,
@@ -5565,20 +5565,20 @@ export const ANNOTATIONS = [
         106.63020385700001
       ]
     ],
-    "keywords": [
-      "protein",
-      "apo "
+    'keywords': [
+      'protein',
+      'apo '
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "394678",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '394678',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 6,
-    "rects": [
+    'pageNumber': 6,
+    'rects': [
       [
         396.0877907710001,
         96.63020385699998,
@@ -5586,19 +5586,19 @@ export const ANNOTATIONS = [
         106.63020385699998
       ]
     ],
-    "keywords": [
-      "apo protein"
+    'keywords': [
+      'apo protein'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "394678",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '394678',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         161.81560153482,
         584.130173339,
@@ -5606,19 +5606,19 @@ export const ANNOTATIONS = [
         594.130173339
       ]
     ],
-    "keywords": [
-      "GLRX2"
+    'keywords': [
+      'GLRX2'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112109634",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112109634',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         158.83739888688999,
         134.13020385700003,
@@ -5626,19 +5626,19 @@ export const ANNOTATIONS = [
         144.13020385700003
       ]
     ],
-    "keywords": [
-      "GLRX2"
+    'keywords': [
+      'GLRX2'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112109634",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112109634',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         369.765897957,
         684.130173339,
@@ -5646,19 +5646,19 @@ export const ANNOTATIONS = [
         694.130173339
       ]
     ],
-    "keywords": [
-      "GLRX2"
+    'keywords': [
+      'GLRX2'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112109634",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112109634',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         333.28827783199995,
         365.40199853499996,
@@ -5666,19 +5666,19 @@ export const ANNOTATIONS = [
         373.90199853499996
       ]
     ],
-    "keywords": [
-      "GLRX2"
+    'keywords': [
+      'GLRX2'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112109634",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112109634',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 8,
-    "rects": [
+    'pageNumber': 8,
+    'rects': [
       [
         103.98560153099999,
         196.723190917,
@@ -5686,19 +5686,19 @@ export const ANNOTATIONS = [
         206.723190917
       ]
     ],
-    "keywords": [
-      "(GLRX2)"
+    'keywords': [
+      '(GLRX2)'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112109634",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112109634',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 8,
-    "rects": [
+    'pageNumber': 8,
+    'rects': [
       [
         69.913601531,
         184.223190917,
@@ -5706,19 +5706,19 @@ export const ANNOTATIONS = [
         194.223190917
       ]
     ],
-    "keywords": [
-      "GLRX2"
+    'keywords': [
+      'GLRX2'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112109634",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112109634',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         271.843601531,
         571.630173339,
@@ -5726,19 +5726,19 @@ export const ANNOTATIONS = [
         581.630173339
       ]
     ],
-    "keywords": [
-      "His6"
+    'keywords': [
+      'His6'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "42007118",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '42007118',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         63.298911131999965,
         546.630173339,
@@ -5746,19 +5746,19 @@ export const ANNOTATIONS = [
         556.630173339
       ]
     ],
-    "keywords": [
-      "Drs."
+    'keywords': [
+      'Drs.'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "945829",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '945829',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         51.02391113199997,
         496.63017333899995,
@@ -5766,19 +5766,19 @@ export const ANNOTATIONS = [
         506.63017333899995
       ]
     ],
-    "keywords": [
-      "in 10"
+    'keywords': [
+      'in 10'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "109180051",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '109180051',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         76.07291113199997,
         496.63017333899995,
@@ -5786,19 +5786,19 @@ export const ANNOTATIONS = [
         506.63017333899995
       ]
     ],
-    "keywords": [
-      "mL"
+    'keywords': [
+      'mL'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "4326471",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '4326471',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         275.02280320675015,
         409.13020385699997,
@@ -5806,19 +5806,19 @@ export const ANNOTATIONS = [
         419.13020385699997
       ]
     ],
-    "keywords": [
-      "mL"
+    'keywords': [
+      'mL'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "4326471",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '4326471',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         359.02269311882003,
         211.95359863200002,
@@ -5826,19 +5826,19 @@ export const ANNOTATIONS = [
         221.95359863200002
       ]
     ],
-    "keywords": [
-      "mL"
+    'keywords': [
+      'mL'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "4326471",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '4326471',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         416.41869311500005,
         96.228096618,
@@ -5846,19 +5846,19 @@ export const ANNOTATIONS = [
         106.228096618
       ]
     ],
-    "keywords": [
-      "mL"
+    'keywords': [
+      'mL'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "4326471",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '4326471',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         423.576693115,
         83.728096618,
@@ -5866,19 +5866,19 @@ export const ANNOTATIONS = [
         93.728096618
       ]
     ],
-    "keywords": [
-      "mL)"
+    'keywords': [
+      'mL)'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "4326471",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '4326471',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         167.82091111483004,
         496.63017333899995,
@@ -5886,19 +5886,19 @@ export const ANNOTATIONS = [
         506.63017333899995
       ]
     ],
-    "keywords": [
-      "(LB)"
+    'keywords': [
+      '(LB)'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "42542",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '42542',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         139.25391112818,
         471.63017333899995,
@@ -5906,19 +5906,19 @@ export const ANNOTATIONS = [
         481.63017333899995
       ]
     ],
-    "keywords": [
-      "LB"
+    'keywords': [
+      'LB'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "42542",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '42542',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         77.83291112817996,
         471.63017333899995,
@@ -5926,19 +5926,19 @@ export const ANNOTATIONS = [
         481.63017333899995
       ]
     ],
-    "keywords": [
-      "to 3"
+    'keywords': [
+      'to 3'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112598213",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112598213',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         254.90680324107012,
         434.13020385699997,
@@ -5946,19 +5946,19 @@ export const ANNOTATIONS = [
         444.13020385699997
       ]
     ],
-    "keywords": [
-      "cell"
+    'keywords': [
+      'cell'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "1057",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '1057',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         168.92280322200003,
         421.63020385699997,
@@ -5966,19 +5966,19 @@ export const ANNOTATIONS = [
         431.63020385699997
       ]
     ],
-    "keywords": [
-      "Cell"
+    'keywords': [
+      'Cell'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "1057",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '1057',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         154.69580321819,
         409.13020385699997,
@@ -5986,19 +5986,19 @@ export const ANNOTATIONS = [
         419.13020385699997
       ]
     ],
-    "keywords": [
-      "for 15"
+    'keywords': [
+      'for 15'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "101073534",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '101073534',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         250.57980321438012,
         409.13020385699997,
@@ -6006,19 +6006,19 @@ export const ANNOTATIONS = [
         419.13020385699997
       ]
     ],
-    "keywords": [
-      "in 30"
+    'keywords': [
+      'in 30'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "109182406",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '109182406',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         68.55080322199998,
         384.13020385699997,
@@ -6026,19 +6026,19 @@ export const ANNOTATIONS = [
         394.13020385699997
       ]
     ],
-    "keywords": [
-      "of a"
+    'keywords': [
+      'of a'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "18290",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '18290',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         51.024298095000034,
         571.630173339,
@@ -6046,19 +6046,19 @@ export const ANNOTATIONS = [
         581.630173339
       ]
     ],
-    "keywords": [
-      "of a"
+    'keywords': [
+      'of a'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "18290",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '18290',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         423.8995099127201,
         346.63017333899995,
@@ -6066,19 +6066,19 @@ export const ANNOTATIONS = [
         356.63017333899995
       ]
     ],
-    "keywords": [
-      "of a"
+    'keywords': [
+      'of a'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "18290",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '18290',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         138.93380110900006,
         318.793196533,
@@ -6086,19 +6086,19 @@ export const ANNOTATIONS = [
         327.293196533
       ]
     ],
-    "keywords": [
-      "of a"
+    'keywords': [
+      'of a'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "18290",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '18290',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         164.020803222,
         334.13020385699997,
@@ -6106,19 +6106,19 @@ export const ANNOTATIONS = [
         344.13020385699997
       ]
     ],
-    "keywords": [
-      "a 12%"
+    'keywords': [
+      'a 12%'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "18826146",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '18826146',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         241.15980322200005,
         334.13020385699997,
@@ -6126,19 +6126,19 @@ export const ANNOTATIONS = [
         344.13020385699997
       ]
     ],
-    "keywords": [
-      "gel"
+    'keywords': [
+      'gel'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112592909",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112592909',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         179.45680322199996,
         321.63020385699997,
@@ -6146,19 +6146,19 @@ export const ANNOTATIONS = [
         331.63020385699997
       ]
     ],
-    "keywords": [
-      "Blue"
+    'keywords': [
+      'Blue'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "726381",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '726381',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         272.1268032239098,
         321.63020385699997,
@@ -6166,19 +6166,19 @@ export const ANNOTATIONS = [
         331.63020385699997
       ]
     ],
-    "keywords": [
-      "S1)."
+    'keywords': [
+      'S1).'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "41324498",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '41324498',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 8,
-    "rects": [
+    'pageNumber': 8,
+    'rects': [
       [
         390.94539439506997,
         209.22329772900002,
@@ -6186,19 +6186,19 @@ export const ANNOTATIONS = [
         219.22329772900002
       ]
     ],
-    "keywords": [
-      "S1)"
+    'keywords': [
+      'S1)'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "41324498",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '41324498',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         155.89480323345998,
         309.13020385699997,
@@ -6206,19 +6206,19 @@ export const ANNOTATIONS = [
         319.13020385699997
       ]
     ],
-    "keywords": [
-      "at 4"
+    'keywords': [
+      'at 4'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "385253",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '385253',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         273.88480322199996,
         271.63020385699997,
@@ -6226,19 +6226,19 @@ export const ANNOTATIONS = [
         281.63020385699997
       ]
     ],
-    "keywords": [
-      "nm,"
+    'keywords': [
+      'nm,'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "50798",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '50798',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         485.30608667763,
         186.95359863200002,
@@ -6246,19 +6246,19 @@ export const ANNOTATIONS = [
         196.95359863200002
       ]
     ],
-    "keywords": [
-      "nm"
+    'keywords': [
+      'nm'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "50798",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '50798',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         256.67209685100005,
         659.130173339,
@@ -6266,19 +6266,19 @@ export const ANNOTATIONS = [
         669.130173339
       ]
     ],
-    "keywords": [
-      "nm"
+    'keywords': [
+      'nm'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "50798",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '50798',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         360.95950363699995,
         671.630173339,
@@ -6286,19 +6286,19 @@ export const ANNOTATIONS = [
         681.630173339
       ]
     ],
-    "keywords": [
-      "nm"
+    'keywords': [
+      'nm'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "50798",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '50798',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         345.91950564225,
         534.130173339,
@@ -6306,19 +6306,19 @@ export const ANNOTATIONS = [
         544.130173339
       ]
     ],
-    "keywords": [
-      "nm"
+    'keywords': [
+      'nm'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "50798",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '50798',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         124.42890666082,
         459.13017333899995,
@@ -6326,19 +6326,19 @@ export const ANNOTATIONS = [
         469.13017333899995
       ]
     ],
-    "keywords": [
-      "nm"
+    'keywords': [
+      'nm'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "50798",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '50798',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         66.5202076299625,
         91.426199768,
@@ -6346,19 +6346,19 @@ export const ANNOTATIONS = [
         99.926199768
       ]
     ],
-    "keywords": [
-      "nm."
+    'keywords': [
+      'nm.'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "50798",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '50798',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 8,
-    "rects": [
+    'pageNumber': 8,
+    'rects': [
       [
         80.79860152337,
         171.723190917,
@@ -6366,19 +6366,19 @@ export const ANNOTATIONS = [
         181.723190917
       ]
     ],
-    "keywords": [
-      "nm"
+    'keywords': [
+      'nm'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "50798",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '50798',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 8,
-    "rects": [
+    'pageNumber': 8,
+    'rects': [
       [
         132.27140307599998,
         109.22329772900001,
@@ -6386,19 +6386,19 @@ export const ANNOTATIONS = [
         119.22329772900001
       ]
     ],
-    "keywords": [
-      "nm"
+    'keywords': [
+      'nm'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "50798",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '50798',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 8,
-    "rects": [
+    'pageNumber': 8,
+    'rects': [
       [
         115.71440307599997,
         96.72329772900001,
@@ -6406,19 +6406,19 @@ export const ANNOTATIONS = [
         106.72329772900001
       ]
     ],
-    "keywords": [
-      "nm"
+    'keywords': [
+      'nm'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "50798",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '50798',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         262.4617,
         189.58820385700002,
@@ -6432,20 +6432,20 @@ export const ANNOTATIONS = [
         196.58820385700002
       ]
     ],
-    "keywords": [
-      "3+",
-      "Fe"
+    'keywords': [
+      '3+',
+      'Fe'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "44173",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '44173',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         280.778411865,
         77.088196228,
@@ -6459,20 +6459,20 @@ export const ANNOTATIONS = [
         84.088196228
       ]
     ],
-    "keywords": [
-      "3+",
-      "Fe"
+    'keywords': [
+      '3+',
+      'Fe'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "44173",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '44173',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         232.40040087880016,
         71.63020385700001,
@@ -6480,19 +6480,19 @@ export const ANNOTATIONS = [
         81.63020385700001
       ]
     ],
-    "keywords": [
-      "to 1"
+    'keywords': [
+      'to 1'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "108969922",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '108969922',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         306.14391113199997,
         721.630196228,
@@ -6500,19 +6500,19 @@ export const ANNOTATIONS = [
         731.630196228
       ]
     ],
-    "keywords": [
-      "and 1"
+    'keywords': [
+      'and 1'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "218973",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '218973',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         421.00539941399995,
         671.630112304,
@@ -6520,19 +6520,19 @@ export const ANNOTATIONS = [
         681.630112304
       ]
     ],
-    "keywords": [
-      "total"
+    'keywords': [
+      'total'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "543623",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '543623',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         383.638399414,
         634.130112304,
@@ -6540,19 +6540,19 @@ export const ANNOTATIONS = [
         644.130112304
       ]
     ],
-    "keywords": [
-      "iron"
+    'keywords': [
+      'iron'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "18252730",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '18252730',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         235.68960153862,
         684.130173339,
@@ -6560,19 +6560,19 @@ export const ANNOTATIONS = [
         694.130173339
       ]
     ],
-    "keywords": [
-      "iron"
+    'keywords': [
+      'iron'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "18252730",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '18252730',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         497.34650563463003,
         396.63017333899995,
@@ -6580,19 +6580,19 @@ export const ANNOTATIONS = [
         406.63017333899995
       ]
     ],
-    "keywords": [
-      "iron"
+    'keywords': [
+      'iron'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "18252730",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '18252730',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         306.141693115,
         543.404587402,
@@ -6600,19 +6600,19 @@ export const ANNOTATIONS = [
         553.404587402
       ]
     ],
-    "keywords": [
-      "EPR"
+    'keywords': [
+      'EPR'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "937332",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '937332',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         525.8986931264601,
         543.404587402,
@@ -6620,19 +6620,19 @@ export const ANNOTATIONS = [
         553.404587402
       ]
     ],
-    "keywords": [
-      "EPR"
+    'keywords': [
+      'EPR'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "937332",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '937332',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         472.46969311500004,
         480.90458740199995,
@@ -6640,19 +6640,19 @@ export const ANNOTATIONS = [
         490.90458740199995
       ]
     ],
-    "keywords": [
-      "EPR"
+    'keywords': [
+      'EPR'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "937332",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '937332',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         145.22609685481996,
         634.130173339,
@@ -6660,19 +6660,19 @@ export const ANNOTATIONS = [
         644.130173339
       ]
     ],
-    "keywords": [
-      "EPR"
+    'keywords': [
+      'EPR'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "937332",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '937332',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         132.43929809500003,
         584.130173339,
@@ -6680,19 +6680,19 @@ export const ANNOTATIONS = [
         594.130173339
       ]
     ],
-    "keywords": [
-      "EPR"
+    'keywords': [
+      'EPR'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "937332",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '937332',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         81.011601531,
         92.022198242,
@@ -6700,19 +6700,19 @@ export const ANNOTATIONS = [
         100.522198242
       ]
     ],
-    "keywords": [
-      "EPR"
+    'keywords': [
+      'EPR'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "937332",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '937332',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         225.00925153100005,
         82.026198242,
@@ -6720,19 +6720,19 @@ export const ANNOTATIONS = [
         90.526198242
       ]
     ],
-    "keywords": [
-      "EPR"
+    'keywords': [
+      'EPR'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "937332",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '937332',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         137.103101531,
         72.03019824200001,
@@ -6740,19 +6740,19 @@ export const ANNOTATIONS = [
         80.53019824200001
       ]
     ],
-    "keywords": [
-      "EPR"
+    'keywords': [
+      'EPR'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "937332",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '937332',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 6,
-    "rects": [
+    'pageNumber': 6,
+    'rects': [
       [
         426.93660196864005,
         384.13017333899995,
@@ -6760,19 +6760,19 @@ export const ANNOTATIONS = [
         394.13017333899995
       ]
     ],
-    "keywords": [
-      "EPR"
+    'keywords': [
+      'EPR'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "937332",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '937332',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         523.6916015309997,
         93.76383386100113,
@@ -6780,19 +6780,19 @@ export const ANNOTATIONS = [
         102.26383386100113
       ]
     ],
-    "keywords": [
-      "epr"
+    'keywords': [
+      'epr'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "937332",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '937332',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         306.141693115,
         518.404587402,
@@ -6806,20 +6806,20 @@ export const ANNOTATIONS = [
         540.904587402
       ]
     ],
-    "keywords": [
-      "at",
-      "K "
+    'keywords': [
+      'at',
+      'K '
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "1062016",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '1062016',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         306.141693115,
         518.404587402,
@@ -6833,20 +6833,20 @@ export const ANNOTATIONS = [
         540.904587402
       ]
     ],
-    "keywords": [
-      "at a",
-      "K "
+    'keywords': [
+      'at a',
+      'K '
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "13892577",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '13892577',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         306.141693115,
         518.404587402,
@@ -6854,19 +6854,19 @@ export const ANNOTATIONS = [
         528.404587402
       ]
     ],
-    "keywords": [
-      "at a"
+    'keywords': [
+      'at a'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "6386035",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '6386035',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         488.25469317032014,
         505.90458740199995,
@@ -6874,19 +6874,19 @@ export const ANNOTATIONS = [
         515.904587402
       ]
     ],
-    "keywords": [
-      "mW,"
+    'keywords': [
+      'mW,'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "100532596",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '100532596',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         455.5196931150001,
         480.90458740199995,
@@ -6894,19 +6894,19 @@ export const ANNOTATIONS = [
         490.90458740199995
       ]
     ],
-    "keywords": [
-      "ms."
+    'keywords': [
+      'ms.'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "7201080",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '7201080',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         481.6790099999999,
         365.179093017,
@@ -6914,19 +6914,19 @@ export const ANNOTATIONS = [
         375.179093017
       ]
     ],
-    "keywords": [
-      "as a"
+    'keywords': [
+      'as a'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "7450869",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '7450869',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         137.06790069700003,
         534.130173339,
@@ -6934,19 +6934,19 @@ export const ANNOTATIONS = [
         544.130173339
       ]
     ],
-    "keywords": [
-      "as a"
+    'keywords': [
+      'as a'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "7450869",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '7450869',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         101.060807617,
         81.43019976800001,
@@ -6954,19 +6954,19 @@ export const ANNOTATIONS = [
         89.93019976800001
       ]
     ],
-    "keywords": [
-      "as a"
+    'keywords': [
+      'as a'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "7450869",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '7450869',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         535.85009082764,
         315.179093017,
@@ -6974,19 +6974,19 @@ export const ANNOTATIONS = [
         325.179093017
       ]
     ],
-    "keywords": [
-      "fit"
+    'keywords': [
+      'fit'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "13890068",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '13890068',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         385.23280761700005,
         121.43119976800001,
@@ -6994,19 +6994,19 @@ export const ANNOTATIONS = [
         129.931199768
       ]
     ],
-    "keywords": [
-      "fit,"
+    'keywords': [
+      'fit,'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "13890068",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '13890068',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         321.45851416000005,
         81.426199768,
@@ -7014,19 +7014,19 @@ export const ANNOTATIONS = [
         89.926199768
       ]
     ],
-    "keywords": [
-      "fit"
+    'keywords': [
+      'fit'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "13890068",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '13890068',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         392.26209082,
         302.679093017,
@@ -7034,19 +7034,19 @@ export const ANNOTATIONS = [
         312.679093017
       ]
     ],
-    "keywords": [
-      "Lamm"
+    'keywords': [
+      'Lamm'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "3908",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '3908',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         323.151101531,
         313.67583386100114,
@@ -7054,19 +7054,19 @@ export const ANNOTATIONS = [
         322.17583386100114
       ]
     ],
-    "keywords": [
-      "Lamm"
+    'keywords': [
+      'Lamm'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "3908",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '3908',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         306.14508666999996,
         174.45359863200002,
@@ -7074,19 +7074,19 @@ export const ANNOTATIONS = [
         184.45359863200002
       ]
     ],
-    "keywords": [
-      "per"
+    'keywords': [
+      'per'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "108917073",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '108917073',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         393.415693115,
         96.228096618,
@@ -7094,19 +7094,19 @@ export const ANNOTATIONS = [
         106.228096618
       ]
     ],
-    "keywords": [
-      "to 10"
+    'keywords': [
+      'to 10'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "108969485",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '108969485',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 4,
-    "rects": [
+    'pageNumber': 4,
+    'rects': [
       [
         467.80169311500015,
         170.836197509,
@@ -7114,19 +7114,19 @@ export const ANNOTATIONS = [
         180.836197509
       ]
     ],
-    "keywords": [
-      "BOLA2,"
+    'keywords': [
+      'BOLA2,'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "103595608",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '103595608',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 4,
-    "rects": [
+    'pageNumber': 4,
+    'rects': [
       [
         335.94169311499996,
         95.836197509,
@@ -7134,19 +7134,19 @@ export const ANNOTATIONS = [
         105.836197509
       ]
     ],
-    "keywords": [
-      "BOLA2"
+    'keywords': [
+      'BOLA2'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "103595608",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '103595608',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 4,
-    "rects": [
+    'pageNumber': 4,
+    'rects': [
       [
         460.86969311118014,
         83.336197509,
@@ -7154,19 +7154,19 @@ export const ANNOTATIONS = [
         93.336197509
       ]
     ],
-    "keywords": [
-      "BOLA"
+    'keywords': [
+      'BOLA'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "42860173",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '42860173',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         517.09450364846,
         646.630173339,
@@ -7174,19 +7174,19 @@ export const ANNOTATIONS = [
         656.630173339
       ]
     ],
-    "keywords": [
-      "BOLA"
+    'keywords': [
+      'BOLA'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "42860173",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '42860173',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         51.02509685099999,
         634.130173339,
@@ -7194,19 +7194,19 @@ export const ANNOTATIONS = [
         644.130173339
       ]
     ],
-    "keywords": [
-      "(Fig."
+    'keywords': [
+      '(Fig.'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "94221",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '94221',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         108.840096851,
         621.630173339,
@@ -7214,19 +7214,19 @@ export const ANNOTATIONS = [
         631.630173339
       ]
     ],
-    "keywords": [
-      "(Fig."
+    'keywords': [
+      '(Fig.'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "94221",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '94221',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         51.023601531,
         340.795196533,
@@ -7234,19 +7234,19 @@ export const ANNOTATIONS = [
         349.295196533
       ]
     ],
-    "keywords": [
-      "Fig."
+    'keywords': [
+      'Fig.'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "94221",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '94221',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 6,
-    "rects": [
+    'pageNumber': 6,
+    'rects': [
       [
         438.147601961,
         446.63017333899995,
@@ -7254,19 +7254,19 @@ export const ANNOTATIONS = [
         456.63017333899995
       ]
     ],
-    "keywords": [
-      "(Fig."
+    'keywords': [
+      '(Fig.'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "94221",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '94221',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         221.3579029870002,
         471.63017333899995,
@@ -7274,19 +7274,19 @@ export const ANNOTATIONS = [
         481.63017333899995
       ]
     ],
-    "keywords": [
-      "(Fig."
+    'keywords': [
+      '(Fig.'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "94221",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '94221',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         306.137899027,
         609.130173339,
@@ -7294,19 +7294,19 @@ export const ANNOTATIONS = [
         619.130173339
       ]
     ],
-    "keywords": [
-      "(Fig."
+    'keywords': [
+      '(Fig.'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "94221",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '94221',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         453.916501464,
         559.130173339,
@@ -7314,19 +7314,19 @@ export const ANNOTATIONS = [
         569.130173339
       ]
     ],
-    "keywords": [
-      "(Fig."
+    'keywords': [
+      '(Fig.'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "94221",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '94221',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 8,
-    "rects": [
+    'pageNumber': 8,
+    'rects': [
       [
         143.699403076,
         159.22329772900002,
@@ -7334,19 +7334,19 @@ export const ANNOTATIONS = [
         169.22329772900002
       ]
     ],
-    "keywords": [
-      "(Fig."
+    'keywords': [
+      '(Fig.'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "94221",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '94221',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 8,
-    "rects": [
+    'pageNumber': 8,
+    'rects': [
       [
         466.24739437982015,
         146.72329772900002,
@@ -7354,19 +7354,19 @@ export const ANNOTATIONS = [
         156.72329772900002
       ]
     ],
-    "keywords": [
-      "(Fig."
+    'keywords': [
+      '(Fig.'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "94221",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '94221',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         114.504298095,
         609.130173339,
@@ -7374,19 +7374,19 @@ export const ANNOTATIONS = [
         619.130173339
       ]
     ],
-    "keywords": [
-      "bridged"
+    'keywords': [
+      'bridged'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "250496",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '250496',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         174.11629809882,
         596.630173339,
@@ -7394,19 +7394,19 @@ export const ANNOTATIONS = [
         606.630173339
       ]
     ],
-    "keywords": [
-      "in a"
+    'keywords': [
+      'in a'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112116265",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112116265',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         472.6765056270001,
         409.13017333899995,
@@ -7414,19 +7414,19 @@ export const ANNOTATIONS = [
         419.13017333899995
       ]
     ],
-    "keywords": [
-      "in a"
+    'keywords': [
+      'in a'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112116265",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112116265',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         388.63595153424694,
         72.03869824200002,
@@ -7434,19 +7434,19 @@ export const ANNOTATIONS = [
         80.53869824200002
       ]
     ],
-    "keywords": [
-      "in a"
+    'keywords': [
+      'in a'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112116265",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112116265',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         388.63595153424694,
         72.03869824200002,
@@ -7454,19 +7454,19 @@ export const ANNOTATIONS = [
         80.53869824200002
       ]
     ],
-    "keywords": [
-      "in a "
+    'keywords': [
+      'in a '
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112116265",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112116265',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 6,
-    "rects": [
+    'pageNumber': 6,
+    'rects': [
       [
         437.36879077863,
         84.13020385699998,
@@ -7474,19 +7474,19 @@ export const ANNOTATIONS = [
         94.13020385699998
       ]
     ],
-    "keywords": [
-      "in a"
+    'keywords': [
+      'in a'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112116265",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112116265',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         158.77760153482006,
         659.130173339,
@@ -7494,19 +7494,19 @@ export const ANNOTATIONS = [
         669.130173339
       ]
     ],
-    "keywords": [
-      "in a"
+    'keywords': [
+      'in a'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112116265",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112116265',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         420.2815057370001,
         721.630173339,
@@ -7514,19 +7514,19 @@ export const ANNOTATIONS = [
         731.630173339
       ]
     ],
-    "keywords": [
-      "decay"
+    'keywords': [
+      'decay'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "42008",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '42008',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         188.26990666464002,
         459.13017333899995,
@@ -7534,19 +7534,19 @@ export const ANNOTATIONS = [
         469.13017333899995
       ]
     ],
-    "keywords": [
-      "decay,"
+    'keywords': [
+      'decay,'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "42008",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '42008',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         467.76150364081985,
         684.130173339,
@@ -7554,19 +7554,19 @@ export const ANNOTATIONS = [
         694.130173339
       ]
     ],
-    "keywords": [
-      "a CD"
+    'keywords': [
+      'a CD'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112117218",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112117218',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         372.85150562699994,
         471.63017333899995,
@@ -7574,19 +7574,19 @@ export const ANNOTATIONS = [
         481.63017333899995
       ]
     ],
-    "keywords": [
-      "a CD"
+    'keywords': [
+      'a CD'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112117218",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112117218',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         405.494503637,
         671.630173339,
@@ -7594,19 +7594,19 @@ export const ANNOTATIONS = [
         681.630173339
       ]
     ],
-    "keywords": [
-      "even"
+    'keywords': [
+      'even'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "36039",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '36039',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         397.30550562699995,
         459.13017333899995,
@@ -7614,19 +7614,19 @@ export const ANNOTATIONS = [
         469.13017333899995
       ]
     ],
-    "keywords": [
-      "yeast"
+    'keywords': [
+      'yeast'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "424122",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '424122',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         419.61950563462995,
         459.13017333899995,
@@ -7634,19 +7634,19 @@ export const ANNOTATIONS = [
         469.13017333899995
       ]
     ],
-    "keywords": [
-      "Grx3"
+    'keywords': [
+      'Grx3'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "34715567",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '34715567',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         341.58850562699996,
         396.63017333899995,
@@ -7654,19 +7654,19 @@ export const ANNOTATIONS = [
         406.63017333899995
       ]
     ],
-    "keywords": [
-      "yield"
+    'keywords': [
+      'yield'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "101409888",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '101409888',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         389.176807617,
         101.43919976800002,
@@ -7674,19 +7674,19 @@ export const ANNOTATIONS = [
         109.93919976800002
       ]
     ],
-    "keywords": [
-      "yield"
+    'keywords': [
+      'yield'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "101409888",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '101409888',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 8,
-    "rects": [
+    'pageNumber': 8,
+    'rects': [
       [
         82.26960153099999,
         309.0922143550001,
@@ -7694,19 +7694,19 @@ export const ANNOTATIONS = [
         317.5922143550001
       ]
     ],
-    "keywords": [
-      "yield"
+    'keywords': [
+      'yield'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "101409888",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '101409888',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 8,
-    "rects": [
+    'pageNumber': 8,
+    'rects': [
       [
         524.069394376,
         146.72329772900002,
@@ -7714,19 +7714,19 @@ export const ANNOTATIONS = [
         156.72329772900002
       ]
     ],
-    "keywords": [
-      "yield"
+    'keywords': [
+      'yield'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "101409888",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '101409888',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         51.023601531,
         340.795196533,
@@ -7734,19 +7734,19 @@ export const ANNOTATIONS = [
         349.295196533
       ]
     ],
-    "keywords": [
-      "Fig. 1"
+    'keywords': [
+      'Fig. 1'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "34716843",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '34716843',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         174.894101531,
         338.789196533,
@@ -7754,19 +7754,19 @@ export const ANNOTATIONS = [
         347.289196533
       ]
     ],
-    "keywords": [
-      "(black)"
+    'keywords': [
+      '(black)'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112044731",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112044731',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         315.243807617,
         121.43119976800001,
@@ -7774,19 +7774,19 @@ export const ANNOTATIONS = [
         129.931199768
       ]
     ],
-    "keywords": [
-      "black."
+    'keywords': [
+      'black.'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112044731",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112044731',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         240.38129760700002,
         328.789196533,
@@ -7794,19 +7794,19 @@ export const ANNOTATIONS = [
         337.289196533
       ]
     ],
-    "keywords": [
-      "(red)."
+    'keywords': [
+      '(red).'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "2658890",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '2658890',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         142.804307617,
         81.43019976800001,
@@ -7814,19 +7814,19 @@ export const ANNOTATIONS = [
         89.93019976800001
       ]
     ],
-    "keywords": [
-      "(red),"
+    'keywords': [
+      '(red),'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "2658890",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '2658890',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         74.381601531,
         91.461198242,
@@ -7840,20 +7840,20 @@ export const ANNOTATIONS = [
         102.528198242
       ]
     ],
-    "keywords": [
-      "a",
-      "2 "
+    'keywords': [
+      'a',
+      '2 '
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "37620400",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '37620400',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         130.617601531,
         71.469198242,
@@ -7861,19 +7861,19 @@ export const ANNOTATIONS = [
         80.53019824200001
       ]
     ],
-    "keywords": [
-      "c EPR"
+    'keywords': [
+      'c EPR'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "3087500",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '3087500',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 6,
-    "rects": [
+    'pageNumber': 6,
+    'rects': [
       [
         339.5656019610001,
         371.63017333899995,
@@ -7881,19 +7881,19 @@ export const ANNOTATIONS = [
         381.63017333899995
       ]
     ],
-    "keywords": [
-      "S3)."
+    'keywords': [
+      'S3).'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "11464243",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '11464243',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 6,
-    "rects": [
+    'pageNumber': 6,
+    'rects': [
       [
         492.00571290527,
         346.63020385699997,
@@ -7901,19 +7901,19 @@ export const ANNOTATIONS = [
         356.63020385699997
       ]
     ],
-    "keywords": [
-      "vs 1820"
+    'keywords': [
+      'vs 1820'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "7161385",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '7161385',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 6,
-    "rects": [
+    'pageNumber': 6,
+    'rects': [
       [
         413.23979077100006,
         334.13020385699997,
@@ -7921,19 +7921,19 @@ export const ANNOTATIONS = [
         344.13020385699997
       ]
     ],
-    "keywords": [
-      "S4"
+    'keywords': [
+      'S4'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "11464239",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '11464239',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 6,
-    "rects": [
+    'pageNumber': 6,
+    'rects': [
       [
         446.6847907710001,
         334.13020385699997,
@@ -7941,19 +7941,19 @@ export const ANNOTATIONS = [
         344.13020385699997
       ]
     ],
-    "keywords": [
-      "S5)."
+    'keywords': [
+      'S5).'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "11464240",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '11464240',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         109.20860153100001,
         721.630173339,
@@ -7961,19 +7961,19 @@ export const ANNOTATIONS = [
         731.630173339
       ]
     ],
-    "keywords": [
-      "S6),"
+    'keywords': [
+      'S6),'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "11464242",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '11464242',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         234.08560153863004,
         696.630173339,
@@ -7981,19 +7981,19 @@ export const ANNOTATIONS = [
         706.630173339
       ]
     ],
-    "keywords": [
-      "us to"
+    'keywords': [
+      'us to'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "41983800",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '41983800',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         186.78790068557004,
         559.130173339,
@@ -8001,19 +8001,19 @@ export const ANNOTATIONS = [
         569.130173339
       ]
     ],
-    "keywords": [
-      "via"
+    'keywords': [
+      'via'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "20358",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '20358',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         221.97690069700013,
         534.130173339,
@@ -8021,19 +8021,19 @@ export const ANNOTATIONS = [
         544.130173339
       ]
     ],
-    "keywords": [
-      "ABC transporter"
+    'keywords': [
+      'ABC transporter'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "818031",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '818031',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         51.02790069700001,
         521.630173339,
@@ -8041,19 +8041,19 @@ export const ANNOTATIONS = [
         531.630173339
       ]
     ],
-    "keywords": [
-      "Atm1p"
+    'keywords': [
+      'Atm1p'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "22",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '22',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         51.017906657000026,
         434.13017333899995,
@@ -8061,19 +8061,19 @@ export const ANNOTATIONS = [
         444.13017333899995
       ]
     ],
-    "keywords": [
-      "line"
+    'keywords': [
+      'line'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "8926979",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '8926979',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         529.10551046018,
         534.130173339,
@@ -8081,19 +8081,19 @@ export const ANNOTATIONS = [
         544.130173339
       ]
     ],
-    "keywords": [
-      "line"
+    'keywords': [
+      'line'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "8926979",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '8926979',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         187.74390665891008,
         371.63017333899995,
@@ -8101,19 +8101,19 @@ export const ANNOTATIONS = [
         381.63017333899995
       ]
     ],
-    "keywords": [
-      "GLRX3"
+    'keywords': [
+      'GLRX3'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112116009",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112116009',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         351.587897957,
         721.630173339,
@@ -8121,19 +8121,19 @@ export const ANNOTATIONS = [
         731.630173339
       ]
     ],
-    "keywords": [
-      "probable"
+    'keywords': [
+      'probable'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "778293",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '778293',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         332.063897957,
         671.630173339,
@@ -8141,19 +8141,19 @@ export const ANNOTATIONS = [
         681.630173339
       ]
     ],
-    "keywords": [
-      "large"
+    'keywords': [
+      'large'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "110483795",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '110483795',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         66.5202076299625,
         91.426199768,
@@ -8161,19 +8161,19 @@ export const ANNOTATIONS = [
         99.926199768
       ]
     ],
-    "keywords": [
-      "nm. a"
+    'keywords': [
+      'nm. a'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "117226",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '117226',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         412.4498076170001,
         111.43519976800002,
@@ -8181,19 +8181,19 @@ export const ANNOTATIONS = [
         119.93519976800002
       ]
     ],
-    "keywords": [
-      "term"
+    'keywords': [
+      'term'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "108974642",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '108974642',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         344.239901516,
         90.865199768,
@@ -8201,19 +8201,19 @@ export const ANNOTATIONS = [
         99.926199768
       ]
     ],
-    "keywords": [
-      "b The"
+    'keywords': [
+      'b The'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "108925328",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '108925328',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 8,
-    "rects": [
+    'pageNumber': 8,
+    'rects': [
       [
         525.3114879387529,
         338.52071435500005,
@@ -8221,19 +8221,19 @@ export const ANNOTATIONS = [
         347.58171435500003
       ]
     ],
-    "keywords": [
-      "d CD"
+    'keywords': [
+      'd CD'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "41332921",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '41332921',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 8,
-    "rects": [
+    'pageNumber': 8,
+    'rects': [
       [
         51.023601531,
         196.723190917,
@@ -8247,20 +8247,20 @@ export const ANNOTATIONS = [
         219.223190917
       ]
     ],
-    "keywords": [
-      "taredoxin 2",
-      "glu-"
+    'keywords': [
+      'taredoxin 2',
+      'glu-'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "818407",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '818407',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 8,
-    "rects": [
+    'pageNumber': 8,
+    'rects': [
       [
         237.33140307981992,
         134.22329772900002,
@@ -8268,19 +8268,19 @@ export const ANNOTATIONS = [
         144.22329772900002
       ]
     ],
-    "keywords": [
-      "Isa1"
+    'keywords': [
+      'Isa1'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "41981130",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '41981130',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 8,
-    "rects": [
+    'pageNumber': 8,
+    'rects': [
       [
         440.6283943779099,
         171.72329772900002,
@@ -8288,19 +8288,19 @@ export const ANNOTATIONS = [
         181.72329772900002
       ]
     ],
-    "keywords": [
-      "ISCU, a"
+    'keywords': [
+      'ISCU, a'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "100329201",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '100329201',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         160.82490153100002,
         112.51480273400034,
@@ -8308,19 +8308,19 @@ export const ANNOTATIONS = [
         121.01480273400034
       ]
     ],
-    "keywords": [
-      "Am J"
+    'keywords': [
+      'Am J'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "938243",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '938243',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         181.590401531,
         112.51480273400034,
@@ -8328,19 +8328,19 @@ export const ANNOTATIONS = [
         121.01480273400034
       ]
     ],
-    "keywords": [
-      "Hum"
+    'keywords': [
+      'Hum'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "45958",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '45958',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         175.382001531,
         102.51880273400035,
@@ -8348,19 +8348,19 @@ export const ANNOTATIONS = [
         111.01880273400035
       ]
     ],
-    "keywords": [
-      "Ann"
+    'keywords': [
+      'Ann'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "42492",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '42492',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         192.68375153099998,
         102.51880273400035,
@@ -8368,19 +8368,19 @@ export const ANNOTATIONS = [
         111.01880273400035
       ]
     ],
-    "keywords": [
-      "Rev"
+    'keywords': [
+      'Rev'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "1490011",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '1490011',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         238.1043515277786,
         703.360215332,
@@ -8388,19 +8388,19 @@ export const ANNOTATIONS = [
         711.860215332
       ]
     ],
-    "keywords": [
-      "Rev"
+    'keywords': [
+      'Rev'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "1490011",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '1490011',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         145.025101531,
         92.52280273400035,
@@ -8408,19 +8408,19 @@ export const ANNOTATIONS = [
         101.02280273400035
       ]
     ],
-    "keywords": [
-      "TA"
+    'keywords': [
+      'TA'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "22072",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '22072',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         271.09540153099977,
         92.52280273400035,
@@ -8428,19 +8428,19 @@ export const ANNOTATIONS = [
         101.02280273400035
       ]
     ],
-    "keywords": [
-      "Acta"
+    'keywords': [
+      'Acta'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "41984173",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '41984173',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         463.3186515310001,
         723.5118338610004,
@@ -8448,19 +8448,19 @@ export const ANNOTATIONS = [
         732.0118338610004
       ]
     ],
-    "keywords": [
-      "Del"
+    'keywords': [
+      'Del'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "7195220",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '7195220',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         394.462701534247,
         713.5158338610004,
@@ -8468,19 +8468,19 @@ export const ANNOTATIONS = [
         722.0158338610004
       ]
     ],
-    "keywords": [
-      "Neri"
+    'keywords': [
+      'Neri'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "7376",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '7376',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         323.151101531,
         703.5198338610004,
@@ -8488,19 +8488,19 @@ export const ANNOTATIONS = [
         712.0198338610004
       ]
     ],
-    "keywords": [
-      "Proc"
+    'keywords': [
+      'Proc'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "42368945",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '42368945',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         358.825601531,
         703.5198338610004,
@@ -8508,19 +8508,19 @@ export const ANNOTATIONS = [
         712.0198338610004
       ]
     ],
-    "keywords": [
-      "Acad"
+    'keywords': [
+      'Acad'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "38864",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '38864',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         379.501851531,
         703.5198338610004,
@@ -8528,19 +8528,19 @@ export const ANNOTATIONS = [
         712.0198338610004
       ]
     ],
-    "keywords": [
-      "Sci"
+    'keywords': [
+      'Sci'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "14181358",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '14181358',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         525.8761015309997,
         683.5278338610004,
@@ -8548,19 +8548,19 @@ export const ANNOTATIONS = [
         692.0278338610004
       ]
     ],
-    "keywords": [
-      "J Am"
+    'keywords': [
+      'J Am'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "16456",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '16456',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         323.151101531,
         583.5678338610006,
@@ -8574,20 +8574,20 @@ export const ANNOTATIONS = [
         602.0638338610006
       ]
     ],
-    "keywords": [
-      "Am",
-      "J "
+    'keywords': [
+      'Am',
+      'J '
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "16456",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '16456',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         354.473601531,
         423.6318338610009,
@@ -8595,19 +8595,19 @@ export const ANNOTATIONS = [
         432.1318338610009
       ]
     ],
-    "keywords": [
-      "J Am"
+    'keywords': [
+      'J Am'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "16456",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '16456',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         476.553151556942,
         393.643833861001,
@@ -8615,19 +8615,19 @@ export const ANNOTATIONS = [
         402.143833861001
       ]
     ],
-    "keywords": [
-      "J Am"
+    'keywords': [
+      'J Am'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "16456",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '16456',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         360.474601531,
         283.6878338610012,
@@ -8635,19 +8635,19 @@ export const ANNOTATIONS = [
         292.1878338610012
       ]
     ],
-    "keywords": [
-      "J Am"
+    'keywords': [
+      'J Am'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "16456",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '16456',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         379.424501531,
         673.4402102660003,
@@ -8655,19 +8655,19 @@ export const ANNOTATIONS = [
         681.9402102660003
       ]
     ],
-    "keywords": [
-      "J Am"
+    'keywords': [
+      'J Am'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "16456",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '16456',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         323.151101531,
         673.5318338610005,
@@ -8675,19 +8675,19 @@ export const ANNOTATIONS = [
         682.0318338610005
       ]
     ],
-    "keywords": [
-      "Chem"
+    'keywords': [
+      'Chem'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "13977448",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '13977448',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         377.457601531,
         633.5478338610005,
@@ -8695,19 +8695,19 @@ export const ANNOTATIONS = [
         642.0478338610005
       ]
     ],
-    "keywords": [
-      "Chem"
+    'keywords': [
+      'Chem'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "13977448",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '13977448',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         338.404351531,
         583.5678338610006,
@@ -8715,19 +8715,19 @@ export const ANNOTATIONS = [
         592.0678338610006
       ]
     ],
-    "keywords": [
-      "Chem"
+    'keywords': [
+      'Chem'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "13977448",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '13977448',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         340.622851531,
         533.5878338610007,
@@ -8735,19 +8735,19 @@ export const ANNOTATIONS = [
         542.0878338610007
       ]
     ],
-    "keywords": [
-      "Chem"
+    'keywords': [
+      'Chem'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "13977448",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '13977448',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         375.238251531,
         423.6318338610009,
@@ -8755,19 +8755,19 @@ export const ANNOTATIONS = [
         432.1318338610009
       ]
     ],
-    "keywords": [
-      "Chem"
+    'keywords': [
+      'Chem'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "13977448",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '13977448',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         503.302651556942,
         393.643833861001,
@@ -8775,19 +8775,19 @@ export const ANNOTATIONS = [
         402.143833861001
       ]
     ],
-    "keywords": [
-      "Chem"
+    'keywords': [
+      'Chem'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "13977448",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '13977448',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         410.09250153100004,
         343.6638338610011,
@@ -8795,19 +8795,19 @@ export const ANNOTATIONS = [
         352.1638338610011
       ]
     ],
-    "keywords": [
-      "Chem"
+    'keywords': [
+      'Chem'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "13977448",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '13977448',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         381.24010153100005,
         283.6878338610012,
@@ -8815,19 +8815,19 @@ export const ANNOTATIONS = [
         292.1878338610012
       ]
     ],
-    "keywords": [
-      "Chem"
+    'keywords': [
+      'Chem'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "13977448",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '13977448',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         523.5029015342723,
         273.6918338610012,
@@ -8835,19 +8835,19 @@ export const ANNOTATIONS = [
         282.1918338610012
       ]
     ],
-    "keywords": [
-      "Chem"
+    'keywords': [
+      'Chem'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "13977448",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '13977448',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         523.5029015342723,
         253.69983386100122,
@@ -8855,19 +8855,19 @@ export const ANNOTATIONS = [
         262.19983386100125
       ]
     ],
-    "keywords": [
-      "Chem"
+    'keywords': [
+      'Chem'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "13977448",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '13977448',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         523.190951531,
         223.7118338610012,
@@ -8875,19 +8875,19 @@ export const ANNOTATIONS = [
         232.2118338610012
       ]
     ],
-    "keywords": [
-      "Chem"
+    'keywords': [
+      'Chem'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "13977448",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '13977448',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         360.474601531,
         163.73583386100114,
@@ -8895,19 +8895,19 @@ export const ANNOTATIONS = [
         172.23583386100114
       ]
     ],
-    "keywords": [
-      "Chem"
+    'keywords': [
+      'Chem'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "13977448",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '13977448',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         205.84345154397107,
         713.356215332,
@@ -8915,19 +8915,19 @@ export const ANNOTATIONS = [
         721.856215332
       ]
     ],
-    "keywords": [
-      "Chem"
+    'keywords': [
+      'Chem'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "13977448",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '13977448',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         402.356651531,
         723.4202102660003,
@@ -8935,19 +8935,19 @@ export const ANNOTATIONS = [
         731.9202102660003
       ]
     ],
-    "keywords": [
-      "Chem"
+    'keywords': [
+      'Chem'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "13977448",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '13977448',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         424.61900153100004,
         713.4242102660003,
@@ -8955,19 +8955,19 @@ export const ANNOTATIONS = [
         721.9242102660003
       ]
     ],
-    "keywords": [
-      "Chem"
+    'keywords': [
+      'Chem'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "13977448",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '13977448',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         399.595001531,
         673.4402102660003,
@@ -8975,19 +8975,19 @@ export const ANNOTATIONS = [
         681.9402102660003
       ]
     ],
-    "keywords": [
-      "Chem"
+    'keywords': [
+      'Chem'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "13977448",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '13977448',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         268.6185015455943,
         653.3802153320001,
@@ -8995,19 +8995,19 @@ export const ANNOTATIONS = [
         661.8802153320001
       ]
     ],
-    "keywords": [
-      "Chem"
+    'keywords': [
+      'Chem'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "13977448",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '13977448',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         399.23290153100004,
         653.4482102660004,
@@ -9015,19 +9015,19 @@ export const ANNOTATIONS = [
         661.9482102660004
       ]
     ],
-    "keywords": [
-      "Chem"
+    'keywords': [
+      'Chem'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "13977448",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '13977448',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         196.7280515310001,
         633.3882153320002,
@@ -9035,19 +9035,19 @@ export const ANNOTATIONS = [
         641.8882153320002
       ]
     ],
-    "keywords": [
-      "Chem"
+    'keywords': [
+      'Chem'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "13977448",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '13977448',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         161.40800153100002,
         563.4162153320003,
@@ -9055,19 +9055,19 @@ export const ANNOTATIONS = [
         571.9162153320003
       ]
     ],
-    "keywords": [
-      "Chem"
+    'keywords': [
+      'Chem'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "13977448",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '13977448',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         346.283851531,
         673.5318338610005,
@@ -9075,19 +9075,19 @@ export const ANNOTATIONS = [
         682.0318338610005
       ]
     ],
-    "keywords": [
-      "Soc"
+    'keywords': [
+      'Soc'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "7803861",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '7803861',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         361.537101531,
         583.5678338610006,
@@ -9095,19 +9095,19 @@ export const ANNOTATIONS = [
         592.0678338610006
       ]
     ],
-    "keywords": [
-      "Soc"
+    'keywords': [
+      'Soc'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "7803861",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '7803861',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         398.37100153100005,
         423.6318338610009,
@@ -9115,19 +9115,19 @@ export const ANNOTATIONS = [
         432.1318338610009
       ]
     ],
-    "keywords": [
-      "Soc"
+    'keywords': [
+      'Soc'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "7803861",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '7803861',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         530.4261515569419,
         393.643833861001,
@@ -9135,19 +9135,19 @@ export const ANNOTATIONS = [
         402.143833861001
       ]
     ],
-    "keywords": [
-      "Soc"
+    'keywords': [
+      'Soc'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "7803861",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '7803861',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         404.37285153100004,
         283.6878338610012,
@@ -9155,19 +9155,19 @@ export const ANNOTATIONS = [
         292.1878338610012
       ]
     ],
-    "keywords": [
-      "Soc"
+    'keywords': [
+      'Soc'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "7803861",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '7803861',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         422.13275153100005,
         673.4402102660003,
@@ -9175,19 +9175,19 @@ export const ANNOTATIONS = [
         681.9402102660003
       ]
     ],
-    "keywords": [
-      "Soc"
+    'keywords': [
+      'Soc'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "7803861",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '7803861',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         323.151101531,
         663.5358338610005,
@@ -9195,19 +9195,19 @@ export const ANNOTATIONS = [
         672.0358338610005
       ]
     ],
-    "keywords": [
-      "Li"
+    'keywords': [
+      'Li'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "109243305",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '109243305',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         417.441601531,
         653.5398338610005,
@@ -9215,19 +9215,19 @@ export const ANNOTATIONS = [
         662.0398338610005
       ]
     ],
-    "keywords": [
-      "Li"
+    'keywords': [
+      'Li'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "109243305",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '109243305',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         323.151101531,
         573.5718338610006,
@@ -9235,19 +9235,19 @@ export const ANNOTATIONS = [
         582.0718338610006
       ]
     ],
-    "keywords": [
-      "Li"
+    'keywords': [
+      'Li'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "109243305",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '109243305',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         346.126601531,
         353.65983386100106,
@@ -9255,19 +9255,19 @@ export const ANNOTATIONS = [
         362.15983386100106
       ]
     ],
-    "keywords": [
-      "Li"
+    'keywords': [
+      'Li'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "109243305",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '109243305',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         346.203101531,
         293.6838338610012,
@@ -9275,19 +9275,19 @@ export const ANNOTATIONS = [
         302.1838338610012
       ]
     ],
-    "keywords": [
-      "Li"
+    'keywords': [
+      'Li'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "109243305",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '109243305',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         346.203101531,
         173.73183386100115,
@@ -9295,19 +9295,19 @@ export const ANNOTATIONS = [
         182.23183386100115
       ]
     ],
-    "keywords": [
-      "Li"
+    'keywords': [
+      'Li'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "109243305",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '109243305',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         500.0386515374941,
         133.7478338610011,
@@ -9315,19 +9315,19 @@ export const ANNOTATIONS = [
         142.2478338610011
       ]
     ],
-    "keywords": [
-      "Li"
+    'keywords': [
+      'Li'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "109243305",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '109243305',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         323.151101531,
         723.4202102660003,
@@ -9335,19 +9335,19 @@ export const ANNOTATIONS = [
         731.9202102660003
       ]
     ],
-    "keywords": [
-      "Li"
+    'keywords': [
+      'Li'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "109243305",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '109243305',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         345.411751531,
         713.4242102660003,
@@ -9355,19 +9355,19 @@ export const ANNOTATIONS = [
         721.9242102660003
       ]
     ],
-    "keywords": [
-      "Li"
+    'keywords': [
+      'Li'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "109243305",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '109243305',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         370.26235153100004,
         663.5358338610005,
@@ -9375,19 +9375,19 @@ export const ANNOTATIONS = [
         672.0358338610005
       ]
     ],
-    "keywords": [
-      "CE"
+    'keywords': [
+      'CE'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "13034",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '13034',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         392.974351531,
         643.5438338610005,
@@ -9395,19 +9395,19 @@ export const ANNOTATIONS = [
         652.0438338610005
       ]
     ],
-    "keywords": [
-      "CE,"
+    'keywords': [
+      'CE,'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "13034",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '13034',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         533.2515515374853,
         563.5758338610007,
@@ -9415,19 +9415,19 @@ export const ANNOTATIONS = [
         572.0758338610007
       ]
     ],
-    "keywords": [
-      "CE"
+    'keywords': [
+      'CE'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "13034",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '13034',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         371.0639015245145,
         123.75183386100112,
@@ -9435,19 +9435,19 @@ export const ANNOTATIONS = [
         132.2518338610011
       ]
     ],
-    "keywords": [
-      "CE,"
+    'keywords': [
+      'CE,'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "13034",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '13034',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         380.704601531,
         653.5398338610005,
@@ -9455,19 +9455,19 @@ export const ANNOTATIONS = [
         662.0398338610005
       ]
     ],
-    "keywords": [
-      "Chen"
+    'keywords': [
+      'Chen'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "5187003",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '5187003',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         146.88490153099997,
         683.3682153320001,
@@ -9475,19 +9475,19 @@ export const ANNOTATIONS = [
         691.8682153320001
       ]
     ],
-    "keywords": [
-      "Chen"
+    'keywords': [
+      'Chen'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "5187003",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '5187003',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         133.807651556942,
         673.3722153320001,
@@ -9495,19 +9495,19 @@ export const ANNOTATIONS = [
         681.8722153320001
       ]
     ],
-    "keywords": [
-      "Chen"
+    'keywords': [
+      'Chen'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "5187003",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '5187003',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         401.631601531,
         653.5398338610005,
@@ -9515,19 +9515,19 @@ export const ANNOTATIONS = [
         662.0398338610005
       ]
     ],
-    "keywords": [
-      "OS,"
+    'keywords': [
+      'OS,'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "4156584",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '4156584',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         417.441601531,
         653.5398338610005,
@@ -9535,19 +9535,19 @@ export const ANNOTATIONS = [
         662.0398338610005
       ]
     ],
-    "keywords": [
-      "Li L,"
+    'keywords': [
+      'Li L,'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "9687812",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '9687812',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         503.4701015309999,
         653.5398338610005,
@@ -9555,19 +9555,19 @@ export const ANNOTATIONS = [
         662.0398338610005
       ]
     ],
-    "keywords": [
-      "EM,"
+    'keywords': [
+      'EM,'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "4338499",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '4338499',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         521.1671015309998,
         653.5398338610005,
@@ -9575,19 +9575,19 @@ export const ANNOTATIONS = [
         662.0398338610005
       ]
     ],
-    "keywords": [
-      "Lin"
+    'keywords': [
+      'Lin'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "105267563",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '105267563',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         349.887851531,
         643.5438338610005,
@@ -9595,19 +9595,19 @@ export const ANNOTATIONS = [
         652.0438338610005
       ]
     ],
-    "keywords": [
-      "NN,"
+    'keywords': [
+      'NN,'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "67405",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '67405',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         424.7465015293766,
         573.5718338610006,
@@ -9615,19 +9615,19 @@ export const ANNOTATIONS = [
         582.0718338610006
       ]
     ],
-    "keywords": [
-      "NN,"
+    'keywords': [
+      'NN,'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "67405",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '67405',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         500.50360153099996,
         643.5438338610005,
@@ -9635,19 +9635,19 @@ export const ANNOTATIONS = [
         652.0438338610005
       ]
     ],
-    "keywords": [
-      "DM,"
+    'keywords': [
+      'DM,'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "4815560",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '4815560',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         355.326151531,
         623.5518338610005,
@@ -9655,19 +9655,19 @@ export const ANNOTATIONS = [
         632.0518338610005
       ]
     ],
-    "keywords": [
-      "MA,"
+    'keywords': [
+      'MA,'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "39734854",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '39734854',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         354.074101531,
         523.5918338610007,
@@ -9675,19 +9675,19 @@ export const ANNOTATIONS = [
         532.0918338610007
       ]
     ],
-    "keywords": [
-      "MA,"
+    'keywords': [
+      'MA,'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "39734854",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '39734854',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         434.80795155856555,
         623.5518338610005,
@@ -9695,19 +9695,19 @@ export const ANNOTATIONS = [
         632.0518338610005
       ]
     ],
-    "keywords": [
-      "BD,"
+    'keywords': [
+      'BD,'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "3878011",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '3878011',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         429.66630151803747,
         523.5918338610007,
@@ -9715,19 +9715,19 @@ export const ANNOTATIONS = [
         532.0918338610007
       ]
     ],
-    "keywords": [
-      "BD,"
+    'keywords': [
+      'BD,'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "3878011",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '3878011',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         455.98230155694193,
         493.6038338610008,
@@ -9735,19 +9735,19 @@ export const ANNOTATIONS = [
         502.1038338610008
       ]
     ],
-    "keywords": [
-      "B. D."
+    'keywords': [
+      'B. D.'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "3878011",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '3878011',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         365.243101531,
         613.5558338610006,
@@ -9755,19 +9755,19 @@ export const ANNOTATIONS = [
         622.0558338610006
       ]
     ],
-    "keywords": [
-      "MR,"
+    'keywords': [
+      'MR,'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "113657460",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '113657460',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         353.5743015374855,
         513.5958338610008,
@@ -9775,19 +9775,19 @@ export const ANNOTATIONS = [
         522.0958338610008
       ]
     ],
-    "keywords": [
-      "MR,"
+    'keywords': [
+      'MR,'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "113657460",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '113657460',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         381.240101531,
         573.5718338610006,
@@ -9795,19 +9795,19 @@ export const ANNOTATIONS = [
         582.0718338610006
       ]
     ],
-    "keywords": [
-      "DT,"
+    'keywords': [
+      'DT,'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "13518",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '13518',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         358.409101531,
         133.7478338610011,
@@ -9815,19 +9815,19 @@ export const ANNOTATIONS = [
         142.2478338610011
       ]
     ],
-    "keywords": [
-      "DT,"
+    'keywords': [
+      'DT,'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "13518",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '13518',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         461.70195152937663,
         573.5718338610006,
@@ -9835,19 +9835,19 @@ export const ANNOTATIONS = [
         582.0718338610006
       ]
     ],
-    "keywords": [
-      "SG,"
+    'keywords': [
+      'SG,'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "19883",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '19883',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         423.455351547235,
         233.7078338610012,
@@ -9855,19 +9855,19 @@ export const ANNOTATIONS = [
         242.2078338610012
       ]
     ],
-    "keywords": [
-      "SG,"
+    'keywords': [
+      'SG,'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "19883",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '19883',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         472.2105015309999,
         203.71983386100118,
@@ -9875,19 +9875,19 @@ export const ANNOTATIONS = [
         212.21983386100118
       ]
     ],
-    "keywords": [
-      "SG,"
+    'keywords': [
+      'SG,'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "19883",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '19883',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         497.0194515293767,
         573.5718338610006,
@@ -9895,19 +9895,19 @@ export const ANNOTATIONS = [
         582.0718338610006
       ]
     ],
-    "keywords": [
-      "NS,"
+    'keywords': [
+      'NS,'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "36839046",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '36839046',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         323.151101531,
         563.5758338610007,
@@ -9915,19 +9915,19 @@ export const ANNOTATIONS = [
         572.0758338610007
       ]
     ],
-    "keywords": [
-      "BM,"
+    'keywords': [
+      'BM,'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "23972",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '23972',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         397.611101531,
         563.5758338610007,
@@ -9935,19 +9935,19 @@ export const ANNOTATIONS = [
         572.0758338610007
       ]
     ],
-    "keywords": [
-      "PJ,"
+    'keywords': [
+      'PJ,'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "3678455",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '3678455',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         437.6095515374856,
         563.5758338610007,
@@ -9955,19 +9955,19 @@ export const ANNOTATIONS = [
         572.0758338610007
       ]
     ],
-    "keywords": [
-      "BH,"
+    'keywords': [
+      'BH,'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "104184",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '104184',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         529.2829015342722,
         233.7078338610012,
@@ -9975,19 +9975,19 @@ export const ANNOTATIONS = [
         242.2078338610012
       ]
     ],
-    "keywords": [
-      "BH,"
+    'keywords': [
+      'BH,'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "104184",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '104184',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         487.77145153748546,
         193.72383386100117,
@@ -9995,19 +9995,19 @@ export const ANNOTATIONS = [
         202.22383386100117
       ]
     ],
-    "keywords": [
-      "BH,"
+    'keywords': [
+      'BH,'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "104184",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '104184',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         486.9010515374855,
         563.5758338610007,
@@ -10015,19 +10015,19 @@ export const ANNOTATIONS = [
         572.0758338610007
       ]
     ],
-    "keywords": [
-      "MK,"
+    'keywords': [
+      'MK,'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "7196647",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '7196647',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         394.551101531,
         223.7118338610012,
@@ -10035,19 +10035,19 @@ export const ANNOTATIONS = [
         232.2118338610012
       ]
     ],
-    "keywords": [
-      "MK,"
+    'keywords': [
+      'MK,'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "7196647",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '7196647',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         354.188851531,
         183.72783386100116,
@@ -10055,19 +10055,19 @@ export const ANNOTATIONS = [
         192.22783386100116
       ]
     ],
-    "keywords": [
-      "MK"
+    'keywords': [
+      'MK'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "7196647",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '7196647',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         457.5055015261379,
         123.75183386100112,
@@ -10075,19 +10075,19 @@ export const ANNOTATIONS = [
         132.2518338610011
       ]
     ],
-    "keywords": [
-      "MK"
+    'keywords': [
+      'MK'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "7196647",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '7196647',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         233.06725154397108,
         573.4122153320003,
@@ -10095,19 +10095,19 @@ export const ANNOTATIONS = [
         581.9122153320003
       ]
     ],
-    "keywords": [
-      "MK,"
+    'keywords': [
+      'MK,'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "7196647",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '7196647',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         341.840901531,
         543.5838338610007,
@@ -10115,19 +10115,19 @@ export const ANNOTATIONS = [
         552.0838338610007
       ]
     ],
-    "keywords": [
-      "AG,"
+    'keywords': [
+      'AG,'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "103325053",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '103325053',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         396.740701531,
         543.5838338610007,
@@ -10135,19 +10135,19 @@ export const ANNOTATIONS = [
         552.0838338610007
       ]
     ],
-    "keywords": [
-      "DJ,"
+    'keywords': [
+      'DJ,'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "6727029",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '6727029',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         454.964001531,
         543.5838338610007,
@@ -10155,19 +10155,19 @@ export const ANNOTATIONS = [
         552.0838338610007
       ]
     ],
-    "keywords": [
-      "JD,"
+    'keywords': [
+      'JD,'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "16461",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '16461',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         500.4806515309999,
         543.5838338610007,
@@ -10175,19 +10175,19 @@ export const ANNOTATIONS = [
         552.0838338610007
       ]
     ],
-    "keywords": [
-      "CC"
+    'keywords': [
+      'CC'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "1043621",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '1043621',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         500.4806515309999,
         543.5838338610007,
@@ -10195,19 +10195,19 @@ export const ANNOTATIONS = [
         552.0838338610007
       ]
     ],
-    "keywords": [
-      "CC (2016)"
+    'keywords': [
+      'CC (2016)'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "14016309",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '14016309',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         351.677101531,
         493.6038338610008,
@@ -10215,19 +10215,19 @@ export const ANNOTATIONS = [
         502.1038338610008
       ]
     ],
-    "keywords": [
-      "A, Na"
+    'keywords': [
+      'A, Na'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "945837",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '945837',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         362.984651531,
         493.6038338610008,
@@ -10235,19 +10235,19 @@ export const ANNOTATIONS = [
         502.1038338610008
       ]
     ],
-    "keywords": [
-      "Na"
+    'keywords': [
+      'Na'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "23104238",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '23104238',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         151.04820151806297,
         623.3922153320002,
@@ -10255,19 +10255,19 @@ export const ANNOTATIONS = [
         631.8922153320002
       ]
     ],
-    "keywords": [
-      "NA,"
+    'keywords': [
+      'NA,'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "23104238",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '23104238',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         362.984651531,
         493.6038338610008,
@@ -10275,19 +10275,19 @@ export const ANNOTATIONS = [
         502.1038338610008
       ]
     ],
-    "keywords": [
-      "Na U,"
+    'keywords': [
+      'Na U,'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "395753",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '395753',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         504.757851556942,
         493.6038338610008,
@@ -10295,19 +10295,19 @@ export const ANNOTATIONS = [
         502.1038338610008
       ]
     ],
-    "keywords": [
-      "and R."
+    'keywords': [
+      'and R.'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "4241541",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '4241541',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         323.151101531,
         453.61983386100087,
@@ -10315,19 +10315,19 @@ export const ANNOTATIONS = [
         462.11983386100087
       ]
     ],
-    "keywords": [
-      "Sen"
+    'keywords': [
+      'Sen'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "10934",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '10934',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         68.032101531,
         653.3802153320001,
@@ -10335,19 +10335,19 @@ export const ANNOTATIONS = [
         661.8802153320001
       ]
     ],
-    "keywords": [
-      "Sen"
+    'keywords': [
+      'Sen'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "10934",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '10934',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         68.032101531,
         633.3882153320002,
@@ -10355,19 +10355,19 @@ export const ANNOTATIONS = [
         641.8882153320002
       ]
     ],
-    "keywords": [
-      "Sen"
+    'keywords': [
+      'Sen'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "10934",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '10934',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         323.151101531,
         453.61983386100087,
@@ -10375,19 +10375,19 @@ export const ANNOTATIONS = [
         462.11983386100087
       ]
     ],
-    "keywords": [
-      "Sen S,"
+    'keywords': [
+      'Sen S,'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112596515",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112596515',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         68.032101531,
         653.3802153320001,
@@ -10395,19 +10395,19 @@ export const ANNOTATIONS = [
         661.8802153320001
       ]
     ],
-    "keywords": [
-      "Sen S,"
+    'keywords': [
+      'Sen S,'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112596515",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112596515',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         68.032101531,
         633.3882153320002,
@@ -10415,19 +10415,19 @@ export const ANNOTATIONS = [
         641.8882153320002
       ]
     ],
-    "keywords": [
-      "Sen S,"
+    'keywords': [
+      'Sen S,'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112596515",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112596515',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         350.215101531,
         413.63583386100095,
@@ -10435,19 +10435,19 @@ export const ANNOTATIONS = [
         422.13583386100095
       ]
     ],
-    "keywords": [
-      "SS,"
+    'keywords': [
+      'SS,'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "110113711",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '110113711',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         151.66360153099998,
         653.3802153320001,
@@ -10455,19 +10455,19 @@ export const ANNOTATIONS = [
         661.8802153320001
       ]
     ],
-    "keywords": [
-      "SS,"
+    'keywords': [
+      'SS,'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "110113711",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '110113711',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         306.14260153099997,
         373.651833861001,
@@ -10481,20 +10481,20 @@ export const ANNOTATIONS = [
         402.143833861001
       ]
     ],
-    "keywords": [
-      " 29.",
-      "Soc"
+    'keywords': [
+      ' 29.',
+      'Soc'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "25769393",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '25769393',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         323.151101531,
         373.651833861001,
@@ -10502,19 +10502,19 @@ export const ANNOTATIONS = [
         382.151833861001
       ]
     ],
-    "keywords": [
-      "Xia"
+    'keywords': [
+      'Xia'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "109215549",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '109215549',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         338.202901531,
         333.6678338610011,
@@ -10522,19 +10522,19 @@ export const ANNOTATIONS = [
         342.1678338610011
       ]
     ],
-    "keywords": [
-      "S-P,"
+    'keywords': [
+      'S-P,'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "7803754",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '7803754',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         412.2821015245145,
         333.6678338610011,
@@ -10542,19 +10542,19 @@ export const ANNOTATIONS = [
         342.1678338610011
       ]
     ],
-    "keywords": [
-      "KK,"
+    'keywords': [
+      'KK,'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "251556",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '251556',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         382.459851531,
         313.67583386100114,
@@ -10562,19 +10562,19 @@ export const ANNOTATIONS = [
         322.17583386100114
       ]
     ],
-    "keywords": [
-      "Ark"
+    'keywords': [
+      'Ark'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "3853071",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '3853071',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         398.281751531,
         313.67583386100114,
@@ -10582,19 +10582,19 @@ export const ANNOTATIONS = [
         322.17583386100114
       ]
     ],
-    "keywords": [
-      "Mat"
+    'keywords': [
+      'Mat'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "31080706",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '31080706',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         414.640001531,
         313.67583386100114,
@@ -10602,19 +10602,19 @@ export const ANNOTATIONS = [
         322.17583386100114
       ]
     ],
-    "keywords": [
-      "Astr"
+    'keywords': [
+      'Astr'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "11639372",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '11639372',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         351.001351531,
         303.67983386100116,
@@ -10622,19 +10622,19 @@ export const ANNOTATIONS = [
         312.17983386100116
       ]
     ],
-    "keywords": [
-      "P (2000)"
+    'keywords': [
+      'P (2000)'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "5658040",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '5658040',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         356.301101531,
         293.6838338610012,
@@ -10642,19 +10642,19 @@ export const ANNOTATIONS = [
         302.1838338610012
       ]
     ],
-    "keywords": [
-      "J, Chain"
+    'keywords': [
+      'J, Chain'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112117813",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112117813',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         356.301101531,
         173.73183386100115,
@@ -10662,19 +10662,19 @@ export const ANNOTATIONS = [
         182.23183386100115
       ]
     ],
-    "keywords": [
-      "J, Chain"
+    'keywords': [
+      'J, Chain'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112117813",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112117813',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         387.470601531,
         293.6838338610012,
@@ -10682,19 +10682,19 @@ export const ANNOTATIONS = [
         302.1838338610012
       ]
     ],
-    "keywords": [
-      "CY,"
+    'keywords': [
+      'CY,'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "13055",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '13055',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         387.470601531,
         173.73183386100115,
@@ -10702,19 +10702,19 @@ export const ANNOTATIONS = [
         182.23183386100115
       ]
     ],
-    "keywords": [
-      "CY,"
+    'keywords': [
+      'CY,'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "13055",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '13055',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         445.53410153100003,
         293.6838338610012,
@@ -10722,19 +10722,19 @@ export const ANNOTATIONS = [
         302.1838338610012
       ]
     ],
-    "keywords": [
-      "GA,"
+    'keywords': [
+      'GA,'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "105051862",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '105051862',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         445.53410153100003,
         173.73183386100115,
@@ -10742,19 +10742,19 @@ export const ANNOTATIONS = [
         182.23183386100115
       ]
     ],
-    "keywords": [
-      "GA,"
+    'keywords': [
+      'GA,'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "105051862",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '105051862',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         504.5581015309998,
         293.6838338610012,
@@ -10762,19 +10762,19 @@ export const ANNOTATIONS = [
         302.1838338610012
       ]
     ],
-    "keywords": [
-      "AF,"
+    'keywords': [
+      'AF,'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "407373",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '407373',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         504.5581015309998,
         173.73183386100115,
@@ -10782,19 +10782,19 @@ export const ANNOTATIONS = [
         182.23183386100115
       ]
     ],
-    "keywords": [
-      "AF,"
+    'keywords': [
+      'AF,'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "407373",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '407373',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         484.33405154723494,
         233.7078338610012,
@@ -10802,19 +10802,19 @@ export const ANNOTATIONS = [
         242.2078338610012
       ]
     ],
-    "keywords": [
-      "IP,"
+    'keywords': [
+      'IP,'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "933743",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '933743',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         344.851601531,
         223.7118338610012,
@@ -10822,19 +10822,19 @@ export const ANNOTATIONS = [
         232.2118338610012
       ]
     ],
-    "keywords": [
-      "DR,"
+    'keywords': [
+      'DR,'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112594697",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112594697',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         413.880101531,
         223.7118338610012,
@@ -10842,19 +10842,19 @@ export const ANNOTATIONS = [
         232.2118338610012
       ]
     ],
-    "keywords": [
-      "Dos"
+    'keywords': [
+      'Dos'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "11638749",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '11638749',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         458.0129515309999,
         223.7118338610012,
@@ -10862,19 +10862,19 @@ export const ANNOTATIONS = [
         232.2118338610012
       ]
     ],
-    "keywords": [
-      "PC"
+    'keywords': [
+      'PC'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112119189",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112119189',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         323.151101531,
         203.71983386100118,
@@ -10882,19 +10882,19 @@ export const ANNOTATIONS = [
         212.21983386100118
       ]
     ],
-    "keywords": [
-      "Gao"
+    'keywords': [
+      'Gao'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "549749",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '549749',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         505.6282515309998,
         203.71983386100118,
@@ -10902,19 +10902,19 @@ export const ANNOTATIONS = [
         212.21983386100118
       ]
     ],
-    "keywords": [
-      "S-K,"
+    'keywords': [
+      'S-K,'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "111060391",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '111060391',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         369.1888015374855,
         193.72383386100117,
@@ -10922,19 +10922,19 @@ export const ANNOTATIONS = [
         202.22383386100117
       ]
     ],
-    "keywords": [
-      "DB,"
+    'keywords': [
+      'DB,'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "16847",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '16847',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         401.1258515374855,
         193.72383386100117,
@@ -10942,19 +10942,19 @@ export const ANNOTATIONS = [
         202.22383386100117
       ]
     ],
-    "keywords": [
-      "H-C,"
+    'keywords': [
+      'H-C,'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "362119",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '362119',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         350.389351531,
         153.73983386100113,
@@ -10962,19 +10962,19 @@ export const ANNOTATIONS = [
         162.23983386100113
       ]
     ],
-    "keywords": [
-      "J-M,"
+    'keywords': [
+      'J-M,'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "100270782",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '100270782',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         373.84595153099997,
         133.7478338610011,
@@ -10982,19 +10982,19 @@ export const ANNOTATIONS = [
         142.2478338610011
       ]
     ],
-    "keywords": [
-      "Zhang"
+    'keywords': [
+      'Zhang'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "106603806",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '106603806',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         168.59475154397109,
         573.4122153320003,
@@ -11002,19 +11002,19 @@ export const ANNOTATIONS = [
         581.9122153320003
       ]
     ],
-    "keywords": [
-      "Zhang"
+    'keywords': [
+      'Zhang'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "106603806",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '106603806',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         323.151101531,
         113.75583386100112,
@@ -11022,19 +11022,19 @@ export const ANNOTATIONS = [
         122.25583386100112
       ]
     ],
-    "keywords": [
-      "(Camb,"
+    'keywords': [
+      '(Camb,'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "50663",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '50663',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         351.562351531,
         113.75583386100112,
@@ -11042,19 +11042,19 @@ export const ANNOTATIONS = [
         122.25583386100112
       ]
     ],
-    "keywords": [
-      "Engl:"
+    'keywords': [
+      'Engl:'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "208194",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '208194',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         416.345101531,
         103.75983386100113,
@@ -11062,19 +11062,19 @@ export const ANNOTATIONS = [
         112.25983386100113
       ]
     ],
-    "keywords": [
-      "F (2010)"
+    'keywords': [
+      'F (2010)'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "41826267",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '41826267',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         323.151101531,
         93.76383386100113,
@@ -11082,19 +11082,19 @@ export const ANNOTATIONS = [
         102.26383386100113
       ]
     ],
-    "keywords": [
-      "(eds)"
+    'keywords': [
+      '(eds)'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "100281754",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '100281754',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         438.42385153424704,
         83.76783386100114,
@@ -11102,19 +11102,19 @@ export const ANNOTATIONS = [
         92.26783386100114
       ]
     ],
-    "keywords": [
-      "York,"
+    'keywords': [
+      'York,'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "26797477",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '26797477',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         460.417601534247,
         83.76783386100114,
@@ -11122,19 +11122,19 @@ export const ANNOTATIONS = [
         92.26783386100114
       ]
     ],
-    "keywords": [
-      "pp"
+    'keywords': [
+      'pp'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "20221668",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '20221668',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         135.87910153099998,
         723.352215332,
@@ -11142,19 +11142,19 @@ export const ANNOTATIONS = [
         731.852215332
       ]
     ],
-    "keywords": [
-      "CA,"
+    'keywords': [
+      'CA,'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "8240934",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '8240934',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         68.032101531,
         713.356215332,
@@ -11162,19 +11162,19 @@ export const ANNOTATIONS = [
         721.856215332
       ]
     ],
-    "keywords": [
-      "FA,"
+    'keywords': [
+      'FA,'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "24536",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '24536',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         82.47700153748549,
         713.356215332,
@@ -11182,19 +11182,19 @@ export const ANNOTATIONS = [
         721.856215332
       ]
     ],
-    "keywords": [
-      "Stout"
+    'keywords': [
+      'Stout'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "45885",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '45885',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         146.487951543971,
         713.356215332,
@@ -11202,19 +11202,19 @@ export const ANNOTATIONS = [
         721.856215332
       ]
     ],
-    "keywords": [
-      "BK"
+    'keywords': [
+      'BK'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "192189",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '192189',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         104.78780153749398,
         703.360215332,
@@ -11222,19 +11222,19 @@ export const ANNOTATIONS = [
         711.860215332
       ]
     ],
-    "keywords": [
-      "WV,"
+    'keywords': [
+      'WV,'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "16522",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '16522',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         171.67685152777847,
         703.360215332,
@@ -11242,19 +11242,19 @@ export const ANNOTATIONS = [
         711.860215332
       ]
     ],
-    "keywords": [
-      "JC"
+    'keywords': [
+      'JC'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "109205",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '109205',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         213.87085152777848,
         703.360215332,
@@ -11262,19 +11262,19 @@ export const ANNOTATIONS = [
         711.860215332
       ]
     ],
-    "keywords": [
-      "Annu"
+    'keywords': [
+      'Annu'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "108914721",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '108914721',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         113.35665153099998,
         683.3682153320001,
@@ -11282,19 +11282,19 @@ export const ANNOTATIONS = [
         691.8682153320001
       ]
     ],
-    "keywords": [
-      "Yu"
+    'keywords': [
+      'Yu'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "10178789",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '10178789',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         413.32250153100006,
         683.4362102660003,
@@ -11302,19 +11302,19 @@ export const ANNOTATIONS = [
         691.9362102660003
       ]
     ],
-    "keywords": [
-      "Yu"
+    'keywords': [
+      'Yu'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "10178789",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '10178789',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         126.62770153099996,
         683.3682153320001,
@@ -11322,19 +11322,19 @@ export const ANNOTATIONS = [
         691.8682153320001
       ]
     ],
-    "keywords": [
-      "L-K,"
+    'keywords': [
+      'L-K,'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "105218045",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '105218045',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         168.60240153099994,
         683.3682153320001,
@@ -11342,19 +11342,19 @@ export const ANNOTATIONS = [
         691.8682153320001
       ]
     ],
-    "keywords": [
-      "Y-H,"
+    'keywords': [
+      'Y-H,'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "100532577",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '100532577',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         215.09060150506642,
         683.3682153320001,
@@ -11362,19 +11362,19 @@ export const ANNOTATIONS = [
         691.8682153320001
       ]
     ],
-    "keywords": [
-      "Y-H,"
+    'keywords': [
+      'Y-H,'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "100532577",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '100532577',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         259.2166515310084,
         683.3682153320001,
@@ -11382,19 +11382,19 @@ export const ANNOTATIONS = [
         691.8682153320001
       ]
     ],
-    "keywords": [
-      "Y-C,"
+    'keywords': [
+      'Y-C,'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "693001",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '693001',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         279.0752015569504,
         683.3682153320001,
@@ -11402,19 +11402,19 @@ export const ANNOTATIONS = [
         691.8682153320001
       ]
     ],
-    "keywords": [
-      "Ke"
+    'keywords': [
+      'Ke'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "251554",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '251554',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         68.032101531,
         673.3722153320001,
@@ -11422,19 +11422,19 @@ export const ANNOTATIONS = [
         681.8722153320001
       ]
     ],
-    "keywords": [
-      "S-C,"
+    'keywords': [
+      'S-C,'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "40101789",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '40101789',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         156.383651556942,
         673.3722153320001,
@@ -11442,19 +11442,19 @@ export const ANNOTATIONS = [
         681.8722153320001
       ]
     ],
-    "keywords": [
-      "C-J,"
+    'keywords': [
+      'C-J,'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "31800",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '31800',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         202.38565155694195,
         673.3722153320001,
@@ -11462,19 +11462,19 @@ export const ANNOTATIONS = [
         681.8722153320001
       ]
     ],
-    "keywords": [
-      "T-H"
+    'keywords': [
+      'T-H'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "112112820",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '112112820',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         352.620601531,
         683.4362102660003,
@@ -11482,19 +11482,19 @@ export const ANNOTATIONS = [
         691.9362102660003
       ]
     ],
-    "keywords": [
-      "JN,"
+    'keywords': [
+      'JN,'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "57471",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '57471',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         394.40660153100004,
         683.4362102660003,
@@ -11502,19 +11502,19 @@ export const ANNOTATIONS = [
         691.9362102660003
       ]
     ],
-    "keywords": [
-      "WK,"
+    'keywords': [
+      'WK,'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "249889",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '249889',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         425.76225153100006,
         683.4362102660003,
@@ -11522,19 +11522,19 @@ export const ANNOTATIONS = [
         691.9362102660003
       ]
     ],
-    "keywords": [
-      "LE,"
+    'keywords': [
+      'LE,'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "192232",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '192232',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         440.900751531,
         683.4362102660003,
@@ -11542,19 +11542,19 @@ export const ANNOTATIONS = [
         691.9362102660003
       ]
     ],
-    "keywords": [
-      "Cox"
+    'keywords': [
+      'Cox'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "1457763",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '1457763',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         457.509751531,
         683.4362102660003,
@@ -11562,19 +11562,19 @@ export const ANNOTATIONS = [
         691.9362102660003
       ]
     ],
-    "keywords": [
-      "RM,"
+    'keywords': [
+      'RM,'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "948867",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '948867',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         503.3162515310001,
         683.4362102660003,
@@ -11582,19 +11582,19 @@ export const ANNOTATIONS = [
         691.9362102660003
       ]
     ],
-    "keywords": [
-      "DH,"
+    'keywords': [
+      'DH,'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "109698",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '109698',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         341.430351531,
         673.4402102660003,
@@ -11602,19 +11602,19 @@ export const ANNOTATIONS = [
         681.9402102660003
       ]
     ],
-    "keywords": [
-      "DP"
+    'keywords': [
+      'DP'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "8241411",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '8241411',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         527.0695015277614,
         663.4442102660004,
@@ -11622,19 +11622,19 @@ export const ANNOTATIONS = [
         671.9442102660004
       ]
     ],
-    "keywords": [
-      "Win-"
+    'keywords': [
+      'Win-'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "14235",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '14235',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         384.924001531,
         653.4482102660004,
@@ -11642,19 +11642,19 @@ export const ANNOTATIONS = [
         661.9482102660004
       ]
     ],
-    "keywords": [
-      "Nat"
+    'keywords': [
+      'Nat'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "9441851",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '9441851',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         258.74065151808,
         623.3922153320002,
@@ -11662,19 +11662,19 @@ export const ANNOTATIONS = [
         631.8922153320002
       ]
     ],
-    "keywords": [
-      "Mol"
+    'keywords': [
+      'Mol'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "108594366",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '108594366',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         132.50970153424703,
         603.4002153320002,
@@ -11682,19 +11682,19 @@ export const ANNOTATIONS = [
         611.9002153320002
       ]
     ],
-    "keywords": [
-      "AK,"
+    'keywords': [
+      'AK,'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "17359640",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '17359640',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         180.755701534247,
         603.4002153320002,
@@ -11702,19 +11702,19 @@ export const ANNOTATIONS = [
         611.9002153320002
       ]
     ],
-    "keywords": [
-      "SJ,"
+    'keywords': [
+      'SJ,'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "12292",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '12292',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         68.032101531,
         573.4122153320003,
@@ -11722,19 +11722,19 @@ export const ANNOTATIONS = [
         581.9122153320003
       ]
     ],
-    "keywords": [
-      "Roret"
+    'keywords': [
+      'Roret'
     ],
-    "meta": {
-      "type": "Genes",
-      "id": "10475",
-      "color": "#8f7cbf",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Genes',
+      'id': '10475',
+      'color': '#8f7cbf',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         463.0116015271801,
         514.280930175,
@@ -11742,19 +11742,19 @@ export const ANNOTATIONS = [
         524.280930175
       ]
     ],
-    "keywords": [
-      "proteins"
+    'keywords': [
+      'proteins'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:36080",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:36080',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         410.287813655,
         289.280899658,
@@ -11762,19 +11762,19 @@ export const ANNOTATIONS = [
         299.280899658
       ]
     ],
-    "keywords": [
-      "proteins"
+    'keywords': [
+      'proteins'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:36080",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:36080',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         337.871813655,
         264.280899658,
@@ -11782,19 +11782,19 @@ export const ANNOTATIONS = [
         274.280899658
       ]
     ],
-    "keywords": [
-      "proteins"
+    'keywords': [
+      'proteins'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:36080",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:36080',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         382.38581365309005,
         114.28089965800002,
@@ -11802,19 +11802,19 @@ export const ANNOTATIONS = [
         124.28089965800002
       ]
     ],
-    "keywords": [
-      "proteins"
+    'keywords': [
+      'proteins'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:36080",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:36080',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         237.1646015310099,
         696.630173339,
@@ -11822,19 +11822,19 @@ export const ANNOTATIONS = [
         706.630173339
       ]
     ],
-    "keywords": [
-      "proteins"
+    'keywords': [
+      'proteins'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:36080",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:36080',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 4,
-    "rects": [
+    'pageNumber': 4,
+    'rects': [
       [
         335.506693115,
         170.836197509,
@@ -11842,19 +11842,19 @@ export const ANNOTATIONS = [
         180.836197509
       ]
     ],
-    "keywords": [
-      "proteins,"
+    'keywords': [
+      'proteins,'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:36080",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:36080',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 4,
-    "rects": [
+    'pageNumber': 4,
+    'rects': [
       [
         510.56669310356995,
         145.836197509,
@@ -11862,19 +11862,19 @@ export const ANNOTATIONS = [
         155.836197509
       ]
     ],
-    "keywords": [
-      "proteins"
+    'keywords': [
+      'proteins'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:36080",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:36080',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 4,
-    "rects": [
+    'pageNumber': 4,
+    'rects': [
       [
         327.96169311499995,
         120.836197509,
@@ -11882,19 +11882,19 @@ export const ANNOTATIONS = [
         130.836197509
       ]
     ],
-    "keywords": [
-      "proteins"
+    'keywords': [
+      'proteins'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:36080",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:36080',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 4,
-    "rects": [
+    'pageNumber': 4,
+    'rects': [
       [
         439.39669311691,
         120.836197509,
@@ -11902,19 +11902,19 @@ export const ANNOTATIONS = [
         130.836197509
       ]
     ],
-    "keywords": [
-      "proteins"
+    'keywords': [
+      'proteins'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:36080",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:36080',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 4,
-    "rects": [
+    'pageNumber': 4,
+    'rects': [
       [
         490.7196931111801,
         83.336197509,
@@ -11922,19 +11922,19 @@ export const ANNOTATIONS = [
         93.336197509
       ]
     ],
-    "keywords": [
-      "proteins"
+    'keywords': [
+      'proteins'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:36080",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:36080',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         306.14150363699997,
         634.130173339,
@@ -11942,19 +11942,19 @@ export const ANNOTATIONS = [
         644.130173339
       ]
     ],
-    "keywords": [
-      "proteins"
+    'keywords': [
+      'proteins'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:36080",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:36080',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         319.20150562699996,
         509.13017333899995,
@@ -11962,19 +11962,19 @@ export const ANNOTATIONS = [
         519.130173339
       ]
     ],
-    "keywords": [
-      "proteins."
+    'keywords': [
+      'proteins.'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:36080",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:36080',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         321.041505627,
         459.13017333899995,
@@ -11982,19 +11982,19 @@ export const ANNOTATIONS = [
         469.13017333899995
       ]
     ],
-    "keywords": [
-      "proteins,"
+    'keywords': [
+      'proteins,'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:36080",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:36080',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         427.51050562700004,
         371.63017333899995,
@@ -12002,19 +12002,19 @@ export const ANNOTATIONS = [
         381.63017333899995
       ]
     ],
-    "keywords": [
-      "proteins"
+    'keywords': [
+      'proteins'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:36080",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:36080',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         253.53990070082017,
         571.630173339,
@@ -12022,19 +12022,19 @@ export const ANNOTATIONS = [
         581.630173339
       ]
     ],
-    "keywords": [
-      "proteins,"
+    'keywords': [
+      'proteins,'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:36080",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:36080',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         72.05790069700001,
         546.630173339,
@@ -12042,19 +12042,19 @@ export const ANNOTATIONS = [
         556.630173339
       ]
     ],
-    "keywords": [
-      "proteins"
+    'keywords': [
+      'proteins'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:36080",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:36080',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         257.11290664748003,
         434.13017333899995,
@@ -12062,19 +12062,19 @@ export const ANNOTATIONS = [
         444.13017333899995
       ]
     ],
-    "keywords": [
-      "proteins"
+    'keywords': [
+      'proteins'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:36080",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:36080',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         217.95790665700017,
         384.13017333899995,
@@ -12082,19 +12082,19 @@ export const ANNOTATIONS = [
         394.13017333899995
       ]
     ],
-    "keywords": [
-      "proteins."
+    'keywords': [
+      'proteins.'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:36080",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:36080',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         427.4778979570001,
         721.630173339,
@@ -12102,19 +12102,19 @@ export const ANNOTATIONS = [
         731.630173339
       ]
     ],
-    "keywords": [
-      "proteins"
+    'keywords': [
+      'proteins'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:36080",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:36080',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         425.58689903844004,
         621.630173339,
@@ -12122,19 +12122,19 @@ export const ANNOTATIONS = [
         631.630173339
       ]
     ],
-    "keywords": [
-      "proteins"
+    'keywords': [
+      'proteins'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:36080",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:36080',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 8,
-    "rects": [
+    'pageNumber': 8,
+    'rects': [
       [
         233.90760155008013,
         259.223190917,
@@ -12142,19 +12142,19 @@ export const ANNOTATIONS = [
         269.223190917
       ]
     ],
-    "keywords": [
-      "proteins"
+    'keywords': [
+      'proteins'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:36080",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:36080',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 8,
-    "rects": [
+    'pageNumber': 8,
+    'rects': [
       [
         129.21160152909,
         246.723190917,
@@ -12162,19 +12162,19 @@ export const ANNOTATIONS = [
         256.723190917
       ]
     ],
-    "keywords": [
-      "proteins,"
+    'keywords': [
+      'proteins,'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:36080",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:36080',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         51.023601531,
         364.280930175,
@@ -12182,19 +12182,19 @@ export const ANNOTATIONS = [
         374.280930175
       ]
     ],
-    "keywords": [
-      "DTT"
+    'keywords': [
+      'DTT'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:18320",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:18320',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         142.25660153864004,
         671.630173339,
@@ -12202,19 +12202,19 @@ export const ANNOTATIONS = [
         681.630173339
       ]
     ],
-    "keywords": [
-      "DTT,"
+    'keywords': [
+      'DTT,'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:18320",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:18320',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         123.26060153101001,
         634.130173339,
@@ -12222,19 +12222,19 @@ export const ANNOTATIONS = [
         644.130173339
       ]
     ],
-    "keywords": [
-      "DTT,"
+    'keywords': [
+      'DTT,'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:18320",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:18320',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         242.01760153672998,
         196.63020385700003,
@@ -12242,19 +12242,19 @@ export const ANNOTATIONS = [
         206.63020385700003
       ]
     ],
-    "keywords": [
-      "DTT,"
+    'keywords': [
+      'DTT,'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:18320",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:18320',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         138.78139886782,
         109.13020385700001,
@@ -12262,19 +12262,19 @@ export const ANNOTATIONS = [
         119.13020385700001
       ]
     ],
-    "keywords": [
-      "DTT"
+    'keywords': [
+      'DTT'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:18320",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:18320',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         205.03640087306997,
         84.13020385700001,
@@ -12282,19 +12282,19 @@ export const ANNOTATIONS = [
         94.13020385700001
       ]
     ],
-    "keywords": [
-      "DTT"
+    'keywords': [
+      'DTT'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:18320",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:18320',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 6,
-    "rects": [
+    'pageNumber': 6,
+    'rects': [
       [
         478.5157907919801,
         134.13020385699997,
@@ -12302,19 +12302,19 @@ export const ANNOTATIONS = [
         144.13020385699997
       ]
     ],
-    "keywords": [
-      "DTT"
+    'keywords': [
+      'DTT'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:18320",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:18320',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 6,
-    "rects": [
+    'pageNumber': 6,
+    'rects': [
       [
         334.800790771,
         96.63020385699998,
@@ -12322,19 +12322,19 @@ export const ANNOTATIONS = [
         106.63020385699998
       ]
     ],
-    "keywords": [
-      "DTT,"
+    'keywords': [
+      'DTT,'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:18320",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:18320',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         51.023601531,
         709.130173339,
@@ -12342,19 +12342,19 @@ export const ANNOTATIONS = [
         719.130173339
       ]
     ],
-    "keywords": [
-      "DTT."
+    'keywords': [
+      'DTT.'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:18320",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:18320',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         185.17160152908997,
         709.130173339,
@@ -12362,19 +12362,19 @@ export const ANNOTATIONS = [
         719.130173339
       ]
     ],
-    "keywords": [
-      "DTT"
+    'keywords': [
+      'DTT'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:18320",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:18320',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 8,
-    "rects": [
+    'pageNumber': 8,
+    'rects': [
       [
         51.029403075999994,
         71.72329772900001,
@@ -12382,19 +12382,19 @@ export const ANNOTATIONS = [
         81.72329772900001
       ]
     ],
-    "keywords": [
-      "DTT"
+    'keywords': [
+      'DTT'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:18320",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:18320',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 8,
-    "rects": [
+    'pageNumber': 8,
+    'rects': [
       [
         306.149394376,
         246.72329772900002,
@@ -12402,19 +12402,19 @@ export const ANNOTATIONS = [
         256.723297729
       ]
     ],
-    "keywords": [
-      "DTT"
+    'keywords': [
+      'DTT'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:18320",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:18320',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 8,
-    "rects": [
+    'pageNumber': 8,
+    'rects': [
       [
         380.43939437599994,
         221.72329772900002,
@@ -12422,19 +12422,19 @@ export const ANNOTATIONS = [
         231.72329772900002
       ]
     ],
-    "keywords": [
-      "DTT"
+    'keywords': [
+      'DTT'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:18320",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:18320',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 8,
-    "rects": [
+    'pageNumber': 8,
+    'rects': [
       [
         335.298394376,
         196.72329772900002,
@@ -12442,19 +12442,19 @@ export const ANNOTATIONS = [
         206.72329772900002
       ]
     ],
-    "keywords": [
-      "DTT"
+    'keywords': [
+      'DTT'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:18320",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:18320',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         51.023601531,
         339.280930175,
@@ -12462,19 +12462,19 @@ export const ANNOTATIONS = [
         349.280930175
       ]
     ],
-    "keywords": [
-      "GSH"
+    'keywords': [
+      'GSH'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:16856",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:16856',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 6,
-    "rects": [
+    'pageNumber': 6,
+    'rects': [
       [
         501.53579076718,
         259.13020385699997,
@@ -12482,19 +12482,19 @@ export const ANNOTATIONS = [
         269.13020385699997
       ]
     ],
-    "keywords": [
-      "GSH"
+    'keywords': [
+      'GSH'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:16856",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:16856',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         202.27790068557005,
         559.130173339,
@@ -12502,19 +12502,19 @@ export const ANNOTATIONS = [
         569.130173339
       ]
     ],
-    "keywords": [
-      "GSH"
+    'keywords': [
+      'GSH'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:16856",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:16856',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         237.88275764293354,
         71.43419976800001,
@@ -12522,19 +12522,19 @@ export const ANNOTATIONS = [
         79.93419976800001
       ]
     ],
-    "keywords": [
-      "GSH"
+    'keywords': [
+      'GSH'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:16856",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:16856',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         527.270402587,
         101.422199768,
@@ -12542,19 +12542,19 @@ export const ANNOTATIONS = [
         109.922199768
       ]
     ],
-    "keywords": [
-      "GSH"
+    'keywords': [
+      'GSH'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:16856",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:16856',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         428.296401516,
         91.426199768,
@@ -12562,19 +12562,19 @@ export const ANNOTATIONS = [
         99.926199768
       ]
     ],
-    "keywords": [
-      "GSH"
+    'keywords': [
+      'GSH'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:16856",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:16856',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         93.893601531,
         389.280930175,
@@ -12582,19 +12582,19 @@ export const ANNOTATIONS = [
         399.280930175
       ]
     ],
-    "keywords": [
-      "Glutaredoxin"
+    'keywords': [
+      'Glutaredoxin'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:48465",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:48465',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 2,
-    "rects": [
+    'pageNumber': 2,
+    'rects': [
       [
         416.06769311690994,
         483.250229492,
@@ -12602,19 +12602,19 @@ export const ANNOTATIONS = [
         493.250229492
       ]
     ],
-    "keywords": [
-      "glutaredoxin"
+    'keywords': [
+      'glutaredoxin'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:48465",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:48465',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         446.2428979550901,
         684.130173339,
@@ -12622,19 +12622,19 @@ export const ANNOTATIONS = [
         694.130173339
       ]
     ],
-    "keywords": [
-      "glutaredoxin)"
+    'keywords': [
+      'glutaredoxin)'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:48465",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:48465',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 8,
-    "rects": [
+    'pageNumber': 8,
+    'rects': [
       [
         51.023601531,
         196.723190917,
@@ -12648,20 +12648,20 @@ export const ANNOTATIONS = [
         219.223190917
       ]
     ],
-    "keywords": [
-      "taredoxin",
-      "glu-"
+    'keywords': [
+      'taredoxin',
+      'glu-'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:48465",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:48465',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         93.89260055443,
         364.280930175,
@@ -12669,19 +12669,19 @@ export const ANNOTATIONS = [
         374.280930175
       ]
     ],
-    "keywords": [
-      "Dithiothreitol"
+    'keywords': [
+      'Dithiothreitol'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:18320",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:18320',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         93.89260055443,
         351.780930175,
@@ -12689,19 +12689,19 @@ export const ANNOTATIONS = [
         361.780930175
       ]
     ],
-    "keywords": [
-      "Ferredoxin"
+    'keywords': [
+      'Ferredoxin'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:5017",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:5017',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         379.75889902318,
         621.630173339,
@@ -12709,19 +12709,19 @@ export const ANNOTATIONS = [
         631.630173339
       ]
     ],
-    "keywords": [
-      "ferredoxin"
+    'keywords': [
+      'ferredoxin'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:5017",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:5017',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         349.66789902700003,
         596.630173339,
@@ -12729,19 +12729,19 @@ export const ANNOTATIONS = [
         606.630173339
       ]
     ],
-    "keywords": [
-      "ferredoxin"
+    'keywords': [
+      'ferredoxin'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:5017",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:5017',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         476.40951046018006,
         546.630173339,
@@ -12749,19 +12749,19 @@ export const ANNOTATIONS = [
         556.630173339
       ]
     ],
-    "keywords": [
-      "ferredoxin"
+    'keywords': [
+      'ferredoxin'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:5017",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:5017',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         306.146510464,
         534.130173339,
@@ -12769,19 +12769,19 @@ export const ANNOTATIONS = [
         544.130173339
       ]
     ],
-    "keywords": [
-      "ferredoxin"
+    'keywords': [
+      'ferredoxin'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:5017",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:5017',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 8,
-    "rects": [
+    'pageNumber': 8,
+    'rects': [
       [
         51.023601531,
         329.0842143550001,
@@ -12795,20 +12795,20 @@ export const ANNOTATIONS = [
         347.58021435500007
       ]
     ],
-    "keywords": [
-      "doxin",
-      "ferre-"
+    'keywords': [
+      'doxin',
+      'ferre-'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:5017",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:5017',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 8,
-    "rects": [
+    'pageNumber': 8,
+    'rects': [
       [
         369.18518794199997,
         339.08171435500003,
@@ -12816,19 +12816,19 @@ export const ANNOTATIONS = [
         347.58171435500003
       ]
     ],
-    "keywords": [
-      "ferredoxin"
+    'keywords': [
+      'ferredoxin'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:5017",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:5017',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 8,
-    "rects": [
+    'pageNumber': 8,
+    'rects': [
       [
         188.89460153100006,
         259.223190917,
@@ -12836,19 +12836,19 @@ export const ANNOTATIONS = [
         269.223190917
       ]
     ],
-    "keywords": [
-      "ferredoxin"
+    'keywords': [
+      'ferredoxin'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:5017",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:5017',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         354.425815185,
         376.780899658,
@@ -12856,19 +12856,19 @@ export const ANNOTATIONS = [
         386.780899658
       ]
     ],
-    "keywords": [
-      "cofactors"
+    'keywords': [
+      'cofactors'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:23357",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:23357',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         382.89481518690997,
         364.280899658,
@@ -12876,19 +12876,19 @@ export const ANNOTATIONS = [
         374.280899658
       ]
     ],
-    "keywords": [
-      "electron"
+    'keywords': [
+      'electron'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:10545",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:10545',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         324.251815185,
         351.780899658,
@@ -12896,19 +12896,19 @@ export const ANNOTATIONS = [
         361.780899658
       ]
     ],
-    "keywords": [
-      "DNA"
+    'keywords': [
+      'DNA'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:16991",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:16991',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 2,
-    "rects": [
+    'pageNumber': 2,
+    'rects': [
       [
         407.258693115,
         233.250198974,
@@ -12916,19 +12916,19 @@ export const ANNOTATIONS = [
         243.250198974
       ]
     ],
-    "keywords": [
-      "DNA"
+    'keywords': [
+      'DNA'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:16991",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:16991',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 2,
-    "rects": [
+    'pageNumber': 2,
+    'rects': [
       [
         431.7716931150001,
         183.250198974,
@@ -12936,19 +12936,19 @@ export const ANNOTATIONS = [
         193.250198974
       ]
     ],
-    "keywords": [
-      "DNA"
+    'keywords': [
+      'DNA'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:16991",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:16991',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         364.38981365499995,
         326.780899658,
@@ -12956,19 +12956,19 @@ export const ANNOTATIONS = [
         336.780899658
       ]
     ],
-    "keywords": [
-      "cofactor"
+    'keywords': [
+      'cofactor'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:23357",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:23357',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         342.3118136549999,
         314.280899658,
@@ -12976,19 +12976,19 @@ export const ANNOTATIONS = [
         324.280899658
       ]
     ],
-    "keywords": [
-      "cofactor"
+    'keywords': [
+      'cofactor'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:23357",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:23357',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         433.26481365499995,
         276.780899658,
@@ -12996,19 +12996,19 @@ export const ANNOTATIONS = [
         286.780899658
       ]
     ],
-    "keywords": [
-      "cofactor."
+    'keywords': [
+      'cofactor.'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:23357",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:23357',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         377.51181365499997,
         314.280899658,
@@ -13016,19 +13016,19 @@ export const ANNOTATIONS = [
         324.280899658
       ]
     ],
-    "keywords": [
-      "lipoic acid,"
+    'keywords': [
+      'lipoic acid,'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:16494",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:16494',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         500.7158136855298,
         301.780899658,
@@ -13036,19 +13036,19 @@ export const ANNOTATIONS = [
         311.780899658
       ]
     ],
-    "keywords": [
-      "lipoic acid"
+    'keywords': [
+      'lipoic acid'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:16494",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:16494',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         452.7178136550001,
         139.280899658,
@@ -13056,19 +13056,19 @@ export const ANNOTATIONS = [
         149.280899658
       ]
     ],
-    "keywords": [
-      "lipoic acid"
+    'keywords': [
+      'lipoic acid'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:16494",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:16494',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         401.13381365500004,
         139.280899658,
@@ -13076,19 +13076,19 @@ export const ANNOTATIONS = [
         149.280899658
       ]
     ],
-    "keywords": [
-      "clusters"
+    'keywords': [
+      'clusters'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:33731",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:33731',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         330.06981365691,
         101.78089965800002,
@@ -13096,19 +13096,19 @@ export const ANNOTATIONS = [
         111.78089965800002
       ]
     ],
-    "keywords": [
-      "clusters:"
+    'keywords': [
+      'clusters:'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:33731",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:33731',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 4,
-    "rects": [
+    'pageNumber': 4,
+    'rects': [
       [
         435.65469309975,
         145.836197509,
@@ -13116,19 +13116,19 @@ export const ANNOTATIONS = [
         155.836197509
       ]
     ],
-    "keywords": [
-      "clusters"
+    'keywords': [
+      'clusters'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:33731",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:33731',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         258.311505737,
         571.630173339,
@@ -13136,19 +13136,19 @@ export const ANNOTATIONS = [
         581.630173339
       ]
     ],
-    "keywords": [
-      "clusters"
+    'keywords': [
+      'clusters'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:33731",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:33731',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         453.1905056269999,
         421.63017333899995,
@@ -13156,19 +13156,19 @@ export const ANNOTATIONS = [
         431.63017333899995
       ]
     ],
-    "keywords": [
-      "clusters."
+    'keywords': [
+      'clusters.'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:33731",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:33731',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 6,
-    "rects": [
+    'pageNumber': 6,
+    'rects': [
       [
         359.5706019610001,
         371.63017333899995,
@@ -13176,19 +13176,19 @@ export const ANNOTATIONS = [
         381.63017333899995
       ]
     ],
-    "keywords": [
-      "Clusters"
+    'keywords': [
+      'Clusters'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:33731",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:33731',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 2,
-    "rects": [
+    'pageNumber': 2,
+    'rects': [
       [
         460.8796931188199,
         458.250229492,
@@ -13196,19 +13196,19 @@ export const ANNOTATIONS = [
         468.250229492
       ]
     ],
-    "keywords": [
-      "amino"
+    'keywords': [
+      'amino'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:46882",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:46882',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 2,
-    "rects": [
+    'pageNumber': 2,
+    'rects': [
       [
         488.00469311882,
         458.250229492,
@@ -13216,19 +13216,19 @@ export const ANNOTATIONS = [
         468.250229492
       ]
     ],
-    "keywords": [
-      "acids"
+    'keywords': [
+      'acids'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:37527",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:37527',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 2,
-    "rects": [
+    'pageNumber': 2,
+    'rects': [
       [
         444.1516931130902,
         420.750229492,
@@ -13236,19 +13236,19 @@ export const ANNOTATIONS = [
         430.750229492
       ]
     ],
-    "keywords": [
-      "Ferric chloride,"
+    'keywords': [
+      'Ferric chloride,'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:30808",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:30808',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         362.7696931264401,
         108.728096618,
@@ -13256,19 +13256,19 @@ export const ANNOTATIONS = [
         118.728096618
       ]
     ],
-    "keywords": [
-      "ferric chloride"
+    'keywords': [
+      'ferric chloride'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:30808",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:30808',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         86.602601531,
         684.130173339,
@@ -13276,19 +13276,19 @@ export const ANNOTATIONS = [
         694.130173339
       ]
     ],
-    "keywords": [
-      "ferric chloride"
+    'keywords': [
+      'ferric chloride'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:30808",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:30808',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         100.442601531,
         328.793196533,
@@ -13296,19 +13296,19 @@ export const ANNOTATIONS = [
         337.293196533
       ]
     ],
-    "keywords": [
-      "ferric chloride,"
+    'keywords': [
+      'ferric chloride,'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:30808",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:30808',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 2,
-    "rects": [
+    'pageNumber': 2,
+    'rects': [
       [
         473.1066931130902,
         420.750229492,
@@ -13316,19 +13316,19 @@ export const ANNOTATIONS = [
         430.750229492
       ]
     ],
-    "keywords": [
-      "chloride,"
+    'keywords': [
+      'chloride,'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:17996",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:17996',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         388.3716931340601,
         108.728096618,
@@ -13336,19 +13336,19 @@ export const ANNOTATIONS = [
         118.728096618
       ]
     ],
-    "keywords": [
-      "chloride"
+    'keywords': [
+      'chloride'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:17996",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:17996',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         110.54060154243999,
         684.130173339,
@@ -13356,19 +13356,19 @@ export const ANNOTATIONS = [
         694.130173339
       ]
     ],
-    "keywords": [
-      "chloride"
+    'keywords': [
+      'chloride'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:17996",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:17996',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         253.9396015386199,
         684.130173339,
@@ -13376,19 +13376,19 @@ export const ANNOTATIONS = [
         694.130173339
       ]
     ],
-    "keywords": [
-      "chloride,"
+    'keywords': [
+      'chloride,'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:17996",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:17996',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         121.955251527753,
         328.793196533,
@@ -13396,19 +13396,19 @@ export const ANNOTATIONS = [
         337.293196533
       ]
     ],
-    "keywords": [
-      "chloride,"
+    'keywords': [
+      'chloride,'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:17996",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:17996',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 2,
-    "rects": [
+    'pageNumber': 2,
+    'rects': [
       [
         513.7006931130902,
         420.750229492,
@@ -13416,19 +13416,19 @@ export const ANNOTATIONS = [
         430.750229492
       ]
     ],
-    "keywords": [
-      "sodium"
+    'keywords': [
+      'sodium'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:26708",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:26708',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         306.141693115,
         555.904587402,
@@ -13436,19 +13436,19 @@ export const ANNOTATIONS = [
         565.904587402
       ]
     ],
-    "keywords": [
-      "sodium"
+    'keywords': [
+      'sodium'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:26708",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:26708',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         483.28869312642996,
         108.728096618,
@@ -13456,19 +13456,19 @@ export const ANNOTATIONS = [
         118.728096618
       ]
     ],
-    "keywords": [
-      "sodium"
+    'keywords': [
+      'sodium'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:26708",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:26708',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         162.14960153862003,
         684.130173339,
@@ -13476,19 +13476,19 @@ export const ANNOTATIONS = [
         694.130173339
       ]
     ],
-    "keywords": [
-      "sodium"
+    'keywords': [
+      'sodium'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:26708",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:26708',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 2,
-    "rects": [
+    'pageNumber': 2,
+    'rects': [
       [
         306.141693115,
         408.250229492,
@@ -13496,19 +13496,19 @@ export const ANNOTATIONS = [
         418.250229492
       ]
     ],
-    "keywords": [
-      "sulfide,"
+    'keywords': [
+      'sulfide,'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:26822",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:26822',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         516.5686931264299,
         108.728096618,
@@ -13516,19 +13516,19 @@ export const ANNOTATIONS = [
         118.728096618
       ]
     ],
-    "keywords": [
-      "sulfide"
+    'keywords': [
+      'sulfide'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:26822",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:26822',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         193.77960153862008,
         684.130173339,
@@ -13536,19 +13536,19 @@ export const ANNOTATIONS = [
         694.130173339
       ]
     ],
-    "keywords": [
-      "sulfide,"
+    'keywords': [
+      'sulfide,'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:26822",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:26822',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 2,
-    "rects": [
+    'pageNumber': 2,
+    'rects': [
       [
         355.121307373,
         409.708198974,
@@ -13556,19 +13556,19 @@ export const ANNOTATIONS = [
         418.250198974
       ]
     ],
-    "keywords": [
-      "l-cysteine"
+    'keywords': [
+      'l-cysteine'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:17561",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:17561',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         85.933502197,
         173.08820385700002,
@@ -13576,19 +13576,19 @@ export const ANNOTATIONS = [
         181.63020385700003
       ]
     ],
-    "keywords": [
-      "l-cysteine."
+    'keywords': [
+      'l-cysteine.'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:17561",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:17561',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         51.023601531,
         673.0881733389999,
@@ -13596,19 +13596,19 @@ export const ANNOTATIONS = [
         681.630173339
       ]
     ],
-    "keywords": [
-      "l-cysteine,"
+    'keywords': [
+      'l-cysteine,'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:17561",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:17561',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         154.975906372,
         330.02849662582605,
@@ -13616,19 +13616,19 @@ export const ANNOTATIONS = [
         337.289196533
       ]
     ],
-    "keywords": [
-      "l-cysteine"
+    'keywords': [
+      'l-cysteine'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:17561",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:17561',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 2,
-    "rects": [
+    'pageNumber': 2,
+    'rects': [
       [
         351.018693115,
         245.750198974,
@@ -13636,19 +13636,19 @@ export const ANNOTATIONS = [
         255.750198974
       ]
     ],
-    "keywords": [
-      "h at"
+    'keywords': [
+      'h at'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:30418",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:30418',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 2,
-    "rects": [
+    'pageNumber': 2,
+    'rects': [
       [
         387.97569312262993,
         195.750198974,
@@ -13656,19 +13656,19 @@ export const ANNOTATIONS = [
         205.750198974
       ]
     ],
-    "keywords": [
-      "kanamycin"
+    'keywords': [
+      'kanamycin'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:6104",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:6104',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         51.02391113199997,
         484.13017333899995,
@@ -13676,19 +13676,19 @@ export const ANNOTATIONS = [
         494.13017333899995
       ]
     ],
-    "keywords": [
-      "kanamycin"
+    'keywords': [
+      'kanamycin'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:6104",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:6104',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         227.8639111281801,
         471.63017333899995,
@@ -13696,19 +13696,19 @@ export const ANNOTATIONS = [
         481.63017333899995
       ]
     ],
-    "keywords": [
-      "kanamycin"
+    'keywords': [
+      'kanamycin'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:6104",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:6104',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         199.8176015386401,
         671.630173339,
@@ -13716,19 +13716,19 @@ export const ANNOTATIONS = [
         681.630173339
       ]
     ],
-    "keywords": [
-      "urea"
+    'keywords': [
+      'urea'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:16199",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:16199',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         163.63260153482997,
         634.130173339,
@@ -13736,19 +13736,19 @@ export const ANNOTATIONS = [
         644.130173339
       ]
     ],
-    "keywords": [
-      "urea."
+    'keywords': [
+      'urea.'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:16199",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:16199',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         268.55740090548994,
         84.13020385700001,
@@ -13756,19 +13756,19 @@ export const ANNOTATIONS = [
         94.13020385700001
       ]
     ],
-    "keywords": [
-      "urea,"
+    'keywords': [
+      'urea,'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:16199",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:16199',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         258.9726015386399,
         671.630173339,
@@ -13776,19 +13776,19 @@ export const ANNOTATIONS = [
         681.630173339
       ]
     ],
-    "keywords": [
-      "HEPES"
+    'keywords': [
+      'HEPES'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:46756",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:46756',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         96.912803222,
         396.63020385699997,
@@ -13796,19 +13796,19 @@ export const ANNOTATIONS = [
         406.63020385699997
       ]
     ],
-    "keywords": [
-      "HEPES,"
+    'keywords': [
+      'HEPES,'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:46756",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:46756',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         114.45980321817997,
         346.63020385699997,
@@ -13816,19 +13816,19 @@ export const ANNOTATIONS = [
         356.63020385699997
       ]
     ],
-    "keywords": [
-      "HEPES,"
+    'keywords': [
+      'HEPES,'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:46756",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:46756',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         255.21380324489985,
         309.13020385699997,
@@ -13836,19 +13836,19 @@ export const ANNOTATIONS = [
         319.13020385699997
       ]
     ],
-    "keywords": [
-      "HEPES,"
+    'keywords': [
+      'HEPES,'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:46756",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:46756',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         148.41080322199994,
         284.13020385699997,
@@ -13856,19 +13856,19 @@ export const ANNOTATIONS = [
         294.13020385699997
       ]
     ],
-    "keywords": [
-      "HEPES,"
+    'keywords': [
+      'HEPES,'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:46756",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:46756',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         157.03739886399995,
         146.63020385700003,
@@ -13876,19 +13876,19 @@ export const ANNOTATIONS = [
         156.63020385700003
       ]
     ],
-    "keywords": [
-      "HEPES,"
+    'keywords': [
+      'HEPES,'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:46756",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:46756',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         510.2096931150001,
         580.904587402,
@@ -13896,19 +13896,19 @@ export const ANNOTATIONS = [
         590.904587402
       ]
     ],
-    "keywords": [
-      "HEPES,"
+    'keywords': [
+      'HEPES,'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:46756",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:46756',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         341.21900999999997,
         365.179093017,
@@ -13916,19 +13916,19 @@ export const ANNOTATIONS = [
         375.179093017
       ]
     ],
-    "keywords": [
-      "HEPES,"
+    'keywords': [
+      'HEPES,'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:46756",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:46756',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         445.70769309973997,
         224.45359863200002,
@@ -13936,19 +13936,19 @@ export const ANNOTATIONS = [
         234.45359863200002
       ]
     ],
-    "keywords": [
-      "HEPES,"
+    'keywords': [
+      'HEPES,'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:46756",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:46756',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 8,
-    "rects": [
+    'pageNumber': 8,
+    'rects': [
       [
         122.6879515828755,
         329.0842143550001,
@@ -13956,19 +13956,19 @@ export const ANNOTATIONS = [
         337.5842143550001
       ]
     ],
-    "keywords": [
-      "HEPES,"
+    'keywords': [
+      'HEPES,'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:46756",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:46756',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         105.84760152717999,
         659.130173339,
@@ -13976,19 +13976,19 @@ export const ANNOTATIONS = [
         669.130173339
       ]
     ],
-    "keywords": [
-      "NaCl,"
+    'keywords': [
+      'NaCl,'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:26710",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:26710',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         173.49480322199997,
         396.63020385699997,
@@ -13996,19 +13996,19 @@ export const ANNOTATIONS = [
         406.63020385699997
       ]
     ],
-    "keywords": [
-      "NaCl,"
+    'keywords': [
+      'NaCl,'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:26710",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:26710',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         188.08880321436007,
         346.63020385699997,
@@ -14016,19 +14016,19 @@ export const ANNOTATIONS = [
         356.63020385699997
       ]
     ],
-    "keywords": [
-      "NaCl,"
+    'keywords': [
+      'NaCl,'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:26710",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:26710',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         86.83980322199997,
         296.63020385699997,
@@ -14036,19 +14036,19 @@ export const ANNOTATIONS = [
         306.63020385699997
       ]
     ],
-    "keywords": [
-      "NaCl,"
+    'keywords': [
+      'NaCl,'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:26710",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:26710',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         223.08480321818,
         284.13020385699997,
@@ -14056,19 +14056,19 @@ export const ANNOTATIONS = [
         294.13020385699997
       ]
     ],
-    "keywords": [
-      "NaCl,"
+    'keywords': [
+      'NaCl,'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:26710",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:26710',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         231.704398864,
         146.63020385700003,
@@ -14076,19 +14076,19 @@ export const ANNOTATIONS = [
         156.63020385700003
       ]
     ],
-    "keywords": [
-      "NaCl,"
+    'keywords': [
+      'NaCl,'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:26710",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:26710',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         344.30569311118,
         568.404587402,
@@ -14096,19 +14096,19 @@ export const ANNOTATIONS = [
         578.404587402
       ]
     ],
-    "keywords": [
-      "NaCl,"
+    'keywords': [
+      'NaCl,'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:26710",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:26710',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         419.87400999999994,
         365.179093017,
@@ -14116,19 +14116,19 @@ export const ANNOTATIONS = [
         375.179093017
       ]
     ],
-    "keywords": [
-      "NaCl,"
+    'keywords': [
+      'NaCl,'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:26710",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:26710',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         520.2416930959198,
         224.45359863200002,
@@ -14136,19 +14136,19 @@ export const ANNOTATIONS = [
         234.45359863200002
       ]
     ],
-    "keywords": [
-      "NaCl,"
+    'keywords': [
+      'NaCl,'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:26710",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:26710',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 8,
-    "rects": [
+    'pageNumber': 8,
+    'rects': [
       [
         189.090801634751,
         329.0842143550001,
@@ -14156,19 +14156,19 @@ export const ANNOTATIONS = [
         337.5842143550001
       ]
     ],
-    "keywords": [
-      "NaCl,"
+    'keywords': [
+      'NaCl,'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:26710",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:26710',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         185.44960153482995,
         634.130173339,
@@ -14176,19 +14176,19 @@ export const ANNOTATIONS = [
         644.130173339
       ]
     ],
-    "keywords": [
-      "Apo protein"
+    'keywords': [
+      'Apo protein'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:13850",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:13850',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         51.020400854,
         84.13020385700001,
@@ -14202,20 +14202,20 @@ export const ANNOTATIONS = [
         106.63020385700001
       ]
     ],
-    "keywords": [
-      "protein",
-      "apo "
+    'keywords': [
+      'protein',
+      'apo '
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:13850",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:13850',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 6,
-    "rects": [
+    'pageNumber': 6,
+    'rects': [
       [
         396.0877907710001,
         96.63020385699998,
@@ -14223,19 +14223,19 @@ export const ANNOTATIONS = [
         106.63020385699998
       ]
     ],
-    "keywords": [
-      "apo protein"
+    'keywords': [
+      'apo protein'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:13850",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:13850',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         76.07291113199997,
         496.63017333899995,
@@ -14243,19 +14243,19 @@ export const ANNOTATIONS = [
         506.63017333899995
       ]
     ],
-    "keywords": [
-      "mL"
+    'keywords': [
+      'mL'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:74705",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:74705',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         275.02280320675015,
         409.13020385699997,
@@ -14263,19 +14263,19 @@ export const ANNOTATIONS = [
         419.13020385699997
       ]
     ],
-    "keywords": [
-      "mL"
+    'keywords': [
+      'mL'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:74705",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:74705',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         359.02269311882003,
         211.95359863200002,
@@ -14283,19 +14283,19 @@ export const ANNOTATIONS = [
         221.95359863200002
       ]
     ],
-    "keywords": [
-      "mL"
+    'keywords': [
+      'mL'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:74705",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:74705',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         416.41869311500005,
         96.228096618,
@@ -14303,19 +14303,19 @@ export const ANNOTATIONS = [
         106.228096618
       ]
     ],
-    "keywords": [
-      "mL"
+    'keywords': [
+      'mL'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:74705",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:74705',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         423.576693115,
         83.728096618,
@@ -14323,19 +14323,19 @@ export const ANNOTATIONS = [
         93.728096618
       ]
     ],
-    "keywords": [
-      "mL)"
+    'keywords': [
+      'mL)'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:74705",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:74705',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         219.86019728788997,
         446.63020385699997,
@@ -14343,19 +14343,19 @@ export const ANNOTATIONS = [
         456.63020385699997
       ]
     ],
-    "keywords": [
-      "isopropyl"
+    'keywords': [
+      'isopropyl'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:30353",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:30353',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         145.40680322582,
         434.13020385699997,
@@ -14363,19 +14363,19 @@ export const ANNOTATIONS = [
         444.13020385699997
       ]
     ],
-    "keywords": [
-      "(IPTG)"
+    'keywords': [
+      '(IPTG)'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:61448",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:61448',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         244.425803222,
         359.13020385699997,
@@ -14383,19 +14383,19 @@ export const ANNOTATIONS = [
         369.13020385699997
       ]
     ],
-    "keywords": [
-      "buffer"
+    'keywords': [
+      'buffer'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:35225",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:35225',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         518.1920908352599,
         340.179093017,
@@ -14403,19 +14403,19 @@ export const ANNOTATIONS = [
         350.179093017
       ]
     ],
-    "keywords": [
-      "buffer."
+    'keywords': [
+      'buffer.'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:35225",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:35225',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         246.74780321054,
         346.63020385699997,
@@ -14423,19 +14423,19 @@ export const ANNOTATIONS = [
         356.63020385699997
       ]
     ],
-    "keywords": [
-      "imidazole,"
+    'keywords': [
+      'imidazole,'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:14434",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:14434',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         273.88480322199996,
         271.63020385699997,
@@ -14443,19 +14443,19 @@ export const ANNOTATIONS = [
         281.63020385699997
       ]
     ],
-    "keywords": [
-      "nm,"
+    'keywords': [
+      'nm,'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:141423",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:141423',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         485.30608667763,
         186.95359863200002,
@@ -14463,19 +14463,19 @@ export const ANNOTATIONS = [
         196.95359863200002
       ]
     ],
-    "keywords": [
-      "nm"
+    'keywords': [
+      'nm'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:141423",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:141423',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         256.67209685100005,
         659.130173339,
@@ -14483,19 +14483,19 @@ export const ANNOTATIONS = [
         669.130173339
       ]
     ],
-    "keywords": [
-      "nm"
+    'keywords': [
+      'nm'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:141423",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:141423',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         360.95950363699995,
         671.630173339,
@@ -14503,19 +14503,19 @@ export const ANNOTATIONS = [
         681.630173339
       ]
     ],
-    "keywords": [
-      "nm"
+    'keywords': [
+      'nm'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:141423",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:141423',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         345.91950564225,
         534.130173339,
@@ -14523,19 +14523,19 @@ export const ANNOTATIONS = [
         544.130173339
       ]
     ],
-    "keywords": [
-      "nm"
+    'keywords': [
+      'nm'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:141423",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:141423',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         124.42890666082,
         459.13017333899995,
@@ -14543,19 +14543,19 @@ export const ANNOTATIONS = [
         469.13017333899995
       ]
     ],
-    "keywords": [
-      "nm"
+    'keywords': [
+      'nm'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:141423",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:141423',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         66.5202076299625,
         91.426199768,
@@ -14563,19 +14563,19 @@ export const ANNOTATIONS = [
         99.926199768
       ]
     ],
-    "keywords": [
-      "nm."
+    'keywords': [
+      'nm.'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:141423",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:141423',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 8,
-    "rects": [
+    'pageNumber': 8,
+    'rects': [
       [
         80.79860152337,
         171.723190917,
@@ -14583,19 +14583,19 @@ export const ANNOTATIONS = [
         181.723190917
       ]
     ],
-    "keywords": [
-      "nm"
+    'keywords': [
+      'nm'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:141423",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:141423',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 8,
-    "rects": [
+    'pageNumber': 8,
+    'rects': [
       [
         132.27140307599998,
         109.22329772900001,
@@ -14603,19 +14603,19 @@ export const ANNOTATIONS = [
         119.22329772900001
       ]
     ],
-    "keywords": [
-      "nm"
+    'keywords': [
+      'nm'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:141423",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:141423',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 8,
-    "rects": [
+    'pageNumber': 8,
+    'rects': [
       [
         115.71440307599997,
         96.72329772900001,
@@ -14623,19 +14623,19 @@ export const ANNOTATIONS = [
         106.72329772900001
       ]
     ],
-    "keywords": [
-      "nm"
+    'keywords': [
+      'nm'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:141423",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:141423',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         262.4617,
         189.58820385700002,
@@ -14649,20 +14649,20 @@ export const ANNOTATIONS = [
         196.58820385700002
       ]
     ],
-    "keywords": [
-      "3+",
-      "Fe"
+    'keywords': [
+      '3+',
+      'Fe'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:29034",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:29034',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         280.778411865,
         77.088196228,
@@ -14676,20 +14676,20 @@ export const ANNOTATIONS = [
         84.088196228
       ]
     ],
-    "keywords": [
-      "3+",
-      "Fe"
+    'keywords': [
+      '3+',
+      'Fe'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:29034",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:29034',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         120.84339888689001,
         134.13020385700003,
@@ -14697,19 +14697,19 @@ export const ANNOTATIONS = [
         144.13020385700003
       ]
     ],
-    "keywords": [
-      "reagents."
+    'keywords': [
+      'reagents.'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:33893",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:33893',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         439.06339941399995,
         721.630112304,
@@ -14717,19 +14717,19 @@ export const ANNOTATIONS = [
         731.630112304
       ]
     ],
-    "keywords": [
-      "reagents"
+    'keywords': [
+      'reagents'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:33893",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:33893',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         51.02039886399999,
         121.63020385700001,
@@ -14737,19 +14737,19 @@ export const ANNOTATIONS = [
         131.63020385700003
       ]
     ],
-    "keywords": [
-      "same"
+    'keywords': [
+      'same'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:15414",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:15414',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         475.37169309591985,
         468.40458740199995,
@@ -14757,19 +14757,19 @@ export const ANNOTATIONS = [
         478.40458740199995
       ]
     ],
-    "keywords": [
-      "same"
+    'keywords': [
+      'same'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:15414",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:15414',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         361.83309082,
         340.179093017,
@@ -14777,19 +14777,19 @@ export const ANNOTATIONS = [
         350.179093017
       ]
     ],
-    "keywords": [
-      "same"
+    'keywords': [
+      'same'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:15414",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:15414',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         454.58309082000017,
         340.179093017,
@@ -14797,19 +14797,19 @@ export const ANNOTATIONS = [
         350.179093017
       ]
     ],
-    "keywords": [
-      "same"
+    'keywords': [
+      'same'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:15414",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:15414',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 8,
-    "rects": [
+    'pageNumber': 8,
+    'rects': [
       [
         487.8519879387529,
         339.08171435500003,
@@ -14817,19 +14817,19 @@ export const ANNOTATIONS = [
         347.58171435500003
       ]
     ],
-    "keywords": [
-      "same"
+    'keywords': [
+      'same'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:15414",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:15414',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         243.38539887735007,
         121.63020385700001,
@@ -14837,19 +14837,19 @@ export const ANNOTATIONS = [
         131.63020385700003
       ]
     ],
-    "keywords": [
-      "glutathione"
+    'keywords': [
+      'glutathione'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:16856",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:16856',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         475.79269311500013,
         96.228096618,
@@ -14857,19 +14857,19 @@ export const ANNOTATIONS = [
         106.228096618
       ]
     ],
-    "keywords": [
-      "glutathione"
+    'keywords': [
+      'glutathione'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:16856",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:16856',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         125.44990303278006,
         484.13017333899995,
@@ -14877,19 +14877,19 @@ export const ANNOTATIONS = [
         494.13017333899995
       ]
     ],
-    "keywords": [
-      "glutathione"
+    'keywords': [
+      'glutathione'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:16856",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:16856',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         230.5959066531801,
         446.63017333899995,
@@ -14897,19 +14897,19 @@ export const ANNOTATIONS = [
         456.63017333899995
       ]
     ],
-    "keywords": [
-      "glutathione,"
+    'keywords': [
+      'glutathione,'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:16856",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:16856',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         51.023601531,
         111.426199768,
@@ -14923,20 +14923,20 @@ export const ANNOTATIONS = [
         129.92219976799998
       ]
     ],
-    "keywords": [
-      "tathione,",
-      "glu-"
+    'keywords': [
+      'tathione,',
+      'glu-'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:16856",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:16856',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         60.388307617,
         81.43019976800001,
@@ -14944,19 +14944,19 @@ export const ANNOTATIONS = [
         89.93019976800001
       ]
     ],
-    "keywords": [
-      "glutathione"
+    'keywords': [
+      'glutathione'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:16856",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:16856',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         383.638399414,
         634.130112304,
@@ -14964,19 +14964,19 @@ export const ANNOTATIONS = [
         644.130112304
       ]
     ],
-    "keywords": [
-      "iron"
+    'keywords': [
+      'iron'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:18248",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:18248',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         235.68960153862,
         684.130173339,
@@ -14984,19 +14984,19 @@ export const ANNOTATIONS = [
         694.130173339
       ]
     ],
-    "keywords": [
-      "iron"
+    'keywords': [
+      'iron'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:18248",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:18248',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         497.34650563463003,
         396.63017333899995,
@@ -15004,19 +15004,19 @@ export const ANNOTATIONS = [
         406.63017333899995
       ]
     ],
-    "keywords": [
-      "iron"
+    'keywords': [
+      'iron'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:18248",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:18248',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         306.141693115,
         555.904587402,
@@ -15024,19 +15024,19 @@ export const ANNOTATIONS = [
         565.904587402
       ]
     ],
-    "keywords": [
-      "sodium dithionite"
+    'keywords': [
+      'sodium dithionite'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:66870",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:66870',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         340.481693115,
         555.904587402,
@@ -15044,19 +15044,19 @@ export const ANNOTATIONS = [
         565.904587402
       ]
     ],
-    "keywords": [
-      "dithionite"
+    'keywords': [
+      'dithionite'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:42160",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:42160',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         207.337751527753,
         92.022198242,
@@ -15064,19 +15064,19 @@ export const ANNOTATIONS = [
         100.522198242
       ]
     ],
-    "keywords": [
-      "dithionite"
+    'keywords': [
+      'dithionite'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:42160",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:42160',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         367.771851531,
         92.03069824200001,
@@ -15084,19 +15084,19 @@ export const ANNOTATIONS = [
         100.53069824200001
       ]
     ],
-    "keywords": [
-      "dithionite"
+    'keywords': [
+      'dithionite'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:42160",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:42160',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         506.79269311499985,
         555.904587402,
@@ -15104,19 +15104,19 @@ export const ANNOTATIONS = [
         565.904587402
       ]
     ],
-    "keywords": [
-      "nitrogen."
+    'keywords': [
+      'nitrogen.'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:29351",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:29351',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         488.25469317032014,
         505.90458740199995,
@@ -15124,19 +15124,19 @@ export const ANNOTATIONS = [
         515.904587402
       ]
     ],
-    "keywords": [
-      "mW,"
+    'keywords': [
+      'mW,'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:74709",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:74709',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         455.5196931150001,
         480.90458740199995,
@@ -15144,19 +15144,19 @@ export const ANNOTATIONS = [
         490.90458740199995
       ]
     ],
-    "keywords": [
-      "ms."
+    'keywords': [
+      'ms.'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:73613",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:73613',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         481.6790099999999,
         365.179093017,
@@ -15164,19 +15164,19 @@ export const ANNOTATIONS = [
         375.179093017
       ]
     ],
-    "keywords": [
-      "as a"
+    'keywords': [
+      'as a'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:15365",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:15365',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         137.06790069700003,
         534.130173339,
@@ -15184,19 +15184,19 @@ export const ANNOTATIONS = [
         544.130173339
       ]
     ],
-    "keywords": [
-      "as a"
+    'keywords': [
+      'as a'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:15365",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:15365',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         101.060807617,
         81.43019976800001,
@@ -15204,19 +15204,19 @@ export const ANNOTATIONS = [
         89.93019976800001
       ]
     ],
-    "keywords": [
-      "as a"
+    'keywords': [
+      'as a'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:15365",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:15365',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         456.101693115,
         83.728096618,
@@ -15224,19 +15224,19 @@ export const ANNOTATIONS = [
         93.728096618
       ]
     ],
-    "keywords": [
-      "ethanol"
+    'keywords': [
+      'ethanol'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:16236",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:16236',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         174.11629809882,
         596.630173339,
@@ -15244,19 +15244,19 @@ export const ANNOTATIONS = [
         606.630173339
       ]
     ],
-    "keywords": [
-      "in a"
+    'keywords': [
+      'in a'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:73179",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:73179',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         472.6765056270001,
         409.13017333899995,
@@ -15264,19 +15264,19 @@ export const ANNOTATIONS = [
         419.13017333899995
       ]
     ],
-    "keywords": [
-      "in a"
+    'keywords': [
+      'in a'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:73179",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:73179',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         388.63595153424694,
         72.03869824200002,
@@ -15284,19 +15284,19 @@ export const ANNOTATIONS = [
         80.53869824200002
       ]
     ],
-    "keywords": [
-      "in a"
+    'keywords': [
+      'in a'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:73179",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:73179',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         388.63595153424694,
         72.03869824200002,
@@ -15304,19 +15304,19 @@ export const ANNOTATIONS = [
         80.53869824200002
       ]
     ],
-    "keywords": [
-      "in a "
+    'keywords': [
+      'in a '
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:73179",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:73179',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 6,
-    "rects": [
+    'pageNumber': 6,
+    'rects': [
       [
         437.36879077863,
         84.13020385699998,
@@ -15324,19 +15324,19 @@ export const ANNOTATIONS = [
         94.13020385699998
       ]
     ],
-    "keywords": [
-      "in a"
+    'keywords': [
+      'in a'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:73179",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:73179',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         158.77760153482006,
         659.130173339,
@@ -15344,19 +15344,19 @@ export const ANNOTATIONS = [
         669.130173339
       ]
     ],
-    "keywords": [
-      "in a"
+    'keywords': [
+      'in a'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:73179",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:73179',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         351.71350364081997,
         646.630173339,
@@ -15364,19 +15364,19 @@ export const ANNOTATIONS = [
         656.630173339
       ]
     ],
-    "keywords": [
-      "chromophore"
+    'keywords': [
+      'chromophore'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:23240",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:23240',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         306.13150562699997,
         484.13017333899995,
@@ -15384,19 +15384,19 @@ export const ANNOTATIONS = [
         494.13017333899995
       ]
     ],
-    "keywords": [
-      "chromophore"
+    'keywords': [
+      'chromophore'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:23240",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:23240',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         518.7555036370002,
         596.630173339,
@@ -15404,19 +15404,19 @@ export const ANNOTATIONS = [
         606.630173339
       ]
     ],
-    "keywords": [
-      "ligand"
+    'keywords': [
+      'ligand'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:52214",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:52214',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 6,
-    "rects": [
+    'pageNumber': 6,
+    'rects': [
       [
         422.86079076718005,
         259.13020385699997,
@@ -15424,19 +15424,19 @@ export const ANNOTATIONS = [
         269.13020385699997
       ]
     ],
-    "keywords": [
-      "ligand"
+    'keywords': [
+      'ligand'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:52214",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:52214',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 6,
-    "rects": [
+    'pageNumber': 6,
+    'rects': [
       [
         324.95279077099997,
         121.63020385699998,
@@ -15444,19 +15444,19 @@ export const ANNOTATIONS = [
         131.63020385699997
       ]
     ],
-    "keywords": [
-      "ligand"
+    'keywords': [
+      'ligand'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:52214",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:52214',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         413.07150562699996,
         446.63017333899995,
@@ -15464,19 +15464,19 @@ export const ANNOTATIONS = [
         456.63017333899995
       ]
     ],
-    "keywords": [
-      "thiol"
+    'keywords': [
+      'thiol'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:29256",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:29256',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         130.617601531,
         71.469198242,
@@ -15484,19 +15484,19 @@ export const ANNOTATIONS = [
         80.53019824200001
       ]
     ],
-    "keywords": [
-      "c EPR"
+    'keywords': [
+      'c EPR'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:554446",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:554446',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 6,
-    "rects": [
+    'pageNumber': 6,
+    'rects': [
       [
         413.23979077100006,
         334.13020385699997,
@@ -15504,19 +15504,19 @@ export const ANNOTATIONS = [
         344.13020385699997
       ]
     ],
-    "keywords": [
-      "S4"
+    'keywords': [
+      'S4'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:29401",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:29401',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 6,
-    "rects": [
+    'pageNumber': 6,
+    'rects': [
       [
         446.6847907710001,
         334.13020385699997,
@@ -15524,19 +15524,19 @@ export const ANNOTATIONS = [
         344.13020385699997
       ]
     ],
-    "keywords": [
-      "S5)."
+    'keywords': [
+      'S5).'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:29386",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:29386',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 6,
-    "rects": [
+    'pageNumber': 6,
+    'rects': [
       [
         424.8227907748201,
         271.63020385699997,
@@ -15544,19 +15544,19 @@ export const ANNOTATIONS = [
         281.63020385699997
       ]
     ],
-    "keywords": [
-      "ligands"
+    'keywords': [
+      'ligands'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:52214",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:52214',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 6,
-    "rects": [
+    'pageNumber': 6,
+    'rects': [
       [
         517.8927907710001,
         96.63020385699998,
@@ -15564,19 +15564,19 @@ export const ANNOTATIONS = [
         106.63020385699998
       ]
     ],
-    "keywords": [
-      "TCEP."
+    'keywords': [
+      'TCEP.'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:63213",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:63213',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 6,
-    "rects": [
+    'pageNumber': 6,
+    'rects': [
       [
         475.66579077099993,
         71.63020385699998,
@@ -15584,19 +15584,19 @@ export const ANNOTATIONS = [
         81.63020385699998
       ]
     ],
-    "keywords": [
-      "acceptor"
+    'keywords': [
+      'acceptor'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:15339",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:15339',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         390.07789795700006,
         721.630173339,
@@ -15604,19 +15604,19 @@ export const ANNOTATIONS = [
         731.630173339
       ]
     ],
-    "keywords": [
-      "acceptor"
+    'keywords': [
+      'acceptor'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:15339",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:15339',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         230.5516015310001,
         634.130173339,
@@ -15624,19 +15624,19 @@ export const ANNOTATIONS = [
         644.130173339
       ]
     ],
-    "keywords": [
-      "serine,"
+    'keywords': [
+      'serine,'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:17822",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:17822',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         416.33589795700004,
         684.130173339,
@@ -15644,19 +15644,19 @@ export const ANNOTATIONS = [
         694.130173339
       ]
     ],
-    "keywords": [
-      "dithiol"
+    'keywords': [
+      'dithiol'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:23853",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:23853',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 8,
-    "rects": [
+    'pageNumber': 8,
+    'rects': [
       [
         165.229403076,
         159.22329772900002,
@@ -15664,19 +15664,19 @@ export const ANNOTATIONS = [
         169.22329772900002
       ]
     ],
-    "keywords": [
-      "6c"
+    'keywords': [
+      '6c'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:27594",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:27594',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         394.462701534247,
         713.5158338610004,
@@ -15684,19 +15684,19 @@ export const ANNOTATIONS = [
         722.0158338610004
       ]
     ],
-    "keywords": [
-      "Neri"
+    'keywords': [
+      'Neri'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:35640",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:35640',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         401.631601531,
         653.5398338610005,
@@ -15704,19 +15704,19 @@ export const ANNOTATIONS = [
         662.0398338610005
       ]
     ],
-    "keywords": [
-      "OS,"
+    'keywords': [
+      'OS,'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:30687",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:30687',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         503.4701015309999,
         653.5398338610005,
@@ -15724,19 +15724,19 @@ export const ANNOTATIONS = [
         662.0398338610005
       ]
     ],
-    "keywords": [
-      "EM,"
+    'keywords': [
+      'EM,'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:73507",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:73507',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         521.1671015309998,
         653.5398338610005,
@@ -15744,19 +15744,19 @@ export const ANNOTATIONS = [
         662.0398338610005
       ]
     ],
-    "keywords": [
-      "Lin"
+    'keywords': [
+      'Lin'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:32386",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:32386',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         500.50360153099996,
         643.5438338610005,
@@ -15764,19 +15764,19 @@ export const ANNOTATIONS = [
         652.0438338610005
       ]
     ],
-    "keywords": [
-      "DM,"
+    'keywords': [
+      'DM,'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:141426",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:141426',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         365.243101531,
         613.5558338610006,
@@ -15784,19 +15784,19 @@ export const ANNOTATIONS = [
         622.0558338610006
       ]
     ],
-    "keywords": [
-      "MR,"
+    'keywords': [
+      'MR,'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:74698",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:74698',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         353.5743015374855,
         513.5958338610008,
@@ -15804,19 +15804,19 @@ export const ANNOTATIONS = [
         522.0958338610008
       ]
     ],
-    "keywords": [
-      "MR,"
+    'keywords': [
+      'MR,'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:74698",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:74698',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         486.9010515374855,
         563.5758338610007,
@@ -15824,19 +15824,19 @@ export const ANNOTATIONS = [
         572.0758338610007
       ]
     ],
-    "keywords": [
-      "MK,"
+    'keywords': [
+      'MK,'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:74706",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:74706',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         394.551101531,
         223.7118338610012,
@@ -15844,19 +15844,19 @@ export const ANNOTATIONS = [
         232.2118338610012
       ]
     ],
-    "keywords": [
-      "MK,"
+    'keywords': [
+      'MK,'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:74706",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:74706',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         354.188851531,
         183.72783386100116,
@@ -15864,19 +15864,19 @@ export const ANNOTATIONS = [
         192.22783386100116
       ]
     ],
-    "keywords": [
-      "MK"
+    'keywords': [
+      'MK'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:74706",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:74706',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         457.5055015261379,
         123.75183386100112,
@@ -15884,19 +15884,19 @@ export const ANNOTATIONS = [
         132.2518338610011
       ]
     ],
-    "keywords": [
-      "MK"
+    'keywords': [
+      'MK'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:74706",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:74706',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         233.06725154397108,
         573.4122153320003,
@@ -15904,19 +15904,19 @@ export const ANNOTATIONS = [
         581.9122153320003
       ]
     ],
-    "keywords": [
-      "MK,"
+    'keywords': [
+      'MK,'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:74706",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:74706',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         396.740701531,
         543.5838338610007,
@@ -15924,19 +15924,19 @@ export const ANNOTATIONS = [
         552.0838338610007
       ]
     ],
-    "keywords": [
-      "DJ,"
+    'keywords': [
+      'DJ,'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:111513",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:111513',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         500.4806515309999,
         543.5838338610007,
@@ -15944,19 +15944,19 @@ export const ANNOTATIONS = [
         552.0838338610007
       ]
     ],
-    "keywords": [
-      "CC"
+    'keywords': [
+      'CC'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:28940",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:28940',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         338.202901531,
         333.6678338610011,
@@ -15964,19 +15964,19 @@ export const ANNOTATIONS = [
         342.1678338610011
       ]
     ],
-    "keywords": [
-      "S-P,"
+    'keywords': [
+      'S-P,'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:74820",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:74820',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         412.2821015245145,
         333.6678338610011,
@@ -15984,19 +15984,19 @@ export const ANNOTATIONS = [
         342.1678338610011
       ]
     ],
-    "keywords": [
-      "KK,"
+    'keywords': [
+      'KK,'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:74564",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:74564',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         445.53410153100003,
         293.6838338610012,
@@ -16004,19 +16004,19 @@ export const ANNOTATIONS = [
         302.1838338610012
       ]
     ],
-    "keywords": [
-      "GA,"
+    'keywords': [
+      'GA,'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:5206",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:5206',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         445.53410153100003,
         173.73183386100115,
@@ -16024,19 +16024,19 @@ export const ANNOTATIONS = [
         182.23183386100115
       ]
     ],
-    "keywords": [
-      "GA,"
+    'keywords': [
+      'GA,'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:5206",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:5206',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         504.5581015309998,
         293.6838338610012,
@@ -16044,19 +16044,19 @@ export const ANNOTATIONS = [
         302.1838338610012
       ]
     ],
-    "keywords": [
-      "AF,"
+    'keywords': [
+      'AF,'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:73807",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:73807',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         504.5581015309998,
         173.73183386100115,
@@ -16064,19 +16064,19 @@ export const ANNOTATIONS = [
         182.23183386100115
       ]
     ],
-    "keywords": [
-      "AF,"
+    'keywords': [
+      'AF,'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:73807",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:73807',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         323.151101531,
         223.7118338610012,
@@ -16084,19 +16084,19 @@ export const ANNOTATIONS = [
         232.2118338610012
       ]
     ],
-    "keywords": [
-      "Dean"
+    'keywords': [
+      'Dean'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:63877",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:63877',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         344.851601531,
         223.7118338610012,
@@ -16104,19 +16104,19 @@ export const ANNOTATIONS = [
         232.2118338610012
       ]
     ],
-    "keywords": [
-      "DR,"
+    'keywords': [
+      'DR,'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:73445",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:73445',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         369.1888015374855,
         193.72383386100117,
@@ -16124,19 +16124,19 @@ export const ANNOTATIONS = [
         202.22383386100117
       ]
     ],
-    "keywords": [
-      "DB,"
+    'keywords': [
+      'DB,'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:33349",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:33349',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         350.389351531,
         153.73983386100113,
@@ -16144,19 +16144,19 @@ export const ANNOTATIONS = [
         162.23983386100113
       ]
     ],
-    "keywords": [
-      "J-M,"
+    'keywords': [
+      'J-M,'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:31739",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:31739',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         343.427851531,
         93.76383386100113,
@@ -16164,19 +16164,19 @@ export const ANNOTATIONS = [
         102.26383386100113
       ]
     ],
-    "keywords": [
-      "Metals"
+    'keywords': [
+      'Metals'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:33521",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:33521',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         86.013851531,
         723.352215332,
@@ -16184,19 +16184,19 @@ export const ANNOTATIONS = [
         731.852215332
       ]
     ],
-    "keywords": [
-      "YS,"
+    'keywords': [
+      'YS,'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:141457",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:141457',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         104.78780153749398,
         703.360215332,
@@ -16204,19 +16204,19 @@ export const ANNOTATIONS = [
         711.860215332
       ]
     ],
-    "keywords": [
-      "WV,"
+    'keywords': [
+      'WV,'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:74877",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:74877',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         126.62770153099996,
         683.3682153320001,
@@ -16224,19 +16224,19 @@ export const ANNOTATIONS = [
         691.8682153320001
       ]
     ],
-    "keywords": [
-      "L-K,"
+    'keywords': [
+      'L-K,'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:73583",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:73583',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         168.60240153099994,
         683.3682153320001,
@@ -16244,19 +16244,19 @@ export const ANNOTATIONS = [
         691.8682153320001
       ]
     ],
-    "keywords": [
-      "Y-H,"
+    'keywords': [
+      'Y-H,'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:73695",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:73695',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         215.09060150506642,
         683.3682153320001,
@@ -16264,19 +16264,19 @@ export const ANNOTATIONS = [
         691.8682153320001
       ]
     ],
-    "keywords": [
-      "Y-H,"
+    'keywords': [
+      'Y-H,'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:73695",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:73695',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         279.0752015569504,
         683.3682153320001,
@@ -16284,19 +16284,19 @@ export const ANNOTATIONS = [
         691.8682153320001
       ]
     ],
-    "keywords": [
-      "Ke"
+    'keywords': [
+      'Ke'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:74557",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:74557',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         68.032101531,
         673.3722153320001,
@@ -16304,19 +16304,19 @@ export const ANNOTATIONS = [
         681.8722153320001
       ]
     ],
-    "keywords": [
-      "S-C,"
+    'keywords': [
+      'S-C,'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:33330",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:33330',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         111.535101531,
         673.3722153320001,
@@ -16324,19 +16324,19 @@ export const ANNOTATIONS = [
         681.8722153320001
       ]
     ],
-    "keywords": [
-      "K-W,"
+    'keywords': [
+      'K-W,'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:74569",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:74569',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         394.40660153100004,
         683.4362102660003,
@@ -16344,19 +16344,19 @@ export const ANNOTATIONS = [
         691.9362102660003
       ]
     ],
-    "keywords": [
-      "WK,"
+    'keywords': [
+      'WK,'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:74872",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:74872',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         425.76225153100006,
         683.4362102660003,
@@ -16364,19 +16364,19 @@ export const ANNOTATIONS = [
         691.9362102660003
       ]
     ],
-    "keywords": [
-      "LE,"
+    'keywords': [
+      'LE,'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:74531",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:74531',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         457.509751531,
         683.4362102660003,
@@ -16384,19 +16384,19 @@ export const ANNOTATIONS = [
         691.9362102660003
       ]
     ],
-    "keywords": [
-      "RM,"
+    'keywords': [
+      'RM,'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:73817",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:73817',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         503.3162515310001,
         683.4362102660003,
@@ -16404,19 +16404,19 @@ export const ANNOTATIONS = [
         691.9362102660003
       ]
     ],
-    "keywords": [
-      "DH,"
+    'keywords': [
+      'DH,'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:73451",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:73451',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         341.430351531,
         673.4402102660003,
@@ -16424,19 +16424,19 @@ export const ANNOTATIONS = [
         681.9402102660003
       ]
     ],
-    "keywords": [
-      "DP"
+    'keywords': [
+      'DP'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:137245",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:137245',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         384.924001531,
         653.4482102660004,
@@ -16444,19 +16444,19 @@ export const ANNOTATIONS = [
         661.9482102660004
       ]
     ],
-    "keywords": [
-      "Nat"
+    'keywords': [
+      'Nat'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:82508",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:82508',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         132.50970153424703,
         603.4002153320002,
@@ -16464,19 +16464,19 @@ export const ANNOTATIONS = [
         611.9002153320002
       ]
     ],
-    "keywords": [
-      "AK,"
+    'keywords': [
+      'AK,'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:132403",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:132403',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         76.179351531,
         593.4042153320003,
@@ -16484,19 +16484,19 @@ export const ANNOTATIONS = [
         601.9042153320003
       ]
     ],
-    "keywords": [
-      "Guo"
+    'keywords': [
+      'Guo'
     ],
-    "meta": {
-      "type": "Chemicals",
-      "id": "CHEBI:16750",
-      "color": "#cee5cb",
-      "idType": "CHEBI"
+    'meta': {
+      'type': 'Chemicals',
+      'id': 'CHEBI:16750',
+      'color': '#cee5cb',
+      'idType': 'CHEBI'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         51.023601531,
         339.280930175,
@@ -16504,19 +16504,19 @@ export const ANNOTATIONS = [
         349.280930175
       ]
     ],
-    "keywords": [
-      "GSH"
+    'keywords': [
+      'GSH'
     ],
-    "meta": {
-      "type": "Compounds",
-      "id": "GLUTATHIONE",
-      "color": "#cee5cb",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Compounds',
+      'id': 'GLUTATHIONE',
+      'color': '#cee5cb',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 6,
-    "rects": [
+    'pageNumber': 6,
+    'rects': [
       [
         501.53579076718,
         259.13020385699997,
@@ -16524,19 +16524,19 @@ export const ANNOTATIONS = [
         269.13020385699997
       ]
     ],
-    "keywords": [
-      "GSH"
+    'keywords': [
+      'GSH'
     ],
-    "meta": {
-      "type": "Compounds",
-      "id": "GLUTATHIONE",
-      "color": "#cee5cb",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Compounds',
+      'id': 'GLUTATHIONE',
+      'color': '#cee5cb',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         202.27790068557005,
         559.130173339,
@@ -16544,19 +16544,19 @@ export const ANNOTATIONS = [
         569.130173339
       ]
     ],
-    "keywords": [
-      "GSH"
+    'keywords': [
+      'GSH'
     ],
-    "meta": {
-      "type": "Compounds",
-      "id": "GLUTATHIONE",
-      "color": "#cee5cb",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Compounds',
+      'id': 'GLUTATHIONE',
+      'color': '#cee5cb',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         237.88275764293354,
         71.43419976800001,
@@ -16564,19 +16564,19 @@ export const ANNOTATIONS = [
         79.93419976800001
       ]
     ],
-    "keywords": [
-      "GSH"
+    'keywords': [
+      'GSH'
     ],
-    "meta": {
-      "type": "Compounds",
-      "id": "GLUTATHIONE",
-      "color": "#cee5cb",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Compounds',
+      'id': 'GLUTATHIONE',
+      'color': '#cee5cb',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         527.270402587,
         101.422199768,
@@ -16584,19 +16584,19 @@ export const ANNOTATIONS = [
         109.922199768
       ]
     ],
-    "keywords": [
-      "GSH"
+    'keywords': [
+      'GSH'
     ],
-    "meta": {
-      "type": "Compounds",
-      "id": "GLUTATHIONE",
-      "color": "#cee5cb",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Compounds',
+      'id': 'GLUTATHIONE',
+      'color': '#cee5cb',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         428.296401516,
         91.426199768,
@@ -16604,19 +16604,19 @@ export const ANNOTATIONS = [
         99.926199768
       ]
     ],
-    "keywords": [
-      "GSH"
+    'keywords': [
+      'GSH'
     ],
-    "meta": {
-      "type": "Compounds",
-      "id": "GLUTATHIONE",
-      "color": "#cee5cb",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Compounds',
+      'id': 'GLUTATHIONE',
+      'color': '#cee5cb',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         226.12620000000004,
         131.224196289,
@@ -16624,19 +16624,19 @@ export const ANNOTATIONS = [
         139.724196289
       ]
     ],
-    "keywords": [
-      "OH"
+    'keywords': [
+      'OH'
     ],
-    "meta": {
-      "type": "Compounds",
-      "id": "OH",
-      "color": "#cee5cb",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Compounds',
+      'id': 'OH',
+      'color': '#cee5cb',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         377.51181365499997,
         314.280899658,
@@ -16644,19 +16644,19 @@ export const ANNOTATIONS = [
         324.280899658
       ]
     ],
-    "keywords": [
-      "lipoic acid,"
+    'keywords': [
+      'lipoic acid,'
     ],
-    "meta": {
-      "type": "Compounds",
-      "id": "LIPOIC-ACID",
-      "color": "#cee5cb",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Compounds',
+      'id': 'LIPOIC-ACID',
+      'color': '#cee5cb',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         500.7158136855298,
         301.780899658,
@@ -16664,19 +16664,19 @@ export const ANNOTATIONS = [
         311.780899658
       ]
     ],
-    "keywords": [
-      "lipoic acid"
+    'keywords': [
+      'lipoic acid'
     ],
-    "meta": {
-      "type": "Compounds",
-      "id": "LIPOIC-ACID",
-      "color": "#cee5cb",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Compounds',
+      'id': 'LIPOIC-ACID',
+      'color': '#cee5cb',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         452.7178136550001,
         139.280899658,
@@ -16684,19 +16684,19 @@ export const ANNOTATIONS = [
         149.280899658
       ]
     ],
-    "keywords": [
-      "lipoic acid"
+    'keywords': [
+      'lipoic acid'
     ],
-    "meta": {
-      "type": "Compounds",
-      "id": "LIPOIC-ACID",
-      "color": "#cee5cb",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Compounds',
+      'id': 'LIPOIC-ACID',
+      'color': '#cee5cb',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 2,
-    "rects": [
+    'pageNumber': 2,
+    'rects': [
       [
         444.1516931130902,
         420.750229492,
@@ -16704,19 +16704,19 @@ export const ANNOTATIONS = [
         430.750229492
       ]
     ],
-    "keywords": [
-      "Ferric chloride,"
+    'keywords': [
+      'Ferric chloride,'
     ],
-    "meta": {
-      "type": "Compounds",
-      "id": "CPD0-1693",
-      "color": "#cee5cb",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Compounds',
+      'id': 'CPD0-1693',
+      'color': '#cee5cb',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         362.7696931264401,
         108.728096618,
@@ -16724,19 +16724,19 @@ export const ANNOTATIONS = [
         118.728096618
       ]
     ],
-    "keywords": [
-      "ferric chloride"
+    'keywords': [
+      'ferric chloride'
     ],
-    "meta": {
-      "type": "Compounds",
-      "id": "CPD0-1693",
-      "color": "#cee5cb",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Compounds',
+      'id': 'CPD0-1693',
+      'color': '#cee5cb',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         86.602601531,
         684.130173339,
@@ -16744,19 +16744,19 @@ export const ANNOTATIONS = [
         694.130173339
       ]
     ],
-    "keywords": [
-      "ferric chloride"
+    'keywords': [
+      'ferric chloride'
     ],
-    "meta": {
-      "type": "Compounds",
-      "id": "CPD0-1693",
-      "color": "#cee5cb",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Compounds',
+      'id': 'CPD0-1693',
+      'color': '#cee5cb',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         100.442601531,
         328.793196533,
@@ -16764,19 +16764,19 @@ export const ANNOTATIONS = [
         337.293196533
       ]
     ],
-    "keywords": [
-      "ferric chloride,"
+    'keywords': [
+      'ferric chloride,'
     ],
-    "meta": {
-      "type": "Compounds",
-      "id": "CPD0-1693",
-      "color": "#cee5cb",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Compounds',
+      'id': 'CPD0-1693',
+      'color': '#cee5cb',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 2,
-    "rects": [
+    'pageNumber': 2,
+    'rects': [
       [
         473.1066931130902,
         420.750229492,
@@ -16784,19 +16784,19 @@ export const ANNOTATIONS = [
         430.750229492
       ]
     ],
-    "keywords": [
-      "chloride,"
+    'keywords': [
+      'chloride,'
     ],
-    "meta": {
-      "type": "Compounds",
-      "id": "CL-",
-      "color": "#cee5cb",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Compounds',
+      'id': 'CL-',
+      'color': '#cee5cb',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         388.3716931340601,
         108.728096618,
@@ -16804,19 +16804,19 @@ export const ANNOTATIONS = [
         118.728096618
       ]
     ],
-    "keywords": [
-      "chloride"
+    'keywords': [
+      'chloride'
     ],
-    "meta": {
-      "type": "Compounds",
-      "id": "CL-",
-      "color": "#cee5cb",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Compounds',
+      'id': 'CL-',
+      'color': '#cee5cb',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         110.54060154243999,
         684.130173339,
@@ -16824,19 +16824,19 @@ export const ANNOTATIONS = [
         694.130173339
       ]
     ],
-    "keywords": [
-      "chloride"
+    'keywords': [
+      'chloride'
     ],
-    "meta": {
-      "type": "Compounds",
-      "id": "CL-",
-      "color": "#cee5cb",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Compounds',
+      'id': 'CL-',
+      'color': '#cee5cb',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         253.9396015386199,
         684.130173339,
@@ -16844,19 +16844,19 @@ export const ANNOTATIONS = [
         694.130173339
       ]
     ],
-    "keywords": [
-      "chloride,"
+    'keywords': [
+      'chloride,'
     ],
-    "meta": {
-      "type": "Compounds",
-      "id": "CL-",
-      "color": "#cee5cb",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Compounds',
+      'id': 'CL-',
+      'color': '#cee5cb',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         121.955251527753,
         328.793196533,
@@ -16864,19 +16864,19 @@ export const ANNOTATIONS = [
         337.293196533
       ]
     ],
-    "keywords": [
-      "chloride,"
+    'keywords': [
+      'chloride,'
     ],
-    "meta": {
-      "type": "Compounds",
-      "id": "CL-",
-      "color": "#cee5cb",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Compounds',
+      'id': 'CL-',
+      'color': '#cee5cb',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 2,
-    "rects": [
+    'pageNumber': 2,
+    'rects': [
       [
         513.7006931130902,
         420.750229492,
@@ -16884,19 +16884,19 @@ export const ANNOTATIONS = [
         430.750229492
       ]
     ],
-    "keywords": [
-      "sodium"
+    'keywords': [
+      'sodium'
     ],
-    "meta": {
-      "type": "Compounds",
-      "id": "NA+",
-      "color": "#cee5cb",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Compounds',
+      'id': 'NA+',
+      'color': '#cee5cb',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         306.141693115,
         555.904587402,
@@ -16904,19 +16904,19 @@ export const ANNOTATIONS = [
         565.904587402
       ]
     ],
-    "keywords": [
-      "sodium"
+    'keywords': [
+      'sodium'
     ],
-    "meta": {
-      "type": "Compounds",
-      "id": "NA+",
-      "color": "#cee5cb",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Compounds',
+      'id': 'NA+',
+      'color': '#cee5cb',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         483.28869312642996,
         108.728096618,
@@ -16924,19 +16924,19 @@ export const ANNOTATIONS = [
         118.728096618
       ]
     ],
-    "keywords": [
-      "sodium"
+    'keywords': [
+      'sodium'
     ],
-    "meta": {
-      "type": "Compounds",
-      "id": "NA+",
-      "color": "#cee5cb",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Compounds',
+      'id': 'NA+',
+      'color': '#cee5cb',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         162.14960153862003,
         684.130173339,
@@ -16944,19 +16944,19 @@ export const ANNOTATIONS = [
         694.130173339
       ]
     ],
-    "keywords": [
-      "sodium"
+    'keywords': [
+      'sodium'
     ],
-    "meta": {
-      "type": "Compounds",
-      "id": "NA+",
-      "color": "#cee5cb",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Compounds',
+      'id': 'NA+',
+      'color': '#cee5cb',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 2,
-    "rects": [
+    'pageNumber': 2,
+    'rects': [
       [
         306.141693115,
         408.250229492,
@@ -16964,19 +16964,19 @@ export const ANNOTATIONS = [
         418.250229492
       ]
     ],
-    "keywords": [
-      "sulfide,"
+    'keywords': [
+      'sulfide,'
     ],
-    "meta": {
-      "type": "Compounds",
-      "id": "HS",
-      "color": "#cee5cb",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Compounds',
+      'id': 'HS',
+      'color': '#cee5cb',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         516.5686931264299,
         108.728096618,
@@ -16984,19 +16984,19 @@ export const ANNOTATIONS = [
         118.728096618
       ]
     ],
-    "keywords": [
-      "sulfide"
+    'keywords': [
+      'sulfide'
     ],
-    "meta": {
-      "type": "Compounds",
-      "id": "HS",
-      "color": "#cee5cb",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Compounds',
+      'id': 'HS',
+      'color': '#cee5cb',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         193.77960153862008,
         684.130173339,
@@ -17004,19 +17004,19 @@ export const ANNOTATIONS = [
         694.130173339
       ]
     ],
-    "keywords": [
-      "sulfide,"
+    'keywords': [
+      'sulfide,'
     ],
-    "meta": {
-      "type": "Compounds",
-      "id": "HS",
-      "color": "#cee5cb",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Compounds',
+      'id': 'HS',
+      'color': '#cee5cb',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 2,
-    "rects": [
+    'pageNumber': 2,
+    'rects': [
       [
         355.121307373,
         409.708198974,
@@ -17024,19 +17024,19 @@ export const ANNOTATIONS = [
         418.250198974
       ]
     ],
-    "keywords": [
-      "l-cysteine"
+    'keywords': [
+      'l-cysteine'
     ],
-    "meta": {
-      "type": "Compounds",
-      "id": "CYS",
-      "color": "#cee5cb",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Compounds',
+      'id': 'CYS',
+      'color': '#cee5cb',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         85.933502197,
         173.08820385700002,
@@ -17044,19 +17044,19 @@ export const ANNOTATIONS = [
         181.63020385700003
       ]
     ],
-    "keywords": [
-      "l-cysteine."
+    'keywords': [
+      'l-cysteine.'
     ],
-    "meta": {
-      "type": "Compounds",
-      "id": "CYS",
-      "color": "#cee5cb",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Compounds',
+      'id': 'CYS',
+      'color': '#cee5cb',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         51.023601531,
         673.0881733389999,
@@ -17064,19 +17064,19 @@ export const ANNOTATIONS = [
         681.630173339
       ]
     ],
-    "keywords": [
-      "l-cysteine,"
+    'keywords': [
+      'l-cysteine,'
     ],
-    "meta": {
-      "type": "Compounds",
-      "id": "CYS",
-      "color": "#cee5cb",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Compounds',
+      'id': 'CYS',
+      'color': '#cee5cb',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         154.975906372,
         330.02849662582605,
@@ -17084,19 +17084,19 @@ export const ANNOTATIONS = [
         337.289196533
       ]
     ],
-    "keywords": [
-      "l-cysteine"
+    'keywords': [
+      'l-cysteine'
     ],
-    "meta": {
-      "type": "Compounds",
-      "id": "CYS",
-      "color": "#cee5cb",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Compounds',
+      'id': 'CYS',
+      'color': '#cee5cb',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 2,
-    "rects": [
+    'pageNumber': 2,
+    'rects': [
       [
         427.702693115,
         120.750198974,
@@ -17104,19 +17104,19 @@ export const ANNOTATIONS = [
         132.560198974
       ]
     ],
-    "keywords": [
-      "(Hs"
+    'keywords': [
+      '(Hs'
     ],
-    "meta": {
-      "type": "Compounds",
-      "id": "CPD-846",
-      "color": "#cee5cb",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Compounds',
+      'id': 'CPD-846',
+      'color': '#cee5cb',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 2,
-    "rects": [
+    'pageNumber': 2,
+    'rects': [
       [
         342.045693115,
         83.250198974,
@@ -17124,19 +17124,19 @@ export const ANNOTATIONS = [
         95.060198974
       ]
     ],
-    "keywords": [
-      "(Hs"
+    'keywords': [
+      '(Hs'
     ],
-    "meta": {
-      "type": "Compounds",
-      "id": "CPD-846",
-      "color": "#cee5cb",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Compounds',
+      'id': 'CPD-846',
+      'color': '#cee5cb',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         85.387601531,
         709.130173339,
@@ -17144,19 +17144,19 @@ export const ANNOTATIONS = [
         720.940173339
       ]
     ],
-    "keywords": [
-      "(Hs"
+    'keywords': [
+      '(Hs'
     ],
-    "meta": {
-      "type": "Compounds",
-      "id": "CPD-846",
-      "color": "#cee5cb",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Compounds',
+      'id': 'CPD-846',
+      'color': '#cee5cb',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         236.99595153424704,
         723.352215332,
@@ -17164,19 +17164,19 @@ export const ANNOTATIONS = [
         731.852215332
       ]
     ],
-    "keywords": [
-      "HS,"
+    'keywords': [
+      'HS,'
     ],
-    "meta": {
-      "type": "Compounds",
-      "id": "CPD-846",
-      "color": "#cee5cb",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Compounds',
+      'id': 'CPD-846',
+      'color': '#cee5cb',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         86.44460153482001,
         671.630173339,
@@ -17184,19 +17184,19 @@ export const ANNOTATIONS = [
         681.630173339
       ]
     ],
-    "keywords": [
-      "EDTA,"
+    'keywords': [
+      'EDTA,'
     ],
-    "meta": {
-      "type": "Compounds",
-      "id": "EDTA",
-      "color": "#cee5cb",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Compounds',
+      'id': 'EDTA',
+      'color': '#cee5cb',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         92.58060154626,
         634.130173339,
@@ -17204,19 +17204,19 @@ export const ANNOTATIONS = [
         644.130173339
       ]
     ],
-    "keywords": [
-      "EDTA,"
+    'keywords': [
+      'EDTA,'
     ],
-    "meta": {
-      "type": "Compounds",
-      "id": "EDTA",
-      "color": "#cee5cb",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Compounds',
+      'id': 'EDTA',
+      'color': '#cee5cb',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         199.8176015386401,
         671.630173339,
@@ -17224,19 +17224,19 @@ export const ANNOTATIONS = [
         681.630173339
       ]
     ],
-    "keywords": [
-      "urea"
+    'keywords': [
+      'urea'
     ],
-    "meta": {
-      "type": "Compounds",
-      "id": "UREA",
-      "color": "#cee5cb",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Compounds',
+      'id': 'UREA',
+      'color': '#cee5cb',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         163.63260153482997,
         634.130173339,
@@ -17244,19 +17244,19 @@ export const ANNOTATIONS = [
         644.130173339
       ]
     ],
-    "keywords": [
-      "urea."
+    'keywords': [
+      'urea.'
     ],
-    "meta": {
-      "type": "Compounds",
-      "id": "UREA",
-      "color": "#cee5cb",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Compounds',
+      'id': 'UREA',
+      'color': '#cee5cb',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         268.55740090548994,
         84.13020385700001,
@@ -17264,19 +17264,19 @@ export const ANNOTATIONS = [
         94.13020385700001
       ]
     ],
-    "keywords": [
-      "urea,"
+    'keywords': [
+      'urea,'
     ],
-    "meta": {
-      "type": "Compounds",
-      "id": "UREA",
-      "color": "#cee5cb",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Compounds',
+      'id': 'UREA',
+      'color': '#cee5cb',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         262.4617,
         189.58820385700002,
@@ -17290,20 +17290,20 @@ export const ANNOTATIONS = [
         196.58820385700002
       ]
     ],
-    "keywords": [
-      "3+",
-      "Fe"
+    'keywords': [
+      '3+',
+      'Fe'
     ],
-    "meta": {
-      "type": "Compounds",
-      "id": "FE+3",
-      "color": "#cee5cb",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Compounds',
+      'id': 'FE+3',
+      'color': '#cee5cb',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         280.778411865,
         77.088196228,
@@ -17317,20 +17317,20 @@ export const ANNOTATIONS = [
         84.088196228
       ]
     ],
-    "keywords": [
-      "3+",
-      "Fe"
+    'keywords': [
+      '3+',
+      'Fe'
     ],
-    "meta": {
-      "type": "Compounds",
-      "id": "FE+3",
-      "color": "#cee5cb",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Compounds',
+      'id': 'FE+3',
+      'color': '#cee5cb',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         243.38539887735007,
         121.63020385700001,
@@ -17338,19 +17338,19 @@ export const ANNOTATIONS = [
         131.63020385700003
       ]
     ],
-    "keywords": [
-      "glutathione"
+    'keywords': [
+      'glutathione'
     ],
-    "meta": {
-      "type": "Compounds",
-      "id": "GLUTATHIONE",
-      "color": "#cee5cb",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Compounds',
+      'id': 'GLUTATHIONE',
+      'color': '#cee5cb',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         475.79269311500013,
         96.228096618,
@@ -17358,19 +17358,19 @@ export const ANNOTATIONS = [
         106.228096618
       ]
     ],
-    "keywords": [
-      "glutathione"
+    'keywords': [
+      'glutathione'
     ],
-    "meta": {
-      "type": "Compounds",
-      "id": "GLUTATHIONE",
-      "color": "#cee5cb",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Compounds',
+      'id': 'GLUTATHIONE',
+      'color': '#cee5cb',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         125.44990303278006,
         484.13017333899995,
@@ -17378,19 +17378,19 @@ export const ANNOTATIONS = [
         494.13017333899995
       ]
     ],
-    "keywords": [
-      "glutathione"
+    'keywords': [
+      'glutathione'
     ],
-    "meta": {
-      "type": "Compounds",
-      "id": "GLUTATHIONE",
-      "color": "#cee5cb",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Compounds',
+      'id': 'GLUTATHIONE',
+      'color': '#cee5cb',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         230.5959066531801,
         446.63017333899995,
@@ -17398,19 +17398,19 @@ export const ANNOTATIONS = [
         456.63017333899995
       ]
     ],
-    "keywords": [
-      "glutathione,"
+    'keywords': [
+      'glutathione,'
     ],
-    "meta": {
-      "type": "Compounds",
-      "id": "GLUTATHIONE",
-      "color": "#cee5cb",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Compounds',
+      'id': 'GLUTATHIONE',
+      'color': '#cee5cb',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         51.023601531,
         111.426199768,
@@ -17424,20 +17424,20 @@ export const ANNOTATIONS = [
         129.92219976799998
       ]
     ],
-    "keywords": [
-      "tathione,",
-      "glu-"
+    'keywords': [
+      'tathione,',
+      'glu-'
     ],
-    "meta": {
-      "type": "Compounds",
-      "id": "GLUTATHIONE",
-      "color": "#cee5cb",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Compounds',
+      'id': 'GLUTATHIONE',
+      'color': '#cee5cb',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         60.388307617,
         81.43019976800001,
@@ -17445,19 +17445,19 @@ export const ANNOTATIONS = [
         89.93019976800001
       ]
     ],
-    "keywords": [
-      "glutathione"
+    'keywords': [
+      'glutathione'
     ],
-    "meta": {
-      "type": "Compounds",
-      "id": "GLUTATHIONE",
-      "color": "#cee5cb",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Compounds',
+      'id': 'GLUTATHIONE',
+      'color': '#cee5cb',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         306.141693115,
         555.904587402,
@@ -17465,19 +17465,19 @@ export const ANNOTATIONS = [
         565.904587402
       ]
     ],
-    "keywords": [
-      "sodium dithionite"
+    'keywords': [
+      'sodium dithionite'
     ],
-    "meta": {
-      "type": "Compounds",
-      "id": "CPD-17695",
-      "color": "#cee5cb",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Compounds',
+      'id': 'CPD-17695',
+      'color': '#cee5cb',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         340.481693115,
         555.904587402,
@@ -17485,19 +17485,19 @@ export const ANNOTATIONS = [
         565.904587402
       ]
     ],
-    "keywords": [
-      "dithionite"
+    'keywords': [
+      'dithionite'
     ],
-    "meta": {
-      "type": "Compounds",
-      "id": "S2O4",
-      "color": "#cee5cb",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Compounds',
+      'id': 'S2O4',
+      'color': '#cee5cb',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         207.337751527753,
         92.022198242,
@@ -17505,19 +17505,19 @@ export const ANNOTATIONS = [
         100.522198242
       ]
     ],
-    "keywords": [
-      "dithionite"
+    'keywords': [
+      'dithionite'
     ],
-    "meta": {
-      "type": "Compounds",
-      "id": "S2O4",
-      "color": "#cee5cb",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Compounds',
+      'id': 'S2O4',
+      'color': '#cee5cb',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         367.771851531,
         92.03069824200001,
@@ -17525,19 +17525,19 @@ export const ANNOTATIONS = [
         100.53069824200001
       ]
     ],
-    "keywords": [
-      "dithionite"
+    'keywords': [
+      'dithionite'
     ],
-    "meta": {
-      "type": "Compounds",
-      "id": "S2O4",
-      "color": "#cee5cb",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Compounds',
+      'id': 'S2O4',
+      'color': '#cee5cb',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         506.79269311499985,
         555.904587402,
@@ -17545,19 +17545,19 @@ export const ANNOTATIONS = [
         565.904587402
       ]
     ],
-    "keywords": [
-      "nitrogen."
+    'keywords': [
+      'nitrogen.'
     ],
-    "meta": {
-      "type": "Compounds",
-      "id": "NITROGEN-MOLECULE",
-      "color": "#cee5cb",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Compounds',
+      'id': 'NITROGEN-MOLECULE',
+      'color': '#cee5cb',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         456.101693115,
         83.728096618,
@@ -17565,19 +17565,19 @@ export const ANNOTATIONS = [
         93.728096618
       ]
     ],
-    "keywords": [
-      "ethanol"
+    'keywords': [
+      'ethanol'
     ],
-    "meta": {
-      "type": "Compounds",
-      "id": "ETOH",
-      "color": "#cee5cb",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Compounds',
+      'id': 'ETOH',
+      'color': '#cee5cb',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         467.76150364081985,
         684.130173339,
@@ -17585,19 +17585,19 @@ export const ANNOTATIONS = [
         694.130173339
       ]
     ],
-    "keywords": [
-      "a CD"
+    'keywords': [
+      'a CD'
     ],
-    "meta": {
-      "type": "Compounds",
-      "id": "CPD-3921",
-      "color": "#cee5cb",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Compounds',
+      'id': 'CPD-3921',
+      'color': '#cee5cb',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         372.85150562699994,
         471.63017333899995,
@@ -17605,19 +17605,19 @@ export const ANNOTATIONS = [
         481.63017333899995
       ]
     ],
-    "keywords": [
-      "a CD"
+    'keywords': [
+      'a CD'
     ],
-    "meta": {
-      "type": "Compounds",
-      "id": "CPD-3921",
-      "color": "#cee5cb",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Compounds',
+      'id': 'CPD-3921',
+      'color': '#cee5cb',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         230.5516015310001,
         634.130173339,
@@ -17625,19 +17625,19 @@ export const ANNOTATIONS = [
         644.130173339
       ]
     ],
-    "keywords": [
-      "serine,"
+    'keywords': [
+      'serine,'
     ],
-    "meta": {
-      "type": "Compounds",
-      "id": "SER",
-      "color": "#cee5cb",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Compounds',
+      'id': 'SER',
+      'color': '#cee5cb',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         323.151101531,
         663.5358338610005,
@@ -17645,19 +17645,19 @@ export const ANNOTATIONS = [
         672.0358338610005
       ]
     ],
-    "keywords": [
-      "Li"
+    'keywords': [
+      'Li'
     ],
-    "meta": {
-      "type": "Compounds",
-      "id": "LI+",
-      "color": "#cee5cb",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Compounds',
+      'id': 'LI+',
+      'color': '#cee5cb',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         417.441601531,
         653.5398338610005,
@@ -17665,19 +17665,19 @@ export const ANNOTATIONS = [
         662.0398338610005
       ]
     ],
-    "keywords": [
-      "Li"
+    'keywords': [
+      'Li'
     ],
-    "meta": {
-      "type": "Compounds",
-      "id": "LI+",
-      "color": "#cee5cb",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Compounds',
+      'id': 'LI+',
+      'color': '#cee5cb',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         323.151101531,
         573.5718338610006,
@@ -17685,19 +17685,19 @@ export const ANNOTATIONS = [
         582.0718338610006
       ]
     ],
-    "keywords": [
-      "Li"
+    'keywords': [
+      'Li'
     ],
-    "meta": {
-      "type": "Compounds",
-      "id": "LI+",
-      "color": "#cee5cb",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Compounds',
+      'id': 'LI+',
+      'color': '#cee5cb',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         346.126601531,
         353.65983386100106,
@@ -17705,19 +17705,19 @@ export const ANNOTATIONS = [
         362.15983386100106
       ]
     ],
-    "keywords": [
-      "Li"
+    'keywords': [
+      'Li'
     ],
-    "meta": {
-      "type": "Compounds",
-      "id": "LI+",
-      "color": "#cee5cb",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Compounds',
+      'id': 'LI+',
+      'color': '#cee5cb',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         346.203101531,
         293.6838338610012,
@@ -17725,19 +17725,19 @@ export const ANNOTATIONS = [
         302.1838338610012
       ]
     ],
-    "keywords": [
-      "Li"
+    'keywords': [
+      'Li'
     ],
-    "meta": {
-      "type": "Compounds",
-      "id": "LI+",
-      "color": "#cee5cb",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Compounds',
+      'id': 'LI+',
+      'color': '#cee5cb',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         346.203101531,
         173.73183386100115,
@@ -17745,19 +17745,19 @@ export const ANNOTATIONS = [
         182.23183386100115
       ]
     ],
-    "keywords": [
-      "Li"
+    'keywords': [
+      'Li'
     ],
-    "meta": {
-      "type": "Compounds",
-      "id": "LI+",
-      "color": "#cee5cb",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Compounds',
+      'id': 'LI+',
+      'color': '#cee5cb',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         500.0386515374941,
         133.7478338610011,
@@ -17765,19 +17765,19 @@ export const ANNOTATIONS = [
         142.2478338610011
       ]
     ],
-    "keywords": [
-      "Li"
+    'keywords': [
+      'Li'
     ],
-    "meta": {
-      "type": "Compounds",
-      "id": "LI+",
-      "color": "#cee5cb",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Compounds',
+      'id': 'LI+',
+      'color': '#cee5cb',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         323.151101531,
         723.4202102660003,
@@ -17785,19 +17785,19 @@ export const ANNOTATIONS = [
         731.9202102660003
       ]
     ],
-    "keywords": [
-      "Li"
+    'keywords': [
+      'Li'
     ],
-    "meta": {
-      "type": "Compounds",
-      "id": "LI+",
-      "color": "#cee5cb",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Compounds',
+      'id': 'LI+',
+      'color': '#cee5cb',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         345.411751531,
         713.4242102660003,
@@ -17805,19 +17805,19 @@ export const ANNOTATIONS = [
         721.9242102660003
       ]
     ],
-    "keywords": [
-      "Li"
+    'keywords': [
+      'Li'
     ],
-    "meta": {
-      "type": "Compounds",
-      "id": "LI+",
-      "color": "#cee5cb",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Compounds',
+      'id': 'LI+',
+      'color': '#cee5cb',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         341.840901531,
         543.5838338610007,
@@ -17825,19 +17825,19 @@ export const ANNOTATIONS = [
         552.0838338610007
       ]
     ],
-    "keywords": [
-      "AG,"
+    'keywords': [
+      'AG,'
     ],
-    "meta": {
-      "type": "Compounds",
-      "id": "AG+",
-      "color": "#cee5cb",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Compounds',
+      'id': 'AG+',
+      'color': '#cee5cb',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         362.984651531,
         493.6038338610008,
@@ -17845,19 +17845,19 @@ export const ANNOTATIONS = [
         502.1038338610008
       ]
     ],
-    "keywords": [
-      "Na"
+    'keywords': [
+      'Na'
     ],
-    "meta": {
-      "type": "Compounds",
-      "id": "NA+",
-      "color": "#cee5cb",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Compounds',
+      'id': 'NA+',
+      'color': '#cee5cb',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         151.04820151806297,
         623.3922153320002,
@@ -17865,19 +17865,19 @@ export const ANNOTATIONS = [
         631.8922153320002
       ]
     ],
-    "keywords": [
-      "NA,"
+    'keywords': [
+      'NA,'
     ],
-    "meta": {
-      "type": "Compounds",
-      "id": "NA+",
-      "color": "#cee5cb",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Compounds',
+      'id': 'NA+',
+      'color': '#cee5cb',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         484.33405154723494,
         233.7078338610012,
@@ -17885,19 +17885,19 @@ export const ANNOTATIONS = [
         242.2078338610012
       ]
     ],
-    "keywords": [
-      "IP,"
+    'keywords': [
+      'IP,'
     ],
-    "meta": {
-      "type": "Compounds",
-      "id": "CPD-4209",
-      "color": "#cee5cb",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Compounds',
+      'id': 'CPD-4209',
+      'color': '#cee5cb',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         323.151101531,
         93.76383386100113,
@@ -17905,19 +17905,19 @@ export const ANNOTATIONS = [
         102.26383386100113
       ]
     ],
-    "keywords": [
-      "(eds)"
+    'keywords': [
+      '(eds)'
     ],
-    "meta": {
-      "type": "Compounds",
-      "id": "CPD-10431",
-      "color": "#cee5cb",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Compounds',
+      'id': 'CPD-10431',
+      'color': '#cee5cb',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         460.417601534247,
         83.76783386100114,
@@ -17925,19 +17925,19 @@ export const ANNOTATIONS = [
         92.26783386100114
       ]
     ],
-    "keywords": [
-      "pp"
+    'keywords': [
+      'pp'
     ],
-    "meta": {
-      "type": "Compounds",
-      "id": "PPI",
-      "color": "#cee5cb",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Compounds',
+      'id': 'PPI',
+      'color': '#cee5cb',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         135.87910153099998,
         723.352215332,
@@ -17945,19 +17945,19 @@ export const ANNOTATIONS = [
         731.852215332
       ]
     ],
-    "keywords": [
-      "CA,"
+    'keywords': [
+      'CA,'
     ],
-    "meta": {
-      "type": "Compounds",
-      "id": "CA+2",
-      "color": "#cee5cb",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Compounds',
+      'id': 'CA+2',
+      'color': '#cee5cb',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         93.893601531,
         389.280930175,
@@ -17965,19 +17965,19 @@ export const ANNOTATIONS = [
         399.280930175
       ]
     ],
-    "keywords": [
-      "Glutaredoxin"
+    'keywords': [
+      'Glutaredoxin'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "GIXO-1852-MONOMER",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'GIXO-1852-MONOMER',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 2,
-    "rects": [
+    'pageNumber': 2,
+    'rects': [
       [
         416.06769311690994,
         483.250229492,
@@ -17985,19 +17985,19 @@ export const ANNOTATIONS = [
         493.250229492
       ]
     ],
-    "keywords": [
-      "glutaredoxin"
+    'keywords': [
+      'glutaredoxin'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "GIXO-1852-MONOMER",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'GIXO-1852-MONOMER',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         446.2428979550901,
         684.130173339,
@@ -18005,19 +18005,19 @@ export const ANNOTATIONS = [
         694.130173339
       ]
     ],
-    "keywords": [
-      "glutaredoxin)"
+    'keywords': [
+      'glutaredoxin)'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "GIXO-1852-MONOMER",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'GIXO-1852-MONOMER',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 8,
-    "rects": [
+    'pageNumber': 8,
+    'rects': [
       [
         51.023601531,
         196.723190917,
@@ -18031,20 +18031,20 @@ export const ANNOTATIONS = [
         219.223190917
       ]
     ],
-    "keywords": [
-      "taredoxin",
-      "glu-"
+    'keywords': [
+      'taredoxin',
+      'glu-'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "GIXO-1852-MONOMER",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'GIXO-1852-MONOMER',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         93.89260055443,
         351.780930175,
@@ -18052,19 +18052,19 @@ export const ANNOTATIONS = [
         361.780930175
       ]
     ],
-    "keywords": [
-      "Ferredoxin"
+    'keywords': [
+      'Ferredoxin'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "MONOMER-13565",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'MONOMER-13565',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         379.75889902318,
         621.630173339,
@@ -18072,19 +18072,19 @@ export const ANNOTATIONS = [
         631.630173339
       ]
     ],
-    "keywords": [
-      "ferredoxin"
+    'keywords': [
+      'ferredoxin'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "MONOMER-13565",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'MONOMER-13565',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         349.66789902700003,
         596.630173339,
@@ -18092,19 +18092,19 @@ export const ANNOTATIONS = [
         606.630173339
       ]
     ],
-    "keywords": [
-      "ferredoxin"
+    'keywords': [
+      'ferredoxin'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "MONOMER-13565",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'MONOMER-13565',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         476.40951046018006,
         546.630173339,
@@ -18112,19 +18112,19 @@ export const ANNOTATIONS = [
         556.630173339
       ]
     ],
-    "keywords": [
-      "ferredoxin"
+    'keywords': [
+      'ferredoxin'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "MONOMER-13565",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'MONOMER-13565',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         306.146510464,
         534.130173339,
@@ -18132,19 +18132,19 @@ export const ANNOTATIONS = [
         544.130173339
       ]
     ],
-    "keywords": [
-      "ferredoxin"
+    'keywords': [
+      'ferredoxin'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "MONOMER-13565",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'MONOMER-13565',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 8,
-    "rects": [
+    'pageNumber': 8,
+    'rects': [
       [
         51.023601531,
         329.0842143550001,
@@ -18158,20 +18158,20 @@ export const ANNOTATIONS = [
         347.58021435500007
       ]
     ],
-    "keywords": [
-      "doxin",
-      "ferre-"
+    'keywords': [
+      'doxin',
+      'ferre-'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "MONOMER-13565",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'MONOMER-13565',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 8,
-    "rects": [
+    'pageNumber': 8,
+    'rects': [
       [
         369.18518794199997,
         339.08171435500003,
@@ -18179,19 +18179,19 @@ export const ANNOTATIONS = [
         347.58171435500003
       ]
     ],
-    "keywords": [
-      "ferredoxin"
+    'keywords': [
+      'ferredoxin'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "MONOMER-13565",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'MONOMER-13565',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 8,
-    "rects": [
+    'pageNumber': 8,
+    'rects': [
       [
         188.89460153100006,
         259.223190917,
@@ -18199,19 +18199,19 @@ export const ANNOTATIONS = [
         269.223190917
       ]
     ],
-    "keywords": [
-      "ferredoxin"
+    'keywords': [
+      'ferredoxin'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "MONOMER-13565",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'MONOMER-13565',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         335.611813655,
         201.780899658,
@@ -18219,19 +18219,19 @@ export const ANNOTATIONS = [
         211.780899658
       ]
     ],
-    "keywords": [
-      "case"
+    'keywords': [
+      'case'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "G7426-MONOMER",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'G7426-MONOMER',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 8,
-    "rects": [
+    'pageNumber': 8,
+    'rects': [
       [
         341.947394376,
         171.72329772900002,
@@ -18239,19 +18239,19 @@ export const ANNOTATIONS = [
         181.72329772900002
       ]
     ],
-    "keywords": [
-      "case"
+    'keywords': [
+      'case'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "G7426-MONOMER",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'G7426-MONOMER',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 2,
-    "rects": [
+    'pageNumber': 2,
+    'rects': [
       [
         306.141693115,
         308.250198974,
@@ -18259,19 +18259,19 @@ export const ANNOTATIONS = [
         318.250198974
       ]
     ],
-    "keywords": [
-      "polymerase"
+    'keywords': [
+      'polymerase'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "G3O-28937-MONOMER",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'G3O-28937-MONOMER',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 2,
-    "rects": [
+    'pageNumber': 2,
+    'rects': [
       [
         351.018693115,
         245.750198974,
@@ -18279,19 +18279,19 @@ export const ANNOTATIONS = [
         255.750198974
       ]
     ],
-    "keywords": [
-      "h at"
+    'keywords': [
+      'h at'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "HS03036-MONOMER",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'HS03036-MONOMER',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 2,
-    "rects": [
+    'pageNumber': 2,
+    'rects': [
       [
         401.09269311500003,
         120.750198974,
@@ -18299,19 +18299,19 @@ export const ANNOTATIONS = [
         130.750198974
       ]
     ],
-    "keywords": [
-      "ISCU"
+    'keywords': [
+      'ISCU'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "G7324-MONOMER",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'G7324-MONOMER',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 2,
-    "rects": [
+    'pageNumber': 2,
+    'rects': [
       [
         445.462693115,
         120.750198974,
@@ -18319,19 +18319,19 @@ export const ANNOTATIONS = [
         130.750198974
       ]
     ],
-    "keywords": [
-      "ISCU)"
+    'keywords': [
+      'ISCU)'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "G7324-MONOMER",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'G7324-MONOMER',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         139.69040085400002,
         96.63020385700001,
@@ -18339,19 +18339,19 @@ export const ANNOTATIONS = [
         106.63020385700001
       ]
     ],
-    "keywords": [
-      "ISCU"
+    'keywords': [
+      'ISCU'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "G7324-MONOMER",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'G7324-MONOMER',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         68.657900697,
         534.130173339,
@@ -18359,19 +18359,19 @@ export const ANNOTATIONS = [
         544.130173339
       ]
     ],
-    "keywords": [
-      "ISCU,"
+    'keywords': [
+      'ISCU,'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "G7324-MONOMER",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'G7324-MONOMER',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         323.657897957,
         684.130173339,
@@ -18379,19 +18379,19 @@ export const ANNOTATIONS = [
         694.130173339
       ]
     ],
-    "keywords": [
-      "ISCU,"
+    'keywords': [
+      'ISCU,'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "G7324-MONOMER",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'G7324-MONOMER',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         333.28827783199995,
         352.87299853499997,
@@ -18399,19 +18399,19 @@ export const ANNOTATIONS = [
         361.37299853499997
       ]
     ],
-    "keywords": [
-      "ISCU"
+    'keywords': [
+      'ISCU'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "G7324-MONOMER",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'G7324-MONOMER',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 8,
-    "rects": [
+    'pageNumber': 8,
+    'rects': [
       [
         246.7276015290901,
         246.723190917,
@@ -18419,19 +18419,19 @@ export const ANNOTATIONS = [
         256.723190917
       ]
     ],
-    "keywords": [
-      "ISCU"
+    'keywords': [
+      'ISCU'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "G7324-MONOMER",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'G7324-MONOMER',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 8,
-    "rects": [
+    'pageNumber': 8,
+    'rects': [
       [
         180.305601531,
         196.723190917,
@@ -18439,19 +18439,19 @@ export const ANNOTATIONS = [
         206.723190917
       ]
     ],
-    "keywords": [
-      "ISCU."
+    'keywords': [
+      'ISCU.'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "G7324-MONOMER",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'G7324-MONOMER',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 8,
-    "rects": [
+    'pageNumber': 8,
+    'rects': [
       [
         440.6283943779099,
         171.72329772900002,
@@ -18459,19 +18459,19 @@ export const ANNOTATIONS = [
         181.72329772900002
       ]
     ],
-    "keywords": [
-      "ISCU,"
+    'keywords': [
+      'ISCU,'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "G7324-MONOMER",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'G7324-MONOMER',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 8,
-    "rects": [
+    'pageNumber': 8,
+    'rects': [
       [
         521.12639439889,
         159.22329772900002,
@@ -18479,19 +18479,19 @@ export const ANNOTATIONS = [
         169.22329772900002
       ]
     ],
-    "keywords": [
-      "ISCU"
+    'keywords': [
+      'ISCU'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "G7324-MONOMER",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'G7324-MONOMER',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 8,
-    "rects": [
+    'pageNumber': 8,
+    'rects': [
       [
         323.98201416,
         109.22329772900001,
@@ -18499,19 +18499,19 @@ export const ANNOTATIONS = [
         119.22329772900001
       ]
     ],
-    "keywords": [
-      "ISCU"
+    'keywords': [
+      'ISCU'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "G7324-MONOMER",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'G7324-MONOMER',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 8,
-    "rects": [
+    'pageNumber': 8,
+    'rects': [
       [
         306.14201416000003,
         96.72329772900001,
@@ -18519,19 +18519,19 @@ export const ANNOTATIONS = [
         106.72329772900001
       ]
     ],
-    "keywords": [
-      "ISCU"
+    'keywords': [
+      'ISCU'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "G7324-MONOMER",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'G7324-MONOMER',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 2,
-    "rects": [
+    'pageNumber': 2,
+    'rects': [
       [
         348.422693115,
         108.250198974,
@@ -18539,19 +18539,19 @@ export const ANNOTATIONS = [
         118.250198974
       ]
     ],
-    "keywords": [
-      "NifS"
+    'keywords': [
+      'NifS'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "HS01304-MONOMER",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'HS01304-MONOMER',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 2,
-    "rects": [
+    'pageNumber': 2,
+    'rects': [
       [
         392.10269311499997,
         108.250198974,
@@ -18559,19 +18559,19 @@ export const ANNOTATIONS = [
         118.250198974
       ]
     ],
-    "keywords": [
-      "NifS)"
+    'keywords': [
+      'NifS)'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "HS01304-MONOMER",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'HS01304-MONOMER',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         126.99009685099999,
         671.630173339,
@@ -18579,19 +18579,19 @@ export const ANNOTATIONS = [
         681.630173339
       ]
     ],
-    "keywords": [
-      "NifS."
+    'keywords': [
+      'NifS.'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "HS01304-MONOMER",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'HS01304-MONOMER',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         221.307297607,
         328.789196533,
@@ -18599,19 +18599,19 @@ export const ANNOTATIONS = [
         337.289196533
       ]
     ],
-    "keywords": [
-      "NifS"
+    'keywords': [
+      'NifS'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "HS01304-MONOMER",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'HS01304-MONOMER',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         67.84960153482,
         671.630173339,
@@ -18619,19 +18619,19 @@ export const ANNOTATIONS = [
         681.630173339
       ]
     ],
-    "keywords": [
-      "mM"
+    'keywords': [
+      'mM'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "CPLX-7759",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'CPLX-7759',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         123.66160153864001,
         671.630173339,
@@ -18639,19 +18639,19 @@ export const ANNOTATIONS = [
         681.630173339
       ]
     ],
-    "keywords": [
-      "mM"
+    'keywords': [
+      'mM'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "CPLX-7759",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'CPLX-7759',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         240.3726015386399,
         671.630173339,
@@ -18659,19 +18659,19 @@ export const ANNOTATIONS = [
         681.630173339
       ]
     ],
-    "keywords": [
-      "mM"
+    'keywords': [
+      'mM'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "CPLX-7759",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'CPLX-7759',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         86.30760152718,
         659.130173339,
@@ -18679,19 +18679,19 @@ export const ANNOTATIONS = [
         669.130173339
       ]
     ],
-    "keywords": [
-      "mM"
+    'keywords': [
+      'mM'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "CPLX-7759",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'CPLX-7759',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         76.61280322199998,
         396.63020385699997,
@@ -18699,19 +18699,19 @@ export const ANNOTATIONS = [
         406.63020385699997
       ]
     ],
-    "keywords": [
-      "mM"
+    'keywords': [
+      'mM'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "CPLX-7759",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'CPLX-7759',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         153.194803222,
         396.63020385699997,
@@ -18719,19 +18719,19 @@ export const ANNOTATIONS = [
         406.63020385699997
       ]
     ],
-    "keywords": [
-      "mM"
+    'keywords': [
+      'mM'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "CPLX-7759",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'CPLX-7759',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         94.90980321817997,
         346.63020385699997,
@@ -18739,19 +18739,19 @@ export const ANNOTATIONS = [
         356.63020385699997
       ]
     ],
-    "keywords": [
-      "mM"
+    'keywords': [
+      'mM'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "CPLX-7759",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'CPLX-7759',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         168.53880321436003,
         346.63020385699997,
@@ -18759,19 +18759,19 @@ export const ANNOTATIONS = [
         356.63020385699997
       ]
     ],
-    "keywords": [
-      "mM"
+    'keywords': [
+      'mM'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "CPLX-7759",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'CPLX-7759',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         235.0538032448999,
         309.13020385699997,
@@ -18779,19 +18779,19 @@ export const ANNOTATIONS = [
         319.13020385699997
       ]
     ],
-    "keywords": [
-      "mM"
+    'keywords': [
+      'mM'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "CPLX-7759",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'CPLX-7759',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         68.06980322199998,
         296.63020385699997,
@@ -18799,19 +18799,19 @@ export const ANNOTATIONS = [
         306.63020385699997
       ]
     ],
-    "keywords": [
-      "mM"
+    'keywords': [
+      'mM'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "CPLX-7759",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'CPLX-7759',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         128.63080322199994,
         284.13020385699997,
@@ -18819,19 +18819,19 @@ export const ANNOTATIONS = [
         294.13020385699997
       ]
     ],
-    "keywords": [
-      "mM"
+    'keywords': [
+      'mM'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "CPLX-7759",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'CPLX-7759',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         203.30480321818,
         284.13020385699997,
@@ -18839,19 +18839,19 @@ export const ANNOTATIONS = [
         294.13020385699997
       ]
     ],
-    "keywords": [
-      "mM"
+    'keywords': [
+      'mM'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "CPLX-7759",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'CPLX-7759',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         222.84760153673005,
         196.63020385700003,
@@ -18859,19 +18859,19 @@ export const ANNOTATIONS = [
         206.63020385700003
       ]
     ],
-    "keywords": [
-      "mM"
+    'keywords': [
+      'mM'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "CPLX-7759",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'CPLX-7759',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         231.68560154053998,
         184.13020385700003,
@@ -18879,19 +18879,19 @@ export const ANNOTATIONS = [
         194.13020385700003
       ]
     ],
-    "keywords": [
-      "mM"
+    'keywords': [
+      'mM'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "CPLX-7759",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'CPLX-7759',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         66.421611328,
         171.63020385700003,
@@ -18899,19 +18899,19 @@ export const ANNOTATIONS = [
         181.63020385700003
       ]
     ],
-    "keywords": [
-      "mM"
+    'keywords': [
+      'mM'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "CPLX-7759",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'CPLX-7759',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         137.25739886399995,
         146.63020385700003,
@@ -18919,19 +18919,19 @@ export const ANNOTATIONS = [
         156.63020385700003
       ]
     ],
-    "keywords": [
-      "mM"
+    'keywords': [
+      'mM'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "CPLX-7759",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'CPLX-7759',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         211.92439886400004,
         146.63020385700003,
@@ -18939,19 +18939,19 @@ export const ANNOTATIONS = [
         156.63020385700003
       ]
     ],
-    "keywords": [
-      "mM"
+    'keywords': [
+      'mM'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "CPLX-7759",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'CPLX-7759',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         223.81539887735013,
         121.63020385700001,
@@ -18959,19 +18959,19 @@ export const ANNOTATIONS = [
         131.63020385700003
       ]
     ],
-    "keywords": [
-      "mM"
+    'keywords': [
+      'mM'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "CPLX-7759",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'CPLX-7759',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         184.41640087306996,
         84.13020385700001,
@@ -18979,19 +18979,19 @@ export const ANNOTATIONS = [
         94.13020385700001
       ]
     ],
-    "keywords": [
-      "mM"
+    'keywords': [
+      'mM'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "CPLX-7759",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'CPLX-7759',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         251.10340087880013,
         71.63020385700001,
@@ -18999,19 +18999,19 @@ export const ANNOTATIONS = [
         81.63020385700001
       ]
     ],
-    "keywords": [
-      "mM"
+    'keywords': [
+      'mM'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "CPLX-7759",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'CPLX-7759',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         330.767911132,
         721.630196228,
@@ -19019,19 +19019,19 @@ export const ANNOTATIONS = [
         731.630196228
       ]
     ],
-    "keywords": [
-      "mM"
+    'keywords': [
+      'mM'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "CPLX-7759",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'CPLX-7759',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         489.95969311500016,
         580.904587402,
@@ -19039,19 +19039,19 @@ export const ANNOTATIONS = [
         590.904587402
       ]
     ],
-    "keywords": [
-      "mM"
+    'keywords': [
+      'mM'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "CPLX-7759",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'CPLX-7759',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         324.45569311118,
         568.404587402,
@@ -19059,19 +19059,19 @@ export const ANNOTATIONS = [
         578.404587402
       ]
     ],
-    "keywords": [
-      "mM"
+    'keywords': [
+      'mM'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "CPLX-7759",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'CPLX-7759',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         320.34400999999997,
         365.179093017,
@@ -19079,19 +19079,19 @@ export const ANNOTATIONS = [
         375.179093017
       ]
     ],
-    "keywords": [
-      "mM"
+    'keywords': [
+      'mM'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "CPLX-7759",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'CPLX-7759',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         398.99900999999994,
         365.179093017,
@@ -19099,19 +19099,19 @@ export const ANNOTATIONS = [
         375.179093017
       ]
     ],
-    "keywords": [
-      "mM"
+    'keywords': [
+      'mM'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "CPLX-7759",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'CPLX-7759',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         346.41469310737,
         224.45359863200002,
@@ -19119,19 +19119,19 @@ export const ANNOTATIONS = [
         234.45359863200002
       ]
     ],
-    "keywords": [
-      "mm)"
+    'keywords': [
+      'mm)'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "CPLX-7759",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'CPLX-7759',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         425.95769309973997,
         224.45359863200002,
@@ -19139,19 +19139,19 @@ export const ANNOTATIONS = [
         234.45359863200002
       ]
     ],
-    "keywords": [
-      "mM"
+    'keywords': [
+      'mM'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "CPLX-7759",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'CPLX-7759',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         500.4916930959199,
         224.45359863200002,
@@ -19159,19 +19159,19 @@ export const ANNOTATIONS = [
         234.45359863200002
       ]
     ],
-    "keywords": [
-      "mM"
+    'keywords': [
+      'mM'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "CPLX-7759",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'CPLX-7759',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         442.02869312643,
         108.728096618,
@@ -19179,19 +19179,19 @@ export const ANNOTATIONS = [
         118.728096618
       ]
     ],
-    "keywords": [
-      "mM)"
+    'keywords': [
+      'mM)'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "CPLX-7759",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'CPLX-7759',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         322.14569311500003,
         96.228096618,
@@ -19199,19 +19199,19 @@ export const ANNOTATIONS = [
         106.228096618
       ]
     ],
-    "keywords": [
-      "mM)"
+    'keywords': [
+      'mM)'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "CPLX-7759",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'CPLX-7759',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         456.50269311500017,
         96.228096618,
@@ -19219,19 +19219,19 @@ export const ANNOTATIONS = [
         106.228096618
       ]
     ],
-    "keywords": [
-      "mM"
+    'keywords': [
+      'mM'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "CPLX-7759",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'CPLX-7759',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         220.41525764293357,
         71.43419976800001,
@@ -19239,19 +19239,19 @@ export const ANNOTATIONS = [
         79.93419976800001
       ]
     ],
-    "keywords": [
-      "mM"
+    'keywords': [
+      'mM'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "CPLX-7759",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'CPLX-7759',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 8,
-    "rects": [
+    'pageNumber': 8,
+    'rects': [
       [
         104.72745158287549,
         329.0842143550001,
@@ -19259,19 +19259,19 @@ export const ANNOTATIONS = [
         337.5842143550001
       ]
     ],
-    "keywords": [
-      "mM"
+    'keywords': [
+      'mM'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "CPLX-7759",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'CPLX-7759',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 8,
-    "rects": [
+    'pageNumber': 8,
+    'rects': [
       [
         171.130301634751,
         329.0842143550001,
@@ -19279,19 +19279,19 @@ export const ANNOTATIONS = [
         337.5842143550001
       ]
     ],
-    "keywords": [
-      "mM"
+    'keywords': [
+      'mM'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "CPLX-7759",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'CPLX-7759',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 8,
-    "rects": [
+    'pageNumber': 8,
+    'rects': [
       [
         421.73339437217993,
         246.72329772900002,
@@ -19299,19 +19299,19 @@ export const ANNOTATIONS = [
         256.723297729
       ]
     ],
-    "keywords": [
-      "mM)"
+    'keywords': [
+      'mM)'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "CPLX-7759",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'CPLX-7759',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         63.298911131999965,
         546.630173339,
@@ -19319,19 +19319,19 @@ export const ANNOTATIONS = [
         556.630173339
       ]
     ],
-    "keywords": [
-      "Drs."
+    'keywords': [
+      'Drs.'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "PD00288",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'PD00288',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         194.52040087880013,
         71.63020385700001,
@@ -19339,19 +19339,19 @@ export const ANNOTATIONS = [
         81.63020385700001
       ]
     ],
-    "keywords": [
-      "made"
+    'keywords': [
+      'made'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "MONOMER-14283",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'MONOMER-14283',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         306.141693115,
         518.404587402,
@@ -19365,20 +19365,20 @@ export const ANNOTATIONS = [
         540.904587402
       ]
     ],
-    "keywords": [
-      "at",
-      "K "
+    'keywords': [
+      'at',
+      'K '
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "CPLX-7891",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'CPLX-7891',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         535.85009082764,
         315.179093017,
@@ -19386,19 +19386,19 @@ export const ANNOTATIONS = [
         325.179093017
       ]
     ],
-    "keywords": [
-      "fit"
+    'keywords': [
+      'fit'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "EG10506-MONOMER",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'EG10506-MONOMER',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         385.23280761700005,
         121.43119976800001,
@@ -19406,19 +19406,19 @@ export const ANNOTATIONS = [
         129.931199768
       ]
     ],
-    "keywords": [
-      "fit,"
+    'keywords': [
+      'fit,'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "EG10506-MONOMER",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'EG10506-MONOMER',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         321.45851416000005,
         81.426199768,
@@ -19426,19 +19426,19 @@ export const ANNOTATIONS = [
         89.926199768
       ]
     ],
-    "keywords": [
-      "fit"
+    'keywords': [
+      'fit'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "EG10506-MONOMER",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'EG10506-MONOMER',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 4,
-    "rects": [
+    'pageNumber': 4,
+    'rects': [
       [
         361.289693115,
         108.336197509,
@@ -19446,19 +19446,19 @@ export const ANNOTATIONS = [
         118.336197509
       ]
     ],
-    "keywords": [
-      "experimental"
+    'keywords': [
+      'experimental'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "G3O-31811-MONOMER",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'G3O-31811-MONOMER',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         197.62845761700004,
         81.43019976800001,
@@ -19466,19 +19466,19 @@ export const ANNOTATIONS = [
         89.93019976800001
       ]
     ],
-    "keywords": [
-      "experimental"
+    'keywords': [
+      'experimental'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "G3O-31811-MONOMER",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'G3O-31811-MONOMER',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 4,
-    "rects": [
+    'pageNumber': 4,
+    'rects': [
       [
         460.86969311118014,
         83.336197509,
@@ -19486,19 +19486,19 @@ export const ANNOTATIONS = [
         93.336197509
       ]
     ],
-    "keywords": [
-      "BOLA"
+    'keywords': [
+      'BOLA'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "EG10125-MONOMER",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'EG10125-MONOMER',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         517.09450364846,
         646.630173339,
@@ -19506,19 +19506,19 @@ export const ANNOTATIONS = [
         656.630173339
       ]
     ],
-    "keywords": [
-      "BOLA"
+    'keywords': [
+      'BOLA'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "EG10125-MONOMER",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'EG10125-MONOMER',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         467.76150364081985,
         684.130173339,
@@ -19526,19 +19526,19 @@ export const ANNOTATIONS = [
         694.130173339
       ]
     ],
-    "keywords": [
-      "a CD"
+    'keywords': [
+      'a CD'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "OCTAPRENYL-METHOXYPHENOL-OH-MONOMER",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'OCTAPRENYL-METHOXYPHENOL-OH-MONOMER',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         372.85150562699994,
         471.63017333899995,
@@ -19546,19 +19546,19 @@ export const ANNOTATIONS = [
         481.63017333899995
       ]
     ],
-    "keywords": [
-      "a CD"
+    'keywords': [
+      'a CD'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "OCTAPRENYL-METHOXYPHENOL-OH-MONOMER",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'OCTAPRENYL-METHOXYPHENOL-OH-MONOMER',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         369.05750363699997,
         596.630173339,
@@ -19566,19 +19566,19 @@ export const ANNOTATIONS = [
         606.630173339
       ]
     ],
-    "keywords": [
-      "and a"
+    'keywords': [
+      'and a'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "MONOMER-19047",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'MONOMER-19047',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         306.14260153099997,
         82.03469824200002,
@@ -19586,19 +19586,19 @@ export const ANNOTATIONS = [
         90.53469824200002
       ]
     ],
-    "keywords": [
-      "to a"
+    'keywords': [
+      'to a'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "MONOMER-16211",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'MONOMER-16211',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 6,
-    "rects": [
+    'pageNumber': 6,
+    'rects': [
       [
         384.486790771,
         71.63020385699998,
@@ -19606,19 +19606,19 @@ export const ANNOTATIONS = [
         81.63020385699998
       ]
     ],
-    "keywords": [
-      "to a"
+    'keywords': [
+      'to a'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "MONOMER-16211",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'MONOMER-16211',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         64.23790665700002,
         384.13017333899995,
@@ -19626,19 +19626,19 @@ export const ANNOTATIONS = [
         394.13017333899995
       ]
     ],
-    "keywords": [
-      "to a"
+    'keywords': [
+      'to a'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "MONOMER-16211",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'MONOMER-16211',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         51.02790069700001,
         534.130173339,
@@ -19652,20 +19652,20 @@ export const ANNOTATIONS = [
         556.630173339
       ]
     ],
-    "keywords": [
-      "tein",
-      "scaffold pro-"
+    'keywords': [
+      'tein',
+      'scaffold pro-'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "GIXO-866-MONOMER",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'GIXO-866-MONOMER',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         221.97690069700013,
         534.130173339,
@@ -19673,19 +19673,19 @@ export const ANNOTATIONS = [
         544.130173339
       ]
     ],
-    "keywords": [
-      "ABC transporter"
+    'keywords': [
+      'ABC transporter'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "GIXO-5235-MONOMER",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'GIXO-5235-MONOMER',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         51.017906657000026,
         434.13017333899995,
@@ -19693,19 +19693,19 @@ export const ANNOTATIONS = [
         444.13017333899995
       ]
     ],
-    "keywords": [
-      "line"
+    'keywords': [
+      'line'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "LINEPSEPA-MONOMER",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'LINEPSEPA-MONOMER',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         529.10551046018,
         534.130173339,
@@ -19713,19 +19713,19 @@ export const ANNOTATIONS = [
         544.130173339
       ]
     ],
-    "keywords": [
-      "line"
+    'keywords': [
+      'line'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "LINEPSEPA-MONOMER",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'LINEPSEPA-MONOMER',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         271.09540153099977,
         92.52280273400035,
@@ -19733,19 +19733,19 @@ export const ANNOTATIONS = [
         101.02280273400035
       ]
     ],
-    "keywords": [
-      "Acta"
+    'keywords': [
+      'Acta'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "MONOMER-19319",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'MONOMER-19319',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         323.151101531,
         703.5198338610004,
@@ -19753,19 +19753,19 @@ export const ANNOTATIONS = [
         712.0198338610004
       ]
     ],
-    "keywords": [
-      "Proc"
+    'keywords': [
+      'Proc'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "PROCST-MONOMER",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'PROCST-MONOMER',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         323.151101531,
         673.5318338610005,
@@ -19773,19 +19773,19 @@ export const ANNOTATIONS = [
         682.0318338610005
       ]
     ],
-    "keywords": [
-      "Chem"
+    'keywords': [
+      'Chem'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "TAR-MONOMER",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'TAR-MONOMER',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         377.457601531,
         633.5478338610005,
@@ -19793,19 +19793,19 @@ export const ANNOTATIONS = [
         642.0478338610005
       ]
     ],
-    "keywords": [
-      "Chem"
+    'keywords': [
+      'Chem'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "TAR-MONOMER",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'TAR-MONOMER',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         338.404351531,
         583.5678338610006,
@@ -19813,19 +19813,19 @@ export const ANNOTATIONS = [
         592.0678338610006
       ]
     ],
-    "keywords": [
-      "Chem"
+    'keywords': [
+      'Chem'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "TAR-MONOMER",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'TAR-MONOMER',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         340.622851531,
         533.5878338610007,
@@ -19833,19 +19833,19 @@ export const ANNOTATIONS = [
         542.0878338610007
       ]
     ],
-    "keywords": [
-      "Chem"
+    'keywords': [
+      'Chem'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "TAR-MONOMER",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'TAR-MONOMER',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         375.238251531,
         423.6318338610009,
@@ -19853,19 +19853,19 @@ export const ANNOTATIONS = [
         432.1318338610009
       ]
     ],
-    "keywords": [
-      "Chem"
+    'keywords': [
+      'Chem'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "TAR-MONOMER",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'TAR-MONOMER',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         503.302651556942,
         393.643833861001,
@@ -19873,19 +19873,19 @@ export const ANNOTATIONS = [
         402.143833861001
       ]
     ],
-    "keywords": [
-      "Chem"
+    'keywords': [
+      'Chem'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "TAR-MONOMER",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'TAR-MONOMER',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         410.09250153100004,
         343.6638338610011,
@@ -19893,19 +19893,19 @@ export const ANNOTATIONS = [
         352.1638338610011
       ]
     ],
-    "keywords": [
-      "Chem"
+    'keywords': [
+      'Chem'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "TAR-MONOMER",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'TAR-MONOMER',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         381.24010153100005,
         283.6878338610012,
@@ -19913,19 +19913,19 @@ export const ANNOTATIONS = [
         292.1878338610012
       ]
     ],
-    "keywords": [
-      "Chem"
+    'keywords': [
+      'Chem'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "TAR-MONOMER",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'TAR-MONOMER',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         523.5029015342723,
         273.6918338610012,
@@ -19933,19 +19933,19 @@ export const ANNOTATIONS = [
         282.1918338610012
       ]
     ],
-    "keywords": [
-      "Chem"
+    'keywords': [
+      'Chem'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "TAR-MONOMER",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'TAR-MONOMER',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         523.5029015342723,
         253.69983386100122,
@@ -19953,19 +19953,19 @@ export const ANNOTATIONS = [
         262.19983386100125
       ]
     ],
-    "keywords": [
-      "Chem"
+    'keywords': [
+      'Chem'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "TAR-MONOMER",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'TAR-MONOMER',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         523.190951531,
         223.7118338610012,
@@ -19973,19 +19973,19 @@ export const ANNOTATIONS = [
         232.2118338610012
       ]
     ],
-    "keywords": [
-      "Chem"
+    'keywords': [
+      'Chem'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "TAR-MONOMER",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'TAR-MONOMER',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         360.474601531,
         163.73583386100114,
@@ -19993,19 +19993,19 @@ export const ANNOTATIONS = [
         172.23583386100114
       ]
     ],
-    "keywords": [
-      "Chem"
+    'keywords': [
+      'Chem'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "TAR-MONOMER",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'TAR-MONOMER',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         205.84345154397107,
         713.356215332,
@@ -20013,19 +20013,19 @@ export const ANNOTATIONS = [
         721.856215332
       ]
     ],
-    "keywords": [
-      "Chem"
+    'keywords': [
+      'Chem'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "TAR-MONOMER",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'TAR-MONOMER',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         402.356651531,
         723.4202102660003,
@@ -20033,19 +20033,19 @@ export const ANNOTATIONS = [
         731.9202102660003
       ]
     ],
-    "keywords": [
-      "Chem"
+    'keywords': [
+      'Chem'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "TAR-MONOMER",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'TAR-MONOMER',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         424.61900153100004,
         713.4242102660003,
@@ -20053,19 +20053,19 @@ export const ANNOTATIONS = [
         721.9242102660003
       ]
     ],
-    "keywords": [
-      "Chem"
+    'keywords': [
+      'Chem'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "TAR-MONOMER",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'TAR-MONOMER',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         399.595001531,
         673.4402102660003,
@@ -20073,19 +20073,19 @@ export const ANNOTATIONS = [
         681.9402102660003
       ]
     ],
-    "keywords": [
-      "Chem"
+    'keywords': [
+      'Chem'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "TAR-MONOMER",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'TAR-MONOMER',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         268.6185015455943,
         653.3802153320001,
@@ -20093,19 +20093,19 @@ export const ANNOTATIONS = [
         661.8802153320001
       ]
     ],
-    "keywords": [
-      "Chem"
+    'keywords': [
+      'Chem'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "TAR-MONOMER",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'TAR-MONOMER',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         399.23290153100004,
         653.4482102660004,
@@ -20113,19 +20113,19 @@ export const ANNOTATIONS = [
         661.9482102660004
       ]
     ],
-    "keywords": [
-      "Chem"
+    'keywords': [
+      'Chem'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "TAR-MONOMER",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'TAR-MONOMER',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         196.7280515310001,
         633.3882153320002,
@@ -20133,19 +20133,19 @@ export const ANNOTATIONS = [
         641.8882153320002
       ]
     ],
-    "keywords": [
-      "Chem"
+    'keywords': [
+      'Chem'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "TAR-MONOMER",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'TAR-MONOMER',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         161.40800153100002,
         563.4162153320003,
@@ -20153,19 +20153,19 @@ export const ANNOTATIONS = [
         571.9162153320003
       ]
     ],
-    "keywords": [
-      "Chem"
+    'keywords': [
+      'Chem'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "TAR-MONOMER",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'TAR-MONOMER',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         381.240101531,
         573.5718338610006,
@@ -20173,19 +20173,19 @@ export const ANNOTATIONS = [
         582.0718338610006
       ]
     ],
-    "keywords": [
-      "DT,"
+    'keywords': [
+      'DT,'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "CPLX-8048",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'CPLX-8048',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         358.409101531,
         133.7478338610011,
@@ -20193,19 +20193,19 @@ export const ANNOTATIONS = [
         142.2478338610011
       ]
     ],
-    "keywords": [
-      "DT,"
+    'keywords': [
+      'DT,'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "CPLX-8048",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'CPLX-8048',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         351.677101531,
         493.6038338610008,
@@ -20213,19 +20213,19 @@ export const ANNOTATIONS = [
         502.1038338610008
       ]
     ],
-    "keywords": [
-      "A, Na"
+    'keywords': [
+      'A, Na'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "ADHE-MONOMER",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'ADHE-MONOMER',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         350.215101531,
         413.63583386100095,
@@ -20233,19 +20233,19 @@ export const ANNOTATIONS = [
         422.13583386100095
       ]
     ],
-    "keywords": [
-      "SS,"
+    'keywords': [
+      'SS,'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "HS01329-MONOMER",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'HS01329-MONOMER',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         151.66360153099998,
         653.3802153320001,
@@ -20253,19 +20253,19 @@ export const ANNOTATIONS = [
         661.8802153320001
       ]
     ],
-    "keywords": [
-      "SS,"
+    'keywords': [
+      'SS,'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "HS01329-MONOMER",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'HS01329-MONOMER',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         484.33405154723494,
         233.7078338610012,
@@ -20273,19 +20273,19 @@ export const ANNOTATIONS = [
         242.2078338610012
       ]
     ],
-    "keywords": [
-      "IP,"
+    'keywords': [
+      'IP,'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "MONOMER-18285",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'MONOMER-18285',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         413.880101531,
         223.7118338610012,
@@ -20293,19 +20293,19 @@ export const ANNOTATIONS = [
         232.2118338610012
       ]
     ],
-    "keywords": [
-      "Dos"
+    'keywords': [
+      'Dos'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "G6783-MONOMER",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'G6783-MONOMER',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         202.38565155694195,
         673.3722153320001,
@@ -20313,19 +20313,19 @@ export const ANNOTATIONS = [
         681.8722153320001
       ]
     ],
-    "keywords": [
-      "T-H"
+    'keywords': [
+      'T-H'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "CPLX66-161",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'CPLX66-161',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         440.900751531,
         683.4362102660003,
@@ -20333,19 +20333,19 @@ export const ANNOTATIONS = [
         691.9362102660003
       ]
     ],
-    "keywords": [
-      "Cox"
+    'keywords': [
+      'Cox'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "MONOMER-9454",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'MONOMER-9454',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         384.924001531,
         653.4482102660004,
@@ -20353,19 +20353,19 @@ export const ANNOTATIONS = [
         661.9482102660004
       ]
     ],
-    "keywords": [
-      "Nat"
+    'keywords': [
+      'Nat'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "MONOMER-13594",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'MONOMER-13594',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         132.50970153424703,
         603.4002153320002,
@@ -20373,19 +20373,19 @@ export const ANNOTATIONS = [
         611.9002153320002
       ]
     ],
-    "keywords": [
-      "AK,"
+    'keywords': [
+      'AK,'
     ],
-    "meta": {
-      "type": "Proteins",
-      "id": "HS08097-MONOMER",
-      "color": "#bcbd22",
-      "idType": "BIOCYC"
+    'meta': {
+      'type': 'Proteins',
+      'id': 'HS08097-MONOMER',
+      'color': '#bcbd22',
+      'idType': 'BIOCYC'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         173.42360153100003,
         650.283081054,
@@ -20393,19 +20393,19 @@ export const ANNOTATIONS = [
         666.283081054
       ]
     ],
-    "keywords": [
-      "human"
+    'keywords': [
+      'human'
     ],
-    "meta": {
-      "type": "Species",
-      "id": "9606",
-      "color": "#3177b8",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Species',
+      'id': '9606',
+      'color': '#3177b8',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         220.4036015310002,
         464.280930175,
@@ -20413,19 +20413,19 @@ export const ANNOTATIONS = [
         474.280930175
       ]
     ],
-    "keywords": [
-      "human"
+    'keywords': [
+      'human'
     ],
-    "meta": {
-      "type": "Species",
-      "id": "9606",
-      "color": "#3177b8",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Species',
+      'id': '9606',
+      'color': '#3177b8',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         120.482601531,
         451.780930175,
@@ -20433,19 +20433,19 @@ export const ANNOTATIONS = [
         461.780930175
       ]
     ],
-    "keywords": [
-      "human"
+    'keywords': [
+      'human'
     ],
-    "meta": {
-      "type": "Species",
-      "id": "9606",
-      "color": "#3177b8",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Species',
+      'id': '9606',
+      'color': '#3177b8',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 2,
-    "rects": [
+    'pageNumber': 2,
+    'rects': [
       [
         358.76869313217,
         520.750229492,
@@ -20453,19 +20453,19 @@ export const ANNOTATIONS = [
         530.750229492
       ]
     ],
-    "keywords": [
-      "human"
+    'keywords': [
+      'human'
     ],
-    "meta": {
-      "type": "Species",
-      "id": "9606",
-      "color": "#3177b8",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Species',
+      'id': '9606',
+      'color': '#3177b8',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 2,
-    "rects": [
+    'pageNumber': 2,
+    'rects': [
       [
         369.872693115,
         120.750198974,
@@ -20473,19 +20473,19 @@ export const ANNOTATIONS = [
         130.750198974
       ]
     ],
-    "keywords": [
-      "human"
+    'keywords': [
+      'human'
     ],
-    "meta": {
-      "type": "Species",
-      "id": "9606",
-      "color": "#3177b8",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Species',
+      'id': '9606',
+      'color': '#3177b8',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 2,
-    "rects": [
+    'pageNumber': 2,
+    'rects': [
       [
         490.452691775,
         95.750198974,
@@ -20493,19 +20493,19 @@ export const ANNOTATIONS = [
         105.750198974
       ]
     ],
-    "keywords": [
-      "human"
+    'keywords': [
+      'human'
     ],
-    "meta": {
-      "type": "Species",
-      "id": "9606",
-      "color": "#3177b8",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Species',
+      'id': '9606',
+      'color': '#3177b8',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         236.31560152909006,
         721.630173339,
@@ -20513,19 +20513,19 @@ export const ANNOTATIONS = [
         731.630173339
       ]
     ],
-    "keywords": [
-      "human"
+    'keywords': [
+      'human'
     ],
-    "meta": {
-      "type": "Species",
-      "id": "9606",
-      "color": "#3177b8",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Species',
+      'id': '9606',
+      'color': '#3177b8',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         129.41560153481996,
         584.130173339,
@@ -20533,19 +20533,19 @@ export const ANNOTATIONS = [
         594.130173339
       ]
     ],
-    "keywords": [
-      "human"
+    'keywords': [
+      'human'
     ],
-    "meta": {
-      "type": "Species",
-      "id": "9606",
-      "color": "#3177b8",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Species',
+      'id': '9606',
+      'color': '#3177b8',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 4,
-    "rects": [
+    'pageNumber': 4,
+    'rects': [
       [
         306.14169311499995,
         95.836197509,
@@ -20553,19 +20553,19 @@ export const ANNOTATIONS = [
         105.836197509
       ]
     ],
-    "keywords": [
-      "human"
+    'keywords': [
+      'human'
     ],
-    "meta": {
-      "type": "Species",
-      "id": "9606",
-      "color": "#3177b8",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Species',
+      'id': '9606',
+      'color': '#3177b8',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         161.18760153099998,
         721.630173339,
@@ -20573,19 +20573,19 @@ export const ANNOTATIONS = [
         731.630173339
       ]
     ],
-    "keywords": [
-      "human"
+    'keywords': [
+      'human'
     ],
-    "meta": {
-      "type": "Species",
-      "id": "9606",
-      "color": "#3177b8",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Species',
+      'id': '9606',
+      'color': '#3177b8',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         459.00150563462995,
         459.13017333899995,
@@ -20593,19 +20593,19 @@ export const ANNOTATIONS = [
         469.13017333899995
       ]
     ],
-    "keywords": [
-      "human"
+    'keywords': [
+      'human'
     ],
-    "meta": {
-      "type": "Species",
-      "id": "9606",
-      "color": "#3177b8",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Species',
+      'id': '9606',
+      'color': '#3177b8',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         374.399505627,
         409.13017333899995,
@@ -20613,19 +20613,19 @@ export const ANNOTATIONS = [
         419.13017333899995
       ]
     ],
-    "keywords": [
-      "human"
+    'keywords': [
+      'human'
     ],
-    "meta": {
-      "type": "Species",
-      "id": "9606",
-      "color": "#3177b8",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Species',
+      'id': '9606',
+      'color': '#3177b8',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         408.38550991463,
         359.13017333899995,
@@ -20633,19 +20633,19 @@ export const ANNOTATIONS = [
         369.13017333899995
       ]
     ],
-    "keywords": [
-      "human"
+    'keywords': [
+      'human'
     ],
-    "meta": {
-      "type": "Species",
-      "id": "9606",
-      "color": "#3177b8",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Species',
+      'id': '9606',
+      'color': '#3177b8',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         476.15089799324005,
         696.630173339,
@@ -20653,19 +20653,19 @@ export const ANNOTATIONS = [
         706.630173339
       ]
     ],
-    "keywords": [
-      "human"
+    'keywords': [
+      'human'
     ],
-    "meta": {
-      "type": "Species",
-      "id": "9606",
-      "color": "#3177b8",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Species',
+      'id': '9606',
+      'color': '#3177b8',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         371.367427832,
         427.79199853499995,
@@ -20673,19 +20673,19 @@ export const ANNOTATIONS = [
         436.29199853499995
       ]
     ],
-    "keywords": [
-      "human"
+    'keywords': [
+      'human'
     ],
-    "meta": {
-      "type": "Species",
-      "id": "9606",
-      "color": "#3177b8",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Species',
+      'id': '9606',
+      'color': '#3177b8',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         371.367427832,
         415.313998535,
@@ -20693,19 +20693,19 @@ export const ANNOTATIONS = [
         423.813998535
       ]
     ],
-    "keywords": [
-      "human"
+    'keywords': [
+      'human'
     ],
-    "meta": {
-      "type": "Species",
-      "id": "9606",
-      "color": "#3177b8",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Species',
+      'id': '9606',
+      'color': '#3177b8',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         371.367427832,
         402.83599853499993,
@@ -20713,19 +20713,19 @@ export const ANNOTATIONS = [
         411.33599853499993
       ]
     ],
-    "keywords": [
-      "human"
+    'keywords': [
+      'human'
     ],
-    "meta": {
-      "type": "Species",
-      "id": "9606",
-      "color": "#3177b8",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Species',
+      'id': '9606',
+      'color': '#3177b8',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         371.367427832,
         390.357998535,
@@ -20733,19 +20733,19 @@ export const ANNOTATIONS = [
         398.857998535
       ]
     ],
-    "keywords": [
-      "human"
+    'keywords': [
+      'human'
     ],
-    "meta": {
-      "type": "Species",
-      "id": "9606",
-      "color": "#3177b8",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Species',
+      'id': '9606',
+      'color': '#3177b8',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         371.52042783199994,
         365.40199853499996,
@@ -20753,19 +20753,19 @@ export const ANNOTATIONS = [
         373.90199853499996
       ]
     ],
-    "keywords": [
-      "human"
+    'keywords': [
+      'human'
     ],
-    "meta": {
-      "type": "Species",
-      "id": "9606",
-      "color": "#3177b8",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Species',
+      'id': '9606',
+      'color': '#3177b8',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         363.49642783199994,
         352.87299853499997,
@@ -20773,19 +20773,19 @@ export const ANNOTATIONS = [
         361.37299853499997
       ]
     ],
-    "keywords": [
-      "human"
+    'keywords': [
+      'human'
     ],
-    "meta": {
-      "type": "Species",
-      "id": "9606",
-      "color": "#3177b8",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Species',
+      'id': '9606',
+      'color': '#3177b8',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         172.17750153100002,
         111.426199768,
@@ -20793,19 +20793,19 @@ export const ANNOTATIONS = [
         119.926199768
       ]
     ],
-    "keywords": [
-      "human"
+    'keywords': [
+      'human'
     ],
-    "meta": {
-      "type": "Species",
-      "id": "9606",
-      "color": "#3177b8",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Species',
+      'id': '9606',
+      'color': '#3177b8',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 8,
-    "rects": [
+    'pageNumber': 8,
+    'rects': [
       [
         265.997101531,
         349.07621435500005,
@@ -20813,19 +20813,19 @@ export const ANNOTATIONS = [
         357.57621435500005
       ]
     ],
-    "keywords": [
-      "human"
+    'keywords': [
+      'human'
     ],
-    "meta": {
-      "type": "Species",
-      "id": "9606",
-      "color": "#3177b8",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Species',
+      'id': '9606',
+      'color': '#3177b8',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 8,
-    "rects": [
+    'pageNumber': 8,
+    'rects': [
       [
         108.01610153099999,
         339.08021435500007,
@@ -20833,19 +20833,19 @@ export const ANNOTATIONS = [
         347.58021435500007
       ]
     ],
-    "keywords": [
-      "human"
+    'keywords': [
+      'human'
     ],
-    "meta": {
-      "type": "Species",
-      "id": "9606",
-      "color": "#3177b8",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Species',
+      'id': '9606',
+      'color': '#3177b8',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 8,
-    "rects": [
+    'pageNumber': 8,
+    'rects': [
       [
         158.41060153100005,
         259.223190917,
@@ -20853,19 +20853,19 @@ export const ANNOTATIONS = [
         269.223190917
       ]
     ],
-    "keywords": [
-      "human"
+    'keywords': [
+      'human'
     ],
-    "meta": {
-      "type": "Species",
-      "id": "9606",
-      "color": "#3177b8",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Species',
+      'id': '9606',
+      'color': '#3177b8',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 8,
-    "rects": [
+    'pageNumber': 8,
+    'rects': [
       [
         132.59140307982,
         134.22329772900002,
@@ -20873,19 +20873,19 @@ export const ANNOTATIONS = [
         144.22329772900002
       ]
     ],
-    "keywords": [
-      "human"
+    'keywords': [
+      'human'
     ],
-    "meta": {
-      "type": "Species",
-      "id": "9606",
-      "color": "#3177b8",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Species',
+      'id': '9606',
+      'color': '#3177b8',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 8,
-    "rects": [
+    'pageNumber': 8,
+    'rects': [
       [
         457.42899536100015,
         71.723297729,
@@ -20893,19 +20893,19 @@ export const ANNOTATIONS = [
         81.723297729
       ]
     ],
-    "keywords": [
-      "human"
+    'keywords': [
+      'human'
     ],
-    "meta": {
-      "type": "Species",
-      "id": "9606",
-      "color": "#3177b8",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Species',
+      'id': '9606',
+      'color': '#3177b8',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 2,
-    "rects": [
+    'pageNumber': 2,
+    'rects': [
       [
         357.79769311691,
         485.060229492,
@@ -20913,19 +20913,19 @@ export const ANNOTATIONS = [
         495.060229492
       ]
     ],
-    "keywords": [
-      "Homo sapiens"
+    'keywords': [
+      'Homo sapiens'
     ],
-    "meta": {
-      "type": "Species",
-      "id": "9606",
-      "color": "#3177b8",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Species',
+      'id': '9606',
+      'color': '#3177b8',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 2,
-    "rects": [
+    'pageNumber': 2,
+    'rects': [
       [
         379.399693115,
         308.250198974,
@@ -20933,19 +20933,19 @@ export const ANNOTATIONS = [
         318.250198974
       ]
     ],
-    "keywords": [
-      "Fisher"
+    'keywords': [
+      'Fisher'
     ],
-    "meta": {
-      "type": "Species",
-      "id": "76720",
-      "color": "#3177b8",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Species',
+      'id': '76720',
+      'color': '#3177b8',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 2,
-    "rects": [
+    'pageNumber': 2,
+    'rects': [
       [
         323.201693115,
         270.750198974,
@@ -20953,19 +20953,19 @@ export const ANNOTATIONS = [
         280.750198974
       ]
     ],
-    "keywords": [
-      "primer"
+    'keywords': [
+      'primer'
     ],
-    "meta": {
-      "type": "Species",
-      "id": "32630",
-      "color": "#3177b8",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Species',
+      'id': '32630',
+      'color': '#3177b8',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 2,
-    "rects": [
+    'pageNumber': 2,
+    'rects': [
       [
         510.31069311691,
         233.250198974,
@@ -20973,19 +20973,19 @@ export const ANNOTATIONS = [
         243.250198974
       ]
     ],
-    "keywords": [
-      "plasmid."
+    'keywords': [
+      'plasmid.'
     ],
-    "meta": {
-      "type": "Species",
-      "id": "45202",
-      "color": "#3177b8",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Species',
+      'id': '45202',
+      'color': '#3177b8',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 2,
-    "rects": [
+    'pageNumber': 2,
+    'rects': [
       [
         397.11169311500004,
         183.250198974,
@@ -20993,19 +20993,19 @@ export const ANNOTATIONS = [
         193.250198974
       ]
     ],
-    "keywords": [
-      "plasmid"
+    'keywords': [
+      'plasmid'
     ],
-    "meta": {
-      "type": "Species",
-      "id": "45202",
-      "color": "#3177b8",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Species',
+      'id': '45202',
+      'color': '#3177b8',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 2,
-    "rects": [
+    'pageNumber': 2,
+    'rects': [
       [
         306.141693115,
         210.060198974,
@@ -21019,20 +21019,20 @@ export const ANNOTATIONS = [
         232.560198974
       ]
     ],
-    "keywords": [
-      "coli",
-      "E. "
+    'keywords': [
+      'coli',
+      'E. '
     ],
-    "meta": {
-      "type": "Species",
-      "id": "562",
-      "color": "#3177b8",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Species',
+      'id': '562',
+      'color': '#3177b8',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         215.22891113962987,
         510.94017333899995,
@@ -21040,19 +21040,19 @@ export const ANNOTATIONS = [
         520.940173339
       ]
     ],
-    "keywords": [
-      "E. coli"
+    'keywords': [
+      'E. coli'
     ],
-    "meta": {
-      "type": "Species",
-      "id": "562",
-      "color": "#3177b8",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Species',
+      'id': '562',
+      'color': '#3177b8',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 2,
-    "rects": [
+    'pageNumber': 2,
+    'rects': [
       [
         400.561691775,
         95.750198974,
@@ -21060,19 +21060,19 @@ export const ANNOTATIONS = [
         105.750198974
       ]
     ],
-    "keywords": [
-      "expression vector"
+    'keywords': [
+      'expression vector'
     ],
-    "meta": {
-      "type": "Species",
-      "id": "81076",
-      "color": "#3177b8",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Species',
+      'id': '81076',
+      'color': '#3177b8',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         90.50591113199997,
         559.130173339,
@@ -21080,19 +21080,19 @@ export const ANNOTATIONS = [
         569.130173339
       ]
     ],
-    "keywords": [
-      "expression vector"
+    'keywords': [
+      'expression vector'
     ],
-    "meta": {
-      "type": "Species",
-      "id": "81076",
-      "color": "#3177b8",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Species',
+      'id': '81076',
+      'color': '#3177b8',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         112.94960153099998,
         571.630173339,
@@ -21100,19 +21100,19 @@ export const ANNOTATIONS = [
         581.630173339
       ]
     ],
-    "keywords": [
-      "tobacco"
+    'keywords': [
+      'tobacco'
     ],
-    "meta": {
-      "type": "Species",
-      "id": "4097",
-      "color": "#3177b8",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Species',
+      'id': '4097',
+      'color': '#3177b8',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         112.94960153099998,
         571.630173339,
@@ -21120,19 +21120,19 @@ export const ANNOTATIONS = [
         581.630173339
       ]
     ],
-    "keywords": [
-      "tobacco etch virus"
+    'keywords': [
+      'tobacco etch virus'
     ],
-    "meta": {
-      "type": "Species",
-      "id": "12227",
-      "color": "#3177b8",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Species',
+      'id': '12227',
+      'color': '#3177b8',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         306.141693115,
         518.404587402,
@@ -21140,19 +21140,19 @@ export const ANNOTATIONS = [
         528.404587402
       ]
     ],
-    "keywords": [
-      "at a"
+    'keywords': [
+      'at a'
     ],
-    "meta": {
-      "type": "Species",
-      "id": "301693",
-      "color": "#3177b8",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Species',
+      'id': '301693',
+      'color': '#3177b8',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         433.44350363700005,
         659.130173339,
@@ -21160,19 +21160,19 @@ export const ANNOTATIONS = [
         669.130173339
       ]
     ],
-    "keywords": [
-      "not shown),"
+    'keywords': [
+      'not shown),'
     ],
-    "meta": {
-      "type": "Species",
-      "id": "32644",
-      "color": "#3177b8",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Species',
+      'id': '32644',
+      'color': '#3177b8',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         51.017902987000014,
         484.13017333899995,
@@ -21186,20 +21186,20 @@ export const ANNOTATIONS = [
         506.63017333899995
       ]
     ],
-    "keywords": [
-      "shown).",
-      "not "
+    'keywords': [
+      'shown).',
+      'not '
     ],
-    "meta": {
-      "type": "Species",
-      "id": "32644",
-      "color": "#3177b8",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Species',
+      'id': '32644',
+      'color': '#3177b8',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         329.818505627,
         421.63017333899995,
@@ -21207,19 +21207,19 @@ export const ANNOTATIONS = [
         431.63017333899995
       ]
     ],
-    "keywords": [
-      "synthetic"
+    'keywords': [
+      'synthetic'
     ],
-    "meta": {
-      "type": "Species",
-      "id": "32630",
-      "color": "#3177b8",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Species',
+      'id': '32630',
+      'color': '#3177b8',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         323.151101531,
         663.5358338610005,
@@ -21227,19 +21227,19 @@ export const ANNOTATIONS = [
         672.0358338610005
       ]
     ],
-    "keywords": [
-      "Li"
+    'keywords': [
+      'Li'
     ],
-    "meta": {
-      "type": "Species",
-      "id": "11086",
-      "color": "#3177b8",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Species',
+      'id': '11086',
+      'color': '#3177b8',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         417.441601531,
         653.5398338610005,
@@ -21247,19 +21247,19 @@ export const ANNOTATIONS = [
         662.0398338610005
       ]
     ],
-    "keywords": [
-      "Li"
+    'keywords': [
+      'Li'
     ],
-    "meta": {
-      "type": "Species",
-      "id": "11086",
-      "color": "#3177b8",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Species',
+      'id': '11086',
+      'color': '#3177b8',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         323.151101531,
         573.5718338610006,
@@ -21267,19 +21267,19 @@ export const ANNOTATIONS = [
         582.0718338610006
       ]
     ],
-    "keywords": [
-      "Li"
+    'keywords': [
+      'Li'
     ],
-    "meta": {
-      "type": "Species",
-      "id": "11086",
-      "color": "#3177b8",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Species',
+      'id': '11086',
+      'color': '#3177b8',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         346.126601531,
         353.65983386100106,
@@ -21287,19 +21287,19 @@ export const ANNOTATIONS = [
         362.15983386100106
       ]
     ],
-    "keywords": [
-      "Li"
+    'keywords': [
+      'Li'
     ],
-    "meta": {
-      "type": "Species",
-      "id": "11086",
-      "color": "#3177b8",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Species',
+      'id': '11086',
+      'color': '#3177b8',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         346.203101531,
         293.6838338610012,
@@ -21307,19 +21307,19 @@ export const ANNOTATIONS = [
         302.1838338610012
       ]
     ],
-    "keywords": [
-      "Li"
+    'keywords': [
+      'Li'
     ],
-    "meta": {
-      "type": "Species",
-      "id": "11086",
-      "color": "#3177b8",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Species',
+      'id': '11086',
+      'color': '#3177b8',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         346.203101531,
         173.73183386100115,
@@ -21327,19 +21327,19 @@ export const ANNOTATIONS = [
         182.23183386100115
       ]
     ],
-    "keywords": [
-      "Li"
+    'keywords': [
+      'Li'
     ],
-    "meta": {
-      "type": "Species",
-      "id": "11086",
-      "color": "#3177b8",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Species',
+      'id': '11086',
+      'color': '#3177b8',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         500.0386515374941,
         133.7478338610011,
@@ -21347,19 +21347,19 @@ export const ANNOTATIONS = [
         142.2478338610011
       ]
     ],
-    "keywords": [
-      "Li"
+    'keywords': [
+      'Li'
     ],
-    "meta": {
-      "type": "Species",
-      "id": "11086",
-      "color": "#3177b8",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Species',
+      'id': '11086',
+      'color': '#3177b8',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         323.151101531,
         723.4202102660003,
@@ -21367,19 +21367,19 @@ export const ANNOTATIONS = [
         731.9202102660003
       ]
     ],
-    "keywords": [
-      "Li"
+    'keywords': [
+      'Li'
     ],
-    "meta": {
-      "type": "Species",
-      "id": "11086",
-      "color": "#3177b8",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Species',
+      'id': '11086',
+      'color': '#3177b8',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         345.411751531,
         713.4242102660003,
@@ -21387,19 +21387,19 @@ export const ANNOTATIONS = [
         721.9242102660003
       ]
     ],
-    "keywords": [
-      "Li"
+    'keywords': [
+      'Li'
     ],
-    "meta": {
-      "type": "Species",
-      "id": "11086",
-      "color": "#3177b8",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Species',
+      'id': '11086',
+      'color': '#3177b8',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         113.35665153099998,
         683.3682153320001,
@@ -21407,19 +21407,19 @@ export const ANNOTATIONS = [
         691.8682153320001
       ]
     ],
-    "keywords": [
-      "Yu"
+    'keywords': [
+      'Yu'
     ],
-    "meta": {
-      "type": "Species",
-      "id": "37334",
-      "color": "#3177b8",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Species',
+      'id': '37334',
+      'color': '#3177b8',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         413.32250153100006,
         683.4362102660003,
@@ -21427,19 +21427,19 @@ export const ANNOTATIONS = [
         691.9362102660003
       ]
     ],
-    "keywords": [
-      "Yu"
+    'keywords': [
+      'Yu'
     ],
-    "meta": {
-      "type": "Species",
-      "id": "37334",
-      "color": "#3177b8",
-      "idType": "NCBI"
+    'meta': {
+      'type': 'Species',
+      'id': '37334',
+      'color': '#3177b8',
+      'idType': 'NCBI'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         114.192601531,
         526.780930175,
@@ -21447,19 +21447,19 @@ export const ANNOTATIONS = [
         536.780930175
       ]
     ],
-    "keywords": [
-      "mitochondrial disease"
+    'keywords': [
+      'mitochondrial disease'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D028361",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D028361',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         173.7526015310001,
         526.780930175,
@@ -21467,19 +21467,19 @@ export const ANNOTATIONS = [
         536.780930175
       ]
     ],
-    "keywords": [
-      "disease"
+    'keywords': [
+      'disease'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D004194",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D004194',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         235.30460152717978,
         514.280930175,
@@ -21487,19 +21487,19 @@ export const ANNOTATIONS = [
         524.280930175
       ]
     ],
-    "keywords": [
-      "disease"
+    'keywords': [
+      'disease'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D004194",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D004194',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         351.01181365499997,
         339.280899658,
@@ -21507,19 +21507,19 @@ export const ANNOTATIONS = [
         349.280899658
       ]
     ],
-    "keywords": [
-      "disease"
+    'keywords': [
+      'disease'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D004194",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D004194',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         51.023601531,
         514.280930175,
@@ -21533,20 +21533,20 @@ export const ANNOTATIONS = [
         536.780930175
       ]
     ],
-    "keywords": [
-      "drome",
-      "Multiple Mitochondrial Dysfunctions Syn-"
+    'keywords': [
+      'drome',
+      'Multiple Mitochondrial Dysfunctions Syn-'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:C565304",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:C565304',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         51.023601531,
         514.280930175,
@@ -21560,20 +21560,20 @@ export const ANNOTATIONS = [
         536.780930175
       ]
     ],
-    "keywords": [
-      "drome",
-      "Syn-"
+    'keywords': [
+      'drome',
+      'Syn-'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D013577",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D013577',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         463.0116015271801,
         514.280930175,
@@ -21581,19 +21581,19 @@ export const ANNOTATIONS = [
         524.280930175
       ]
     ],
-    "keywords": [
-      "proteins"
+    'keywords': [
+      'proteins'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D018455",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D018455',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         410.287813655,
         289.280899658,
@@ -21601,19 +21601,19 @@ export const ANNOTATIONS = [
         299.280899658
       ]
     ],
-    "keywords": [
-      "proteins"
+    'keywords': [
+      'proteins'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D018455",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D018455',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         337.871813655,
         264.280899658,
@@ -21621,19 +21621,19 @@ export const ANNOTATIONS = [
         274.280899658
       ]
     ],
-    "keywords": [
-      "proteins"
+    'keywords': [
+      'proteins'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D018455",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D018455',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         382.38581365309005,
         114.28089965800002,
@@ -21641,19 +21641,19 @@ export const ANNOTATIONS = [
         124.28089965800002
       ]
     ],
-    "keywords": [
-      "proteins"
+    'keywords': [
+      'proteins'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D018455",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D018455',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         237.1646015310099,
         696.630173339,
@@ -21661,19 +21661,19 @@ export const ANNOTATIONS = [
         706.630173339
       ]
     ],
-    "keywords": [
-      "proteins"
+    'keywords': [
+      'proteins'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D018455",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D018455',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 4,
-    "rects": [
+    'pageNumber': 4,
+    'rects': [
       [
         335.506693115,
         170.836197509,
@@ -21681,19 +21681,19 @@ export const ANNOTATIONS = [
         180.836197509
       ]
     ],
-    "keywords": [
-      "proteins,"
+    'keywords': [
+      'proteins,'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D018455",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D018455',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 4,
-    "rects": [
+    'pageNumber': 4,
+    'rects': [
       [
         510.56669310356995,
         145.836197509,
@@ -21701,19 +21701,19 @@ export const ANNOTATIONS = [
         155.836197509
       ]
     ],
-    "keywords": [
-      "proteins"
+    'keywords': [
+      'proteins'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D018455",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D018455',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 4,
-    "rects": [
+    'pageNumber': 4,
+    'rects': [
       [
         327.96169311499995,
         120.836197509,
@@ -21721,19 +21721,19 @@ export const ANNOTATIONS = [
         130.836197509
       ]
     ],
-    "keywords": [
-      "proteins"
+    'keywords': [
+      'proteins'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D018455",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D018455',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 4,
-    "rects": [
+    'pageNumber': 4,
+    'rects': [
       [
         439.39669311691,
         120.836197509,
@@ -21741,19 +21741,19 @@ export const ANNOTATIONS = [
         130.836197509
       ]
     ],
-    "keywords": [
-      "proteins"
+    'keywords': [
+      'proteins'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D018455",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D018455',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 4,
-    "rects": [
+    'pageNumber': 4,
+    'rects': [
       [
         490.7196931111801,
         83.336197509,
@@ -21761,19 +21761,19 @@ export const ANNOTATIONS = [
         93.336197509
       ]
     ],
-    "keywords": [
-      "proteins"
+    'keywords': [
+      'proteins'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D018455",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D018455',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         306.14150363699997,
         634.130173339,
@@ -21781,19 +21781,19 @@ export const ANNOTATIONS = [
         644.130173339
       ]
     ],
-    "keywords": [
-      "proteins"
+    'keywords': [
+      'proteins'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D018455",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D018455',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         319.20150562699996,
         509.13017333899995,
@@ -21801,19 +21801,19 @@ export const ANNOTATIONS = [
         519.130173339
       ]
     ],
-    "keywords": [
-      "proteins."
+    'keywords': [
+      'proteins.'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D018455",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D018455',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         321.041505627,
         459.13017333899995,
@@ -21821,19 +21821,19 @@ export const ANNOTATIONS = [
         469.13017333899995
       ]
     ],
-    "keywords": [
-      "proteins,"
+    'keywords': [
+      'proteins,'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D018455",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D018455',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         427.51050562700004,
         371.63017333899995,
@@ -21841,19 +21841,19 @@ export const ANNOTATIONS = [
         381.63017333899995
       ]
     ],
-    "keywords": [
-      "proteins"
+    'keywords': [
+      'proteins'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D018455",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D018455',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         253.53990070082017,
         571.630173339,
@@ -21861,19 +21861,19 @@ export const ANNOTATIONS = [
         581.630173339
       ]
     ],
-    "keywords": [
-      "proteins,"
+    'keywords': [
+      'proteins,'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D018455",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D018455',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         72.05790069700001,
         546.630173339,
@@ -21881,19 +21881,19 @@ export const ANNOTATIONS = [
         556.630173339
       ]
     ],
-    "keywords": [
-      "proteins"
+    'keywords': [
+      'proteins'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D018455",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D018455',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         257.11290664748003,
         434.13017333899995,
@@ -21901,19 +21901,19 @@ export const ANNOTATIONS = [
         444.13017333899995
       ]
     ],
-    "keywords": [
-      "proteins"
+    'keywords': [
+      'proteins'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D018455",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D018455',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         217.95790665700017,
         384.13017333899995,
@@ -21921,19 +21921,19 @@ export const ANNOTATIONS = [
         394.13017333899995
       ]
     ],
-    "keywords": [
-      "proteins."
+    'keywords': [
+      'proteins.'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D018455",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D018455',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         427.4778979570001,
         721.630173339,
@@ -21941,19 +21941,19 @@ export const ANNOTATIONS = [
         731.630173339
       ]
     ],
-    "keywords": [
-      "proteins"
+    'keywords': [
+      'proteins'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D018455",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D018455',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         425.58689903844004,
         621.630173339,
@@ -21961,19 +21961,19 @@ export const ANNOTATIONS = [
         631.630173339
       ]
     ],
-    "keywords": [
-      "proteins"
+    'keywords': [
+      'proteins'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D018455",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D018455',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 8,
-    "rects": [
+    'pageNumber': 8,
+    'rects': [
       [
         233.90760155008013,
         259.223190917,
@@ -21981,19 +21981,19 @@ export const ANNOTATIONS = [
         269.223190917
       ]
     ],
-    "keywords": [
-      "proteins"
+    'keywords': [
+      'proteins'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D018455",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D018455',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 8,
-    "rects": [
+    'pageNumber': 8,
+    'rects': [
       [
         129.21160152909,
         246.723190917,
@@ -22001,19 +22001,19 @@ export const ANNOTATIONS = [
         256.723190917
       ]
     ],
-    "keywords": [
-      "proteins,"
+    'keywords': [
+      'proteins,'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D018455",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D018455',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         347.1406015424595,
         489.280930175,
@@ -22021,19 +22021,19 @@ export const ANNOTATIONS = [
         499.280930175
       ]
     ],
-    "keywords": [
-      "complexes"
+    'keywords': [
+      'complexes'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D005117",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D005117',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 4,
-    "rects": [
+    'pageNumber': 4,
+    'rects': [
       [
         457.5736931150001,
         133.336197509,
@@ -22041,19 +22041,19 @@ export const ANNOTATIONS = [
         143.336197509
       ]
     ],
-    "keywords": [
-      "complexes"
+    'keywords': [
+      'complexes'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D005117",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D005117',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         331.33850562699996,
         571.630173339,
@@ -22061,19 +22061,19 @@ export const ANNOTATIONS = [
         581.630173339
       ]
     ],
-    "keywords": [
-      "complexes"
+    'keywords': [
+      'complexes'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D005117",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D005117',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         389.0686015501001,
         476.780930175,
@@ -22081,19 +22081,19 @@ export const ANNOTATIONS = [
         486.780930175
       ]
     ],
-    "keywords": [
-      "discrete"
+    'keywords': [
+      'discrete'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D021922",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D021922',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         254.3768,
         141.220196289,
@@ -22101,19 +22101,19 @@ export const ANNOTATIONS = [
         149.720196289
       ]
     ],
-    "keywords": [
-      "State"
+    'keywords': [
+      'State'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D000210",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D000210',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         99.6606,
         106.188702148,
@@ -22121,19 +22121,19 @@ export const ANNOTATIONS = [
         114.688702148
       ]
     ],
-    "keywords": [
-      "State"
+    'keywords': [
+      'State'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D000210",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D000210',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         234.70010000000002,
         106.188702148,
@@ -22141,19 +22141,19 @@ export const ANNOTATIONS = [
         114.688702148
       ]
     ],
-    "keywords": [
-      "State"
+    'keywords': [
+      'State'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D000210",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D000210',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         238.59224999675308,
         81.1572,
@@ -22161,19 +22161,19 @@ export const ANNOTATIONS = [
         89.6572
       ]
     ],
-    "keywords": [
-      "State"
+    'keywords': [
+      'State'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D000210",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D000210',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         438.041593115,
         429.789093017,
@@ -22181,19 +22181,19 @@ export const ANNOTATIONS = [
         440.789093017
       ]
     ],
-    "keywords": [
-      "state"
+    'keywords': [
+      'state'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D000210",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D000210',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         509.8905099069999,
         334.13017333899995,
@@ -22201,19 +22201,19 @@ export const ANNOTATIONS = [
         344.13017333899995
       ]
     ],
-    "keywords": [
-      "state"
+    'keywords': [
+      'state'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D000210",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D000210',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         119.8524,
         131.224196289,
@@ -22221,19 +22221,19 @@ export const ANNOTATIONS = [
         139.724196289
       ]
     ],
-    "keywords": [
-      "West"
+    'keywords': [
+      'West'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D013036",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D013036',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         418.87881518691006,
         364.280899658,
@@ -22241,19 +22241,19 @@ export const ANNOTATIONS = [
         374.280899658
       ]
     ],
-    "keywords": [
-      "transport,"
+    'keywords': [
+      'transport,'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:C564766",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:C564766',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         324.251815185,
         351.780899658,
@@ -22261,19 +22261,19 @@ export const ANNOTATIONS = [
         361.780899658
       ]
     ],
-    "keywords": [
-      "DNA"
+    'keywords': [
+      'DNA'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D004266",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D004266',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 2,
-    "rects": [
+    'pageNumber': 2,
+    'rects': [
       [
         407.258693115,
         233.250198974,
@@ -22281,19 +22281,19 @@ export const ANNOTATIONS = [
         243.250198974
       ]
     ],
-    "keywords": [
-      "DNA"
+    'keywords': [
+      'DNA'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D004266",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D004266',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 2,
-    "rects": [
+    'pageNumber': 2,
+    'rects': [
       [
         431.7716931150001,
         183.250198974,
@@ -22301,19 +22301,19 @@ export const ANNOTATIONS = [
         193.250198974
       ]
     ],
-    "keywords": [
-      "DNA"
+    'keywords': [
+      'DNA'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D004266",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D004266',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         306.14181365499996,
         239.280899658,
@@ -22321,19 +22321,19 @@ export const ANNOTATIONS = [
         249.280899658
       ]
     ],
-    "keywords": [
-      "metabolism"
+    'keywords': [
+      'metabolism'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D008661",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D008661',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         453.2288136473599,
         226.780899658,
@@ -22341,19 +22341,19 @@ export const ANNOTATIONS = [
         236.780899658
       ]
     ],
-    "keywords": [
-      "pathways"
+    'keywords': [
+      'pathways'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D058606",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D058606',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         506.69981365881995,
         76.78089965800002,
@@ -22361,19 +22361,19 @@ export const ANNOTATIONS = [
         86.78089965800002
       ]
     ],
-    "keywords": [
-      "pathways"
+    'keywords': [
+      'pathways'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D058606",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D058606',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         506.69981365881995,
         76.78089965800002,
@@ -22381,19 +22381,19 @@ export const ANNOTATIONS = [
         86.78089965800002
       ]
     ],
-    "keywords": [
-      "pathways "
+    'keywords': [
+      'pathways '
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D058606",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D058606',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         306.14181365499996,
         164.280899658,
@@ -22407,20 +22407,20 @@ export const ANNOTATIONS = [
         186.780899658
       ]
     ],
-    "keywords": [
-      "orders",
-      "mitochondrial dis-"
+    'keywords': [
+      'orders',
+      'mitochondrial dis-'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D028361",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D028361',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         306.14181365499996,
         151.780899658,
@@ -22434,20 +22434,20 @@ export const ANNOTATIONS = [
         174.280899658
       ]
     ],
-    "keywords": [
-      "functions Syndromes",
-      "Multiple Mitochondrial Dys-"
+    'keywords': [
+      'functions Syndromes',
+      'Multiple Mitochondrial Dys-'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:C565304",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:C565304',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         347.66681365499994,
         151.780899658,
@@ -22455,19 +22455,19 @@ export const ANNOTATIONS = [
         161.780899658
       ]
     ],
-    "keywords": [
-      "Syndromes"
+    'keywords': [
+      'Syndromes'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D013577",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D013577',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         387.3408136549999,
         76.78089965800002,
@@ -22475,19 +22475,19 @@ export const ANNOTATIONS = [
         86.78089965800002
       ]
     ],
-    "keywords": [
-      "impairment"
+    'keywords': [
+      'impairment'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D020886",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D020886',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 1,
-    "rects": [
+    'pageNumber': 1,
+    'rects': [
       [
         387.3408136549999,
         76.78089965800002,
@@ -22495,19 +22495,19 @@ export const ANNOTATIONS = [
         86.78089965800002
       ]
     ],
-    "keywords": [
-      "impairment of"
+    'keywords': [
+      'impairment of'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:C566757",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:C566757',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 2,
-    "rects": [
+    'pageNumber': 2,
+    'rects': [
       [
         343.0325930509998,
         608.250229492,
@@ -22515,19 +22515,19 @@ export const ANNOTATIONS = [
         618.250229492
       ]
     ],
-    "keywords": [
-      "cellular"
+    'keywords': [
+      'cellular'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D018329",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D018329',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 2,
-    "rects": [
+    'pageNumber': 2,
+    'rects': [
       [
         348.773693115,
         458.250229492,
@@ -22535,19 +22535,19 @@ export const ANNOTATIONS = [
         468.250229492
       ]
     ],
-    "keywords": [
-      "sites"
+    'keywords': [
+      'sites'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D009371",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D009371',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 2,
-    "rects": [
+    'pageNumber': 2,
+    'rects': [
       [
         379.399693115,
         308.250198974,
@@ -22555,19 +22555,19 @@ export const ANNOTATIONS = [
         318.250198974
       ]
     ],
-    "keywords": [
-      "Fisher"
+    'keywords': [
+      'Fisher'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D019846",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D019846',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 2,
-    "rects": [
+    'pageNumber': 2,
+    'rects': [
       [
         306.141693115,
         210.060198974,
@@ -22581,20 +22581,20 @@ export const ANNOTATIONS = [
         232.560198974
       ]
     ],
-    "keywords": [
-      "coli",
-      "E. "
+    'keywords': [
+      'coli',
+      'E. '
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D004927",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D004927',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         215.22891113962987,
         510.94017333899995,
@@ -22602,19 +22602,19 @@ export const ANNOTATIONS = [
         520.940173339
       ]
     ],
-    "keywords": [
-      "E. coli"
+    'keywords': [
+      'E. coli'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D004927",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D004927',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         254.90680324107012,
         434.13020385699997,
@@ -22622,19 +22622,19 @@ export const ANNOTATIONS = [
         444.13020385699997
       ]
     ],
-    "keywords": [
-      "cell"
+    'keywords': [
+      'cell'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D002471",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D002471',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         168.92280322200003,
         421.63020385699997,
@@ -22642,19 +22642,19 @@ export const ANNOTATIONS = [
         431.63020385699997
       ]
     ],
-    "keywords": [
-      "Cell"
+    'keywords': [
+      'Cell'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D002471",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D002471',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         92.87939887162999,
         134.13020385700003,
@@ -22662,19 +22662,19 @@ export const ANNOTATIONS = [
         144.13020385700003
       ]
     ],
-    "keywords": [
-      "excess"
+    'keywords': [
+      'excess'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D015835",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D015835',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         410.62339941399995,
         721.630112304,
@@ -22682,19 +22682,19 @@ export const ANNOTATIONS = [
         731.630112304
       ]
     ],
-    "keywords": [
-      "excess"
+    'keywords': [
+      'excess'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D015835",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D015835',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         517.7976931111803,
         568.404587402,
@@ -22702,19 +22702,19 @@ export const ANNOTATIONS = [
         578.404587402
       ]
     ],
-    "keywords": [
-      "excess"
+    'keywords': [
+      'excess'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D015835",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D015835',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         248.844101531,
         121.422199768,
@@ -22722,19 +22722,19 @@ export const ANNOTATIONS = [
         129.92219976799998
       ]
     ],
-    "keywords": [
-      "excess"
+    'keywords': [
+      'excess'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D015835",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D015835',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         436.57169311499996,
         555.904587402,
@@ -22742,19 +22742,19 @@ export const ANNOTATIONS = [
         565.904587402
       ]
     ],
-    "keywords": [
-      "frozen"
+    'keywords': [
+      'frozen'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D002062",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D002062',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         390.911693115,
         480.90458740199995,
@@ -22762,19 +22762,19 @@ export const ANNOTATIONS = [
         490.90458740199995
       ]
     ],
-    "keywords": [
-      "constant:"
+    'keywords': [
+      'constant:'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D014717",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D014717',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         509.72289903843983,
         596.630173339,
@@ -22782,19 +22782,19 @@ export const ANNOTATIONS = [
         606.630173339
       ]
     ],
-    "keywords": [
-      "constant"
+    'keywords': [
+      'constant'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D014717",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D014717',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         306.145206457,
         559.130173339,
@@ -22802,19 +22802,19 @@ export const ANNOTATIONS = [
         569.130173339
       ]
     ],
-    "keywords": [
-      "constant"
+    'keywords': [
+      'constant'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D014717",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D014717',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         490.65751391599997,
         456.521498535,
@@ -22822,19 +22822,19 @@ export const ANNOTATIONS = [
         465.021498535
       ]
     ],
-    "keywords": [
-      "constant"
+    'keywords': [
+      'constant'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D014717",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D014717',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         464.37751416000003,
         81.426199768,
@@ -22842,19 +22842,19 @@ export const ANNOTATIONS = [
         89.926199768
       ]
     ],
-    "keywords": [
-      "constant"
+    'keywords': [
+      'constant'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D014717",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D014717',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 8,
-    "rects": [
+    'pageNumber': 8,
+    'rects': [
       [
         51.023601531,
         289.10021435500016,
@@ -22868,20 +22868,20 @@ export const ANNOTATIONS = [
         307.59621435500014
       ]
     ],
-    "keywords": [
-      "stant",
-      "con-"
+    'keywords': [
+      'stant',
+      'con-'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D014717",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D014717',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 8,
-    "rects": [
+    'pageNumber': 8,
+    'rects': [
       [
         404.579187942,
         319.08971435500007,
@@ -22889,19 +22889,19 @@ export const ANNOTATIONS = [
         327.58971435500007
       ]
     ],
-    "keywords": [
-      "constant"
+    'keywords': [
+      'constant'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D014717",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D014717',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 8,
-    "rects": [
+    'pageNumber': 8,
+    'rects': [
       [
         242.38760152336982,
         171.723190917,
@@ -22909,19 +22909,19 @@ export const ANNOTATIONS = [
         181.723190917
       ]
     ],
-    "keywords": [
-      "constant"
+    'keywords': [
+      'constant'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D014717",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D014717',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 8,
-    "rects": [
+    'pageNumber': 8,
+    'rects': [
       [
         391.03140322599995,
         134.22329772900002,
@@ -22929,19 +22929,19 @@ export const ANNOTATIONS = [
         144.22329772900002
       ]
     ],
-    "keywords": [
-      "constant"
+    'keywords': [
+      'constant'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D014717",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D014717',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 3,
-    "rects": [
+    'pageNumber': 3,
+    'rects': [
       [
         481.6790099999999,
         365.179093017,
@@ -22949,19 +22949,19 @@ export const ANNOTATIONS = [
         375.179093017
       ]
     ],
-    "keywords": [
-      "as a"
+    'keywords': [
+      'as a'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D056807",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D056807',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         137.06790069700003,
         534.130173339,
@@ -22969,19 +22969,19 @@ export const ANNOTATIONS = [
         544.130173339
       ]
     ],
-    "keywords": [
-      "as a"
+    'keywords': [
+      'as a'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D056807",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D056807',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         101.060807617,
         81.43019976800001,
@@ -22989,19 +22989,19 @@ export const ANNOTATIONS = [
         89.93019976800001
       ]
     ],
-    "keywords": [
-      "as a"
+    'keywords': [
+      'as a'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D056807",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D056807',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 4,
-    "rects": [
+    'pageNumber': 4,
+    'rects': [
       [
         429.3066931150001,
         170.836197509,
@@ -23009,19 +23009,19 @@ export const ANNOTATIONS = [
         180.836197509
       ]
     ],
-    "keywords": [
-      "cytosolic"
+    'keywords': [
+      'cytosolic'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:C536654",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:C536654',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         168.28509685100005,
         659.130173339,
@@ -23029,19 +23029,19 @@ export const ANNOTATIONS = [
         669.130173339
       ]
     ],
-    "keywords": [
-      "bands"
+    'keywords': [
+      'bands'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D000652",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D000652',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         79.71430110900002,
         318.793196533,
@@ -23049,19 +23049,19 @@ export const ANNOTATIONS = [
         327.293196533
       ]
     ],
-    "keywords": [
-      "bands"
+    'keywords': [
+      'bands'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D000652",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D000652',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         209.61309687007008,
         646.630173339,
@@ -23069,19 +23069,19 @@ export const ANNOTATIONS = [
         656.630173339
       ]
     ],
-    "keywords": [
-      "spectrum"
+    'keywords': [
+      'spectrum'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D015211",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D015211',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         166.16609685482,
         634.130173339,
@@ -23089,19 +23089,19 @@ export const ANNOTATIONS = [
         644.130173339
       ]
     ],
-    "keywords": [
-      "spectrum"
+    'keywords': [
+      'spectrum'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D015211",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D015211',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         493.9115036408199,
         684.130173339,
@@ -23109,19 +23109,19 @@ export const ANNOTATIONS = [
         694.130173339
       ]
     ],
-    "keywords": [
-      "spectrum"
+    'keywords': [
+      'spectrum'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D015211",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D015211',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         98.989101531,
         92.022198242,
@@ -23129,19 +23129,19 @@ export const ANNOTATIONS = [
         100.522198242
       ]
     ],
-    "keywords": [
-      "spectrum"
+    'keywords': [
+      'spectrum'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D015211",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D015211',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         155.41210153100002,
         72.03019824200001,
@@ -23149,19 +23149,19 @@ export const ANNOTATIONS = [
         80.53019824200001
       ]
     ],
-    "keywords": [
-      "spectrum"
+    'keywords': [
+      'spectrum'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D015211",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D015211',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         391.79710153099995,
         82.03469824200002,
@@ -23169,19 +23169,19 @@ export const ANNOTATIONS = [
         90.53469824200002
       ]
     ],
-    "keywords": [
-      "spectrum"
+    'keywords': [
+      'spectrum'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D015211",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D015211',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         480.71560153099995,
         82.03469824200002,
@@ -23189,19 +23189,19 @@ export const ANNOTATIONS = [
         90.53469824200002
       ]
     ],
-    "keywords": [
-      "spectrum"
+    'keywords': [
+      'spectrum'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D015211",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D015211',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         114.504298095,
         609.130173339,
@@ -23209,19 +23209,19 @@ export const ANNOTATIONS = [
         619.130173339
       ]
     ],
-    "keywords": [
-      "bridged"
+    'keywords': [
+      'bridged'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:C566689",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:C566689',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         420.2815057370001,
         721.630173339,
@@ -23229,19 +23229,19 @@ export const ANNOTATIONS = [
         731.630173339
       ]
     ],
-    "keywords": [
-      "decay"
+    'keywords': [
+      'decay'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D003731",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D003731',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         188.26990666464002,
         459.13017333899995,
@@ -23249,19 +23249,19 @@ export const ANNOTATIONS = [
         469.13017333899995
       ]
     ],
-    "keywords": [
-      "decay,"
+    'keywords': [
+      'decay,'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D003731",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D003731',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         334.61150363699994,
         609.130173339,
@@ -23269,19 +23269,19 @@ export const ANNOTATIONS = [
         619.130173339
       ]
     ],
-    "keywords": [
-      "coordination"
+    'keywords': [
+      'coordination'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D001259",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D001259',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 6,
-    "rects": [
+    'pageNumber': 6,
+    'rects': [
       [
         340.46360196100005,
         434.13017333899995,
@@ -23289,19 +23289,19 @@ export const ANNOTATIONS = [
         444.13017333899995
       ]
     ],
-    "keywords": [
-      "coordination"
+    'keywords': [
+      'coordination'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D001259",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D001259',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 6,
-    "rects": [
+    'pageNumber': 6,
+    'rects': [
       [
         437.52360196100017,
         421.63017333899995,
@@ -23309,19 +23309,19 @@ export const ANNOTATIONS = [
         431.63017333899995
       ]
     ],
-    "keywords": [
-      "coordination"
+    'keywords': [
+      'coordination'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D001259",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D001259',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 6,
-    "rects": [
+    'pageNumber': 6,
+    'rects': [
       [
         306.141790771,
         246.63020385699997,
@@ -23335,20 +23335,20 @@ export const ANNOTATIONS = [
         269.13020385699997
       ]
     ],
-    "keywords": [
-      "dination",
-      "coor-"
+    'keywords': [
+      'dination',
+      'coor-'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D001259",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D001259',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         51.023601531,
         696.630173339,
@@ -23362,20 +23362,20 @@ export const ANNOTATIONS = [
         719.130173339
       ]
     ],
-    "keywords": [
-      "tion.",
-      "coordina-"
+    'keywords': [
+      'tion.',
+      'coordina-'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D001259",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D001259',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         118.04360153099998,
         634.130173339,
@@ -23383,19 +23383,19 @@ export const ANNOTATIONS = [
         644.130173339
       ]
     ],
-    "keywords": [
-      "coordination"
+    'keywords': [
+      'coordination'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D001259",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D001259',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         454.845503637,
         596.630173339,
@@ -23403,19 +23403,19 @@ export const ANNOTATIONS = [
         606.630173339
       ]
     ],
-    "keywords": [
-      "undefined"
+    'keywords': [
+      'undefined'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:C566799",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:C566799',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         342.912505627,
         496.63017333899995,
@@ -23423,19 +23423,19 @@ export const ANNOTATIONS = [
         506.63017333899995
       ]
     ],
-    "keywords": [
-      "effect"
+    'keywords': [
+      'effect'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D007088",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D007088',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 8,
-    "rects": [
+    'pageNumber': 8,
+    'rects': [
       [
         358.06639437791,
         196.72329772900002,
@@ -23443,19 +23443,19 @@ export const ANNOTATIONS = [
         206.72329772900002
       ]
     ],
-    "keywords": [
-      "effect"
+    'keywords': [
+      'effect'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D007088",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D007088',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         400.3905056269999,
         484.13017333899995,
@@ -23463,19 +23463,19 @@ export const ANNOTATIONS = [
         494.13017333899995
       ]
     ],
-    "keywords": [
-      "levels"
+    'keywords': [
+      'levels'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D006937",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D006937',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         508.12550564417,
         384.13017333899995,
@@ -23483,19 +23483,19 @@ export const ANNOTATIONS = [
         394.13017333899995
       ]
     ],
-    "keywords": [
-      "chemical"
+    'keywords': [
+      'chemical'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D002057",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D002057',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 5,
-    "rects": [
+    'pageNumber': 5,
+    'rects': [
       [
         240.38129760700002,
         328.789196533,
@@ -23503,19 +23503,19 @@ export const ANNOTATIONS = [
         337.289196533
       ]
     ],
-    "keywords": [
-      "(red)."
+    'keywords': [
+      '(red).'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D003117",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D003117',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         142.804307617,
         81.43019976800001,
@@ -23523,19 +23523,19 @@ export const ANNOTATIONS = [
         89.93019976800001
       ]
     ],
-    "keywords": [
-      "(red),"
+    'keywords': [
+      '(red),'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D003117",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D003117',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 6,
-    "rects": [
+    'pageNumber': 6,
+    'rects': [
       [
         330.15860196100004,
         434.13017333899995,
@@ -23543,19 +23543,19 @@ export const ANNOTATIONS = [
         444.13017333899995
       ]
     ],
-    "keywords": [
-      "in coordination"
+    'keywords': [
+      'in coordination'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D001259",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D001259',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 6,
-    "rects": [
+    'pageNumber': 6,
+    'rects': [
       [
         479.82779078244005,
         234.13020385699997,
@@ -23563,19 +23563,19 @@ export const ANNOTATIONS = [
         244.13020385699997
       ]
     ],
-    "keywords": [
-      "formation"
+    'keywords': [
+      'formation'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D058426",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D058426',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         154.37590070082,
         559.130173339,
@@ -23583,19 +23583,19 @@ export const ANNOTATIONS = [
         569.130173339
       ]
     ],
-    "keywords": [
-      "formed"
+    'keywords': [
+      'formed'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D006212",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D006212',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 7,
-    "rects": [
+    'pageNumber': 7,
+    'rects': [
       [
         463.39789795700017,
         709.130173339,
@@ -23603,19 +23603,19 @@ export const ANNOTATIONS = [
         719.130173339
       ]
     ],
-    "keywords": [
-      "Direct"
+    'keywords': [
+      'Direct'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D006552",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D006552',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         323.151101531,
         543.5838338610007,
@@ -23623,19 +23623,19 @@ export const ANNOTATIONS = [
         552.0838338610007
       ]
     ],
-    "keywords": [
-      "Frey"
+    'keywords': [
+      'Frey'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D013547",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D013547',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 10,
-    "rects": [
+    'pageNumber': 10,
+    'rects': [
       [
         500.4806515309999,
         543.5838338610007,
@@ -23643,19 +23643,19 @@ export const ANNOTATIONS = [
         552.0838338610007
       ]
     ],
-    "keywords": [
-      "CC"
+    'keywords': [
+      'CC'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D020216",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D020216',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         252.01545153424715,
         723.352215332,
@@ -23663,19 +23663,19 @@ export const ANNOTATIONS = [
         731.852215332
       ]
     ],
-    "keywords": [
-      "Armstrong"
+    'keywords': [
+      'Armstrong'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D008216",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D008216',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         440.900751531,
         683.4362102660003,
@@ -23683,19 +23683,19 @@ export const ANNOTATIONS = [
         691.9362102660003
       ]
     ],
-    "keywords": [
-      "Cox"
+    'keywords': [
+      'Cox'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D030401",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D030401',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   },
   {
-    "pageNumber": 11,
-    "rects": [
+    'pageNumber': 11,
+    'rects': [
       [
         462.041101531,
         612.8947102660004,
@@ -23703,14 +23703,14 @@ export const ANNOTATIONS = [
         621.3947102660004
       ]
     ],
-    "keywords": [
-      "neutral"
+    'keywords': [
+      'neutral'
     ],
-    "meta": {
-      "type": "Diseases",
-      "id": "MESH:D006250",
-      "color": "#fae0b8",
-      "idType": "MESH"
+    'meta': {
+      'type': 'Diseases',
+      'id': 'MESH:D006250',
+      'color': '#fae0b8',
+      'idType': 'MESH'
     }
   }
 ]
