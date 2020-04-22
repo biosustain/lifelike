@@ -6,7 +6,7 @@ import {
 import { ANNOTATIONS } from './mock_data';
 import {
   Annotation
-} from './interfaces';
+} from './types';
 
 @Injectable({
   providedIn: '***ARANGO_USERNAME***'
@@ -28,7 +28,7 @@ export class PdfAnnotationsService {
    */
   public searchForAnnotation(annotationId: string): Annotation {
     return (ANNOTATIONS as Annotation[]).filter(
-      (ann: Annotation) => ann.id === annotationId
+      (ann: Annotation) => ann.meta.id === annotationId
     )[0] || null;
   }
 }

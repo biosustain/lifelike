@@ -12,7 +12,8 @@ export class PdfViewerDirective implements AfterViewInit {
   ngAfterViewInit() {
     let dom = this.el.nativeElement as Element;
 
-    dom = dom.getElementsByClassName('example-container mat-drawer-container')[0];
-    dom.getElementsByTagName('mat-drawer')[0].remove();
+    //dom = dom.getElementsByClassName('example-container mat-drawer-container')[0];
+    //dom.getElementsByTagName('mat-drawer')[0].remove(); 
+    // ???
   }
 }
