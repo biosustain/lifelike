@@ -1,6 +1,6 @@
 export const ANNOTATIONS = [
   {
-    'pageNumber': 1,
+    pageNumber: 1,
     'rects': [
       [
         222.09560153100003,
