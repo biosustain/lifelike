@@ -11,12 +11,8 @@ import {
 } from '../services';
 
 import {
-  GraphData
+  GraphData, Annotation, Location
 } from '../services/interfaces';
-
-import {
-  Annotation, Location
-} from '../services/types';
 
 const MOCK_FILES: PdfFile[] = [ // TODO: remove once backend is in place
   {file_id: '0', filename: 'pdf file number 0', creation_date: '', username: ''},
