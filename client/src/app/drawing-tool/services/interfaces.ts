@@ -77,19 +77,40 @@ interface GraphSelectionData {
   otherNodes?: VisNetworkGraphNode[];
 }
 
-/**
- * Schema for annoations added in pdf-viewer
- */
-interface Annotation {
-  /** The entity being annotated */
-  keyword: string;
-  /** The type of entity */
-  type: string;
-  /** Color to associate with entity */
-  color: string;
-  /** CHEBI id or some other id system */
-  id: string;
+interface Location {
+  pageNumber:number;
+  rect: Rect;
 }
+
+interface Links {
+  ncbi?: string;
+  uniprot?: string;
+  wikipedia?: string;
+  google?: string;
+}
+
+interface Meta {
+  type:string;
+  color:string;
+  id?:string;
+  idType?: string;
+  isCustom?: boolean;
+  allText?: string;
+  links?: Links;
+}
+
+interface Rect {
+  [index:number]: number
+}
+
+interface Annotation {
+  pageNumber: number;
+  keywords: string[];
+  rects: Rect[];
+  meta: Meta;
+}
+
+
 
 /**
  * Project schema definition
@@ -118,6 +139,10 @@ export {
   UniversalGraphEdge,
   UniversalGraphNode,
   Annotation,
+  Meta,
+  Rect,
+  Links,
+  Location,
   GraphData,
   GraphSelectionData
 };
