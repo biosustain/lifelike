@@ -1,6 +1,7 @@
 import json
 import pytest
 
+from io import StringIO
 from os import path
 
 from neo4japp.database import (
@@ -8,7 +9,7 @@ from neo4japp.database import (
     get_bioc_document_service,
     get_annotations_pdf_parser,
 )
-
+from neo4japp.data_transfer_objects import PDFParsedCharacters
 from neo4japp.models import Files
 
 
@@ -16,16 +17,59 @@ from neo4japp.models import Files
 directory = path.realpath(path.dirname(__file__))
 
 
+@pytest.mark.parametrize(
+    'index, text',
+    [(1, PDFParsedCharacters(
+        coor_obj_per_pdf_page=None,
+        str_per_pdf_page={
+            1: ['I', ' ', 'a', 'm', ' ', 'a', ' ', 's', 'e', 'n', 't', 'e', 'n', 'c', 'e', '\n'],  #noqa
+        },
+    )),
+    (2, PDFParsedCharacters(
+        coor_obj_per_pdf_page=None,
+        str_per_pdf_page={
+            1: ['E', '.', ' ', '\n', 'C', 'o', 'l', 'i', ' '],  #noqa
+        },
+    ))],
+)
+def test_extract_tokens(annotations_setup, index, text):
+    pdf_parser = get_annotations_pdf_parser()
+    parsed_tokens = pdf_parser.extract_tokens(parsed_chars=text)
+    tokens = {t.keyword for t in parsed_tokens.token_positions}
+
+    if index == 1:
+        verify = {
+            'I',
+            'I am',
+            'I am a',
+            'I am a sentence',
+            'am',
+            'am a',
+            'am a sentence',
+            'a',
+            'a sentence',
+            'sentence',
+        }
+        assert verify == tokens
+    elif index == 2:
+        verify = {
+            'E.',
+            'E.\nColi',
+            'Coli',
+        }
+        assert verify == tokens
+
+
 @pytest.mark.skip
 def test_generate_annotations(annotations_setup):
     annotator = get_annotations_service()
-    token_extractor = get_annotations_pdf_parser()
+    pdf_parser = get_annotations_pdf_parser()
 
     pdf = path.join(directory, 'pdf_samples/example3.pdf')
 
-    pdf_text = token_extractor.parse_pdf(pdf=pdf)
+    pdf_text = pdf_parser.parse_pdf(pdf=pdf)
     annotations = annotator.create_annotations(
-        tokens=token_extractor.extract_tokens(parsed_chars=pdf_text))
+        tokens=pdf_parser.extract_tokens(parsed_chars=pdf_text))
 
     keywords = {o['keyword'] for o in annotations}
 
@@ -41,14 +85,14 @@ def test_generate_annotations(annotations_setup):
 def test_generate_bioc_annotations_format(annotations_setup):
     annotator = get_annotations_service()
     bioc_service = get_bioc_document_service()
-    token_extractor = get_annotations_pdf_parser()
+    pdf_parser = get_annotations_pdf_parser()
 
     pdf = path.join(directory, 'pdf_samples/example3.pdf')
 
     with open(pdf, 'rb') as f:
-        pdf_text = token_extractor.parse_pdf(pdf=f)
+        pdf_text = pdf_parser.parse_pdf(pdf=f)
         annotations = annotator.create_annotations(
-            tokens=token_extractor.extract_tokens(parsed_chars=pdf_text))
+            tokens=pdf_parser.extract_tokens(parsed_chars=pdf_text))
 
     bioc = bioc_service.read(
         parsed_chars=pdf_text,
@@ -65,15 +109,15 @@ def test_generate_bioc_annotations_format(annotations_setup):
 def test_save_bioc_annotations_to_db(annotations_setup, session):
     annotator = get_annotations_service()
     bioc_service = get_bioc_document_service()
-    token_extractor = get_annotations_pdf_parser()
+    pdf_parser = get_annotations_pdf_parser()
 
     pdf = path.join(directory, 'pdf_samples/example3.pdf')
 
     with open(pdf, 'rb') as f:
-        parsed_pdf_chars = token_extractor.parse_pdf(pdf=f)
-        pdf_text = token_extractor.parse_pdf_high_level(pdf=f)
+        parsed_pdf_chars = pdf_parser.parse_pdf(pdf=f)
+        pdf_text = pdf_parser.parse_pdf_high_level(pdf=f)
         annotations = annotator.create_annotations(
-            tokens=token_extractor.extract_tokens(parsed_chars=parsed_pdf_chars))
+            tokens=pdf_parser.extract_tokens(parsed_chars=parsed_pdf_chars))
 
     bioc = bioc_service.read(
         text=pdf_text,
@@ -112,10 +156,10 @@ def test_save_bioc_annotations_to_db(annotations_setup, session):
 )
 def test_single_word_chebi_chemical_full_annotations(annotations_setup, text):
     annotator = get_annotations_service()
-    token_extractor = get_annotations_pdf_parser()
+    pdf_parser = get_annotations_pdf_parser()
 
     annotations = annotator.create_annotations(
-        tokens=token_extractor.extract_tokens(parsed_chars=text))
+        tokens=pdf_parser.extract_tokens(parsed_chars=text))
 
     full_keywords = set([o['keyword'] for o in annotations])
 
@@ -140,10 +184,10 @@ def test_single_word_chebi_chemical_full_annotations(annotations_setup, text):
 )
 def test_single_word_compound_full_annotations(annotations_setup, text):
     annotator = get_annotations_service()
-    token_extractor = get_annotations_pdf_parser()
+    pdf_parser = get_annotations_pdf_parser()
 
     annotations = annotator.create_annotations(
-        tokens=token_extractor.extract_tokens(parsed_chars=text))
+        tokens=pdf_parser.extract_tokens(parsed_chars=text))
 
     full_keywords = set([o['keyword'] for o in annotations])
 
@@ -166,10 +210,10 @@ def test_single_word_compound_full_annotations(annotations_setup, text):
 )
 def test_single_word_protein_full_annotations(annotations_setup, text):
     annotator = get_annotations_service()
-    token_extractor = get_annotations_pdf_parser()
+    pdf_parser = get_annotations_pdf_parser()
 
     annotations = annotator.create_annotations(
-        tokens=token_extractor.extract_tokens(parsed_chars=text))
+        tokens=pdf_parser.extract_tokens(parsed_chars=text))
 
     full_keywords = set([o['keyword'] for o in annotations])
 
@@ -191,10 +235,10 @@ def test_single_word_protein_full_annotations(annotations_setup, text):
 )
 def test_single_word_species_full_annotations(annotations_setup, text):
     annotator = get_annotations_service()
-    token_extractor = get_annotations_pdf_parser()
+    pdf_parser = get_annotations_pdf_parser()
 
     annotations = annotator.create_annotations(
-        tokens=token_extractor.extract_tokens(parsed_chars=text))
+        tokens=pdf_parser.extract_tokens(parsed_chars=text))
 
     full_keywords = set([o['keyword'] for o in annotations])
 
@@ -217,10 +261,10 @@ def test_single_word_species_full_annotations(annotations_setup, text):
 )
 def test_single_word_diseases_full_annotations(annotations_setup, text):
     annotator = get_annotations_service()
-    token_extractor = get_annotations_pdf_parser()
+    pdf_parser = get_annotations_pdf_parser()
 
     annotations = annotator.create_annotations(
-        tokens=token_extractor.extract_tokens(parsed_chars=text))
+        tokens=pdf_parser.extract_tokens(parsed_chars=text))
 
     full_keywords = set([o['keyword'] for o in annotations])
 
@@ -244,10 +288,10 @@ def test_single_word_diseases_full_annotations(annotations_setup, text):
 )
 def test_multi_word_chebi_chemical_full_annotations(annotations_setup, text):
     annotator = get_annotations_service()
-    token_extractor = get_annotations_pdf_parser()
+    pdf_parser = get_annotations_pdf_parser()
 
     annotations = annotator.create_annotations(
-        tokens=token_extractor.extract_tokens(parsed_chars=text))
+        tokens=pdf_parser.extract_tokens(parsed_chars=text))
 
     full_keywords = set([o['keyword'] for o in annotations])
 
@@ -275,10 +319,10 @@ def test_multi_word_chebi_chemical_full_annotations(annotations_setup, text):
 )
 def test_multi_word_compound_full_annotations(annotations_setup, text):
     annotator = get_annotations_service()
-    token_extractor = get_annotations_pdf_parser()
+    pdf_parser = get_annotations_pdf_parser()
 
     annotations = annotator.create_annotations(
-        tokens=token_extractor.extract_tokens(parsed_chars=text))
+        tokens=pdf_parser.extract_tokens(parsed_chars=text))
 
     full_keywords = set([o['keyword'] for o in annotations])
 
@@ -301,10 +345,10 @@ def test_multi_word_compound_full_annotations(annotations_setup, text):
 )
 def test_multi_word_protein_full_annotations(annotations_setup, text):
     annotator = get_annotations_service()
-    token_extractor = get_annotations_pdf_parser()
+    pdf_parser = get_annotations_pdf_parser()
 
     annotations = annotator.create_annotations(
-        tokens=token_extractor.extract_tokens(parsed_chars=text))
+        tokens=pdf_parser.extract_tokens(parsed_chars=text))
 
     full_keywords = set([o['keyword'] for o in annotations])
 
@@ -327,10 +371,10 @@ def test_multi_word_protein_full_annotations(annotations_setup, text):
 )
 def test_multi_word_species_full_annotations(annotations_setup, text):
     annotator = get_annotations_service()
-    token_extractor = get_annotations_pdf_parser()
+    pdf_parser = get_annotations_pdf_parser()
 
     annotations = annotator.create_annotations(
-        tokens=token_extractor.extract_tokens(parsed_chars=text))
+        tokens=pdf_parser.extract_tokens(parsed_chars=text))
 
     full_keywords = set([o['keyword'] for o in annotations])
 
@@ -353,10 +397,10 @@ def test_multi_word_species_full_annotations(annotations_setup, text):
 )
 def test_multi_word_diseases_full_annotations(annotations_setup, text):
     annotator = get_annotations_service()
-    token_extractor = get_annotations_pdf_parser()
+    pdf_parser = get_annotations_pdf_parser()
 
     annotations = annotator.create_annotations(
-        tokens=token_extractor.extract_tokens(parsed_chars=text))
+        tokens=pdf_parser.extract_tokens(parsed_chars=text))
 
     full_keywords = set([o['keyword'] for o in annotations])
 
@@ -384,10 +428,10 @@ def test_multi_word_diseases_full_annotations(annotations_setup, text):
 )
 def test_correct_annotated_entity_recognition(annotations_setup, text):
     annotator = get_annotations_service()
-    token_extractor = get_annotations_pdf_parser()
+    pdf_parser = get_annotations_pdf_parser()
 
     annotations = annotator.create_annotations(
-        tokens=token_extractor.extract_tokens(parsed_chars=text))
+        tokens=pdf_parser.extract_tokens(parsed_chars=text))
 
     chemical_keywords = {o['keyword']: o['id'] for o in annotations if o['type'] == 'Chemicals'}
     compound_keywords = {o['keyword']: o['id'] for o in annotations if o['type'] == 'Compounds'}
@@ -441,10 +485,10 @@ def test_can_exit_sequential_walking_loop(annotations_setup, text):
         'short) 3  ' repeats
     """
     annotator = get_annotations_service()
-    token_extractor = get_annotations_pdf_parser()
+    pdf_parser = get_annotations_pdf_parser()
 
     annotations = annotator.create_annotations(
-        tokens=token_extractor.extract_tokens(parsed_chars=text))
+        tokens=pdf_parser.extract_tokens(parsed_chars=text))
 
     species_keywords = {o['keyword']: o['id'] for o in annotations if o['type'] == 'Species'}
     assert len(species_keywords) == 2
@@ -455,10 +499,10 @@ def test_can_exit_sequential_walking_loop(annotations_setup, text):
     'text', ['headaches is a term used alternatively by multiple common names not included'])
 def test_can_drop_synonym_annotations_if_common_names_not_used(annotations_setup, text):
     annotator = get_annotations_service()
-    token_extractor = get_annotations_pdf_parser()
+    pdf_parser = get_annotations_pdf_parser()
 
     annotations = annotator.create_annotations(
-        tokens=token_extractor.extract_tokens(parsed_chars=text))
+        tokens=pdf_parser.extract_tokens(parsed_chars=text))
 
     diseases_keywords = set([o['keyword'] for o in annotations if o['type'] == 'Diseases'])
     assert len(diseases_keywords) == 0
@@ -468,10 +512,10 @@ def test_can_drop_synonym_annotations_if_common_names_not_used(annotations_setup
 @pytest.mark.parametrize('text', ['dihydrogen is a common name for hydrogen'])
 def test_can_annotate_synonym_if_one_of_common_names_is_used(annotations_setup, text):
     annotator = get_annotations_service()
-    token_extractor = get_annotations_pdf_parser()
+    pdf_parser = get_annotations_pdf_parser()
 
     annotations = annotator.create_annotations(
-        tokens=token_extractor.extract_tokens(parsed_chars=text))
+        tokens=pdf_parser.extract_tokens(parsed_chars=text))
 
     chemical_keywords = set([o['keyword'] for o in annotations if o['type'] == 'Chemicals'])
     keywords = {'dihydrogen', 'hydrogen', 'name'}
@@ -482,10 +526,10 @@ def test_can_annotate_synonym_if_one_of_common_names_is_used(annotations_setup, 
 @pytest.mark.parametrize('text', ['dihydrogen and hydrogen atom are a common names for hydrogen'])
 def test_can_drop_synonym_annotations_if_multiple_common_names_is_used(annotations_setup, text):
     annotator = get_annotations_service()
-    token_extractor = get_annotations_pdf_parser()
+    pdf_parser = get_annotations_pdf_parser()
 
     annotations = annotator.create_annotations(
-        tokens=token_extractor.extract_tokens(parsed_chars=text))
+        tokens=pdf_parser.extract_tokens(parsed_chars=text))
 
     chemical_keywords = set([o['keyword'] for o in annotations if o['type'] == 'Chemicals'])
     keywords = {'dihydrogen', 'hydrogen atom', 'atom'}
