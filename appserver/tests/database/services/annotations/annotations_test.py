@@ -19,18 +19,20 @@ directory = path.realpath(path.dirname(__file__))
 
 @pytest.mark.parametrize(
     'index, text',
-    [(1, PDFParsedCharacters(
-        coor_obj_per_pdf_page=None,
-        str_per_pdf_page={
-            1: ['I', ' ', 'a', 'm', ' ', 'a', ' ', 's', 'e', 'n', 't', 'e', 'n', 'c', 'e', '\n'],  #noqa
-        },
-    )),
-    (2, PDFParsedCharacters(
-        coor_obj_per_pdf_page=None,
-        str_per_pdf_page={
-            1: ['E', '.', ' ', '\n', 'C', 'o', 'l', 'i', ' '],  #noqa
-        },
-    ))],
+    [
+        (1, PDFParsedCharacters(
+            coor_obj_per_pdf_page=None,
+            str_per_pdf_page={
+                1: ['I', ' ', 'a', 'm', ' ', 'a', ' ', 's', 'e', 'n', 't', 'e', 'n', 'c', 'e', '\n'],  # noqa
+            },
+        )),
+        (2, PDFParsedCharacters(
+            coor_obj_per_pdf_page=None,
+            str_per_pdf_page={
+                1: ['E', '.', ' ', '\n', 'C', 'o', 'l', 'i', ' '],  # noqa
+            },
+        )),
+    ],
 )
 def test_extract_tokens(annotations_setup, index, text):
     pdf_parser = get_annotations_pdf_parser()
@@ -111,7 +113,7 @@ def test_save_bioc_annotations_to_db(annotations_setup, session):
     bioc_service = get_bioc_document_service()
     pdf_parser = get_annotations_pdf_parser()
 
-    pdf = path.join(directory, 'pdf_samples/example3.pdf')
+    pdf = path.join(directory, 'pdf_samples/554. salazar msystems 20.pdf')
 
     with open(pdf, 'rb') as f:
         parsed_pdf_chars = pdf_parser.parse_pdf(pdf=f)
@@ -121,7 +123,7 @@ def test_save_bioc_annotations_to_db(annotations_setup, session):
 
     bioc = bioc_service.read(
         text=pdf_text,
-        file_uri=path.join(directory, 'pdf_samples/example3.pdf'))
+        file_uri=path.join(directory, 'pdf_samples/554. salazar msystems 20.pdf'))
     annotations_json = bioc_service.generate_bioc_json(annotations=annotations, bioc=bioc)
 
     annotated_json_f = path.join(directory, 'pdf_samples/annotations-test.json')
