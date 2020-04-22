@@ -254,7 +254,7 @@ def prepare_lmdb_diseases_database():
             for line in reader:
                 disease_id = line[0]
                 disease_name = line[1]
-                synonyms = line[2].split(',')
+                synonym = line[2]
 
                 disease = {
                     'disease_id': disease_id,
@@ -264,9 +264,7 @@ def prepare_lmdb_diseases_database():
                     } if disease_name != 'null' else {},
                 }
 
-                if synonyms:
-                    for syn in synonyms:
-                        synonyms_list.append((normalize_str(syn), disease))
+                synonyms_list.append((normalize_str(synonym), disease))
 
                 try:
                     if disease_name != 'null':
