@@ -23713,4 +23713,4 @@ export const ANNOTATIONS = [
       idType: 'MESH'
     }
   }
-]
+];

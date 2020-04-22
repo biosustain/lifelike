@@ -6,7 +6,7 @@ import {
 import { ANNOTATIONS } from './mock_data';
 import {
   Annotation
-} from './types';
+} from './interfaces';
 
 @Injectable({
   providedIn: '***ARANGO_USERNAME***'
