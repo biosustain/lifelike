@@ -16,10 +16,6 @@ from neo4japp.models.files import Files
 
 bp = Blueprint('files', __name__, url_prefix='/files')
 
-ALLOWED_EXTENSIONS = {'pdf'}
-UPLOAD_FOLDER = 'files/input/'
-OUTPUT_PATH = 'files/output/'
-
 
 @bp.route('/upload', methods=['POST'])
 @auth.login_required
@@ -29,7 +25,7 @@ def upload_pdf():
     pdf_parser = get_annotations_pdf_parser()
 
     pdf = request.files['file']
-    project = request.form['project']
+    project = '1'  # TODO: remove hard coded project
     binary_pdf = pdf.read()
     username = g.current_user
 
@@ -74,9 +70,12 @@ def upload_pdf():
 def list_files():
     """TODO: See JIRA LL-322
     """
-    data = request.get_json()
+    # TODO: remove hard coded project
+    # Part of phase 1, as explained at https://github.com/SBRG/kg-prototypes/pull/85#issue-404823272
+    project = '1'
+
     files = [{
-        'id': row.id,
+        'id': row.id,  # TODO: is this of any use?
         'file_id': row.file_id,
         'filename': row.filename,
         'username': row.username,
@@ -87,24 +86,22 @@ def list_files():
         Files.filename,
         Files.username,
         Files.creation_date)
-        .filter(Files.project == data['project'])
+        .filter(Files.project == project)
         .all()]
     return jsonify({'files': files})
 
 
-@bp.route('/get_pdf/<id>', methods=['GET'])
+@bp.route('/<id>', methods=['GET'])
 @auth.login_required
 def get_pdf(id):
-    data = request.get_json()
-    OUTPUT_PATH = os.path.abspath(os.getcwd()) + '/outputs/'
-    file, filename = db.session.query(Files.raw_file,
-                                      Files.filename) \
-        .filter(Files.file_id == id and Files.project == data['project'])\
+    project = '1'  # TODO: remove hard coded project
+    file, filename = db.session.query(Files.raw_file, Files.filename) \
+        .filter(Files.file_id == id and Files.project == project)\
         .one()
-    file_full_path = OUTPUT_PATH + filename
     # TODO: Remove writing in filesystem part, this is not needed should be tackle in next version
-    write_file(file, file_full_path)
-    return send_from_directory(OUTPUT_PATH, filename)
+    outdir = os.path.abspath(os.getcwd())
+    write_file(file, os.path.join(outdir, filename))
+    return send_from_directory(outdir, filename)
 
 
 @bp.route('/bioc', methods=['GET'])

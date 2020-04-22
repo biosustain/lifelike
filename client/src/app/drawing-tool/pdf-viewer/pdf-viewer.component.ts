@@ -19,16 +19,16 @@ import {
 } from '../services/types';
 
 const MOCK_FILES: PdfFile[] = [ // TODO: remove once backend is in place
-  {id: '0', filename: 'pdf file number 0', creationDate: '', username: ''},
-  {id: '1', filename: 'pdf file number 1', creationDate: '', username: ''},
-  {id: '2', filename: 'pdf file number 2', creationDate: '', username: ''},
-  {id: '3', filename: 'pdf file number 3', creationDate: '', username: ''},
-  {id: '4', filename: 'pdf file number 4', creationDate: '', username: ''},
-  {id: '5', filename: 'pdf file number 5', creationDate: '', username: ''},
-  {id: '6', filename: 'pdf file number 6', creationDate: '', username: ''},
-  {id: '7', filename: 'pdf file number 7', creationDate: '', username: ''},
-  {id: '8', filename: 'pdf file number 8', creationDate: '', username: ''},
-  {id: '9', filename: 'pdf file number 9', creationDate: '', username: ''},
+  {file_id: '0', filename: 'pdf file number 0', creation_date: '', username: ''},
+  {file_id: '1', filename: 'pdf file number 1', creation_date: '', username: ''},
+  {file_id: '2', filename: 'pdf file number 2', creation_date: '', username: ''},
+  {file_id: '3', filename: 'pdf file number 3', creation_date: '', username: ''},
+  {file_id: '4', filename: 'pdf file number 4', creation_date: '', username: ''},
+  {file_id: '5', filename: 'pdf file number 5', creation_date: '', username: ''},
+  {file_id: '6', filename: 'pdf file number 6', creation_date: '', username: ''},
+  {file_id: '7', filename: 'pdf file number 7', creation_date: '', username: ''},
+  {file_id: '8', filename: 'pdf file number 8', creation_date: '', username: ''},
+  {file_id: '9', filename: 'pdf file number 9', creation_date: '', username: ''},
 ];
 
 
@@ -41,12 +41,19 @@ const MOCK_FILES: PdfFile[] = [ // TODO: remove once backend is in place
 export class PdfViewerComponent implements AfterViewInit, OnDestroy {
 
   annotations: object[] = [];
-  files: PdfFile[] = MOCK_FILES;
+  files: PdfFile[] = [];
   filesFilter = new FormControl('');
   filesFilterSub: Subscription;
   filteredFiles = this.files;
+
   pdfFileUrl = '/assets/pdfs/example3-test.pdf'; // TODO: remove asset once backend is in place
   goToPosition =  new Subject<any>();
+
+  // Type information coming from interface PDFSource at:
+  // https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/pdfjs-dist/index.d.ts
+  // TODO: feel free to remove the sample.pdf when desired. In that case, also mocked annotations should be removed
+  pdfData: {url?: string, data?: Uint8Array} = {url: '/assets/pdfs/example3-test.pdf'};
+
   constructor(
     private pdfAnnService: PdfAnnotationsService,
     private dataFlow: DataFlowService,
@@ -62,6 +69,7 @@ export class PdfViewerComponent implements AfterViewInit, OnDestroy {
   ngAfterViewInit() {
     setTimeout(
       () => {
+        // TODO: Should this be updated at this point?
         this.pdfAnnService.getMockupAnnotation()
         .subscribe(ann => {
           this.annotations = ann;
@@ -112,7 +120,11 @@ export class PdfViewerComponent implements AfterViewInit, OnDestroy {
   openPdf(id: string) {
     //this.pdfFileUrl = `${environment.apiUrl}/api/files/${id}`;
     //console.log(`url passed to pdf viewer: ${this.pdfFileUrl}`);
-    console.log('eren commented out this');
+    //this.pdf.getFile(id).subscribe((pdfData: ArrayBuffer) => {
+     // this.annotations = [];
+      // TODO: update annotations?
+      //this.pdfData = {data: new Uint8Array(pdfData)};
+    //});
   }
 
   ngOnDestroy() {
