@@ -18,7 +18,7 @@ RUN yarn build --configuration=staging --output-path=dist
 FROM nginx:1.16.0-alpine
 COPY --from=build /home/node/client/dist /usr/share/nginx/html
 RUN rm /etc/nginx/conf.d/default.conf
-COPY --from=build /home/node/client/nginx/staging.conf /etc/nginx/conf.d
+COPY --from=build /home/node/client/nginx/staging.conf /etc/nginx/conf.d/default.conf
 
 EXPOSE 80
 
