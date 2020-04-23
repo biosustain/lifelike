@@ -19,6 +19,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
   selection = new SelectionModel<PdfFile>(false, []);
   selectionChanged: Subscription;
   canOpen = false;
+  isReannotating = false;
 
   constructor(
     private pdf: PdfFilesService,
@@ -56,5 +57,21 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
   openFile() {
     localStorage.setItem('fileIdForPdfViewer', this.selection.selected[0].file_id);
     this.router.navigate(['/pdf-viewer']);
+  }
+
+  reannotate() {
+    this.isReannotating = true;
+    this.pdf.reannotateFile(this.selection.selected[0].file_id).subscribe(
+      (res) => {
+        this.isReannotating = false;
+        this.snackBar.open(`Reannotation succeeded`, 'Close', {duration: 5000});
+        console.log('reannotation result', res);
+      },
+      err => {
+        this.isReannotating = false;
+        this.snackBar.open(`Reannotation failed`, 'Close', {duration: 10000});
+        console.error('reannotation error', err);
+      }
+    );
   }
 }
