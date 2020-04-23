@@ -128,6 +128,19 @@ def get_annotations(id):
     return jsonify(annotations)
 
 
+@bp.route('/add_custom_annotation/<id>', methods=['PATCH'])
+@auth.login_required
+def add_custom_annotation(id):
+    annotation_to_add = request.get_json()
+    annotation_to_add['user_id'] = g.current_user.id
+    file = Files.query.filter_by(file_id=id).first()
+    if not file:
+        return {'error': 'File does not exist'}, 400
+    file.custom_annotations = [annotation_to_add, *file.custom_annotations]
+    db.session.commit()
+    return {'status': 'success'}, 200
+
+
 def write_file(data, filename):
     # Convert binary data to proper format and write it on Hard Disk
     with open(filename, 'wb') as f:
