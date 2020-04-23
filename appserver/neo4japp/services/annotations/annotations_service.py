@@ -236,15 +236,8 @@ class AnnotationsService:
         keyword_positions.append(
             Annotation.TextPosition(
                 value=keyword,
-                lower_left={
-                    'x': start_lower_x,  # type: ignore
-                    'y': start_lower_y,  # type: ignore
-                },
-                upper_right={
-                    'x': end_upper_x,  # type: ignore
-                    'y': end_upper_y,  # type: ignore
-                },
-            ),
+                positions=[start_lower_x, start_lower_y, end_upper_x, end_upper_y],  # noqa
+            )
         )
 
     def _get_annotation(
@@ -327,23 +320,26 @@ class AnnotationsService:
 
                     keyword_starting_idx = char_indexes[0]
                     keyword_ending_idx = char_indexes[-1]
-                    keyword_length = 0
 
-                    for keyword_obj in keyword_positions:
-                        keyword_length += len(keyword_obj.value)
+                    meta = Annotation.Meta(
+                        keyword_type=token_type,
+                        color=color,
+                        id=entity_id,
+                        id_type=entity['id_type'],
+                        links=Annotation.Meta.Links(),
+                    )
 
                     matches.append(
                         Annotation(
                             page_number=token_positions.page_number,
-                            keyword=keyword_positions,
-                            keyword_length=keyword_length,
+                            rects=[pos.positions for pos in keyword_positions],
+                            keywords=[k.value for k in keyword_positions],
+                            keyword=token_positions.keyword,
+                            keyword_length=len(token_positions.keyword),
                             lo_location_offset=keyword_starting_idx,
                             hi_location_offset=keyword_ending_idx,
-                            keyword_type=token_type,
-                            color=color,
-                            id=entity_id,
-                            id_type=entity['id_type'],
-                        ),
+                            meta=meta,
+                        )
                     )
                 else:
                     unwanted_matches.add(word)
@@ -469,11 +465,7 @@ class AnnotationsService:
         """
         new_matches = []
         for match in matches:
-            keyword = ''
-            for keyword_obj in match.keyword:
-                keyword += keyword_obj.value
-
-            if normalize_str(keyword) not in unwanted_keywords:
+            if normalize_str(match.keyword) not in unwanted_keywords:
                 new_matches.append(match)
         return new_matches
 
