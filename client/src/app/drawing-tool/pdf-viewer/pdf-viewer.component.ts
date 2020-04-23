@@ -3,7 +3,6 @@ import { FormControl } from '@angular/forms';
 import { Subscription, Subject } from 'rxjs';
 import { PdfFile } from 'app/interfaces/pdf-files.interface';
 import { PdfFilesService } from 'app/shared/services/pdf-files.service';
-import { environment } from 'environments/environment';
 
 import {
   PdfAnnotationsService,
@@ -60,6 +59,12 @@ export class PdfViewerComponent implements AfterViewInit, OnDestroy {
       this.files = files;
       this.updateFilteredFiles(this.filesFilter.value);
     });
+    // Handles opening a pdf from other pages
+    const fileId = localStorage.getItem('fileIdForPdfViewer');
+    if (fileId) {
+      localStorage.removeItem('fileIdForPdfViewer');
+      this.openPdf(fileId);
+    }
   }
 
   ngAfterViewInit() {
