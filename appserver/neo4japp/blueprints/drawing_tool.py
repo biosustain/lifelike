@@ -185,7 +185,6 @@ def get_project_pdf(project_id):
 
     unprocessed.append(data_source.hash_id)
 
-
     while len(unprocessed):
         item = unprocessed.pop(0)
         project = Project.query.filter_by(hash_id=item).one()
@@ -198,7 +197,8 @@ def get_project_pdf(project_id):
         references.extend(references_)
 
     for annot, hash_id in references:
-        annot[NameObject('/Dest')] = ArrayObject([processed[hash_id].getPage(0).indirectRef, NameObject('/Fit')])
+        annot[NameObject('/Dest')] = ArrayObject([processed[hash_id].getPage(0).indirectRef,
+                                                  NameObject('/Fit')])
         del(annot['/A'])
 
     return merge_pdfs(processed, processed_ids)
