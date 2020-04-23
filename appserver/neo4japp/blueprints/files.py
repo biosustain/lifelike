@@ -121,10 +121,11 @@ def transform_to_bioc():
 @bp.route('/get_annotations/<id>', methods=['GET'])
 @auth.login_required
 def get_annotations(id):
-    data = request.get_json()
-    annotations = db.session.query(Files.annotations)\
-        .filter(Files.file_id == id and Files.project == data['project'])\
-        .one()
+    file = Files.query.filter_by(file_id=id).first()
+    if not file:
+        return {'error': 'File does not exist'}, 400
+    annotations = file.annotations['documents'][0]['passages'][0]['annotations'] + \
+        file.custom_annotations
     return jsonify(annotations)
 
 
