@@ -51,8 +51,6 @@ DISPLAY_NAME_MAP = {
 
 # Start Text Mining Dataset
 
-
-ELASTICSEARCH_URL = 'http://elasticsearch:9200'
 GRAPH_INDEX = 'graph'
 
 

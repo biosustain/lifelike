@@ -320,9 +320,17 @@ class AnnotationsService:
                         keyword_positions=keyword_positions
                     )
 
+                    keyword_starting_idx = char_indexes[0]
+                    keyword_length = 0
+
+                    for keyword_obj in keyword_positions:
+                        keyword_length += len(keyword_obj['value'])
+
                     matches.append({
                         'page_number': token_positions.page_number,
                         'keyword': keyword_positions,
+                        'keyword_location_offset': keyword_starting_idx,
+                        'keyword_length': keyword_length,
                         'type': token_type,
                         'color': color,
                         'id': entity_id,

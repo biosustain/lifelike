@@ -3,7 +3,6 @@ import { FormControl } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { PdfFile } from 'app/interfaces/pdf-files.interface';
 import { PdfFilesService } from 'app/shared/services/pdf-files.service';
-import { environment } from 'environments/environment';
 
 import {
   PdfAnnotationsService,
@@ -29,7 +28,11 @@ export class PdfViewerComponent implements AfterViewInit, OnDestroy {
   filesFilter = new FormControl('');
   filesFilterSub: Subscription;
   filteredFiles = this.files;
-  pdfFileUrl = '/assets/pdfs/sample.pdf'; // TODO: remove asset once backend is in place
+
+  // Type information coming from interface PDFSource at:
+  // https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/pdfjs-dist/index.d.ts
+  // TODO: feel free to remove the sample.pdf when desired. In that case, also mocked annotations should be removed
+  pdfData: {url?: string, data?: Uint8Array} = {url: '/assets/pdfs/sample.pdf'};
 
   constructor(
     private pdfAnnService: PdfAnnotationsService,
@@ -46,6 +49,7 @@ export class PdfViewerComponent implements AfterViewInit, OnDestroy {
   ngAfterViewInit() {
     setTimeout(
       () => {
+        // TODO: Should this be updated at this point?
         this.pdfAnnService.getMockupAnnotation()
         .subscribe(ann => {
           this.annotations = ann;
@@ -90,8 +94,11 @@ export class PdfViewerComponent implements AfterViewInit, OnDestroy {
   }
 
   openPdf(id: string) {
-    this.pdfFileUrl = `${environment.apiUrl}/api/files/${id}`;
-    console.log(`url passed to pdf viewer: ${this.pdfFileUrl}`);
+    this.pdf.getFile(id).subscribe((pdfData: ArrayBuffer) => {
+      this.annotations = [];
+      // TODO: update annotations?
+      this.pdfData = {data: new Uint8Array(pdfData)};
+    });
   }
 
   ngOnDestroy() {
