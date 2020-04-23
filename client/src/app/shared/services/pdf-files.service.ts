@@ -9,13 +9,15 @@ import { PdfFiles, PdfFile, PdfFileUpload } from 'app/interfaces/pdf-files.inter
   providedIn: '***ARANGO_USERNAME***'
 })
 export class PdfFilesService {
+  readonly baseUrl = '/api/files';
+
   constructor(
     private auth: AuthenticationService,
     private http: HttpClient,
   ) {}
 
   getFiles(): Observable<PdfFile[]> {
-    return this.http.get<PdfFiles>('/api/files/list', this.buildHttpOptions()).pipe(
+    return this.http.get<PdfFiles>(`${this.baseUrl}/list`).pipe(
       map((res: PdfFiles) => res.files),
       catchError(err => {
         console.error(err);
@@ -24,14 +26,15 @@ export class PdfFilesService {
     );
   }
 
-  getFile(id: string): Observable<any> {
-    return this.http.get(`/api/files/${id}`);
+  getFile(id: string): Observable<ArrayBuffer> {
+    const options = Object.assign(this.buildHttpOptions(), {responseType: 'arraybuffer'});
+    return this.http.get<ArrayBuffer>(`${this.baseUrl}/${id}`, options);
   }
 
   uploadFile(file: File): Observable<PdfFileUpload> {
     const formData: FormData = new FormData();
     formData.append('file', file);
-    return this.http.post<PdfFileUpload>('/api/files/upload', formData, this.buildHttpOptions());
+    return this.http.post<PdfFileUpload>(`${this.baseUrl}/upload`, formData, this.buildHttpOptions());
   }
 
   private buildHttpOptions() {

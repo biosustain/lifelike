@@ -4,6 +4,7 @@
 - [FAQ](#faq)
   - [Table of Contents](#table-of-contents)
   - [How do I set up my developer environment?](#how-do-i-set-up-my-developer-environment)
+  - [How do I add new packages to package.json?](#how-do-i-add-new-packages-to-packagejson)
   - [How do I connect to the neo4j container?](#how-do-i-connect-to-the-neo4j-container)
   - [How do I connect to the postgres container?](#how-do-i-connect-to-the-postgres-container)
   - [How do I debug a running application locally?](#how-do-i-debug-a-running-application-locally)
@@ -15,31 +16,39 @@
   - [How do I create a postgres schema diagram?](#how-do-i-create-a-postgres-schema-diagram)
 
 ## How do I set up my developer environment?
-To run the application, first create the docker images
+To build run the application, first create the docker images
 
-__Step 1__
-```
+__Build__
+```bash
 docker-compose build --no-cache
+```
+
+__Run__
+```bash
+docker-compose up
+```
+OR the *less verbose version*
+```bash
+docker-compose up -d
 ```
 
 __(Optional)__
 To setup `node_modules` folder for local development, run the following command
 ```
-docker-compose run client yarn install
-```
-We could have also used `yarn install` locally, but this poses an issue when we go and mount our volume on Docker if our operating system is not Linux (e.g. if we're using Windows or Mac). Our client container will end up using the incorrect binaries, so by installing through Docker, we ensure we get the correct binaries.
-
-__Step 2__
-Run the application suite through
-```
-docker-compose up -d
+yarn install --frozen-lockfile
 ```
 
-__Step 3__
-Run the following to set up the Neo4J full text indexing
+## How do I add new packages to package.json?
+1. Run the following
 ```
-docker-compose exec appserver python db/neo4jsetup.py
+docker-compose exec client yarn add <package name>
 ```
+
+2. Ensure the package has been installed in the `package.json` and `yarn.lock` file
+
+3. Commit the `package.json` and `yarn.lock` file
+
+Why not install it directly via `yarn install` locally? There's a potential for the package manager to use the incorrect binaries between linux and (macOS/Windows).
 
 __Other Notes__
 1. Run `docker-compose down` to stop the application.
