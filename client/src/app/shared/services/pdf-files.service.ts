@@ -37,6 +37,15 @@ export class PdfFilesService {
     return this.http.post<PdfFileUpload>(`${this.baseUrl}/upload`, formData, this.buildHttpOptions());
   }
 
+  reannotateFile(id: string) {
+    return this.http.get<JSON>(`${this.baseUrl}/${id}/reannotate`).pipe(
+      catchError(err => {
+        console.error(err);
+        return of([]);
+      }),
+    );
+  }
+
   private buildHttpOptions() {
     return {
       headers: new HttpHeaders({
