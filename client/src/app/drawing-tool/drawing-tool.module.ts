@@ -37,9 +37,13 @@ import {
   FriendlyDateStrPipe
 } from './pipes';
 
+import { CopyPasteMapsService } from './services/copy-paste-maps.service';
+
 import {
   PendingChangesGuard
 } from './guards';
+
+import { DrawingToolContextMenuComponent } from './drawing-tool/drawing-tool-context-menu/drawing-tool-context-menu.component';
 import { PaletteComponent } from './drawing-tool/palette/palette.component';
 import { InfoPanelComponent } from './drawing-tool/info-panel/info-panel.component';
 import { PdfViewerDirective } from './pdf-viewer/pdf-viewer.directive';
@@ -53,6 +57,7 @@ import { MapSearchChannelComponent } from './map-search-channel/map-search-chann
     DeleteProjectDialogComponent,
     CopyProjectDialogComponent,
     DrawingToolComponent,
+    DrawingToolContextMenuComponent,
     PdfViewerComponent,
     TruncatePipe,
     FriendlyDateStrPipe,
@@ -84,6 +89,7 @@ import { MapSearchChannelComponent } from './map-search-channel/map-search-chann
     TextFieldModule
   ],
   providers: [
+    CopyPasteMapsService,
     // {
     //   provide: HTTP_INTERCEPTORS,
     //   useClass: AuthenticationService,
