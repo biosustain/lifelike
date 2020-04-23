@@ -5,6 +5,7 @@ import { HttpClient } from '@angular/common/http';
 import { ChartOptions, ChartDataSets } from 'chart.js';
 import { SingleDataSet } from 'ng2-charts';
 import * as pluginDataLabels from 'chartjs-plugin-datalabels';
+import { environment } from 'environments/environment';
 
 interface StatisticsDataResponse {
   [domain: string]: {

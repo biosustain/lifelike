@@ -7,6 +7,8 @@ interface UniversalGraphNode {
   };
   display_name: string;
   hash: string;
+  shape?: string;
+  icon?: any;
   label: string;
   sub_labels: string[];
 }
@@ -28,6 +30,9 @@ interface VisNetworkGraphNode {
   id?: string;
   group?: string;
   size?: number;
+  shape?: string;
+  icon?: any;
+  widthConstraint?: any;
   data?: {
     hyperlink?: string;
     detail?: string;
@@ -66,6 +71,7 @@ interface GraphSelectionData {
   edgeData?: VisNetworkGraphEdge;
   nodeData?: {
     id: string,
+    shape?: string,
     group: string,
     label: string,
     edges: VisNetworkGraphEdge[],
