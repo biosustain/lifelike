@@ -240,7 +240,8 @@ class AnnotationsService:
         keyword_positions.append(
             Annotation.TextPosition(
                 value=keyword,
-                positions=[start_lower_x, start_lower_y, end_upper_x, end_upper_y],  # noqa
+                positions=[
+                    start_lower_x, start_lower_y, end_upper_x, end_upper_y],  # type: ignore
             )
         )
 
@@ -342,7 +343,7 @@ class AnnotationsService:
                     matches.append(
                         Annotation(
                             page_number=token_positions.page_number,
-                            rects=[pos.positions for pos in keyword_positions],
+                            rects=[pos.positions for pos in keyword_positions],  # type: ignore
                             keywords=[k.value for k in keyword_positions],
                             keyword=token_positions.keyword,
                             keyword_length=len(token_positions.keyword),
