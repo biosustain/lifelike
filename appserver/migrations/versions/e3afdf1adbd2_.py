@@ -2,7 +2,7 @@
 and project to include author/public
 
 Revision ID: e3afdf1adbd2
-Revises: 59b6851c654e
+Revises: b032b46c803b
 Create Date: 2020-03-31 22:02:59.992221
 
 """
@@ -13,7 +13,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = 'e3afdf1adbd2'
-down_revision = '59b6851c654e'
+down_revision = 'b032b46c803b'
 branch_labels = None
 depends_on = None
 
