@@ -13,6 +13,7 @@ from neo4japp.database import (
     get_bioc_document_service,
 )
 from neo4japp.models.files import Files
+from neo4japp.exceptions import RecordNotFoundException
 
 bp = Blueprint('files', __name__, url_prefix='/files')
 
@@ -121,9 +122,9 @@ def transform_to_bioc():
 @bp.route('/get_annotations/<id>', methods=['GET'])
 @auth.login_required
 def get_annotations(id):
-    file = Files.query.filter_by(file_id=id).first()
+    file = Files.query.filter_by(file_id=id).one_or_none()
     if not file:
-        return {'error': 'File does not exist'}, 400
+        raise RecordNotFoundException('File does not exist')
     annotations = file.annotations['documents'][0]['passages'][0]['annotations'] + \
         file.custom_annotations
     return jsonify(annotations)
@@ -134,9 +135,9 @@ def get_annotations(id):
 def add_custom_annotation(id):
     annotation_to_add = request.get_json()
     annotation_to_add['user_id'] = g.current_user.id
-    file = Files.query.filter_by(file_id=id).first()
+    file = Files.query.filter_by(file_id=id).one_or_none()
     if not file:
-        return {'error': 'File does not exist'}, 400
+        raise RecordNotFoundException('File does not exist')
     file.custom_annotations = [annotation_to_add, *file.custom_annotations]
     db.session.commit()
     return {'status': 'success'}, 200
