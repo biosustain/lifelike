@@ -1,5 +1,11 @@
 from enum import Enum
 
+# these links are used in annotations and custom annotations
+NCBI_LINK = 'https://ncbi.nlm.nih.gov/gene/?term='
+UNIPROT_LINK = 'https://uniprot.org/uniprot/?query='
+WIKIPEDIA_LINK = 'https://www.google.com/search?q=site:+wikipedia.org+'
+GOOGLE_LINK = 'https://www.google.com/search?q='
+
 PDF_NEW_LINE_THRESHOLD = .30
 COMMON_TWO_LETTER_WORDS = {
     'of', 'to', 'in', 'it', 'is', 'be', 'as', 'at',

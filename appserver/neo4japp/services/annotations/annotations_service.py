@@ -17,6 +17,10 @@ from .constants import (
     EntityIdStr,
     EntityType,
     PDF_NEW_LINE_THRESHOLD,
+    NCBI_LINK,
+    UNIPROT_LINK,
+    WIKIPEDIA_LINK,
+    GOOGLE_LINK,
 )
 from .lmdb_dao import LMDBDao
 from .util import normalize_str
@@ -320,13 +324,19 @@ class AnnotationsService:
 
                     keyword_starting_idx = char_indexes[0]
                     keyword_ending_idx = char_indexes[-1]
+                    link_search_term = f'{token_positions.keyword}'
 
                     meta = Annotation.Meta(
                         keyword_type=token_type,
                         color=color,
                         id=entity_id,
                         id_type=entity['id_type'],
-                        links=Annotation.Meta.Links(),
+                        links=Annotation.Meta.Links(
+                            ncbi=NCBI_LINK + link_search_term,
+                            uniprot=UNIPROT_LINK + link_search_term,
+                            wikipedia=WIKIPEDIA_LINK + link_search_term,
+                            google=GOOGLE_LINK + link_search_term,
+                        ),
                     )
 
                     matches.append(
