@@ -35,11 +35,8 @@ docker-compose up -d
 __(Optional)__
 To setup `node_modules` folder for local development, run the following command
 ```
-yarn install
+yarn install --frozen-lockfile
 ```
-__IMPORTANT NOTE!! READ ME__
-- If you set up the local development, the `yarn.lock` will update. Do not commit the changes. If we want to install new packages, see [How do I add new packages to package.json](#how-do-i-add-new-packages-to-packagejson)
-
 
 ## How do I add new packages to package.json?
 1. Run the following
