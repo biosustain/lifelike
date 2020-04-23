@@ -1,4 +1,6 @@
-"""empty message
+"""Update files model to include custom_annotations.
+We will use this field to preserve annotations added
+by users until they are revised and added to the pipeline
 
 Revision ID: d096d886925b
 Revises: 0101429d1046
