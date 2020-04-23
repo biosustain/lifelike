@@ -5,6 +5,7 @@
     <input #fileInput hidden type="file" accept="application/pdf"
       (change)="onFileInput($event.target.files)">
     <button mat-raised-button [disabled]="!canOpen" (click)="openFile()">Open</button>
+    <button mat-raised-button [disabled]="!canOpen || isReannotating" (click)="reannotate()">Reannotate</button>
   </div>
 
   <mat-progress-bar mode="indeterminate" *ngIf="isUploading"></mat-progress-bar>
