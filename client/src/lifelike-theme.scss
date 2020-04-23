@@ -3,9 +3,9 @@
 @include mat-core();
 
 $light-primary-text: white;
-$dark-primary-text: rgba(black, 0.87);
-$light-secondary-text: rgba(white, 0.7);
-$dark-secondary-text: rgba(black, 0.54);
+$dark-primary-text: black;
+$light-secondary-text: white;
+$dark-secondary-text: black;
 
 $lifelike-primary-colors: (
   50 : #e2f1f5,
