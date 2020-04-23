@@ -26,7 +26,8 @@ class PDFTokenPositionsList(CamelDictMixin):
     coor_obj_per_pdf_page: Dict[int, List[Union[LTChar, LTAnno]]] = attr.ib()  # noqa
 
 
-# IMPORTANT NOTE/TODO: the commented out old code is there
+# IMPORTANT NOTE/TODO: JIRA LL-465
+# the commented out old code is there
 # because we need to resolve this issue of what data
 # structure to use. Up until 4/20 the commented out
 # structure was used in annotations and pdf-viewer
