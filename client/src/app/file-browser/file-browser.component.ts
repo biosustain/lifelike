@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { Params, Router } from '@angular/router';
+import { Router } from '@angular/router';
 import { Observable, Subscription } from 'rxjs';
 import { SelectionModel } from '@angular/cdk/collections';
 import { MatSnackBar } from '@angular/material';
@@ -54,9 +54,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
   }
 
   openFile() {
-    const params: Params = {
-      file_id: this.selection.selected[0].file_id
-    };
-    this.router.navigate(['/pdf-viewer', params]);
+    localStorage.setItem('fileIdForPdfViewer', this.selection.selected[0].file_id);
+    this.router.navigate(['/pdf-viewer']);
   }
 }
