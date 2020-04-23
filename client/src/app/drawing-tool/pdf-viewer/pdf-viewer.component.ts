@@ -1,4 +1,4 @@
-import { Component, AfterViewInit, OnDestroy } from '@angular/core';
+import { Component, OnDestroy } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { Subscription, Subject } from 'rxjs';
 import { PdfFile } from 'app/interfaces/pdf-files.interface';
@@ -6,26 +6,11 @@ import { PdfFilesService } from 'app/shared/services/pdf-files.service';
 
 import {
   PdfAnnotationsService,
-  DataFlowService
 } from '../services';
 
 import {
-  GraphData, Annotation, Location, Meta
+  Annotation, Location, Meta
 } from '../services/interfaces';
-
-const MOCK_FILES: PdfFile[] = [ // TODO: remove once backend is in place
-  {file_id: '0', filename: 'pdf file number 0', creation_date: '', username: ''},
-  {file_id: '1', filename: 'pdf file number 1', creation_date: '', username: ''},
-  {file_id: '2', filename: 'pdf file number 2', creation_date: '', username: ''},
-  {file_id: '3', filename: 'pdf file number 3', creation_date: '', username: ''},
-  {file_id: '4', filename: 'pdf file number 4', creation_date: '', username: ''},
-  {file_id: '5', filename: 'pdf file number 5', creation_date: '', username: ''},
-  {file_id: '6', filename: 'pdf file number 6', creation_date: '', username: ''},
-  {file_id: '7', filename: 'pdf file number 7', creation_date: '', username: ''},
-  {file_id: '8', filename: 'pdf file number 8', creation_date: '', username: ''},
-  {file_id: '9', filename: 'pdf file number 9', creation_date: '', username: ''},
-];
-
 
 @Component({
   selector: 'app-pdf-viewer',
@@ -33,7 +18,7 @@ const MOCK_FILES: PdfFile[] = [ // TODO: remove once backend is in place
   styleUrls: ['./pdf-viewer.component.scss']
 })
 
-export class PdfViewerComponent implements AfterViewInit, OnDestroy {
+export class PdfViewerComponent implements OnDestroy {
 
   annotations: Annotation[] = [];
   files: PdfFile[] = [];
@@ -46,12 +31,10 @@ export class PdfViewerComponent implements AfterViewInit, OnDestroy {
 
   // Type information coming from interface PDFSource at:
   // https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/pdfjs-dist/index.d.ts
-  // TODO: feel free to remove the sample.pdf when desired. In that case, also mocked annotations should be removed
-  pdfData: {url?: string, data?: Uint8Array} = {url: '/assets/pdfs/example3-test.pdf'};
+  pdfData: {url?: string, data?: Uint8Array};
 
   constructor(
     private pdfAnnService: PdfAnnotationsService,
-    private dataFlow: DataFlowService,
     private pdf: PdfFilesService,
   ) {
     this.filesFilterSub = this.filesFilter.valueChanges.subscribe(this.updateFilteredFiles);
@@ -65,19 +48,6 @@ export class PdfViewerComponent implements AfterViewInit, OnDestroy {
       localStorage.removeItem('fileIdForPdfViewer');
       this.openPdf(fileId);
     }
-  }
-
-  ngAfterViewInit() {
-    setTimeout(
-      () => {
-        // TODO: Should this be updated at this point?
-        this.pdfAnnService.getMockupAnnotation()
-        .subscribe(ann => {
-          this.annotations = ann;
-        });
-      },
-      200
-    );
   }
 
   annotationCreated(annotation) {
@@ -128,13 +98,13 @@ export class PdfViewerComponent implements AfterViewInit, OnDestroy {
   }
 
   openPdf(id: string) {
-    // this.pdfFileUrl = `${environment.apiUrl}/api/files/${id}`;
-    // console.log(`url passed to pdf viewer: ${this.pdfFileUrl}`);
-    // this.pdf.getFile(id).subscribe((pdfData: ArrayBuffer) => {
-    // this.annotations = [];
-    // TODO: update annotations?
-    // this.pdfData = {data: new Uint8Array(pdfData)};
-    // });
+    this.annotations = [];
+    this.pdf.getFile(id).subscribe((pdfData: ArrayBuffer) => {
+        this.pdfData = {data: new Uint8Array(pdfData)};
+        this.pdfAnnService.getFileAnnotations(id).subscribe((annotations) => {
+            this.annotations = annotations;
+        });
+    });
   }
 
   ngOnDestroy() {

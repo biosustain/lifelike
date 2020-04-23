@@ -1,4 +1,6 @@
 import { Injectable } from '@angular/core';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+
 import {
   of, Observable
 } from 'rxjs';
@@ -13,13 +15,50 @@ import {
 })
 export class PdfAnnotationsService {
 
-  constructor() { }
+  baseUrl = '/api/files';
+
+  constructor(
+      private http: HttpClient,
+  ) { }
+
+  /**
+   * Create http options with authorization
+   * header if boolean set to true
+   * @param withJwt boolean representing whether to return the options with a jwt
+   */
+  createHttpOptions(withJwt = false) {
+    if (withJwt) {
+      return {
+        headers: new HttpHeaders({
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer ' + localStorage.getItem('access_jwt'),
+        }),
+      };
+    } else {
+      return {
+        headers: new HttpHeaders({
+          'Content-Type': 'application/json',
+        }),
+      };
+    }
+  }
 
   /**
    * Send sample annotations
    */
   public getMockupAnnotation(): Observable<any[]> {
     return of(ANNOTATIONS);
+  }
+
+  /**
+   * Retrieves the annotations of the given file.
+   * @param fileId id of the file
+   */
+  getFileAnnotations(fileId: string): Observable<any> {
+      return this.http.get(
+        this.baseUrl + `/get_annotations/${fileId}`,
+        this.createHttpOptions(true),
+      );
   }
 
   /**

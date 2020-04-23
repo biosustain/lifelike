@@ -121,11 +121,45 @@ def transform_to_bioc():
 @bp.route('/get_annotations/<id>', methods=['GET'])
 @auth.login_required
 def get_annotations(id):
-    data = request.get_json()
+    # data = request.get_json()
+    # project = data['project']
+    project = '1'  # TODO: remove hard coded project
+
     annotations = db.session.query(Files.annotations)\
-        .filter(Files.file_id == id and Files.project == data['project'])\
+        .filter(Files.file_id == id and Files.project == project)\
         .one()
-    return jsonify(annotations)
+
+    # TODO: Should remove this eventually...
+    def map_annotations_to_correct_format(unformatted_annotations: dict):
+        unformatted_annotations_list = unformatted_annotations[0]['documents'][0]['passages'][0]['annotations']  # noqa
+        formatted_annotations_list = []
+
+        for unformatted_annotation in unformatted_annotations_list:
+            formatted_annotation = dict(
+                pageNumber=unformatted_annotation['page_number'],
+                rects=[
+                    [
+                        unformatted_annotation['keyword'][0]['lower_left']['x'],
+                        unformatted_annotation['keyword'][0]['lower_left']['y'],
+                        unformatted_annotation['keyword'][0]['upper_right']['x'],
+                        unformatted_annotation['keyword'][0]['upper_right']['y'],
+                    ]
+                ],
+                keywords=[
+                    unformatted_annotation['keyword'][0]['value'],
+                ],
+                meta=dict(
+                    type=unformatted_annotation['type'],
+                    id=unformatted_annotation['id'],
+                    color=unformatted_annotation['color'],
+                    idType=unformatted_annotation['id_type'],
+                )
+            )
+
+            formatted_annotations_list.append(formatted_annotation)
+        return formatted_annotations_list
+
+    return jsonify(map_annotations_to_correct_format(annotations))
 
 
 def write_file(data, filename):
