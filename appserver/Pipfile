@@ -29,6 +29,7 @@ pdfminer-six = "==20200402"
 graphviz = "==0.13.2"
 lmdb = "==0.98"
 ipython = "==7.3.0"
+sqlalchemy-searchable = "*"
 
 [requires]
 python_version = "3.8.2"
