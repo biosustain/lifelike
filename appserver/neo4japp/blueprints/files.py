@@ -1,7 +1,9 @@
+import io
 import uuid
 from datetime import datetime
 import os
 import json
+from typing import Optional
 from neo4japp.blueprints.auth import auth
 from flask import Blueprint, request, abort, send_from_directory, jsonify, g
 from werkzeug.utils import secure_filename
@@ -20,10 +22,6 @@ bp = Blueprint('files', __name__, url_prefix='/files')
 @bp.route('/upload', methods=['POST'])
 @auth.login_required
 def upload_pdf():
-    annotator = get_annotations_service()
-    bioc_service = get_bioc_document_service()
-    pdf_parser = get_annotations_pdf_parser()
-
     pdf = request.files['file']
     project = '1'  # TODO: remove hard coded project
     binary_pdf = pdf.read()
@@ -32,25 +30,21 @@ def upload_pdf():
     filename = secure_filename(request.files['file'].filename)
     file_id = str(uuid.uuid4())
 
+    annotations_json = annotate(file_id, filename, pdf)
+
+    if annotations_json is None:
+        abort(400, 'Could not annotate file')
+
+    files = Files(
+        file_id=file_id,
+        filename=filename,
+        raw_file=binary_pdf,
+        username=username.id,
+        annotations=annotations_json,
+        project=project
+    )
+
     try:
-        parsed_pdf_chars = pdf_parser.parse_pdf(pdf=pdf)
-        pdf_text = pdf_parser.parse_pdf_high_level(pdf=pdf)
-        annotations = annotator.create_annotations(
-            tokens=pdf_parser.extract_tokens(parsed_chars=parsed_pdf_chars))
-
-        # TODO: Miguel: need to update file_uri with file path
-        bioc = bioc_service.read(text=pdf_text, file_uri=filename)
-        annotations_json = bioc_service.generate_bioc_json(
-            annotations=annotations, bioc=bioc)
-
-        files = Files(
-            file_id=file_id,
-            filename=filename,
-            raw_file=binary_pdf,
-            username=username.id,
-            annotations=annotations_json,
-            project=project
-        )
         db.session.add(files)
         db.session.commit()
         return jsonify({
@@ -132,3 +126,35 @@ def write_file(data, filename):
     # Convert binary data to proper format and write it on Hard Disk
     with open(filename, 'wb') as f:
         f.write(data)
+
+
+def annotate(file_id, filename, pdf_file_object) -> Optional[str]:
+    pdf_parser = get_annotations_pdf_parser()
+    annotator = get_annotations_service()
+    bioc_service = get_bioc_document_service()
+    annotations_json = None
+    try:
+        # TODO: Miguel: need to update file_uri with file path
+        parsed_pdf_chars = pdf_parser.parse_pdf(pdf=pdf_file_object)
+        tokens = pdf_parser.extract_tokens(parsed_chars=parsed_pdf_chars)
+        annotations = annotator.create_annotations(tokens=tokens)
+        pdf_text = pdf_parser.parse_pdf_high_level(pdf=pdf_file_object)
+        bioc = bioc_service.read(text=pdf_text, file_uri=filename)
+        annotations_json = bioc_service.generate_bioc_json(annotations=annotations, bioc=bioc)
+    except Exception:
+        pass
+    return annotations_json
+
+
+@bp.route('/<id>/reannotate')
+@auth.login_required
+def reannotate(id):
+    file = Files.query.filter_by(file_id=id).first()
+    fp = io.BytesIO(file.raw_file)
+    annotations_json = annotate(id, file.filename, fp)
+    fp.close()
+    if annotations_json is None:
+        abort(400, 'Could not annotate file')
+    file.annotations = annotations_json
+    db.session.commit()
+    return jsonify(annotations_json)
