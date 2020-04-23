@@ -1,3 +1,5 @@
+import { OperatingSystems } from 'app/interfaces/shared.interface';
+
 /**
  * Converts a string to hex.
  * TODO: Consider a better way to encode data (e.g. base64/32)
@@ -43,6 +45,42 @@ export function whichTransitionEvent() {
     for (const t in transitions) {
         if ( el.style[t] !== undefined ) {
             return transitions[t];
+        }
+    }
+}
+
+export function getClientOS() {
+    if (navigator.appVersion.indexOf('Linux') !== -1) {
+        return OperatingSystems.LINUX;
+    }
+    if (navigator.appVersion.indexOf('Mac') !== -1) {
+        return OperatingSystems.MAC;
+    }
+    if (navigator.appVersion.indexOf('Win') !== -1) {
+        return OperatingSystems.WINDOWS;
+    }
+    return OperatingSystems.UNKNOWN;
+
+}
+
+export function keyCodeRepresentsPasteEvent(event: any) {
+    const clientOS = getClientOS();
+    switch (clientOS) {
+        case OperatingSystems.MAC: {
+            if (event.code === 'KeyV' && event.metaKey === true) {
+                return true;
+            }
+            return false;
+        }
+        case OperatingSystems.LINUX:
+        case OperatingSystems.WINDOWS: {
+            if (event.code === 'KeyV' && event.ctrlKey === true) {
+                return true;
+            }
+            return false;
+        }
+        default: {
+            return false;
         }
     }
 }

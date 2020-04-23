@@ -2,6 +2,15 @@
     <div class='nav-bar'>
         <mat-icon (click)='changeSize()' class='fr'>menu</mat-icon>
     </div>
+
+    <div class='w-90 center'>
+      <mat-checkbox
+        *ngIf='graphData.id!=="" && isNode && graphData.group === "link"'
+        [(ngModel)]="nodeIsIcon"
+        (change)="linkNodeCheckboxChanged($event)"
+      >Show Link Node as Icon</mat-checkbox>
+    </div>
+
     <form
         *ngIf='graphData.id!==""'
         class='w-90 center'
