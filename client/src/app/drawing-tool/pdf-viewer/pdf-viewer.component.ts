@@ -29,7 +29,7 @@ export class PdfViewerComponent implements OnDestroy {
   goToPosition: Subject<Location> = new Subject<Location>();
   openPdfSub: Subscription;
   pdfViewerReady = false;
-
+  pdfFileLoaded = false;
   // Type information coming from interface PDFSource at:
   // https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/pdfjs-dist/index.d.ts
   pdfData: { url?: string, data?: Uint8Array };
@@ -99,6 +99,7 @@ export class PdfViewerComponent implements OnDestroy {
   }
 
   openPdf(id: string) {
+    this.pdfFileLoaded = false;
     this.pdfViewerReady = false;
     this.openPdfSub = combineLatest(
       this.pdf.getFile(id),
@@ -133,6 +134,14 @@ export class PdfViewerComponent implements OnDestroy {
   }
 
   scrollInPdf(loc: Location) {
+    if(!this.pdfFileLoaded) {
+      console.log('File in the pdf viewer is not loaded yet. So, I cant scroll');
+      return;
+    }
     this.goToPosition.next(loc);
+  }
+
+  loadCompleted(status) {
+    this.pdfFileLoaded = status;
   }
 }
