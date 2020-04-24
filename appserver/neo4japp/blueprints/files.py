@@ -129,34 +129,21 @@ def get_annotations(id):
         .filter(Files.file_id == id and Files.project == project)\
         .one()
 
-    # TODO: Should remove this eventually...
+    # TODO: Should remove this eventually...the annotator should return data readable by the
+    # lib-pdf-viewer-lib, or the lib should conform to what is being returned by the annotator.
+    # Something has to give.
     def map_annotations_to_correct_format(unformatted_annotations: dict):
         unformatted_annotations_list = unformatted_annotations[0]['documents'][0]['passages'][0]['annotations']  # noqa
         formatted_annotations_list = []
 
         for unformatted_annotation in unformatted_annotations_list:
-            formatted_annotation = dict(
-                pageNumber=unformatted_annotation['page_number'],
-                rects=[
-                    [
-                        unformatted_annotation['keyword'][0]['lower_left']['x'],
-                        unformatted_annotation['keyword'][0]['lower_left']['y'],
-                        unformatted_annotation['keyword'][0]['upper_right']['x'],
-                        unformatted_annotation['keyword'][0]['upper_right']['y'],
-                    ]
-                ],
-                keywords=[
-                    keyword['value'] for keyword in unformatted_annotation['keyword']
-                ],
-                meta=dict(
-                    type=unformatted_annotation['type'],
-                    id=unformatted_annotation['id'],
-                    color=unformatted_annotation['color'],
-                    idType=unformatted_annotation['id_type'],
-                )
-            )
+            # Remove the 'keywordType' attribute and replace it with 'type', as the
+            # lib-pdf-viewer-lib does not recognize 'keywordType'
+            keyword_type = unformatted_annotation['meta']['keywordType']
+            del unformatted_annotation['meta']['keywordType']
+            unformatted_annotation['meta']['type'] = keyword_type
 
-            formatted_annotations_list.append(formatted_annotation)
+            formatted_annotations_list.append(unformatted_annotation)
         return formatted_annotations_list
 
     return jsonify(map_annotations_to_correct_format(annotations))
