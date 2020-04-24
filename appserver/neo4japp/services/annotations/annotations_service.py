@@ -6,6 +6,10 @@ from typing import Dict, List, Optional, Set, Tuple, Union
 
 from pdfminer.layout import LTAnno, LTChar
 
+from .annotation_interval_tree import (
+    AnnotationInterval,
+    AnnotationIntervalTree,
+)
 from .constants import (
     COMMON_WORDS,
     TYPO_SYNONYMS,
@@ -15,9 +19,10 @@ from .constants import (
     PDF_NEW_LINE_THRESHOLD,
 )
 from .lmdb_dao import LMDBDao
-from neo4japp.services.annotations.util import normalize_str
+from .util import normalize_str
 
 from neo4japp.data_transfer_objects import (
+    Annotation,
     PDFTokenPositions,
     PDFTokenPositionsList,
 )
@@ -34,14 +39,14 @@ class AnnotationsService:
         self.lmdb_session = lmdb_session
 
         # for word tokens that are typos
-        self.correct_synonyms: Dict[str, str] = dict()
+        self.correct_synonyms: Dict[str, str] = {}
 
-        self.matched_genes: Dict[str, List[PDFTokenPositions]] = dict()
-        self.matched_chemicals: Dict[str, List[PDFTokenPositions]] = dict()
-        self.matched_compounds: Dict[str, List[PDFTokenPositions]] = dict()
-        self.matched_proteins: Dict[str, List[PDFTokenPositions]] = dict()
-        self.matched_species: Dict[str, List[PDFTokenPositions]] = dict()
-        self.matched_diseases: Dict[str, List[PDFTokenPositions]] = dict()
+        self.matched_genes: Dict[str, List[PDFTokenPositions]] = {}
+        self.matched_chemicals: Dict[str, List[PDFTokenPositions]] = {}
+        self.matched_compounds: Dict[str, List[PDFTokenPositions]] = {}
+        self.matched_proteins: Dict[str, List[PDFTokenPositions]] = {}
+        self.matched_species: Dict[str, List[PDFTokenPositions]] = {}
+        self.matched_diseases: Dict[str, List[PDFTokenPositions]] = {}
 
         self.validated_genes_tokens: Set[str] = set()
         self.validated_chemicals_tokens: Set[str] = set()
@@ -155,7 +160,7 @@ class AnnotationsService:
         self,
         curr_page_coor_obj: List[Union[LTChar, LTAnno]],
         indexes: List[int],
-        keyword_positions: List[dict] = [],
+        keyword_positions: List[Annotation.TextPosition] = [],
     ) -> None:
         """Creates the keyword objects with the keyword
         text, along with their coordinate positions and
@@ -212,9 +217,7 @@ class AnnotationsService:
                         curr_page_coor_obj=curr_page_coor_obj,
                         pos_idx=pos_idx-1,
                     )
-
-                    _, prev_lower_y, _, prev_upper_y = curr_page_coor_obj[prev_idx].bbox  # noqa
-                    height = prev_upper_y - prev_lower_y
+                    height = curr_page_coor_obj[prev_idx].height
 
                     # if diff is greater than height ratio
                     # then part of keyword is on a new line
@@ -230,17 +233,19 @@ class AnnotationsService:
                 else:
                     keyword += curr_page_coor_obj[pos_idx].get_text()
 
-        keyword_positions.append({
-            'value': keyword,
-            'lower_left': {
-                'x': start_lower_x,
-                'y': start_lower_y,
-            },
-            'upper_right': {
-                'x': end_upper_x,
-                'y': end_upper_y,
-            }
-        })
+        keyword_positions.append(
+            Annotation.TextPosition(
+                value=keyword,
+                lower_left={
+                    'x': start_lower_x,  # type: ignore
+                    'y': start_lower_y,  # type: ignore
+                },
+                upper_right={
+                    'x': end_upper_x,  # type: ignore
+                    'y': end_upper_y,  # type: ignore
+                },
+            ),
+        )
 
     def _get_annotation(
         self,
@@ -251,7 +256,7 @@ class AnnotationsService:
         id_str: str,
         correct_synonyms: Dict[str, str],
         coor_obj_per_pdf_page: Dict[int, List[Union[LTChar, LTAnno]]],
-    ) -> Tuple[List[dict], Set[str]]:
+    ) -> Tuple[List[Annotation], Set[str]]:
         """Create annotation objects for tokens.
 
         Assumption:
@@ -274,7 +279,7 @@ class AnnotationsService:
                 (1) A synonym that is also a common name, and the other common name appears
                     (1a) how to handle? Currently ignore synonym because can't infer (?)
         """
-        matches: List[dict] = []
+        matches: List[Annotation] = []
         unwanted_matches: Set[str] = set()
 
         tokens_lowercased = set(tokens.keys())
@@ -311,7 +316,7 @@ class AnnotationsService:
                     curr_page_coor_obj = coor_obj_per_pdf_page[
                         token_positions.page_number]
 
-                    keyword_positions: List[dict] = []
+                    keyword_positions: List[Annotation.TextPosition] = []
                     char_indexes = list(token_positions.char_positions.keys())
 
                     self._create_keyword_objects(
@@ -321,21 +326,25 @@ class AnnotationsService:
                     )
 
                     keyword_starting_idx = char_indexes[0]
+                    keyword_ending_idx = char_indexes[-1]
                     keyword_length = 0
 
                     for keyword_obj in keyword_positions:
-                        keyword_length += len(keyword_obj['value'])
+                        keyword_length += len(keyword_obj.value)
 
-                    matches.append({
-                        'page_number': token_positions.page_number,
-                        'keyword': keyword_positions,
-                        'keyword_location_offset': keyword_starting_idx,
-                        'keyword_length': keyword_length,
-                        'type': token_type,
-                        'color': color,
-                        'id': entity_id,
-                        'id_type': entity['id_type'],
-                    })
+                    matches.append(
+                        Annotation(
+                            page_number=token_positions.page_number,
+                            keyword=keyword_positions,
+                            keyword_length=keyword_length,
+                            lo_location_offset=keyword_starting_idx,
+                            hi_location_offset=keyword_ending_idx,
+                            keyword_type=token_type,
+                            color=color,
+                            id=entity_id,
+                            id_type=entity['id_type'],
+                        ),
+                    )
                 else:
                     unwanted_matches.add(word)
         return matches, unwanted_matches
@@ -344,7 +353,7 @@ class AnnotationsService:
         self,
         entity_id_str: str,
         coor_obj_per_pdf_page: Dict[int, List[Union[LTChar, LTAnno]]],
-    ) -> Tuple[List[dict], Set[str]]:
+    ) -> Tuple[List[Annotation], Set[str]]:
         return self._get_annotation(
             tokens=self.matched_genes,
             token_type=EntityType.Genes.value,
@@ -359,7 +368,7 @@ class AnnotationsService:
         self,
         entity_id_str: str,
         coor_obj_per_pdf_page: Dict[int, List[Union[LTChar, LTAnno]]],
-    ) -> Tuple[List[dict], Set[str]]:
+    ) -> Tuple[List[Annotation], Set[str]]:
         return self._get_annotation(
             tokens=self.matched_chemicals,
             token_type=EntityType.Chemicals.value,
@@ -374,7 +383,7 @@ class AnnotationsService:
         self,
         entity_id_str: str,
         coor_obj_per_pdf_page: Dict[int, List[Union[LTChar, LTAnno]]],
-    ) -> Tuple[List[dict], Set[str]]:
+    ) -> Tuple[List[Annotation], Set[str]]:
         return self._get_annotation(
             tokens=self.matched_compounds,
             token_type=EntityType.Compounds.value,
@@ -389,7 +398,7 @@ class AnnotationsService:
         self,
         entity_id_str: str,
         coor_obj_per_pdf_page: Dict[int, List[Union[LTChar, LTAnno]]],
-    ) -> Tuple[List[dict], Set[str]]:
+    ) -> Tuple[List[Annotation], Set[str]]:
         return self._get_annotation(
             tokens=self.matched_proteins,
             token_type=EntityType.Proteins.value,
@@ -404,7 +413,7 @@ class AnnotationsService:
         self,
         entity_id_str: str,
         coor_obj_per_pdf_page: Dict[int, List[Union[LTChar, LTAnno]]],
-    ) -> Tuple[List[dict], Set[str]]:
+    ) -> Tuple[List[Annotation], Set[str]]:
         return self._get_annotation(
             tokens=self.matched_species,
             token_type=EntityType.Species.value,
@@ -419,7 +428,7 @@ class AnnotationsService:
         self,
         entity_id_str: str,
         coor_obj_per_pdf_page: Dict[int, List[Union[LTChar, LTAnno]]],
-    ) -> Tuple[List[dict], Set[str]]:
+    ) -> Tuple[List[Annotation], Set[str]]:
         return self._get_annotation(
             tokens=self.matched_diseases,
             token_type=EntityType.Diseases.value,
@@ -435,7 +444,7 @@ class AnnotationsService:
         annotation_type: str,
         entity_id_str: str,
         coor_obj_per_pdf_page: Dict[int, List[Union[LTChar, LTAnno]]],
-    ) -> Tuple[List[dict], Set[str]]:
+    ) -> Tuple[List[Annotation], Set[str]]:
         funcs = {
             EntityType.Genes.value: self._annotate_genes,
             EntityType.Chemicals.value: self._annotate_chemicals,
@@ -453,25 +462,25 @@ class AnnotationsService:
 
     def _remove_unwanted_keywords(
         self,
-        matches: List[dict],
+        matches: List[Annotation],
         unwanted_keywords: Set[str],
-    ) -> List[dict]:
+    ) -> List[Annotation]:
         """Remove any unwanted keywords from annotations.
         """
         new_matches = []
-        for obj in matches:
+        for match in matches:
             keyword = ''
-            for keyword_obj in obj['keyword']:
-                keyword += keyword_obj['value']
+            for keyword_obj in match.keyword:
+                keyword += keyword_obj.value
 
             if normalize_str(keyword) not in unwanted_keywords:
-                new_matches.append(obj)
+                new_matches.append(match)
         return new_matches
 
     def create_annotations(
         self,
         tokens: PDFTokenPositionsList,
-    ) -> List[dict]:
+    ) -> List[Annotation]:
         self._filter_tokens(tokens=tokens)
 
         matched_genes, unwanted_genes = self.annotate(
@@ -559,4 +568,62 @@ class AnnotationsService:
         unified_annotations.extend(updated_matched_species)
         unified_annotations.extend(updated_matched_diseases)
 
-        return unified_annotations
+        # TODO: this is related to JIRA LL-407/408
+        # create dictionary with page number as keys
+        # otherwise indexes will collide between different pages
+        #
+        # marked as TODO because need to decide how we want to
+        # handle these conflicts; e.g remove them or keep them and let the user decide.
+        # the code is implemented to prepare for that and gather
+        # all of the conflicts in one place
+        #
+        # unified_annotations_dict: Dict[int, List[Annotation]] = {}
+        # for unified in unified_annotations:
+        #     if unified.page_number in unified_annotations_dict:
+        #         unified_annotations_dict[unified.page_number].append(unified)
+        #     else:
+        #         unified_annotations_dict[unified.page_number] = [unified]
+        #
+        # for _, annotations in unified_annotations_dict.items():
+        #     self.find_conflicting_annotations(annotations)
+
+        # sorting descending order for now until the above
+        # TODO is resolved - but shouldn't be removed when it is.
+        # this handles the longer keyword substring take precedence
+        return sorted(
+            unified_annotations,
+            key=lambda annotate: annotate.keyword_length,
+            reverse=True,
+        )
+
+    def find_conflicting_annotations(
+        self,
+        annotations: List[Annotation],
+    ) -> List[Annotation]:
+        """Find all of the annotations that have overlapping
+        index intervals. The intervals implies the same keyword has been
+        annotated several times, each as different entities. So we
+        need to choose which entity to go with.
+
+        TODO:
+
+        Additionally, the overlap also tells us two keywords are
+        either substrings of each other, or two keywords contain a
+        common word between them. For the former, the longer and more
+        specific keyword takes precedence. For the later, still
+        need to consider how to handle.
+        """
+        conflicts = []
+        tree = AnnotationIntervalTree()
+
+        for annotation in annotations:
+            tree.add(
+                AnnotationInterval(
+                    begin=annotation.lo_location_offset,
+                    end=annotation.hi_location_offset,
+                    data=annotation,
+                ),
+            )
+
+        conflicts.extend(tree.split_overlaps())
+        return conflicts

@@ -10,6 +10,8 @@ from bioc import (
     BioCPassage,
 )
 
+from neo4japp.data_transfer_objects import Annotation
+
 
 class BiocDocumentService:
     def __init__(self) -> None:
@@ -58,10 +60,11 @@ class BiocDocumentService:
 
     def generate_bioc_json(
         self,
-        annotations: List[dict],
+        annotations: List[Annotation],
         bioc: BioCCollection,
     ) -> dict:
         bioc_dump = biocjson.dumps(bioc, indent=2)
         bioc = json.loads(bioc_dump)
-        bioc['documents'][0]['passages'][0]['annotations'] = annotations
+        bioc['documents'][0]['passages'][0]['annotations'] = [
+            anno.to_dict() for anno in annotations]
         return bioc
