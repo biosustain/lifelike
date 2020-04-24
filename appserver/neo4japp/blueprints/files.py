@@ -58,10 +58,10 @@ def upload_pdf():
             'filename': filename,
             'status': 'Successfully uploaded'
         })
-    except Exception:
+    except Exception as err:
         return abort(
             400,
-            'File was unable to upload, please try again and make sure the file is a PDF.'
+            f'File was unable to upload, please try again {str(err)}'
         )
 
 
