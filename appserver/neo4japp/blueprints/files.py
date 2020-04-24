@@ -30,33 +30,24 @@ def upload_pdf():
     filename = secure_filename(request.files['file'].filename)
     file_id = str(uuid.uuid4())
 
-    annotations_json = annotate(file_id, filename, pdf)
-
-    if annotations_json is None:
-        abort(400, 'Could not annotate file')
+    annotations = annotate(file_id, filename, pdf)
 
     files = Files(
         file_id=file_id,
         filename=filename,
         raw_file=binary_pdf,
         username=username.id,
-        annotations=annotations_json,
+        annotations=annotations,
         project=project
     )
 
-    try:
-        db.session.add(files)
-        db.session.commit()
-        return jsonify({
-            'file_id': file_id,
-            'filename': filename,
-            'status': 'Successfully uploaded'
-        })
-    except Exception:
-        return abort(
-            400,
-            'File was unable to upload, please try again and make sure the file is a PDF.'
-        )
+    db.session.add(files)
+    db.session.commit()
+    return jsonify({
+        'file_id': file_id,
+        'filename': filename,
+        'status': 'Successfully uploaded'
+    })
 
 
 @bp.route('/list', methods=['GET'])
