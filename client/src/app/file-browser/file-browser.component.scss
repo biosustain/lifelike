@@ -6,3 +6,8 @@
     max-width: 1200px;
   }
 }
+
+// https://v8.material.angular.io/components/table/overview#selection
+.mat-column-select {
+  overflow: initial;
+}

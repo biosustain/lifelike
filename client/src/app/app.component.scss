@@ -1,5 +1,7 @@
+@import "***ARANGO_DB_NAME***-theme.scss";
+
 .vertical-nav {
-  background-color: #2196f3;
+  background-color: mat-color($***ARANGO_DB_NAME***-primary);
 
   a {
     height: 54px;
@@ -13,7 +15,7 @@
     }
 
     mat-icon {
-      color: white;
+      color: $light-primary-text;
     }
   }
 }
