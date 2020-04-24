@@ -146,7 +146,7 @@ def get_annotations(id):
                     ]
                 ],
                 keywords=[
-                    unformatted_annotation['keyword'][0]['value'],
+                    keyword['value'] for keyword in unformatted_annotation['keyword']
                 ],
                 meta=dict(
                     type=unformatted_annotation['type'],
