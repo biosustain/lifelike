@@ -1,6 +1,6 @@
 import { Component, OnDestroy } from '@angular/core';
 import { FormControl } from '@angular/forms';
-import { Subscription, Subject } from 'rxjs';
+import { Subscription, Subject, combineLatest } from 'rxjs';
 import { PdfFile } from 'app/interfaces/pdf-files.interface';
 import { PdfFilesService } from 'app/shared/services/pdf-files.service';
 
@@ -26,12 +26,13 @@ export class PdfViewerComponent implements OnDestroy {
   filesFilterSub: Subscription;
   filteredFiles = this.files;
 
-  pdfFileUrl = '/assets/pdfs/example3-test.pdf'; // TODO: remove asset once backend is in place
-  goToPosition: Subject<Location> =  new Subject<Location>();
+  goToPosition: Subject<Location> = new Subject<Location>();
+  openPdfSub: Subscription;
+  pdfViewerReady = false;
 
   // Type information coming from interface PDFSource at:
   // https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/pdfjs-dist/index.d.ts
-  pdfData: {url?: string, data?: Uint8Array};
+  pdfData: { url?: string, data?: Uint8Array };
 
   constructor(
     private pdfAnnService: PdfAnnotationsService,
@@ -98,17 +99,24 @@ export class PdfViewerComponent implements OnDestroy {
   }
 
   openPdf(id: string) {
-    this.annotations = [];
-    this.pdf.getFile(id).subscribe((pdfData: ArrayBuffer) => {
-        this.pdfData = {data: new Uint8Array(pdfData)};
-        this.pdfAnnService.getFileAnnotations(id).subscribe((annotations) => {
-            this.annotations = annotations;
-        });
+    this.pdfViewerReady = false;
+    this.openPdfSub = combineLatest(
+      this.pdf.getFile(id),
+      this.pdfAnnService.getFileAnnotations(id)
+    ).subscribe(([pdf, ann]) => {
+      this.pdfData = { data: new Uint8Array(pdf) };
+      this.annotations = ann;
+      setTimeout(() => {
+        this.pdfViewerReady = true;
+      }, 10);
     });
   }
 
   ngOnDestroy() {
     this.filesFilterSub.unsubscribe();
+    if (this.openPdfSub) {
+      this.openPdfSub.unsubscribe();
+    }
   }
 
   generateHyperlink(annDef: Annotation): string {
