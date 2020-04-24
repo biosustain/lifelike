@@ -25,6 +25,7 @@
     <div class='w-100 vh-100'>
       <!-- PDF Viewer -->
       <lib-pdf-viewer-lib
+        *ngIf="pdfViewerReady"
         id='pdf-viewer'
         appPdfViewer
         [pdfSrc]="pdfData"
