@@ -121,11 +121,32 @@ def transform_to_bioc():
 @bp.route('/get_annotations/<id>', methods=['GET'])
 @auth.login_required
 def get_annotations(id):
-    data = request.get_json()
+    # data = request.get_json()
+    # project = data['project']
+    project = '1'  # TODO: remove hard coded project
+
     annotations = db.session.query(Files.annotations)\
-        .filter(Files.file_id == id and Files.project == data['project'])\
+        .filter(Files.file_id == id and Files.project == project)\
         .one()
-    return jsonify(annotations)
+
+    # TODO: Should remove this eventually...the annotator should return data readable by the
+    # lib-pdf-viewer-lib, or the lib should conform to what is being returned by the annotator.
+    # Something has to give.
+    def map_annotations_to_correct_format(unformatted_annotations: dict):
+        unformatted_annotations_list = unformatted_annotations[0]['documents'][0]['passages'][0]['annotations']  # noqa
+        formatted_annotations_list = []
+
+        for unformatted_annotation in unformatted_annotations_list:
+            # Remove the 'keywordType' attribute and replace it with 'type', as the
+            # lib-pdf-viewer-lib does not recognize 'keywordType'
+            keyword_type = unformatted_annotation['meta']['keywordType']
+            del unformatted_annotation['meta']['keywordType']
+            unformatted_annotation['meta']['type'] = keyword_type
+
+            formatted_annotations_list.append(unformatted_annotation)
+        return formatted_annotations_list
+
+    return jsonify(map_annotations_to_correct_format(annotations))
 
 
 def write_file(data, filename):
