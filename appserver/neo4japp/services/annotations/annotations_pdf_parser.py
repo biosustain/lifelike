@@ -122,6 +122,7 @@ class AnnotationsPDFParser:
         return text in whitespace or text == '\xa0' or text in punctuation  # noqa
 
     def _is_whitespace(self, text: str) -> bool:
+        # whitespace contains newline
         return text in whitespace or text == '\xa0'
 
     def extract_tokens(
@@ -149,11 +150,14 @@ class AnnotationsPDFParser:
             word = ''
 
             for i, char in enumerate(char_list):
-                if char in whitespace:
+                if char in whitespace and char_list[i-1] not in punctuation:
                     if char_idx_map:
                         word_list.append((word, char_idx_map))
                         char_idx_map = {}
                         word = ''
+                elif char in whitespace and char_list[i-1] in punctuation:
+                    # potentially newline
+                    pass
                 else:
                     word += char
                     char_idx_map[i] = char
@@ -175,7 +179,7 @@ class AnnotationsPDFParser:
                     char_idx_maps = [char_idx_map for _, char_idx_map in word_char_idx_map_pairing]  # noqa
 
                     curr_keyword = ' '.join(words)
-                    if not self._is_whitespace_or_punctuation(text=curr_keyword):
+                    if not self._is_whitespace_or_punctuation(curr_keyword):
                         curr_char_idx_mappings: Dict[int, str] = {}
 
                         # need to keep order here so can't unpack (?)
@@ -193,7 +197,7 @@ class AnnotationsPDFParser:
                         # could potentially have duplicates due to
                         # the sequential increment starting over
                         # at end of page
-                        hashval = token.to_dict()
+                        hashval = compute_hash(token.to_dict())
                         if hashval not in processed_tokens:
                             keyword_tokens.append(token)
                             processed_tokens.add(hashval)
