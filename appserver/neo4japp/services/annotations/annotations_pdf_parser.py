@@ -155,7 +155,7 @@ class AnnotationsPDFParser:
                         word_list.append((word, char_idx_map))
                         char_idx_map = {}
                         word = ''
-                elif char in whitespace and char_list[i-1] in punctuation:
+                elif char in whitespace and char_list[i-1] '-':
                     # potentially newline
                     pass
                 else:
