@@ -42,7 +42,7 @@
     "moment": "^2.24.0",
     "ng2-charts": "^2.3.0",
     "ngrx-store-localstorage": "9.0.0",
-    "pdf-viewer-lib": "git+https://8a6e387c4df4efe82b82790132da7efd7477ebce:x-oauth-basic@github.com/sbrg/pdf-viewer-lib#1.0.6",
+    "pdf-viewer-lib": "git+https://8a6e387c4df4efe82b82790132da7efd7477ebce:x-oauth-basic@github.com/sbrg/pdf-viewer-lib#1.0.7",
     "pdfjs-dist": "2.2.228",
     "qtip2": "3.0.3",
     "rxjs": "~6.4.0",
