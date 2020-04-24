@@ -3,7 +3,7 @@ to unix to allow assigning specific permissions
 to specific authorities
 
 Revision ID: d9627f552779
-Revises: 384e13b3ec54
+Revises: b032b46c803b
 Create Date: 2020-03-15 21:49:41.116433
 
 """
@@ -13,7 +13,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = 'd9627f552779'
-down_revision = '384e13b3ec54'
+down_revision = 'b032b46c803b'
 branch_labels = None
 depends_on = None
 
