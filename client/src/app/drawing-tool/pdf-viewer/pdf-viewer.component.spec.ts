@@ -1,10 +1,11 @@
-import { APP_BASE_HREF } from '@angular/common';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { RouterTestingModule } from '@angular/router/testing';
 
-import { configureTestSuite } from 'ng-bullet';
+import { APP_BASE_HREF } from '@angular/common';
 
 import { DrawingToolModule } from '../drawing-tool.module';
 import { PdfViewerComponent } from './pdf-viewer.component';
+import { configureTestSuite } from 'ng-bullet';
 
 describe('PdfViewerComponent', () => {
     let component: PdfViewerComponent;
@@ -13,7 +14,8 @@ describe('PdfViewerComponent', () => {
     configureTestSuite(() => {
         TestBed.configureTestingModule({
             imports: [
-                DrawingToolModule
+                DrawingToolModule,
+                RouterTestingModule,
             ],
             providers: [
                 {provide: APP_BASE_HREF, useValue : '/' }
