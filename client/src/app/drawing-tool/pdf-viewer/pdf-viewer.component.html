@@ -25,13 +25,19 @@
     <div class='w-100 vh-100'>
       <!-- PDF Viewer -->
       <lib-pdf-viewer-lib
+        *ngIf="pdfViewerReady"
         id='pdf-viewer'
         appPdfViewer
         [pdfSrc]="pdfData"
         [annotations]="annotations"
         [dropAreaIdentifier]="'#dropme'"
         [handleDropArea]="false"
-        (dropEvents)="drop($event)">
+        [goToPosition]="goToPosition"
+        (dropEvents)="drop($event)"
+        (custom-annotation-created)="annotationCreated($event)"
+        (loadCompleted)="loadCompleted($event)"
+        >
+        
       </lib-pdf-viewer-lib>
     </div>
   </mat-sidenav-content>
