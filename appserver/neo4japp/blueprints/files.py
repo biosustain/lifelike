@@ -128,7 +128,7 @@ def write_file(data, filename):
         f.write(data)
 
 
-def annotate(file_id, filename, pdf_file_object) -> Optional[str]:
+def annotate(file_id, filename, pdf_file_object) -> dict:
     pdf_parser = get_annotations_pdf_parser()
     annotator = get_annotations_service()
     bioc_service = get_bioc_document_service()
@@ -146,8 +146,8 @@ def annotate(file_id, filename, pdf_file_object) -> Optional[str]:
 def reannotate(id):
     file = Files.query.filter_by(file_id=id).first()
     fp = io.BytesIO(file.raw_file)
-    annotations_json = annotate(id, file.filename, fp)
+    annotations = annotate(id, file.filename, fp)
     fp.close()
-    file.annotations = annotations_json
+    file.annotations = annotations
     db.session.commit()
-    return jsonify(annotations_json)
+    return jsonify(annotations)
