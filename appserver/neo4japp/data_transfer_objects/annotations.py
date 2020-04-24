@@ -67,6 +67,7 @@ class Annotation(CamelDictMixin):
     page_number: int = attr.ib()
     # keywords and rects are a pair
     # each index in the list correspond to the other
+    # these two replaced the old lower_left/upper_right in TextPosition
     keywords: List[str] = attr.ib()
     rects: List[TextPosition] = attr.ib()
     # the untouched str keyword
