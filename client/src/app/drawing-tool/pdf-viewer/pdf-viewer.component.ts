@@ -44,6 +44,12 @@ export class PdfViewerComponent implements AfterViewInit, OnDestroy {
       this.files = files;
       this.updateFilteredFiles(this.filesFilter.value);
     });
+    // Handles opening a pdf from other pages
+    const fileId = localStorage.getItem('fileIdForPdfViewer');
+    if (fileId) {
+      localStorage.removeItem('fileIdForPdfViewer');
+      this.openPdf(fileId);
+    }
   }
 
   ngAfterViewInit() {
