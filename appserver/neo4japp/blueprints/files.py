@@ -132,15 +132,13 @@ def annotate(file_id, filename, pdf_file_object) -> Optional[str]:
     pdf_parser = get_annotations_pdf_parser()
     annotator = get_annotations_service()
     bioc_service = get_bioc_document_service()
-    annotations_json = None
     # TODO: Miguel: need to update file_uri with file path
     parsed_pdf_chars = pdf_parser.parse_pdf(pdf=pdf_file_object)
     tokens = pdf_parser.extract_tokens(parsed_chars=parsed_pdf_chars)
     annotations = annotator.create_annotations(tokens=tokens)
     pdf_text = pdf_parser.parse_pdf_high_level(pdf=pdf_file_object)
     bioc = bioc_service.read(text=pdf_text, file_uri=filename)
-    annotations_json = bioc_service.generate_bioc_json(annotations=annotations, bioc=bioc)
-    return annotations_json
+    return bioc_service.generate_bioc_json(annotations=annotations, bioc=bioc)
 
 
 @bp.route('/<id>/reannotate')
