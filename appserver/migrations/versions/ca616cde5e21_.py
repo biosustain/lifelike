@@ -1,7 +1,7 @@
 """"Update project model to have URI hash_id
 
 Revision ID: ca616cde5e21
-Revises: e3afdf1adbd2
+Revises: 384e13b3ec54
 Create Date: 2020-04-09 18:59:16.619547
 
 """
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = 'ca616cde5e21'
-down_revision = 'e3afdf1adbd2'
+down_revision = '384e13b3ec54'
 branch_labels = None
 depends_on = None
 
