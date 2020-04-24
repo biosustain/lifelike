@@ -133,16 +133,13 @@ def annotate(file_id, filename, pdf_file_object) -> Optional[str]:
     annotator = get_annotations_service()
     bioc_service = get_bioc_document_service()
     annotations_json = None
-    try:
-        # TODO: Miguel: need to update file_uri with file path
-        parsed_pdf_chars = pdf_parser.parse_pdf(pdf=pdf_file_object)
-        tokens = pdf_parser.extract_tokens(parsed_chars=parsed_pdf_chars)
-        annotations = annotator.create_annotations(tokens=tokens)
-        pdf_text = pdf_parser.parse_pdf_high_level(pdf=pdf_file_object)
-        bioc = bioc_service.read(text=pdf_text, file_uri=filename)
-        annotations_json = bioc_service.generate_bioc_json(annotations=annotations, bioc=bioc)
-    except Exception:
-        pass
+    # TODO: Miguel: need to update file_uri with file path
+    parsed_pdf_chars = pdf_parser.parse_pdf(pdf=pdf_file_object)
+    tokens = pdf_parser.extract_tokens(parsed_chars=parsed_pdf_chars)
+    annotations = annotator.create_annotations(tokens=tokens)
+    pdf_text = pdf_parser.parse_pdf_high_level(pdf=pdf_file_object)
+    bioc = bioc_service.read(text=pdf_text, file_uri=filename)
+    annotations_json = bioc_service.generate_bioc_json(annotations=annotations, bioc=bioc)
     return annotations_json
 
 
@@ -153,8 +150,6 @@ def reannotate(id):
     fp = io.BytesIO(file.raw_file)
     annotations_json = annotate(id, file.filename, fp)
     fp.close()
-    if annotations_json is None:
-        abort(400, 'Could not annotate file')
     file.annotations = annotations_json
     db.session.commit()
     return jsonify(annotations_json)
