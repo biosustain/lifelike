@@ -13,11 +13,11 @@ do
         echo ${file}
         line=$(cat "${file}" | grep "down_revision")
         # take only the hashval
-        name=${line##*= }
-        if [[ ! "${hash_set[$name]}" ]]; then
-            hash_set[${name}]=1
+        hashval=${line##*= }
+        if [[ ! "${hash_set[$hashval]}" ]]; then
+            hash_set[${hashval}]=1
         else
-            echo "Migration integrity check failed. Diverged at ${name}."
+            echo "Migration integrity check failed. Diverged at ${hashval}."
             exit 1
         fi
     fi
