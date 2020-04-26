@@ -1,0 +1,14 @@
+name: Migration integrity check
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Check migration integrity
+      run: ./appserver/bin/migration-integrity-check
