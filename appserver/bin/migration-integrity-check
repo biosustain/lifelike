@@ -1,0 +1,24 @@
+#!/bin/bash
+
+echo "Checking migration integrity"
+
+# Start in appserver directory
+__dir__="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+declare -A hash_set
+
+for file in "${__dir__}/../migrations/versions"/*
+do
+    if [[ -f $file ]]; then
+        echo ${file}
+        line=$(cat "${file}" | grep "down_revision")
+        # take only the hashval
+        name=${line##*= }
+        if [[ ! "${hash_set[$name]}" ]]; then
+            hash_set[${name}]=1
+        else
+            echo "Migration integrity check failed. Diverged at ${name}."
+            exit 1
+        fi
+    fi
+done
