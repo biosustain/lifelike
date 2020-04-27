@@ -1,4 +1,4 @@
-"""empty message
+"""Create projects table since project was taken
 
 Revision ID: 9d90838ba1b5
 Revises: 6f6be267949c
