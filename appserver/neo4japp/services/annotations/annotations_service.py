@@ -227,12 +227,18 @@ class AnnotationsService:
                     # if diff is greater than height ratio
                     # then part of keyword is on a new line
                     if diff > height * PDF_NEW_LINE_THRESHOLD:
-                        self._create_keyword_objects(
+                        _, _, new_upper_x, new_upper_y = self._create_keyword_objects(
                             curr_page_coor_obj=curr_page_coor_obj,
                             indexes=indexes[i:],
                             keyword_positions=keyword_positions,
                             cropbox=cropbox,
                         )
+
+                        if new_upper_x > end_upper_x:
+                            end_upper_x = new_upper_x
+
+                        if new_upper_y > end_upper_y:
+                            end_upper_y = new_upper_y
                         break
                     else:
                         keyword += curr_page_coor_obj[pos_idx].get_text()
@@ -251,6 +257,7 @@ class AnnotationsService:
                     start_lower_x, start_lower_y, end_upper_x, end_upper_y],  # type: ignore
             )
         )
+        return start_lower_x, start_lower_y, end_upper_x, end_upper_y
 
     def _get_annotation(
         self,
