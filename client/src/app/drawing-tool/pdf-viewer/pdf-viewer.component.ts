@@ -173,7 +173,9 @@ export class PdfViewerComponent implements OnDestroy {
     if (this.openPdfSub) {
       this.openPdfSub.unsubscribe();
     }
-    this.addAnnotationSub.unsubscribe();
+    if (this.addAnnotationSub) {
+      this.addAnnotationSub.unsubscribe();
+    }
   }
 
   generateHyperlink(annDef: Annotation): string {
