@@ -185,7 +185,7 @@ class AnnotationsService:
         def _skip_lt_anno(
             curr_page_coor_obj: List[Union[LTChar, LTAnno]],
             pos_idx: int,
-        ) -> int:
+        ) -> Tuple[float, float, float, float]:
             i = pos_idx
             while isinstance(curr_page_coor_obj[i], LTAnno) and i >= 0:
                 i -= 1
@@ -245,10 +245,10 @@ class AnnotationsService:
                 else:
                     keyword += curr_page_coor_obj[pos_idx].get_text()
 
-        start_lower_x += cropbox[0]
-        end_upper_x += cropbox[0]
-        start_lower_y += cropbox[1]
-        end_upper_y += cropbox[1]
+        start_lower_x += cropbox[0]  # type: ignore
+        end_upper_x += cropbox[0]  # type: ignore
+        start_lower_y += cropbox[1]  # type: ignore
+        end_upper_y += cropbox[1]  # type: ignore
 
         keyword_positions.append(
             Annotation.TextPosition(
