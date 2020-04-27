@@ -33,6 +33,8 @@ import { SplitterComponent } from './splitter/splitter.component';
 import { MapSearchChannelComponent } from './map-search-channel/map-search-channel.component';
 import { ExportModalComponent } from './drawing-tool/export-modal/export-modal.component';
 import {MatDialogModule} from "@angular/material/dialog";
+import {MatFormFieldModule} from "@angular/material/form-field";
+import {MatInputModule} from "@angular/material/input";
 import { MapPreviewComponent } from './project-list-view/map-preview/map-preview.component';
 import { MapListComponent } from './project-list-view/map-list/map-list.component';
 import { SharedModule } from 'app/shared/shared.module';
