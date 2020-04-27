@@ -2,7 +2,7 @@
   -webkit-user-select: none;  /* Chrome all / Safari all */
   -moz-user-select: none;     /* Firefox all */
   -ms-user-select: none;      /* IE 10+ */
-  user-select: none; 
+  user-select: none;
 }
 
 @mixin overlay {
@@ -35,7 +35,7 @@ $dark-blue: #3177B8;
 
   hr {
     border: none;
-    border-bottom: 1px solid #eee;    
+    border-bottom: 1px solid #eee;
   }
 
   div {
@@ -47,11 +47,11 @@ $dark-blue: #3177B8;
     max-width: 18em;
     white-space: nowrap;
     overflow: hidden;
-    text-overflow: ellipsis;    
+    text-overflow: ellipsis;
   }
   div:hover {
     background-color: #333;
-    color: #fff;    
+    color: #fff;
   }
   div::before {
     content: '';
@@ -59,7 +59,7 @@ $dark-blue: #3177B8;
     margin-right: 0.75em;
     width: 0.5em;
     height: 1em;
-    display: inline-block;    
+    display: inline-block;
   }
 }
 
@@ -113,11 +113,16 @@ $dark-blue: #3177B8;
         box-shadow: 0 5px 15px rgba(0,0,0,0.3);
       }
     }
-    
+
     #add-project {
       @include overlay();
       bottom: 0;
       right: 0;
+    }
+
+    #search {
+      @include overlay();
+      bottom: 0;
     }
   }
 
