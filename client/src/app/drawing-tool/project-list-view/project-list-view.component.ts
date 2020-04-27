@@ -2,16 +2,16 @@ import {
   Component,
   ViewChild,
   TemplateRef,
-  ViewContainerRef
+  ViewContainerRef, OnInit
 } from '@angular/core';
 import {
   MatDialog
 } from '@angular/material/dialog';
-import { Router } from '@angular/router';
-import { OverlayRef, Overlay } from '@angular/cdk/overlay';
-import { Subscription, fromEvent } from 'rxjs';
-import { TemplatePortal } from '@angular/cdk/portal';
-import { filter, take } from 'rxjs/operators';
+import {Router} from '@angular/router';
+import {OverlayRef, Overlay} from '@angular/cdk/overlay';
+import {Subscription, fromEvent} from 'rxjs';
+import {TemplatePortal} from '@angular/cdk/portal';
+import {filter, take} from 'rxjs/operators';
 
 import {
   ProjectsService,
@@ -34,7 +34,7 @@ import {
 import {
   CopyProjectDialogComponent
 } from './copy-project-dialog/copy-project-dialog.component';
-import { MatSnackBar, MatTabChangeEvent } from '@angular/material';
+import {MatSnackBar, MatTabChangeEvent} from '@angular/material';
 
 import * as $ from 'jquery';
 
@@ -56,14 +56,16 @@ const sort = (a: Project, b: Project) => {
     return -1;
   }
 };
-import { isNullOrUndefined } from 'util';
+import {isNullOrUndefined} from 'util';
+import {FormControl, FormGroup} from '@angular/forms';
 
 @Component({
   selector: 'app-project-list-view',
   templateUrl: './project-list-view.component.html',
   styleUrls: ['./project-list-view.component.scss']
 })
-export class ProjectListViewComponent {
+export class ProjectListViewComponent implements OnInit {
+
   /** Template to inject contextmenu in */
   @ViewChild('projectMenu', {static: false}) projectMenu: TemplateRef<any>;
   overlayRef: OverlayRef | null;
@@ -101,23 +103,46 @@ export class ProjectListViewComponent {
   privateDisplayMode = 'personal';
   displayIndex = 0;
 
+  /** Search form implementation */
+  searchForm: FormGroup = new FormGroup({
+    term: new FormControl('')
+  });
+  searchFormSubscription: Subscription;
+
+  /**
+   * List of projects owned by user and found by the search
+   */
+  searchResults: Project[] = [];
+
+
+  ngOnInit(): void {
+    this.searchFormSubscription = this.searchForm.valueChanges.subscribe(val => {
+      this.searchForm.setErrors({required: null});
+    });
+  }
+
   get displayMode() {
     return this.privateDisplayMode;
   }
+
   set displayMode(val) {
     this.privateDisplayMode = val;
-    this.displayIndex = val === 'personal' ? 0 : 1;
+    this.displayIndex = val === 'personal' ? 0 : val === 'community' ? 1 : 2;
     this.projects.sort(sort);
   }
 
   get node() {
-    if (!this.focusedEntity) { return null; }
+    if (!this.focusedEntity) {
+      return null;
+    }
 
     return this.focusedEntity.nodeData;
   }
 
   get emptyGraph() {
-    if (!this.selectedProject) { return true; }
+    if (!this.selectedProject) {
+      return true;
+    }
 
     return this.selectedProject.graph.nodes.length ? false : true;
   }
@@ -201,8 +226,10 @@ export class ProjectListViewComponent {
    * if so, call delete API on project
    * @param project represents a project object
    */
-  deleteProject(project= null) {
-    if (!project) { project = this.selectedProject; }
+  deleteProject(project = null) {
+    if (!project) {
+      project = this.selectedProject;
+    }
 
     const dialogRef = this.dialog.open(DeleteProjectDialogComponent, {
       width: '40%',
@@ -214,19 +241,20 @@ export class ProjectListViewComponent {
         this.projectService.deleteProject(project)
           .subscribe(resp => {
 
-            this.projects = this.projects.filter(p => p.id !== project.id);
-            this.publicProjects = this.publicProjects.filter(p => p.id !== project.id);
+              this.projects = this.projects.filter(p => p.id !== project.id);
+              this.publicProjects = this.publicProjects.filter(p => p.id !== project.id);
 
-            if (project === this.selectedProject) {
-              this.selectedProject = null;
+              if (project === this.selectedProject) {
+                this.selectedProject = null;
 
 
-              $('.list-view').animate({
-                width: '100%'
-              }, 400, () => {});
+                $('.list-view').animate({
+                  width: '100%'
+                }, 400, () => {
+                });
+              }
             }
-          }
-        );
+          );
       }
     });
   }
@@ -257,7 +285,7 @@ export class ProjectListViewComponent {
             (data) => {
               this.projects.push(data.project);
               this.displayMode = 'personal';
-          });
+            });
       }
     });
   }
@@ -267,8 +295,10 @@ export class ProjectListViewComponent {
    * through a confirmation dialog, then call create API on project
    * @param project represents a project object
    */
-  copyProject(project: Project= null) {
-    if (!project) { project = this.selectedProject; }
+  copyProject(project: Project = null) {
+    if (!project) {
+      project = this.selectedProject;
+    }
 
     const dialogRef = this.dialog.open(CopyProjectDialogComponent, {
       width: '40%',
@@ -276,7 +306,9 @@ export class ProjectListViewComponent {
     });
 
     dialogRef.afterClosed().subscribe(result => {
-      if (!result) { return; }
+      if (!result) {
+        return;
+      }
 
       this.projectService.addProject(result)
         .subscribe((data) => {
@@ -289,19 +321,21 @@ export class ProjectListViewComponent {
   /**
    * Display selected project with graph preview
    * and meta-data
-   * @param proj represents a project object
+   * @param project represents a project object
    */
-  pickProject(proj: Project) {
-    if (this.overlayRef) { return; }
+  pickProject(project: Project) {
+    if (this.overlayRef) {
+      return;
+    }
 
-    this.selectedProject = proj;
+    this.selectedProject = project;
 
     setTimeout(
       () => {
         const container = document.getElementById('canvas');
         this.visGraph = new NetworkVis(container);
 
-        const g = this.projectService.universe2Vis(proj.graph);
+        const g = this.projectService.universe2Vis(project.graph);
 
         setTimeout(
           () => {
@@ -370,7 +404,7 @@ export class ProjectListViewComponent {
     // Position overlay to top right corner
     // of cursor context menu click
     const positionStrategy = this.overlay.position()
-      .flexibleConnectedTo({ x, y })
+      .flexibleConnectedTo({x, y})
       .withPositions([
         {
           originX: 'end',
@@ -420,7 +454,7 @@ export class ProjectListViewComponent {
    */
   close() {
     if (!isNullOrUndefined(this.sub)) {
-        this.sub.unsubscribe();
+      this.sub.unsubscribe();
     }
     if (this.overlayRef) {
       this.overlayRef.dispose();
@@ -460,5 +494,22 @@ export class ProjectListViewComponent {
 
     $('#canvas-container').animate({height: containerHeight}, 600);
     $('#map-panel').animate({height: panelHeight}, 600);
+  }
+
+  goToSearch() {
+    this.displayIndex = 2;
+  }
+
+  searchForMaps(event) {
+    if (event.key === 'Enter') {
+      this.searchResults = [];
+      this.projectService.searchForMaps(this.searchForm.value.term)
+        .subscribe(
+          (data) => {
+            this.searchResults = (
+              data.projects as Project[]
+            );
+          });
+    }
   }
 }
