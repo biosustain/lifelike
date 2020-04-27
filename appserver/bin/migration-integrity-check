@@ -5,20 +5,13 @@ echo "Checking migration integrity"
 # Start in appserver directory
 __dir__="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-declare -A hash_set
+cd ${__dir__}/../migrations
 
-for file in "${__dir__}/../migrations/versions"/*
-do
-    if [[ -f $file ]]; then
-        echo ${file}
-        line=$(cat "${file}" | grep "down_revision")
-        # take only the hashval
-        hashval=${line##*= }
-        if [[ ! "${hash_set[$hashval]}" ]]; then
-            hash_set[${hashval}]=1
-        else
-            echo "Migration integrity check failed. Diverged at ${hashval}."
-            exit 1
-        fi
-    fi
-done
+conflict=$(alembic branches)
+
+if [[ ${conflict} ]]
+then
+    echo "Migration integrity check failed. Diverged at:"
+    echo "${conflict}"
+    exit 1
+fi
