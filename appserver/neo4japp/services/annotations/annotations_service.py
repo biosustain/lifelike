@@ -166,7 +166,7 @@ class AnnotationsService:
         indexes: List[int],
         cropbox: Tuple[int, int],
         keyword_positions: List[Annotation.TextPosition] = [],
-    ) -> None:
+    ) -> Tuple[float, float, float, float]:
         """Creates the keyword objects with the keyword
         text, along with their coordinate positions and
         page number.
@@ -185,7 +185,7 @@ class AnnotationsService:
         def _skip_lt_anno(
             curr_page_coor_obj: List[Union[LTChar, LTAnno]],
             pos_idx: int,
-        ) -> Tuple[float, float, float, float]:
+        ) -> int:
             i = pos_idx
             while isinstance(curr_page_coor_obj[i], LTAnno) and i >= 0:
                 i -= 1
