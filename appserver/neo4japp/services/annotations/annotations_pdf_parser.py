@@ -151,11 +151,15 @@ class AnnotationsPDFParser:
             word = ''
 
             for i, char in enumerate(char_list):
-                if char in whitespace:
+                if char in whitespace and char_list[i-1] != '-':
                     if char_idx_map:
                         word_list.append((word, char_idx_map))
                         char_idx_map = {}
                         word = ''
+                elif char in whitespace and char_list[i-1] == '-':
+                    # word is possibly on new line
+                    # so ignore the space
+                    pass
                 else:
                     if i + 1 == max_length:
                         # reached end so add whatever is left
