@@ -11,4 +11,6 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: Check migration integrity
-      run: ./appserver/bin/migration-integrity-check
+      run: |
+        docker-compose -f docker-compose.pytest-workflow.yml up --build -d
+        ./appserver/bin/migration-integrity-check
