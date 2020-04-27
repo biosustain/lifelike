@@ -25,18 +25,21 @@ directory = path.realpath(path.dirname(__file__))
             str_per_pdf_page={
                 1: ['I', ' ', 'a', 'm', ' ', 'a', ' ', 's', 'e', 'n', 't', 'e', 'n', 'c', 'e', '\n'],  # noqa
             },
+            cropbox_per_page={1: [9, 9]},
         )),
         (2, PDFParsedCharacters(
             coor_obj_per_pdf_page=None,
             str_per_pdf_page={
                 1: ['E', '.', ' ', '\n', 'C', 'o', 'l', 'i'],  # noqa
             },
+            cropbox_per_page={1: [9, 9]},
         )),
         (3, PDFParsedCharacters(
             coor_obj_per_pdf_page=None,
             str_per_pdf_page={
                 1: ['T', 'y', 'p', 'h', '-', 'i', 'm', 'u', 'r', 'i', 'u', 'm'],  # noqa
             },
+            cropbox_per_page={1: [9, 9]},
         )),
     ],
 )
