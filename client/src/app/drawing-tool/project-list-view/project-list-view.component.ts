@@ -74,6 +74,7 @@ export class ProjectListViewComponent {
   }
 
   get isItMine() {
+    if (!this.selectedProject) { return false; }
     return this.userId === this.selectedProject.user_id;
   }
 

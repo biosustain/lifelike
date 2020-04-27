@@ -6,12 +6,8 @@
 
 #map-channel {
   #map-list-container {
-
     position: relative;
     background: #ECF0F1;
-    float: left;
-    width: 25%;
-    height: 100vh;
 
     #add-project {
       @include overlay();
@@ -21,11 +17,6 @@
   }
 
   #map-preview.empty {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-
     p {
       font-size: 2.25rem;
       color: #707070;
@@ -37,22 +28,6 @@
     float: left;
     width: 75%;
     height: 100vh;
-
-    #empty-graph {
-      width: 100%;
-      height: 70vh;
-      position: relative;
-
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-
-      p {
-        font-size: 2.25rem;
-        color: #707070;
-      }
-    }
 
     #canvas-container {
       width: 100%;
