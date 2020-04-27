@@ -3,7 +3,7 @@ import uuid
 from datetime import datetime
 import os
 import json
-from typing import Optional
+from typing import List
 from neo4japp.blueprints.auth import auth
 from flask import Blueprint, request, abort, send_from_directory, jsonify, g
 from werkzeug.utils import secure_filename
@@ -153,13 +153,17 @@ def annotate(file_id, filename, pdf_file_object) -> dict:
     return bioc_service.generate_bioc_json(annotations=annotations, bioc=bioc)
 
 
-@bp.route('/<id>/reannotate')
+@bp.route('/reannotate', methods=['POST'])
 @auth.login_required
-def reannotate(id):
-    file = Files.query.filter_by(file_id=id).first()
-    fp = io.BytesIO(file.raw_file)
-    annotations = annotate(id, file.filename, fp)
-    fp.close()
-    file.annotations = annotations
-    db.session.commit()
-    return jsonify(annotations)
+def reannotate():
+    ids = request.get_json()
+    succeeded: List[str] = []
+    for id in ids:
+        file = Files.query.filter_by(file_id=id).first()
+        fp = io.BytesIO(file.raw_file)
+        annotations = annotate(id, file.filename, fp)
+        fp.close()
+        file.annotations = annotations
+        db.session.commit()
+        succeeded.append(id)
+    return jsonify(succeeded)
