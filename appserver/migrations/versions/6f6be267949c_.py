@@ -1,7 +1,8 @@
-"""empty message
+"""Update file migrations schema and relation
+with projects table through id instead of foreign key ... =(
 
 Revision ID: 6f6be267949c
-Revises: 59b6851c654e
+Revises: ca616cde5e21
 Create Date: 2020-04-14 10:28:34.294973
 
 """
@@ -12,7 +13,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = '6f6be267949c'
-down_revision = '59b6851c654e'
+down_revision = 'ca616cde5e21'
 branch_labels = None
 depends_on = None
 
