@@ -1,0 +1,16 @@
+name: Migration integrity check
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Check migration integrity
+      run: |
+        docker-compose -f docker-compose.pytest-workflow.yml up --build -d
+        docker-compose -f docker-compose.pytest-workflow.yml exec -T appserver ./bin/migration-integrity-check

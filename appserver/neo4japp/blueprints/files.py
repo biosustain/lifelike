@@ -3,7 +3,7 @@ from datetime import datetime
 import os
 import json
 from neo4japp.blueprints.auth import auth
-from flask import Blueprint, request, abort, send_from_directory, jsonify, g
+from flask import Blueprint, request, abort, jsonify, g, make_response
 from werkzeug.utils import secure_filename
 
 from neo4japp.database import (
@@ -95,14 +95,10 @@ def list_files():
 @bp.route('/<id>', methods=['GET'])
 @auth.login_required
 def get_pdf(id):
-    project = '1'  # TODO: remove hard coded project
-    file, filename = db.session.query(Files.raw_file, Files.filename) \
-        .filter(Files.file_id == id and Files.project == project)\
-        .one()
-    # TODO: Remove writing in filesystem part, this is not needed should be tackle in next version
-    outdir = os.path.abspath(os.getcwd())
-    write_file(file, os.path.join(outdir, filename))
-    return send_from_directory(outdir, filename)
+    entry = db.session.query(Files.raw_file).filter(Files.file_id == id).one()
+    res = make_response(entry.raw_file)
+    res.headers['Content-Type'] = 'application/pdf'
+    return res
 
 
 @bp.route('/bioc', methods=['GET'])
@@ -164,9 +160,3 @@ def add_custom_annotation(id):
     file.custom_annotations = [annotation_to_add, *file.custom_annotations]
     db.session.commit()
     return {'status': 'success'}, 200
-
-
-def write_file(data, filename):
-    # Convert binary data to proper format and write it on Hard Disk
-    with open(filename, 'wb') as f:
-        f.write(data)
