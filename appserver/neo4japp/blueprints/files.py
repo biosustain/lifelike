@@ -3,7 +3,7 @@ from datetime import datetime
 import os
 import json
 from neo4japp.blueprints.auth import auth
-from flask import Blueprint, request, abort, send_from_directory, jsonify, g
+from flask import Blueprint, request, abort, jsonify, g, make_response
 from werkzeug.utils import secure_filename
 
 from neo4japp.database import (
@@ -94,14 +94,10 @@ def list_files():
 @bp.route('/<id>', methods=['GET'])
 @auth.login_required
 def get_pdf(id):
-    project = '1'  # TODO: remove hard coded project
-    file, filename = db.session.query(Files.raw_file, Files.filename) \
-        .filter(Files.file_id == id and Files.project == project)\
-        .one()
-    # TODO: Remove writing in filesystem part, this is not needed should be tackle in next version
-    outdir = os.path.abspath(os.getcwd())
-    write_file(file, os.path.join(outdir, filename))
-    return send_from_directory(outdir, filename)
+    entry = db.session.query(Files.raw_file).filter(Files.file_id == id).one()
+    res = make_response(entry.raw_file)
+    res.headers['Content-Type'] = 'application/pdf'
+    return res
 
 
 @bp.route('/bioc', methods=['GET'])
@@ -121,14 +117,29 @@ def transform_to_bioc():
 @bp.route('/get_annotations/<id>', methods=['GET'])
 @auth.login_required
 def get_annotations(id):
-    data = request.get_json()
+    # data = request.get_json()
+    # project = data['project']
+    project = '1'  # TODO: remove hard coded project
+
     annotations = db.session.query(Files.annotations)\
-        .filter(Files.file_id == id and Files.project == data['project'])\
+        .filter(Files.file_id == id and Files.project == project)\
         .one()
-    return jsonify(annotations)
 
+    # TODO: Should remove this eventually...the annotator should return data readable by the
+    # lib-pdf-viewer-lib, or the lib should conform to what is being returned by the annotator.
+    # Something has to give.
+    def map_annotations_to_correct_format(unformatted_annotations: dict):
+        unformatted_annotations_list = unformatted_annotations[0]['documents'][0]['passages'][0]['annotations']  # noqa
+        formatted_annotations_list = []
 
-def write_file(data, filename):
-    # Convert binary data to proper format and write it on Hard Disk
-    with open(filename, 'wb') as f:
-        f.write(data)
+        for unformatted_annotation in unformatted_annotations_list:
+            # Remove the 'keywordType' attribute and replace it with 'type', as the
+            # lib-pdf-viewer-lib does not recognize 'keywordType'
+            keyword_type = unformatted_annotation['meta']['keywordType']
+            del unformatted_annotation['meta']['keywordType']
+            unformatted_annotation['meta']['type'] = keyword_type
+
+            formatted_annotations_list.append(unformatted_annotation)
+        return formatted_annotations_list
+
+    return jsonify(map_annotations_to_correct_format(annotations))
