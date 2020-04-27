@@ -11,7 +11,7 @@ The `file_id` column replaced the original
 purpose of the `id` column.
 
 Revision ID: 59b6851c654e
-Revises: d9627f552779
+Revises: e3afdf1adbd2
 Create Date: 2020-04-03 11:52:12.693738
 
 """
@@ -22,7 +22,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = '59b6851c654e'
-down_revision = 'd9627f552779'
+down_revision = 'e3afdf1adbd2'
 branch_labels = None
 depends_on = None
 
