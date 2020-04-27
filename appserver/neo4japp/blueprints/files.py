@@ -161,9 +161,13 @@ def reannotate():
     for id in ids:
         file = Files.query.filter_by(file_id=id).first()
         fp = io.BytesIO(file.raw_file)
-        annotations = annotate(id, file.filename, fp)
+        try:
+            annotations = annotate(id, file.filename, fp)
+        except Exception:
+            pass
+        else:
+            file.annotations = annotations
+            db.session.commit()
+            succeeded.append(id)
         fp.close()
-        file.annotations = annotations
-        db.session.commit()
-        succeeded.append(id)
     return jsonify(succeeded)
