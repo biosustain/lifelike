@@ -97,7 +97,7 @@ export class PdfViewerComponent implements OnDestroy {
         }
       }
     };
-    
+
     this.addAnnotationSub = this.pdfAnnService.addCustomAnnotation(this.currentFileId, annotationToAdd).subscribe(
       response => {
         this.addedAnnotation = annotationToAdd;
