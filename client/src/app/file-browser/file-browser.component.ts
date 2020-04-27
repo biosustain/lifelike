@@ -1,9 +1,9 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
-import { Observable, Subscription } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { SelectionModel } from '@angular/cdk/collections';
 import { MatSnackBar } from '@angular/material';
-import { PdfFile, PdfFileUpload } from 'app/interfaces/pdf-files.interface';
+import { AnnotationStatus, PdfFile, PdfFileUpload } from 'app/interfaces/pdf-files.interface';
 import { PdfFilesService } from 'app/shared/services/pdf-files.service';
 
 
@@ -14,9 +14,9 @@ import { PdfFilesService } from 'app/shared/services/pdf-files.service';
 })
 export class FileBrowserComponent implements OnInit, OnDestroy {
   displayedColumns: string[] = ['select', 'filename', 'creationDate', 'username', 'annotation'];
-  dataSource: Observable<PdfFile[]>;
+  dataSource: PdfFile[] = [];
   isUploading = false;
-  selection = new SelectionModel<PdfFile>(false, []);
+  selection = new SelectionModel<PdfFile>(true, []);
   selectionChanged: Subscription;
   canOpen = false;
   isReannotating = false;
@@ -28,12 +28,25 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit() {
-    this.dataSource = this.pdf.getFiles();
-    this.selectionChanged = this.selection.changed.subscribe(() => this.canOpen = this.selection.hasValue());
+    this.updateDataSource();
+    this.selectionChanged = this.selection.changed.subscribe(() => this.canOpen = this.selection.selected.length === 1);
   }
 
   ngOnDestroy() {
     this.selectionChanged.unsubscribe();
+  }
+
+  updateDataSource() {
+    this.pdf.getFiles().subscribe(
+      (files: PdfFile[]) => {
+        // We assume that fetched files are correctly annotated
+        files.forEach((file: PdfFile) => file.annotation_status = AnnotationStatus.Success);
+        this.dataSource = files;
+      },
+      err => {
+        this.snackBar.open(`Cannot fetch list of files: ${err}`, 'Close', {duration: 10000});
+      }
+    );
   }
 
   onFileInput(files: FileList) {
@@ -45,7 +58,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
       (res: PdfFileUpload) => {
         this.isUploading = false;
         this.snackBar.open(`File uploaded: ${res.filename}`, 'Close', {duration: 5000});
-        this.dataSource = this.pdf.getFiles(); // updates the list on successful upload
+        this.updateDataSource(); // updates the list on successful upload
       },
       err => {
         this.isUploading = false;
@@ -61,17 +74,42 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
 
   reannotate() {
     this.isReannotating = true;
-    this.pdf.reannotateFile(this.selection.selected[0].file_id).subscribe(
-      (res) => {
+    const ids: string[] = this.selection.selected.map((file: PdfFile) => {
+      file.annotation_status = AnnotationStatus.Loading;
+      return file.file_id;
+    });
+    this.pdf.reannotateFiles(ids).subscribe(
+      (res: string[]) => {
+        for (const id of ids) {
+          // pick file by id
+          const file: PdfFile = this.dataSource.find((file: PdfFile) => file.file_id === id);
+          // check if it was successfully annotated
+          file.annotation_status = res.includes(id) ? AnnotationStatus.Success : AnnotationStatus.Failure;
+        }
         this.isReannotating = false;
-        this.snackBar.open(`Reannotation succeeded`, 'Close', {duration: 5000});
+        this.snackBar.open(`Reannotation completed`, 'Close', {duration: 5000});
         console.log('reannotation result', res);
       },
       err => {
+        for (const id of ids) {
+          // pick file by id
+          const file: PdfFile = this.dataSource.find((file: PdfFile) => file.file_id === id);
+          // mark it as failed
+          file.annotation_status = AnnotationStatus.Failure;
+        }
         this.isReannotating = false;
         this.snackBar.open(`Reannotation failed`, 'Close', {duration: 10000});
         console.error('reannotation error', err);
       }
     );
+  }
+
+  // Adapted from https://v8.material.angular.io/components/table/overview#selection
+  masterToggle() {
+    if (this.selection.selected.length === this.dataSource.length) {
+      this.selection.clear();
+    } else {
+      this.selection.select(...this.dataSource);
+    }
   }
 }
