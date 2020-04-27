@@ -340,3 +340,56 @@ def get_project_image(project_id, format):
         )
 
     return graph.pipe()
+
+
+@bp.route('/projects/<string:project_id>/<string:format>', methods=['get'])
+@auth.login_required
+def get_project_image(project_id, format):
+    """
+    Gets a PDF file from the project drawing
+    """
+
+    colormap = {
+        'disease': "#F3AB4A",
+        'species': '#3177B8',
+        'chemical': '#71B267',
+        'gene': '#563A9F',
+        'study': '#005662',
+        'observation': '#9A0007',
+        'entity': 'black'
+    }
+
+    user = g.current_user
+
+    # Pull up project by id
+    data_source = Project.query.filter_by(
+        id=project_id,
+        user_id=user.id
+    ).first_or_404()
+
+    json_graph = data_source.graph
+    graph = gv.Digraph('POC', comment=data_source.description, engine='neato', graph_attr=(('margin', '3'),), format=format)  # noqa
+    for node in json_graph['nodes']:
+        params = {
+            'name': node['hash'],
+            'label': node['display_name'],
+            'pos': f"{node['data']['x'] / 55},{-node['data']['y'] / 55}!",
+            'shape': 'box',
+            'style': 'rounded,filled',
+            'color': colormap[node['label']],
+            'fontcolor': 'white',
+            'fontname': 'sans-serif',
+            'fillcolor': colormap[node['label']],
+            'margin': "0.2,0.0"
+        }
+        graph.node(**params)
+
+    for edge in json_graph['edges']:
+        graph.edge(
+            edge['from'],
+            edge['to'],
+            edge['label'],
+            color='blue'
+        )
+
+    return graph.pipe()
