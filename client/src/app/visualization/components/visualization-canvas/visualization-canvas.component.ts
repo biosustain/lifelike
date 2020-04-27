@@ -830,6 +830,10 @@ export class VisualizationCanvasComponent implements OnInit {
             this.onDragStartCallback(params);
         });
 
+        this.networkGraph.on('dragEnd', (params) => {
+            this.onDragEndCallback(params);
+        });
+
         this.networkGraph.on('hoverNode', (params) => {
             this.onHoverNodeCallback(params);
         });
@@ -875,7 +879,11 @@ export class VisualizationCanvasComponent implements OnInit {
 
     onDragStartCallback(params: any) {
         this.hideAllTooltips();
-        this.updateSelectedNodes(); // Dragging a node doesn't fire node selection, but it is selected after dragging finishes, so update
+    }
+
+    onDragEndCallback(params: any) {
+        // Dragging a node doesn't fire node selection, but it is selected after dragging finishes, so update
+        this.updateSelectedNodes();
     }
 
     onHoverNodeCallback(params: any) {
