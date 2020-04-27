@@ -6,26 +6,26 @@
 
     <div id='map-list'>
       <h1>Maps</h1>
-      <mat-tab-group 
+      <mat-tab-group
         [selectedIndex]="displayIndex"
         (selectedTabChange)="toggleView($event)">
         <mat-tab label="Personal">
-          <div 
+          <div
             class='map shadow'
             *ngFor='let project of projects'
             (contextmenu)="open($event, project)"
             (click)='pickProject(project)'>
             <h3>
               {{
-                project.label | truncate:['40']
+              project.label | truncate:['40']
               }}
             </h3>
             <p class='author'>
-              By {{project?.author}} 
+              By {{project?.author}}
             </p>
             <p class='date'>
               Modified {{project?.date_modified | friendlyDateStr}}
-            </p> 
+            </p>
           </div>
         </mat-tab>
         <mat-tab label="Community">
@@ -36,20 +36,51 @@
             (click)='pickProject(project)'>
             <h3>
               {{
-                project.label | truncate:['40']
+              project.label | truncate:['40']
               }}
             </h3>
             <p class='author'>
-              By {{project?.author}} 
+              By {{project?.author}}
             </p>
             <p class='date'>
               Modified {{project?.date_modified | friendlyDateStr}}
-            </p> 
+            </p>
+          </div>
+        </mat-tab>
+        <mat-tab label="Search">
+          <form
+            class='map shadow'
+            [formGroup]='searchForm'>
+            <mat-form-field
+              class='w-100'
+              appearance='legacy'>
+              <mat-label>Search in maps</mat-label>
+              <input formControlName='term' matInput (keyup)='searchForMaps($event)'>
+              <mat-icon matSuffix>search</mat-icon>
+              <mat-hint>Write to search concept across all maps</mat-hint>
+            </mat-form-field>
+          </form>
+          <div
+            class='map shadow'
+            *ngFor='let project of searchResults'
+            (contextmenu)="open($event, project)"
+            (click)='pickProject(project)'>
+            <h3>
+              {{
+              project.label | truncate:['40']
+              }}
+            </h3>
+            <p class='author'>
+              By {{project?.author}}
+            </p>
+            <p class='date'>
+              Modified {{project?.date_modified | friendlyDateStr}}
+            </p>
           </div>
         </mat-tab>
       </mat-tab-group>
     </div>
-    <button 
+    <button
       mat-fab
       color='primary'
       id='add-project'
@@ -57,25 +88,33 @@
       (click)='createProject()'>
       <mat-icon>add</mat-icon>
     </button>
-  </div>  
+    <button
+      mat-fab
+      color='primary'
+      id='search'
+      aria-label="Example icon-button with a heart icon"
+      (click)='goToSearch()'>
+      <mat-icon>search</mat-icon>
+    </button>
+  </div>
   <!-- Map Preview Panel -->
   <div
     *ngIf='selectedProject else empty;'
     id='map-preview'
     class=''>
     <!-- Empty Graph -->
-    <div 
+    <div
       *ngIf='emptyGraph'
       id='empty-graph'>
       <p>Empty Graph</p>
     </div>
-    <div 
+    <div
       [ngClass]='{"dn": emptyGraph}'
       id='canvas-container'>
       <!-- Network Graph Canvas -->
       <div id='canvas'></div>
       <!-- Read Panel -->
-      <div 
+      <div
         *ngIf='node'
         id='read-panel'>
         <h3>{{node?.label}}</h3>
@@ -94,7 +133,7 @@
             Hyperlink
           </p>
           <p class='link'
-            (click)='goToLink(node.data.hyperlink)'>
+             (click)='goToLink(node.data.hyperlink)'>
             {{node?.data?.hyperlink}}
           </p>
         </div>
@@ -109,7 +148,7 @@
             </p>
           </div>
         </div>
-        </div>
+      </div>
       <!-- Tool Panel -->
       <div id='tool-panel'>
         <mat-icon

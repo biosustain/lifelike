@@ -1,6 +1,6 @@
-import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import {Injectable} from '@angular/core';
+import {Observable} from 'rxjs';
+import {HttpClient, HttpHeaders} from '@angular/common/http';
 
 import {
   Project,
@@ -16,7 +16,7 @@ import {
   utiProject,
   microbiomeProject
 } from './mock_data';
-import { isNullOrUndefined } from 'util';
+import {isNullOrUndefined} from 'util';
 
 
 @Injectable({
@@ -28,24 +28,25 @@ export class ProjectsService {
 
   readonly baseUrl = '/api/drawing-tool';
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {
+  }
 
   /**
    * Create http options with authorization
    * header if boolean set to true
    * @param withJwt boolean representing whether to use jwt or not
    */
-  createHttpOptions(withJwt= false, blob= false) {
+  createHttpOptions(withJwt = false, blob = false) {
     let headers;
 
     if (withJwt) {
       headers = {
-            'Content-Type':  'application/json',
-            Authorization: 'Bearer ' + localStorage.getItem('access_jwt')
-          };
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer ' + localStorage.getItem('access_jwt')
+      };
     } else {
       headers = {
-        'Content-Type':  'application/json'
+        'Content-Type': 'application/json'
       };
     }
     let httpOptions: any;
@@ -68,10 +69,10 @@ export class ProjectsService {
    * @param hashId - act as uri for map
    */
   public serveProject(hashId) {
-   return this.http.get(
-    this.baseUrl + `/map/${hashId}`,
-    this.createHttpOptions(true)
-   );
+    return this.http.get(
+      this.baseUrl + `/map/${hashId}`,
+      this.createHttpOptions(true)
+    );
   }
 
 
@@ -94,6 +95,17 @@ export class ProjectsService {
     return this.http.get(
       this.baseUrl + '/projects',
       this.createHttpOptions(true),
+    );
+  }
+
+  /**
+   * Search for all maps given search term
+   */
+  public searchForMaps(term: string): Observable<any> {
+    return this.http.post(
+      this.baseUrl + '/search',
+      {term},
+      this.createHttpOptions(true)
     );
   }
 
