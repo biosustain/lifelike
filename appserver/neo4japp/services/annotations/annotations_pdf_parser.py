@@ -97,8 +97,6 @@ class AnnotationsPDFParser:
             )
 
         for page_idx, lt_char_list in coor_obj_per_pdf_page.items():
-            # if lt_char_list[-1].get_text() not in whitespace:
-            #     lt_char_list.append(LTAnno(' '))
             for lt_char in lt_char_list:
                 # LTAnno are 'virtual' characters inserted by the parser
                 # don't really care for \n so make them whitespace
@@ -150,17 +148,22 @@ class AnnotationsPDFParser:
             word = ''
 
             for i, char in enumerate(char_list):
-                if char in whitespace and char_list[i-1] not in punctuation:
+                if char in whitespace:
                     if char_idx_map:
                         word_list.append((word, char_idx_map))
                         char_idx_map = {}
                         word = ''
-                elif char in whitespace and char_list[i-1] '-':
-                    # potentially newline
-                    pass
                 else:
-                    word += char
-                    char_idx_map[i] = char
+                    if i + 1 == max_length:
+                        # reached end so add whatever is left
+                        word += char
+                        char_idx_map[i] = char
+                        word_list.append((word, char_idx_map))
+                        char_idx_map = {}
+                        word = ''
+                    else:
+                        word += char
+                        char_idx_map[i] = char
 
             words_with_char_idx[page_idx] = word_list
 
