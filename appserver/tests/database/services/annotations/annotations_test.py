@@ -29,7 +29,13 @@ directory = path.realpath(path.dirname(__file__))
         (2, PDFParsedCharacters(
             coor_obj_per_pdf_page=None,
             str_per_pdf_page={
-                1: ['E', '.', ' ', '\n', 'C', 'o', 'l', 'i', ' '],  # noqa
+                1: ['E', '.', ' ', '\n', 'C', 'o', 'l', 'i'],  # noqa
+            },
+        )),
+        (3, PDFParsedCharacters(
+            coor_obj_per_pdf_page=None,
+            str_per_pdf_page={
+                1: ['T', 'y', 'p', 'h', '-', 'i', 'm', 'u', 'r', 'i', 'u', 'm'],  # noqa
             },
         )),
     ],
@@ -56,9 +62,12 @@ def test_extract_tokens(annotations_setup, index, text):
     elif index == 2:
         verify = {
             'E.',
-            'E.\nColi',
+            'E. Coli',
             'Coli',
         }
+        assert verify == tokens
+    elif index == 3:
+        verify = {'Typh-imurium'}
         assert verify == tokens
 
 
