@@ -12,6 +12,8 @@ import {
   Annotation, Location, Meta
 } from '../services/interfaces';
 
+import { MatSnackBar } from '@angular/material/snack-bar';
+
 @Component({
   selector: 'app-pdf-viewer',
   templateUrl: './pdf-viewer.component.html',
@@ -33,10 +35,14 @@ export class PdfViewerComponent implements OnDestroy {
   // Type information coming from interface PDFSource at:
   // https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/pdfjs-dist/index.d.ts
   pdfData: { url?: string, data?: Uint8Array };
+  currentFileId: string;
+  addedAnnotation: Annotation;
+  addAnnotationSub: Subscription;
 
   constructor(
     private pdfAnnService: PdfAnnotationsService,
     private pdf: PdfFilesService,
+    private snackBar: MatSnackBar
   ) {
     this.filesFilterSub = this.filesFilter.valueChanges.subscribe(this.updateFilteredFiles);
     this.pdf.getFiles().subscribe((files: PdfFile[]) => {
@@ -51,8 +57,56 @@ export class PdfViewerComponent implements OnDestroy {
     }
   }
 
-  annotationCreated(annotation) {
-    console.log('annotation is created', annotation);
+  annotationCreated(annotation: Annotation) {
+    const defaultLinks = {
+      ncbi: 'https://www.ncbi.nlm.nih.gov/gene/?query=',
+      uniprot: 'https://www.uniprot.org/uniprot/?query=',
+      wikipedia: 'https://www.google.com/search?q=site:+wikipedia.org+',
+      google: 'https://www.google.com/search?q='
+    };
+
+    // try getting id from the ncbi or uniprot link
+    let id = '';
+    let idType = '';
+
+    const uniprotRegExp = new RegExp('uniprot\.org\.uniprot\/([^?#]*)');
+    const uniprotResult = uniprotRegExp.exec(annotation.meta.links.uniprot);
+    if (uniprotResult && uniprotResult[1]) {
+      id = 'UNIPROT:' + uniprotResult[1];
+      idType = 'UNIPROT';
+    }
+
+    const ncbiRegExp = new RegExp('ncbi\.nlm\.nih\.gov\/gene\/([^?#]*)');
+    const ncbiResult = ncbiRegExp.exec(annotation.meta.links.ncbi);
+    if (ncbiResult && ncbiResult[1]) {
+      id = 'NCBI:' + ncbiResult[1];
+      idType = 'NCBI';
+    }
+
+    const annotationToAdd = {
+      ...annotation,
+      meta: {
+        ...annotation.meta,
+        id,
+        idType,
+        links: {
+          ncbi: annotation.meta.links.ncbi || defaultLinks.ncbi + annotation.meta.allText,
+          uniprot: annotation.meta.links.uniprot || defaultLinks.uniprot + annotation.meta.allText,
+          wikipedia: annotation.meta.links.wikipedia || defaultLinks.wikipedia + annotation.meta.allText,
+          google: annotation.meta.links.google || defaultLinks.google + annotation.meta.allText
+        }
+      }
+    };
+    
+    this.addAnnotationSub = this.pdfAnnService.addCustomAnnotation(this.currentFileId, annotationToAdd).subscribe(
+      response => {
+        this.addedAnnotation = annotationToAdd;
+        this.snackBar.open('Annotation has been added', 'Close', { duration: 5000 });
+      },
+      err => {
+        this.snackBar.open(`Error: failed to add annotation`, 'Close', { duration: 10000 });
+      }
+    );
   }
 
   /**
@@ -107,6 +161,7 @@ export class PdfViewerComponent implements OnDestroy {
     ).subscribe(([pdf, ann]) => {
       this.pdfData = { data: new Uint8Array(pdf) };
       this.annotations = ann;
+      this.currentFileId = id;
       setTimeout(() => {
         this.pdfViewerReady = true;
       }, 10);
@@ -118,6 +173,7 @@ export class PdfViewerComponent implements OnDestroy {
     if (this.openPdfSub) {
       this.openPdfSub.unsubscribe();
     }
+    this.addAnnotationSub.unsubscribe();
   }
 
   generateHyperlink(annDef: Annotation): string {
