@@ -1,8 +1,6 @@
-<div id='map-channel' class='w-100' style='overflow-y: hidden;'>
-  <!-- Map Lists -->
-  <div
-    id='map-list-container'
-    class=''>
+<div id='map-channel' fxFlex fxLayout class='w-100 vh-100'>
+  <!-- Map List -->
+  <div id='map-list-container' class='h-100' fxFlex="30">
     <app-map-list
       childMode='true'
       [projects]='projects'
@@ -17,28 +15,26 @@
       (click)='createProject()'>
       <mat-icon>add</mat-icon>
     </button>
-  </div>  
-  <!-- Map Preview Panel -->
-  <div
-    *ngIf='selectedProject else empty;'
-    id='map-preview'
-    class=''>
-    <!-- Empty Graph -->
-    <div 
-      *ngIf='emptyGraph'
-      id='empty-graph'>
-      <p>Empty Graph</p>
+  </div>
+  <div class='h-100' fxFlex="70" fxLayout='column' fxLayoutAlign="start center">
+    <!-- Map Preview Panel -->
+    <div class='bg-green' fxFill fxFlex="70" fxLayoutAlign="center center">
+      <div
+        fxFill
+        *ngIf='selectedProject else empty;'
+        id='map-preview'>
+        <div 
+          id='canvas-container'>
+          <app-map-preview
+            [project]='selectedProject'>
+          </app-map-preview>
+        </div>
+      </div>
     </div>
-    <div 
-      [ngClass]='{"dn": emptyGraph}'
-      id='canvas-container'>
-      <app-map-preview
-        [project]='selectedProject'>
-      </app-map-preview>
-    </div>
-    <!-- Meta info about map -->
-    <div id='map-meta-panel'>
-      <div id='details'>
+    <!-- Map Meta Panel -->
+    <div fxFill fxFlex="30" fxLayout='row'>
+      <!-- Meta Info -->
+      <div fxFill fxFlex="50" fxLayout='column' fxLayoutAlign="start center">
         <h2>{{selectedProject?.label}}</h2>
         <p class='author'>
           By {{selectedProject?.author}}
@@ -50,7 +46,8 @@
           {{selectedProject?.description}}
         </p>
       </div>
-      <div id='actions'>
+      <!-- Actions -->
+      <div fxFill fxFlex="50" fxLayout='column' fxLayoutAlign="center center">
         <div *ngIf='isItMine'>
           <button
             mat-raised-button
@@ -83,9 +80,11 @@
     </div>
   </div>
 </div>
-<!-- Empty Scene -->
+
+  <!-- Empty Scene -->
 <ng-template #empty>
-  <div id='map-preview' class='empty'>
+  <div fxFill fxLayoutAlign="center center" id='map-preview' class='empty'>
     <p>Create or select a project</p>
   </div>
 </ng-template>
+  
