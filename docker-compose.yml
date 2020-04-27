@@ -32,6 +32,7 @@ services:
     appserver:
         container_name: n4j-appserver
         command: [
+            '/usr/bin/env', 'bash',
             'bin/wait-for-postgres',
             'bin/wait-for-neo4j',
             'bin/start-dev']
