@@ -84,10 +84,12 @@ class AnnotationsPDFParser:
         device = PDFPageAggregator(rsrcmgr=rsrcmgr, laparams=LAParams())
         interpreter = PDFPageInterpreter(rsrcmgr=rsrcmgr, device=device)
 
-        str_per_pdf_page: Dict[int, List[str]] = dict()
-        coor_obj_per_pdf_page: Dict[int, List[Union[LTChar, LTAnno]]] = dict()
+        str_per_pdf_page: Dict[int, List[str]] = {}
+        coor_obj_per_pdf_page: Dict[int, List[Union[LTChar, LTAnno]]] = {}
+        cropbox_per_page: Dict[int, Tuple[int, int]] = {}
 
         for i, page in enumerate(PDFPage.create_pages(pdf_doc)):
+            cropbox_per_page[i+1] = (page.cropbox[0], page.cropbox[1])
             interpreter.process_page(page)
             layout = device.get_result()
             self._get_lt_char(
@@ -114,6 +116,7 @@ class AnnotationsPDFParser:
         return PDFParsedCharacters(
             coor_obj_per_pdf_page=coor_obj_per_pdf_page,
             str_per_pdf_page=str_per_pdf_page,
+            cropbox_per_page=cropbox_per_page,
         )
 
     def _is_whitespace_or_punctuation(self, text: str) -> bool:
@@ -213,4 +216,5 @@ class AnnotationsPDFParser:
         return PDFTokenPositionsList(
             token_positions=keyword_tokens,
             coor_obj_per_pdf_page=parsed_chars.coor_obj_per_pdf_page,
+            cropbox_per_page=parsed_chars.cropbox_per_page,
         )
