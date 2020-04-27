@@ -1,19 +1,16 @@
-import { Component, AfterViewInit, OnDestroy } from '@angular/core';
+import { Component, OnDestroy } from '@angular/core';
 import { FormControl } from '@angular/forms';
-import { Subscription } from 'rxjs';
+import { Subscription, Subject, combineLatest } from 'rxjs';
 import { PdfFile } from 'app/interfaces/pdf-files.interface';
 import { PdfFilesService } from 'app/shared/services/pdf-files.service';
 
 import {
   PdfAnnotationsService,
-  DataFlowService
 } from '../services';
 
 import {
-  Annotation,
-  GraphData
+  Annotation, Location, Meta
 } from '../services/interfaces';
-
 
 @Component({
   selector: 'app-pdf-viewer',
@@ -21,22 +18,24 @@ import {
   styleUrls: ['./pdf-viewer.component.scss']
 })
 
-export class PdfViewerComponent implements AfterViewInit, OnDestroy {
+export class PdfViewerComponent implements OnDestroy {
 
-  annotations: object[] = [];
+  annotations: Annotation[] = [];
   files: PdfFile[] = [];
   filesFilter = new FormControl('');
   filesFilterSub: Subscription;
   filteredFiles = this.files;
 
+  goToPosition: Subject<Location> = new Subject<Location>();
+  openPdfSub: Subscription;
+  pdfViewerReady = false;
+  pdfFileLoaded = false;
   // Type information coming from interface PDFSource at:
   // https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/pdfjs-dist/index.d.ts
-  // TODO: feel free to remove the sample.pdf when desired. In that case, also mocked annotations should be removed
-  pdfData: {url?: string, data?: Uint8Array} = {url: '/assets/pdfs/sample.pdf'};
+  pdfData: { url?: string, data?: Uint8Array };
 
   constructor(
     private pdfAnnService: PdfAnnotationsService,
-    private dataFlow: DataFlowService,
     private pdf: PdfFilesService,
   ) {
     this.filesFilterSub = this.filesFilter.valueChanges.subscribe(this.updateFilteredFiles);
@@ -44,19 +43,16 @@ export class PdfViewerComponent implements AfterViewInit, OnDestroy {
       this.files = files;
       this.updateFilteredFiles(this.filesFilter.value);
     });
+    // Handles opening a pdf from other pages
+    const fileId = localStorage.getItem('fileIdForPdfViewer');
+    if (fileId) {
+      localStorage.removeItem('fileIdForPdfViewer');
+      this.openPdf(fileId);
+    }
   }
 
-  ngAfterViewInit() {
-    setTimeout(
-      () => {
-        // TODO: Should this be updated at this point?
-        this.pdfAnnService.getMockupAnnotation()
-        .subscribe(ann => {
-          this.annotations = ann;
-        });
-      },
-      200
-    );
+  annotationCreated(annotation) {
+    console.log('annotation is created', annotation);
   }
 
   /**
@@ -73,18 +69,27 @@ export class PdfViewerComponent implements AfterViewInit, OnDestroy {
         .getElementById('drawing-tool-view-container')
         .getBoundingClientRect() as DOMRect;
 
-    const annId = nodeDom.getAttribute('annotation-id');
-    const annDef: Annotation = this.pdfAnnService.searchForAnnotation(annId);
+    // everything that graphbuilder might need is under meta
+    const meta: Meta = JSON.parse(nodeDom.getAttribute('meta')) as Meta;
 
+    // use location object to scroll in the pdf.
+    const loc: Location = JSON.parse(nodeDom.getAttribute('location')) as Location;
+
+    // custom annotations dont have id yet.
+    // const annDef: Annotation = this.pdfAnnService.searchForAnnotation(annId);
+
+    /*
     const payload: GraphData = {
       x: mouseEvent.clientX - containerCoord.x,
       y: mouseEvent.clientY,
       label: nodeDom.innerText,
-      group: (annDef.type as string).toLocaleLowerCase(),
+      group: (meta.type as string).toLowerCase(),
       hyperlink: this.generateHyperlink(annDef)
     };
+    */
+    // hyperlink should be hyperlinks. Those are in Meta field called Links.
 
-    this.dataFlow.pushNode2Canvas(payload);
+    // this.dataFlow.pushNode2Canvas(payload);
   }
 
   private updateFilteredFiles = (name: string) => {
@@ -94,27 +99,49 @@ export class PdfViewerComponent implements AfterViewInit, OnDestroy {
   }
 
   openPdf(id: string) {
-    this.pdf.getFile(id).subscribe((pdfData: ArrayBuffer) => {
-      this.annotations = [];
-      // TODO: update annotations?
-      this.pdfData = {data: new Uint8Array(pdfData)};
+    this.pdfFileLoaded = false;
+    this.pdfViewerReady = false;
+    this.openPdfSub = combineLatest(
+      this.pdf.getFile(id),
+      this.pdfAnnService.getFileAnnotations(id)
+    ).subscribe(([pdf, ann]) => {
+      this.pdfData = { data: new Uint8Array(pdf) };
+      this.annotations = ann;
+      setTimeout(() => {
+        this.pdfViewerReady = true;
+      }, 10);
     });
   }
 
   ngOnDestroy() {
     this.filesFilterSub.unsubscribe();
+    if (this.openPdfSub) {
+      this.openPdfSub.unsubscribe();
+    }
   }
 
   generateHyperlink(annDef: Annotation): string {
 
-    switch (annDef.type) {
+    switch (annDef.meta.type) {
       case 'Chemical':
-        const id = annDef.id.match(/(\d+)/g)[0];
+        const id = annDef.meta.id.match(/(\d+)/g)[0];
         return `https://www.ebi.ac.uk/chebi/searchId.do?chebiId=${id}`;
       case 'Gene':
-        return `https://www.ncbi.nlm.nih.gov/gene/?term=${annDef.id}`;
+        return `https://www.ncbi.nlm.nih.gov/gene/?term=${annDef.meta.id}`;
       default:
         return '';
     }
+  }
+
+  scrollInPdf(loc: Location) {
+    if (!this.pdfFileLoaded) {
+      console.log('File in the pdf viewer is not loaded yet. So, I cant scroll');
+      return;
+    }
+    this.goToPosition.next(loc);
+  }
+
+  loadCompleted(status) {
+    this.pdfFileLoaded = status;
   }
 }
