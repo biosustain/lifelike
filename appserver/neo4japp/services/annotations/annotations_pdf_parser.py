@@ -1,11 +1,11 @@
 import re
 
-from string import whitespace
+from string import punctuation, whitespace
 from typing import Any, Dict, List, Set, Tuple, Union
 
 from pdfminer import high_level
 from pdfminer.converter import PDFPageAggregator, TextConverter
-from pdfminer.layout import LAParams, LTAnno, LTChar, LTTextBox, LTTextLine
+from pdfminer.layout import LAParams, LTAnno, LTChar, LTTextBox, LTTextLine, LTFigure
 from pdfminer.pdfdocument import PDFDocument
 from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
 from pdfminer.pdfpage import PDFPage
@@ -17,6 +17,11 @@ from neo4japp.data_transfer_objects import (
     PDFTokenPositionsList,
 )
 from neo4japp.util import compute_hash
+
+from .constants import (
+    PDF_CHARACTER_SPACING_THRESHOLD,
+    PDF_NEW_LINE_THRESHOLD,
+)
 
 
 class AnnotationsPDFParser:
@@ -30,8 +35,25 @@ class AnnotationsPDFParser:
         page_idx: int,
         coor_obj_per_pdf_page: Dict[int, List[Union[LTChar, LTAnno]]],
     ) -> None:
+        def space_exists_between_lt_chars(a: LTChar, b: LTChar):
+            """Determines if a space character exists between two LTChars."""
+            return (
+                (b.x0 - a.x1 > a.width * PDF_CHARACTER_SPACING_THRESHOLD) or
+                (abs(b.y0 - a.y0) > a.height * PDF_NEW_LINE_THRESHOLD)
+            )
+
+        def should_add_virtual_space(
+            prev_char: Union[LTAnno, LTChar],
+            curr_char: Union[LTAnno, LTChar]
+        ):
+            return (
+                isinstance(prev_char, LTChar) and prev_char.get_text() != ' ' and
+                isinstance(curr_char, LTChar) and curr_char.get_text() != ' ' and
+                space_exists_between_lt_chars(prev_char, curr_char)
+            )
+
         for lt_obj in layout:
-            if isinstance(lt_obj, LTTextBox) or isinstance(lt_obj, LTTextLine):
+            if isinstance(lt_obj, LTTextBox) or isinstance(lt_obj, LTTextLine) or isinstance(lt_obj, LTFigure):  # noqa
                 self._get_lt_char(
                     layout=lt_obj,
                     page_idx=page_idx,
@@ -39,6 +61,11 @@ class AnnotationsPDFParser:
                 )
             elif isinstance(lt_obj, LTChar) or isinstance(lt_obj, LTAnno):
                 if page_idx + 1 in coor_obj_per_pdf_page:
+                    prev_char = coor_obj_per_pdf_page[page_idx+1][-1]
+                    if should_add_virtual_space(prev_char, lt_obj):
+                        virtual_space_char = LTAnno(' ')
+                        coor_obj_per_pdf_page[page_idx+1].append(virtual_space_char)
+
                     coor_obj_per_pdf_page[page_idx+1].append(lt_obj)
                 else:
                     coor_obj_per_pdf_page[page_idx+1] = [lt_obj]
@@ -70,6 +97,8 @@ class AnnotationsPDFParser:
             )
 
         for page_idx, lt_char_list in coor_obj_per_pdf_page.items():
+            if lt_char_list[-1].get_text() not in whitespace:
+                lt_char_list.append(LTAnno(' '))
             for lt_char in lt_char_list:
                 # LTAnno are 'virtual' characters inserted by the parser
                 # don't really care for \n so make them whitespace
@@ -122,10 +151,11 @@ class AnnotationsPDFParser:
                     char_idx_map: Dict[int, str] = {}
 
                     while whitespace_count < curr_max_words and curr_idx < max_length:
-                        # ignore leading spaces
+                        # ignore leading spaces or punctuations
                         if (curr_keyword == '' and
                             (char_list[curr_idx] in whitespace or
-                                char_list[curr_idx] == '\xa0')):
+                                char_list[curr_idx] == '\xa0' or
+                                char_list[curr_idx] in punctuation)):
                             curr_idx += 1
                         else:
                             if (char_list[curr_idx] not in whitespace and
@@ -190,7 +220,34 @@ class AnnotationsPDFParser:
                 # since curr_idx will always reset to that idx
                 first_whitespace_encountered_idx = new_start_idx = curr_idx
 
+        # clean up any duplicates due to whitespace at the end
+        # of a page, and the number of words in the keyword
+        # hasn't reached the self.max_word_length yet
+        #
+        # TODO: JIRA LL-460
+        keyword_tokens: List[PDFTokenPositions] = []
+        keyword_tokens_set: Set[str] = set()
+
+        for token in token_objects:
+            if token.keyword[-1] in whitespace or token.keyword[-1] == '\xa0':
+                tmp_keyword = token.keyword[:-1]
+                tmp_char_positions = {k: v for k, v in token.char_positions.items()}
+                tmp_char_positions.popitem()
+                hashval = compute_hash(tmp_char_positions)
+
+                if hashval not in keyword_tokens_set:
+                    keyword_tokens_set.add(hashval)
+                    keyword_tokens.append(PDFTokenPositions(
+                        page_number=token.page_number,
+                        keyword=tmp_keyword,
+                        char_positions=tmp_char_positions,
+                    ))
+            else:
+                hashval = compute_hash(token.char_positions)
+                keyword_tokens_set.add(hashval)
+                keyword_tokens.append(token)
+
         return PDFTokenPositionsList(
-            token_positions=token_objects,
+            token_positions=keyword_tokens,
             coor_obj_per_pdf_page=parsed_chars.coor_obj_per_pdf_page,
         )
