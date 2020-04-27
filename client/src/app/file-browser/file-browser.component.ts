@@ -82,7 +82,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
       (res: string[]) => {
         for (const id of ids) {
           // pick file by id
-          const file: PdfFile = this.dataSource.find((file: PdfFile) => file.file_id === id);
+          const file: PdfFile = this.dataSource.find((f: PdfFile) => f.file_id === id);
           // check if it was successfully annotated
           file.annotation_status = res.includes(id) ? AnnotationStatus.Success : AnnotationStatus.Failure;
         }
@@ -93,7 +93,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
       err => {
         for (const id of ids) {
           // pick file by id
-          const file: PdfFile = this.dataSource.find((file: PdfFile) => file.file_id === id);
+          const file: PdfFile = this.dataSource.find((f: PdfFile) => f.file_id === id);
           // mark it as failed
           file.annotation_status = AnnotationStatus.Failure;
         }
