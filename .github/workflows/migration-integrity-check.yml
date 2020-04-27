@@ -13,4 +13,4 @@ jobs:
     - name: Check migration integrity
       run: |
         docker-compose -f docker-compose.pytest-workflow.yml up --build -d
-        ./appserver/bin/migration-integrity-check
+        docker-compose -f docker-compose.pytest-workflow.yml exec -T appserver ./bin/migration-integrity-check
