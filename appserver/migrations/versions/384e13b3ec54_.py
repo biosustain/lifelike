@@ -1,7 +1,7 @@
 """Make user's name and project's author non-nullable
 
 Revision ID: 384e13b3ec54
-Revises: 59b6851c654e
+Revises: e3afdf1adbd2
 Create Date: 2020-04-08 19:11:26.626906
 
 """
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = '384e13b3ec54'
-down_revision = '59b6851c654e'
+down_revision = 'e3afdf1adbd2'
 branch_labels = None
 depends_on = None
 
