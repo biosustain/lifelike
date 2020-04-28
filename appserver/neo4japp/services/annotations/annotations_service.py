@@ -164,8 +164,9 @@ class AnnotationsService:
         self,
         curr_page_coor_obj: List[Union[LTChar, LTAnno]],
         indexes: List[int],
+        cropbox: Tuple[int, int],
         keyword_positions: List[Annotation.TextPosition] = [],
-    ) -> None:
+    ) -> Tuple[float, float, float, float]:
         """Creates the keyword objects with the keyword
         text, along with their coordinate positions and
         page number.
@@ -226,16 +227,28 @@ class AnnotationsService:
                     # if diff is greater than height ratio
                     # then part of keyword is on a new line
                     if diff > height * PDF_NEW_LINE_THRESHOLD:
-                        self._create_keyword_objects(
+                        _, _, new_upper_x, new_upper_y = self._create_keyword_objects(
                             curr_page_coor_obj=curr_page_coor_obj,
                             indexes=indexes[i:],
                             keyword_positions=keyword_positions,
+                            cropbox=cropbox,
                         )
+
+                        if new_upper_x > end_upper_x:
+                            end_upper_x = new_upper_x
+
+                        if new_upper_y > end_upper_y:
+                            end_upper_y = new_upper_y
                         break
                     else:
                         keyword += curr_page_coor_obj[pos_idx].get_text()
                 else:
                     keyword += curr_page_coor_obj[pos_idx].get_text()
+
+        start_lower_x += cropbox[0]  # type: ignore
+        end_upper_x += cropbox[0]  # type: ignore
+        start_lower_y += cropbox[1]  # type: ignore
+        end_upper_y += cropbox[1]  # type: ignore
 
         keyword_positions.append(
             Annotation.TextPosition(
@@ -244,6 +257,7 @@ class AnnotationsService:
                     start_lower_x, start_lower_y, end_upper_x, end_upper_y],  # type: ignore
             )
         )
+        return start_lower_x, start_lower_y, end_upper_x, end_upper_y
 
     def _get_annotation(
         self,
@@ -254,6 +268,7 @@ class AnnotationsService:
         id_str: str,
         correct_synonyms: Dict[str, str],
         coor_obj_per_pdf_page: Dict[int, List[Union[LTChar, LTAnno]]],
+        cropbox_per_page: Dict[int, Tuple[int, int]],
     ) -> Tuple[List[Annotation], Set[str]]:
         """Create annotation objects for tokens.
 
@@ -313,6 +328,7 @@ class AnnotationsService:
                     # create list of positions boxes
                     curr_page_coor_obj = coor_obj_per_pdf_page[
                         token_positions.page_number]
+                    cropbox = cropbox_per_page[token_positions.page_number]
 
                     keyword_positions: List[Annotation.TextPosition] = []
                     char_indexes = list(token_positions.char_positions.keys())
@@ -320,7 +336,8 @@ class AnnotationsService:
                     self._create_keyword_objects(
                         curr_page_coor_obj=curr_page_coor_obj,
                         indexes=char_indexes,
-                        keyword_positions=keyword_positions
+                        keyword_positions=keyword_positions,
+                        cropbox=cropbox,
                     )
 
                     keyword_starting_idx = char_indexes[0]
@@ -361,7 +378,8 @@ class AnnotationsService:
         entity_id_str: str,
         coor_obj_per_pdf_page: Dict[int, List[Union[LTChar, LTAnno]]],
         matched_organism_ids: List[str],
-        organism_frequency: Dict[str, int]
+        organism_frequency: Dict[str, int],
+        cropbox_per_page: Dict[int, Tuple[int, int]],
     ) -> Tuple[List[Annotation], Set[str]]:
         """Gene specific annotation. Nearly identical to `_get_annotation`,
         except that we check genes against the matched organisms found in the
@@ -456,6 +474,7 @@ class AnnotationsService:
                     # create list of positions boxes
                     curr_page_coor_obj = coor_obj_per_pdf_page[
                         token_positions.page_number]
+                    cropbox = cropbox_per_page[token_positions.page_number]
 
                     keyword_positions: List[Annotation.TextPosition] = []
                     char_indexes = list(token_positions.char_positions.keys())
@@ -463,7 +482,8 @@ class AnnotationsService:
                     self._create_keyword_objects(
                         curr_page_coor_obj=curr_page_coor_obj,
                         indexes=char_indexes,
-                        keyword_positions=keyword_positions
+                        keyword_positions=keyword_positions,
+                        cropbox=cropbox,
                     )
 
                     keyword_starting_idx = char_indexes[0]
@@ -503,6 +523,7 @@ class AnnotationsService:
         self,
         entity_id_str: str,
         coor_obj_per_pdf_page: Dict[int, List[Union[LTChar, LTAnno]]],
+        cropbox_per_page: Dict[int, Tuple[int, int]],
     ) -> Tuple[List[Annotation], Set[str]]:
         return self._get_annotation(
             tokens=self.matched_chemicals,
@@ -512,12 +533,14 @@ class AnnotationsService:
             id_str=entity_id_str,
             correct_synonyms=self.correct_synonyms,
             coor_obj_per_pdf_page=coor_obj_per_pdf_page,
+            cropbox_per_page=cropbox_per_page,
         )
 
     def _annotate_compounds(
         self,
         entity_id_str: str,
         coor_obj_per_pdf_page: Dict[int, List[Union[LTChar, LTAnno]]],
+        cropbox_per_page: Dict[int, Tuple[int, int]],
     ) -> Tuple[List[Annotation], Set[str]]:
         return self._get_annotation(
             tokens=self.matched_compounds,
@@ -527,12 +550,14 @@ class AnnotationsService:
             id_str=entity_id_str,
             correct_synonyms=self.correct_synonyms,
             coor_obj_per_pdf_page=coor_obj_per_pdf_page,
+            cropbox_per_page=cropbox_per_page,
         )
 
     def _annotate_proteins(
         self,
         entity_id_str: str,
         coor_obj_per_pdf_page: Dict[int, List[Union[LTChar, LTAnno]]],
+        cropbox_per_page: Dict[int, Tuple[int, int]],
     ) -> Tuple[List[Annotation], Set[str]]:
         return self._get_annotation(
             tokens=self.matched_proteins,
@@ -542,12 +567,14 @@ class AnnotationsService:
             id_str=entity_id_str,
             correct_synonyms=self.correct_synonyms,
             coor_obj_per_pdf_page=coor_obj_per_pdf_page,
+            cropbox_per_page=cropbox_per_page,
         )
 
     def _annotate_species(
         self,
         entity_id_str: str,
         coor_obj_per_pdf_page: Dict[int, List[Union[LTChar, LTAnno]]],
+        cropbox_per_page: Dict[int, Tuple[int, int]],
     ) -> Tuple[List[Annotation], Set[str]]:
         return self._get_annotation(
             tokens=self.matched_species,
@@ -557,12 +584,14 @@ class AnnotationsService:
             id_str=entity_id_str,
             correct_synonyms=self.correct_synonyms,
             coor_obj_per_pdf_page=coor_obj_per_pdf_page,
+            cropbox_per_page=cropbox_per_page,
         )
 
     def _annotate_diseases(
         self,
         entity_id_str: str,
         coor_obj_per_pdf_page: Dict[int, List[Union[LTChar, LTAnno]]],
+        cropbox_per_page: Dict[int, Tuple[int, int]],
     ) -> Tuple[List[Annotation], Set[str]]:
         return self._get_annotation(
             tokens=self.matched_diseases,
@@ -572,6 +601,7 @@ class AnnotationsService:
             id_str=entity_id_str,
             correct_synonyms=self.correct_synonyms,
             coor_obj_per_pdf_page=coor_obj_per_pdf_page,
+            cropbox_per_page=cropbox_per_page,
         )
 
     def annotate(
@@ -579,6 +609,7 @@ class AnnotationsService:
         annotation_type: str,
         entity_id_str: str,
         coor_obj_per_pdf_page: Dict[int, List[Union[LTChar, LTAnno]]],
+        cropbox_per_page: Dict[int, Tuple[int, int]],
     ) -> Tuple[List[Annotation], Set[str]]:
         funcs = {
             EntityType.Chemicals.value: self._annotate_chemicals,
@@ -592,6 +623,7 @@ class AnnotationsService:
         return annotate_entities(
             entity_id_str=entity_id_str,
             coor_obj_per_pdf_page=coor_obj_per_pdf_page,
+            cropbox_per_page=cropbox_per_page,
         )
 
     def _get_entity_frequency(
@@ -630,37 +662,43 @@ class AnnotationsService:
             annotation_type=EntityType.Species.value,
             entity_id_str=EntityIdStr.Species.value,
             coor_obj_per_pdf_page=tokens.coor_obj_per_pdf_page,
+            cropbox_per_page=tokens.cropbox_per_page,
         )
 
         matched_genes, unwanted_genes = self._annotate_genes(
             entity_id_str=EntityIdStr.Genes.value,
             coor_obj_per_pdf_page=tokens.coor_obj_per_pdf_page,
             matched_organism_ids=[annotation.meta.id for annotation in matched_species],
-            organism_frequency=self._get_entity_frequency(matched_species)
+            organism_frequency=self._get_entity_frequency(matched_species),
+            cropbox_per_page=tokens.cropbox_per_page,
         )
 
         matched_chemicals, unwanted_chemicals = self.annotate(
             annotation_type=EntityType.Chemicals.value,
             entity_id_str=EntityIdStr.Chemicals.value,
             coor_obj_per_pdf_page=tokens.coor_obj_per_pdf_page,
+            cropbox_per_page=tokens.cropbox_per_page,
         )
 
         matched_compounds, unwanted_compounds = self.annotate(
             annotation_type=EntityType.Compounds.value,
             entity_id_str=EntityIdStr.Compounds.value,
             coor_obj_per_pdf_page=tokens.coor_obj_per_pdf_page,
+            cropbox_per_page=tokens.cropbox_per_page,
         )
 
         matched_proteins, unwanted_proteins = self.annotate(
             annotation_type=EntityType.Proteins.value,
             entity_id_str=EntityIdStr.Proteins.value,
             coor_obj_per_pdf_page=tokens.coor_obj_per_pdf_page,
+            cropbox_per_page=tokens.cropbox_per_page,
         )
 
         matched_diseases, unwanted_diseases = self.annotate(
             annotation_type=EntityType.Diseases.value,
             entity_id_str=EntityIdStr.Diseases.value,
             coor_obj_per_pdf_page=tokens.coor_obj_per_pdf_page,
+            cropbox_per_page=tokens.cropbox_per_page,
         )
 
         unwanted_matches_set_list = [

@@ -13,6 +13,7 @@ from neo4japp.database import (
     get_bioc_document_service,
 )
 from neo4japp.models.files import Files
+from neo4japp.exceptions import RecordNotFoundException
 
 bp = Blueprint('files', __name__, url_prefix='/files')
 
@@ -60,8 +61,8 @@ def upload_pdf():
         })
     except Exception:
         return abort(
-            400,
-            'File was unable to upload, please try again and make sure the file is a PDF.'
+            500,
+            'File was unable to upload, please try again.'
         )
 
 
@@ -121,15 +122,17 @@ def get_annotations(id):
     # project = data['project']
     project = '1'  # TODO: remove hard coded project
 
-    annotations = db.session.query(Files.annotations)\
-        .filter(Files.file_id == id and Files.project == project)\
-        .one()
+    file = Files.query.filter_by(file_id=id, project=project).one_or_none()
+    if not file:
+        raise RecordNotFoundException('File does not exist')
+
+    annotations = file.annotations
 
     # TODO: Should remove this eventually...the annotator should return data readable by the
     # lib-pdf-viewer-lib, or the lib should conform to what is being returned by the annotator.
     # Something has to give.
     def map_annotations_to_correct_format(unformatted_annotations: dict):
-        unformatted_annotations_list = unformatted_annotations[0]['documents'][0]['passages'][0]['annotations']  # noqa
+        unformatted_annotations_list = unformatted_annotations['documents'][0]['passages'][0]['annotations']  # noqa
         formatted_annotations_list = []
 
         for unformatted_annotation in unformatted_annotations_list:
@@ -142,4 +145,18 @@ def get_annotations(id):
             formatted_annotations_list.append(unformatted_annotation)
         return formatted_annotations_list
 
-    return jsonify(map_annotations_to_correct_format(annotations))
+    # for now, custom annotations are stored in the format that pdf-viewer supports
+    return jsonify(map_annotations_to_correct_format(annotations) + file.custom_annotations)
+
+
+@bp.route('/add_custom_annotation/<id>', methods=['PATCH'])
+@auth.login_required
+def add_custom_annotation(id):
+    annotation_to_add = request.get_json()
+    annotation_to_add['user_id'] = g.current_user.id
+    file = Files.query.filter_by(file_id=id).one_or_none()
+    if not file:
+        raise RecordNotFoundException('File does not exist')
+    file.custom_annotations = [annotation_to_add, *file.custom_annotations]
+    db.session.commit()
+    return {'status': 'success'}, 200

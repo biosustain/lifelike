@@ -1,6 +1,6 @@
 import attr
 
-from typing import Dict, List, Union
+from typing import Dict, List, Tuple, Union
 
 from pdfminer.layout import LTAnno, LTChar
 
@@ -11,6 +11,7 @@ from neo4japp.util import CamelDictMixin
 class PDFParsedCharacters(CamelDictMixin):
     coor_obj_per_pdf_page: Dict[int, List[Union[LTChar, LTAnno]]] = attr.ib()  # noqa
     str_per_pdf_page: Dict[int, List[str]] = attr.ib()
+    cropbox_per_page: Dict[int, Tuple[int, int]] = attr.ib()
 
 
 @attr.s(frozen=True)
@@ -24,6 +25,7 @@ class PDFTokenPositions(CamelDictMixin):
 class PDFTokenPositionsList(CamelDictMixin):
     token_positions: List[PDFTokenPositions] = attr.ib()
     coor_obj_per_pdf_page: Dict[int, List[Union[LTChar, LTAnno]]] = attr.ib()  # noqa
+    cropbox_per_page: Dict[int, Tuple[int, int]] = attr.ib()
 
 
 # IMPORTANT NOTE/TODO: JIRA LL-465
