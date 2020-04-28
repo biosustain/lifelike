@@ -217,8 +217,7 @@ export class ProjectListViewComponent {
 
       this.projectService.addProject(result)
         .subscribe((data) => {
-          this.projects.push(data.project);
-          // TODO: Connect through ViewChild
+          this.projects = this.projects.concat([data.project]);
         });
     });
   }

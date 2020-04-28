@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Input } from '@angular/core';
+import { GraphSelectionData } from 'app/drawing-tool/services/interfaces';
 
 @Component({
   selector: 'app-read-panel',
@@ -6,6 +7,18 @@ import { Component, OnInit } from '@angular/core';
   styleUrls: ['./read-panel.component.scss']
 })
 export class ReadPanelComponent implements OnInit {
+  /** The edge or node focused on */
+  @Input() focusedEntity: GraphSelectionData = null;
+
+  get node() {
+    if (!this.focusedEntity) { return null; }
+
+    return this.focusedEntity.nodeData;
+  }
+
+  get nodeStyle() {
+    return this.focusedEntity.nodeData.group || '';
+  }
 
   constructor() { }
 
