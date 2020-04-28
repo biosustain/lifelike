@@ -1,4 +1,5 @@
-"""empty message
+"""Update file migrations schema and relation
+with projects table through id instead of foreign key ... =(
 
 Revision ID: 6f6be267949c
 Revises: 59b6851c654e

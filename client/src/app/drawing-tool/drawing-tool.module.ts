@@ -23,9 +23,13 @@ import {
   FriendlyDateStrPipe
 } from './pipes';
 
+import { CopyPasteMapsService } from './services/copy-paste-maps.service';
+
 import {
   PendingChangesGuard
 } from './guards';
+
+import { DrawingToolContextMenuComponent } from './drawing-tool/drawing-tool-context-menu/drawing-tool-context-menu.component';
 import { PaletteComponent } from './drawing-tool/palette/palette.component';
 import { InfoPanelComponent } from './drawing-tool/info-panel/info-panel.component';
 import { SplitterComponent } from './splitter/splitter.component';
@@ -34,6 +38,8 @@ import { MapListComponent } from './project-list-view/map-list/map-list.componen
 import { SharedModule } from 'app/shared/shared.module';
 import { RouterModule } from '@angular/router';
 import { ReadPanelComponent } from '../project-list-view/read-panel/read-panel.component';
+import { PdfViewerComponent } from './pdf-viewer/pdf-viewer.component';
+import { PdfViewerLibModule } from 'pdf-viewer-lib';
 
 const routes = [
   {
@@ -62,6 +68,8 @@ const routes = [
     DeleteProjectDialogComponent,
     CopyProjectDialogComponent,
     DrawingToolComponent,
+    DrawingToolContextMenuComponent,
+    PdfViewerComponent,
     TruncatePipe,
     FriendlyDateStrPipe,
     PaletteComponent,
@@ -79,10 +87,11 @@ const routes = [
   ],
   imports: [
     SharedModule,
-    // PdfViewerLibModule,
+    PdfViewerLibModule,
     RouterModule.forChild(routes)
   ],
   providers: [
+    CopyPasteMapsService,
     // {
     //   provide: HTTP_INTERCEPTORS,
     //   useClass: AuthenticationService,

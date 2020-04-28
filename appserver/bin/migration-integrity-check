@@ -1,0 +1,17 @@
+#!/bin/bash
+
+echo "Checking migration integrity"
+
+# Start in appserver directory
+__dir__="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+cd ${__dir__}/../migrations
+
+conflict=$(alembic branches)
+
+if [[ ${conflict} ]]
+then
+    echo "Migration integrity check failed. Diverged at:"
+    echo "${conflict}"
+    exit 1
+fi

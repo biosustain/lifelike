@@ -16,7 +16,11 @@ services:
 
     appserver:
         container_name: n4j-appserver
-        command: ['bin/wait-for-postgres', 'bin/start-dev']
+        command: [
+            'bin/wait-for-postgres',
+            'bin/wait-for-neo4j',
+            'bin/start-dev',
+        ]
         build: ./appserver
         ports:
             - "5000:5000"

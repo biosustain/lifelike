@@ -1,36 +1,35 @@
-/**
- * Temporarily commented out in order to allow ng build --prod
- * Un-comment once pdf-viewer is building properly
- */
-// import { APP_BASE_HREF } from '@angular/common';
-// import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { RouterTestingModule } from '@angular/router/testing';
 
-// import { DrawingToolModule } from '../drawing-tool.module';
-// import { PdfViewerComponent } from './pdf-viewer.component';
+import { APP_BASE_HREF } from '@angular/common';
 
-// xdescribe('PdfViewerComponent', () => {
-//   let component: PdfViewerComponent;
-//   let fixture: ComponentFixture<PdfViewerComponent>;
+import { DrawingToolModule } from '../drawing-tool.module';
+import { PdfViewerComponent } from './pdf-viewer.component';
+import { configureTestSuite } from 'ng-bullet';
 
-//   beforeEach(async(() => {
-//     TestBed.configureTestingModule({
-//       imports: [
-//         DrawingToolModule
-//       ],
-//       providers: [
-//         {provide: APP_BASE_HREF, useValue : '/' }
-//       ]
-//     })
-//     .compileComponents();
-//   }));
+describe('PdfViewerComponent', () => {
+    let component: PdfViewerComponent;
+    let fixture: ComponentFixture<PdfViewerComponent>;
 
-//   beforeEach(() => {
-//     fixture = TestBed.createComponent(PdfViewerComponent);
-//     component = fixture.componentInstance;
-//     fixture.detectChanges();
-//   });
+    configureTestSuite(() => {
+        TestBed.configureTestingModule({
+            imports: [
+                DrawingToolModule,
+                RouterTestingModule,
+            ],
+            providers: [
+                {provide: APP_BASE_HREF, useValue : '/' }
+            ]
+        });
+    });
 
-//   it('should create', () => {
-//     expect(component).toBeTruthy();
-//   });
-// });
+    beforeEach(() => {
+        fixture = TestBed.createComponent(PdfViewerComponent);
+        component = fixture.componentInstance;
+        fixture.detectChanges();
+    });
+
+    it('should create', () => {
+        expect(component).toBeTruthy();
+    });
+});

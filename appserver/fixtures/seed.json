@@ -11,7 +11,7 @@
             },
             {
               "username": "user2",
-              "email": "user@hotmail.com",
+              "email": "user2@hotmail.com",
               "password_hash": "hai_password",
               "first_name": "Jim",
               "last_name": "Meloncholy"

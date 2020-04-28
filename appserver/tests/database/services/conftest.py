@@ -60,38 +60,38 @@ def annotations_setup(app):
     directory = path.realpath(path.dirname(__file__))
 
     # below is not working, always says files are not there
-    if not path.exists(
-        path.join(
-            directory,
-            '../../neo4japp/services/annotations/lmdb/genes/data.mdb')):
-        prepare_databases.prepare_lmdb_genes_database()
+    # if not path.exists(
+    #     path.join(
+    #         directory,
+    #         '../../neo4japp/services/annotations/lmdb/genes/data.mdb')):
+    #     prepare_databases.prepare_lmdb_genes_database()
 
-    if not path.exists(
-        path.join(
-            directory,
-            '../../neo4japp/services/annotations/lmdb/chemicals/data.mdb')):
-        prepare_databases.prepare_lmdb_chemicals_database()
+    # if not path.exists(
+    #     path.join(
+    #         directory,
+    #         '../../neo4japp/services/annotations/lmdb/chemicals/data.mdb')):
+    #     prepare_databases.prepare_lmdb_chemicals_database()
 
-    if not path.exists(
-        path.join(
-            directory,
-            '../../neo4japp/services/annotations/lmdb/compounds/data.mdb')):
-        prepare_databases.prepare_lmdb_compounds_database()
+    # if not path.exists(
+    #     path.join(
+    #         directory,
+    #         '../../neo4japp/services/annotations/lmdb/compounds/data.mdb')):
+    #     prepare_databases.prepare_lmdb_compounds_database()
 
-    if not path.exists(
-        path.join(
-            directory,
-            '../../neo4japp/services/annotations/lmdb/proteins/data.mdb')):
-        prepare_databases.prepare_lmdb_proteins_database()
+    # if not path.exists(
+    #     path.join(
+    #         directory,
+    #         '../../neo4japp/services/annotations/lmdb/proteins/data.mdb')):
+    #     prepare_databases.prepare_lmdb_proteins_database()
 
-    if not path.exists(
-        path.join(
-            directory,
-            '../../neo4japp/services/annotations/lmdb/species/data.mdb')):
-        prepare_databases.prepare_lmdb_species_database()
+    # if not path.exists(
+    #     path.join(
+    #         directory,
+    #         '../../neo4japp/services/annotations/lmdb/species/data.mdb')):
+    #     prepare_databases.prepare_lmdb_species_database()
 
-    if not path.exists(
-        path.join(
-            directory,
-            '../../neo4japp/services/annotations/lmdb/diseases/data.mdb')):
-        prepare_databases.prepare_lmdb_diseases_database()
+    # if not path.exists(
+    #     path.join(
+    #         directory,
+    #         '../../neo4japp/services/annotations/lmdb/diseases/data.mdb')):
+    #     prepare_databases.prepare_lmdb_diseases_database()
