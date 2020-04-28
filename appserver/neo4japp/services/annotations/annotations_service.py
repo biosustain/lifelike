@@ -361,6 +361,7 @@ class AnnotationsService:
         entity_id_str: str,
         coor_obj_per_pdf_page: Dict[int, List[Union[LTChar, LTAnno]]],
         matched_organism_ids: List[str],
+        organism_frequency: Dict[str, int]
     ) -> Tuple[List[Annotation], Set[str]]:
         """Gene specific annotation. Nearly identical to `_get_annotation`,
         except that we check genes against the matched organisms found in the
@@ -391,21 +392,21 @@ class AnnotationsService:
 
         tokens_lowercased = set(tokens.keys())
 
-        def get_gene_to_organism_map(
+        def get_gene_to_organism_match_result(
             genes: List[str],
             organisms: List[str]
         ) -> Dict[str, Dict[str, str]]:
             """Returns a mapping of genes to organisms."""
             from neo4japp.database import get_neo4j_service_dao
             neo4j = get_neo4j_service_dao()
-            gene_to_organisms_map = neo4j.get_genes_to_organisms(genes, organisms)
-            return gene_to_organisms_map
+            result = neo4j.get_genes_to_organisms(genes, organisms)
+            return result
 
-        gene_to_organism_map = get_gene_to_organism_map(list(tokens.keys()), matched_organism_ids)
+        match_result = get_gene_to_organism_match_result(list(tokens.keys()), matched_organism_ids)
 
         for word, token_positions_list in tokens.items():
-            # If the gene is not mapped to any organism in the paper, discard it
-            if word not in gene_to_organism_map.keys():
+            # If the gene is not matched to any organism in the paper, discard it
+            if word not in match_result.keys():
                 unwanted_matches.add(word)
                 continue
 
@@ -439,10 +440,19 @@ class AnnotationsService:
                 if common_name_count == 1:
                     # If a gene was matched to more than one organism in the document,
                     # we have to check which of them to use, and get the corresponding
-                    # gene data
-                    if len(gene_to_organism_map[word]) > 1:
-                        # TODO LL-358: Do some magic to determine which gene to use
-                        pass
+                    # gene data. Right now we use the organism with the highest
+                    # frequency within the document, but we may fine-tune this later.
+                    if len(match_result[word]) > 1:
+                        organism_to_gene_pairs = match_result[word]
+                        most_frequent_organism = str()
+                        greatest_frequency = 0
+
+                        for organism_id in organism_to_gene_pairs.keys():
+                            if organism_frequency[organism_id] > greatest_frequency:
+                                greatest_frequency = organism_frequency[organism_id]
+                                most_frequent_organism = organism_id
+
+                        entity_id = organism_to_gene_pairs[most_frequent_organism]
 
                     # create list of positions boxes
                     curr_page_coor_obj = coor_obj_per_pdf_page[
@@ -586,6 +596,19 @@ class AnnotationsService:
             coor_obj_per_pdf_page=coor_obj_per_pdf_page,
         )
 
+    def _get_entity_frequency(
+        self,
+        annotations: List[Annotation],
+    ) -> Dict[str, int]:
+        entity_frequency: Dict[str, int] = dict()
+        for annotation in annotations:
+            entity_id = annotation.meta.id
+            if entity_frequency.get(entity_id, None) is not None:
+                entity_frequency[entity_id] += 1
+            else:
+                entity_frequency[entity_id] = 1
+        return entity_frequency
+
     def _remove_unwanted_keywords(
         self,
         matches: List[Annotation],
@@ -614,7 +637,8 @@ class AnnotationsService:
         matched_genes, unwanted_genes = self._annotate_genes(
             entity_id_str=EntityIdStr.Genes.value,
             coor_obj_per_pdf_page=tokens.coor_obj_per_pdf_page,
-            matched_organism_ids=[annotation.meta.id for annotation in matched_species]
+            matched_organism_ids=[annotation.meta.id for annotation in matched_species],
+            organism_frequency=self._get_entity_frequency(matched_species)
         )
 
         matched_chemicals, unwanted_chemicals = self.annotate(
