@@ -1,4 +1,5 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { configureTestSuite } from 'ng-bullet';
 
 import { MapListComponent } from './map-list.component';
 import { RouterModule } from '@angular/router';
@@ -26,7 +27,7 @@ describe('MapListComponent', () => {
   let component: MapListComponent;
   let fixture: ComponentFixture<MapListComponent>;
 
-  beforeEach(async(() => {
+  configureTestSuite(() => {
     TestBed.configureTestingModule({
       imports: [
         AngularMaterialModule,
@@ -41,7 +42,7 @@ describe('MapListComponent', () => {
     })
     .compileComponents();
     TestBed.overrideProvider(ProjectsService, {useValue: new MockProjectsService(null)});
-  }));
+  });
 
   beforeEach(() => {
     fixture = TestBed.createComponent(MapListComponent);
