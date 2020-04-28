@@ -1,4 +1,4 @@
-"""empty message
+"""Deduplicate file uploads
 
 Revision ID: 4e71ffa529c1
 Revises: 7998c4d9f557
