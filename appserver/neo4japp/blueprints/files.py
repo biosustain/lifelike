@@ -12,6 +12,7 @@ from neo4japp.database import (
     get_annotations_pdf_parser,
     get_bioc_document_service,
 )
+from neo4japp.models import AppUser
 from neo4japp.models.files import Files
 from neo4japp.exceptions import RecordNotFoundException
 
@@ -28,7 +29,7 @@ def upload_pdf():
     pdf = request.files['file']
     project = '1'  # TODO: remove hard coded project
     binary_pdf = pdf.read()
-    username = g.current_user
+    user = g.current_user
 
     filename = secure_filename(request.files['file'].filename)
     # Make sure that the filename is not longer than the DB column permits
@@ -55,7 +56,8 @@ def upload_pdf():
             file_id=file_id,
             filename=filename,
             raw_file=binary_pdf,
-            username=username.id,
+            user_id=user.id,
+            username=user.username,
             annotations=annotations_json,
             project=project
         )
@@ -86,14 +88,17 @@ def list_files():
         'id': row.id,  # TODO: is this of any use?
         'file_id': row.file_id,
         'filename': row.filename,
-        'username': row.username,
+        'username': row.username if row.user_id else row.legacy_username,
         'creation_date': row.creation_date,
     } for row in db.session.query(
         Files.id,
         Files.file_id,
         Files.filename,
-        Files.username,
+        Files.user_id,
+        AppUser.username,
+        Files.username.label('legacy_username'),
         Files.creation_date)
+        .join(AppUser)
         .filter(Files.project == project)
         .all()]
     return jsonify({'files': files})
