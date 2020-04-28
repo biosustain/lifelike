@@ -3,7 +3,7 @@ import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { SelectionModel } from '@angular/cdk/collections';
 import { MatSnackBar } from '@angular/material';
-import { AnnotationStatus, PdfFile, PdfFileUpload } from 'app/interfaces/pdf-files.interface';
+import { AnnotationStatus, PdfFile, PdfFileUpload, Reannotation } from 'app/interfaces/pdf-files.interface';
 import { PdfFilesService } from 'app/shared/services/pdf-files.service';
 
 
@@ -79,12 +79,12 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
       return file.file_id;
     });
     this.pdf.reannotateFiles(ids).subscribe(
-      (res: string[]) => {
+      (res: Reannotation) => {
         for (const id of ids) {
           // pick file by id
           const file: PdfFile = this.dataSource.find((f: PdfFile) => f.file_id === id);
-          // check if it was successfully annotated
-          file.annotation_status = res.includes(id) ? AnnotationStatus.Success : AnnotationStatus.Failure;
+          // set its annotation status
+          file.annotation_status = res[id] === 'Annotated' ? AnnotationStatus.Success : AnnotationStatus.Failure;
         }
         this.isReannotating = false;
         this.snackBar.open(`Reannotation completed`, 'Close', {duration: 5000});
@@ -106,10 +106,14 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
 
   // Adapted from https://v8.material.angular.io/components/table/overview#selection
   masterToggle() {
+    // TODO: remove debug console.logs once we feel this function is not buggy
     if (this.selection.selected.length === this.dataSource.length) {
       this.selection.clear();
+      console.debug('masterToggle() same length');
     } else {
       this.selection.select(...this.dataSource);
+      console.debug('masterToggle() different length');
     }
+    console.debug('masterToggle() selected before return', this.selection.selected);
   }
 }

@@ -3,7 +3,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { AuthenticationService } from 'app/auth/services/authentication.service';
-import { PdfFiles, PdfFile, PdfFileUpload } from 'app/interfaces/pdf-files.interface';
+import { PdfFiles, PdfFile, PdfFileUpload, Reannotation } from 'app/interfaces/pdf-files.interface';
 
 @Injectable({
   providedIn: 'root'
@@ -37,16 +37,11 @@ export class PdfFilesService {
     return this.http.post<PdfFileUpload>(`${this.baseUrl}/upload`, formData, this.buildHttpOptions());
   }
 
-  reannotateFiles(ids: string[]) {
-    return this.http.post<string[]>(
+  reannotateFiles(ids: string[]): Observable<Reannotation> {
+    return this.http.post<Reannotation>(
       `${this.baseUrl}/reannotate`,
       ids,
       this.buildHttpOptions()
-    ).pipe(
-      catchError(err => {
-        console.error(err);
-        return of([]);
-      }),
     );
   }
 
