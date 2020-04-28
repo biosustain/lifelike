@@ -159,7 +159,9 @@ def reannotate():
     ids = request.get_json()
     succeeded: List[str] = []
     for id in ids:
-        file = Files.query.filter_by(file_id=id).first()
+        file = Files.query.filter_by(file_id=id).one_or_none()
+        if file is None:
+            continue
         fp = io.BytesIO(file.raw_file)
         try:
             annotations = annotate(id, file.filename, fp)
