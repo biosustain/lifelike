@@ -62,25 +62,55 @@ def test_extract_tokens(annotations_setup, index, text):
         assert verify == tokens
 
 
-@pytest.mark.skip
-def test_generate_annotations(annotations_setup):
+@pytest.mark.parametrize(
+    'file, expected_keywords',
+    [
+        # (
+        #     'example3.pdf',
+        #     [
+        #         'Ferredoxin',
+        #         'lipoic acid',
+        #         'Glutaredoxin',
+        #         'Ferric chloride',
+        #         'Human',
+        #         'mitochondrial disease',
+        #     ]
+        # ),
+        (
+            'example4.pdf',
+            [
+                'Amdinocillin',                 # Chemical
+                'Escherichia coli',             # Organism
+                'cysB',                         # Gene
+                'ppGpp',                        # Compound
+                'transcriptional regulator',    # Protein
+                'strain'                        # Disease
+            ]
+        ),
+    ],
+)
+def test_generate_annotations(
+    annotations_setup,
+    example4_pdf_gene_and_organism_network,
+    file,
+    expected_keywords,
+):
     annotator = get_annotations_service()
     pdf_parser = get_annotations_pdf_parser()
 
-    pdf = path.join(directory, 'pdf_samples/example3.pdf')
+    pdf = path.join(directory, f'pdf_samples/{file}')
 
-    pdf_text = pdf_parser.parse_pdf(pdf=pdf)
-    annotations = annotator.create_annotations(
-        tokens=pdf_parser.extract_tokens(parsed_chars=pdf_text))
+    with open(pdf, 'rb') as f:
+        pdf_text = pdf_parser.parse_pdf(pdf=f)
+        annotations = annotator.create_annotations(
+            tokens=pdf_parser.extract_tokens(parsed_chars=pdf_text))
 
-    keywords = {o['keyword'] for o in annotations}
+    keywords = {o.keyword for o in annotations}
 
-    assert 'Ferredoxin' in keywords
-    assert 'lipoic acid' in keywords
-    assert 'Glutaredoxin' in keywords
-    assert 'Ferric chloride' in keywords
-    assert 'Human' in keywords
-    assert 'mitochondrial disease' in keywords
+    assert all([
+        (expected_keyword in keywords)
+        for expected_keyword in expected_keywords]
+    )
 
 
 @pytest.mark.skip
