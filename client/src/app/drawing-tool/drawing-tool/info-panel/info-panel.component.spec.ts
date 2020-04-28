@@ -4,6 +4,7 @@ import { configureTestSuite } from 'ng-bullet';
 
 import { DrawingToolModule } from '../../drawing-tool.module';
 import { InfoPanelComponent } from './info-panel.component';
+import { RootStoreModule } from 'app/***ARANGO_USERNAME***-store';
 
 describe('InfoPanelComponent', () => {
     let component: InfoPanelComponent;
@@ -11,7 +12,10 @@ describe('InfoPanelComponent', () => {
 
     configureTestSuite(() => {
         TestBed.configureTestingModule({
-            imports: [ DrawingToolModule ]
+            imports: [
+                DrawingToolModule,
+                RootStoreModule
+            ]
         });
     });
 

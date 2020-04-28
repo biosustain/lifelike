@@ -9,17 +9,7 @@ import { FileBrowserComponent } from 'app/file-browser/file-browser.component';
 import { LoginComponent } from 'app/auth/components/login.component';
 import { LifelikeHomePageComponent } from 'app/home/components/***ARANGO_DB_NAME***-home.component';
 
-import {
-  ProjectListViewComponent,
-  DrawingToolComponent,
-  // PdfViewerComponent,
-  PendingChangesGuard
-} from './drawing-tool';
-import {
-  SplitterComponent
-} from './drawing-tool/splitter/splitter.component';
-
-import { routes as dtRoutes } from './drawing-tool/drawing-tool.module'
+import { routes as dtRoutes } from './drawing-tool/drawing-tool.module';
 import { AdminGuard } from 'app/admin/services/admin-guard.service';
 import { AuthGuard } from 'app/auth/guards/auth-guard.service';
 import { LoginGuard } from 'app/auth/guards/login-guard.service';
