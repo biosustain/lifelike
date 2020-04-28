@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
-echo "SEED DATA INTACT"
 
-echo "Upgrading"
+echo "Upgrading PostgreSQL"
 flask db upgrade
-echo "Seeding database"
+echo "Seeding PostgreSQL"
 flask seed
+echo "Setting up neo4j indexes"
+# Sets up the indexes for neo4j
+flask init-neo4j

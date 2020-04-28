@@ -1,19 +1,23 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
+import { AuthenticationService } from 'app/auth/services/authentication.service';
 import { PdfFiles, PdfFile, PdfFileUpload } from 'app/interfaces/pdf-files.interface';
 
 @Injectable({
   providedIn: 'root'
 })
 export class PdfFilesService {
+  readonly baseUrl = '/api/files';
+
   constructor(
+    private auth: AuthenticationService,
     private http: HttpClient,
   ) {}
 
   getFiles(): Observable<PdfFile[]> {
-    return this.http.get<PdfFiles>('/api/files/list').pipe(
+    return this.http.get<PdfFiles>(`${this.baseUrl}/list`).pipe(
       map((res: PdfFiles) => res.files),
       catchError(err => {
         console.error(err);
@@ -22,14 +26,31 @@ export class PdfFilesService {
     );
   }
 
-  getFile(id: string): Observable<any> {
-    return this.http.get(`/api/files/${id}`);
+  getFile(id: string): Observable<ArrayBuffer> {
+    const options = Object.assign(this.createHttpOptions(true), {responseType: 'arraybuffer'});
+    return this.http.get<ArrayBuffer>(`${this.baseUrl}/${id}`, options);
   }
 
   uploadFile(file: File): Observable<PdfFileUpload> {
     const formData: FormData = new FormData();
     formData.append('file', file);
-    // formData.append('username', this_should_be_found_somewhere);
-    return this.http.post<PdfFileUpload>('/api/files/upload', formData);
+    return this.http.post<PdfFileUpload>(`${this.baseUrl}/upload`, formData, this.createHttpOptions(true));
+  }
+
+  createHttpOptions(withJwt = false) {
+    if (withJwt) {
+      return {
+        headers: new HttpHeaders({
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer ' + localStorage.getItem('access_jwt'),
+        }),
+      };
+    } else {
+      return {
+        headers: new HttpHeaders({
+          'Content-Type': 'application/json',
+        }),
+      };
+    }
   }
 }

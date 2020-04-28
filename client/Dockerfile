@@ -24,6 +24,11 @@ ENV N4J_CLIENT $N4J_HOME/client
 ENV PATH $N4J_CLIENT/node_modules/.bin:$PATH
 
 WORKDIR $N4J_CLIENT
+
+COPY --chown=$N4J_USER:$N4J_USER package.json $N4J_CLIENT/package.json
+COPY --chown=$N4J_USER:$N4J_USER yarn.lock $N4J_CLIENT/yarn.lock
+RUN yarn install && chown -R $N4J_USER:$N4J_USER node_modules
+
 USER $N4J_USER
 
 COPY . $N4J_CLIENT

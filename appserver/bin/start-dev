@@ -11,4 +11,5 @@ cd "${__dir__}/.."
 # Mark ready
 touch .READY
 
+echo "Running development server"
 flask run --host 0.0.0.0
