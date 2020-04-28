@@ -1,4 +1,4 @@
-"""empty message
+"""Creating vector and vectorizer for project table
 
 Revision ID: a84e5653318c
 Revises: 0101429d1046
@@ -17,7 +17,7 @@ from sqlalchemy.dialects.postgresql import JSON
 
 # revision identifiers, used by Alembic.
 revision = 'a84e5653318c'
-down_revision = '0101429d1046'
+down_revision = '7998c4d9f557'
 branch_labels = None
 depends_on = None
 
