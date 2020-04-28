@@ -21,6 +21,7 @@ import { httpInterceptorProviders } from 'app/http-interceptors/index';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { BrowserModule } from '@angular/platform-browser';
 import { VisualizationModule } from './visualization/visualization.module';
+import { DrawingToolModule } from './drawing-tool/drawing-tool.module';
 
 @NgModule({
   declarations: [
@@ -44,6 +45,7 @@ import { VisualizationModule } from './visualization/visualization.module';
     RootStoreModule,
     SearchModule,
     ChartsModule,
+    DrawingToolModule
   ],
   entryComponents: [
     UploadProgressDialogComponent,
