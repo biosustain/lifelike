@@ -506,10 +506,24 @@ export class ProjectListViewComponent implements OnInit {
       this.projectService.searchForMaps(this.searchForm.value.term)
         .subscribe(
           (data) => {
+            this.highlightNodes(data, this.searchForm.value.term.split(' '));
             this.searchResults = (
               data.projects as Project[]
             );
           });
     }
+  }
+
+  private highlightNodes(data, terms: string[]) {
+    data.projects.forEach(project => {
+      project.graph.nodes.forEach(node => {
+        terms.forEach(term => {
+          const regexp = new RegExp('^' + term + '.*$', 'gi');
+          if (node.display_name.match(regexp)) {
+            node.color = {background: '#FFFF00'};
+          }
+        });
+      });
+    });
   }
 }
