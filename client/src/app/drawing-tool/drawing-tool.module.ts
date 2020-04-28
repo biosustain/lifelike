@@ -97,7 +97,8 @@ export const routes = [
     PendingChangesGuard
   ],
   exports: [
-    RouterModule
+    RouterModule,
+    PdfViewerLibModule
   ]
 })
 export class DrawingToolModule { }
