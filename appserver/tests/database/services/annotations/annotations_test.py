@@ -62,20 +62,21 @@ def test_extract_tokens(annotations_setup, index, text):
         assert verify == tokens
 
 
+@pytest.mark.skip
 @pytest.mark.parametrize(
     'file, expected_keywords',
     [
-        # (
-        #     'example3.pdf',
-        #     [
-        #         'Ferredoxin',
-        #         'lipoic acid',
-        #         'Glutaredoxin',
-        #         'Ferric chloride',
-        #         'Human',
-        #         'mitochondrial disease',
-        #     ]
-        # ),
+        (
+            'example3.pdf',
+            [
+                'Ferredoxin',
+                'lipoic acid',
+                'Glutaredoxin',
+                'Ferric chloride',
+                'Human',
+                'mitochondrial disease',
+            ]
+        ),
         (
             'example4.pdf',
             [
