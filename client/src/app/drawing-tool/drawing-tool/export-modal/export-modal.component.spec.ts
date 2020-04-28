@@ -1,17 +1,23 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ExportModalComponent } from './export-modal.component';
+import { DrawingToolModule } from '../../drawing-tool.module';
+import { MatDialogRef} from '@angular/material/dialog';
+import {configureTestSuite} from 'ng-bullet';
 
 describe('ExportModalComponent', () => {
   let component: ExportModalComponent;
   let fixture: ComponentFixture<ExportModalComponent>;
 
-  beforeEach(async(() => {
-    TestBed.configureTestingModule({
-      declarations: [ ExportModalComponent ]
-    })
-    .compileComponents();
-  }));
+  configureTestSuite(() => {
+      TestBed.configureTestingModule({
+          imports: [ DrawingToolModule ],
+          providers: [{
+             provide: MatDialogRef,
+             useValue: {}
+          }]
+      });
+  });
 
   beforeEach(() => {
     fixture = TestBed.createComponent(ExportModalComponent);
