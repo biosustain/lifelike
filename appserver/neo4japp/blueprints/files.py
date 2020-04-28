@@ -31,6 +31,13 @@ def upload_pdf():
     username = g.current_user
 
     filename = secure_filename(request.files['file'].filename)
+    # Make sure that the filename is not longer than the DB column permits
+    max_filename_length = Files.filename.property.columns[0].type.length
+    if len(filename) > max_filename_length:
+        name, extension = os.path.splitext(filename)
+        if len(extension) > max_filename_length:
+            extension = ".dat"
+        filename = name[:max(0, max_filename_length - len(extension))] + extension
     file_id = str(uuid.uuid4())
 
     try:
