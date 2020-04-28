@@ -88,7 +88,7 @@ def list_files():
         'id': row.id,  # TODO: is this of any use?
         'file_id': row.file_id,
         'filename': row.filename,
-        'username': row.username if row.user_id else row.legacy_username,
+        'username': row.username if row.user_id is not None else row.legacy_username,
         'creation_date': row.creation_date,
     } for row in db.session.query(
         Files.id,
