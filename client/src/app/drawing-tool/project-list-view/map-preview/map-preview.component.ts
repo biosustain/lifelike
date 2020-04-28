@@ -59,16 +59,6 @@ export class MapPreviewComponent implements OnInit {
 
   @Output() toggleFullscreen: EventEmitter<string> = new EventEmitter<string>();
 
-  get node() {
-    if (!this.focusedEntity) { return null; }
-
-    return this.focusedEntity.nodeData;
-  }
-
-  get nodeStyle() {
-    return this.focusedEntity.nodeData.group || '';
-  }
-
   constructor(
     private projectService: ProjectsService,
     private route: ActivatedRoute
