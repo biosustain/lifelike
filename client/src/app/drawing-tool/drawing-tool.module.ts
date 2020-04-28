@@ -80,7 +80,9 @@ export const routes = [
     CreateProjectDialogComponent,
     DeleteProjectDialogComponent,
     CopyProjectDialogComponent,
-    MapListComponent
+    MapListComponent,
+    ProjectListViewComponent,
+    PdfViewerComponent
   ],
   imports: [
     SharedModule,
