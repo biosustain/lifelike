@@ -11,7 +11,6 @@ import {
 import { map, takeUntil } from 'rxjs/operators';
 import { BehaviorSubject, Subject } from 'rxjs';
 
-
 @Injectable({providedIn: 'root'})
 export class AccountService implements OnDestroy {
     readonly accountApi = '/api/accounts';

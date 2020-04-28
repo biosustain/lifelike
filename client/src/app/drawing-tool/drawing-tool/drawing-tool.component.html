@@ -5,6 +5,19 @@
     (cdkDropListDropped)='drop($event)'
     id='canvas'>
   </div>
+  <!-- Context Menu -->
+  <app-drawing-tool-context-menu
+    [tooltipSelector]="contextMenuTooltipSelector"
+    [tooltipOptions]="contextMenuTooltipOptions"
+    [selectedNodeIds]="selectedNodes"
+    [selectedEdgeIds]="selectedEdges"
+    (removeNodes)="removeNodes($event)"
+    (removeEdges)="removeEdges($event)"
+    (selectNeighbors)="selectNeighbors($event)"
+    (copySelection)="copySelection()"
+    (pasteSelection)="pasteSelection()"
+    (createLinkNodeFromClipboard)="createLinkNodeFromClipboard($event)"
+  ></app-drawing-tool-context-menu>
   <!-- Tool UI -->
   <div id='tool-panel' class='shadow-4 ma3'>
     <mat-icon

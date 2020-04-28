@@ -2,20 +2,29 @@
     <div class='nav-bar'>
         <mat-icon (click)='changeSize()' class='fr'>menu</mat-icon>
     </div>
-    <form 
+
+    <div class='w-90 center'>
+      <mat-checkbox
+        *ngIf='graphData.id!=="" && isNode && graphData.group === "link"'
+        [(ngModel)]="nodeIsIcon"
+        (change)="linkNodeCheckboxChanged($event)"
+      >Show Link Node as Icon</mat-checkbox>
+    </div>
+
+    <form
         *ngIf='graphData.id!==""'
         class='w-90 center'
         [formGroup]='entityForm'>
-        
+
         <mat-form-field class="w-100 mt3">
             <mat-label>Label</mat-label>
-            <input 
+            <input
                 matInput
                 (keydown.enter)="blurInput($event)"
                 formControlName='label'>
         </mat-form-field>
 
-        <mat-form-field 
+        <mat-form-field
             *ngIf='isNode'
             class='w-100'>
             <mat-label>Type</mat-label>
@@ -29,18 +38,18 @@
             </mat-select>
         </mat-form-field>
 
-        <mat-form-field 
+        <mat-form-field
             *ngIf='isNode'
             class="w-100 mt3">
             <mat-label>Hyperlink</mat-label>
-            <input 
+            <input
                 matInput
                 (keydown.enter)="blurInput($event)"
                 formControlName='hyperlink'>
             <mat-icon (click)='goToLink()' matSuffix>link</mat-icon>
         </mat-form-field>
 
-        <mat-form-field 
+        <mat-form-field
             *ngIf='isNode'
             class="w-100 mt3">
             <mat-label>Detail</mat-label>
@@ -54,22 +63,22 @@
             </textarea>
         </mat-form-field>
 
-        <div 
+        <div
             *ngIf='isNode'
             class='flex' style="flex-wrap: wrap;">
-            <p 
+            <p
                 matTooltip='Click to collapse/uncollapse'
                 matTooltipPosition="right"
                 (click)='toggleCollapsible()'
                 class='blue dim collapsible'>
                 Edges
             </p>
-            <button 
+            <button
                 (click)='addEdge()'
-                mat-button color="primary" 
+                mat-button color="primary"
                 style="margin-left: auto;">
                 Add Edge
-            </button> 
+            </button>
             <p
                 *ngIf='!edges'
                 class='silver w-100 tc mv3'>
@@ -77,11 +86,11 @@
             </p>
         </div>
 
-        <div 
+        <div
             *ngIf='isNode'
             [ngClass]='edgeListStyle'
             id='edge-list'>
-            <div 
+            <div
                 formArrayName='edges'
                 *ngFor="let edge of edgeFormArr.controls; let i = index;"
                 class='db flex mb3'

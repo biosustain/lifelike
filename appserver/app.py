@@ -14,7 +14,7 @@ app = create_app(config=f'config.{app_config}')
 
 @app.route('/')
 def home():
-    return render_template('index.html')
+    return 'Ouch! You hit me.'
 
 
 @app.cli.command("seed")
@@ -74,6 +74,13 @@ def seed():
                     draw_proj.set_hash_id()
 
                     db.session.commit()
+
+
+@app.cli.command("init-neo4j")
+def init_neo4j():
+    # Sets up the proper indexes for Neo4j
+    from db import setup as neo4jsetup
+    neo4jsetup()
 
 
 @app.cli.command("drop_tables")
