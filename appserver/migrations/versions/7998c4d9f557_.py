@@ -2,9 +2,9 @@
 We will use this field to preserve annotations added
 by users until they are revised and added to the pipeline
 
-Revision ID: d096d886925b
-Revises: 0101429d1046
-Create Date: 2020-04-22 18:01:44.908016
+Revision ID: 7998c4d9f557
+Revises: a36d95c0cf4c
+Create Date: 2020-04-28 08:24:05.246430
 
 """
 from alembic import context
@@ -13,8 +13,8 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = 'd096d886925b'
-down_revision = '0101429d1046'
+revision = '7998c4d9f557'
+down_revision = 'a36d95c0cf4c'
 branch_labels = None
 depends_on = None
 
