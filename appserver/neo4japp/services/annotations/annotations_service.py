@@ -360,16 +360,135 @@ class AnnotationsService:
         self,
         entity_id_str: str,
         coor_obj_per_pdf_page: Dict[int, List[Union[LTChar, LTAnno]]],
+        matched_organism_ids: List[str],
     ) -> Tuple[List[Annotation], Set[str]]:
-        return self._get_annotation(
-            tokens=self.matched_genes,
-            token_type=EntityType.Genes.value,
-            color=EntityColor.Genes.value,
-            transaction=self.lmdb_session.genes_txn,
-            id_str=entity_id_str,
-            correct_synonyms=self.correct_synonyms,
-            coor_obj_per_pdf_page=coor_obj_per_pdf_page,
-        )
+        """Gene specific annotation. Nearly identical to `_get_annotation`,
+        except that we check genes against the matched organisms found in the
+        document.
+
+        It is likely that the annotator will detect keywords that resemble gene
+        names, but are not genes in the context of the document.
+
+        It is also possible that two organisms discussed in the document each have a
+        gene with the same name. In this case we need a way to distinguish between the
+        two.
+
+        To resolve both of the above issues we check the graph database for
+        relationships between genes/organisms, and handle each of the following cases:
+            1. Exactly one organism match for a given gene
+            2. More than one organism match for a given gene
+            3. No organism matches for a given gene
+        """
+
+        tokens: Dict[str, List[PDFTokenPositions]] = self.matched_genes
+        token_type: str = EntityType.Genes.value
+        color: str = EntityColor.Genes.value
+        transaction = self.lmdb_session.genes_txn
+        correct_synonyms: Dict[str, str] = self.correct_synonyms
+
+        matches: List[Annotation] = []
+        unwanted_matches: Set[str] = set()
+
+        tokens_lowercased = set(tokens.keys())
+
+        def get_gene_to_organism_map(
+            genes: List[str],
+            organisms: List[str]
+        ) -> Dict[str, Dict[str, str]]:
+            """Returns a mapping of genes to organisms."""
+            from neo4japp.database import get_neo4j_service_dao
+            neo4j = get_neo4j_service_dao()
+            gene_to_organisms_map = neo4j.get_genes_to_organisms(genes, organisms)
+            return gene_to_organisms_map
+
+        gene_to_organism_map = get_gene_to_organism_map(list(tokens.keys()), matched_organism_ids)
+
+        for word, token_positions_list in tokens.items():
+            # If the gene is not mapped to any organism in the paper, discard it
+            if word not in gene_to_organism_map.keys():
+                unwanted_matches.add(word)
+                continue
+
+            for token_positions in token_positions_list:
+                if word in correct_synonyms:
+                    lookup_key = correct_synonyms[word]
+                else:
+                    lookup_key = word
+
+                lookup_key = normalize_str(lookup_key)
+
+                entity = json.loads(transaction.get(lookup_key.encode('utf-8')))
+
+                common_name_count = 0
+                if len(entity['common_name']) > 1:
+                    common_names = set([v for _, v in entity['common_name'].items()])
+                    common_names_in_doc_text = [n in tokens_lowercased for n in common_names]  # noqa
+
+                    # skip if none of the common names appear
+                    if not any(common_names_in_doc_text):
+                        continue
+                    else:
+                        for k, v in entity['common_name'].items():
+                            if v in tokens_lowercased:
+                                common_name_count += 1
+                                entity_id = k
+                else:
+                    common_name_count = 1
+                    entity_id = entity[entity_id_str]
+
+                if common_name_count == 1:
+                    # If a gene was matched to more than one organism in the document,
+                    # we have to check which of them to use, and get the corresponding
+                    # gene data
+                    if len(gene_to_organism_map[word]) > 1:
+                        # TODO LL-358: Do some magic to determine which gene to use
+                        pass
+
+                    # create list of positions boxes
+                    curr_page_coor_obj = coor_obj_per_pdf_page[
+                        token_positions.page_number]
+
+                    keyword_positions: List[Annotation.TextPosition] = []
+                    char_indexes = list(token_positions.char_positions.keys())
+
+                    self._create_keyword_objects(
+                        curr_page_coor_obj=curr_page_coor_obj,
+                        indexes=char_indexes,
+                        keyword_positions=keyword_positions
+                    )
+
+                    keyword_starting_idx = char_indexes[0]
+                    keyword_ending_idx = char_indexes[-1]
+                    link_search_term = f'{token_positions.keyword}'
+
+                    meta = Annotation.Meta(
+                        keyword_type=token_type,
+                        color=color,
+                        id=entity_id,
+                        id_type=entity['id_type'],
+                        links=Annotation.Meta.Links(
+                            ncbi=NCBI_LINK + link_search_term,
+                            uniprot=UNIPROT_LINK + link_search_term,
+                            wikipedia=WIKIPEDIA_LINK + link_search_term,
+                            google=GOOGLE_LINK + link_search_term,
+                        ),
+                    )
+
+                    matches.append(
+                        Annotation(
+                            page_number=token_positions.page_number,
+                            rects=[pos.positions for pos in keyword_positions],  # type: ignore
+                            keywords=[k.value for k in keyword_positions],
+                            keyword=token_positions.keyword,
+                            keyword_length=len(token_positions.keyword),
+                            lo_location_offset=keyword_starting_idx,
+                            hi_location_offset=keyword_ending_idx,
+                            meta=meta,
+                        )
+                    )
+                else:
+                    unwanted_matches.add(word)
+        return matches, unwanted_matches
 
     def _annotate_chemicals(
         self,
@@ -486,10 +605,16 @@ class AnnotationsService:
     ) -> List[Annotation]:
         self._filter_tokens(tokens=tokens)
 
-        matched_genes, unwanted_genes = self.annotate(
-            annotation_type=EntityType.Genes.value,
+        matched_species, unwanted_species = self.annotate(
+            annotation_type=EntityType.Species.value,
+            entity_id_str=EntityIdStr.Species.value,
+            coor_obj_per_pdf_page=tokens.coor_obj_per_pdf_page,
+        )
+
+        matched_genes, unwanted_genes = self._annotate_genes(
             entity_id_str=EntityIdStr.Genes.value,
             coor_obj_per_pdf_page=tokens.coor_obj_per_pdf_page,
+            matched_organism_ids=[annotation.meta.id for annotation in matched_species]
         )
 
         matched_chemicals, unwanted_chemicals = self.annotate(
@@ -507,12 +632,6 @@ class AnnotationsService:
         matched_proteins, unwanted_proteins = self.annotate(
             annotation_type=EntityType.Proteins.value,
             entity_id_str=EntityIdStr.Proteins.value,
-            coor_obj_per_pdf_page=tokens.coor_obj_per_pdf_page,
-        )
-
-        matched_species, unwanted_species = self.annotate(
-            annotation_type=EntityType.Species.value,
-            entity_id_str=EntityIdStr.Species.value,
             coor_obj_per_pdf_page=tokens.coor_obj_per_pdf_page,
         )
 
