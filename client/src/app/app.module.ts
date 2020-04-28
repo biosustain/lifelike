@@ -15,6 +15,7 @@ import { SearchModule } from './search/search.module';
 import { DrawingToolModule } from './drawing-tool/drawing-tool.module';
 import { SharedModule } from './shared/shared.module';
 import { FileBrowserComponent } from './file-browser/file-browser.component';
+import { UploadProgressDialogComponent } from './file-browser/upload-progress-dialog.component';
 import { UserModule } from 'app/users/users.module';
 import { KgStatisticsComponent } from './kg-statistics/kg-statistics.component';
 import { ChartsModule } from 'ng2-charts';
@@ -25,6 +26,7 @@ import { httpInterceptorProviders } from 'app/http-interceptors/index';
   declarations: [
     AppComponent,
     FileBrowserComponent,
+    UploadProgressDialogComponent,
     KgStatisticsComponent,
   ],
   imports: [
@@ -44,6 +46,9 @@ import { httpInterceptorProviders } from 'app/http-interceptors/index';
     SearchModule,
     DrawingToolModule,
     ChartsModule,
+  ],
+  entryComponents: [
+    UploadProgressDialogComponent,
   ],
   providers: [httpInterceptorProviders],
   exports: [
