@@ -5,6 +5,7 @@ import uuid
 from datetime import datetime
 
 from flask import Blueprint, request, abort, jsonify, g, make_response
+from sqlalchemy.orm.exc import NoResultFound
 from werkzeug.utils import secure_filename
 
 from neo4japp.blueprints.auth import auth
@@ -48,13 +49,13 @@ def upload_pdf():
         annotations_json = bioc_service.generate_bioc_json(
             annotations=annotations, bioc=bioc)
 
-        # First look for an existing copy of this file
-        file_content = db.session.query(FileContent.id) \
-            .filter(FileContent.checksum_sha256 == checksum_sha256) \
-            .first()
-
-        # Otherwise, let's create a new row
-        if not file_content:
+        try:
+            # First look for an existing copy of this file
+            file_content = db.session.query(FileContent.id) \
+                .filter(FileContent.checksum_sha256 == checksum_sha256) \
+                .one()
+        except NoResultFound:
+            # Otherwise, let's add the file content to the database
             file_content = FileContent(
                 raw_file=pdf_content,
                 checksum_sha256=checksum_sha256
@@ -114,11 +115,14 @@ def list_files():
 @bp.route('/<id>', methods=['GET'])
 @auth.login_required
 def get_pdf(id):
-    entry = db.session \
-        .query(Files.raw_file.label("legacy_raw_file"), FileContent.raw_file) \
-        .outerjoin(FileContent) \
-        .filter(Files.file_id == id) \
-        .one()
+    try:
+        entry = db.session \
+            .query(Files.raw_file.label("legacy_raw_file"), FileContent.raw_file) \
+            .outerjoin(FileContent) \
+            .filter(Files.file_id == id) \
+            .one()
+    except NoResultFound:
+        raise RecordNotFoundException('Requested PDF file not found.')
     res = make_response(entry.raw_file or entry.legacy_raw_file)
     res.headers['Content-Type'] = 'application/pdf'
     return res
