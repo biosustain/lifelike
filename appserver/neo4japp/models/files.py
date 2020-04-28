@@ -13,3 +13,4 @@ class Files(RDBMSBase):  # type: ignore
     creation_date = db.Column(db.DateTime, default=db.func.now())
     annotations = db.Column(postgresql.JSONB, nullable=False, server_default='[]')
     project = db.Column(db.Integer(), db.ForeignKey('projects.id'), nullable=False)
+    custom_annotations = db.Column(postgresql.JSONB, nullable=False, server_default='[]')
