@@ -16,7 +16,6 @@ print_usage() {
 
 set -o errexit                  # exit on command failure; use <cmd> || true to allow for exception
 set -o nounset                  # exit when script tries to use undeclared variables
-set -o pipefail
 
 if [ $# -ne 2 ];
 then
