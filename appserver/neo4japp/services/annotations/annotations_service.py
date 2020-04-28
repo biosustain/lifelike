@@ -405,9 +405,8 @@ class AnnotationsService:
         match_result = get_gene_to_organism_match_result(list(tokens.keys()), matched_organism_ids)
 
         for word, token_positions_list in tokens.items():
-            # If the gene is not matched to any organism in the paper, discard it
+            # If the "gene" is not matched to any organism in the paper, ignore it
             if word not in match_result.keys():
-                unwanted_matches.add(word)
                 continue
 
             for token_positions in token_positions_list:
