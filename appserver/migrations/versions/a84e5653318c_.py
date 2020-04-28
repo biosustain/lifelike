@@ -1,7 +1,7 @@
 """Creating vector and vectorizer for project table
 
 Revision ID: a84e5653318c
-Revises: 0101429d1046
+Revises: 7998c4d9f557
 Create Date: 2020-04-23 11:51:00.436591
 
 """
