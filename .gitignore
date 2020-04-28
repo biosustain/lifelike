@@ -49,8 +49,9 @@ terraform-gcloud.json
 *.env
 *.env.*
 
-# .idea folder
+# IDE - IntelliJ
 .idea/
+/*.iml
 
 #virtual environments
 .venv/
