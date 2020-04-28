@@ -3,7 +3,7 @@ from datetime import datetime
 import os
 import json
 from neo4japp.blueprints.auth import auth
-from flask import Blueprint, request, abort, send_from_directory, jsonify, g
+from flask import Blueprint, request, abort, jsonify, g, make_response
 from werkzeug.utils import secure_filename
 
 from neo4japp.database import (
@@ -13,6 +13,7 @@ from neo4japp.database import (
     get_bioc_document_service,
 )
 from neo4japp.models.files import Files
+from neo4japp.exceptions import RecordNotFoundException
 
 bp = Blueprint('files', __name__, url_prefix='/files')
 
@@ -94,14 +95,10 @@ def list_files():
 @bp.route('/<id>', methods=['GET'])
 @auth.login_required
 def get_pdf(id):
-    project = '1'  # TODO: remove hard coded project
-    file, filename = db.session.query(Files.raw_file, Files.filename) \
-        .filter(Files.file_id == id and Files.project == project)\
-        .one()
-    # TODO: Remove writing in filesystem part, this is not needed should be tackle in next version
-    outdir = os.path.abspath(os.getcwd())
-    write_file(file, os.path.join(outdir, filename))
-    return send_from_directory(outdir, filename)
+    entry = db.session.query(Files.raw_file).filter(Files.file_id == id).one()
+    res = make_response(entry.raw_file)
+    res.headers['Content-Type'] = 'application/pdf'
+    return res
 
 
 @bp.route('/bioc', methods=['GET'])
@@ -125,15 +122,17 @@ def get_annotations(id):
     # project = data['project']
     project = '1'  # TODO: remove hard coded project
 
-    annotations = db.session.query(Files.annotations)\
-        .filter(Files.file_id == id and Files.project == project)\
-        .one()
+    file = Files.query.filter_by(file_id=id, project=project).one_or_none()
+    if not file:
+        raise RecordNotFoundException('File does not exist')
+
+    annotations = file.annotations
 
     # TODO: Should remove this eventually...the annotator should return data readable by the
     # lib-pdf-viewer-lib, or the lib should conform to what is being returned by the annotator.
     # Something has to give.
     def map_annotations_to_correct_format(unformatted_annotations: dict):
-        unformatted_annotations_list = unformatted_annotations[0]['documents'][0]['passages'][0]['annotations']  # noqa
+        unformatted_annotations_list = unformatted_annotations['documents'][0]['passages'][0]['annotations']  # noqa
         formatted_annotations_list = []
 
         for unformatted_annotation in unformatted_annotations_list:
@@ -146,10 +145,18 @@ def get_annotations(id):
             formatted_annotations_list.append(unformatted_annotation)
         return formatted_annotations_list
 
-    return jsonify(map_annotations_to_correct_format(annotations))
+    # for now, custom annotations are stored in the format that pdf-viewer supports
+    return jsonify(map_annotations_to_correct_format(annotations) + file.custom_annotations)
 
 
-def write_file(data, filename):
-    # Convert binary data to proper format and write it on Hard Disk
-    with open(filename, 'wb') as f:
-        f.write(data)
+@bp.route('/add_custom_annotation/<id>', methods=['PATCH'])
+@auth.login_required
+def add_custom_annotation(id):
+    annotation_to_add = request.get_json()
+    annotation_to_add['user_id'] = g.current_user.id
+    file = Files.query.filter_by(file_id=id).one_or_none()
+    if not file:
+        raise RecordNotFoundException('File does not exist')
+    file.custom_annotations = [annotation_to_add, *file.custom_annotations]
+    db.session.commit()
+    return {'status': 'success'}, 200

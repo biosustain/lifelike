@@ -1,7 +1,7 @@
-"""empty message
+"""Create projects table since project was taken
 
 Revision ID: 9d90838ba1b5
-Revises: 6f6be267949c
+Revises: ca616cde5e21
 Create Date: 2020-04-16 13:07:58.992563
 
 """
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = '9d90838ba1b5'
-down_revision = '6f6be267949c'
+down_revision = 'ca616cde5e21'
 branch_labels = None
 depends_on = None
 
