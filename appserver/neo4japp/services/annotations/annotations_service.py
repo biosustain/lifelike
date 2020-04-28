@@ -582,7 +582,6 @@ class AnnotationsService:
         coor_obj_per_pdf_page: Dict[int, List[Union[LTChar, LTAnno]]],
     ) -> Tuple[List[Annotation], Set[str]]:
         funcs = {
-            EntityType.Genes.value: self._annotate_genes,
             EntityType.Chemicals.value: self._annotate_chemicals,
             EntityType.Compounds.value: self._annotate_compounds,
             EntityType.Proteins.value: self._annotate_proteins,
