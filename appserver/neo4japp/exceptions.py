@@ -63,6 +63,7 @@ class FormatterException(BaseException):
 
 
 class BadRequestError(BaseException):
-    """Signals that the user may have done something wrong and that the message should be shown to the user."""
+    """Signals that the user may have done something wrong and that the
+    message should be shown to the user."""
     def __init__(self, message):
         super().__init__('Bad Request Error', message)
