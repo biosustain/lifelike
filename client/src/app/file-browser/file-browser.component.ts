@@ -109,11 +109,11 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
     // TODO: remove debug console.logs once we feel this function is not buggy
     if (this.selection.selected.length === this.dataSource.length) {
       this.selection.clear();
-      console.debug('masterToggle() same length');
+      console.log('masterToggle() same length');
     } else {
       this.selection.select(...this.dataSource);
-      console.debug('masterToggle() different length');
+      console.log('masterToggle() different length');
     }
-    console.debug('masterToggle() selected before return', this.selection.selected);
+    console.log('masterToggle() selected before return', this.selection.selected);
   }
 }
