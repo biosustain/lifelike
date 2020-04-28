@@ -126,20 +126,15 @@ class AnnotationsPDFParser:
         # whitespace contains newline
         return text in whitespace or text == '\xa0'
 
-    def extract_tokens(
+    def combine_chars_into_words(
         self,
         parsed_chars: PDFParsedCharacters,
-    ) -> PDFTokenPositionsList:
-        """Extract word tokens from the parsed characters.
+    ) -> Dict[int, List[Tuple[str, Dict[int, str]]]]:
+        """Combines a list of char into a list of words.
 
-        Returns a token list of sequentially concatentated
-        words up to the @self.max_word_length. Each token object
-        in the list will contain the keyword, and the index of
-        each keyword.
-
-        E.g ['A', 'B', 'C', 'D', 'E'] -> ['A', 'A B', 'A B C', 'B', 'B C', ...]
+        E.g ['H', 'e', 'l', 'l', 'o', ' ', 'T', 'h', 'e', 'r', 'e']
+        becomes ['Hello', 'There']
         """
-        keyword_tokens: List[PDFTokenPositions] = []
         words_with_char_idx: Dict[int, List[Tuple[str, Dict[int, str]]]] = {}
 
         # first combine each character into single words
@@ -173,6 +168,24 @@ class AnnotationsPDFParser:
                         char_idx_map[i] = char
 
             words_with_char_idx[page_idx] = word_list
+        return words_with_char_idx
+
+    def extract_tokens(
+        self,
+        parsed_chars: PDFParsedCharacters,
+    ) -> PDFTokenPositionsList:
+        """Extract word tokens from the parsed characters.
+
+        Returns a token list of sequentially concatentated
+        words up to the @self.max_word_length. Each token object
+        in the list will contain the keyword, and the index of
+        each keyword.
+
+        E.g ['A', 'B', 'C', 'D', 'E'] -> ['A', 'A B', 'A B C', 'B', 'B C', ...]
+            - NOTE: each character here represents a word
+        """
+        keyword_tokens: List[PDFTokenPositions] = []
+        words_with_char_idx = self.combine_chars_into_words(parsed_chars=parsed_chars)
 
         curr_max_words = 1
         processed_tokens: Set[str] = set()
@@ -180,7 +193,7 @@ class AnnotationsPDFParser:
         # now create keyword tokens up to self.max_word_length
         for page_idx, words_char_idx_list in words_with_char_idx.items():
             end_idx = 1
-            max_length = len(char_list)
+            max_length = len(words_char_idx_list)
 
             for i, _ in enumerate(words_char_idx_list):
                 while curr_max_words <= self.max_word_length and end_idx <= max_length:  # noqa
