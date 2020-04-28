@@ -1,4 +1,4 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { GraphSelectionData, UniversalGraph, VisNetworkGraphEdge, Project } from 'app/drawing-tool/services/interfaces';
 import { NetworkVis } from 'app/drawing-tool/network-vis';
 import { ProjectsService } from 'app/drawing-tool/services';
@@ -56,6 +56,8 @@ export class MapPreviewComponent implements OnInit {
       100
     );
   }
+
+  @Output() toggleFullscreen: EventEmitter<string> = new EventEmitter<string>();
 
   get node() {
     if (!this.focusedEntity) { return null; }
@@ -145,18 +147,6 @@ export class MapPreviewComponent implements OnInit {
   toggle() {
     this.screenMode = this.screenMode === 'shrink' ? 'grow' : 'shrink';
 
-    // Calculate the parameters for our animation
-    const listWidth = this.screenMode === 'shrink' ? '25%' : '0%';
-    const previewWidth = this.screenMode === 'shrink' ? '75%' : '100%';
-    const listDuration = this.screenMode === 'shrink' ? 500 : 400;
-    const previewDuration = this.screenMode === 'shrink' ? 400 : 500;
-    const containerHeight = this.screenMode === 'shrink' ? '70vh' : '100vh';
-    const panelHeight = this.screenMode === 'shrink' ? '30vh' : '0vh';
-
-    $('#map-list-container').animate({width: listWidth}, listDuration);
-    $('#map-preview').animate({width: previewWidth}, previewDuration);
-
-    $('#canvas-container').animate({height: containerHeight}, 600);
-    $('#map-panel').animate({height: panelHeight}, 600);
+    this.toggleFullscreen.emit(this.screenMode);
   }
 }

@@ -1,6 +1,6 @@
 <div id='map-channel' fxFlex fxLayout class='w-100 vh-100'>
   <!-- Map List -->
-  <div id='map-list-container' class='h-100' fxFlex="30">
+  <div *ngIf='fullScreenmode==="shrink"' id='map-list-container' class='h-100' fxFlex="30">
     <app-map-list
       childMode='true'
       [projects]='projects'
@@ -16,9 +16,9 @@
       <mat-icon>add</mat-icon>
     </button>
   </div>
-  <div class='h-100' fxFlex="70" fxLayout='column' fxLayoutAlign="start center">
+  <div class='h-100' fxFill [fxFlex]="fullScreenmode === 'shrink' ? 70 : 100" fxLayout='column' fxLayoutAlign="start center">
     <!-- Map Preview Panel -->
-    <div class='bg-green' fxFill fxFlex="70" fxLayoutAlign="center center">
+    <div class='bg-green' fxFill [fxFlex]="fullScreenmode === 'shrink' ? 70 : 100" fxLayoutAlign="center center">
       <div
         fxFill
         *ngIf='selectedProject else empty;'
@@ -26,15 +26,16 @@
         <div 
           id='canvas-container'>
           <app-map-preview
-            [project]='selectedProject'>
+            [project]='selectedProject'
+            (toggleFullscreen)='toggleFullscreen($event)'>
           </app-map-preview>
         </div>
       </div>
     </div>
     <!-- Map Meta Panel -->
-    <div fxFill fxFlex="30" fxLayout='row'>
+    <div *ngIf='fullScreenmode==="shrink"' id='map-meta-panel' fxFill fxFlex="30" fxLayout='row'>
       <!-- Meta Info -->
-      <div fxFill fxFlex="50" fxLayout='column' fxLayoutAlign="start center">
+      <div id='details' fxFill fxFlex="70">
         <h2>{{selectedProject?.label}}</h2>
         <p class='author'>
           By {{selectedProject?.author}}
@@ -47,7 +48,7 @@
         </p>
       </div>
       <!-- Actions -->
-      <div fxFill fxFlex="50" fxLayout='column' fxLayoutAlign="center center">
+      <div id='actions' fxFill fxFlex="30" fxLayout='column' fxLayoutAlign="center center">
         <div *ngIf='isItMine'>
           <button
             mat-raised-button

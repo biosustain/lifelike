@@ -47,6 +47,8 @@ import { AuthenticationService } from 'app/auth/services/authentication.service'
   styleUrls: ['./project-list-view.component.scss']
 })
 export class ProjectListViewComponent {
+  fullScreenmode = 'shrink';
+
   /**
    * ID of the user
    */
@@ -254,5 +256,10 @@ export class ProjectListViewComponent {
       default:
         break;
     }
+  }
+
+  toggleFullscreen(screenMode) {
+    this.fullScreenmode = screenMode;
+    console.log(this.fullScreenmode);
   }
 }
