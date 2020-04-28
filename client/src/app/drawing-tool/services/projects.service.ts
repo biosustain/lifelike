@@ -99,7 +99,8 @@ export class ProjectsService {
   }
 
   /**
-   * Search for all maps given search term
+   * Return results based on search terms
+   * inside of nodes in drawing-tool map
    */
   public searchForMaps(term: string): Observable<any> {
     return this.http.post(

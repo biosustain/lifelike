@@ -520,7 +520,7 @@ export class ProjectListViewComponent implements OnInit {
         terms.forEach(term => {
           const regexp = new RegExp('^' + term + '.*$', 'gi');
           if (node.display_name.match(regexp)) {
-            node.color = {background: '#FFFF00'};
+            node.color = {background: '#FFFD92'};
           }
         });
       });
