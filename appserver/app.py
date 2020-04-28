@@ -67,7 +67,7 @@ def seed():
                         user_id=idx+1
                     )
 
-                    db.session.add(proj)
+                    db.session.add(draw_proj)
                     db.session.flush()
 
                     # Assign hash_id to map
