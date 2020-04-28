@@ -1,3 +1,4 @@
+from enum import Enum
 import io
 import uuid
 from datetime import datetime
@@ -5,7 +6,7 @@ import os
 import json
 from typing import List
 from neo4japp.blueprints.auth import auth
-from flask import Blueprint, request, abort, jsonify, g, make_response
+from flask import Blueprint, current_app, request, abort, jsonify, g, make_response
 from werkzeug.utils import secure_filename
 
 from neo4japp.database import (
@@ -143,23 +144,33 @@ def annotate(file_id, filename, pdf_file_object) -> dict:
     return bioc_service.generate_bioc_json(annotations=annotations, bioc=bioc)
 
 
+class AnnotationOutcome(Enum):
+    ANNOTATED = 'Annotated'
+    NOT_ANNOTATED = 'Not annotated'
+    NOT_FOUND = 'Not found'
+
+
 @bp.route('/reannotate', methods=['POST'])
 @auth.login_required
 def reannotate():
     ids = request.get_json()
-    succeeded: List[str] = []
+    outcome: Mapping[str, str] = {}  # file id to annotation outcome
     for id in ids:
         file = Files.query.filter_by(file_id=id).one_or_none()
         if file is None:
+            current_app.logger.error('Could not find file: %s, %s', id, file.filename)
+            outcome[id] = AnnotationOutcome.NOT_FOUND.value
             continue
         fp = io.BytesIO(file.raw_file)
         try:
             annotations = annotate(id, file.filename, fp)
-        except Exception:
-            pass
+        except Exception as e:
+            current_app.logger.error('Could not annotate file: %s, %s, %s', id, file.filename, e)
+            outcome[id] = AnnotationOutcome.NOT_ANNOTATED.value
         else:
             file.annotations = annotations
             db.session.commit()
-            succeeded.append(id)
+            current_app.logger.debug('File successfully annotated: %s, %s', id, file.filename)
+            outcome[id] = AnnotationOutcome.ANNOTATED.value
         fp.close()
-    return jsonify(succeeded)
+    return jsonify(outcome)
