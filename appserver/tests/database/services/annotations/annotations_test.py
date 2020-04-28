@@ -1,7 +1,6 @@
 import json
 import pytest
 
-from io import StringIO
 from os import path
 
 from neo4japp.database import (
@@ -15,63 +14,6 @@ from neo4japp.models import Files
 
 # reference to this directory
 directory = path.realpath(path.dirname(__file__))
-
-
-@pytest.mark.parametrize(
-    'index, text',
-    [
-        (1, PDFParsedCharacters(
-            coor_obj_per_pdf_page=None,
-            str_per_pdf_page={
-                1: ['I', ' ', 'a', 'm', ' ', 'a', ' ', 's', 'e', 'n', 't', 'e', 'n', 'c', 'e', '\n'],  # noqa
-            },
-            cropbox_per_page={1: [9, 9]},
-        )),
-        (2, PDFParsedCharacters(
-            coor_obj_per_pdf_page=None,
-            str_per_pdf_page={
-                1: ['E', '.', ' ', '\n', 'C', 'o', 'l', 'i'],  # noqa
-            },
-            cropbox_per_page={1: [9, 9]},
-        )),
-        (3, PDFParsedCharacters(
-            coor_obj_per_pdf_page=None,
-            str_per_pdf_page={
-                1: ['T', 'y', 'p', 'h', '-', 'i', 'm', 'u', 'r', 'i', 'u', 'm'],  # noqa
-            },
-            cropbox_per_page={1: [9, 9]},
-        )),
-    ],
-)
-def test_extract_tokens(annotations_setup, index, text):
-    pdf_parser = get_annotations_pdf_parser()
-    parsed_tokens = pdf_parser.extract_tokens(parsed_chars=text)
-    tokens = {t.keyword for t in parsed_tokens.token_positions}
-
-    if index == 1:
-        verify = {
-            'I',
-            'I am',
-            'I am a',
-            'I am a sentence',
-            'am',
-            'am a',
-            'am a sentence',
-            'a',
-            'a sentence',
-            'sentence',
-        }
-        assert verify == tokens
-    elif index == 2:
-        verify = {
-            'E.',
-            'E. Coli',
-            'Coli',
-        }
-        assert verify == tokens
-    elif index == 3:
-        verify = {'Typh-imurium'}
-        assert verify == tokens
 
 
 @pytest.mark.skip
