@@ -1,4 +1,4 @@
-"""Creating vector and vectorizer for project table
+"""Creating vector and vectorizer for drawing tool map
 
 Revision ID: a84e5653318c
 Revises: 7998c4d9f557
