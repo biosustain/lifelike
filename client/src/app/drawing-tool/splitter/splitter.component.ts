@@ -9,9 +9,9 @@ import {
   HostListener
 } from '@angular/core';
 
-// import {
-//   PdfViewerComponent
-// } from '../pdf-viewer/pdf-viewer.component';
+import {
+  PdfViewerComponent
+} from '../pdf-viewer/pdf-viewer.component';
 import {
   MapListComponent
 } from '../project-list-view/map-list/map-list.component';
@@ -85,10 +85,10 @@ export class SplitterComponent implements OnInit, AfterViewInit {
         factory = this.r.resolveComponentFactory(MapListComponent);
         this.splitPanelLength = 30;
         break;
-      // case 'pdf-viewer':
-      //   factory = this.r.resolveComponentFactory(PdfViewerComponent);
-      //   this.splitPanelLength = 50;
-      //   break;
+      case 'pdf-viewer':
+        factory = this.r.resolveComponentFactory(PdfViewerComponent);
+        this.splitPanelLength = 50;
+        break;
       default:
         break;
     }
