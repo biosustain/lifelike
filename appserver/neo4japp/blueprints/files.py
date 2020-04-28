@@ -1,19 +1,21 @@
+import hashlib
+import json
+import os
 import uuid
 from datetime import datetime
-import os
-import json
-from neo4japp.blueprints.auth import auth
+
 from flask import Blueprint, request, abort, jsonify, g, make_response
 from werkzeug.utils import secure_filename
 
+from neo4japp.blueprints.auth import auth
 from neo4japp.database import (
     db,
     get_annotations_service,
     get_annotations_pdf_parser,
     get_bioc_document_service,
 )
-from neo4japp.models.files import Files
 from neo4japp.exceptions import RecordNotFoundException
+from neo4japp.models.files import Files, FileContent
 
 bp = Blueprint('files', __name__, url_prefix='/files')
 
@@ -26,8 +28,10 @@ def upload_pdf():
     pdf_parser = get_annotations_pdf_parser()
 
     pdf = request.files['file']
+    pdf_content = pdf.read()  # TODO: don't work with whole file in memory
+    pdf.stream.seek(0)
     project = '1'  # TODO: remove hard coded project
-    binary_pdf = pdf.read()
+    checksum_sha256 = hashlib.sha256(pdf_content).digest()
     username = g.current_user
 
     filename = secure_filename(request.files['file'].filename)
@@ -44,16 +48,31 @@ def upload_pdf():
         annotations_json = bioc_service.generate_bioc_json(
             annotations=annotations, bioc=bioc)
 
-        files = Files(
+        # First look for an existing copy of this file
+        file_content = db.session.query(FileContent.id) \
+            .filter(FileContent.checksum_sha256 == checksum_sha256) \
+            .first()
+
+        # Otherwise, let's create a new row
+        if not file_content:
+            file_content = FileContent(
+                raw_file=pdf_content,
+                checksum_sha256=checksum_sha256
+            )
+            db.session.add(file_content)
+            db.session.commit()
+
+        file = Files(
             file_id=file_id,
             filename=filename,
-            raw_file=binary_pdf,
+            content_id=file_content.id,
             username=username.id,
             annotations=annotations_json,
             project=project
         )
-        db.session.add(files)
+        db.session.add(file)
         db.session.commit()
+
         return jsonify({
             'file_id': file_id,
             'filename': filename,
@@ -95,8 +114,12 @@ def list_files():
 @bp.route('/<id>', methods=['GET'])
 @auth.login_required
 def get_pdf(id):
-    entry = db.session.query(Files.raw_file).filter(Files.file_id == id).one()
-    res = make_response(entry.raw_file)
+    entry = db.session \
+        .query(Files.raw_file.label("legacy_raw_file"), FileContent.raw_file) \
+        .outerjoin(FileContent) \
+        .filter(Files.file_id == id) \
+        .one()
+    res = make_response(entry.raw_file or entry.legacy_raw_file)
     res.headers['Content-Type'] = 'application/pdf'
     return res
 
