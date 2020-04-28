@@ -98,7 +98,7 @@ def list_files():
         AppUser.username,
         Files.username.label('legacy_username'),
         Files.creation_date)
-        .join(AppUser)
+        .outerjoin(AppUser)
         .filter(Files.project == project)
         .all()]
     return jsonify({'files': files})
