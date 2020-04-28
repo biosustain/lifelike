@@ -1,8 +1,5 @@
 import { NgModule } from '@angular/core';
 
-// import { PdfViewerLibModule } from 'pdf-viewer-lib';
-// import { PdfViewerComponent } from './pdf-viewer/pdf-viewer.component';
-
 import {
   ProjectListViewComponent
 } from './project-list-view/project-list-view.component';
@@ -41,7 +38,7 @@ import { ReadPanelComponent } from '../project-list-view/read-panel/read-panel.c
 import { PdfViewerComponent } from './pdf-viewer/pdf-viewer.component';
 import { PdfViewerLibModule } from 'pdf-viewer-lib';
 
-const routes = [
+export const routes = [
   {
     path: 'project-list',
     component: ProjectListViewComponent
