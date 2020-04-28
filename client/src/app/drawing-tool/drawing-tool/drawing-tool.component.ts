@@ -78,8 +78,8 @@ import {
 import {
   InfoPanelComponent
 } from './info-panel/info-panel.component';
-import {ExportModalComponent} from "./export-modal/export-modal.component";
-import {MatDialog, MatDialogConfig} from "@angular/material/dialog";
+import {ExportModalComponent} from './export-modal/export-modal.component';
+import {MatDialog, MatDialogConfig} from '@angular/material/dialog';
 
 interface Update {
   event: string;
