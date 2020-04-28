@@ -33,6 +33,7 @@ import { MapPreviewComponent } from './project-list-view/map-preview/map-preview
 import { MapListComponent } from './project-list-view/map-list/map-list.component';
 import { SharedModule } from 'app/shared/shared.module';
 import { RouterModule } from '@angular/router';
+import { ReadPanelComponent } from '../project-list-view/read-panel/read-panel.component';
 
 const routes = [
   {
@@ -67,7 +68,8 @@ const routes = [
     InfoPanelComponent,
     SplitterComponent,
     MapPreviewComponent,
-    MapListComponent
+    MapListComponent,
+    ReadPanelComponent
   ],
   entryComponents: [
     CreateProjectDialogComponent,
