@@ -62,6 +62,19 @@ export class PdfAnnotationsService {
   }
 
   /**
+   * Adds custom annotation for the given file.
+   * @param fileId id of the file
+   * @param annotation annotation to add
+   */
+  addCustomAnnotation(fileId: string, annotation: Annotation): Observable<any> {
+    return this.http.patch(
+      this.baseUrl + `/add_custom_annotation/${fileId}`,
+      annotation,
+      this.createHttpOptions(true)
+    );
+  }
+
+  /**
    * Search for annoation by id and return annotation object
    * @param annotationId id of the annotation to search for
    */
