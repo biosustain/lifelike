@@ -340,11 +340,11 @@ def gas_gangrene_with_associations_and_references(
 
     # Snippet -> Publication Relationships
     penicillins_alleviates_reduces_snippet_to_publication_edge = Relationship(
-        penicillins_to_gas_gangrene_snippet_node1, 'HAS_PUBLICATION', penicillins_to_gas_gangrene_publication_node1  # noqa
+        penicillins_to_gas_gangrene_snippet_node1, 'IN_PUB', penicillins_to_gas_gangrene_publication_node1  # noqa
     )
 
     penicillins_treatment_snippet_to_publication_edge = Relationship(
-        penicillins_to_gas_gangrene_snippet_node2, 'HAS_PUBLICATION', penicillins_to_gas_gangrene_publication_node2  # noqa
+        penicillins_to_gas_gangrene_snippet_node2, 'IN_PUB', penicillins_to_gas_gangrene_publication_node2  # noqa
     )
     tx.create(penicillins_alleviates_reduces_snippet_to_publication_edge)
     tx.create(penicillins_treatment_snippet_to_publication_edge)
