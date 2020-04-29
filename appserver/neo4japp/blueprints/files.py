@@ -117,13 +117,13 @@ def list_files():
 def get_pdf(id):
     try:
         entry = db.session \
-            .query(Files.raw_file.label("legacy_raw_file"), FileContent.raw_file) \
-            .outerjoin(FileContent) \
+            .query(Files.id, FileContent.raw_file) \
+            .join(FileContent) \
             .filter(Files.file_id == id) \
             .one()
     except NoResultFound:
         raise RecordNotFoundException('Requested PDF file not found.')
-    res = make_response(entry.raw_file or entry.legacy_raw_file)
+    res = make_response(entry.raw_file)
     res.headers['Content-Type'] = 'application/pdf'
     return res
 
