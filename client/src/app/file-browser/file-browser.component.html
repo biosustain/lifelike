@@ -1,13 +1,11 @@
 <mat-toolbar>File Browser</mat-toolbar>
 <div class="container" fxLayout="column" fxLayoutAlign="start start" fxLayoutGap="8px">
   <div fxLayoutGap="8px">
-    <button mat-raised-button (click)="fileInput.click()">Upload</button>
+    <button mat-raised-button (click)="fileInput.click()"><mat-icon>add_box</mat-icon> Upload</button>
     <input #fileInput hidden type="file" accept="application/pdf"
-      (change)="onFileInput($event.target.files)">
+      (change)="onFileInput($event.target.files);$event.target.value = null">
     <button mat-raised-button [disabled]="!canOpen" (click)="openFile()">Open</button>
   </div>
-
-  <mat-progress-bar mode="indeterminate" *ngIf="isUploading"></mat-progress-bar>
 
   <mat-table [dataSource]="dataSource">
     <ng-container matColumnDef="select">
