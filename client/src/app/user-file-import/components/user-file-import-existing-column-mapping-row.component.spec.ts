@@ -7,7 +7,7 @@ import {
 import { OverlayContainer } from '@angular/cdk/overlay';
 import { FormBuilder } from '@angular/forms';
 import { MatSelectChange } from '@angular/material';
-import { By } from '@angular/platform-browser';
+import { By, BrowserModule } from '@angular/platform-browser';
 
 import { Store } from '@ngrx/store';
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
@@ -24,6 +24,7 @@ import {
 import { getNodeProperties } from '../store/actions';
 
 import { UserFileImportExistingColumnMappingRowComponent } from './user-file-import-existing-column-mapping-row.component';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 describe('UserFileImportExistingColumnMappingRowComponent', () => {
     let component: UserFileImportExistingColumnMappingRowComponent;
@@ -49,6 +50,7 @@ describe('UserFileImportExistingColumnMappingRowComponent', () => {
             imports: [
                 RootStoreModule,
                 SharedModule,
+                BrowserAnimationsModule
             ],
         })
         .compileComponents();

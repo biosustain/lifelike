@@ -10,6 +10,7 @@ import { RootStoreModule } from 'app/root-store';
 import { ContextMenuControlService } from 'app/visualization/services/context-menu-control.service';
 
 import { ContextMenuComponent } from './context-menu.component';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 describe('ContextMenuComponent', () => {
     let component: ContextMenuComponent;
@@ -25,6 +26,7 @@ describe('ContextMenuComponent', () => {
             imports: [
                 RootStoreModule,
                 SharedModule,
+                BrowserAnimationsModule
             ],
             declarations: [ ContextMenuComponent ],
             providers: [ContextMenuControlService],

@@ -24,6 +24,7 @@ import {
 import { getNodeProperties } from '../store/actions';
 
 import { UserFileImportNewColumnMappingRowComponent } from './user-file-import-new-column-mapping-row.component';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 describe('UserFileImportNewColumnMappingRowComponent', () => {
     let component: UserFileImportNewColumnMappingRowComponent;
@@ -50,6 +51,7 @@ describe('UserFileImportNewColumnMappingRowComponent', () => {
             imports: [
                 RootStoreModule,
                 SharedModule,
+                BrowserAnimationsModule
             ],
         })
         .compileComponents();
