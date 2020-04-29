@@ -12,6 +12,10 @@ from typing import Any, List, Optional, Type
 
 from flask import json, jsonify, request
 
+from py2neo import Node
+
+from neo4japp.constants import DISPLAY_NAME_MAP
+
 
 def encode_to_str(obj):
     """Converts different types into a string representation. """
@@ -336,3 +340,13 @@ def generate_jwt_token(
         exp=time_now + timedelta(**{time_unit: time_offset}),
         type=token_type,
     ), secret, algorithm=algorithm)
+
+
+def get_first_known_label(node: Node):
+    labels_as_str = str(node.labels).split(':')[1:]  # First item is always ''
+
+    for label in labels_as_str:
+        if label in DISPLAY_NAME_MAP:
+            return label
+
+    raise ValueError('Detected node label of an unknown type!')
