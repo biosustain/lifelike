@@ -6,6 +6,7 @@ import { APP_BASE_HREF } from '@angular/common';
 import { DrawingToolModule } from '../drawing-tool.module';
 import { PdfViewerComponent } from './pdf-viewer.component';
 import { configureTestSuite } from 'ng-bullet';
+import { RootStoreModule } from 'app/root-store';
 
 describe('PdfViewerComponent', () => {
     let component: PdfViewerComponent;
@@ -16,6 +17,7 @@ describe('PdfViewerComponent', () => {
             imports: [
                 DrawingToolModule,
                 RouterTestingModule,
+                RootStoreModule
             ],
             providers: [
                 {provide: APP_BASE_HREF, useValue : '/' }
