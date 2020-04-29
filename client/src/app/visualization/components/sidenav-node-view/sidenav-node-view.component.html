@@ -6,7 +6,7 @@
   <li>Sublabels:
     <ul *ngIf="nodeEntity.data.subLabels.length > 1; else noSubLabels">
       <li *ngFor="let label of nodeEntity.data.subLabels">
-        <div class="sidenav-node-sub-label" *ngIf="label !== nodeEntity.data.primaryLabel">{{ label }}</div>
+        <div class="sidenav-node-sub-label">{{ label }}</div>
       </li>
     </ul>
     <ng-template #noSubLabels>N/A</ng-template>
