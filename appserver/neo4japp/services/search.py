@@ -41,7 +41,7 @@ class SearchService(GraphBaseDao):
             score = result['score']
             # Assume the first label is the primary type
             node_type = [l for l in node.labels].pop(0)
-            if node_type == 'Reference':
+            if node_type == 'Snippet':
                 graph_node = GraphNode.from_py2neo(
                     node, display_fn=lambda x: x.get('sentence'))
                 chem_node = result.get('chemical', None)
@@ -95,9 +95,9 @@ class SearchService(GraphBaseDao):
         cypher_query = """
             CALL db.index.fulltext.queryNodes("namesEvidenceAndId", $search_term)
             YIELD node, score
-            OPTIONAL MATCH (publication:Publication)<-[:HAS_PUBLICATION]-(node:Reference)
+            OPTIONAL MATCH (publication:Publication)<-[:IN_PUB]-(node:Snippet)
             WITH node, publication, score
-            OPTIONAL MATCH (node:Reference)<-[:HAS_REF]-(association:Association)
+            OPTIONAL MATCH (node:Snippet)-[:PREDICTS]->(association:Association)
             WITH node, publication, association, score
             OPTIONAL MATCH (chemical:Chemical)-[:HAS_ASSOCIATION]->(association:Association)
             OPTIONAL MATCH (association:Association)-[:HAS_ASSOCIATION]->(disease:Disease)
