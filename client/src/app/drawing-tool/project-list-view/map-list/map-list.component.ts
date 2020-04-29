@@ -64,14 +64,12 @@ export class MapListComponent implements OnInit {
     public overlay: Overlay,
     public viewContainerRef: ViewContainerRef,
     private projService: ProjectsService
-  ) {
+  ) {}
+
+  ngOnInit() {
     if (!this.childMode) {
       this.refresh();
     }
-  }
-
-  ngOnInit() {
-
   }
 
   /**

@@ -16,13 +16,6 @@
     }
   }
 
-  #map-preview.empty {
-    p {
-      font-size: 2.25rem;
-      color: #707070;
-    }
-  }
-
   #map-preview {
     background: #fff;
 
@@ -59,5 +52,14 @@
         }
       }
     }
+  }
+}
+
+
+.empty {
+  min-width: unset !important;
+  p {
+    font-size: 2.25rem;
+    color: #707070;
   }
 }
