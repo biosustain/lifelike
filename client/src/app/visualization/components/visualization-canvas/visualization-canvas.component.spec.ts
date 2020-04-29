@@ -37,6 +37,7 @@ import { SidenavEdgeViewComponent } from '../sidenav-edge-view/sidenav-edge-view
 import { SidenavNodeViewComponent } from '../sidenav-node-view/sidenav-node-view.component';
 import { VisualizationQuickbarComponent } from '../../components/visualization-quickbar/visualization-quickbar.component';
 import { VisualizationCanvasComponent } from '../visualization-canvas/visualization-canvas.component';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 describe('VisualizationCanvasComponent', () => {
     let fixture: ComponentFixture<VisualizationCanvasComponent>;
@@ -104,6 +105,7 @@ describe('VisualizationCanvasComponent', () => {
             imports: [
                 SharedModule,
                 RootStoreModule,
+                BrowserAnimationsModule
             ],
             declarations: [
                 VisualizationCanvasComponent,
