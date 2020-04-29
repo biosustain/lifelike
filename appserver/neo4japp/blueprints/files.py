@@ -4,7 +4,7 @@ import uuid
 from datetime import datetime
 import os
 import json
-from typing import List
+from typing import Dict
 from neo4japp.blueprints.auth import auth
 from flask import Blueprint, current_app, request, abort, jsonify, g, make_response
 from werkzeug.utils import secure_filename
@@ -31,7 +31,7 @@ def upload_pdf():
     filename = secure_filename(request.files['file'].filename)
     file_id = str(uuid.uuid4())
 
-    annotations = annotate(file_id, filename, pdf)
+    annotations = annotate(filename, pdf)
 
     files = Files(
         file_id=file_id,
@@ -131,7 +131,7 @@ def get_annotations(id):
     return jsonify(map_annotations_to_correct_format(annotations))
 
 
-def annotate(file_id, filename, pdf_file_object) -> dict:
+def annotate(filename, pdf_file_object) -> dict:
     pdf_parser = get_annotations_pdf_parser()
     annotator = get_annotations_service()
     bioc_service = get_bioc_document_service()
@@ -154,7 +154,7 @@ class AnnotationOutcome(Enum):
 @auth.login_required
 def reannotate():
     ids = request.get_json()
-    outcome: Mapping[str, str] = {}  # file id to annotation outcome
+    outcome: Dict[str, str] = {}  # file id to annotation outcome
     for id in ids:
         file = Files.query.filter_by(file_id=id).one_or_none()
         if file is None:
@@ -163,7 +163,7 @@ def reannotate():
             continue
         fp = io.BytesIO(file.raw_file)
         try:
-            annotations = annotate(id, file.filename, fp)
+            annotations = annotate(file.filename, fp)
         except Exception as e:
             current_app.logger.error('Could not annotate file: %s, %s, %s', id, file.filename, e)
             outcome[id] = AnnotationOutcome.NOT_ANNOTATED.value

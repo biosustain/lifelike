@@ -106,14 +106,10 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
 
   // Adapted from https://v8.material.angular.io/components/table/overview#selection
   masterToggle() {
-    // TODO: remove debug console.logs once we feel this function is not buggy
     if (this.selection.selected.length === this.dataSource.length) {
       this.selection.clear();
-      console.log('masterToggle() same length');
     } else {
       this.selection.select(...this.dataSource);
-      console.log('masterToggle() different length');
     }
-    console.log('masterToggle() selected before return', this.selection.selected);
   }
 }
