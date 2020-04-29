@@ -455,8 +455,8 @@ class Neo4JService(GraphBaseDao):
             MATCH (f)-[:HAS_ASSOCIATION]->(a:Association)-[:HAS_ASSOCIATION]->(t)
             WHERE ID(f)={} AND ID(t)={} AND a.description='{}'
             WITH a AS association
-            MATCH (association)-[:HAS_REF]-(r:Reference)-[:HAS_PUBLICATION]-(p:Publication)
-            RETURN r AS reference, p AS publication
+            MATCH (association)-[:HAS_REF]-(s:Snippet)-[:HAS_PUBLICATION]-(p:Publication)
+            RETURN s AS reference, p AS publication
         """.format(from_node, to_node, association)
         return query
 
@@ -465,9 +465,9 @@ class Neo4JService(GraphBaseDao):
             MATCH
             (f:{from_label})-[:HAS_ASSOCIATION]->(a:Association)-[:HAS_ASSOCIATION]->(t:{to_label})
             WHERE ID(f)=$from_id AND ID(t)=$to_id AND a.description=$description
-            WITH ID(a) AS association_id MATCH (a:Association)-[:HAS_REF]-(r:Reference)
+            WITH ID(a) AS association_id MATCH (a:Association)-[:HAS_REF]-(s:Snippet)
             WHERE ID(a)=association_id
-            RETURN COUNT(r) as count
+            RETURN COUNT(s) as count
         """
         return query
 
