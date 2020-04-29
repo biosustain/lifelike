@@ -3,6 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { configureTestSuite } from 'ng-bullet';
 
 import { HighlightSnippetComponent } from './highlight-snippet.component';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 describe('HighlightSnippetComponent', () => {
     let instance: HighlightSnippetComponent;
@@ -16,7 +17,10 @@ describe('HighlightSnippetComponent', () => {
 
     configureTestSuite( () => {
         TestBed.configureTestingModule({
-            declarations: [ HighlightSnippetComponent ]
+            declarations: [ HighlightSnippetComponent ],
+            imports: [
+                BrowserAnimationsModule
+            ]
         });
     });
 

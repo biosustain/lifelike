@@ -30,6 +30,7 @@ import {
     SheetNameAndColumnNames,
     SheetRowPreview,
 } from 'app/interfaces';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 describe('UserFileImportComponent', () => {
     let component: UserFileImportComponent;
@@ -54,6 +55,7 @@ describe('UserFileImportComponent', () => {
             imports: [
                 RootStoreModule,
                 SharedModule,
+                BrowserAnimationsModule
             ],
         })
         .compileComponents();
