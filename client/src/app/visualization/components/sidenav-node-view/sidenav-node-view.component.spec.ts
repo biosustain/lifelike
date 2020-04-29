@@ -7,6 +7,7 @@ import { RootStoreModule } from 'app/root-store';
 import { SharedModule } from 'app/shared/shared.module';
 
 import { SidenavNodeViewComponent } from './sidenav-node-view.component';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 describe('SidenavNodeViewComponent', () => {
     let component: SidenavNodeViewComponent;
     let fixture: ComponentFixture<SidenavNodeViewComponent>;
@@ -18,6 +19,7 @@ describe('SidenavNodeViewComponent', () => {
             imports: [
                 SharedModule,
                 RootStoreModule,
+                BrowserAnimationsModule
             ],
             declarations: [ SidenavNodeViewComponent ]
         });

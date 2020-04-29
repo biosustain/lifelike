@@ -27,6 +27,7 @@ import {
     SheetNameAndColumnNames,
     SheetRowPreview,
 } from 'app/interfaces';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 const chosenSheetToMap = {
     sheetName: 'sheet1',
@@ -57,6 +58,7 @@ describe('UserFileImportColumnMappingComponent', () => {
             imports: [
                 RootStoreModule,
                 SharedModule,
+                BrowserAnimationsModule
             ],
         })
         .compileComponents();
