@@ -43,7 +43,7 @@ def upgrade():
                     sa.Column('creation_date', sa.DateTime(), nullable=False),
                     sa.PrimaryKeyConstraint('id', name=op.f('pk_files_content'))
                     )
-    op.create_index(op.f('ix_files_content_checksum_sha256'), 'files_content', ['checksum_sha256'], unique=False)
+    op.create_index(op.f('ix_files_content_checksum_sha256'), 'files_content', ['checksum_sha256'], unique=True)
     op.add_column('files', sa.Column('content_id', sa.Integer(), nullable=True))
     op.create_foreign_key(op.f('fk_files_content_id_files_content'), 'files', 'files_content', ['content_id'], ['id'],
                           ondelete='CASCADE')
