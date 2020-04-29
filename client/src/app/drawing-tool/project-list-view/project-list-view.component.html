@@ -1,86 +1,13 @@
-<div id='map-channel' class='w-100' style='overflow-y: hidden;'>
-  <!-- Map Lists -->
-  <div
-    id='map-list-container'
-    class=''>
-
-    <div id='map-list'>
-      <h1>Maps</h1>
-      <mat-tab-group
-        [selectedIndex]="displayIndex"
-        (selectedTabChange)="toggleView($event)">
-        <mat-tab label="Personal">
-          <div
-            class='map shadow'
-            *ngFor='let project of projects'
-            (contextmenu)="open($event, project)"
-            (click)='pickProject(project)'>
-            <h3>
-              {{
-              project.label | truncate:['40']
-              }}
-            </h3>
-            <p class='author'>
-              By {{project?.author}}
-            </p>
-            <p class='date'>
-              Modified {{project?.date_modified | friendlyDateStr}}
-            </p>
-          </div>
-        </mat-tab>
-        <mat-tab label="Community">
-          <div
-            class='map shadow'
-            *ngFor='let project of publicProjects'
-            (contextmenu)="open($event, project)"
-            (click)='pickProject(project)'>
-            <h3>
-              {{
-              project.label | truncate:['40']
-              }}
-            </h3>
-            <p class='author'>
-              By {{project?.author}}
-            </p>
-            <p class='date'>
-              Modified {{project?.date_modified | friendlyDateStr}}
-            </p>
-          </div>
-        </mat-tab>
-        <mat-tab label="Search">
-          <form
-            class='map shadow'
-            [formGroup]='searchForm'>
-            <mat-form-field
-              class='w-100'
-              appearance='legacy'>
-              <mat-label>Search in maps</mat-label>
-              <input formControlName='term' matInput (keyup)='searchForMaps($event)'>
-              <mat-icon matSuffix>search</mat-icon>
-              <mat-hint>Write to search concepts across all maps</mat-hint>
-            </mat-form-field>
-          </form>
-          <div
-            class='map shadow'
-            *ngFor='let project of searchResults'
-            (contextmenu)="open($event, project)"
-            (click)='pickProject(project)'>
-            <h3>
-              {{
-              project.label | truncate:['40']
-              }}
-            </h3>
-            <p class='author'>
-              By {{project?.author}}
-            </p>
-            <p class='date'>
-              Modified {{project?.date_modified | friendlyDateStr}}
-            </p>
-          </div>
-        </mat-tab>
-      </mat-tab-group>
-    </div>
-    <button
+<div id='map-channel' fxFlex fxLayout class='w-100 vh-100'>
+  <!-- Map List -->
+  <div *ngIf='fullScreenmode==="shrink"' id='map-list-container' class='h-100' fxFlex="30">
+    <app-map-list
+      childMode='true'
+      [projects]='projects'
+      [publicProjects]='publicProjects'
+      (projectAPICaller)='handleAPI($event)'>
+    </app-map-list>
+    <button 
       mat-fab
       color='primary'
       id='add-project'
@@ -88,97 +15,26 @@
       (click)='createProject()'>
       <mat-icon>add</mat-icon>
     </button>
-    <button
-      mat-fab
-      color='primary'
-      id='search'
-      aria-label="Example icon-button with a heart icon"
-      (click)='goToSearch()'>
-      <mat-icon>search</mat-icon>
-    </button>
   </div>
-  <!-- Map Preview Panel -->
-  <div
-    *ngIf='selectedProject else empty;'
-    id='map-preview'
-    class=''>
-    <!-- Empty Graph -->
-    <div
-      *ngIf='emptyGraph'
-      id='empty-graph'>
-      <p>Empty Graph</p>
-    </div>
-    <div
-      [ngClass]='{"dn": emptyGraph}'
-      id='canvas-container'>
-      <!-- Network Graph Canvas -->
-      <div id='canvas'></div>
-      <!-- Read Panel -->
+  <div *ngIf='selectedProject else empty;' class='h-100' fxFill [fxFlex]="fullScreenmode === 'shrink' ? 70 : 100" fxLayout='column' fxLayoutAlign="start center">
+    <!-- Map Preview Panel -->
+    <div class='bg-green' fxFill [fxFlex]="fullScreenmode === 'shrink' ? 70 : 100" fxLayoutAlign="center center">
       <div
-        *ngIf='node'
-        id='read-panel'>
-        <h3>{{node?.label}}</h3>
-        <!-- Type -->
-        <div>
-          <p class='blue b'>
-            Type
-          </p>
-          <p>
-            {{node?.group}}
-          </p>
+        fxFill
+        id='map-preview'>
+        <div 
+          id='canvas-container'>
+          <app-map-preview
+            [project]='selectedProject'
+            (toggleFullscreen)='toggleFullscreen($event)'>
+          </app-map-preview>
         </div>
-        <!-- Link -->
-        <div *ngIf='node?.data?.hyperlink'>
-          <p class='blue b'>
-            Hyperlink
-          </p>
-          <p class='link'
-             (click)='goToLink(node.data.hyperlink)'>
-            {{node?.data?.hyperlink}}
-          </p>
-        </div>
-        <!-- Edges-->
-        <div *ngIf='node?.edges.length'>
-          <p class='blue b'>Edges</p>
-          <div *ngFor='let edge of node?.edges'>
-            <p>
-              <span class='dark-silver'>{{edge?.label}}</span>
-              &nbsp;
-              <span class='dark-blue'>{{getNode(edge)}}</span>
-            </p>
-          </div>
-        </div>
-      </div>
-      <!-- Tool Panel -->
-      <div id='tool-panel'>
-        <mat-icon
-          matTooltip="Fit Graph"
-          matTooltipPosition="right"
-          class='fit'
-          (click)='fit()'>
-          zoom_out_map
-        </mat-icon>
-        <mat-icon
-          *ngIf='screenMode==="shrink"'
-          matTooltip="Fullscreen"
-          matTooltipPosition="right"
-          class='Full Screen'
-          (click)='toggle()'>
-          fullscreen
-        </mat-icon>
-        <mat-icon
-          *ngIf='screenMode==="grow"'
-          matTooltip="Shrink"
-          matTooltipPosition="right"
-          class='Shrink'
-          (click)='toggle()'>
-          fullscreen_exit
-        </mat-icon>
       </div>
     </div>
-    <!-- Meta info about map -->
-    <div id='map-meta-panel'>
-      <div id='details'>
+    <!-- Map Meta Panel -->
+    <div *ngIf='fullScreenmode==="shrink"' id='map-meta-panel' fxFill fxFlex="30" fxLayout='row'>
+      <!-- Meta Info -->
+      <div id='details' fxFill fxFlex="70">
         <h2>{{selectedProject?.label}}</h2>
         <p class='author'>
           By {{selectedProject?.author}}
@@ -190,8 +46,9 @@
           {{selectedProject?.description}}
         </p>
       </div>
-      <div id='actions'>
-        <div *ngIf='displayMode==="personal"'>
+      <!-- Actions -->
+      <div id='actions' fxFill fxFlex="30" fxLayout='column' fxLayoutAlign="center center">
+        <div *ngIf='isItMine'>
           <button
             mat-raised-button
             color="primary"
@@ -211,7 +68,7 @@
             DELETE
           </button>
         </div>
-        <div *ngIf='displayMode==="community"'>
+        <div *ngIf='!isItMine'>
           <button
             mat-raised-button
             color="primary"
@@ -223,18 +80,11 @@
     </div>
   </div>
 </div>
-<!-- Context Menu -->
-<ng-template #projectMenu let-project>
-  <section
-    (contextmenu)="$event.preventDefault()"
-    class="project-menu">
-    <div (click)='copyProject(project)'>Make copy of</div>
-    <div *ngIf='displayMode==="personal"' (click)="deleteProject(project)">Delete</div>
-  </section>
-</ng-template>
+
 <!-- Empty Scene -->
 <ng-template #empty>
-  <div id='map-preview' class='empty'>
+  <div fxFill fxLayout='column' fxLayoutAlign="center center" class='empty h-100'>
     <p>Create or select a project</p>
   </div>
 </ng-template>
+  

@@ -136,6 +136,8 @@ interface Project {
   public?: boolean;
   /** URI for project */
   hash_id?: string;
+  /** ID of the user who made the project */
+  user_id?: number;
 }
 
 export {

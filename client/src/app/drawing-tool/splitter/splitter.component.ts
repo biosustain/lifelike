@@ -5,15 +5,16 @@ import {
   ViewContainerRef,
   Injector,
   ViewChild,
-  AfterViewInit
+  AfterViewInit,
+  HostListener
 } from '@angular/core';
 
 import {
   PdfViewerComponent
 } from '../pdf-viewer/pdf-viewer.component';
 import {
-  MapSearchChannelComponent
-} from '../map-search-channel/map-search-channel.component';
+  MapListComponent
+} from '../project-list-view/map-list/map-list.component';
 import { Observable } from 'rxjs';
 
 @Component({
@@ -22,14 +23,6 @@ import { Observable } from 'rxjs';
   styleUrls: ['./splitter.component.scss']
 })
 export class SplitterComponent implements OnInit, AfterViewInit {
-  // TODO: Fix this ..
-  // @HostListener('window:beforeunload')
-  // canDeactivate(): Observable<boolean> | boolean {
-  //   return this.saveState ? true : confirm(
-  //       'WARNING: You have unsaved changes. Press Cancel to go back and save these changes, or OK to lose these changes.'
-  //   );
-  // }
-
   @ViewChild(
     'leftPanel',
     {static: false, read: ViewContainerRef}
@@ -38,6 +31,8 @@ export class SplitterComponent implements OnInit, AfterViewInit {
   splitPanelLength = 0;
 
   currentApp = '';
+
+  saveState = true;
 
   constructor(
     private injector: Injector,
@@ -50,6 +45,17 @@ export class SplitterComponent implements OnInit, AfterViewInit {
 
   ngAfterViewInit() {
 
+  }
+
+  @HostListener('window:beforeunload')
+  canDeactivate(): Observable<boolean> | boolean {
+    return this.saveState ? true : confirm(
+        'WARNING: You have unsaved changes. Press Cancel to go back and save these changes, or OK to lose these changes.'
+    );
+  }
+
+  resolveSaveState(saveState: boolean) {
+    this.saveState = saveState;
   }
 
   /**
@@ -76,17 +82,18 @@ export class SplitterComponent implements OnInit, AfterViewInit {
 
     switch (app) {
       case 'map-search':
-        factory = this.r.resolveComponentFactory(MapSearchChannelComponent);
+        factory = this.r.resolveComponentFactory(MapListComponent);
+        this.splitPanelLength = 30;
         break;
       case 'pdf-viewer':
         factory = this.r.resolveComponentFactory(PdfViewerComponent);
+        this.splitPanelLength = 50;
         break;
       default:
         break;
     }
 
     this.leftPanel.clear();
-    this.splitPanelLength = 50;
     this.currentApp = app;
 
     ref = this.leftPanel.createComponent(factory);
