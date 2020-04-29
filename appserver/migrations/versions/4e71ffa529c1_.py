@@ -47,6 +47,10 @@ def upgrade():
     op.add_column('files', sa.Column('content_id', sa.Integer(), nullable=True))
     op.create_foreign_key(op.f('fk_files_content_id_files_content'), 'files', 'files_content', ['content_id'], ['id'],
                           ondelete='CASCADE')
+    op.alter_column('files', 'filename',
+                    existing_type=sa.VARCHAR(length=60),
+                    type_=sa.String(length=200),
+                    existing_nullable=False)
 
     conn = op.get_bind()
 
@@ -84,6 +88,10 @@ def upgrade():
 
 
 def downgrade():
+    op.alter_column('files', 'filename',
+                    existing_type=sa.String(length=200),
+                    type_=sa.VARCHAR(length=60),
+                    existing_nullable=False)
     op.drop_constraint(op.f('fk_files_content_id_files_content'), 'files', type_='foreignkey')
     op.add_column('files', sa.Column('raw_file', sa.LargeBinary(), nullable=True))
 
