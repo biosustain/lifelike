@@ -97,7 +97,7 @@ class SearchService(GraphBaseDao):
             YIELD node, score
             OPTIONAL MATCH (publication:Publication)<-[:HAS_PUBLICATION]-(node:Snippet)
             WITH node, publication, score
-            OPTIONAL MATCH (node:Snippet)<-[:HAS_REF]-(association:Association)
+            OPTIONAL MATCH (node:Snippet)-[:PREDICTS]->(association:Association)
             WITH node, publication, association, score
             OPTIONAL MATCH (chemical:Chemical)-[:HAS_ASSOCIATION]->(association:Association)
             OPTIONAL MATCH (association:Association)-[:HAS_ASSOCIATION]->(disease:Disease)
