@@ -72,14 +72,14 @@ export class PdfViewerComponent implements OnDestroy {
     const uniprotRegExp = new RegExp('uniprot\.org\.uniprot\/([^?#]*)');
     const uniprotResult = uniprotRegExp.exec(annotation.meta.links.uniprot);
     if (uniprotResult && uniprotResult[1]) {
-      id = 'UNIPROT:' + uniprotResult[1];
+      id = uniprotResult[1];
       idType = 'UNIPROT';
     }
 
     const ncbiRegExp = new RegExp('ncbi\.nlm\.nih\.gov\/gene\/([^?#]*)');
     const ncbiResult = ncbiRegExp.exec(annotation.meta.links.ncbi);
     if (ncbiResult && ncbiResult[1]) {
-      id = 'NCBI:' + ncbiResult[1];
+      id = ncbiResult[1];
       idType = 'NCBI';
     }
 
