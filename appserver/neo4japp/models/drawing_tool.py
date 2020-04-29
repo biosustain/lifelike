@@ -38,5 +38,6 @@ class Project(RDBMSBase):
 
 class ProjectSchema(ma.ModelSchema):  # type: ignore
     class Meta:
+        include_fk = True
         model = Project
         model_converter = ModelConverter
