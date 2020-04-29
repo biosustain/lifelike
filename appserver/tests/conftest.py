@@ -30,6 +30,9 @@ from neo4japp.services import (
     Neo4JService,
     SearchService,
 )
+from neo4japp.util import (
+    get_first_known_label,
+)
 
 
 @pytest.fixture(scope='function')
@@ -363,7 +366,8 @@ def gas_gangrene_vis_node(gas_gangrene):
     """Creates a VisNode from gas gangrene"""
     node_as_graph_node = GraphNode.from_py2neo(
         gas_gangrene,
-        display_fn=lambda x: x.get(DISPLAY_NAME_MAP[next(iter(gas_gangrene.labels), set())])
+        # TODO: Should change the way label is retrieved here...
+        display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label(gas_gangrene.labels)])
     )
 
     gas_gangrene_vis_node = VisNode(
@@ -385,7 +389,7 @@ def gas_gangrene_duplicate_vis_node(gas_gangrene):
     """Creates a DuplicateVisNode from gas gangrene"""
     node_as_graph_node = GraphNode.from_py2neo(
         gas_gangrene,
-        display_fn=lambda x: x.get(DISPLAY_NAME_MAP[next(iter(gas_gangrene.labels), set())])
+        display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label(gas_gangrene.labels)])
     )
 
     gas_gangrene_duplicate_vis_node = DuplicateVisNode(
@@ -408,7 +412,7 @@ def penicillins_vis_node(penicillins):
     """Creates a VisNode from penicillins"""
     node_as_graph_node = GraphNode.from_py2neo(
         penicillins,
-        display_fn=lambda x: x.get(DISPLAY_NAME_MAP[next(iter(penicillins.labels), set())])
+        display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label(penicillins.labels)])
     )
 
     penicillins_vis_node = VisNode(
@@ -430,7 +434,7 @@ def penicillins_duplicate_vis_node(penicillins):
     """Creates a DuplicateVisNode from penicillins"""
     node_as_graph_node = GraphNode.from_py2neo(
         penicillins,
-        display_fn=lambda x: x.get(DISPLAY_NAME_MAP[next(iter(penicillins.labels), set())])
+        display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label(penicillins.labels)])
     )
 
     penicillins_duplicate_vis_node = DuplicateVisNode(
@@ -453,7 +457,7 @@ def pomc_vis_node(pomc):
     """Creates a VisNode from pomc"""
     node_as_graph_node = GraphNode.from_py2neo(
         pomc,
-        display_fn=lambda x: x.get(DISPLAY_NAME_MAP[next(iter(pomc.labels), set())])
+        display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label(pomc.labels)])
     )
 
     pomc_vis_node = VisNode(
@@ -475,7 +479,7 @@ def pomc_duplicate_vis_node(pomc):
     """Creates a DuplicateVisNode from pomc"""
     node_as_graph_node = GraphNode.from_py2neo(
         pomc,
-        display_fn=lambda x: x.get(DISPLAY_NAME_MAP[next(iter(pomc.labels), set())])
+        display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label(pomc.labels)])
     )
 
     pomc_duplicate_vis_node = DuplicateVisNode(
