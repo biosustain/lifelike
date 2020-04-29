@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpEvent, HttpHeaders } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { AuthenticationService } from 'app/auth/services/authentication.service';
-import { PdfFiles, PdfFile, PdfFileUpload } from 'app/interfaces/pdf-files.interface';
+import { PdfFile, PdfFiles, PdfFileUpload } from 'app/interfaces/pdf-files.interface';
 
 @Injectable({
   providedIn: '***ARANGO_USERNAME***'
@@ -14,7 +14,8 @@ export class PdfFilesService {
   constructor(
     private auth: AuthenticationService,
     private http: HttpClient,
-  ) {}
+  ) {
+  }
 
   getFiles(): Observable<PdfFile[]> {
     return this.http.get<PdfFiles>(`${this.baseUrl}/list`).pipe(
@@ -27,14 +28,18 @@ export class PdfFilesService {
   }
 
   getFile(id: string): Observable<ArrayBuffer> {
-    const options = Object.assign(this.buildHttpOptions(), {responseType: 'arraybuffer'});
+    const options = Object.assign(this.createHttpOptions(true), {responseType: 'arraybuffer'});
     return this.http.get<ArrayBuffer>(`${this.baseUrl}/${id}`, options);
   }
 
-  uploadFile(file: File): Observable<PdfFileUpload> {
+  uploadFile(file: File): Observable<HttpEvent<PdfFileUpload>> {
     const formData: FormData = new FormData();
     formData.append('file', file);
-    return this.http.post<PdfFileUpload>(`${this.baseUrl}/upload`, formData, this.buildHttpOptions());
+    return this.http.post<PdfFileUpload>(`${this.baseUrl}/upload`, formData, {
+      ...this.buildHttpOptions(),
+      observe: 'events',
+      reportProgress: true,
+    });
   }
 
   private buildHttpOptions() {
@@ -43,5 +48,22 @@ export class PdfFilesService {
         Authorization: `Bearer ${this.auth.getAccessToken()}`
       }),
     };
+  }
+
+  createHttpOptions(withJwt = false) {
+    if (withJwt) {
+      return {
+        headers: new HttpHeaders({
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer ' + localStorage.getItem('access_jwt'),
+        }),
+      };
+    } else {
+      return {
+        headers: new HttpHeaders({
+          'Content-Type': 'application/json',
+        }),
+      };
+    }
   }
 }

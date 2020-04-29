@@ -6,6 +6,7 @@ import { RootStoreModule } from 'app/***ARANGO_USERNAME***-store';
 import { SharedModule } from 'app/shared/shared.module';
 
 import { VisualizationQuickbarComponent } from './visualization-quickbar.component';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 describe('VisualizationQuickbarComponent', () => {
     let fixture: ComponentFixture<VisualizationQuickbarComponent>;
@@ -16,6 +17,7 @@ describe('VisualizationQuickbarComponent', () => {
             imports: [
                 SharedModule,
                 RootStoreModule,
+                BrowserAnimationsModule
             ],
             declarations: [
                 VisualizationQuickbarComponent,
