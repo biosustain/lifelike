@@ -87,4 +87,8 @@ export class AuthenticationService {
 
     return auth.user.id;
   }
+
+  public getAccessToken() {
+    return localStorage.getItem('access_jwt') || '';
+  }
 }
