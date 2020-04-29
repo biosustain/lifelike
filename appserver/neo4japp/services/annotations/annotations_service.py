@@ -750,9 +750,9 @@ class AnnotationsService:
                                 if key1 > key2:
                                     chosen_annotation = conflict
 
-                    hashval = compute_hash(chosen_annotation.to_dict())
+                    hashval = compute_hash(chosen_annotation.to_dict())  # type: ignore
                     if hashval not in processed:
-                        fixed_annotations.append(chosen_annotation)
+                        fixed_annotations.append(chosen_annotation)  # type: ignore
                         processed.add(hashval)
         return fixed_annotations
 
