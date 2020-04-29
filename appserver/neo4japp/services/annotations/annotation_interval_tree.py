@@ -17,10 +17,7 @@ class AnnotationIntervalTree(IntervalTree):
         if len(self.boundary_table) == 2:
             return
 
-        # get bound locations
-        bounds = sorted(
-            [bound for bound, occurences in self.boundary_table.items() if occurences > 1],  # noqa
-        )
+        bounds = sorted(self.boundary_table)
 
         new_ivs = set()
         for lbound, ubound in zip(bounds[:-1], bounds[1:]):
@@ -29,3 +26,7 @@ class AnnotationIntervalTree(IntervalTree):
 
         new_ivs = [iv.data for iv in list(new_ivs)]
         return new_ivs
+
+    def overlap(self, begin, end):
+        overlaps = super().overlap(begin, end)
+        return [overlap.data for overlap in list(overlaps)]

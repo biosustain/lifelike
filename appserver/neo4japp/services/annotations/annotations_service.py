@@ -16,6 +16,7 @@ from .constants import (
     EntityColor,
     EntityIdStr,
     EntityType,
+    ENTITY_TYPE_PRECEDENCE,
     PDF_NEW_LINE_THRESHOLD,
     NCBI_LINK,
     UNIPROT_LINK,
@@ -600,7 +601,7 @@ class AnnotationsService:
             unwanted_keywords=unwanted_keywords_set,
         )
 
-        unified_annotations = []
+        unified_annotations: List[Annotation] = []
         unified_annotations.extend(updated_matched_genes)
         unified_annotations.extend(updated_matched_chemicals)
         unified_annotations.extend(updated_matched_compounds)
@@ -608,37 +609,123 @@ class AnnotationsService:
         unified_annotations.extend(updated_matched_species)
         unified_annotations.extend(updated_matched_diseases)
 
-        # TODO: this is related to JIRA LL-407/408
-        # create dictionary with page number as keys
-        # otherwise indexes will collide between different pages
-        #
-        # marked as TODO because need to decide how we want to
-        # handle these conflicts; e.g remove them or keep them and let the user decide.
-        # the code is implemented to prepare for that and gather
-        # all of the conflicts in one place
-        #
-        # unified_annotations_dict: Dict[int, List[Annotation]] = {}
-        # for unified in unified_annotations:
-        #     if unified.page_number in unified_annotations_dict:
-        #         unified_annotations_dict[unified.page_number].append(unified)
-        #     else:
-        #         unified_annotations_dict[unified.page_number] = [unified]
-        #
-        # for _, annotations in unified_annotations_dict.items():
-        #     self.find_conflicting_annotations(annotations)
+        updated_unified_annotations: List[Annotation] = []
+        unified_annotations_dict: Dict[int, List[Annotation]] = {}
+        conflicting_annotations: Dict[int, List[Annotation]] = {}
+        # use to keep track and not include when building the
+        # updated_unified_annotations
+        # will extend at the very end with correct list
+        conflicting_annotations_hashes: Set[str] = set()
 
-        # sorting descending order for now until the above
-        # TODO is resolved - but shouldn't be removed when it is.
-        # this handles the longer keyword substring take precedence
-        return sorted(
-            unified_annotations,
-            key=lambda annotate: annotate.keyword_length,
-            reverse=True,
-        )
+        # need to go page by page because coordinates
+        # reset on each page
+        for unified in unified_annotations:
+            if unified.lo_location_offset == unified.hi_location_offset:
+                # keyword is a single character
+                updated_unified_annotations.append(unified)
+            elif unified.page_number in unified_annotations_dict:
+                unified_annotations_dict[unified.page_number].append(unified)
+            else:
+                unified_annotations_dict[unified.page_number] = [unified]
+
+        for page_number, annotations in unified_annotations_dict.items():
+            conflicts = self.find_conflicting_annotations(annotations)
+            conflicting_annotations_hashes = set.union(*[
+                {compute_hash(c.to_dict()) for c in conflicts},
+                conflicting_annotations_hashes,
+            ])
+
+            conflicting_annotations[page_number] = conflicts
+
+        for no_conflict_anno in unified_annotations:
+            hashval = compute_hash(no_conflict_anno.to_dict())
+            if hashval not in conflicting_annotations_hashes:
+                updated_unified_annotations.append(no_conflict_anno)
+
+        fixed_annotations: List[Annotation] = []
+
+        for _, conflicting_annos in conflicting_annotations.items():
+            # any annotations that remain are overlapping ones
+            overlapping_annotations: Dict[str, Annotation] = {}
+            tmp_fixed_annotations: List[Annotation] = []
+
+            for annotation in conflicting_annos:
+                hashval = compute_hash({
+                    'keyword': annotation.keyword,
+                    'lo_location_offset': annotation.lo_location_offset,
+                    'hi_location_offset': annotation.hi_location_offset,
+                })
+
+                if hashval not in overlapping_annotations:
+                    overlapping_annotations[hashval] = annotation
+                else:
+                    # exact intervals so choose entity precedence
+                    conflicting_anno = overlapping_annotations.pop(hashval)
+
+                    key1 = ENTITY_TYPE_PRECEDENCE[annotation.meta.keyword_type]
+                    key2 = ENTITY_TYPE_PRECEDENCE[conflicting_anno.meta.keyword_type]
+
+                    if key1 > key2:
+                        overlapping_annotations[hashval] = annotation
+                    else:
+                        overlapping_annotations[hashval] = conflicting_anno
+
+            # at this point all annotations
+            # with exact duplicate intervals and exact
+            # keywords are fixed
+            tmp_fixed_annotations = [anno for _, anno in overlapping_annotations.items()]
+
+            tmp_fixed_annotations_dict = {
+                compute_hash(anno.to_dict()): anno for anno in tmp_fixed_annotations}
+            tmp_fixed_annotations_hashes = {
+                compute_hash(anno.to_dict()) for anno in tmp_fixed_annotations}
+
+            tree = AnnotationIntervalTree()
+
+            for annotation in tmp_fixed_annotations:
+                tree.add(
+                    AnnotationInterval(
+                        begin=annotation.lo_location_offset,
+                        end=annotation.hi_location_offset,
+                        data=annotation,
+                    ),
+                )
+
+            processed: Set[str] = set()
+            for annotation in tmp_fixed_annotations:
+                conflicts = tree.overlap(
+                    begin=annotation.lo_location_offset,
+                    end=annotation.hi_location_offset,
+                )
+                if len(conflicts) == 1:
+                    fixed_annotations.extend(conflicts)
+                else:
+                    chosen_annotation = None
+                    for conflict in conflicts:
+                        if chosen_annotation is None:
+                            chosen_annotation = conflict
+                        else:
+                            if conflict.keyword_length > chosen_annotation.keyword_length:
+                                chosen_annotation = conflict
+                            elif conflict.keyword_length == chosen_annotation.keyword_length:
+                                key1 = ENTITY_TYPE_PRECEDENCE[conflict.meta.keyword_type]
+                                key2 = ENTITY_TYPE_PRECEDENCE[chosen_annotation.meta.keyword_type]
+
+                                if key1 > key2:
+                                    chosen_annotation = conflict
+
+                    hashval = compute_hash(chosen_annotation.to_dict())
+                    if hashval not in processed:
+                        fixed_annotations.append(chosen_annotation)
+                        processed.add(hashval)
+
+        updated_unified_annotations.extend(fixed_annotations)
+        return updated_unified_annotations
 
     def find_conflicting_annotations(
         self,
         annotations: List[Annotation],
+        # query: Optional[]
     ) -> List[Annotation]:
         """Find all of the annotations that have overlapping
         index intervals. The intervals implies the same keyword has been
