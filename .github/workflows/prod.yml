@@ -19,6 +19,10 @@ env:
     PROJECT_ID: ${{ secrets.GCE_PROJECT }}
     GCE_INSTANCE: kg-prod
     GCE_INSTANCE_ZONE: us-central1-a
+    # TODO: Delete these later after refactor, redundant
+    NEO4J_ENTITIES_HOST: ${{ secrets.NEO4J_ENTITIES_HOST }}
+    NEO4J_ENTITIES_PASS: ${{ secrets.NEO4J_ENTITIES_PASS }}
+    NEO4J_ENTITIES_USER: ${{ secrets.NEO4J_ENTITIES_USER }}
 
 jobs:
     setup-build-publish-deploy:
@@ -70,6 +74,9 @@ jobs:
                 echo "FLASK_ENV=$FLASK_ENV" >> prod.env
                 echo "DOCKER_USER=_json_key" >> prod.env
                 echo "PROJECT_ID=$PROJECT_ID" >> prod.env
+                echo "NEO4J_ENTITIES_HOST=$NEO4J_ENTITIES_HOST" >> prod.env
+                echo "NEO4J_ENTITIES_PASS=$NEO4J_ENTITIES_PASS" >> prod.env
+                echo "NEO4J_ENTITIES_USER=$NEO4J_ENTITIES_USER" >> prod.env
                 echo "$SERVICE_ACCOUNT_CRED" >> keyfile.json
                 gcloud compute scp prod.env root@$GCE_INSTANCE:/srv --zone $GCE_INSTANCE_ZONE
                 gcloud compute scp keyfile.json root@$GCE_INSTANCE:/srv --zone $GCE_INSTANCE_ZONE
