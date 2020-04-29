@@ -11,6 +11,7 @@ interface UniversalGraphNode {
   icon?: any;
   label: string;
   sub_labels: string[];
+  color?: any;
 }
 interface UniversalGraphEdge {
   label: string;
@@ -37,6 +38,7 @@ interface VisNetworkGraphNode {
     hyperlink?: string;
     detail?: string;
   };
+  color?: any;
 }
 interface VisNetworkGraphEdge {
   id?: string;

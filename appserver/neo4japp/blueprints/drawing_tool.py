@@ -1,14 +1,14 @@
-from datetime import datetime, timedelta
-from flask import current_app, request, Response, json, Blueprint, g
-import jwt
+from datetime import datetime
+
+import graphviz as gv
+from flask import request, Blueprint, g
 from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy_searchable import search
 
 from neo4japp.blueprints.auth import auth
 from neo4japp.database import db
 from neo4japp.exceptions import RecordNotFoundException
-from neo4japp.models import AppUser, Project, ProjectSchema
-
-import graphviz as gv
+from neo4japp.models import Project, ProjectSchema
 
 bp = Blueprint('drawing_tool', __name__, url_prefix='/drawing-tool')
 
@@ -211,3 +211,16 @@ def get_project_pdf(project_id):
         )
 
     return graph.pipe()
+
+
+@bp.route('/search', methods=['POST'])
+@auth.login_required
+def find_maps():
+    user = g.current_user
+    data = request.get_json()
+    query = search(Project.query, data['term'], sort=True)
+    personal = query.filter_by(user_id=user.id).all()
+    community = query.filter_by(public=True).all()
+    project_schema = ProjectSchema(many=True)
+
+    return {'projects': project_schema.dump(personal) + project_schema.dump(community)}, 200

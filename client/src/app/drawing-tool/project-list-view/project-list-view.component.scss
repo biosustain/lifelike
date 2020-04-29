@@ -14,6 +14,11 @@
       bottom: 0;
       right: 0;
     }
+
+    #search {
+      @include overlay();
+      bottom: 0;
+    }
   }
 
   #map-preview {
