@@ -2,16 +2,16 @@ import {
   Component,
   ViewChild,
   TemplateRef,
-  ViewContainerRef
+  ViewContainerRef, OnInit
 } from '@angular/core';
 import {
   MatDialog
 } from '@angular/material/dialog';
-import { Router } from '@angular/router';
-import { OverlayRef, Overlay } from '@angular/cdk/overlay';
-import { Subscription, fromEvent } from 'rxjs';
-import { TemplatePortal } from '@angular/cdk/portal';
-import { filter, take } from 'rxjs/operators';
+import {Router} from '@angular/router';
+import {OverlayRef, Overlay} from '@angular/cdk/overlay';
+import {Subscription, fromEvent} from 'rxjs';
+import {TemplatePortal} from '@angular/cdk/portal';
+import {filter, take} from 'rxjs/operators';
 
 import {
   ProjectsService,
@@ -34,7 +34,7 @@ import {
 import {
   CopyProjectDialogComponent
 } from './copy-project-dialog/copy-project-dialog.component';
-import { MatSnackBar, MatTabChangeEvent } from '@angular/material';
+import {MatSnackBar, MatTabChangeEvent} from '@angular/material';
 
 import * as $ from 'jquery';
 
@@ -70,7 +70,9 @@ export class ProjectListViewComponent {
   selectedProject: Project = null;
 
   get emptyGraph() {
-    if (!this.selectedProject) { return true; }
+    if (!this.selectedProject) {
+      return true;
+    }
 
     return this.selectedProject.graph.nodes.length ? false : true;
   }
@@ -138,8 +140,10 @@ export class ProjectListViewComponent {
    * if so, call delete API on project
    * @param project represents a project object
    */
-  deleteProject(project= null) {
-    if (!project) { project = this.selectedProject; }
+  deleteProject(project = null) {
+    if (!project) {
+      project = this.selectedProject;
+    }
 
     const dialogRef = this.dialog.open(DeleteProjectDialogComponent, {
       width: '40%',
@@ -151,19 +155,20 @@ export class ProjectListViewComponent {
         this.projectService.deleteProject(project)
           .subscribe(resp => {
 
-            this.projects = this.projects.filter(p => p.id !== project.id);
-            this.publicProjects = this.publicProjects.filter(p => p.id !== project.id);
+              this.projects = this.projects.filter(p => p.id !== project.id);
+              this.publicProjects = this.publicProjects.filter(p => p.id !== project.id);
 
-            if (project === this.selectedProject) {
-              this.selectedProject = null;
+              if (project === this.selectedProject) {
+                this.selectedProject = null;
 
 
-              $('.list-view').animate({
-                width: '100%'
-              }, 400, () => {});
+                $('.list-view').animate({
+                  width: '100%'
+                }, 400, () => {
+                });
+              }
             }
-          }
-        );
+          );
       }
     });
   }
@@ -203,8 +208,10 @@ export class ProjectListViewComponent {
    * through a confirmation dialog, then call create API on project
    * @param project represents a project object
    */
-  copyProject(project: Project= null) {
-    if (!project) { project = this.selectedProject; }
+  copyProject(project: Project = null) {
+    if (!project) {
+      project = this.selectedProject;
+    }
 
     const dialogRef = this.dialog.open(CopyProjectDialogComponent, {
       width: '40%',
@@ -212,7 +219,9 @@ export class ProjectListViewComponent {
     });
 
     dialogRef.afterClosed().subscribe(result => {
-      if (!result) { return; }
+      if (!result) {
+        return;
+      }
 
       this.projectService.addProject(result)
         .subscribe((data) => {
@@ -224,7 +233,7 @@ export class ProjectListViewComponent {
   /**
    * Display selected project with graph preview
    * and meta-data
-   * @param proj represents a project object
+   * @param project represents a project object
    */
   pickProject(proj: Project) {
     this.selectedProject = proj;
