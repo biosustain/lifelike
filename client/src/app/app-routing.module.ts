@@ -13,6 +13,7 @@ import { routes as dtRoutes } from './drawing-tool/drawing-tool.module';
 import { AdminGuard } from 'app/admin/services/admin-guard.service';
 import { AuthGuard } from 'app/auth/guards/auth-guard.service';
 import { LoginGuard } from 'app/auth/guards/login-guard.service';
+import { PdfViewerComponent } from 'app/drawing-tool/pdf-viewer/pdf-viewer.component';
 
 // TODO: Add an unprotected home page
 const routes: Routes = [
@@ -34,10 +35,10 @@ const routes: Routes = [
     //   './drawing-tool/drawing-tool.module'
     // ).then(m => m.DrawingToolModule)
   },
-  // {
-  //   path: 'pdf-viewer',
-  //   component: PdfViewerComponent
-  // },
+  {
+    path: 'pdf-viewer',
+    component: PdfViewerComponent
+  },
   {
     path: 'file-browser',
     component: FileBrowserComponent,
