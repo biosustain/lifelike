@@ -267,21 +267,19 @@ def gas_gangrene_with_associations_and_references(
         id=2771501,
     )
 
-    # Reference Nodes
+    # Snippet Nodes
     penicillins_to_gas_gangrene_reference_node1 = Node(
-        'Reference',
+        'Snippet',
         entry1_text='penicillin',
         entry2_text='gas gangrene',
         id=9810347,
-        score=0.4300000071525574,
         sentence='In a mouse model of gas_gangrene caused by...',
     )
     penicillins_to_gas_gangrene_reference_node2 = Node(
-        'Reference',
+        'Snippet',
         entry1_text='penicillin',
         entry2_text='gas gangrene',
         id=9810346,
-        score=0.4300000071525574,
         sentence='Toxin suppression and rapid bacterial killing may...',
     )
 
@@ -329,7 +327,7 @@ def gas_gangrene_with_associations_and_references(
     tx.create(penicillins_association_to_gas_gangrene_edge1)
     tx.create(penicillins_association_to_gas_gangrene_edge2)
 
-    # Association -> Reference Relationships
+    # Association <- Snippet Relationships
     penicillins_alleviates_reduces_association_to_reference_edge = Relationship(
         penicillins_to_gas_gangrene_association_node1, 'HAS_REF', penicillins_to_gas_gangrene_reference_node1  # noqa
     )
@@ -340,7 +338,7 @@ def gas_gangrene_with_associations_and_references(
     tx.create(penicillins_alleviates_reduces_association_to_reference_edge)
     tx.create(penicillins_treatment_association_to_reference_edge)
 
-    # Reference -> Publication Relationships
+    # Snippet -> Publication Relationships
     penicillins_alleviates_reduces_reference_to_publication_edge = Relationship(
         penicillins_to_gas_gangrene_reference_node1, 'HAS_PUBLICATION', penicillins_to_gas_gangrene_publication_node1  # noqa
     )
