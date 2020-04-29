@@ -7,6 +7,7 @@ import { isNullOrUndefined } from 'util';
 import { take, filter } from 'rxjs/operators';
 import { TemplatePortal } from '@angular/cdk/portal';
 import { ProjectsService } from 'app/drawing-tool/services';
+import { FormGroup, FormControl } from '@angular/forms';
 
 /**
  * Sort project by most recent modified date
@@ -60,6 +61,17 @@ export class MapListComponent implements OnInit {
     this.projects.sort(sort);
   }
 
+  /** Search form implementation */
+  searchForm: FormGroup = new FormGroup({
+    term: new FormControl('')
+  });
+  searchFormSubscription: Subscription;
+
+  /**
+   * List of projects owned by user and found by the search
+   */
+  searchResults: Project[] = [];
+
   constructor(
     public overlay: Overlay,
     public viewContainerRef: ViewContainerRef,
@@ -70,6 +82,9 @@ export class MapListComponent implements OnInit {
     if (!this.childMode) {
       this.refresh();
     }
+    this.searchFormSubscription = this.searchForm.valueChanges.subscribe(val => {
+      this.searchForm.setErrors({required: null});
+    });
   }
 
   /**
@@ -196,5 +211,36 @@ export class MapListComponent implements OnInit {
       this.overlayRef.dispose();
       this.overlayRef = null;
     }
+  }
+
+  goToSearch() {
+    this.displayIndex = 2;
+  }
+
+  searchForMaps(event) {
+    if (event.key === 'Enter') {
+      this.searchResults = [];
+      this.projService.searchForMaps(this.searchForm.value.term)
+        .subscribe(
+          (data) => {
+            this.highlightNodes(data, this.searchForm.value.term.split(' '));
+            this.searchResults = (
+              data.projects as Project[]
+            );
+          });
+    }
+  }
+
+  private highlightNodes(data, terms: string[]) {
+    data.projects.forEach(project => {
+      project.graph.nodes.forEach(node => {
+        terms.forEach(term => {
+          const regexp = new RegExp('^' + term + '.*$', 'gi');
+          if (node.display_name.match(regexp)) {
+            node.color = {background: '#FFFD92'};
+          }
+        });
+      });
+    });
   }
 }
