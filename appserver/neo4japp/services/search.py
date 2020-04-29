@@ -95,7 +95,7 @@ class SearchService(GraphBaseDao):
         cypher_query = """
             CALL db.index.fulltext.queryNodes("namesEvidenceAndId", $search_term)
             YIELD node, score
-            OPTIONAL MATCH (publication:Publication)<-[:HAS_PUBLICATION]-(node:Snippet)
+            OPTIONAL MATCH (publication:Publication)<-[:IN_PUB]-(node:Snippet)
             WITH node, publication, score
             OPTIONAL MATCH (node:Snippet)-[:PREDICTS]->(association:Association)
             WITH node, publication, association, score
