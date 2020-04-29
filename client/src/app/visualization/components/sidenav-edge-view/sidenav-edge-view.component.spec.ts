@@ -7,6 +7,7 @@ import { RootStoreModule } from 'app/***ARANGO_USERNAME***-store';
 import { SharedModule } from 'app/shared/shared.module';
 
 import { SidenavEdgeViewComponent } from './sidenav-edge-view.component';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 describe('SidenavEdgeViewComponent', () => {
     let component: SidenavEdgeViewComponent;
@@ -24,6 +25,7 @@ describe('SidenavEdgeViewComponent', () => {
             imports: [
                 SharedModule,
                 RootStoreModule,
+                BrowserAnimationsModule
             ],
             declarations: [ SidenavEdgeViewComponent ]
         });

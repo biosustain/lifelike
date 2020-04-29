@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+echo "Cleaning database"
+flask drop_tables
 echo "Upgrading PostgreSQL"
 flask db upgrade
 echo "Seeding PostgreSQL"

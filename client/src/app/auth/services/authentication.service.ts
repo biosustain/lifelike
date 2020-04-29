@@ -80,6 +80,14 @@ export class AuthenticationService {
       );
   }
 
+  public whoAmI() {
+    const auth = JSON.parse(localStorage.getItem('auth'));
+
+    if (!auth.user) { return; }
+
+    return auth.user.id;
+  }
+
   public getAccessToken() {
     return localStorage.getItem('access_jwt') || '';
   }

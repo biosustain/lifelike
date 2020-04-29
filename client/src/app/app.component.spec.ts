@@ -6,6 +6,7 @@ import { configureTestSuite } from 'ng-bullet';
 import { AppComponent } from './app.component';
 import { RootStoreModule } from './***ARANGO_USERNAME***-store';
 import { SharedModule } from './shared/shared.module';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 describe('AppComponent', () => {
     let fixture: ComponentFixture<AppComponent>;
@@ -17,6 +18,7 @@ describe('AppComponent', () => {
                 RouterTestingModule,
                 RootStoreModule,
                 SharedModule,
+                BrowserAnimationsModule,
             ],
             declarations: [
                 AppComponent

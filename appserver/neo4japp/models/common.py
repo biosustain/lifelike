@@ -3,10 +3,14 @@ from decimal import Decimal
 
 from neo4japp.database import db
 from neo4japp.util import snake_to_camel, camel_to_snake
+from marshmallow import fields
+from marshmallow_sqlalchemy.convert import ModelConverter as BaseModelConverter
+from sqlalchemy_utils.types import TSVectorType
 
 
 class NEO4JBase():
     """ Base class for all neo4j related ORM """
+
     def to_dict(self, keyfn=None):
         d = self.__dict__
         keyfn = keyfn or snake_to_camel
@@ -144,3 +148,15 @@ class RDBMSBase(db.Model):  # type: ignore
                 value = data[k]
             setattr(self, attr, value)
         return self
+
+
+class ModelConverter(BaseModelConverter):
+    """ Custom Model Converter to extend the BaseModelConverter to allow new types
+        for example: TSVector type for full text search.
+        This is been explain in the issue on the sqlalchemy repo:
+        https://github.com/marshmallow-code/marshmallow-sqlalchemy/issues/55#issuecomment-472684594
+    """
+    SQLA_TYPE_MAPPING = {
+        **BaseModelConverter.SQLA_TYPE_MAPPING,
+        **{TSVectorType: fields.Field},
+    }
