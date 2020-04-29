@@ -7,6 +7,7 @@ import { SharedModule } from 'app/shared/shared.module';
 import { RootStoreModule } from 'app/***ARANGO_USERNAME***-store';
 
 import { SidenavClusterViewComponent } from './sidenav-cluster-view.component';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 describe('SidenavClusterViewComponent', () => {
     let component: SidenavClusterViewComponent;
@@ -19,6 +20,7 @@ describe('SidenavClusterViewComponent', () => {
             imports: [
                 SharedModule,
                 RootStoreModule,
+                BrowserAnimationsModule
             ],
             declarations: [ SidenavClusterViewComponent ]
         });
