@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpEvent, HttpHeaders } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { AuthenticationService } from 'app/auth/services/authentication.service';
@@ -14,7 +14,8 @@ export class PdfFilesService {
   constructor(
     private auth: AuthenticationService,
     private http: HttpClient,
-  ) {}
+  ) {
+  }
 
   getFiles(): Observable<PdfFile[]> {
     return this.http.get<PdfFiles>(`${this.baseUrl}/list`).pipe(
@@ -31,10 +32,14 @@ export class PdfFilesService {
     return this.http.get<ArrayBuffer>(`${this.baseUrl}/${id}`, options);
   }
 
-  uploadFile(file: File): Observable<PdfFileUpload> {
+  uploadFile(file: File): Observable<HttpEvent<PdfFileUpload>> {
     const formData: FormData = new FormData();
     formData.append('file', file);
-    return this.http.post<PdfFileUpload>(`${this.baseUrl}/upload`, formData, this.buildHttpOptions());
+    return this.http.post<PdfFileUpload>(`${this.baseUrl}/upload`, formData, {
+      ...this.buildHttpOptions(),
+      observe: 'events',
+      reportProgress: true,
+    });
   }
 
   reannotateFiles(ids: string[]): Observable<Reannotation> {

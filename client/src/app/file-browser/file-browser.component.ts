@@ -1,39 +1,43 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { Subscription } from 'rxjs';
 import { SelectionModel } from '@angular/cdk/collections';
 import { MatSnackBar } from '@angular/material';
-import { AnnotationStatus, PdfFile, PdfFileUpload, Reannotation } from 'app/interfaces/pdf-files.interface';
+import { BehaviorSubject, Subject } from 'rxjs';
+import { AnnotationStatus, PdfFile, Reannotation } from 'app/interfaces/pdf-files.interface';
 import { PdfFilesService } from 'app/shared/services/pdf-files.service';
-
+import { HttpEventType } from '@angular/common/http';
+import { UploadProgress, UploadStatus } from 'app/interfaces/file-browser.interfaces';
+import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
+import { UploadProgressDialogComponent } from './upload-progress-dialog.component';
 
 @Component({
   selector: 'app-file-browser',
   templateUrl: './file-browser.component.html',
-  styleUrls: ['./file-browser.component.scss']
+  styleUrls: ['./file-browser.component.scss'],
 })
-export class FileBrowserComponent implements OnInit, OnDestroy {
+export class FileBrowserComponent implements OnInit {
   displayedColumns: string[] = ['select', 'filename', 'creationDate', 'username', 'annotation'];
   dataSource: PdfFile[] = [];
-  isUploading = false;
   selection = new SelectionModel<PdfFile>(true, []);
-  selectionChanged: Subscription;
-  canOpen = false;
   isReannotating = false;
+  status = UploadStatus.Ready;
+  /**
+   * Progress events will be streamed to the progress dialog.
+   */
+  progress: Subject<UploadProgress> = new BehaviorSubject<UploadProgress>(
+    new UploadProgress(UploadStatus.Ready, 0)
+  );
 
   constructor(
     private pdf: PdfFilesService,
     private router: Router,
     private snackBar: MatSnackBar,
-  ) {}
+    public dialog: MatDialog,
+  ) {
+  }
 
   ngOnInit() {
     this.updateDataSource();
-    this.selectionChanged = this.selection.changed.subscribe(() => this.canOpen = this.selection.selected.length === 1);
-  }
-
-  ngOnDestroy() {
-    this.selectionChanged.unsubscribe();
   }
 
   updateDataSource() {
@@ -53,16 +57,40 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
     if (files.length === 0) {
       return;
     }
-    this.isUploading = true;
-    this.pdf.uploadFile(files[0]).subscribe(
-      (res: PdfFileUpload) => {
-        this.isUploading = false;
-        this.snackBar.open(`File uploaded: ${res.filename}`, 'Close', {duration: 5000});
-        this.updateDataSource(); // updates the list on successful upload
+    if (this.status !== UploadStatus.Ready) {
+      // the user shouldn't be able to initiate a new file upload
+      return;
+    }
+
+    const name = files[0].name;
+    this.status = UploadStatus.Starting;
+
+    // Let's show some progress!
+    this.progress.next(new UploadProgress(this.status, 0, name));
+    this.openProgressDialog();
+
+    this.pdf.uploadFile(files[0]).subscribe(event => {
+        if (event.type === HttpEventType.UploadProgress) {
+          if (event.loaded >= event.total) {
+            this.status = UploadStatus.Processing;
+          } else {
+            this.status = UploadStatus.Uploading;
+          }
+          this.progress.next(new UploadProgress(this.status, event.loaded / event.total, name));
+        } else if (event.type === HttpEventType.Response) {
+          this.progress.next(new UploadProgress(this.status, 1, name));
+          this.status = UploadStatus.Ready;
+          this.dialog.closeAll();
+          this.snackBar.open(`File uploaded: ${event.body.filename}`, 'Close', {duration: 5000});
+          this.updateDataSource(); // updates the list on successful upload
+        }
       },
-      err => {
-        this.isUploading = false;
-        this.snackBar.open(`Error on upload: ${err}`, 'Close', {duration: 10000});
+      () => {
+        this.status = UploadStatus.Ready;
+        this.dialog.closeAll();
+        this.snackBar.open('An error was encountered uploading your file.', 'Close', {
+          verticalPosition: 'top', // show the message on top for visibility
+        });
       }
     );
   }
@@ -111,5 +139,21 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
     } else {
       this.selection.select(...this.dataSource);
     }
+  }
+
+  /**
+   * Show the upload progress dialog to the user.
+   */
+  openProgressDialog() {
+    const dialogConfig = new MatDialogConfig();
+
+    dialogConfig.width = '400px';
+    dialogConfig.disableClose = true;
+    dialogConfig.autoFocus = true;
+    dialogConfig.data = {
+      progress: this.progress
+    };
+
+    this.dialog.open(UploadProgressDialogComponent, dialogConfig);
   }
 }
