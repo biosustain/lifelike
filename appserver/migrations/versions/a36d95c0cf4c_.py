@@ -1,4 +1,5 @@
-"""empty message
+"""Create foreign key relation from files
+to projects
 
 Revision ID: a36d95c0cf4c
 Revises: 9d90838ba1b5
