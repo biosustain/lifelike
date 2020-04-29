@@ -36,10 +36,18 @@ export class PdfFilesService {
     const formData: FormData = new FormData();
     formData.append('file', file);
     return this.http.post<PdfFileUpload>(`${this.baseUrl}/upload`, formData, {
-      ...this.createHttpOptions(true),
+      ...this.buildHttpOptions(),
       observe: 'events',
       reportProgress: true,
     });
+  }
+
+  private buildHttpOptions() {
+    return {
+      headers: new HttpHeaders({
+        Authorization: `Bearer ${this.auth.getAccessToken()}`
+      }),
+    };
   }
 
   createHttpOptions(withJwt = false) {
