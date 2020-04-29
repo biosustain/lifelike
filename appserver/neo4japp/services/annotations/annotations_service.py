@@ -446,30 +446,27 @@ class AnnotationsService:
                     if not any(common_names_in_doc_text):
                         continue
                     else:
-                        for k, v in entity['common_name'].items():
+                        for _, v in entity['common_name'].items():
                             if v in tokens_lowercased:
                                 common_name_count += 1
-                                entity_id = k
                 else:
                     common_name_count = 1
-                    entity_id = entity[entity_id_str]
 
                 if common_name_count == 1:
-                    # If a gene was matched to more than one organism in the document,
-                    # we have to check which of them to use, and get the corresponding
-                    # gene data. Right now we use the organism with the highest
-                    # frequency within the document, but we may fine-tune this later.
-                    if len(match_result[word]) > 1:
-                        organism_to_gene_pairs = match_result[word]
-                        most_frequent_organism = str()
-                        greatest_frequency = 0
+                    # If a gene was matched to at least one organism in the document,
+                    # we have to get the corresponding gene data. If a gene matches
+                    # more than one organism, we use the one with the highest
+                    # frequency within the document. We may fine-tune this later.
+                    organism_to_gene_pairs = match_result[word]
+                    most_frequent_organism = str()
+                    greatest_frequency = 0
 
-                        for organism_id in organism_to_gene_pairs.keys():
-                            if organism_frequency[organism_id] > greatest_frequency:
-                                greatest_frequency = organism_frequency[organism_id]
-                                most_frequent_organism = organism_id
+                    for organism_id in organism_to_gene_pairs.keys():
+                        if organism_frequency[organism_id] > greatest_frequency:
+                            greatest_frequency = organism_frequency[organism_id]
+                            most_frequent_organism = organism_id
 
-                        entity_id = organism_to_gene_pairs[most_frequent_organism]
+                    entity_id = organism_to_gene_pairs[most_frequent_organism]
 
                     # create list of positions boxes
                     curr_page_coor_obj = coor_obj_per_pdf_page[
