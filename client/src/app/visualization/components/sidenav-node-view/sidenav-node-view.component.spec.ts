@@ -73,7 +73,13 @@ describe('SidenavNodeViewComponent', () => {
         fixture.detectChanges();
 
         const nodeSubLabelElements = document.getElementsByClassName('sidenav-node-sub-label');
-        expect(nodeSubLabelElements.length).toEqual(1);
-        expect(nodeSubLabelElements[0].textContent).toEqual('ExtraSubLabel');
+        expect(nodeSubLabelElements.length).toEqual(2);
+
+        const labels = [];
+        labels.push(nodeSubLabelElements[0].textContent);
+        labels.push(nodeSubLabelElements[1].textContent);
+
+        expect(labels).toContain('MockNode');
+        expect(labels).toContain('ExtraSubLabel');
     });
 });
