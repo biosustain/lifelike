@@ -26,7 +26,6 @@ export interface Reference extends GraphNode {
         entry1Text: string;
         entry2Text: string;
         id: string;
-        score: number;
         sentence: string;
     };
 }
