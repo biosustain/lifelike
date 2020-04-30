@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { BehaviorSubject, Observable, Subject, Subscription } from 'rxjs';
+import { BehaviorSubject, Observable, Subject, Subscription, throwError } from 'rxjs';
 import { SelectionModel } from '@angular/cdk/collections';
 import { MatSnackBar } from '@angular/material';
 import { PdfFile } from 'app/interfaces/pdf-files.interface';
@@ -78,12 +78,10 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
           this.dataSource = this.pdf.getFiles(); // updates the list on successful upload
         }
       },
-      () => {
+      err => {
         this.status = UploadStatus.Ready;
         this.dialog.closeAll();
-        this.snackBar.open('An error was encountered uploading your file.', 'Close', {
-          verticalPosition: 'top', // show the message on top for visibility
-        });
+        return throwError(err);
       }
     );
   }
