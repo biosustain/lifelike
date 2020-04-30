@@ -4,7 +4,7 @@ import { ExportModalComponent } from './export-modal.component';
 import { DrawingToolModule } from '../../drawing-tool.module';
 import { MatDialogRef} from '@angular/material/dialog';
 import {configureTestSuite} from 'ng-bullet';
-import {RootStoreModule} from "../../../root-store";
+import {RootStoreModule} from '../../../root-store';
 
 describe('ExportModalComponent', () => {
   let component: ExportModalComponent;
