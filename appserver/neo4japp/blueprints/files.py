@@ -57,7 +57,6 @@ def upload_pdf():
             filename=filename,
             raw_file=binary_pdf,
             user_id=user.id,
-            username=user.username,
             annotations=annotations_json,
             project=project
         )
@@ -88,7 +87,7 @@ def list_files():
         'id': row.id,  # TODO: is this of any use?
         'file_id': row.file_id,
         'filename': row.filename,
-        'username': row.username if row.user_id is not None else row.legacy_username,
+        'username': row.username,
         'creation_date': row.creation_date,
     } for row in db.session.query(
         Files.id,
@@ -96,9 +95,8 @@ def list_files():
         Files.filename,
         Files.user_id,
         AppUser.username,
-        Files.username.label('legacy_username'),
         Files.creation_date)
-        .outerjoin(AppUser)
+        .join(AppUser, Files.user_id == AppUser.id)
         .filter(Files.project == project)
         .all()]
     return jsonify({'files': files})
