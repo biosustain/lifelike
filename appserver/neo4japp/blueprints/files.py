@@ -1,19 +1,20 @@
+import json
+import os
 import uuid
 from datetime import datetime
-import os
-import json
-from neo4japp.blueprints.auth import auth
-from flask import Blueprint, request, abort, jsonify, g, make_response
+
+from flask import Blueprint, request, jsonify, g, make_response
 from werkzeug.utils import secure_filename
 
+from neo4japp.blueprints.auth import auth
 from neo4japp.database import (
     db,
     get_annotations_service,
     get_annotations_pdf_parser,
     get_bioc_document_service,
 )
+from neo4japp.exceptions import RecordNotFoundException, BadRequestError
 from neo4japp.models.files import Files
-from neo4japp.exceptions import RecordNotFoundException
 
 bp = Blueprint('files', __name__, url_prefix='/files')
 
@@ -42,6 +43,11 @@ def upload_pdf():
 
     try:
         parsed_pdf_chars = pdf_parser.parse_pdf(pdf=pdf)
+    except Exception as e:
+        raise BadRequestError("Your file could not be processed. "
+                              "Double check that it is in PDF format.") from e
+
+    try:
         pdf_text = pdf_parser.parse_pdf_high_level(pdf=pdf)
         annotations = annotator.create_annotations(
             tokens=pdf_parser.extract_tokens(parsed_chars=parsed_pdf_chars))
@@ -50,27 +56,25 @@ def upload_pdf():
         bioc = bioc_service.read(text=pdf_text, file_uri=filename)
         annotations_json = bioc_service.generate_bioc_json(
             annotations=annotations, bioc=bioc)
+    except Exception as e:
+        raise BadRequestError("Your file could not be annotated and your file "
+                              "was not saved.") from e
 
-        files = Files(
-            file_id=file_id,
-            filename=filename,
-            raw_file=binary_pdf,
-            username=username.id,
-            annotations=annotations_json,
-            project=project
-        )
-        db.session.add(files)
-        db.session.commit()
-        return jsonify({
-            'file_id': file_id,
-            'filename': filename,
-            'status': 'Successfully uploaded'
-        })
-    except Exception as err:
-        return abort(
-            400,
-            f'File was unable to upload, please try again {str(err)}'
-        )
+    files = Files(
+        file_id=file_id,
+        filename=filename,
+        raw_file=binary_pdf,
+        username=username.id,
+        annotations=annotations_json,
+        project=project
+    )
+    db.session.add(files)
+    db.session.commit()
+    return jsonify({
+        'file_id': file_id,
+        'filename': filename,
+        'status': 'Successfully uploaded'
+    })
 
 
 @bp.route('/list', methods=['GET'])
