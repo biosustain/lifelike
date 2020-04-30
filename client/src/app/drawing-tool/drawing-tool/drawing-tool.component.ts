@@ -58,7 +58,6 @@ import {
 import {
   DataFlowService,
   ProjectsService,
-  nodeTemplates,
   makeid
 } from '../services';
 import {
@@ -78,6 +77,7 @@ import {
 import {
   InfoPanelComponent
 } from './info-panel/info-panel.component';
+import { annotationTypes } from 'app/shared/annotation-styles';
 
 interface Update {
   event: string;
@@ -160,7 +160,7 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
   node4AddingEdge2;
 
   /** Build the palette ui with node templates defined */
-  nodeTemplates = nodeTemplates;
+  nodeTemplates = annotationTypes;
 
   /**
    * Subscription for subjects

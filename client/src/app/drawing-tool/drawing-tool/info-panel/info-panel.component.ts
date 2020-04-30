@@ -10,7 +10,6 @@ import { MatCheckboxChange } from '@angular/material';
 import * as $ from 'jquery';
 
 import {
-  nodeTemplates,
   uuidv4,
   DataFlowService
 } from '../../services';
@@ -27,6 +26,7 @@ import { filter } from 'rxjs/operators';
 import { isNullOrUndefined } from 'util';
 
 import { LINK_NODE_ICON_OBJECT } from 'app/constants';
+import { annotationTypes } from 'app/shared/annotation-styles';
 
 @Component({
   selector: 'app-info-panel',
@@ -37,7 +37,7 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
   @ViewChild('autosize', {static: true}) autosize: CdkTextareaAutosize;
 
   /** Build the palette ui with node templates defined */
-  nodeTemplates = nodeTemplates;
+  nodeTemplates = annotationTypes;
 
   paletteMode = 'minimized';
 

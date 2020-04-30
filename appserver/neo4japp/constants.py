@@ -57,3 +57,75 @@ GRAPH_INDEX = 'graph'
 def is_db_name(s: str):
     """ check if a str is db name"""
     return s in [DB_CHEBI, DB_NCBI, DB_GO] or s.lower().endswith('cyc')
+
+
+ANNOTATATION_STYLES = [{
+        "color": '#673ab7',
+        "label": "gene",
+    },
+    {
+        "color": '#ff9800',
+        "label": "disease",
+    },
+    {
+        "color": '#4caf50',
+        "label": "chemical",
+    },
+    {
+        "color": '#5d4037',
+        "label": "mutation",
+    },
+    {
+        "color": '#0277bd',
+        "label": "species",
+    },
+    {
+        "color": '#d62728',
+        "label": "company",
+    },
+    {
+        "color": '#17becf',
+        "label": "study",
+    },
+    {
+        "color": '#bcbd22',
+        "label": "protein",
+    },
+    {
+        "color": '#e377c2',
+        "label": "pathway",
+    },
+    {
+        "color": '#edc949',
+        "label": "phentotype",
+    },
+    {
+        "label": "ENTITY",
+        "color": '#7f7f7f'
+    },
+    {
+        "label": "LINK",
+        "color": '#7f7f7f'
+    },
+    # Non - Entity Types
+    {
+        "label": "correlation",
+        "color": '#d7d9f8'
+    },
+    {
+        "label": "cause",
+        "color": '#d7d9f8'
+    },
+    {
+        "label": "effect",
+        "color": '#d7d9f8'
+    },
+    {
+        "label": "observation",
+        "color": '#d7d9f8'
+    },
+    {
+        "label": "association",
+        "color": '#d7d9f8'
+    }
+]

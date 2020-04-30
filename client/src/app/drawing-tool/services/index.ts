@@ -5,9 +5,6 @@ import {
     ProjectsService
 } from './projects.service';
 import {
-    nodeTemplates
-} from './nodes';
-import {
     PdfAnnotationsService,
 } from './pdf-annotations.service';
 import {
@@ -46,7 +43,6 @@ export {
     DataFlowService,
     ProjectsService,
     PdfAnnotationsService,
-    nodeTemplates,
     uuidv4,
     makeid,
     DragDropEventFactory,
