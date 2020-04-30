@@ -4,6 +4,7 @@ import { ExportModalComponent } from './export-modal.component';
 import { DrawingToolModule } from '../../drawing-tool.module';
 import { MatDialogRef} from '@angular/material/dialog';
 import {configureTestSuite} from 'ng-bullet';
+import {RootStoreModule} from "../../../***ARANGO_USERNAME***-store";
 
 describe('ExportModalComponent', () => {
   let component: ExportModalComponent;
@@ -11,7 +12,10 @@ describe('ExportModalComponent', () => {
 
   configureTestSuite(() => {
       TestBed.configureTestingModule({
-          imports: [ DrawingToolModule ],
+          imports: [
+            DrawingToolModule,
+            RootStoreModule
+          ],
           providers: [{
              provide: MatDialogRef,
              useValue: {}
