@@ -49,11 +49,11 @@ TYPO_SYNONYMS = {
 }
 
 ENTITY_TYPE_PRECEDENCE = {
-    'Chemicals': 3,
-    'Compounds': 3,
+    'Chemicals': 4,
+    'Compounds': 4,
     'Diseases': 5,
     'Genes': 2,
-    'Proteins': 4,
+    'Proteins': 3,
     'Species': 1,
 }
 
