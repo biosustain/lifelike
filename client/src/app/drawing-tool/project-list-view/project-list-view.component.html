@@ -5,15 +5,24 @@
       childMode='true'
       [projects]='projects'
       [publicProjects]='publicProjects'
-      (projectAPICaller)='handleAPI($event)'>
+      (projectAPICaller)='handleAPI($event)'
+      [displayIndex]='displayIndex'>
     </app-map-list>
-    <button 
+    <button
       mat-fab
       color='primary'
       id='add-project'
       aria-label="Example icon-button with a heart icon"
       (click)='createProject()'>
       <mat-icon>add</mat-icon>
+    </button>
+    <button
+      mat-fab
+      color='primary'
+      id='search'
+      aria-label="Example icon-button with a heart icon"
+      (click)='goToSearch()'>
+      <mat-icon>search</mat-icon>
     </button>
   </div>
   <div *ngIf='selectedProject else empty;' class='h-100' fxFill [fxFlex]="fullScreenmode === 'shrink' ? 70 : 100" fxLayout='column' fxLayoutAlign="start center">
@@ -22,7 +31,7 @@
       <div
         fxFill
         id='map-preview'>
-        <div 
+        <div
           id='canvas-container'>
           <app-map-preview
             [project]='selectedProject'
@@ -87,4 +96,3 @@
     <p>Create or select a project</p>
   </div>
 </ng-template>
-  
