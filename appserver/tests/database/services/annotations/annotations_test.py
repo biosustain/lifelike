@@ -30,7 +30,7 @@ directory = path.realpath(path.dirname(__file__))
                 hi_location_offset=8,
                 keyword_length=4,
                 keywords=[''],
-                rects=[[1,2]],
+                rects=[[1, 2]],
                 meta=Annotation.Meta(
                     keyword_type='Genes',
                     color='',
@@ -46,7 +46,7 @@ directory = path.realpath(path.dirname(__file__))
                 hi_location_offset=20,
                 keyword_length=16,
                 keywords=[''],
-                rects=[[1,2]],
+                rects=[[1, 2]],
                 meta=Annotation.Meta(
                     keyword_type='Chemicals',
                     color='',
@@ -64,7 +64,7 @@ directory = path.realpath(path.dirname(__file__))
                 hi_location_offset=8,
                 keyword_length=4,
                 keywords=[''],
-                rects=[[1,2]],
+                rects=[[1, 2]],
                 meta=Annotation.Meta(
                     keyword_type='Genes',
                     color='',
@@ -80,7 +80,7 @@ directory = path.realpath(path.dirname(__file__))
                 hi_location_offset=8,
                 keyword_length=4,
                 keywords=[''],
-                rects=[[1,2]],
+                rects=[[1, 2]],
                 meta=Annotation.Meta(
                     keyword_type='Chemicals',
                     color='',
@@ -98,7 +98,7 @@ directory = path.realpath(path.dirname(__file__))
                 hi_location_offset=38,
                 keyword_length=4,
                 keywords=[''],
-                rects=[[1,2]],
+                rects=[[1, 2]],
                 meta=Annotation.Meta(
                     keyword_type='Genes',
                     color='',
@@ -114,7 +114,7 @@ directory = path.realpath(path.dirname(__file__))
                 hi_location_offset=20,
                 keyword_length=16,
                 keywords=[''],
-                rects=[[1,2]],
+                rects=[[1, 2]],
                 meta=Annotation.Meta(
                     keyword_type='Chemicals',
                     color='',
@@ -132,7 +132,7 @@ directory = path.realpath(path.dirname(__file__))
                 hi_location_offset=20,
                 keyword_length=4,
                 keywords=[''],
-                rects=[[1,2]],
+                rects=[[1, 2]],
                 meta=Annotation.Meta(
                     keyword_type='Genes',
                     color='',
@@ -148,7 +148,75 @@ directory = path.realpath(path.dirname(__file__))
                 hi_location_offset=20,
                 keyword_length=16,
                 keywords=[''],
-                rects=[[1,2]],
+                rects=[[1, 2]],
+                meta=Annotation.Meta(
+                    keyword_type='Chemicals',
+                    color='',
+                    id='',
+                    id_type='',
+                    links=Annotation.Meta.Links(),
+                ),
+            ),
+        ]),
+        (5, [
+            Annotation(
+                page_number=1,
+                keyword='word',
+                lo_location_offset=17,
+                hi_location_offset=20,
+                keyword_length=4,
+                keywords=[''],
+                rects=[[1, 2]],
+                meta=Annotation.Meta(
+                    keyword_type='Genes',
+                    color='',
+                    id='',
+                    id_type='',
+                    links=Annotation.Meta.Links(),
+                ),
+            ),
+        ]),
+        (6, [
+            Annotation(
+                page_number=1,
+                keyword='word',
+                lo_location_offset=17,
+                hi_location_offset=20,
+                keyword_length=4,
+                keywords=[''],
+                rects=[[1, 2]],
+                meta=Annotation.Meta(
+                    keyword_type='Genes',
+                    color='',
+                    id='',
+                    id_type='',
+                    links=Annotation.Meta.Links(),
+                ),
+            ),
+            Annotation(
+                page_number=1,
+                keyword='Test a long word',
+                lo_location_offset=5,
+                hi_location_offset=20,
+                keyword_length=16,
+                keywords=[''],
+                rects=[[1, 2]],
+                meta=Annotation.Meta(
+                    keyword_type='Chemicals',
+                    color='',
+                    id='',
+                    id_type='',
+                    links=Annotation.Meta.Links(),
+                ),
+            ),
+            Annotation(
+                page_number=1,
+                keyword='long word',
+                lo_location_offset=55,
+                hi_location_offset=63,
+                keyword_length=16,
+                keywords=[''],
+                rects=[[1, 2]],
                 meta=Annotation.Meta(
                     keyword_type='Chemicals',
                     color='',
@@ -177,6 +245,14 @@ def test_fix_conflicting_annotations(annotations_setup, index, annotations):
     elif index == 4:
         assert len(fixed) == 1
         assert fixed[0] == annotations[1]
+    elif index == 5:
+        assert len(fixed) == 1
+        assert fixed[0] == annotations[0]
+    elif index == 6:
+        assert len(fixed) == 2
+        assert annotations[0] not in fixed
+        assert annotations[1] in fixed
+        assert annotations[2] in fixed
 
 
 @pytest.mark.skip
