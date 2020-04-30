@@ -746,7 +746,7 @@ class AnnotationsService:
                                     chosen_annotation = conflict
                                 elif conflict.keyword_length == chosen_annotation.keyword_length:
                                     key1 = ENTITY_TYPE_PRECEDENCE[conflict.meta.keyword_type]
-                                    key2 = ENTITY_TYPE_PRECEDENCE[chosen_annotation.meta.keyword_type]
+                                    key2 = ENTITY_TYPE_PRECEDENCE[chosen_annotation.meta.keyword_type]  # noqa
 
                                     if key1 > key2:
                                         chosen_annotation = conflict
