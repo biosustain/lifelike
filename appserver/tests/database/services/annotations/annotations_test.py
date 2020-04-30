@@ -19,6 +19,7 @@ from neo4japp.models import Files
 directory = path.realpath(path.dirname(__file__))
 
 
+@pytest.mark.skip
 @pytest.mark.parametrize(
     'index, annotations',
     [
