@@ -3,6 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { configureTestSuite } from 'ng-bullet';
 
 import { LegendComponent } from './legend.component';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 describe('LegendComponent', () => {
     let component: LegendComponent;
@@ -10,7 +11,10 @@ describe('LegendComponent', () => {
 
     configureTestSuite(() => {
         TestBed.configureTestingModule({
-            declarations: [ LegendComponent ]
+            declarations: [ LegendComponent ],
+            imports: [
+                BrowserAnimationsModule
+            ]
         });
     });
 

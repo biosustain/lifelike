@@ -28,7 +28,7 @@ export class PdfFilesService {
   }
 
   getFile(id: string): Observable<ArrayBuffer> {
-    const options = Object.assign(this.buildHttpOptions(), {responseType: 'arraybuffer'});
+    const options = Object.assign(this.createHttpOptions(true), {responseType: 'arraybuffer'});
     return this.http.get<ArrayBuffer>(`${this.baseUrl}/${id}`, options);
   }
 
@@ -56,5 +56,22 @@ export class PdfFilesService {
         Authorization: `Bearer ${this.auth.getAccessToken()}`
       }),
     };
+  }
+
+  createHttpOptions(withJwt = false) {
+    if (withJwt) {
+      return {
+        headers: new HttpHeaders({
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer ' + localStorage.getItem('access_jwt'),
+        }),
+      };
+    } else {
+      return {
+        headers: new HttpHeaders({
+          'Content-Type': 'application/json',
+        }),
+      };
+    }
   }
 }

@@ -1,7 +1,13 @@
 import hashlib
 
 from neo4japp.database import db, ma
-from neo4japp.models import RDBMSBase
+from neo4japp.models import RDBMSBase, ModelConverter
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy_searchable import make_searchable
+from sqlalchemy_utils.types import TSVectorType
+
+Base = declarative_base()
+make_searchable(Base.metadata)
 
 
 class Project(RDBMSBase):
@@ -17,6 +23,7 @@ class Project(RDBMSBase):
     public = db.Column(db.Boolean, default=False)
     user_id = db.Column(db.Integer, db.ForeignKey('appuser.id'), nullable=False)
     hash_id = db.Column(db.String(50), unique=True)
+    search_vector = db.Column(TSVectorType('label'))
 
     def set_hash_id(self):
         """ Assign hash based on project id with salt
@@ -31,4 +38,6 @@ class Project(RDBMSBase):
 
 class ProjectSchema(ma.ModelSchema):  # type: ignore
     class Meta:
+        include_fk = True
         model = Project
+        model_converter = ModelConverter
