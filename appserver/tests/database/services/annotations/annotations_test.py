@@ -257,7 +257,7 @@ def test_fix_conflicting_annotations(annotations_setup, index, annotations):
 
 
 @pytest.mark.skip
-def test_generate_annotations(annotations_setup):
+@pytest.mark.parametrize(
     'file, expected_keywords',
     [
         (
