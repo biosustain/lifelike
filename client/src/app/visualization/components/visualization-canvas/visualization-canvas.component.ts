@@ -70,6 +70,12 @@ export class VisualizationCanvasComponent implements OnInit {
             let newClusterCount = 0;
             edgeLabelsOfExpandedNode.forEach(directionList => newClusterCount += directionList.length);
 
+            if (edgeLabelsOfExpandedNode.size === 0) {
+                alert('Something strange occurred: attempted to pre-cluster a node with zero relationships!');
+                return;
+            }
+
+            // When the last relationship is finished clustering, emit
             this.clusterCreatedSource.asObservable().pipe(
                 skip(this.openClusteringRequests + newClusterCount - 1),
                 first(),
