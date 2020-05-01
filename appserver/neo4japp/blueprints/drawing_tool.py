@@ -188,7 +188,7 @@ def get_project_pdf(project_id):
         item = unprocessed.pop(0)
         project = Project.query.filter_by(hash_id=item).one_or_none()
         if not project:
-            rasie(RecordNotFoundException())
+            raise RecordNotFoundException()
         pdf_data = process(project)
         pdf_object = PdfFileReader(io.BytesIO(pdf_data))
         processed[item] = pdf_object
