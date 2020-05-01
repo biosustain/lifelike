@@ -219,7 +219,7 @@ class DeletionOutcome(Enum):
     NOT_FOUND = 'Not found'
 
 
-@bp.route('/bulk_delete', methods=['POST'])
+@bp.route('/bulk_delete', methods=['DELETE'])
 @auth.login_required
 def delete_files():
     ids = request.get_json()

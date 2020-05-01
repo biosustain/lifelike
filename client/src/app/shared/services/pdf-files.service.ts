@@ -33,7 +33,7 @@ export class PdfFilesService {
   }
 
   deleteFiles(ids: string[]): Observable<string> {
-    return this.http.post<string>(`${this.baseUrl}/bulk_delete`, ids, this.buildHttpOptions());
+    return this.http.request<string>('DELETE', `${this.baseUrl}/bulk_delete`, {body: ids, ...this.buildHttpOptions()});
   }
 
   uploadFile(file: File): Observable<HttpEvent<PdfFileUpload>> {
