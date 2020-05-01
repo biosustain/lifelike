@@ -31,6 +31,7 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatTreeModule } from '@angular/material/tree';
+import { MatFormFieldModule } from '@angular/material/form-field';
 import { ANIMATION_MODULE_TYPE } from '@angular/platform-browser/animations';
 
 
@@ -102,9 +103,6 @@ import { ANIMATION_MODULE_TYPE } from '@angular/platform-browser/animations';
         MatTooltipModule,
         MatTreeModule,
     ],
-    providers: [
-      { provide: ANIMATION_MODULE_TYPE, useValue: 'BrowserAnimations' }
-    ]
 })
 
 export class AngularMaterialModule {}

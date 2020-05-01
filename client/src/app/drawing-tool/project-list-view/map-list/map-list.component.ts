@@ -50,14 +50,14 @@ export class MapListComponent implements OnInit {
 
   /** Whether to show community or personal maps */
   privateDisplayMode = 'personal';
-  displayIndex = 0;
+  @Input() displayIndex = null;
 
   get displayMode() {
     return this.privateDisplayMode;
   }
   set displayMode(val) {
     this.privateDisplayMode = val;
-    this.displayIndex = val === 'personal' ? 0 : 1;
+    this.displayIndex = val === 'personal' ? 0 : val === 'community' ? 1 : 2;
     this.projects.sort(sort);
   }
 
@@ -211,10 +211,6 @@ export class MapListComponent implements OnInit {
       this.overlayRef.dispose();
       this.overlayRef = null;
     }
-  }
-
-  goToSearch() {
-    this.displayIndex = 2;
   }
 
   searchForMaps(event) {
