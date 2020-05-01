@@ -1,5 +1,6 @@
 <h2 mat-dialog-title>
-  <mat-icon>error</mat-icon>
+  <mat-icon *ngIf="type == 'WARNING'">warning</mat-icon>
+  <mat-icon *ngIf="type == 'ERROR'">error</mat-icon>
   {{title}}
 </h2>
 

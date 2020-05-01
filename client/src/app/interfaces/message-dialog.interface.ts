@@ -1,3 +1,5 @@
 export enum MessageType {
-  Error = 'error',
+  Info = 'INFO',
+  Warning = 'WARNING',
+  Error = 'ERROR',
 }
