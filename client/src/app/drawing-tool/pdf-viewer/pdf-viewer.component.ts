@@ -147,8 +147,9 @@ export class PdfViewerComponent implements OnDestroy {
   }
 
   private updateFilteredFiles = (name: string) => {
+    const words = name.split(' ').filter(w => w.length).map(w => w.toLocaleLowerCase());
     this.filteredFiles = this.files.filter(
-      (file: PdfFile) => file.filename.toLocaleLowerCase().includes(name.toLocaleLowerCase())
+      (file: PdfFile) => words.some(w => file.filename.toLocaleLowerCase().includes(w))
     );
   }
 
