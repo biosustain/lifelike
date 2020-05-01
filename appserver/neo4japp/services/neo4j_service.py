@@ -492,7 +492,7 @@ class Neo4JService(GraphBaseDao):
         """.format(**args)
 
     # TODO: Allow flexible limits on nodes; enable this in the blueprints
-    def get_expand_query(self, node_id: str, limit: int = 50):
+    def get_expand_query(self, node_id: str, limit: int = 200):
         query = """
             MATCH (n)-[l:ASSOCIATED]-(s) WHERE ID(n) = {}
             WITH n, s, l
