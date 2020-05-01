@@ -1,4 +1,5 @@
 import logging
+import traceback
 from functools import partial
 
 from flask import current_app, Flask, jsonify
@@ -70,6 +71,7 @@ def handle_error(code: int, ex: BaseException):
     reterr = {'apiHttpError': ex.to_dict()}
     if current_app.debug:
         logger.error("Request caused BaseException error", exc_info=ex)
+        reterr['detail'] = "".join(traceback.format_exception(etype=type(ex), value=ex, tb=ex.__traceback__))
     return jsonify(reterr), code
 
 
@@ -77,6 +79,7 @@ def handle_bad_request_exception(code: int, ex: BadRequestError):
     reterr = {'message': ex.message}
     if current_app.debug:
         logger.warning("Request caused BadRequestError", exc_info=ex)
+        reterr['detail'] = "".join(traceback.format_exception(etype=type(ex), value=ex, tb=ex.__traceback__))
     return jsonify(reterr), code
 
 
@@ -84,4 +87,5 @@ def handle_generic_error(code: int, ex: Exception):
     reterr = {'apiHttpError': str(ex)}
     if current_app.debug:
         logger.error("Request caused unhandled exception", exc_info=ex)
+        reterr['detail'] = "".join(traceback.format_exception(etype=type(ex), value=ex, tb=ex.__traceback__))
     return jsonify(reterr), code

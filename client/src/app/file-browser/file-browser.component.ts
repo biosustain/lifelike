@@ -68,7 +68,7 @@ export class FileBrowserComponent implements OnInit {
 
     // Let's show some progress!
     this.progress.next(new UploadProgress(this.status, 0, name));
-    this.openProgressDialog();
+    const dialogRef = this.openProgressDialog();
 
     this.pdf.uploadFile(files[0]).subscribe(event => {
         if (event.type === HttpEventType.UploadProgress) {
@@ -81,14 +81,14 @@ export class FileBrowserComponent implements OnInit {
         } else if (event.type === HttpEventType.Response) {
           this.progress.next(new UploadProgress(this.status, 1, name));
           this.status = UploadStatus.Ready;
-          this.dialog.closeAll();
+          dialogRef.close();
           this.snackBar.open(`File uploaded: ${event.body.filename}`, 'Close', {duration: 5000});
           this.updateDataSource(); // updates the list on successful upload
         }
       },
       err => {
         this.status = UploadStatus.Ready;
-        this.dialog.closeAll();
+        dialogRef.close();
         return throwError(err);
       }
     );
@@ -168,7 +168,7 @@ export class FileBrowserComponent implements OnInit {
       progress: this.progress
     };
 
-    this.dialog.open(UploadProgressDialogComponent, dialogConfig);
+    return this.dialog.open(UploadProgressDialogComponent, dialogConfig);
   }
 
   applyFilter(filterValue: string) {
