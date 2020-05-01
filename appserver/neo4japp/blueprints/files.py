@@ -97,7 +97,8 @@ def get_or_delete_file(id):
         return res
     if request.method == 'DELETE':
         if g.current_user.id != int(entry.username):
-            current_app.logger.error('Cannot delete file (not an owner): %s, %s', entry.file_id, entry.filename)
+            current_app.logger.error('Cannot delete file (not an owner): %s, %s',
+                                     entry.file_id, entry.filename)
             raise Forbidden(
                 description='You are not the owner of this file. You cannot delete it.'
             )
