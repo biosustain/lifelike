@@ -17,7 +17,7 @@ def setup():
         except GraphError:
             print('WARNING: No previous indexes found. Continuing...')
 
-        labels = [TYPE_GENE, TYPE_DISEASE, TYPE_TAXONOMY, TYPE_CHEMICAL, TYPE_REFERENCE]
+        labels = [TYPE_GENE, TYPE_DISEASE, TYPE_TAXONOMY, TYPE_CHEMICAL, TYPE_SNIPPET]
         indexed_properties = ['name', 'id', 'sentence']
         create_fts_index_query = """
             CALL db.index.fulltext.createNodeIndex(

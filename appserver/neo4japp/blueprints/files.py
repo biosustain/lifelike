@@ -9,14 +9,15 @@ from neo4japp.blueprints.auth import auth
 from flask import Blueprint, current_app, request, abort, jsonify, g, make_response
 from werkzeug.utils import secure_filename
 
+from neo4japp.blueprints.auth import auth
 from neo4japp.database import (
     db,
     get_annotations_service,
     get_annotations_pdf_parser,
     get_bioc_document_service,
 )
+from neo4japp.exceptions import RecordNotFoundException, BadRequestError
 from neo4japp.models.files import Files
-from neo4japp.exceptions import RecordNotFoundException
 
 bp = Blueprint('files', __name__, url_prefix='/files')
 
@@ -30,6 +31,13 @@ def upload_pdf():
     username = g.current_user
 
     filename = secure_filename(request.files['file'].filename)
+    # Make sure that the filename is not longer than the DB column permits
+    max_filename_length = Files.filename.property.columns[0].type.length
+    if len(filename) > max_filename_length:
+        name, extension = os.path.splitext(filename)
+        if len(extension) > max_filename_length:
+            extension = ".dat"
+        filename = name[:max(0, max_filename_length - len(extension))] + extension
     file_id = str(uuid.uuid4())
 
     annotations = annotate(filename, pdf)
