@@ -60,6 +60,10 @@ class AnnotationsPDFParser:
                     coor_obj_per_pdf_page=coor_obj_per_pdf_page,
                 )
             elif isinstance(lt_obj, LTChar) or isinstance(lt_obj, LTAnno):
+                # ignore CID fonts
+                # these are arithmetic or other symbols the parser
+                # was not able to translate
+                # usually requires a license or better algorithm from parser
                 if not lt_obj.get_text().startswith('cid:'):
                     if page_idx + 1 in coor_obj_per_pdf_page:
                         prev_char = coor_obj_per_pdf_page[page_idx+1][-1]
