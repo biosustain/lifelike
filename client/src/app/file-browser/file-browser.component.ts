@@ -93,8 +93,8 @@ export class FileBrowserComponent implements OnInit {
     );
   }
 
-  openFile() {
-    localStorage.setItem('fileIdForPdfViewer', this.selection.selected[0].file_id);
+  openFile(fileId: string) {
+    localStorage.setItem('fileIdForPdfViewer', fileId);
     this.router.navigate(['/pdf-viewer']);
   }
 
