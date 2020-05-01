@@ -7,6 +7,7 @@ import json
 from typing import Dict
 from neo4japp.blueprints.auth import auth
 from flask import Blueprint, current_app, request, abort, jsonify, g, make_response
+from werkzeug.exceptions import Forbidden
 from werkzeug.utils import secure_filename
 
 from neo4japp.blueprints.auth import auth
@@ -86,13 +87,22 @@ def list_files():
     return jsonify({'files': files})
 
 
-@bp.route('/<id>', methods=['GET'])
+@bp.route('/<id>', methods=['GET', 'DELETE'])
 @auth.login_required
-def get_pdf(id):
-    entry = db.session.query(Files.raw_file).filter(Files.file_id == id).one()
-    res = make_response(entry.raw_file)
-    res.headers['Content-Type'] = 'application/pdf'
-    return res
+def get_or_delete_file(id):
+    entry = db.session.query(Files).filter(Files.file_id == id).one()
+    if request.method == 'GET':
+        res = make_response(entry.raw_file)
+        res.headers['Content-Type'] = 'application/pdf'
+        return res
+    if request.method == 'DELETE':
+        if g.current_user.id != int(entry.username):
+            raise Forbidden(
+                description='You are not the owner of this file. You cannot delete it.'
+            )
+        db.session.delete(entry)
+        db.session.commit()
+        return ''
 
 
 @bp.route('/bioc', methods=['GET'])
@@ -198,4 +208,32 @@ def reannotate():
             current_app.logger.debug('File successfully annotated: %s, %s', id, file.filename)
             outcome[id] = AnnotationOutcome.ANNOTATED.value
         fp.close()
+    return jsonify(outcome)
+
+
+class DeletionOutcome(Enum):
+    DELETED = 'Deleted'
+    NOT_DELETED = 'Not deleted'
+    NOT_FOUND = 'Not found'
+
+
+@bp.route('/bulk_delete', methods=['POST'])
+@auth.login_required
+def delete_files():
+    ids = request.get_json()
+    outcome: Dict[str, str] = {}  # file id to deletion outcome
+    for id in ids:
+        file = Files.query.filter_by(file_id=id).one_or_none()
+        if file is None:
+            current_app.logger.error('Could not find file: %s, %s', id, file.filename)
+            outcome[id] = DeletionOutcome.NOT_FOUND.value
+            continue
+        if g.current_user.id != int(file.username):
+            current_app.logger.error('Cannot delete file (not an owner): %s, %s', id, file.filename)
+            outcome[id] = DeletionOutcome.NOT_DELETED.value
+            continue
+        db.session.delete(file)
+        db.session.commit()
+        current_app.logger.debug('File deleted: %s, %s', id, file.filename)
+        outcome[id] = DeletionOutcome.DELETED.value
     return jsonify(outcome)
