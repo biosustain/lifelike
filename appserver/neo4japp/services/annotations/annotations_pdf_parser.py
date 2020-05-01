@@ -60,15 +60,16 @@ class AnnotationsPDFParser:
                     coor_obj_per_pdf_page=coor_obj_per_pdf_page,
                 )
             elif isinstance(lt_obj, LTChar) or isinstance(lt_obj, LTAnno):
-                if page_idx + 1 in coor_obj_per_pdf_page:
-                    prev_char = coor_obj_per_pdf_page[page_idx+1][-1]
-                    if should_add_virtual_space(prev_char, lt_obj):
-                        virtual_space_char = LTAnno(' ')
-                        coor_obj_per_pdf_page[page_idx+1].append(virtual_space_char)
+                if not lt_obj.get_text().startswith('cid:'):
+                    if page_idx + 1 in coor_obj_per_pdf_page:
+                        prev_char = coor_obj_per_pdf_page[page_idx+1][-1]
+                        if should_add_virtual_space(prev_char, lt_obj):
+                            virtual_space_char = LTAnno(' ')
+                            coor_obj_per_pdf_page[page_idx+1].append(virtual_space_char)
 
-                    coor_obj_per_pdf_page[page_idx+1].append(lt_obj)
-                else:
-                    coor_obj_per_pdf_page[page_idx+1] = [lt_obj]
+                        coor_obj_per_pdf_page[page_idx+1].append(lt_obj)
+                    else:
+                        coor_obj_per_pdf_page[page_idx+1] = [lt_obj]
 
     def parse_pdf_high_level(self, pdf) -> str:
         return high_level.extract_text(pdf)
