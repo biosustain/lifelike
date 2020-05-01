@@ -47,7 +47,7 @@ export const routes = [
     component: DrawingToolComponent
   },
   {
-    path: 'splitter',
+    path: 'splitter/:hash_id',
     component: SplitterComponent,
     canDeactivate: [PendingChangesGuard]
   },

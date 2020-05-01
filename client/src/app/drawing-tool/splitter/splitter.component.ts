@@ -9,6 +9,7 @@ import {
   HostListener,
   ComponentRef
 } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 
 import {
   PdfViewerComponent
@@ -33,6 +34,7 @@ export class SplitterComponent implements OnInit, AfterViewInit {
   splitPanelLength = 0;
 
   currentApp = '';
+  currentMap = '';
 
   saveState = true;
 
@@ -40,8 +42,13 @@ export class SplitterComponent implements OnInit, AfterViewInit {
 
   constructor(
     private injector: Injector,
-    private r: ComponentFactoryResolver
-  ) { }
+    private r: ComponentFactoryResolver,
+    private route: ActivatedRoute
+  ) {
+    if (this.route.snapshot.params.hash_id) {
+      this.currentMap = this.route.snapshot.params.hash_id;
+    }
+  }
 
   ngOnInit() {
 
