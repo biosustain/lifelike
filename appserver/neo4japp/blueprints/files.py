@@ -206,7 +206,7 @@ def reannotate():
 
 class DeletionOutcome(Enum):
     DELETED = 'Deleted'
-    NOT_DELETED = 'Not deleted'
+    NOT_OWNER = 'Not an owner'
     NOT_FOUND = 'Not found'
 
 
@@ -223,7 +223,7 @@ def delete_files():
             continue
         if g.current_user.id != int(file.username):
             current_app.logger.error('Cannot delete file (not an owner): %s, %s', id, file.filename)
-            outcome[id] = DeletionOutcome.NOT_DELETED.value
+            outcome[id] = DeletionOutcome.NOT_OWNER.value
             continue
         db.session.delete(file)
         db.session.commit()
