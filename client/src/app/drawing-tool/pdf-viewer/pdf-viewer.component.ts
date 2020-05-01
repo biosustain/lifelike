@@ -197,6 +197,7 @@ export class PdfViewerComponent implements OnDestroy {
         } else if (ann.meta.type === 'Species') {
           return `https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=${ann.meta.id}`;
         }
+        return '';
       default:
         return '';
     }
