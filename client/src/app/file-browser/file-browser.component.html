@@ -1,15 +1,18 @@
 <mat-toolbar>File Browser</mat-toolbar>
-<div class="container" fxLayout="column" fxLayoutAlign="start start" fxLayoutGap="8px">
+<div class="container" fxLayout="column" fxLayoutAlign="start start">
   <div fxLayoutGap="8px">
     <button mat-raised-button (click)="fileInput.click()"><mat-icon>add_box</mat-icon> Upload</button>
     <input #fileInput hidden type="file" accept="application/pdf"
       (change)="onFileInput($event.target.files);$event.target.value = null">
-    <button mat-raised-button [disabled]="selection.selected.length !== 1" (click)="openFile()">Open</button>
     <button mat-raised-button [disabled]="selection.selected.length === 0" (click)="deleteFiles()" color="warn">Delete</button>
     <button mat-raised-button [disabled]="selection.selected.length === 0 || isReannotating" (click)="reannotate()">Reannotate</button>
   </div>
 
-  <mat-table [dataSource]="dataSource">
+  <mat-form-field fxFlexOffset="16px">
+    <input matInput (keyup)="applyFilter($event.target.value)" placeholder="Filter by name">
+  </mat-form-field>
+
+  <mat-table [dataSource]="dataSource" class="mat-elevation-z1">
     <ng-container matColumnDef="select">
       <mat-header-cell *matHeaderCellDef fxFlex="nogrow">
         <mat-checkbox (change)="$event ? masterToggle() : null"
@@ -26,7 +29,9 @@
 
     <ng-container matColumnDef="filename">
       <mat-header-cell *matHeaderCellDef> Name </mat-header-cell>
-      <mat-cell *matCellDef="let element"> {{element.filename}} </mat-cell>
+      <mat-cell *matCellDef="let element">
+        <button mat-button (click)="openFile(element.file_id)"> {{element.filename}} </button>
+      </mat-cell>
     </ng-container>
 
     <ng-container matColumnDef="creationDate">
