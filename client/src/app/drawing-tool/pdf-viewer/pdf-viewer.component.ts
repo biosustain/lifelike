@@ -5,11 +5,11 @@ import { PdfFile } from 'app/interfaces/pdf-files.interface';
 import { PdfFilesService } from 'app/shared/services/pdf-files.service';
 
 import {
-  PdfAnnotationsService,
+  PdfAnnotationsService, DataFlowService,
 } from '../services';
 
 import {
-  Annotation, Location, Meta
+  Annotation, Location, Meta, GraphData
 } from '../services/interfaces';
 
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -42,7 +42,8 @@ export class PdfViewerComponent implements OnDestroy {
   constructor(
     private pdfAnnService: PdfAnnotationsService,
     private pdf: PdfFilesService,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private dataFlow: DataFlowService
   ) {
     this.filesFilterSub = this.filesFilter.valueChanges.subscribe(this.updateFilteredFiles);
     this.pdf.getFiles().subscribe((files: PdfFile[]) => {
@@ -129,21 +130,20 @@ export class PdfViewerComponent implements OnDestroy {
     // use location object to scroll in the pdf.
     const loc: Location = JSON.parse(nodeDom.getAttribute('location')) as Location;
 
-    // custom annotations dont have id yet.
-    // const annDef: Annotation = this.pdfAnnService.searchForAnnotation(annId);
+    const getUrl = window.location;
+    let hyperlink = getUrl.protocol + '//' + getUrl.host + '/dt/link/';
+    hyperlink = hyperlink + `${this.currentFileId}/${loc.pageNumber}/`;
+    hyperlink = hyperlink + `${loc.rect[0]}/${loc.rect[1]}/${loc.rect[2]}/${loc.rect[3]}`;
 
-    /*
     const payload: GraphData = {
       x: mouseEvent.clientX - containerCoord.x,
       y: mouseEvent.clientY,
-      label: nodeDom.innerText,
-      group: (meta.type as string).toLowerCase(),
-      hyperlink: this.generateHyperlink(annDef)
+      label: meta.allText,
+      group: 'link',
+      hyperlink
     };
-    */
-    // hyperlink should be hyperlinks. Those are in Meta field called Links.
 
-    // this.dataFlow.pushNode2Canvas(payload);
+    this.dataFlow.pushNode2Canvas(payload);
   }
 
   private updateFilteredFiles = (name: string) => {

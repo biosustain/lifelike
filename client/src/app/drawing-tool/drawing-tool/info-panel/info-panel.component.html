@@ -5,7 +5,7 @@
 
     <div class='w-90 center'>
       <mat-checkbox
-        *ngIf='graphData.id!=="" && isNode && graphData.group === "link"'
+        *ngIf='graphData.id!=="" && isNode && graphData.group === "link" || graphData.group === "note"'
         [(ngModel)]="nodeIsIcon"
         (change)="linkNodeCheckboxChanged($event)"
       >Show Link Node as Icon</mat-checkbox>
