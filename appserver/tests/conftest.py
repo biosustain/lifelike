@@ -356,6 +356,80 @@ def gas_gangrene_with_associations_and_references(
 
     return gas_gangrene
 
+
+@pytest.fixture(scope='function')
+def example4_pdf_gene_and_organism_network(
+    graph,
+):
+    tx = graph.begin()
+
+    cysB = Node(
+        'db_NCBI',
+        name='cysB',
+        locus_tag='b1275',
+        id='945771'
+    )
+
+    mcrB = Node(
+        'db_NCBI',
+        name='mcrB',
+        locus_tag='b4346',
+        id='949122'
+    )
+
+    oxyR_e_coli = Node(
+        'db_NCBI',
+        name='oxyR',
+        locus_tag='b3961',
+        id='948462'
+    )
+
+    oxyR_salmonella = Node(
+        'db_NCBI',
+        name='cysB',
+        locus_tag='STM4125',
+        id='1255651'
+    )
+
+    e_coli = Node(
+        'db_NCBI',
+        name='Escherichia coli',
+        rank='species',
+        id='562',
+    )
+
+    salmonella = Node(
+        'db_NCBI',
+        name='Salmonella enterica',
+        rank='species',
+        id='28901',
+    )
+
+    cysB_has_taxonomy_e_coli = Relationship(
+        cysB, 'HAS_TAXONOMY', e_coli,
+    )
+
+    mcrB_has_taxonomy_e_coli = Relationship(
+        mcrB, 'HAS_TAXONOMY', e_coli,
+    )
+
+    oxyR_has_taxonomy_e_coli = Relationship(
+        oxyR_e_coli, 'HAS_TAXONOMY', e_coli,
+    )
+
+    oxyR_has_taxonomy_salmonella = Relationship(
+        oxyR_salmonella, 'HAS_TAXONOMY', salmonella,
+    )
+
+    tx.create(cysB_has_taxonomy_e_coli)
+    tx.create(mcrB_has_taxonomy_e_coli)
+    tx.create(oxyR_has_taxonomy_e_coli)
+    tx.create(oxyR_has_taxonomy_salmonella)
+
+    tx.commit()
+
+    return graph
+
 # End Graph Data Fixtures #
 
 # Start DTO Fixtures #
