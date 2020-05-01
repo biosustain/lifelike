@@ -99,6 +99,21 @@ export class FileBrowserComponent implements OnInit {
     this.router.navigate(['/pdf-viewer']);
   }
 
+  deleteFiles() {
+    const ids: string[] = this.selection.selected.map((file: PdfFile) => file.file_id);
+    this.pdf.deleteFiles(ids).subscribe(
+      (res: string) => {
+        this.snackBar.open(`Deletion completed`, 'Close', {duration: 5000});
+        this.updateDataSource(); // updates the list on successful deletion
+        console.log('deletion result', res);
+      },
+      err => {
+        this.snackBar.open(`Deletion failed`, 'Close', {duration: 10000});
+        console.error('deletion error', err);
+      }
+    );
+  }
+
   reannotate() {
     this.isReannotating = true;
     const ids: string[] = this.selection.selected.map((file: PdfFile) => {
