@@ -14,6 +14,7 @@ import graphviz as gv
 from PyPDF4 import PdfFileReader, PdfFileWriter
 from PyPDF4.generic import NameObject, ArrayObject
 
+from appserver.neo4japp.exceptions import RecordNotFoundException
 
 bp = Blueprint('drawing_tool', __name__, url_prefix='/drawing-tool')
 
@@ -186,7 +187,9 @@ def get_project_pdf(project_id):
 
     while len(unprocessed):
         item = unprocessed.pop(0)
-        project = Project.query.filter_by(hash_id=item).one()
+        project = Project.query.filter_by(hash_id=item).one_or_none()
+        if not project:
+            rasie(RecordNotFoundException)
         pdf_data = process(project)
         pdf_object = PdfFileReader(io.BytesIO(pdf_data))
         processed[item] = pdf_object
