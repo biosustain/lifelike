@@ -5,6 +5,7 @@
     <input #fileInput hidden type="file" accept="application/pdf"
       (change)="onFileInput($event.target.files);$event.target.value = null">
     <button mat-raised-button [disabled]="selection.selected.length !== 1" (click)="openFile()">Open</button>
+    <button mat-raised-button [disabled]="selection.selected.length === 0" (click)="deleteFiles()" color="warn">Delete</button>
     <button mat-raised-button [disabled]="selection.selected.length === 0 || isReannotating" (click)="reannotate()">Reannotate</button>
   </div>
 
