@@ -6,8 +6,10 @@ import {
   Injector,
   ViewChild,
   AfterViewInit,
-  HostListener
+  HostListener,
+  ComponentRef
 } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 
 import {
   PdfViewerComponent
@@ -16,6 +18,7 @@ import {
   MapListComponent
 } from '../project-list-view/map-list/map-list.component';
 import { Observable } from 'rxjs';
+import { LaunchApp } from '../services/interfaces';
 
 @Component({
   selector: 'app-splitter',
@@ -31,13 +34,21 @@ export class SplitterComponent implements OnInit, AfterViewInit {
   splitPanelLength = 0;
 
   currentApp = '';
+  currentMap = '';
 
   saveState = true;
 
+  dynamicComponentRef: ComponentRef<any>;
+
   constructor(
     private injector: Injector,
-    private r: ComponentFactoryResolver
-  ) { }
+    private r: ComponentFactoryResolver,
+    private route: ActivatedRoute
+  ) {
+    if (this.route.snapshot.params.hash_id) {
+      this.currentMap = this.route.snapshot.params.hash_id;
+    }
+  }
 
   ngOnInit() {
 
@@ -71,32 +82,46 @@ export class SplitterComponent implements OnInit, AfterViewInit {
    *
    * @param app - app such as pdf-viewer or kg-visualizer
    */
-  openApp(app: string) {
-    if (!app) {
+  openApp(appCmd: LaunchApp) {
+    if (!appCmd) {
       this.close();
       return;
     }
 
-    let factory;
-    let ref;
+    // Don't waste time trying to re-open the app
+    // if it's already opened
+    if (this.currentApp !== appCmd.app) {
+      let factory;
 
-    switch (app) {
-      case 'map-search':
-        factory = this.r.resolveComponentFactory(MapListComponent);
-        this.splitPanelLength = 30;
-        break;
-      case 'pdf-viewer':
-        factory = this.r.resolveComponentFactory(PdfViewerComponent);
-        this.splitPanelLength = 50;
-        break;
-      default:
-        break;
+      switch (appCmd.app) {
+        case 'map-search':
+          factory = this.r.resolveComponentFactory(MapListComponent);
+          this.splitPanelLength = 30;
+          break;
+        case 'pdf-viewer':
+          factory = this.r.resolveComponentFactory(PdfViewerComponent);
+          this.splitPanelLength = 50;
+          break;
+        default:
+          break;
+      }
+
+      this.leftPanel.clear();
+      this.currentApp = appCmd.app;
+
+      this.dynamicComponentRef = this.leftPanel.createComponent(factory);
+      this.dynamicComponentRef.changeDetectorRef.detectChanges();
     }
 
-    this.leftPanel.clear();
-    this.currentApp = app;
-
-    ref = this.leftPanel.createComponent(factory);
-    ref.changeDetectorRef.detectChanges();
+    // If an argument is supplied, inject into dynamic component
+    if (this.currentApp === 'pdf-viewer' && appCmd.arg !== null) {
+      this.dynamicComponentRef.instance.openPdf(
+        appCmd.arg.fileId,
+        {
+          coords: appCmd.arg.coords,
+          pageNumber: appCmd.arg.pageNumber
+        }
+      );
+    }
   }
 }
