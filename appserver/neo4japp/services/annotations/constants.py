@@ -49,6 +49,7 @@ TYPO_SYNONYMS = {
 }
 
 ENTITY_TYPE_PRECEDENCE = {
+    # larger value takes precedence
     'Chemicals': 4,
     'Compounds': 4,
     'Diseases': 5,
