@@ -44,21 +44,21 @@ class AnnotationsService:
         self.lmdb_session = lmdb_session
 
         # for word tokens that are typos
-        self.correct_synonyms: Dict[str, str] = None
+        self.correct_synonyms: Dict[str, str] = None  # type: ignore
 
-        self.matched_genes: Dict[str, List[PDFTokenPositions]] = None
-        self.matched_chemicals: Dict[str, List[PDFTokenPositions]] = None
-        self.matched_compounds: Dict[str, List[PDFTokenPositions]] = None
-        self.matched_proteins: Dict[str, List[PDFTokenPositions]] = None
-        self.matched_species: Dict[str, List[PDFTokenPositions]] = None
-        self.matched_diseases: Dict[str, List[PDFTokenPositions]] = None
+        self.matched_genes: Dict[str, List[PDFTokenPositions]] = None  # type: ignore
+        self.matched_chemicals: Dict[str, List[PDFTokenPositions]] = None  # type: ignore
+        self.matched_compounds: Dict[str, List[PDFTokenPositions]] = None  # type: ignore
+        self.matched_proteins: Dict[str, List[PDFTokenPositions]] = None  # type: ignore
+        self.matched_species: Dict[str, List[PDFTokenPositions]] = None  # type: ignore
+        self.matched_diseases: Dict[str, List[PDFTokenPositions]] = None  # type: ignore
 
-        self.validated_genes_tokens: Set[str] = None
-        self.validated_chemicals_tokens: Set[str] = None
-        self.validated_compounds_tokens: Set[str] = None
-        self.validated_proteins_tokens: Set[str] = None
-        self.validated_species_tokens: Set[str] = None
-        self.validated_diseases_tokens: Set[str] = None
+        self.validated_genes_tokens: Set[str] = None  # type: ignore
+        self.validated_chemicals_tokens: Set[str] = None  # type: ignore
+        self.validated_compounds_tokens: Set[str] = None  # type: ignore
+        self.validated_proteins_tokens: Set[str] = None  # type: ignore
+        self.validated_species_tokens: Set[str] = None  # type: ignore
+        self.validated_diseases_tokens: Set[str] = None  # type: ignore
 
     def _init_state(self):
         """Called in create_annotations()"""
