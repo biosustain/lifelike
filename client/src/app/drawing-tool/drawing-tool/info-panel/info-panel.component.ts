@@ -21,7 +21,8 @@ import {
   VisNetworkGraphEdge,
   VisNetworkGraphNode,
   GraphData,
-  GraphSelectionData
+  GraphSelectionData,
+  LaunchApp
 } from '../../services/interfaces';
 
 import { Subscription } from 'rxjs';
@@ -38,7 +39,7 @@ import { LINK_NODE_ICON_OBJECT } from 'app/constants';
 })
 export class InfoPanelComponent implements OnInit, OnDestroy {
   @ViewChild('autosize', {static: true}) autosize: CdkTextareaAutosize;
-  @Output() openApp: EventEmitter<any> = new EventEmitter<any>();
+  @Output() openApp: EventEmitter<LaunchApp> = new EventEmitter<LaunchApp>();
 
   /** Build the palette ui with node templates defined */
   nodeTemplates = nodeTemplates;
@@ -433,17 +434,33 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
     const hyperlink: string = this.entityForm.value.hyperlink;
 
     if (this.graphData.group === 'link') {
+      // If a link, create a payload from hyperlink url
       const getUrl = window.location;
       const prefixLink = getUrl.protocol + '//' + getUrl.host + '/dt/link/';
       const [
         fileId,
-        pageNum,
+        page,
         coordA,
         coordB,
         coordC,
         coordD
       ] = hyperlink.replace(prefixLink, '').split('/');
-
+      // Emit app command with annotation payload
+      this.openApp.emit({
+          app: 'pdf-viewer',
+          arg: {
+            // tslint:disable-next-line: radix
+            pageNumber: parseInt(page),
+            fileId,
+            coords: [
+              parseFloat(coordA),
+              parseFloat(coordB),
+              parseFloat(coordC),
+              parseFloat(coordD)
+            ]
+          }
+        }
+      );
     } else if (
       hyperlink.includes('http')
     ) {
