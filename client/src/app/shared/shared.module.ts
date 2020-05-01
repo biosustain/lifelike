@@ -22,9 +22,11 @@ import { DragDropModule } from '@angular/cdk/drag-drop';
 import { TextFieldModule } from '@angular/cdk/text-field';
 import { HttpClientModule } from '@angular/common/http';
 import { MessageDialogComponent } from './components/message-dialog/message-dialog.component';
+import { ProgressDialogComponent } from './components/progress-dialog/progress-dialog.component';
 
 const components = [
   MessageDialogComponent,
+  ProgressDialogComponent,
   HighlightSnippetComponent,
   LegendComponent,
   NodeRelationshipComponent,
@@ -34,6 +36,7 @@ const components = [
 @NgModule({
   entryComponents: [
     MessageDialogComponent,
+    ProgressDialogComponent,
   ],
   imports: [
     CommonModule,
