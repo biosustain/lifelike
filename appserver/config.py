@@ -35,6 +35,11 @@ class Development(Base):
     WTF_CSRF_ENABLED = False
 
 
+class Staging(Base):
+    """Staging configurations"""
+    SITE_NAME = 'Lifelike Knowledge Search (Staging)'
+
+
 class Testing(Base):
     """Functional test configuration"""
     TESTING = True
