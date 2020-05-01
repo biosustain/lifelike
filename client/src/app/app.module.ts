@@ -1,5 +1,4 @@
 import { NgModule } from '@angular/core';
-import { HttpClientModule } from '@angular/common/http';
 
 import { RootStoreModule } from 'app/***ARANGO_USERNAME***-store';
 
@@ -45,14 +44,14 @@ import { DrawingToolModule } from './drawing-tool/drawing-tool.module';
     RootStoreModule,
     SearchModule,
     ChartsModule,
-    DrawingToolModule
+    DrawingToolModule,
   ],
   entryComponents: [
     UploadProgressDialogComponent,
   ],
   providers: [httpInterceptorProviders],
-  exports: [
-  ],
+  exports: [],
   bootstrap: [AppComponent]
 })
-export class AppModule { }
+export class AppModule {
+}
