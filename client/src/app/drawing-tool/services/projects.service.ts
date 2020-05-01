@@ -122,6 +122,28 @@ export class ProjectsService {
   }
 
   /**
+   * Return SVG version of the project
+   * @param project represents a Project
+   */
+  public getSVG(project: Project): Observable<any> {
+    return this.http.get(
+      this.baseUrl + `/projects/${project.id}/svg`,
+      this.createHttpOptions(true, true)
+    );
+  }
+
+  /**
+   * Return PNG version of the project
+   * @param project represents a Project
+   */
+  public getPNG(project: Project): Observable<any> {
+    return this.http.get(
+      this.baseUrl + `/projects/${project.id}/png`,
+      this.createHttpOptions(true, true)
+    );
+  }
+
+  /**
    * Add project to user's collection
    * @param project represents a Project
    */
