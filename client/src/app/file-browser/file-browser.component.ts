@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { SelectionModel } from '@angular/cdk/collections';
+import { MatTableDataSource } from '@angular/material/table';
 import { MatSnackBar } from '@angular/material';
 import { BehaviorSubject, Subject, throwError } from 'rxjs';
 import { AnnotationStatus, PdfFile, Reannotation } from 'app/interfaces/pdf-files.interface';
@@ -17,7 +18,7 @@ import { UploadProgressDialogComponent } from './upload-progress-dialog.componen
 })
 export class FileBrowserComponent implements OnInit {
   displayedColumns: string[] = ['select', 'filename', 'creationDate', 'username', 'annotation'];
-  dataSource: PdfFile[] = [];
+  dataSource = new MatTableDataSource<PdfFile>([]);
   selection = new SelectionModel<PdfFile>(true, []);
   isReannotating = false;
   status = UploadStatus.Ready;
@@ -45,7 +46,7 @@ export class FileBrowserComponent implements OnInit {
       (files: PdfFile[]) => {
         // We assume that fetched files are correctly annotated
         files.forEach((file: PdfFile) => file.annotation_status = AnnotationStatus.Success);
-        this.dataSource = files;
+        this.dataSource.data = files;
       },
       err => {
         this.snackBar.open(`Cannot fetch list of files: ${err}`, 'Close', {duration: 10000});
@@ -93,9 +94,24 @@ export class FileBrowserComponent implements OnInit {
     );
   }
 
-  openFile() {
-    localStorage.setItem('fileIdForPdfViewer', this.selection.selected[0].file_id);
+  openFile(fileId: string) {
+    localStorage.setItem('fileIdForPdfViewer', fileId);
     this.router.navigate(['/pdf-viewer']);
+  }
+
+  deleteFiles() {
+    const ids: string[] = this.selection.selected.map((file: PdfFile) => file.file_id);
+    this.pdf.deleteFiles(ids).subscribe(
+      (res: string) => {
+        this.snackBar.open(`Deletion completed`, 'Close', {duration: 5000});
+        this.updateDataSource(); // updates the list on successful deletion
+        console.log('deletion result', res);
+      },
+      err => {
+        this.snackBar.open(`Deletion failed`, 'Close', {duration: 10000});
+        console.error('deletion error', err);
+      }
+    );
   }
 
   reannotate() {
@@ -108,7 +124,7 @@ export class FileBrowserComponent implements OnInit {
       (res: Reannotation) => {
         for (const id of ids) {
           // pick file by id
-          const file: PdfFile = this.dataSource.find((f: PdfFile) => f.file_id === id);
+          const file: PdfFile = this.dataSource.data.find((f: PdfFile) => f.file_id === id);
           // set its annotation status
           file.annotation_status = res[id] === 'Annotated' ? AnnotationStatus.Success : AnnotationStatus.Failure;
         }
@@ -119,7 +135,7 @@ export class FileBrowserComponent implements OnInit {
       err => {
         for (const id of ids) {
           // pick file by id
-          const file: PdfFile = this.dataSource.find((f: PdfFile) => f.file_id === id);
+          const file: PdfFile = this.dataSource.data.find((f: PdfFile) => f.file_id === id);
           // mark it as failed
           file.annotation_status = AnnotationStatus.Failure;
         }
@@ -132,10 +148,10 @@ export class FileBrowserComponent implements OnInit {
 
   // Adapted from https://v8.material.angular.io/components/table/overview#selection
   masterToggle() {
-    if (this.selection.selected.length === this.dataSource.length) {
+    if (this.selection.selected.length === this.dataSource.data.length) {
       this.selection.clear();
     } else {
-      this.selection.select(...this.dataSource);
+      this.selection.select(...this.dataSource.data);
     }
   }
 
@@ -153,5 +169,9 @@ export class FileBrowserComponent implements OnInit {
     };
 
     this.dialog.open(UploadProgressDialogComponent, dialogConfig);
+  }
+
+  applyFilter(filterValue: string) {
+    this.dataSource.filter = filterValue.trim().toLowerCase();
   }
 }
