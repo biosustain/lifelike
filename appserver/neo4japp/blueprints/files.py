@@ -15,6 +15,7 @@ from neo4japp.database import (
     get_annotations_service,
     get_annotations_pdf_parser,
     get_bioc_document_service,
+    get_lmdb_dao,
 )
 from neo4japp.exceptions import RecordNotFoundException, BadRequestError
 from neo4japp.models.files import Files
@@ -159,8 +160,9 @@ def add_custom_annotation(id):
 
 
 def annotate(filename, pdf_file_object) -> dict:
+    lmdb_dao = get_lmdb_dao()
     pdf_parser = get_annotations_pdf_parser()
-    annotator = get_annotations_service()
+    annotator = get_annotations_service(lmdb_dao=lmdb_dao)
     bioc_service = get_bioc_document_service()
     # TODO: Miguel: need to update file_uri with file path
     parsed_pdf_chars = pdf_parser.parse_pdf(pdf=pdf_file_object)
