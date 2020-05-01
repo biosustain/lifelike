@@ -66,7 +66,8 @@ import {
   Project,
   VisNetworkGraphEdge,
   VisNetworkGraphNode,
-  VisNetworkGraph
+  VisNetworkGraph,
+  LaunchApp
 } from '../services/interfaces';
 import {
   DrawingToolContextMenuControlService
@@ -114,7 +115,7 @@ export interface Action {
 })
 export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
   /** Communicate to parent component to open another app side by side */
-  @Output() openApp: EventEmitter < string > = new EventEmitter < string > ();
+  @Output() openApp: EventEmitter <LaunchApp> = new EventEmitter <LaunchApp> ();
   /** Communicate which app is active for app icon presentation */
   @Input() currentApp = '';
 
@@ -224,6 +225,7 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
         action: 'add node',
         data: {
           label: node.label,
+          detail: node.label,
           group: node.group,
           x: coord.x,
           y: coord.y,
@@ -427,14 +429,21 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
    * Handle closing or opening apps
    * @param app - any app such as pdf-viewer, map-search, kg-visualizer
    */
-  toggle(app, arg=null) {
+  toggle(app, arg= null) {
     if (this.currentApp === app) {
       // Shutdown app
       this.openApp.emit(null);
     } else {
       // Open app
-      this.openApp.emit(app);
+      this.openApp.emit({
+        app,
+        arg
+      });
     }
+  }
+
+  toggleApp(appCmd: LaunchApp) {
+    this.openApp.emit(appCmd);
   }
 
   /**

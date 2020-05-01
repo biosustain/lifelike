@@ -1,6 +1,6 @@
 import { Component, OnDestroy } from '@angular/core';
 import { FormControl } from '@angular/forms';
-import { Subscription, Subject, combineLatest } from 'rxjs';
+import { Subscription, Subject, combineLatest, BehaviorSubject } from 'rxjs';
 import { PdfFile } from 'app/interfaces/pdf-files.interface';
 import { PdfFilesService } from 'app/shared/services/pdf-files.service';
 
@@ -31,13 +31,28 @@ export class PdfViewerComponent implements OnDestroy {
   goToPosition: Subject<Location> = new Subject<Location>();
   openPdfSub: Subscription;
   pdfViewerReady = false;
-  pdfFileLoaded = false;
   // Type information coming from interface PDFSource at:
   // https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/pdfjs-dist/index.d.ts
   pdfData: { url?: string, data?: Uint8Array };
   currentFileId: string;
   addedAnnotation: Annotation;
   addAnnotationSub: Subscription;
+
+  private locationOpener = new BehaviorSubject<Location>(null);
+
+  PDF_FILE_LOADED = false;
+  get pdfFileLoaded() {
+    return this.PDF_FILE_LOADED;
+  }
+  set pdfFileLoaded(val) {
+    this.PDF_FILE_LOADED = val;
+
+    if (this.PDF_FILE_LOADED && this.locationOpener.value) {
+      this.scrollInPdf(
+        this.locationOpener.value
+      );
+    }
+  }
 
   constructor(
     private pdfAnnService: PdfAnnotationsService,
@@ -152,7 +167,14 @@ export class PdfViewerComponent implements OnDestroy {
     );
   }
 
-  openPdf(id: string) {
+  openPdf(id: string, loc: Location= null) {
+    if (this.currentFileId === id) {
+      if (loc) {
+        this.scrollInPdf(loc);
+      }
+      return;
+    }
+
     this.pdfFileLoaded = false;
     this.pdfViewerReady = false;
     this.openPdfSub = combineLatest(
@@ -164,6 +186,11 @@ export class PdfViewerComponent implements OnDestroy {
       this.currentFileId = id;
       setTimeout(() => {
         this.pdfViewerReady = true;
+
+        // If location argument is supplied
+        if (loc) {
+          this.locationOpener.next(loc);
+        }
       }, 10);
     });
   }
