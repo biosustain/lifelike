@@ -147,9 +147,10 @@ export class PdfViewerComponent implements OnDestroy {
   }
 
   private updateFilteredFiles = (name: string) => {
-    this.filteredFiles = this.files.filter(
-      (file: PdfFile) => file.filename.includes(name.toLocaleLowerCase())
-    );
+    const words = name.split(' ').filter(w => w.length).map(w => w.toLocaleLowerCase());
+    this.filteredFiles = words.length
+      ? this.files.filter((file: PdfFile) => words.some(w => file.filename.toLocaleLowerCase().includes(w)))
+      : this.files;
   }
 
   openPdf(id: string) {
