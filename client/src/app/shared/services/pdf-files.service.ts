@@ -32,6 +32,10 @@ export class PdfFilesService {
     return this.http.get<ArrayBuffer>(`${this.baseUrl}/${id}`, options);
   }
 
+  deleteFiles(ids: string[]): Observable<string> {
+    return this.http.request<string>('DELETE', `${this.baseUrl}/bulk_delete`, {body: ids, ...this.buildHttpOptions()});
+  }
+
   uploadFile(file: File): Observable<HttpEvent<PdfFileUpload>> {
     const formData: FormData = new FormData();
     formData.append('file', file);
