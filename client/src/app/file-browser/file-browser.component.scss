@@ -1,9 +1,13 @@
 .container {
   padding: 8px;
 
-  mat-table {
+  .mat-form-field, mat-table {
     width: 100%;
     max-width: 1200px;
+  }
+
+  .mat-form-field {
+    font-size: 14px;
   }
 }
 
