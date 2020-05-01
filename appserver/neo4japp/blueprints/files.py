@@ -1,9 +1,12 @@
-import json
-import os
+from enum import Enum
+import io
 import uuid
 from datetime import datetime
-
-from flask import Blueprint, request, jsonify, g, make_response
+import os
+import json
+from typing import Dict
+from neo4japp.blueprints.auth import auth
+from flask import Blueprint, current_app, request, abort, jsonify, g, make_response
 from werkzeug.utils import secure_filename
 
 from neo4japp.blueprints.auth import auth
@@ -22,10 +25,6 @@ bp = Blueprint('files', __name__, url_prefix='/files')
 @bp.route('/upload', methods=['POST'])
 @auth.login_required
 def upload_pdf():
-    annotator = get_annotations_service()
-    bioc_service = get_bioc_document_service()
-    pdf_parser = get_annotations_pdf_parser()
-
     pdf = request.files['file']
     project = '1'  # TODO: remove hard coded project
     binary_pdf = pdf.read()
@@ -41,33 +40,17 @@ def upload_pdf():
         filename = name[:max(0, max_filename_length - len(extension))] + extension
     file_id = str(uuid.uuid4())
 
-    try:
-        parsed_pdf_chars = pdf_parser.parse_pdf(pdf=pdf)
-    except Exception as e:
-        raise BadRequestError("Your file could not be processed. "
-                              "Double check that it is in PDF format.") from e
-
-    try:
-        pdf_text = pdf_parser.parse_pdf_high_level(pdf=pdf)
-        annotations = annotator.create_annotations(
-            tokens=pdf_parser.extract_tokens(parsed_chars=parsed_pdf_chars))
-
-        # TODO: Miguel: need to update file_uri with file path
-        bioc = bioc_service.read(text=pdf_text, file_uri=filename)
-        annotations_json = bioc_service.generate_bioc_json(
-            annotations=annotations, bioc=bioc)
-    except Exception as e:
-        raise BadRequestError("Your file could not be annotated and your file "
-                              "was not saved.") from e
+    annotations = annotate(filename, pdf)
 
     files = Files(
         file_id=file_id,
         filename=filename,
         raw_file=binary_pdf,
         username=username.id,
-        annotations=annotations_json,
+        annotations=annotations,
         project=project
     )
+
     db.session.add(files)
     db.session.commit()
     return jsonify({
@@ -171,3 +154,48 @@ def add_custom_annotation(id):
     file.custom_annotations = [annotation_to_add, *file.custom_annotations]
     db.session.commit()
     return {'status': 'success'}, 200
+
+
+def annotate(filename, pdf_file_object) -> dict:
+    pdf_parser = get_annotations_pdf_parser()
+    annotator = get_annotations_service()
+    bioc_service = get_bioc_document_service()
+    # TODO: Miguel: need to update file_uri with file path
+    parsed_pdf_chars = pdf_parser.parse_pdf(pdf=pdf_file_object)
+    tokens = pdf_parser.extract_tokens(parsed_chars=parsed_pdf_chars)
+    annotations = annotator.create_annotations(tokens=tokens)
+    pdf_text = pdf_parser.parse_pdf_high_level(pdf=pdf_file_object)
+    bioc = bioc_service.read(text=pdf_text, file_uri=filename)
+    return bioc_service.generate_bioc_json(annotations=annotations, bioc=bioc)
+
+
+class AnnotationOutcome(Enum):
+    ANNOTATED = 'Annotated'
+    NOT_ANNOTATED = 'Not annotated'
+    NOT_FOUND = 'Not found'
+
+
+@bp.route('/reannotate', methods=['POST'])
+@auth.login_required
+def reannotate():
+    ids = request.get_json()
+    outcome: Dict[str, str] = {}  # file id to annotation outcome
+    for id in ids:
+        file = Files.query.filter_by(file_id=id).one_or_none()
+        if file is None:
+            current_app.logger.error('Could not find file: %s, %s', id, file.filename)
+            outcome[id] = AnnotationOutcome.NOT_FOUND.value
+            continue
+        fp = io.BytesIO(file.raw_file)
+        try:
+            annotations = annotate(file.filename, fp)
+        except Exception as e:
+            current_app.logger.error('Could not annotate file: %s, %s, %s', id, file.filename, e)
+            outcome[id] = AnnotationOutcome.NOT_ANNOTATED.value
+        else:
+            file.annotations = annotations
+            db.session.commit()
+            current_app.logger.debug('File successfully annotated: %s, %s', id, file.filename)
+            outcome[id] = AnnotationOutcome.ANNOTATED.value
+        fp.close()
+    return jsonify(outcome)
