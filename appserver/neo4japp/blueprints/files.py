@@ -87,24 +87,15 @@ def list_files():
     return jsonify({'files': files})
 
 
-@bp.route('/<id>', methods=['GET', 'DELETE'])
+@bp.route('/<id>', methods=['GET'])
 @auth.login_required
-def get_or_delete_file(id):
-    entry = db.session.query(Files).filter(Files.file_id == id).one()
-    if request.method == 'GET':
-        res = make_response(entry.raw_file)
-        res.headers['Content-Type'] = 'application/pdf'
-        return res
-    if request.method == 'DELETE':
-        if g.current_user.id != int(entry.username):
-            current_app.logger.error('Cannot delete file (not an owner): %s, %s',
-                                     entry.file_id, entry.filename)
-            raise Forbidden(
-                description='You are not the owner of this file. You cannot delete it.'
-            )
-        db.session.delete(entry)
-        db.session.commit()
-        return ''
+def get_pdf(id):
+    entry = db.session.query(Files).filter(Files.file_id == id).one_or_none()
+    if entry is None:
+        raise RecordNotFoundException(f'File not found. Id: {id}')
+    res = make_response(entry.raw_file)
+    res.headers['Content-Type'] = 'application/pdf'
+    return res
 
 
 @bp.route('/bioc', methods=['GET'])
