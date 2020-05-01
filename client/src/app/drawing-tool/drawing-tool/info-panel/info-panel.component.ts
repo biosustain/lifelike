@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ViewChild, NgZone } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, NgZone, Output } from '@angular/core';
 import {
   FormGroup,
   FormControl,
@@ -6,6 +6,9 @@ import {
 } from '@angular/forms';
 import {CdkTextareaAutosize} from '@angular/cdk/text-field';
 import { MatCheckboxChange } from '@angular/material';
+import {
+  EventEmitter
+} from '@angular/core';
 
 import * as $ from 'jquery';
 
@@ -35,6 +38,7 @@ import { LINK_NODE_ICON_OBJECT } from 'app/constants';
 })
 export class InfoPanelComponent implements OnInit, OnDestroy {
   @ViewChild('autosize', {static: true}) autosize: CdkTextareaAutosize;
+  @Output() openApp: EventEmitter<any> = new EventEmitter<any>();
 
   /** Build the palette ui with node templates defined */
   nodeTemplates = nodeTemplates;
@@ -428,7 +432,19 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
   goToLink() {
     const hyperlink: string = this.entityForm.value.hyperlink;
 
-    if (
+    if (this.graphData.group === 'link') {
+      const getUrl = window.location;
+      const prefixLink = getUrl.protocol + '//' + getUrl.host + '/dt/link/';
+      const [
+        fileId,
+        pageNum,
+        coordA,
+        coordB,
+        coordC,
+        coordD
+      ] = hyperlink.replace(prefixLink, '').split('/');
+
+    } else if (
       hyperlink.includes('http')
     ) {
       window.open(hyperlink, '_blank');

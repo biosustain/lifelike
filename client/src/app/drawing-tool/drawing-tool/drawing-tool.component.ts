@@ -427,7 +427,7 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
    * Handle closing or opening apps
    * @param app - any app such as pdf-viewer, map-search, kg-visualizer
    */
-  toggle(app) {
+  toggle(app, arg=null) {
     if (this.currentApp === app) {
       // Shutdown app
       this.openApp.emit(null);
@@ -606,8 +606,6 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
     const mapId = nativeElement.id;
     const label = nativeElement.children[0].textContent;
     const hyperlink = getUrl.protocol + '//' + getUrl.host + '/dt/map/' + mapId;
-
-    console.log(nativeElement);
 
     // Get DOM coordinate of dropped node relative
     // to container DOM
@@ -977,7 +975,7 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
       data: {
         shape: 'icon',
         icon: LINK_NODE_ICON_OBJECT,
-        group: 'link',
+        group: 'note',
         label: '',
         detail: clipboardContent,
         ...canvasCoords
