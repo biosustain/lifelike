@@ -36,7 +36,7 @@ TYPE_CHEMICAL = 'Chemical'
 TYPE_DISEASE = 'Disease'
 TYPE_GENE = 'Gene'
 TYPE_PUBLICATION = 'Publication'
-TYPE_REFERENCE = 'Reference'
+TYPE_SNIPPET = 'Snippet'
 TYPE_TAXONOMY = 'Taxonomy'
 
 DISPLAY_NAME_MAP = {
@@ -46,7 +46,7 @@ DISPLAY_NAME_MAP = {
     TYPE_DISEASE: 'name',
     TYPE_GENE: 'name',
     TYPE_PUBLICATION: 'title',  # NOTE: These tend to be long, might want to use a different attribute or consider truncating on the client  # noqa
-    TYPE_REFERENCE: 'sentence',  # NOTE: Same here
+    TYPE_SNIPPET: 'sentence',  # NOTE: Same here
 }
 
 # Start Text Mining Dataset
