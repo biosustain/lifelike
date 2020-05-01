@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { SelectionModel } from '@angular/cdk/collections';
 import { MatSnackBar } from '@angular/material';
-import { BehaviorSubject, Subject } from 'rxjs';
+import { BehaviorSubject, Subject, throwError } from 'rxjs';
 import { AnnotationStatus, PdfFile, Reannotation } from 'app/interfaces/pdf-files.interface';
 import { PdfFilesService } from 'app/shared/services/pdf-files.service';
 import { HttpEventType } from '@angular/common/http';
@@ -85,12 +85,10 @@ export class FileBrowserComponent implements OnInit {
           this.updateDataSource(); // updates the list on successful upload
         }
       },
-      () => {
+      err => {
         this.status = UploadStatus.Ready;
         this.dialog.closeAll();
-        this.snackBar.open('An error was encountered uploading your file.', 'Close', {
-          verticalPosition: 'top', // show the message on top for visibility
-        });
+        return throwError(err);
       }
     );
   }
