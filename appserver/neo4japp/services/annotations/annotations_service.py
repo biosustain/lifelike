@@ -44,40 +44,21 @@ class AnnotationsService:
         self.lmdb_session = lmdb_session
 
         # for word tokens that are typos
-        self.correct_synonyms: Dict[str, str] = None  # type: ignore
+        self.correct_synonyms: Dict[str, str] = {}
 
-        self.matched_genes: Dict[str, List[PDFTokenPositions]] = None  # type: ignore
-        self.matched_chemicals: Dict[str, List[PDFTokenPositions]] = None  # type: ignore
-        self.matched_compounds: Dict[str, List[PDFTokenPositions]] = None  # type: ignore
-        self.matched_proteins: Dict[str, List[PDFTokenPositions]] = None  # type: ignore
-        self.matched_species: Dict[str, List[PDFTokenPositions]] = None  # type: ignore
-        self.matched_diseases: Dict[str, List[PDFTokenPositions]] = None  # type: ignore
+        self.matched_genes: Dict[str, List[PDFTokenPositions]] = {}
+        self.matched_chemicals: Dict[str, List[PDFTokenPositions]] = {}
+        self.matched_compounds: Dict[str, List[PDFTokenPositions]] = {}
+        self.matched_proteins: Dict[str, List[PDFTokenPositions]] = {}
+        self.matched_species: Dict[str, List[PDFTokenPositions]] = {}
+        self.matched_diseases: Dict[str, List[PDFTokenPositions]] = {}
 
-        self.validated_genes_tokens: Set[str] = None  # type: ignore
-        self.validated_chemicals_tokens: Set[str] = None  # type: ignore
-        self.validated_compounds_tokens: Set[str] = None  # type: ignore
-        self.validated_proteins_tokens: Set[str] = None  # type: ignore
-        self.validated_species_tokens: Set[str] = None  # type: ignore
-        self.validated_diseases_tokens: Set[str] = None  # type: ignore
-
-    def _init_state(self):
-        """Called in create_annotations()"""
-        # for word tokens that are typos
-        self.correct_synonyms = {}
-
-        self.matched_genes = {}
-        self.matched_chemicals = {}
-        self.matched_compounds = {}
-        self.matched_proteins = {}
-        self.matched_species = {}
-        self.matched_diseases = {}
-
-        self.validated_genes_tokens = set()
-        self.validated_chemicals_tokens = set()
-        self.validated_compounds_tokens = set()
-        self.validated_proteins_tokens = set()
-        self.validated_species_tokens = set()
-        self.validated_diseases_tokens = set()
+        self.validated_genes_tokens: Set[str] = set()
+        self.validated_chemicals_tokens: Set[str] = set()
+        self.validated_compounds_tokens: Set[str] = set()
+        self.validated_proteins_tokens: Set[str] = set()
+        self.validated_species_tokens: Set[str] = set()
+        self.validated_diseases_tokens: Set[str] = set()
 
     def lmdb_validation(
         self,
@@ -673,7 +654,6 @@ class AnnotationsService:
         self,
         tokens: PDFTokenPositionsList,
     ) -> List[Annotation]:
-        self._init_state()
         self._filter_tokens(tokens=tokens)
 
         matched_species, unwanted_species = self.annotate(
