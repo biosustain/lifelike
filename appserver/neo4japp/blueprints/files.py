@@ -7,7 +7,6 @@ import json
 from typing import Dict
 from neo4japp.blueprints.auth import auth
 from flask import Blueprint, current_app, request, abort, jsonify, g, make_response
-from werkzeug.exceptions import Forbidden
 from werkzeug.utils import secure_filename
 
 from neo4japp.blueprints.auth import auth
