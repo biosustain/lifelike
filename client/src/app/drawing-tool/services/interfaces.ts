@@ -130,7 +130,7 @@ interface LaunchApp {
     fileId?: string,
     // page of the pdf that the annotation is located on
     pageNumber?: number
-  }
+  };
 }
 
 
