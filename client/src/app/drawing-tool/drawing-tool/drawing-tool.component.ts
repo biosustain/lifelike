@@ -119,6 +119,16 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
   /** Communicate which app is active for app icon presentation */
   @Input() currentApp = '';
 
+  /** Communicate what map to load by map hash id */
+  CURRENT_MAP = '';
+  get currentMap() {
+    return this.CURRENT_MAP;
+  }
+  @Input()
+  set currentMap(val) {
+    this.CURRENT_MAP = val;
+  }
+
   @ViewChild(InfoPanelComponent, {
     static: false
   }) infoPanel: InfoPanelComponent;
@@ -220,7 +230,7 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
           y: node.y
         });
 
-      // TODO ADD NODE
+      // ADD NODE
       const cmd = {
         action: 'add node',
         data: {
@@ -245,21 +255,21 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
       const type = update.type;
 
       if (event === 'delete' && type === 'node') {
-        // TODO REMOVE NODE
+        // DELETE NODE
         const cmd = {
           action: 'delete node',
           data: update.data as VisNetworkGraphNode
         };
         this.recordCommand(cmd);
       } else if (event === 'delete' && type === 'edge') {
-        // TODO REMOVE EDGE
+        // DELETE EDGE
         const cmd = {
           action: 'delete edge',
           data: update.data as VisNetworkGraphEdge
         };
         this.recordCommand(cmd);
       } else if (event === 'update' && type === 'node') {
-        // TODO UPDATE NODE
+        // UPDATE NODE
         const cmd = {
           action: 'update node',
           data: update.data as {
@@ -269,7 +279,7 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
         };
         this.recordCommand(cmd);
       } else if (event === 'update' && type === 'edge') {
-        // TODO UPDATE EDGE
+        // UPDATE EDGE
         const cmd = {
           action: 'update edge',
           data: update.data as VisNetworkGraphEdge
@@ -285,59 +295,7 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
       this.visjsNetworkGraph = new NetworkVis(
         document.getElementById('canvas')
       );
-
-      // Listen for project sent from project-list view
-      this.dataFlow.$projectlist2Canvas.subscribe((project) => {
-        if (!project) {
-          return;
-        }
-
-        this.project = project;
-
-        // Convert graph from universal to vis.js format
-        const g = this.projectService.universe2Vis(project.graph);
-
-        // Draw graph around data
-        this.visjsNetworkGraph.draw(
-          g.nodes,
-          g.edges
-        );
-
-        /**
-         * Event handlers
-         */
-        this.visjsNetworkGraph.network.on(
-          'click',
-          (properties) => this.networkClickHandler(properties)
-        );
-        this.visjsNetworkGraph.network.on(
-          'doubleClick',
-          (properties) => this.networkDoubleClickHandler(properties)
-        );
-        this.visjsNetworkGraph.network.on(
-          'oncontext',
-          (properties) => this.networkOnContextCallback(properties)
-        );
-        this.visjsNetworkGraph.network.on(
-          'dragStart',
-          (properties) => this.networkDragStartCallback(properties)
-        );
-        // Listen for nodes moving on canvas
-        this.visjsNetworkGraph.network.on(
-          'dragEnd',
-          (properties) => {
-            // Dragging a node doesn't fire node selection, but it is selected after dragging finishes, so update
-            this.updateSelectedNodes();
-            if (properties.nodes.length) {
-              this.saveState = false;
-            }
-          }
-        );
-        // Listen for mouse movement on canvas to feed to handler
-        $('#canvas > div > canvas').on('mousemove',
-          (e) => this.edgeFormationRenderer(e)
-        );
-      });
+      this.openMap(this.currentMap);
     });
   }
 
@@ -354,6 +312,64 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
     // Complete the vis canvas element event listeners
     this.endMouseMoveEventSource.complete();
     this.endPasteEventSource.complete();
+  }
+
+  /**
+   * Pull map from server by hash id and draw it onto canvas
+   * @param hashId - identifier to pull by from the server
+   */
+  openMap(hashId: string) {
+    this.projectService.serveProject(hashId)
+      .subscribe(
+        (resp: any) => {
+          this.project = resp.project;
+
+          // Convert graph from universal to vis.js format
+          const g = this.projectService.universe2Vis(this.project.graph);
+
+          // Draw graph around data
+          this.visjsNetworkGraph.draw(
+            g.nodes,
+            g.edges
+          );
+
+          /**
+           * Event handlers
+           */
+          this.visjsNetworkGraph.network.on(
+            'click',
+            (properties) => this.networkClickHandler(properties)
+          );
+          this.visjsNetworkGraph.network.on(
+            'doubleClick',
+            (properties) => this.networkDoubleClickHandler(properties)
+          );
+          this.visjsNetworkGraph.network.on(
+            'oncontext',
+            (properties) => this.networkOnContextCallback(properties)
+          );
+          this.visjsNetworkGraph.network.on(
+            'dragStart',
+            (properties) => this.networkDragStartCallback(properties)
+          );
+          // Listen for nodes moving on canvas
+          this.visjsNetworkGraph.network.on(
+            'dragEnd',
+            (properties) => {
+              // Dragging a node doesn't fire node selection, but it is selected after dragging finishes, so update
+              this.updateSelectedNodes();
+              if (properties.nodes.length) {
+                this.saveState = false;
+              }
+            }
+          );
+          // Listen for mouse movement on canvas to feed to handler
+          $('#canvas > div > canvas').on('mousemove',
+            (e) => this.edgeFormationRenderer(e)
+          );
+        },
+        err => console.log(err)
+      );
   }
 
   updateCursorDocumentPos(event: MouseEvent) {
@@ -639,7 +655,7 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
       y
     });
 
-    // TODO ADD NODE
+    // ADD NODE
     const cmd = {
       action: 'add node',
       data: {
@@ -683,7 +699,7 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
       y
     });
 
-    // TODO ADD NODE
+    // ADD NODE
     const cmd = {
       action: 'add node',
       data: {
@@ -832,7 +848,7 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
       if (properties.nodes.length) {
         const targetId = properties.nodes[0];
 
-        // TODO ADD EDGE
+        // ADD EDGE
         const cmd = {
           action: 'add edge',
           data: {
