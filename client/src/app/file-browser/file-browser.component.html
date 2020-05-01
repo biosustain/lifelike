@@ -4,13 +4,16 @@
     <button mat-raised-button (click)="fileInput.click()"><mat-icon>add_box</mat-icon> Upload</button>
     <input #fileInput hidden type="file" accept="application/pdf"
       (change)="onFileInput($event.target.files);$event.target.value = null">
-    <button mat-raised-button [disabled]="!canOpen" (click)="openFile()">Open</button>
+    <button mat-raised-button [disabled]="selection.selected.length !== 1" (click)="openFile()">Open</button>
+    <button mat-raised-button [disabled]="selection.selected.length === 0 || isReannotating" (click)="reannotate()">Reannotate</button>
   </div>
 
   <mat-table [dataSource]="dataSource">
     <ng-container matColumnDef="select">
       <mat-header-cell *matHeaderCellDef fxFlex="nogrow">
-        <mat-checkbox disabled="true"></mat-checkbox>
+        <mat-checkbox (change)="$event ? masterToggle() : null"
+                      [checked]="selection.hasValue() && selection.selected.length === dataSource.length"
+                      [indeterminate]="selection.hasValue() && selection.selected.length !== dataSource.length"></mat-checkbox>
       </mat-header-cell>
       <mat-cell *matCellDef="let element" fxFlex="nogrow">
         <mat-checkbox (click)="$event.stopPropagation()"
@@ -37,7 +40,7 @@
 
     <ng-container matColumnDef="annotation">
       <mat-header-cell *matHeaderCellDef> Annotation </mat-header-cell>
-      <mat-cell *matCellDef="let element"> ✓ </mat-cell>
+      <mat-cell *matCellDef="let element"> {{element.annotation_status}} </mat-cell>
     </ng-container>
 
     <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
