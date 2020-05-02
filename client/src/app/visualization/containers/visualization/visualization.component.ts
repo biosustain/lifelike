@@ -19,6 +19,7 @@ import {
     VisNode,
     VisEdge,
     ExpandNodeResult,
+    ExpandNodeRequest,
 } from 'app/interfaces';
 import {
     NODE_EXPANSION_LIMIT,
@@ -31,6 +32,8 @@ import {
 
 
 import { VisualizationService } from '../../services/visualization.service';
+
+import { stringToHex } from 'app/shared/utils';
 
 @Component({
     selector: 'app-visualization',
@@ -63,6 +66,7 @@ export class VisualizationComponent implements OnInit {
         private route: ActivatedRoute,
         private visService: VisualizationService,
     ) {
+        console.log(stringToHex('12203365'));
         this.legend = new Map<string, string[]>();
         this.legend.set('Gene', ['#78CDD7', '#247B7B']);
         this.legend.set('Disease', ['#8FA6CB', '#7D84B2']);
@@ -227,8 +231,15 @@ export class VisualizationComponent implements OnInit {
         return {...e, label: e.data.description, arrows: 'to'};
     }
 
-    expandNode(nodeId: number) {
-        this.visService.expandNode(nodeId, NODE_EXPANSION_LIMIT).subscribe((r: Neo4jResults) => {
+    expandNode(expandNodeRequest: ExpandNodeRequest) {
+        const {nodeId, filterLabels } = expandNodeRequest;
+
+        if (filterLabels.length === 0) {
+            this.openNoResultsFromExpandDialog();
+            return;
+        }
+
+        this.visService.expandNode(nodeId, filterLabels, NODE_EXPANSION_LIMIT).subscribe((r: Neo4jResults) => {
             const nodeRef = this.nodes.get(nodeId) as VisNode;
             const visJSDataFormat = this.convertToVisJSFormat(r);
             let { edges, nodes } = visJSDataFormat;

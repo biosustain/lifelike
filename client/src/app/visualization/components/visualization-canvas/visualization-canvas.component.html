@@ -24,6 +24,26 @@ we should be careful using 'autosize', as it may lead to performance problems.--
       <mat-icon *ngIf="sidenavOpened">chevron_right</mat-icon>
       <mat-icon *ngIf="!sidenavOpened">chevron_left</mat-icon>
     </button>
+
+    <!-- TODO: This should probably be its own component... -->
+    <div id="expand-node-type-filter-container">
+      <form [formGroup]="expandNodeForm" fxLayout="column" fxLayoutAlign="space-between start">
+        <div>Include in Expand Node Result:</div>
+
+        <mat-checkbox
+          formControlName="Chemical"
+        >Chemical</mat-checkbox>
+
+        <mat-checkbox
+          formControlName="Gene"
+        >Gene</mat-checkbox>
+
+        <mat-checkbox
+          formControlName="Disease"
+        >Disease</mat-checkbox>
+
+      </form>
+    </div>
   </mat-sidenav-content>
 
   <mat-sidenav class="sidenav" #sidenav position="end" mode="over" [(opened)]="sidenavOpened" (openedChange)="setSidenavStatus($event)">

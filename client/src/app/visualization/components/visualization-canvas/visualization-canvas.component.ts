@@ -5,6 +5,7 @@ import {
     OnInit,
     Output,
 } from '@angular/core';
+import { FormGroup, FormBuilder } from '@angular/forms';
 
 import { Options } from '@popperjs/core';
 
@@ -32,6 +33,7 @@ import {
     Direction,
     ReferenceTableRow,
     ExpandNodeResult,
+    ExpandNodeRequest,
 } from 'app/interfaces';
 
 import { uuidv4 } from 'app/shared/utils';
@@ -54,7 +56,7 @@ enum SidenavEntityType {
     providers: [ContextMenuControlService],
 })
 export class VisualizationCanvasComponent implements OnInit {
-    @Output() expandNode = new EventEmitter<number>();
+    @Output() expandNode = new EventEmitter<ExpandNodeRequest>();
     @Output() finishedPreClustering = new EventEmitter<boolean>();
     @Output() getSnippetsFromEdge = new EventEmitter<VisEdge>();
     @Output() getSnippetsFromDuplicateEdge = new EventEmitter<DuplicateVisEdge>();
@@ -164,9 +166,12 @@ export class VisualizationCanvasComponent implements OnInit {
     referenceTableTooltipSelector: string;
     referenceTableTooltipOptions: Partial<Options>;
 
+    expandNodeForm: FormGroup;
+
     constructor(
         private contextMenuControlService: ContextMenuControlService,
         private visService: VisualizationService,
+        private fb: FormBuilder,
     ) {
         this.sidenavOpened = false;
         this.sidenavEntity = null;
@@ -190,6 +195,12 @@ export class VisualizationCanvasComponent implements OnInit {
         this.clusters = new Map<string, string>();
         this.openClusteringRequests = 0;
         this.clusterCreatedSource = new Subject<boolean>();
+
+        this.expandNodeForm = this.fb.group({
+            Chemical: true,
+            Disease: true,
+            Gene: true,
+        });
     }
 
     ngOnInit() {
@@ -284,7 +295,11 @@ export class VisualizationCanvasComponent implements OnInit {
             this.collapseNeighbors(nodeRef);
         } else {
             // Need to request new data from the parent when nodes are expanded
-            this.expandNode.emit(nodeId);
+            const filterLabels = Object.keys(this.expandNodeForm.value).filter((key) => this.expandNodeForm.value[key]);
+            this.expandNode.emit({
+                nodeId,
+                filterLabels,
+            });
         }
     }
 
