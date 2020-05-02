@@ -155,8 +155,8 @@ class Neo4JService(GraphBaseDao):
             return self._query_neo4j(query)
         return None
 
-    def expand_graph(self, node_id: str, limit: int):
-        query = self.get_expand_query(node_id, limit)
+    def expand_graph(self, node_id: str, filter_labels: List[str], limit: int):
+        query = self.get_expand_query(node_id, filter_labels, limit)
         return self._query_neo4j(query)
 
     def get_snippets_from_edge(self, edge: VisEdge):
@@ -492,13 +492,29 @@ class Neo4JService(GraphBaseDao):
         """.format(**args)
 
     # TODO: Allow flexible limits on nodes; enable this in the blueprints
-    def get_expand_query(self, node_id: str, limit: int = 200):
-        query = """
-            MATCH (n)-[l:ASSOCIATED]-(s) WHERE ID(n) = {}
-            WITH n, s, l
-            LIMIT {}
-            return collect(n) + collect(s) as nodes, collect(l) as relationships
-        """.format(node_id, limit)
+    def get_expand_query(self, node_id: str, filter_labels: List[str], limit: int = 200):
+        if len(filter_labels) == 0:
+            query = """
+                MATCH (n)-[l:ASSOCIATED]-(s)
+                WHERE ID(n) = {}
+                WITH n, s, l
+                LIMIT {}
+                return collect(n) + collect(s) as nodes, collect(l) as relationships
+            """.format(node_id, limit)
+        else:
+            label_filter_str = ''
+            for label in filter_labels[:-1]:
+                label_filter_str += f's:{label} OR '
+            label_filter_str += f's:{filter_labels[-1]}'
+
+            query = """
+                MATCH (n)-[l:ASSOCIATED]-(s)
+                WHERE ID(n) = {} AND ({})
+                WITH n, s, l
+                LIMIT {}
+                return collect(n) + collect(s) as nodes, collect(l) as relationships
+            """.format(node_id, label_filter_str, limit)
+
         return query
 
     def get_snippets_from_edge_query(self, from_node: int, to_node: int, association: str):
