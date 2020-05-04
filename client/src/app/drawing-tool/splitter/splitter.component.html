@@ -17,6 +17,7 @@
       <div id='dropme'>
         <app-drawing-tool
         [currentApp]='currentApp'
+        [currentMap]='currentMap'
         (openApp)='openApp($event)'
         (saveStateListener)='resolveSaveState($event)'>
       </app-drawing-tool>

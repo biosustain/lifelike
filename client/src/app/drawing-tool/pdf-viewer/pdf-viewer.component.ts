@@ -1,15 +1,15 @@
 import { Component, OnDestroy } from '@angular/core';
 import { FormControl } from '@angular/forms';
-import { Subscription, Subject, combineLatest } from 'rxjs';
+import { Subscription, Subject, combineLatest, BehaviorSubject } from 'rxjs';
 import { PdfFile } from 'app/interfaces/pdf-files.interface';
 import { PdfFilesService } from 'app/shared/services/pdf-files.service';
 
 import {
-  PdfAnnotationsService,
+  PdfAnnotationsService, DataFlowService,
 } from '../services';
 
 import {
-  Annotation, Location, Meta
+  Annotation, Location, Meta, GraphData
 } from '../services/interfaces';
 
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -31,7 +31,6 @@ export class PdfViewerComponent implements OnDestroy {
   goToPosition: Subject<Location> = new Subject<Location>();
   openPdfSub: Subscription;
   pdfViewerReady = false;
-  pdfFileLoaded = false;
   // Type information coming from interface PDFSource at:
   // https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/pdfjs-dist/index.d.ts
   pdfData: { url?: string, data?: Uint8Array };
@@ -39,10 +38,27 @@ export class PdfViewerComponent implements OnDestroy {
   addedAnnotation: Annotation;
   addAnnotationSub: Subscription;
 
+  private locationOpener = new BehaviorSubject<Location>(null);
+
+  PDF_FILE_LOADED = false;
+  get pdfFileLoaded() {
+    return this.PDF_FILE_LOADED;
+  }
+  set pdfFileLoaded(val) {
+    this.PDF_FILE_LOADED = val;
+
+    if (this.PDF_FILE_LOADED && this.locationOpener.value) {
+      this.scrollInPdf(
+        this.locationOpener.value
+      );
+    }
+  }
+
   constructor(
     private pdfAnnService: PdfAnnotationsService,
     private pdf: PdfFilesService,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private dataFlow: DataFlowService
   ) {
     this.filesFilterSub = this.filesFilter.valueChanges.subscribe(this.updateFilteredFiles);
     this.pdf.getFiles().subscribe((files: PdfFile[]) => {
@@ -129,21 +145,20 @@ export class PdfViewerComponent implements OnDestroy {
     // use location object to scroll in the pdf.
     const loc: Location = JSON.parse(nodeDom.getAttribute('location')) as Location;
 
-    // custom annotations dont have id yet.
-    // const annDef: Annotation = this.pdfAnnService.searchForAnnotation(annId);
+    const getUrl = window.location;
+    let hyperlink = getUrl.protocol + '//' + getUrl.host + '/dt/link/';
+    hyperlink = hyperlink + `${this.currentFileId}/${loc.pageNumber}/`;
+    hyperlink = hyperlink + `${loc.rect[0]}/${loc.rect[1]}/${loc.rect[2]}/${loc.rect[3]}`;
 
-    /*
     const payload: GraphData = {
       x: mouseEvent.clientX - containerCoord.x,
       y: mouseEvent.clientY,
-      label: nodeDom.innerText,
-      group: (meta.type as string).toLowerCase(),
-      hyperlink: this.generateHyperlink(annDef)
+      label: meta.allText,
+      group: 'link',
+      hyperlink
     };
-    */
-    // hyperlink should be hyperlinks. Those are in Meta field called Links.
 
-    // this.dataFlow.pushNode2Canvas(payload);
+    this.dataFlow.pushNode2Canvas(payload);
   }
 
   private updateFilteredFiles = (name: string) => {
@@ -153,7 +168,14 @@ export class PdfViewerComponent implements OnDestroy {
       : this.files;
   }
 
-  openPdf(id: string) {
+  openPdf(id: string, loc: Location= null) {
+    if (this.currentFileId === id) {
+      if (loc) {
+        this.scrollInPdf(loc);
+      }
+      return;
+    }
+
     this.pdfFileLoaded = false;
     this.pdfViewerReady = false;
     this.openPdfSub = combineLatest(
@@ -162,9 +184,17 @@ export class PdfViewerComponent implements OnDestroy {
     ).subscribe(([pdf, ann]) => {
       this.pdfData = { data: new Uint8Array(pdf) };
       this.annotations = ann;
+      this.annotations.forEach(annotation => {
+        annotation.meta.hyperlink = this.generateHyperlink(annotation);
+      });
       this.currentFileId = id;
       setTimeout(() => {
         this.pdfViewerReady = true;
+
+        // If location argument is supplied
+        if (loc) {
+          this.locationOpener.next(loc);
+        }
       }, 10);
     });
   }
@@ -179,14 +209,23 @@ export class PdfViewerComponent implements OnDestroy {
     }
   }
 
-  generateHyperlink(annDef: Annotation): string {
-
-    switch (annDef.meta.type) {
-      case 'Chemical':
-        const id = annDef.meta.id.match(/(\d+)/g)[0];
-        return `https://www.ebi.ac.uk/chebi/searchId.do?chebiId=${id}`;
-      case 'Gene':
-        return `https://www.ncbi.nlm.nih.gov/gene/?term=${annDef.meta.id}`;
+  generateHyperlink(ann: Annotation): string {
+    switch (ann.meta.idType) {
+      case 'CHEBI':
+        return `https://www.ebi.ac.uk/chebi/searchId.do?chebiId=${ann.meta.id}`;
+      // prefix 'MESH:' should be removed from the id in order for search to work
+      case 'MESH':
+        return `https://www.ncbi.nlm.nih.gov/mesh/${ann.meta.id.substring(5)}`;
+      // Note: UNIPROT links will not work as currently there are names in the id fields
+      case 'UNIPROT':
+        return `https://www.uniprot.org/uniprot/${ann.meta.id}`;
+      case 'NCBI':
+        if (ann.meta.type === 'Genes') {
+          return `https://www.ncbi.nlm.nih.gov/gene/${ann.meta.id}`;
+        } else if (ann.meta.type === 'Species') {
+          return `https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=${ann.meta.id}`;
+        }
+        return '';
       default:
         return '';
     }

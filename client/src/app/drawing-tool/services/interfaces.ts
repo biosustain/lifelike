@@ -105,6 +105,7 @@ interface Meta {
   isCustom?: boolean;
   allText?: string;
   links?: Links;
+  hyperlink?: string;
 }
 
 interface Rect {
@@ -118,6 +119,20 @@ interface Annotation {
   meta: Meta;
 }
 
+/**
+ * Interface for launching app wit parameters
+ */
+interface LaunchApp {
+  app: string;
+  arg?: {
+    // For pdf-viewer, coordinate of the nnoation of pd
+    coords?: number[],
+    // hash of pdf to locate by
+    fileId?: string,
+    // page of the pdf that the annotation is located on
+    pageNumber?: number
+  };
+}
 
 
 /**
@@ -154,5 +169,6 @@ export {
   Links,
   Location,
   GraphData,
-  GraphSelectionData
+  GraphSelectionData,
+  LaunchApp
 };

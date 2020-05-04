@@ -52,6 +52,7 @@ export class FileBrowserComponent implements OnInit {
         this.snackBar.open(`Cannot fetch list of files: ${err}`, 'Close', {duration: 10000});
       }
     );
+    this.selection.clear();
   }
 
   onFileInput(files: FileList) {

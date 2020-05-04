@@ -243,12 +243,13 @@ def process(data_source, format='pdf'):
         'phenotype': '#EDC949'
     }
     json_graph = data_source.graph
-
     graph = gv.Digraph(
         data_source.label,
         comment=data_source.description,
         engine='neato',
-        graph_attr=(('margin', '3'),),
+        graph_attr=(
+            ('margin', '3'),
+            ('dpi', '300')),
         format=format)
 
     for node in json_graph['nodes']:
@@ -298,7 +299,6 @@ def get_project_image(project_id, format):
     """
     Gets a image file from the project drawing
     """
-
     user = g.current_user
 
     # Pull up project by id
