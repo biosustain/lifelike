@@ -75,13 +75,6 @@ export class PdfViewerComponent implements OnDestroy {
     private dataFlow: DataFlowService,
     public dialog: MatDialog,
   ) {
-    // Handles opening a pdf from other pages
-    const linkedFileId = localStorage.getItem('fileIdForPdfViewer');
-    if (linkedFileId) {
-      localStorage.removeItem('fileIdForPdfViewer');
-      this.openPdf(new DummyFile(linkedFileId));
-    }
-
     // Listener for file open
     this.openPdfSub = this.loadTask.observable.subscribe(([[pdfFileContent, ann], [file, loc]]) => {
       this.pdfData = {data: new Uint8Array(pdfFileContent)};
@@ -99,6 +92,13 @@ export class PdfViewerComponent implements OnDestroy {
         }
       }, 10);
     });
+
+    // Handles opening a pdf from other pages
+    const linkedFileId = localStorage.getItem('fileIdForPdfViewer');
+    if (linkedFileId) {
+      localStorage.removeItem('fileIdForPdfViewer');
+      this.openPdf(new DummyFile(linkedFileId));
+    }
   }
 
   annotationCreated(annotation: Annotation) {
