@@ -16,8 +16,8 @@
     <ng-container matColumnDef="select">
       <mat-header-cell *matHeaderCellDef fxFlex="nogrow">
         <mat-checkbox (change)="$event ? masterToggle() : null"
-                      [checked]="selection.hasValue() && selection.selected.length === dataSource.length"
-                      [indeterminate]="selection.hasValue() && selection.selected.length !== dataSource.length"></mat-checkbox>
+                      [checked]="selection.hasValue() && selection.selected.length === dataSource.data.length"
+                      [indeterminate]="selection.hasValue() && selection.selected.length !== dataSource.data.length"></mat-checkbox>
       </mat-header-cell>
       <mat-cell *matCellDef="let element" fxFlex="nogrow">
         <mat-checkbox (click)="$event.stopPropagation()"
