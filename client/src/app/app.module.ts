@@ -17,7 +17,7 @@ import { ChartsModule } from 'ng2-charts';
 
 import { httpInterceptorProviders } from 'app/http-interceptors/index';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { BrowserModule } from '@angular/platform-browser';
+import { BrowserModule, Title } from '@angular/platform-browser';
 import { VisualizationModule } from './visualization/visualization.module';
 import { DrawingToolModule } from './drawing-tool/drawing-tool.module';
 
@@ -44,7 +44,10 @@ import { DrawingToolModule } from './drawing-tool/drawing-tool.module';
     ChartsModule,
     DrawingToolModule,
   ],
-  providers: [httpInterceptorProviders],
+  providers: [
+    httpInterceptorProviders,
+    Title
+  ],
   exports: [],
   bootstrap: [AppComponent]
 })
