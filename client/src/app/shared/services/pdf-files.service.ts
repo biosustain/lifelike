@@ -3,7 +3,7 @@ import { HttpClient, HttpEvent, HttpHeaders } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { AuthenticationService } from 'app/auth/services/authentication.service';
-import { PdfFile, PdfFiles, PdfFileUpload } from 'app/interfaces/pdf-files.interface';
+import { PdfFiles, PdfFile, PdfFileUpload, Reannotation } from 'app/interfaces/pdf-files.interface';
 
 @Injectable({
   providedIn: 'root'
@@ -32,6 +32,10 @@ export class PdfFilesService {
     return this.http.get<ArrayBuffer>(`${this.baseUrl}/${id}`, options);
   }
 
+  deleteFiles(ids: string[]): Observable<string> {
+    return this.http.request<string>('DELETE', `${this.baseUrl}/bulk_delete`, {body: ids, ...this.buildHttpOptions()});
+  }
+
   uploadFile(file: File): Observable<HttpEvent<PdfFileUpload>> {
     const formData: FormData = new FormData();
     formData.append('file', file);
@@ -40,6 +44,14 @@ export class PdfFilesService {
       observe: 'events',
       reportProgress: true,
     });
+  }
+
+  reannotateFiles(ids: string[]): Observable<Reannotation> {
+    return this.http.post<Reannotation>(
+      `${this.baseUrl}/reannotate`,
+      ids,
+      this.buildHttpOptions()
+    );
   }
 
   private buildHttpOptions() {
