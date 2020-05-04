@@ -40,3 +40,9 @@ router-outlet + * {
   flex: 1 1 0%;
   flex-direction: column;
 }
+
+.ui-draggable-dragging {
+  width: 20px !important;
+  height: 20px !important;
+  background-color: blue !important;
+}
