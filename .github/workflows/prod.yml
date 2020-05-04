@@ -1,8 +1,13 @@
 name: Production Deployment
 
 on:
-    pull_request:
-        types: [labeled]
+    push:
+        branches:
+          - master
+        tags:
+          - v1
+          - v1.*
+
 
 env:
     SERVICE_ACCOUNT_CRED: ${{ secrets.GCE_SA_KEY }}
@@ -17,6 +22,7 @@ env:
     FLASK_APP_CONFIG: ${{ secrets.PROD_FLASK_APP_CONFIG }}
     FLASK_ENV: ${{ secrets.PROD_FLASK_ENV }}
     PROJECT_ID: ${{ secrets.GCE_PROJECT }}
+    GITHUB_HASH: $GITHUB_SHA
     GCE_INSTANCE: kg-prod
     GCE_INSTANCE_ZONE: us-central1-a
     # TODO: Delete these later after refactor, redundant
@@ -77,6 +83,7 @@ jobs:
                 echo "NEO4J_ENTITIES_HOST=$NEO4J_ENTITIES_HOST" >> prod.env
                 echo "NEO4J_ENTITIES_PASS=$NEO4J_ENTITIES_PASS" >> prod.env
                 echo "NEO4J_ENTITIES_USER=$NEO4J_ENTITIES_USER" >> prod.env
+                echo "GITHUB_HASH=$GITHUB_HASH >> prod.env"
                 echo "$SERVICE_ACCOUNT_CRED" >> keyfile.json
                 gcloud compute scp prod.env ***ARANGO_USERNAME***@$GCE_INSTANCE:/srv --zone $GCE_INSTANCE_ZONE
                 gcloud compute scp keyfile.json ***ARANGO_USERNAME***@$GCE_INSTANCE:/srv --zone $GCE_INSTANCE_ZONE
