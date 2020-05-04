@@ -1,15 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { BehaviorSubject, throwError } from 'rxjs';
 import { SelectionModel } from '@angular/cdk/collections';
-import { MatTableDataSource } from '@angular/material/table';
-import { MatSnackBar } from '@angular/material';
-import { BehaviorSubject, Subject, throwError } from 'rxjs';
+import { MatSnackBar, MatTableDataSource } from '@angular/material';
 import { AnnotationStatus, PdfFile, Reannotation } from 'app/interfaces/pdf-files.interface';
 import { PdfFilesService } from 'app/shared/services/pdf-files.service';
 import { HttpEventType } from '@angular/common/http';
-import { UploadProgress, UploadStatus } from 'app/interfaces/file-browser.interfaces';
-import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
-import { UploadProgressDialogComponent } from './upload-progress-dialog.component';
+import { Progress, ProgressMode } from 'app/interfaces/common-dialog.interface';
+import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 
 @Component({
   selector: 'app-file-browser',
@@ -21,19 +19,13 @@ export class FileBrowserComponent implements OnInit {
   dataSource = new MatTableDataSource<PdfFile>([]);
   selection = new SelectionModel<PdfFile>(true, []);
   isReannotating = false;
-  status = UploadStatus.Ready;
-  /**
-   * Progress events will be streamed to the progress dialog.
-   */
-  progress: Subject<UploadProgress> = new BehaviorSubject<UploadProgress>(
-    new UploadProgress(UploadStatus.Ready, 0)
-  );
+  uploadStarted = false;
 
   constructor(
     private pdf: PdfFilesService,
     private router: Router,
     private snackBar: MatSnackBar,
-    public dialog: MatDialog,
+    private progressDialog: ProgressDialog,
   ) {
   }
 
@@ -59,37 +51,47 @@ export class FileBrowserComponent implements OnInit {
     if (files.length === 0) {
       return;
     }
-    if (this.status !== UploadStatus.Ready) {
-      // the user shouldn't be able to initiate a new file upload
+
+    // The user shouldn't be able to initiate a new file upload
+    if (this.uploadStarted) {
       return;
     }
-
-    const name = files[0].name;
-    this.status = UploadStatus.Starting;
+    this.uploadStarted = true;
 
     // Let's show some progress!
-    this.progress.next(new UploadProgress(this.status, 0, name));
-    this.openProgressDialog();
+    const progressObservable = new BehaviorSubject<Progress>(new Progress({
+      status: 'Preparing file for upload...',
+    }));
+    const progressDialogRef = this.progressDialog.display({
+      title: `Adding ${files[0].name}...`,
+      progressObservable,
+    });
 
     this.pdf.uploadFile(files[0]).subscribe(event => {
         if (event.type === HttpEventType.UploadProgress) {
           if (event.loaded >= event.total) {
-            this.status = UploadStatus.Processing;
+            progressObservable.next(new Progress({
+              mode: ProgressMode.Buffer,
+              status: 'Processing on server...',
+              value: event.loaded / event.total
+            }));
           } else {
-            this.status = UploadStatus.Uploading;
+            progressObservable.next(new Progress({
+              mode: ProgressMode.Determinate,
+              status: 'Uploading file...',
+              value: event.loaded / event.total
+            }));
           }
-          this.progress.next(new UploadProgress(this.status, event.loaded / event.total, name));
         } else if (event.type === HttpEventType.Response) {
-          this.progress.next(new UploadProgress(this.status, 1, name));
-          this.status = UploadStatus.Ready;
-          this.dialog.closeAll();
+          progressDialogRef.close();
+          this.uploadStarted = false;
           this.snackBar.open(`File uploaded: ${event.body.filename}`, 'Close', {duration: 5000});
           this.updateDataSource(); // updates the list on successful upload
         }
       },
       err => {
-        this.status = UploadStatus.Ready;
-        this.dialog.closeAll();
+        progressDialogRef.close();
+        this.uploadStarted = false;
         return throwError(err);
       }
     );
@@ -154,22 +156,6 @@ export class FileBrowserComponent implements OnInit {
     } else {
       this.selection.select(...this.dataSource.data);
     }
-  }
-
-  /**
-   * Show the upload progress dialog to the user.
-   */
-  openProgressDialog() {
-    const dialogConfig = new MatDialogConfig();
-
-    dialogConfig.width = '400px';
-    dialogConfig.disableClose = true;
-    dialogConfig.autoFocus = true;
-    dialogConfig.data = {
-      progress: this.progress
-    };
-
-    this.dialog.open(UploadProgressDialogComponent, dialogConfig);
   }
 
   applyFilter(filterValue: string) {
