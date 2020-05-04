@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ViewChild, NgZone } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, NgZone, Output } from '@angular/core';
 import {
   FormGroup,
   FormControl,
@@ -6,6 +6,9 @@ import {
 } from '@angular/forms';
 import {CdkTextareaAutosize} from '@angular/cdk/text-field';
 import { MatCheckboxChange } from '@angular/material';
+import {
+  EventEmitter
+} from '@angular/core';
 
 import * as $ from 'jquery';
 
@@ -18,7 +21,8 @@ import {
   VisNetworkGraphEdge,
   VisNetworkGraphNode,
   GraphData,
-  GraphSelectionData
+  GraphSelectionData,
+  LaunchApp
 } from '../../services/interfaces';
 
 import { Subscription } from 'rxjs';
@@ -35,6 +39,7 @@ import { LINK_NODE_ICON_OBJECT } from 'app/constants';
 })
 export class InfoPanelComponent implements OnInit, OnDestroy {
   @ViewChild('autosize', {static: true}) autosize: CdkTextareaAutosize;
+  @Output() openApp: EventEmitter<LaunchApp> = new EventEmitter<LaunchApp>();
 
   /** Build the palette ui with node templates defined */
   nodeTemplates = nodeTemplates;
@@ -428,7 +433,35 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
   goToLink() {
     const hyperlink: string = this.entityForm.value.hyperlink;
 
-    if (
+    if (this.graphData.group === 'link') {
+      // If a link, create a payload from hyperlink url
+      const getUrl = window.location;
+      const prefixLink = getUrl.protocol + '//' + getUrl.host + '/dt/link/';
+      const [
+        fileId,
+        page,
+        coordA,
+        coordB,
+        coordC,
+        coordD
+      ] = hyperlink.replace(prefixLink, '').split('/');
+      // Emit app command with annotation payload
+      this.openApp.emit({
+          app: 'pdf-viewer',
+          arg: {
+            // tslint:disable-next-line: radix
+            pageNumber: parseInt(page),
+            fileId,
+            coords: [
+              parseFloat(coordA),
+              parseFloat(coordB),
+              parseFloat(coordC),
+              parseFloat(coordD)
+            ]
+          }
+        }
+      );
+    } else if (
       hyperlink.includes('http')
     ) {
       window.open(hyperlink, '_blank');
