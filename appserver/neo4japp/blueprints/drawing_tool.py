@@ -243,7 +243,6 @@ def process(data_source, format='pdf'):
         'phenotype': '#EDC949'
     }
     json_graph = data_source.graph
-
     graph = gv.Digraph(
         data_source.label,
         comment=data_source.description,
@@ -298,7 +297,6 @@ def get_project_image(project_id, format):
     """
     Gets a image file from the project drawing
     """
-
     user = g.current_user
 
     # Pull up project by id
