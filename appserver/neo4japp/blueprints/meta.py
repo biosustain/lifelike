@@ -13,7 +13,7 @@ health of the application
 @bp.route('/', methods=['GET'])
 @jsonify_with_class()
 def build_version():
-    build_timestamp = current_app.config.get('BUILD_TIMESTAMP')
+    build_timestamp = current_app.config.get('GITHUB_LAST_COMMIT_TIMESTAMP')
     git_commit_hash = current_app.config.get('GITHUB_HASH')
-    result = BuildInformation(timestamp=build_timestamp, git_hash=git_commit_hash)
+    result = BuildInformation(build_timestamp=build_timestamp, git_hash=git_commit_hash)
     return SuccessResponse(result=result, status_code=200)

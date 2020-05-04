@@ -7,6 +7,7 @@ class Base():
 
     # Optional for tracking the master branch for the build
     GITHUB_HASH = os.environ.get('GITHUB_HASH', 'undefined')
+    GITHUB_LAST_COMMIT_TIMESTAMP = os.environ.get('GITHUB_COMMIT_TIMESTAMP')
 
     SECRET_KEY = os.environ.get('SECRET_KEY', 'secrets')
 
