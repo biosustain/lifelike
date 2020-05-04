@@ -3,6 +3,7 @@ import { FormControl } from '@angular/forms';
 import { Subscription, Subject, combineLatest } from 'rxjs';
 import { PdfFile } from 'app/interfaces/pdf-files.interface';
 import { PdfFilesService } from 'app/shared/services/pdf-files.service';
+import { HYPERLINKS } from 'app/shared/constants';
 
 import {
   PdfAnnotationsService,
@@ -184,18 +185,18 @@ export class PdfViewerComponent implements OnDestroy {
   generateHyperlink(ann: Annotation): string {
     switch (ann.meta.idType) {
       case 'CHEBI':
-        return `https://www.ebi.ac.uk/chebi/searchId.do?chebiId=${ann.meta.id}`;
-      // prefix 'MESH:' should be removed from the id in order for search to work
+        return HYPERLINKS.CHEBI + ann.meta.id;
       case 'MESH':
-        return `https://www.ncbi.nlm.nih.gov/mesh/${ann.meta.id.substring(5)}`;
-      // Note: UNIPROT links will not work as currently there are names in the id fields
+        // prefix 'MESH:' should be removed from the id in order for search to work
+        return HYPERLINKS.MESH + ann.meta.id.substring(5);
       case 'UNIPROT':
-        return `https://www.uniprot.org/uniprot/${ann.meta.id}`;
+        // Note: UNIPROT links will not work as currently there are names in the id fields
+        return HYPERLINKS + ann.meta.id;
       case 'NCBI':
         if (ann.meta.type === 'Genes') {
-          return `https://www.ncbi.nlm.nih.gov/gene/${ann.meta.id}`;
+          return HYPERLINKS.NCBI_GENES + ann.meta.id;
         } else if (ann.meta.type === 'Species') {
-          return `https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=${ann.meta.id}`;
+          return HYPERLINKS.NCBI_SPECIES + ann.meta.id;
         }
         return '';
       default:
