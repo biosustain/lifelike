@@ -17,8 +17,8 @@ from neo4japp.services.annotations.util import normalize_str
 directory = path.realpath(path.dirname(__file__))
 
 
-def prepare_lmdb_genes_database():
-    with open(path.join(directory, 'datasets/genes.tsv'), 'r') as f:
+def prepare_lmdb_genes_database(filename: str):
+    with open(path.join(directory, filename), 'r') as f:
         map_size = 1099511627776
         db = lmdb.open(path.join(directory, 'lmdb/genes'), map_size=map_size)
         with db.begin(write=True) as transaction:
@@ -50,8 +50,8 @@ def prepare_lmdb_genes_database():
                     continue
 
 
-def prepare_lmdb_chemicals_database():
-    with open(path.join(directory, 'datasets/chebi.csv'), 'r') as f:
+def prepare_lmdb_chemicals_database(filename: str):
+    with open(path.join(directory, filename), 'r') as f:
         map_size = 1099511627776
         db = lmdb.open(path.join(directory, 'lmdb/chemicals'), map_size=map_size)
         with db.begin(write=True) as transaction:
@@ -111,8 +111,8 @@ def prepare_lmdb_chemicals_database():
                     continue
 
 
-def prepare_lmdb_compounds_database():
-    with open(path.join(directory, 'datasets/compounds.csv'), 'r') as f:
+def prepare_lmdb_compounds_database(filename: str):
+    with open(path.join(directory, filename), 'r') as f:
         map_size = 1099511627776
         db = lmdb.open(path.join(directory, 'lmdb/compounds'), map_size=map_size)
         with db.begin(write=True) as transaction:
@@ -172,8 +172,8 @@ def prepare_lmdb_compounds_database():
                     continue
 
 
-def prepare_lmdb_proteins_database():
-    with open(path.join(directory, 'datasets/proteins.tsv'), 'r') as f:
+def prepare_lmdb_proteins_database(filename: str):
+    with open(path.join(directory, filename), 'r') as f:
         map_size = 1099511627776
         db = lmdb.open(path.join(directory, 'lmdb/proteins'), map_size=map_size)
         with db.begin(write=True) as transaction:
@@ -206,8 +206,8 @@ def prepare_lmdb_proteins_database():
                     continue
 
 
-def prepare_lmdb_species_database():
-    with open(path.join(directory, 'datasets/taxonomy.tsv'), 'r') as f:
+def prepare_lmdb_species_database(filename: str):
+    with open(path.join(directory, filename), 'r') as f:
         map_size = 1099511627776
         db = lmdb.open(path.join(directory, 'lmdb/species'), map_size=map_size)
         with db.begin(write=True) as transaction:
@@ -241,8 +241,8 @@ def prepare_lmdb_species_database():
                         continue
 
 
-def prepare_lmdb_diseases_database():
-    with open(path.join(directory, 'datasets/disease.csv'), 'r') as f:
+def prepare_lmdb_diseases_database(filename: str):
+    with open(path.join(directory, filename), 'r') as f:
         map_size = 1099511627776
         db = lmdb.open(path.join(directory, 'lmdb/diseases'), map_size=map_size)
         with db.begin(write=True) as transaction:
@@ -318,9 +318,13 @@ if __name__ == '__main__':
                 print(f'Deleting {path.join(parent, fn)}...')
                 remove(path.join(parent, fn))
 
-    prepare_lmdb_genes_database()
-    prepare_lmdb_chemicals_database()
-    prepare_lmdb_compounds_database()
-    prepare_lmdb_proteins_database()
-    prepare_lmdb_species_database()
-    prepare_lmdb_diseases_database()
+    prepare_lmdb_genes_database(filename='datasets/genes.tsv')
+    prepare_lmdb_chemicals_database(filename='datasets/chebi.csv')
+    prepare_lmdb_compounds_database(filename='datasets/compounds.csv')
+    prepare_lmdb_proteins_database(filename='datasets/proteins.tsv')
+    prepare_lmdb_species_database(filename='datasets/taxonomy.tsv')
+    prepare_lmdb_diseases_database(filename='datasets/disease.csv')
+
+    # covid-19
+    prepare_lmdb_diseases_database(filename='datasets/covid19_disease.csv')
+    prepare_lmdb_species_database(filename='datasets/covid19_taxonomy.tsv')
