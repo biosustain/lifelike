@@ -3,7 +3,7 @@
 </h1>
 
 <mat-dialog-content>
-  <app-file-list #fileList (select)="select($event)"></app-file-list>
+  <app-file-list #fileList (fileSelect)="select($event)"></app-file-list>
 </mat-dialog-content>
 
 <mat-dialog-actions class="mt2" align="end">
