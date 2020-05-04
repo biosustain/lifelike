@@ -6,6 +6,9 @@ on:
 
 jobs:
     demo:
+        name: Trigger Test
+        runs-on: ubuntu-latest
+
         steps:
             - name: Show GitHub SHA
               run: |-
