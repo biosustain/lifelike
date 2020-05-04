@@ -96,26 +96,26 @@ def get_account_service():
     return g.account_service
 
 
-def get_annotations_service():
-    if 'annotations_service' not in g:
-        from neo4japp.services.annotations import AnnotationsService, LMDBDao
-        lmdb_dao = LMDBDao()
-        g.annotations_service = AnnotationsService(lmdb_session=lmdb_dao)
-    return g.annotations_service
+def get_lmdb_dao():
+    if 'lmdb_dao' not in g:
+        from neo4japp.services.annotations import LMDBDao
+        g.lmdb_dao = LMDBDao()
+    return g.lmdb_dao
+
+
+def get_annotations_service(lmdb_dao):
+    from neo4japp.services.annotations import AnnotationsService
+    return AnnotationsService(lmdb_session=lmdb_dao)
 
 
 def get_annotations_pdf_parser():
-    if 'annotations_pdf_parser' not in g:
-        from neo4japp.services.annotations import AnnotationsPDFParser
-        g.annotations_pdf_parser = AnnotationsPDFParser()
-    return g.annotations_pdf_parser
+    from neo4japp.services.annotations import AnnotationsPDFParser
+    return AnnotationsPDFParser()
 
 
 def get_bioc_document_service():
-    if 'bioc_document_service' not in g:
-        from neo4japp.services.annotations import BiocDocumentService
-        g.bioc_document_service = BiocDocumentService()
-    return g.bioc_document_service
+    from neo4japp.services.annotations import BiocDocumentService
+    return BiocDocumentService()
 
 
 def reset_dao():
@@ -130,9 +130,7 @@ def reset_dao():
         'search_dao',
         'authorization_service',
         'account_service',
-        'annotations_service',
-        'annotations_pdf_parser',
-        'bioc_document_service',
+        'lmdb_dao',
     ]:
         if dao in g:
             g.pop(dao)

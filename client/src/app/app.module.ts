@@ -1,5 +1,4 @@
 import { NgModule } from '@angular/core';
-import { HttpClientModule } from '@angular/common/http';
 
 import { RootStoreModule } from 'app/***ARANGO_USERNAME***-store';
 
@@ -12,7 +11,6 @@ import { UserFileImportModule } from './user-file-import/user-file-import.module
 import { SearchModule } from './search/search.module';
 import { SharedModule } from './shared/shared.module';
 import { FileBrowserComponent } from './file-browser/file-browser.component';
-import { UploadProgressDialogComponent } from './file-browser/upload-progress-dialog.component';
 import { UserModule } from 'app/users/users.module';
 import { KgStatisticsComponent } from './kg-statistics/kg-statistics.component';
 import { ChartsModule } from 'ng2-charts';
@@ -27,7 +25,6 @@ import { DrawingToolModule } from './drawing-tool/drawing-tool.module';
   declarations: [
     AppComponent,
     FileBrowserComponent,
-    UploadProgressDialogComponent,
     KgStatisticsComponent,
   ],
   imports: [
@@ -45,14 +42,11 @@ import { DrawingToolModule } from './drawing-tool/drawing-tool.module';
     RootStoreModule,
     SearchModule,
     ChartsModule,
-    DrawingToolModule
-  ],
-  entryComponents: [
-    UploadProgressDialogComponent,
+    DrawingToolModule,
   ],
   providers: [httpInterceptorProviders],
-  exports: [
-  ],
+  exports: [],
   bootstrap: [AppComponent]
 })
-export class AppModule { }
+export class AppModule {
+}
