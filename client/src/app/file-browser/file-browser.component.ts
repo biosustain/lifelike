@@ -4,7 +4,7 @@ import { SelectionModel } from '@angular/cdk/collections';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatSnackBar } from '@angular/material';
 import { BehaviorSubject, Subject, throwError } from 'rxjs';
-import { AnnotationStatus, PdfFile, Reannotation } from 'app/interfaces/pdf-files.interface';
+import { AnnotationStatus, PdfFile } from 'app/interfaces/pdf-files.interface';
 import { PdfFilesService } from 'app/shared/services/pdf-files.service';
 import { HttpEventType } from '@angular/common/http';
 import { UploadProgress, UploadStatus } from 'app/interfaces/file-browser.interfaces';
@@ -122,7 +122,7 @@ export class FileBrowserComponent implements OnInit {
       return file.file_id;
     });
     this.pdf.reannotateFiles(ids).subscribe(
-      (res: Reannotation) => {
+      (res) => {
         for (const id of ids) {
           // pick file by id
           const file: PdfFile = this.dataSource.data.find((f: PdfFile) => f.file_id === id);
