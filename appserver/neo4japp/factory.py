@@ -1,5 +1,6 @@
 import logging
 from functools import partial
+from datetime import datetime
 
 from flask import current_app, Flask, jsonify
 from flask_caching import Cache
@@ -41,6 +42,7 @@ def create_app(name='neo4japp', config='config.Development'):
         'CACHE_THRESHOLD': 10,
     }
 
+    app.config['BUILD_TIMESTAMP'] = datetime.now()
     app.config.from_object(cache_config)
 
     # init cache

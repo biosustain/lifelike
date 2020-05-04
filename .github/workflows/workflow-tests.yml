@@ -1,0 +1,12 @@
+name: Testing Triggers
+
+on:
+    release:
+        types: [published]
+
+jobs:
+    demo:
+        steps:
+            - name: Show GitHub SHA
+              run: |-
+                echo $GITHUB_SHA
