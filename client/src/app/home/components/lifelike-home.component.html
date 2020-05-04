@@ -2,6 +2,6 @@
   <mat-toolbar-row>
     <span>Lifelike 3.0</span>
     <span class="spacer"></span>
-    <span id="versioning-info">version: {{ ((buildInfo$ | async)?.gitHash | slice:0:7) }} </span>
+    <span id="versioning-info">last updated: {{ (buildInfo$ | async)?.gitHash }}</span>
   </mat-toolbar-row>
 </mat-toolbar>

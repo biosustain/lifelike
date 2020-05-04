@@ -1,4 +1,4 @@
 export interface BuildInfo {
-    timestamp: string;
+    buildTimestamp: string;
     gitHash: string;
 }
