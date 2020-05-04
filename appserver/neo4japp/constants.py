@@ -16,7 +16,6 @@ PROP_CHEBI_ID = 'chebi_id'
 PROP_BIOCYC_ID = 'biocyc_id'
 PROP_COMMON_NAME = 'common_name'
 
-
 NODE_SPECIES = 'Species'
 
 DB_REGULONDB = 'RegulonDB'
@@ -70,6 +69,10 @@ ANNOTATATION_STYLES = [{
     {
         "color": '#4caf50',
         "label": "chemical",
+    },
+    {
+        "color": '#4caf50',
+        "label": "compound",
     },
     {
         "color": '#5d4037',
@@ -129,3 +132,79 @@ ANNOTATATION_STYLES = [{
         "color": '#d7d9f8'
     }
 ]
+
+ANNOTATATION_STYLES_DICT = {
+    "gene": {
+        "color": '#673ab7',
+        "label": "gene",
+    },
+    "disease": {
+        "color": '#ff9800',
+        "label": "disease",
+    },
+    "chemical": {
+        "color": '#4caf50',
+        "label": "chemical",
+    },
+    "compound": {
+        "color": '#4caf50',
+        "label": "compound",
+    },
+    "mutation": {
+        "color": '#5d4037',
+        "label": "mutation",
+    },
+    "species": {
+        "color": '#0277bd',
+        "label": "species",
+    },
+    "company": {
+        "color": '#d62728',
+        "label": "company",
+    },
+    "study": {
+        "color": '#17becf',
+        "label": "study",
+    },
+    "protein": {
+        "color": '#bcbd22',
+        "label": "protein",
+    },
+    "pathway": {
+        "color": '#e377c2',
+        "label": "pathway",
+    },
+    "phenotype": {
+        "color": '#edc949',
+        "label": "phenotype",
+    },
+    "entity": {
+        "label": "ENTITY",
+        "color": '#7f7f7f'
+    },
+    "link": {
+        "label": "LINK",
+        "color": '#7f7f7f'
+    },
+    # Non - Entity Types
+    "correlation": {
+        "label": "correlation",
+        "color": '#d7d9f8'
+    },
+    "label": {
+        "label": "cause",
+        "color": '#d7d9f8'
+    },
+    "effect": {
+        "label": "effect",
+        "color": '#d7d9f8'
+    },
+    "observation": {
+        "label": "observation",
+        "color": '#d7d9f8'
+    },
+    "association": {
+        "label": "association",
+        "color": '#d7d9f8'
+    }
+}
