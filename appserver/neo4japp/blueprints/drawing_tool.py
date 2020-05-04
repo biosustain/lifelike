@@ -248,7 +248,9 @@ def process(data_source, format='pdf'):
         data_source.label,
         comment=data_source.description,
         engine='neato',
-        graph_attr=(('margin', '3'),),
+        graph_attr=(
+            ('margin', '3'),
+            ('dpi', '300')),
         format=format)
 
     for node in json_graph['nodes']:
