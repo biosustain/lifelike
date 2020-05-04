@@ -50,12 +50,13 @@ TYPO_SYNONYMS = {
 
 ENTITY_TYPE_PRECEDENCE = {
     # larger value takes precedence
-    'Chemicals': 4,
-    'Compounds': 4,
-    'Diseases': 5,
-    'Genes': 2,
-    'Proteins': 3,
+    'Chemicals': 5,
+    'Compounds': 5,
+    'Diseases': 6,
+    'Genes': 3,
+    'Proteins': 4,
     'Species': 1,
+    'Phenotypes': 2,
 }
 
 
@@ -66,6 +67,7 @@ class EntityColor(Enum):
     Genes = '#8f7cbf'
     Proteins = '#bcbd22'
     Species = '#3177b8'
+    Phenotypes = '#edc949'
 
 
 class EntityIdStr(Enum):
@@ -75,6 +77,7 @@ class EntityIdStr(Enum):
     Genes = 'gene_id'
     Proteins = 'protein_id'
     Species = 'tax_id'
+    Phenotypes = 'phenotype_id'
 
 
 class EntityType(Enum):
@@ -84,3 +87,4 @@ class EntityType(Enum):
     Genes = 'Genes'
     Proteins = 'Proteins'
     Species = 'Species'
+    Phenotypes = 'Phenotypes'

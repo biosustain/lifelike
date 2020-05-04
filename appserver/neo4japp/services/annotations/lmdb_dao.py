@@ -8,29 +8,42 @@ directory = path.realpath(path.dirname(__file__))
 
 
 class LMDBDao:
-    def __init__(self) -> None:
+    def __init__(
+        self,
+        genes_lmdb_path: str='lmdb/genes',
+        chemicals_lmdb_path: str='lmdb/chemicals',
+        compounds_lmdb_path: str='lmdb/compounds',
+        proteins_lmdb_path: str='lmdb/proteins',
+        species_lmdb_path: str='lmdb/species',
+        diseases_lmdb_path: str='lmdb/diseases',
+        phenotypes_lmdb_path: str='lmdb/phenotype',
+    ) -> None:
         self.genes_env = lmdb.open(
-            path=path.join(directory, 'lmdb/genes'),
+            path=path.join(directory, genes_lmdb_path),
             readonly=True,
         )
         self.chemicals_env = lmdb.open(
-            path=path.join(directory, 'lmdb/chemicals'),
+            path=path.join(directory, chemicals_lmdb_path),
             readonly=True,
         )
         self.compounds_env = lmdb.open(
-            path=path.join(directory, 'lmdb/compounds'),
+            path=path.join(directory, compounds_lmdb_path),
             readonly=True,
         )
         self.proteins_env = lmdb.open(
-            path=path.join(directory, 'lmdb/proteins'),
+            path=path.join(directory, proteins_lmdb_path),
             readonly=True,
         )
         self.species_env = lmdb.open(
-            path=path.join(directory, 'lmdb/species'),
+            path=path.join(directory, species_lmdb_path),
             readonly=True,
         )
         self.diseases_env = lmdb.open(
-            path=path.join(directory, 'lmdb/diseases'),
+            path=path.join(directory, diseases_lmdb_path),
+            readonly=True,
+        )
+        self.phenotypes_env = lmdb.open(
+            path=path.join(directory, phenotypes_lmdb_path),
             readonly=True,
         )
 
@@ -42,6 +55,7 @@ class LMDBDao:
         self.proteins_txn = self.proteins_env.begin()
         self.species_txn = self.species_env.begin()
         self.diseases_txn = self.diseases_env.begin()
+        self.phenotypes_txn = self.phenotypes_env.begin()
 
     def new_lmdb(self):
         # TODO: JIRA LL-315 from LL-256
