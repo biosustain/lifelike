@@ -38,8 +38,8 @@ import {MatSnackBar, MatTabChangeEvent} from '@angular/material';
 
 import * as $ from 'jquery';
 
-import { isNullOrUndefined } from 'util';
-import { AuthenticationService } from 'app/auth/services/authentication.service';
+import {isNullOrUndefined} from 'util';
+import {AuthenticationService} from 'app/auth/services/authentication.service';
 
 @Component({
   selector: 'app-project-list-view',
@@ -69,6 +69,8 @@ export class ProjectListViewComponent {
    */
   selectedProject: Project = null;
 
+  displayIndex = 0;
+
   get emptyGraph() {
     if (!this.selectedProject) {
       return true;
@@ -78,7 +80,9 @@ export class ProjectListViewComponent {
   }
 
   get isItMine() {
-    if (!this.selectedProject) { return false; }
+    if (!this.selectedProject) {
+      return false;
+    }
     return this.userId === this.selectedProject.user_id;
   }
 
@@ -198,7 +202,7 @@ export class ProjectListViewComponent {
           .subscribe(
             (data) => {
               this.projects = this.projects.concat([data.project]);
-        });
+            });
       }
     });
   }
@@ -248,7 +252,7 @@ export class ProjectListViewComponent {
     this.route.navigateByUrl('dt/splitter');
   }
 
-  handleAPI(evt: {action: string, project: Project}) {
+  handleAPI(evt: { action: string, project: Project }) {
 
     switch (evt.action) {
       case 'pick':
@@ -268,5 +272,9 @@ export class ProjectListViewComponent {
   toggleFullscreen(screenMode) {
     this.fullScreenmode = screenMode;
     console.log(this.fullScreenmode);
+  }
+
+  goToSearch() {
+    this.displayIndex = 2;
   }
 }
