@@ -231,7 +231,7 @@ export class MapListComponent implements OnInit {
     data.projects.forEach(project => {
       project.graph.nodes.forEach(node => {
         terms.forEach(term => {
-          const regexp = new RegExp('^' + term + '.*$', 'gi');
+          const regexp = new RegExp( term + '.*$', 'gi');
           if (node.display_name.match(regexp)) {
             node.color = {background: '#FFFD92'};
           }
