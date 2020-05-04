@@ -184,6 +184,9 @@ export class PdfViewerComponent implements OnDestroy {
     ).subscribe(([pdf, ann]) => {
       this.pdfData = { data: new Uint8Array(pdf) };
       this.annotations = ann;
+      this.annotations.forEach(annotation => {
+        annotation.meta.hyperlink = this.generateHyperlink(annotation);
+      });
       this.currentFileId = id;
       setTimeout(() => {
         this.pdfViewerReady = true;
@@ -206,14 +209,23 @@ export class PdfViewerComponent implements OnDestroy {
     }
   }
 
-  generateHyperlink(annDef: Annotation): string {
-
-    switch (annDef.meta.type) {
-      case 'Chemical':
-        const id = annDef.meta.id.match(/(\d+)/g)[0];
-        return `https://www.ebi.ac.uk/chebi/searchId.do?chebiId=${id}`;
-      case 'Gene':
-        return `https://www.ncbi.nlm.nih.gov/gene/?term=${annDef.meta.id}`;
+  generateHyperlink(ann: Annotation): string {
+    switch (ann.meta.idType) {
+      case 'CHEBI':
+        return `https://www.ebi.ac.uk/chebi/searchId.do?chebiId=${ann.meta.id}`;
+      // prefix 'MESH:' should be removed from the id in order for search to work
+      case 'MESH':
+        return `https://www.ncbi.nlm.nih.gov/mesh/${ann.meta.id.substring(5)}`;
+      // Note: UNIPROT links will not work as currently there are names in the id fields
+      case 'UNIPROT':
+        return `https://www.uniprot.org/uniprot/${ann.meta.id}`;
+      case 'NCBI':
+        if (ann.meta.type === 'Genes') {
+          return `https://www.ncbi.nlm.nih.gov/gene/${ann.meta.id}`;
+        } else if (ann.meta.type === 'Species') {
+          return `https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=${ann.meta.id}`;
+        }
+        return '';
       default:
         return '';
     }
