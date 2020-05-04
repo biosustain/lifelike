@@ -10,7 +10,7 @@ import { BackgroundTask } from '../shared/rxjs/background-task';
   templateUrl: './file-list.component.html',
 })
 export class FileListComponent {
-  @Output() select: EventEmitter<PdfFile> = new EventEmitter();
+  @Output() fileSelect: EventEmitter<PdfFile> = new EventEmitter();
   refreshTask: BackgroundTask<void, PdfFile[]>;
   files: PdfFile[] = [];
   filteredFiles = this.files;
@@ -34,7 +34,7 @@ export class FileListComponent {
   }
 
   selectionClicked(file: PdfFile) {
-    this.select.emit(file);
+    this.fileSelect.emit(file);
   }
 
   private updateFilteredFiles(name: string) {
