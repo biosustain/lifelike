@@ -81,6 +81,8 @@ import {
 } from './info-panel/info-panel.component';
 import {ExportModalComponent} from './export-modal/export-modal.component';
 import {MatDialog, MatDialogConfig} from '@angular/material/dialog';
+import { FileSelectionDialogComponent } from '../../file-browser/file-selection-dialog.component';
+import { PdfFile } from '../../interfaces/pdf-files.interface';
 
 interface Update {
   event: string;
@@ -463,6 +465,28 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
 
   toggleApp(appCmd: LaunchApp) {
     this.openApp.emit(appCmd);
+  }
+
+  openPdfApp() {
+    const app = 'pdf-viewer';
+    if (this.currentApp === app) {
+      this.toggle(app);
+    } else {
+      const dialogConfig = new MatDialogConfig();
+
+      dialogConfig.width = '600px';
+      dialogConfig.disableClose = true;
+      dialogConfig.autoFocus = true;
+      dialogConfig.data = {};
+
+      const dialogRef = this.dialog.open(FileSelectionDialogComponent, dialogConfig);
+      dialogRef.beforeClosed().subscribe((file: PdfFile) => {
+        if (file !== null) {
+          localStorage.setItem('fileIdForPdfViewer', file.file_id);
+          this.toggle(app);
+        }
+      });
+    }
   }
 
   /**

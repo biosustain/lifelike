@@ -38,7 +38,7 @@
       [matTooltip]='currentApp==="pdf-viewer" ? "Close PDF Viewer" : "Open PDF Viewer"'
       matTooltipPosition="right"
       [ngClass]='{"active": currentApp==="pdf-viewer"}'
-      (click)='toggle("pdf-viewer")'>
+      (click)='openPdfApp()'>
       menu_book
     </mat-icon>
     <mat-icon
