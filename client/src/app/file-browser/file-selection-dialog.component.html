@@ -1,0 +1,12 @@
+<h1 mat-dialog-title>
+  Select PDF
+</h1>
+
+<mat-dialog-content>
+  <app-file-list #fileList (select)="select($event)"></app-file-list>
+</mat-dialog-content>
+
+<mat-dialog-actions class="mt2" align="end">
+  <button mat-button (click)="refresh()">Refresh</button>
+  <button mat-button [mat-dialog-close]="null">Close</button>
+</mat-dialog-actions>
