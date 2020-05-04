@@ -32,7 +32,7 @@ export class PdfFilesService {
     return this.http.get<ArrayBuffer>(`${this.baseUrl}/${id}`, options);
   }
 
-  deleteFiles(ids: string[]): Observable<Object> {
+  deleteFiles(ids: string[]): Observable<object> {
     return this.http.request('DELETE', `${this.baseUrl}/bulk_delete`, {body: ids, ...this.buildHttpOptions()});
   }
 
@@ -46,7 +46,7 @@ export class PdfFilesService {
     });
   }
 
-  reannotateFiles(ids: string[]): Observable<Object> {
+  reannotateFiles(ids: string[]): Observable<object> {
     return this.http.post(
       `${this.baseUrl}/reannotate`,
       ids,
