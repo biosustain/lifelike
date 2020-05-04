@@ -98,8 +98,9 @@ def prepare_lmdb_chemicals_database(filename: str):
                         entity = transaction.get(syn.encode('utf-8'))
                         if entity:
                             entity = json.loads(entity)
+                            import IPython; IPython.embed()
                             entity['common_name'] = {
-                                **entity['common_name'], **chemical['common_name']}
+                                **entity['common_name'], **chemical['common_name']}  # type: ignore
                             transaction.put(
                                 syn.encode('utf-8'),
                                 json.dumps(entity).encode('utf-8'))
@@ -160,7 +161,7 @@ def prepare_lmdb_compounds_database(filename: str):
                         if entity:
                             entity = json.loads(entity)
                             entity['common_name'] = {
-                                **entity['common_name'], **compound['common_name']}
+                                **entity['common_name'], **compound['common_name']}  # type: ignore
                             transaction.put(
                                 syn.encode('utf-8'),
                                 json.dumps(entity).encode('utf-8'))
@@ -287,7 +288,7 @@ def prepare_lmdb_diseases_database(filename: str):
                         if entity:
                             entity = json.loads(entity)
                             entity['common_name'] = {
-                                **entity['common_name'], **disease['common_name']}
+                                **entity['common_name'], **disease['common_name']}  # type: ignore
                             transaction.put(
                                 syn.encode('utf-8'),
                                 json.dumps(entity).encode('utf-8'))
