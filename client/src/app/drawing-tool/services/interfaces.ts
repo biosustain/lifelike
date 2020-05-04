@@ -105,6 +105,7 @@ interface Meta {
   isCustom?: boolean;
   allText?: string;
   links?: Links;
+  hyperlink?: string;
 }
 
 interface Rect {
