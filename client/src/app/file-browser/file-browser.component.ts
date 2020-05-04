@@ -103,8 +103,12 @@ export class FileBrowserComponent implements OnInit {
   deleteFiles() {
     const ids: string[] = this.selection.selected.map((file: PdfFile) => file.file_id);
     this.pdf.deleteFiles(ids).subscribe(
-      (res: string) => {
-        this.snackBar.open(`Deletion completed`, 'Close', {duration: 5000});
+      (res) => {
+        let msg = 'Deletion completed';
+        if (Object.values(res).includes('Not an owner')) { // check if any file was not owned by the current user
+          msg = `${msg}, but one or more files could not be deleted because you are not the owner`;
+        }
+        this.snackBar.open(msg, 'Close', {duration: 5000});
         this.updateDataSource(); // updates the list on successful deletion
         console.log('deletion result', res);
       },
