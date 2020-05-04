@@ -1,31 +1,21 @@
-<mat-sidenav-container>
-  <mat-sidenav #sidenav mode="side">
-    <div fxLayout="column">
-      <div fxLayout fxLayoutAlign="space-between center">
-        <p class="sidenav-title">Open PDF</p>
-        <button mat-icon-button (click)="sidenav.close()">
-          <mat-icon>menu_open</mat-icon>
-        </button>
-      </div>
-      <mat-divider></mat-divider>
-      <div class="drawer-content" fxLayout="column">
-        <mat-form-field>
-          <input matInput placeholder="Search" [formControl]="filesFilter">
-        </mat-form-field>
-        <button mat-button fxLayoutAlign="start center"
-          *ngFor="let file of filteredFiles" (click)="openPdf(file.file_id)">
-          <mat-icon>description</mat-icon> {{file.filename}}
-        </button>
-      </div>
+<div class="w-100 vh-100 relative" fxLayout="column">
+  <div class="pdf-toolbar z-1">
+    <button mat-raised-button (click)="openFileDialog()">
+      <mat-icon>folder_open</mat-icon>
+      Open
+    </button>
+  </div>
+  <div class="overflow-auto">
+    <div *ngIf="!pdfViewerReady && !loadTask.loaded && !loadTask.running" class="w-100 pa3">
+      <app-file-list (select)="openPdf($event)"></app-file-list>
     </div>
-  </mat-sidenav>
-
-  <mat-sidenav-content>
-    <button mat-raised-button color="accent" (click)="sidenav.toggle()">Open PDF</button>
-    <div class='w-100 vh-100'>
+    <div *ngIf="!pdfViewerReady && loadTask.running" fxLayout="row" fxLayoutAlign="center center" class="mt4">
+      <mat-icon>hourglass_empty</mat-icon>
+      Downloading {{loadTask.valueLoading[0].filename ? loadTask.valueLoading[0].filename : 'file'}}...
+    </div>
+    <div *ngIf="pdfViewerReady">
       <!-- PDF Viewer -->
       <lib-pdf-viewer-lib
-        *ngIf="pdfViewerReady"
         id='pdf-viewer'
         appPdfViewer
         [pdfSrc]="pdfData"
@@ -37,9 +27,8 @@
         (dropEvents)="drop($event)"
         (custom-annotation-created)="annotationCreated($event)"
         (loadCompleted)="loadCompleted($event)"
-        >
-        
+      >
       </lib-pdf-viewer-lib>
     </div>
-  </mat-sidenav-content>
-</mat-sidenav-container>
+  </div>
+</div>
