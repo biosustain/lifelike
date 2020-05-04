@@ -155,8 +155,22 @@ class Neo4JService(GraphBaseDao):
             return self._query_neo4j(query)
         return None
 
+    def get_connected_nodes(self, node_id: str, filter_labels: List[str], limit: int):
+        query = self.get_connected_nodes_query(filter_labels)
+
+        results = self.graph.run(
+            query,
+            {
+                'node_id': node_id,
+                'limit': limit
+            }
+        ).data()
+
+        return [result['node_id'] for result in results]
+
     def expand_graph(self, node_id: str, filter_labels: List[str], limit: int):
-        query = self.get_expand_query(node_id, filter_labels, limit)
+        connected_node_ids = self.get_connected_nodes(node_id, filter_labels, limit)
+        query = self.get_expand_query(node_id, connected_node_ids)
         return self._query_neo4j(query)
 
     def get_snippets_from_edge(self, edge: VisEdge):
@@ -491,16 +505,14 @@ class Neo4JService(GraphBaseDao):
             COALESCE(relationships(p1), []) + COALESCE(relationships(p2), []) as relationships
         """.format(**args)
 
-    # TODO: Allow flexible limits on nodes; enable this in the blueprints
-    def get_expand_query(self, node_id: str, filter_labels: List[str], limit: int = 200):
+    def get_connected_nodes_query(self, filter_labels: List[str]):
         if len(filter_labels) == 0:
             query = """
-                MATCH (n)-[l:ASSOCIATED]-(s)
-                WHERE ID(n) = {}
-                WITH n, s, l
-                LIMIT {}
-                return collect(n) + collect(s) as nodes, collect(l) as relationships
-            """.format(node_id, limit)
+                MATCH (n)-[:ASSOCIATED]-(s)
+                WHERE ID(n) = $node_id
+                RETURN DISTINCT ID(s) as node_id
+                LIMIT $limit
+            """
         else:
             label_filter_str = ''
             for label in filter_labels[:-1]:
@@ -508,12 +520,20 @@ class Neo4JService(GraphBaseDao):
             label_filter_str += f's:{filter_labels[-1]}'
 
             query = """
+                MATCH (n)-[:ASSOCIATED]-(s)
+                WHERE ID(n) = $node_id AND ({})
+                RETURN DISTINCT ID(s) as node_id
+                LIMIT $limit
+            """.format(label_filter_str)
+        return query
+
+    def get_expand_query(self, node_id: str, connected_node_ids: List[str]):
+        query = """
                 MATCH (n)-[l:ASSOCIATED]-(s)
-                WHERE ID(n) = {} AND ({})
+                WHERE ID(n) = {} AND ID(s) IN {}
                 WITH n, s, l
-                LIMIT {}
                 return collect(n) + collect(s) as nodes, collect(l) as relationships
-            """.format(node_id, label_filter_str, limit)
+            """.format(node_id, connected_node_ids)
 
         return query
 
@@ -546,7 +566,6 @@ class Neo4JService(GraphBaseDao):
             return [n]+ COALESCE(nodes(p1), [])+ COALESCE(nodes(p2), []) as nodes,
             COALESCE(relationships(p1), []) + COALESCE(relationships(p2), []) as relationships
         """.format(biocyc_id)
-        print(query)
         return query
 
     def get_gene_to_organism_query(self):
