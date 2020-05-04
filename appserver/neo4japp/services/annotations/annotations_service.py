@@ -52,6 +52,7 @@ class AnnotationsService:
         self.matched_proteins: Dict[str, List[PDFTokenPositions]] = {}
         self.matched_species: Dict[str, List[PDFTokenPositions]] = {}
         self.matched_diseases: Dict[str, List[PDFTokenPositions]] = {}
+        self.matched_phenotypes: Dict[str, List[PDFTokenPositions]] = {}
 
         self.validated_genes_tokens: Set[str] = set()
         self.validated_chemicals_tokens: Set[str] = set()
@@ -59,6 +60,7 @@ class AnnotationsService:
         self.validated_proteins_tokens: Set[str] = set()
         self.validated_species_tokens: Set[str] = set()
         self.validated_diseases_tokens: Set[str] = set()
+        self.validated_phenotypes_tokens: Set[str] = set()
 
     def lmdb_validation(
         self,
@@ -127,9 +129,18 @@ class AnnotationsService:
             else:
                 self.matched_diseases[word] = [token]
 
+        phenotype_val = self.lmdb_session.phenotypes_txn.get(lookup_key)
+        if phenotype_val and hashval not in self.validated_phenotypes_tokens:
+            self.validated_phenotypes_tokens.add(hashval)
+            if word in self.matched_phenotypes:
+                self.matched_phenotypes[word].append(token)
+            else:
+                self.matched_phenotypes[word] = [token]
+
         return [
             gene_val, chem_val, comp_val,
             protein_val, species_val, diseases_val,
+            phenotype_val,
         ]
 
     def _filter_tokens(self, tokens: PDFTokenPositionsList) -> None:
@@ -602,6 +613,23 @@ class AnnotationsService:
             cropbox_per_page=cropbox_per_page,
         )
 
+    def _annotate_phenotypes(
+        self,
+        entity_id_str: str,
+        coor_obj_per_pdf_page: Dict[int, List[Union[LTChar, LTAnno]]],
+        cropbox_per_page: Dict[int, Tuple[int, int]],
+    ) -> Tuple[List[Annotation], Set[str]]:
+        return self._get_annotation(
+            tokens=self.matched_phenotypes,
+            token_type=EntityType.Phenotypes.value,
+            color=EntityColor.Phenotypes.value,
+            transaction=self.lmdb_session.phenotypes_txn,
+            id_str=entity_id_str,
+            correct_synonyms=self.correct_synonyms,
+            coor_obj_per_pdf_page=coor_obj_per_pdf_page,
+            cropbox_per_page=cropbox_per_page,
+        )
+
     def annotate(
         self,
         annotation_type: str,
@@ -615,6 +643,7 @@ class AnnotationsService:
             EntityType.Proteins.value: self._annotate_proteins,
             EntityType.Species.value: self._annotate_species,
             EntityType.Diseases.value: self._annotate_diseases,
+            EntityType.Phenotypes.value: self._annotate_phenotypes,
         }
 
         annotate_entities = funcs[annotation_type]
@@ -699,6 +728,13 @@ class AnnotationsService:
             cropbox_per_page=tokens.cropbox_per_page,
         )
 
+        matched_phenotypes, unwanted_phenotypes = self.annotate(
+            annotation_type=EntityType.Phenotypes.value,
+            entity_id_str=EntityIdStr.Phenotypes.value,
+            coor_obj_per_pdf_page=tokens.coor_obj_per_pdf_page,
+            cropbox_per_page=tokens.cropbox_per_page,
+        )
+
         unwanted_matches_set_list = [
             unwanted_genes,
             unwanted_chemicals,
@@ -706,6 +742,7 @@ class AnnotationsService:
             unwanted_proteins,
             unwanted_species,
             unwanted_diseases,
+            unwanted_phenotypes,
         ]
 
         unwanted_keywords_set = set.union(*unwanted_matches_set_list)
@@ -740,6 +777,11 @@ class AnnotationsService:
             unwanted_keywords=unwanted_keywords_set,
         )
 
+        updated_matched_phenotypes = self._remove_unwanted_keywords(
+            matches=matched_phenotypes,
+            unwanted_keywords=unwanted_keywords_set,
+        )
+
         unified_annotations: List[Annotation] = []
         unified_annotations.extend(updated_matched_genes)
         unified_annotations.extend(updated_matched_chemicals)
@@ -747,6 +789,7 @@ class AnnotationsService:
         unified_annotations.extend(updated_matched_proteins)
         unified_annotations.extend(updated_matched_species)
         unified_annotations.extend(updated_matched_diseases)
+        unified_annotations.extend(updated_matched_phenotypes)
 
         fixed_unified_annotations = self.fix_conflicting_annotations(
             unified_annotations=unified_annotations)

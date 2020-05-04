@@ -8,6 +8,7 @@ import csv
 import lmdb
 import json
 
+from ast import literal_eval
 from os import path, remove, walk
 
 from neo4japp.services.annotations.util import normalize_str
@@ -321,7 +322,8 @@ def prepare_lmdb_phenotypes_database(filename: str):
             for line in reader:
                 phenotype_id = line[1]
                 phenotype_name = line[2]
-                synonyms = line[3]
+                # turn string repr list into list
+                synonyms = literal_eval(line[3])
 
                 phenotype = {
                     'phenotype_id': phenotype_id,
