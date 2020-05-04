@@ -854,7 +854,7 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
                 duration: 2000,
             });
         } else {
-            this.projectService.getSVG(this.project).subscribe (resp => {
+            this.projectService.getPNG(this.project).subscribe (resp => {
                 // It is necessary to create a new blob object with mime-type explicitly set
                 // otherwise only Chrome works like it should
                 const newBlob = new Blob([resp], { type: 'image/png' });
