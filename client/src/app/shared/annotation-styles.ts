@@ -17,7 +17,7 @@ const COMPANY = '#d62728';
 const STUDY = '#17becf';
 const PROTEIN = '#bcbd22';
 const PATHWAY = '#e377c2';
-const PHENTOTYPE = '#edc949';
+const PHENOTYPE = '#edc949';
 
 const ENTITY = '#7f7f7f';
 const LINK = '#7f7f7f';
@@ -76,7 +76,7 @@ const annotationTypes = [{
   },
   {
     label: 'phenotype',
-    color: PHENTOTYPE,
+    color: PHENOTYPE,
     background: '#f9eec8'
   },
   {

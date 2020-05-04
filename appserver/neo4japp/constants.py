@@ -58,7 +58,7 @@ def is_db_name(s: str):
     return s in [DB_CHEBI, DB_NCBI, DB_GO] or s.lower().endswith('cyc')
 
 
-ANNOTATATION_STYLES = [{
+ANNOTATION_STYLES = [{
         "color": '#673ab7',
         "label": "gene",
     },
@@ -133,7 +133,7 @@ ANNOTATATION_STYLES = [{
     }
 ]
 
-ANNOTATATION_STYLES_DICT = {
+ANNOTATION_STYLES_DICT = {
     "gene": {
         "color": '#673ab7',
         "label": "gene",
