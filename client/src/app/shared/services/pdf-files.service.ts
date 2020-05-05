@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpEvent, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpEvent } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { AuthenticationService } from 'app/auth/services/authentication.service';
-import { PdfFile, PdfFiles, PdfFileUpload } from 'app/interfaces/pdf-files.interface';
+import { PdfFiles, PdfFile, PdfFileUpload } from 'app/interfaces/pdf-files.interface';
 
 @Injectable({
   providedIn: '***ARANGO_USERNAME***'
@@ -18,7 +18,8 @@ export class PdfFilesService {
   }
 
   getFiles(): Observable<PdfFile[]> {
-    return this.http.get<PdfFiles>(`${this.baseUrl}/list`).pipe(
+    const options = { headers: this.getAuthHeader() };
+    return this.http.get<PdfFiles>(`${this.baseUrl}/list`, options).pipe(
       map((res: PdfFiles) => res.files),
       catchError(err => {
         console.error(err);
@@ -28,25 +29,37 @@ export class PdfFilesService {
   }
 
   getFile(id: string): Observable<ArrayBuffer> {
-    const options = Object.assign(this.buildHttpOptions(), {responseType: 'arraybuffer'});
-    return this.http.get<ArrayBuffer>(`${this.baseUrl}/${id}`, options);
+    const options = {
+      headers: this.getAuthHeader(),
+      responseType: 'arraybuffer' as const,
+    };
+    return this.http.get(`${this.baseUrl}/${id}`, options);
+  }
+
+  deleteFiles(ids: string[]): Observable<object> {
+    const options = {
+      body: ids,
+      headers: this.getAuthHeader(),
+    };
+    return this.http.request('DELETE', `${this.baseUrl}/bulk_delete`, options);
   }
 
   uploadFile(file: File): Observable<HttpEvent<PdfFileUpload>> {
     const formData: FormData = new FormData();
     formData.append('file', file);
     return this.http.post<PdfFileUpload>(`${this.baseUrl}/upload`, formData, {
-      ...this.buildHttpOptions(),
+      headers: this.getAuthHeader(),
       observe: 'events',
       reportProgress: true,
     });
   }
 
-  private buildHttpOptions() {
-    return {
-      headers: new HttpHeaders({
-        Authorization: `Bearer ${this.auth.getAccessToken()}`
-      }),
-    };
+  reannotateFiles(ids: string[]): Observable<object> {
+    const options = { headers: this.getAuthHeader() };
+    return this.http.post(`${this.baseUrl}/reannotate`, ids, options);
+  }
+
+  private getAuthHeader() {
+    return { Authorization: `Bearer ${this.auth.getAccessToken()}` };
   }
 }

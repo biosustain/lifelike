@@ -48,6 +48,16 @@ TYPO_SYNONYMS = {
     'multiplemitochondrialdysfunctionssyndromes': ['Multiple Mitochondrial Dysfunctions Syndrome'],  # noqa
 }
 
+ENTITY_TYPE_PRECEDENCE = {
+    # larger value takes precedence
+    'Chemicals': 4,
+    'Compounds': 4,
+    'Diseases': 5,
+    'Genes': 2,
+    'Proteins': 3,
+    'Species': 1,
+}
+
 
 class EntityColor(Enum):
     Chemicals = '#cee5cb'

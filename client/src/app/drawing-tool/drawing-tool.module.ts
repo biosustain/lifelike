@@ -1,17 +1,4 @@
 import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { BrowserModule } from '@angular/platform-browser';
-import { DragDropModule } from '@angular/cdk/drag-drop';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { HttpClientModule } from '@angular/common/http';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { FlexLayoutModule } from '@angular/flex-layout';
-import {TextFieldModule} from '@angular/cdk/text-field';
-
-import { AngularSplitModule } from 'angular-split';
-
-import { PdfViewerLibModule } from 'pdf-viewer-lib';
-import { AngularMaterialModule } from 'app/shared/angular-material.module';
 
 import {
   ProjectListViewComponent
@@ -29,10 +16,6 @@ import {
   DrawingToolComponent
 } from './drawing-tool/drawing-tool.component';
 import {
-  PdfViewerComponent
-} from './pdf-viewer/pdf-viewer.component';
-
-import {
   TruncatePipe,
   FriendlyDateStrPipe
 } from './pipes';
@@ -46,9 +29,35 @@ import {
 import { DrawingToolContextMenuComponent } from './drawing-tool/drawing-tool-context-menu/drawing-tool-context-menu.component';
 import { PaletteComponent } from './drawing-tool/palette/palette.component';
 import { InfoPanelComponent } from './drawing-tool/info-panel/info-panel.component';
-import { PdfViewerDirective } from './pdf-viewer/pdf-viewer.directive';
 import { SplitterComponent } from './splitter/splitter.component';
-import { MapSearchChannelComponent } from './map-search-channel/map-search-channel.component';
+import { ExportModalComponent } from './drawing-tool/export-modal/export-modal.component';
+import { MatDialogModule } from '@angular/material/dialog';
+import { MapPreviewComponent } from './project-list-view/map-preview/map-preview.component';
+import { MapListComponent } from './project-list-view/map-list/map-list.component';
+import { SharedModule } from 'app/shared/shared.module';
+import { RouterModule } from '@angular/router';
+import { PdfViewerComponent } from './pdf-viewer/pdf-viewer.component';
+import { PdfViewerLibModule } from 'pdf-viewer-lib';
+
+export const routes = [
+  {
+    path: 'project-list',
+    component: ProjectListViewComponent
+  },
+  {
+    path: 'drawing-tool',
+    component: DrawingToolComponent
+  },
+  {
+    path: 'splitter/:hash_id',
+    component: SplitterComponent,
+    canDeactivate: [PendingChangesGuard]
+  },
+  {
+    path: 'map/:hash_id',
+    component: MapPreviewComponent
+  }
+];
 
 @NgModule({
   declarations: [
@@ -63,30 +72,26 @@ import { MapSearchChannelComponent } from './map-search-channel/map-search-chann
     FriendlyDateStrPipe,
     PaletteComponent,
     InfoPanelComponent,
-    PdfViewerDirective,
     SplitterComponent,
-    MapSearchChannelComponent
+    MapPreviewComponent,
+    MapListComponent,
+    ExportModalComponent
   ],
   entryComponents: [
     CreateProjectDialogComponent,
     DeleteProjectDialogComponent,
     CopyProjectDialogComponent,
+    MapListComponent,
+    ProjectListViewComponent,
     PdfViewerComponent,
-    MapSearchChannelComponent
+    ExportModalComponent
   ],
   imports: [
-    AngularSplitModule.forRoot(),
-    CommonModule,
-    BrowserModule,
-    HttpClientModule,
-    BrowserAnimationsModule,
-    FormsModule,
-    ReactiveFormsModule,
-    DragDropModule,
+    SharedModule,
     PdfViewerLibModule,
-    AngularMaterialModule,
-    FlexLayoutModule,
-    TextFieldModule
+    MatDialogModule,
+    RouterModule.forChild(routes)
+
   ],
   providers: [
     CopyPasteMapsService,
@@ -98,6 +103,8 @@ import { MapSearchChannelComponent } from './map-search-channel/map-search-chann
     PendingChangesGuard
   ],
   exports: [
+    RouterModule,
+    PdfViewerLibModule
   ]
 })
 export class DrawingToolModule { }

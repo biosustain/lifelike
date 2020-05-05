@@ -5,16 +5,20 @@ import {
   ViewContainerRef,
   Injector,
   ViewChild,
-  AfterViewInit
+  AfterViewInit,
+  HostListener,
+  ComponentRef
 } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 
 import {
   PdfViewerComponent
 } from '../pdf-viewer/pdf-viewer.component';
 import {
-  MapSearchChannelComponent
-} from '../map-search-channel/map-search-channel.component';
+  MapListComponent
+} from '../project-list-view/map-list/map-list.component';
 import { Observable } from 'rxjs';
+import { LaunchApp } from '../services/interfaces';
 
 @Component({
   selector: 'app-splitter',
@@ -22,14 +26,6 @@ import { Observable } from 'rxjs';
   styleUrls: ['./splitter.component.scss']
 })
 export class SplitterComponent implements OnInit, AfterViewInit {
-  // TODO: Fix this ..
-  // @HostListener('window:beforeunload')
-  // canDeactivate(): Observable<boolean> | boolean {
-  //   return this.saveState ? true : confirm(
-  //       'WARNING: You have unsaved changes. Press Cancel to go back and save these changes, or OK to lose these changes.'
-  //   );
-  // }
-
   @ViewChild(
     'leftPanel',
     {static: false, read: ViewContainerRef}
@@ -38,11 +34,21 @@ export class SplitterComponent implements OnInit, AfterViewInit {
   splitPanelLength = 0;
 
   currentApp = '';
+  currentMap = '';
+
+  saveState = true;
+
+  dynamicComponentRef: ComponentRef<any>;
 
   constructor(
     private injector: Injector,
-    private r: ComponentFactoryResolver
-  ) { }
+    private r: ComponentFactoryResolver,
+    private route: ActivatedRoute
+  ) {
+    if (this.route.snapshot.params.hash_id) {
+      this.currentMap = this.route.snapshot.params.hash_id;
+    }
+  }
 
   ngOnInit() {
 
@@ -50,6 +56,17 @@ export class SplitterComponent implements OnInit, AfterViewInit {
 
   ngAfterViewInit() {
 
+  }
+
+  @HostListener('window:beforeunload')
+  canDeactivate(): Observable<boolean> | boolean {
+    return this.saveState ? true : confirm(
+        'WARNING: You have unsaved changes. Press Cancel to go back and save these changes, or OK to lose these changes.'
+    );
+  }
+
+  resolveSaveState(saveState: boolean) {
+    this.saveState = saveState;
   }
 
   /**
@@ -65,31 +82,46 @@ export class SplitterComponent implements OnInit, AfterViewInit {
    *
    * @param app - app such as pdf-viewer or kg-visualizer
    */
-  openApp(app: string) {
-    if (!app) {
+  openApp(appCmd: LaunchApp) {
+    if (!appCmd) {
       this.close();
       return;
     }
 
-    let factory;
-    let ref;
+    // Don't waste time trying to re-open the app
+    // if it's already opened
+    if (this.currentApp !== appCmd.app) {
+      let factory;
 
-    switch (app) {
-      case 'map-search':
-        factory = this.r.resolveComponentFactory(MapSearchChannelComponent);
-        break;
-      case 'pdf-viewer':
-        factory = this.r.resolveComponentFactory(PdfViewerComponent);
-        break;
-      default:
-        break;
+      switch (appCmd.app) {
+        case 'map-search':
+          factory = this.r.resolveComponentFactory(MapListComponent);
+          this.splitPanelLength = 30;
+          break;
+        case 'pdf-viewer':
+          factory = this.r.resolveComponentFactory(PdfViewerComponent);
+          this.splitPanelLength = 50;
+          break;
+        default:
+          break;
+      }
+
+      this.leftPanel.clear();
+      this.currentApp = appCmd.app;
+
+      this.dynamicComponentRef = this.leftPanel.createComponent(factory);
+      this.dynamicComponentRef.changeDetectorRef.detectChanges();
     }
 
-    this.leftPanel.clear();
-    this.splitPanelLength = 50;
-    this.currentApp = app;
-
-    ref = this.leftPanel.createComponent(factory);
-    ref.changeDetectorRef.detectChanges();
+    // If an argument is supplied, inject into dynamic component
+    if (this.currentApp === 'pdf-viewer' && appCmd.arg !== null) {
+      this.dynamicComponentRef.instance.openPdf(
+        appCmd.arg.fileId,
+        {
+          coords: appCmd.arg.coords,
+          pageNumber: appCmd.arg.pageNumber
+        }
+      );
+    }
   }
 }
