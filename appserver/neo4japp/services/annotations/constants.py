@@ -61,12 +61,12 @@ ENTITY_TYPE_PRECEDENCE = {
 
 
 class EntityColor(Enum):
-    Chemicals = ANNOTATION_STYLES_DICT['chemical'].get('color')
-    Compounds = ANNOTATION_STYLES_DICT['compound'].get('color')
-    Diseases = ANNOTATION_STYLES_DICT['disease'].get('color')
-    Genes = ANNOTATION_STYLES_DICT['gene'].get('color')
-    Proteins = ANNOTATION_STYLES_DICT['protein'].get('color')
-    Species = ANNOTATION_STYLES_DICT['species'].get('color')
+    Chemicals = ANNOTATION_STYLES_DICT['chemical']['color']
+    Compounds = ANNOTATION_STYLES_DICT['compound']['color']
+    Diseases = ANNOTATION_STYLES_DICT['disease']['color']
+    Genes = ANNOTATION_STYLES_DICT['gene']['color']
+    Proteins = ANNOTATION_STYLES_DICT['protein']['color']
+    Species = ANNOTATION_STYLES_DICT['species']['color']
 
 
 class EntityIdStr(Enum):
