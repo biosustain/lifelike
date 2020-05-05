@@ -1,5 +1,4 @@
 import {
-  nodeTemplates,
   uuidv4
 } from './services';
 import {
@@ -7,6 +6,7 @@ import {
   GraphSelectionData
 } from './services/interfaces';
 import { Network, Options, DataSet } from 'vis-network';
+import { annotationTypes, visJsGroupStyleFactory } from '../shared/annotation-styles';
 
 /**
  * A class wrapped around the instatiation of
@@ -58,20 +58,8 @@ export class NetworkVis {
     this.container = container;
 
     // Pull in node template styling defs
-    const groupStyling = {};
-    for (const template of nodeTemplates) {
-      groupStyling[template.label] = {
-        borderWidth: 1,
-        color: {
-          background: '#fff'
-        },
-        font: {
-          color: template.color
-        }
-      };
-    }
     // And assign to vis network js styling
-    this.options.groups = groupStyling;
+    this.options.groups = visJsGroupStyleFactory();
   }
 
   /**
