@@ -465,6 +465,10 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
       hyperlink.includes('http')
     ) {
       window.open(hyperlink, '_blank');
+    } else if (
+      hyperlink.includes('mailto')
+    ) {
+      window.open(hyperlink);
     } else {
       window.open('http://' + hyperlink);
     }
