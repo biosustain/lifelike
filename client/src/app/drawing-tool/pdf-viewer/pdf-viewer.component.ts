@@ -3,7 +3,7 @@ import { FormControl } from '@angular/forms';
 import { Subscription, Subject, combineLatest, BehaviorSubject } from 'rxjs';
 import { PdfFile } from 'app/interfaces/pdf-files.interface';
 import { PdfFilesService } from 'app/shared/services/pdf-files.service';
-import { HYPERLINKS } from 'app/shared/constants';
+import { HYPERLINKS, SEARCH_LINKS } from 'app/shared/constants';
 
 import {
   PdfAnnotationsService, DataFlowService,
@@ -75,13 +75,6 @@ export class PdfViewerComponent implements OnDestroy {
   }
 
   annotationCreated(annotation: Annotation) {
-    const defaultLinks = {
-      ncbi: 'https://www.ncbi.nlm.nih.gov/gene/?query=',
-      uniprot: 'https://www.uniprot.org/uniprot/?query=',
-      wikipedia: 'https://www.google.com/search?q=site:+wikipedia.org+',
-      google: 'https://www.google.com/search?q='
-    };
-
     // try getting id from the ncbi or uniprot link
     let id = '';
     let idType = '';
@@ -107,10 +100,10 @@ export class PdfViewerComponent implements OnDestroy {
         id,
         idType,
         links: {
-          ncbi: annotation.meta.links.ncbi || defaultLinks.ncbi + annotation.meta.allText,
-          uniprot: annotation.meta.links.uniprot || defaultLinks.uniprot + annotation.meta.allText,
-          wikipedia: annotation.meta.links.wikipedia || defaultLinks.wikipedia + annotation.meta.allText,
-          google: annotation.meta.links.google || defaultLinks.google + annotation.meta.allText
+          ncbi: annotation.meta.links.ncbi || SEARCH_LINKS.NCBI + annotation.meta.allText,
+          uniprot: annotation.meta.links.uniprot || SEARCH_LINKS.UNIPROT + annotation.meta.allText,
+          wikipedia: annotation.meta.links.wikipedia || SEARCH_LINKS.WIKIPEDIA + annotation.meta.allText,
+          google: annotation.meta.links.google || SEARCH_LINKS.GOOGLE + annotation.meta.allText
         }
       }
     };
