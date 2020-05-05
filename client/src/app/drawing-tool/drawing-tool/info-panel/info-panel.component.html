@@ -63,7 +63,7 @@
             </textarea>
         </mat-form-field>
 
-        <button *ngIf='graphData.data.source' mat-button color="primary" (click)='goToSource()'>
+        <button *ngIf='graphData?.data?.source' mat-button color="primary" (click)='goToSource()'>
             Source
         </button>
 
