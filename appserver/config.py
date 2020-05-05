@@ -5,6 +5,10 @@ class Base():
     """Default values"""
     SITE_NAME = 'Lifelike Knowledge Search'
 
+    # Optional for tracking the master branch for the build
+    GITHUB_HASH = os.environ.get('GITHUB_HASH', 'undefined')
+    GITHUB_LAST_COMMIT_TIMESTAMP = os.environ.get('GITHUB_COMMIT_TIMESTAMP', 'undefined')
+
     SECRET_KEY = os.environ.get('SECRET_KEY', 'secrets')
 
     POSTGRES_HOST = os.environ.get('POSTGRES_HOST')
