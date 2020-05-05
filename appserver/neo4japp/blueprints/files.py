@@ -115,7 +115,7 @@ def get_pdf(id):
     try:
         entry = db.session \
             .query(Files.id, FileContent.raw_file) \
-            .join(FileContent) \
+            .join(FileContent, FileContent.id == Files.content_id) \
             .filter(Files.file_id == id) \
             .one()
     except NoResultFound:
