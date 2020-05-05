@@ -1,5 +1,4 @@
 import { NgModule } from '@angular/core';
-import { HttpClientModule } from '@angular/common/http';
 
 import { RootStoreModule } from 'app/root-store';
 
@@ -11,8 +10,7 @@ import { LifelikeHomeModule } from 'app/home/lifelike-home.module';
 import { UserFileImportModule } from './user-file-import/user-file-import.module';
 import { SearchModule } from './search/search.module';
 import { SharedModule } from './shared/shared.module';
-import { FileBrowserComponent } from './file-browser/file-browser.component';
-import { UploadProgressDialogComponent } from './file-browser/upload-progress-dialog.component';
+import { DialogConfirmDeletionComponent, FileBrowserComponent } from './file-browser/file-browser.component';
 import { UserModule } from 'app/users/users.module';
 import { KgStatisticsComponent } from './kg-statistics/kg-statistics.component';
 import { ChartsModule } from 'ng2-charts';
@@ -26,8 +24,8 @@ import { DrawingToolModule } from './drawing-tool/drawing-tool.module';
 @NgModule({
   declarations: [
     AppComponent,
+    DialogConfirmDeletionComponent,
     FileBrowserComponent,
-    UploadProgressDialogComponent,
     KgStatisticsComponent,
   ],
   imports: [
@@ -45,14 +43,14 @@ import { DrawingToolModule } from './drawing-tool/drawing-tool.module';
     RootStoreModule,
     SearchModule,
     ChartsModule,
-    DrawingToolModule
-  ],
-  entryComponents: [
-    UploadProgressDialogComponent,
+    DrawingToolModule,
   ],
   providers: [httpInterceptorProviders],
-  exports: [
+  exports: [],
+  entryComponents: [
+    DialogConfirmDeletionComponent,
   ],
   bootstrap: [AppComponent]
 })
-export class AppModule { }
+export class AppModule {
+}
