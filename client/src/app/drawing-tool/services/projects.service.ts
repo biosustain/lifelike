@@ -191,7 +191,8 @@ export class ProjectsService {
             y: n.y,
             hyperlink: isNullOrUndefined(n.data.hyperlink) ? '' : n.data.hyperlink,
             detail: isNullOrUndefined(n.data.detail) ? '' : n.data.detail,
-            source: isNullOrUndefined(n.data.source) ? '' : n.data.source
+            source: isNullOrUndefined(n.data.source) ? '' : n.data.source,
+            hyperlinks: isNullOrUndefined(n.data.source) ? [] : n.data.hyperlinks
           },
           display_name: n.label,
           hash: n.id,
@@ -242,7 +243,8 @@ export class ProjectsService {
           data: {
             hyperlink: isNullOrUndefined(n.data.hyperlink) ? '' : n.data.hyperlink,
             detail: isNullOrUndefined(n.data.detail) ? '' : n.data.detail,
-            source: isNullOrUndefined(n.data.source) ? '' : n.data.source
+            source: isNullOrUndefined(n.data.source) ? '' : n.data.source,
+            hyperlinks: isNullOrUndefined(n.data.source) ? [] : n.data.hyperlinks
           }
         };
       }

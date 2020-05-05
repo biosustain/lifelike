@@ -179,6 +179,7 @@ export class NetworkVis {
     n.data = {
       source: n.source || '',
       detail: n.detail || '',
+      hyperlinks: n.hyperlinks || []
     };
 
     this.visNodes.add([n]);
@@ -222,18 +223,18 @@ export class NetworkVis {
     };
 
     switch (data.group) {
-        case 'link': {
-            updatedNode = {
-                ...updatedNode,
-                label: data.shape === 'icon' ? '' : data.data.detail,
-            };
-            this.visNodes.update(updatedNode);
-            break;
-        }
-        default: {
-            this.visNodes.update(updatedNode);
-            break;
-        }
+      case 'link': {
+          updatedNode = {
+              ...updatedNode,
+              label: data.shape === 'icon' ? '' : data.data.detail,
+          };
+          this.visNodes.update(updatedNode);
+          break;
+      }
+      default: {
+          this.visNodes.update(updatedNode);
+          break;
+      }
     }
   }
 

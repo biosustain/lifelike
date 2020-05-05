@@ -720,7 +720,8 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
         group: node.group,
         x: coord.x,
         y: coord.y,
-        source: node.data.source
+        source: node.data.source,
+        hyperlinks: node.data.hyperlinks
       }
     };
     this.recordCommand(cmd);
