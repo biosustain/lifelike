@@ -57,7 +57,9 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
     edges: [],
     hyperlink: '',
     detail: '',
-    source: ''
+    data: {
+      source: '',
+    }
   };
 
   nodeIsIcon = false;
