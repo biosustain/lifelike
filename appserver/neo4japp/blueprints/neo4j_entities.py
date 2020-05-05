@@ -5,6 +5,7 @@ from neo4japp.database import get_neo4j
 
 bp = Blueprint('neo4j-entities-api', __name__, url_prefix='/neo4j-entities')
 
+
 @bp.route('/statistics', methods=['GET'])
 def get_knowledge_graph_statistics():
     # domains and entities are hard-coded for now, as there is no way to distinguish
