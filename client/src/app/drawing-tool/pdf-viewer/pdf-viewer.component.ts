@@ -146,9 +146,15 @@ export class PdfViewerComponent implements OnDestroy {
     // use location object to scroll in the pdf.
     const loc: Location = JSON.parse(nodeDom.getAttribute('location')) as Location;
 
-    const getUrl = window.location;
     let source = '/dt/pdf/' + `${this.currentFileId}/${loc.pageNumber}/`;
     source = source + `${loc.rect[0]}/${loc.rect[1]}/${loc.rect[2]}/${loc.rect[3]}`;
+
+    const hyperlinks = Object.keys(meta.links).map(k => {
+      return {
+        domain: k,
+        url: meta.links[k]
+      };
+    });
 
     // Convert form plural to singular
     const mapper = (plural) => {
@@ -176,7 +182,8 @@ export class PdfViewerComponent implements OnDestroy {
       label: meta.allText,
       group: mapper(meta.type),
       data: {
-        source
+        source,
+        hyperlinks
       }
     };
 

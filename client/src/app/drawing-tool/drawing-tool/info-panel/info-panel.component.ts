@@ -59,6 +59,7 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
     detail: '',
     data: {
       source: '',
+      hyperlinks: []
     }
   };
 
@@ -433,8 +434,8 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
   /**
    * Allow user to navigate to a link in a new tab
    */
-  goToLink() {
-    const hyperlink: string = this.entityForm.value.hyperlink;
+  goToLink(url= null) {
+    const hyperlink: string = url || this.entityForm.value.hyperlink;
 
     if (!hyperlink) { return; }
 
