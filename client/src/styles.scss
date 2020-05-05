@@ -1,5 +1,21 @@
 @import "lifelike-theme.scss";
 
+$blue: #3797DB;
+$dark-blue: #3177B8;
+
+@mixin no-select {
+  -webkit-user-select: none;  /* Chrome all / Safari all */
+  -moz-user-select: none;     /* Firefox all */
+  -ms-user-select: none;      /* IE 10+ */
+  user-select: none; 
+}
+
+@mixin overlay {
+  position: absolute;
+  z-index: 2;
+  margin: 1rem;
+}
+
 .field-width {
   width: 100%;
 }
@@ -23,4 +39,10 @@ router-outlet + * {
   display: flex;
   flex: 1 1 0%;
   flex-direction: column;
+}
+
+.ui-draggable-dragging {
+  width: 20px !important;
+  height: 20px !important;
+  background-color: blue !important;
 }

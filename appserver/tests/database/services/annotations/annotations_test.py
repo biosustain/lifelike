@@ -1,7 +1,6 @@
 import json
 import pytest
 
-from io import StringIO
 from os import path
 
 from neo4japp.database import (
@@ -9,7 +8,10 @@ from neo4japp.database import (
     get_bioc_document_service,
     get_annotations_pdf_parser,
 )
-from neo4japp.data_transfer_objects import PDFParsedCharacters
+from neo4japp.data_transfer_objects import (
+    Annotation,
+    PDFParsedCharacters
+)
 from neo4japp.models import Files
 
 
@@ -17,70 +19,293 @@ from neo4japp.models import Files
 directory = path.realpath(path.dirname(__file__))
 
 
+@pytest.mark.skip
 @pytest.mark.parametrize(
-    'index, text',
+    'index, annotations',
     [
-        (1, PDFParsedCharacters(
-            coor_obj_per_pdf_page=None,
-            str_per_pdf_page={
-                1: ['I', ' ', 'a', 'm', ' ', 'a', ' ', 's', 'e', 'n', 't', 'e', 'n', 'c', 'e', '\n'],  # noqa
-            },
-        )),
-        (2, PDFParsedCharacters(
-            coor_obj_per_pdf_page=None,
-            str_per_pdf_page={
-                1: ['E', '.', ' ', '\n', 'C', 'o', 'l', 'i', ' '],  # noqa
-            },
-        )),
+        (1, [
+            Annotation(
+                page_number=1,
+                keyword='Test',
+                lo_location_offset=5,
+                hi_location_offset=8,
+                keyword_length=4,
+                keywords=[''],
+                rects=[[1, 2]],
+                meta=Annotation.Meta(
+                    keyword_type='Genes',
+                    color='',
+                    id='',
+                    id_type='',
+                    links=Annotation.Meta.Links(),
+                ),
+            ),
+            Annotation(
+                page_number=1,
+                keyword='Test a long word',
+                lo_location_offset=5,
+                hi_location_offset=20,
+                keyword_length=16,
+                keywords=[''],
+                rects=[[1, 2]],
+                meta=Annotation.Meta(
+                    keyword_type='Chemicals',
+                    color='',
+                    id='',
+                    id_type='',
+                    links=Annotation.Meta.Links(),
+                ),
+            ),
+        ]),
+        (2, [
+            Annotation(
+                page_number=1,
+                keyword='Test',
+                lo_location_offset=5,
+                hi_location_offset=8,
+                keyword_length=4,
+                keywords=[''],
+                rects=[[1, 2]],
+                meta=Annotation.Meta(
+                    keyword_type='Genes',
+                    color='',
+                    id='',
+                    id_type='',
+                    links=Annotation.Meta.Links(),
+                ),
+            ),
+            Annotation(
+                page_number=1,
+                keyword='Test',
+                lo_location_offset=5,
+                hi_location_offset=8,
+                keyword_length=4,
+                keywords=[''],
+                rects=[[1, 2]],
+                meta=Annotation.Meta(
+                    keyword_type='Chemicals',
+                    color='',
+                    id='',
+                    id_type='',
+                    links=Annotation.Meta.Links(),
+                ),
+            ),
+        ]),
+        (3, [
+            Annotation(
+                page_number=1,
+                keyword='Test',
+                lo_location_offset=35,
+                hi_location_offset=38,
+                keyword_length=4,
+                keywords=[''],
+                rects=[[1, 2]],
+                meta=Annotation.Meta(
+                    keyword_type='Genes',
+                    color='',
+                    id='',
+                    id_type='',
+                    links=Annotation.Meta.Links(),
+                ),
+            ),
+            Annotation(
+                page_number=1,
+                keyword='Test a long word',
+                lo_location_offset=5,
+                hi_location_offset=20,
+                keyword_length=16,
+                keywords=[''],
+                rects=[[1, 2]],
+                meta=Annotation.Meta(
+                    keyword_type='Chemicals',
+                    color='',
+                    id='',
+                    id_type='',
+                    links=Annotation.Meta.Links(),
+                ),
+            ),
+        ]),
+        (4, [
+            Annotation(
+                page_number=1,
+                keyword='word',
+                lo_location_offset=17,
+                hi_location_offset=20,
+                keyword_length=4,
+                keywords=[''],
+                rects=[[1, 2]],
+                meta=Annotation.Meta(
+                    keyword_type='Genes',
+                    color='',
+                    id='',
+                    id_type='',
+                    links=Annotation.Meta.Links(),
+                ),
+            ),
+            Annotation(
+                page_number=1,
+                keyword='Test a long word',
+                lo_location_offset=5,
+                hi_location_offset=20,
+                keyword_length=16,
+                keywords=[''],
+                rects=[[1, 2]],
+                meta=Annotation.Meta(
+                    keyword_type='Chemicals',
+                    color='',
+                    id='',
+                    id_type='',
+                    links=Annotation.Meta.Links(),
+                ),
+            ),
+        ]),
+        (5, [
+            Annotation(
+                page_number=1,
+                keyword='word',
+                lo_location_offset=17,
+                hi_location_offset=20,
+                keyword_length=4,
+                keywords=[''],
+                rects=[[1, 2]],
+                meta=Annotation.Meta(
+                    keyword_type='Genes',
+                    color='',
+                    id='',
+                    id_type='',
+                    links=Annotation.Meta.Links(),
+                ),
+            ),
+        ]),
+        (6, [
+            Annotation(
+                page_number=1,
+                keyword='word',
+                lo_location_offset=17,
+                hi_location_offset=20,
+                keyword_length=4,
+                keywords=[''],
+                rects=[[1, 2]],
+                meta=Annotation.Meta(
+                    keyword_type='Genes',
+                    color='',
+                    id='',
+                    id_type='',
+                    links=Annotation.Meta.Links(),
+                ),
+            ),
+            Annotation(
+                page_number=1,
+                keyword='Test a long word',
+                lo_location_offset=5,
+                hi_location_offset=20,
+                keyword_length=16,
+                keywords=[''],
+                rects=[[1, 2]],
+                meta=Annotation.Meta(
+                    keyword_type='Chemicals',
+                    color='',
+                    id='',
+                    id_type='',
+                    links=Annotation.Meta.Links(),
+                ),
+            ),
+            Annotation(
+                page_number=1,
+                keyword='long word',
+                lo_location_offset=55,
+                hi_location_offset=63,
+                keyword_length=16,
+                keywords=[''],
+                rects=[[1, 2]],
+                meta=Annotation.Meta(
+                    keyword_type='Chemicals',
+                    color='',
+                    id='',
+                    id_type='',
+                    links=Annotation.Meta.Links(),
+                ),
+            ),
+        ]),
     ],
 )
-def test_extract_tokens(annotations_setup, index, text):
-    pdf_parser = get_annotations_pdf_parser()
-    parsed_tokens = pdf_parser.extract_tokens(parsed_chars=text)
-    tokens = {t.keyword for t in parsed_tokens.token_positions}
+def test_fix_conflicting_annotations(annotations_setup, index, annotations):
+    annotation_service = get_annotations_service()
+    fixed = annotation_service.fix_conflicting_annotations(unified_annotations=annotations)
 
     if index == 1:
-        verify = {
-            'I',
-            'I am',
-            'I am a',
-            'I am a sentence',
-            'am',
-            'am a',
-            'am a sentence',
-            'a',
-            'a sentence',
-            'sentence',
-        }
-        assert verify == tokens
+        assert len(fixed) == 1
+        assert fixed[0] == annotations[1]
     elif index == 2:
-        verify = {
-            'E.',
-            'E.\nColi',
-            'Coli',
-        }
-        assert verify == tokens
+        assert len(fixed) == 1
+        assert fixed[0] == annotations[1]
+    elif index == 3:
+        assert len(fixed) == 2
+        assert annotations[0] in fixed
+        assert annotations[1] in fixed
+    elif index == 4:
+        assert len(fixed) == 1
+        assert fixed[0] == annotations[1]
+    elif index == 5:
+        assert len(fixed) == 1
+        assert fixed[0] == annotations[0]
+    elif index == 6:
+        assert len(fixed) == 2
+        assert annotations[0] not in fixed
+        assert annotations[1] in fixed
+        assert annotations[2] in fixed
 
 
 @pytest.mark.skip
-def test_generate_annotations(annotations_setup):
+@pytest.mark.parametrize(
+    'file, expected_keywords',
+    [
+        (
+            'example3.pdf',
+            [
+                'Ferredoxin',
+                'lipoic acid',
+                'Glutaredoxin',
+                'Ferric chloride',
+                'Human',
+                'mitochondrial disease',
+            ]
+        ),
+        (
+            'example4.pdf',
+            [
+                'Amdinocillin',                 # Chemical
+                'Escherichia coli',             # Organism
+                'cysB',                         # Gene
+                'ppGpp',                        # Compound
+                'transcriptional regulator',    # Protein
+                'strain'                        # Disease
+            ]
+        ),
+    ],
+)
+def test_generate_annotations(
+    annotations_setup,
+    example4_pdf_gene_and_organism_network,
+    file,
+    expected_keywords,
+):
     annotator = get_annotations_service()
     pdf_parser = get_annotations_pdf_parser()
 
-    pdf = path.join(directory, 'pdf_samples/example3.pdf')
+    pdf = path.join(directory, f'pdf_samples/{file}')
 
-    pdf_text = pdf_parser.parse_pdf(pdf=pdf)
-    annotations = annotator.create_annotations(
-        tokens=pdf_parser.extract_tokens(parsed_chars=pdf_text))
+    with open(pdf, 'rb') as f:
+        pdf_text = pdf_parser.parse_pdf(pdf=f)
+        annotations = annotator.create_annotations(
+            tokens=pdf_parser.extract_tokens(parsed_chars=pdf_text))
 
-    keywords = {o['keyword'] for o in annotations}
+    keywords = {o.keyword for o in annotations}
 
-    assert 'Ferredoxin' in keywords
-    assert 'lipoic acid' in keywords
-    assert 'Glutaredoxin' in keywords
-    assert 'Ferric chloride' in keywords
-    assert 'Human' in keywords
-    assert 'mitochondrial disease' in keywords
+    assert all([
+        (expected_keyword in keywords)
+        for expected_keyword in expected_keywords]
+    )
 
 
 @pytest.mark.skip

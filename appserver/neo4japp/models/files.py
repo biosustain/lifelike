@@ -1,6 +1,7 @@
 from sqlalchemy.dialects import postgresql
 
 from neo4japp.database import db
+from neo4japp.models import AppUser
 from neo4japp.models.common import RDBMSBase
 
 
@@ -20,7 +21,7 @@ class Files(RDBMSBase):  # type: ignore
     content_id = db.Column(db.Integer,
                            db.ForeignKey('files_content.id', ondelete='CASCADE'),
                            nullable=False)
-    username = db.Column(db.String(30))
+    user_id = db.Column(db.Integer, db.ForeignKey('appuser.id', ondelete='CASCADE'), nullable=False)
     creation_date = db.Column(db.DateTime, default=db.func.now())
     annotations = db.Column(postgresql.JSONB, nullable=False, server_default='[]')
     project = db.Column(db.Integer(), db.ForeignKey('projects.id'), nullable=False)

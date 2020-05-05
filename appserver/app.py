@@ -1,3 +1,4 @@
+import click
 import jwt
 import json
 import os
@@ -110,3 +111,18 @@ def drop_all_tables_and_enums():
             name for (name, ) in db.engine.execute(text(enum_sql))
         ]:
             db.engine.execute(text('DROP TYPE IF EXISTS "%s" CASCADE' % enum))
+
+
+@app.cli.command("create-user")
+@click.argument("name", nargs=1)
+@click.argument("email", nargs=1)
+def create_user(name, email):
+    user = AppUser(
+        username=name,
+        first_name=name,
+        last_name=name,
+        email=email,
+    )
+    user.set_password('password')
+    db.session.add(user)
+    db.session.commit()

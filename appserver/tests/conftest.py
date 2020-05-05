@@ -30,6 +30,9 @@ from neo4japp.services import (
     Neo4JService,
     SearchService,
 )
+from neo4japp.util import (
+    get_first_known_label,
+)
 
 
 @pytest.fixture(scope='function')
@@ -267,21 +270,19 @@ def gas_gangrene_with_associations_and_references(
         id=2771501,
     )
 
-    # Reference Nodes
-    penicillins_to_gas_gangrene_reference_node1 = Node(
-        'Reference',
+    # Snippet Nodes
+    penicillins_to_gas_gangrene_snippet_node1 = Node(
+        'Snippet',
         entry1_text='penicillin',
         entry2_text='gas gangrene',
         id=9810347,
-        score=0.4300000071525574,
         sentence='In a mouse model of gas_gangrene caused by...',
     )
-    penicillins_to_gas_gangrene_reference_node2 = Node(
-        'Reference',
+    penicillins_to_gas_gangrene_snippet_node2 = Node(
+        'Snippet',
         entry1_text='penicillin',
         entry2_text='gas gangrene',
         id=9810346,
-        score=0.4300000071525574,
         sentence='Toxin suppression and rapid bacterial killing may...',
     )
 
@@ -329,31 +330,105 @@ def gas_gangrene_with_associations_and_references(
     tx.create(penicillins_association_to_gas_gangrene_edge1)
     tx.create(penicillins_association_to_gas_gangrene_edge2)
 
-    # Association -> Reference Relationships
-    penicillins_alleviates_reduces_association_to_reference_edge = Relationship(
-        penicillins_to_gas_gangrene_association_node1, 'HAS_REF', penicillins_to_gas_gangrene_reference_node1  # noqa
+    # Association <- Snippet Relationships
+    penicillins_alleviates_reduces_association_to_snippet_edge = Relationship(
+        penicillins_to_gas_gangrene_snippet_node1, 'PREDICTS', penicillins_to_gas_gangrene_association_node1  # noqa
     )
 
-    penicillins_treatment_association_to_reference_edge = Relationship(
-        penicillins_to_gas_gangrene_association_node2, 'HAS_REF', penicillins_to_gas_gangrene_reference_node2  # noqa
+    penicillins_treatment_association_to_snippet_edge = Relationship(
+        penicillins_to_gas_gangrene_snippet_node2, 'PREDICTS', penicillins_to_gas_gangrene_association_node2,   # noqa
     )
-    tx.create(penicillins_alleviates_reduces_association_to_reference_edge)
-    tx.create(penicillins_treatment_association_to_reference_edge)
+    tx.create(penicillins_alleviates_reduces_association_to_snippet_edge)
+    tx.create(penicillins_treatment_association_to_snippet_edge)
 
-    # Reference -> Publication Relationships
-    penicillins_alleviates_reduces_reference_to_publication_edge = Relationship(
-        penicillins_to_gas_gangrene_reference_node1, 'HAS_PUBLICATION', penicillins_to_gas_gangrene_publication_node1  # noqa
+    # Snippet -> Publication Relationships
+    penicillins_alleviates_reduces_snippet_to_publication_edge = Relationship(
+        penicillins_to_gas_gangrene_snippet_node1, 'IN_PUB', penicillins_to_gas_gangrene_publication_node1  # noqa
     )
 
-    penicillins_treatment_reference_to_publication_edge = Relationship(
-        penicillins_to_gas_gangrene_reference_node2, 'HAS_PUBLICATION', penicillins_to_gas_gangrene_publication_node2  # noqa
+    penicillins_treatment_snippet_to_publication_edge = Relationship(
+        penicillins_to_gas_gangrene_snippet_node2, 'IN_PUB', penicillins_to_gas_gangrene_publication_node2  # noqa
     )
-    tx.create(penicillins_alleviates_reduces_reference_to_publication_edge)
-    tx.create(penicillins_treatment_reference_to_publication_edge)
+    tx.create(penicillins_alleviates_reduces_snippet_to_publication_edge)
+    tx.create(penicillins_treatment_snippet_to_publication_edge)
 
     tx.commit()
 
     return gas_gangrene
+
+
+@pytest.fixture(scope='function')
+def example4_pdf_gene_and_organism_network(
+    graph,
+):
+    tx = graph.begin()
+
+    cysB = Node(
+        'db_NCBI',
+        name='cysB',
+        locus_tag='b1275',
+        id='945771'
+    )
+
+    mcrB = Node(
+        'db_NCBI',
+        name='mcrB',
+        locus_tag='b4346',
+        id='949122'
+    )
+
+    oxyR_e_coli = Node(
+        'db_NCBI',
+        name='oxyR',
+        locus_tag='b3961',
+        id='948462'
+    )
+
+    oxyR_salmonella = Node(
+        'db_NCBI',
+        name='cysB',
+        locus_tag='STM4125',
+        id='1255651'
+    )
+
+    e_coli = Node(
+        'db_NCBI',
+        name='Escherichia coli',
+        rank='species',
+        id='562',
+    )
+
+    salmonella = Node(
+        'db_NCBI',
+        name='Salmonella enterica',
+        rank='species',
+        id='28901',
+    )
+
+    cysB_has_taxonomy_e_coli = Relationship(
+        cysB, 'HAS_TAXONOMY', e_coli,
+    )
+
+    mcrB_has_taxonomy_e_coli = Relationship(
+        mcrB, 'HAS_TAXONOMY', e_coli,
+    )
+
+    oxyR_has_taxonomy_e_coli = Relationship(
+        oxyR_e_coli, 'HAS_TAXONOMY', e_coli,
+    )
+
+    oxyR_has_taxonomy_salmonella = Relationship(
+        oxyR_salmonella, 'HAS_TAXONOMY', salmonella,
+    )
+
+    tx.create(cysB_has_taxonomy_e_coli)
+    tx.create(mcrB_has_taxonomy_e_coli)
+    tx.create(oxyR_has_taxonomy_e_coli)
+    tx.create(oxyR_has_taxonomy_salmonella)
+
+    tx.commit()
+
+    return graph
 
 # End Graph Data Fixtures #
 
@@ -365,7 +440,8 @@ def gas_gangrene_vis_node(gas_gangrene):
     """Creates a VisNode from gas gangrene"""
     node_as_graph_node = GraphNode.from_py2neo(
         gas_gangrene,
-        display_fn=lambda x: x.get(DISPLAY_NAME_MAP[next(iter(gas_gangrene.labels), set())])
+        # TODO: Should change the way label is retrieved here...
+        display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label(gas_gangrene)])
     )
 
     gas_gangrene_vis_node = VisNode(
@@ -387,7 +463,7 @@ def gas_gangrene_duplicate_vis_node(gas_gangrene):
     """Creates a DuplicateVisNode from gas gangrene"""
     node_as_graph_node = GraphNode.from_py2neo(
         gas_gangrene,
-        display_fn=lambda x: x.get(DISPLAY_NAME_MAP[next(iter(gas_gangrene.labels), set())])
+        display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label(gas_gangrene)])
     )
 
     gas_gangrene_duplicate_vis_node = DuplicateVisNode(
@@ -410,7 +486,7 @@ def penicillins_vis_node(penicillins):
     """Creates a VisNode from penicillins"""
     node_as_graph_node = GraphNode.from_py2neo(
         penicillins,
-        display_fn=lambda x: x.get(DISPLAY_NAME_MAP[next(iter(penicillins.labels), set())])
+        display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label(penicillins)])
     )
 
     penicillins_vis_node = VisNode(
@@ -432,7 +508,7 @@ def penicillins_duplicate_vis_node(penicillins):
     """Creates a DuplicateVisNode from penicillins"""
     node_as_graph_node = GraphNode.from_py2neo(
         penicillins,
-        display_fn=lambda x: x.get(DISPLAY_NAME_MAP[next(iter(penicillins.labels), set())])
+        display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label(penicillins)])
     )
 
     penicillins_duplicate_vis_node = DuplicateVisNode(
@@ -455,7 +531,7 @@ def pomc_vis_node(pomc):
     """Creates a VisNode from pomc"""
     node_as_graph_node = GraphNode.from_py2neo(
         pomc,
-        display_fn=lambda x: x.get(DISPLAY_NAME_MAP[next(iter(pomc.labels), set())])
+        display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label(pomc)])
     )
 
     pomc_vis_node = VisNode(
@@ -477,7 +553,7 @@ def pomc_duplicate_vis_node(pomc):
     """Creates a DuplicateVisNode from pomc"""
     node_as_graph_node = GraphNode.from_py2neo(
         pomc,
-        display_fn=lambda x: x.get(DISPLAY_NAME_MAP[next(iter(pomc.labels), set())])
+        display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label(pomc)])
     )
 
     pomc_duplicate_vis_node = DuplicateVisNode(
