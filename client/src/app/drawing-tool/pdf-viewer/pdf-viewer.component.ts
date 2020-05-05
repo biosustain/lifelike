@@ -39,22 +39,7 @@ export class PdfViewerComponent implements OnDestroy {
   currentFileId: string;
   addedAnnotation: Annotation;
   addAnnotationSub: Subscription;
-
-  private locationOpener = new BehaviorSubject<Location>(null);
-
-  PDF_FILE_LOADED = false;
-  get pdfFileLoaded() {
-    return this.PDF_FILE_LOADED;
-  }
-  set pdfFileLoaded(val) {
-    this.PDF_FILE_LOADED = val;
-
-    if (this.PDF_FILE_LOADED && this.locationOpener.value) {
-      this.scrollInPdf(
-        this.locationOpener.value
-      );
-    }
-  }
+  pdfFileLoaded: boolean = false;
 
   constructor(
     private pdfAnnService: PdfAnnotationsService,
