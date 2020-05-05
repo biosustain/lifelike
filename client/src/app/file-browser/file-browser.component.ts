@@ -75,7 +75,7 @@ export class FileBrowserComponent implements OnInit {
           if (event.loaded >= event.total) {
             progressObservable.next(new Progress({
               mode: ProgressMode.Buffer,
-              status: 'Processing on server...',
+              status: 'Detecting annotations in file...',
               value: event.loaded / event.total
             }));
           } else {
