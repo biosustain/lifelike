@@ -232,7 +232,7 @@ def delete_files():
             current_app.logger.error('Could not find file: %s, %s', id, file.filename)
             outcome[id] = DeletionOutcome.NOT_FOUND.value
             continue
-        if g.current_user.id != int(file.username):
+        if g.current_user.id != int(file.user_id):
             current_app.logger.error('Cannot delete file (not an owner): %s, %s', id, file.filename)
             outcome[id] = DeletionOutcome.NOT_OWNER.value
             continue
