@@ -1,7 +1,9 @@
-"""empty message
+"""Adds a temp lookup table for organism/gene pairs. This is a stand-in for
+Robin's Neo4j dataset while we figure out how to handle individual strains
+for organisms.
 
 Revision ID: 782b6ba8b7eb
-Revises: a84e5653318c
+Revises: f5c30dc0effe
 Create Date: 2020-05-04 23:15:48.765478
 
 """
@@ -17,7 +19,7 @@ from neo4japp.models import OrganismGeneMatch
 
 # revision identifiers, used by Alembic.
 revision = '782b6ba8b7eb'
-down_revision = 'a84e5653318c'
+down_revision = 'f5c30dc0effe'
 branch_labels = None
 depends_on = None
 
