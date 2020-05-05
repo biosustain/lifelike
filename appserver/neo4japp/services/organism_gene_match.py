@@ -1,6 +1,5 @@
 from sqlalchemy import func
 from sqlalchemy.orm.session import Session
-from sqlalchemy.sql.expression import and_
 
 from typing import Dict, List
 
@@ -22,10 +21,7 @@ class OrganismGeneMatchService(RDBMSBaseDao):
             func.lower(OrganismGeneMatch.gene_name),
             OrganismGeneMatch.gene_id,
         ).filter(
-            and_(
-                func.lower(OrganismGeneMatch.synonym).in_(genes),
-            )
-
+            func.lower(OrganismGeneMatch.synonym).in_(genes),
         )
 
         for row in result:
