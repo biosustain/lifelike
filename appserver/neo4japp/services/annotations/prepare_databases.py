@@ -390,7 +390,6 @@ if __name__ == '__main__':
                 print(f'Deleting {path.join(parent, fn)}...')
                 remove(path.join(parent, fn))
 
-
     prepare_lmdb_genes_database(filename='datasets/genes.tsv')
     prepare_lmdb_chemicals_database(filename='datasets/chebi.csv')
     prepare_lmdb_compounds_database(filename='datasets/compounds.csv')
