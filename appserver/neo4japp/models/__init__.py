@@ -11,3 +11,4 @@ from .drawing_tool import Project, ProjectSchema
 from .neo4j import GraphNode, GraphRelationship
 from .files import Files
 from .projects import Projects
+from .organism_match import OrganismGeneMatch

@@ -8,10 +8,8 @@ import {
 
 import * as $ from 'jquery';
 
-import {
-  nodeTemplates
-} from '../../services';
 import { Action } from '../drawing-tool.component';
+import { annotationTypes } from 'app/shared/annotation-styles';
 
 @Component({
   selector: 'app-palette',
@@ -28,7 +26,7 @@ export class PaletteComponent implements OnInit {
   paletteMode = 1;
 
   /** Build the palette ui with node templates defined */
-  nodeTemplates = nodeTemplates;
+  nodeTemplates = annotationTypes;
 
   constructor() { }
 

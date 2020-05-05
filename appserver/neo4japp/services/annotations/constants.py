@@ -1,4 +1,5 @@
 from enum import Enum
+from neo4japp.constants import ANNOTATION_STYLES_DICT
 
 # these links are used in annotations and custom annotations
 NCBI_LINK = 'https://ncbi.nlm.nih.gov/gene/?term='
@@ -61,13 +62,13 @@ ENTITY_TYPE_PRECEDENCE = {
 
 
 class EntityColor(Enum):
-    Chemicals = '#cee5cb'
-    Compounds = '#cee5cb'
-    Diseases = '#fae0b8'
-    Genes = '#8f7cbf'
-    Proteins = '#bcbd22'
-    Species = '#3177b8'
-    Phenotypes = '#edc949'
+    Chemicals = ANNOTATION_STYLES_DICT['chemical']['color']
+    Compounds = ANNOTATION_STYLES_DICT['compound']['color']
+    Diseases = ANNOTATION_STYLES_DICT['disease']['color']
+    Genes = ANNOTATION_STYLES_DICT['gene']['color']
+    Proteins = ANNOTATION_STYLES_DICT['protein']['color']
+    Species = ANNOTATION_STYLES_DICT['species']['color']
+    Phenotypes = ANNOTATION_STYLES_DICT['phenotype']['color']
 
 
 class EntityIdStr(Enum):
