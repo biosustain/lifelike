@@ -358,7 +358,7 @@ def prepare_lmdb_phenotypes_database(filename: str):
                         if entity:
                             entity = json.loads(entity)
                             entity['common_name'] = {
-                                **entity['common_name'], **phenotype['common_name']}
+                                **entity['common_name'], **phenotype['common_name']}  # type: ignore
                             transaction.put(
                                 normalize_str(syn).encode('utf-8'),
                                 json.dumps(entity).encode('utf-8'))
