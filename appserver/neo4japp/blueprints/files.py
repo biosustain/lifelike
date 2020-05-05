@@ -1,12 +1,12 @@
-from enum import Enum
 import io
+import json
+import os
 import uuid
 from datetime import datetime
-import os
-import json
+from enum import Enum
 from typing import Dict
-from neo4japp.blueprints.auth import auth
-from flask import Blueprint, current_app, request, abort, jsonify, g, make_response
+
+from flask import Blueprint, current_app, request, jsonify, g, make_response
 from werkzeug.utils import secure_filename
 
 from neo4japp.blueprints.auth import auth
@@ -18,6 +18,7 @@ from neo4japp.database import (
     get_lmdb_dao,
 )
 from neo4japp.exceptions import RecordNotFoundException, BadRequestError
+from neo4japp.models import AppUser
 from neo4japp.models.files import Files
 
 bp = Blueprint('files', __name__, url_prefix='/files')
@@ -29,7 +30,7 @@ def upload_pdf():
     pdf = request.files['file']
     project = '1'  # TODO: remove hard coded project
     binary_pdf = pdf.read()
-    username = g.current_user
+    user = g.current_user
 
     filename = secure_filename(request.files['file'].filename)
     # Make sure that the filename is not longer than the DB column permits
@@ -47,7 +48,7 @@ def upload_pdf():
         file_id=file_id,
         filename=filename,
         raw_file=binary_pdf,
-        username=username.id,
+        user_id=user.id,
         annotations=annotations,
         project=project
     )
@@ -80,8 +81,10 @@ def list_files():
         Files.id,
         Files.file_id,
         Files.filename,
-        Files.username,
+        Files.user_id,
+        AppUser.username,
         Files.creation_date)
+        .join(AppUser, Files.user_id == AppUser.id)
         .filter(Files.project == project)
         .all()]
     return jsonify({'files': files})
@@ -165,12 +168,19 @@ def annotate(filename, pdf_file_object) -> dict:
     annotator = get_annotations_service(lmdb_dao=lmdb_dao)
     bioc_service = get_bioc_document_service()
     # TODO: Miguel: need to update file_uri with file path
-    parsed_pdf_chars = pdf_parser.parse_pdf(pdf=pdf_file_object)
-    tokens = pdf_parser.extract_tokens(parsed_chars=parsed_pdf_chars)
-    annotations = annotator.create_annotations(tokens=tokens)
-    pdf_text = pdf_parser.parse_pdf_high_level(pdf=pdf_file_object)
-    bioc = bioc_service.read(text=pdf_text, file_uri=filename)
-    return bioc_service.generate_bioc_json(annotations=annotations, bioc=bioc)
+    try:
+        parsed_pdf_chars = pdf_parser.parse_pdf(pdf=pdf_file_object)
+    except Exception as e:
+        raise BadRequestError("Your file could not be imported. Please check if it is a valid PDF.")
+
+    try:
+        tokens = pdf_parser.extract_tokens(parsed_chars=parsed_pdf_chars)
+        annotations = annotator.create_annotations(tokens=tokens)
+        pdf_text = pdf_parser.parse_pdf_high_level(pdf=pdf_file_object)
+        bioc = bioc_service.read(text=pdf_text, file_uri=filename)
+        return bioc_service.generate_bioc_json(annotations=annotations, bioc=bioc)
+    except Exception as e:
+        raise BadRequestError("Your file could not be annotated and your PDF file was not saved.")
 
 
 class AnnotationOutcome(Enum):
