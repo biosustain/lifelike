@@ -47,12 +47,10 @@ jobs:
               with:
                 node-version: ${{ matrix.node-version }}
 
-            - name: Client Linting
+            - name: Client Linting & Test
               run: |-
                 cd client
                 yarn install
                 yarn lint
-
-            - name: Client Tests
-              run: |-
                 yarn test
+
