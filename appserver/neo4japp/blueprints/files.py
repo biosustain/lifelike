@@ -1,3 +1,4 @@
+import hashlib
 import io
 import json
 import os
@@ -7,6 +8,8 @@ from enum import Enum
 from typing import Dict
 
 from flask import Blueprint, current_app, request, jsonify, g, make_response
+from neo4japp.models import AppUser
+from sqlalchemy.orm.exc import NoResultFound
 from werkzeug.utils import secure_filename
 
 from neo4japp.blueprints.auth import auth
@@ -18,8 +21,7 @@ from neo4japp.database import (
     get_lmdb_dao,
 )
 from neo4japp.exceptions import RecordNotFoundException, BadRequestError
-from neo4japp.models import AppUser
-from neo4japp.models.files import Files
+from neo4japp.models.files import Files, FileContent
 
 bp = Blueprint('files', __name__, url_prefix='/files')
 
@@ -28,8 +30,11 @@ bp = Blueprint('files', __name__, url_prefix='/files')
 @auth.login_required
 def upload_pdf():
     pdf = request.files['file']
+    pdf_content = pdf.read()  # TODO: don't work with whole file in memory
+    pdf.stream.seek(0)
     project = '1'  # TODO: remove hard coded project
-    binary_pdf = pdf.read()
+    pdf_content = pdf.read()
+    checksum_sha256 = hashlib.sha256(pdf_content).digest()
     user = g.current_user
 
     filename = secure_filename(request.files['file'].filename)
@@ -44,17 +49,31 @@ def upload_pdf():
 
     annotations = annotate(filename, pdf)
 
-    files = Files(
+    try:
+        # First look for an existing copy of this file
+        file_content = db.session.query(FileContent.id) \
+            .filter(FileContent.checksum_sha256 == checksum_sha256) \
+            .one()
+    except NoResultFound:
+        # Otherwise, let's add the file content to the database
+        file_content = FileContent(
+            raw_file=pdf_content,
+            checksum_sha256=checksum_sha256
+        )
+        db.session.add(file_content)
+        db.session.commit()
+
+    file = Files(
         file_id=file_id,
         filename=filename,
-        raw_file=binary_pdf,
+        content_id=file_content.id,
         user_id=user.id,
         annotations=annotations,
         project=project
     )
-
-    db.session.add(files)
+    db.session.add(file)
     db.session.commit()
+
     return jsonify({
         'file_id': file_id,
         'filename': filename,
@@ -93,9 +112,14 @@ def list_files():
 @bp.route('/<id>', methods=['GET'])
 @auth.login_required
 def get_pdf(id):
-    entry = db.session.query(Files).filter(Files.file_id == id).one_or_none()
-    if entry is None:
-        raise RecordNotFoundException(f'File not found. Id: {id}')
+    try:
+        entry = db.session \
+            .query(Files.id, FileContent.raw_file) \
+            .join(FileContent, FileContent.id == Files.content_id) \
+            .filter(Files.file_id == id) \
+            .one()
+    except NoResultFound:
+        raise RecordNotFoundException('Requested PDF file not found.')
     res = make_response(entry.raw_file)
     res.headers['Content-Type'] = 'application/pdf'
     return res
