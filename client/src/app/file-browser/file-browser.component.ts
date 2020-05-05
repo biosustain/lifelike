@@ -170,7 +170,7 @@ export class FileBrowserComponent implements OnInit {
   }
 
   openDeleteDialog() {
-    const dialogRef = this.deleteDialog.open(DialogConfirmDeletion, {
+    const dialogRef = this.deleteDialog.open(DialogConfirmDeletionComponent, {
       data: { files: this.selection.selected },
     });
 
@@ -183,9 +183,9 @@ export class FileBrowserComponent implements OnInit {
 }
 
 @Component({
-  selector: 'dialog-confirm-deletion',
+  selector: 'app-dialog-confirm-deletion',
   templateUrl: './dialog-confirm-deletion.html',
 })
-export class DialogConfirmDeletion {
+export class DialogConfirmDeletionComponent {
   constructor(@Inject(MAT_DIALOG_DATA) public data: any) { }
 }
