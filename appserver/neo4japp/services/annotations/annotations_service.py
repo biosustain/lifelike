@@ -354,7 +354,7 @@ class AnnotationsService:
 
                     keyword_starting_idx = char_indexes[0]
                     keyword_ending_idx = char_indexes[-1]
-                    link_search_term = f'{token_positions.keyword}'
+                    link_search_term = entity['name']
 
                     meta = Annotation.Meta(
                         keyword_type=token_type,
@@ -369,13 +369,17 @@ class AnnotationsService:
                         ),
                     )
 
+                    # the `keywords` property here is to allow us to know
+                    # what coordinates map to what text in the PDF
+                    # we want to actually use the real name inside LMDB
+                    # for the `keyword` and `keyword_length` properties
                     matches.append(
                         Annotation(
                             page_number=token_positions.page_number,
                             rects=[pos.positions for pos in keyword_positions],  # type: ignore
                             keywords=[k.value for k in keyword_positions],
-                            keyword=token_positions.keyword,
-                            keyword_length=len(token_positions.keyword),
+                            keyword=link_search_term,
+                            keyword_length=len(link_search_term),
                             lo_location_offset=keyword_starting_idx,
                             hi_location_offset=keyword_ending_idx,
                             meta=meta,
