@@ -1,4 +1,4 @@
-import { Component, OnDestroy } from '@angular/core';
+import { Component, EventEmitter, OnDestroy, Output } from '@angular/core';
 import { BehaviorSubject, combineLatest, Subject, Subscription } from 'rxjs';
 import { PdfFilesService } from 'app/shared/services/pdf-files.service';
 import { HYPERLINKS } from 'app/shared/constants';
@@ -31,6 +31,9 @@ class DummyFile implements PdfFile {
 })
 
 export class PdfViewerComponent implements OnDestroy {
+  @Output() requestClose: EventEmitter<any> = new EventEmitter();
+  @Output() fileOpen: EventEmitter<PdfFile> = new EventEmitter();
+
   annotations: Annotation[] = [];
 
   goToPosition: Subject<Location> = new Subject<Location>();
@@ -83,6 +86,7 @@ export class PdfViewerComponent implements OnDestroy {
         annotation.meta.hyperlink = this.generateHyperlink(annotation);
       });
       this.currentFileId = file.file_id;
+      this.fileOpen.emit(file);
       setTimeout(() => {
         this.pdfViewerReady = true;
 
@@ -260,5 +264,9 @@ export class PdfViewerComponent implements OnDestroy {
 
   loadCompleted(status) {
     this.pdfFileLoaded = status;
+  }
+
+  close() {
+    this.requestClose.emit(null);
   }
 }

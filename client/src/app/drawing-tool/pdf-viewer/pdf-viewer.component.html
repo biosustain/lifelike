@@ -1,9 +1,16 @@
 <div class="w-100 vh-100 relative" fxLayout="column">
-  <div class="pdf-toolbar z-1">
-    <button mat-raised-button (click)="openFileDialog()">
-      <mat-icon>folder_open</mat-icon>
-      Open
-    </button>
+  <div class="sidebar-toolbar" fxLayout="row">
+    <div>
+      <button mat-raised-button (click)="openFileDialog()">
+        <mat-icon>folder_open</mat-icon>
+        Open
+      </button>
+    </div>
+    <div class="ml-auto" fxLayout="row" fxLayoutGap="5px">
+      <button mat-icon-button (click)="close()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
   </div>
   <div class="overflow-auto">
     <div *ngIf="!pdfViewerReady && loadTask.running" fxLayout="row" fxLayoutAlign="center center" class="mt4">
