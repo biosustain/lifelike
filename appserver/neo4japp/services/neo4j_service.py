@@ -18,7 +18,12 @@ from neo4japp.services.common import GraphBaseDao
 from neo4japp.models import GraphNode, GraphRelationship
 from neo4japp.constants import *
 from neo4japp.factory import cache
-from neo4japp.util import CamelDictMixin, compute_hash, snake_to_camel_dict
+from neo4japp.util import (
+    CamelDictMixin,
+    compute_hash,
+    get_first_known_label,
+    snake_to_camel_dict,
+)
 
 from py2neo import (
     Graph,
@@ -96,7 +101,8 @@ class Neo4JService(GraphBaseDao):
             for node in nodes:
                 graph_node = GraphNode.from_py2neo(
                     node,
-                    display_fn=lambda x: x.get(DISPLAY_NAME_MAP[next(iter(node.labels), set())])  # type: ignore  # noqa
+                    display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label(node)]),  # type: ignore  # noqa
+                    primary_label_fn=get_first_known_label,
                 )
                 node_dict[graph_node.id] = graph_node
             for rel in rels:
@@ -108,7 +114,11 @@ class Neo4JService(GraphBaseDao):
     def get_organisms(self):
         nodes = list(NodeMatcher(self.graph).match(NODE_SPECIES))
         organism_nodes = [
-            GraphNode.from_py2neo(n, display_fn=lambda x: x.get('common_name'))
+            GraphNode.from_py2neo(
+                n,
+                display_fn=lambda x: x.get('common_name'),
+                primary_label_fn=get_first_known_label,
+            )
             for n in nodes
         ]
         return dict(nodes=[n.to_dict() for n in organism_nodes], edges=[])
@@ -116,7 +126,11 @@ class Neo4JService(GraphBaseDao):
     def get_some_diseases(self):
         nodes = list(NodeMatcher(self.graph).match(TYPE_DISEASE).limit(10))
         disease_nodes = [
-            GraphNode.from_py2neo(n, display_fn=lambda x: x.get(DISPLAY_NAME_MAP[TYPE_DISEASE]))
+            GraphNode.from_py2neo(
+                n,
+                display_fn=lambda x: x.get(DISPLAY_NAME_MAP[TYPE_DISEASE]),
+                primary_label_fn=lambda x: TYPE_DISEASE,
+            )
             for n in nodes
         ]
         return dict(nodes=[n.to_dict() for n in disease_nodes], edges=[])
@@ -151,11 +165,13 @@ class Neo4JService(GraphBaseDao):
         snippets = [Snippet(
             reference=GraphNode.from_py2neo(
                 result['reference'],
-                display_fn=lambda x: x.get(DISPLAY_NAME_MAP[next(iter(result['reference'].labels), set())]),  # type: ignore  # noqa
+                display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label(result['reference'])]),  # type: ignore  # noqa
+                primary_label_fn=get_first_known_label,
             ),
             publication=GraphNode.from_py2neo(
                 result['publication'],
-                display_fn=lambda x: x.get(DISPLAY_NAME_MAP[next(iter(result['publication'].labels), set())]),  # type: ignore  # noqa
+                display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label(result['publication'])]),  # type: ignore  # noqa
+                primary_label_fn=get_first_known_label,
             )
         ) for result in data]
 
@@ -173,11 +189,13 @@ class Neo4JService(GraphBaseDao):
         snippets = [Snippet(
             reference=GraphNode.from_py2neo(
                 result['reference'],
-                display_fn=lambda x: x.get(DISPLAY_NAME_MAP[next(iter(result['reference'].labels), set())]),  # type: ignore  # noqa
+                display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label(result['reference'])]),  # type: ignore  # noqa
+                primary_label_fn=get_first_known_label,
             ),
             publication=GraphNode.from_py2neo(
                 result['publication'],
-                display_fn=lambda x: x.get(DISPLAY_NAME_MAP[next(iter(result['publication'].labels), set())]),  # type: ignore  # noqa
+                display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label(result['publication'])]),  # type: ignore  # noqa
+                primary_label_fn=get_first_known_label,
             )
         ) for result in data]
 
@@ -250,6 +268,36 @@ class Neo4JService(GraphBaseDao):
             results=results,
         )
 
+    def get_genes_to_organisms(
+        self,
+        genes: List[str],
+        organisms: List[str],
+    ) -> Dict[str, Dict[str, str]]:
+        gene_to_organism_map: Dict[str, Dict[str, str]] = dict()
+
+        query = self.get_gene_to_organism_query()
+        result = self.graph.run(
+            query,
+            {
+                'genes': genes,
+                'organisms': organisms,
+            }
+        ).data()
+
+        for row in result:
+            gene_name: str = row['gene']
+            organism_id: str = row['organism_id']
+            # For now just get the first gene in the list of matches, no way for us to infer which
+            # to use
+            gene_id: str = row['genes_in_organism_with_name'][0]
+
+            if gene_to_organism_map.get(gene_name, None) is not None:
+                gene_to_organism_map[gene_name][organism_id] = gene_id
+            else:
+                gene_to_organism_map[gene_name] = {organism_id: gene_id}
+
+        return gene_to_organism_map
+
     def load_reaction_graph(self, biocyc_id: str):
         query = self.get_reaction_query(biocyc_id)
         return self._query_neo4j(query)
@@ -277,7 +325,8 @@ class Neo4JService(GraphBaseDao):
             node = self.graph.evaluate(cypher_query)
             graph_node = GraphNode.from_py2neo(
                 node,
-                display_fn=lambda x: x.get(DISPLAY_NAME_MAP[next(iter(node.labels), set())]),  # type: ignore  # noqa
+                display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label(node)]),  # type: ignore  # noqa
+                primary_label_fn=get_first_known_label,
             )
             return dict(nodes=[graph_node.to_dict()], edges=[])
         else:
@@ -300,11 +349,13 @@ class Neo4JService(GraphBaseDao):
                 relationship = row['relationship']
                 graph_nodeA = GraphNode.from_py2neo(
                     nodeA,
-                    display_fn=lambda x: x.get(DISPLAY_NAME_MAP[next(iter(nodeA.labels), set())])  # type: ignore  # noqa
+                    display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label(nodeA)]),  # type: ignore  # noqa
+                    primary_label_fn=get_first_known_label,
                 )
                 graph_nodeB = GraphNode.from_py2neo(
                     nodeB,
-                    display_fn=lambda x: x.get(DISPLAY_NAME_MAP[next(iter(nodeB.labels), set())])  # type: ignore  # noqa
+                    display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label(nodeB)]),  # type: ignore  # noqa
+                    primary_label_fn=get_first_known_label,
                 )
                 rel = GraphRelationship.from_py2neo(relationship)
                 node_dict[graph_nodeA.id] = graph_nodeA
@@ -455,8 +506,8 @@ class Neo4JService(GraphBaseDao):
             MATCH (f)-[:HAS_ASSOCIATION]->(a:Association)-[:HAS_ASSOCIATION]->(t)
             WHERE ID(f)={} AND ID(t)={} AND a.description='{}'
             WITH a AS association
-            MATCH (association)-[:HAS_REF]-(r:Reference)-[:HAS_PUBLICATION]-(p:Publication)
-            RETURN r AS reference, p AS publication
+            MATCH (association)<-[:PREDICTS]-(s:Snippet)-[:IN_PUB]-(p:Publication)
+            RETURN s AS reference, p AS publication
         """.format(from_node, to_node, association)
         return query
 
@@ -465,9 +516,9 @@ class Neo4JService(GraphBaseDao):
             MATCH
             (f:{from_label})-[:HAS_ASSOCIATION]->(a:Association)-[:HAS_ASSOCIATION]->(t:{to_label})
             WHERE ID(f)=$from_id AND ID(t)=$to_id AND a.description=$description
-            WITH ID(a) AS association_id MATCH (a:Association)-[:HAS_REF]-(r:Reference)
+            WITH ID(a) AS association_id MATCH (a:Association)<-[:PREDICTS]-(s:Snippet)
             WHERE ID(a)=association_id
-            RETURN COUNT(r) as count
+            RETURN COUNT(s) as count
         """
         return query
 
@@ -480,6 +531,21 @@ class Neo4JService(GraphBaseDao):
             COALESCE(relationships(p1), []) + COALESCE(relationships(p2), []) as relationships
         """.format(biocyc_id)
         print(query)
+        return query
+
+    def get_gene_to_organism_query(self):
+        """Retrieves a list of all the genes with a given name
+        in a particular organism."""
+        query = """
+            MATCH (g:db_NCBI)-[:HAS_TAXONOMY]->(o:db_NCBI)
+            WHERE
+                EXISTS(g.locus_tag) AND // Checks that 'g' is a Gene
+                EXISTS(o.rank) AND // Checks that 'o' is a species
+                toLower(g.name) IN $genes AND
+                o.id in $organisms
+            WITH toLower(g.name) as gene, g.id as gene_id, o.id as organism_id
+            RETURN gene, collect(gene_id) AS genes_in_organism_with_name, organism_id
+        """
         return query
 
     def search_for_relationship_with_label_and_properties(

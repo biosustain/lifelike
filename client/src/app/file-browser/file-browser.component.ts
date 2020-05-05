@@ -1,111 +1,191 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, Inject, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { BehaviorSubject, Observable, Subject, Subscription } from 'rxjs';
 import { SelectionModel } from '@angular/cdk/collections';
-import { MatSnackBar } from '@angular/material';
-import { PdfFile } from 'app/interfaces/pdf-files.interface';
+import { MatTableDataSource } from '@angular/material/table';
+import { MatDialog, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { BehaviorSubject, throwError } from 'rxjs';
+import { AnnotationStatus, PdfFile } from 'app/interfaces/pdf-files.interface';
 import { PdfFilesService } from 'app/shared/services/pdf-files.service';
 import { HttpEventType } from '@angular/common/http';
-import { UploadProgress, UploadStatus } from 'app/interfaces/file-browser.interfaces';
-import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
-import { UploadProgressDialogComponent } from './upload-progress-dialog.component';
+import { Progress, ProgressMode } from 'app/interfaces/common-dialog.interface';
+import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 
 @Component({
   selector: 'app-file-browser',
   templateUrl: './file-browser.component.html',
   styleUrls: ['./file-browser.component.scss'],
 })
-export class FileBrowserComponent implements OnInit, OnDestroy {
+export class FileBrowserComponent implements OnInit {
   displayedColumns: string[] = ['select', 'filename', 'creationDate', 'username', 'annotation'];
-  dataSource: Observable<PdfFile[]>;
-  selection = new SelectionModel<PdfFile>(false, []);
-  selectionChanged: Subscription;
-  canOpen = false;
-  status = UploadStatus.Ready;
-  /**
-   * Progress events will be streamed to the progress dialog.
-   */
-  progress: Subject<UploadProgress> = new BehaviorSubject<UploadProgress>(
-    new UploadProgress(UploadStatus.Ready, 0)
-  );
+  dataSource = new MatTableDataSource<PdfFile>([]);
+  selection = new SelectionModel<PdfFile>(true, []);
+  isReannotating = false;
+  uploadStarted = false;
 
   constructor(
     private pdf: PdfFilesService,
     private router: Router,
     private snackBar: MatSnackBar,
-    public dialog: MatDialog,
+    private deleteDialog: MatDialog,
+    private progressDialog: ProgressDialog,
   ) {
   }
 
   ngOnInit() {
-    this.dataSource = this.pdf.getFiles();
-    this.selectionChanged = this.selection.changed.subscribe(() => this.canOpen = this.selection.hasValue());
+    this.updateDataSource();
   }
 
-  ngOnDestroy() {
-    this.selectionChanged.unsubscribe();
+  updateDataSource() {
+    this.pdf.getFiles().subscribe(
+      (files: PdfFile[]) => {
+        // We assume that fetched files are correctly annotated
+        files.forEach((file: PdfFile) => file.annotation_status = AnnotationStatus.Success);
+        this.dataSource.data = files;
+      },
+      err => {
+        this.snackBar.open(`Cannot fetch list of files: ${err}`, 'Close', {duration: 10000});
+      }
+    );
+    this.selection.clear();
   }
 
   onFileInput(files: FileList) {
     if (files.length === 0) {
       return;
     }
-    if (this.status !== UploadStatus.Ready) {
-      // the user shouldn't be able to initiate a new file upload
+
+    // The user shouldn't be able to initiate a new file upload
+    if (this.uploadStarted) {
       return;
     }
-
-    const name = files[0].name;
-    this.status = UploadStatus.Starting;
+    this.uploadStarted = true;
 
     // Let's show some progress!
-    this.progress.next(new UploadProgress(this.status, 0, name));
-    this.openProgressDialog();
+    const progressObservable = new BehaviorSubject<Progress>(new Progress({
+      status: 'Preparing file for upload...',
+    }));
+    const progressDialogRef = this.progressDialog.display({
+      title: `Adding ${files[0].name}...`,
+      progressObservable,
+    });
 
     this.pdf.uploadFile(files[0]).subscribe(event => {
         if (event.type === HttpEventType.UploadProgress) {
           if (event.loaded >= event.total) {
-            this.status = UploadStatus.Processing;
+            progressObservable.next(new Progress({
+              mode: ProgressMode.Buffer,
+              status: 'Detecting annotations in file...',
+              value: event.loaded / event.total
+            }));
           } else {
-            this.status = UploadStatus.Uploading;
+            progressObservable.next(new Progress({
+              mode: ProgressMode.Determinate,
+              status: 'Uploading file...',
+              value: event.loaded / event.total
+            }));
           }
-          this.progress.next(new UploadProgress(this.status, event.loaded / event.total, name));
         } else if (event.type === HttpEventType.Response) {
-          this.progress.next(new UploadProgress(this.status, 1, name));
-          this.status = UploadStatus.Ready;
-          this.dialog.closeAll();
+          progressDialogRef.close();
+          this.uploadStarted = false;
           this.snackBar.open(`File uploaded: ${event.body.filename}`, 'Close', {duration: 5000});
-          this.dataSource = this.pdf.getFiles(); // updates the list on successful upload
+          this.updateDataSource(); // updates the list on successful upload
         }
       },
-      () => {
-        this.status = UploadStatus.Ready;
-        this.dialog.closeAll();
-        this.snackBar.open('An error was encountered uploading your file.', 'Close', {
-          verticalPosition: 'top', // show the message on top for visibility
-        });
+      err => {
+        progressDialogRef.close();
+        this.uploadStarted = false;
+        return throwError(err);
       }
     );
   }
 
-  openFile() {
-    localStorage.setItem('fileIdForPdfViewer', this.selection.selected[0].file_id);
+  openFile(fileId: string) {
+    localStorage.setItem('fileIdForPdfViewer', fileId);
     this.router.navigate(['/pdf-viewer']);
   }
 
-  /**
-   * Show the upload progress dialog to the user.
-   */
-  openProgressDialog() {
-    const dialogConfig = new MatDialogConfig();
-
-    dialogConfig.width = '400px';
-    dialogConfig.disableClose = true;
-    dialogConfig.autoFocus = true;
-    dialogConfig.data = {
-      progress: this.progress
-    };
-
-    this.dialog.open(UploadProgressDialogComponent, dialogConfig);
+  deleteFiles() {
+    const ids: string[] = this.selection.selected.map((file: PdfFile) => file.file_id);
+    this.pdf.deleteFiles(ids).subscribe(
+      (res) => {
+        let msg = 'Deletion completed';
+        if (Object.values(res).includes('Not an owner')) { // check if any file was not owned by the current user
+          msg = `${msg}, but one or more files could not be deleted because you are not the owner`;
+        }
+        this.snackBar.open(msg, 'Close', {duration: 10000});
+        this.updateDataSource(); // updates the list on successful deletion
+        console.log('deletion result', res);
+      },
+      err => {
+        this.snackBar.open(`Deletion failed`, 'Close', {duration: 10000});
+        console.error('deletion error', err);
+      }
+    );
   }
+
+  reannotate() {
+    this.isReannotating = true;
+    const ids: string[] = this.selection.selected.map((file: PdfFile) => {
+      file.annotation_status = AnnotationStatus.Loading;
+      return file.file_id;
+    });
+    this.pdf.reannotateFiles(ids).subscribe(
+      (res) => {
+        for (const id of ids) {
+          // pick file by id
+          const file: PdfFile = this.dataSource.data.find((f: PdfFile) => f.file_id === id);
+          // set its annotation status
+          file.annotation_status = res[id] === 'Annotated' ? AnnotationStatus.Success : AnnotationStatus.Failure;
+        }
+        this.isReannotating = false;
+        this.snackBar.open(`Reannotation completed`, 'Close', {duration: 5000});
+        console.log('reannotation result', res);
+      },
+      err => {
+        for (const id of ids) {
+          // pick file by id
+          const file: PdfFile = this.dataSource.data.find((f: PdfFile) => f.file_id === id);
+          // mark it as failed
+          file.annotation_status = AnnotationStatus.Failure;
+        }
+        this.isReannotating = false;
+        this.snackBar.open(`Reannotation failed`, 'Close', {duration: 10000});
+        console.error('reannotation error', err);
+      }
+    );
+  }
+
+  // Adapted from https://v8.material.angular.io/components/table/overview#selection
+  masterToggle() {
+    if (this.selection.selected.length === this.dataSource.data.length) {
+      this.selection.clear();
+    } else {
+      this.selection.select(...this.dataSource.data);
+    }
+  }
+
+  applyFilter(filterValue: string) {
+    this.dataSource.filter = filterValue.trim().toLowerCase();
+  }
+
+  openDeleteDialog() {
+    const dialogRef = this.deleteDialog.open(DialogConfirmDeletionComponent, {
+      data: { files: this.selection.selected },
+    });
+
+    dialogRef.afterClosed().subscribe(shouldDelete => {
+      if (shouldDelete) {
+        this.deleteFiles();
+      }
+    });
+  }
+}
+
+@Component({
+  selector: 'app-dialog-confirm-deletion',
+  templateUrl: './dialog-confirm-deletion.html',
+})
+export class DialogConfirmDeletionComponent {
+  constructor(@Inject(MAT_DIALOG_DATA) public data: any) { }
 }

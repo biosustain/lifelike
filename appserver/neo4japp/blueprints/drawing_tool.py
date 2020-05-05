@@ -1,14 +1,19 @@
-from datetime import datetime, timedelta
-from flask import current_app, request, Response, json, Blueprint, g
-import jwt
+import io
+from datetime import datetime
+
+from flask import request, Blueprint, g
 from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy_searchable import search
 
 from neo4japp.blueprints.auth import auth
 from neo4japp.database import db
 from neo4japp.exceptions import RecordNotFoundException
-from neo4japp.models import AppUser, Project, ProjectSchema
+from neo4japp.models import Project, ProjectSchema
 
 import graphviz as gv
+from PyPDF4 import PdfFileReader, PdfFileWriter
+from PyPDF4.generic import NameObject, ArrayObject
+
 
 bp = Blueprint('drawing_tool', __name__, url_prefix='/drawing-tool')
 
@@ -164,15 +169,10 @@ def get_project_pdf(project_id):
     Gets a PDF file from the project drawing
     """
 
-    colormap = {
-        'disease': "#F3AB4A",
-        'species': '#3177B8',
-        'chemical': '#71B267',
-        'gene': '#563A9F',
-        'study': '#005662',
-        'observation': '#9A0007',
-        'entity': 'black'
-    }
+    unprocessed = []
+    processed = {}
+    processed_ids = []
+    references = []
 
     user = g.current_user
 
@@ -182,19 +182,86 @@ def get_project_pdf(project_id):
         user_id=user.id
     ).first_or_404()
 
+    unprocessed.append(data_source.hash_id)
+
+    while len(unprocessed):
+        item = unprocessed.pop(0)
+        project = Project.query.filter_by(hash_id=item).one_or_none()
+        if not project:
+            raise RecordNotFoundException()
+        pdf_data = process(project)
+        pdf_object = PdfFileReader(io.BytesIO(pdf_data))
+        processed[item] = pdf_object
+        processed_ids.append(item)
+        unprocessed_, references_ = get_references(pdf_object)
+        unprocessed.extend([x for x in unprocessed_ if x not in unprocessed])
+        references.extend(references_)
+
+    for annot, hash_id in references:
+        annot[NameObject('/Dest')] = ArrayObject([processed[hash_id].getPage(0).indirectRef,
+                                                  NameObject('/Fit')])
+        del(annot['/A'])
+
+    return merge_pdfs(processed, processed_ids)
+
+
+def merge_pdfs(processed, pdf_list):
+    final = PdfFileWriter()
+    for pdf_id in pdf_list:
+        final.addPage(processed[pdf_id].getPage(0))
+    output = io.BytesIO()
+    final.write(output)
+
+    return output.getvalue()
+
+
+def get_references(pdf_object):
+    unprocessed = []
+    references = []
+    for x in pdf_object.getPage(0).get('/Annots', []):
+        x = x.getObject()
+        if 'dt/map/' in x['/A']['/URI']:
+            id = x['/A']['/URI'].split('map/')[-1]
+            unprocessed.append(id)
+            references.append((x, id))
+
+    return unprocessed, references
+
+
+def process(data_source, format='pdf'):
+    colormap = {
+        'disease': "#FF9800",
+        'species': '#0277BD',
+        'chemical': '#4CAF50',
+        'gene': '#673AB7',
+        'study': '#17BECF',
+        'observation': '#D62728',
+        'entity': '#7F7F7F',
+        'mutation': '#4CAF50',
+        'protein': '#BCBD22',
+        'pathway': '#E377C2',
+        'phenotype': '#EDC949'
+    }
     json_graph = data_source.graph
-    graph = gv.Digraph('POC', comment=data_source.description, engine='neato', graph_attr=(('margin', '3'),))  # noqa
+    graph = gv.Digraph(
+        data_source.label,
+        comment=data_source.description,
+        engine='neato',
+        graph_attr=(
+            ('margin', '3'),
+            ('dpi', '300')),
+        format=format)
+
     for node in json_graph['nodes']:
         params = {
             'name': node['hash'],
             'label': node['display_name'],
             'pos': f"{node['data']['x'] / 55},{-node['data']['y'] / 55}!",
             'shape': 'box',
-            'style': 'rounded,filled',
-            'color': colormap[node['label']],
-            'fontcolor': 'white',
+            'style': 'rounded',
+            'color': '#2B7CE9',
+            'fontcolor': colormap.get(node['label'], 'black'),
             'fontname': 'sans-serif',
-            'fillcolor': colormap[node['label']],
             'margin': "0.2,0.0"
         }
         if 'hyperlink' in node['data'] and node['data']['hyperlink']:
@@ -207,7 +274,37 @@ def get_project_pdf(project_id):
             edge['from'],
             edge['to'],
             edge['label'],
-            color='blue'
+            color='#2B7CE9'
         )
 
     return graph.pipe()
+
+
+@bp.route('/search', methods=['POST'])
+@auth.login_required
+def find_maps():
+    user = g.current_user
+    data = request.get_json()
+    query = search(Project.query, data['term'], sort=True)
+    personal = query.filter_by(user_id=user.id).all()
+    community = query.filter_by(public=True).all()
+    project_schema = ProjectSchema(many=True)
+
+    return {'projects': project_schema.dump(personal) + project_schema.dump(community)}, 200
+
+
+@bp.route('/projects/<string:project_id>/<string:format>', methods=['get'])
+@auth.login_required
+def get_project_image(project_id, format):
+    """
+    Gets a image file from the project drawing
+    """
+    user = g.current_user
+
+    # Pull up project by id
+    data_source = Project.query.filter_by(
+        id=project_id,
+        user_id=user.id
+    ).first_or_404()
+
+    return process(data_source, format)

@@ -60,15 +60,20 @@ class AnnotationsPDFParser:
                     coor_obj_per_pdf_page=coor_obj_per_pdf_page,
                 )
             elif isinstance(lt_obj, LTChar) or isinstance(lt_obj, LTAnno):
-                if page_idx + 1 in coor_obj_per_pdf_page:
-                    prev_char = coor_obj_per_pdf_page[page_idx+1][-1]
-                    if should_add_virtual_space(prev_char, lt_obj):
-                        virtual_space_char = LTAnno(' ')
-                        coor_obj_per_pdf_page[page_idx+1].append(virtual_space_char)
+                # ignore CID fonts
+                # these are arithmetic or other symbols the parser
+                # was not able to translate
+                # usually requires a license or better algorithm from parser
+                if not lt_obj.get_text().startswith('cid:'):
+                    if page_idx + 1 in coor_obj_per_pdf_page:
+                        prev_char = coor_obj_per_pdf_page[page_idx+1][-1]
+                        if should_add_virtual_space(prev_char, lt_obj):
+                            virtual_space_char = LTAnno(' ')
+                            coor_obj_per_pdf_page[page_idx+1].append(virtual_space_char)
 
-                    coor_obj_per_pdf_page[page_idx+1].append(lt_obj)
-                else:
-                    coor_obj_per_pdf_page[page_idx+1] = [lt_obj]
+                        coor_obj_per_pdf_page[page_idx+1].append(lt_obj)
+                    else:
+                        coor_obj_per_pdf_page[page_idx+1] = [lt_obj]
 
     def parse_pdf_high_level(self, pdf) -> str:
         return high_level.extract_text(pdf)
@@ -84,10 +89,12 @@ class AnnotationsPDFParser:
         device = PDFPageAggregator(rsrcmgr=rsrcmgr, laparams=LAParams())
         interpreter = PDFPageInterpreter(rsrcmgr=rsrcmgr, device=device)
 
-        str_per_pdf_page: Dict[int, List[str]] = dict()
-        coor_obj_per_pdf_page: Dict[int, List[Union[LTChar, LTAnno]]] = dict()
+        str_per_pdf_page: Dict[int, List[str]] = {}
+        coor_obj_per_pdf_page: Dict[int, List[Union[LTChar, LTAnno]]] = {}
+        cropbox_per_page: Dict[int, Tuple[int, int]] = {}
 
         for i, page in enumerate(PDFPage.create_pages(pdf_doc)):
+            cropbox_per_page[i+1] = (page.cropbox[0], page.cropbox[1])
             interpreter.process_page(page)
             layout = device.get_result()
             self._get_lt_char(
@@ -97,8 +104,6 @@ class AnnotationsPDFParser:
             )
 
         for page_idx, lt_char_list in coor_obj_per_pdf_page.items():
-            if lt_char_list[-1].get_text() not in whitespace:
-                lt_char_list.append(LTAnno(' '))
             for lt_char in lt_char_list:
                 # LTAnno are 'virtual' characters inserted by the parser
                 # don't really care for \n so make them whitespace
@@ -116,7 +121,59 @@ class AnnotationsPDFParser:
         return PDFParsedCharacters(
             coor_obj_per_pdf_page=coor_obj_per_pdf_page,
             str_per_pdf_page=str_per_pdf_page,
+            cropbox_per_page=cropbox_per_page,
         )
+
+    def _is_whitespace_or_punctuation(self, text: str) -> bool:
+        return text in whitespace or text == '\xa0' or text in punctuation  # noqa
+
+    def _is_whitespace(self, text: str) -> bool:
+        # whitespace contains newline
+        return text in whitespace or text == '\xa0'
+
+    def combine_chars_into_words(
+        self,
+        parsed_chars: PDFParsedCharacters,
+    ) -> Dict[int, List[Tuple[str, Dict[int, str]]]]:
+        """Combines a list of char into a list of words.
+
+        E.g ['H', 'e', 'l', 'l', 'o', ' ', 'T', 'h', 'e', 'r', 'e']
+        becomes ['Hello', 'There']
+        """
+        words_with_char_idx: Dict[int, List[Tuple[str, Dict[int, str]]]] = {}
+
+        # first combine each character into single words
+        # and save each character's index relative to page it's on
+        for page_idx, char_list in parsed_chars.str_per_pdf_page.items():
+            word_list: List[Tuple[str, Dict[int, str]]] = []
+            char_idx_map: Dict[int, str] = {}
+            max_length = len(char_list)
+            word = ''
+
+            for i, char in enumerate(char_list):
+                if char in whitespace and char_list[i-1] != '-':
+                    if char_idx_map:
+                        word_list.append((word, char_idx_map))
+                        char_idx_map = {}
+                        word = ''
+                elif char in whitespace and char_list[i-1] == '-':
+                    # word is possibly on new line
+                    # so ignore the space
+                    pass
+                else:
+                    if i + 1 == max_length:
+                        # reached end so add whatever is left
+                        word += char
+                        char_idx_map[i] = char
+                        word_list.append((word, char_idx_map))
+                        char_idx_map = {}
+                        word = ''
+                    else:
+                        word += char
+                        char_idx_map[i] = char
+
+            words_with_char_idx[page_idx] = word_list
+        return words_with_char_idx
 
     def extract_tokens(
         self,
@@ -130,124 +187,56 @@ class AnnotationsPDFParser:
         each keyword.
 
         E.g ['A', 'B', 'C', 'D', 'E'] -> ['A', 'A B', 'A B C', 'B', 'B C', ...]
+            - NOTE: each character here represents a word
         """
-        curr_max_words = 1
-        token_objects: List[PDFTokenPositions] = []
+        keyword_tokens: List[PDFTokenPositions] = []
+        words_with_char_idx = self.combine_chars_into_words(parsed_chars=parsed_chars)
 
+        curr_max_words = 1
         processed_tokens: Set[str] = set()
 
-        for page_idx, char_list in parsed_chars.str_per_pdf_page.items():
-            curr_page = page_idx
-            max_length = len(char_list)
-            curr_idx = 0
-            new_start_idx = 0
-            first_whitespace_encountered_idx = 0
+        # now create keyword tokens up to self.max_word_length
+        for page_idx, words_char_idx_list in words_with_char_idx.items():
+            end_idx = 1
+            max_length = len(words_char_idx_list)
 
-            while curr_idx < max_length:
-                curr_keyword = ''
+            for i, _ in enumerate(words_char_idx_list):
+                while curr_max_words <= self.max_word_length and end_idx <= max_length:  # noqa
+                    word_char_idx_map_pairing = words_char_idx_list[i:end_idx]
+                    words = [word for word, _ in word_char_idx_map_pairing]
+                    char_idx_maps = [char_idx_map for _, char_idx_map in word_char_idx_map_pairing]  # noqa
 
-                while curr_max_words <= self.max_word_length:
-                    whitespace_count = 0
-                    char_idx_map: Dict[int, str] = {}
+                    curr_keyword = ' '.join(words)
+                    if not self._is_whitespace_or_punctuation(curr_keyword):
+                        curr_char_idx_mappings: Dict[int, str] = {}
 
-                    while whitespace_count < curr_max_words and curr_idx < max_length:
-                        # ignore leading spaces or punctuations
-                        if (curr_keyword == '' and
-                            (char_list[curr_idx] in whitespace or
-                                char_list[curr_idx] == '\xa0' or
-                                char_list[curr_idx] in punctuation)):
-                            curr_idx += 1
-                        else:
-                            if (char_list[curr_idx] not in whitespace and
-                                    char_list[curr_idx] != '\xa0'):
-                                curr_keyword += char_list[curr_idx]
-                                char_idx_map[curr_idx] = char_list[curr_idx]
-                                curr_idx += 1
-                            else:
-                                # encountered whitespace
-                                # \xa0 is non-breaking whitespace
+                        # need to keep order here so can't unpack (?)
+                        for char_map in char_idx_maps:
+                            for k, v in char_map.items():
+                                curr_char_idx_mappings[k] = v
 
-                                # check if double spacing
-                                if (curr_idx+1 < max_length and
-                                        (char_list[curr_idx+1] in whitespace or
-                                            char_list[curr_idx+1] == '\xa0')):
-                                    curr_idx += 1
-                                else:
-                                    # if whitespace encountered, but previous
-                                    # character is '-', then don't count the
-                                    # whitespace as likely word continues on
-                                    # new line
-                                    # this is to account turning '\n' into ' '
-                                    # in @parse_pdf()
-                                    if char_list[curr_idx - 1] == '-':
-                                        curr_idx += 1
-                                    else:
-                                        if whitespace_count == 0:
-                                            first_whitespace_encountered_idx = curr_idx
+                        token = PDFTokenPositions(
+                            page_number=page_idx,
+                            keyword=curr_keyword,
+                            char_positions=curr_char_idx_mappings,
+                        )
 
-                                        # each whitespace encountered means a
-                                        # whole word has been processed
-                                        if whitespace_count + 1 < curr_max_words:
-                                            curr_keyword += char_list[curr_idx]
-                                            char_idx_map[curr_idx] = char_list[curr_idx]
-                                            curr_idx += 1
-                                        whitespace_count += 1
+                        # need to do this check because
+                        # could potentially have duplicates due to
+                        # the sequential increment starting over
+                        # at end of page
+                        hashval = compute_hash(token.to_dict())
+                        if hashval not in processed_tokens:
+                            keyword_tokens.append(token)
+                            processed_tokens.add(hashval)
 
-                    token = PDFTokenPositions(
-                        page_number=curr_page,
-                        keyword=curr_keyword,
-                        char_positions=char_idx_map,
-                    )
-                    hashval = compute_hash(token.to_dict())
-                    if hashval not in processed_tokens:
-                        processed_tokens.add(hashval)
-                        token_objects.append(token)
-
-                    curr_idx = new_start_idx
-                    curr_keyword = ''
                     curr_max_words += 1
-
+                    end_idx += 1
                 curr_max_words = 1
-                whitespace_count = 0
-                curr_idx = first_whitespace_encountered_idx + 1
-                # setting first_whitespace_encountered_idx to curr_idx
-                # to avoid edge case that causes infinite loop
-                # if the sequential increment started over at the last word
-                # and there is no whitespace after it,
-                # it is possible for first_whitespace_encountered_idx
-                # to be an idx before the first character of the word
-                # meaning it'll be in an infinite loop
-                # since curr_idx will always reset to that idx
-                first_whitespace_encountered_idx = new_start_idx = curr_idx
-
-        # clean up any duplicates due to whitespace at the end
-        # of a page, and the number of words in the keyword
-        # hasn't reached the self.max_word_length yet
-        #
-        # TODO: JIRA LL-460
-        keyword_tokens: List[PDFTokenPositions] = []
-        keyword_tokens_set: Set[str] = set()
-
-        for token in token_objects:
-            if token.keyword[-1] in whitespace or token.keyword[-1] == '\xa0':
-                tmp_keyword = token.keyword[:-1]
-                tmp_char_positions = {k: v for k, v in token.char_positions.items()}
-                tmp_char_positions.popitem()
-                hashval = compute_hash(tmp_char_positions)
-
-                if hashval not in keyword_tokens_set:
-                    keyword_tokens_set.add(hashval)
-                    keyword_tokens.append(PDFTokenPositions(
-                        page_number=token.page_number,
-                        keyword=tmp_keyword,
-                        char_positions=tmp_char_positions,
-                    ))
-            else:
-                hashval = compute_hash(token.char_positions)
-                keyword_tokens_set.add(hashval)
-                keyword_tokens.append(token)
+                end_idx = i + 2
 
         return PDFTokenPositionsList(
             token_positions=keyword_tokens,
             coor_obj_per_pdf_page=parsed_chars.coor_obj_per_pdf_page,
+            cropbox_per_page=parsed_chars.cropbox_per_page,
         )
