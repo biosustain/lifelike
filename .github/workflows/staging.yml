@@ -21,6 +21,8 @@ env:
     GITHUB_HASH: $GITHUB_SHA
     GCE_INSTANCE: kg-staging
     GCE_INSTANCE_ZONE: us-central1-a
+    CLOUD_SQL_ALIAS: ${{ secrets.STAGING_CLOUD_SQL_ALIAS }}
+    GCE_BACKUP_BUCKET: ${{ secrets.POSTGRES_BACKUP_BUCKET }}
     # TODO: Delete these later after refactor, redundant
     NEO4J_ENTITIES_HOST: ${{ secrets.NEO4J_ENTITIES_HOST }}
     NEO4J_ENTITIES_PASS: ${{ secrets.NEO4J_ENTITIES_PASS }}
@@ -78,11 +80,11 @@ jobs:
                 echo "NEO4J_ENTITIES_HOST=$NEO4J_ENTITIES_HOST" >> staging.env
                 echo "NEO4J_ENTITIES_PASS=$NEO4J_ENTITIES_PASS" >> staging.env
                 echo "NEO4J_ENTITIES_USER=$NEO4J_ENTITIES_USER" >> staging.env
-                GITHUB_COMMIT_TIMESTAMP=$(git log -1 --format=%cd)
+                echo "CLOUD_SQL_ALIAS=$CLOUD_SQL_ALIAS" >> staging.env
+                echo "GCE_BACKUP_BUCKET=$GCE_BACKUP_BUCKET >> staging.env"
+                GITHUB_COMMIT_TIMESTAMP=$(git log -1 --format=%cI)
                 echo "GITHUB_COMMIT_TIMESTAMP=$GITHUB_COMMIT_TIMESTAMP" >> staging.env
                 echo "GITHUB_HASH=$GITHUB_HASH >> staging.env"
-
-
                 echo "$SERVICE_ACCOUNT_CRED" >> keyfile.json
                 gcloud compute scp staging.env ***ARANGO_USERNAME***@$GCE_INSTANCE:/srv --zone $GCE_INSTANCE_ZONE
                 gcloud compute scp keyfile.json ***ARANGO_USERNAME***@$GCE_INSTANCE:/srv --zone $GCE_INSTANCE_ZONE
@@ -92,4 +94,11 @@ jobs:
             - name: Deploy
               run: |-
                 gcloud compute ssh ***ARANGO_USERNAME***@$GCE_INSTANCE --zone $GCE_INSTANCE_ZONE --command='/srv/startup.sh -t staging';
-                gcloud compute ssh ***ARANGO_USERNAME***@$GCE_INSTANCE --zone $GCE_INSTANCE_ZONE --command='sudo docker system prune';
+
+            - name: Applying database migrations
+              run: |-
+                gcloud compute ssh ***ARANGO_USERNAME***@$GCE_INSTANCE --zone $GCE_INSTANCE_ZONE --command='/srv/migration-manager.sh';
+
+            - name: Clean up images
+              run: |-
+                gcloud compute ssh ***ARANGO_USERNAME***@$GCE_INSTANCE --zone $GCE_INSTANCE_ZONE --command='sudo docker system prune -f';
