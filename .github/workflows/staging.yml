@@ -99,7 +99,7 @@ jobs:
 
             - name: Applying database migrations
               run: |-
-                gcloud compute ssh ***ARANGO_USERNAME***@$GCE_INSTANCE --zone $GCE_INSTANCE_ZONE --command='/srv/migration-manager.sh';
+                gcloud compute ssh ***ARANGO_USERNAME***@$GCE_INSTANCE --zone $GCE_INSTANCE_ZONE --command='/srv/migration-manager.sh -t staging';
 
             - name: Clean up images
               run: |-
