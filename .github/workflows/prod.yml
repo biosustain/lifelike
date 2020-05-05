@@ -1,8 +1,9 @@
 name: Production Deployment
 
 on:
-    pull_request:
-        types: [labeled]
+  release:
+    types: [published]
+
 
 env:
     SERVICE_ACCOUNT_CRED: ${{ secrets.GCE_SA_KEY }}
@@ -17,8 +18,11 @@ env:
     FLASK_APP_CONFIG: ${{ secrets.PROD_FLASK_APP_CONFIG }}
     FLASK_ENV: ${{ secrets.PROD_FLASK_ENV }}
     PROJECT_ID: ${{ secrets.GCE_PROJECT }}
+    GITHUB_HASH: $GITHUB_SHA
     GCE_INSTANCE: kg-prod
     GCE_INSTANCE_ZONE: us-central1-a
+    CLOUD_SQL_ALIAS: ${{ secrets.PROD_CLOUD_SQL_ALIAS }}
+    GCE_BACKUP_BUCKET: ${{ secrets.POSTGRES_BACKUP_BUCKET }}
     # TODO: Delete these later after refactor, redundant
     NEO4J_ENTITIES_HOST: ${{ secrets.NEO4J_ENTITIES_HOST }}
     NEO4J_ENTITIES_PASS: ${{ secrets.NEO4J_ENTITIES_PASS }}
@@ -29,8 +33,6 @@ jobs:
 
         name: Setup, Build, Publish, and Deploy
         runs-on: ubuntu-latest
-
-        if: contains(github.event.pull_request.labels.*.name, 'production')
 
         steps:
             - name: Checkout
@@ -77,13 +79,27 @@ jobs:
                 echo "NEO4J_ENTITIES_HOST=$NEO4J_ENTITIES_HOST" >> prod.env
                 echo "NEO4J_ENTITIES_PASS=$NEO4J_ENTITIES_PASS" >> prod.env
                 echo "NEO4J_ENTITIES_USER=$NEO4J_ENTITIES_USER" >> prod.env
+                echo "CLOUD_SQL_ALIAS=$CLOUD_SQL_ALIAS" >> prod.env
+                echo "GCE_BACKUP_BUCKET=$GCE_BACKUP_BUCKET" >> prod.env
+                echo "GITHUB_HASH=$GITHUB_HASH >> prod.env"
+                GITHUB_COMMIT_TIMESTAMP=$(git log -1 --format=%cI)
+                echo "GITHUB_COMMIT_TIMESTAMP=$GITHUB_COMMIT_TIMESTAMP" >> prod.env
                 echo "$SERVICE_ACCOUNT_CRED" >> keyfile.json
                 gcloud compute scp prod.env root@$GCE_INSTANCE:/srv --zone $GCE_INSTANCE_ZONE
                 gcloud compute scp keyfile.json root@$GCE_INSTANCE:/srv --zone $GCE_INSTANCE_ZONE
                 gcloud compute scp ./deployment/bin/startup.sh root@$GCE_INSTANCE:/srv --zone $GCE_INSTANCE_ZONE
+                gcloud compute scp ./deployment/bin/migration-manager.sh root@$GCE_INSTANCE:/srv --zone $GCE_INSTANCE_ZONE
                 gcloud compute ssh root@$GCE_INSTANCE --zone $GCE_INSTANCE_ZONE --command='chmod a+x /srv/startup.sh';
+                gcloud compute ssh root@$GCE_INSTANCE --zone $GCE_INSTANCE_ZONE --command='chmod a+x /srv/migration-manager.sh';
 
             - name: Deploy
               run: |-
                 gcloud compute ssh root@$GCE_INSTANCE --zone $GCE_INSTANCE_ZONE --command='/srv/startup.sh -t production';
-                gcloud compute ssh root@$GCE_INSTANCE --zone $GCE_INSTANCE_ZONE --command='sudo docker system prune';
+
+            - name: Applying database migrations
+              run: |-
+                gcloud compute ssh root@$GCE_INSTANCE --zone $GCE_INSTANCE_ZONE --command='/srv/migration-manager.sh -t production';
+
+            - name: Clean up images
+              run: |-
+                gcloud compute ssh root@$GCE_INSTANCE --zone $GCE_INSTANCE_ZONE --command='sudo docker system prune -f';
