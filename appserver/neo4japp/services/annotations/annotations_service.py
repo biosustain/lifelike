@@ -411,7 +411,7 @@ class AnnotationsService:
 
         def get_gene_match_result(
             genes: List[str],
-        ) -> Dict[str, Dict[str, str]]:
+        ) -> Dict[str, str]:
             """Returns a map of gene name to gene id."""
             from neo4japp.database import get_organism_gene_match_service
             organism_gene_match_service = get_organism_gene_match_service()
