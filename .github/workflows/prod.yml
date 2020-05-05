@@ -98,7 +98,7 @@ jobs:
 
             - name: Applying database migrations
               run: |-
-                gcloud compute ssh root@$GCE_INSTANCE --zone $GCE_INSTANCE_ZONE --command='/srv/migration-manager.sh';
+                gcloud compute ssh root@$GCE_INSTANCE --zone $GCE_INSTANCE_ZONE --command='/srv/migration-manager.sh -t production';
 
             - name: Clean up images
               run: |-
