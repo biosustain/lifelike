@@ -89,6 +89,13 @@ def get_authorization_service():
     return g.authorization_service
 
 
+def get_organism_gene_match_service():
+    if 'organism_gene_match_service' not in g:
+        from neo4japp.services import OrganismGeneMatchService
+        g.organism_gene_match_service = OrganismGeneMatchService(db.session)
+    return g.organism_gene_match_service
+
+
 def get_account_service():
     if 'account_service' not in g:
         from neo4japp.services import AccountService
