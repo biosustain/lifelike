@@ -3,6 +3,7 @@ import { FormControl } from '@angular/forms';
 import { Subscription, Subject, combineLatest, BehaviorSubject } from 'rxjs';
 import { PdfFile } from 'app/interfaces/pdf-files.interface';
 import { PdfFilesService } from 'app/shared/services/pdf-files.service';
+import { HYPERLINKS } from 'app/shared/constants';
 
 import {
   PdfAnnotationsService, DataFlowService,
@@ -184,6 +185,9 @@ export class PdfViewerComponent implements OnDestroy {
     ).subscribe(([pdf, ann]) => {
       this.pdfData = { data: new Uint8Array(pdf) };
       this.annotations = ann;
+      this.annotations.forEach(annotation => {
+        annotation.meta.hyperlink = this.generateHyperlink(annotation);
+      });
       this.currentFileId = id;
       setTimeout(() => {
         this.pdfViewerReady = true;
@@ -206,14 +210,23 @@ export class PdfViewerComponent implements OnDestroy {
     }
   }
 
-  generateHyperlink(annDef: Annotation): string {
-
-    switch (annDef.meta.type) {
-      case 'Chemical':
-        const id = annDef.meta.id.match(/(\d+)/g)[0];
-        return `https://www.ebi.ac.uk/chebi/searchId.do?chebiId=${id}`;
-      case 'Gene':
-        return `https://www.ncbi.nlm.nih.gov/gene/?term=${annDef.meta.id}`;
+  generateHyperlink(ann: Annotation): string {
+    switch (ann.meta.idType) {
+      case 'CHEBI':
+        return HYPERLINKS.CHEBI + ann.meta.id;
+      case 'MESH':
+        // prefix 'MESH:' should be removed from the id in order for search to work
+        return HYPERLINKS.MESH + ann.meta.id.substring(5);
+      case 'UNIPROT':
+        // Note: UNIPROT links will not work as currently there are names in the id fields
+        return HYPERLINKS + ann.meta.id;
+      case 'NCBI':
+        if (ann.meta.type === 'Genes') {
+          return HYPERLINKS.NCBI_GENES + ann.meta.id;
+        } else if (ann.meta.type === 'Species') {
+          return HYPERLINKS.NCBI_SPECIES + ann.meta.id;
+        }
+        return '';
       default:
         return '';
     }
