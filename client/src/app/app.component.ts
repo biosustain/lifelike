@@ -34,4 +34,5 @@ export class AppComponent {
   logout() {
     this.store.dispatch(AuthActions.logout());
   }
+
 }

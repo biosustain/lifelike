@@ -30,6 +30,8 @@ import { DrawingToolContextMenuComponent } from './drawing-tool/drawing-tool-con
 import { PaletteComponent } from './drawing-tool/palette/palette.component';
 import { InfoPanelComponent } from './drawing-tool/info-panel/info-panel.component';
 import { SplitterComponent } from './splitter/splitter.component';
+import { ExportModalComponent } from './drawing-tool/export-modal/export-modal.component';
+import { MatDialogModule } from '@angular/material/dialog';
 import { MapPreviewComponent } from './project-list-view/map-preview/map-preview.component';
 import { MapListComponent } from './project-list-view/map-list/map-list.component';
 import { SharedModule } from 'app/shared/shared.module';
@@ -47,7 +49,7 @@ export const routes = [
     component: DrawingToolComponent
   },
   {
-    path: 'splitter',
+    path: 'splitter/:hash_id',
     component: SplitterComponent,
     canDeactivate: [PendingChangesGuard]
   },
@@ -72,7 +74,8 @@ export const routes = [
     InfoPanelComponent,
     SplitterComponent,
     MapPreviewComponent,
-    MapListComponent
+    MapListComponent,
+    ExportModalComponent
   ],
   entryComponents: [
     CreateProjectDialogComponent,
@@ -80,12 +83,15 @@ export const routes = [
     CopyProjectDialogComponent,
     MapListComponent,
     ProjectListViewComponent,
-    PdfViewerComponent
+    PdfViewerComponent,
+    ExportModalComponent
   ],
   imports: [
     SharedModule,
     PdfViewerLibModule,
+    MatDialogModule,
     RouterModule.forChild(routes)
+
   ],
   providers: [
     CopyPasteMapsService,

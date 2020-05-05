@@ -1,17 +1,20 @@
+import logging
+import traceback
 from functools import partial
 
 from flask import current_app, Flask, jsonify
 from flask_caching import Cache
 from flask_cors import CORS
-from flask_httpauth import HTTPTokenAuth
 from werkzeug.utils import find_modules, import_string
 
-from neo4japp.encoders import CustomJSONEncoder
 from neo4japp.database import db, ma, migrate
+from neo4japp.encoders import CustomJSONEncoder
 from neo4japp.exceptions import (
     BaseException, JWTAuthTokenException,
-    JWTTokenException, RecordNotFoundException
-)
+    JWTTokenException, RecordNotFoundException,
+    BadRequestError)
+
+logger = logging.getLogger(__name__)
 
 # Used for registering blueprints
 BLUEPRINT_PACKAGE = __package__ + '.blueprints'
@@ -51,6 +54,7 @@ def create_app(name='neo4japp', config='config.Development'):
     app.register_error_handler(JWTAuthTokenException, partial(handle_error, 401))
     app.register_error_handler(JWTTokenException, partial(handle_error, 401))
     app.register_error_handler(BaseException, partial(handle_error, 400))
+    app.register_error_handler(BadRequestError, partial(handle_bad_request_exception, 400))
     app.register_error_handler(Exception, partial(handle_generic_error, 500))
     return app
 
@@ -64,9 +68,26 @@ def register_blueprints(app, pkgname):
 
 def handle_error(code: int, ex: BaseException):
     reterr = {'apiHttpError': ex.to_dict()}
+    if current_app.debug:
+        logger.error("Request caused BaseException error", exc_info=ex)
+        reterr['detail'] = "".join(traceback.format_exception(
+            etype=type(ex), value=ex, tb=ex.__traceback__))
+    return jsonify(reterr), code
+
+
+def handle_bad_request_exception(code: int, ex: BadRequestError):
+    reterr = {'message': ex.message}
+    if current_app.debug:
+        logger.warning("Request caused BadRequestError", exc_info=ex)
+        reterr['detail'] = "".join(traceback.format_exception(
+            etype=type(ex), value=ex, tb=ex.__traceback__))
     return jsonify(reterr), code
 
 
 def handle_generic_error(code: int, ex: Exception):
     reterr = {'apiHttpError': str(ex)}
+    if current_app.debug:
+        logger.error("Request caused unhandled exception", exc_info=ex)
+        reterr['detail'] = "".join(traceback.format_exception(
+            etype=type(ex), value=ex, tb=ex.__traceback__))
     return jsonify(reterr), code
