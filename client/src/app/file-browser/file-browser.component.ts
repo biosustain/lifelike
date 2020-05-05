@@ -1,8 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Inject, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { SelectionModel } from '@angular/cdk/collections';
 import { MatTableDataSource } from '@angular/material/table';
-import { MatSnackBar } from '@angular/material';
+import { MatDialog, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { BehaviorSubject, throwError } from 'rxjs';
 import { AnnotationStatus, PdfFile } from 'app/interfaces/pdf-files.interface';
 import { PdfFilesService } from 'app/shared/services/pdf-files.service';
@@ -26,6 +27,7 @@ export class FileBrowserComponent implements OnInit {
     private pdf: PdfFilesService,
     private router: Router,
     private snackBar: MatSnackBar,
+    private deleteDialog: MatDialog,
     private progressDialog: ProgressDialog,
   ) {
   }
@@ -166,4 +168,24 @@ export class FileBrowserComponent implements OnInit {
   applyFilter(filterValue: string) {
     this.dataSource.filter = filterValue.trim().toLowerCase();
   }
+
+  openDeleteDialog() {
+    const dialogRef = this.deleteDialog.open(DialogConfirmDeletion, {
+      data: { files: this.selection.selected },
+    });
+
+    dialogRef.afterClosed().subscribe(shouldDelete => {
+      if (shouldDelete) {
+        this.deleteFiles();
+      }
+    });
+  }
+}
+
+@Component({
+  selector: 'dialog-confirm-deletion',
+  templateUrl: './dialog-confirm-deletion.html',
+})
+export class DialogConfirmDeletion {
+  constructor(@Inject(MAT_DIALOG_DATA) public data: any) { }
 }
