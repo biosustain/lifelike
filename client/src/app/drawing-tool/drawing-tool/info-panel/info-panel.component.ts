@@ -436,41 +436,46 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
   goToLink() {
     const hyperlink: string = this.entityForm.value.hyperlink;
 
-    if (this.graphData.data.source) {
-      // If a link, create a payload from hyperlink url
-      const getUrl = window.location;
-      const prefixLink = '/dt/pdf/';
-      const [
-        fileId,
-        page,
-        coordA,
-        coordB,
-        coordC,
-        coordD
-      ] = hyperlink.replace(prefixLink, '').split('/');
-      // Emit app command with annotation payload
-      this.openApp.emit({
-          app: 'pdf-viewer',
-          arg: {
-            // tslint:disable-next-line: radix
-            pageNumber: parseInt(page),
-            fileId,
-            coords: [
-              parseFloat(coordA),
-              parseFloat(coordB),
-              parseFloat(coordC),
-              parseFloat(coordD)
-            ]
-          }
-        }
-      );
-    } else if (
+    if (!hyperlink) { return; }
+
+    if (
       hyperlink.includes('http')
     ) {
       window.open(hyperlink, '_blank');
     } else {
       window.open('http://' + hyperlink);
     }
+  }
+
+  /**
+   * Bring user to original source of node information
+   */
+  goToSource() {
+    const prefixLink = '/dt/pdf/';
+    const [
+      fileId,
+      page,
+      coordA,
+      coordB,
+      coordC,
+      coordD
+    ] = this.graphData.data.source.replace(prefixLink, '').split('/');
+    // Emit app command with annotation payload
+    this.openApp.emit({
+        app: 'pdf-viewer',
+        arg: {
+          // tslint:disable-next-line: radix
+          pageNumber: parseInt(page),
+          fileId,
+          coords: [
+            parseFloat(coordA),
+            parseFloat(coordB),
+            parseFloat(coordC),
+            parseFloat(coordD)
+          ]
+        }
+      }
+    );
   }
 
   blurInput(e: Event) {
