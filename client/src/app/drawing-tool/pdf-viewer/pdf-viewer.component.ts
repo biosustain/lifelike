@@ -147,17 +147,40 @@ export class PdfViewerComponent implements OnDestroy {
     const loc: Location = JSON.parse(nodeDom.getAttribute('location')) as Location;
 
     const getUrl = window.location;
-    let hyperlink = getUrl.protocol + '//' + getUrl.host + '/dt/link/';
-    hyperlink = hyperlink + `${this.currentFileId}/${loc.pageNumber}/`;
-    hyperlink = hyperlink + `${loc.rect[0]}/${loc.rect[1]}/${loc.rect[2]}/${loc.rect[3]}`;
+    let source = '/dt/pdf/' + `${this.currentFileId}/${loc.pageNumber}/`;
+    source = source + `${loc.rect[0]}/${loc.rect[1]}/${loc.rect[2]}/${loc.rect[3]}`;
+
+    // Convert form plural to singular
+    const mapper = (plural) => {
+      switch (plural) {
+        case 'Chemicals':
+          return 'chemical';
+        case 'Compounds':
+          return 'compound';
+        case 'Diseases':
+          return 'disease';
+        case 'Genes':
+          return 'gene';
+        case 'Proteins':
+          return 'protein';
+        case 'Species':
+          return 'species';
+        default:
+          return plural;
+      }
+    };
 
     const payload: GraphData = {
       x: mouseEvent.clientX - containerCoord.x,
       y: mouseEvent.clientY,
       label: meta.allText,
-      group: 'link',
-      hyperlink
+      group: mapper(meta.type),
+      data: {
+        source
+      }
     };
+
+    console.log(meta, loc, event, payload);
 
     this.dataFlow.pushNode2Canvas(payload);
   }
