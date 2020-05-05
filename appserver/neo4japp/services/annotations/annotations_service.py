@@ -16,6 +16,7 @@ from .constants import (
     EntityColor,
     EntityIdStr,
     EntityType,
+    ENTITY_TYPE_PRECEDENCE,
     PDF_NEW_LINE_THRESHOLD,
     NCBI_LINK,
     UNIPROT_LINK,
@@ -377,18 +378,144 @@ class AnnotationsService:
         self,
         entity_id_str: str,
         coor_obj_per_pdf_page: Dict[int, List[Union[LTChar, LTAnno]]],
+        matched_organism_ids: List[str],
+        organism_frequency: Dict[str, int],
         cropbox_per_page: Dict[int, Tuple[int, int]],
     ) -> Tuple[List[Annotation], Set[str]]:
-        return self._get_annotation(
-            tokens=self.matched_genes,
-            token_type=EntityType.Genes.value,
-            color=EntityColor.Genes.value,
-            transaction=self.lmdb_session.genes_txn,
-            id_str=entity_id_str,
-            correct_synonyms=self.correct_synonyms,
-            coor_obj_per_pdf_page=coor_obj_per_pdf_page,
-            cropbox_per_page=cropbox_per_page,
-        )
+        """Gene specific annotation. Nearly identical to `_get_annotation`,
+        except that we check genes against the matched organisms found in the
+        document.
+
+        It is likely that the annotator will detect keywords that resemble gene
+        names, but are not genes in the context of the document.
+
+        It is also possible that two organisms discussed in the document each have a
+        gene with the same name. In this case we need a way to distinguish between the
+        two.
+
+        To resolve both of the above issues we check the graph database for
+        relationships between genes/organisms, and handle each of the following cases:
+            1. Exactly one organism match for a given gene
+            2. More than one organism match for a given gene
+            3. No organism matches for a given gene
+        """
+
+        tokens: Dict[str, List[PDFTokenPositions]] = self.matched_genes
+        token_type: str = EntityType.Genes.value
+        color: str = EntityColor.Genes.value
+        transaction = self.lmdb_session.genes_txn
+        correct_synonyms: Dict[str, str] = self.correct_synonyms
+
+        matches: List[Annotation] = []
+        unwanted_matches: Set[str] = set()
+
+        tokens_lowercased = set(tokens.keys())
+
+        def get_gene_to_organism_match_result(
+            genes: List[str],
+            organisms: List[str]
+        ) -> Dict[str, Dict[str, str]]:
+            """Returns a mapping of genes to organisms."""
+            from neo4japp.database import get_neo4j_service_dao
+            neo4j = get_neo4j_service_dao()
+            result = neo4j.get_genes_to_organisms(genes, organisms)
+            return result
+
+        match_result = get_gene_to_organism_match_result(list(tokens.keys()), matched_organism_ids)
+
+        for word, token_positions_list in tokens.items():
+            # If the "gene" is not matched to any organism in the paper, ignore it
+            if word not in match_result.keys():
+                continue
+
+            for token_positions in token_positions_list:
+                if word in correct_synonyms:
+                    lookup_key = correct_synonyms[word]
+                else:
+                    lookup_key = word
+
+                lookup_key = normalize_str(lookup_key)
+
+                entity = json.loads(transaction.get(lookup_key.encode('utf-8')))
+
+                common_name_count = 0
+                if len(entity['common_name']) > 1:
+                    common_names = set([v for _, v in entity['common_name'].items()])
+                    common_names_in_doc_text = [n in tokens_lowercased for n in common_names]  # noqa
+
+                    # skip if none of the common names appear
+                    if not any(common_names_in_doc_text):
+                        continue
+                    else:
+                        for _, v in entity['common_name'].items():
+                            if v in tokens_lowercased:
+                                common_name_count += 1
+                else:
+                    common_name_count = 1
+
+                if common_name_count == 1:
+                    # If a gene was matched to at least one organism in the document,
+                    # we have to get the corresponding gene data. If a gene matches
+                    # more than one organism, we use the one with the highest
+                    # frequency within the document. We may fine-tune this later.
+                    organism_to_gene_pairs = match_result[word]
+                    most_frequent_organism = str()
+                    greatest_frequency = 0
+
+                    for organism_id in organism_to_gene_pairs.keys():
+                        if organism_frequency[organism_id] > greatest_frequency:
+                            greatest_frequency = organism_frequency[organism_id]
+                            most_frequent_organism = organism_id
+
+                    entity_id = organism_to_gene_pairs[most_frequent_organism]
+
+                    # create list of positions boxes
+                    curr_page_coor_obj = coor_obj_per_pdf_page[
+                        token_positions.page_number]
+                    cropbox = cropbox_per_page[token_positions.page_number]
+
+                    keyword_positions: List[Annotation.TextPosition] = []
+                    char_indexes = list(token_positions.char_positions.keys())
+
+                    self._create_keyword_objects(
+                        curr_page_coor_obj=curr_page_coor_obj,
+                        indexes=char_indexes,
+                        keyword_positions=keyword_positions,
+                        cropbox=cropbox,
+                    )
+
+                    keyword_starting_idx = char_indexes[0]
+                    keyword_ending_idx = char_indexes[-1]
+                    link_search_term = f'{token_positions.keyword}'
+
+                    meta = Annotation.Meta(
+                        keyword_type=token_type,
+                        color=color,
+                        id=entity_id,
+                        id_type=entity['id_type'],
+                        links=Annotation.Meta.Links(
+                            ncbi=NCBI_LINK + link_search_term,
+                            uniprot=UNIPROT_LINK + link_search_term,
+                            wikipedia=WIKIPEDIA_LINK + link_search_term,
+                            google=GOOGLE_LINK + link_search_term,
+                        ),
+                    )
+
+                    matches.append(
+                        Annotation(
+                            page_number=token_positions.page_number,
+                            rects=[pos.positions for pos in keyword_positions],  # type: ignore
+                            keywords=[k.value for k in keyword_positions],
+                            keyword=token_positions.keyword,
+                            keyword_length=len(token_positions.keyword),
+                            lo_location_offset=keyword_starting_idx,
+                            hi_location_offset=keyword_ending_idx,
+                            meta=meta,
+                        )
+                    )
+                else:
+                    unwanted_matches.add(word)
+        return matches, unwanted_matches
 
     def _annotate_chemicals(
         self,
@@ -483,7 +610,6 @@ class AnnotationsService:
         cropbox_per_page: Dict[int, Tuple[int, int]],
     ) -> Tuple[List[Annotation], Set[str]]:
         funcs = {
-            EntityType.Genes.value: self._annotate_genes,
             EntityType.Chemicals.value: self._annotate_chemicals,
             EntityType.Compounds.value: self._annotate_compounds,
             EntityType.Proteins.value: self._annotate_proteins,
@@ -497,6 +623,19 @@ class AnnotationsService:
             coor_obj_per_pdf_page=coor_obj_per_pdf_page,
             cropbox_per_page=cropbox_per_page,
         )
+
+    def _get_entity_frequency(
+        self,
+        annotations: List[Annotation],
+    ) -> Dict[str, int]:
+        entity_frequency: Dict[str, int] = dict()
+        for annotation in annotations:
+            entity_id = annotation.meta.id
+            if entity_frequency.get(entity_id, None) is not None:
+                entity_frequency[entity_id] += 1
+            else:
+                entity_frequency[entity_id] = 1
+        return entity_frequency
 
     def _remove_unwanted_keywords(
         self,
@@ -517,10 +656,18 @@ class AnnotationsService:
     ) -> List[Annotation]:
         self._filter_tokens(tokens=tokens)
 
-        matched_genes, unwanted_genes = self.annotate(
-            annotation_type=EntityType.Genes.value,
+        matched_species, unwanted_species = self.annotate(
+            annotation_type=EntityType.Species.value,
+            entity_id_str=EntityIdStr.Species.value,
+            coor_obj_per_pdf_page=tokens.coor_obj_per_pdf_page,
+            cropbox_per_page=tokens.cropbox_per_page,
+        )
+
+        matched_genes, unwanted_genes = self._annotate_genes(
             entity_id_str=EntityIdStr.Genes.value,
             coor_obj_per_pdf_page=tokens.coor_obj_per_pdf_page,
+            matched_organism_ids=[annotation.meta.id for annotation in matched_species],
+            organism_frequency=self._get_entity_frequency(matched_species),
             cropbox_per_page=tokens.cropbox_per_page,
         )
 
@@ -541,13 +688,6 @@ class AnnotationsService:
         matched_proteins, unwanted_proteins = self.annotate(
             annotation_type=EntityType.Proteins.value,
             entity_id_str=EntityIdStr.Proteins.value,
-            coor_obj_per_pdf_page=tokens.coor_obj_per_pdf_page,
-            cropbox_per_page=tokens.cropbox_per_page,
-        )
-
-        matched_species, unwanted_species = self.annotate(
-            annotation_type=EntityType.Species.value,
-            entity_id_str=EntityIdStr.Species.value,
             coor_obj_per_pdf_page=tokens.coor_obj_per_pdf_page,
             cropbox_per_page=tokens.cropbox_per_page,
         )
@@ -600,7 +740,7 @@ class AnnotationsService:
             unwanted_keywords=unwanted_keywords_set,
         )
 
-        unified_annotations = []
+        unified_annotations: List[Annotation] = []
         unified_annotations.extend(updated_matched_genes)
         unified_annotations.extend(updated_matched_chemicals)
         unified_annotations.extend(updated_matched_compounds)
@@ -608,33 +748,153 @@ class AnnotationsService:
         unified_annotations.extend(updated_matched_species)
         unified_annotations.extend(updated_matched_diseases)
 
-        # TODO: this is related to JIRA LL-407/408
-        # create dictionary with page number as keys
-        # otherwise indexes will collide between different pages
-        #
-        # marked as TODO because need to decide how we want to
-        # handle these conflicts; e.g remove them or keep them and let the user decide.
-        # the code is implemented to prepare for that and gather
-        # all of the conflicts in one place
-        #
-        # unified_annotations_dict: Dict[int, List[Annotation]] = {}
-        # for unified in unified_annotations:
-        #     if unified.page_number in unified_annotations_dict:
-        #         unified_annotations_dict[unified.page_number].append(unified)
-        #     else:
-        #         unified_annotations_dict[unified.page_number] = [unified]
-        #
-        # for _, annotations in unified_annotations_dict.items():
-        #     self.find_conflicting_annotations(annotations)
+        fixed_unified_annotations = self.fix_conflicting_annotations(
+            unified_annotations=unified_annotations)
 
-        # sorting descending order for now until the above
-        # TODO is resolved - but shouldn't be removed when it is.
-        # this handles the longer keyword substring take precedence
-        return sorted(
-            unified_annotations,
-            key=lambda annotate: annotate.keyword_length,
-            reverse=True,
-        )
+        return fixed_unified_annotations
+
+    def fix_conflicting_annotations(
+        self,
+        unified_annotations: List[Annotation],
+    ) -> List[Annotation]:
+        """Fix any conflicting annotations.
+
+        An annotation is a conflict if it has overlapping
+        `lo_location_offset` and `hi_location_offset` with another annotation.
+        """
+        updated_unified_annotations: List[Annotation] = []
+        unified_annotations_dict: Dict[int, List[Annotation]] = {}
+
+        # need to go page by page because coordinates
+        # reset on each page
+        for unified in unified_annotations:
+            if unified.lo_location_offset == unified.hi_location_offset:
+                # keyword is a single character
+                # should not have overlaps
+                updated_unified_annotations.append(unified)
+            elif unified.page_number in unified_annotations_dict:
+                unified_annotations_dict[unified.page_number].append(unified)
+            else:
+                unified_annotations_dict[unified.page_number] = [unified]
+
+        conflicting_annotations: Dict[int, List[Annotation]] = {}
+        # don't need to separate by page
+        # because hashes will always be different
+        conflicting_annotations_hashes: Set[str] = set()
+
+        for page_number, annotations in unified_annotations_dict.items():
+            conflicts = self.find_conflicting_annotations(annotations)
+            conflicting_annotations_hashes = set.union(*[
+                {compute_hash(c.to_dict()) for c in conflicts} if conflicts else set(),
+                conflicting_annotations_hashes,
+            ])
+
+            conflicting_annotations[page_number] = conflicts or []
+
+        for no_conflict_anno in unified_annotations:
+            hashval = compute_hash(no_conflict_anno.to_dict())
+            if hashval not in conflicting_annotations_hashes:
+                updated_unified_annotations.append(no_conflict_anno)
+
+        fixed_annotations = self._remove_overlapping_annotations(
+            conflicting_annotations=conflicting_annotations)
+
+        updated_unified_annotations.extend(fixed_annotations)
+        return updated_unified_annotations
+
+    def _compute_interval_hashes(self, annotation: Annotation) -> str:
+        return compute_hash({
+            'keyword': annotation.keyword,
+            'lo_location_offset': annotation.lo_location_offset,
+            'hi_location_offset': annotation.hi_location_offset,
+        })
+
+    def create_annotation_tree(
+        self,
+        annotations: List[Annotation],
+    ) -> AnnotationIntervalTree:
+        tree = AnnotationIntervalTree()
+        for annotation in annotations:
+            tree.add(
+                AnnotationInterval(
+                    begin=annotation.lo_location_offset,
+                    end=annotation.hi_location_offset,
+                    data=annotation,
+                ),
+            )
+        return tree
+
+    def _remove_overlapping_annotations(
+        self,
+        conflicting_annotations: Dict[int, List[Annotation]],
+    ) -> List[Annotation]:
+        """Remove annotations based on these rules:
+
+        (1) If exact intervals, then consider entity precedence.
+        (2) If overlapping, then consider longest length.
+            - If overlapping but same length, then consider
+            entity precedence.
+        """
+        fixed_annotations: List[Annotation] = []
+
+        for _, conflicting_annos in conflicting_annotations.items():
+            if conflicting_annos:
+                overlapping_annotations: Dict[str, Annotation] = {}
+                tmp_fixed_annotations: List[Annotation] = []
+
+                for annotation in conflicting_annos:
+                    hashval = self._compute_interval_hashes(annotation)
+
+                    if hashval not in overlapping_annotations:
+                        overlapping_annotations[hashval] = annotation
+                    else:
+                        # exact intervals so choose entity precedence
+                        conflicting_anno = overlapping_annotations.pop(hashval)
+
+                        key1 = ENTITY_TYPE_PRECEDENCE[annotation.meta.keyword_type]
+                        key2 = ENTITY_TYPE_PRECEDENCE[conflicting_anno.meta.keyword_type]
+
+                        if key1 > key2:
+                            overlapping_annotations[hashval] = annotation
+                        else:
+                            overlapping_annotations[hashval] = conflicting_anno
+
+                # at this point all annotations
+                # with exact duplicate intervals and exact
+                # keywords are fixed
+                tmp_fixed_annotations = [anno for _, anno in overlapping_annotations.items()]
+
+                tree = self.create_annotation_tree(annotations=tmp_fixed_annotations)
+                processed: Set[str] = set()
+
+                # fix any leftover annotations with overlapping intervals
+                for annotation in tmp_fixed_annotations:
+                    conflicts = tree.overlap(
+                        begin=annotation.lo_location_offset,
+                        end=annotation.hi_location_offset,
+                    )
+                    if len(conflicts) == 1:
+                        fixed_annotations.extend(conflicts)
+                    else:
+                        chosen_annotation = None
+                        for conflict in conflicts:
+                            if chosen_annotation is None:
+                                chosen_annotation = conflict
+                            else:
+                                if conflict.keyword_length > chosen_annotation.keyword_length:
+                                    chosen_annotation = conflict
+                                elif conflict.keyword_length == chosen_annotation.keyword_length:
+                                    key1 = ENTITY_TYPE_PRECEDENCE[conflict.meta.keyword_type]
+                                    key2 = ENTITY_TYPE_PRECEDENCE[chosen_annotation.meta.keyword_type]  # noqa
+
+                                    if key1 > key2:
+                                        chosen_annotation = conflict
+
+                        hashval = compute_hash(chosen_annotation.to_dict())  # type: ignore
+                        if hashval not in processed:
+                            fixed_annotations.append(chosen_annotation)  # type: ignore
+                            processed.add(hashval)
+        return fixed_annotations
 
     def find_conflicting_annotations(
         self,
@@ -645,25 +905,9 @@ class AnnotationsService:
         annotated several times, each as different entities. So we
         need to choose which entity to go with.
 
-        TODO:
-
         Additionally, the overlap also tells us two keywords are
         either substrings of each other, or two keywords contain a
-        common word between them. For the former, the longer and more
-        specific keyword takes precedence. For the later, still
-        need to consider how to handle.
+        common word between them.
         """
-        conflicts = []
-        tree = AnnotationIntervalTree()
-
-        for annotation in annotations:
-            tree.add(
-                AnnotationInterval(
-                    begin=annotation.lo_location_offset,
-                    end=annotation.hi_location_offset,
-                    data=annotation,
-                ),
-            )
-
-        conflicts.extend(tree.split_overlaps())
-        return conflicts
+        tree = self.create_annotation_tree(annotations=annotations)
+        return tree.split_overlaps()

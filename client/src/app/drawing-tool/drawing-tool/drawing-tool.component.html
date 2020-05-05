@@ -50,13 +50,14 @@
     </mat-icon>
     <mat-icon
       [ngClass]='saveStyle'
-      (click)='downloadPDF()'>
+      (click)='download()'>
       get_app
     </mat-icon>
   </div>
   <!-- Info Panel UI -->
   <app-info-panel
-    id='info-panel'>
+    id='info-panel'
+    (openApp)='toggleApp($event)'>
   </app-info-panel>
   <!-- Palette UI -->
   <app-palette
