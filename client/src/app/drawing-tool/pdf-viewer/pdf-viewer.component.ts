@@ -211,8 +211,9 @@ export class PdfViewerComponent implements OnDestroy {
         // prefix 'MESH:' should be removed from the id in order for search to work
         return HYPERLINKS.MESH + ann.meta.id.substring(5);
       case 'UNIPROT':
-        // Note: UNIPROT links will not work as currently there are names in the id fields
-        return HYPERLINKS + ann.meta.id;
+        // TODO: return hyperlink once there are actual ids in the 'id' field instead of names
+        // return HYPERLINKS + ann.meta.id;
+        return ann.meta.links.uniprot;
       case 'NCBI':
         if (ann.meta.type === 'Genes') {
           return HYPERLINKS.NCBI_GENES + ann.meta.id;
