@@ -378,8 +378,6 @@ class AnnotationsService:
         self,
         entity_id_str: str,
         coor_obj_per_pdf_page: Dict[int, List[Union[LTChar, LTAnno]]],
-        matched_organism_ids: List[str],
-        organism_frequency: Dict[str, int],
         cropbox_per_page: Dict[int, Tuple[int, int]],
     ) -> Tuple[List[Annotation], Set[str]]:
         """Gene specific annotation. Nearly identical to `_get_annotation`,
@@ -411,20 +409,21 @@ class AnnotationsService:
 
         tokens_lowercased = set(tokens.keys())
 
-        def get_gene_to_organism_match_result(
+        def get_gene_match_result(
             genes: List[str],
-            organisms: List[str]
         ) -> Dict[str, Dict[str, str]]:
-            """Returns a mapping of genes to organisms."""
-            from neo4japp.database import get_neo4j_service_dao
-            neo4j = get_neo4j_service_dao()
-            result = neo4j.get_genes_to_organisms(genes, organisms)
-            return result
+            """Returns a map of gene name to gene id."""
+            from neo4japp.database import get_organism_gene_match_service
+            organism_gene_match_service = get_organism_gene_match_service()
 
-        match_result = get_gene_to_organism_match_result(list(tokens.keys()), matched_organism_ids)
+            return organism_gene_match_service.get_genes(genes)
+
+        match_result = get_gene_match_result(list(tokens.keys()))
 
         for word, token_positions_list in tokens.items():
-            # If the "gene" is not matched to any organism in the paper, ignore it
+            # If the "gene" is not matched to any organism in our postgres table, ignore it.
+            # In the future, we will want to check the organisms that actually appear in the
+            # paper, but for now we just check postgres for the known organisms.
             if word not in match_result.keys():
                 continue
 
@@ -454,20 +453,12 @@ class AnnotationsService:
                     common_name_count = 1
 
                 if common_name_count == 1:
-                    # If a gene was matched to at least one organism in the document,
-                    # we have to get the corresponding gene data. If a gene matches
-                    # more than one organism, we use the one with the highest
-                    # frequency within the document. We may fine-tune this later.
-                    organism_to_gene_pairs = match_result[word]
-                    most_frequent_organism = str()
-                    greatest_frequency = 0
-
-                    for organism_id in organism_to_gene_pairs.keys():
-                        if organism_frequency[organism_id] > greatest_frequency:
-                            greatest_frequency = organism_frequency[organism_id]
-                            most_frequent_organism = organism_id
-
-                    entity_id = organism_to_gene_pairs[most_frequent_organism]
+                    # Currently using a postgres lookup table to filter out keywords that don't
+                    # match a curated slice of the main dataset, and to map synonyms to the
+                    # correct gene. This postgres table currently has unique gene names, so we
+                    # expect a 1:1 match of gene to organism. In the future, we can't always
+                    # assume this to be the case, as some organism strains have matching gene names.
+                    entity_id = match_result[word]
 
                     # create list of positions boxes
                     curr_page_coor_obj = coor_obj_per_pdf_page[
@@ -666,8 +657,6 @@ class AnnotationsService:
         matched_genes, unwanted_genes = self._annotate_genes(
             entity_id_str=EntityIdStr.Genes.value,
             coor_obj_per_pdf_page=tokens.coor_obj_per_pdf_page,
-            matched_organism_ids=[annotation.meta.id for annotation in matched_species],
-            organism_frequency=self._get_entity_frequency(matched_species),
             cropbox_per_page=tokens.cropbox_per_page,
         )
 
