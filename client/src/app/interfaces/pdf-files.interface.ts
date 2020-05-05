@@ -21,9 +21,3 @@ export interface PdfFileUpload {
   filename: string;
   status: string;
 }
-
-export interface Reannotation {
-  annotated: string[];
-  not_annotated: string[];
-  not_found: string[];
-}
