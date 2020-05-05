@@ -111,7 +111,7 @@ export class FileBrowserComponent implements OnInit {
         if (Object.values(res).includes('Not an owner')) { // check if any file was not owned by the current user
           msg = `${msg}, but one or more files could not be deleted because you are not the owner`;
         }
-        this.snackBar.open(msg, 'Close', {duration: 5000});
+        this.snackBar.open(msg, 'Close', {duration: 10000});
         this.updateDataSource(); // updates the list on successful deletion
         console.log('deletion result', res);
       },
