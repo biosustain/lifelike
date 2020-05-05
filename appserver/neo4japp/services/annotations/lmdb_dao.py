@@ -10,13 +10,13 @@ directory = path.realpath(path.dirname(__file__))
 class LMDBDao:
     def __init__(
         self,
-        genes_lmdb_path: str='lmdb/genes',
-        chemicals_lmdb_path: str='lmdb/chemicals',
-        compounds_lmdb_path: str='lmdb/compounds',
-        proteins_lmdb_path: str='lmdb/proteins',
-        species_lmdb_path: str='lmdb/species',
-        diseases_lmdb_path: str='lmdb/diseases',
-        phenotypes_lmdb_path: str='lmdb/phenotype',
+        genes_lmdb_path: str = 'lmdb/genes',
+        chemicals_lmdb_path: str = 'lmdb/chemicals',
+        compounds_lmdb_path: str = 'lmdb/compounds',
+        proteins_lmdb_path: str = 'lmdb/proteins',
+        species_lmdb_path: str = 'lmdb/species',
+        diseases_lmdb_path: str = 'lmdb/diseases',
+        phenotypes_lmdb_path: str = 'lmdb/phenotype',
     ) -> None:
         if all([
             genes_lmdb_path,
