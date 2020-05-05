@@ -180,8 +180,6 @@ export class PdfViewerComponent implements OnDestroy {
       }
     };
 
-    console.log(meta, loc, event, payload);
-
     this.dataFlow.pushNode2Canvas(payload);
   }
 
