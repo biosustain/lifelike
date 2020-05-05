@@ -1,6 +1,9 @@
 name: Integration Checks
 
-on: push
+on:
+  push:
+    branches-ignore:
+      - master
 
 jobs:
     appserver-integration-checks:
