@@ -177,7 +177,7 @@ export class NetworkVis {
         maximum: 600,
     };
     n.data = {
-      hyperlink: n.hyperlink || '',
+      source: n.source || '',
       detail: n.detail || '',
     };
 
@@ -314,18 +314,5 @@ export class NetworkVis {
     });
 
     this.network.redraw();
-  }
-
-  /**
-   * Return a base64 png of the network map
-   * from the canvas
-   */
-  pullImage() {
-    if (!this.network) { return null; }
-
-    /* tslint:disable:no-string-literal */
-    const context = this.network['canvas'].getContext();
-
-    return context.canvas.toDataURL();
   }
 }

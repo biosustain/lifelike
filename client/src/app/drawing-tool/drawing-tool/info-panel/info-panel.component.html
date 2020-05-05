@@ -63,7 +63,11 @@
             </textarea>
         </mat-form-field>
 
-        <div
+        <button *ngIf='graphData.data.source' mat-button color="primary" (click)='goToLink()'>
+            Source
+        </button>
+
+        <!-- <div
             *ngIf='isNode'
             class='flex' style="flex-wrap: wrap;">
             <p
@@ -84,9 +88,9 @@
                 class='silver w-100 tc mv3'>
                 No edges ...
             </p>
-        </div>
+        </div> -->
 
-        <div
+        <!-- <div
             *ngIf='isNode'
             [ngClass]='edgeListStyle'
             id='edge-list'>
@@ -123,7 +127,7 @@
                     <p class='tc red' style='font-size: 12px;'>Delete</p>
                 </div>
             </div>
-        </div>
+        </div> -->
 
         <button (click)='delete()' mat-button color="warn" class='delete'>
             Delete

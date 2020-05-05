@@ -56,7 +56,8 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
     group: '',
     edges: [],
     hyperlink: '',
-    detail: ''
+    detail: '',
+    source: ''
   };
 
   nodeIsIcon = false;
@@ -236,8 +237,8 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
               to: e.to
             };
           }),
-          hyperlink: data.nodeData.data.hyperlink,
-          detail: data.nodeData.data.detail
+          hyperlink: data.nodeData.data.hyperlink || '',
+          detail: data.nodeData.data.detail || ''
         };
         this.entityForm.setValue(formData, {emitEvent: false});
 
@@ -433,10 +434,10 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
   goToLink() {
     const hyperlink: string = this.entityForm.value.hyperlink;
 
-    if (this.graphData.group === 'link') {
+    if (this.graphData.data.source) {
       // If a link, create a payload from hyperlink url
       const getUrl = window.location;
-      const prefixLink = getUrl.protocol + '//' + getUrl.host + '/dt/link/';
+      const prefixLink = '/dt/pdf/';
       const [
         fileId,
         page,
