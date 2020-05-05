@@ -18,6 +18,7 @@ env:
     FLASK_APP_CONFIG: ${{ secrets.STAGING_FLASK_APP_CONFIG }}
     FLASK_ENV: ${{ secrets.STAGING_FLASK_ENV }}
     PROJECT_ID: ${{ secrets.GCE_PROJECT }}
+    GITHUB_HASH: $GITHUB_SHA
     GCE_INSTANCE: kg-staging
     GCE_INSTANCE_ZONE: us-central1-a
     # TODO: Delete these later after refactor, redundant
@@ -77,6 +78,11 @@ jobs:
                 echo "NEO4J_ENTITIES_HOST=$NEO4J_ENTITIES_HOST" >> staging.env
                 echo "NEO4J_ENTITIES_PASS=$NEO4J_ENTITIES_PASS" >> staging.env
                 echo "NEO4J_ENTITIES_USER=$NEO4J_ENTITIES_USER" >> staging.env
+                GITHUB_COMMIT_TIMESTAMP=$(git log -1 --format=%cd)
+                echo "GITHUB_COMMIT_TIMESTAMP=$GITHUB_COMMIT_TIMESTAMP" >> staging.env
+                echo "GITHUB_HASH=$GITHUB_HASH >> staging.env"
+
+
                 echo "$SERVICE_ACCOUNT_CRED" >> keyfile.json
                 gcloud compute scp staging.env ***ARANGO_USERNAME***@$GCE_INSTANCE:/srv --zone $GCE_INSTANCE_ZONE
                 gcloud compute scp keyfile.json ***ARANGO_USERNAME***@$GCE_INSTANCE:/srv --zone $GCE_INSTANCE_ZONE
