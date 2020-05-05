@@ -467,28 +467,6 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
     this.openApp.emit(appCmd);
   }
 
-  openPdfApp() {
-    const app = 'pdf-viewer';
-    if (this.currentApp === app) {
-      this.toggle(app);
-    } else {
-      const dialogConfig = new MatDialogConfig();
-
-      dialogConfig.width = '600px';
-      dialogConfig.disableClose = true;
-      dialogConfig.autoFocus = true;
-      dialogConfig.data = {};
-
-      const dialogRef = this.dialog.open(FileSelectionDialogComponent, dialogConfig);
-      dialogRef.beforeClosed().subscribe((file: PdfFile) => {
-        if (file !== null) {
-          localStorage.setItem('fileIdForPdfViewer', file.file_id);
-          this.toggle(app);
-        }
-      });
-    }
-  }
-
   /**
    * Checks if an undo or redo action contains a graph update
    * affecting the focused entity and push update to info-panel
