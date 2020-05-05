@@ -48,7 +48,7 @@ def upload_pdf():
         file_id=file_id,
         filename=filename,
         raw_file=binary_pdf,
-        username=user.id,
+        user_id=user.id,
         annotations=annotations,
         project=project
     )
