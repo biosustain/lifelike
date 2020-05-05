@@ -1,0 +1,59 @@
+name: Integration Checks
+
+on:
+  push:
+    branches-ignore:
+      - master
+
+jobs:
+    appserver-integration-checks:
+
+        name: Pytest, Linting, Migration Integrity
+        runs-on: ubuntu-latest
+
+        steps:
+            - uses: actions/checkout@v2
+
+            - name: Create Docker Image
+              run: |-
+                docker-compose -f docker-compose.ci-test.yml up --build -d
+                ./appserver/bin/wait-for-flask
+
+            - name: Appserver Linting Checks
+              run: |-
+                docker-compose exec -T appserver mypy .
+                docker-compose exec -T appserver pycodestyle .
+
+            - name: Pytests
+              run: |-
+                docker-compose exec -T appserver pytest tests
+
+            - name: Migration Integrity Check
+              run: |-
+                docker-compose -f docker-compose.ci-test.yml exec -T appserver ./bin/migration-integrity-check
+
+    client-integration-checks:
+
+        name: Client Linting and Unit Tests
+        runs-on: ubuntu-latest
+
+        strategy:
+            matrix:
+                os: [ubuntu-latest]
+                node-version: [13.x]
+
+        steps:
+            - uses: actions/checkout@v1
+
+            - name: Use Node.js ${{ matrix.node-version }}
+              uses: actions/setup-node@v1
+              with:
+                node-version: ${{ matrix.node-version }}
+
+            - name: Client Linting & Test
+              run: |-
+                cd client
+                yarn install
+                yarn lint
+                yarn test
+
