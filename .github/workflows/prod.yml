@@ -1,8 +1,9 @@
 name: Production Deployment
 
 on:
-    pull_request:
-        types: [labeled]
+  release:
+    types: [published]
+
 
 env:
     SERVICE_ACCOUNT_CRED: ${{ secrets.GCE_SA_KEY }}
@@ -17,6 +18,7 @@ env:
     FLASK_APP_CONFIG: ${{ secrets.PROD_FLASK_APP_CONFIG }}
     FLASK_ENV: ${{ secrets.PROD_FLASK_ENV }}
     PROJECT_ID: ${{ secrets.GCE_PROJECT }}
+    GITHUB_HASH: $GITHUB_SHA
     GCE_INSTANCE: kg-prod
     GCE_INSTANCE_ZONE: us-central1-a
     CLOUD_SQL_ALIAS: ${{ secrets.PROD_CLOUD_SQL_ALIAS }}
@@ -31,8 +33,6 @@ jobs:
 
         name: Setup, Build, Publish, and Deploy
         runs-on: ubuntu-latest
-
-        if: contains(github.event.pull_request.labels.*.name, 'production')
 
         steps:
             - name: Checkout
@@ -81,6 +81,9 @@ jobs:
                 echo "NEO4J_ENTITIES_USER=$NEO4J_ENTITIES_USER" >> prod.env
                 echo "CLOUD_SQL_ALIAS=$CLOUD_SQL_ALIAS" >> prod.env
                 echo "GCE_BACKUP_BUCKET=$GCE_BACKUP_BUCKET >> prod.env"
+                echo "GITHUB_HASH=$GITHUB_HASH >> prod.env"
+                GITHUB_COMMIT_TIMESTAMP=$(git log -1 --format=%cI)
+                echo "GITHUB_COMMIT_TIMESTAMP=$GITHUB_COMMIT_TIMESTAMP" >> prod.env
                 echo "$SERVICE_ACCOUNT_CRED" >> keyfile.json
                 gcloud compute scp prod.env root@$GCE_INSTANCE:/srv --zone $GCE_INSTANCE_ZONE
                 gcloud compute scp keyfile.json root@$GCE_INSTANCE:/srv --zone $GCE_INSTANCE_ZONE
@@ -97,4 +100,4 @@ jobs:
 
             - name: Clean up images
               run: |-
-                gcloud compute ssh root@$GCE_INSTANCE --zone $GCE_INSTANCE_ZONE --command='sudo docker system prune';
+                gcloud compute ssh root@$GCE_INSTANCE --zone $GCE_INSTANCE_ZONE --command='sudo docker system prune -f';

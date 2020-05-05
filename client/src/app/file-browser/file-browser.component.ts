@@ -1,15 +1,15 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Inject, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { SelectionModel } from '@angular/cdk/collections';
 import { MatTableDataSource } from '@angular/material/table';
-import { MatSnackBar } from '@angular/material';
-import { BehaviorSubject, Subject, throwError } from 'rxjs';
-import { AnnotationStatus, PdfFile, Reannotation } from 'app/interfaces/pdf-files.interface';
+import { MatDialog, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { BehaviorSubject, throwError } from 'rxjs';
+import { AnnotationStatus, PdfFile } from 'app/interfaces/pdf-files.interface';
 import { PdfFilesService } from 'app/shared/services/pdf-files.service';
 import { HttpEventType } from '@angular/common/http';
-import { UploadProgress, UploadStatus } from 'app/interfaces/file-browser.interfaces';
-import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
-import { UploadProgressDialogComponent } from './upload-progress-dialog.component';
+import { Progress, ProgressMode } from 'app/interfaces/common-dialog.interface';
+import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 
 @Component({
   selector: 'app-file-browser',
@@ -21,19 +21,14 @@ export class FileBrowserComponent implements OnInit {
   dataSource = new MatTableDataSource<PdfFile>([]);
   selection = new SelectionModel<PdfFile>(true, []);
   isReannotating = false;
-  status = UploadStatus.Ready;
-  /**
-   * Progress events will be streamed to the progress dialog.
-   */
-  progress: Subject<UploadProgress> = new BehaviorSubject<UploadProgress>(
-    new UploadProgress(UploadStatus.Ready, 0)
-  );
+  uploadStarted = false;
 
   constructor(
     private pdf: PdfFilesService,
     private router: Router,
     private snackBar: MatSnackBar,
-    public dialog: MatDialog,
+    private deleteDialog: MatDialog,
+    private progressDialog: ProgressDialog,
   ) {
   }
 
@@ -59,37 +54,47 @@ export class FileBrowserComponent implements OnInit {
     if (files.length === 0) {
       return;
     }
-    if (this.status !== UploadStatus.Ready) {
-      // the user shouldn't be able to initiate a new file upload
+
+    // The user shouldn't be able to initiate a new file upload
+    if (this.uploadStarted) {
       return;
     }
-
-    const name = files[0].name;
-    this.status = UploadStatus.Starting;
+    this.uploadStarted = true;
 
     // Let's show some progress!
-    this.progress.next(new UploadProgress(this.status, 0, name));
-    this.openProgressDialog();
+    const progressObservable = new BehaviorSubject<Progress>(new Progress({
+      status: 'Preparing file for upload...',
+    }));
+    const progressDialogRef = this.progressDialog.display({
+      title: `Adding ${files[0].name}...`,
+      progressObservable,
+    });
 
     this.pdf.uploadFile(files[0]).subscribe(event => {
         if (event.type === HttpEventType.UploadProgress) {
           if (event.loaded >= event.total) {
-            this.status = UploadStatus.Processing;
+            progressObservable.next(new Progress({
+              mode: ProgressMode.Buffer,
+              status: 'Processing on server...',
+              value: event.loaded / event.total
+            }));
           } else {
-            this.status = UploadStatus.Uploading;
+            progressObservable.next(new Progress({
+              mode: ProgressMode.Determinate,
+              status: 'Uploading file...',
+              value: event.loaded / event.total
+            }));
           }
-          this.progress.next(new UploadProgress(this.status, event.loaded / event.total, name));
         } else if (event.type === HttpEventType.Response) {
-          this.progress.next(new UploadProgress(this.status, 1, name));
-          this.status = UploadStatus.Ready;
-          this.dialog.closeAll();
+          progressDialogRef.close();
+          this.uploadStarted = false;
           this.snackBar.open(`File uploaded: ${event.body.filename}`, 'Close', {duration: 5000});
           this.updateDataSource(); // updates the list on successful upload
         }
       },
       err => {
-        this.status = UploadStatus.Ready;
-        this.dialog.closeAll();
+        progressDialogRef.close();
+        this.uploadStarted = false;
         return throwError(err);
       }
     );
@@ -103,8 +108,12 @@ export class FileBrowserComponent implements OnInit {
   deleteFiles() {
     const ids: string[] = this.selection.selected.map((file: PdfFile) => file.file_id);
     this.pdf.deleteFiles(ids).subscribe(
-      (res: string) => {
-        this.snackBar.open(`Deletion completed`, 'Close', {duration: 5000});
+      (res) => {
+        let msg = 'Deletion completed';
+        if (Object.values(res).includes('Not an owner')) { // check if any file was not owned by the current user
+          msg = `${msg}, but one or more files could not be deleted because you are not the owner`;
+        }
+        this.snackBar.open(msg, 'Close', {duration: 10000});
         this.updateDataSource(); // updates the list on successful deletion
         console.log('deletion result', res);
       },
@@ -122,7 +131,7 @@ export class FileBrowserComponent implements OnInit {
       return file.file_id;
     });
     this.pdf.reannotateFiles(ids).subscribe(
-      (res: Reannotation) => {
+      (res) => {
         for (const id of ids) {
           // pick file by id
           const file: PdfFile = this.dataSource.data.find((f: PdfFile) => f.file_id === id);
@@ -156,23 +165,27 @@ export class FileBrowserComponent implements OnInit {
     }
   }
 
-  /**
-   * Show the upload progress dialog to the user.
-   */
-  openProgressDialog() {
-    const dialogConfig = new MatDialogConfig();
-
-    dialogConfig.width = '400px';
-    dialogConfig.disableClose = true;
-    dialogConfig.autoFocus = true;
-    dialogConfig.data = {
-      progress: this.progress
-    };
-
-    this.dialog.open(UploadProgressDialogComponent, dialogConfig);
-  }
-
   applyFilter(filterValue: string) {
     this.dataSource.filter = filterValue.trim().toLowerCase();
   }
+
+  openDeleteDialog() {
+    const dialogRef = this.deleteDialog.open(DialogConfirmDeletionComponent, {
+      data: { files: this.selection.selected },
+    });
+
+    dialogRef.afterClosed().subscribe(shouldDelete => {
+      if (shouldDelete) {
+        this.deleteFiles();
+      }
+    });
+  }
+}
+
+@Component({
+  selector: 'app-dialog-confirm-deletion',
+  templateUrl: './dialog-confirm-deletion.html',
+})
+export class DialogConfirmDeletionComponent {
+  constructor(@Inject(MAT_DIALOG_DATA) public data: any) { }
 }

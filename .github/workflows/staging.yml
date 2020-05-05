@@ -18,6 +18,7 @@ env:
     FLASK_APP_CONFIG: ${{ secrets.STAGING_FLASK_APP_CONFIG }}
     FLASK_ENV: ${{ secrets.STAGING_FLASK_ENV }}
     PROJECT_ID: ${{ secrets.GCE_PROJECT }}
+    GITHUB_HASH: $GITHUB_SHA
     GCE_INSTANCE: kg-staging
     GCE_INSTANCE_ZONE: us-central1-a
     CLOUD_SQL_ALIAS: ${{ secrets.STAGING_CLOUD_SQL_ALIAS }}
@@ -81,6 +82,9 @@ jobs:
                 echo "NEO4J_ENTITIES_USER=$NEO4J_ENTITIES_USER" >> staging.env
                 echo "CLOUD_SQL_ALIAS=$CLOUD_SQL_ALIAS" >> staging.env
                 echo "GCE_BACKUP_BUCKET=$GCE_BACKUP_BUCKET >> staging.env"
+                GITHUB_COMMIT_TIMESTAMP=$(git log -1 --format=%cI)
+                echo "GITHUB_COMMIT_TIMESTAMP=$GITHUB_COMMIT_TIMESTAMP" >> staging.env
+                echo "GITHUB_HASH=$GITHUB_HASH >> staging.env"
                 echo "$SERVICE_ACCOUNT_CRED" >> keyfile.json
                 gcloud compute scp staging.env root@$GCE_INSTANCE:/srv --zone $GCE_INSTANCE_ZONE
                 gcloud compute scp keyfile.json root@$GCE_INSTANCE:/srv --zone $GCE_INSTANCE_ZONE
@@ -97,4 +101,4 @@ jobs:
 
             - name: Clean up images
               run: |-
-                gcloud compute ssh root@$GCE_INSTANCE --zone $GCE_INSTANCE_ZONE --command='sudo docker system prune';
+                gcloud compute ssh root@$GCE_INSTANCE --zone $GCE_INSTANCE_ZONE --command='sudo docker system prune -f';
