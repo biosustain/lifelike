@@ -165,8 +165,9 @@ export class NetworkVis {
         maximum: 600,
     };
     n.data = {
-      hyperlink: n.hyperlink || '',
+      source: n.source || '',
       detail: n.detail || '',
+      hyperlinks: n.hyperlinks || []
     };
 
     this.visNodes.add([n]);
@@ -210,18 +211,18 @@ export class NetworkVis {
     };
 
     switch (data.group) {
-        case 'link': {
-            updatedNode = {
-                ...updatedNode,
-                label: data.shape === 'icon' ? '' : data.data.detail,
-            };
-            this.visNodes.update(updatedNode);
-            break;
-        }
-        default: {
-            this.visNodes.update(updatedNode);
-            break;
-        }
+      case 'link': {
+          updatedNode = {
+              ...updatedNode,
+              label: data.shape === 'icon' ? '' : data.data.detail,
+          };
+          this.visNodes.update(updatedNode);
+          break;
+      }
+      default: {
+          this.visNodes.update(updatedNode);
+          break;
+      }
     }
   }
 
@@ -302,18 +303,5 @@ export class NetworkVis {
     });
 
     this.network.redraw();
-  }
-
-  /**
-   * Return a base64 png of the network map
-   * from the canvas
-   */
-  pullImage() {
-    if (!this.network) { return null; }
-
-    /* tslint:disable:no-string-literal */
-    const context = this.network['canvas'].getContext();
-
-    return context.canvas.toDataURL();
   }
 }
