@@ -8,7 +8,6 @@ from enum import Enum
 from typing import Dict
 
 from flask import Blueprint, current_app, request, jsonify, g, make_response
-from neo4japp.models import AppUser
 from sqlalchemy.orm.exc import NoResultFound
 from werkzeug.utils import secure_filename
 
@@ -34,7 +33,6 @@ def upload_pdf():
     pdf_content = pdf.read()  # TODO: don't work with whole file in memory
     pdf.stream.seek(0)
     project = '1'  # TODO: remove hard coded project
-    pdf_content = pdf.read()
     checksum_sha256 = hashlib.sha256(pdf_content).digest()
     user = g.current_user
 
