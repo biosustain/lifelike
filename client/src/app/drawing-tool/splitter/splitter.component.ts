@@ -115,6 +115,7 @@ export class SplitterComponent implements OnInit, AfterViewInit {
 
     // If an argument is supplied, inject into dynamic component
     if (this.currentApp === 'pdf-viewer' && appCmd.arg !== null) {
+      console.log(appCmd);
       this.dynamicComponentRef.instance.openPdf(
         appCmd.arg.fileId,
         {
