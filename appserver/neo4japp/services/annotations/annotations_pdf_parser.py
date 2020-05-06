@@ -64,7 +64,7 @@ class AnnotationsPDFParser:
                 # these are arithmetic or other symbols the parser
                 # was not able to translate
                 # usually requires a license or better algorithm from parser
-                if not lt_obj.get_text().startswith('cid:'):
+                if not re.search(r'cid:\d+', lt_obj.get_text()):
                     if page_idx + 1 in coor_obj_per_pdf_page:
                         prev_char = coor_obj_per_pdf_page[page_idx+1][-1]
                         if should_add_virtual_space(prev_char, lt_obj):
@@ -130,6 +130,9 @@ class AnnotationsPDFParser:
     def _is_whitespace(self, text: str) -> bool:
         # whitespace contains newline
         return text in whitespace or text == '\xa0'
+
+    def _has_unwanted_punctuation(self, text: str) -> bool:
+        return text == ',' or text == '.' or text == ')' or text == '('
 
     def combine_chars_into_words(
         self,
@@ -214,6 +217,20 @@ class AnnotationsPDFParser:
                         for char_map in char_idx_maps:
                             for k, v in char_map.items():
                                 curr_char_idx_mappings[k] = v
+
+                        # strip out trailing punctuations
+                        while self._has_unwanted_punctuation(curr_keyword[-1]):
+                            dict_keys = list(curr_char_idx_mappings.keys())
+                            last = dict_keys[-1]
+                            curr_char_idx_mappings.pop(last)
+                            curr_keyword = curr_keyword[:-1]
+
+                        # strip out leading punctuations
+                        while self._has_unwanted_punctuation(curr_keyword[0]):
+                            dict_keys = list(curr_char_idx_mappings.keys())
+                            first = dict_keys[0]
+                            curr_char_idx_mappings.pop(first)
+                            curr_keyword = curr_keyword[1:]
 
                         token = PDFTokenPositions(
                             page_number=page_idx,
