@@ -8,8 +8,13 @@ import { BehaviorSubject, throwError } from 'rxjs';
 import { AnnotationStatus, PdfFile } from 'app/interfaces/pdf-files.interface';
 import { PdfFilesService } from 'app/shared/services/pdf-files.service';
 import { HttpEventType } from '@angular/common/http';
+import { AppUser } from 'app/interfaces';
 import { Progress, ProgressMode } from 'app/interfaces/common-dialog.interface';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
+import { AuthSelectors } from 'app/auth/store';
+import { select, Store } from '@ngrx/store';
+import { State } from 'app/root-store';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-file-browser',
@@ -23,13 +28,17 @@ export class FileBrowserComponent implements OnInit {
   isReannotating = false;
   uploadStarted = false;
 
+  currentUser$: Observable<AppUser>;
+
   constructor(
     private pdf: PdfFilesService,
     private router: Router,
     private snackBar: MatSnackBar,
     private deleteDialog: MatDialog,
     private progressDialog: ProgressDialog,
+    private store: Store<State>,
   ) {
+    this.currentUser$ = this.store.pipe(select(AuthSelectors.selectAuthUser));
   }
 
   ngOnInit() {

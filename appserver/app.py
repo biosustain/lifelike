@@ -5,7 +5,7 @@ import os
 from flask import render_template
 from sqlalchemy.sql.expression import text
 from neo4japp.factory import create_app
-from neo4japp.models import AppUser, Project, Projects, OrganismGeneMatch
+from neo4japp.models import AppRole, AppUser, Project, Projects, OrganismGeneMatch
 
 from neo4japp.database import db, get_account_service
 
@@ -125,6 +125,17 @@ def create_user(name, email):
     )
     user.set_password('password')
     db.session.add(user)
+    db.session.commit()
+
+
+@app.cli.command("set-role")
+@click.argument("email", nargs=1)
+@click.argument("role", nargs=1)
+def set_role(email, role):
+    account_service = get_account_service()
+    user = AppUser.query.filter_by(email=email).one()
+    get_role = account_service.get_or_create_role(role)
+    user.roles.extend([get_role])
     db.session.commit()
 
 
