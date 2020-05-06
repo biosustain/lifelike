@@ -118,7 +118,7 @@ export class SplitterComponent implements OnInit, AfterViewInit {
       this.dynamicComponentRef.instance.openPdf(
         appCmd.arg.fileId,
         {
-          coords: appCmd.arg.coords,
+          rect: appCmd.arg.coords,
           pageNumber: appCmd.arg.pageNumber
         }
       );
