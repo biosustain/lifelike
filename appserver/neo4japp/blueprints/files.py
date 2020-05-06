@@ -235,7 +235,9 @@ def reannotate():
             current_app.logger.error('Could not annotate file: %s, %s, %s', id, file.filename, e)
             outcome[id] = AnnotationOutcome.NOT_ANNOTATED.value
         else:
-            file.annotations = annotations
+            db.session.query(Files).filter(Files.file_id == id).update({
+                'annotations': annotations,
+            })
             db.session.commit()
             current_app.logger.debug('File successfully annotated: %s, %s', id, file.filename)
             outcome[id] = AnnotationOutcome.ANNOTATED.value
