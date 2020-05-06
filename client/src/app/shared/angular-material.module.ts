@@ -103,9 +103,6 @@ import { ANIMATION_MODULE_TYPE } from '@angular/platform-browser/animations';
         MatTooltipModule,
         MatTreeModule,
     ],
-    providers: [
-        { provide: ANIMATION_MODULE_TYPE, useValue: 'BrowserAnimations' }
-    ],
 })
 
 export class AngularMaterialModule {}
