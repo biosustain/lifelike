@@ -727,7 +727,7 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
     // Push to backend to save
     this.projectService.updateProject(this.project).subscribe(() => {
       this.saveState = true;
-      this.snackBar.open('Project is saved', null, {
+      this.snackBar.open('Map is saved', null, {
         duration: 2000,
       });
     });

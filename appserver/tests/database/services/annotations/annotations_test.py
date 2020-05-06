@@ -4,7 +4,6 @@ import pytest
 from os import path
 
 from neo4japp.database import (
-    get_annotations_service,
     get_bioc_document_service,
     get_annotations_pdf_parser,
 )
@@ -13,13 +12,13 @@ from neo4japp.data_transfer_objects import (
     PDFParsedCharacters
 )
 from neo4japp.models import Files
+from neo4japp.services.annotations import AnnotationsService, LMDBDao
 
 
 # reference to this directory
 directory = path.realpath(path.dirname(__file__))
 
 
-@pytest.mark.skip
 @pytest.mark.parametrize(
     'index, annotations',
     [
@@ -230,7 +229,17 @@ directory = path.realpath(path.dirname(__file__))
     ],
 )
 def test_fix_conflicting_annotations(annotations_setup, index, annotations):
-    annotation_service = get_annotations_service()
+    annotation_service = AnnotationsService(
+        lmdb_session=LMDBDao(
+            genes_lmdb_path='',
+            chemicals_lmdb_path='',
+            compounds_lmdb_path='',
+            proteins_lmdb_path='',
+            species_lmdb_path='',
+            diseases_lmdb_path='',
+            phenotypes_lmdb_path='',
+        ),
+    )
     fixed = annotation_service.fix_conflicting_annotations(unified_annotations=annotations)
 
     if index == 1:
