@@ -5,7 +5,7 @@ import os
 from flask import render_template
 from sqlalchemy.sql.expression import text
 from neo4japp.factory import create_app
-from neo4japp.models import AppUser, Project, Projects
+from neo4japp.models import AppUser, Project, Projects, OrganismGeneMatch
 
 from neo4japp.database import db, get_account_service
 
@@ -125,4 +125,34 @@ def create_user(name, email):
     )
     user.set_password('password')
     db.session.add(user)
+    db.session.commit()
+
+
+@app.cli.command('seed-organism-gene-match-table')
+def seed_organism_gene_match_table():
+    # reference to this directory
+    directory = os.path.realpath(os.path.dirname(__file__))
+
+    rows = []
+    with open(os.path.join(directory, './migrations/upgrade_data/gene_names_for_4organisms.csv'), 'r') as f:  # noqa
+        for i, line in enumerate(f.readlines()):
+            if i == 0:
+                continue
+
+            # GeneID,GeneName,Synonym,Tax_ID, Organism
+            data = line.split(',')
+
+            row = OrganismGeneMatch(
+                gene_id=data[0].strip(),
+                gene_name=data[1].strip(),
+                synonym=data[2].strip(),
+                taxonomy_id=data[3].strip(),
+                organism=data[4].strip(),
+            )
+            rows.append(row)
+
+            if i % 1000 == 0:
+                db.session.bulk_save_objects(rows)
+                db.session.flush()
+                rows = []
     db.session.commit()
