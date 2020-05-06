@@ -1,0 +1,17 @@
+.test-container {
+    display: flex;
+}
+
+.right-content {
+    width: 100%;
+    height: 100;
+    background-color: red;
+}
+
+lib-pdf-viewer-lib {
+    width: 50%;
+}
+
+#drop-area {
+    height: 100%;
+}
