@@ -104,6 +104,7 @@ def list_files():
         Files.creation_date)
         .join(AppUser, Files.user_id == AppUser.id)
         .filter(Files.project == project)
+        .order_by(Files.creation_date.desc())
         .all()]
     return jsonify({'files': files})
 
