@@ -44,6 +44,7 @@ export class PdfViewerComponent implements OnDestroy {
         this.pdfAnnService.getFileAnnotations(file.file_id)
       );
     });
+  pendingScroll: Location;
   openPdfSub: Subscription;
   pdfViewerReady = false;
   // Type information coming from interface PDFSource at:
@@ -52,24 +53,7 @@ export class PdfViewerComponent implements OnDestroy {
   currentFileId: string;
   addedAnnotation: Annotation;
   addAnnotationSub: Subscription;
-
-  private locationOpener = new BehaviorSubject<Location>(null);
-
-  PDF_FILE_LOADED = false;
-
-  get pdfFileLoaded() {
-    return this.PDF_FILE_LOADED;
-  }
-
-  set pdfFileLoaded(val) {
-    this.PDF_FILE_LOADED = val;
-
-    if (this.PDF_FILE_LOADED && this.locationOpener.value) {
-      this.scrollInPdf(
-        this.locationOpener.value
-      );
-    }
-  }
+  pdfFileLoaded = false;
 
   constructor(
     private pdfAnnService: PdfAnnotationsService,
@@ -80,20 +64,14 @@ export class PdfViewerComponent implements OnDestroy {
   ) {
     // Listener for file open
     this.openPdfSub = this.loadTask.observable.subscribe(([[pdfFileContent, ann], [file, loc]]) => {
-      this.pdfData = {data: new Uint8Array(pdfFileContent)};
+      this.pdfData = { data: new Uint8Array(pdfFileContent) };
       this.annotations = ann;
       this.annotations.forEach(annotation => {
         annotation.meta.hyperlink = this.generateHyperlink(annotation);
       });
       this.currentFileId = file.file_id;
-      this.fileOpen.emit(file);
       setTimeout(() => {
         this.pdfViewerReady = true;
-
-        // If location argument is supplied
-        if (loc) {
-          this.locationOpener.next(loc);
-        }
       }, 10);
     });
 
@@ -216,7 +194,7 @@ export class PdfViewerComponent implements OnDestroy {
       }
       return;
     }
-
+    this.pendingScroll = loc;
     this.pdfFileLoaded = false;
     this.pdfViewerReady = false;
 
@@ -264,6 +242,10 @@ export class PdfViewerComponent implements OnDestroy {
 
   loadCompleted(status) {
     this.pdfFileLoaded = status;
+    if (this.pdfFileLoaded && this.pendingScroll) {
+      this.scrollInPdf(this.pendingScroll);
+      this.pendingScroll = null;
+    }
   }
 
   close() {
