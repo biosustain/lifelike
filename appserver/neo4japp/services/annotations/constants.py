@@ -35,6 +35,7 @@ COMMON_MISC_WORDS = {
     'patch', 'membrane', 'walker', 'group', 'cluster',
     'protein', 'transporter', 'toxin', 'molecule', 'vitamin',
     'light', 'mixture', 'solution', 'other', 'unknown',
+    'collection',
 }
 
 COMMON_WORDS = set.union(*[
