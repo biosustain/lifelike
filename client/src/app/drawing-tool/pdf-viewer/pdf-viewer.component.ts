@@ -30,6 +30,7 @@ export class PdfViewerComponent implements OnDestroy {
   filteredFiles = this.files;
 
   goToPosition: Subject<Location> = new Subject<Location>();
+  pendingScroll: Location;
   openPdfSub: Subscription;
   pdfViewerReady = false;
   // Type information coming from interface PDFSource at:
@@ -38,22 +39,7 @@ export class PdfViewerComponent implements OnDestroy {
   currentFileId: string;
   addedAnnotation: Annotation;
   addAnnotationSub: Subscription;
-
-  private locationOpener = new BehaviorSubject<Location>(null);
-
-  PDF_FILE_LOADED = false;
-  get pdfFileLoaded() {
-    return this.PDF_FILE_LOADED;
-  }
-  set pdfFileLoaded(val) {
-    this.PDF_FILE_LOADED = val;
-
-    if (this.PDF_FILE_LOADED && this.locationOpener.value) {
-      this.scrollInPdf(
-        this.locationOpener.value
-      );
-    }
-  }
+  pdfFileLoaded = false;
 
   constructor(
     private pdfAnnService: PdfAnnotationsService,
@@ -176,7 +162,7 @@ export class PdfViewerComponent implements OnDestroy {
       }
       return;
     }
-
+    this.pendingScroll = loc;
     this.pdfFileLoaded = false;
     this.pdfViewerReady = false;
     this.openPdfSub = combineLatest(
@@ -191,11 +177,6 @@ export class PdfViewerComponent implements OnDestroy {
       this.currentFileId = id;
       setTimeout(() => {
         this.pdfViewerReady = true;
-
-        // If location argument is supplied
-        if (loc) {
-          this.locationOpener.next(loc);
-        }
       }, 10);
     });
   }
@@ -242,5 +223,9 @@ export class PdfViewerComponent implements OnDestroy {
 
   loadCompleted(status) {
     this.pdfFileLoaded = status;
+    if (this.pdfFileLoaded && this.pendingScroll) {
+      this.scrollInPdf(this.pendingScroll);
+      this.pendingScroll = null;
+    }
   }
 }
