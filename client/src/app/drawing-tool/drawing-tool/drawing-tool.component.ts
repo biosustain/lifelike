@@ -78,6 +78,7 @@ import {
 import {
   InfoPanelComponent
 } from './info-panel/info-panel.component';
+
 import { annotationTypes } from 'app/shared/annotation-styles';
 import {ExportModalComponent} from './export-modal/export-modal.component';
 import {MatDialog, MatDialogConfig} from '@angular/material/dialog';
@@ -94,14 +95,15 @@ interface Graph {
 interface Command {
   action: string;
   data: {
-    id?: string;
-    label?: string;
-    group?: string;
-    x?: number;
-    y?: number;
-    node?: VisNetworkGraphNode;
-    edges?: VisNetworkGraphEdge[]
-    edge?: VisNetworkGraphEdge;
+    id ?: string;
+    label ?: string;
+    group ?: string;
+    x ?: number;
+    y ?: number;
+    source ?: string;
+    node ?: VisNetworkGraphNode;
+    edges ?: VisNetworkGraphEdge[]
+    edge ?: VisNetworkGraphEdge;
   };
 }
 export interface Action {
@@ -117,7 +119,7 @@ export interface Action {
 })
 export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
   /** Communicate to parent component to open another app side by side */
-  @Output() openApp: EventEmitter <LaunchApp> = new EventEmitter <LaunchApp> ();
+  @Output() openApp: EventEmitter < LaunchApp > = new EventEmitter < LaunchApp > ();
   /** Communicate which app is active for app icon presentation */
   @Input() currentApp = '';
 
@@ -204,7 +206,7 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
     private copyPasteMapsService: CopyPasteMapsService,
     private clipboardService: ClipboardService,
     private dialog: MatDialog
-    ) {}
+  ) {}
 
   ngOnInit() {
     this.endMouseMoveEventSource = new Subject();
@@ -220,33 +222,9 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
     };
 
     // Listen for node addition from pdf-viewer
-    this.pdfDataSubscription = this.dataFlow.$pdfDataSource.subscribe((node: GraphData) => {
-      if (!node) {
-        return;
-      }
-
-      // Convert DOM coordinate to canvas coordinate
-      const coord =
-        this.visjsNetworkGraph
-        .network.DOMtoCanvas({
-          x: node.x,
-          y: node.y
-        });
-
-      // ADD NODE
-      const cmd = {
-        action: 'add node',
-        data: {
-          label: node.label,
-          detail: node.label,
-          group: node.group,
-          x: coord.x,
-          y: coord.y,
-          hyperlink: node.hyperlink
-        }
-      };
-      this.recordCommand(cmd);
-    });
+    this.pdfDataSubscription = this.dataFlow.$pdfDataSource.subscribe(
+      (node: GraphData) => this.dropPdf(node)
+    );
 
     // Listen for graph update from info-panel-ui
     this.formDataSubscription = this.dataFlow.formDataSource.subscribe((update: Update) => {
@@ -448,7 +426,7 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
    * Handle closing or opening apps
    * @param app - any app such as pdf-viewer, map-search, kg-visualizer
    */
-  toggle(app, arg= null) {
+  toggle(app, arg = null) {
     if (this.currentApp === app) {
       // Shutdown app
       this.openApp.emit(null);
@@ -629,11 +607,10 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
 
   dropMap(event: CdkDragDrop < any > ) {
     const nativeElement = event.item.element.nativeElement;
-    const getUrl = window.location;
 
     const mapId = nativeElement.id;
     const label = nativeElement.children[0].textContent;
-    const hyperlink = getUrl.protocol + '//' + getUrl.host + '/dt/map/' + mapId;
+    const source = '/dt/map/' + mapId;
 
     // Get DOM coordinate of dropped node relative
     // to container DOM
@@ -665,7 +642,7 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
         group: 'map',
         label,
         ...coord,
-        hyperlink
+        source
       }
     };
     this.recordCommand(cmd);
@@ -713,6 +690,39 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
     };
     this.recordCommand(cmd);
   }
+
+  /**
+   * Handle drawing node onto canvas accoridng to pdf payload
+   * @param node - represent data of new node
+   */
+  dropPdf(node: GraphData) {
+    if (!node) {
+      return;
+    }
+
+    // Convert DOM coordinate to canvas coordinate
+    const coord =
+      this.visjsNetworkGraph
+      .network.DOMtoCanvas({
+        x: node.x,
+        y: node.y
+      });
+
+    // ADD NODE
+    const cmd = {
+      action: 'add node',
+      data: {
+        label: node.label,
+        group: node.group,
+        x: coord.x,
+        y: coord.y,
+        source: node.data.source,
+        hyperlinks: node.data.hyperlinks
+      }
+    };
+    this.recordCommand(cmd);
+  }
+
   /**
    * Save the current representation of knowledge model
    */
@@ -733,171 +743,189 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-    /**
-     * Asks for the format to download the map
-     */
-    download() {
-        if (!this.saveState) {
-            this.snackBar.open('Please save the project before exporting', null, {
-                duration: 2000,
-            });
-        } else {
+  /**
+   * Asks for the format to download the map
+   */
+  download() {
+    if (!this.saveState) {
+      this.snackBar.open('Please save the project before exporting', null, {
+        duration: 2000,
+      });
+    } else {
 
-            const dialogConfig = new MatDialogConfig();
-            dialogConfig.autoFocus = true;
-            dialogConfig.panelClass = 'export-dialog';
+      const dialogConfig = new MatDialogConfig();
+      dialogConfig.autoFocus = true;
+      dialogConfig.panelClass = 'export-dialog';
 
-            const dialogRef = this.dialog.open(ExportModalComponent, dialogConfig);
-            dialogRef.afterClosed().subscribe(fileFormat => {
-              if (fileFormat === 'pdf') {
-                this.downloadPDF();
-              }
-              if (fileFormat === 'svg') {
-                this.downloadSVG();
-              }
-              if (fileFormat === 'png') {
-                this.downloadPNG();
-              }
-            });
+      const dialogRef = this.dialog.open(ExportModalComponent, dialogConfig);
+      dialogRef.afterClosed().subscribe(fileFormat => {
+        if (fileFormat === 'pdf') {
+          this.downloadPDF();
+        }
+        if (fileFormat === 'svg') {
+          this.downloadSVG();
+        }
+        if (fileFormat === 'png') {
+          this.downloadPNG();
+        }
+      });
 
+    }
+
+  }
+  /**
+   * Saves and downloads the PDF version of the current map
+   */
+  downloadPDF() {
+    if (!this.saveState) {
+      this.snackBar.open('Please save the project before exporting', null, {
+        duration: 2000,
+      });
+    } else {
+      this.projectService.getPDF(this.project).subscribe(resp => {
+        // It is necessary to create a new blob object with mime-type explicitly set
+        // otherwise only Chrome works like it should
+        const newBlob = new Blob([resp], {
+          type: 'application/pdf'
+        });
+
+        // IE doesn't allow using a blob object directly as link href
+        // instead it is necessary to use msSaveOrOpenBlob
+        if (window.navigator && window.navigator.msSaveOrOpenBlob) {
+          window.navigator.msSaveOrOpenBlob(newBlob);
+          return;
         }
 
+        // For other browsers:
+        // Create a link pointing to the ObjectURL containing the blob.
+        const data = window.URL.createObjectURL(newBlob);
+
+        const link = document.createElement('a');
+        link.href = data;
+        link.download = this.project.label + '.pdf';
+        // this is necessary as link.click() does not work on the latest firefox
+        link.dispatchEvent(new MouseEvent('click', {
+          bubbles: true,
+          cancelable: true,
+          view: window
+        }));
+
+        setTimeout(() => {
+          // For Firefox it is necessary to delay revoking the ObjectURL
+          window.URL.revokeObjectURL(data);
+          link.remove();
+        }, 100);
+      });
     }
-    /**
-     * Saves and downloads the PDF version of the current map
-     */
-    downloadPDF() {
-        if (!this.saveState) {
-            this.snackBar.open('Please save the project before exporting', null, {
-                duration: 2000,
-            });
-        } else {
-            this.projectService.getPDF(this.project).subscribe (resp => {
-                // It is necessary to create a new blob object with mime-type explicitly set
-                // otherwise only Chrome works like it should
-                const newBlob = new Blob([resp], { type: 'application/pdf' });
+  }
 
-                // IE doesn't allow using a blob object directly as link href
-                // instead it is necessary to use msSaveOrOpenBlob
-                if (window.navigator && window.navigator.msSaveOrOpenBlob) {
-                    window.navigator.msSaveOrOpenBlob(newBlob);
-                    return;
-                }
 
-                // For other browsers:
-                // Create a link pointing to the ObjectURL containing the blob.
-                const data = window.URL.createObjectURL(newBlob);
+  /**
+   * Saves and downloads the SVG version of the current map
+   */
+  downloadSVG() {
+    if (!this.saveState) {
+      this.snackBar.open('Please save the project before exporting', null, {
+        duration: 2000,
+      });
+    } else {
+      this.projectService.getSVG(this.project).subscribe(resp => {
+        // It is necessary to create a new blob object with mime-type explicitly set
+        // otherwise only Chrome works like it should
+        const newBlob = new Blob([resp], {
+          type: 'image/svg'
+        });
 
-                const link = document.createElement('a');
-                link.href = data;
-                link.download = this.project.label + '.pdf';
-                // this is necessary as link.click() does not work on the latest firefox
-                link.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
-
-                setTimeout(() => {
-                    // For Firefox it is necessary to delay revoking the ObjectURL
-                    window.URL.revokeObjectURL(data);
-                    link.remove();
-                }, 100);
-            });
+        // IE doesn't allow using a blob object directly as link href
+        // instead it is necessary to use msSaveOrOpenBlob
+        if (window.navigator && window.navigator.msSaveOrOpenBlob) {
+          window.navigator.msSaveOrOpenBlob(newBlob);
+          return;
         }
+
+        // For other browsers:
+        // Create a link pointing to the ObjectURL containing the blob.
+        const data = window.URL.createObjectURL(newBlob);
+
+        const link = document.createElement('a');
+        link.href = data;
+        link.download = this.project.label + '.svg';
+        // this is necessary as link.click() does not work on the latest firefox
+        link.dispatchEvent(new MouseEvent('click', {
+          bubbles: true,
+          cancelable: true,
+          view: window
+        }));
+
+        setTimeout(() => {
+          // For Firefox it is necessary to delay revoking the ObjectURL
+          window.URL.revokeObjectURL(data);
+          link.remove();
+        }, 100);
+      });
     }
+  }
 
 
-    /**
-     * Saves and downloads the SVG version of the current map
-     */
-    downloadSVG() {
-        if (!this.saveState) {
-            this.snackBar.open('Please save the project before exporting', null, {
-                duration: 2000,
-            });
-        } else {
-            this.projectService.getSVG(this.project).subscribe (resp => {
-                // It is necessary to create a new blob object with mime-type explicitly set
-                // otherwise only Chrome works like it should
-                const newBlob = new Blob([resp], { type: 'image/svg' });
+  /**
+   * Saves and downloads the PNG version of the current map
+   */
+  downloadPNG() {
+    if (!this.saveState) {
+      this.snackBar.open('Please save the project before exporting', null, {
+        duration: 2000,
+      });
+    } else {
+      this.projectService.getPNG(this.project).subscribe(resp => {
+        // It is necessary to create a new blob object with mime-type explicitly set
+        // otherwise only Chrome works like it should
+        const newBlob = new Blob([resp], {
+          type: 'image/png'
+        });
 
-                // IE doesn't allow using a blob object directly as link href
-                // instead it is necessary to use msSaveOrOpenBlob
-                if (window.navigator && window.navigator.msSaveOrOpenBlob) {
-                    window.navigator.msSaveOrOpenBlob(newBlob);
-                    return;
-                }
-
-                // For other browsers:
-                // Create a link pointing to the ObjectURL containing the blob.
-                const data = window.URL.createObjectURL(newBlob);
-
-                const link = document.createElement('a');
-                link.href = data;
-                link.download = this.project.label + '.svg';
-                // this is necessary as link.click() does not work on the latest firefox
-                link.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
-
-                setTimeout(() => {
-                    // For Firefox it is necessary to delay revoking the ObjectURL
-                    window.URL.revokeObjectURL(data);
-                    link.remove();
-                }, 100);
-            });
+        // IE doesn't allow using a blob object directly as link href
+        // instead it is necessary to use msSaveOrOpenBlob
+        if (window.navigator && window.navigator.msSaveOrOpenBlob) {
+          window.navigator.msSaveOrOpenBlob(newBlob);
+          return;
         }
+
+        // For other browsers:
+        // Create a link pointing to the ObjectURL containing the blob.
+        const data = window.URL.createObjectURL(newBlob);
+
+        const link = document.createElement('a');
+        link.href = data;
+        link.download = this.project.label + '.png';
+        // this is necessary as link.click() does not work on the latest firefox
+        link.dispatchEvent(new MouseEvent('click', {
+          bubbles: true,
+          cancelable: true,
+          view: window
+        }));
+
+        setTimeout(() => {
+          // For Firefox it is necessary to delay revoking the ObjectURL
+          window.URL.revokeObjectURL(data);
+          link.remove();
+        }, 100);
+      });
     }
+  }
 
 
-    /**
-     * Saves and downloads the PNG version of the current map
-     */
-    downloadPNG() {
-        if (!this.saveState) {
-            this.snackBar.open('Please save the project before exporting', null, {
-                duration: 2000,
-            });
-        } else {
-            this.projectService.getPNG(this.project).subscribe (resp => {
-                // It is necessary to create a new blob object with mime-type explicitly set
-                // otherwise only Chrome works like it should
-                const newBlob = new Blob([resp], { type: 'image/png' });
-
-                // IE doesn't allow using a blob object directly as link href
-                // instead it is necessary to use msSaveOrOpenBlob
-                if (window.navigator && window.navigator.msSaveOrOpenBlob) {
-                    window.navigator.msSaveOrOpenBlob(newBlob);
-                    return;
-                }
-
-                // For other browsers:
-                // Create a link pointing to the ObjectURL containing the blob.
-                const data = window.URL.createObjectURL(newBlob);
-
-                const link = document.createElement('a');
-                link.href = data;
-                link.download = this.project.label + '.png';
-                // this is necessary as link.click() does not work on the latest firefox
-                link.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
-
-                setTimeout(() => {
-                    // For Firefox it is necessary to delay revoking the ObjectURL
-                    window.URL.revokeObjectURL(data);
-                    link.remove();
-                }, 100);
-            });
-        }
-    }
-
-
-    // -- Helpers --
-    /**
-     * Build key,value pair style dict
-     * from nodeTemplate
-     * @param nodeTemplate represents a node object
-     */
-    nodeStyleCompute(nodeTemplate) {
-        return {
-            color: nodeTemplate.color,
-            background: nodeTemplate.background
-        };
-    }
+  // -- Helpers --
+  /**
+   * Build key,value pair style dict
+   * from nodeTemplate
+   * @param nodeTemplate represents a node object
+   */
+  nodeStyleCompute(nodeTemplate) {
+    return {
+      color: nodeTemplate.color,
+      background: nodeTemplate.background
+    };
+  }
 
   fitAll() {
     this.visjsNetworkGraph.zoom2All();
