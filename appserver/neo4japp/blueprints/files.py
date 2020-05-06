@@ -21,6 +21,7 @@ from neo4japp.database import (
     get_lmdb_dao,
 )
 from neo4japp.exceptions import RecordNotFoundException, BadRequestError
+from neo4japp.models import AppUser
 from neo4japp.models.files import Files, FileContent
 
 bp = Blueprint('files', __name__, url_prefix='/files')
@@ -219,7 +220,11 @@ def reannotate():
     ids = request.get_json()
     outcome: Dict[str, str] = {}  # file id to annotation outcome
     for id in ids:
-        file = Files.query.filter_by(file_id=id).one_or_none()
+        file = db.session \
+            .query(Files.id, Files.filename, Files.annotations, FileContent.raw_file) \
+            .join(FileContent, FileContent.id == Files.content_id) \
+            .filter(Files.file_id == id) \
+            .one_or_none()
         if file is None:
             current_app.logger.error('Could not find file: %s, %s', id, file.filename)
             outcome[id] = AnnotationOutcome.NOT_FOUND.value
@@ -231,7 +236,9 @@ def reannotate():
             current_app.logger.error('Could not annotate file: %s, %s, %s', id, file.filename, e)
             outcome[id] = AnnotationOutcome.NOT_ANNOTATED.value
         else:
-            file.annotations = annotations
+            db.session.query(Files).filter(Files.file_id == id).update({
+                'annotations': annotations,
+            })
             db.session.commit()
             current_app.logger.debug('File successfully annotated: %s, %s', id, file.filename)
             outcome[id] = AnnotationOutcome.ANNOTATED.value
