@@ -219,33 +219,35 @@ class AnnotationsPDFParser:
                                 curr_char_idx_mappings[k] = v
 
                         # strip out trailing punctuations
-                        while self._has_unwanted_punctuation(curr_keyword[-1]):
+                        while curr_keyword and self._has_unwanted_punctuation(curr_keyword[-1]):
                             dict_keys = list(curr_char_idx_mappings.keys())
                             last = dict_keys[-1]
                             curr_char_idx_mappings.pop(last)
                             curr_keyword = curr_keyword[:-1]
 
                         # strip out leading punctuations
-                        while self._has_unwanted_punctuation(curr_keyword[0]):
+                        while curr_keyword and self._has_unwanted_punctuation(curr_keyword[0]):
                             dict_keys = list(curr_char_idx_mappings.keys())
                             first = dict_keys[0]
                             curr_char_idx_mappings.pop(first)
                             curr_keyword = curr_keyword[1:]
 
-                        token = PDFTokenPositions(
-                            page_number=page_idx,
-                            keyword=curr_keyword,
-                            char_positions=curr_char_idx_mappings,
-                        )
+                        # keyword could've been all punctuation
+                        if curr_keyword:
+                            token = PDFTokenPositions(
+                                page_number=page_idx,
+                                keyword=curr_keyword,
+                                char_positions=curr_char_idx_mappings,
+                            )
 
-                        # need to do this check because
-                        # could potentially have duplicates due to
-                        # the sequential increment starting over
-                        # at end of page
-                        hashval = compute_hash(token.to_dict())
-                        if hashval not in processed_tokens:
-                            keyword_tokens.append(token)
-                            processed_tokens.add(hashval)
+                            # need to do this check because
+                            # could potentially have duplicates due to
+                            # the sequential increment starting over
+                            # at end of page
+                            hashval = compute_hash(token.to_dict())
+                            if hashval not in processed_tokens:
+                                keyword_tokens.append(token)
+                                processed_tokens.add(hashval)
 
                     curr_max_words += 1
                     end_idx += 1
