@@ -219,7 +219,11 @@ def reannotate():
     ids = request.get_json()
     outcome: Dict[str, str] = {}  # file id to annotation outcome
     for id in ids:
-        file = Files.query.filter_by(file_id=id).one_or_none()
+        file = db.session \
+            .query(Files.id, Files.filename, Files.annotations, FileContent.raw_file) \
+            .join(FileContent, FileContent.id == Files.content_id) \
+            .filter(Files.file_id == id)\
+            .one_or_none()
         if file is None:
             current_app.logger.error('Could not find file: %s, %s', id, file.filename)
             outcome[id] = AnnotationOutcome.NOT_FOUND.value
