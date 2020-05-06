@@ -39,7 +39,7 @@ export class PdfViewerComponent implements OnDestroy {
   currentFileId: string;
   addedAnnotation: Annotation;
   addAnnotationSub: Subscription;
-  pdfFileLoaded: boolean = false;
+  pdfFileLoaded = false;
 
   constructor(
     private pdfAnnService: PdfAnnotationsService,
@@ -223,7 +223,7 @@ export class PdfViewerComponent implements OnDestroy {
 
   loadCompleted(status) {
     this.pdfFileLoaded = status;
-    if(this.pdfFileLoaded && this.pendingScroll) {
+    if (this.pdfFileLoaded && this.pendingScroll) {
       this.scrollInPdf(this.pendingScroll);
       this.pendingScroll = null;
     }
