@@ -5,8 +5,11 @@ from datetime import datetime
 import os
 import json
 from typing import Dict
+from urllib.parse import urlparse
+import urllib.request
 from neo4japp.blueprints.auth import auth
 from flask import Blueprint, current_app, request, abort, jsonify, g, make_response
+from werkzeug.datastructures import FileStorage
 from werkzeug.utils import secure_filename
 
 from neo4japp.blueprints.auth import auth
@@ -26,12 +29,20 @@ bp = Blueprint('files', __name__, url_prefix='/files')
 @bp.route('/upload', methods=['POST'])
 @auth.login_required
 def upload_pdf():
-    pdf = request.files['file']
+    filename = None
+    pdf = None
+    if 'url' in request.form:
+        url = request.form['url']
+        data = urllib.request.urlopen(url).read()
+        filename = secure_filename(os.path.basename(urlparse(url).path))
+        pdf = FileStorage(io.BytesIO(data), filename)
+    else:
+        filename = secure_filename(request.files['file'].filename)
+        pdf = request.files['file']
     project = '1'  # TODO: remove hard coded project
     binary_pdf = pdf.read()
     username = g.current_user
 
-    filename = secure_filename(request.files['file'].filename)
     # Make sure that the filename is not longer than the DB column permits
     max_filename_length = Files.filename.property.columns[0].type.length
     if len(filename) > max_filename_length:
