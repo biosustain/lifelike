@@ -27,7 +27,7 @@ from .constants import (
 class AnnotationsPDFParser:
     def __init__(self) -> None:
         # TODO: go into constants.py if used by other classes
-        self.max_word_length = 6
+        self.max_word_length = 4
 
     def _get_lt_char(
         self,
