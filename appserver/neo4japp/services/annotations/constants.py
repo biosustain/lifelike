@@ -44,6 +44,8 @@ COMMON_WORDS = set.union(*[
     COMMON_MISC_WORDS,
 ])
 
+MISC_SYMBOLS_AND_CHARS = {'(c)'}
+
 TYPO_SYNONYMS = {
     # 'e coli': ['E. coli', 'Escherichia coli', 'Enterococcus coli'],
     'multiplemitochondrialdysfunctionssyndromes': ['Multiple Mitochondrial Dysfunctions Syndrome'],  # noqa
