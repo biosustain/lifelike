@@ -43,11 +43,11 @@ export class AnnotationPanelComponent {
   ) { }
 
   createAnnotation() {
-    const annotation : Annotation = {
+    const annotation: Annotation = {
       pageNumber: this.data.pageNumber,
       keywords: this.data.text,
       rects: this.data.coords.map((coord) => {
-        return [coord[0],coord[3],coord[2],coord[1]];
+        return [coord[0], coord[3], coord[2], coord[1]];
       }),
       meta: {
         type: this.entityType,
@@ -56,7 +56,7 @@ export class AnnotationPanelComponent {
         isCustom: true,
         allText: this.data.allText
       }
-    }
+    };
     this.dialogRef.close(annotation);
   }
 
