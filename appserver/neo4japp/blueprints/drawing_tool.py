@@ -9,6 +9,7 @@ from neo4japp.blueprints.auth import auth
 from neo4japp.database import db
 from neo4japp.exceptions import RecordNotFoundException
 from neo4japp.models import Project, ProjectSchema
+from neo4japp.constants import ANNOTATION_STYLES_DICT
 
 import graphviz as gv
 from PyPDF4 import PdfFileReader, PdfFileWriter
@@ -261,7 +262,7 @@ def process(data_source, format='pdf'):
             'shape': 'box',
             'style': 'rounded',
             'color': '#2B7CE9',
-            'fontcolor': colormap.get(node['label'], 'black'),
+            'fontcolor': ANNOTATION_STYLES_DICT.get(node['label'], {'color': 'black'})['color'],
             'fontname': 'sans-serif',
             'margin': "0.2,0.0"
         }
