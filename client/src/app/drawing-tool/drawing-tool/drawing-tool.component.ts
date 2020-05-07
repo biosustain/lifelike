@@ -716,8 +716,7 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
         group: node.group,
         x: coord.x,
         y: coord.y,
-        source: node.data.source,
-        hyperlinks: node.data.hyperlinks
+        ...node.data
       }
     };
     this.recordCommand(cmd);
@@ -1136,10 +1135,9 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
     const cmd = {
       action: 'add node',
       data: {
-        shape: 'icon',
         icon: LINK_NODE_ICON_OBJECT,
         group: 'note',
-        label: '',
+        label: 'note',
         detail: clipboardContent,
         ...canvasCoords
       }
