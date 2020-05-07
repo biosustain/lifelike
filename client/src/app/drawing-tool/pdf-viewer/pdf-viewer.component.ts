@@ -3,7 +3,7 @@ import { FormControl } from '@angular/forms';
 import { Subscription, Subject, combineLatest, BehaviorSubject } from 'rxjs';
 import { PdfFile } from 'app/interfaces/pdf-files.interface';
 import { PdfFilesService } from 'app/shared/services/pdf-files.service';
-import { HYPERLINKS, SEARCH_LINKS } from 'app/shared/constants';
+import { Hyperlink, SearchLink } from 'app/shared/constants';
 
 import {
   PdfAnnotationsService, DataFlowService,
@@ -100,10 +100,10 @@ export class PdfViewerComponent implements OnDestroy {
         id,
         idType,
         links: {
-          ncbi: annotation.meta.links.ncbi || SEARCH_LINKS.NCBI + annotation.meta.allText,
-          uniprot: annotation.meta.links.uniprot || SEARCH_LINKS.UNIPROT + annotation.meta.allText,
-          wikipedia: annotation.meta.links.wikipedia || SEARCH_LINKS.WIKIPEDIA + annotation.meta.allText,
-          google: annotation.meta.links.google || SEARCH_LINKS.GOOGLE + annotation.meta.allText
+          ncbi: annotation.meta.links.ncbi || this.buildUrl(SearchLink.Ncbi, annotation.meta.allText),
+          uniprot: annotation.meta.links.uniprot || this.buildUrl(SearchLink.Uniprot, annotation.meta.allText),
+          wikipedia: annotation.meta.links.wikipedia || this.buildUrl(SearchLink.Wikipedia, annotation.meta.allText),
+          google: annotation.meta.links.google || this.buildUrl(SearchLink.Google, annotation.meta.allText),
         }
       }
     };
@@ -206,22 +206,26 @@ export class PdfViewerComponent implements OnDestroy {
   generateHyperlink(ann: Annotation): string {
     switch (ann.meta.idType) {
       case 'CHEBI':
-        return HYPERLINKS.CHEBI + ann.meta.id;
+        return this.buildUrl(Hyperlink.Chebi, ann.meta.id);
       case 'MESH':
         // prefix 'MESH:' should be removed from the id in order for search to work
-        return HYPERLINKS.MESH + ann.meta.id.substring(5);
+        return this.buildUrl(Hyperlink.Mesh, ann.meta.id.substring(5));
       case 'UNIPROT':
-        return HYPERLINKS.UNIPROT + ann.meta.id;
+        return this.buildUrl(Hyperlink.Uniprot, ann.meta.id);
       case 'NCBI':
         if (ann.meta.type === 'Genes') {
-          return HYPERLINKS.NCBI_GENES + ann.meta.id;
+          return this.buildUrl(Hyperlink.NcbiGenes, ann.meta.id);
         } else if (ann.meta.type === 'Species') {
-          return HYPERLINKS.NCBI_SPECIES + ann.meta.id;
+          return this.buildUrl(Hyperlink.NcbiSpecies, ann.meta.id);
         }
         return '';
       default:
         return '';
     }
+  }
+
+  private buildUrl(provider: Hyperlink | SearchLink, query: string): string {
+    return provider + query;
   }
 
   scrollInPdf(loc: Location) {
