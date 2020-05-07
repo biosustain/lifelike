@@ -82,6 +82,8 @@ import {
 import { annotationTypes } from 'app/shared/annotation-styles';
 import {ExportModalComponent} from './export-modal/export-modal.component';
 import {MatDialog, MatDialogConfig} from '@angular/material/dialog';
+import { FileSelectionDialogComponent } from '../../file-browser/file-selection-dialog.component';
+import { PdfFile } from '../../interfaces/pdf-files.interface';
 
 interface Update {
   event: string;
