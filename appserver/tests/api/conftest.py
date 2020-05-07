@@ -6,20 +6,27 @@ import types
 import hashlib
 import pytest
 from datetime import date, datetime
-from neo4japp.models import AppUser, Project, Projects, FileContent, Files
+from neo4japp.models import (
+    AppUser,
+    Project,
+    Projects,
+    FileContent,
+    Files,
+)
 
 
 @pytest.fixture(scope='function')
-def fix_owner(session) -> AppUser:
+def fix_api_owner(session, account_user) -> AppUser:
     user = AppUser(
         id=100,
         username='admin',
         email='admin@***ARANGO_DB_NAME***.bio',
         first_name='Jim',
         last_name='Melancholy',
-        roles=['admin'],
     )
     user.set_password('password')
+    admin_role = account_user.get_or_create_role('admin')
+    user.roles.extend([admin_role])
     session.add(user)
     session.flush()
     return user
@@ -103,14 +110,14 @@ def fix_project(test_user, session):
 
 
 @pytest.fixture(scope='function')
-def private_fix_project(fix_owner, session) -> Project:
+def private_fix_project(fix_api_owner, session) -> Project:
     project = Project(
         id=100,
         label='Project1',
         description='a test project',
         author='Jim Melancholy',
         graph=json.dumps({'project': 'project 1'}),
-        user_id=fix_owner.id,
+        user_id=fix_api_owner.id,
     )
     session.add(project)
     session.flush()
