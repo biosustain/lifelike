@@ -9,6 +9,7 @@ from neo4japp.blueprints.auth import auth
 from neo4japp.database import db
 from neo4japp.exceptions import RecordNotFoundException
 from neo4japp.models import Project, ProjectSchema
+from neo4japp.constants import ANNOTATION_STYLES_DICT
 
 import graphviz as gv
 from PyPDF4 import PdfFileReader, PdfFileWriter
@@ -243,13 +244,14 @@ def process(data_source, format='pdf'):
         'phenotype': '#EDC949'
     }
     json_graph = data_source.graph
+    graph_attr = [('margin', '3')]
+    if format == 'png':
+        graph_attr.append(('dpi', '300'))
     graph = gv.Digraph(
         data_source.label,
         comment=data_source.description,
         engine='neato',
-        graph_attr=(
-            ('margin', '3'),
-            ('dpi', '300')),
+        graph_attr=graph_attr,
         format=format)
 
     for node in json_graph['nodes']:
@@ -260,7 +262,7 @@ def process(data_source, format='pdf'):
             'shape': 'box',
             'style': 'rounded',
             'color': '#2B7CE9',
-            'fontcolor': colormap.get(node['label'], 'black'),
+            'fontcolor': ANNOTATION_STYLES_DICT.get(node['label'], {'color': 'black'})['color'],
             'fontname': 'sans-serif',
             'margin': "0.2,0.0"
         }

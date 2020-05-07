@@ -63,7 +63,18 @@
             </textarea>
         </mat-form-field>
 
-        <div
+        <div *ngIf='graphData?.data?.hyperlinks'>
+            <h4 class='blue'>Hyperlinks</h4>
+            <div class="flex pointer items-center dim" *ngFor='let h of graphData?.data?.hyperlinks' (click)='goToLink(h?.url)'>
+                <mat-icon class='dib' matSuffix>link</mat-icon><span class='dib f6'>{{h.domain | titlecase}}</span>
+            </div>
+        </div>
+
+        <button *ngIf='graphData?.data?.source' mat-button color="primary" (click)='goToSource()'>
+            Source
+        </button>
+
+        <!-- <div
             *ngIf='isNode'
             class='flex' style="flex-wrap: wrap;">
             <p
@@ -84,9 +95,9 @@
                 class='silver w-100 tc mv3'>
                 No edges ...
             </p>
-        </div>
+        </div> -->
 
-        <div
+        <!-- <div
             *ngIf='isNode'
             [ngClass]='edgeListStyle'
             id='edge-list'>
@@ -99,11 +110,11 @@
                     [formGroupName]='i'
                     class='w-70 fl'>
                     <mat-form-field appearance='outline' class="w-100 mt3">
-                        <mat-label>Label</mat-label>
+                        <mat-label>Name</mat-label>
                         <input
                             (keydown.enter)="blurInput($event)"
                             matInput
-                            placeholder="Label"
+                            placeholder="Name"
                             formControlName='label'>
                     </mat-form-field>
                     <mat-form-field appearance='outline' class='w-100'>
@@ -123,7 +134,7 @@
                     <p class='tc red' style='font-size: 12px;'>Delete</p>
                 </div>
             </div>
-        </div>
+        </div> -->
 
         <button (click)='delete()' mat-button color="warn" class='delete'>
             Delete
