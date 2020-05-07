@@ -5856,9 +5856,9 @@ pbkdf2@^3.0.3:
     safe-buffer "^5.0.1"
     sha.js "^2.4.8"
 
-"pdf-viewer-lib@git+https://fc215532d1caed454a90124744094a6b8fe042b0:x-oauth-basic@github.com/sbrg/pdf-viewer-lib#1.0.21":
+"pdf-viewer-lib@git+https://fc215532d1caed454a90124744094a6b8fe042b0:x-oauth-basic@github.com/sbrg/pdf-viewer-lib#1.0.31":
   version "0.0.1"
-  resolved "git+https://fc215532d1caed454a90124744094a6b8fe042b0:x-oauth-basic@github.com/sbrg/pdf-viewer-lib#156373b0562a9a97416144e56ecc9ec3e75b8b85"
+  resolved "git+https://fc215532d1caed454a90124744094a6b8fe042b0:x-oauth-basic@github.com/sbrg/pdf-viewer-lib#87995b957783e8e026f14484301a98146bebae5a"
   dependencies:
     pdfjs-dist "^2.2.228"
 

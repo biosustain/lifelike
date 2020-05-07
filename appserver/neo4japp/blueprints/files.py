@@ -8,7 +8,6 @@ from enum import Enum
 from typing import Dict
 
 from flask import Blueprint, current_app, request, jsonify, g, make_response
-from neo4japp.models import AppUser
 from sqlalchemy.orm.exc import NoResultFound
 from werkzeug.utils import secure_filename
 
@@ -21,7 +20,9 @@ from neo4japp.database import (
     get_lmdb_dao,
 )
 from neo4japp.exceptions import RecordNotFoundException, BadRequestError
+from neo4japp.models import AppUser
 from neo4japp.models.files import Files, FileContent
+from neo4japp.blueprints.permissions import requires_role
 
 bp = Blueprint('files', __name__, url_prefix='/files')
 
@@ -33,7 +34,6 @@ def upload_pdf():
     pdf_content = pdf.read()  # TODO: don't work with whole file in memory
     pdf.stream.seek(0)
     project = '1'  # TODO: remove hard coded project
-    pdf_content = pdf.read()
     checksum_sha256 = hashlib.sha256(pdf_content).digest()
     user = g.current_user
 
@@ -105,6 +105,7 @@ def list_files():
         Files.creation_date)
         .join(AppUser, Files.user_id == AppUser.id)
         .filter(Files.project == project)
+        .order_by(Files.creation_date.desc())
         .all()]
     return jsonify({'files': files})
 
@@ -222,7 +223,7 @@ def reannotate():
         file = db.session \
             .query(Files.id, Files.filename, Files.annotations, FileContent.raw_file) \
             .join(FileContent, FileContent.id == Files.content_id) \
-            .filter(Files.file_id == id)\
+            .filter(Files.file_id == id) \
             .one_or_none()
         if file is None:
             current_app.logger.error('Could not find file: %s, %s', id, file.filename)
@@ -253,7 +254,11 @@ class DeletionOutcome(Enum):
 
 @bp.route('/bulk_delete', methods=['DELETE'])
 @auth.login_required
+@requires_role('admin')
 def delete_files():
+
+    yield g.current_user
+
     ids = request.get_json()
     outcome: Dict[str, str] = {}  # file id to deletion outcome
     for id in ids:
@@ -262,12 +267,9 @@ def delete_files():
             current_app.logger.error('Could not find file: %s, %s', id, file.filename)
             outcome[id] = DeletionOutcome.NOT_FOUND.value
             continue
-        if g.current_user.id != int(file.user_id):
-            current_app.logger.error('Cannot delete file (not an owner): %s, %s', id, file.filename)
-            outcome[id] = DeletionOutcome.NOT_OWNER.value
-            continue
         db.session.delete(file)
         db.session.commit()
         current_app.logger.debug('File deleted: %s, %s', id, file.filename)
         outcome[id] = DeletionOutcome.DELETED.value
-    return jsonify(outcome)
+
+    yield jsonify(outcome)

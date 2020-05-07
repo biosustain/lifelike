@@ -56,7 +56,11 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
     group: '',
     edges: [],
     hyperlink: '',
-    detail: ''
+    detail: '',
+    data: {
+      source: '',
+      hyperlinks: []
+    }
   };
 
   nodeIsIcon = false;
@@ -236,8 +240,8 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
               to: e.to
             };
           }),
-          hyperlink: data.nodeData.data.hyperlink,
-          detail: data.nodeData.data.detail
+          hyperlink: data.nodeData.data.hyperlink || '',
+          detail: data.nodeData.data.detail || ''
         };
         this.entityForm.setValue(formData, {emitEvent: false});
 
@@ -430,38 +434,12 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
   /**
    * Allow user to navigate to a link in a new tab
    */
-  goToLink() {
-    const hyperlink: string = this.entityForm.value.hyperlink;
+  goToLink(url= null) {
+    const hyperlink: string = url || this.entityForm.value.hyperlink;
 
-    if (this.graphData.group === 'link') {
-      // If a link, create a payload from hyperlink url
-      const getUrl = window.location;
-      const prefixLink = getUrl.protocol + '//' + getUrl.host + '/dt/link/';
-      const [
-        fileId,
-        page,
-        coordA,
-        coordB,
-        coordC,
-        coordD
-      ] = hyperlink.replace(prefixLink, '').split('/');
-      // Emit app command with annotation payload
-      this.openApp.emit({
-          app: 'pdf-viewer',
-          arg: {
-            // tslint:disable-next-line: radix
-            pageNumber: parseInt(page),
-            fileId,
-            coords: [
-              parseFloat(coordA),
-              parseFloat(coordB),
-              parseFloat(coordC),
-              parseFloat(coordD)
-            ]
-          }
-        }
-      );
-    } else if (
+    if (!hyperlink) { return; }
+
+    if (
       hyperlink.includes('http')
     ) {
       window.open(hyperlink, '_blank');
@@ -472,6 +450,37 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
     } else {
       window.open('http://' + hyperlink);
     }
+  }
+
+  /**
+   * Bring user to original source of node information
+   */
+  goToSource() {
+    const prefixLink = '/dt/pdf/';
+    const [
+      fileId,
+      page,
+      coordA,
+      coordB,
+      coordC,
+      coordD
+    ] = this.graphData.data.source.replace(prefixLink, '').split('/');
+    // Emit app command with annotation payload
+    this.openApp.emit({
+        app: 'pdf-viewer',
+        arg: {
+          // tslint:disable-next-line: radix
+          pageNumber: parseInt(page),
+          fileId,
+          coords: [
+            parseFloat(coordA),
+            parseFloat(coordB),
+            parseFloat(coordC),
+            parseFloat(coordD)
+          ]
+        }
+      }
+    );
   }
 
   blurInput(e: Event) {
