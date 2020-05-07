@@ -23,6 +23,7 @@ class AnnotationIntervalTree(IntervalTree):
         bounds = sorted(self.boundary_table)
 
         new_ivs = set()
+
         for lbound, ubound in zip(bounds[:-1], bounds[1:]):
             for iv in self[lbound]:
                 new_ivs.add(Interval(lbound, ubound, iv.data))
@@ -39,6 +40,7 @@ class AnnotationIntervalTree(IntervalTree):
                 processed[interval] = [iv.data]
 
         processed_ivs: Set[str] = set()
+
         for _, annotations in processed.items():
             if len(annotations) > 1:
                 for anno in annotations:
@@ -48,6 +50,7 @@ class AnnotationIntervalTree(IntervalTree):
                     hashval = compute_hash(anno.to_dict())
                     if hashval not in processed_ivs:
                         returned_ivs.append(anno)
+                        processed_ivs.add(hashval)
 
         return returned_ivs
 
