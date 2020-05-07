@@ -254,11 +254,8 @@ class DeletionOutcome(Enum):
 
 @bp.route('/bulk_delete', methods=['DELETE'])
 @auth.login_required
-@requires_role('admin')
 def delete_files():
-
-    yield g.current_user
-
+    curr_user = g.current_user
     ids = request.get_json()
     outcome: Dict[str, str] = {}  # file id to deletion outcome
     for id in ids:
@@ -267,9 +264,13 @@ def delete_files():
             current_app.logger.error('Could not find file: %s, %s', id, file.filename)
             outcome[id] = DeletionOutcome.NOT_FOUND.value
             continue
+        if 'admin' not in curr_user.roles and curr_user.id != int(file.user_id):
+            current_app.logger.error('Cannot delete file (not an owner): %s, %s', id, file.filename)
+            outcome[id] = DeletionOutcome.NOT_OWNER.value
+            continue
         db.session.delete(file)
         db.session.commit()
         current_app.logger.debug('File deleted: %s, %s', id, file.filename)
         outcome[id] = DeletionOutcome.DELETED.value
 
-    yield jsonify(outcome)
+    return jsonify(outcome)
