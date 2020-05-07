@@ -1,7 +1,7 @@
 import { Component, EventEmitter, OnDestroy, Output } from '@angular/core';
 import { BehaviorSubject, combineLatest, Subject, Subscription } from 'rxjs';
 import { PdfFilesService } from 'app/shared/services/pdf-files.service';
-import { HYPERLINKS } from 'app/shared/constants';
+import { Hyperlink, SearchLink } from 'app/shared/constants';
 
 import { DataFlowService, PdfAnnotationsService, } from '../services';
 
@@ -84,13 +84,6 @@ export class PdfViewerComponent implements OnDestroy {
   }
 
   annotationCreated(annotation: Annotation) {
-    const defaultLinks = {
-      ncbi: 'https://www.ncbi.nlm.nih.gov/gene/?query=',
-      uniprot: 'https://www.uniprot.org/uniprot/?query=',
-      wikipedia: 'https://www.google.com/search?q=site:+wikipedia.org+',
-      google: 'https://www.google.com/search?q='
-    };
-
     // try getting id from the ncbi or uniprot link
     let id = '';
     let idType = '';
@@ -116,10 +109,10 @@ export class PdfViewerComponent implements OnDestroy {
         id,
         idType,
         links: {
-          ncbi: annotation.meta.links.ncbi || defaultLinks.ncbi + annotation.meta.allText,
-          uniprot: annotation.meta.links.uniprot || defaultLinks.uniprot + annotation.meta.allText,
-          wikipedia: annotation.meta.links.wikipedia || defaultLinks.wikipedia + annotation.meta.allText,
-          google: annotation.meta.links.google || defaultLinks.google + annotation.meta.allText
+          ncbi: annotation.meta.links.ncbi || this.buildUrl(SearchLink.Ncbi, annotation.meta.allText),
+          uniprot: annotation.meta.links.uniprot || this.buildUrl(SearchLink.Uniprot, annotation.meta.allText),
+          wikipedia: annotation.meta.links.wikipedia || this.buildUrl(SearchLink.Wikipedia, annotation.meta.allText),
+          google: annotation.meta.links.google || this.buildUrl(SearchLink.Google, annotation.meta.allText),
         }
       }
     };
@@ -241,23 +234,26 @@ export class PdfViewerComponent implements OnDestroy {
   generateHyperlink(ann: Annotation): string {
     switch (ann.meta.idType) {
       case 'CHEBI':
-        return HYPERLINKS.CHEBI + ann.meta.id;
+        return this.buildUrl(Hyperlink.Chebi, ann.meta.id);
       case 'MESH':
         // prefix 'MESH:' should be removed from the id in order for search to work
-        return HYPERLINKS.MESH + ann.meta.id.substring(5);
+        return this.buildUrl(Hyperlink.Mesh, ann.meta.id.substring(5));
       case 'UNIPROT':
-        // Note: UNIPROT links will not work as currently there are names in the id fields
-        return HYPERLINKS + ann.meta.id;
+        return this.buildUrl(Hyperlink.Uniprot, ann.meta.id);
       case 'NCBI':
         if (ann.meta.type === 'Genes') {
-          return HYPERLINKS.NCBI_GENES + ann.meta.id;
+          return this.buildUrl(Hyperlink.NcbiGenes, ann.meta.id);
         } else if (ann.meta.type === 'Species') {
-          return HYPERLINKS.NCBI_SPECIES + ann.meta.id;
+          return this.buildUrl(Hyperlink.NcbiSpecies, ann.meta.id);
         }
         return '';
       default:
         return '';
     }
+  }
+
+  private buildUrl(provider: Hyperlink | SearchLink, query: string): string {
+    return provider + query;
   }
 
   scrollInPdf(loc: Location) {
