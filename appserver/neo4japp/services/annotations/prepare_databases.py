@@ -192,9 +192,7 @@ def prepare_lmdb_proteins_database(filename: str):
                 protein_id = line[1]
                 protein_name = line[2] if 'Uncharacterized protein' not in line[2] else line[0]  # noqa
                 protein = {
-                    # changed protein_id to protein_name for now (JIRA LL-671)
-                    # will eventually change back to protein_id
-                    'protein_id': protein_name,
+                    'protein_id': protein_id,
                     'id_type': 'UNIPROT',
                     'name': protein_name,
                     'common_name': {
