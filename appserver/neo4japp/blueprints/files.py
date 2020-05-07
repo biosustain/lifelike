@@ -1,18 +1,23 @@
-from enum import Enum
+import hashlib
 import io
+import json
+import os
 import uuid
 from datetime import datetime
-import os
-import json
+from enum import Enum
 from typing import Dict
 from urllib.parse import urlparse
 import urllib.request
-from neo4japp.blueprints.auth import auth
-from flask import Blueprint, current_app, request, abort, jsonify, g, make_response
+
+from flask import Blueprint, current_app, request, jsonify, g, make_response
+
+from sqlalchemy.orm.exc import NoResultFound
+
 from werkzeug.datastructures import FileStorage
 from werkzeug.utils import secure_filename
 
 from neo4japp.blueprints.auth import auth
+from neo4japp.blueprints.permissions import requires_role
 from neo4japp.database import (
     db,
     get_annotations_service,
@@ -21,7 +26,8 @@ from neo4japp.database import (
     get_lmdb_dao,
 )
 from neo4japp.exceptions import RecordNotFoundException, BadRequestError
-from neo4japp.models.files import Files
+from neo4japp.models import AppUser
+from neo4japp.models.files import Files, FileContent
 
 bp = Blueprint('files', __name__, url_prefix='/files')
 
@@ -39,9 +45,11 @@ def upload_pdf():
     else:
         filename = secure_filename(request.files['file'].filename)
         pdf = request.files['file']
+    pdf_content = pdf.read()  # TODO: don't work with whole file in memory
+    pdf.stream.seek(0)
     project = '1'  # TODO: remove hard coded project
-    binary_pdf = pdf.read()
-    username = g.current_user
+    checksum_sha256 = hashlib.sha256(pdf_content).digest()
+    user = g.current_user
 
     # Make sure that the filename is not longer than the DB column permits
     max_filename_length = Files.filename.property.columns[0].type.length
@@ -54,17 +62,31 @@ def upload_pdf():
 
     annotations = annotate(filename, pdf)
 
-    files = Files(
+    try:
+        # First look for an existing copy of this file
+        file_content = db.session.query(FileContent.id) \
+            .filter(FileContent.checksum_sha256 == checksum_sha256) \
+            .one()
+    except NoResultFound:
+        # Otherwise, let's add the file content to the database
+        file_content = FileContent(
+            raw_file=pdf_content,
+            checksum_sha256=checksum_sha256
+        )
+        db.session.add(file_content)
+        db.session.commit()
+
+    file = Files(
         file_id=file_id,
         filename=filename,
-        raw_file=binary_pdf,
-        username=username.id,
+        content_id=file_content.id,
+        user_id=user.id,
         annotations=annotations,
         project=project
     )
-
-    db.session.add(files)
+    db.session.add(file)
     db.session.commit()
+
     return jsonify({
         'file_id': file_id,
         'filename': filename,
@@ -91,9 +113,12 @@ def list_files():
         Files.id,
         Files.file_id,
         Files.filename,
-        Files.username,
+        Files.user_id,
+        AppUser.username,
         Files.creation_date)
+        .join(AppUser, Files.user_id == AppUser.id)
         .filter(Files.project == project)
+        .order_by(Files.creation_date.desc())
         .all()]
     return jsonify({'files': files})
 
@@ -101,9 +126,14 @@ def list_files():
 @bp.route('/<id>', methods=['GET'])
 @auth.login_required
 def get_pdf(id):
-    entry = db.session.query(Files).filter(Files.file_id == id).one_or_none()
-    if entry is None:
-        raise RecordNotFoundException(f'File not found. Id: {id}')
+    try:
+        entry = db.session \
+            .query(Files.id, FileContent.raw_file) \
+            .join(FileContent, FileContent.id == Files.content_id) \
+            .filter(Files.file_id == id) \
+            .one()
+    except NoResultFound:
+        raise RecordNotFoundException('Requested PDF file not found.')
     res = make_response(entry.raw_file)
     res.headers['Content-Type'] = 'application/pdf'
     return res
@@ -176,12 +206,19 @@ def annotate(filename, pdf_file_object) -> dict:
     annotator = get_annotations_service(lmdb_dao=lmdb_dao)
     bioc_service = get_bioc_document_service()
     # TODO: Miguel: need to update file_uri with file path
-    parsed_pdf_chars = pdf_parser.parse_pdf(pdf=pdf_file_object)
-    tokens = pdf_parser.extract_tokens(parsed_chars=parsed_pdf_chars)
-    annotations = annotator.create_annotations(tokens=tokens)
-    pdf_text = pdf_parser.parse_pdf_high_level(pdf=pdf_file_object)
-    bioc = bioc_service.read(text=pdf_text, file_uri=filename)
-    return bioc_service.generate_bioc_json(annotations=annotations, bioc=bioc)
+    try:
+        parsed_pdf_chars = pdf_parser.parse_pdf(pdf=pdf_file_object)
+    except Exception as e:
+        raise BadRequestError("Your file could not be imported. Please check if it is a valid PDF.")
+
+    try:
+        tokens = pdf_parser.extract_tokens(parsed_chars=parsed_pdf_chars)
+        annotations = annotator.create_annotations(tokens=tokens)
+        pdf_text = pdf_parser.parse_pdf_high_level(pdf=pdf_file_object)
+        bioc = bioc_service.read(text=pdf_text, file_uri=filename)
+        return bioc_service.generate_bioc_json(annotations=annotations, bioc=bioc)
+    except Exception as e:
+        raise BadRequestError("Your file could not be annotated and your PDF file was not saved.")
 
 
 class AnnotationOutcome(Enum):
@@ -196,7 +233,11 @@ def reannotate():
     ids = request.get_json()
     outcome: Dict[str, str] = {}  # file id to annotation outcome
     for id in ids:
-        file = Files.query.filter_by(file_id=id).one_or_none()
+        file = db.session \
+            .query(Files.id, Files.filename, Files.annotations, FileContent.raw_file) \
+            .join(FileContent, FileContent.id == Files.content_id) \
+            .filter(Files.file_id == id) \
+            .one_or_none()
         if file is None:
             current_app.logger.error('Could not find file: %s, %s', id, file.filename)
             outcome[id] = AnnotationOutcome.NOT_FOUND.value
@@ -208,7 +249,9 @@ def reannotate():
             current_app.logger.error('Could not annotate file: %s, %s, %s', id, file.filename, e)
             outcome[id] = AnnotationOutcome.NOT_ANNOTATED.value
         else:
-            file.annotations = annotations
+            db.session.query(Files).filter(Files.file_id == id).update({
+                'annotations': annotations,
+            })
             db.session.commit()
             current_app.logger.debug('File successfully annotated: %s, %s', id, file.filename)
             outcome[id] = AnnotationOutcome.ANNOTATED.value
@@ -224,7 +267,11 @@ class DeletionOutcome(Enum):
 
 @bp.route('/bulk_delete', methods=['DELETE'])
 @auth.login_required
+@requires_role('admin')
 def delete_files():
+
+    yield g.current_user
+
     ids = request.get_json()
     outcome: Dict[str, str] = {}  # file id to deletion outcome
     for id in ids:
@@ -233,12 +280,9 @@ def delete_files():
             current_app.logger.error('Could not find file: %s, %s', id, file.filename)
             outcome[id] = DeletionOutcome.NOT_FOUND.value
             continue
-        if g.current_user.id != int(file.username):
-            current_app.logger.error('Cannot delete file (not an owner): %s, %s', id, file.filename)
-            outcome[id] = DeletionOutcome.NOT_OWNER.value
-            continue
         db.session.delete(file)
         db.session.commit()
         current_app.logger.debug('File deleted: %s, %s', id, file.filename)
         outcome[id] = DeletionOutcome.DELETED.value
-    return jsonify(outcome)
+
+    yield jsonify(outcome)

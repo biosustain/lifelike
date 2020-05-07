@@ -1,5 +1,4 @@
 import {
-  nodeTemplates,
   uuidv4
 } from './services';
 import {
@@ -7,6 +6,7 @@ import {
   GraphSelectionData
 } from './services/interfaces';
 import { Network, Options, DataSet } from 'vis-network';
+import { annotationTypes, visJsGroupStyleFactory } from '../shared/annotation-styles';
 
 /**
  * A class wrapped around the instatiation of
@@ -58,20 +58,8 @@ export class NetworkVis {
     this.container = container;
 
     // Pull in node template styling defs
-    const groupStyling = {};
-    for (const template of nodeTemplates) {
-      groupStyling[template.label] = {
-        borderWidth: 1,
-        color: {
-          background: '#fff'
-        },
-        font: {
-          color: template.color
-        }
-      };
-    }
     // And assign to vis network js styling
-    this.options.groups = groupStyling;
+    this.options.groups = visJsGroupStyleFactory();
   }
 
   /**
@@ -177,8 +165,9 @@ export class NetworkVis {
         maximum: 600,
     };
     n.data = {
-      hyperlink: n.hyperlink || '',
+      source: n.source || '',
       detail: n.detail || '',
+      hyperlinks: n.hyperlinks || []
     };
 
     this.visNodes.add([n]);
@@ -222,18 +211,18 @@ export class NetworkVis {
     };
 
     switch (data.group) {
-        case 'link': {
-            updatedNode = {
-                ...updatedNode,
-                label: data.shape === 'icon' ? '' : data.data.detail,
-            };
-            this.visNodes.update(updatedNode);
-            break;
-        }
-        default: {
-            this.visNodes.update(updatedNode);
-            break;
-        }
+      case 'link': {
+          updatedNode = {
+              ...updatedNode,
+              label: data.shape === 'icon' ? '' : data.data.detail,
+          };
+          this.visNodes.update(updatedNode);
+          break;
+      }
+      default: {
+          this.visNodes.update(updatedNode);
+          break;
+      }
     }
   }
 
@@ -314,18 +303,5 @@ export class NetworkVis {
     });
 
     this.network.redraw();
-  }
-
-  /**
-   * Return a base64 png of the network map
-   * from the canvas
-   */
-  pullImage() {
-    if (!this.network) { return null; }
-
-    /* tslint:disable:no-string-literal */
-    const context = this.network['canvas'].getContext();
-
-    return context.canvas.toDataURL();
   }
 }

@@ -2,7 +2,15 @@
 <div class="container" fxLayout="column" fxLayoutAlign="start start">
   <div fxLayoutGap="8px">
     <button mat-raised-button (click)="openUploadDialog()"><mat-icon>add_box</mat-icon> Upload</button>
-    <button mat-raised-button [disabled]="selection.selected.length === 0" (click)="openDeleteDialog()" color="warn">Delete</button>
+    <button
+      *ngIf="(currentUser$ | async)?.roles.includes('admin')"
+      mat-raised-button
+      [disabled]="selection.selected.length === 0"
+      (click)="openDeleteDialog()"
+      color="warn"
+    >
+      Delete
+    </button>
     <button mat-raised-button [disabled]="selection.selected.length === 0 || isReannotating" (click)="reannotate()">Reannotate</button>
   </div>
 

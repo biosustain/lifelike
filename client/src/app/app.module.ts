@@ -10,37 +10,29 @@ import { LifelikeHomeModule } from 'app/home/lifelike-home.module';
 import { UserFileImportModule } from './user-file-import/user-file-import.module';
 import { SearchModule } from './search/search.module';
 import { SharedModule } from './shared/shared.module';
-import {
-  DialogConfirmDeletionComponent,
-  DialogUploadComponent,
-  FileBrowserComponent,
-} from './file-browser/file-browser.component';
 import { UserModule } from 'app/users/users.module';
 import { KgStatisticsComponent } from './kg-statistics/kg-statistics.component';
 import { ChartsModule } from 'ng2-charts';
 
 import { httpInterceptorProviders } from 'app/http-interceptors/index';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { BrowserModule } from '@angular/platform-browser';
+import { BrowserModule, Title } from '@angular/platform-browser';
 import { VisualizationModule } from './visualization/visualization.module';
 import { DrawingToolModule } from './drawing-tool/drawing-tool.module';
+import { FileBrowserModule } from './file-browser/file-browser.module';
 
 @NgModule({
   declarations: [
     AppComponent,
-    DialogConfirmDeletionComponent,
-    DialogUploadComponent,
-    FileBrowserComponent,
     KgStatisticsComponent,
   ],
   imports: [
     BrowserModule,
-    BrowserAnimationsModule,
     AdminModule,
     AuthModule,
     SharedModule,
     AppRoutingModule,
     UserFileImportModule,
+    FileBrowserModule,
     LifelikeHomeModule,
     VisualizationModule,
     UserModule,
@@ -50,12 +42,11 @@ import { DrawingToolModule } from './drawing-tool/drawing-tool.module';
     ChartsModule,
     DrawingToolModule,
   ],
-  providers: [httpInterceptorProviders],
-  exports: [],
-  entryComponents: [
-    DialogConfirmDeletionComponent,
-    DialogUploadComponent,
+  providers: [
+    httpInterceptorProviders,
+    Title
   ],
+  exports: [],
   bootstrap: [AppComponent]
 })
 export class AppModule {
