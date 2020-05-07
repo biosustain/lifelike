@@ -13,9 +13,11 @@ from .annotation_interval_tree import (
 from .constants import (
     COMMON_WORDS,
     TYPO_SYNONYMS,
+    DatabaseType,
     EntityColor,
     EntityIdStr,
     EntityType,
+    ENTITY_HYPERLINKS,
     ENTITY_TYPE_PRECEDENCE,
     PDF_NEW_LINE_THRESHOLD,
     NCBI_LINK,
@@ -355,12 +357,22 @@ class AnnotationsService:
                     keyword_starting_idx = char_indexes[0]
                     keyword_ending_idx = char_indexes[-1]
                     link_search_term = entity['name']
+                    if entity['id_type'] != DatabaseType.Ncbi.value:
+                        hyperlink = ENTITY_HYPERLINKS[entity['id_type']]
+                    else:
+                        hyperlink = ENTITY_HYPERLINKS[entity['id_type']][token_type]
+
+                    if entity['id_type'] == DatabaseType.Mesh.value:
+                        hyperlink += entity_id[5:]
+                    else:
+                        hyperlink += entity_id
 
                     meta = Annotation.Meta(
                         keyword_type=token_type,
                         color=color,
                         id=entity_id,
                         id_type=entity['id_type'],
+                        id_hyperlink=hyperlink,
                         links=Annotation.Meta.Links(
                             ncbi=NCBI_LINK + link_search_term,
                             uniprot=UNIPROT_LINK + link_search_term,
@@ -493,12 +505,22 @@ class AnnotationsService:
                     keyword_starting_idx = char_indexes[0]
                     keyword_ending_idx = char_indexes[-1]
                     link_search_term = f'{token_positions.keyword}'
+                    if entity['id_type'] != DatabaseType.Ncbi.value:
+                        hyperlink = ENTITY_HYPERLINKS[entity['id_type']]
+                    else:
+                        hyperlink = ENTITY_HYPERLINKS[entity['id_type']][token_type]
+
+                    if entity['id_type'] == DatabaseType.Mesh.value:
+                        hyperlink += entity_id[5:]
+                    else:
+                        hyperlink += entity_id
 
                     meta = Annotation.Meta(
                         keyword_type=token_type,
                         color=color,
                         id=entity_id,
                         id_type=entity['id_type'],
+                        id_hyperlink=hyperlink,
                         links=Annotation.Meta.Links(
                             ncbi=NCBI_LINK + link_search_term,
                             uniprot=UNIPROT_LINK + link_search_term,
