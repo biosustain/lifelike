@@ -256,6 +256,7 @@ class DeletionOutcome(Enum):
 @auth.login_required
 def delete_files():
     curr_user = g.current_user
+    user_roles = [r.name for r in curr_user.roles]
     ids = request.get_json()
     outcome: Dict[str, str] = {}  # file id to deletion outcome
     for id in ids:
@@ -264,7 +265,7 @@ def delete_files():
             current_app.logger.error('Could not find file: %s, %s', id, file.filename)
             outcome[id] = DeletionOutcome.NOT_FOUND.value
             continue
-        if 'admin' not in curr_user.roles and curr_user.id != int(file.user_id):
+        if 'admin' not in user_roles and curr_user.id != int(file.user_id):
             current_app.logger.error('Cannot delete file (not an owner): %s, %s', id, file.filename)
             outcome[id] = DeletionOutcome.NOT_OWNER.value
             continue
