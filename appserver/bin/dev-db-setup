@@ -3,7 +3,7 @@
 echo "Cleaning database"
 flask drop_tables
 echo "Upgrading PostgreSQL"
-flask db upgrade
+flask db upgrade --x-arg data_migrate="True"
 echo "Seeding PostgreSQL"
 flask seed
 echo "Setting up neo4j indexes"
