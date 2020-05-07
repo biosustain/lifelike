@@ -391,7 +391,8 @@ class AnnotationsService:
 
     def _annotate_genes(
         self,
-        entity_id_str: str,
+        matched_organism_ids: List[str],
+        organism_frequency: Dict[str, int],
         coor_obj_per_pdf_page: Dict[int, List[Union[LTChar, LTAnno]]],
         cropbox_per_page: Dict[int, Tuple[int, int]],
     ) -> Tuple[List[Annotation], Set[str]]:
@@ -412,7 +413,6 @@ class AnnotationsService:
             2. More than one organism match for a given gene
             3. No organism matches for a given gene
         """
-
         tokens: Dict[str, List[PDFTokenPositions]] = self.matched_genes
         token_type: str = EntityType.Genes.value
         color: str = EntityColor.Genes.value
@@ -424,21 +424,34 @@ class AnnotationsService:
 
         tokens_lowercased = set(tokens.keys())
 
-        def get_gene_match_result(
+        def get_gene_to_organism_match_result(
             genes: List[str],
-        ) -> Dict[str, str]:
+            matched_organism_ids: List[str],
+        ) -> Dict[str, Dict[str, str]]:
             """Returns a map of gene name to gene id."""
             from neo4japp.database import get_organism_gene_match_service
+            from neo4japp.database import get_neo4j_service_dao
+
             organism_gene_match_service = get_organism_gene_match_service()
+            neo4j = get_neo4j_service_dao()
 
-            return organism_gene_match_service.get_genes(genes)
+            # First check if the gene/organism match exists in the postgres lookup table
+            postgres_result = organism_gene_match_service.get_genes(genes, matched_organism_ids)
 
-        match_result = get_gene_match_result(list(tokens.keys()))
+            # Collect all the genes that were not matched to an organism in the table, and search
+            # the Neo4j database for them
+            second_round_genes = [gene for gene in genes if gene not in postgres_result.keys()]
+            neo4j_result = neo4j.get_genes_to_organisms(second_round_genes, matched_organism_ids)
+
+            # Join the results of the two queries
+            postgres_result.update(neo4j_result)
+
+            return postgres_result
+
+        match_result = get_gene_to_organism_match_result(list(tokens.keys()), matched_organism_ids)
 
         for word, token_positions_list in tokens.items():
-            # If the "gene" is not matched to any organism in our postgres table, ignore it.
-            # In the future, we will want to check the organisms that actually appear in the
-            # paper, but for now we just check postgres for the known organisms.
+            # If the "gene" is not matched to any organism in the paper, ignore it
             if word not in match_result.keys():
                 continue
 
@@ -473,7 +486,21 @@ class AnnotationsService:
                     # correct gene. This postgres table currently has unique gene names, so we
                     # expect a 1:1 match of gene to organism. In the future, we can't always
                     # assume this to be the case, as some organism strains have matching gene names.
-                    entity_id = match_result[word]
+
+                    # If a gene was matched to at least one organism in the document,
+                    # we have to get the corresponding gene data. If a gene matches
+                    # more than one organism, we use the one with the highest
+                    # frequency within the document. We may fine-tune this later.
+                    organism_to_gene_pairs = match_result[word]
+                    most_frequent_organism = str()
+                    greatest_frequency = 0
+
+                    for organism_id in organism_to_gene_pairs.keys():
+                        if organism_frequency[organism_id] > greatest_frequency:
+                            greatest_frequency = organism_frequency[organism_id]
+                            most_frequent_organism = organism_id
+
+                    entity_id = organism_to_gene_pairs[most_frequent_organism]
 
                     # create list of positions boxes
                     curr_page_coor_obj = coor_obj_per_pdf_page[
@@ -688,7 +715,8 @@ class AnnotationsService:
         )
 
         matched_genes, unwanted_genes = self._annotate_genes(
-            entity_id_str=EntityIdStr.Genes.value,
+            matched_organism_ids=[annotation.meta.id for annotation in matched_species],
+            organism_frequency=self._get_entity_frequency(matched_species),
             coor_obj_per_pdf_page=tokens.coor_obj_per_pdf_page,
             cropbox_per_page=tokens.cropbox_per_page,
         )
