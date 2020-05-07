@@ -218,7 +218,7 @@ export class DialogConfirmDeletionComponent {
   styleUrls: ['./dialog-upload.scss'],
 })
 export class DialogUploadComponent implements OnInit, OnDestroy {
-  forbidUpload = false;
+  forbidUpload = true;
   pickedFileName: string;
   payload: UploadPayload; // to avoid writing this.data.payload everywhere
 
@@ -262,9 +262,9 @@ export class DialogUploadComponent implements OnInit, OnDestroy {
   /** Validates if the Upload button should be enabled or disabled */
   validatePayload() {
     if (this.payload.type === UploadType.Files) {
-      this.forbidUpload = this.payload.files && this.payload.files.length > 0;
+      this.forbidUpload = !this.payload.files || this.payload.files.length === 0;
     } else { // UploadType.Url
-      this.forbidUpload = this.payload.url && this.payload.url.length > 0;
+      this.forbidUpload = !this.payload.url || this.payload.url.length === 0;
     }
   }
 }
