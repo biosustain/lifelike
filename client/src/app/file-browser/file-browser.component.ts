@@ -1,11 +1,12 @@
-import { Component, Inject, OnInit } from '@angular/core';
+import { Component, Inject, OnDestroy, OnInit } from '@angular/core';
+import { FormControl } from '@angular/forms';
 import { Router } from '@angular/router';
 import { SelectionModel } from '@angular/cdk/collections';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatDialog, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { BehaviorSubject, throwError } from 'rxjs';
-import { AnnotationStatus, PdfFile } from 'app/interfaces/pdf-files.interface';
+import { BehaviorSubject, Subscription, throwError } from 'rxjs';
+import { AnnotationStatus, PdfFile, UploadPayload, UploadType } from 'app/interfaces/pdf-files.interface';
 import { PdfFilesService } from 'app/shared/services/pdf-files.service';
 import { HttpEventType } from '@angular/common/http';
 import { Progress, ProgressMode } from 'app/interfaces/common-dialog.interface';
@@ -27,7 +28,7 @@ export class FileBrowserComponent implements OnInit {
     private pdf: PdfFilesService,
     private router: Router,
     private snackBar: MatSnackBar,
-    private deleteDialog: MatDialog,
+    private dialog: MatDialog,
     private progressDialog: ProgressDialog,
   ) {
   }
@@ -50,11 +51,7 @@ export class FileBrowserComponent implements OnInit {
     this.selection.clear();
   }
 
-  onFileInput(files: FileList) {
-    if (files.length === 0) {
-      return;
-    }
-
+  upload(data: UploadPayload) {
     // The user shouldn't be able to initiate a new file upload
     if (this.uploadStarted) {
       return;
@@ -65,12 +62,13 @@ export class FileBrowserComponent implements OnInit {
     const progressObservable = new BehaviorSubject<Progress>(new Progress({
       status: 'Preparing file for upload...',
     }));
+    const name = data.type === UploadType.Files ? data.files[0].name : 'file';
     const progressDialogRef = this.progressDialog.display({
-      title: `Adding ${files[0].name}...`,
+      title: `Adding ${name}...`,
       progressObservable,
     });
 
-    this.pdf.uploadFile(files[0]).subscribe(event => {
+    this.pdf.uploadFile(data).subscribe(event => {
         if (event.type === HttpEventType.UploadProgress) {
           if (event.loaded >= event.total) {
             progressObservable.next(new Progress({
@@ -170,13 +168,28 @@ export class FileBrowserComponent implements OnInit {
   }
 
   openDeleteDialog() {
-    const dialogRef = this.deleteDialog.open(DialogConfirmDeletionComponent, {
+    const dialogRef = this.dialog.open(DialogConfirmDeletionComponent, {
       data: { files: this.selection.selected },
     });
 
     dialogRef.afterClosed().subscribe(shouldDelete => {
       if (shouldDelete) {
         this.deleteFiles();
+      }
+    });
+  }
+
+  openUploadDialog() {
+    const uploadData: UploadPayload = {type: UploadType.Files}; // doesn't matter what we set it to, but it needs a value
+
+    const dialogRef = this.dialog.open(DialogUploadComponent, {
+      data: { payload: uploadData },
+      width: '640px',
+    });
+
+    dialogRef.afterClosed().subscribe((runUpload: boolean) => {
+      if (runUpload) {
+        this.upload(uploadData);
       }
     });
   }
@@ -188,4 +201,61 @@ export class FileBrowserComponent implements OnInit {
 })
 export class DialogConfirmDeletionComponent {
   constructor(@Inject(MAT_DIALOG_DATA) public data: any) { }
+}
+
+@Component({
+  selector: 'app-dialog-upload',
+  templateUrl: './dialog-upload.html',
+  styleUrls: ['./dialog-upload.scss'],
+})
+export class DialogUploadComponent implements OnInit, OnDestroy {
+  forbidUpload = false;
+  pickedFileName: string;
+  payload: UploadPayload; // to avoid writing this.data.payload everywhere
+
+  selectedTab = new FormControl(0);
+  tabChange: Subscription;
+
+  url = new FormControl('');
+  urlChange: Subscription;
+
+  constructor(@Inject(MAT_DIALOG_DATA) private data: any) {
+    this.payload = this.data.payload;
+  }
+
+  ngOnInit() {
+    this.urlChange = this.url.valueChanges.subscribe((value: string) => {
+      this.payload.url = value;
+      this.validatePayload();
+    });
+    this.tabChange = this.selectedTab.valueChanges.subscribe(value => {
+      this.payload.type = value === 0 ? UploadType.Files : UploadType.Url;
+      this.validatePayload();
+    });
+  }
+
+  ngOnDestroy() {
+    this.urlChange.unsubscribe();
+    this.tabChange.unsubscribe();
+  }
+
+  /** Called upon clicking the Browse button */
+  onFilesPick(fileList: FileList) {
+    const files: File[] = [];
+    for (let i = 0; i < fileList.length; ++i) {
+      files.push(fileList.item(i));
+    }
+    this.payload.files = files;
+    this.pickedFileName = fileList.length ? fileList[0].name : '';
+    this.validatePayload();
+  }
+
+  /** Validates if the Upload button should be enabled or disabled */
+  validatePayload() {
+    if (this.payload.type === UploadType.Files) {
+      this.forbidUpload = this.payload.files && this.payload.files.length > 0;
+    } else { // UploadType.Url
+      this.forbidUpload = this.payload.url && this.payload.url.length > 0;
+    }
+  }
 }
