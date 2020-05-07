@@ -37,7 +37,7 @@ import { MapListComponent } from './project-list-view/map-list/map-list.componen
 import { SharedModule } from 'app/shared/shared.module';
 import { RouterModule } from '@angular/router';
 import { PdfViewerComponent } from './pdf-viewer/pdf-viewer.component';
-import { PdfViewerLibModule } from 'pdf-viewer-lib';
+import { PdfViewerLibModule } from 'app/pdf-viewer/pdf-viewer-lib.module';
 
 export const routes = [
   {
