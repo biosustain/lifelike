@@ -19,8 +19,8 @@ import { KgStatisticsComponent } from './kg-statistics/kg-statistics.component';
 
 // TODO: Add an unprotected home page
 const routes: Routes = [
-  { path: '', component: LifelikeHomePageComponent},
-  { path: 'admin', component: AdminPanelComponent, canActivate: [AdminGuard]},
+  { path: '', component: LifelikeHomePageComponent, data: {title: 'Dashboard'}},
+  { path: 'admin', component: AdminPanelComponent, canActivate: [AdminGuard], data: {title: 'Dashboard'}},
   { path: 'neo4j-upload', component: UserFileImportComponent, canActivate: [AuthGuard]},
   { path: 'neo4j-visualizer', component: VisualizationComponent, canActivate: [AuthGuard]},
   { path: 'login', component: LoginComponent, canActivate: [LoginGuard] },
@@ -28,11 +28,12 @@ const routes: Routes = [
   { path: 'search', component: SearchCollectionPageComponent },
   // Used as a work-around for navigation to work when navigating with
   // changing queries
-  { path: 'search/:redirect', component: SearchCollectionPageComponent },
+  { path: 'search/:redirect', component: SearchCollectionPageComponent, data: {title: 'KG Visualizer'} },
   {
     path: 'dt',
     canActivate: [AuthGuard],
-    children: dtRoutes
+    children: dtRoutes,
+    data: {title: 'Map Projects'}
     // TODO - Bring back once pdf-viewer source code integration is resolved
     // loadChildren: () => import(
     //   './drawing-tool/drawing-tool.module'
@@ -40,12 +41,14 @@ const routes: Routes = [
   },
   {
     path: 'pdf-viewer',
-    component: PdfViewerComponent
+    component: PdfViewerComponent,
+    data: {title: 'PDF Viewer'}
   },
   {
     path: 'file-browser',
     component: FileBrowserComponent,
     canActivate: [AuthGuard],
+    data: {title: 'File Browser'}
   },
   {
     path: 'kg-statistics',
