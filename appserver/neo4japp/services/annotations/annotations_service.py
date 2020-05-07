@@ -924,34 +924,44 @@ class AnnotationsService:
 
                 tree = self.create_annotation_tree(annotations=tmp_fixed_annotations)
                 processed: Set[str] = set()
+                unwanted_processed: Set[str] = set()
 
                 # fix any leftover annotations with overlapping intervals
                 for annotation in tmp_fixed_annotations:
-                    conflicts = tree.overlap(
-                        begin=annotation.lo_location_offset,
-                        end=annotation.hi_location_offset,
-                    )
-                    if len(conflicts) == 1:
-                        fixed_annotations.extend(conflicts)
-                    else:
-                        chosen_annotation = None
-                        for conflict in conflicts:
-                            if chosen_annotation is None:
-                                chosen_annotation = conflict
-                            else:
-                                if conflict.keyword_length > chosen_annotation.keyword_length:
+                    hashval = compute_hash(annotation.to_dict())
+                    if hashval not in unwanted_processed:
+                        conflicts = tree.overlap(
+                            begin=annotation.lo_location_offset,
+                            end=annotation.hi_location_offset,
+                        )
+
+                        if len(conflicts) == 1:
+                            fixed_annotations.extend(conflicts)
+                        else:
+                            chosen_annotation = None
+                            for conflict in conflicts:
+                                # hashval = compute_hash(conflict.to_dict())
+                                # if hashval not in unwanted_processed:
+                                if chosen_annotation is None:
                                     chosen_annotation = conflict
-                                elif conflict.keyword_length == chosen_annotation.keyword_length:
-                                    key1 = ENTITY_TYPE_PRECEDENCE[conflict.meta.keyword_type]
-                                    key2 = ENTITY_TYPE_PRECEDENCE[chosen_annotation.meta.keyword_type]  # noqa
-
-                                    if key1 > key2:
+                                else:
+                                    if conflict.keyword_length > chosen_annotation.keyword_length:
+                                        hashval = compute_hash(chosen_annotation.to_dict())
+                                        unwanted_processed.add(hashval)
                                         chosen_annotation = conflict
+                                    elif conflict.keyword_length == chosen_annotation.keyword_length:
+                                        key1 = ENTITY_TYPE_PRECEDENCE[conflict.meta.keyword_type]
+                                        key2 = ENTITY_TYPE_PRECEDENCE[chosen_annotation.meta.keyword_type]  # noqa
 
-                        hashval = compute_hash(chosen_annotation.to_dict())  # type: ignore
-                        if hashval not in processed:
-                            fixed_annotations.append(chosen_annotation)  # type: ignore
-                            processed.add(hashval)
+                                        if key1 > key2:
+                                            hashval = compute_hash(chosen_annotation.to_dict())
+                                            unwanted_processed.add(hashval)
+                                            chosen_annotation = conflict
+
+                            hashval = compute_hash(chosen_annotation.to_dict())  # type: ignore
+                            if hashval not in processed and hashval not in unwanted_processed:
+                                fixed_annotations.append(chosen_annotation)  # type: ignore
+                                processed.add(hashval)
         return fixed_annotations
 
     def find_conflicting_annotations(
