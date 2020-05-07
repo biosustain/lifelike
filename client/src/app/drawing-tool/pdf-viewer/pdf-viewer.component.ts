@@ -119,6 +119,7 @@ export class PdfViewerComponent implements OnDestroy {
 
     this.addAnnotationSub = this.pdfAnnService.addCustomAnnotation(this.currentFileId, annotationToAdd).subscribe(
       response => {
+        annotationToAdd.meta.hyperlink = this.generateHyperlink(annotationToAdd);
         this.addedAnnotation = annotationToAdd;
         this.snackBar.open('Annotation has been added', 'Close', {duration: 5000});
       },
