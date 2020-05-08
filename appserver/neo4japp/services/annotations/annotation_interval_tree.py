@@ -101,9 +101,9 @@ class AnnotationIntervalTree(IntervalTree):
             if merged:  # series already begun
                 lower = merged[-1]
                 if (higher.begin < lower.end or
-                        not strict and
-                            higher.begin == lower.end
-                    ):  # should merge
+                    not strict and
+                    higher.begin == lower.end
+                ):  # noqa  # should merge
                     upper_bound = max(lower.end, higher.end)
                     if data_reducer is not None:
                         current_reduced[0] = data_reducer(current_reduced[0], higher.data)
