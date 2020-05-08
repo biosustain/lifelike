@@ -179,7 +179,7 @@ class AnnotationsService:
         indexes: List[int],
         cropbox: Tuple[int, int],
         keyword_positions: List[Annotation.TextPosition] = [],
-    ) -> Tuple[float, float, float, float]:
+    ) -> None:
         """Creates the keyword objects with the keyword
         text, along with their coordinate positions and
         page number.
@@ -223,40 +223,40 @@ class AnnotationsService:
                     end_upper_x = upper_x
                     end_upper_y = upper_y
                 else:
-                    if upper_y > end_upper_y:
-                        end_upper_y = upper_y
-
-                    if upper_x > end_upper_x:
-                        end_upper_x = upper_x
-
-                if lower_y != start_lower_y:
-                    diff = abs(lower_y - start_lower_y)
-                    prev_idx = _skip_lt_anno(
-                        curr_page_coor_obj=curr_page_coor_obj,
-                        pos_idx=pos_idx-1,
-                    )
-                    height = curr_page_coor_obj[prev_idx].height
-
-                    # if diff is greater than height ratio
-                    # then part of keyword is on a new line
-                    if diff > height * PDF_NEW_LINE_THRESHOLD:
-                        _, _, new_upper_x, new_upper_y = self._create_keyword_objects(
+                    if lower_y != start_lower_y:
+                        diff = abs(lower_y - start_lower_y)
+                        prev_idx = _skip_lt_anno(
                             curr_page_coor_obj=curr_page_coor_obj,
-                            indexes=indexes[i:],
-                            keyword_positions=keyword_positions,
-                            cropbox=cropbox,
+                            pos_idx=pos_idx-1,
                         )
+                        height = curr_page_coor_obj[prev_idx].height
 
-                        if new_upper_x > end_upper_x:
-                            end_upper_x = new_upper_x
+                        # if diff is greater than height ratio
+                        # then part of keyword is on a new line
+                        if diff > height * PDF_NEW_LINE_THRESHOLD:
+                            self._create_keyword_objects(
+                                curr_page_coor_obj=curr_page_coor_obj,
+                                indexes=indexes[i:],
+                                keyword_positions=keyword_positions,
+                                cropbox=cropbox,
+                            )
+                            break
+                        else:
+                            if upper_y > end_upper_y:
+                                end_upper_y = upper_y
 
-                        if new_upper_y > end_upper_y:
-                            end_upper_y = new_upper_y
-                        break
+                            if upper_x > end_upper_x:
+                                end_upper_x = upper_x
+
+                            keyword += curr_page_coor_obj[pos_idx].get_text()
                     else:
+                        if upper_y > end_upper_y:
+                            end_upper_y = upper_y
+
+                        if upper_x > end_upper_x:
+                            end_upper_x = upper_x
+
                         keyword += curr_page_coor_obj[pos_idx].get_text()
-                else:
-                    keyword += curr_page_coor_obj[pos_idx].get_text()
 
         start_lower_x += cropbox[0]  # type: ignore
         end_upper_x += cropbox[0]  # type: ignore
@@ -270,7 +270,6 @@ class AnnotationsService:
                     start_lower_x, start_lower_y, end_upper_x, end_upper_y],  # type: ignore
             )
         )
-        return start_lower_x, start_lower_y, end_upper_x, end_upper_y
 
     def _get_annotation(
         self,
@@ -500,7 +499,7 @@ class AnnotationsService:
 
                     keyword_starting_idx = char_indexes[0]
                     keyword_ending_idx = char_indexes[-1]
-                    link_search_term = f'{token_positions.keyword}'
+                    link_search_term = entity['name']
 
                     meta = Annotation.Meta(
                         keyword_type=token_type,
@@ -520,8 +519,8 @@ class AnnotationsService:
                             page_number=token_positions.page_number,
                             rects=[pos.positions for pos in keyword_positions],  # type: ignore
                             keywords=[k.value for k in keyword_positions],
-                            keyword=token_positions.keyword,
-                            keyword_length=len(token_positions.keyword),
+                            keyword=link_search_term,
+                            keyword_length=len(link_search_term),
                             lo_location_offset=keyword_starting_idx,
                             hi_location_offset=keyword_ending_idx,
                             meta=meta,
