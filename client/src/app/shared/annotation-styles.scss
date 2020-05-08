@@ -12,6 +12,9 @@ $protein: #bcbd22;
 $pathway: #e377c2;
 $phenotype: #edc949;
 
+$note: #edc949;
+$map: #0277bd;
+
 $entity: #7f7f7f;
 $link: #7f7f7f;
 
@@ -70,6 +73,13 @@ $association: #d7d9f8;
 }
 .association {
   color: $association;
+}
+
+.note {
+  color: $note;
+}
+.map {
+  color: $map;
 }
 
 

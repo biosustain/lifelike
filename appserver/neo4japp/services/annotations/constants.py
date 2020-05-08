@@ -29,6 +29,7 @@ COMMON_MISC_WORDS = {
     'patch', 'membrane', 'walker', 'group', 'cluster',
     'protein', 'transporter', 'toxin', 'molecule', 'vitamin',
     'light', 'mixture', 'solution', 'other', 'unknown',
+    'collection',
 }
 
 COMMON_WORDS = set.union(*[
@@ -37,6 +38,8 @@ COMMON_WORDS = set.union(*[
     COMMON_FOUR_LETTER_WORDS,
     COMMON_MISC_WORDS,
 ])
+
+MISC_SYMBOLS_AND_CHARS = {'(c)'}
 
 TYPO_SYNONYMS = {
     # 'e coli': ['E. coli', 'Escherichia coli', 'Enterococcus coli'],

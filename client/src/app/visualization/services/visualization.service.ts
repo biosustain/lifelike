@@ -32,9 +32,9 @@ export class VisualizationService {
      * of the dept of 1.
      * @param nodeId the node id from the database
      */
-    expandNode(nodeId: number, limit: number = NODE_EXPANSION_LIMIT) {
+    expandNode(nodeId: number, filterLabels: string[], limit: number = NODE_EXPANSION_LIMIT) {
         return this.http.post<{result: Neo4jResults}>(
-            `${this.visApi}/expand`, {nodeId, limit},
+            `${this.visApi}/expand`, {nodeId, filterLabels, limit},
         ).pipe(map(resp => resp.result));
     }
 
