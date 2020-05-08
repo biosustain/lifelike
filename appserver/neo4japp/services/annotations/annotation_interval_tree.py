@@ -32,7 +32,7 @@ class AnnotationIntervalTree(IntervalTree):
         `data_reducer` function.
         """
         if not self:
-            return
+            return []  # noqa
 
         sorted_intervals = sorted(self.all_intervals)  # get sorted intervals
         merged = []
@@ -79,7 +79,7 @@ class AnnotationIntervalTree(IntervalTree):
         `data_reducer` function.
         """
         if not self:
-            return
+            return []  # noqa
 
         sorted_intervals = sorted(self.all_intervals)  # get sorted intervals
         merged = []
