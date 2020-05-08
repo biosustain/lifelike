@@ -30,10 +30,7 @@ import {
     NoResultsFromExpandDialogComponent
 } from 'app/visualization/components/no-results-from-expand-dialog/no-results-from-expand-dialog.component';
 
-
 import { VisualizationService } from '../../services/visualization.service';
-
-import { stringToHex } from 'app/shared/utils';
 
 @Component({
     selector: 'app-visualization',
