@@ -1,23 +1,21 @@
-import { Component, OnInit, Output, EventEmitter, Input, ViewChild, NgZone, HostListener } from '@angular/core';
+import { AfterViewInit, Component, EventEmitter, HostListener, Input, NgZone, OnInit, Output, ViewChild } from '@angular/core';
 import { Subject } from 'rxjs';
 import { Annotation, Location, Meta } from './annotation-type';
-import {
-  PDFProgressData,
-  PDFDocumentProxy,
-  PDFSource
-} from './pdf-viewer/pdf-viewer.module';
+import { PDFDocumentProxy, PDFProgressData, PDFSource } from './pdf-viewer/pdf-viewer.module';
 import { PdfViewerComponent } from './pdf-viewer/pdf-viewer.component';
 import { MatDialog } from '@angular/material/dialog';
 import { PDFPageViewport } from 'pdfjs-dist';
 import { AnnotationPanelComponent } from './annotation-panel/annotation-panel.component';
+
 declare var jQuery: any;
 
 @Component({
+  // tslint:disable-next-line:component-selector
   selector: 'lib-pdf-viewer-lib',
   templateUrl: './pdf-viewer-lib.component.html',
   styles: ['./pdf-viewer-lib.component.css']
 })
-export class PdfViewerLibComponent implements OnInit {
+export class PdfViewerLibComponent implements OnInit, AfterViewInit {
 
   @Input() pdfSrc: string | PDFSource | ArrayBuffer;
   @Input() annotations: Annotation[];
@@ -25,6 +23,7 @@ export class PdfViewerLibComponent implements OnInit {
   @Input() handleDropArea: boolean;
   @Input() goToPosition: Subject<Location>;
   @Input() debugMode: boolean;
+
   @Input()
   set addedAnnotation(annotation: Annotation) {
     if (annotation) {
@@ -35,6 +34,7 @@ export class PdfViewerLibComponent implements OnInit {
 
   @Output() loadCompleted = new EventEmitter();
   @Output() dropEvents = new EventEmitter();
+  // tslint:disable
   @Output('custom-annotation-created') annotationCreated = new EventEmitter();
 
   pendingHighlights = {};
@@ -67,16 +67,18 @@ export class PdfViewerLibComponent implements OnInit {
   selectedTextCoords: any[];
   currentPage: number;
 
-  opacity = 0.3
+  opacity = 0.3;
 
-  @ViewChild(PdfViewerComponent, { static: false })
+  @ViewChild(PdfViewerComponent, {static: false})
   private pdfComponent: PdfViewerComponent;
 
   constructor(private dialog: MatDialog, private zone: NgZone) {
 
     (window as any).deleteFrictionless = this.deleteFrictionless.bind(this);
     (window as any).openAnnotationPanel = () => {
-      (window as any).pdfViewerRef.zone.run(function () { (window as any).pdfViewerRef.componentFn() });
+      (window as any).pdfViewerRef.zone.run(() => {
+        (window as any).pdfViewerRef.componentFn();
+      });
     };
     (window as any).openLinkPanel = this.openAddLinkPanel;
     (window as any).pdfViewerRef = {
@@ -94,16 +96,16 @@ export class PdfViewerLibComponent implements OnInit {
         console.log('Pdf viewer is not ready to go to a position');
         return;
       }
-      if(sub) {
+      if (sub) {
         this.scrollToPage(sub.pageNumber, sub.rect);
       }
     });
 
     if (this.debugMode) {
-      jQuery(document).on("click", ".system-annotation", function (event) {
-        let target = event.target;
-        let location = JSON.parse(jQuery(target).attr('location')) as Location;
-        let meta = JSON.parse(jQuery(target).attr('meta')) as Meta;
+      jQuery(document).on('click', '.system-annotation', event => {
+        const target = event.target;
+        const location = JSON.parse(jQuery(target).attr('location')) as Location;
+        const meta = JSON.parse(jQuery(target).attr('meta')) as Meta;
         console.log('pagenumber is ', location.pageNumber);
         console.log('rect is ', location.rect);
         console.log('Meta is ', meta);
@@ -112,25 +114,25 @@ export class PdfViewerLibComponent implements OnInit {
   }
 
   ngAfterViewInit(): void {
-    let dropAreaIdentifier = this.dropAreaIdentifier;
-    let that = this;
+    const dropAreaIdentifier = this.dropAreaIdentifier;
+    const that = this;
     jQuery(dropAreaIdentifier).droppable({
-      accept: ".frictionless-annotation,.system-annotation",
-      drop: function (event, ui) {
+      accept: '.frictionless-annotation,.system-annotation',
+      drop(event, ui) {
         that.dropEvents.emit({
-          event: event,
-          ui: ui
+          event,
+          ui
         });
 
         if (this.handleDropArea) {
-          var droppable = jQuery(this);
-          var draggable = ui.draggable;
-          var clone = draggable.clone();
+          const droppable = jQuery(this);
+          const draggable = ui.draggable;
+          const clone = draggable.clone();
           // Move draggable into droppable
           jQuery(dropAreaIdentifier).append(clone);
-          var $newPosX = ui.offset.left - jQuery(this).offset().left;
-          var $newPosY = ui.offset.top - jQuery(this).offset().top;
-          clone.css({ position: 'relative', top: Number($newPosY), left: Number($newPosX) });
+          const $newPosX = ui.offset.left - jQuery(this).offset().left;
+          const $newPosY = ui.offset.top - jQuery(this).offset().top;
+          clone.css({position: 'relative', top: Number($newPosY), left: Number($newPosX)});
           clone.removeClass('highlight');
         }
 
@@ -150,33 +152,33 @@ export class PdfViewerLibComponent implements OnInit {
 
 
   addAnnotation(annotation: Annotation, pageNum: number, isCustomAnnotation: boolean) {
-    let pdfPageView = this.pageRef[pageNum];
-    let viewPort: PDFPageViewport = pdfPageView.viewport;
+    const pdfPageView = this.pageRef[pageNum];
+    const viewPort: PDFPageViewport = pdfPageView.viewport;
 
-    //each annotation should have allText field set.
-    let allText = (annotation.keywords || []).join(' ');
+    // each annotation should have allText field set.
+    const allText = (annotation.keywords || []).join(' ');
     if (!annotation.meta.allText || annotation.meta.allText === '') {
       annotation.meta.allText = allText;
     }
 
     for (const rect of annotation.rects) {
-      let bounds = viewPort.convertToViewportRectangle(rect);
-      let left = Math.min(bounds[0], bounds[2]);
+      const bounds = viewPort.convertToViewportRectangle(rect);
+      const left = Math.min(bounds[0], bounds[2]);
       let top = Math.min(bounds[1], bounds[3]);
-      let width = Math.abs(bounds[0] - bounds[2]);
-      let height = Math.abs(bounds[1] - bounds[3]);
-      let overlayContainer = pdfPageView.div;
-      let overlayDiv = document.createElement('div');
-      let location: Location = {
+      const width = Math.abs(bounds[0] - bounds[2]);
+      const height = Math.abs(bounds[1] - bounds[3]);
+      const overlayContainer = pdfPageView.div;
+      const overlayDiv = document.createElement('div');
+      const location: Location = {
         pageNumber: annotation.pageNumber,
-        rect: rect
+        rect
       };
       overlayDiv.setAttribute('class', 'system-annotation');
       overlayDiv.setAttribute('location', JSON.stringify(location));
       overlayDiv.setAttribute('meta', JSON.stringify(annotation.meta));
       top = this.normalizeTopCoordinate(top, annotation);
-      let opacity = this.normalizeOpacityLevel(annotation);
-      let bgcolor = this.normalizeBackgroundColor(annotation);
+      const opacity = this.normalizeOpacityLevel(annotation);
+      const bgcolor = this.normalizeBackgroundColor(annotation);
       overlayDiv.setAttribute('style', `opacity:${opacity}; background-color: ${bgcolor};position:absolute;` +
         'left:' + left + 'px;top:' + (top) + 'px;width:' + width + 'px;height:' + height + 'px;');
       overlayContainer.appendChild(overlayDiv);
@@ -185,14 +187,14 @@ export class PdfViewerLibComponent implements OnInit {
       jQuery(overlayDiv).draggable({
         revert: true,
         revertDuration: 0,
-        stack: ".draggable",
+        stack: '.draggable',
         appendTo: this.dropAreaIdentifier,
         zIndex: 99999,
         helper: 'clone',
-        start: function (e, ui) {
-          jQuery(ui.helper).css("opacity", 1);
-          jQuery(ui.helper).css("width", "");
-          jQuery(ui.helper).css("height", "");
+        start(e, ui) {
+          jQuery(ui.helper).css('opacity', 1);
+          jQuery(ui.helper).css('width', '');
+          jQuery(ui.helper).css('height', '');
           jQuery(ui.helper).text(annotation.meta.allText);
         }
       });
@@ -223,7 +225,7 @@ export class PdfViewerLibComponent implements OnInit {
       );
     }
     if (this.pendingHighlights[pageNum]) {
-      let rect = this.pendingHighlights[pageNum];
+      const rect = this.pendingHighlights[pageNum];
       delete this.pendingHighlights[pageNum];
       this.addHighlightItem(pageNum, rect);
     }
@@ -240,7 +242,7 @@ export class PdfViewerLibComponent implements OnInit {
   }
 
   normalizeOpacityLevel(an: Annotation) {
-    let t = an.meta.type.toLowerCase();
+    const t = an.meta.type.toLowerCase();
     if (t.indexOf('chemic') > -1 || t.indexOf('disea') > -1) {
       return this.opacity + 0.1;
     }
@@ -248,7 +250,7 @@ export class PdfViewerLibComponent implements OnInit {
   }
 
   normalizeBackgroundColor(an: Annotation): string {
-    let t = an.meta.type.toLowerCase();
+    const t = an.meta.type.toLowerCase();
     if (t.indexOf('chemic') > -1) {
       return '#9cda94';
     }
@@ -259,7 +261,7 @@ export class PdfViewerLibComponent implements OnInit {
   }
 
   prepareTooltipContent(an: Annotation): string {
-    let base = [`Type: ${an.meta.type}`];
+    const base = [`Type: ${an.meta.type}`];
     if (an.meta.id) {
       if (an.meta.hyperlink) {
         base.push(`Id: <a href=${an.meta.hyperlink} target="_blank">${an.meta.id}</a>`);
@@ -291,31 +293,31 @@ export class PdfViewerLibComponent implements OnInit {
 
   processAnnotations(pageNum: number, pdfPageView: any) {
     this.pageRef[pageNum] = pdfPageView;
-    let filteredAnnotations = this.annotations.filter((an) => an.pageNumber === pageNum);
+    const filteredAnnotations = this.annotations.filter((an) => an.pageNumber === pageNum);
     for (const an of filteredAnnotations) {
-      this.addAnnotation(an, pageNum, an.meta.isCustom)
+      this.addAnnotation(an, pageNum, an.meta.isCustom);
     }
   }
 
   @HostListener('window:mouseup', ['$event'])
   mouseUp(event) {
-    let i = 0;
-    let selection = window.getSelection() as any;
-    let baseNode = selection.baseNode;
-    let parent = baseNode && baseNode.parentNode as any;
+    const i = 0;
+    const selection = window.getSelection() as any;
+    const baseNode = selection.baseNode;
+    const parent = baseNode && baseNode.parentNode as any;
     if (!parent || !parent.closest('.textLayer')) {
       // coming not from pdf-viewer
       return false;
     }
-    let selectedRects = selection.getRangeAt(0).getClientRects();
+    const selectedRects = selection.getRangeAt(0).getClientRects();
     if (selectedRects.length === 0) {
       console.log('selectedRects 0');
       this.clearSelection();
       return false;
     }
     if (selectedRects.length === 1) {
-      let firstRect = selectedRects[0];
-      let width = firstRect.width;
+      const firstRect = selectedRects[0];
+      const width = firstRect.width;
       if (width < 1) {
         console.log('width is smaller than 1');
         this.clearSelection();
@@ -326,29 +328,30 @@ export class PdfViewerLibComponent implements OnInit {
     this.allText = selection.toString();
     const documentFragment = selection.getRangeAt(0).cloneContents();
     this.selectedText = Array.from(documentFragment.childNodes).map((node: any) => node.textContent);
-    this.currentPage = parseInt(parent.closest('.page').getAttribute('data-page-number'));
-    let pdfPageView = this.pageRef[this.currentPage];
-    let viewport = pdfPageView.viewport;
-    let pageElement = pdfPageView.div;
-    var pageRect = pdfPageView.canvas.getClientRects()[0];
+    this.currentPage = parseInt(parent.closest('.page').getAttribute('data-page-number'), 10);
+    const pdfPageView = this.pageRef[this.currentPage];
+    const viewport = pdfPageView.viewport;
+    const pageElement = pdfPageView.div;
+    const pageRect = pdfPageView.canvas.getClientRects()[0];
 
     this.selectedTextCoords = [];
     const that = this;
-    let selected = jQuery.map(selectedRects, function (r) {
+    const selected = jQuery.map(selectedRects, r => {
 
-      var rect = viewport.convertToPdfPoint(r.left - pageRect.left, r.top - pageRect.top).concat(viewport.convertToPdfPoint(r.right - pageRect.left, r.bottom - pageRect.top));
+      const rect = viewport.convertToPdfPoint(r.left - pageRect.left, r.top - pageRect.top)
+        .concat(viewport.convertToPdfPoint(r.right - pageRect.left, r.bottom - pageRect.top));
       that.selectedTextCoords.push(rect);
-      var bounds = viewport.convertToViewportRectangle(rect);
-      //if (i % 2 == 0) { // verify if not odd (must be pair)
-      var el = document.createElement('div');
-      let meta: Meta = {
+      const bounds = viewport.convertToViewportRectangle(rect);
+      // if (i % 2 == 0) { // verify if not odd (must be pair)
+      const el = document.createElement('div');
+      const meta: Meta = {
         allText: that.allText,
         type: 'user-annotation',
         color: 'not-defined'
       };
-      let location: Location = {
+      const location: Location = {
         pageNumber: that.currentPage,
-        rect: rect
+        rect
       };
       el.setAttribute('location', JSON.stringify(location));
       el.setAttribute('meta', JSON.stringify(meta));
@@ -363,14 +366,14 @@ export class PdfViewerLibComponent implements OnInit {
       jQuery(el).draggable({
         revert: true,
         revertDuration: 0,
-        stack: ".draggable",
+        stack: '.draggable',
         appendTo: that.dropAreaIdentifier,
         zIndex: 99999,
         helper: 'clone',
-        start: function (e, ui) {
-          jQuery(ui.helper).css("opacity", 1);
-          jQuery(ui.helper).css("width", "");
-          jQuery(ui.helper).css("height", "");
+        start(e, ui) {
+          jQuery(ui.helper).css('opacity', 1);
+          jQuery(ui.helper).css('width', '');
+          jQuery(ui.helper).css('height', '');
           jQuery(ui.helper).text(meta.allText);
         }
       });
@@ -379,7 +382,9 @@ export class PdfViewerLibComponent implements OnInit {
       (jQuery(el) as any).qtip(
         {
 
-          content: `<img src="assets/images/annotate.png" onclick="openAnnotationPanel()"> <img src="assets/images/link.png" onclick="openLinkPanel()"> <img src="assets/images/trash.png" onclick="deleteFrictionless()">`,
+          content: `<img src="assets/images/annotate.png" onclick="openAnnotationPanel()">
+            <img src="assets/images/link.png" onclick="openLinkPanel()">
+            <img src="assets/images/trash.png" onclick="deleteFrictionless()">`,
           position: {
             my: 'bottom center',
             target: 'mouse',
@@ -403,15 +408,15 @@ export class PdfViewerLibComponent implements OnInit {
           }
         }
       );
-      //}
-      //i++;
+      // }
+      // i++;
     });
 
     this.clearSelection();
   }
 
   deleteFrictionless() {
-    jQuery('.frictionless-annotation').qtip("destroy");
+    jQuery('.frictionless-annotation').qtip('destroy');
     jQuery('.frictionless-annotation').remove();
     this.selectedText = [];
     this.selectedTextCoords = [];
@@ -419,7 +424,7 @@ export class PdfViewerLibComponent implements OnInit {
   }
 
   openAnnotationPanel() {
-    jQuery('.frictionless-annotation').qtip("hide");
+    jQuery('.frictionless-annotation').qtip('hide');
     const dialogRef = this.dialog.open(AnnotationPanelComponent, {
       autoFocus: false,
       data: {
@@ -435,7 +440,7 @@ export class PdfViewerLibComponent implements OnInit {
         this.annotationCreated.emit(annotation);
         this.deleteFrictionless();
       }
-    })
+    });
   }
 
   openAddLinkPanel() {
@@ -443,7 +448,7 @@ export class PdfViewerLibComponent implements OnInit {
   }
 
   clearSelection() {
-    var sel = window.getSelection();
+    const sel = window.getSelection();
     sel.removeAllRanges();
   }
 
@@ -451,7 +456,7 @@ export class PdfViewerLibComponent implements OnInit {
    * Set custom path to pdf worker
    */
   setCustomWorkerPath() {
-    (<any>window).pdfWorkerSrc = '/lib/pdfjs-dist/build/pdf.worker.js';
+    (window as any).pdfWorkerSrc = '/lib/pdfjs-dist/build/pdf.worker.js';
   }
 
   incrementPage(amount: number) {
@@ -485,18 +490,17 @@ export class PdfViewerLibComponent implements OnInit {
 
   /**
    * Get pdf information after it's loaded
-   * @param pdf
    */
   afterLoadComplete(pdf: PDFDocumentProxy) {
     this.pdf = pdf;
 
     this.loadOutline();
 
-    //setTimeout(() => {
+    // setTimeout(() => {
     //  this.loadCompleted.emit(true);
-    //}, 2000);
+    // }, 2000);
 
-    //this.isLoadCompleted = true;
+    // this.isLoadCompleted = true;
   }
 
   /**
@@ -510,8 +514,6 @@ export class PdfViewerLibComponent implements OnInit {
 
   /**
    * Handle error callback
-   *
-   * @param error
    */
   onError(error: any) {
     this.error = error; // set error
@@ -519,10 +521,8 @@ export class PdfViewerLibComponent implements OnInit {
   }
 
 
-
   /**
    * Pdf loading progress callback
-   * @param {PDFProgressData} progressData
    */
   onProgress(progressData: PDFProgressData) {
     console.log(progressData);
@@ -538,7 +538,6 @@ export class PdfViewerLibComponent implements OnInit {
 
   /**
    * Navigate to destination
-   * @param destination
    */
   navigateTo(destination: any) {
     this.pdfComponent.pdfLinkService.navigateTo(destination);
@@ -561,24 +560,24 @@ export class PdfViewerLibComponent implements OnInit {
   }
 
   addHighlightItem(pageNum: number, highlightRect: number[]) {
-    let pdfPageView = this.pageRef[pageNum];
+    const pdfPageView = this.pageRef[pageNum];
     if (!pdfPageView) {
       this.pendingHighlights[pageNum] = highlightRect;
       return;
     }
-    let viewPort: PDFPageViewport = pdfPageView.viewport;
-    let bounds = viewPort.convertToViewportRectangle(highlightRect);
-    let left = Math.min(bounds[0], bounds[2]);
-    let top = Math.min(bounds[1], bounds[3]);
-    let width = Math.abs(bounds[0] - bounds[2]);
-    let height = Math.abs(bounds[1] - bounds[3]);
-    let overlayContainer = pdfPageView.div;
-    let overlayDiv = document.createElement('div');
+    const viewPort: PDFPageViewport = pdfPageView.viewport;
+    const bounds = viewPort.convertToViewportRectangle(highlightRect);
+    const left = Math.min(bounds[0], bounds[2]);
+    const top = Math.min(bounds[1], bounds[3]);
+    const width = Math.abs(bounds[0] - bounds[2]);
+    const height = Math.abs(bounds[1] - bounds[3]);
+    const overlayContainer = pdfPageView.div;
+    const overlayDiv = document.createElement('div');
     overlayDiv.setAttribute('style', `opacity:0.3; background-color: black;position:absolute;` +
       'left:' + left + 'px;top:' + (top - 2) + 'px;width:' + width + 'px;height:' + height + 'px;');
     overlayContainer.appendChild(overlayDiv);
     overlayDiv.scrollIntoView();
-    jQuery(overlayDiv).effect("highlight", {}, 1000);
+    jQuery(overlayDiv).effect('highlight', {}, 1000);
     setTimeout(() => {
       jQuery(overlayDiv).remove();
     }, 1500);
@@ -586,8 +585,6 @@ export class PdfViewerLibComponent implements OnInit {
 
   /**
    * Page rendered callback, which is called when a page is rendered (called multiple times)
-   *
-   * @param {CustomEvent} e
    */
   pageRendered(e: CustomEvent) {
     this.allPages = this.pdf.numPages;
@@ -597,7 +594,7 @@ export class PdfViewerLibComponent implements OnInit {
     console.log('(page-rendered)', e);
     const nump = Number(this.pdf.numPages);
     const currentNump = Number((e as any).pageNumber);
-    if(nump === currentNump) {
+    if (nump === currentNump) {
       this.isLoadCompleted = true;
       setTimeout(() => {
         this.loadCompleted.emit(true);
