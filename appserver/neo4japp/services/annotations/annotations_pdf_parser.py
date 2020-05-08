@@ -242,7 +242,7 @@ class AnnotationsPDFParser:
                             curr_keyword = curr_keyword[:-1]
 
                         # strip out leading punctuations
-                        while curr_keyword and self._has_unwanted_punctuation(curr_keyword[0], leading=True):
+                        while curr_keyword and self._has_unwanted_punctuation(curr_keyword[0], leading=True):  # noqa
                             dict_keys = list(curr_char_idx_mappings.keys())
                             first = dict_keys[0]
                             curr_char_idx_mappings.pop(first)
