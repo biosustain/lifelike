@@ -6,25 +6,6 @@ we should be careful using 'autosize', as it may lead to performance problems.--
 
     <app-legend [legend]="legend"></app-legend>
 
-    <div id="network-viz"></div>
-
-    <!-- This isn't visible unless the user has right-clicked to open the context menu -->
-    <app-context-menu
-      [tooltipSelector]="contextMenuTooltipSelector"
-      [tooltipOptions]="contextMenuTooltipOptions"
-      [selectedNodeIds]="selectedNodes"
-      [selectedEdgeIds]="selectedEdges"
-      [selectedNodeEdgeLabelData]="selectedNodeEdgeLabelData"
-      (groupNeighborsWithRelationship)="groupNeighborsWithRelationship($event)"
-      (removeNodes)="removeNodes($event)"
-      (removeEdges)="removeEdges($event)"
-      (selectNeighbors)="selectNeighbors($event)"
-    ></app-context-menu>
-    <button id="sidenav-toggle-button" mat-mini-fab (click)="toggleSidenavOpened()">
-      <mat-icon *ngIf="sidenavOpened">chevron_right</mat-icon>
-      <mat-icon *ngIf="!sidenavOpened">chevron_left</mat-icon>
-    </button>
-
     <!-- TODO: This should probably be its own component... -->
     <div id="expand-node-type-filter-container">
       <form [formGroup]="expandNodeForm" fxLayout="column" fxLayoutAlign="space-between start">
@@ -44,6 +25,25 @@ we should be careful using 'autosize', as it may lead to performance problems.--
 
       </form>
     </div>
+
+    <div id="network-viz"></div>
+
+    <!-- This isn't visible unless the user has right-clicked to open the context menu -->
+    <app-context-menu
+      [tooltipSelector]="contextMenuTooltipSelector"
+      [tooltipOptions]="contextMenuTooltipOptions"
+      [selectedNodeIds]="selectedNodes"
+      [selectedEdgeIds]="selectedEdges"
+      [selectedNodeEdgeLabelData]="selectedNodeEdgeLabelData"
+      (groupNeighborsWithRelationship)="groupNeighborsWithRelationship($event)"
+      (removeNodes)="removeNodes($event)"
+      (removeEdges)="removeEdges($event)"
+      (selectNeighbors)="selectNeighbors($event)"
+    ></app-context-menu>
+    <button id="sidenav-toggle-button" mat-mini-fab (click)="toggleSidenavOpened()">
+      <mat-icon *ngIf="sidenavOpened">chevron_right</mat-icon>
+      <mat-icon *ngIf="!sidenavOpened">chevron_left</mat-icon>
+    </button>
   </mat-sidenav-content>
 
   <mat-sidenav class="sidenav" #sidenav position="end" mode="over" [(opened)]="sidenavOpened" (openedChange)="setSidenavStatus($event)">
