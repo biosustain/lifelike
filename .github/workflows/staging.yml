@@ -4,8 +4,6 @@ on:
   push:
     branches:
       - master
-  pull_request:
-    types: [labeled]
 
 env:
     SERVICE_ACCOUNT_CRED: ${{ secrets.GCE_SA_KEY }}
@@ -36,8 +34,6 @@ jobs:
 
         name: Setup, Build, Publish, and Deploy
         runs-on: ubuntu-latest
-
-        if: contains(github.event.pull_request.labels.*.name, 'staging')
 
         steps:
             - name: Checkout
