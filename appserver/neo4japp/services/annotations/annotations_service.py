@@ -1,6 +1,7 @@
 import json
 import re
 
+from math import inf
 from string import ascii_lowercase, digits, punctuation
 from typing import Dict, List, Optional, Set, Tuple, Union
 
@@ -410,34 +411,62 @@ class AnnotationsService:
     def _get_gene_id_for_annotation(
         self,
         word: str,
+        token_positions: PDFTokenPositions,
         match_result: Dict[str, Dict[str, str]],
+        matched_organism_locations: Dict[int, Dict[str, List[Tuple[int, int]]]],
         organism_frequency: Dict[str, int],
     ):
-        """Currently using a postgres lookup table to filter out keywords that don't
-        match a curated slice of the main dataset, and to map synonyms to the
-        correct gene. This postgres table currently has unique gene names, so we
-        expect a 1:1 match of gene to organism. In the future, we can't always
-        assume this to be the case, as some organism strains have matching gene names.
+        """Gets the correct gene ID for a given gene and its list of matching organisms.
 
-        If a gene was matched to at least one organism in the document,
-        we have to get the corresponding gene data. If a gene matches
-        more than one organism, we use the one with the highest
-        frequency within the document. We may fine-tune this later.
+        A gene name may match multiple organisms. To choose which organism to use, we first
+        check for the closest one in the document. Currently we are limited to checking only
+        the page the gene occurs on. If no matching organism is on the page, then we check
+        which organism in the matching list appears most frequently in the document.
         """
+        char_indexes = list(token_positions.char_positions.keys())
+        keyword_starting_idx = char_indexes[0]
+        keyword_ending_idx = char_indexes[-1]
+
+        # If a gene was matched to at least one organism in the document,
+        # we have to get the corresponding gene data. If a gene matches
+        # more than one organism, we first check for the closest organism
+        # on the current page.
         organism_to_gene_pairs = match_result[word]
-        most_frequent_organism = str()
-        greatest_frequency = 0
+        organisms_on_this_page = matched_organism_locations.get(token_positions.page_number, None)  # noqa
+        if organisms_on_this_page is not None and len(set(organism_to_gene_pairs.keys()).intersection(set(organisms_on_this_page.keys()))) > 0:  # noqa
+            closest_organism = str()
+            smallest_distance = inf
 
-        for organism_id in organism_to_gene_pairs.keys():
-            if organism_frequency[organism_id] > greatest_frequency:
-                greatest_frequency = organism_frequency[organism_id]
-                most_frequent_organism = organism_id
+            for organism_id in organism_to_gene_pairs.keys():
+                if organisms_on_this_page.get(organism_id, None) is not None:
+                    for organism_occurrence in organisms_on_this_page[organism_id]:
+                        organism_starting_idx, organism_ending_idx = organism_occurrence
+                        if keyword_starting_idx > organism_ending_idx:
+                            distance_from_gene_to_this_organism = keyword_starting_idx - organism_ending_idx  # noqa
+                        else:
+                            distance_from_gene_to_this_organism = organism_starting_idx - keyword_ending_idx  # noqa
 
-        return organism_to_gene_pairs[most_frequent_organism]
+                        if distance_from_gene_to_this_organism < smallest_distance:
+                            closest_organism = organism_id
+                            smallest_distance = distance_from_gene_to_this_organism
+            return organism_to_gene_pairs[closest_organism]
+        # If there is no closest match on the page,
+        # then we use the one with the highest frequency within the document.
+        # We may fine-tune this later.
+        else:
+            most_frequent_organism = str()
+            greatest_frequency = 0
+
+            for organism_id in organism_to_gene_pairs.keys():
+                if organism_frequency[organism_id] > greatest_frequency:
+                    greatest_frequency = organism_frequency[organism_id]
+                    most_frequent_organism = organism_id
+
+            return organism_to_gene_pairs[most_frequent_organism]
 
     def _annotate_genes(
         self,
-        matched_organism_ids: List[str],
+        matched_organism_locations: Dict[int, Dict[str, List[Tuple[int, int]]]],
         organism_frequency: Dict[str, int],
         coor_obj_per_pdf_page: Dict[int, List[Union[LTChar, LTAnno]]],
         cropbox_per_page: Dict[int, Tuple[int, int]],
@@ -473,7 +502,7 @@ class AnnotationsService:
         hybrid_neo4j_postgres_service = get_hybrid_neo4j_postgres_service()
         match_result = hybrid_neo4j_postgres_service.get_gene_to_organism_match_result(
             genes=list(tokens.keys()),
-            matched_organism_ids=matched_organism_ids,
+            matched_organism_ids=list(organism_frequency.keys()),
         )
 
         for word, token_positions_list in tokens.items():
@@ -509,8 +538,10 @@ class AnnotationsService:
                 if common_name_count == 1:
                     entity_id = self._get_gene_id_for_annotation(
                         word=word,
+                        token_positions=token_positions,
                         match_result=match_result,
-                        organism_frequency=organism_frequency
+                        matched_organism_locations=matched_organism_locations,
+                        organism_frequency=organism_frequency,
                     )
 
                     matches.append(self._create_annotation_object(
@@ -664,6 +695,27 @@ class AnnotationsService:
                 entity_frequency[entity_id] = 1
         return entity_frequency
 
+    def _get_entity_locations(
+        self,
+        annotations: List[Annotation],
+    ) -> Dict[int, Dict[str, List[Tuple[int, int]]]]:
+        matched_organism_locations: Dict[int, Dict[str, List[Tuple[int, int]]]] = {}
+        for anno in annotations:
+            if matched_organism_locations.get(anno.page_number, None) is not None:
+                if matched_organism_locations[anno.page_number].get(anno.meta.id, None) is not None:
+                    matched_organism_locations[anno.page_number][anno.meta.id].append(
+                        (anno.lo_location_offset, anno.hi_location_offset)
+                    )
+                else:
+                    matched_organism_locations[anno.page_number][anno.meta.id] = [
+                        (anno.lo_location_offset, anno.hi_location_offset)
+                    ]
+            else:
+                matched_organism_locations[anno.page_number] = {
+                    anno.meta.id: [(anno.lo_location_offset, anno.hi_location_offset)]
+                }
+        return matched_organism_locations
+
     def _remove_unwanted_keywords(
         self,
         matches: List[Annotation],
@@ -691,7 +743,7 @@ class AnnotationsService:
         )
 
         matched_genes, unwanted_genes = self._annotate_genes(
-            matched_organism_ids=[annotation.meta.id for annotation in matched_species],
+            matched_organism_locations=self._get_entity_locations(matched_species),
             organism_frequency=self._get_entity_frequency(matched_species),
             coor_obj_per_pdf_page=tokens.coor_obj_per_pdf_page,
             cropbox_per_page=tokens.cropbox_per_page,
