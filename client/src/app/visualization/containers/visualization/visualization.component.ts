@@ -66,7 +66,6 @@ export class VisualizationComponent implements OnInit {
         private route: ActivatedRoute,
         private visService: VisualizationService,
     ) {
-        console.log(stringToHex('12203365'));
         this.legend = new Map<string, string[]>();
         this.legend.set('Gene', ['#78CDD7', '#247B7B']);
         this.legend.set('Disease', ['#8FA6CB', '#7D84B2']);
