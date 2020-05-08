@@ -55,6 +55,7 @@ class Annotation(CamelDictMixin):
         links: Links = attr.ib()
         id: str = attr.ib()
         id_type: str = attr.ib()
+        id_hyperlink: str = attr.ib()
         is_custom: bool = attr.ib(default=False)
         all_text: str = attr.ib(default='')
 
