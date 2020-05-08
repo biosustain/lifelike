@@ -8,12 +8,13 @@ interface ControlChanged {
 }
 
 @Component({
-  selector: 'pdf-viewer-toolbar',
+  selector: 'app-pdf-viewer-lib-toolbar',
   templateUrl: './toolbar.component.html',
   styleUrls: ['./toolbar.component.scss']
 })
 export class ToolbarComponent implements OnInit {
 
+  // tslint:disable-next-line:no-output-on-prefix
   @Output() onControlChanged =  new EventEmitter();
 
   constructor() {
@@ -24,7 +25,7 @@ export class ToolbarComponent implements OnInit {
 
   refresh() {
   }
-  
+
   zoomIn() {
     this.onControlChanged.emit('zoomin');
   }
