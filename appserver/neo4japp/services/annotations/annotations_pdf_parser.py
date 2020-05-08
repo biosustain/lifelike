@@ -1,6 +1,6 @@
 import re
 
-from string import punctuation, whitespace
+from string import ascii_letters, punctuation, whitespace
 from typing import Any, Dict, List, Set, Tuple, Union
 
 from pdfminer import high_level
@@ -19,15 +19,17 @@ from neo4japp.data_transfer_objects import (
 from neo4japp.util import compute_hash
 
 from .constants import (
+    MISC_SYMBOLS_AND_CHARS,
     PDF_CHARACTER_SPACING_THRESHOLD,
     PDF_NEW_LINE_THRESHOLD,
 )
+from .util import clean_char
 
 
 class AnnotationsPDFParser:
     def __init__(self) -> None:
         # TODO: go into constants.py if used by other classes
-        self.max_word_length = 4
+        self.max_word_length = 6
 
     def _get_lt_char(
         self,
@@ -124,15 +126,24 @@ class AnnotationsPDFParser:
             cropbox_per_page=cropbox_per_page,
         )
 
-    def _is_whitespace_or_punctuation(self, text: str) -> bool:
-        return text in whitespace or text == '\xa0' or text in punctuation  # noqa
+    def _not_all_whitespace_or_punctuation(self, text: str) -> bool:
+        for c in text:
+            if c in ascii_letters:
+                return True
+        return False
 
-    def _is_whitespace(self, text: str) -> bool:
+    def _is_whitespace_or_punctuation(self, char: str) -> bool:
+        return char in whitespace or char == '\xa0' or char in punctuation  # noqa
+
+    def _is_whitespace(self, char: str) -> bool:
         # whitespace contains newline
-        return text in whitespace or text == '\xa0'
+        return char in whitespace or char == '\xa0'
 
-    def _has_unwanted_punctuation(self, text: str) -> bool:
-        return text == ',' or text == '.' or text == ')' or text == '('
+    def _has_unwanted_punctuation(self, char: str, leading: bool = False) -> bool:
+        check = (char == ',' or char == '.' or char == ')' or char == '(')
+        if leading:
+            check = check or char == '-'
+        return check
 
     def combine_chars_into_words(
         self,
@@ -154,26 +165,30 @@ class AnnotationsPDFParser:
             word = ''
 
             for i, char in enumerate(char_list):
-                if char in whitespace and char_list[i-1] != '-':
-                    if char_idx_map:
-                        word_list.append((word, char_idx_map))
-                        char_idx_map = {}
-                        word = ''
-                elif char in whitespace and char_list[i-1] == '-':
-                    # word is possibly on new line
-                    # so ignore the space
-                    pass
-                else:
-                    if i + 1 == max_length:
-                        # reached end so add whatever is left
-                        word += char
-                        char_idx_map[i] = char
-                        word_list.append((word, char_idx_map))
-                        char_idx_map = {}
-                        word = ''
+                curr_char = clean_char(char)
+                prev_char = clean_char(char_list[i-1])
+
+                if curr_char not in MISC_SYMBOLS_AND_CHARS:
+                    if curr_char in whitespace and prev_char != '-':
+                        if char_idx_map:
+                            word_list.append((word, char_idx_map))
+                            char_idx_map = {}
+                            word = ''
+                    elif curr_char in whitespace and prev_char == '-':
+                        # word is possibly on new line
+                        # so ignore the space
+                        pass
                     else:
-                        word += char
-                        char_idx_map[i] = char
+                        if i + 1 == max_length:
+                            # reached end so add whatever is left
+                            word += curr_char
+                            char_idx_map[i] = curr_char
+                            word_list.append((word, char_idx_map))
+                            char_idx_map = {}
+                            word = ''
+                        else:
+                            word += curr_char
+                            char_idx_map[i] = curr_char
 
             words_with_char_idx[page_idx] = word_list
         return words_with_char_idx
@@ -210,7 +225,8 @@ class AnnotationsPDFParser:
                     char_idx_maps = [char_idx_map for _, char_idx_map in word_char_idx_map_pairing]  # noqa
 
                     curr_keyword = ' '.join(words)
-                    if not self._is_whitespace_or_punctuation(curr_keyword):
+
+                    if not self._is_whitespace_or_punctuation(curr_keyword) and self._not_all_whitespace_or_punctuation(curr_keyword):  # noqa
                         curr_char_idx_mappings: Dict[int, str] = {}
 
                         # need to keep order here so can't unpack (?)
@@ -226,7 +242,7 @@ class AnnotationsPDFParser:
                             curr_keyword = curr_keyword[:-1]
 
                         # strip out leading punctuations
-                        while curr_keyword and self._has_unwanted_punctuation(curr_keyword[0]):
+                        while curr_keyword and self._has_unwanted_punctuation(curr_keyword[0], leading=True):  # noqa
                             dict_keys = list(curr_char_idx_mappings.keys())
                             first = dict_keys[0]
                             curr_char_idx_mappings.pop(first)
