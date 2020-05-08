@@ -59,7 +59,7 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
     detail: '',
     data: {
       source: '',
-      hyperlinks: []
+      search: []
     }
   };
 
@@ -282,18 +282,6 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
     this.formSubscription.unsubscribe();
   }
 
-  linkNodeCheckboxChanged(event: MatCheckboxChange) {
-    const val = this.entityForm.value;
-
-    // When the checkbox is clicked we want to either show the detail as the label (if the node
-    // is in 'box' shape) or not show the label at all (if the node is in 'icon' shape). This
-    // will trigger the subscription above.
-    this.entityForm.setValue({
-        ...val,
-        label: event.checked ? '' : val.detail,
-    });
-  }
-
   /**
    * Hide or show the edges
    */
@@ -456,31 +444,40 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
    * Bring user to original source of node information
    */
   goToSource() {
-    const prefixLink = '/dt/pdf/';
-    const [
-      fileId,
-      page,
-      coordA,
-      coordB,
-      coordC,
-      coordD
-    ] = this.graphData.data.source.replace(prefixLink, '').split('/');
-    // Emit app command with annotation payload
-    this.openApp.emit({
-        app: 'pdf-viewer',
-        arg: {
-          // tslint:disable-next-line: radix
-          pageNumber: parseInt(page),
-          fileId,
-          coords: [
-            parseFloat(coordA),
-            parseFloat(coordB),
-            parseFloat(coordC),
-            parseFloat(coordD)
-          ]
+    if (
+      this.graphData.data.source.includes('/dt/pdf')
+    ) {
+      const prefixLink = '/dt/pdf/';
+      const [
+        fileId,
+        page,
+        coordA,
+        coordB,
+        coordC,
+        coordD
+      ] = this.graphData.data.source.replace(prefixLink, '').split('/');
+      // Emit app command with annotation payload
+      this.openApp.emit({
+          app: 'pdf-viewer',
+          arg: {
+            // tslint:disable-next-line: radix
+            pageNumber: parseInt(page),
+            fileId,
+            coords: [
+              parseFloat(coordA),
+              parseFloat(coordB),
+              parseFloat(coordC),
+              parseFloat(coordD)
+            ]
+          }
         }
-      }
-    );
+      );
+    } else if (
+      this.graphData.data.source.includes('/dt/map')
+    ) {
+      const hyperlink = window.location.origin  + this.graphData.data.source;
+      window.open(hyperlink, '_blank');
+    }
   }
 
   blurInput(e: Event) {
