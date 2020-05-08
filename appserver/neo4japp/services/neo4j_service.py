@@ -282,6 +282,36 @@ class Neo4JService(GraphBaseDao):
             results=results,
         )
 
+    def get_genes_to_organisms(
+        self,
+        genes: List[str],
+        organisms: List[str],
+    ) -> Dict[str, Dict[str, str]]:
+        gene_to_organism_map: Dict[str, Dict[str, str]] = dict()
+
+        query = self.get_gene_to_organism_query()
+        result = self.graph.run(
+            query,
+            {
+                'genes': genes,
+                'organisms': organisms,
+            }
+        ).data()
+
+        for row in result:
+            gene_name: str = row['gene']
+            organism_id: str = row['organism_id']
+            # For now just get the first gene in the list of matches, no way for us to infer which
+            # to use
+            gene_id: str = row['genes_in_organism_with_name'][0]
+
+            if gene_to_organism_map.get(gene_name, None) is not None:
+                gene_to_organism_map[gene_name][organism_id] = gene_id
+            else:
+                gene_to_organism_map[gene_name] = {organism_id: gene_id}
+
+        return gene_to_organism_map
+
     def load_reaction_graph(self, biocyc_id: str):
         query = self.get_reaction_query(biocyc_id)
         return self._query_neo4j(query)
@@ -536,6 +566,19 @@ class Neo4JService(GraphBaseDao):
             return [n]+ COALESCE(nodes(p1), [])+ COALESCE(nodes(p2), []) as nodes,
             COALESCE(relationships(p1), []) + COALESCE(relationships(p2), []) as relationships
         """.format(biocyc_id)
+        return query
+
+    def get_gene_to_organism_query(self):
+        """Retrieves a list of all the genes with a given name
+        in a particular organism."""
+        query = """
+            MATCH (g:Gene)-[:HAS_TAXONOMY]->(o:Taxonomy)
+            WHERE
+                toLower(g.name) IN $genes AND
+                o.id in $organisms
+            WITH toLower(g.name) as gene, g.id as gene_id, o.id as organism_id
+            RETURN gene, collect(gene_id) AS genes_in_organism_with_name, organism_id
+        """
         return query
 
     def search_for_relationship_with_label_and_properties(

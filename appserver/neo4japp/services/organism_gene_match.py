@@ -1,5 +1,6 @@
 from sqlalchemy import func
 from sqlalchemy.orm.session import Session
+from sqlalchemy.sql.expression import and_
 
 from typing import Dict, List
 
@@ -14,19 +15,32 @@ class OrganismGeneMatchService(RDBMSBaseDao):
     def get_genes(
         self,
         genes: List[str],
-    ) -> Dict[str, str]:
-        gene_map: Dict[str, str] = dict()
+        organism_ids: List[str]
+    ) -> Dict[str, Dict[str, str]]:
 
         result = self.session.query(
             func.lower(OrganismGeneMatch.gene_name),
             OrganismGeneMatch.gene_id,
+            OrganismGeneMatch.taxonomy_id,
         ).filter(
-            func.lower(OrganismGeneMatch.synonym).in_(genes),
+            and_(
+                func.lower(OrganismGeneMatch.synonym).in_(genes),
+                OrganismGeneMatch.taxonomy_id.in_(organism_ids),
+            )
         )
 
+        gene_to_organism_map: Dict[str, Dict[str, str]] = dict()
         for row in result:
             gene_name: str = row[0]
             gene_id: str = row[1]
-            gene_map[gene_name] = gene_id
+            organism_id = row[2]
 
-        return gene_map
+            # If an organism has multiple genes with the same name, we save the one appearing last
+            # in the result set. Currently no way of identifying which should be returned, however
+            # we might change this in the future.
+            if gene_to_organism_map.get(gene_name, None) is not None:
+                gene_to_organism_map[gene_name][organism_id] = gene_id
+            else:
+                gene_to_organism_map[gene_name] = {organism_id: gene_id}
+
+        return gene_to_organism_map
