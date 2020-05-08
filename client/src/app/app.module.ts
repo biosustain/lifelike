@@ -1,5 +1,4 @@
 import { NgModule } from '@angular/core';
-import { HttpClientModule } from '@angular/common/http';
 
 import { RootStoreModule } from 'app/***ARANGO_USERNAME***-store';
 
@@ -11,33 +10,31 @@ import { LifelikeHomeModule } from 'app/home/***ARANGO_DB_NAME***-home.module';
 import { UserFileImportModule } from './user-file-import/user-file-import.module';
 import { SearchModule } from './search/search.module';
 import { SharedModule } from './shared/shared.module';
-import { FileBrowserComponent } from './file-browser/file-browser.component';
-import { UploadProgressDialogComponent } from './file-browser/upload-progress-dialog.component';
 import { UserModule } from 'app/users/users.module';
 import { KgStatisticsComponent } from './kg-statistics/kg-statistics.component';
 import { ChartsModule } from 'ng2-charts';
 
 import { httpInterceptorProviders } from 'app/http-interceptors/index';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { BrowserModule } from '@angular/platform-browser';
+import { BrowserModule, Title } from '@angular/platform-browser';
 import { VisualizationModule } from './visualization/visualization.module';
 import { DrawingToolModule } from './drawing-tool/drawing-tool.module';
+import { FileBrowserModule } from './file-browser/file-browser.module';
+import { DialogConfirmDeletionComponent } from './file-browser/file-browser.component';
 
 @NgModule({
   declarations: [
     AppComponent,
-    FileBrowserComponent,
-    UploadProgressDialogComponent,
+    DialogConfirmDeletionComponent,
     KgStatisticsComponent,
   ],
   imports: [
     BrowserModule,
-    BrowserAnimationsModule,
     AdminModule,
     AuthModule,
     SharedModule,
     AppRoutingModule,
     UserFileImportModule,
+    FileBrowserModule,
     LifelikeHomeModule,
     VisualizationModule,
     UserModule,
@@ -45,14 +42,17 @@ import { DrawingToolModule } from './drawing-tool/drawing-tool.module';
     RootStoreModule,
     SearchModule,
     ChartsModule,
-    DrawingToolModule
+    DrawingToolModule,
   ],
+  providers: [
+    httpInterceptorProviders,
+    Title
+  ],
+  exports: [],
   entryComponents: [
-    UploadProgressDialogComponent,
-  ],
-  providers: [httpInterceptorProviders],
-  exports: [
+    DialogConfirmDeletionComponent,
   ],
   bootstrap: [AppComponent]
 })
-export class AppModule { }
+export class AppModule {
+}

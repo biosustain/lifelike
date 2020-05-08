@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ViewChild, NgZone } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, NgZone, Output } from '@angular/core';
 import {
   FormGroup,
   FormControl,
@@ -6,11 +6,13 @@ import {
 } from '@angular/forms';
 import {CdkTextareaAutosize} from '@angular/cdk/text-field';
 import { MatCheckboxChange } from '@angular/material';
+import {
+  EventEmitter
+} from '@angular/core';
 
 import * as $ from 'jquery';
 
 import {
-  nodeTemplates,
   uuidv4,
   DataFlowService
 } from '../../services';
@@ -18,7 +20,8 @@ import {
   VisNetworkGraphEdge,
   VisNetworkGraphNode,
   GraphData,
-  GraphSelectionData
+  GraphSelectionData,
+  LaunchApp
 } from '../../services/interfaces';
 
 import { Subscription } from 'rxjs';
@@ -27,6 +30,7 @@ import { filter } from 'rxjs/operators';
 import { isNullOrUndefined } from 'util';
 
 import { LINK_NODE_ICON_OBJECT } from 'app/constants';
+import { annotationTypes } from 'app/shared/annotation-styles';
 
 @Component({
   selector: 'app-info-panel',
@@ -35,9 +39,10 @@ import { LINK_NODE_ICON_OBJECT } from 'app/constants';
 })
 export class InfoPanelComponent implements OnInit, OnDestroy {
   @ViewChild('autosize', {static: true}) autosize: CdkTextareaAutosize;
+  @Output() openApp: EventEmitter<LaunchApp> = new EventEmitter<LaunchApp>();
 
   /** Build the palette ui with node templates defined */
-  nodeTemplates = nodeTemplates;
+  nodeTemplates = annotationTypes;
 
   paletteMode = 'minimized';
 
@@ -51,7 +56,11 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
     group: '',
     edges: [],
     hyperlink: '',
-    detail: ''
+    detail: '',
+    data: {
+      source: '',
+      search: []
+    }
   };
 
   nodeIsIcon = false;
@@ -231,8 +240,8 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
               to: e.to
             };
           }),
-          hyperlink: data.nodeData.data.hyperlink,
-          detail: data.nodeData.data.detail
+          hyperlink: data.nodeData.data.hyperlink || '',
+          detail: data.nodeData.data.detail || ''
         };
         this.entityForm.setValue(formData, {emitEvent: false});
 
@@ -271,18 +280,6 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
     // with subject on accident when re-init next time
     this.graphDataSubscription.unsubscribe();
     this.formSubscription.unsubscribe();
-  }
-
-  linkNodeCheckboxChanged(event: MatCheckboxChange) {
-    const val = this.entityForm.value;
-
-    // When the checkbox is clicked we want to either show the detail as the label (if the node
-    // is in 'box' shape) or not show the label at all (if the node is in 'icon' shape). This
-    // will trigger the subscription above.
-    this.entityForm.setValue({
-        ...val,
-        label: event.checked ? '' : val.detail,
-    });
   }
 
   /**
@@ -425,15 +422,61 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
   /**
    * Allow user to navigate to a link in a new tab
    */
-  goToLink() {
-    const hyperlink: string = this.entityForm.value.hyperlink;
+  goToLink(url= null) {
+    const hyperlink: string = url || this.entityForm.value.hyperlink;
+
+    if (!hyperlink) { return; }
 
     if (
       hyperlink.includes('http')
     ) {
       window.open(hyperlink, '_blank');
+    } else if (
+      hyperlink.includes('mailto')
+    ) {
+      window.open(hyperlink);
     } else {
       window.open('http://' + hyperlink);
+    }
+  }
+
+  /**
+   * Bring user to original source of node information
+   */
+  goToSource() {
+    if (
+      this.graphData.data.source.includes('/dt/pdf')
+    ) {
+      const prefixLink = '/dt/pdf/';
+      const [
+        fileId,
+        page,
+        coordA,
+        coordB,
+        coordC,
+        coordD
+      ] = this.graphData.data.source.replace(prefixLink, '').split('/');
+      // Emit app command with annotation payload
+      this.openApp.emit({
+          app: 'pdf-viewer',
+          arg: {
+            // tslint:disable-next-line: radix
+            pageNumber: parseInt(page),
+            fileId,
+            coords: [
+              parseFloat(coordA),
+              parseFloat(coordB),
+              parseFloat(coordC),
+              parseFloat(coordD)
+            ]
+          }
+        }
+      );
+    } else if (
+      this.graphData.data.source.includes('/dt/map')
+    ) {
+      const hyperlink = window.location.origin  + this.graphData.data.source;
+      window.open(hyperlink, '_blank');
     }
   }
 

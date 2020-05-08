@@ -5,7 +5,8 @@ import { Observable, throwError } from 'rxjs';
 
 import { Store } from '@ngrx/store';
 import { State } from 'app/***ARANGO_USERNAME***-store/state';
-import { SnackbarActions } from 'app/shared/store';
+import { MessageDialogActions, SnackbarActions } from 'app/shared/store';
+import { MessageType } from 'app/interfaces/message-dialog.interface';
 
 /**
  * HttpErrorInterceptor is used to intercept a request/response
@@ -39,17 +40,21 @@ export class HttpErrorInterceptor implements HttpInterceptor {
           return throwError(res);
         } else if (statusCode === 400 || statusCode >= 500) {
           let message = 'The server encountered a problem. No further details are currently available.';
-          if (res.error && res.error.message) {
-            message = res.error.message;
+          let detail = null;
+          if (res.error) {
+            if (res.error.message) {
+              message = res.error.message;
+            }
+            if (res.error.detail) {
+              detail = res.error.detail;
+            }
           }
-          this.store.dispatch(SnackbarActions.displaySnackbar({
+          this.store.dispatch(MessageDialogActions.displayMessageDialog({
             payload: {
+              title: 'Problem Encountered',
               message,
-              action: 'Dismiss',
-              config: {
-                verticalPosition: 'top',
-                duration: 10000
-              },
+              detail,
+              type: MessageType.Error,
             }
           }));
           return throwError(res);

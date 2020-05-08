@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { Router } from '@angular/router';
+import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { select, Store } from '@ngrx/store';
 import { State } from 'app/***ARANGO_USERNAME***-store';
 
@@ -8,6 +8,7 @@ import { AuthSelectors } from 'app/auth/store';
 import { Observable } from 'rxjs';
 
 import { AppUser } from 'app/interfaces';
+import { Title } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-***ARANGO_USERNAME***',
@@ -22,9 +23,17 @@ export class AppComponent {
   constructor(
     private store: Store<State>,
     private router: Router,
+    private activatedRoute: ActivatedRoute,
+    private titleService: Title,
   ) {
     this.loggedIn$ = store.pipe(select(AuthSelectors.selectAuthLoginState));
     this.appuser$ = store.pipe(select(AuthSelectors.selectAuthUser));
+    this.router.events.subscribe(event => {
+      if (event instanceof NavigationEnd) {
+        const child = this.activatedRoute.firstChild;
+        titleService.setTitle(child.snapshot.data.title ? `Lifelike: ${child.snapshot.data.title}` : 'Lifelike');
+      }
+    });
   }
 
   login() {
@@ -34,4 +43,5 @@ export class AppComponent {
   logout() {
     this.store.dispatch(AuthActions.logout());
   }
+
 }
