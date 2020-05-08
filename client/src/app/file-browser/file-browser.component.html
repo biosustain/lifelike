@@ -4,7 +4,7 @@
     <button mat-raised-button (click)="fileInput.click()"><mat-icon>add_box</mat-icon> Upload</button>
     <input #fileInput hidden type="file" accept="application/pdf"
       (change)="onFileInput($event.target.files);$event.target.value = null">
-    <button mat-raised-button [disabled]="selection.selected.length === 0" (click)="deleteFiles()" color="warn">Delete</button>
+    <button mat-raised-button [disabled]="selection.selected.length === 0" (click)="openDeleteDialog()" color="warn">Delete</button>
     <button mat-raised-button [disabled]="selection.selected.length === 0 || isReannotating" (click)="reannotate()">Reannotate</button>
   </div>
 
@@ -16,8 +16,8 @@
     <ng-container matColumnDef="select">
       <mat-header-cell *matHeaderCellDef fxFlex="nogrow">
         <mat-checkbox (change)="$event ? masterToggle() : null"
-                      [checked]="selection.hasValue() && selection.selected.length === dataSource.length"
-                      [indeterminate]="selection.hasValue() && selection.selected.length !== dataSource.length"></mat-checkbox>
+                      [checked]="selection.hasValue() && selection.selected.length === dataSource.data.length"
+                      [indeterminate]="selection.hasValue() && selection.selected.length !== dataSource.data.length"></mat-checkbox>
       </mat-header-cell>
       <mat-cell *matCellDef="let element" fxFlex="nogrow">
         <mat-checkbox (click)="$event.stopPropagation()"
@@ -52,4 +52,6 @@
     <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
     <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
   </mat-table>
+
+  <p *ngIf="dataSource.data.length === 0">No files found.</p>
 </div>

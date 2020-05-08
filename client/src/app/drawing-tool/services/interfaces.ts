@@ -4,6 +4,8 @@ interface UniversalGraphNode {
     y: number;
     hyperlink?: string;
     detail?: string;
+    source?: string;
+    search?: Hyperlink[];
   };
   display_name: string;
   hash: string;
@@ -37,6 +39,8 @@ interface VisNetworkGraphNode {
   data?: {
     hyperlink?: string;
     detail?: string;
+    source?: string;
+    search?: Hyperlink[];
   };
   color?: any;
 }
@@ -64,6 +68,12 @@ interface GraphData {
   detail?: string;
   x?: number;
   y?: number;
+  data?: {
+    hyperlink?: string;
+    source?: string;
+    detail?: string;
+    search?: Hyperlink[];
+  };
 }
 
 /**
@@ -78,11 +88,18 @@ interface GraphSelectionData {
     label: string,
     edges: VisNetworkGraphEdge[],
     data: {
-      hyperlink: string;
-      detail: string;
+      hyperlink?: string;
+      detail?: string;
+      source?: string;
+      search?: Hyperlink[];
     }
   };
   otherNodes?: VisNetworkGraphNode[];
+}
+
+interface Hyperlink {
+  url: string;
+  domain: string;
 }
 
 interface Location {
@@ -105,6 +122,7 @@ interface Meta {
   isCustom?: boolean;
   allText?: string;
   links?: Links;
+  hyperlink?: string;
 }
 
 interface Rect {
@@ -118,6 +136,20 @@ interface Annotation {
   meta: Meta;
 }
 
+/**
+ * Interface for launching app wit parameters
+ */
+interface LaunchApp {
+  app: string;
+  arg?: {
+    // For pdf-viewer, coordinate of the nnoation of pd
+    coords?: number[],
+    // hash of pdf to locate by
+    fileId?: string,
+    // page of the pdf that the annotation is located on
+    pageNumber?: number
+  };
+}
 
 
 /**
@@ -154,5 +186,6 @@ export {
   Links,
   Location,
   GraphData,
-  GraphSelectionData
+  GraphSelectionData,
+  LaunchApp
 };

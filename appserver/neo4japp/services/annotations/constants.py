@@ -1,8 +1,9 @@
 from enum import Enum
+from neo4japp.constants import ANNOTATION_STYLES_DICT
 
 # these links are used in annotations and custom annotations
 NCBI_LINK = 'https://ncbi.nlm.nih.gov/gene/?term='
-UNIPROT_LINK = 'https://uniprot.org/uniprot/?query='
+UNIPROT_LINK = 'https://uniprot.org/uniprot/?sort=score&query='
 WIKIPEDIA_LINK = 'https://www.google.com/search?q=site:+wikipedia.org+'
 GOOGLE_LINK = 'https://www.google.com/search?q='
 
@@ -48,14 +49,26 @@ TYPO_SYNONYMS = {
     'multiplemitochondrialdysfunctionssyndromes': ['Multiple Mitochondrial Dysfunctions Syndrome'],  # noqa
 }
 
+ENTITY_TYPE_PRECEDENCE = {
+    # larger value takes precedence
+    'Chemicals': 5,
+    'Compounds': 5,
+    'Diseases': 6,
+    'Genes': 3,
+    'Proteins': 4,
+    'Species': 1,
+    'Phenotypes': 2,
+}
+
 
 class EntityColor(Enum):
-    Chemicals = '#cee5cb'
-    Compounds = '#cee5cb'
-    Diseases = '#fae0b8'
-    Genes = '#8f7cbf'
-    Proteins = '#bcbd22'
-    Species = '#3177b8'
+    Chemicals = ANNOTATION_STYLES_DICT['chemical']['color']
+    Compounds = ANNOTATION_STYLES_DICT['compound']['color']
+    Diseases = ANNOTATION_STYLES_DICT['disease']['color']
+    Genes = ANNOTATION_STYLES_DICT['gene']['color']
+    Proteins = ANNOTATION_STYLES_DICT['protein']['color']
+    Species = ANNOTATION_STYLES_DICT['species']['color']
+    Phenotypes = ANNOTATION_STYLES_DICT['phenotype']['color']
 
 
 class EntityIdStr(Enum):
@@ -65,6 +78,7 @@ class EntityIdStr(Enum):
     Genes = 'gene_id'
     Proteins = 'protein_id'
     Species = 'tax_id'
+    Phenotypes = 'phenotype_id'
 
 
 class EntityType(Enum):
@@ -74,3 +88,4 @@ class EntityType(Enum):
     Genes = 'Genes'
     Proteins = 'Proteins'
     Species = 'Species'
+    Phenotypes = 'Phenotypes'

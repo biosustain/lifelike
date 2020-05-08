@@ -103,7 +103,7 @@ export class ProjectListViewComponent {
    * personal and community
    */
   refresh() {
-    // TODO: Sort projects
+    // TODO: Sort projects by modified date
     this.projectService.pullProjects()
       .subscribe(data => {
         this.projects = (
@@ -249,7 +249,7 @@ export class ProjectListViewComponent {
    */
   goToProject() {
     this.dataFlow.pushProject2Canvas(this.selectedProject);
-    this.route.navigateByUrl('dt/splitter');
+    this.route.navigateByUrl(`dt/splitter/${this.selectedProject.hash_id}`);
   }
 
   handleAPI(evt: { action: string, project: Project }) {
