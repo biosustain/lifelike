@@ -37,7 +37,7 @@
       <p [ngClass]='nodeStyle' class='b'>Edges</p>
       <div *ngFor='let edge of node?.edges'>
         <p class='attr'>
-          <span [ngClass]='nodeStyle' class='edge-label'>{{edge?.label}}&nbsp;</span>
+          <span [ngClass]='nodeStyle' class='edge-label i'>{{edge?.label}}&nbsp;</span>
           <span class='target-label'>{{getNode(edge)}}</span>
         </p>
       </div>

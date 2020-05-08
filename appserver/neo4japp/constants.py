@@ -130,7 +130,15 @@ ANNOTATION_STYLES = [{
     {
         "label": "association",
         "color": '#d7d9f8'
-    }
+    },
+    {
+        "color": '#0277bd',
+        "label": "map",
+    },
+    {
+        "color": '#edc949',
+        "label": "note",
+    },
 ]
 
 ANNOTATION_STYLES_DICT = {
@@ -206,5 +214,13 @@ ANNOTATION_STYLES_DICT = {
     "association": {
         "label": "association",
         "color": '#d7d9f8'
-    }
+    },
+    "species": {
+        "color": '#0277bd',
+        "label": "species",
+    },
+    "phentotype": {
+        "color": '#edc949',
+        "label": "phentotype",
+    },
 }
