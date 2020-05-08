@@ -17,14 +17,49 @@ from neo4japp.data_transfer_objects import PDFParsedCharacters
         (2, PDFParsedCharacters(
             coor_obj_per_pdf_page=None,
             str_per_pdf_page={
-                1: ['E', '.', ' ', '\n', 'C', 'o', 'l', 'i'],  # noqa
+                1: ['E', '.', ' ', '\n', 'C', 'o', 'l', 'i'],
             },
             cropbox_per_page={1: [9, 9]},
         )),
         (3, PDFParsedCharacters(
             coor_obj_per_pdf_page=None,
             str_per_pdf_page={
-                1: ['T', 'y', 'p', 'h', '-', 'i', 'm', 'u', 'r', 'i', 'u', 'm'],  # noqa
+                1: ['T', 'y', 'p', 'h', '-', 'i', 'm', 'u', 'r', 'i', 'u', 'm'],
+            },
+            cropbox_per_page={1: [9, 9]},
+        )),
+        (4, PDFParsedCharacters(
+            coor_obj_per_pdf_page=None,
+            str_per_pdf_page={
+                1: ['I', ' ', 'H', 'a', 'v', 'e', 'c', 'o', 'm', 'm', 'a', ','],
+            },
+            cropbox_per_page={1: [9, 9]},
+        )),
+        (5, PDFParsedCharacters(
+            coor_obj_per_pdf_page=None,
+            str_per_pdf_page={
+                1: ['I', ' ', 'H', 'a', 'v', 'e', ')'],
+            },
+            cropbox_per_page={1: [9, 9]},
+        )),
+        (6, PDFParsedCharacters(
+            coor_obj_per_pdf_page=None,
+            str_per_pdf_page={
+                1: ['I', ' ', 'H', 'a', 'v', 'e', '.'],
+            },
+            cropbox_per_page={1: [9, 9]},
+        )),
+        (7, PDFParsedCharacters(
+            coor_obj_per_pdf_page=None,
+            str_per_pdf_page={
+                1: ['I', ' ', 'H', 'a', 'v', 'e', '.', ')', ','],
+            },
+            cropbox_per_page={1: [9, 9]},
+        )),
+        (8, PDFParsedCharacters(
+            coor_obj_per_pdf_page=None,
+            str_per_pdf_page={
+                1: ['(', ',', 'I', ' ', 'H', 'a', 'v', 'e', '.', ')', ','],
             },
             cropbox_per_page={1: [9, 9]},
         )),
@@ -51,13 +86,19 @@ def test_extract_tokens(annotations_setup, index, text):
         assert verify == tokens
     elif index == 2:
         verify = {
-            'E.',
+            'E',
             'E. Coli',
             'Coli',
         }
         assert verify == tokens
     elif index == 3:
         verify = {'Typh-imurium'}
+        assert verify == tokens
+    elif index == 4:
+        verify = {'I Havecomma', 'Havecomma', 'I'}
+        assert verify == tokens
+    elif index == 5 or index == 6 or index == 7 or index == 8:
+        verify = {'I Have', 'Have', 'I'}
         assert verify == tokens
 
 
