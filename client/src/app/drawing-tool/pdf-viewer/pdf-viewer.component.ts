@@ -152,7 +152,8 @@ export class PdfViewerComponent implements OnDestroy {
     let source = '/dt/pdf/' + `${this.currentFileId}/${loc.pageNumber}/`;
     source = source + `${loc.rect[0]}/${loc.rect[1]}/${loc.rect[2]}/${loc.rect[3]}`;
 
-    const hyperlinks = Object.keys(meta.links).map(k => {
+    const hyperlink = meta.hyperlink;
+    const search = Object.keys(meta.links).map(k => {
       return {
         domain: k,
         url: meta.links[k]
@@ -174,6 +175,8 @@ export class PdfViewerComponent implements OnDestroy {
           return 'protein';
         case 'Species':
           return 'species';
+        case 'Phenotypes':
+          return 'phenotype';
         default:
           return plural;
       }
@@ -186,7 +189,8 @@ export class PdfViewerComponent implements OnDestroy {
       group: mapper(meta.type),
       data: {
         source,
-        hyperlinks
+        search,
+        hyperlink
       }
     };
 
