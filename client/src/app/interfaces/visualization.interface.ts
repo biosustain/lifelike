@@ -35,6 +35,11 @@ export interface ClusteredNode {
     edges: DuplicateVisEdge[];
 }
 
+export interface ExpandNodeRequest {
+    nodeId: number;
+    filterLabels: string[];
+}
+
 export interface ExpandNodeResult {
     expandedNode: number;
     nodes: VisNode[];
