@@ -2,7 +2,7 @@ import json
 import re
 
 from string import ascii_lowercase, digits, punctuation
-from typing import Dict, List, Optional, Set, Tuple, Union
+from typing import cast, Dict, List, Optional, Set, Tuple, Union
 
 from pdfminer.layout import LTAnno, LTChar
 
@@ -359,7 +359,8 @@ class AnnotationsService:
                     if entity['id_type'] != DatabaseType.Ncbi.value:
                         hyperlink = ENTITY_HYPERLINKS[entity['id_type']]
                     else:
-                        hyperlink = ENTITY_HYPERLINKS[entity['id_type']][token_type]
+                        # type ignore, see https://github.com/python/mypy/issues/8277
+                        hyperlink = ENTITY_HYPERLINKS[entity['id_type']][token_type]  # type: ignore
 
                     if entity['id_type'] == DatabaseType.Mesh.value:
                         hyperlink += entity_id[5:]
@@ -371,7 +372,7 @@ class AnnotationsService:
                         color=color,
                         id=entity_id,
                         id_type=entity['id_type'],
-                        id_hyperlink=hyperlink,
+                        id_hyperlink=cast(str, hyperlink),
                         links=Annotation.Meta.Links(
                             ncbi=NCBI_LINK + link_search_term,
                             uniprot=UNIPROT_LINK + link_search_term,
@@ -507,7 +508,8 @@ class AnnotationsService:
                     if entity['id_type'] != DatabaseType.Ncbi.value:
                         hyperlink = ENTITY_HYPERLINKS[entity['id_type']]
                     else:
-                        hyperlink = ENTITY_HYPERLINKS[entity['id_type']][token_type]
+                        # type ignore, see https://github.com/python/mypy/issues/8277
+                        hyperlink = ENTITY_HYPERLINKS[entity['id_type']][token_type]  # type: ignore
 
                     if entity['id_type'] == DatabaseType.Mesh.value:
                         hyperlink += entity_id[5:]
@@ -519,7 +521,7 @@ class AnnotationsService:
                         color=color,
                         id=entity_id,
                         id_type=entity['id_type'],
-                        id_hyperlink=hyperlink,
+                        id_hyperlink=cast(str, hyperlink),
                         links=Annotation.Meta.Links(
                             ncbi=NCBI_LINK + link_search_term,
                             uniprot=UNIPROT_LINK + link_search_term,
