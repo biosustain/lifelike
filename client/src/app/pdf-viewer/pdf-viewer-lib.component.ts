@@ -326,7 +326,7 @@ export class PdfViewerLibComponent implements OnInit {
     this.allText = selection.toString();
     const documentFragment = selection.getRangeAt(0).cloneContents();
     this.selectedText = Array.from(documentFragment.childNodes).map((node: any) => node.textContent);
-    this.currentPage = parent.closest('.page').getAttribute('data-page-number');
+    this.currentPage = parseInt(parent.closest('.page').getAttribute('data-page-number'));
     let pdfPageView = this.pageRef[this.currentPage];
     let viewport = pdfPageView.viewport;
     let pageElement = pdfPageView.div;
@@ -518,7 +518,7 @@ export class PdfViewerLibComponent implements OnInit {
     console.log(error);
   }
 
-  
+
 
   /**
    * Pdf loading progress callback
