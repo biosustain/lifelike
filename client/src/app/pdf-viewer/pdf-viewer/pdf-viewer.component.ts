@@ -26,7 +26,7 @@ import { createEventBus } from '../utils/event-bus-utils';
 
 import * as viewerx from 'pdfjs-dist/web/pdf_viewer';
 
-declare var require: any
+declare var require: any;
 let PDFJS: any;
 let PDFJSViewer: any;
 
@@ -36,8 +36,8 @@ function isSSR() {
 
 if (!isSSR()) {
   PDFJS = require('pdfjs-dist/build/pdf');
-  PDFJSViewer = viewerx; 
-  //require('pdfjs-dist/web/pdf_viewer');
+  PDFJSViewer = viewerx;
+  // require('pdfjs-dist/web/pdf_viewer');
 
   PDFJS.verbosity = PDFJS.VerbosityLevel.ERRORS;
 }
@@ -49,7 +49,7 @@ export enum RenderTextMode {
 }
 
 @Component({
-  selector: 'pdf-viewer',
+  selector: 'app-pdf-viewer-lib',
   template: `
     <div #pdfViewerContainer class="ng2-pdf-viewer-container">
       <div class="pdfViewer"></div>
@@ -59,101 +59,50 @@ export enum RenderTextMode {
 })
 export class PdfViewerComponent
   implements OnChanges, OnInit, OnDestroy, AfterViewChecked {
-  @ViewChild('pdfViewerContainer', {static:false}) pdfViewerContainer;
-  private isVisible: boolean = false;
-
-  static CSS_UNITS: number = 96.0 / 72.0;
-  static BORDER_WIDTH: number = 9;
-
-  private pdfMultiPageViewer: any;
-  private pdfMultiPageLinkService: any;
-  private pdfMultiPageFindController: any;
-
-  private pdfSinglePageViewer: any;
-  private pdfSinglePageLinkService: any;
-  private pdfSinglePageFindController: any;
-
-  private _cMapsUrl =
-    typeof PDFJS !== 'undefined'
-      ? `https://unpkg.com/pdfjs-dist@${(PDFJS as any).version}/cmaps/`
-      : null;
-  private _renderText = true;
-  private _renderTextMode: RenderTextMode = RenderTextMode.ENABLED;
-  private _stickToPage = false;
-  private _originalSize = true;
-  private _pdf: PDFDocumentProxy;
-  private _page = 1;
-  private _zoom = 1;
-  private _rotation = 0;
-  private _showAll = true;
-  private _canAutoResize = true;
-  private _fitToPage = false;
-  private _externalLinkTarget = 'blank';
-  private _showBorders = false;
-  private lastLoaded: string | Uint8Array | PDFSource;
-  private _latestScrolledPage: number;
-
-  private resizeTimeout: NodeJS.Timer;
-  private pageScrollTimeout: NodeJS.Timer;
-  private isInitialized = false;
-  private loadingTask: any;
-
-  @Output('after-load-complete') afterLoadComplete = new EventEmitter<
-    PDFDocumentProxy
-  >();
-  @Output('page-rendered') pageRendered = new EventEmitter<CustomEvent>();
-  @Output('text-layer-rendered') textLayerRendered = new EventEmitter<
-    CustomEvent
-  >();
-  @Output('error') onError = new EventEmitter<any>();
-  @Output('on-progress') onProgress = new EventEmitter<PDFProgressData>();
-  @Output() pageChange: EventEmitter<number> = new EventEmitter<number>(true);
-  @Input()
-  src: string | Uint8Array | PDFSource;
 
   @Input('c-maps-url')
   set cMapsUrl(cMapsUrl: string) {
-    this._cMapsUrl = cMapsUrl;
+    this.internalCMapsUrl = cMapsUrl;
   }
 
  @Input('page')
-  set page(_page) {
-    _page = parseInt(_page, 10) || 1;
-    const orginalPage = _page;
+  set page(page) {
+    page = parseInt(page, 10) || 1;
+    const orginalPage = page;
 
-    if (this._pdf) {
-      _page = this.getValidPageNumber(_page);
+    if (this.internalPdf) {
+      page = this.getValidPageNumber(page);
     }
 
-    this._page = _page;
-    if (orginalPage !== _page) {
-      this.pageChange.emit(_page);
+    this.internalPage = page;
+    if (orginalPage !== page) {
+      this.pageChange.emit(page);
     }
   }
 
   @Input('render-text')
   set renderText(renderText: boolean) {
-    this._renderText = renderText;
+    this.internalRenderText = renderText;
   }
 
   @Input('render-text-mode')
   set renderTextMode(renderTextMode: RenderTextMode) {
-    this._renderTextMode = renderTextMode;
+    this.internalRenderTextMode = renderTextMode;
   }
 
   @Input('original-size')
   set originalSize(originalSize: boolean) {
-    this._originalSize = originalSize;
+    this.internalOriginalSize = originalSize;
   }
 
   @Input('show-all')
   set showAll(value: boolean) {
-    this._showAll = value;
+    this.internalShowAll = value;
   }
 
   @Input('stick-to-page')
   set stickToPage(value: boolean) {
-    this._stickToPage = value;
+    this.internalStickToPage = value;
   }
 
   @Input('zoom')
@@ -162,11 +111,11 @@ export class PdfViewerComponent
       return;
     }
 
-    this._zoom = value;
+    this.internalZoom = value;
   }
 
   get zoom() {
-    return this._zoom;
+    return this.internalZoom;
   }
 
   @Input('rotation')
@@ -176,52 +125,27 @@ export class PdfViewerComponent
       return;
     }
 
-    this._rotation = value;
+    this.internalRotation = value;
   }
 
   @Input('external-link-target')
   set externalLinkTarget(value: string) {
-    this._externalLinkTarget = value;
+    this.internalExternalLinkTarget = value;
   }
 
   @Input('autoresize')
   set autoresize(value: boolean) {
-    this._canAutoResize = Boolean(value);
+    this.internalCanAutoResize = Boolean(value);
   }
 
   @Input('fit-to-page')
   set fitToPage(value: boolean) {
-    this._fitToPage = Boolean(value);
+    this.internalFitToPage = Boolean(value);
   }
 
   @Input('show-borders')
   set showBorders(value: boolean) {
-    this._showBorders = Boolean(value);
-  }
-
-  static getLinkTarget(type: string) {
-    switch (type) {
-      case 'blank':
-        return (<any>PDFJS).LinkTarget.BLANK;
-      case 'none':
-        return (<any>PDFJS).LinkTarget.NONE;
-      case 'self':
-        return (<any>PDFJS).LinkTarget.SELF;
-      case 'parent':
-        return (<any>PDFJS).LinkTarget.PARENT;
-      case 'top':
-        return (<any>PDFJS).LinkTarget.TOP;
-    }
-
-    return null;
-  }
-
-  static setExternalLinkTarget(type: string) {
-    const linkTarget = PdfViewerComponent.getLinkTarget(type);
-
-    if (linkTarget !== null) {
-      (<any>PDFJS).externalLinkTarget = linkTarget;
-    }
+    this.internalShowBorders = Boolean(value);
   }
 
   constructor(private element: ElementRef) {
@@ -244,6 +168,103 @@ export class PdfViewerComponent
     }
 
     (PDFJS as any).GlobalWorkerOptions.workerSrc = pdfWorkerSrc;
+  }
+
+  get pdfLinkService(): any {
+    return this.internalShowAll
+      ? this.pdfMultiPageLinkService
+      : this.pdfSinglePageLinkService;
+  }
+
+  get pdfViewer(): any {
+    return this.getCurrentViewer();
+  }
+
+  get pdfFindController(): any {
+    return this.internalShowAll
+      ? this.pdfMultiPageFindController
+      : this.pdfSinglePageFindController;
+  }
+
+  static CSS_UNITS: number = 96.0 / 72.0;
+  static BORDER_WIDTH = 9;
+  @ViewChild('pdfViewerContainer', {static: false}) pdfViewerContainer;
+  private isVisible = false;
+
+  private pdfMultiPageViewer: any;
+  private pdfMultiPageLinkService: any;
+  private pdfMultiPageFindController: any;
+
+  private pdfSinglePageViewer: any;
+  private pdfSinglePageLinkService: any;
+  private pdfSinglePageFindController: any;
+
+  private internalCMapsUrl =
+    typeof PDFJS !== 'undefined'
+      ? `https://unpkg.com/pdfjs-dist@${(PDFJS as any).version}/cmaps/`
+      : null;
+  private internalRenderText = true;
+  private internalRenderTextMode: RenderTextMode = RenderTextMode.ENABLED;
+  private internalStickToPage = false;
+  private internalOriginalSize = true;
+  private internalPdf: PDFDocumentProxy;
+  private internalPage = 1;
+  private internalZoom = 1;
+  private internalRotation = 0;
+  private internalShowAll = true;
+  private internalCanAutoResize = true;
+  private internalFitToPage = false;
+  private internalExternalLinkTarget = 'blank';
+  private internalShowBorders = false;
+  private lastLoaded: string | Uint8Array | PDFSource;
+  private internalLatestScrolledPage: number;
+
+  private resizeTimeout: NodeJS.Timer;
+  private pageScrollTimeout: NodeJS.Timer;
+  private isInitialized = false;
+  private loadingTask: any;
+
+  // tslint:disable-next-line
+  @Output('after-load-complete') afterLoadComplete = new EventEmitter<
+    PDFDocumentProxy
+  >();
+  // tslint:disable-next-line
+  @Output('page-rendered') pageRendered = new EventEmitter<CustomEvent>();
+  // tslint:disable-next-line
+  @Output('text-layer-rendered') textLayerRendered = new EventEmitter<
+    CustomEvent
+  >();
+  // tslint:disable-next-line
+  @Output('error') onError = new EventEmitter<any>();
+  // tslint:disable-next-line
+  @Output('on-progress') onProgress = new EventEmitter<PDFProgressData>();
+  @Output() pageChange: EventEmitter<number> = new EventEmitter<number>(true);
+  @Input()
+  src: string | Uint8Array | PDFSource;
+
+  static getLinkTarget(type: string) {
+    switch (type) {
+      case 'blank':
+        return (PDFJS as any).LinkTarget.BLANK;
+      case 'none':
+        return (PDFJS as any).LinkTarget.NONE;
+      case 'self':
+        return (PDFJS as any).LinkTarget.SELF;
+      case 'parent':
+        return (PDFJS as any).LinkTarget.PARENT;
+      case 'top':
+        return (PDFJS as any).LinkTarget.TOP;
+    }
+
+    return null;
+  }
+
+  static setExternalLinkTarget(type: string) {
+    const linkTarget = PdfViewerComponent.getLinkTarget(type);
+
+    if (linkTarget !== null) {
+      (PDFJS as any).externalLinkTarget = linkTarget;
+    }
   }
 
   ngAfterViewChecked(): void {
@@ -277,14 +298,14 @@ export class PdfViewerComponent
   }
 
   ngOnDestroy() {
-    if (this._pdf) {
-      this._pdf.destroy();
+    if (this.internalPdf) {
+      this.internalPdf.destroy();
     }
   }
 
   @HostListener('window:resize', [])
   public onPageResize() {
-    if (!this._canAutoResize || !this._pdf) {
+    if (!this.internalCanAutoResize || !this.internalPdf) {
       return;
     }
 
@@ -297,22 +318,6 @@ export class PdfViewerComponent
     }, 100);
   }
 
-  get pdfLinkService(): any {
-    return this._showAll
-      ? this.pdfMultiPageLinkService
-      : this.pdfSinglePageLinkService;
-  }
-
-  get pdfViewer(): any {
-    return this.getCurrentViewer();
-  }
-
-  get pdfFindController(): any {
-    return this._showAll
-      ? this.pdfMultiPageFindController
-      : this.pdfSinglePageFindController;
-  }
-
   ngOnChanges(changes: SimpleChanges) {
     if (isSSR() || !this.isVisible) {
       return;
@@ -320,58 +325,58 @@ export class PdfViewerComponent
 
     if ('src' in changes) {
       this.loadPDF();
-    } else if (this._pdf) {
+    } else if (this.internalPdf) {
       if ('renderText' in changes) {
-        this.getCurrentViewer().textLayerMode = this._renderText
-          ? this._renderTextMode
+        this.getCurrentViewer().textLayerMode = this.internalRenderText
+          ? this.internalRenderTextMode
           : RenderTextMode.DISABLED;
         this.resetPdfDocument();
       } else if ('showAll' in changes) {
         this.resetPdfDocument();
       }
       if ('page' in changes) {
-        if (changes['page'].currentValue === this._latestScrolledPage) {
+        if (changes.page.currentValue === this.internalLatestScrolledPage) {
           return;
         }
 
         // New form of page changing: The viewer will now jump to the specified page when it is changed.
         // This behavior is introducedby using the PDFSinglePageViewer
-        this.getCurrentViewer().scrollPageIntoView({ pageNumber: this._page });
+        this.getCurrentViewer().scrollPageIntoView({ pageNumber: this.internalPage });
       }
 
       this.update();
     }
   }
 
-  public convertCoordinates(pageNum: number, rect:number[]) : Promise<any> {
-    return new Promise((resolve,reject) => {
-      this._pdf.getPage(pageNum)
+  public convertCoordinates(pageNum: number, rect: number[]): Promise<any> {
+    return new Promise((resolve, reject) => {
+      this.internalPdf.getPage(pageNum)
       .then((page: PDFPageProxy) => {
         console.log('pagenum is ', pageNum);
         console.log('loaded view ', page.view);
-        const rotation = this._rotation || page.rotate;
+        const rotation = this.internalRotation || page.rotate;
         const viewPort: PDFPageViewport =
           (page as any).getViewport({
-            scale: this._zoom,
+            scale: this.internalZoom,
             rotation
           });
 
         const bounds = viewPort.convertToViewportRectangle(rect);
-        let left = Math.min(bounds[0], bounds[2]);
-        let top = Math.min(bounds[1], bounds[3]);
-        let width = Math.abs(bounds[0] - bounds[2]);
-        let height = Math.abs(bounds[1] - bounds[3]);
+        const left = Math.min(bounds[0], bounds[2]);
+        const top = Math.min(bounds[1], bounds[3]);
+        const width = Math.abs(bounds[0] - bounds[2]);
+        const height = Math.abs(bounds[1] - bounds[3]);
         resolve({
-          left:left,
-          top: top,
-          width: width,
-          height: height
+          left,
+          top,
+          width,
+          height
         });
-        //var x = Math.min(screenRect[0], screenRect[2]), width = Math.abs(screenRect[0] - screenRect[2]);
-        //var y = Math.min(screenRect[1], screenRect[3]), height = Math.abs(screenRect[1] - screenRect[3]);
-        //resolve([x,y,width,height]);
-      })
-    })
+        // var x = Math.min(screenRect[0], screenRect[2]), width = Math.abs(screenRect[0] - screenRect[2]);
+        // var y = Math.min(screenRect[1], screenRect[3]), height = Math.abs(screenRect[1] - screenRect[3]);
+        // resolve([x,y,width,height]);
+      });
+    });
 
   }
 
@@ -382,29 +387,29 @@ export class PdfViewerComponent
 
   public updateSize() {
     const currentViewer = this.getCurrentViewer();
-    this._pdf
+    this.internalPdf
       .getPage(currentViewer.currentPageNumber)
       .then((page: PDFPageProxy) => {
-        const rotation = this._rotation || page.rotate;
+        const rotation = this.internalRotation || page.rotate;
         const viewportWidth =
           (page as any).getViewport({
-            scale: this._zoom,
+            scale: this.internalZoom,
             rotation
           }).width * PdfViewerComponent.CSS_UNITS;
-        let scale = this._zoom;
+        let scale = this.internalZoom;
         let stickToPage = true;
 
         // Scale the document when it shouldn't be in original size or doesn't fit into the viewport
         if (
-          !this._originalSize ||
-          (this._fitToPage &&
+          !this.internalOriginalSize ||
+          (this.internalFitToPage &&
             viewportWidth > this.pdfViewerContainer.nativeElement.clientWidth)
         ) {
           scale = this.getScale(
             (page as any).getViewport({ scale: 1, rotation })
               .width
           );
-          stickToPage = !this._stickToPage;
+          stickToPage = !this.internalStickToPage;
         }
 
         currentViewer._setScale(scale, stickToPage);
@@ -416,9 +421,9 @@ export class PdfViewerComponent
       this.loadingTask.destroy();
     }
 
-    if (this._pdf) {
-      this._pdf.destroy();
-      this._pdf = null;
+    if (this.internalPdf) {
+      this.internalPdf.destroy();
+      this.internalPdf = null;
       this.pdfMultiPageViewer.setDocument(null);
       this.pdfSinglePageViewer.setDocument(null);
 
@@ -431,9 +436,9 @@ export class PdfViewerComponent
   }
 
   private setupMultiPageViewer() {
-    (PDFJS as any).disableTextLayer = !this._renderText;
+    (PDFJS as any).disableTextLayer = !this.internalRenderText;
 
-    PdfViewerComponent.setExternalLinkTarget(this._externalLinkTarget);
+    PdfViewerComponent.setExternalLinkTarget(this.internalExternalLinkTarget);
 
     const eventBus = createEventBus(PDFJSViewer);
 
@@ -447,7 +452,7 @@ export class PdfViewerComponent
       }
 
       this.pageScrollTimeout = setTimeout(() => {
-        this._latestScrolledPage = e.pageNumber;
+        this.internalLatestScrolledPage = e.pageNumber;
         this.pageChange.emit(e.pageNumber);
       }, 100);
     });
@@ -463,30 +468,30 @@ export class PdfViewerComponent
     });
 
     const pdfOptions: PDFViewerParams | any = {
-      eventBus: eventBus,
+      eventBus,
       container: this.element.nativeElement.querySelector('div'),
-      removePageBorders: !this._showBorders,
+      removePageBorders: !this.internalShowBorders,
       linkService: this.pdfMultiPageLinkService,
-      textLayerMode: this._renderText
-        ? this._renderTextMode
+      textLayerMode: this.internalRenderText
+        ? this.internalRenderTextMode
         : RenderTextMode.DISABLED,
       findController: this.pdfMultiPageFindController
     };
 
     this.pdfMultiPageViewer = new PDFJSViewer.PDFViewer(pdfOptions);
     this.pdfMultiPageLinkService.setViewer(this.pdfMultiPageViewer);
-    this.pdfMultiPageFindController.setDocument(this._pdf);
+    this.pdfMultiPageFindController.setDocument(this.internalPdf);
   }
 
   private setupSinglePageViewer() {
-    (PDFJS as any).disableTextLayer = !this._renderText;
+    (PDFJS as any).disableTextLayer = !this.internalRenderText;
 
-    PdfViewerComponent.setExternalLinkTarget(this._externalLinkTarget);
+    PdfViewerComponent.setExternalLinkTarget(this.internalExternalLinkTarget);
 
     const eventBus = createEventBus(PDFJSViewer);
 
     eventBus.on('pagechanging', e => {
-      if (e.pageNumber != this._page) {
+      if (e.pageNumber !== this.internalPage) {
         this.page = e.pageNumber;
       }
     });
@@ -508,21 +513,21 @@ export class PdfViewerComponent
     });
 
     const pdfOptions: PDFViewerParams | any = {
-      eventBus: eventBus,
+      eventBus,
       container: this.element.nativeElement.querySelector('div'),
-      removePageBorders: !this._showBorders,
+      removePageBorders: !this.internalShowBorders,
       linkService: this.pdfSinglePageLinkService,
-      textLayerMode: this._renderText
-        ? this._renderTextMode
+      textLayerMode: this.internalRenderText
+        ? this.internalRenderTextMode
         : RenderTextMode.DISABLED,
       findController: this.pdfSinglePageFindController
     };
 
     this.pdfSinglePageViewer = new PDFJSViewer.PDFSinglePageViewer(pdfOptions);
     this.pdfSinglePageLinkService.setViewer(this.pdfSinglePageViewer);
-    this.pdfSinglePageFindController.setDocument(this._pdf);
+    this.pdfSinglePageFindController.setDocument(this.internalPdf);
 
-    this.pdfSinglePageViewer._currentPageNumber = this._page;
+    this.pdfSinglePageViewer._currentPageNumber = this.internalPage;
   }
 
   private getValidPageNumber(page: number): number {
@@ -530,8 +535,8 @@ export class PdfViewerComponent
       return 1;
     }
 
-    if (page > this._pdf.numPages) {
-      return this._pdf.numPages;
+    if (page > this.internalPdf.numPages) {
+      return this.internalPdf.numPages;
     }
 
     return page;
@@ -540,12 +545,12 @@ export class PdfViewerComponent
   private getDocumentParams() {
     const srcType = typeof this.src;
 
-    if (!this._cMapsUrl) {
+    if (!this.internalCMapsUrl) {
       return this.src;
     }
 
     const params: any = {
-      cMapUrl: this._cMapsUrl,
+      cMapUrl: this.internalCMapsUrl,
       cMapPacked: true
     };
 
@@ -581,9 +586,9 @@ export class PdfViewerComponent
     };
 
     const src = this.src;
-    (<PDFPromise<PDFDocumentProxy>>this.loadingTask.promise).then(
+    (this.loadingTask.promise as PDFPromise<PDFDocumentProxy>).then(
       (pdf: PDFDocumentProxy) => {
-        this._pdf = pdf;
+        this.internalPdf = pdf;
         this.lastLoaded = src;
 
         this.afterLoadComplete.emit(pdf);
@@ -604,27 +609,27 @@ export class PdfViewerComponent
   }
 
   private update() {
-    this.page = this._page;
+    this.page = this.internalPage;
 
     this.render();
   }
 
   private render() {
-    this._page = this.getValidPageNumber(this._page);
+    this.internalPage = this.getValidPageNumber(this.internalPage);
     const currentViewer = this.getCurrentViewer();
 
     if (
-      this._rotation !== 0 ||
-      currentViewer.pagesRotation !== this._rotation
+      this.internalRotation !== 0 ||
+      currentViewer.pagesRotation !== this.internalRotation
     ) {
       setTimeout(() => {
-        currentViewer.pagesRotation = this._rotation;
+        currentViewer.pagesRotation = this.internalRotation;
       });
     }
 
-    if (this._stickToPage) {
+    if (this.internalStickToPage) {
       setTimeout(() => {
-        currentViewer.currentPageNumber = this._page;
+        currentViewer.currentPageNumber = this.internalPage;
       });
     }
 
@@ -634,37 +639,37 @@ export class PdfViewerComponent
   private getScale(viewportWidth: number) {
     const pdfContainerWidth =
       this.pdfViewerContainer.nativeElement.clientWidth -
-      (this._showBorders ? 2 * PdfViewerComponent.BORDER_WIDTH : 0);
+      (this.internalShowBorders ? 2 * PdfViewerComponent.BORDER_WIDTH : 0);
 
     if (pdfContainerWidth === 0 || viewportWidth === 0) {
       return 1;
     }
 
     return (
-      (this._zoom * (pdfContainerWidth / viewportWidth)) /
+      (this.internalZoom * (pdfContainerWidth / viewportWidth)) /
       PdfViewerComponent.CSS_UNITS
     );
   }
 
   private getCurrentViewer(): any {
-    return this._showAll ? this.pdfMultiPageViewer : this.pdfSinglePageViewer;
+    return this.internalShowAll ? this.pdfMultiPageViewer : this.pdfSinglePageViewer;
   }
 
   private resetPdfDocument() {
-    this.pdfFindController.setDocument(this._pdf);
+    this.pdfFindController.setDocument(this.internalPdf);
 
-    if (this._showAll) {
+    if (this.internalShowAll) {
       this.pdfSinglePageViewer.setDocument(null);
       this.pdfSinglePageLinkService.setDocument(null);
 
-      this.pdfMultiPageViewer.setDocument(this._pdf);
-      this.pdfMultiPageLinkService.setDocument(this._pdf, null);
+      this.pdfMultiPageViewer.setDocument(this.internalPdf);
+      this.pdfMultiPageLinkService.setDocument(this.internalPdf, null);
     } else {
       this.pdfMultiPageViewer.setDocument(null);
       this.pdfMultiPageLinkService.setDocument(null);
 
-      this.pdfSinglePageViewer.setDocument(this._pdf);
-      this.pdfSinglePageLinkService.setDocument(this._pdf, null);
+      this.pdfSinglePageViewer.setDocument(this.internalPdf);
+      this.pdfSinglePageLinkService.setDocument(this.internalPdf, null);
     }
   }
 }
