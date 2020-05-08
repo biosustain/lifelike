@@ -38,6 +38,7 @@ import { SharedModule } from 'app/shared/shared.module';
 import { RouterModule } from '@angular/router';
 import { PdfViewerComponent } from './pdf-viewer/pdf-viewer.component';
 import { PdfViewerLibModule } from 'pdf-viewer-lib';
+import { FileBrowserModule } from '../file-browser/file-browser.module';
 
 export const routes = [
   {
@@ -49,7 +50,7 @@ export const routes = [
     component: DrawingToolComponent
   },
   {
-    path: 'splitter',
+    path: 'splitter/:hash_id',
     component: SplitterComponent,
     canDeactivate: [PendingChangesGuard]
   },
@@ -90,8 +91,8 @@ export const routes = [
     SharedModule,
     PdfViewerLibModule,
     MatDialogModule,
-    RouterModule.forChild(routes)
-
+    RouterModule.forChild(routes),
+    FileBrowserModule,
   ],
   providers: [
     CopyPasteMapsService,

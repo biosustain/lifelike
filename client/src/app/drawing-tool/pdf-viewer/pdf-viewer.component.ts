@@ -1,18 +1,28 @@
-import { Component, OnDestroy } from '@angular/core';
-import { FormControl } from '@angular/forms';
-import { Subscription, Subject, combineLatest } from 'rxjs';
-import { PdfFile } from 'app/interfaces/pdf-files.interface';
+import { Component, EventEmitter, OnDestroy, Output } from '@angular/core';
+import { BehaviorSubject, combineLatest, Subject, Subscription } from 'rxjs';
 import { PdfFilesService } from 'app/shared/services/pdf-files.service';
+import { Hyperlink, SearchLink } from 'app/shared/constants';
 
-import {
-  PdfAnnotationsService,
-} from '../services';
+import { DataFlowService, PdfAnnotationsService, } from '../services';
 
-import {
-  Annotation, Location, Meta
-} from '../services/interfaces';
+import { Annotation, GraphData, Location, Meta } from '../services/interfaces';
 
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
+import { PdfFile } from '../../interfaces/pdf-files.interface';
+import { FileSelectionDialogComponent } from '../../file-browser/file-selection-dialog.component';
+import { BackgroundTask } from '../../shared/rxjs/background-task';
+
+class DummyFile implements PdfFile {
+  constructor(
+    // tslint:disable-next-line
+    public file_id: string,
+    public filename: string = null,
+    // tslint:disable-next-line
+    public creation_date: string = null,
+    public username: string = null) {
+  }
+}
 
 @Component({
   selector: 'app-pdf-viewer',
@@ -21,50 +31,59 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 })
 
 export class PdfViewerComponent implements OnDestroy {
+  @Output() requestClose: EventEmitter<any> = new EventEmitter();
+  @Output() fileOpen: EventEmitter<PdfFile> = new EventEmitter();
 
   annotations: Annotation[] = [];
-  files: PdfFile[] = [];
-  filesFilter = new FormControl('');
-  filesFilterSub: Subscription;
-  filteredFiles = this.files;
 
   goToPosition: Subject<Location> = new Subject<Location>();
+  loadTask: BackgroundTask<[PdfFile, Location], [ArrayBuffer, any]> =
+    new BackgroundTask(([file, loc]) => {
+      return combineLatest(
+        this.pdf.getFile(file.file_id),
+        this.pdfAnnService.getFileAnnotations(file.file_id)
+      );
+    });
+  pendingScroll: Location;
   openPdfSub: Subscription;
   pdfViewerReady = false;
-  pdfFileLoaded = false;
   // Type information coming from interface PDFSource at:
   // https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/pdfjs-dist/index.d.ts
   pdfData: { url?: string, data?: Uint8Array };
   currentFileId: string;
   addedAnnotation: Annotation;
   addAnnotationSub: Subscription;
+  pdfFileLoaded = false;
 
   constructor(
     private pdfAnnService: PdfAnnotationsService,
     private pdf: PdfFilesService,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private dataFlow: DataFlowService,
+    public dialog: MatDialog,
   ) {
-    this.filesFilterSub = this.filesFilter.valueChanges.subscribe(this.updateFilteredFiles);
-    this.pdf.getFiles().subscribe((files: PdfFile[]) => {
-      this.files = files;
-      this.updateFilteredFiles(this.filesFilter.value);
+    // Listener for file open
+    this.openPdfSub = this.loadTask.observable.subscribe(([[pdfFileContent, ann], [file, loc]]) => {
+      this.pdfData = { data: new Uint8Array(pdfFileContent) };
+      this.annotations = ann;
+      this.annotations.forEach(annotation => {
+        annotation.meta.hyperlink = this.generateHyperlink(annotation);
+      });
+      this.currentFileId = file.file_id;
+      setTimeout(() => {
+        this.pdfViewerReady = true;
+      }, 10);
     });
+
     // Handles opening a pdf from other pages
-    const fileId = localStorage.getItem('fileIdForPdfViewer');
-    if (fileId) {
+    const linkedFileId = localStorage.getItem('fileIdForPdfViewer');
+    if (linkedFileId) {
       localStorage.removeItem('fileIdForPdfViewer');
-      this.openPdf(fileId);
+      this.openPdf(new DummyFile(linkedFileId));
     }
   }
 
   annotationCreated(annotation: Annotation) {
-    const defaultLinks = {
-      ncbi: 'https://www.ncbi.nlm.nih.gov/gene/?query=',
-      uniprot: 'https://www.uniprot.org/uniprot/?query=',
-      wikipedia: 'https://www.google.com/search?q=site:+wikipedia.org+',
-      google: 'https://www.google.com/search?q='
-    };
-
     // try getting id from the ncbi or uniprot link
     let id = '';
     let idType = '';
@@ -90,21 +109,22 @@ export class PdfViewerComponent implements OnDestroy {
         id,
         idType,
         links: {
-          ncbi: annotation.meta.links.ncbi || defaultLinks.ncbi + annotation.meta.allText,
-          uniprot: annotation.meta.links.uniprot || defaultLinks.uniprot + annotation.meta.allText,
-          wikipedia: annotation.meta.links.wikipedia || defaultLinks.wikipedia + annotation.meta.allText,
-          google: annotation.meta.links.google || defaultLinks.google + annotation.meta.allText
+          ncbi: annotation.meta.links.ncbi || this.buildUrl(SearchLink.Ncbi, annotation.meta.allText),
+          uniprot: annotation.meta.links.uniprot || this.buildUrl(SearchLink.Uniprot, annotation.meta.allText),
+          wikipedia: annotation.meta.links.wikipedia || this.buildUrl(SearchLink.Wikipedia, annotation.meta.allText),
+          google: annotation.meta.links.google || this.buildUrl(SearchLink.Google, annotation.meta.allText),
         }
       }
     };
 
     this.addAnnotationSub = this.pdfAnnService.addCustomAnnotation(this.currentFileId, annotationToAdd).subscribe(
       response => {
+        annotationToAdd.meta.hyperlink = this.generateHyperlink(annotationToAdd);
         this.addedAnnotation = annotationToAdd;
-        this.snackBar.open('Annotation has been added', 'Close', { duration: 5000 });
+        this.snackBar.open('Annotation has been added', 'Close', {duration: 5000});
       },
       err => {
-        this.snackBar.open(`Error: failed to add annotation`, 'Close', { duration: 10000 });
+        this.snackBar.open(`Error: failed to add annotation`, 'Close', {duration: 10000});
       }
     );
   }
@@ -129,48 +149,85 @@ export class PdfViewerComponent implements OnDestroy {
     // use location object to scroll in the pdf.
     const loc: Location = JSON.parse(nodeDom.getAttribute('location')) as Location;
 
-    // custom annotations dont have id yet.
-    // const annDef: Annotation = this.pdfAnnService.searchForAnnotation(annId);
+    let source = '/dt/pdf/' + `${this.currentFileId}/${loc.pageNumber}/`;
+    source = source + `${loc.rect[0]}/${loc.rect[1]}/${loc.rect[2]}/${loc.rect[3]}`;
 
-    /*
+    const hyperlink = meta.hyperlink;
+    const search = Object.keys(meta.links).map(k => {
+      return {
+        domain: k,
+        url: meta.links[k]
+      };
+    });
+
+    // Convert form plural to singular
+    const mapper = (plural) => {
+      switch (plural) {
+        case 'Chemicals':
+          return 'chemical';
+        case 'Compounds':
+          return 'compound';
+        case 'Diseases':
+          return 'disease';
+        case 'Genes':
+          return 'gene';
+        case 'Proteins':
+          return 'protein';
+        case 'Species':
+          return 'species';
+        case 'Phenotypes':
+          return 'phenotype';
+        default:
+          return plural;
+      }
+    };
+
     const payload: GraphData = {
       x: mouseEvent.clientX - containerCoord.x,
       y: mouseEvent.clientY,
-      label: nodeDom.innerText,
-      group: (meta.type as string).toLowerCase(),
-      hyperlink: this.generateHyperlink(annDef)
+      label: meta.allText,
+      group: mapper(meta.type),
+      data: {
+        source,
+        search,
+        hyperlink
+      }
     };
-    */
-    // hyperlink should be hyperlinks. Those are in Meta field called Links.
 
-    // this.dataFlow.pushNode2Canvas(payload);
+    this.dataFlow.pushNode2Canvas(payload);
   }
 
-  private updateFilteredFiles = (name: string) => {
-    const words = name.split(' ').filter(w => w.length).map(w => w.toLocaleLowerCase());
-    this.filteredFiles = words.length
-      ? this.files.filter((file: PdfFile) => words.some(w => file.filename.toLocaleLowerCase().includes(w)))
-      : this.files;
-  }
+  openFileDialog() {
+    const dialogConfig = new MatDialogConfig();
 
-  openPdf(id: string) {
-    this.pdfFileLoaded = false;
-    this.pdfViewerReady = false;
-    this.openPdfSub = combineLatest(
-      this.pdf.getFile(id),
-      this.pdfAnnService.getFileAnnotations(id)
-    ).subscribe(([pdf, ann]) => {
-      this.pdfData = { data: new Uint8Array(pdf) };
-      this.annotations = ann;
-      this.currentFileId = id;
-      setTimeout(() => {
-        this.pdfViewerReady = true;
-      }, 10);
+    dialogConfig.width = '600px';
+    dialogConfig.disableClose = true;
+    dialogConfig.autoFocus = true;
+    dialogConfig.data = {};
+
+    const dialogRef = this.dialog.open(FileSelectionDialogComponent, dialogConfig);
+    dialogRef.beforeClosed().subscribe((file: PdfFile) => {
+      if (file !== null) {
+        this.openPdf(file);
+      }
     });
   }
 
+  openPdf(file: PdfFile, loc: Location = null) {
+    if (this.currentFileId === file.file_id) {
+      if (loc) {
+        this.scrollInPdf(loc);
+      }
+      return;
+    }
+    this.pendingScroll = loc;
+    this.pdfFileLoaded = false;
+    this.pdfViewerReady = false;
+
+    this.loadTask.update([file, loc]);
+  }
+
   ngOnDestroy() {
-    this.filesFilterSub.unsubscribe();
     if (this.openPdfSub) {
       this.openPdfSub.unsubscribe();
     }
@@ -179,17 +236,29 @@ export class PdfViewerComponent implements OnDestroy {
     }
   }
 
-  generateHyperlink(annDef: Annotation): string {
-
-    switch (annDef.meta.type) {
-      case 'Chemical':
-        const id = annDef.meta.id.match(/(\d+)/g)[0];
-        return `https://www.ebi.ac.uk/chebi/searchId.do?chebiId=${id}`;
-      case 'Gene':
-        return `https://www.ncbi.nlm.nih.gov/gene/?term=${annDef.meta.id}`;
+  generateHyperlink(ann: Annotation): string {
+    switch (ann.meta.idType) {
+      case 'CHEBI':
+        return this.buildUrl(Hyperlink.Chebi, ann.meta.id);
+      case 'MESH':
+        // prefix 'MESH:' should be removed from the id in order for search to work
+        return this.buildUrl(Hyperlink.Mesh, ann.meta.id.substring(5));
+      case 'UNIPROT':
+        return this.buildUrl(Hyperlink.Uniprot, ann.meta.id);
+      case 'NCBI':
+        if (ann.meta.type === 'Genes') {
+          return this.buildUrl(Hyperlink.NcbiGenes, ann.meta.id);
+        } else if (ann.meta.type === 'Species') {
+          return this.buildUrl(Hyperlink.NcbiSpecies, ann.meta.id);
+        }
+        return '';
       default:
         return '';
     }
+  }
+
+  private buildUrl(provider: Hyperlink | SearchLink, query: string): string {
+    return provider + query;
   }
 
   scrollInPdf(loc: Location) {
@@ -202,5 +271,13 @@ export class PdfViewerComponent implements OnDestroy {
 
   loadCompleted(status) {
     this.pdfFileLoaded = status;
+    if (this.pdfFileLoaded && this.pendingScroll) {
+      this.scrollInPdf(this.pendingScroll);
+      this.pendingScroll = null;
+    }
+  }
+
+  close() {
+    this.requestClose.emit(null);
   }
 }
