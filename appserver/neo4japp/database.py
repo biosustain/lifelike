@@ -125,6 +125,11 @@ def get_bioc_document_service():
     return BiocDocumentService()
 
 
+def get_hybrid_neo4j_postgres_service():
+    from neo4japp.higher_order_services import HybridNeo4jPostgresService
+    return HybridNeo4jPostgresService()
+
+
 def reset_dao():
     """ Cleans up DAO bound to flask request context
 
