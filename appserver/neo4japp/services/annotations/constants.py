@@ -3,7 +3,7 @@ from neo4japp.constants import ANNOTATION_STYLES_DICT
 
 # these links are used in annotations and custom annotations
 NCBI_LINK = 'https://ncbi.nlm.nih.gov/gene/?term='
-UNIPROT_LINK = 'https://uniprot.org/uniprot/?query='
+UNIPROT_LINK = 'https://uniprot.org/uniprot/?sort=score&query='
 WIKIPEDIA_LINK = 'https://www.google.com/search?q=site:+wikipedia.org+'
 GOOGLE_LINK = 'https://www.google.com/search?q='
 
@@ -35,6 +35,7 @@ COMMON_MISC_WORDS = {
     'patch', 'membrane', 'walker', 'group', 'cluster',
     'protein', 'transporter', 'toxin', 'molecule', 'vitamin',
     'light', 'mixture', 'solution', 'other', 'unknown',
+    'collection',
 }
 
 COMMON_WORDS = set.union(*[
