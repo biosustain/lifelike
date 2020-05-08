@@ -16,29 +16,29 @@ import { isNullOrUndefined } from 'util';
 
 import { Network, DataSet, IdType } from 'vis-network';
 
+import { MAX_CLUSTER_ROWS } from 'app/constants';
 import {
     ClusteredNode,
     DuplicateNodeEdgePair,
+    Direction,
     DuplicateVisEdge,
     DuplicateVisNode,
+    ExpandNodeResult,
+    ExpandNodeRequest,
     GetClusterGraphDataResult,
     GetSnippetsResult,
     GroupRequest,
     Neo4jGraphConfig,
+    ReferenceTableRow,
     SidenavClusterEntity,
     SidenavNodeEntity,
     SidenavEdgeEntity,
     VisEdge,
     VisNode,
-    Direction,
-    ReferenceTableRow,
-    ExpandNodeResult,
-    ExpandNodeRequest,
 } from 'app/interfaces';
-
+import { MessageType } from 'app/interfaces/message-dialog.interface';
+import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { uuidv4 } from 'app/shared/utils';
-
-import { MAX_CLUSTER_ROWS } from 'app/constants';
 import { ContextMenuControlService } from 'app/visualization/services/context-menu-control.service';
 import { VisualizationService } from 'app/visualization/services/visualization.service';
 
@@ -73,7 +73,13 @@ export class VisualizationCanvasComponent implements OnInit {
             edgeLabelsOfExpandedNode.forEach(directionList => newClusterCount += directionList.length);
 
             if (edgeLabelsOfExpandedNode.size === 0) {
-                alert('Something strange occurred: attempted to pre-cluster a node with zero relationships!');
+                this.messageDialog.display(
+                    {
+                        title: 'Auto-Cluster Error!',
+                        message: 'Something strange occurred: attempted to pre-cluster a node with zero relationships!',
+                        type: MessageType.Error
+                    }
+                );
                 return;
             }
 
@@ -170,6 +176,7 @@ export class VisualizationCanvasComponent implements OnInit {
 
     constructor(
         private contextMenuControlService: ContextMenuControlService,
+        private messageDialog: MessageDialog,
         private visService: VisualizationService,
         private fb: FormBuilder,
     ) {
@@ -717,9 +724,13 @@ export class VisualizationCanvasComponent implements OnInit {
             duplicateNodeEdgePairs = this.createDuplicateNodesAndEdges(neighborNodesWithRel, relationship, node, direction);
         } catch (e) {
             console.log(e);
-            alert(
-                `An error occurred while trying to cluster node with ID ${node} on relationship ` +
-                `${relationship} in direction "${direction}". `
+            this.messageDialog.display(
+                {
+                    title: 'Clustering Error!',
+                    message: `An error occurred while trying to cluster node with ID ${node} on relationship ` +
+                    `${relationship} in direction "${direction}". `,
+                    type: MessageType.Error
+                }
             );
             return;
         }
