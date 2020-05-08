@@ -271,6 +271,63 @@ class AnnotationsService:
             )
         )
 
+    def _create_annotation_object(
+        self,
+        token_positions: PDFTokenPositions,
+        coor_obj_per_pdf_page: Dict[int, List[Union[LTChar, LTAnno]]],
+        cropbox_per_page: Dict[int, Tuple[int, int]],
+        token_type: str,
+        entity: dict,
+        entity_id: str,
+        color: str,
+    ):
+        # create list of positions boxes
+        curr_page_coor_obj = coor_obj_per_pdf_page[
+            token_positions.page_number]
+        cropbox = cropbox_per_page[token_positions.page_number]
+
+        keyword_positions: List[Annotation.TextPosition] = []
+        char_indexes = list(token_positions.char_positions.keys())
+
+        self._create_keyword_objects(
+            curr_page_coor_obj=curr_page_coor_obj,
+            indexes=char_indexes,
+            keyword_positions=keyword_positions,
+            cropbox=cropbox,
+        )
+
+        keyword_starting_idx = char_indexes[0]
+        keyword_ending_idx = char_indexes[-1]
+        link_search_term = entity['name']
+
+        meta = Annotation.Meta(
+            keyword_type=token_type,
+            color=color,
+            id=entity_id,
+            id_type=entity['id_type'],
+            links=Annotation.Meta.Links(
+                ncbi=NCBI_LINK + link_search_term,
+                uniprot=UNIPROT_LINK + link_search_term,
+                wikipedia=WIKIPEDIA_LINK + link_search_term,
+                google=GOOGLE_LINK + link_search_term,
+            ),
+        )
+
+        # the `keywords` property here is to allow us to know
+        # what coordinates map to what text in the PDF
+        # we want to actually use the real name inside LMDB
+        # for the `keyword` and `keyword_length` properties
+        return Annotation(
+            page_number=token_positions.page_number,
+            rects=[pos.positions for pos in keyword_positions],  # type: ignore
+            keywords=[k.value for k in keyword_positions],
+            keyword=link_search_term,
+            keyword_length=len(link_search_term),
+            lo_location_offset=keyword_starting_idx,
+            hi_location_offset=keyword_ending_idx,
+            meta=meta,
+        )
+
     def _get_annotation(
         self,
         tokens: Dict[str, List[PDFTokenPositions]],
@@ -337,57 +394,46 @@ class AnnotationsService:
                     entity_id = entity[id_str]
 
                 if common_name_count == 1:
-                    # create list of positions boxes
-                    curr_page_coor_obj = coor_obj_per_pdf_page[
-                        token_positions.page_number]
-                    cropbox = cropbox_per_page[token_positions.page_number]
-
-                    keyword_positions: List[Annotation.TextPosition] = []
-                    char_indexes = list(token_positions.char_positions.keys())
-
-                    self._create_keyword_objects(
-                        curr_page_coor_obj=curr_page_coor_obj,
-                        indexes=char_indexes,
-                        keyword_positions=keyword_positions,
-                        cropbox=cropbox,
-                    )
-
-                    keyword_starting_idx = char_indexes[0]
-                    keyword_ending_idx = char_indexes[-1]
-                    link_search_term = entity['name']
-
-                    meta = Annotation.Meta(
-                        keyword_type=token_type,
+                    matches.append(self._create_annotation_object(
+                        coor_obj_per_pdf_page=coor_obj_per_pdf_page,
+                        cropbox_per_page=cropbox_per_page,
+                        token_positions=token_positions,
+                        token_type=token_type,
+                        entity=entity,
+                        entity_id=entity_id,
                         color=color,
-                        id=entity_id,
-                        id_type=entity['id_type'],
-                        links=Annotation.Meta.Links(
-                            ncbi=NCBI_LINK + link_search_term,
-                            uniprot=UNIPROT_LINK + link_search_term,
-                            wikipedia=WIKIPEDIA_LINK + link_search_term,
-                            google=GOOGLE_LINK + link_search_term,
-                        ),
-                    )
-
-                    # the `keywords` property here is to allow us to know
-                    # what coordinates map to what text in the PDF
-                    # we want to actually use the real name inside LMDB
-                    # for the `keyword` and `keyword_length` properties
-                    matches.append(
-                        Annotation(
-                            page_number=token_positions.page_number,
-                            rects=[pos.positions for pos in keyword_positions],  # type: ignore
-                            keywords=[k.value for k in keyword_positions],
-                            keyword=link_search_term,
-                            keyword_length=len(link_search_term),
-                            lo_location_offset=keyword_starting_idx,
-                            hi_location_offset=keyword_ending_idx,
-                            meta=meta,
-                        )
-                    )
+                    ))
                 else:
                     unwanted_matches.add(word)
         return matches, unwanted_matches
+
+    def _get_gene_id_for_annotation(
+        self,
+        word: str,
+        match_result: Dict[str, Dict[str, str]],
+        organism_frequency: Dict[str, int],
+    ):
+        """Currently using a postgres lookup table to filter out keywords that don't
+        match a curated slice of the main dataset, and to map synonyms to the
+        correct gene. This postgres table currently has unique gene names, so we
+        expect a 1:1 match of gene to organism. In the future, we can't always
+        assume this to be the case, as some organism strains have matching gene names.
+
+        If a gene was matched to at least one organism in the document,
+        we have to get the corresponding gene data. If a gene matches
+        more than one organism, we use the one with the highest
+        frequency within the document. We may fine-tune this later.
+        """
+        organism_to_gene_pairs = match_result[word]
+        most_frequent_organism = str()
+        greatest_frequency = 0
+
+        for organism_id in organism_to_gene_pairs.keys():
+            if organism_frequency[organism_id] > greatest_frequency:
+                greatest_frequency = organism_frequency[organism_id]
+                most_frequent_organism = organism_id
+
+        return organism_to_gene_pairs[most_frequent_organism]
 
     def _annotate_genes(
         self,
@@ -461,71 +507,21 @@ class AnnotationsService:
                     common_name_count = 1
 
                 if common_name_count == 1:
-                    # Currently using a postgres lookup table to filter out keywords that don't
-                    # match a curated slice of the main dataset, and to map synonyms to the
-                    # correct gene. This postgres table currently has unique gene names, so we
-                    # expect a 1:1 match of gene to organism. In the future, we can't always
-                    # assume this to be the case, as some organism strains have matching gene names.
-
-                    # If a gene was matched to at least one organism in the document,
-                    # we have to get the corresponding gene data. If a gene matches
-                    # more than one organism, we use the one with the highest
-                    # frequency within the document. We may fine-tune this later.
-                    organism_to_gene_pairs = match_result[word]
-                    most_frequent_organism = str()
-                    greatest_frequency = 0
-
-                    for organism_id in organism_to_gene_pairs.keys():
-                        if organism_frequency[organism_id] > greatest_frequency:
-                            greatest_frequency = organism_frequency[organism_id]
-                            most_frequent_organism = organism_id
-
-                    entity_id = organism_to_gene_pairs[most_frequent_organism]
-
-                    # create list of positions boxes
-                    curr_page_coor_obj = coor_obj_per_pdf_page[
-                        token_positions.page_number]
-                    cropbox = cropbox_per_page[token_positions.page_number]
-
-                    keyword_positions: List[Annotation.TextPosition] = []
-                    char_indexes = list(token_positions.char_positions.keys())
-
-                    self._create_keyword_objects(
-                        curr_page_coor_obj=curr_page_coor_obj,
-                        indexes=char_indexes,
-                        keyword_positions=keyword_positions,
-                        cropbox=cropbox,
+                    entity_id = self._get_gene_id_for_annotation(
+                        word=word,
+                        match_result=match_result,
+                        organism_frequency=organism_frequency
                     )
 
-                    keyword_starting_idx = char_indexes[0]
-                    keyword_ending_idx = char_indexes[-1]
-                    link_search_term = entity['name']
-
-                    meta = Annotation.Meta(
-                        keyword_type=token_type,
+                    matches.append(self._create_annotation_object(
+                        coor_obj_per_pdf_page=coor_obj_per_pdf_page,
+                        cropbox_per_page=cropbox_per_page,
+                        token_positions=token_positions,
+                        token_type=token_type,
+                        entity=entity,
+                        entity_id=entity_id,
                         color=color,
-                        id=entity_id,
-                        id_type=entity['id_type'],
-                        links=Annotation.Meta.Links(
-                            ncbi=NCBI_LINK + link_search_term,
-                            uniprot=UNIPROT_LINK + link_search_term,
-                            wikipedia=WIKIPEDIA_LINK + link_search_term,
-                            google=GOOGLE_LINK + link_search_term,
-                        ),
-                    )
-
-                    matches.append(
-                        Annotation(
-                            page_number=token_positions.page_number,
-                            rects=[pos.positions for pos in keyword_positions],  # type: ignore
-                            keywords=[k.value for k in keyword_positions],
-                            keyword=link_search_term,
-                            keyword_length=len(link_search_term),
-                            lo_location_offset=keyword_starting_idx,
-                            hi_location_offset=keyword_ending_idx,
-                            meta=meta,
-                        )
-                    )
+                    ))
                 else:
                     unwanted_matches.add(word)
         return matches, unwanted_matches
