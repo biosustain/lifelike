@@ -363,9 +363,9 @@ class AnnotationsService:
                         hyperlink = ENTITY_HYPERLINKS[entity['id_type']][token_type]  # type: ignore
 
                     if entity['id_type'] == DatabaseType.Mesh.value:
-                        hyperlink += entity_id[5:]
+                        hyperlink += entity_id[5:]  # type: ignore
                     else:
-                        hyperlink += entity_id
+                        hyperlink += entity_id  # type: ignore
 
                     meta = Annotation.Meta(
                         keyword_type=token_type,
@@ -512,9 +512,9 @@ class AnnotationsService:
                         hyperlink = ENTITY_HYPERLINKS[entity['id_type']][token_type]  # type: ignore
 
                     if entity['id_type'] == DatabaseType.Mesh.value:
-                        hyperlink += entity_id[5:]
+                        hyperlink += entity_id[5:]  # type: ignore
                     else:
-                        hyperlink += entity_id
+                        hyperlink += entity_id  # type: ignore
 
                     meta = Annotation.Meta(
                         keyword_type=token_type,
