@@ -14,15 +14,18 @@ import { AdminGuard } from 'app/admin/services/admin-guard.service';
 import { AuthGuard } from 'app/auth/guards/auth-guard.service';
 import { LoginGuard } from 'app/auth/guards/login-guard.service';
 import { PdfViewerComponent } from 'app/drawing-tool/pdf-viewer/pdf-viewer.component';
+import { UserSettingsComponent } from 'app/users/components/user-settings.component';
+import { KgStatisticsComponent } from './kg-statistics/kg-statistics.component';
 
 // TODO: Add an unprotected home page
 const routes: Routes = [
   { path: '', component: LifelikeHomePageComponent, data: {title: 'Dashboard'}},
   { path: 'admin', component: AdminPanelComponent, canActivate: [AdminGuard], data: {title: 'Dashboard'}},
   { path: 'neo4j-upload', component: UserFileImportComponent, canActivate: [AuthGuard]},
-  { path: 'neo4j-visualizer', component: VisualizationComponent, canActivate: [AuthGuard], data: {title: 'KG Visualizer'}},
-  { path: 'login', component: LoginComponent, canActivate: [LoginGuard], data: {title: 'Login'} },
-  { path: 'search', component: SearchCollectionPageComponent, data: {title: 'Search'} },
+  { path: 'neo4j-visualizer', component: VisualizationComponent, canActivate: [AuthGuard]},
+  { path: 'login', component: LoginComponent, canActivate: [LoginGuard] },
+  { path: 'users/:user', component: UserSettingsComponent, canActivate: [AuthGuard] },
+  { path: 'search', component: SearchCollectionPageComponent },
   // Used as a work-around for navigation to work when navigating with
   // changing queries
   { path: 'search/:redirect', component: SearchCollectionPageComponent, data: {title: 'KG Visualizer'} },
@@ -46,6 +49,10 @@ const routes: Routes = [
     component: FileBrowserComponent,
     canActivate: [AuthGuard],
     data: {title: 'File Browser'}
+  },
+  {
+    path: 'kg-statistics',
+    component: KgStatisticsComponent,
   },
 ];
 

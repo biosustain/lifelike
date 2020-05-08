@@ -1,5 +1,6 @@
 import pytest
 import os
+from pathlib import Path
 
 from py2neo import (
     Graph,
@@ -754,3 +755,9 @@ def gas_gangrene_treatment_clustered_nodes(
     ]
 
 # End DTO Fixtures #
+
+
+@pytest.fixture(scope='session')
+def pdf_dir() -> str:
+    """ Returns the directory of the example PDFs """
+    return os.path.join(Path(__file__).parent, 'database', 'services', 'annotations', 'pdf_samples')
