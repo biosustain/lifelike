@@ -1,5 +1,6 @@
 import { TestBed, ComponentFixture } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { RouterTestingModule } from '@angular/router/testing';
 
 import { configureTestSuite } from 'ng-bullet';
@@ -11,6 +12,7 @@ import { DataSet } from 'vis-data';
 import {
     ClusteredNode,
     DuplicateVisEdge,
+    ExpandNodeRequest,
     GraphNode,
     GraphRelationship,
     Neo4jResults,
@@ -25,7 +27,6 @@ import { VisualizationComponent } from './visualization.component';
 
 import { VisualizationService } from '../../services/visualization.service';
 import { VisualizationCanvasComponent } from '../../components/visualization-canvas/visualization-canvas.component';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 describe('VisualizationComponent', () => {
     let fixture: ComponentFixture<VisualizationComponent>;
@@ -159,10 +160,14 @@ describe('VisualizationComponent', () => {
         const visualizationCanvasComponentMock = fixture.debugElement.query(
             By.directive(VisualizationCanvasComponent)
         ).componentInstance as VisualizationCanvasComponent;
+        const mockExpandNodeRequest = {
+            nodeId: 1,
+            filterLabels: ['Chemicals', 'Diseases', 'Genes']
+        } as ExpandNodeRequest;
 
-        visualizationCanvasComponentMock.expandNode.emit(1);
+        visualizationCanvasComponentMock.expandNode.emit(mockExpandNodeRequest);
 
-        expect(expandNodeSpy).toHaveBeenCalledWith(1);
+        expect(expandNodeSpy).toHaveBeenCalledWith(mockExpandNodeRequest);
     });
 
     it('should call getSnippetsFromEdge service when child requests snippets for edge', () => {

@@ -5,6 +5,7 @@ import { SharedModule } from 'app/shared/shared.module';
 
 import { AutoClusterDialogComponent } from './components/auto-cluster-dialog/auto-cluster-dialog.component';
 import { ContextMenuComponent } from './components/context-menu/context-menu.component';
+import { NoResultsFromExpandDialogComponent } from './components/no-results-from-expand-dialog/no-results-from-expand-dialog.component';
 import { SidenavClusterViewComponent } from './components/sidenav-cluster-view/sidenav-cluster-view.component';
 import { SidenavEdgeViewComponent } from './components/sidenav-edge-view/sidenav-edge-view.component';
 import { SidenavNodeViewComponent } from './components/sidenav-node-view/sidenav-node-view.component';
@@ -16,6 +17,7 @@ import { VisualizationComponent } from './containers/visualization/visualization
 const components = [
     AutoClusterDialogComponent,
     ContextMenuComponent,
+    NoResultsFromExpandDialogComponent,
     SidenavClusterViewComponent,
     SidenavEdgeViewComponent,
     SidenavNodeViewComponent,
@@ -30,6 +32,9 @@ const components = [
     providers: [VisualizationService],
     exports: components,
     // Need to add the cluster dialog because it is dynamically loaded by type in the VisualizationComponent
-    entryComponents: [AutoClusterDialogComponent],
+    entryComponents: [
+        AutoClusterDialogComponent,
+        NoResultsFromExpandDialogComponent,
+    ],
 })
 export class VisualizationModule {}
