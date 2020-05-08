@@ -22,6 +22,7 @@ from neo4japp.database import (
 from neo4japp.exceptions import RecordNotFoundException, BadRequestError
 from neo4japp.models import AppUser
 from neo4japp.models.files import Files, FileContent
+from neo4japp.blueprints.permissions import requires_role
 
 bp = Blueprint('files', __name__, url_prefix='/files')
 
@@ -254,6 +255,8 @@ class DeletionOutcome(Enum):
 @bp.route('/bulk_delete', methods=['DELETE'])
 @auth.login_required
 def delete_files():
+    curr_user = g.current_user
+    user_roles = [r.name for r in curr_user.roles]
     ids = request.get_json()
     outcome: Dict[str, str] = {}  # file id to deletion outcome
     for id in ids:
@@ -262,7 +265,7 @@ def delete_files():
             current_app.logger.error('Could not find file: %s, %s', id, file.filename)
             outcome[id] = DeletionOutcome.NOT_FOUND.value
             continue
-        if g.current_user.id != int(file.user_id):
+        if 'admin' not in user_roles and curr_user.id != int(file.user_id):
             current_app.logger.error('Cannot delete file (not an owner): %s, %s', id, file.filename)
             outcome[id] = DeletionOutcome.NOT_OWNER.value
             continue
@@ -270,4 +273,5 @@ def delete_files():
         db.session.commit()
         current_app.logger.debug('File deleted: %s, %s', id, file.filename)
         outcome[id] = DeletionOutcome.DELETED.value
+
     return jsonify(outcome)
