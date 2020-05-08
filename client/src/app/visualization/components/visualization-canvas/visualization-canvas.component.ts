@@ -5,6 +5,7 @@ import {
     OnInit,
     Output,
 } from '@angular/core';
+import { FormGroup, FormBuilder } from '@angular/forms';
 
 import { Options } from '@popperjs/core';
 
@@ -15,28 +16,29 @@ import { isNullOrUndefined } from 'util';
 
 import { Network, DataSet, IdType } from 'vis-network';
 
+import { MAX_CLUSTER_ROWS } from 'app/constants';
 import {
     ClusteredNode,
     DuplicateNodeEdgePair,
+    Direction,
     DuplicateVisEdge,
     DuplicateVisNode,
+    ExpandNodeResult,
+    ExpandNodeRequest,
     GetClusterGraphDataResult,
     GetSnippetsResult,
     GroupRequest,
     Neo4jGraphConfig,
+    ReferenceTableRow,
     SidenavClusterEntity,
     SidenavNodeEntity,
     SidenavEdgeEntity,
     VisEdge,
     VisNode,
-    Direction,
-    ReferenceTableRow,
-    ExpandNodeResult,
 } from 'app/interfaces';
-
+import { MessageType } from 'app/interfaces/message-dialog.interface';
+import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { uuidv4 } from 'app/shared/utils';
-
-import { MAX_CLUSTER_ROWS } from 'app/constants';
 import { ContextMenuControlService } from 'app/visualization/services/context-menu-control.service';
 import { VisualizationService } from 'app/visualization/services/visualization.service';
 
@@ -54,7 +56,7 @@ enum SidenavEntityType {
     providers: [ContextMenuControlService],
 })
 export class VisualizationCanvasComponent implements OnInit {
-    @Output() expandNode = new EventEmitter<number>();
+    @Output() expandNode = new EventEmitter<ExpandNodeRequest>();
     @Output() finishedPreClustering = new EventEmitter<boolean>();
     @Output() getSnippetsFromEdge = new EventEmitter<VisEdge>();
     @Output() getSnippetsFromDuplicateEdge = new EventEmitter<DuplicateVisEdge>();
@@ -70,6 +72,18 @@ export class VisualizationCanvasComponent implements OnInit {
             let newClusterCount = 0;
             edgeLabelsOfExpandedNode.forEach(directionList => newClusterCount += directionList.length);
 
+            if (edgeLabelsOfExpandedNode.size === 0) {
+                this.messageDialog.display(
+                    {
+                        title: 'Auto-Cluster Error!',
+                        message: 'Something strange occurred: attempted to pre-cluster a node with zero relationships!',
+                        type: MessageType.Error
+                    }
+                );
+                return;
+            }
+
+            // When the last relationship is finished clustering, emit
             this.clusterCreatedSource.asObservable().pipe(
                 skip(this.openClusteringRequests + newClusterCount - 1),
                 first(),
@@ -158,9 +172,13 @@ export class VisualizationCanvasComponent implements OnInit {
     referenceTableTooltipSelector: string;
     referenceTableTooltipOptions: Partial<Options>;
 
+    expandNodeForm: FormGroup;
+
     constructor(
         private contextMenuControlService: ContextMenuControlService,
+        private messageDialog: MessageDialog,
         private visService: VisualizationService,
+        private fb: FormBuilder,
     ) {
         this.sidenavOpened = false;
         this.sidenavEntity = null;
@@ -184,6 +202,12 @@ export class VisualizationCanvasComponent implements OnInit {
         this.clusters = new Map<string, string>();
         this.openClusteringRequests = 0;
         this.clusterCreatedSource = new Subject<boolean>();
+
+        this.expandNodeForm = this.fb.group({
+            Chemical: true,
+            Disease: true,
+            Gene: true,
+        });
     }
 
     ngOnInit() {
@@ -278,7 +302,11 @@ export class VisualizationCanvasComponent implements OnInit {
             this.collapseNeighbors(nodeRef);
         } else {
             // Need to request new data from the parent when nodes are expanded
-            this.expandNode.emit(nodeId);
+            const filterLabels = Object.keys(this.expandNodeForm.value).filter((key) => this.expandNodeForm.value[key]);
+            this.expandNode.emit({
+                nodeId,
+                filterLabels,
+            });
         }
     }
 
@@ -696,9 +724,13 @@ export class VisualizationCanvasComponent implements OnInit {
             duplicateNodeEdgePairs = this.createDuplicateNodesAndEdges(neighborNodesWithRel, relationship, node, direction);
         } catch (e) {
             console.log(e);
-            alert(
-                `An error occurred while trying to cluster node with ID ${node} on relationship ` +
-                `${relationship} in direction "${direction}". `
+            this.messageDialog.display(
+                {
+                    title: 'Clustering Error!',
+                    message: `An error occurred while trying to cluster node with ID ${node} on relationship ` +
+                    `${relationship} in direction "${direction}". `,
+                    type: MessageType.Error
+                }
             );
             return;
         }
