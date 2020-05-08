@@ -38,6 +38,7 @@ directory = path.realpath(path.dirname(__file__))
                     color='',
                     id='',
                     id_type='',
+                    id_hyperlink='',
                     links=Annotation.Meta.Links(),
                 ),
             ),
@@ -54,6 +55,7 @@ directory = path.realpath(path.dirname(__file__))
                     color='',
                     id='',
                     id_type='',
+                    id_hyperlink='',
                     links=Annotation.Meta.Links(),
                 ),
             ),
@@ -72,6 +74,7 @@ directory = path.realpath(path.dirname(__file__))
                     color='',
                     id='',
                     id_type='',
+                    id_hyperlink='',
                     links=Annotation.Meta.Links(),
                 ),
             ),
@@ -88,6 +91,7 @@ directory = path.realpath(path.dirname(__file__))
                     color='',
                     id='',
                     id_type='',
+                    id_hyperlink='',
                     links=Annotation.Meta.Links(),
                 ),
             ),
@@ -106,6 +110,7 @@ directory = path.realpath(path.dirname(__file__))
                     color='',
                     id='',
                     id_type='',
+                    id_hyperlink='',
                     links=Annotation.Meta.Links(),
                 ),
             ),
@@ -122,6 +127,7 @@ directory = path.realpath(path.dirname(__file__))
                     color='',
                     id='',
                     id_type='',
+                    id_hyperlink='',
                     links=Annotation.Meta.Links(),
                 ),
             ),
@@ -140,6 +146,7 @@ directory = path.realpath(path.dirname(__file__))
                     color='',
                     id='',
                     id_type='',
+                    id_hyperlink='',
                     links=Annotation.Meta.Links(),
                 ),
             ),
@@ -156,6 +163,7 @@ directory = path.realpath(path.dirname(__file__))
                     color='',
                     id='',
                     id_type='',
+                    id_hyperlink='',
                     links=Annotation.Meta.Links(),
                 ),
             ),
@@ -174,6 +182,7 @@ directory = path.realpath(path.dirname(__file__))
                     color='',
                     id='',
                     id_type='',
+                    id_hyperlink='',
                     links=Annotation.Meta.Links(),
                 ),
             ),
@@ -192,6 +201,7 @@ directory = path.realpath(path.dirname(__file__))
                     color='',
                     id='',
                     id_type='',
+                    id_hyperlink='',
                     links=Annotation.Meta.Links(),
                 ),
             ),
@@ -208,6 +218,7 @@ directory = path.realpath(path.dirname(__file__))
                     color='',
                     id='',
                     id_type='',
+                    id_hyperlink='',
                     links=Annotation.Meta.Links(),
                 ),
             ),
@@ -224,6 +235,44 @@ directory = path.realpath(path.dirname(__file__))
                     color='',
                     id='',
                     id_type='',
+                    id_hyperlink='',
+                    links=Annotation.Meta.Links(),
+                ),
+            ),
+        ]),
+        # adjacent intervals
+        (7, [
+            Annotation(
+                page_number=1,
+                keyword='word a',
+                lo_location_offset=17,
+                hi_location_offset=22,
+                keyword_length=6,
+                keywords=[''],
+                rects=[[1, 2]],
+                meta=Annotation.Meta(
+                    keyword_type='Genes',
+                    color='',
+                    id='',
+                    id_type='',
+                    id_hyperlink='',
+                    links=Annotation.Meta.Links(),
+                ),
+            ),
+            Annotation(
+                page_number=1,
+                keyword='a long word',
+                lo_location_offset=22,
+                hi_location_offset=32,
+                keyword_length=10,
+                keywords=[''],
+                rects=[[1, 2]],
+                meta=Annotation.Meta(
+                    keyword_type='Chemicals',
+                    color='',
+                    id='',
+                    id_type='',
+                    id_hyperlink='',
                     links=Annotation.Meta.Links(),
                 ),
             ),
@@ -265,6 +314,10 @@ def test_fix_conflicting_annotations(annotations_setup, index, annotations):
         assert annotations[0] not in fixed
         assert annotations[1] in fixed
         assert annotations[2] in fixed
+    elif index == 7:
+        # test adjacent intervals
+        assert len(fixed) == 1
+        assert fixed[0] == annotations[1]
 
 
 @pytest.mark.skip
