@@ -2,6 +2,8 @@ import attr
 
 from flask import Blueprint, request
 
+from typing import List
+
 from neo4japp.blueprints import GraphRequest
 from neo4japp.constants import *
 from neo4japp.database import get_neo4j_service_dao
@@ -26,6 +28,7 @@ class ReactionRequest(CamelDictMixin):
 @attr.s(frozen=True)
 class ExpandNodeRequest(CamelDictMixin):
     node_id: int = attr.ib()
+    filter_labels: List[str] = attr.ib()
     limit: int = attr.ib()
 
 
@@ -70,7 +73,7 @@ def load_regulatory_graph(req: GraphRequest):
 @jsonify_with_class(ExpandNodeRequest)
 def expand_graph_node(req: ExpandNodeRequest):
     neo4j = get_neo4j_service_dao()
-    node = neo4j.expand_graph(req.node_id, req.limit)
+    node = neo4j.expand_graph(req.node_id, req.filter_labels, req.limit)
     return SuccessResponse(result=node, status_code=200)
 
 
