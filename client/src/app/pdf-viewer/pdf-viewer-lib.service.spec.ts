@@ -7,7 +7,7 @@ describe('PdfViewerLibService', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({});
-    service = TestBed.inject(PdfViewerLibService);
+    service = TestBed.get(PdfViewerLibService);
   });
 
   it('should be created', () => {
