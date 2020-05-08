@@ -1,9 +1,8 @@
-from typing import Dict, List, Set, Tuple
+from typing import List
 
 from intervaltree import Interval, IntervalTree
 
 from neo4japp.data_transfer_objects import Annotation
-from neo4japp.util import compute_hash
 
 
 class AnnotationInterval(Interval):
@@ -12,48 +11,105 @@ class AnnotationInterval(Interval):
 
 
 class AnnotationIntervalTree(IntervalTree):
+    """Need to inherit like this because the IntervalTree returns
+    self.__init__ for each function. But it's not able to construct
+    a new tree correctly with our annotations data.
+
+    Also, in some cases we just want a new list of annotations.
+    """
     def __init__(self, intervals=None):
         super().__init__(intervals=intervals)
 
-    def split_overlaps(self):
-        """Finds all annotations with overlapping intervals."""
+    def merge_equals(
+        self,
+        data_reducer,
+        data_initializer=None,
+    ) -> List[Annotation]:
+        """Exactly identical just override to change return type.
+        See self.__init__ comment.
+
+        Merge all annotations with equal intervals based on
+        `data_reducer` function.
+        """
         if not self:
             return
 
-        bounds = sorted(self.boundary_table)
+        sorted_intervals = sorted(self.all_intervals)  # get sorted intervals
+        merged = []
+        # use mutable object to allow new_series() to modify it
+        current_reduced = [None]
+        higher = None  # iterating variable, which new_series() needs access to
 
-        new_ivs = set()
+        def new_series():
+            if data_initializer is None:
+                current_reduced[0] = higher.data
+                merged.append(higher)
+                return
+            else:  # data_initializer is not None
+                current_reduced[0] = copy(data_initializer)
+                current_reduced[0] = data_reducer(current_reduced[0], higher.data)
+                merged.append(Interval(higher.begin, higher.end, current_reduced[0]))
 
-        for lbound, ubound in zip(bounds[:-1], bounds[1:]):
-            for iv in self[lbound]:
-                new_ivs.add(Interval(lbound, ubound, iv.data))
+        for higher in sorted_intervals:
+            if merged:  # series already begun
+                lower = merged[-1]
+                if higher.range_matches(lower):  # should merge
+                    upper_bound = max(lower.end, higher.end)
+                    if data_reducer is not None:
+                        current_reduced[0] = data_reducer(current_reduced[0], higher.data)
+                    else:  # annihilate the data, since we don't know how to merge it
+                        current_reduced[0] = None
+                    merged[-1] = Interval(lower.begin, upper_bound, current_reduced[0])
+                else:
+                    new_series()
+            else:  # not merged; is first of Intervals to merge
+                new_series()
+        return [anno.data for anno in merged]
 
-        new_ivs = list(new_ivs)
-        processed: Dict[Tuple[int, int], List[Annotation]] = {}
-        returned_ivs: List[Annotation] = []
+    def merge_overlaps(
+        self,
+        data_reducer,
+        data_initializer=None,
+        strict=False,
+    ) -> List[Annotation]:
+        """Exactly identical just override to change return type.
+        See self.__init__ comment.
 
-        for iv in new_ivs:
-            interval = (iv.begin, iv.end)
-            if interval in processed:
-                processed[interval].append(iv.data)
-            else:
-                processed[interval] = [iv.data]
+        Merge all annotations with overlapping intervals based on
+        `data_reducer` function.
+        """
+        if not self:
+            return
 
-        processed_ivs: Set[str] = set()
+        sorted_intervals = sorted(self.all_intervals)  # get sorted intervals
+        merged = []
+        # use mutable object to allow new_series() to modify it
+        current_reduced = [None]
+        higher = None  # iterating variable, which new_series() needs access to
 
-        for _, annotations in processed.items():
-            if len(annotations) > 1:
-                for anno in annotations:
-                    # need to compute hash here because the interval tree
-                    # can return duplicate annotation
-                    # because it groups into a tuple based on overlapping intervals
-                    hashval = compute_hash(anno.to_dict())
-                    if hashval not in processed_ivs:
-                        returned_ivs.append(anno)
-                        processed_ivs.add(hashval)
+        def new_series():
+            if data_initializer is None:
+                current_reduced[0] = higher.data
+                merged.append(higher)
+                return
+            else:  # data_initializer is not None
+                current_reduced[0] = copy(data_initializer)
+                current_reduced[0] = data_reducer(current_reduced[0], higher.data)
+                merged.append(Interval(higher.begin, higher.end, current_reduced[0]))
 
-        return returned_ivs
-
-    def overlap(self, begin, end):
-        overlaps = super().overlap(begin, end)
-        return [overlap.data for overlap in list(overlaps)]
+        for higher in sorted_intervals:
+            if merged:  # series already begun
+                lower = merged[-1]
+                if (higher.begin < lower.end or
+                    not strict and higher.begin == lower.end):  # should merge
+                    upper_bound = max(lower.end, higher.end)
+                    if data_reducer is not None:
+                        current_reduced[0] = data_reducer(current_reduced[0], higher.data)
+                    else:  # annihilate the data, since we don't know how to merge it
+                        current_reduced[0] = None
+                    merged[-1] = Interval(lower.begin, upper_bound, current_reduced[0])
+                else:
+                    new_series()
+            else:  # not merged; is first of Intervals to merge
+                new_series()
+        return [anno.data for anno in merged]
