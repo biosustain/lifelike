@@ -6,4 +6,3 @@
 
 ## Get Started
 - See the Developer [FAQ](docs/faq.md)
-

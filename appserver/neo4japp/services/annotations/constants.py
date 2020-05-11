@@ -1,12 +1,6 @@
 from enum import Enum
 from neo4japp.constants import ANNOTATION_STYLES_DICT
 
-# these links are used in annotations and custom annotations
-NCBI_LINK = 'https://ncbi.nlm.nih.gov/gene/?term='
-UNIPROT_LINK = 'https://uniprot.org/uniprot/?sort=score&query='
-WIKIPEDIA_LINK = 'https://www.google.com/search?q=site:+wikipedia.org+'
-GOOGLE_LINK = 'https://www.google.com/search?q='
-
 PDF_NEW_LINE_THRESHOLD = .30
 PDF_CHARACTER_SPACING_THRESHOLD = .325
 COMMON_TWO_LETTER_WORDS = {
@@ -35,6 +29,7 @@ COMMON_MISC_WORDS = {
     'patch', 'membrane', 'walker', 'group', 'cluster',
     'protein', 'transporter', 'toxin', 'molecule', 'vitamin',
     'light', 'mixture', 'solution', 'other', 'unknown',
+    'collection',
 }
 
 COMMON_WORDS = set.union(*[
@@ -43,6 +38,8 @@ COMMON_WORDS = set.union(*[
     COMMON_FOUR_LETTER_WORDS,
     COMMON_MISC_WORDS,
 ])
+
+MISC_SYMBOLS_AND_CHARS = {'(c)'}
 
 TYPO_SYNONYMS = {
     # 'e coli': ['E. coli', 'Escherichia coli', 'Enterococcus coli'],
@@ -89,3 +86,30 @@ class EntityType(Enum):
     Proteins = 'Proteins'
     Species = 'Species'
     Phenotypes = 'Phenotypes'
+
+
+class DatabaseType(Enum):
+    Chebi = 'CHEBI'
+    Mesh = 'MESH'
+    Uniprot = 'UNIPROT'
+    Ncbi = 'NCBI'
+    Biocyc = 'BIOCYC'
+
+
+# these links are used in annotations and custom annotations
+# first are search links
+# then entity hyperlinks
+NCBI_LINK = 'https://www.ncbi.nlm.nih.gov/gene/?query='
+UNIPROT_LINK = 'https://www.uniprot.org/uniprot/?sort=score&query='
+WIKIPEDIA_LINK = 'https://www.google.com/search?q=site:+wikipedia.org+'
+GOOGLE_LINK = 'https://www.google.com/search?q='
+ENTITY_HYPERLINKS = {
+    DatabaseType.Chebi.value: 'https://www.ebi.ac.uk/chebi/searchId.do?chebiId=',
+    DatabaseType.Mesh.value: 'https://www.ncbi.nlm.nih.gov/mesh/',
+    DatabaseType.Uniprot.value: 'https://www.uniprot.org/uniprot/?sort=score&query=',
+    DatabaseType.Ncbi.value: {
+        EntityType.Genes.value: 'https://www.ncbi.nlm.nih.gov/gene/',
+        EntityType.Species.value: 'https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=',
+    },
+    DatabaseType.Biocyc.value: '',
+}

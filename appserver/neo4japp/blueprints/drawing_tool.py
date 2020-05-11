@@ -230,19 +230,6 @@ def get_references(pdf_object):
 
 
 def process(data_source, format='pdf'):
-    colormap = {
-        'disease': "#FF9800",
-        'species': '#0277BD',
-        'chemical': '#4CAF50',
-        'gene': '#673AB7',
-        'study': '#17BECF',
-        'observation': '#D62728',
-        'entity': '#7F7F7F',
-        'mutation': '#4CAF50',
-        'protein': '#BCBD22',
-        'pathway': '#E377C2',
-        'phenotype': '#EDC949'
-    }
     json_graph = data_source.graph
     graph_attr = [('margin', '3')]
     if format == 'png':

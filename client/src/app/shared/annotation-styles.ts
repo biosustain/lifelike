@@ -19,6 +19,9 @@ const PROTEIN = '#bcbd22';
 const PATHWAY = '#e377c2';
 const PHENOTYPE = '#edc949';
 
+const NOTE  = '#edc949';
+const MAP = '#0277bd';
+
 const ENTITY = '#7f7f7f';
 const LINK = '#7f7f7f';
 
@@ -32,101 +35,108 @@ const ASSOCIATION = '#d7d9f8';
 const annotationTypes = [{
     label: 'gene',
     color: GENE,
-    background: '#d0c1eb'
   },
   {
     label: 'disease',
     color: DISEASE,
-    background: '#ffe0b2'
   },
   {
     label: 'chemical',
     color: CHEMICAL,
-    background: '#c8e7ca'
   },
   {
     label: 'mutation',
     color: MUTATION,
-    background: '#d6c1ba'
   },
   {
     label: 'species',
     color: SPECIES,
-    background: '#a0dafd'
   },
   {
     label: 'company',
     color: COMPANY,
-    background: '#f3bdbe'
   },
   {
     label: 'study',
     color: STUDY,
-    background: '#b3f0f6'
   },
   {
     label: 'protein',
     color: PROTEIN,
-    background: '#f1f1b6'
   },
   {
     label: 'pathway',
     color: PATHWAY,
-    background: '#f6d6ec'
   },
   {
     label: 'phenotype',
     color: PHENOTYPE,
-    background: '#f9eec8'
   },
   {
     label: 'link',
     color: LINK,
-    background: '#d8d8d8',
   },
   {
     label: 'entity',
     color: ENTITY,
-    background: '#d8d8d8'
+  },
+  {
+    label: 'map',
+    color: MAP,
+    iconCode: '\uf279'
+  },
+  {
+    label: 'note',
+    color: NOTE,
+    iconCode: '\uf249'
   },
   // Non-Entity types
   {
     label: 'correlation',
-    color: CORRELATION,
-    background: '#fff'
+    background: CORRELATION,
   },
   {
     label: 'cause',
-    color: CAUSE,
-    background: '#fff'
+    background: CAUSE,
   },
   {
     label: 'effect',
-    color: EFFECT,
-    background: '#fff'
+    background: EFFECT,
   },
   {
     label: 'observation',
-    color: OBSERVATION,
-    background: '#fff'
+    background: OBSERVATION,
   },
   {
     label: 'association',
-    color: ASSOCIATION,
-    background: '#fff'
+    background: ASSOCIATION,
   },
 ];
 
-function groupStyle(color) {
-  return {
+function groupStyle(ann) {
+  const gStyle: any = {
     borderWidth: 1,
     color: {
-      background: '#fff'
+      background: ann.background || '#FFF',
+      border: ann.border || '#2B7CE9'
     },
     font: {
-      color
+      color: ann.color || '#000'
     }
   };
+
+  if (ann.iconCode) {
+    gStyle.icon = {
+      face: 'FontAwesome',
+      weight: 'bold',
+      code: ann.iconCode,
+      size: 50,
+      color: ann.color
+    };
+    gStyle.shape = 'icon';
+  }
+
+  return gStyle;
 }
 
 /**
@@ -138,7 +148,7 @@ function visJsGroupStyleFactory() {
 
     annotationTypes.map(
         ann => {
-            groupStyleDict[ann.label] = groupStyle(ann.color);
+            groupStyleDict[ann.label] = groupStyle(ann);
         }
     );
 
