@@ -8,7 +8,6 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 describe('PdfViewerLibComponent', () => {
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [PdfViewerLibComponent],
       imports: [
         FormsModule,
         BrowserAnimationsModule,
