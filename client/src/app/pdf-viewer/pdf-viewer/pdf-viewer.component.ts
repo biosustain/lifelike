@@ -352,8 +352,6 @@ export class PdfViewerComponent
     return new Promise((resolve, reject) => {
       this.internalPdf.getPage(pageNum)
       .then((page: PDFPageProxy) => {
-        console.log('pagenum is ', pageNum);
-        console.log('loaded view ', page.view);
         const rotation = this.internalRotation || page.rotate;
         const viewPort: PDFPageViewport =
           (page as any).getViewport({
