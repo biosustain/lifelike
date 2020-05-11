@@ -15,10 +15,10 @@ export interface Meta {
   color: string;
   id?: string;
   idType?: string;
+  idHyperlink?: string;
   isCustom?: boolean;
   allText?: string;
   links?: Links;
-  hyperlink?: string;
 }
 
 export type Rect = number[];
