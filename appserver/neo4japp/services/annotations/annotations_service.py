@@ -47,6 +47,8 @@ class AnnotationsService:
 
         self.lmdb_session = lmdb_session
 
+        self.hybrid_neo4j_postgres_service = get_hybrid_neo4j_postgres_service()
+
         # for word tokens that are typos
         self.correct_synonyms: Dict[str, str] = {}
 
@@ -512,8 +514,7 @@ class AnnotationsService:
 
         tokens_lowercased = set(tokens.keys())
 
-        hybrid_neo4j_postgres_service = get_hybrid_neo4j_postgres_service()
-        match_result = hybrid_neo4j_postgres_service.get_gene_to_organism_match_result(
+        match_result = self.hybrid_neo4j_postgres_service.get_gene_to_organism_match_result(
             genes=list(tokens.keys()),
             matched_organism_ids=list(organism_frequency.keys()),
         )
