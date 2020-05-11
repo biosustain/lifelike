@@ -8,6 +8,7 @@ def test_expand_node_gets_no_results_for_node_with_no_relationships(
     expand_query_result = neo4j_service_dao.expand_graph(
         node_id=gas_gangrene.identity,
         limit=1,
+        filter_labels=['Chemical', 'Disease', 'Gene'],
     )
 
     assert expand_query_result.get('nodes', None) is not None
@@ -24,6 +25,7 @@ def test_expand_node_can_limit_results(
     expand_query_result = neo4j_service_dao.expand_graph(
         node_id=gas_gangrene_with_associations_and_references.identity,
         limit=1,
+        filter_labels=['Chemical', 'Disease', 'Gene'],
     )
 
     assert expand_query_result.get('nodes', None) is not None

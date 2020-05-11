@@ -19,13 +19,16 @@ import {
     VisNode,
     VisEdge,
     ExpandNodeResult,
+    ExpandNodeRequest,
 } from 'app/interfaces';
 import {
     NODE_EXPANSION_LIMIT,
     NODE_EXPANSION_CLUSTERING_RECOMMENDATION,
 } from 'app/shared/constants';
 import { AutoClusterDialogComponent } from 'app/visualization/components/auto-cluster-dialog/auto-cluster-dialog.component';
-
+import {
+    NoResultsFromExpandDialogComponent
+} from 'app/visualization/components/no-results-from-expand-dialog/no-results-from-expand-dialog.component';
 
 import { VisualizationService } from '../../services/visualization.service';
 
@@ -160,6 +163,13 @@ export class VisualizationComponent implements OnInit {
         dialogInstance.loadingClusters = true;
     }
 
+    openNoResultsFromExpandDialog() {
+        this.dialog.open(NoResultsFromExpandDialogComponent, {
+            width: '250px',
+            height: '120px',
+        });
+    }
+
     finishedPreClustering(event: boolean) {
         this.autoClusterDialogRef.close();
     }
@@ -217,11 +227,24 @@ export class VisualizationComponent implements OnInit {
         return {...e, label: e.data.description, arrows: 'to'};
     }
 
-    expandNode(nodeId: number) {
-        this.visService.expandNode(nodeId, NODE_EXPANSION_LIMIT).subscribe((r: Neo4jResults) => {
+    expandNode(expandNodeRequest: ExpandNodeRequest) {
+        const {nodeId, filterLabels } = expandNodeRequest;
+
+        if (filterLabels.length === 0) {
+            this.openNoResultsFromExpandDialog();
+            return;
+        }
+
+        this.visService.expandNode(nodeId, filterLabels, NODE_EXPANSION_LIMIT).subscribe((r: Neo4jResults) => {
             const nodeRef = this.nodes.get(nodeId) as VisNode;
             const visJSDataFormat = this.convertToVisJSFormat(r);
             let { edges, nodes } = visJSDataFormat;
+
+            // If the expanded node has no connecting relationships, notify the user
+            if (edges.length === 0) {
+                this.openNoResultsFromExpandDialog();
+                return;
+            }
 
             // Sets the node expand state to true
             nodes = nodes.map((n) => {
