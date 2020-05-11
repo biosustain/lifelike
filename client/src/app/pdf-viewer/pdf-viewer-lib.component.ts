@@ -263,8 +263,8 @@ export class PdfViewerLibComponent implements OnInit, AfterViewInit {
   prepareTooltipContent(an: Annotation): string {
     const base = [`Type: ${an.meta.type}`];
     if (an.meta.id) {
-      if (an.meta.hyperlink) {
-        base.push(`Id: <a href=${an.meta.hyperlink} target="_blank">${an.meta.id}</a>`);
+      if (an.meta.idHyperlink) {
+        base.push(`Id: <a href=${an.meta.idHyperlink} target="_blank">${an.meta.id}</a>`);
       } else {
         base.push(`Id: ${an.meta.id}`);
       }
