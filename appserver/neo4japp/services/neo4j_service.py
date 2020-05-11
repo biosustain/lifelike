@@ -155,8 +155,22 @@ class Neo4JService(GraphBaseDao):
             return self._query_neo4j(query)
         return None
 
-    def expand_graph(self, node_id: str, limit: int):
-        query = self.get_expand_query(node_id, limit)
+    def get_connected_nodes(self, node_id: str, filter_labels: List[str], limit: int):
+        query = self.get_connected_nodes_query(filter_labels)
+
+        results = self.graph.run(
+            query,
+            {
+                'node_id': node_id,
+                'limit': limit
+            }
+        ).data()
+
+        return [result['node_id'] for result in results]
+
+    def expand_graph(self, node_id: str, filter_labels: List[str], limit: int):
+        connected_node_ids = self.get_connected_nodes(node_id, filter_labels, limit)
+        query = self.get_expand_query(node_id, connected_node_ids)
         return self._query_neo4j(query)
 
     def get_snippets_from_edge(self, edge: VisEdge):
@@ -267,6 +281,36 @@ class Neo4JService(GraphBaseDao):
         return GetClusterGraphDataResult(
             results=results,
         )
+
+    def get_genes_to_organisms(
+        self,
+        genes: List[str],
+        organisms: List[str],
+    ) -> Dict[str, Dict[str, str]]:
+        gene_to_organism_map: Dict[str, Dict[str, str]] = dict()
+
+        query = self.get_gene_to_organism_query()
+        result = self.graph.run(
+            query,
+            {
+                'genes': genes,
+                'organisms': organisms,
+            }
+        ).data()
+
+        for row in result:
+            gene_name: str = row['gene']
+            organism_id: str = row['organism_id']
+            # For now just get the first gene in the list of matches, no way for us to infer which
+            # to use
+            gene_id: str = row['genes_in_organism_with_name'][0]
+
+            if gene_to_organism_map.get(gene_name, None) is not None:
+                gene_to_organism_map[gene_name][organism_id] = gene_id
+            else:
+                gene_to_organism_map[gene_name] = {organism_id: gene_id}
+
+        return gene_to_organism_map
 
     def load_reaction_graph(self, biocyc_id: str):
         query = self.get_reaction_query(biocyc_id)
@@ -461,14 +505,36 @@ class Neo4JService(GraphBaseDao):
             COALESCE(relationships(p1), []) + COALESCE(relationships(p2), []) as relationships
         """.format(**args)
 
-    # TODO: Allow flexible limits on nodes; enable this in the blueprints
-    def get_expand_query(self, node_id: str, limit: int = 50):
+    def get_connected_nodes_query(self, filter_labels: List[str]):
+        if len(filter_labels) == 0:
+            query = """
+                MATCH (n)-[:ASSOCIATED]-(s)
+                WHERE ID(n) = $node_id
+                RETURN DISTINCT ID(s) as node_id
+                LIMIT $limit
+            """
+        else:
+            label_filter_str = ''
+            for label in filter_labels[:-1]:
+                label_filter_str += f's:{label} OR '
+            label_filter_str += f's:{filter_labels[-1]}'
+
+            query = """
+                MATCH (n)-[:ASSOCIATED]-(s)
+                WHERE ID(n) = $node_id AND ({})
+                RETURN DISTINCT ID(s) as node_id
+                LIMIT $limit
+            """.format(label_filter_str)
+        return query
+
+    def get_expand_query(self, node_id: str, connected_node_ids: List[str]):
         query = """
-            MATCH (n)-[l:ASSOCIATED]-(s) WHERE ID(n) = {}
-            WITH n, s, l
-            LIMIT {}
-            return collect(n) + collect(s) as nodes, collect(l) as relationships
-        """.format(node_id, limit)
+                MATCH (n)-[l:ASSOCIATED]-(s)
+                WHERE ID(n) = {} AND ID(s) IN {}
+                WITH n, s, l
+                return collect(n) + collect(s) as nodes, collect(l) as relationships
+            """.format(node_id, connected_node_ids)
+
         return query
 
     def get_snippets_from_edge_query(self, from_node: int, to_node: int, association: str):
@@ -500,7 +566,19 @@ class Neo4JService(GraphBaseDao):
             return [n]+ COALESCE(nodes(p1), [])+ COALESCE(nodes(p2), []) as nodes,
             COALESCE(relationships(p1), []) + COALESCE(relationships(p2), []) as relationships
         """.format(biocyc_id)
-        print(query)
+        return query
+
+    def get_gene_to_organism_query(self):
+        """Retrieves a list of all the genes with a given name
+        in a particular organism."""
+        query = """
+            MATCH (g:Gene)-[:HAS_TAXONOMY]->(o:Taxonomy)
+            WHERE
+                toLower(g.name) IN $genes AND
+                o.id in $organisms
+            WITH toLower(g.name) as gene, g.id as gene_id, o.id as organism_id
+            RETURN gene, collect(gene_id) AS genes_in_organism_with_name, organism_id
+        """
         return query
 
     def search_for_relationship_with_label_and_properties(

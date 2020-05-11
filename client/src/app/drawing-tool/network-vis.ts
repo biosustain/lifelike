@@ -6,7 +6,7 @@ import {
   GraphSelectionData
 } from './services/interfaces';
 import { Network, Options, DataSet } from 'vis-network';
-import { annotationTypes, visJsGroupStyleFactory } from '../shared/annotation-styles';
+import { visJsGroupStyleFactory } from '../shared/annotation-styles';
 
 /**
  * A class wrapped around the instatiation of
@@ -167,7 +167,8 @@ export class NetworkVis {
     n.data = {
       source: n.source || '',
       detail: n.detail || '',
-      hyperlinks: n.hyperlinks || []
+      search: n.search || [],
+      hyperlink: n.hyperlink || ''
     };
 
     this.visNodes.add([n]);
