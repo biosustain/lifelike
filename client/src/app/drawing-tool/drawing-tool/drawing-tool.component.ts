@@ -82,8 +82,6 @@ import {
 import { annotationTypes } from 'app/shared/annotation-styles';
 import {ExportModalComponent} from './export-modal/export-modal.component';
 import {MatDialog, MatDialogConfig} from '@angular/material/dialog';
-import { FileSelectionDialogComponent } from '../../file-browser/file-selection-dialog.component';
-import { PdfFile } from '../../interfaces/pdf-files.interface';
 
 interface Update {
   event: string;
@@ -186,6 +184,8 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
   formDataSubscription: Subscription = null;
   pdfDataSubscription: Subscription = null;
 
+  // Prevent the user from leaving the page
+  // if work is left un-saved
   @HostListener('window:beforeunload')
   canDeactivate(): Observable < boolean > | boolean {
     return this.saveState ? true : confirm(
@@ -1134,6 +1134,9 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
       x: coords.x,
       y: coords.y
     });
+
+    console.log(clipboardContent);
+
     const cmd = {
       action: 'add node',
       data: {
