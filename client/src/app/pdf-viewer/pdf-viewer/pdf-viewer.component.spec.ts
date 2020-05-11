@@ -18,7 +18,7 @@ describe('AppComponent', () => {
   let testApp: TestComponent;
 
   function setPdf(numPages: number) {
-    (pdfViewer as any)._pdf = {
+    (pdfViewer as any).internalPdf = {
       numPages,
       destroy: () => {}
     };
@@ -91,7 +91,7 @@ describe('AppComponent', () => {
     it('should check default url', () => {
       const PDFJS = require('pdfjs-dist/build/pdf');
 
-      expect((pdfViewer as any)._cMapsUrl).toBe(
+      expect((pdfViewer as any).internalCMapsUrl).toBe(
         `https://unpkg.com/pdfjs-dist@${(PDFJS as any).version}/cmaps/`
       );
     });
