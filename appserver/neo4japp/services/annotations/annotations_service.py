@@ -226,6 +226,8 @@ class AnnotationsService:
                     start_lower_y = lower_y
                     end_upper_x = upper_x
                     end_upper_y = upper_y
+
+                    keyword += curr_page_coor_obj[pos_idx].get_text()
                 else:
                     if lower_y != start_lower_y:
                         diff = abs(lower_y - start_lower_y)
@@ -335,7 +337,7 @@ class AnnotationsService:
         return Annotation(
             page_number=token_positions.page_number,
             rects=[pos.positions for pos in keyword_positions],  # type: ignore
-            keywords=[k.value for k in keyword_positions],
+            keywords=[link_search_term],
             keyword=link_search_term,
             keyword_length=len(link_search_term),
             lo_location_offset=keyword_starting_idx,
