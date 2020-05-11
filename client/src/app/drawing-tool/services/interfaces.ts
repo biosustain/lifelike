@@ -119,7 +119,7 @@ interface Meta {
   color: string;
   id?: string;
   idType?: string;
-  idHyperlink?: string,
+  idHyperlink?: string;
   isCustom?: boolean;
   allText?: string;
   links?: Links;
