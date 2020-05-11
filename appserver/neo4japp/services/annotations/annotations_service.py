@@ -33,6 +33,7 @@ from neo4japp.data_transfer_objects import (
     PDFTokenPositions,
     PDFTokenPositionsList,
 )
+from neo4japp.database import get_hybrid_neo4j_postgres_service
 from neo4japp.util import compute_hash
 
 
@@ -44,6 +45,8 @@ class AnnotationsService:
         self.regex_for_floats = r'^-?\d+(?:\.\d+)?$'
 
         self.lmdb_session = lmdb_session
+
+        self.hybrid_neo4j_postgres_service = get_hybrid_neo4j_postgres_service()
 
         # for word tokens that are typos
         self.correct_synonyms: Dict[str, str] = {}
@@ -272,6 +275,74 @@ class AnnotationsService:
             )
         )
 
+    def _create_annotation_object(
+        self,
+        token_positions: PDFTokenPositions,
+        coor_obj_per_pdf_page: Dict[int, List[Union[LTChar, LTAnno]]],
+        cropbox_per_page: Dict[int, Tuple[int, int]],
+        token_type: str,
+        entity: dict,
+        entity_id: str,
+        color: str,
+    ):
+        # create list of positions boxes
+        curr_page_coor_obj = coor_obj_per_pdf_page[
+            token_positions.page_number]
+        cropbox = cropbox_per_page[token_positions.page_number]
+
+        keyword_positions: List[Annotation.TextPosition] = []
+        char_indexes = list(token_positions.char_positions.keys())
+
+        self._create_keyword_objects(
+            curr_page_coor_obj=curr_page_coor_obj,
+            indexes=char_indexes,
+            keyword_positions=keyword_positions,
+            cropbox=cropbox,
+        )
+
+        keyword_starting_idx = char_indexes[0]
+        keyword_ending_idx = char_indexes[-1]
+        link_search_term = entity['name']
+        if entity['id_type'] != DatabaseType.Ncbi.value:
+            hyperlink = ENTITY_HYPERLINKS[entity['id_type']]
+        else:
+            # type ignore, see https://github.com/python/mypy/issues/8277
+            hyperlink = ENTITY_HYPERLINKS[entity['id_type']][token_type]  # type: ignore
+
+        if entity['id_type'] == DatabaseType.Mesh.value:
+            hyperlink += entity_id[5:]  # type: ignore
+        else:
+            hyperlink += entity_id  # type: ignore
+
+        meta = Annotation.Meta(
+            keyword_type=token_type,
+            color=color,
+            id=entity_id,
+            id_type=entity['id_type'],
+            id_hyperlink=cast(str, hyperlink),
+            links=Annotation.Meta.Links(
+                ncbi=NCBI_LINK + link_search_term,
+                uniprot=UNIPROT_LINK + link_search_term,
+                wikipedia=WIKIPEDIA_LINK + link_search_term,
+                google=GOOGLE_LINK + link_search_term,
+            ),
+        )
+
+        # the `keywords` property here is to allow us to know
+        # what coordinates map to what text in the PDF
+        # we want to actually use the real name inside LMDB
+        # for the `keyword` and `keyword_length` properties
+        return Annotation(
+            page_number=token_positions.page_number,
+            rects=[pos.positions for pos in keyword_positions],  # type: ignore
+            keywords=[k.value for k in keyword_positions],
+            keyword=link_search_term,
+            keyword_length=len(link_search_term),
+            lo_location_offset=keyword_starting_idx,
+            hi_location_offset=keyword_ending_idx,
+            meta=meta,
+        )
+
     def _get_annotation(
         self,
         tokens: Dict[str, List[PDFTokenPositions]],
@@ -338,72 +409,51 @@ class AnnotationsService:
                     entity_id = entity[id_str]
 
                 if common_name_count == 1:
-                    # create list of positions boxes
-                    curr_page_coor_obj = coor_obj_per_pdf_page[
-                        token_positions.page_number]
-                    cropbox = cropbox_per_page[token_positions.page_number]
-
-                    keyword_positions: List[Annotation.TextPosition] = []
-                    char_indexes = list(token_positions.char_positions.keys())
-
-                    self._create_keyword_objects(
-                        curr_page_coor_obj=curr_page_coor_obj,
-                        indexes=char_indexes,
-                        keyword_positions=keyword_positions,
-                        cropbox=cropbox,
-                    )
-
-                    keyword_starting_idx = char_indexes[0]
-                    keyword_ending_idx = char_indexes[-1]
-                    link_search_term = entity['name']
-                    if entity['id_type'] != DatabaseType.Ncbi.value:
-                        hyperlink = ENTITY_HYPERLINKS[entity['id_type']]
-                    else:
-                        # type ignore, see https://github.com/python/mypy/issues/8277
-                        hyperlink = ENTITY_HYPERLINKS[entity['id_type']][token_type]  # type: ignore
-
-                    if entity['id_type'] == DatabaseType.Mesh.value:
-                        hyperlink += entity_id[5:]  # type: ignore
-                    else:
-                        hyperlink += entity_id  # type: ignore
-
-                    meta = Annotation.Meta(
-                        keyword_type=token_type,
+                    matches.append(self._create_annotation_object(
+                        coor_obj_per_pdf_page=coor_obj_per_pdf_page,
+                        cropbox_per_page=cropbox_per_page,
+                        token_positions=token_positions,
+                        token_type=token_type,
+                        entity=entity,
+                        entity_id=entity_id,
                         color=color,
-                        id=entity_id,
-                        id_type=entity['id_type'],
-                        id_hyperlink=cast(str, hyperlink),
-                        links=Annotation.Meta.Links(
-                            ncbi=NCBI_LINK + link_search_term,
-                            uniprot=UNIPROT_LINK + link_search_term,
-                            wikipedia=WIKIPEDIA_LINK + link_search_term,
-                            google=GOOGLE_LINK + link_search_term,
-                        ),
-                    )
-
-                    # the `keywords` property here is to allow us to know
-                    # what coordinates map to what text in the PDF
-                    # we want to actually use the real name inside LMDB
-                    # for the `keyword` and `keyword_length` properties
-                    matches.append(
-                        Annotation(
-                            page_number=token_positions.page_number,
-                            rects=[pos.positions for pos in keyword_positions],  # type: ignore
-                            keywords=[k.value for k in keyword_positions],
-                            keyword=link_search_term,
-                            keyword_length=len(link_search_term),
-                            lo_location_offset=keyword_starting_idx,
-                            hi_location_offset=keyword_ending_idx,
-                            meta=meta,
-                        )
-                    )
+                    ))
                 else:
                     unwanted_matches.add(word)
         return matches, unwanted_matches
 
+    def _get_gene_id_for_annotation(
+        self,
+        word: str,
+        match_result: Dict[str, Dict[str, str]],
+        organism_frequency: Dict[str, int],
+    ):
+        """Currently using a postgres lookup table to filter out keywords that don't
+        match a curated slice of the main dataset, and to map synonyms to the
+        correct gene. This postgres table currently has unique gene names, so we
+        expect a 1:1 match of gene to organism. In the future, we can't always
+        assume this to be the case, as some organism strains have matching gene names.
+
+        If a gene was matched to at least one organism in the document,
+        we have to get the corresponding gene data. If a gene matches
+        more than one organism, we use the one with the highest
+        frequency within the document. We may fine-tune this later.
+        """
+        organism_to_gene_pairs = match_result[word]
+        most_frequent_organism = str()
+        greatest_frequency = 0
+
+        for organism_id in organism_to_gene_pairs.keys():
+            if organism_frequency[organism_id] > greatest_frequency:
+                greatest_frequency = organism_frequency[organism_id]
+                most_frequent_organism = organism_id
+
+        return organism_to_gene_pairs[most_frequent_organism]
+
     def _annotate_genes(
         self,
-        entity_id_str: str,
+        matched_organism_ids: List[str],
+        organism_frequency: Dict[str, int],
         coor_obj_per_pdf_page: Dict[int, List[Union[LTChar, LTAnno]]],
         cropbox_per_page: Dict[int, Tuple[int, int]],
     ) -> Tuple[List[Annotation], Set[str]]:
@@ -424,7 +474,6 @@ class AnnotationsService:
             2. More than one organism match for a given gene
             3. No organism matches for a given gene
         """
-
         tokens: Dict[str, List[PDFTokenPositions]] = self.matched_genes
         token_type: str = EntityType.Genes.value
         color: str = EntityColor.Genes.value
@@ -436,21 +485,13 @@ class AnnotationsService:
 
         tokens_lowercased = set(tokens.keys())
 
-        def get_gene_match_result(
-            genes: List[str],
-        ) -> Dict[str, str]:
-            """Returns a map of gene name to gene id."""
-            from neo4japp.database import get_organism_gene_match_service
-            organism_gene_match_service = get_organism_gene_match_service()
-
-            return organism_gene_match_service.get_genes(genes)
-
-        match_result = get_gene_match_result(list(tokens.keys()))
+        match_result = self.hybrid_neo4j_postgres_service.get_gene_to_organism_match_result(
+            genes=list(tokens.keys()),
+            matched_organism_ids=matched_organism_ids,
+        )
 
         for word, token_positions_list in tokens.items():
-            # If the "gene" is not matched to any organism in our postgres table, ignore it.
-            # In the future, we will want to check the organisms that actually appear in the
-            # paper, but for now we just check postgres for the known organisms.
+            # If the "gene" is not matched to any organism in the paper, ignore it
             if word not in match_result.keys():
                 continue
 
@@ -480,68 +521,21 @@ class AnnotationsService:
                     common_name_count = 1
 
                 if common_name_count == 1:
-                    # Currently using a postgres lookup table to filter out keywords that don't
-                    # match a curated slice of the main dataset, and to map synonyms to the
-                    # correct gene. This postgres table currently has unique gene names, so we
-                    # expect a 1:1 match of gene to organism. In the future, we can't always
-                    # assume this to be the case, as some organism strains have matching gene names.
-                    entity_id = match_result[word]
-
-                    # create list of positions boxes
-                    curr_page_coor_obj = coor_obj_per_pdf_page[
-                        token_positions.page_number]
-                    cropbox = cropbox_per_page[token_positions.page_number]
-
-                    keyword_positions: List[Annotation.TextPosition] = []
-                    char_indexes = list(token_positions.char_positions.keys())
-
-                    self._create_keyword_objects(
-                        curr_page_coor_obj=curr_page_coor_obj,
-                        indexes=char_indexes,
-                        keyword_positions=keyword_positions,
-                        cropbox=cropbox,
+                    entity_id = self._get_gene_id_for_annotation(
+                        word=word,
+                        match_result=match_result,
+                        organism_frequency=organism_frequency
                     )
 
-                    keyword_starting_idx = char_indexes[0]
-                    keyword_ending_idx = char_indexes[-1]
-                    link_search_term = entity['name']
-                    if entity['id_type'] != DatabaseType.Ncbi.value:
-                        hyperlink = ENTITY_HYPERLINKS[entity['id_type']]
-                    else:
-                        # type ignore, see https://github.com/python/mypy/issues/8277
-                        hyperlink = ENTITY_HYPERLINKS[entity['id_type']][token_type]  # type: ignore
-
-                    if entity['id_type'] == DatabaseType.Mesh.value:
-                        hyperlink += entity_id[5:]  # type: ignore
-                    else:
-                        hyperlink += entity_id  # type: ignore
-
-                    meta = Annotation.Meta(
-                        keyword_type=token_type,
+                    matches.append(self._create_annotation_object(
+                        coor_obj_per_pdf_page=coor_obj_per_pdf_page,
+                        cropbox_per_page=cropbox_per_page,
+                        token_positions=token_positions,
+                        token_type=token_type,
+                        entity=entity,
+                        entity_id=entity_id,
                         color=color,
-                        id=entity_id,
-                        id_type=entity['id_type'],
-                        id_hyperlink=cast(str, hyperlink),
-                        links=Annotation.Meta.Links(
-                            ncbi=NCBI_LINK + link_search_term,
-                            uniprot=UNIPROT_LINK + link_search_term,
-                            wikipedia=WIKIPEDIA_LINK + link_search_term,
-                            google=GOOGLE_LINK + link_search_term,
-                        ),
-                    )
-
-                    matches.append(
-                        Annotation(
-                            page_number=token_positions.page_number,
-                            rects=[pos.positions for pos in keyword_positions],  # type: ignore
-                            keywords=[k.value for k in keyword_positions],
-                            keyword=link_search_term,
-                            keyword_length=len(link_search_term),
-                            lo_location_offset=keyword_starting_idx,
-                            hi_location_offset=keyword_ending_idx,
-                            meta=meta,
-                        )
-                    )
+                    ))
                 else:
                     unwanted_matches.add(word)
         return matches, unwanted_matches
@@ -711,7 +705,8 @@ class AnnotationsService:
         )
 
         matched_genes, unwanted_genes = self._annotate_genes(
-            entity_id_str=EntityIdStr.Genes.value,
+            matched_organism_ids=[annotation.meta.id for annotation in matched_species],
+            organism_frequency=self._get_entity_frequency(matched_species),
             coor_obj_per_pdf_page=tokens.coor_obj_per_pdf_page,
             cropbox_per_page=tokens.cropbox_per_page,
         )
