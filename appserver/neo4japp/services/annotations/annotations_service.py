@@ -337,6 +337,12 @@ class AnnotationsService:
         return Annotation(
             page_number=token_positions.page_number,
             rects=[pos.positions for pos in keyword_positions],  # type: ignore
+            # NOTE and TODO: keywords field shouldn't be used
+            # by pdf-viewer to create the text for new nodes
+            # on the drawing canvas...
+            # it's used to know what part of keyword maps to which
+            # coordinate pair in `rects` for debugging...
+            # pdf-viewer should use field `keyword` instead
             keywords=[link_search_term],
             keyword=link_search_term,
             keyword_length=len(link_search_term),
