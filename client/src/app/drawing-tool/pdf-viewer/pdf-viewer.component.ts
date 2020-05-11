@@ -218,6 +218,11 @@ export class PdfViewerComponent implements OnDestroy {
     });
   }
 
+  /**
+   * Open pdf by file_id along with location to scroll to
+   * @param file - represent the pdf to open
+   * @param loc - the location of the annotation we want to scroll to
+   */
   openPdf(file: PdfFile, loc: Location = null) {
     if (this.currentFileId === file.file_id) {
       if (loc) {
