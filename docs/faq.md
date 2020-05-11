@@ -14,6 +14,7 @@
   - [How do I run unit tests for Angular?](#how-do-i-run-unit-tests-for-angular)
   - [How do I run linting checks?](#how-do-i-run-linting-checks)
   - [How do I create a postgres schema diagram?](#how-do-i-create-a-postgres-schema-diagram)
+  - [Where can I find common design patterns?](#where-can-i-find-common-design-patterns)
 
 ## How do I set up my developer environment?
 To build run the application, first create the docker images
@@ -153,3 +154,7 @@ eralchemy -i 'postgresql+psycopg2://postgres:postgres@localhost:5431/postgres' -
 ```
 
 4. (Optional) Commit the schema update to the repository
+
+
+## Where can I find common design patterns?
+https://github.com/SBRG/kg-prototypes/wiki
