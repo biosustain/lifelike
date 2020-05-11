@@ -264,7 +264,7 @@ export class PdfViewerLibComponent implements OnInit, AfterViewInit {
     const base = [`Type: ${an.meta.type}`];
     if (an.meta.id) {
       if (an.meta.idHyperlink) {
-        base.push(`Id: <a href=${an.meta.idHyperlink} target="_blank">${an.meta.id}</a>`);
+        base.push(`Id: <a href=${encodeURI(an.meta.idHyperlink)} target="_blank">${an.meta.id}</a>`);
       } else {
         base.push(`Id: ${an.meta.id}`);
       }
