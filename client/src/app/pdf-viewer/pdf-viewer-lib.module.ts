@@ -8,14 +8,11 @@ import { PdfViewerModule } from './pdf-viewer/pdf-viewer.module';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { FlexLayoutModule } from '@angular/flex-layout';
-import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatSidenavModule } from '@angular/material/sidenav';
-import { MatDialogModule } from '@angular/material';
-import { MatChipsModule } from '@angular/material';
-import { MatSelectModule } from '@angular/material';
-import { MatInputModule } from '@angular/material';
+import { MatChipsModule, MatDialogModule, MatInputModule, MatSelectModule } from '@angular/material';
 import { MatButtonModule } from '@angular/material/button';
 
 @NgModule({
@@ -24,7 +21,7 @@ import { MatButtonModule } from '@angular/material/button';
     PdfViewerModule,
     CommonModule,
     FormsModule,
-    NoopAnimationsModule,
+    BrowserAnimationsModule,
     MatFormFieldModule,
     MatCheckboxModule,
     MatSidenavModule,
@@ -38,4 +35,5 @@ import { MatButtonModule } from '@angular/material/button';
   entryComponents: [AnnotationPanelComponent],
   exports: [PdfViewerLibComponent]
 })
-export class PdfViewerLibModule { }
+export class PdfViewerLibModule {
+}
