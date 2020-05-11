@@ -695,39 +695,93 @@ class AnnotationsService:
             cropbox_per_page=cropbox_per_page,
         )
 
+    def _update_entity_frequency_map(
+        self,
+        entity_frequency: Dict[str, int],
+        annotation: Annotation,
+    ) -> Dict[str, int]:
+        entity_id = annotation.meta.id
+        if entity_frequency.get(entity_id, None) is not None:
+            entity_frequency[entity_id] += 1
+        else:
+            entity_frequency[entity_id] = 1
+
+        return entity_frequency
+
     def _get_entity_frequency(
         self,
         annotations: List[Annotation],
     ) -> Dict[str, int]:
+        """Takes as input a list of annotation objects (intended to be of a single entity type).
+
+        Returns the frequency of each annotation entity within the document.
+        """
         entity_frequency: Dict[str, int] = dict()
         for annotation in annotations:
-            entity_id = annotation.meta.id
-            if entity_frequency.get(entity_id, None) is not None:
-                entity_frequency[entity_id] += 1
-            else:
-                entity_frequency[entity_id] = 1
+            entity_frequency = self._update_entity_frequency_map(
+                entity_frequency=entity_frequency,
+                annotation=annotation,
+            )
         return entity_frequency
+
+    def _update_entity_location_map(
+        self,
+        matched_entity_locations: Dict[int, Dict[str, List[Tuple[int, int]]]],
+        annotation: Annotation,
+    ) -> Dict[int, Dict[str, List[Tuple[int, int]]]]:
+        if matched_entity_locations.get(annotation.page_number, None) is not None:
+            if matched_entity_locations[annotation.page_number].get(annotation.meta.id, None) is not None:  # noqa
+                matched_entity_locations[annotation.page_number][annotation.meta.id].append(
+                    (annotation.lo_location_offset, annotation.hi_location_offset)
+                )
+            else:
+                matched_entity_locations[annotation.page_number][annotation.meta.id] = [
+                    (annotation.lo_location_offset, annotation.hi_location_offset)
+                ]
+        else:
+            matched_entity_locations[annotation.page_number] = {
+                annotation.meta.id: [(annotation.lo_location_offset, annotation.hi_location_offset)]
+            }
+        return matched_entity_locations
 
     def _get_entity_locations(
         self,
         annotations: List[Annotation],
     ) -> Dict[int, Dict[str, List[Tuple[int, int]]]]:
-        matched_organism_locations: Dict[int, Dict[str, List[Tuple[int, int]]]] = {}
-        for anno in annotations:
-            if matched_organism_locations.get(anno.page_number, None) is not None:
-                if matched_organism_locations[anno.page_number].get(anno.meta.id, None) is not None:
-                    matched_organism_locations[anno.page_number][anno.meta.id].append(
-                        (anno.lo_location_offset, anno.hi_location_offset)
-                    )
-                else:
-                    matched_organism_locations[anno.page_number][anno.meta.id] = [
-                        (anno.lo_location_offset, anno.hi_location_offset)
-                    ]
-            else:
-                matched_organism_locations[anno.page_number] = {
-                    anno.meta.id: [(anno.lo_location_offset, anno.hi_location_offset)]
-                }
-        return matched_organism_locations
+        """Takes as input a list of annotation objects (intended to be of a single entity type).
+
+        Returns the locations of the annotation entities within the document.
+        """
+        matched_entity_locations: Dict[int, Dict[str, List[Tuple[int, int]]]] = {}
+        for annotation in annotations:
+            matched_entity_locations = self._update_entity_location_map(
+                matched_entity_locations=matched_entity_locations,
+                annotation=annotation,
+            )
+        return matched_entity_locations
+
+    def _get_entity_frequency_and_locations(
+        self,
+        annotations: List[Annotation],
+    ) -> Tuple[Dict[str, int], Dict[int, Dict[str, List[Tuple[int, int]]]]]:
+        """Takes as input a list of annotation objects (intended to be of a single entity type).
+
+        Returns the frequency of the annotation entities, and their locations within the document.
+        """
+        matched_entity_locations: Dict[int, Dict[str, List[Tuple[int, int]]]] = {}
+        entity_frequency: Dict[str, int] = dict()
+
+        for annotation in annotations:
+            entity_frequency = self._update_entity_frequency_map(
+                entity_frequency=entity_frequency,
+                annotation=annotation,
+            )
+            matched_entity_locations = self._update_entity_location_map(
+                matched_entity_locations=matched_entity_locations,
+                annotation=annotation,
+            )
+
+        return entity_frequency, matched_entity_locations
 
     def _remove_unwanted_keywords(
         self,
@@ -742,119 +796,113 @@ class AnnotationsService:
                 new_matches.append(match)
         return new_matches
 
+    def _create_initial_annotations_list(
+        self,
+        tokens: PDFTokenPositionsList,
+    ) -> Tuple[List[List[Annotation]], List[Set[str]]]:
+        """Takes as input a list of keyword tokens.
+
+        Returns an initial list of candidate annotation objects, as well
+        as a list of keyword sets for words we intend to drop from our
+        annotation list.
+        """
+        entity_type_and_id_pairs = [
+            (EntityType.Species.value, EntityIdStr.Species.value),
+            (EntityType.Chemicals.value, EntityIdStr.Chemicals.value),
+            (EntityType.Compounds.value, EntityIdStr.Compounds.value),
+            (EntityType.Proteins.value, EntityIdStr.Proteins.value),
+            (EntityType.Diseases.value, EntityIdStr.Diseases.value),
+            (EntityType.Phenotypes.value, EntityIdStr.Phenotypes.value),
+        ]
+
+        matched_list, unwanted_matches_set_list = [], []
+
+        for entity_type, entity_id_str in entity_type_and_id_pairs:
+            matched, unwanted = self.annotate(
+                annotation_type=entity_type,
+                entity_id_str=entity_id_str,
+                coor_obj_per_pdf_page=tokens.coor_obj_per_pdf_page,
+                cropbox_per_page=tokens.cropbox_per_page,
+            )
+            matched_list.append(matched)
+            unwanted_matches_set_list.append(unwanted)
+
+        return matched_list, unwanted_matches_set_list
+
+    def _get_fixed_unified_annotations(
+        self,
+        matched_list: List[List[Annotation]],
+        unwanted_matches_set_list: Set[str],
+    ) -> List[Annotation]:
+        """Takes as input a list of annotations, and a set of unwanted keywords.
+        Annotations and keywords may span multiple entity types (e.g. compounds,
+        chemicals, organisms, etc.).
+
+        Returns an updated list of annotations with
+        undesired annotations stripped out, and with conflicting annotations
+        resolved.
+        """
+        updated_annotations = []
+        for matched_entities in matched_list:
+            updated_annotations.append(
+                self._remove_unwanted_keywords(
+                    matches=matched_entities,
+                    unwanted_keywords=unwanted_matches_set_list,
+                )
+            )
+
+        unified_annotations: List[Annotation] = []
+        for updated_annotation_set in updated_annotations:
+            unified_annotations.extend(updated_annotation_set)
+
+        return self.fix_conflicting_annotations(
+            unified_annotations=unified_annotations
+        )
+
     def create_annotations(
         self,
         tokens: PDFTokenPositionsList,
     ) -> List[Annotation]:
         self._filter_tokens(tokens=tokens)
 
-        matched_species, unwanted_species = self.annotate(
-            annotation_type=EntityType.Species.value,
-            entity_id_str=EntityIdStr.Species.value,
-            coor_obj_per_pdf_page=tokens.coor_obj_per_pdf_page,
-            cropbox_per_page=tokens.cropbox_per_page,
+        # Get matches for Species, Chemicals, Compounds, Diseases, Proteins, and Phenotypes
+        matched_list, unwanted_matches_list = self._create_initial_annotations_list(
+            tokens=tokens,
         )
 
-        matched_genes, unwanted_genes = self._annotate_genes(
-            matched_organism_locations=self._get_entity_locations(matched_species),
-            organism_frequency=self._get_entity_frequency(matched_species),
-            coor_obj_per_pdf_page=tokens.coor_obj_per_pdf_page,
-            cropbox_per_page=tokens.cropbox_per_page,
+        # Do first round of filtering on the matched list
+        unwanted_matches_set_list = set.union(*unwanted_matches_list)
+        fixed_unified_annotations = self._get_fixed_unified_annotations(
+            matched_list=matched_list,
+            unwanted_matches_set_list=unwanted_matches_set_list,
         )
 
-        matched_chemicals, unwanted_chemicals = self.annotate(
-            annotation_type=EntityType.Chemicals.value,
-            entity_id_str=EntityIdStr.Chemicals.value,
-            coor_obj_per_pdf_page=tokens.coor_obj_per_pdf_page,
-            cropbox_per_page=tokens.cropbox_per_page,
-        )
-
-        matched_compounds, unwanted_compounds = self.annotate(
-            annotation_type=EntityType.Compounds.value,
-            entity_id_str=EntityIdStr.Compounds.value,
-            coor_obj_per_pdf_page=tokens.coor_obj_per_pdf_page,
-            cropbox_per_page=tokens.cropbox_per_page,
-        )
-
-        matched_proteins, unwanted_proteins = self.annotate(
-            annotation_type=EntityType.Proteins.value,
-            entity_id_str=EntityIdStr.Proteins.value,
-            coor_obj_per_pdf_page=tokens.coor_obj_per_pdf_page,
-            cropbox_per_page=tokens.cropbox_per_page,
-        )
-
-        matched_diseases, unwanted_diseases = self.annotate(
-            annotation_type=EntityType.Diseases.value,
-            entity_id_str=EntityIdStr.Diseases.value,
-            coor_obj_per_pdf_page=tokens.coor_obj_per_pdf_page,
-            cropbox_per_page=tokens.cropbox_per_page,
-        )
-
-        matched_phenotypes, unwanted_phenotypes = self.annotate(
-            annotation_type=EntityType.Phenotypes.value,
-            entity_id_str=EntityIdStr.Phenotypes.value,
-            coor_obj_per_pdf_page=tokens.coor_obj_per_pdf_page,
-            cropbox_per_page=tokens.cropbox_per_page,
-        )
-
-        unwanted_matches_set_list = [
-            unwanted_genes,
-            unwanted_chemicals,
-            unwanted_compounds,
-            unwanted_proteins,
-            unwanted_species,
-            unwanted_diseases,
-            unwanted_phenotypes,
+        # Create a list of species annotations
+        matched_reduced_species = [
+            anno for anno in fixed_unified_annotations
+            if anno.meta.keyword_type == EntityType.Species.value
         ]
 
-        unwanted_keywords_set = set.union(*unwanted_matches_set_list)
-
-        updated_matched_genes = self._remove_unwanted_keywords(
-            matches=matched_genes,
-            unwanted_keywords=unwanted_keywords_set,
+        organism_frequency, matched_organism_locations = self._get_entity_frequency_and_locations(
+            annotations=matched_reduced_species,
         )
 
-        updated_matched_chemicals = self._remove_unwanted_keywords(
-            matches=matched_chemicals,
-            unwanted_keywords=unwanted_keywords_set,
+        # Match genes with the reduced set of organisms
+        matched_genes, unwanted_genes = self._annotate_genes(
+            matched_organism_locations=matched_organism_locations,
+            organism_frequency=organism_frequency,
+            coor_obj_per_pdf_page=tokens.coor_obj_per_pdf_page,
+            cropbox_per_page=tokens.cropbox_per_page,
         )
+        matched_list.append(matched_genes)
+        unwanted_matches_list.append(unwanted_genes)
 
-        updated_matched_compounds = self._remove_unwanted_keywords(
-            matches=matched_compounds,
-            unwanted_keywords=unwanted_keywords_set,
+        # Do second round of filtering, now with genes
+        unwanted_matches_set_list = set.union(*unwanted_matches_list)
+        fixed_unified_annotations = self._get_fixed_unified_annotations(
+            matched_list=matched_list,
+            unwanted_matches_set_list=unwanted_matches_set_list,
         )
-
-        updated_matched_proteins = self._remove_unwanted_keywords(
-            matches=matched_proteins,
-            unwanted_keywords=unwanted_keywords_set,
-        )
-
-        updated_matched_species = self._remove_unwanted_keywords(
-            matches=matched_species,
-            unwanted_keywords=unwanted_keywords_set,
-        )
-
-        updated_matched_diseases = self._remove_unwanted_keywords(
-            matches=matched_diseases,
-            unwanted_keywords=unwanted_keywords_set,
-        )
-
-        updated_matched_phenotypes = self._remove_unwanted_keywords(
-            matches=matched_phenotypes,
-            unwanted_keywords=unwanted_keywords_set,
-        )
-
-        unified_annotations: List[Annotation] = []
-        unified_annotations.extend(updated_matched_genes)
-        unified_annotations.extend(updated_matched_chemicals)
-        unified_annotations.extend(updated_matched_compounds)
-        unified_annotations.extend(updated_matched_proteins)
-        unified_annotations.extend(updated_matched_species)
-        unified_annotations.extend(updated_matched_diseases)
-        unified_annotations.extend(updated_matched_phenotypes)
-
-        fixed_unified_annotations = self.fix_conflicting_annotations(
-            unified_annotations=unified_annotations)
 
         return fixed_unified_annotations
 
