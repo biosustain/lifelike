@@ -150,19 +150,20 @@ export class PdfViewerComponent implements OnDestroy {
     let source = '/dt/pdf/' + `${this.currentFileId}/${loc.pageNumber}/`;
     source = source + `${loc.rect[0]}/${loc.rect[1]}/${loc.rect[2]}/${loc.rect[3]}`;
 
-    const hyperlink = meta.idHyperlink;
-    const search = Object.keys(meta.links).map(k => {
+    console.log(meta, loc);
+
+    const hyperlink = meta.idHyperlink || '';
+    const search = Object.keys(meta.links || []).map(k => {
       return {
         domain: k,
         url: meta.links[k]
       };
     });
 
-    // Convert form plural to singular
+    // Convert form plural to singular since annotation
+    // .. if no matches are made, return as entity
     const mapper = (plural) => {
       switch (plural) {
-        case 'Chemicals':
-          return 'chemical';
         case 'Compounds':
           return 'compound';
         case 'Diseases':
@@ -173,10 +174,18 @@ export class PdfViewerComponent implements OnDestroy {
           return 'protein';
         case 'Species':
           return 'species';
+        case 'Mutations':
+            return 'mutation';
+        case 'Chemicals':
+          return 'chemical';
         case 'Phenotypes':
           return 'phenotype';
+        case 'Pathways':
+          return 'pathway';
+        case 'Companies':
+          return 'company';
         default:
-          return plural;
+          return 'entity';
       }
     };
 
