@@ -2,7 +2,7 @@ import json
 import re
 
 from string import ascii_lowercase, digits, punctuation
-from typing import Dict, List, Optional, Set, Tuple, Union
+from typing import cast, Dict, List, Optional, Set, Tuple, Union
 
 from pdfminer.layout import LTAnno, LTChar
 
@@ -13,9 +13,11 @@ from .annotation_interval_tree import (
 from .constants import (
     COMMON_WORDS,
     TYPO_SYNONYMS,
+    DatabaseType,
     EntityColor,
     EntityIdStr,
     EntityType,
+    ENTITY_HYPERLINKS,
     ENTITY_TYPE_PRECEDENCE,
     PDF_NEW_LINE_THRESHOLD,
     NCBI_LINK,
@@ -31,6 +33,7 @@ from neo4japp.data_transfer_objects import (
     PDFTokenPositions,
     PDFTokenPositionsList,
 )
+from neo4japp.database import get_hybrid_neo4j_postgres_service
 from neo4japp.util import compute_hash
 
 
@@ -42,6 +45,8 @@ class AnnotationsService:
         self.regex_for_floats = r'^-?\d+(?:\.\d+)?$'
 
         self.lmdb_session = lmdb_session
+
+        self.hybrid_neo4j_postgres_service = get_hybrid_neo4j_postgres_service()
 
         # for word tokens that are typos
         self.correct_synonyms: Dict[str, str] = {}
@@ -178,7 +183,7 @@ class AnnotationsService:
         indexes: List[int],
         cropbox: Tuple[int, int],
         keyword_positions: List[Annotation.TextPosition] = [],
-    ) -> Tuple[float, float, float, float]:
+    ) -> None:
         """Creates the keyword objects with the keyword
         text, along with their coordinate positions and
         page number.
@@ -222,40 +227,40 @@ class AnnotationsService:
                     end_upper_x = upper_x
                     end_upper_y = upper_y
                 else:
-                    if upper_y > end_upper_y:
-                        end_upper_y = upper_y
-
-                    if upper_x > end_upper_x:
-                        end_upper_x = upper_x
-
-                if lower_y != start_lower_y:
-                    diff = abs(lower_y - start_lower_y)
-                    prev_idx = _skip_lt_anno(
-                        curr_page_coor_obj=curr_page_coor_obj,
-                        pos_idx=pos_idx-1,
-                    )
-                    height = curr_page_coor_obj[prev_idx].height
-
-                    # if diff is greater than height ratio
-                    # then part of keyword is on a new line
-                    if diff > height * PDF_NEW_LINE_THRESHOLD:
-                        _, _, new_upper_x, new_upper_y = self._create_keyword_objects(
+                    if lower_y != start_lower_y:
+                        diff = abs(lower_y - start_lower_y)
+                        prev_idx = _skip_lt_anno(
                             curr_page_coor_obj=curr_page_coor_obj,
-                            indexes=indexes[i:],
-                            keyword_positions=keyword_positions,
-                            cropbox=cropbox,
+                            pos_idx=pos_idx-1,
                         )
+                        height = curr_page_coor_obj[prev_idx].height
 
-                        if new_upper_x > end_upper_x:
-                            end_upper_x = new_upper_x
+                        # if diff is greater than height ratio
+                        # then part of keyword is on a new line
+                        if diff > height * PDF_NEW_LINE_THRESHOLD:
+                            self._create_keyword_objects(
+                                curr_page_coor_obj=curr_page_coor_obj,
+                                indexes=indexes[i:],
+                                keyword_positions=keyword_positions,
+                                cropbox=cropbox,
+                            )
+                            break
+                        else:
+                            if upper_y > end_upper_y:
+                                end_upper_y = upper_y
 
-                        if new_upper_y > end_upper_y:
-                            end_upper_y = new_upper_y
-                        break
+                            if upper_x > end_upper_x:
+                                end_upper_x = upper_x
+
+                            keyword += curr_page_coor_obj[pos_idx].get_text()
                     else:
+                        if upper_y > end_upper_y:
+                            end_upper_y = upper_y
+
+                        if upper_x > end_upper_x:
+                            end_upper_x = upper_x
+
                         keyword += curr_page_coor_obj[pos_idx].get_text()
-                else:
-                    keyword += curr_page_coor_obj[pos_idx].get_text()
 
         start_lower_x += cropbox[0]  # type: ignore
         end_upper_x += cropbox[0]  # type: ignore
@@ -269,7 +274,74 @@ class AnnotationsService:
                     start_lower_x, start_lower_y, end_upper_x, end_upper_y],  # type: ignore
             )
         )
-        return start_lower_x, start_lower_y, end_upper_x, end_upper_y
+
+    def _create_annotation_object(
+        self,
+        token_positions: PDFTokenPositions,
+        coor_obj_per_pdf_page: Dict[int, List[Union[LTChar, LTAnno]]],
+        cropbox_per_page: Dict[int, Tuple[int, int]],
+        token_type: str,
+        entity: dict,
+        entity_id: str,
+        color: str,
+    ):
+        # create list of positions boxes
+        curr_page_coor_obj = coor_obj_per_pdf_page[
+            token_positions.page_number]
+        cropbox = cropbox_per_page[token_positions.page_number]
+
+        keyword_positions: List[Annotation.TextPosition] = []
+        char_indexes = list(token_positions.char_positions.keys())
+
+        self._create_keyword_objects(
+            curr_page_coor_obj=curr_page_coor_obj,
+            indexes=char_indexes,
+            keyword_positions=keyword_positions,
+            cropbox=cropbox,
+        )
+
+        keyword_starting_idx = char_indexes[0]
+        keyword_ending_idx = char_indexes[-1]
+        link_search_term = entity['name']
+        if entity['id_type'] != DatabaseType.Ncbi.value:
+            hyperlink = ENTITY_HYPERLINKS[entity['id_type']]
+        else:
+            # type ignore, see https://github.com/python/mypy/issues/8277
+            hyperlink = ENTITY_HYPERLINKS[entity['id_type']][token_type]  # type: ignore
+
+        if entity['id_type'] == DatabaseType.Mesh.value:
+            hyperlink += entity_id[5:]  # type: ignore
+        else:
+            hyperlink += entity_id  # type: ignore
+
+        meta = Annotation.Meta(
+            keyword_type=token_type,
+            color=color,
+            id=entity_id,
+            id_type=entity['id_type'],
+            id_hyperlink=cast(str, hyperlink),
+            links=Annotation.Meta.Links(
+                ncbi=NCBI_LINK + link_search_term,
+                uniprot=UNIPROT_LINK + link_search_term,
+                wikipedia=WIKIPEDIA_LINK + link_search_term,
+                google=GOOGLE_LINK + link_search_term,
+            ),
+        )
+
+        # the `keywords` property here is to allow us to know
+        # what coordinates map to what text in the PDF
+        # we want to actually use the real name inside LMDB
+        # for the `keyword` and `keyword_length` properties
+        return Annotation(
+            page_number=token_positions.page_number,
+            rects=[pos.positions for pos in keyword_positions],  # type: ignore
+            keywords=[k.value for k in keyword_positions],
+            keyword=link_search_term,
+            keyword_length=len(link_search_term),
+            lo_location_offset=keyword_starting_idx,
+            hi_location_offset=keyword_ending_idx,
+            meta=meta,
+        )
 
     def _get_annotation(
         self,
@@ -337,61 +409,51 @@ class AnnotationsService:
                     entity_id = entity[id_str]
 
                 if common_name_count == 1:
-                    # create list of positions boxes
-                    curr_page_coor_obj = coor_obj_per_pdf_page[
-                        token_positions.page_number]
-                    cropbox = cropbox_per_page[token_positions.page_number]
-
-                    keyword_positions: List[Annotation.TextPosition] = []
-                    char_indexes = list(token_positions.char_positions.keys())
-
-                    self._create_keyword_objects(
-                        curr_page_coor_obj=curr_page_coor_obj,
-                        indexes=char_indexes,
-                        keyword_positions=keyword_positions,
-                        cropbox=cropbox,
-                    )
-
-                    keyword_starting_idx = char_indexes[0]
-                    keyword_ending_idx = char_indexes[-1]
-                    link_search_term = entity['name']
-
-                    meta = Annotation.Meta(
-                        keyword_type=token_type,
+                    matches.append(self._create_annotation_object(
+                        coor_obj_per_pdf_page=coor_obj_per_pdf_page,
+                        cropbox_per_page=cropbox_per_page,
+                        token_positions=token_positions,
+                        token_type=token_type,
+                        entity=entity,
+                        entity_id=entity_id,
                         color=color,
-                        id=entity_id,
-                        id_type=entity['id_type'],
-                        links=Annotation.Meta.Links(
-                            ncbi=NCBI_LINK + link_search_term,
-                            uniprot=UNIPROT_LINK + link_search_term,
-                            wikipedia=WIKIPEDIA_LINK + link_search_term,
-                            google=GOOGLE_LINK + link_search_term,
-                        ),
-                    )
-
-                    # the `keywords` property here is to allow us to know
-                    # what coordinates map to what text in the PDF
-                    # we want to actually use the real name inside LMDB
-                    # for the `keyword` and `keyword_length` properties
-                    matches.append(
-                        Annotation(
-                            page_number=token_positions.page_number,
-                            rects=[pos.positions for pos in keyword_positions],  # type: ignore
-                            keywords=[k.value for k in keyword_positions],
-                            keyword=link_search_term,
-                            keyword_length=len(link_search_term),
-                            lo_location_offset=keyword_starting_idx,
-                            hi_location_offset=keyword_ending_idx,
-                            meta=meta,
-                        )
-                    )
+                    ))
                 else:
                     unwanted_matches.add(word)
         return matches, unwanted_matches
 
+    def _get_gene_id_for_annotation(
+        self,
+        word: str,
+        match_result: Dict[str, Dict[str, str]],
+        organism_frequency: Dict[str, int],
+    ):
+        """Currently using a postgres lookup table to filter out keywords that don't
+        match a curated slice of the main dataset, and to map synonyms to the
+        correct gene. This postgres table currently has unique gene names, so we
+        expect a 1:1 match of gene to organism. In the future, we can't always
+        assume this to be the case, as some organism strains have matching gene names.
+
+        If a gene was matched to at least one organism in the document,
+        we have to get the corresponding gene data. If a gene matches
+        more than one organism, we use the one with the highest
+        frequency within the document. We may fine-tune this later.
+        """
+        organism_to_gene_pairs = match_result[word]
+        most_frequent_organism = str()
+        greatest_frequency = 0
+
+        for organism_id in organism_to_gene_pairs.keys():
+            if organism_frequency[organism_id] > greatest_frequency:
+                greatest_frequency = organism_frequency[organism_id]
+                most_frequent_organism = organism_id
+
+        return organism_to_gene_pairs[most_frequent_organism]
+
     def _annotate_genes(
         self,
-        entity_id_str: str,
+        matched_organism_ids: List[str],
+        organism_frequency: Dict[str, int],
         coor_obj_per_pdf_page: Dict[int, List[Union[LTChar, LTAnno]]],
         cropbox_per_page: Dict[int, Tuple[int, int]],
     ) -> Tuple[List[Annotation], Set[str]]:
@@ -412,7 +474,6 @@ class AnnotationsService:
             2. More than one organism match for a given gene
             3. No organism matches for a given gene
         """
-
         tokens: Dict[str, List[PDFTokenPositions]] = self.matched_genes
         token_type: str = EntityType.Genes.value
         color: str = EntityColor.Genes.value
@@ -424,21 +485,13 @@ class AnnotationsService:
 
         tokens_lowercased = set(tokens.keys())
 
-        def get_gene_match_result(
-            genes: List[str],
-        ) -> Dict[str, str]:
-            """Returns a map of gene name to gene id."""
-            from neo4japp.database import get_organism_gene_match_service
-            organism_gene_match_service = get_organism_gene_match_service()
-
-            return organism_gene_match_service.get_genes(genes)
-
-        match_result = get_gene_match_result(list(tokens.keys()))
+        match_result = self.hybrid_neo4j_postgres_service.get_gene_to_organism_match_result(
+            genes=list(tokens.keys()),
+            matched_organism_ids=matched_organism_ids,
+        )
 
         for word, token_positions_list in tokens.items():
-            # If the "gene" is not matched to any organism in our postgres table, ignore it.
-            # In the future, we will want to check the organisms that actually appear in the
-            # paper, but for now we just check postgres for the known organisms.
+            # If the "gene" is not matched to any organism in the paper, ignore it
             if word not in match_result.keys():
                 continue
 
@@ -468,57 +521,21 @@ class AnnotationsService:
                     common_name_count = 1
 
                 if common_name_count == 1:
-                    # Currently using a postgres lookup table to filter out keywords that don't
-                    # match a curated slice of the main dataset, and to map synonyms to the
-                    # correct gene. This postgres table currently has unique gene names, so we
-                    # expect a 1:1 match of gene to organism. In the future, we can't always
-                    # assume this to be the case, as some organism strains have matching gene names.
-                    entity_id = match_result[word]
-
-                    # create list of positions boxes
-                    curr_page_coor_obj = coor_obj_per_pdf_page[
-                        token_positions.page_number]
-                    cropbox = cropbox_per_page[token_positions.page_number]
-
-                    keyword_positions: List[Annotation.TextPosition] = []
-                    char_indexes = list(token_positions.char_positions.keys())
-
-                    self._create_keyword_objects(
-                        curr_page_coor_obj=curr_page_coor_obj,
-                        indexes=char_indexes,
-                        keyword_positions=keyword_positions,
-                        cropbox=cropbox,
+                    entity_id = self._get_gene_id_for_annotation(
+                        word=word,
+                        match_result=match_result,
+                        organism_frequency=organism_frequency
                     )
 
-                    keyword_starting_idx = char_indexes[0]
-                    keyword_ending_idx = char_indexes[-1]
-                    link_search_term = f'{token_positions.keyword}'
-
-                    meta = Annotation.Meta(
-                        keyword_type=token_type,
+                    matches.append(self._create_annotation_object(
+                        coor_obj_per_pdf_page=coor_obj_per_pdf_page,
+                        cropbox_per_page=cropbox_per_page,
+                        token_positions=token_positions,
+                        token_type=token_type,
+                        entity=entity,
+                        entity_id=entity_id,
                         color=color,
-                        id=entity_id,
-                        id_type=entity['id_type'],
-                        links=Annotation.Meta.Links(
-                            ncbi=NCBI_LINK + link_search_term,
-                            uniprot=UNIPROT_LINK + link_search_term,
-                            wikipedia=WIKIPEDIA_LINK + link_search_term,
-                            google=GOOGLE_LINK + link_search_term,
-                        ),
-                    )
-
-                    matches.append(
-                        Annotation(
-                            page_number=token_positions.page_number,
-                            rects=[pos.positions for pos in keyword_positions],  # type: ignore
-                            keywords=[k.value for k in keyword_positions],
-                            keyword=token_positions.keyword,
-                            keyword_length=len(token_positions.keyword),
-                            lo_location_offset=keyword_starting_idx,
-                            hi_location_offset=keyword_ending_idx,
-                            meta=meta,
-                        )
-                    )
+                    ))
                 else:
                     unwanted_matches.add(word)
         return matches, unwanted_matches
@@ -688,7 +705,8 @@ class AnnotationsService:
         )
 
         matched_genes, unwanted_genes = self._annotate_genes(
-            entity_id_str=EntityIdStr.Genes.value,
+            matched_organism_ids=[annotation.meta.id for annotation in matched_species],
+            organism_frequency=self._get_entity_frequency(matched_species),
             coor_obj_per_pdf_page=tokens.coor_obj_per_pdf_page,
             cropbox_per_page=tokens.cropbox_per_page,
         )
@@ -796,13 +814,16 @@ class AnnotationsService:
         """Fix any conflicting annotations.
 
         An annotation is a conflict if it has overlapping
-        `lo_location_offset` and `hi_location_offset` with another annotation.
+        `lo_location_offset` and `hi_location_offset` with another annotation
+        or if it has adjacent intervals, meaning a `hi_location_offset` equals
+        the `lo_location_offset` of another annotation.
         """
         updated_unified_annotations: List[Annotation] = []
         unified_annotations_dict: Dict[int, List[Annotation]] = {}
 
         # need to go page by page because coordinates
         # reset on each page
+        # TODO: JIRA LL-581
         for unified in unified_annotations:
             if unified.lo_location_offset == unified.hi_location_offset:
                 # keyword is a single character
@@ -813,37 +834,21 @@ class AnnotationsService:
             else:
                 unified_annotations_dict[unified.page_number] = [unified]
 
-        conflicting_annotations: Dict[int, List[Annotation]] = {}
-        # don't need to separate by page
-        # because hashes will always be different
-        conflicting_annotations_hashes: Set[str] = set()
+        annotations_to_clean: Dict[int, List[Annotation]] = {}
 
         for page_number, annotations in unified_annotations_dict.items():
-            conflicts = self.find_conflicting_annotations(annotations)
-            conflicting_annotations_hashes = set.union(*[
-                {compute_hash(c.to_dict()) for c in conflicts} if conflicts else set(),
-                conflicting_annotations_hashes,
-            ])
-
-            conflicting_annotations[page_number] = conflicts or []
-
-        for no_conflict_anno in unified_annotations:
-            hashval = compute_hash(no_conflict_anno.to_dict())
-            if hashval not in conflicting_annotations_hashes:
-                updated_unified_annotations.append(no_conflict_anno)
+            tree = self.create_annotation_tree(annotations=annotations)
+            # first clean all annotations with equal intervals
+            # this means the same keyword was mapped to multiple entities
+            cleaned_of_equal_intervals = tree.merge_equals(
+                data_reducer=self.determine_entity_precedence)
+            annotations_to_clean[page_number] = cleaned_of_equal_intervals
 
         fixed_annotations = self._remove_overlapping_annotations(
-            conflicting_annotations=conflicting_annotations)
+            conflicting_annotations=annotations_to_clean)
 
         updated_unified_annotations.extend(fixed_annotations)
         return updated_unified_annotations
-
-    def _compute_interval_hashes(self, annotation: Annotation) -> str:
-        return compute_hash({
-            'keyword': annotation.keyword,
-            'lo_location_offset': annotation.lo_location_offset,
-            'hi_location_offset': annotation.hi_location_offset,
-        })
 
     def create_annotation_tree(
         self,
@@ -860,14 +865,31 @@ class AnnotationsService:
             )
         return tree
 
+    def determine_entity_precedence(
+        self,
+        anno1: Annotation,
+        anno2: Annotation,
+    ) -> Annotation:
+        if anno1.keyword_length > anno2.keyword_length:
+            return anno1
+        elif anno1.keyword_length == anno2.keyword_length:
+            key1 = ENTITY_TYPE_PRECEDENCE[anno1.meta.keyword_type]
+            key2 = ENTITY_TYPE_PRECEDENCE[anno2.meta.keyword_type]
+
+            if key1 > key2:
+                return anno1
+            else:
+                return anno2
+        else:
+            return anno2
+
     def _remove_overlapping_annotations(
         self,
         conflicting_annotations: Dict[int, List[Annotation]],
     ) -> List[Annotation]:
         """Remove annotations based on these rules:
 
-        (1) If exact intervals, then consider entity precedence.
-        (2) If overlapping, then consider longest length.
+        If overlapping, then consider longest length.
             - If overlapping but same length, then consider
             entity precedence.
         """
@@ -875,75 +897,10 @@ class AnnotationsService:
 
         for _, conflicting_annos in conflicting_annotations.items():
             if conflicting_annos:
-                overlapping_annotations: Dict[str, Annotation] = {}
-                tmp_fixed_annotations: List[Annotation] = []
-
-                for annotation in conflicting_annos:
-                    hashval = self._compute_interval_hashes(annotation)
-
-                    if hashval not in overlapping_annotations:
-                        overlapping_annotations[hashval] = annotation
-                    else:
-                        # exact intervals so choose entity precedence
-                        conflicting_anno = overlapping_annotations.pop(hashval)
-
-                        key1 = ENTITY_TYPE_PRECEDENCE[annotation.meta.keyword_type]
-                        key2 = ENTITY_TYPE_PRECEDENCE[conflicting_anno.meta.keyword_type]
-
-                        if key1 > key2:
-                            overlapping_annotations[hashval] = annotation
-                        else:
-                            overlapping_annotations[hashval] = conflicting_anno
-
-                # at this point all annotations
-                # with exact duplicate intervals and exact
-                # keywords are fixed
-                tmp_fixed_annotations = [anno for _, anno in overlapping_annotations.items()]
-
-                tree = self.create_annotation_tree(annotations=tmp_fixed_annotations)
-                processed: Set[str] = set()
-
-                # fix any leftover annotations with overlapping intervals
-                for annotation in tmp_fixed_annotations:
-                    conflicts = tree.overlap(
-                        begin=annotation.lo_location_offset,
-                        end=annotation.hi_location_offset,
-                    )
-                    if len(conflicts) == 1:
-                        fixed_annotations.extend(conflicts)
-                    else:
-                        chosen_annotation = None
-                        for conflict in conflicts:
-                            if chosen_annotation is None:
-                                chosen_annotation = conflict
-                            else:
-                                if conflict.keyword_length > chosen_annotation.keyword_length:
-                                    chosen_annotation = conflict
-                                elif conflict.keyword_length == chosen_annotation.keyword_length:
-                                    key1 = ENTITY_TYPE_PRECEDENCE[conflict.meta.keyword_type]
-                                    key2 = ENTITY_TYPE_PRECEDENCE[chosen_annotation.meta.keyword_type]  # noqa
-
-                                    if key1 > key2:
-                                        chosen_annotation = conflict
-
-                        hashval = compute_hash(chosen_annotation.to_dict())  # type: ignore
-                        if hashval not in processed:
-                            fixed_annotations.append(chosen_annotation)  # type: ignore
-                            processed.add(hashval)
+                tree = self.create_annotation_tree(annotations=conflicting_annos)
+                fixed_annotations.extend(
+                    tree.merge_overlaps(
+                        data_reducer=self.determine_entity_precedence,
+                    ),
+                )
         return fixed_annotations
-
-    def find_conflicting_annotations(
-        self,
-        annotations: List[Annotation],
-    ) -> List[Annotation]:
-        """Find all of the annotations that have overlapping
-        index intervals. The intervals implies the same keyword has been
-        annotated several times, each as different entities. So we
-        need to choose which entity to go with.
-
-        Additionally, the overlap also tells us two keywords are
-        either substrings of each other, or two keywords contain a
-        common word between them.
-        """
-        tree = self.create_annotation_tree(annotations=annotations)
-        return tree.split_overlaps()
