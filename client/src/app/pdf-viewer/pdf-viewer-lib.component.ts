@@ -89,11 +89,9 @@ export class PdfViewerLibComponent implements OnInit, AfterViewInit {
   }
 
   ngOnInit() {
-    console.log('debugMode ', this.debugMode);
     this.goToPosition.subscribe((sub) => {
-      console.log('goto position ', sub);
       if (!this.isLoadCompleted && sub) {
-        console.log('Pdf viewer is not ready to go to a position');
+        // Pdf viewer is not ready to go to a position
         return;
       }
       if (sub) {
@@ -106,9 +104,6 @@ export class PdfViewerLibComponent implements OnInit, AfterViewInit {
         const target = event.target;
         const location = JSON.parse(jQuery(target).attr('location')) as Location;
         const meta = JSON.parse(jQuery(target).attr('meta')) as Meta;
-        console.log('pagenumber is ', location.pageNumber);
-        console.log('rect is ', location.rect);
-        console.log('Meta is ', meta);
       });
     }
   }
@@ -141,7 +136,6 @@ export class PdfViewerLibComponent implements OnInit, AfterViewInit {
   }
 
   toolbarControlChanged(event) {
-    console.log('toolbar control is ', event);
     if (event === 'zoomin') {
       this.incrementZoom(0.1);
     }
@@ -311,7 +305,6 @@ export class PdfViewerLibComponent implements OnInit, AfterViewInit {
     }
     const selectedRects = selection.getRangeAt(0).getClientRects();
     if (selectedRects.length === 0) {
-      console.log('selectedRects 0');
       this.clearSelection();
       return false;
     }
@@ -319,7 +312,6 @@ export class PdfViewerLibComponent implements OnInit, AfterViewInit {
       const firstRect = selectedRects[0];
       const width = firstRect.width;
       if (width < 1) {
-        console.log('width is smaller than 1');
         this.clearSelection();
         return false;
       }
@@ -444,7 +436,7 @@ export class PdfViewerLibComponent implements OnInit, AfterViewInit {
   }
 
   openAddLinkPanel() {
-    console.log('open link panel here');
+    // open link panel here
   }
 
   clearSelection() {
@@ -525,7 +517,6 @@ export class PdfViewerLibComponent implements OnInit, AfterViewInit {
    * Pdf loading progress callback
    */
   onProgress(progressData: PDFProgressData) {
-    console.log(progressData);
     this.progressData = progressData;
 
     this.isLoaded = progressData.loaded >= progressData.total;
@@ -547,8 +538,6 @@ export class PdfViewerLibComponent implements OnInit, AfterViewInit {
    * Scroll view
    */
   scrollToPage(pageNum: number, highlightRect?: number[]) {
-    console.log('scrollPage is ', pageNum);
-    console.log('highlightRect', highlightRect);
     this.pdfComponent.pdfViewer.scrollPageIntoView({
       pageNumber: pageNum
     });
@@ -589,9 +578,6 @@ export class PdfViewerLibComponent implements OnInit, AfterViewInit {
   pageRendered(e: CustomEvent) {
     this.allPages = this.pdf.numPages;
     this.currentRenderedPage = (e as any).pageNumber;
-    console.log(this.pdf.numPages);
-    console.log('(page-rendered)', (e as any).pageNumber);
-    console.log('(page-rendered)', e);
     const nump = Number(this.pdf.numPages);
     const currentNump = Number((e as any).pageNumber);
     if (nump === currentNump) {
