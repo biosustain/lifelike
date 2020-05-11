@@ -1135,8 +1135,6 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
       y: coords.y
     });
 
-    console.log(clipboardContent);
-
     const cmd = {
       action: 'add node',
       data: {

@@ -150,8 +150,6 @@ export class PdfViewerComponent implements OnDestroy {
     let source = '/dt/pdf/' + `${this.currentFileId}/${loc.pageNumber}/`;
     source = source + `${loc.rect[0]}/${loc.rect[1]}/${loc.rect[2]}/${loc.rect[3]}`;
 
-    console.log(meta, loc);
-
     const hyperlink = meta.idHyperlink || '';
     const search = Object.keys(meta.links || []).map(k => {
       return {
