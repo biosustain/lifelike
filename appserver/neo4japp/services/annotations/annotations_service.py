@@ -450,23 +450,23 @@ class AnnotationsService:
         # more than one organism, we first check for the closest organism
         # on the current page.
         organism_to_gene_pairs = match_result[word]
-        organisms_on_this_page = matched_organism_locations.get(token_positions.page_number, None)  # noqa
-        if organisms_on_this_page is not None and len(set(organism_to_gene_pairs.keys()).intersection(set(organisms_on_this_page.keys()))) > 0:  # noqa
+        organisms_on_this_page = matched_organism_locations.get(token_positions.page_number, dict())  # noqa
+        organisms_found = set(organism_to_gene_pairs.keys()).intersection(set(organisms_on_this_page.keys()))  # noqa
+        if len(organisms_on_this_page) > 0 and len(organisms_found) > 0:
             closest_organism = str()
             smallest_distance = inf
 
-            for organism_id in organism_to_gene_pairs.keys():
-                if organisms_on_this_page.get(organism_id, None) is not None:
-                    for organism_occurrence in organisms_on_this_page[organism_id]:
-                        organism_starting_idx, organism_ending_idx = organism_occurrence
-                        if keyword_starting_idx > organism_ending_idx:
-                            distance_from_gene_to_this_organism = keyword_starting_idx - organism_ending_idx  # noqa
-                        else:
-                            distance_from_gene_to_this_organism = organism_starting_idx - keyword_ending_idx  # noqa
+            for organism_id in organisms_found:
+                for organism_occurrence in organisms_on_this_page[organism_id]:
+                    organism_starting_idx, organism_ending_idx = organism_occurrence
+                    if keyword_starting_idx > organism_ending_idx:
+                        distance_from_gene_to_this_organism = keyword_starting_idx - organism_ending_idx  # noqa
+                    else:
+                        distance_from_gene_to_this_organism = organism_starting_idx - keyword_ending_idx  # noqa
 
-                        if distance_from_gene_to_this_organism < smallest_distance:
-                            closest_organism = organism_id
-                            smallest_distance = distance_from_gene_to_this_organism
+                    if distance_from_gene_to_this_organism < smallest_distance:
+                        closest_organism = organism_id
+                        smallest_distance = distance_from_gene_to_this_organism
             return organism_to_gene_pairs[closest_organism]
         # If there is no closest match on the page,
         # then we use the one with the highest frequency within the document.
