@@ -33,7 +33,7 @@ const routes: Routes = [
     path: 'dt',
     canActivate: [AuthGuard],
     children: dtRoutes,
-    data: {title: 'Map Projects'}
+    data: {title: 'Relationship Maps'}
     // TODO - Bring back once pdf-viewer source code integration is resolved
     // loadChildren: () => import(
     //   './drawing-tool/drawing-tool.module'
