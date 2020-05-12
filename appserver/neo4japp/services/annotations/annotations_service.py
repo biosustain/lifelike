@@ -771,7 +771,7 @@ class AnnotationsService:
             matched_entity_locations: Dict[int, Dict[str, List[Tuple[int, int]]]],
             annotation: Annotation,
         ):
-            if isinstance(annotation, OrganismAnnotation) and annotation.meta.category == OrganismCategory.Viruses.value:  # noqa
+            if isinstance(annotation.meta, OrganismAnnotation.OrganismMeta) and annotation.meta.category == OrganismCategory.Viruses.value:  # noqa
                 if matched_entity_locations[annotation.page_number].get(HOMO_SAPIENS_TAX_ID, None) is not None:  # noqa
                     matched_entity_locations[annotation.page_number][HOMO_SAPIENS_TAX_ID].append(  # noqa
                         (annotation.lo_location_offset, annotation.hi_location_offset)
