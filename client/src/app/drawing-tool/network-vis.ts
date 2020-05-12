@@ -6,7 +6,7 @@ import {
   GraphSelectionData
 } from './services/interfaces';
 import { Network, Options, DataSet } from 'vis-network';
-import { annotationTypes, visJsGroupStyleFactory } from '../shared/annotation-styles';
+import { visJsGroupStyleFactory } from '../shared/annotation-styles';
 
 /**
  * A class wrapped around the instatiation of
@@ -165,8 +165,10 @@ export class NetworkVis {
         maximum: 600,
     };
     n.data = {
-      hyperlink: n.hyperlink || '',
+      source: n.source || '',
       detail: n.detail || '',
+      search: n.search || [],
+      hyperlink: n.hyperlink || ''
     };
 
     this.visNodes.add([n]);
@@ -210,18 +212,18 @@ export class NetworkVis {
     };
 
     switch (data.group) {
-        case 'link': {
-            updatedNode = {
-                ...updatedNode,
-                label: data.shape === 'icon' ? '' : data.data.detail,
-            };
-            this.visNodes.update(updatedNode);
-            break;
-        }
-        default: {
-            this.visNodes.update(updatedNode);
-            break;
-        }
+      case 'link': {
+          updatedNode = {
+              ...updatedNode,
+              label: data.shape === 'icon' ? '' : data.data.detail,
+          };
+          this.visNodes.update(updatedNode);
+          break;
+      }
+      default: {
+          this.visNodes.update(updatedNode);
+          break;
+      }
     }
   }
 
@@ -302,18 +304,5 @@ export class NetworkVis {
     });
 
     this.network.redraw();
-  }
-
-  /**
-   * Return a base64 png of the network map
-   * from the canvas
-   */
-  pullImage() {
-    if (!this.network) { return null; }
-
-    /* tslint:disable:no-string-literal */
-    const context = this.network['canvas'].getContext();
-
-    return context.canvas.toDataURL();
   }
 }
