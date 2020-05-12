@@ -49,6 +49,7 @@ export class PdfFilesService {
     if (data.type === UploadType.Files) {
       formData.append('file', data.files[0]);
     } else {
+      formData.append('filename', data.filename);
       formData.append('url', data.url);
     }
     return this.http.post<PdfFileUpload>(`${this.baseUrl}/upload`, formData, {

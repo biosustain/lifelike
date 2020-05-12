@@ -29,6 +29,9 @@ export enum UploadType {
 
 export interface UploadPayload {
   type: UploadType;
+  // if type === Files
   files?: File[];
+  // if type === Url
+  filename?: string;
   url?: string;
 }
