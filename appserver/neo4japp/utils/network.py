@@ -31,7 +31,7 @@ class ControlledConnectionMixin:
         return 80 <= port <= 20000 and port not in self.blocked_ports
 
     def resolve(self, host):
-        """Resolve the hostname into an IP, but don't permit certain IP addresses."""
+        """Resolve the hostname into an IP."""
         return socket.gethostbyname(host)
 
     def connect(self):
@@ -44,10 +44,10 @@ class ControlledConnectionMixin:
         port = self.port
 
         if not self.is_ip_allowed(ip):
-            raise socket.error("connection private IP class blocked")
+            raise socket.error("connection to non-allowed IP blocked")
 
         if not self.is_port_allowed(port):
-            raise socket.error("connection to non-permitted port blocked")
+            raise socket.error("connection to non-allowed port blocked")
 
         self.sock = self._create_connection((ip, port), self.timeout, self.source_address)
         self.sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
