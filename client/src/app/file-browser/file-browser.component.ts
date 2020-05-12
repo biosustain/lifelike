@@ -11,6 +11,7 @@ import { HttpEventType } from '@angular/common/http';
 import { Progress, ProgressMode } from 'app/interfaces/common-dialog.interface';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 
+
 @Component({
   selector: 'app-file-browser',
   templateUrl: './file-browser.component.html',
@@ -29,8 +30,7 @@ export class FileBrowserComponent implements OnInit {
     private snackBar: MatSnackBar,
     private deleteDialog: MatDialog,
     private progressDialog: ProgressDialog,
-  ) {
-  }
+  ) {}
 
   ngOnInit() {
     this.updateDataSource();
