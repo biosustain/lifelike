@@ -8,9 +8,26 @@
 // - con
 // - inv
 
+import { isNullOrUndefined } from 'util';
+
+interface AnnotationStyle {
+  label: string;
+  color: string;
+  iconCode?: string;
+  style?: {
+    // Override the border-color of the node on vis-network
+    border?: string;
+    // Override the background-color of the node on vis-network
+    background?: string;
+    // Override the font-color of the node on the vis-network
+    color?: string;
+  };
+}
+
 const GENE = '#673ab7';
 const DISEASE = '#ff9800';
 const CHEMICAL = '#4caf50';
+const COMPOUND = '#4caf50';
 const MUTATION = '#5d4037';
 const SPECIES = '#0277bd';
 const COMPANY = '#d62728';
@@ -32,7 +49,7 @@ const EFFECT = '#d7d9f8';
 const OBSERVATION = '#d7d9f8';
 const ASSOCIATION = '#d7d9f8';
 
-const annotationTypes = [{
+const annotationTypes: AnnotationStyle[] = [{
     label: 'gene',
     color: GENE,
   },
@@ -43,6 +60,10 @@ const annotationTypes = [{
   {
     label: 'chemical',
     color: CHEMICAL,
+  },
+  {
+    label: 'compound',
+    color: COMPOUND,
   },
   {
     label: 'mutation',
@@ -93,35 +114,65 @@ const annotationTypes = [{
   // Non-Entity types
   {
     label: 'correlation',
-    background: CORRELATION,
+    color: CORRELATION,
+    style: {
+      border: '#fff',
+      background: CORRELATION,
+      color: '#000'
+    },
   },
   {
     label: 'cause',
-    background: CAUSE,
+    color: CAUSE,
+    style: {
+      border: '#fff',
+      background: CAUSE,
+      color: '#000'
+    },
   },
   {
     label: 'effect',
-    background: EFFECT,
+    color: EFFECT,
+    style: {
+      border: '#fff',
+      background: EFFECT,
+      color: '#000'
+    },
   },
   {
     label: 'observation',
-    background: OBSERVATION,
+    color: OBSERVATION,
+    style: {
+      border: '#fff',
+      background: OBSERVATION,
+      color: '#000'
+    },
   },
   {
     label: 'association',
-    background: ASSOCIATION,
+    color: ASSOCIATION,
+    style: {
+      border: '#fff',
+      background: ASSOCIATION,
+      color: '#000'
+    },
   },
 ];
 
-function groupStyle(ann) {
+/**
+ * Return group styling based on the annotation
+ * style definition
+ * @param ann - annotation style definition
+ */
+function groupStyle(ann: AnnotationStyle) {
   const gStyle: any = {
     borderWidth: 1,
     color: {
-      background: ann.background || '#FFF',
-      border: ann.border || '#2B7CE9'
+      background: ann.style && ann.style.background ? ann.style.background : '#fff',
+      border: ann.style && ann.style.border ? ann.style.border : '#2B7CE9'
     },
     font: {
-      color: ann.color || '#000'
+      color: ann.style && ann.style.color ? ann.style.color : ann.color
     }
   };
 
