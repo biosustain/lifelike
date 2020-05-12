@@ -334,6 +334,7 @@ class AnnotationsService:
                     wikipedia=WIKIPEDIA_LINK + link_search_term,
                     google=GOOGLE_LINK + link_search_term,
                 ),
+                all_text=link_search_term,
             )
             # the `keywords` property here is to allow us to know
             # what coordinates map to what text in the PDF
@@ -362,6 +363,7 @@ class AnnotationsService:
                     wikipedia=WIKIPEDIA_LINK + link_search_term,
                     google=GOOGLE_LINK + link_search_term,
                 ),
+                all_text=link_search_term,
             )
             return Annotation(
                 page_number=token_positions.page_number,
