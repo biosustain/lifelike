@@ -336,7 +336,7 @@ class AnnotationsService:
         # what coordinates map to what text in the PDF
         # we want to actually use the real name inside LMDB
         # for the `keyword` and `keyword_length` properties
-        return Annotation(
+        annotation = Annotation(
             page_number=token_positions.page_number,
             rects=[pos.positions for pos in keyword_positions],  # type: ignore
             keywords=[k.value for k in keyword_positions],
@@ -346,6 +346,8 @@ class AnnotationsService:
             hi_location_offset=keyword_ending_idx,
             meta=meta,
         )
+
+        return annotation, {compute_hash(annotation.to_dict()): token_positions.keyword}
 
     def _get_annotation(
         self,
@@ -357,7 +359,7 @@ class AnnotationsService:
         correct_synonyms: Dict[str, str],
         coor_obj_per_pdf_page: Dict[int, List[Union[LTChar, LTAnno]]],
         cropbox_per_page: Dict[int, Tuple[int, int]],
-    ) -> Tuple[List[Annotation], Set[str]]:
+    ) -> Tuple[List[Annotation], Set[str], Dict[str, str]]:
         """Create annotation objects for tokens.
 
         Assumption:
@@ -382,6 +384,9 @@ class AnnotationsService:
         """
         matches: List[Annotation] = []
         unwanted_matches: Set[str] = set()
+        # annotation object hash with it's keyword
+        # as appeared in pdf
+        hashed_pdf_keywords: Dict[str, str] = {}
 
         tokens_lowercased = set(tokens.keys())
 
@@ -413,7 +418,7 @@ class AnnotationsService:
                     entity_id = entity[id_str]
 
                 if common_name_count == 1:
-                    matches.append(self._create_annotation_object(
+                    annotation, annotation_pdf_keyword = self._create_annotation_object(
                         coor_obj_per_pdf_page=coor_obj_per_pdf_page,
                         cropbox_per_page=cropbox_per_page,
                         token_positions=token_positions,
@@ -421,10 +426,12 @@ class AnnotationsService:
                         entity=entity,
                         entity_id=entity_id,
                         color=color,
-                    ))
+                    )
+                    matches.append(annotation)
+                    hashed_pdf_keywords = {**hashed_pdf_keywords, **annotation_pdf_keyword}
                 else:
                     unwanted_matches.add(word)
-        return matches, unwanted_matches
+        return matches, unwanted_matches, hashed_pdf_keywords
 
     def _get_gene_id_for_annotation(
         self,
@@ -488,7 +495,7 @@ class AnnotationsService:
         organism_frequency: Dict[str, int],
         coor_obj_per_pdf_page: Dict[int, List[Union[LTChar, LTAnno]]],
         cropbox_per_page: Dict[int, Tuple[int, int]],
-    ) -> Tuple[List[Annotation], Set[str]]:
+    ) -> Tuple[List[Annotation], Set[str], Dict[str, str]]:
         """Gene specific annotation. Nearly identical to `_get_annotation`,
         except that we check genes against the matched organisms found in the
         document.
@@ -514,6 +521,9 @@ class AnnotationsService:
 
         matches: List[Annotation] = []
         unwanted_matches: Set[str] = set()
+        # annotation object hash with it's keyword
+        # as appeared in pdf
+        hashed_pdf_keywords: Dict[str, str] = {}
 
         tokens_lowercased = set(tokens.keys())
 
@@ -561,7 +571,7 @@ class AnnotationsService:
                         organism_frequency=organism_frequency,
                     )
 
-                    matches.append(self._create_annotation_object(
+                    annotation, annotation_pdf_keyword = self._create_annotation_object(
                         coor_obj_per_pdf_page=coor_obj_per_pdf_page,
                         cropbox_per_page=cropbox_per_page,
                         token_positions=token_positions,
@@ -569,10 +579,12 @@ class AnnotationsService:
                         entity=entity,
                         entity_id=entity_id,
                         color=color,
-                    ))
+                    )
+                    matches.append(annotation)
+                    hashed_pdf_keywords = {**hashed_pdf_keywords, **annotation_pdf_keyword}
                 else:
                     unwanted_matches.add(word)
-        return matches, unwanted_matches
+        return matches, unwanted_matches, hashed_pdf_keywords
 
     def _annotate_chemicals(
         self,
@@ -803,7 +815,7 @@ class AnnotationsService:
     def _create_initial_annotations_list(
         self,
         tokens: PDFTokenPositionsList,
-    ) -> Tuple[List[List[Annotation]], List[Set[str]]]:
+    ) -> Tuple[List[List[Annotation]], List[Set[str]], Dict[str, str]]:
         """Takes as input a list of keyword tokens.
 
         Returns an initial list of candidate annotation objects, as well
@@ -820,9 +832,10 @@ class AnnotationsService:
         ]
 
         matched_list, unwanted_matches_set_list = [], []
+        all_hashed_annotation_keywords: Dict[str, str] = {}
 
         for entity_type, entity_id_str in entity_type_and_id_pairs:
-            matched, unwanted = self.annotate(
+            matched, unwanted, hashed_annotation_keywords = self.annotate(
                 annotation_type=entity_type,
                 entity_id_str=entity_id_str,
                 coor_obj_per_pdf_page=tokens.coor_obj_per_pdf_page,
@@ -830,8 +843,10 @@ class AnnotationsService:
             )
             matched_list.append(matched)
             unwanted_matches_set_list.append(unwanted)
+            all_hashed_annotation_keywords = {
+                **all_hashed_annotation_keywords, **hashed_annotation_keywords}
 
-        return matched_list, unwanted_matches_set_list
+        return matched_list, unwanted_matches_set_list, all_hashed_annotation_keywords
 
     def _get_fixed_unified_annotations(
         self,
@@ -863,6 +878,76 @@ class AnnotationsService:
             unified_annotations=unified_annotations
         )
 
+    def _get_fixed_false_positive_unified_annotations(
+        self,
+        annotations_list: List[Annotation],
+        all_hashed_annotation_keywords: Dict[str, str],
+    ) -> List[Annotation]:
+        """Removes any false positive annotations.
+
+        False positives occurred during our matching
+        because we normalize the text from the pdf and
+        the keys in lmdb.
+
+        E.g pdf text vs lmdb
+            ----------------
+            Gao         GAO
+            Ye          YE
+            CA          CA++
+            Adenosine   adenosine
+            to a        TO-A
+            as a        ASA
+            Fig         FIG
+
+        Fix rounds:
+            (1) First round of fixing lowers all letters and
+            removes any that do not match.
+                - Results in:
+                pdf text vs lmdb
+                ----------------
+                Gao         GAO
+                Ye          YE
+                Adenosine   adenosine
+                Fig         FIG
+            (2) Second round of fixing only looks at matches
+            with three letters or less (and not a gene) and does an equals to
+            and removes any that do not match.
+                - Results in:
+                pdf text vs lmdb
+                ----------------
+                Adenosine   adenosine
+            (3) Third round fixes genes ... TODO: figure out requirements
+
+            NOTE: This does remove annotations like `2-deoxy-inosine` because
+            the correct term is `2'-deoxyinosine`.
+        """
+        round_one: List[Annotation] = []
+        fixed_annotations: List[Annotation] = []
+
+        for annotation in annotations_list:
+            hashval = compute_hash(annotation.to_dict())
+            keyword_from_annotation = annotation.keyword.lower()
+            keyword_from_pdf = all_hashed_annotation_keywords[hashval].lower()
+
+            if keyword_from_annotation == keyword_from_pdf:
+                round_one.append(annotation)
+
+        for round_one_annotation in round_one:
+            if (len(round_one_annotation.keyword) > 3 or
+                round_one_annotation.meta.keyword_type == EntityType.Genes.value):
+                fixed_annotations.append(round_one_annotation)
+            else:
+                hashval = compute_hash(round_one_annotation.to_dict())
+                keyword_from_annotation = round_one_annotation.keyword
+                keyword_from_pdf = all_hashed_annotation_keywords[hashval]
+
+                if keyword_from_annotation == keyword_from_pdf:
+                    fixed_annotations.append(round_one_annotation)
+
+        # TODO: Third round fixes
+
+        return fixed_annotations
+
     def create_annotations(
         self,
         tokens: PDFTokenPositionsList,
@@ -870,7 +955,9 @@ class AnnotationsService:
         self._filter_tokens(tokens=tokens)
 
         # Get matches for Species, Chemicals, Compounds, Diseases, Proteins, and Phenotypes
-        matched_list, unwanted_matches_list = self._create_initial_annotations_list(
+        (matched_list,
+        unwanted_matches_list,
+        all_hashed_annotation_keywords) = self._create_initial_annotations_list(
             tokens=tokens,
         )
 
@@ -892,7 +979,7 @@ class AnnotationsService:
         )
 
         # Match genes with the reduced set of organisms
-        matched_genes, unwanted_genes = self._annotate_genes(
+        matched_genes, unwanted_genes, hashed_gene_annotation_keyword = self._annotate_genes(
             matched_organism_locations=matched_organism_locations,
             organism_frequency=organism_frequency,
             coor_obj_per_pdf_page=tokens.coor_obj_per_pdf_page,
@@ -900,12 +987,19 @@ class AnnotationsService:
         )
         matched_list.append(matched_genes)
         unwanted_matches_list.append(unwanted_genes)
+        all_hashed_annotation_keywords = {
+            **all_hashed_annotation_keywords, **hashed_gene_annotation_keyword}
 
         # Do second round of filtering, now with genes
         unwanted_matches_set_list = set.union(*unwanted_matches_list)
         fixed_unified_annotations = self._get_fixed_unified_annotations(
             matched_list=matched_list,
             unwanted_matches_set_list=unwanted_matches_set_list,
+        )
+
+        fixed_unified_annotations = self._get_fixed_false_positive_unified_annotations(
+            annotations_list=fixed_unified_annotations,
+            all_hashed_annotation_keywords=all_hashed_annotation_keywords,
         )
 
         return fixed_unified_annotations
