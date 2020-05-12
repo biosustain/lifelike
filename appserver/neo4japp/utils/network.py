@@ -140,14 +140,14 @@ def read_url(*args, max_length, read_chunk_size=8192, buffer=None, **kwargs):
         chunk = conn.read(min(read_chunk_size, max_length - length_downloaded + 1))
         chunk_len = len(chunk)
 
+        if not chunk_len:
+            break
+
         # Check length
         length_downloaded += chunk_len
         if length_downloaded > max_length:
             raise ContentTooLongError(
                 "file downloaded exceeded max ({} > {})".format(length_downloaded, max_length))
-
-        if not chunk_len:
-            break
 
         buffer.write(chunk)
 
