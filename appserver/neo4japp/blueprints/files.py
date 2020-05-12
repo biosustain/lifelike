@@ -27,6 +27,10 @@ from neo4japp.database import (
 from neo4japp.exceptions import RecordNotFoundException, BadRequestError
 from neo4japp.models import AppUser
 from neo4japp.models.files import Files, FileContent
+from neo4japp.utils.network import read_url
+
+URL_FETCH_MAX_LENGTH = 1024 * 1024 * 30
+URL_FETCH_TIMEOUT = 10
 
 bp = Blueprint('files', __name__, url_prefix='/files')
 
@@ -38,7 +42,7 @@ def upload_pdf():
     pdf = None
     if 'url' in request.form:
         url = request.form['url']
-        data = urllib.request.urlopen(url).read()
+        data = read_url(url, max_length=URL_FETCH_MAX_LENGTH, timeout=URL_FETCH_TIMEOUT).getvalue()
         filename = secure_filename(request.form['filename'])
         if not filename.lower().endswith('.pdf'):
             filename += '.pdf'
