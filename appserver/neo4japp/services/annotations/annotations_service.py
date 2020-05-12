@@ -12,19 +12,21 @@ from .annotation_interval_tree import (
     AnnotationIntervalTree,
 )
 from .constants import (
-    COMMON_WORDS,
-    TYPO_SYNONYMS,
     DatabaseType,
     EntityColor,
     EntityIdStr,
     EntityType,
+    OrganismCategory,
+    COMMON_WORDS,
     ENTITY_HYPERLINKS,
     ENTITY_TYPE_PRECEDENCE,
-    PDF_NEW_LINE_THRESHOLD,
+    GOOGLE_LINK,
+    HOMO_SAPIENS_TAX_ID,
     NCBI_LINK,
+    PDF_NEW_LINE_THRESHOLD,
+    TYPO_SYNONYMS,
     UNIPROT_LINK,
     WIKIPEDIA_LINK,
-    GOOGLE_LINK,
 )
 from .lmdb_dao import LMDBDao
 from .util import normalize_str
@@ -33,6 +35,7 @@ from neo4japp.data_transfer_objects import (
     Annotation,
     PDFTokenPositions,
     PDFTokenPositionsList,
+    OrganismAnnotation,
 )
 from neo4japp.database import get_hybrid_neo4j_postgres_service
 from neo4japp.util import compute_hash
@@ -315,19 +318,35 @@ class AnnotationsService:
         else:
             hyperlink += entity_id  # type: ignore
 
-        meta = Annotation.Meta(
-            keyword_type=token_type,
-            color=color,
-            id=entity_id,
-            id_type=entity['id_type'],
-            id_hyperlink=cast(str, hyperlink),
-            links=Annotation.Meta.Links(
-                ncbi=NCBI_LINK + link_search_term,
-                uniprot=UNIPROT_LINK + link_search_term,
-                wikipedia=WIKIPEDIA_LINK + link_search_term,
-                google=GOOGLE_LINK + link_search_term,
-            ),
-        )
+        if token_type == EntityType.Species.value:
+            meta = OrganismAnnotation.OrganismMeta(
+                category=entity['category'],
+                keyword_type=token_type,
+                color=color,
+                id=entity_id,
+                id_type=entity['id_type'],
+                id_hyperlink=cast(str, hyperlink),
+                links=OrganismAnnotation.OrganismMeta.Links(
+                    ncbi=NCBI_LINK + link_search_term,
+                    uniprot=UNIPROT_LINK + link_search_term,
+                    wikipedia=WIKIPEDIA_LINK + link_search_term,
+                    google=GOOGLE_LINK + link_search_term,
+                ),
+            )
+        else:
+            meta = Annotation.Meta(
+                keyword_type=token_type,
+                color=color,
+                id=entity_id,
+                id_type=entity['id_type'],
+                id_hyperlink=cast(str, hyperlink),
+                links=Annotation.Meta.Links(
+                    ncbi=NCBI_LINK + link_search_term,
+                    uniprot=UNIPROT_LINK + link_search_term,
+                    wikipedia=WIKIPEDIA_LINK + link_search_term,
+                    google=GOOGLE_LINK + link_search_term,
+                ),
+            )
 
         # the `keywords` property here is to allow us to know
         # what coordinates map to what text in the PDF
@@ -730,6 +749,21 @@ class AnnotationsService:
         matched_entity_locations: Dict[int, Dict[str, List[Tuple[int, int]]]],
         annotation: Annotation,
     ) -> Dict[int, Dict[str, List[Tuple[int, int]]]]:
+        def _check_if_human_id_should_be_added(
+            matched_entity_locations: Dict[int, Dict[str, List[Tuple[int, int]]]],
+            annotation: Annotation,
+        ):
+            if isinstance(annotation.meta, OrganismAnnotation.OrganismMeta) and annotation.meta.category == OrganismCategory.Viruses.value:  # noqa
+                if matched_entity_locations[annotation.page_number].get(HOMO_SAPIENS_TAX_ID, None) is not None:  # noqa
+                    matched_entity_locations[annotation.page_number][HOMO_SAPIENS_TAX_ID].append(  # noqa
+                        (annotation.lo_location_offset, annotation.hi_location_offset)
+                    )
+                else:
+                    matched_entity_locations[annotation.page_number][HOMO_SAPIENS_TAX_ID] = [
+                        (annotation.lo_location_offset, annotation.hi_location_offset)
+                    ]
+            return matched_entity_locations
+
         if matched_entity_locations.get(annotation.page_number, None) is not None:
             if matched_entity_locations[annotation.page_number].get(annotation.meta.id, None) is not None:  # noqa
                 matched_entity_locations[annotation.page_number][annotation.meta.id].append(
@@ -739,10 +773,25 @@ class AnnotationsService:
                 matched_entity_locations[annotation.page_number][annotation.meta.id] = [
                     (annotation.lo_location_offset, annotation.hi_location_offset)
                 ]
+
+            # If the annotation represents a virus, then also mark this location as a human
+            # annotation
+            matched_entity_locations = _check_if_human_id_should_be_added(
+                matched_entity_locations=matched_entity_locations,
+                annotation=annotation,
+            )
         else:
             matched_entity_locations[annotation.page_number] = {
                 annotation.meta.id: [(annotation.lo_location_offset, annotation.hi_location_offset)]
             }
+
+            # If the annotation represents a virus, then also mark this location as a human
+            # annotation
+            matched_entity_locations = _check_if_human_id_should_be_added(
+                matched_entity_locations=matched_entity_locations,
+                annotation=annotation,
+            )
+
         return matched_entity_locations
 
     def _get_entity_locations(
