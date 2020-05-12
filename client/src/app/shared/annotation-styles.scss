@@ -4,6 +4,7 @@
 $gene: #673ab7;
 $disease: #ff9800;
 $chemical: #4caf50;
+$compound: #4caf50;
 $mutation: #5d4037;
 $species: #0277bd;
 $company: #d62728;
@@ -35,6 +36,9 @@ $association: #d7d9f8;
 }
 .chemical {
   color: $chemical;
+}
+.compound {
+  color: #4caf50;
 }
 .mutation {
   color: $mutation;

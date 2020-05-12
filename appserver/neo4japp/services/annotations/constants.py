@@ -106,7 +106,7 @@ GOOGLE_LINK = 'https://www.google.com/search?q='
 ENTITY_HYPERLINKS = {
     DatabaseType.Chebi.value: 'https://www.ebi.ac.uk/chebi/searchId.do?chebiId=',
     DatabaseType.Mesh.value: 'https://www.ncbi.nlm.nih.gov/mesh/',
-    DatabaseType.Uniprot.value: 'https://www.uniprot.org/uniprot/',
+    DatabaseType.Uniprot.value: 'https://www.uniprot.org/uniprot/?sort=score&query=',
     DatabaseType.Ncbi.value: {
         EntityType.Genes.value: 'https://www.ncbi.nlm.nih.gov/gene/',
         EntityType.Species.value: 'https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=',
