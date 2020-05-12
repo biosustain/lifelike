@@ -2,7 +2,8 @@ import socket
 import urllib
 from http.client import HTTPSConnection, HTTPConnection
 from io import BytesIO
-from urllib.request import HTTPSHandler, HTTPHandler, OpenerDirector, UnknownHandler, HTTPRedirectHandler, \
+from urllib.request import HTTPSHandler, HTTPHandler, OpenerDirector,\
+    UnknownHandler, HTTPRedirectHandler, \
     HTTPDefaultErrorHandler, HTTPErrorProcessor
 
 from IPy import IP
