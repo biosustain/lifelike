@@ -13,10 +13,12 @@
     </mat-tab>
 
     <mat-tab label="From URL">
-      <div class="tab-content" fxLayout="row" fxLayoutAlign="start center" >
-        <mat-icon>insert_link</mat-icon>
+      <div class="tab-content" fxLayout="column">
         <mat-form-field fxFlex>
           <input matInput [formControl]="url" placeholder="Enter a URL">
+        </mat-form-field>
+        <mat-form-field fxFlex>
+          <input matInput [formControl]="filename" placeholder="Enter a filename">
         </mat-form-field>
       </div>
     </mat-tab>

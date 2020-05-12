@@ -216,6 +216,8 @@ export class DialogUploadComponent implements OnInit, OnDestroy {
   selectedTab = new FormControl(0);
   tabChange: Subscription;
 
+  filename = new FormControl('');
+  filenameChange: Subscription;
   url = new FormControl('');
   urlChange: Subscription;
 
@@ -224,6 +226,10 @@ export class DialogUploadComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    this.filenameChange = this.filename.valueChanges.subscribe((value: string) => {
+      this.payload.filename = value;
+      this.validatePayload();
+    });
     this.urlChange = this.url.valueChanges.subscribe((value: string) => {
       this.payload.url = value;
       this.validatePayload();
@@ -239,7 +245,7 @@ export class DialogUploadComponent implements OnInit, OnDestroy {
     this.tabChange.unsubscribe();
   }
 
-  /** Called upon clicking the Browse button */
+  /** Called upon picking a file from the Browse button */
   onFilesPick(fileList: FileList) {
     const files: File[] = [];
     for (let i = 0; i < fileList.length; ++i) {
@@ -252,10 +258,13 @@ export class DialogUploadComponent implements OnInit, OnDestroy {
 
   /** Validates if the Upload button should be enabled or disabled */
   validatePayload() {
+    const filesIsOk = this.payload.files && this.payload.files.length > 0;
+    const filenameIsOk = this.payload.filename && this.payload.filename.length > 0;
+    const urlIsOk = this.payload.url && this.payload.url.length > 0;
     if (this.payload.type === UploadType.Files) {
-      this.forbidUpload = !this.payload.files || this.payload.files.length === 0;
+      this.forbidUpload = !filesIsOk;
     } else { // UploadType.Url
-      this.forbidUpload = !this.payload.url || this.payload.url.length === 0;
+      this.forbidUpload = !(filenameIsOk && urlIsOk);
     }
   }
 }

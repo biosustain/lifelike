@@ -6,7 +6,6 @@ import uuid
 from datetime import datetime
 from enum import Enum
 from typing import Dict
-from urllib.parse import urlparse
 import urllib.request
 
 from flask import Blueprint, current_app, request, jsonify, g, make_response
@@ -40,7 +39,9 @@ def upload_pdf():
     if 'url' in request.form:
         url = request.form['url']
         data = urllib.request.urlopen(url).read()
-        filename = secure_filename(os.path.basename(urlparse(url).path))
+        filename = secure_filename(request.form['filename'])
+        if not filename.lower().endswith('.pdf'):
+            filename += '.pdf'
         pdf = FileStorage(io.BytesIO(data), filename)
     else:
         filename = secure_filename(request.files['file'].filename)
