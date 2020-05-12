@@ -2,7 +2,7 @@ import json
 import re
 
 from math import inf
-from string import ascii_lowercase, digits, punctuation
+from string import ascii_letters, digits, punctuation
 from typing import cast, Dict, List, Optional, Set, Tuple, Union
 
 from pdfminer.layout import LTAnno, LTChar
@@ -84,7 +84,7 @@ class AnnotationsService:
         if synonym:
             lookup_key = normalize_str(synonym).encode('utf-8')
         else:
-            lookup_key = word.encode('utf-8')
+            lookup_key = normalize_str(word).encode('utf-8')
         hashval = compute_hash(token.to_dict())
 
         gene_val = self.lmdb_session.genes_txn.get(lookup_key)
@@ -152,29 +152,29 @@ class AnnotationsService:
     def _filter_tokens(self, tokens: PDFTokenPositionsList) -> None:
         """Filter the tokens into separate matched sets in LMDB."""
         for token in tokens.token_positions:
-            token_normalized = normalize_str(token.keyword)
+            word = token.keyword
 
-            if token_normalized:
-                if (token_normalized not in COMMON_WORDS and
-                        not re.match(self.regex_for_floats, token_normalized) and
-                        token_normalized not in ascii_lowercase and
-                        token_normalized not in digits):
+            if word:
+                if (word.lower() not in COMMON_WORDS and
+                        not re.match(self.regex_for_floats, word) and
+                        word not in ascii_letters and
+                        word not in digits):
 
-                    if token_normalized in TYPO_SYNONYMS:
-                        for correct_synonym in TYPO_SYNONYMS[token_normalized]:
+                    if word in TYPO_SYNONYMS:
+                        for correct_synonym in TYPO_SYNONYMS[word]:
                             validations = self.lmdb_validation(
-                                word=token_normalized,
+                                word=word,
                                 token=token,
                                 synonym=correct_synonym,
                             )
 
                             # just get the first match is fine
                             if any(validations):
-                                self.correct_synonyms[token_normalized] = correct_synonym
+                                self.correct_synonyms[word] = correct_synonym
                                 break
                     else:
                         self.lmdb_validation(
-                            word=token_normalized,
+                            word=word,
                             token=token,
                         )
 
@@ -796,7 +796,7 @@ class AnnotationsService:
         """
         new_matches = []
         for match in matches:
-            if normalize_str(match.keyword) not in unwanted_keywords:
+            if match.keyword not in unwanted_keywords:
                 new_matches.append(match)
         return new_matches
 
