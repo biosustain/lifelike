@@ -7,6 +7,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Dict
 import urllib.request
+from urllib.error import URLError
 
 from flask import Blueprint, current_app, request, jsonify, g, make_response
 
@@ -42,7 +43,12 @@ def upload_pdf():
     pdf = None
     if 'url' in request.form:
         url = request.form['url']
-        data = read_url(url, max_length=URL_FETCH_MAX_LENGTH, timeout=URL_FETCH_TIMEOUT).getvalue()
+        try:
+            data = read_url(url, max_length=URL_FETCH_MAX_LENGTH, timeout=URL_FETCH_TIMEOUT).getvalue()
+        except (ValueError, URLError):
+            raise BadRequestError("Your file could not be downloaded, either because it is "
+                                  "inaccessible or another problem occurred. Please double "
+                                  "check the spelling of the URL.")
         filename = secure_filename(request.form['filename'])
         if not filename.lower().endswith('.pdf'):
             filename += '.pdf'
