@@ -93,7 +93,17 @@ export class SplitterComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   openApp(appCmd: LaunchApp) {
-    if (appCmd && this.currentApp !== appCmd.app && appCmd.app === 'pdf-viewer') {
+    // Check to see
+    // - if the appCmd is NOT null
+    // - if current app is NOT the same as new app to be opened
+    // - if the app being opened is pdf-viewer
+    // - if an argument is NOT supplied with the command
+    if (
+      appCmd &&
+      this.currentApp !== appCmd.app &&
+      appCmd.app === 'pdf-viewer' &&
+      appCmd.arg === null
+    ) {
       if (this.lastFileOpened) {
           localStorage.setItem('fileIdForPdfViewer', this.lastFileOpened.file_id);
           this._openApp(appCmd);
@@ -175,7 +185,6 @@ export class SplitterComponent implements OnInit, OnDestroy, AfterViewInit {
 
     // If an argument is supplied, inject into dynamic component
     if (this.currentApp === 'pdf-viewer' && appCmd.arg !== null) {
-      console.log(appCmd);
       this.dynamicComponentRef.instance.openPdf(
         appCmd.arg.fileId,
         {
