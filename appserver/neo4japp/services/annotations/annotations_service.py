@@ -889,62 +889,19 @@ class AnnotationsService:
         because we normalize the text from the pdf and
         the keys in lmdb.
 
-        E.g pdf text vs lmdb
-            ----------------
-            Gao         GAO
-            Ye          YE
-            CA          CA++
-            Adenosine   adenosine
-            to a        TO-A
-            as a        ASA
-            Fig         FIG
-
-        Fix rounds:
-            (1) First round of fixing lowers all letters and
-            removes any that do not match.
-                - Results in:
-                pdf text vs lmdb
-                ----------------
-                Gao         GAO
-                Ye          YE
-                Adenosine   adenosine
-                Fig         FIG
-            (2) Second round of fixing only looks at matches
-            with three letters or less (and not a gene) and does an equals to
-            and removes any that do not match.
-                - Results in:
-                pdf text vs lmdb
-                ----------------
-                Adenosine   adenosine
-            (3) Third round fixes genes ... TODO: figure out requirements
-
-            NOTE: This does remove annotations like `2-deoxy-inosine` because
-            the correct term is `2'-deoxyinosine`.
+        False positives are multi length word that
+        got matched to a shorter length word due to
+        normalizing in lmdb.
         """
-        round_one: List[Annotation] = []
         fixed_annotations: List[Annotation] = []
 
         for annotation in annotations_list:
             hashval = compute_hash(annotation.to_dict())
-            keyword_from_annotation = annotation.keyword.lower()
-            keyword_from_pdf = all_hashed_annotation_keywords[hashval].lower()
+            keyword_from_annotation = annotation.keyword.split(' ')
+            keyword_from_pdf = all_hashed_annotation_keywords[hashval].split(' ')
 
-            if keyword_from_annotation == keyword_from_pdf:
-                round_one.append(annotation)
-
-        for round_one_annotation in round_one:
-            if (len(round_one_annotation.keyword) > 3 or
-                round_one_annotation.meta.keyword_type == EntityType.Genes.value):
-                fixed_annotations.append(round_one_annotation)
-            else:
-                hashval = compute_hash(round_one_annotation.to_dict())
-                keyword_from_annotation = round_one_annotation.keyword
-                keyword_from_pdf = all_hashed_annotation_keywords[hashval]
-
-                if keyword_from_annotation == keyword_from_pdf:
-                    fixed_annotations.append(round_one_annotation)
-
-        # TODO: Third round fixes
+            if len(keyword_from_annotation) == len(keyword_from_pdf):
+                fixed_annotations.append(annotation)
 
         return fixed_annotations
 
