@@ -192,7 +192,9 @@ def prepare_lmdb_proteins_database(filename: str):
                 protein_id = line[1]
                 protein_name = line[2] if 'Uncharacterized protein' not in line[2] else line[0]  # noqa
                 protein = {
-                    'protein_id': protein_id,
+                    # changed protein_id to protein_name for now (JIRA LL-671)
+                    # will eventually change back to protein_id
+                    'protein_id': protein_name,
                     'id_type': 'UNIPROT',
                     'name': protein_name,
                     'common_name': {
@@ -220,33 +222,32 @@ def prepare_lmdb_species_database(filename: str):
         with db.begin(write=True) as transaction:
             reader = csv.reader(f, delimiter='\t', quotechar='"')
             # skip headers
-            # tax_id	rank	parent_tax_id	name	name_class
+            # tax_id	category	name	name_class
             headers = next(reader)
             for line in reader:
-                if line[1] == 'species':
-                    # synonyms already have their own line in dataset
-                    species_id = line[0]
-                    species_rank = line[1]
-                    species_name = line[3]
+                # synonyms already have their own line in dataset
+                species_id = line[0]
+                species_category = line[1]
+                species_name = line[2]
 
-                    species = {
-                        'tax_id': species_id,
-                        'id_type': 'NCBI',
-                        'rank': species_rank,
-                        'name': species_name,
-                        'common_name': {species_id: normalize_str(species_name)},
-                    }
+                species = {
+                    'tax_id': species_id,
+                    'id_type': 'NCBI',
+                    'category': species_category if species_category else 'Uncategorized',
+                    'name': species_name,
+                    'common_name': {species_id: normalize_str(species_name)},
+                }
 
-                    try:
-                        if species_name != 'null':
-                            transaction.put(
-                                normalize_str(species_name).encode('utf-8'),
-                                json.dumps(species).encode('utf-8'))
-                    except lmdb.BadValsizeError:
-                        # ignore any keys that are too large
-                        # LMDB has max key size 512 bytes
-                        # can change but larger keys mean performance issues
-                        continue
+                try:
+                    if species_name != 'null':
+                        transaction.put(
+                            normalize_str(species_name).encode('utf-8'),
+                            json.dumps(species).encode('utf-8'))
+                except lmdb.BadValsizeError:
+                    # ignore any keys that are too large
+                    # LMDB has max key size 512 bytes
+                    # can change but larger keys mean performance issues
+                    continue
 
 
 def prepare_lmdb_diseases_database(filename: str):

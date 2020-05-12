@@ -3,21 +3,13 @@
         <mat-icon (click)='changeSize()' class='fr'>menu</mat-icon>
     </div>
 
-    <div class='w-90 center'>
-      <mat-checkbox
-        *ngIf='graphData.id!=="" && isNode && graphData.group === "link" || graphData.group === "note"'
-        [(ngModel)]="nodeIsIcon"
-        (change)="linkNodeCheckboxChanged($event)"
-      >Show Link Node as Icon</mat-checkbox>
-    </div>
-
     <form
         *ngIf='graphData.id!==""'
         class='w-90 center'
         [formGroup]='entityForm'>
 
         <mat-form-field class="w-100 mt3">
-            <mat-label>Label</mat-label>
+            <mat-label>Name</mat-label>
             <input
                 matInput
                 (keydown.enter)="blurInput($event)"
@@ -63,67 +55,16 @@
             </textarea>
         </mat-form-field>
 
-        <div
-            *ngIf='isNode'
-            class='flex' style="flex-wrap: wrap;">
-            <p
-                matTooltip='Click to collapse/uncollapse'
-                matTooltipPosition="right"
-                (click)='toggleCollapsible()'
-                class='blue dim collapsible'>
-                Edges
-            </p>
-            <button
-                (click)='addEdge()'
-                mat-button color="primary"
-                style="margin-left: auto;">
-                Add Edge
-            </button>
-            <p
-                *ngIf='!edges'
-                class='silver w-100 tc mv3'>
-                No edges ...
-            </p>
-        </div>
-
-        <div
-            *ngIf='isNode'
-            [ngClass]='edgeListStyle'
-            id='edge-list'>
-            <div
-                formArrayName='edges'
-                *ngFor="let edge of edgeFormArr.controls; let i = index;"
-                class='db flex mb3'
-                style="font-size: 14px;">
-                <div
-                    [formGroupName]='i'
-                    class='w-70 fl'>
-                    <mat-form-field appearance='outline' class="w-100 mt3">
-                        <mat-label>Label</mat-label>
-                        <input
-                            (keydown.enter)="blurInput($event)"
-                            matInput
-                            placeholder="Label"
-                            formControlName='label'>
-                    </mat-form-field>
-                    <mat-form-field appearance='outline' class='w-100'>
-                        <mat-label>Connected To</mat-label>
-                        <mat-select
-                            formControlName='to'>
-                            <mat-option
-                                *ngFor="let n of nodeBank"
-                                [value]='n.id'>
-                                {{n.label | titlecase}}
-                            </mat-option>
-                        </mat-select>
-                    </mat-form-field>
-                </div>
-                <div class='w-30 fl flex flex-column justify-center pointer'>
-                    <mat-icon (click)='deleteEdge(edge, i)' color='warn' style='margin: 0 auto; display: block;'>delete</mat-icon>
-                    <p class='tc red' style='font-size: 12px;'>Delete</p>
-                </div>
+        <div *ngIf='graphData?.data?.search?.length'>
+            <h4 class='blue'>Search</h4>
+            <div class="flex pointer items-center dim" *ngFor='let h of graphData?.data?.search' (click)='goToLink(h?.url)'>
+                <mat-icon class='dib' matSuffix>link</mat-icon><span class='dib f6'>{{h.domain | titlecase}}</span>
             </div>
         </div>
+
+        <button *ngIf='graphData?.data?.source' mat-button color="primary" (click)='goToSource()'>
+            Source
+        </button>
 
         <button (click)='delete()' mat-button color="warn" class='delete'>
             Delete

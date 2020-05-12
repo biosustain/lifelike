@@ -8,9 +8,26 @@
 // - con
 // - inv
 
+import { isNullOrUndefined } from 'util';
+
+interface AnnotationStyle {
+  label: string;
+  color: string;
+  iconCode?: string;
+  style?: {
+    // Override the border-color of the node on vis-network
+    border?: string;
+    // Override the background-color of the node on vis-network
+    background?: string;
+    // Override the font-color of the node on the vis-network
+    color?: string;
+  };
+}
+
 const GENE = '#673ab7';
 const DISEASE = '#ff9800';
 const CHEMICAL = '#4caf50';
+const COMPOUND = '#4caf50';
 const MUTATION = '#5d4037';
 const SPECIES = '#0277bd';
 const COMPANY = '#d62728';
@@ -18,6 +35,9 @@ const STUDY = '#17becf';
 const PROTEIN = '#bcbd22';
 const PATHWAY = '#e377c2';
 const PHENOTYPE = '#edc949';
+
+const NOTE  = '#edc949';
+const MAP = '#0277bd';
 
 const ENTITY = '#7f7f7f';
 const LINK = '#7f7f7f';
@@ -29,104 +49,145 @@ const EFFECT = '#d7d9f8';
 const OBSERVATION = '#d7d9f8';
 const ASSOCIATION = '#d7d9f8';
 
-const annotationTypes = [{
+const annotationTypes: AnnotationStyle[] = [{
     label: 'gene',
     color: GENE,
-    background: '#d0c1eb'
   },
   {
     label: 'disease',
     color: DISEASE,
-    background: '#ffe0b2'
   },
   {
     label: 'chemical',
     color: CHEMICAL,
-    background: '#c8e7ca'
+  },
+  {
+    label: 'compound',
+    color: COMPOUND,
   },
   {
     label: 'mutation',
     color: MUTATION,
-    background: '#d6c1ba'
   },
   {
     label: 'species',
     color: SPECIES,
-    background: '#a0dafd'
   },
   {
     label: 'company',
     color: COMPANY,
-    background: '#f3bdbe'
   },
   {
     label: 'study',
     color: STUDY,
-    background: '#b3f0f6'
   },
   {
     label: 'protein',
     color: PROTEIN,
-    background: '#f1f1b6'
   },
   {
     label: 'pathway',
     color: PATHWAY,
-    background: '#f6d6ec'
   },
   {
     label: 'phenotype',
     color: PHENOTYPE,
-    background: '#f9eec8'
   },
   {
     label: 'link',
     color: LINK,
-    background: '#d8d8d8',
   },
   {
     label: 'entity',
     color: ENTITY,
-    background: '#d8d8d8'
+  },
+  {
+    label: 'map',
+    color: MAP,
+    iconCode: '\uf279'
+  },
+  {
+    label: 'note',
+    color: NOTE,
+    iconCode: '\uf249'
   },
   // Non-Entity types
   {
     label: 'correlation',
     color: CORRELATION,
-    background: '#fff'
+    style: {
+      border: '#fff',
+      background: CORRELATION,
+      color: '#000'
+    },
   },
   {
     label: 'cause',
     color: CAUSE,
-    background: '#fff'
+    style: {
+      border: '#fff',
+      background: CAUSE,
+      color: '#000'
+    },
   },
   {
     label: 'effect',
     color: EFFECT,
-    background: '#fff'
+    style: {
+      border: '#fff',
+      background: EFFECT,
+      color: '#000'
+    },
   },
   {
     label: 'observation',
     color: OBSERVATION,
-    background: '#fff'
+    style: {
+      border: '#fff',
+      background: OBSERVATION,
+      color: '#000'
+    },
   },
   {
     label: 'association',
     color: ASSOCIATION,
-    background: '#fff'
+    style: {
+      border: '#fff',
+      background: ASSOCIATION,
+      color: '#000'
+    },
   },
 ];
 
-function groupStyle(color) {
-  return {
+/**
+ * Return group styling based on the annotation
+ * style definition
+ * @param ann - annotation style definition
+ */
+function groupStyle(ann: AnnotationStyle) {
+  const gStyle: any = {
     borderWidth: 1,
     color: {
-      background: '#fff'
+      background: ann.style && ann.style.background ? ann.style.background : '#fff',
+      border: ann.style && ann.style.border ? ann.style.border : '#2B7CE9'
     },
     font: {
-      color
+      color: ann.style && ann.style.color ? ann.style.color : ann.color
     }
   };
+
+  if (ann.iconCode) {
+    gStyle.icon = {
+      face: 'FontAwesome',
+      weight: 'bold',
+      code: ann.iconCode,
+      size: 50,
+      color: ann.color
+    };
+    gStyle.shape = 'icon';
+  }
+
+  return gStyle;
 }
 
 /**
@@ -138,7 +199,7 @@ function visJsGroupStyleFactory() {
 
     annotationTypes.map(
         ann => {
-            groupStyleDict[ann.label] = groupStyle(ann.color);
+            groupStyleDict[ann.label] = groupStyle(ann);
         }
     );
 

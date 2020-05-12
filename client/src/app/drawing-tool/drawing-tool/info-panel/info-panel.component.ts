@@ -56,7 +56,11 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
     group: '',
     edges: [],
     hyperlink: '',
-    detail: ''
+    detail: '',
+    data: {
+      source: '',
+      search: []
+    }
   };
 
   nodeIsIcon = false;
@@ -236,8 +240,8 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
               to: e.to
             };
           }),
-          hyperlink: data.nodeData.data.hyperlink,
-          detail: data.nodeData.data.detail
+          hyperlink: data.nodeData.data.hyperlink || '',
+          detail: data.nodeData.data.detail || ''
         };
         this.entityForm.setValue(formData, {emitEvent: false});
 
@@ -276,18 +280,6 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
     // with subject on accident when re-init next time
     this.graphDataSubscription.unsubscribe();
     this.formSubscription.unsubscribe();
-  }
-
-  linkNodeCheckboxChanged(event: MatCheckboxChange) {
-    const val = this.entityForm.value;
-
-    // When the checkbox is clicked we want to either show the detail as the label (if the node
-    // is in 'box' shape) or not show the label at all (if the node is in 'icon' shape). This
-    // will trigger the subscription above.
-    this.entityForm.setValue({
-        ...val,
-        label: event.checked ? '' : val.detail,
-    });
   }
 
   /**
@@ -430,13 +422,32 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
   /**
    * Allow user to navigate to a link in a new tab
    */
-  goToLink() {
-    const hyperlink: string = this.entityForm.value.hyperlink;
+  goToLink(url= null) {
+    const hyperlink: string = url || this.entityForm.value.hyperlink;
 
-    if (this.graphData.group === 'link') {
-      // If a link, create a payload from hyperlink url
-      const getUrl = window.location;
-      const prefixLink = getUrl.protocol + '//' + getUrl.host + '/dt/link/';
+    if (!hyperlink) { return; }
+
+    if (
+      hyperlink.includes('http')
+    ) {
+      window.open(hyperlink, '_blank');
+    } else if (
+      hyperlink.includes('mailto')
+    ) {
+      window.open(hyperlink);
+    } else {
+      window.open('http://' + hyperlink);
+    }
+  }
+
+  /**
+   * Bring user to original source of node information
+   */
+  goToSource() {
+    if (
+      this.graphData.data.source.includes('/dt/pdf')
+    ) {
+      const prefixLink = '/dt/pdf/';
       const [
         fileId,
         page,
@@ -444,7 +455,7 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
         coordB,
         coordC,
         coordD
-      ] = hyperlink.replace(prefixLink, '').split('/');
+      ] = this.graphData.data.source.replace(prefixLink, '').split('/');
       // Emit app command with annotation payload
       this.openApp.emit({
           app: 'pdf-viewer',
@@ -462,11 +473,10 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
         }
       );
     } else if (
-      hyperlink.includes('http')
+      this.graphData.data.source.includes('/dt/map')
     ) {
+      const hyperlink = window.location.origin  + this.graphData.data.source;
       window.open(hyperlink, '_blank');
-    } else {
-      window.open('http://' + hyperlink);
     }
   }
 
