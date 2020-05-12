@@ -9,6 +9,11 @@
     >
       <app-search-record-relationships [node]="n" *ngSwitchCase="'Snippet'">
       </app-search-record-relationships>
+      <!-- TODO: Deprecate once we have a deveopment database that matches n4j production
+      The terms 'Snippet' and 'Reference' are the same, so we must remove "Reference"
+      -->
+      <app-search-record-relationships [node]="n" *ngSwitchCase="'Reference'">
+      </app-search-record-relationships>
       <app-search-record-node [node]="n" *ngSwitchDefault>
       </app-search-record-node>
     </div>
