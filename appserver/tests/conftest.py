@@ -286,15 +286,24 @@ def gas_gangrene_with_associations_and_references(
         id=9810346,
         sentence='Toxin suppression and rapid bacterial killing may...',
     )
+    penicillins_to_gas_gangrene_snippet_node3 = Node(
+        'Snippet',
+        entry1_text='penicillin',
+        entry2_text='gas gangrene',
+        id=9810348,
+        sentence='...penicillin was found to reduce the affect of...',
+    )
 
     # Publication Nodes
     penicillins_to_gas_gangrene_publication_node1 = Node(
         'Publication',
         id=1,
+        pub_year=2014
     )
     penicillins_to_gas_gangrene_publication_node2 = Node(
         'Publication',
         id=2,
+        pub_year=2015
     )
 
     # Entity -> Association Relationships
@@ -336,10 +345,15 @@ def gas_gangrene_with_associations_and_references(
         penicillins_to_gas_gangrene_snippet_node1, 'PREDICTS', penicillins_to_gas_gangrene_association_node1  # noqa
     )
 
+    penicillins_alleviates_reduces_association_to_snippet_edge2 = Relationship(
+        penicillins_to_gas_gangrene_snippet_node3, 'PREDICTS', penicillins_to_gas_gangrene_association_node1  # noqa
+    )
+
     penicillins_treatment_association_to_snippet_edge = Relationship(
         penicillins_to_gas_gangrene_snippet_node2, 'PREDICTS', penicillins_to_gas_gangrene_association_node2,   # noqa
     )
     tx.create(penicillins_alleviates_reduces_association_to_snippet_edge)
+    tx.create(penicillins_alleviates_reduces_association_to_snippet_edge2)
     tx.create(penicillins_treatment_association_to_snippet_edge)
 
     # Snippet -> Publication Relationships
@@ -347,10 +361,15 @@ def gas_gangrene_with_associations_and_references(
         penicillins_to_gas_gangrene_snippet_node1, 'IN_PUB', penicillins_to_gas_gangrene_publication_node1  # noqa
     )
 
+    penicillins_alleviates_reduces_snippet_to_publication_edge2 = Relationship(
+        penicillins_to_gas_gangrene_snippet_node3, 'IN_PUB', penicillins_to_gas_gangrene_publication_node2  # noqa
+    )
+
     penicillins_treatment_snippet_to_publication_edge = Relationship(
         penicillins_to_gas_gangrene_snippet_node2, 'IN_PUB', penicillins_to_gas_gangrene_publication_node2  # noqa
     )
     tx.create(penicillins_alleviates_reduces_snippet_to_publication_edge)
+    tx.create(penicillins_alleviates_reduces_snippet_to_publication_edge2)
     tx.create(penicillins_treatment_snippet_to_publication_edge)
 
     tx.commit()
