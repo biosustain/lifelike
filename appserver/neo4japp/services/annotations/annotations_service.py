@@ -227,6 +227,8 @@ class AnnotationsService:
                     start_lower_y = lower_y
                     end_upper_x = upper_x
                     end_upper_y = upper_y
+
+                    keyword += curr_page_coor_obj[pos_idx].get_text()
                 else:
                     if lower_y != start_lower_y:
                         diff = abs(lower_y - start_lower_y)
@@ -327,6 +329,7 @@ class AnnotationsService:
                 wikipedia=WIKIPEDIA_LINK + link_search_term,
                 google=GOOGLE_LINK + link_search_term,
             ),
+            all_text=link_search_term,
         )
 
         # the `keywords` property here is to allow us to know
