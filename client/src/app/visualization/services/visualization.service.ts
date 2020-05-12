@@ -8,10 +8,11 @@ import {
     DuplicateNodeEdgePair,
     DuplicateVisEdge,
     GetClusterGraphDataResult,
+    GetReferenceTableDataResult,
     GetSnippetsResult,
     Neo4jResults,
+    NodeLegend,
     VisEdge,
-    GetReferenceTableDataResult,
 } from 'app/interfaces';
 import { NODE_EXPANSION_LIMIT } from 'app/shared/constants';
 
@@ -66,6 +67,12 @@ export class VisualizationService {
     getClusterGraphData(clusteredNodes: ClusteredNode[]) {
         return this.http.post<{result: GetClusterGraphDataResult}>(
             `${this.visApi}/get-cluster-graph-data`, {clusteredNodes},
+        ).pipe(map(resp => resp.result));
+    }
+
+    getLegendForVisualizer() {
+        return this.http.get<{result: NodeLegend}>(
+            `${this.visApi}/get-legend-for-visualizer`,
         ).pipe(map(resp => resp.result));
     }
 }

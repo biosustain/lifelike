@@ -1,3 +1,10 @@
+export interface NodeLegend {
+    [key: string]: {
+        color: string;
+        label: string;
+    };
+}
+
 /** Node representation from the backend */
 export interface GraphNode {
   id: number;

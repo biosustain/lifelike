@@ -64,9 +64,14 @@ export class VisualizationComponent implements OnInit {
         private visService: VisualizationService,
     ) {
         this.legend = new Map<string, string[]>();
-        this.legend.set('Gene', ['#78CDD7', '#247B7B']);
-        this.legend.set('Disease', ['#8FA6CB', '#7D84B2']);
-        this.legend.set('Chemical', ['#CD5D67', '#410B13']);
+        this.visService.getLegendForVisualizer().subscribe(legend => {
+            Object.keys(legend).forEach(label => {
+                // Keys of the result dict are all lowercase, need to change the first character
+                // to uppercase to match Neo4j labels
+                const formattedLabel = label.slice(0, 1).toUpperCase() + label.slice(1);
+                this.legend.set(formattedLabel, [legend[label].color, '#247B7B']); // TODO: Figure out what the secondary color should be
+            });
+        });
     }
 
     ngOnInit() {
