@@ -29,6 +29,9 @@ export class NetworkVis {
       multiselect: true
     },
     edges: {
+      color: {
+        color: '#2B7CE9'
+      },
       arrows: {
         to: {
           enabled: true
