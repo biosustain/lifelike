@@ -60,6 +60,16 @@ ENTITY_TYPE_PRECEDENCE = {
     'Phenotypes': 2,
 }
 
+HOMO_SAPIENS_TAX_ID = '9606'
+
+
+class OrganismCategory(Enum):
+    Archaea = 'Archaea'
+    Bacteria = 'Bacteria'
+    Eukaryota = 'Eukaryota'
+    Viruses = 'Viruses'
+    Uncategorized = 'Uncategorized'
+
 
 class EntityColor(Enum):
     Chemicals = ANNOTATION_STYLES_DICT['chemical']['color']
