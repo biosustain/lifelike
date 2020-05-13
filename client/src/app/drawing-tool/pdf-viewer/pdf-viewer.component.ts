@@ -275,6 +275,7 @@ export class PdfViewerComponent implements OnDestroy {
   scrollInPdf(loc: Location) {
     if (!this.pdfFileLoaded) {
       console.log('File in the pdf viewer is not loaded yet. So, I cant scroll');
+      this.pendingScroll = loc;
       return;
     }
     this.goToPosition.next(loc);

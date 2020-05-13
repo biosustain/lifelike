@@ -71,6 +71,8 @@ export class SplitterComponent implements OnInit, OnDestroy, AfterViewInit {
 
   }
 
+  // Prevent the user from leaving the page
+  // if work is left un-saved
   @HostListener('window:beforeunload')
   canDeactivate(): Observable<boolean> | boolean {
     return this.saveState ? true : confirm(
