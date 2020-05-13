@@ -90,11 +90,6 @@ jobs:
                 gcloud compute ssh $GCE_INSTANCE --zone $GCE_INSTANCE_ZONE --command='sudo chmod a+x /srv/startup.sh';
                 gcloud compute ssh $GCE_INSTANCE --zone $GCE_INSTANCE_ZONE --command='sudo chmod a+x /srv/migration-manager.sh';
 
-            - name: Save encrypted copy of environment file to Google Bucket
-              run: |-
-                gcloud kms encrypt --location global --keyring kg-secrets --key kg-secrets-key --plaintext-file staging.env --ciphertext-file staging.env.encrypted
-                gsutil cp staging.env.encrypted gs://kg-secrets/staging.env.encrypted
-
             - name: Deploy
               run: |-
                 gcloud compute ssh $GCE_INSTANCE --zone $GCE_INSTANCE_ZONE --command='sudo /srv/startup.sh -t staging';
