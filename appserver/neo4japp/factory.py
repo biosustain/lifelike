@@ -1,4 +1,5 @@
 import logging
+import os
 import traceback
 from functools import partial
 
@@ -14,7 +15,13 @@ from neo4japp.exceptions import (
     JWTTokenException, RecordNotFoundException,
     BadRequestError)
 
+import sentry_sdk
+from sentry_sdk.integrations.flask import FlaskIntegration
+
 logger = logging.getLogger(__name__)
+
+# Commit Hash (Version) of Application
+GITHUB_HASH = os.environ.get('GITHUB_HASH', 'unspecified')
 
 # Used for registering blueprints
 BLUEPRINT_PACKAGE = __package__ + '.blueprints'
@@ -26,6 +33,13 @@ cache = Cache()
 
 
 def create_app(name='neo4japp', config='config.Development'):
+
+    if config == 'config.Staging' or config == 'config.Production':
+        sentry_sdk.init(
+            dsn=os.environ.get('SENTRY_KEY'),
+            integrations=[FlaskIntegration()],
+        )
+
     app = Flask(name)
     app.config.from_object(config)
 
@@ -70,6 +84,7 @@ def handle_error(code: int, ex: BaseException):
     reterr = {'apiHttpError': ex.to_dict()}
     if current_app.debug:
         logger.error("Request caused BaseException error", exc_info=ex)
+        reterr['version'] = GITHUB_HASH
         reterr['detail'] = "".join(traceback.format_exception(
             etype=type(ex), value=ex, tb=ex.__traceback__))
     return jsonify(reterr), code
@@ -79,6 +94,7 @@ def handle_bad_request_exception(code: int, ex: BadRequestError):
     reterr = {'message': ex.message}
     if current_app.debug:
         logger.warning("Request caused BadRequestError", exc_info=ex)
+        reterr['version'] = GITHUB_HASH
         reterr['detail'] = "".join(traceback.format_exception(
             etype=type(ex), value=ex, tb=ex.__traceback__))
     return jsonify(reterr), code
@@ -88,6 +104,7 @@ def handle_generic_error(code: int, ex: Exception):
     reterr = {'apiHttpError': str(ex)}
     if current_app.debug:
         logger.error("Request caused unhandled exception", exc_info=ex)
+        reterr['version'] = GITHUB_HASH
         reterr['detail'] = "".join(traceback.format_exception(
             etype=type(ex), value=ex, tb=ex.__traceback__))
     return jsonify(reterr), code
