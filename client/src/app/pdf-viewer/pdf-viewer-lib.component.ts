@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, EventEmitter, HostListener, Input, NgZone, OnInit, Output, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, EventEmitter, HostListener, Input, NgZone, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
 import { Subject } from 'rxjs';
 import { Annotation, Location, Meta } from './annotation-type';
 import { PDFDocumentProxy, PDFProgressData, PDFSource } from './pdf-viewer/pdf-viewer.module';
@@ -15,7 +15,7 @@ declare var jQuery: any;
   templateUrl: './pdf-viewer-lib.component.html',
   styles: ['./pdf-viewer-lib.component.css']
 })
-export class PdfViewerLibComponent implements OnInit, AfterViewInit {
+export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
 
   @Input() pdfSrc: string | PDFSource | ArrayBuffer;
   @Input() annotations: Annotation[];
@@ -66,6 +66,9 @@ export class PdfViewerLibComponent implements OnInit, AfterViewInit {
   selectedText: string[];
   selectedTextCoords: any[];
   currentPage: number;
+  mouseDownClientX: number;
+  mouseDownClientY: number;
+  dragThreshold = 5;
 
   opacity = 0.3;
 
@@ -133,6 +136,12 @@ export class PdfViewerLibComponent implements OnInit, AfterViewInit {
 
       }
     });
+
+    this.pdfComponent.pdfViewerContainer.nativeElement.addEventListener('mouseup', this.mouseUp);
+  }
+
+  ngOnDestroy(): void {
+    this.pdfComponent.pdfViewerContainer.nativeElement.removeEventListener('mouseup', this.mouseUp);
   }
 
   toolbarControlChanged(event) {
@@ -293,8 +302,19 @@ export class PdfViewerLibComponent implements OnInit, AfterViewInit {
     }
   }
 
-  @HostListener('window:mouseup', ['$event'])
-  mouseUp(event) {
+  @HostListener('window:mousedown', ['$event'])
+  mouseDown(event) {
+    this.mouseDownClientX = event.clientX;
+    this.mouseDownClientY = event.clientY;
+  }
+
+  mouseUp = event => {
+    if (this.selectedText && this.selectedText.length
+      && Math.abs(this.mouseDownClientX - event.clientX) < this.dragThreshold
+      && Math.abs(this.mouseDownClientY - event.clientY) < this.dragThreshold) {
+      this.deleteFrictionless();
+      return;
+    }
     const i = 0;
     const selection = window.getSelection() as any;
     const baseNode = selection.baseNode;
