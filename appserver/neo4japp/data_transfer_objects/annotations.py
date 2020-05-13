@@ -79,3 +79,10 @@ class Annotation(CamelDictMixin):
     lo_location_offset: int = attr.ib()
     hi_location_offset: int = attr.ib()
     meta: Meta = attr.ib()
+
+
+@attr.s(frozen=True)
+class OrganismAnnotation(Annotation):
+    @attr.s(frozen=True)
+    class OrganismMeta(Annotation.Meta):
+        category: str = attr.ib(default='')
