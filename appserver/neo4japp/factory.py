@@ -21,7 +21,7 @@ from sentry_sdk.integrations.flask import FlaskIntegration
 logger = logging.getLogger(__name__)
 
 # Commit Hash (Version) of Application
-GITHUB_HASH = os.environ.get('GITHUB_HASH')
+GITHUB_HASH = os.environ.get('GITHUB_HASH', 'unspecified')
 
 # Used for registering blueprints
 BLUEPRINT_PACKAGE = __package__ + '.blueprints'
