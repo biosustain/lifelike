@@ -12,19 +12,21 @@ from .annotation_interval_tree import (
     AnnotationIntervalTree,
 )
 from .constants import (
-    COMMON_WORDS,
-    TYPO_SYNONYMS,
     DatabaseType,
     EntityColor,
     EntityIdStr,
     EntityType,
+    OrganismCategory,
+    COMMON_WORDS,
     ENTITY_HYPERLINKS,
     ENTITY_TYPE_PRECEDENCE,
-    PDF_NEW_LINE_THRESHOLD,
+    GOOGLE_LINK,
+    HOMO_SAPIENS_TAX_ID,
     NCBI_LINK,
+    PDF_NEW_LINE_THRESHOLD,
+    TYPO_SYNONYMS,
     UNIPROT_LINK,
     WIKIPEDIA_LINK,
-    GOOGLE_LINK,
 )
 from .lmdb_dao import LMDBDao
 from .util import normalize_str
@@ -33,6 +35,7 @@ from neo4japp.data_transfer_objects import (
     Annotation,
     PDFTokenPositions,
     PDFTokenPositionsList,
+    OrganismAnnotation,
 )
 from neo4japp.database import get_hybrid_neo4j_postgres_service
 from neo4japp.util import compute_hash
@@ -317,35 +320,61 @@ class AnnotationsService:
         else:
             hyperlink += entity_id  # type: ignore
 
-        meta = Annotation.Meta(
-            keyword_type=token_type,
-            color=color,
-            id=entity_id,
-            id_type=entity['id_type'],
-            id_hyperlink=cast(str, hyperlink),
-            links=Annotation.Meta.Links(
-                ncbi=NCBI_LINK + link_search_term,
-                uniprot=UNIPROT_LINK + link_search_term,
-                wikipedia=WIKIPEDIA_LINK + link_search_term,
-                google=GOOGLE_LINK + link_search_term,
-            ),
-            all_text=link_search_term,
-        )
-
-        # the `keywords` property here is to allow us to know
-        # what coordinates map to what text in the PDF
-        # we want to actually use the real name inside LMDB
-        # for the `keyword` and `keyword_length` properties
-        return Annotation(
-            page_number=token_positions.page_number,
-            rects=[pos.positions for pos in keyword_positions],  # type: ignore
-            keywords=[k.value for k in keyword_positions],
-            keyword=link_search_term,
-            keyword_length=len(link_search_term),
-            lo_location_offset=keyword_starting_idx,
-            hi_location_offset=keyword_ending_idx,
-            meta=meta,
-        )
+        if token_type == EntityType.Species.value:
+            organism_meta = OrganismAnnotation.OrganismMeta(
+                category=entity['category'],
+                keyword_type=token_type,
+                color=color,
+                id=entity_id,
+                id_type=entity['id_type'],
+                id_hyperlink=cast(str, hyperlink),
+                links=OrganismAnnotation.OrganismMeta.Links(
+                    ncbi=NCBI_LINK + link_search_term,
+                    uniprot=UNIPROT_LINK + link_search_term,
+                    wikipedia=WIKIPEDIA_LINK + link_search_term,
+                    google=GOOGLE_LINK + link_search_term,
+                ),
+                all_text=link_search_term,
+            )
+            # the `keywords` property here is to allow us to know
+            # what coordinates map to what text in the PDF
+            # we want to actually use the real name inside LMDB
+            # for the `keyword` and `keyword_length` properties
+            return OrganismAnnotation(
+                page_number=token_positions.page_number,
+                rects=[pos.positions for pos in keyword_positions],  # type: ignore
+                keywords=[k.value for k in keyword_positions],
+                keyword=link_search_term,
+                keyword_length=len(link_search_term),
+                lo_location_offset=keyword_starting_idx,
+                hi_location_offset=keyword_ending_idx,
+                meta=organism_meta,
+            )
+        else:
+            meta = Annotation.Meta(
+                keyword_type=token_type,
+                color=color,
+                id=entity_id,
+                id_type=entity['id_type'],
+                id_hyperlink=cast(str, hyperlink),
+                links=Annotation.Meta.Links(
+                    ncbi=NCBI_LINK + link_search_term,
+                    uniprot=UNIPROT_LINK + link_search_term,
+                    wikipedia=WIKIPEDIA_LINK + link_search_term,
+                    google=GOOGLE_LINK + link_search_term,
+                ),
+                all_text=link_search_term,
+            )
+            return Annotation(
+                page_number=token_positions.page_number,
+                rects=[pos.positions for pos in keyword_positions],  # type: ignore
+                keywords=[k.value for k in keyword_positions],
+                keyword=link_search_term,
+                keyword_length=len(link_search_term),
+                lo_location_offset=keyword_starting_idx,
+                hi_location_offset=keyword_ending_idx,
+                meta=meta,
+            )
 
     def _get_annotation(
         self,
@@ -464,7 +493,14 @@ class AnnotationsService:
                     else:
                         distance_from_gene_to_this_organism = organism_starting_idx - keyword_ending_idx  # noqa
 
-                    if distance_from_gene_to_this_organism < smallest_distance:
+                    # If the new distance is the same as the current closest distance, and either
+                    # the current closest organism is homo sapiens, or the closest organism ISN'T
+                    # homo sapiens AND the new organism IS, then prefer homo sapiens.
+                    if (distance_from_gene_to_this_organism == smallest_distance and
+                            (closest_organism == HOMO_SAPIENS_TAX_ID or
+                                (closest_organism != HOMO_SAPIENS_TAX_ID and organism_id == HOMO_SAPIENS_TAX_ID))):  # noqa
+                        closest_organism = HOMO_SAPIENS_TAX_ID
+                    elif distance_from_gene_to_this_organism < smallest_distance:
                         closest_organism = organism_id
                         smallest_distance = distance_from_gene_to_this_organism
             return organism_to_gene_pairs[closest_organism]
@@ -733,6 +769,21 @@ class AnnotationsService:
         matched_entity_locations: Dict[int, Dict[str, List[Tuple[int, int]]]],
         annotation: Annotation,
     ) -> Dict[int, Dict[str, List[Tuple[int, int]]]]:
+        def _check_if_human_id_should_be_added(
+            matched_entity_locations: Dict[int, Dict[str, List[Tuple[int, int]]]],
+            annotation: Annotation,
+        ):
+            if isinstance(annotation.meta, OrganismAnnotation.OrganismMeta) and annotation.meta.category == OrganismCategory.Viruses.value:  # noqa
+                if matched_entity_locations[annotation.page_number].get(HOMO_SAPIENS_TAX_ID, None) is not None:  # noqa
+                    matched_entity_locations[annotation.page_number][HOMO_SAPIENS_TAX_ID].append(  # noqa
+                        (annotation.lo_location_offset, annotation.hi_location_offset)
+                    )
+                else:
+                    matched_entity_locations[annotation.page_number][HOMO_SAPIENS_TAX_ID] = [
+                        (annotation.lo_location_offset, annotation.hi_location_offset)
+                    ]
+            return matched_entity_locations
+
         if matched_entity_locations.get(annotation.page_number, None) is not None:
             if matched_entity_locations[annotation.page_number].get(annotation.meta.id, None) is not None:  # noqa
                 matched_entity_locations[annotation.page_number][annotation.meta.id].append(
@@ -742,10 +793,25 @@ class AnnotationsService:
                 matched_entity_locations[annotation.page_number][annotation.meta.id] = [
                     (annotation.lo_location_offset, annotation.hi_location_offset)
                 ]
+
+            # If the annotation represents a virus, then also mark this location as a human
+            # annotation
+            matched_entity_locations = _check_if_human_id_should_be_added(
+                matched_entity_locations=matched_entity_locations,
+                annotation=annotation,
+            )
         else:
             matched_entity_locations[annotation.page_number] = {
                 annotation.meta.id: [(annotation.lo_location_offset, annotation.hi_location_offset)]
             }
+
+            # If the annotation represents a virus, then also mark this location as a human
+            # annotation
+            matched_entity_locations = _check_if_human_id_should_be_added(
+                matched_entity_locations=matched_entity_locations,
+                annotation=annotation,
+            )
+
         return matched_entity_locations
 
     def _get_entity_locations(
