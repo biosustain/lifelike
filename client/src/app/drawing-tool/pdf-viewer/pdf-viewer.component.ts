@@ -72,12 +72,13 @@ export class PdfViewerComponent implements OnDestroy {
       }, 10);
     });
 
+    // TODO - Remove and replace with url paramter
     // Handles opening a pdf from other pages
-    const linkedFileId = localStorage.getItem('fileIdForPdfViewer');
-    if (linkedFileId) {
-      localStorage.removeItem('fileIdForPdfViewer');
-      this.openPdf(new DummyFile(linkedFileId));
-    }
+    // const linkedFileId = localStorage.getItem('fileIdForPdfViewer');
+    // if (linkedFileId) {
+    //   localStorage.removeItem('fileIdForPdfViewer');
+    //   this.openPdf(new DummyFile(linkedFileId));
+    // }
   }
 
   annotationCreated(annotation: Annotation) {
