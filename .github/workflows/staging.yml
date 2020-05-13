@@ -5,7 +5,6 @@ on:
     types: [labeled]
 
 env:
-    SERVICE_ACCOUNT_CRED: ${{ secrets.GCE_SA_KEY }}
     POSTGRES_HOST: ${{ secrets.STAGING_POSTGRES_HOST }}
     POSTGRES_PORT: ${{ secrets.STAGING_POSTGRES_PORT }}
     POSTGRES_USER: ${{ secrets.STAGING_POSTGRES_USER }}
@@ -20,12 +19,10 @@ env:
     GITHUB_HASH: $GITHUB_SHA
     GCE_INSTANCE: kg-staging
     GCE_INSTANCE_ZONE: us-central1-a
+    GCE_SERVICE_ACCOUNT: ${{ secrets.GCE_SA_KEY }}
     CLOUD_SQL_ALIAS: ${{ secrets.STAGING_CLOUD_SQL_ALIAS }}
     GCE_BACKUP_BUCKET: ${{ secrets.POSTGRES_BACKUP_BUCKET }}
-    # TODO: Delete these later after refactor, redundant
-    NEO4J_ENTITIES_HOST: ${{ secrets.NEO4J_ENTITIES_HOST }}
-    NEO4J_ENTITIES_PASS: ${{ secrets.NEO4J_ENTITIES_PASS }}
-    NEO4J_ENTITIES_USER: ${{ secrets.NEO4J_ENTITIES_USER }}
+    SENTRY_KEY: ${{ secrets.SENTRY_KEY }}
 
 jobs:
 
@@ -78,30 +75,34 @@ jobs:
                 echo "FLASK_ENV=$FLASK_ENV" >> staging.env
                 echo "DOCKER_USER=_json_key" >> staging.env
                 echo "PROJECT_ID=$PROJECT_ID" >> staging.env
-                echo "NEO4J_ENTITIES_HOST=$NEO4J_ENTITIES_HOST" >> staging.env
-                echo "NEO4J_ENTITIES_PASS=$NEO4J_ENTITIES_PASS" >> staging.env
-                echo "NEO4J_ENTITIES_USER=$NEO4J_ENTITIES_USER" >> staging.env
                 echo "CLOUD_SQL_ALIAS=$CLOUD_SQL_ALIAS" >> staging.env
                 echo "GCE_BACKUP_BUCKET=$GCE_BACKUP_BUCKET" >> staging.env
+                echo "SERVICE_ACCOUNT_CRED=$GCE_SERVICE_ACCOUNT" >> staging.env
                 GITHUB_COMMIT_TIMESTAMP=$(git log -1 --format=%cI)
                 echo "GITHUB_COMMIT_TIMESTAMP=$GITHUB_COMMIT_TIMESTAMP" >> staging.env
-                echo "GITHUB_HASH=$GITHUB_HASH >> staging.env"
-                echo "$SERVICE_ACCOUNT_CRED" >> keyfile.json
-                gcloud compute scp staging.env root@$GCE_INSTANCE:/srv --zone $GCE_INSTANCE_ZONE
-                gcloud compute scp keyfile.json root@$GCE_INSTANCE:/srv --zone $GCE_INSTANCE_ZONE
-                gcloud compute scp ./deployment/bin/startup.sh root@$GCE_INSTANCE:/srv --zone $GCE_INSTANCE_ZONE
-                gcloud compute scp ./deployment/bin/migration-manager.sh root@$GCE_INSTANCE:/srv --zone $GCE_INSTANCE_ZONE
-                gcloud compute ssh root@$GCE_INSTANCE --zone $GCE_INSTANCE_ZONE --command='chmod a+x /srv/startup.sh';
-                gcloud compute ssh root@$GCE_INSTANCE --zone $GCE_INSTANCE_ZONE --command='chmod a+x /srv/migration-manager.sh';
+                echo "GITHUB_HASH=$GITHUB_HASH" >> staging.env
+                echo "SENTRY_KEY=$SENTRY_KEY" >> staging.env
+                echo "$GCE_SERVICE_ACCOUNT" >> keyfile.json
+                gcloud compute scp staging.env $GCE_INSTANCE:/srv --zone $GCE_INSTANCE_ZONE
+                gcloud compute scp keyfile.json $GCE_INSTANCE:/srv --zone $GCE_INSTANCE_ZONE
+                gcloud compute scp ./deployment/bin/startup.sh $GCE_INSTANCE:/srv --zone $GCE_INSTANCE_ZONE
+                gcloud compute scp ./deployment/bin/migration-manager.sh $GCE_INSTANCE:/srv --zone $GCE_INSTANCE_ZONE
+                gcloud compute ssh $GCE_INSTANCE --zone $GCE_INSTANCE_ZONE --command='sudo chmod a+x /srv/startup.sh';
+                gcloud compute ssh $GCE_INSTANCE --zone $GCE_INSTANCE_ZONE --command='sudo chmod a+x /srv/migration-manager.sh';
+
+            - name: Save encrypted copy of environment file to Google Bucket
+              run: |-
+                gcloud kms encrypt --location global --keyring kg-secrets --key kg-secrets-key --plaintext-file staging.env --ciphertext-file staging.env.encrypted
+                gsutil cp staging.env.encrypted gs://kg-secrets/staging.env.encrypted
 
             - name: Deploy
               run: |-
-                gcloud compute ssh root@$GCE_INSTANCE --zone $GCE_INSTANCE_ZONE --command='/srv/startup.sh -t staging';
+                gcloud compute ssh $GCE_INSTANCE --zone $GCE_INSTANCE_ZONE --command='sudo /srv/startup.sh -t staging';
 
             - name: Applying database migrations
               run: |-
-                gcloud compute ssh root@$GCE_INSTANCE --zone $GCE_INSTANCE_ZONE --command='/srv/migration-manager.sh -t staging';
+                gcloud compute ssh $GCE_INSTANCE --zone $GCE_INSTANCE_ZONE --command='sudo /srv/migration-manager.sh -t staging';
 
             - name: Clean up images
               run: |-
-                gcloud compute ssh root@$GCE_INSTANCE --zone $GCE_INSTANCE_ZONE --command='sudo docker system prune -f';
+                gcloud compute ssh $GCE_INSTANCE --zone $GCE_INSTANCE_ZONE --command='sudo docker system prune -f';
