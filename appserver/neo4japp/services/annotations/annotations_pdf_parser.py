@@ -133,11 +133,8 @@ class AnnotationsPDFParser:
         return False
 
     def _is_whitespace_or_punctuation(self, char: str) -> bool:
-        return char in whitespace or char == '\xa0' or char in punctuation  # noqa
-
-    def _is_whitespace(self, char: str) -> bool:
         # whitespace contains newline
-        return char in whitespace or char == '\xa0'
+        return char in whitespace or char == '\xa0' or char in punctuation  # noqa
 
     def _has_unwanted_punctuation(self, char: str, leading: bool = False) -> bool:
         check = (char == ',' or char == '.' or char == ')' or char == '(' or char == ';' or char == ':')  # noqa
@@ -174,10 +171,6 @@ class AnnotationsPDFParser:
                             word_list.append((word, char_idx_map))
                             char_idx_map = {}
                             word = ''
-                    elif curr_char in whitespace and prev_char == '-':
-                        # word is possibly on new line
-                        # so ignore the space
-                        pass
                     else:
                         if i + 1 == max_length:
                             # reached end so add whatever is left
@@ -187,8 +180,15 @@ class AnnotationsPDFParser:
                             char_idx_map = {}
                             word = ''
                         else:
-                            word += curr_char
-                            char_idx_map[i] = curr_char
+                            next_char = clean_char(char_list[i+1])
+                            if ((curr_char == '-' and next_char in whitespace) or
+                                (curr_char in whitespace and prev_char == '-')):
+                                # word is possibly on new line
+                                # so ignore the space
+                                pass
+                            else:
+                                word += curr_char
+                                char_idx_map[i] = curr_char
 
             words_with_char_idx[page_idx] = word_list
         return words_with_char_idx
@@ -252,7 +252,11 @@ class AnnotationsPDFParser:
                         if curr_keyword:
                             token = PDFTokenPositions(
                                 page_number=page_idx,
-                                keyword=curr_keyword,
+                                # whitespaces don't exist in curr_char_idx_mappings
+                                # they were added to separate words
+                                # and might've been left behind after stripping out
+                                # unwanted punctuation
+                                keyword=curr_keyword.strip(),
                                 char_positions=curr_char_idx_mappings,
                             )
 

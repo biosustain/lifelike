@@ -340,7 +340,7 @@ class AnnotationsService:
             # what coordinates map to what text in the PDF
             # we want to actually use the real name inside LMDB
             # for the `keyword` and `keyword_length` properties
-            return OrganismAnnotation(
+            annotation = OrganismAnnotation(
                 page_number=token_positions.page_number,
                 rects=[pos.positions for pos in keyword_positions],  # type: ignore
                 keywords=[k.value for k in keyword_positions],
@@ -365,7 +365,7 @@ class AnnotationsService:
                 ),
                 all_text=link_search_term,
             )
-            return Annotation(
+            annotation = Annotation(
                 page_number=token_positions.page_number,
                 rects=[pos.positions for pos in keyword_positions],  # type: ignore
                 keywords=[k.value for k in keyword_positions],
@@ -417,7 +417,7 @@ class AnnotationsService:
         # as appeared in pdf
         hashed_pdf_keywords: Dict[str, str] = {}
 
-        tokens_lowercased = set(tokens.keys())
+        tokens_lowercased = set([normalize_str(s) for s in list(tokens.keys())])
 
         for word, token_positions_list in tokens.items():
             for token_positions in token_positions_list:
@@ -561,10 +561,10 @@ class AnnotationsService:
         # as appeared in pdf
         hashed_pdf_keywords: Dict[str, str] = {}
 
-        tokens_lowercased = set(tokens.keys())
+        tokens_lowercased = set([normalize_str(s) for s in list(tokens.keys())])
 
         match_result = self.hybrid_neo4j_postgres_service.get_gene_to_organism_match_result(
-            genes=list(tokens.keys()),
+            genes=[normalize_str(s) for s in list(tokens.keys())],
             matched_organism_ids=list(organism_frequency.keys()),
         )
 
@@ -627,7 +627,7 @@ class AnnotationsService:
         entity_id_str: str,
         coor_obj_per_pdf_page: Dict[int, List[Union[LTChar, LTAnno]]],
         cropbox_per_page: Dict[int, Tuple[int, int]],
-    ) -> Tuple[List[Annotation], Set[str]]:
+    ) -> Tuple[List[Annotation], Set[str], Dict[str, str]]:
         return self._get_annotation(
             tokens=self.matched_chemicals,
             token_type=EntityType.Chemicals.value,
@@ -644,7 +644,7 @@ class AnnotationsService:
         entity_id_str: str,
         coor_obj_per_pdf_page: Dict[int, List[Union[LTChar, LTAnno]]],
         cropbox_per_page: Dict[int, Tuple[int, int]],
-    ) -> Tuple[List[Annotation], Set[str]]:
+    ) -> Tuple[List[Annotation], Set[str], Dict[str, str]]:
         return self._get_annotation(
             tokens=self.matched_compounds,
             token_type=EntityType.Compounds.value,
@@ -661,7 +661,7 @@ class AnnotationsService:
         entity_id_str: str,
         coor_obj_per_pdf_page: Dict[int, List[Union[LTChar, LTAnno]]],
         cropbox_per_page: Dict[int, Tuple[int, int]],
-    ) -> Tuple[List[Annotation], Set[str]]:
+    ) -> Tuple[List[Annotation], Set[str], Dict[str, str]]:
         return self._get_annotation(
             tokens=self.matched_proteins,
             token_type=EntityType.Proteins.value,
@@ -678,7 +678,7 @@ class AnnotationsService:
         entity_id_str: str,
         coor_obj_per_pdf_page: Dict[int, List[Union[LTChar, LTAnno]]],
         cropbox_per_page: Dict[int, Tuple[int, int]],
-    ) -> Tuple[List[Annotation], Set[str]]:
+    ) -> Tuple[List[Annotation], Set[str], Dict[str, str]]:
         return self._get_annotation(
             tokens=self.matched_species,
             token_type=EntityType.Species.value,
@@ -695,7 +695,7 @@ class AnnotationsService:
         entity_id_str: str,
         coor_obj_per_pdf_page: Dict[int, List[Union[LTChar, LTAnno]]],
         cropbox_per_page: Dict[int, Tuple[int, int]],
-    ) -> Tuple[List[Annotation], Set[str]]:
+    ) -> Tuple[List[Annotation], Set[str], Dict[str, str]]:
         return self._get_annotation(
             tokens=self.matched_diseases,
             token_type=EntityType.Diseases.value,
@@ -712,7 +712,7 @@ class AnnotationsService:
         entity_id_str: str,
         coor_obj_per_pdf_page: Dict[int, List[Union[LTChar, LTAnno]]],
         cropbox_per_page: Dict[int, Tuple[int, int]],
-    ) -> Tuple[List[Annotation], Set[str]]:
+    ) -> Tuple[List[Annotation], Set[str], Dict[str, str]]:
         return self._get_annotation(
             tokens=self.matched_phenotypes,
             token_type=EntityType.Phenotypes.value,
@@ -963,10 +963,13 @@ class AnnotationsService:
 
         for annotation in annotations_list:
             hashval = compute_hash(annotation.to_dict())
-            keyword_from_annotation = annotation.keyword.split(' ')
             keyword_from_pdf = all_hashed_annotation_keywords[hashval].split(' ')
 
-            if len(keyword_from_annotation) == len(keyword_from_pdf):
+            if len(keyword_from_pdf) > 1:
+                keyword_from_annotation = annotation.keyword.split(' ')
+                if len(keyword_from_annotation) >= len(keyword_from_pdf):
+                    fixed_annotations.append(annotation)
+            else:
                 fixed_annotations.append(annotation)
 
         return fixed_annotations
@@ -1008,6 +1011,7 @@ class AnnotationsService:
             coor_obj_per_pdf_page=tokens.coor_obj_per_pdf_page,
             cropbox_per_page=tokens.cropbox_per_page,
         )
+
         matched_list.append(matched_genes)
         unwanted_matches_list.append(unwanted_genes)
         all_hashed_annotation_keywords = {
