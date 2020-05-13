@@ -88,11 +88,6 @@ jobs:
                 gcloud compute ssh root@$GCE_INSTANCE --zone $GCE_INSTANCE_ZONE --command='chmod a+x /srv/startup.sh';
                 gcloud compute ssh root@$GCE_INSTANCE --zone $GCE_INSTANCE_ZONE --command='chmod a+x /srv/migration-manager.sh';
 
-            - name: Save encrypted copy of environment file to Google Bucket
-              run: |-
-                gcloud kms encrypt --location global --keyring kg-secrets --key kg-secrets-key --plaintext-file prod.env --ciphertext-file prod.env.encrypted
-                gsutil cp prod.env.encrypted gs://kg-secrets/prod.env.encrypted
-
             - name: Deploy
               run: |-
                 gcloud compute ssh root@$GCE_INSTANCE --zone $GCE_INSTANCE_ZONE --command='/srv/startup.sh -t production';
