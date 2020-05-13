@@ -6,7 +6,6 @@ on:
 
 
 env:
-    SERVICE_ACCOUNT_CRED: ${{ secrets.GCE_SA_KEY }}
     POSTGRES_HOST: ${{ secrets.PROD_POSTGRES_HOST }}
     POSTGRES_PORT: ${{ secrets.PROD_POSTGRES_PORT }}
     POSTGRES_USER: ${{ secrets.PROD_POSTGRES_USER }}
@@ -21,12 +20,10 @@ env:
     GITHUB_HASH: $GITHUB_SHA
     GCE_INSTANCE: kg-prod
     GCE_INSTANCE_ZONE: us-central1-a
+    GCE_SERVICE_ACCOUNT: ${{ secrets.GCE_SA_KEY }}
     CLOUD_SQL_ALIAS: ${{ secrets.PROD_CLOUD_SQL_ALIAS }}
     GCE_BACKUP_BUCKET: ${{ secrets.POSTGRES_BACKUP_BUCKET }}
-    # TODO: Delete these later after refactor, redundant
-    NEO4J_ENTITIES_HOST: ${{ secrets.NEO4J_ENTITIES_HOST }}
-    NEO4J_ENTITIES_PASS: ${{ secrets.NEO4J_ENTITIES_PASS }}
-    NEO4J_ENTITIES_USER: ${{ secrets.NEO4J_ENTITIES_USER }}
+    SENTRY_KEY: ${{ secrets.SENTRY_KEY }}
 
 jobs:
     setup-build-publish-deploy:
@@ -76,21 +73,25 @@ jobs:
                 echo "FLASK_ENV=$FLASK_ENV" >> prod.env
                 echo "DOCKER_USER=_json_key" >> prod.env
                 echo "PROJECT_ID=$PROJECT_ID" >> prod.env
-                echo "NEO4J_ENTITIES_HOST=$NEO4J_ENTITIES_HOST" >> prod.env
-                echo "NEO4J_ENTITIES_PASS=$NEO4J_ENTITIES_PASS" >> prod.env
-                echo "NEO4J_ENTITIES_USER=$NEO4J_ENTITIES_USER" >> prod.env
                 echo "CLOUD_SQL_ALIAS=$CLOUD_SQL_ALIAS" >> prod.env
                 echo "GCE_BACKUP_BUCKET=$GCE_BACKUP_BUCKET" >> prod.env
+                echo "SERVICE_ACCOUNT_CRED=$GCE_SERVICE_ACCOUNT" >> prod.env
                 echo "GITHUB_HASH=$GITHUB_HASH >> prod.env"
                 GITHUB_COMMIT_TIMESTAMP=$(git log -1 --format=%cI)
                 echo "GITHUB_COMMIT_TIMESTAMP=$GITHUB_COMMIT_TIMESTAMP" >> prod.env
-                echo "$SERVICE_ACCOUNT_CRED" >> keyfile.json
+                echo "SENTRY_KEY=$SENTRY_KEY" >> prod.env
+                echo "$GCE_SERVICE_ACCOUNT" >> keyfile.json
                 gcloud compute scp prod.env ***ARANGO_USERNAME***@$GCE_INSTANCE:/srv --zone $GCE_INSTANCE_ZONE
                 gcloud compute scp keyfile.json ***ARANGO_USERNAME***@$GCE_INSTANCE:/srv --zone $GCE_INSTANCE_ZONE
                 gcloud compute scp ./deployment/bin/startup.sh ***ARANGO_USERNAME***@$GCE_INSTANCE:/srv --zone $GCE_INSTANCE_ZONE
                 gcloud compute scp ./deployment/bin/migration-manager.sh ***ARANGO_USERNAME***@$GCE_INSTANCE:/srv --zone $GCE_INSTANCE_ZONE
                 gcloud compute ssh ***ARANGO_USERNAME***@$GCE_INSTANCE --zone $GCE_INSTANCE_ZONE --command='chmod a+x /srv/startup.sh';
                 gcloud compute ssh ***ARANGO_USERNAME***@$GCE_INSTANCE --zone $GCE_INSTANCE_ZONE --command='chmod a+x /srv/migration-manager.sh';
+
+            - name: Save encrypted copy of environment file to Google Bucket
+              run: |-
+                gcloud kms encrypt --location global --keyring kg-secrets --key kg-secrets-key --plaintext-file prod.env --ciphertext-file prod.env.encrypted
+                gsutil cp prod.env.encrypted gs://kg-secrets/prod.env.encrypted
 
             - name: Deploy
               run: |-
