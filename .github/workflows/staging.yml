@@ -80,7 +80,7 @@ jobs:
                 echo "SERVICE_ACCOUNT_CRED=$GCE_SERVICE_ACCOUNT" >> staging.env
                 GITHUB_COMMIT_TIMESTAMP=$(git log -1 --format=%cI)
                 echo "GITHUB_COMMIT_TIMESTAMP=$GITHUB_COMMIT_TIMESTAMP" >> staging.env
-                echo "GITHUB_HASH=$GITHUB_HASH" >> staging.env
+                echo "GITHUB_HASH=temporarily-disabled" >> staging.env
                 echo "SENTRY_KEY=$SENTRY_KEY" >> staging.env
                 echo "$GCE_SERVICE_ACCOUNT" >> keyfile.json
                 gcloud compute scp staging.env $GCE_INSTANCE:/srv --zone $GCE_INSTANCE_ZONE
