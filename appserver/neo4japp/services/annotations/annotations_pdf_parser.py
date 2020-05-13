@@ -140,7 +140,7 @@ class AnnotationsPDFParser:
         return char in whitespace or char == '\xa0'
 
     def _has_unwanted_punctuation(self, char: str, leading: bool = False) -> bool:
-        check = (char == ',' or char == '.' or char == ')' or char == '(')
+        check = (char == ',' or char == '.' or char == ')' or char == '(' or char == ';' or char == ':')  # noqa
         if leading:
             check = check or char == '-'
         return check
