@@ -20,6 +20,7 @@ import { VisualizationModule } from './visualization/visualization.module';
 import { DrawingToolModule } from './drawing-tool/drawing-tool.module';
 import { FileBrowserModule } from './file-browser/file-browser.module';
 import { DialogConfirmDeletionComponent } from './file-browser/file-browser.component';
+import {NodeSearchModule} from './node-search/node-search.module';
 
 @NgModule({
   declarations: [
@@ -38,6 +39,7 @@ import { DialogConfirmDeletionComponent } from './file-browser/file-browser.comp
     LifelikeHomeModule,
     VisualizationModule,
     UserModule,
+    NodeSearchModule,
     // ngrx
     RootStoreModule,
     SearchModule,
