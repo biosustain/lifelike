@@ -9,12 +9,11 @@ import { configureTestSuite } from 'ng-bullet';
 
 import { MockComponents } from 'ng-mocks';
 
-import { PdfViewerLibModule } from 'pdf-viewer-lib';
-
 import { CopyPasteMapsService } from 'app/drawing-tool/services/copy-paste-maps.service';
 import { ClipboardService } from 'app/shared/services/clipboard.service';
 import { SharedModule } from 'app/shared/shared.module';
 import { RootStoreModule } from 'app/***ARANGO_USERNAME***-store';
+import { PdfViewerLibModule } from 'app/pdf-viewer/pdf-viewer-lib.module';
 
 import { DataFlowService, DragDropEventFactory, ProjectsService } from '../services';
 import { DrawingToolContextMenuControlService } from '../services/drawing-tool-context-menu-control.service';
