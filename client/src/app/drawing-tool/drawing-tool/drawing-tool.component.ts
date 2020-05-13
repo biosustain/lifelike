@@ -607,6 +607,10 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
+  /**
+   * Handle drop events from the map list
+   * @param event - represent map schema through dom element
+   */
   dropMap(event: CdkDragDrop < any > ) {
     const nativeElement = event.item.element.nativeElement;
 
