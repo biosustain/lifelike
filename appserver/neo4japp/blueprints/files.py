@@ -44,7 +44,8 @@ def upload_pdf():
     if 'url' in request.form:
         url = request.form['url']
         try:
-            data = read_url(url, max_length=URL_FETCH_MAX_LENGTH, timeout=URL_FETCH_TIMEOUT).getvalue()
+            data = read_url(url, max_length=URL_FETCH_MAX_LENGTH,
+                            timeout=URL_FETCH_TIMEOUT).getvalue()
         except (ValueError, URLError):
             raise BadRequestError("Your file could not be downloaded, either because it is "
                                   "inaccessible or another problem occurred. Please double "
