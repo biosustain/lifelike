@@ -298,7 +298,7 @@ def test_fix_conflicting_annotations(annotations_setup, index, annotations):
         assert fixed[0] == annotations[1]
     elif index == 2:
         assert len(fixed) == 1
-        assert fixed[0] == annotations[1]
+        assert fixed[0] == annotations[0]
     elif index == 3:
         assert len(fixed) == 2
         assert annotations[0] in fixed
