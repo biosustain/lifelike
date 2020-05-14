@@ -104,15 +104,14 @@ class AnnotationIntervalTree(IntervalTree):
                     not strict and
                     higher.begin == lower.end
                 ):  # noqa  # should merge
+                    upper_bound = max(lower.end, higher.end)
                     if data_reducer is not None:
                         current_reduced[0] = data_reducer(current_reduced[0], higher.data)
                     else:  # annihilate the data, since we don't know how to merge it
                         current_reduced[0] = None
-                    merged[-1] = Interval(
-                        current_reduced[0].lo_location_offset,
-                        current_reduced[0].hi_location_offset,
-                        current_reduced[0],
-                    )
+                    lower_offset = current_reduced[0].lo_location_offset if current_reduced[0] else lower.begin  # noqa
+                    upper_offset = current_reduced[0].hi_location_offset if current_reduced[0] else upper_bound  # noqa
+                    merged[-1] = Interval(lower_offset, upper_offset, current_reduced[0])
                 else:
                     new_series()
             else:  # not merged; is first of Intervals to merge
