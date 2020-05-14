@@ -140,23 +140,4 @@ export class MapPreviewComponent implements OnInit {
   fit() {
     this.visGraph.zoom2All();
   }
-
-  /** Switch between full-screen and preview mode of */
-  toggle() {
-    this.screenMode = this.screenMode === 'shrink' ? 'grow' : 'shrink';
-
-    // Calculate the parameters for our animation
-    const listWidth = this.screenMode === 'shrink' ? '25%' : '0%';
-    const previewWidth = this.screenMode === 'shrink' ? '75%' : '100%';
-    const listDuration = this.screenMode === 'shrink' ? 500 : 400;
-    const previewDuration = this.screenMode === 'shrink' ? 400 : 500;
-    const containerHeight = this.screenMode === 'shrink' ? '70vh' : '100vh';
-    const panelHeight = this.screenMode === 'shrink' ? '30vh' : '0vh';
-
-    $('#map-list-container').animate({width: listWidth}, listDuration);
-    $('#map-preview').animate({width: previewWidth}, previewDuration);
-
-    $('#canvas-container').animate({height: containerHeight}, 600);
-    $('#map-panel').animate({height: panelHeight}, 600);
-  }
 }
