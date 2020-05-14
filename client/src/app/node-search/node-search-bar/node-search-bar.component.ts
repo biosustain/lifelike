@@ -1,5 +1,7 @@
-import {Component, Input, OnInit} from '@angular/core';
+import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
 import {FormControl, FormGroup} from '@angular/forms';
+import {SearchService} from '../../search/services/search.service';
+import {FTSQueryRecord} from '../../interfaces';
 
 @Component({
   selector: 'app-node-search-bar',
@@ -8,19 +10,23 @@ import {FormControl, FormGroup} from '@angular/forms';
 })
 export class NodeSearchBarComponent implements OnInit {
 
-  @Input() query = '';
   @Input() error = '';
+  @Output() results = new EventEmitter<any>();
   searchForm = new FormGroup({
     searchInput: new FormControl(''),
   });
 
-  constructor() {
+  constructor(private searchService: SearchService) {
   }
 
   ngOnInit() {
   }
 
   onSubmit() {
+    this.searchService.fullTextSearch(this.searchForm.value.searchInput)
+      .subscribe((results) => {
+        this.results.emit(results.nodes as FTSQueryRecord[]);
+      });
   }
 
 }

@@ -5,7 +5,7 @@
                 <button mat-button matPrefix mat-icon-button>
                     <mat-icon>search</mat-icon>
                 </button>
-                <input formControlName="searchInput" matInput placeholder="Search (e.g. Gas Gangrene)" [value]="query" />
+                <input formControlName="searchInput" matInput placeholder="Search (e.g. Gas Gangrene)" />
             </mat-form-field>
         </form>
         <mat-card-footer><span *ngIf="error">{{ error }}</span></mat-card-footer>
