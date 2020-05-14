@@ -973,6 +973,11 @@ class AnnotationsService:
                 keyword_from_annotation = annotation.keyword.split(' ')
                 if len(keyword_from_annotation) >= len(keyword_from_pdf):
                     fixed_annotations.append(annotation)
+                else:
+                    # consider case such as `ferredoxin 2` vs `ferredoxin-2` in lmdb
+                    keyword_from_annotation = annotation.keyword.split('-')
+                    if len(keyword_from_annotation) >= len(keyword_from_pdf):
+                        fixed_annotations.append(annotation)
             else:
                 fixed_annotations.append(annotation)
 
