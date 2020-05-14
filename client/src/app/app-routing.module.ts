@@ -40,7 +40,7 @@ const routes: Routes = [
     // ).then(m => m.DrawingToolModule)
   },
   {
-    path: 'pdf-viewer',
+    path: 'pdf-viewer/:file_id',
     component: PdfViewerComponent,
     data: {title: 'PDF Viewer'}
   },
