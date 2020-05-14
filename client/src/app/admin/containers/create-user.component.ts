@@ -24,12 +24,16 @@ export class CreateUserComponent {
     MIN_PASSWORD_LENGTH = 8;
 
     form: FormGroup = new FormGroup({
+        firstName: new FormControl('', Validators.required),
+        lastName: new FormControl('', Validators.required),
         username: new FormControl('', Validators.required),
         password: new FormControl(
             '', [Validators.required, Validators.minLength(this.MIN_PASSWORD_LENGTH)]),
         email: new FormControl('', [Validators.required, Validators.email]),
     });
 
+    get firstName() { return this.form.get('firstName'); }
+    get lastName() { return this.form.get('lastName'); }
     get username() { return this.form.get('username'); }
     get password() { return this.form.get('password'); }
     get email() { return this.form.get('email'); }
@@ -42,6 +46,8 @@ export class CreateUserComponent {
     submit(submitBtn: MatButton) {
         submitBtn.disabled = true;
         this.accountService.createUser({
+            firstName: this.form.value.firstName,
+            lastName: this.form.value.lastName,
             username: this.form.value.username,
             password: this.form.value.password,
             email: this.form.value.email,

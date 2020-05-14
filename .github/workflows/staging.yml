@@ -1,8 +1,9 @@
 name: Staging Deployment
 
 on:
-  pull_request:
-    types: [labeled]
+  push:
+    branches:
+      - master
 
 env:
     POSTGRES_HOST: ${{ secrets.STAGING_POSTGRES_HOST }}
@@ -30,8 +31,6 @@ jobs:
 
         name: Setup, Build, Publish, and Deploy
         runs-on: ubuntu-latest
-
-        if: contains(github.event.pull_request.labels.*.name, 'staging')
 
         steps:
             - name: Checkout
@@ -77,10 +76,9 @@ jobs:
                 echo "PROJECT_ID=$PROJECT_ID" >> staging.env
                 echo "CLOUD_SQL_ALIAS=$CLOUD_SQL_ALIAS" >> staging.env
                 echo "GCE_BACKUP_BUCKET=$GCE_BACKUP_BUCKET" >> staging.env
-                echo "SERVICE_ACCOUNT_CRED=$GCE_SERVICE_ACCOUNT" >> staging.env
                 GITHUB_COMMIT_TIMESTAMP=$(git log -1 --format=%cI)
                 echo "GITHUB_COMMIT_TIMESTAMP=$GITHUB_COMMIT_TIMESTAMP" >> staging.env
-                echo "GITHUB_HASH=$GITHUB_HASH" >> staging.env
+                echo "GITHUB_HASH=temporarily-disabled" >> staging.env
                 echo "SENTRY_KEY=$SENTRY_KEY" >> staging.env
                 echo "$GCE_SERVICE_ACCOUNT" >> keyfile.json
                 gcloud compute scp staging.env $GCE_INSTANCE:/srv --zone $GCE_INSTANCE_ZONE
@@ -89,11 +87,6 @@ jobs:
                 gcloud compute scp ./deployment/bin/migration-manager.sh $GCE_INSTANCE:/srv --zone $GCE_INSTANCE_ZONE
                 gcloud compute ssh $GCE_INSTANCE --zone $GCE_INSTANCE_ZONE --command='sudo chmod a+x /srv/startup.sh';
                 gcloud compute ssh $GCE_INSTANCE --zone $GCE_INSTANCE_ZONE --command='sudo chmod a+x /srv/migration-manager.sh';
-
-            - name: Save encrypted copy of environment file to Google Bucket
-              run: |-
-                gcloud kms encrypt --location global --keyring kg-secrets --key kg-secrets-key --plaintext-file staging.env --ciphertext-file staging.env.encrypted
-                gsutil cp staging.env.encrypted gs://kg-secrets/staging.env.encrypted
 
             - name: Deploy
               run: |-
