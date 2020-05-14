@@ -33,8 +33,8 @@ PyPDF4 = "==1.27.0"
 sqlalchemy-searchable = "*"
 intervaltree = "==3.0.2"
 unidecode = "==1.1.1"
-ipy = "*"
 sentry-sdk = {extras = ["flask"],version = "==0.14.3"}
+ipy = "*"
 
 [requires]
 python_version = "3.8.2"
