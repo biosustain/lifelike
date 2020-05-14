@@ -28,12 +28,12 @@ const routes: Routes = [
   { path: 'search', component: SearchCollectionPageComponent },
   // Used as a work-around for navigation to work when navigating with
   // changing queries
-  { path: 'search/:redirect', component: SearchCollectionPageComponent, data: {title: 'KG Visualizer'} },
+  { path: 'search/:redirect', component: SearchCollectionPageComponent, data: {title: 'Knowledge Graph Explorer'} },
   {
     path: 'dt',
     canActivate: [AuthGuard],
     children: dtRoutes,
-    data: {title: 'Relationship Maps'}
+    data: {title: 'Knowledge Reconstruction'}
     // TODO - Bring back once pdf-viewer source code integration is resolved
     // loadChildren: () => import(
     //   './drawing-tool/drawing-tool.module'
