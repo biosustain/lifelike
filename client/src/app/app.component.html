@@ -38,6 +38,10 @@
 
 <mat-menu #userMenu="matMenu" xPosition="after">
   <ng-container *ngIf="(loggedIn$ | async); else loggedOut">
+    <button *ngIf="(userRoles$ | async)?.includes('admin')" mat-menu-item [routerLink]="['/admin']">
+      <mat-icon>gavel</mat-icon>
+      Admin
+    </button>
     <button mat-menu-item [routerLink]="['/users', (appuser$ | async)?.username]">
       <mat-icon>person</mat-icon>
       {{ (appuser$ | async)?.username }}

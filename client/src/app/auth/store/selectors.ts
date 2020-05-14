@@ -33,3 +33,10 @@ export const selectAuthLoginStateAndUser = createSelector(
         return {loggedIn, user};
     }
 );
+
+export const selectRoles = createSelector(
+    selectAuthUser,
+    (user: AppUser) => {
+        return user ? user.roles : [];
+    }
+);
