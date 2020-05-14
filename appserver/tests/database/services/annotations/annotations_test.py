@@ -51,7 +51,7 @@ directory = path.realpath(path.dirname(__file__))
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    keyword_type='Chemicals',
+                    keyword_type='Genes',
                     color='',
                     id='',
                     id_type='',
@@ -305,19 +305,19 @@ def test_fix_conflicting_annotations(annotations_setup, index, annotations):
         assert annotations[1] in fixed
     elif index == 4:
         assert len(fixed) == 1
-        assert fixed[0] == annotations[1]
+        assert fixed[0] == annotations[0]
     elif index == 5:
         assert len(fixed) == 1
         assert fixed[0] == annotations[0]
     elif index == 6:
         assert len(fixed) == 2
-        assert annotations[0] not in fixed
-        assert annotations[1] in fixed
+        assert annotations[0] in fixed
+        assert annotations[1] not in fixed
         assert annotations[2] in fixed
     elif index == 7:
         # test adjacent intervals
         assert len(fixed) == 1
-        assert fixed[0] == annotations[1]
+        assert fixed[0] == annotations[0]
 
 
 @pytest.mark.skip
