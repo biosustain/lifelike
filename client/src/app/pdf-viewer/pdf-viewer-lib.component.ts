@@ -169,11 +169,12 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
     if (visible == null) {
       visible = true;
     }
-    const element = (annotation as any).ref;
-    if (!element) {
-      throw new Error("missing ref on annotation");
+    const elements = (annotation as any).refs;
+    if (elements) {
+      for (const element of elements) {
+        element.style.display = visible ? 'block' : 'none';
+      }
     }
-    element.style.display = visible ? 'block' : 'none';
   }
 
   addAnnotation(annotation: Annotation, pageNum: number, isCustomAnnotation: boolean) {
@@ -208,6 +209,10 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
         'left:' + left + 'px;top:' + (top) + 'px;width:' + width + 'px;height:' + height + 'px;');
       overlayContainer.appendChild(overlayDiv);
       (annotation as any).ref = overlayDiv;
+      if (!(annotation as any).refs) {
+        (annotation as any).refs = [];
+      }
+      (annotation as any).refs.push(overlayDiv);
       jQuery(overlayDiv).css('cursor', 'move');
       jQuery(overlayDiv).draggable({
         revert: true,

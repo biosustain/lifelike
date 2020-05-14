@@ -14,6 +14,7 @@ import { FileSelectionDialogComponent } from '../../file-browser/file-selection-
 import { BackgroundTask } from '../../shared/rxjs/background-task';
 import { PdfViewerLibComponent } from '../../pdf-viewer/pdf-viewer-lib.component';
 import { ENTITY_TYPE_MAP, ENTITY_TYPES, EntityType } from 'app/shared/annotation-types';
+import { MatCheckboxChange } from '@angular/material';
 
 class DummyFile implements PdfFile {
   constructor(
@@ -72,6 +73,8 @@ export class PdfViewerComponent implements OnDestroy {
   addedAnnotation: Annotation;
   addAnnotationSub: Subscription;
   pdfFileLoaded = false;
+  sortedEntityTypeEntries = [];
+  entityTypeVisibilityChanged = false;
 
   @ViewChild(PdfViewerLibComponent, {static: false}) pdfViewerLib;
 
@@ -87,6 +90,7 @@ export class PdfViewerComponent implements OnDestroy {
       this.pdfData = {data: new Uint8Array(pdfFileContent)};
       this.annotations = ann;
       this.updateAnnotationIndex();
+      this.updateSortedEntityTypeEntries();
 
       this.currentFileId = file.file_id;
       setTimeout(() => {
@@ -119,8 +123,8 @@ export class PdfViewerComponent implements OnDestroy {
     }
   }
 
-  get sortedEntityTypeEntries(): EntityTypeEntry[] {
-    return ENTITY_TYPES
+  updateSortedEntityTypeEntries() {
+    this.sortedEntityTypeEntries = ENTITY_TYPES
       .map(entityType => new EntityTypeEntry(entityType, this.annotationEntityTypeMap.get(entityType.id) || []))
       .sort((a, b) => {
         if (a.annotations.length && !b.annotations.length) {
@@ -142,8 +146,19 @@ export class PdfViewerComponent implements OnDestroy {
     }
   }
 
-  toggleEntityTypeVisibility(entityType: EntityType) {
-    this.entityTypeVisibilityMap.set(entityType.id, !this.isEntityTypeVisible(entityType));
+  changeEntityTypeVisibility(entityType: EntityType, event: MatCheckboxChange) {
+    this.entityTypeVisibilityMap.set(entityType.id, event.checked);
+
+    // Keep track if the user has some entity types disabled
+    let entityTypeVisibilityChanged = false;
+    for (const value of this.entityTypeVisibilityMap.values()) {
+      if (!value) {
+        entityTypeVisibilityChanged = true;
+        break;
+      }
+    }
+    this.entityTypeVisibilityChanged = entityTypeVisibilityChanged;
+
     this.filterChangeSubject.next();
   }
 
@@ -206,6 +221,7 @@ export class PdfViewerComponent implements OnDestroy {
 
     this.addedAnnotations.push(annotation);
     this.updateAnnotationIndex();
+    this.updateSortedEntityTypeEntries();
   }
 
   /**
