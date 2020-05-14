@@ -563,14 +563,18 @@ class AnnotationsService:
 
         tokens_lowercased = set([normalize_str(s) for s in list(tokens.keys())])
 
+        # TODO: do we need to normalize when searching in neo4j?
+        # some genes have punctuation
+        # see JIRA LL-802
         match_result = self.hybrid_neo4j_postgres_service.get_gene_to_organism_match_result(
             genes=[normalize_str(s) for s in list(tokens.keys())],
             matched_organism_ids=list(organism_frequency.keys()),
         )
 
         for word, token_positions_list in tokens.items():
+            normalized_word = normalize_str(word)
             # If the "gene" is not matched to any organism in the paper, ignore it
-            if word not in match_result.keys():
+            if normalized_word not in match_result.keys():
                 continue
 
             for token_positions in token_positions_list:
@@ -600,7 +604,7 @@ class AnnotationsService:
 
                 if common_name_count == 1:
                     entity_id = self._get_gene_id_for_annotation(
-                        word=word,
+                        word=normalized_word,
                         token_positions=token_positions,
                         match_result=match_result,
                         matched_organism_locations=matched_organism_locations,
@@ -1094,18 +1098,18 @@ class AnnotationsService:
         anno1: Annotation,
         anno2: Annotation,
     ) -> Annotation:
-        if anno1.keyword_length > anno2.keyword_length:
-            return anno1
-        elif anno1.keyword_length == anno2.keyword_length:
-            key1 = ENTITY_TYPE_PRECEDENCE[anno1.meta.keyword_type]
-            key2 = ENTITY_TYPE_PRECEDENCE[anno2.meta.keyword_type]
+        key1 = ENTITY_TYPE_PRECEDENCE[anno1.meta.keyword_type]
+        key2 = ENTITY_TYPE_PRECEDENCE[anno2.meta.keyword_type]
 
-            if key1 > key2:
+        if key1 > key2:
+            return anno1
+        elif key2 > key1:
+            return anno2
+        else:
+            if anno1.keyword_length > anno2.keyword_length:
                 return anno1
             else:
                 return anno2
-        else:
-            return anno2
 
     def _remove_overlapping_annotations(
         self,
