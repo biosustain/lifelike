@@ -734,7 +734,7 @@ class AnnotationsService:
         entity_id_str: str,
         coor_obj_per_pdf_page: Dict[int, List[Union[LTChar, LTAnno]]],
         cropbox_per_page: Dict[int, Tuple[int, int]],
-    ) -> Tuple[List[Annotation], Set[str]]:
+    ) -> Tuple[List[Annotation], Set[str], Dict[str, str]]:
         funcs = {
             EntityType.Chemicals.value: self._annotate_chemicals,
             EntityType.Compounds.value: self._annotate_compounds,
@@ -911,10 +911,10 @@ class AnnotationsService:
                 coor_obj_per_pdf_page=tokens.coor_obj_per_pdf_page,
                 cropbox_per_page=tokens.cropbox_per_page,
             )
-            matched_list.append(matched)
-            unwanted_matches_set_list.append(unwanted)
+            matched_list.append(matched)  # type: ignore
+            unwanted_matches_set_list.append(unwanted)  # type: ignore
             all_hashed_annotation_keywords = {
-                **all_hashed_annotation_keywords, **hashed_annotation_keywords}
+                **all_hashed_annotation_keywords, **hashed_annotation_keywords}  # type: ignore
 
         return matched_list, unwanted_matches_set_list, all_hashed_annotation_keywords
 
