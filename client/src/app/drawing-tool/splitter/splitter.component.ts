@@ -126,37 +126,6 @@ export class SplitterComponent implements OnInit, OnDestroy, AfterViewInit {
     } else {
       this._openApp(appCmd);
     }
-
-
-    // TODO - Figure out what the hell to do with this
-    // if (
-    //   appCmd &&
-    //   this.currentApp !== appCmd.app &&
-    //   appCmd.app === 'pdf-viewer' &&
-    //   appCmd.arg === null
-    // ) {
-    //   if (this.lastFileOpened) {
-    //       localStorage.setItem('fileIdForPdfViewer', this.lastFileOpened.file_id);
-    //       this._openApp(appCmd);
-    //   } else {
-    //     const dialogConfig = new MatDialogConfig();
-
-    //     dialogConfig.width = '600px';
-    //     dialogConfig.disableClose = true;
-    //     dialogConfig.autoFocus = true;
-    //     dialogConfig.data = {};
-
-    //     const dialogRef = this.dialog.open(FileSelectionDialogComponent, dialogConfig);
-    //     dialogRef.beforeClosed().subscribe((file: PdfFile) => {
-    //       if (file !== null) {
-    //         localStorage.setItem('fileIdForPdfViewer', file.file_id);
-    //         this._openApp(appCmd);
-    //       }
-    //     });
-    //   }
-    // } else {
-    //   this._openApp(appCmd);
-    // }
   }
 
   /**
@@ -183,31 +152,10 @@ export class SplitterComponent implements OnInit, OnDestroy, AfterViewInit {
           break;
       }
 
-      // TODO - Ask Albert what this is about
-      // if (this.requestCloseSubscription) {
-      //   this.requestCloseSubscription.unsubscribe();
-      // }
-      // if (this.fileOpenSubscription) {
-      //   this.fileOpenSubscription.unsubscribe();
-      // }
-
       this.leftPanel.clear();
       this.currentApp = appCmd.app;
 
       this.dynamicComponentRef = this.leftPanel.createComponent(factory);
-
-      // TODO - Ask Albert what this is about
-      // if (this.dynamicComponentRef.instance.requestClose) {
-      //   this.requestCloseSubscription = this.dynamicComponentRef.instance.requestClose.subscribe(() => {
-      //     this.openApp(null);
-      //   });
-      // }
-
-      // if (this.dynamicComponentRef.instance.fileOpen) {
-      //   this.fileOpenSubscription = this.dynamicComponentRef.instance.fileOpen.subscribe(file => {
-      //     this.lastFileOpened = file;
-      //   });
-      // }
 
       this.dynamicComponentRef.changeDetectorRef.detectChanges();
     }
