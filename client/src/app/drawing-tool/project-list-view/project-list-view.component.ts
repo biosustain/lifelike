@@ -269,11 +269,6 @@ export class ProjectListViewComponent {
     }
   }
 
-  toggleFullscreen(screenMode) {
-    this.fullScreenmode = screenMode;
-    console.log(this.fullScreenmode);
-  }
-
   goToSearch() {
     this.displayIndex = 2;
   }
