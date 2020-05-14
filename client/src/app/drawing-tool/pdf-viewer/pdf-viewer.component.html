@@ -1,27 +1,27 @@
 <div class="w-100 vh-100 relative" fxLayout="column">
   <div class="sidebar-toolbar" fxLayout="row" fxLayoutAlign="space-between">
     <div fxLayoutGap="0.25rem">
-      <button mat-raised-button (click)="openFileDialog()" matTooltip="Open a new document">
+      <button mat-button (click)="openFileDialog()" matTooltip="Open a new document">
         <mat-icon>folder_open</mat-icon>
         Open
       </button>
     </div>
     <div fxLayout="row" fxLayoutGap="0.25rem">
-      <button mat-raised-button (click)="zoomIn()" [disabled]="!pdfViewerReady" matTooltip="Zoom in">
+      <button mat-button (click)="zoomIn()" [disabled]="!pdfViewerReady" matTooltip="Zoom in">
         <mat-icon>zoom_in</mat-icon>
       </button>
-      <button mat-raised-button (click)="zoomOut()" [disabled]="!pdfViewerReady" matTooltip="Zoom out">
+      <button mat-button (click)="zoomOut()" [disabled]="!pdfViewerReady" matTooltip="Zoom out">
         <mat-icon>zoom_out</mat-icon>
       </button>
     </div>
     <div fxLayout="row" fxLayoutGap="0.25rem">
       <div class="relative">
-        <button mat-raised-button
+        <button mat-button
                 (click)="toggleFilterPopup()"
                 [disabled]="!pdfViewerReady"
                 [matTooltip]="!filterPopupOpen ? 'Choose which annotations to hide' : null"
                 matTooltipPosition="left">
-          Filters
+          Filters<span [style.visibility]="entityTypeVisibilityChanged ? 'visible' : 'hidden'">*</span>
           <mat-icon *ngIf="!filterPopupOpen">expand_more</mat-icon>
           <mat-icon *ngIf="filterPopupOpen">expand_less</mat-icon>
         </button>
@@ -31,7 +31,7 @@
             <div *ngFor="let entityTypeEntry of sortedEntityTypeEntries"
                  [ngClass]="entityTypeEntry.annotations.length ? '' : 'o-20'">
               <mat-checkbox [checked]="isEntityTypeVisible(entityTypeEntry.type)"
-                            (click)="toggleEntityTypeVisibility(entityTypeEntry.type)">
+                            (change)="changeEntityTypeVisibility(entityTypeEntry.type, $event)">
                 <span class="entity-type-legend" [ngStyle]="{background: entityTypeEntry.type.color}">
                 </span> {{entityTypeEntry.type.name}} <span *ngIf="!!entityTypeEntry.annotations.length">
                 ({{entityTypeEntry.annotations.length}})
