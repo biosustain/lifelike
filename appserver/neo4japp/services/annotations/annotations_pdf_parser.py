@@ -137,9 +137,9 @@ class AnnotationsPDFParser:
         return char in whitespace or char == '\xa0' or char in punctuation  # noqa
 
     def _has_unwanted_punctuation(self, char: str, leading: bool = False) -> bool:
-        check = (char == ',' or char == '.' or char == ')' or char == '(' or char == ';' or char == ':')  # noqa
+        check = (char == ',' or char == '.' or char == ')' or char == '(' or char == ';' or char == ':' or char == '*')  # noqa
         if leading:
-            check = check or char == '-'
+            check = check or char == '-' or char == '*'
         return check
 
     def combine_chars_into_words(
@@ -182,7 +182,7 @@ class AnnotationsPDFParser:
                         else:
                             next_char = clean_char(char_list[i+1])
                             if ((curr_char == '-' and next_char in whitespace) or
-                                (curr_char in whitespace and prev_char == '-')):
+                                (curr_char in whitespace and prev_char == '-')):  # noqa
                                 # word is possibly on new line
                                 # so ignore the space
                                 pass
