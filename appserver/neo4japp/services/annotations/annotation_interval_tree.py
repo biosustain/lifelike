@@ -109,8 +109,8 @@ class AnnotationIntervalTree(IntervalTree):
                         current_reduced[0] = data_reducer(current_reduced[0], higher.data)
                     else:  # annihilate the data, since we don't know how to merge it
                         current_reduced[0] = None
-                    lower_offset = current_reduced[0].lo_location_offset if current_reduced[0] else lower.begin  # noqa
-                    upper_offset = current_reduced[0].hi_location_offset if current_reduced[0] else upper_bound  # noqa
+                    lower_offset = current_reduced[0].lo_location_offset if current_reduced[0] else lower.begin  # type: ignore  # noqa
+                    upper_offset = current_reduced[0].hi_location_offset if current_reduced[0] else upper_bound  # type: ignore  # noqa
                     merged[-1] = Interval(lower_offset, upper_offset, current_reduced[0])
                 else:
                     new_series()
