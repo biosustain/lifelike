@@ -2,7 +2,7 @@ import { Component, Inject, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { SelectionModel } from '@angular/cdk/collections';
 import { MatTableDataSource } from '@angular/material/table';
-import { MatDialog, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { BehaviorSubject, throwError } from 'rxjs';
 import { AnnotationStatus, PdfFile } from 'app/interfaces/pdf-files.interface';
@@ -75,7 +75,7 @@ export class FileBrowserComponent implements OnInit {
           if (event.loaded >= event.total) {
             progressObservable.next(new Progress({
               mode: ProgressMode.Buffer,
-              status: 'Detecting annotations in file...',
+              status: 'Creating annotations in file...',
               value: event.loaded / event.total
             }));
           } else {
@@ -130,6 +130,15 @@ export class FileBrowserComponent implements OnInit {
       file.annotation_status = AnnotationStatus.Loading;
       return file.file_id;
     });
+    // Let's show some progress!
+    const progressObservable = new BehaviorSubject<Progress>(new Progress({
+      status: 'Re-creating annotations in file...',
+      mode: ProgressMode.Buffer,
+    }));
+    const progressDialogRef = this.progressDialog.display({
+      title: `Reannotating file${this.selection.selected.length === 1 ? '' : 's'}...`,
+      progressObservable,
+    });
     this.pdf.reannotateFiles(ids).subscribe(
       (res) => {
         for (const id of ids) {
@@ -140,7 +149,7 @@ export class FileBrowserComponent implements OnInit {
         }
         this.isReannotating = false;
         this.snackBar.open(`Reannotation completed`, 'Close', {duration: 5000});
-        console.log('reannotation result', res);
+        progressDialogRef.close();
       },
       err => {
         for (const id of ids) {
@@ -151,7 +160,7 @@ export class FileBrowserComponent implements OnInit {
         }
         this.isReannotating = false;
         this.snackBar.open(`Reannotation failed`, 'Close', {duration: 10000});
-        console.error('reannotation error', err);
+        progressDialogRef.close();
       }
     );
   }
