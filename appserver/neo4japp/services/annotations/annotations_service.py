@@ -994,7 +994,7 @@ class AnnotationsService:
         unwanted_matches_list,
         all_hashed_annotation_keywords) = self._create_initial_annotations_list(
             tokens=tokens,
-        )
+        )  # noqa
 
         # Do first round of filtering on the matched list
         unwanted_matches_set_list = set.union(*unwanted_matches_list)
