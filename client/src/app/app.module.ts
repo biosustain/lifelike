@@ -19,12 +19,10 @@ import { BrowserModule, Title } from '@angular/platform-browser';
 import { VisualizationModule } from './visualization/visualization.module';
 import { DrawingToolModule } from './drawing-tool/drawing-tool.module';
 import { FileBrowserModule } from './file-browser/file-browser.module';
-import { DialogConfirmDeletionComponent } from './file-browser/file-browser.component';
 
 @NgModule({
   declarations: [
     AppComponent,
-    DialogConfirmDeletionComponent,
     KgStatisticsComponent,
   ],
   imports: [
@@ -49,9 +47,6 @@ import { DialogConfirmDeletionComponent } from './file-browser/file-browser.comp
     Title
   ],
   exports: [],
-  entryComponents: [
-    DialogConfirmDeletionComponent,
-  ],
   bootstrap: [AppComponent]
 })
 export class AppModule {

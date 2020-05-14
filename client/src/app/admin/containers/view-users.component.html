@@ -5,7 +5,10 @@
     <mat-card-content>
         <mat-list>
             <mat-list-item *ngFor="let user of users">
-                <mat-icon mat-list-icon>account_circle</mat-icon>
+                <mat-icon *ngIf="!user.roles.includes('admin'); else adminIco" mat-list-icon>account_circle</mat-icon>
+                <ng-template #adminIco>
+                    <mat-icon mat-list-icon>gavel</mat-icon>
+                </ng-template>
                 <div mat-line>{{ user.username }}</div>
                 <div mat-line>{{ user.email }}</div>
                 <div mat-line id="user-actions">
