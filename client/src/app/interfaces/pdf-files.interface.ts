@@ -21,3 +21,17 @@ export interface PdfFileUpload {
   filename: string;
   status: string;
 }
+
+export enum UploadType {
+  Files = 'files',
+  Url = 'url',
+}
+
+export interface UploadPayload {
+  type: UploadType;
+  // if type === Files
+  files?: File[];
+  // if type === Url
+  filename?: string;
+  url?: string;
+}
