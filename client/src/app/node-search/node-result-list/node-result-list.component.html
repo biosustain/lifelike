@@ -1,6 +1,6 @@
 <div class="mat-elevation-z8">
   <table mat-table [dataSource]="dataSource">
-    <!-- Database Column -->
+    <!-- Name Column -->
     <ng-container matColumnDef="name">
       <th mat-header-cell *matHeaderCellDef> Name</th>
       <td mat-cell *matCellDef="let element"> {{element.name}} </td>
@@ -12,7 +12,7 @@
       <td mat-cell *matCellDef="let element"> {{element.type}} </td>
     </ng-container>
 
-    <!-- Name Column -->
+    <!-- Database Column -->
     <ng-container matColumnDef="database">
       <th mat-header-cell *matHeaderCellDef> Database</th>
       <td mat-cell *matCellDef="let element"> {{element.database}} </td>
