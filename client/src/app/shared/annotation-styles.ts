@@ -10,6 +10,7 @@
 
 interface AnnotationStyle {
   // Mandatory fields
+
   label: string;
   color: string;
   // Optional fields
