@@ -949,6 +949,8 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy, G
 
     // Apply the change
     action.apply(this);
+
+    this.requestRender();
   }
 
   // ========================================
