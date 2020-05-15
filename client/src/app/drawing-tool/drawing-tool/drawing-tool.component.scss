@@ -37,11 +37,11 @@
 }
 @mixin noselect {
   -webkit-touch-callout: none; /* iOS Safari */
-    -webkit-user-select: none; /* Safari */
-     -khtml-user-select: none; /* Konqueror HTML */
-       -moz-user-select: none; /* Old versions of Firefox */
-        -ms-user-select: none; /* Internet Explorer/Edge */
-            user-select: none; /* Non-prefixed version, currently
+  -webkit-user-select: none; /* Safari */
+  -khtml-user-select: none; /* Konqueror HTML */
+  -moz-user-select: none; /* Old versions of Firefox */
+  -ms-user-select: none; /* Internet Explorer/Edge */
+  user-select: none; /* Non-prefixed version, currently
                                   supported by Chrome, Opera and Firefox */
 }
 
@@ -69,17 +69,30 @@
     left: 0;
     background: #fff;
     display: flex;
-    flex-direction: column;
     justify-content: center;
     align-items: center;
 
+    .tool-panel-group {
+      border-left: 1px solid #efefef;
+      padding: (0.65rem / 2) 0.65rem;
+
+      &:first-child {
+        border: 0;
+      }
+    }
+
     mat-icon {
-      font-size: 30px;
-      width: 30px;
-      height: 30px;
-      margin: 0.75rem;
+      font-size: 25px;
+      width: 25px;
+      height: 25px;
+
+      padding: 0.65rem 0.65rem;
       cursor: pointer;
       transition: color .2s ease-in;
+    }
+
+    mat-icon.separator-before {
+      border-left: 1px solid #efefef;
     }
 
     mat-icon:hover {
@@ -101,30 +114,33 @@
       color: #e74c3c;
     }
   }
-  
+
   #info-panel {
+    width: 16rem;
+    top: 0;
+    right: 0;
+    transform: translateY(-2rem);
+    opacity: 0;
+    transition: transform ease-out 0.2s, opacity ease 0.1s;
+    max-height: calc(100vh - 2rem);
+    background-color: #fff;
+    @include overlay;
     @include scrollbars(.25em, #3797DB);
-    overflow-x: hidden;
-  }
 
-  #info-panel {
-      @include overlay;
-      width: 16rem;
-      height: 52px;
-      top: 0;
-      right: 0;
-
-      background-color: #fff;
+    &.in {
+      transform: translateY(0);
+      opacity: 1;
+    }
   }
 
   #palette-panel::-webkit-scrollbar {
-      display: none;
+    display: none;
   }
   #palette-panel {
-      @include overlay;
-      width: 16rem;
-      height: 20rem;
-      bottom: 0;
-      left: 0;
+    @include overlay;
+    width: 16rem;
+    max-height: calc(100vh - 7rem);
+    bottom: 0;
+    left: 0;
   }
 }
