@@ -194,7 +194,7 @@ export class PdfViewerComponent implements OnDestroy {
     const payload: GraphData = {
       x: mouseEvent.clientX - containerCoord.x,
       y: mouseEvent.clientY,
-      label: meta.type === 'Links' ? 'Link' : meta.allText,
+      label: meta.type === 'Links' ? '' : meta.allText,
       group: mapper(meta.type),
       data: {
         source,
