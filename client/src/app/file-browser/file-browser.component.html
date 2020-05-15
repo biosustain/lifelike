@@ -3,7 +3,6 @@
   <div fxLayoutGap="8px">
     <button mat-raised-button (click)="openUploadDialog()"><mat-icon>add_box</mat-icon> Upload</button>
     <button
-      *ngIf="(currentUser$ | async)?.roles.includes('admin')"
       mat-raised-button
       [disabled]="selection.selected.length === 0"
       (click)="openDeleteDialog()"
