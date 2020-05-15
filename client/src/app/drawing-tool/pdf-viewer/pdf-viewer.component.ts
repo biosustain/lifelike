@@ -12,6 +12,7 @@ import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { PdfFile } from '../../interfaces/pdf-files.interface';
 import { FileSelectionDialogComponent } from '../../file-browser/file-selection-dialog.component';
 import { BackgroundTask } from '../../shared/rxjs/background-task';
+import { ActivatedRoute } from '@angular/router';
 
 class DummyFile implements PdfFile {
   constructor(
@@ -61,6 +62,7 @@ export class PdfViewerComponent implements OnDestroy {
     private snackBar: MatSnackBar,
     private dataFlow: DataFlowService,
     public dialog: MatDialog,
+    private route: ActivatedRoute
   ) {
     // Listener for file open
     this.openPdfSub = this.loadTask.observable.subscribe(([[pdfFileContent, ann], [file, loc]]) => {
@@ -72,10 +74,10 @@ export class PdfViewerComponent implements OnDestroy {
       }, 10);
     });
 
-    // Handles opening a pdf from other pages
-    const linkedFileId = localStorage.getItem('fileIdForPdfViewer');
-    if (linkedFileId) {
-      localStorage.removeItem('fileIdForPdfViewer');
+    // Check if the component was loaded with a url to parse fileId
+    // from
+    if (this.route.snapshot.params.file_id) {
+      const linkedFileId = this.route.snapshot.params.file_id;
       this.openPdf(new DummyFile(linkedFileId));
     }
   }
