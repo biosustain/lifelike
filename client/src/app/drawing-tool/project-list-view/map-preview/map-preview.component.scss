@@ -1,10 +1,55 @@
 @import "../../../../styles.scss";
 @import "../../services/nodes.scss";
 
-#canvas {
+  #canvas {
     width: 100%;
     height: 100%;
   }
+
+  #meta-panel {
+    @include overlay;
+    @include no-select;
+    bottom: 0;
+    left: 0;
+    
+    width: 40%;
+    min-width: 300px;
+    max-width: 500px;
+    background-color: rgba(94, 94, 92, 0.8);
+
+    margin-bottom: 0;
+    padding: 1rem;
+
+    mat-icon {
+      cursor: pointer;
+    }
+    mat-icon:hover {
+      color: $blue;
+      transition: color ease-in;
+    }
+
+    h2 {
+      margin-top: 1rem;
+      margin-bottom: 1rem;
+      color: lighten($color: $blue, $amount: 20);
+    }
+    p.author {
+      color: #f0f0f0;
+    }
+    p.date {
+      color: #f0f0f0;
+    }
+    p.description {
+      color: #f1f1f1;
+    }
+  }
+
+  #meta-panel:hover {
+    background-color: rgba(94, 94, 92, 1);
+    transition: background-color ease-in;
+  }
+
+
   #read-panel {
     @include overlay;
     top: 0;
