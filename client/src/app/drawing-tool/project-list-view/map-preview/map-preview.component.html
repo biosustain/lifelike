@@ -43,14 +43,35 @@
       </div>
     </div>
   </div>
+  <!-- Meta Panel -->
+  <div id='meta-panel'>
+    <div class='fr'>
+      <mat-icon class='dib fr ma1 white'>minimize</mat-icon>
+      <!-- TODO - connect to dialog for updating project detail information -->
+      <mat-icon class='dib fr ma1 white'>edit</mat-icon>
+    </div>
+    <h2>{{project?.label}}</h2>
+    <div class='can-hide'>
+      <p class='author'>
+        By {{project?.author}}
+      </p>
+      <p class='date'>
+        Modified {{project?.date_modified | friendlyDateStr}}
+      </p>
+      <p class='description'>
+        {{project?.description}}
+      </p>
+    </div>
+  </div>
   <!-- Tool Panel -->
   <div [ngClass]="{'childless': !childMode}" id='tool-panel'>
-    <!-- TODO - Add other action ui items here -->
-    <!-- * share -->
-    <!-- * copy -->
-    <!-- * edit -->
-    <!-- * delete -->
     <mat-icon matTooltip="Fit Graph" matTooltipPosition="right" class='fit' (click)='fit()'>
       zoom_out_map
     </mat-icon>
+    <!-- TODO - Add other action ui items here along with functionality -->
+    <mat-icon>share</mat-icon>
+    <mat-icon>file_copy</mat-icon>
+    <mat-icon>publish</mat-icon>
+    <mat-icon>edit</mat-icon>
+    <mat-icon>delete</mat-icon>
   </div>
