@@ -1,14 +1,5 @@
-import {
-  Component,
-  OnInit,
-  Input,
-  Output,
-  EventEmitter
-} from '@angular/core';
+import { Component } from '@angular/core';
 
-import * as $ from 'jquery';
-
-import { Action } from '../drawing-tool.component';
 import { annotationTypes } from 'app/shared/annotation-styles';
 
 @Component({
@@ -16,56 +7,26 @@ import { annotationTypes } from 'app/shared/annotation-styles';
   templateUrl: './palette.component.html',
   styleUrls: ['./palette.component.scss']
 })
-export class PaletteComponent implements OnInit {
-  @Input() undoStack: Action[] = [];
-  @Input() redoStack: Action[] = [];
-
-  @Output() undo: EventEmitter<any> = new EventEmitter();
-  @Output() redo: EventEmitter<any> = new EventEmitter();
-
-  paletteMode = 1;
-
-  /** Build the palette ui with node templates defined */
+export class PaletteComponent {
   nodeTemplates = annotationTypes;
+  expanded = false;
 
-  constructor() { }
-
-  ngOnInit() {
-
+  constructor() {
   }
 
-  _undo() {
-    if (this.undoStack.length) { this.undo.emit(); }
-  }
-  _redo() {
-    if (this.redoStack.length) { this.redo.emit(); }
-  }
-
-  changeSize() {
-    switch (this.paletteMode) {
-      case 0:
-        $('#palette-panel').animate({
-          height: '20rem'
-        }, 500, () => {
-          this.paletteMode = 1;
-        });
-        break;
-      case 1:
-        $('#palette-panel').animate({
-          height: '36rem'
-        }, 500, () => {
-          this.paletteMode = 2;
-        });
-        break;
-      case 2:
-        $('#palette-panel').animate({
-          height: '52px'
-        }, 500, () => {
-          this.paletteMode = 0;
-        });
-        break;
-      default:
-        break;
+  /**
+   * Get the node templates that we plan to show, based on whether
+   * we have this baby expanded.
+   */
+  get nodeTemplatesShown() {
+    if (this.expanded) {
+      return this.nodeTemplates;
+    } else {
+      return this.nodeTemplates.slice(0, 8);
     }
+  }
+
+  toggleExpansion() {
+    this.expanded = !this.expanded;
   }
 }

@@ -1,10 +1,7 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Subject } from 'rxjs';
 
-import {
-  Project,
-  VisNetworkGraphNode
-} from './interfaces';
+import { GraphAction, GraphEntity, Project, VisNetworkGraphNode } from './interfaces';
 import { coronavirus } from './mock_data';
 
 /**
@@ -15,23 +12,24 @@ import { coronavirus } from './mock_data';
 })
 export class DataFlowService {
 
-  /** Communication route to canvas for node dropping */
-  private pdf2Canvas = new BehaviorSubject<any>(null);
+  // Communication route to canvas for node dropping
+  private pdf2Canvas = new Subject<any>();
   $pdfDataSource = this.pdf2Canvas.asObservable();
 
-  /** Communication route to info-panel-ui */
-  private graph2Form = new BehaviorSubject<any>(null);
-  graphDataSource = this.graph2Form.asObservable();
+  // Communication route to info-panel-ui
+  private graph2Form = new Subject<GraphEntity>();
+  graphEntitySource = this.graph2Form.asObservable();
 
-  /** Communication route to canvas component */
-  private form2Graph = new BehaviorSubject<any>(null);
+  // Communication route to canvas component
+  private form2Graph = new Subject<GraphAction>();
   formDataSource = this.form2Graph.asObservable();
 
-  /** Communication route from project-list to drawing-tool */
+  // Communication route from project-list to drawing-tool
   private projectlist2Canvas = new BehaviorSubject<Project>(coronavirus);
   $projectlist2Canvas = this.projectlist2Canvas.asObservable();
 
-  constructor() { }
+  constructor() {
+  }
 
   /**
    * Send dropped node to be interecepted in
@@ -55,15 +53,15 @@ export class DataFlowService {
    * and its properties
    * @param nodeData represents node data
    */
-  pushGraphData(nodeData) {
+  pushSelection(nodeData) {
     this.graph2Form.next(nodeData);
   }
 
   /**
    * Send update of node or edge's properties
-   * @param graphDataChange represents a change to the graph data
+   * @param action represents a change to the graph data
    */
-  pushGraphUpdate(graphDataChange) {
-    this.form2Graph.next(graphDataChange);
+  pushFormChange(action: GraphAction) {
+    this.form2Graph.next(action);
   }
 }
