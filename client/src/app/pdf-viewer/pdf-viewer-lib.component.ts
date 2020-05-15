@@ -6,6 +6,7 @@ import { PdfViewerComponent } from './pdf-viewer/pdf-viewer.component';
 import { MatDialog } from '@angular/material/dialog';
 import { PDFPageViewport } from 'pdfjs-dist';
 import { AnnotationPanelComponent } from './annotation-panel/annotation-panel.component';
+import { annotationTypes } from 'app/shared/annotation-styles';
 
 declare var jQuery: any;
 
@@ -394,7 +395,11 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
           jQuery(ui.helper).css('opacity', 1);
           jQuery(ui.helper).css('width', '');
           jQuery(ui.helper).css('height', '');
-          jQuery(ui.helper).text(meta.allText);
+          if (that.isSelectionLink) {
+            jQuery(ui.helper).html(`<span class="fa fa-file" style="color: ${annotationTypes.find(type => type.label === 'link').color}"></span>`);
+          } else {
+            jQuery(ui.helper).text(meta.allText);
+          }
         }
       });
       jQuery(el).draggable('enable');
