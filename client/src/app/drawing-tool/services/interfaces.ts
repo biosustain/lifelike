@@ -1,3 +1,44 @@
+/**
+ * A graph component manages a graph and may render it.
+ */
+interface GraphComponent {
+  /**
+   * Add the given node to the graph.
+   * @param node the node
+   */
+  addNode(node: UniversalGraphNode): void;
+
+  /**
+   * Remove the given node from the graph.
+   * @param node the node
+   * @return true if the node was found
+   */
+  removeNode(node: UniversalGraphNode): void;
+}
+
+/**
+ * An action is something the user performed on a {@link GraphComponent}
+ * that can be applied or rolled back.
+ */
+interface GraphAction {
+  /**
+   * A user friendly description of the action for a history log.
+   */
+  description: string;
+
+  /**
+   * Called to perform the action.
+   * @param component the component with the graph
+   */
+  apply: (component: GraphComponent) => void;
+
+  /**
+   * Called to undo the action.
+   * @param component the component with the graph
+   */
+  rollback: (component: GraphComponent) => void;
+}
+
 interface UniversalGraphNode {
   data: {
     x: number;
@@ -24,6 +65,15 @@ interface UniversalGraphEdge {
 interface UniversalGraph {
   nodes: UniversalGraphNode[];
   edges: UniversalGraphEdge[];
+}
+declare type UniversalGraphEntity = UniversalGraphNode | UniversalGraphEdge;
+enum GraphEntityType {
+  Node = 'node',
+  Edge = 'edge',
+}
+interface GraphEntity {
+  type: GraphEntityType;
+  entity: UniversalGraphEntity;
 }
 
 interface VisNetworkGraphNode {
@@ -173,6 +223,8 @@ interface Project {
 }
 
 export {
+  GraphComponent,
+  GraphAction,
   Project,
   VisNetworkGraph,
   VisNetworkGraphEdge,
@@ -180,6 +232,9 @@ export {
   UniversalGraph,
   UniversalGraphEdge,
   UniversalGraphNode,
+  UniversalGraphEntity,
+  GraphEntityType,
+  GraphEntity,
   Annotation,
   Meta,
   Rect,

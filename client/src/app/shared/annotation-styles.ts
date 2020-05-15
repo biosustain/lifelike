@@ -8,8 +8,6 @@
 // - con
 // - inv
 
-import { isNullOrUndefined } from 'util';
-
 interface AnnotationStyle {
   // Mandatory fields
   label: string;
@@ -38,7 +36,7 @@ const PROTEIN = '#bcbd22';
 const PATHWAY = '#e377c2';
 const PHENOTYPE = '#edc949';
 
-const NOTE  = '#edc949';
+const NOTE = '#edc949';
 const MAP = '#0277bd';
 
 const ENTITY = '#7f7f7f';
@@ -52,9 +50,9 @@ const OBSERVATION = '#d7d9f8';
 const ASSOCIATION = '#d7d9f8';
 
 const annotationTypes: AnnotationStyle[] = [{
-    label: 'gene',
-    color: GENE,
-  },
+  label: 'gene',
+  color: GENE,
+},
   {
     label: 'disease',
     color: DISEASE,
@@ -161,6 +159,11 @@ const annotationTypes: AnnotationStyle[] = [{
   },
 ];
 
+const annotationTypesMap: Map<string, AnnotationStyle> = annotationTypes.reduce((map, item) => {
+  map.set(item.label, item);
+  return map;
+}, new Map());
+
 /**
  * Return group styling based on the annotation
  * style definition
@@ -197,18 +200,19 @@ function groupStyle(ann: AnnotationStyle) {
  * different group types for vis-js network library
  */
 function visJsGroupStyleFactory() {
-    const groupStyleDict = {};
+  const groupStyleDict = {};
 
-    annotationTypes.map(
-        ann => {
-            groupStyleDict[ann.label] = groupStyle(ann);
-        }
-    );
+  annotationTypes.map(
+    ann => {
+      groupStyleDict[ann.label] = groupStyle(ann);
+    }
+  );
 
-    return groupStyleDict;
+  return groupStyleDict;
 }
 
 export {
   annotationTypes,
+  annotationTypesMap,
   visJsGroupStyleFactory
 };

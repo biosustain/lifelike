@@ -1,114 +1,69 @@
-import {
-  Component,
-  OnInit,
-  AfterViewInit,
-  OnDestroy,
-  HostListener,
-  Output,
-  EventEmitter,
-  Input,
-  ViewChild
-} from '@angular/core';
-import {
-  MatSnackBar
-} from '@angular/material/snack-bar';
-import {
-  CdkDragDrop
-} from '@angular/cdk/drag-drop';
+import { AfterViewInit, Component, EventEmitter, HostListener, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { CdkDragDrop } from '@angular/cdk/drag-drop';
 
-import {
-  Options
-} from '@popperjs/core';
+import { Options } from '@popperjs/core';
 
-import * as $ from 'jquery';
+import * as d3 from 'd3';
+import intersects from 'intersects';
+import 'canvas-plus';
+import './canvas-arrow';
 
-import {
-  Subscription,
-  Observable,
-  fromEvent,
-  Subject
-} from 'rxjs';
-import {
-  filter,
-  first,
-  takeUntil,
-  debounceTime
-} from 'rxjs/operators';
+import { fromEvent, Observable, Subject, Subscription } from 'rxjs';
+import { debounceTime, filter, first, takeUntil } from 'rxjs/operators';
 
-import {
-  IdType
-} from 'vis-network';
+import { IdType } from 'vis-network';
 
+import { Coords2D } from 'app/interfaces/shared.interface';
+import { ClipboardService } from 'app/shared/services/clipboard.service';
+import { keyCodeRepresentsPasteEvent } from 'app/shared/utils';
+import { DataFlowService, makeid, ProjectsService } from '../services';
 import {
-  LINK_NODE_ICON_OBJECT
-} from 'app/constants';
-import {
-  Coords2D
-} from 'app/interfaces/shared.interface';
-import {
-  ClipboardService
-} from 'app/shared/services/clipboard.service';
-import {
-  keyCodeRepresentsPasteEvent
-} from 'app/shared/utils';
-
-import {
-  NetworkVis
-} from '../network-vis';
-import {
-  DataFlowService,
-  ProjectsService,
-  makeid
-} from '../services';
-import {
+  GraphAction,
+  GraphComponent,
   GraphData,
+  GraphEntity,
+  GraphEntityType,
+  LaunchApp,
   Project,
-  VisNetworkGraphEdge,
-  VisNetworkGraphNode,
-  VisNetworkGraph,
-  LaunchApp
+  UniversalGraph,
+  UniversalGraphEdge,
+  UniversalGraphEntity,
+  UniversalGraphNode
 } from '../services/interfaces';
-import {
-  DrawingToolContextMenuControlService
-} from '../services/drawing-tool-context-menu-control.service';
-import {
-  CopyPasteMapsService
-} from '../services/copy-paste-maps.service';
+import { DrawingToolContextMenuControlService } from '../services/drawing-tool-context-menu-control.service';
+import { CopyPasteMapsService } from '../services/copy-paste-maps.service';
 
-import {
-  InfoPanelComponent
-} from './info-panel/info-panel.component';
+import { InfoPanelComponent } from './info-panel/info-panel.component';
 
-import { annotationTypes } from 'app/shared/annotation-styles';
-import {ExportModalComponent} from './export-modal/export-modal.component';
-import {MatDialog, MatDialogConfig} from '@angular/material/dialog';
+import { annotationTypesMap } from 'app/shared/annotation-styles';
+import { ExportModalComponent } from './export-modal/export-modal.component';
+import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
+import { NodeCreation } from '../services/actions';
 
-interface Update {
-  event: string;
-  type: string;
-  data: object | string | number;
+interface GraphNodeMetrics {
+  textWidth: number;
+  textActualHeight: number;
+  nodeX: number;
+  nodeY: number;
+  nodeX2: number;
+  nodeY2: number;
+  nodeWidth: number;
+  nodeHeight: number;
 }
-interface Graph {
-  edges: VisNetworkGraphEdge[];
-  nodes: VisNetworkGraphNode[];
+
+interface EdgeCreationNodeData {
+  x: number;
+  y: number;
 }
-interface Command {
-  action: string;
-  data: {
-    id ?: string;
-    label ?: string;
-    group ?: string;
-    x ?: number;
-    y ?: number;
-    source ?: string;
-    node ?: VisNetworkGraphNode;
-    edges ?: VisNetworkGraphEdge[]
-    edge ?: VisNetworkGraphEdge;
-  };
+
+interface EdgeCreationNode {
+  data: EdgeCreationNodeData;
 }
-export interface Action {
-  cmd: string;
-  graph: Graph;
+
+interface EdgeCreationState {
+  from: UniversalGraphNode;
+  to?: EdgeCreationNode;
 }
 
 @Component({
@@ -117,17 +72,19 @@ export interface Action {
   styleUrls: ['./drawing-tool.component.scss'],
   providers: [ClipboardService],
 })
-export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
+export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy, GraphComponent {
   /** Communicate to parent component to open another app side by side */
-  @Output() openApp: EventEmitter < LaunchApp > = new EventEmitter < LaunchApp > ();
+  @Output() openApp: EventEmitter<LaunchApp> = new EventEmitter<LaunchApp>();
   /** Communicate which app is active for app icon presentation */
   @Input() currentApp = '';
 
   /** Communicate what map to load by map hash id */
   CURRENT_MAP = '';
+
   get currentMap() {
     return this.CURRENT_MAP;
   }
+
   @Input()
   set currentMap(val) {
     this.CURRENT_MAP = val;
@@ -137,12 +94,12 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
     static: false
   }) infoPanel: InfoPanelComponent;
 
-  mouseMoveEventStream: Observable < MouseEvent > ;
-  endMouseMoveEventSource: Subject < boolean > ;
+  mouseMoveEventStream: Observable<MouseEvent>;
+  endMouseMoveEventSource: Subject<boolean>;
   mouseMoveSub: Subscription;
 
-  pasteEventStream: Observable < KeyboardEvent > ;
-  endPasteEventSource: Subject < boolean > ;
+  pasteEventStream: Observable<KeyboardEvent>;
+  endPasteEventSource: Subject<boolean>;
   pasteSub: Subscription;
 
   cursorDocumentPos: Coords2D; // Represents the position of the cursor within the document { x: number; y: number }
@@ -151,44 +108,27 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
   selectedEdges: IdType[];
 
   contextMenuTooltipSelector: string;
-  contextMenuTooltipOptions: Partial < Options > ;
+  contextMenuTooltipOptions: Partial<Options>;
 
-  /** The current graph representation on canvas */
-  currentGraphState: {
-    edges: VisNetworkGraphEdge[],
-    nodes: VisNetworkGraphNode[]
-  } = null;
-
-  undoStack: Action[] = [];
-  redoStack: Action[] = [];
 
   /** Obj representation of knowledge model with metadata */
   project: Project = null;
-  /** vis.js network graph DOM instantiation */
-  visjsNetworkGraph: NetworkVis = null;
 
   /** Communicate save state to parent component */
   @Output() saveStateListener: EventEmitter<boolean> = new EventEmitter<boolean>();
 
   /** Whether or not graph is saved from modification */
   SAVE_STATE = true;
+
   get saveState() {
     return this.SAVE_STATE;
   }
+
   set saveState(val) {
     this.SAVE_STATE = val;
     // communicate to parent component of save state change
     this.saveStateListener.emit(this.SAVE_STATE);
   }
-
-
-  /** Render condition for dragging gesture of edge formation */
-  addMode = false;
-  /** Node part of dragging gesture for edge formation  */
-  node4AddingEdge2;
-
-  /** Build the palette ui with node templates defined */
-  nodeTemplates = annotationTypes;
 
   /**
    * Subscription for subjects
@@ -197,10 +137,72 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
   formDataSubscription: Subscription = null;
   pdfDataSubscription: Subscription = null;
 
+  /**
+   * The canvas element from the template.
+   */
+  @ViewChild('canvas', {static: true}) canvasChild;
+  /**
+   * Holds the canvas after ngAfterViewInit() is run.
+   */
+  canvas: HTMLCanvasElement;
+  /**
+   * The transform represents the current zoom of the graph, which must be
+   * taken into consideration whenever mapping between graph coordinates and
+   * viewport coordinates.
+   */
+  transform = d3.zoomIdentity.scale(0.8).translate(700, 500);
+  /**
+   * Collection of nodes displayed on the graph. This is not a view --
+   * it is a direct copy of nodes being rendered.
+   */
+  nodes: UniversalGraphNode[] = [];
+  /**
+   * Collection of nodes displayed on the graph. This is not a view --
+   * it is a direct copy of edges being rendered.
+   */
+  edges: UniversalGraphEdge[] = [];
+  /**
+   * Maps node's hashes to nodes for O(1) lookup, essential to the speed
+   * of most of this graph code.
+   */
+  nodeHashMap: Map<string, UniversalGraphNode> = new Map();
+  /**
+   * Used for the double-click-to-create-an-edge function to store the from
+   * node and other details regarding the connection.
+   */
+  interactiveEdgeCreationState: EdgeCreationState | undefined = null;
+  /**
+   * Stores the offset between the node and the initial position of the mouse
+   * when clicked during the start of a drag event. Used for node position stability
+   * when the user is dragging nodes on the canvas, otherwise the node 'jumps'
+   * so node center is the same the mouse position, and the jump is not what we want.
+   */
+  offsetBetweenNodeAndMouseInitialPosition: number[] = [0, 0];
+  /**
+   * Holds the currently selected node or edge.
+   */
+  highlighted: GraphEntity | undefined;
+  /**
+   * Holds the currently highlighted node or edge.
+   */
+  selected: GraphEntity | undefined;
+
+  /**
+   * Stack of actions in the history.
+   */
+  history: GraphAction[] = [];
+  /**
+   * Stores where we are in the history, where the number is the next free index
+   * in the history array if there is nothing to redo/rollback. When the user
+   * calls undo(), the index goes -1 and when the user calls redo(), the index
+   * goes +1.
+   */
+  nextHistoryIndex = 0;
+
   // Prevent the user from leaving the page
   // if work is left un-saved
   @HostListener('window:beforeunload')
-  canDeactivate(): Observable < boolean > | boolean {
+  canDeactivate(): Observable<boolean> | boolean {
     return this.saveState ? true : confirm(
       'WARNING: You have unsaved changes. Press Cancel to go back and save these changes, or OK to lose these changes.'
     );
@@ -221,12 +223,12 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
     private copyPasteMapsService: CopyPasteMapsService,
     private clipboardService: ClipboardService,
     private dialog: MatDialog
-  ) {}
+  ) {
+  }
 
   ngOnInit() {
     this.endMouseMoveEventSource = new Subject();
     this.endPasteEventSource = new Subject();
-    this.setupCtrlVPasteOnCanvas();
 
     this.selectedNodes = [];
     this.selectedEdges = [];
@@ -238,61 +240,36 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
 
     // Listen for node addition from pdf-viewer
     this.pdfDataSubscription = this.dataFlow.$pdfDataSource.subscribe(
-      (node: GraphData) => this.dropPdf(node)
+      (node: GraphData) => this.fileDropped(node)
     );
 
     // Listen for graph update from info-panel-ui
-    this.formDataSubscription = this.dataFlow.formDataSource.subscribe((update: Update) => {
-      if (!update) {
-        return;
-      }
-
-      const event = update.event;
-      const type = update.type;
-
-      if (event === 'delete' && type === 'node') {
-        // DELETE NODE
-        const cmd = {
-          action: 'delete node',
-          data: update.data as VisNetworkGraphNode
-        };
-        this.recordCommand(cmd);
-      } else if (event === 'delete' && type === 'edge') {
-        // DELETE EDGE
-        const cmd = {
-          action: 'delete edge',
-          data: update.data as VisNetworkGraphEdge
-        };
-        this.recordCommand(cmd);
-      } else if (event === 'update' && type === 'node') {
-        // UPDATE NODE
-        const cmd = {
-          action: 'update node',
-          data: update.data as {
-            node: VisNetworkGraphNode,
-            edges: VisNetworkGraphEdge[]
-          }
-        };
-        this.recordCommand(cmd);
-      } else if (event === 'update' && type === 'edge') {
-        // UPDATE EDGE
-        const cmd = {
-          action: 'update edge',
-          data: update.data as VisNetworkGraphEdge
-        };
-        this.recordCommand(cmd);
-      }
+    this.formDataSubscription = this.dataFlow.formDataSource.subscribe((action: GraphAction) => {
+      this.execute(action);
     });
   }
 
   ngAfterViewInit() {
-    setTimeout(() => {
-      // Init network graph object
-      this.visjsNetworkGraph = new NetworkVis(
-        document.getElementById('canvas')
-      );
-      this.openMap(this.currentMap);
-    });
+    this.canvas = this.canvasChild.nativeElement as HTMLCanvasElement;
+    this.canvas.width = (this.canvas.parentNode as HTMLElement).clientWidth;
+    this.canvas.height = (this.canvas.parentNode as HTMLElement).clientHeight;
+
+    d3.select(this.canvas)
+      .on('click', this.canvasClicked.bind(this))
+      .on('dblclick', this.canvasDoubleClicked.bind(this))
+      .on('mousemove', this.canvasMouseMoved.bind(this))
+      .call(d3.drag()
+        .container(this.canvas)
+        .subject(this.getEntityAtMouse.bind(this))
+        .on('start', this.canvasDragStarted.bind(this))
+        .on('drag', this.canvasDragged.bind(this))
+        .on('end', this.canvasDragEnded.bind(this)))
+      .call(d3.zoom()
+        .scaleExtent([1 / 10, 20])
+        .on('zoom', this.canvasZoomed.bind(this)))
+      .on('dblclick.zoom', null);
+
+    this.loadMap(this.currentMap);
   }
 
   ngOnDestroy() {
@@ -300,73 +277,734 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
     this.formDataSubscription.unsubscribe();
     this.pdfDataSubscription.unsubscribe();
 
-    // Reset BehaviorSubjects form dataFlow service
-    this.dataFlow.pushGraphData(null);
-    this.dataFlow.pushGraphUpdate(null);
-    this.dataFlow.pushNode2Canvas(null);
-
     // Complete the vis canvas element event listeners
     this.endMouseMoveEventSource.complete();
     this.endPasteEventSource.complete();
   }
 
+  // ========================================
+  // Graph I/O
+  // ========================================
+
   /**
    * Pull map from server by hash id and draw it onto canvas
    * @param hashId - identifier to pull by from the server
    */
-  openMap(hashId: string) {
-    this.projectService.serveProject(hashId)
-      .subscribe(
-        (resp: any) => {
-          this.project = resp.project;
-
-          // Convert graph from universal to vis.js format
-          const g = this.projectService.universe2Vis(this.project.graph);
-
-          // Draw graph around data
-          this.visjsNetworkGraph.draw(
-            g.nodes,
-            g.edges
-          );
-
-          /**
-           * Event handlers
-           */
-          this.visjsNetworkGraph.network.on(
-            'click',
-            (properties) => this.networkClickHandler(properties)
-          );
-          this.visjsNetworkGraph.network.on(
-            'doubleClick',
-            (properties) => this.networkDoubleClickHandler(properties)
-          );
-          this.visjsNetworkGraph.network.on(
-            'oncontext',
-            (properties) => this.networkOnContextCallback(properties)
-          );
-          this.visjsNetworkGraph.network.on(
-            'dragStart',
-            (properties) => this.networkDragStartCallback(properties)
-          );
-          // Listen for nodes moving on canvas
-          this.visjsNetworkGraph.network.on(
-            'dragEnd',
-            (properties) => {
-              // Dragging a node doesn't fire node selection, but it is selected after dragging finishes, so update
-              this.updateSelectedNodes();
-              if (properties.nodes.length) {
-                this.saveState = false;
-              }
-            }
-          );
-          // Listen for mouse movement on canvas to feed to handler
-          $('#canvas > div > canvas').on('mousemove',
-            (e) => this.edgeFormationRenderer(e)
-          );
-        },
-        err => console.log(err)
-      );
+  loadMap(hashId: string): void {
+    this.projectService.serveProject(hashId).subscribe(
+      (resp: any) => {
+        this.project = resp.project;
+        this.setGraph(this.project.graph);
+      }
+    );
   }
+
+  /**
+   * Replace the graph that is being rendered by the drawing tool.
+   * @param graph the graph to replace with
+   */
+  setGraph(graph: UniversalGraph): void {
+    console.log('graph loaded', graph);
+
+    this.nodes = [...graph.nodes];
+    this.edges = [...graph.edges];
+
+    // We need O(1) lookup of nodes
+    this.nodeHashMap = graph.nodes.reduce(
+      (map, node) => map.set(node.hash, node),
+      new Map()
+    );
+
+    this.requestRender();
+  }
+
+  // ========================================
+  // Accessors
+  // ========================================
+
+  /**
+   * Grab the node referenced by the given hash. Throws errors if not found.
+   * Should never not be found, otherwise there is a serious data integrity problem.
+   * @param hash the hash
+   */
+  nodeReference(hash: string): UniversalGraphNode {
+    const node = this.nodeHashMap.get(hash);
+    if (node == null) {
+      throw new Error('missing node link');
+    }
+    return node;
+  }
+
+  /**
+   * Return if any one of the given items has been selected.
+   * @param entities a list of entities to check
+   */
+  isAnySelected(...entities: UniversalGraphEntity[]) {
+    if (!this.selected) {
+      return false;
+    }
+    for (const d of entities) {
+      if (this.selected.entity === d) {
+        return true;
+      }
+    }
+  }
+
+  /**
+   * Return if any one of the given items has been highlighted.
+   * @param entities a list of entities to check
+   */
+  isAnyHighlighted(...entities: UniversalGraphEntity[]) {
+    if (!this.highlighted) {
+      return false;
+    }
+    for (const d of entities) {
+      if (this.highlighted.entity === d) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  // ========================================
+  // Styles
+  // ========================================
+
+  /**
+   * Calculate the primary color for the given node.
+   * @param d the node in question
+   */
+  calculateNodeColor(d: UniversalGraphNode): string {
+    return annotationTypesMap.get(d.label).color;
+  }
+
+  /**
+   * Calculate the font string for a graph node.
+   * @param d the node to calculate for
+   */
+  calculateNodeFont(d: UniversalGraphNode): string {
+    const scaleFactor = 1 / this.transform.scale(1).k;
+    return (this.isAnyHighlighted(d) || this.isAnySelected(d) ? 'bold ' : '') + (scaleFactor * 15) + 'px Roboto';
+  }
+
+  /**
+   * Calculate the font string for a graph edge.
+   * @param d the edge to calculate for
+   */
+  calculateEdgeFont(d: UniversalGraphEdge): string {
+    const scaleFactor = 1 / this.transform.scale(1).k;
+    const from = this.nodeReference(d.from);
+    const to = this.nodeReference(d.to);
+    return (this.isAnyHighlighted(d, from, to) ? 'bold ' : '')
+      + (scaleFactor * 14) + 'px Roboto';
+  }
+
+  /**
+   * Calculate the box metrics (dimensions) for a node.
+   * @param d the node in question
+   */
+  calculateNodeMetrics(d: UniversalGraphNode): GraphNodeMetrics {
+    const canvas = this.canvas;
+    const ctx = canvas.getContext('2d');
+    const textSize = ctx.measureText(d.display_name);
+    const textActualHeight = textSize.actualBoundingBoxAscent + textSize.actualBoundingBoxDescent;
+    const nodeWidth = textSize.width + 10;
+    const nodeHeight = textActualHeight + 10;
+    const nodeX = d.data.x - nodeWidth / 2;
+    const nodeY = d.data.y - nodeHeight / 2;
+    return {
+      textWidth: textSize.width,
+      textActualHeight,
+      nodeX,
+      nodeY,
+      nodeX2: nodeX + nodeWidth,
+      nodeY2: nodeY + nodeHeight,
+      nodeWidth,
+      nodeHeight,
+    };
+  }
+
+  // ========================================
+  // Utility geometric operations
+  // ========================================
+
+  /**
+   * Find the best matching node at the given position.
+   * @param nodes list of nodes to search through
+   * @param x graph X location
+   * @param y graph Y location
+   */
+  findNode(nodes: UniversalGraphNode[], x: number, y: number): UniversalGraphNode | undefined {
+    const canvas = this.canvas;
+    const ctx = canvas.getContext('2d');
+    for (let i = nodes.length - 1; i >= 0; --i) {
+      const d = nodes[i];
+      ctx.font = this.calculateNodeFont(d);
+      const metrics = this.calculateNodeMetrics(d);
+      if (x >= metrics.nodeX && x <= metrics.nodeX2 && y >= metrics.nodeY && y <= metrics.nodeY2) {
+        return d;
+      }
+    }
+    return undefined;
+  }
+
+  /**
+   * Find the best matching edge at the given position.
+   * @param edges list of edges to search through
+   * @param x graph X location
+   * @param y graph Y location
+   */
+  findEdge(edges: UniversalGraphEdge[], x: number, y: number): UniversalGraphEdge | undefined {
+    const candidates = [];
+    for (const edge of edges) {
+      const from = this.nodeReference(edge.from);
+      const to = this.nodeReference(edge.to);
+
+      const x1 = Math.min(from.data.x, to.data.x);
+      const x2 = Math.max(from.data.x, to.data.x);
+      const y1 = Math.min(from.data.y, to.data.y);
+      const y2 = Math.max(from.data.y, to.data.y);
+      const distance = this.getLinePointIntersectionDistance(x, y, x1, x2, y1, y2);
+
+      if (distance <= 2) {
+        candidates.push([edge, distance]);
+      }
+    }
+
+    if (candidates.length) {
+      let bestCandidate = candidates[0];
+      for (let i = 1; i < candidates.length; i++) {
+        const candidate = candidates[i];
+        if (candidate[1] < bestCandidate[1]) {
+          bestCandidate = candidate;
+        }
+      }
+      return bestCandidate[0];
+    }
+    return undefined;
+  }
+
+  /**
+   * Get the graph entity located where the mouse is, if there is one.
+   */
+  getEntityAtMouse(): GraphEntity | undefined {
+    const canvas = this.canvas;
+    const [mouseX, mouseY] = d3.mouse(canvas);
+    const x = this.transform.invertX(mouseX);
+    const y = this.transform.invertY(mouseY);
+    const node = this.findNode(this.nodes, x, y);
+    if (node) {
+      return {
+        type: GraphEntityType.Node,
+        entity: node
+      };
+    }
+    const edge = this.findEdge(this.edges, x, y);
+    if (edge) {
+      return {
+        type: GraphEntityType.Edge,
+        entity: edge
+      };
+    }
+    return undefined;
+  }
+
+  // ========================================
+  // Rendering
+  // ========================================
+
+  /**
+   * Re-render the graph.
+   */
+  requestRender() {
+    // TODO: Maybe flag as a render being required and do it in requestAnimationFrame()
+    this.render();
+  }
+
+  /**
+   * Re-render the graph.
+   */
+  render() {
+    const transform = this.transform;
+    const canvas = this.canvas;
+    const ctx = canvas.getContext('2d');
+
+    // Multiply any values by this number to have it *NOT* scale with zoom
+    const noZoomScale = 1 / transform.scale(1).k;
+
+    ctx.save();
+    ctx.fillStyle = '#f2f2f2';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.translate(transform.x, transform.y);
+    ctx.scale(transform.k, transform.k);
+
+    //
+    // Draws the elements needed for the interactive edge creation feature
+    // Note that we draw this feature below everything else
+    //
+    if (this.interactiveEdgeCreationState && this.interactiveEdgeCreationState.to) {
+      ctx.beginPath();
+
+      const {from, to} = this.interactiveEdgeCreationState;
+
+      // Draw line
+      const lineWidth = 0.5 * noZoomScale;
+      ctx.lineWidth = 3 / transform.scale(3).k;
+      ctx.fillStyle = '#2B7CE9';
+      (ctx as any).arrow(
+        from.data.x, from.data.y, to.data.x, to.data.y,
+        [0, lineWidth, -10 * noZoomScale, lineWidth, -10 * noZoomScale, 5 * noZoomScale]);
+      ctx.fill();
+
+      // Draw the 'o' node at the end of the line
+      const nodeRadius = 6 * noZoomScale;
+      const x = to.data.x;
+      const y = to.data.y;
+      ctx.moveTo(x, y);
+      ctx.arc(x, y, nodeRadius, 0, 2 * Math.PI);
+      ctx.strokeStyle = '#2B7CE9';
+      ctx.stroke();
+      ctx.fillStyle = '#97C2FC';
+      ctx.fill();
+    }
+
+    //
+    // Draw edge lines, without the labels (for correct z-ordering)
+    //
+    this.edges.forEach(d => {
+      ctx.beginPath();
+
+      const from = this.nodeReference(d.from);
+      const to = this.nodeReference(d.to);
+
+      ctx.font = this.calculateNodeFont(this.nodeReference(d.to));
+      const toMetrics = this.calculateNodeMetrics(this.nodeReference(d.to));
+
+      // Because we draw an arrowhead at the end, we need the line to stop at the
+      // shape's edge and not at the node center, so we need to find the intersection between
+      // the line and the node box
+      const toCollision = this.pointOnRect(
+        this.nodeReference(d.from).data.x,
+        this.nodeReference(d.from).data.y,
+        toMetrics.nodeX,
+        toMetrics.nodeY,
+        toMetrics.nodeX2,
+        toMetrics.nodeY2,
+        true
+      );
+
+      // Draw line
+      const lineWidth = (this.isAnyHighlighted(d, from, to) ? 1 : 0.5) * noZoomScale;
+      ctx.fillStyle = (!this.highlighted || this.isAnyHighlighted(d, from, to)) ? '#2B7CE9' : '#ACCFFF';
+      (ctx as any).arrow(
+        this.nodeReference(d.from).data.x,
+        this.nodeReference(d.from).data.y,
+        toCollision.x,
+        toCollision.y,
+        [0, lineWidth, -10 * noZoomScale, lineWidth, -10 * noZoomScale, 5 * noZoomScale]);
+      ctx.fill();
+    });
+
+    //
+    // Draw edge labels (after we've drawn the lines, for correct z-ordering)
+    //
+    this.edges.forEach(d => {
+      ctx.beginPath();
+
+      // Draw label
+      if (d.label) {
+        const from = this.nodeReference(d.from);
+        const to = this.nodeReference(d.to);
+
+        ctx.font = this.calculateNodeFont(to);
+        const toMetrics = this.calculateNodeMetrics(to);
+        const toCollision = this.pointOnRect(from.data.x, from.data.y,
+          toMetrics.nodeX, toMetrics.nodeY, toMetrics.nodeX2, toMetrics.nodeY2, true);
+
+        ctx.font = this.calculateNodeFont(from);
+        const fromMetrics = this.calculateNodeMetrics(from);
+        const fromCollision = this.pointOnRect(to.data.x, to.data.y,
+          fromMetrics.nodeX, fromMetrics.nodeY, fromMetrics.nodeX2, fromMetrics.nodeY2, true);
+
+        ctx.font = this.calculateEdgeFont(d);
+        const textSize = ctx.measureText(d.label);
+        const width = textSize.width;
+        const height = textSize.actualBoundingBoxAscent + textSize.actualBoundingBoxDescent;
+        const x = Math.abs(fromCollision.x - toCollision.x) / 2 + Math.min(fromCollision.x, toCollision.x) - width / 2;
+        const y = Math.abs(fromCollision.y - toCollision.y) / 2 + Math.min(fromCollision.y, toCollision.y) + height / 2;
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 3 * noZoomScale;
+        ctx.strokeText(d.label, x, y);
+        ctx.fillStyle = '#888';
+        ctx.fillText(d.label, x, y);
+      }
+    });
+
+    //
+    // Draw node
+    //
+    this.nodes.forEach((d, i) => {
+      ctx.beginPath();
+
+      ctx.font = this.calculateNodeFont(d);
+      const metrics = this.calculateNodeMetrics(d);
+
+      // Node box
+      (ctx as any).roundedRect(
+        metrics.nodeX,
+        metrics.nodeY,
+        metrics.nodeWidth,
+        metrics.nodeHeight,
+        5 * noZoomScale
+      );
+      ctx.strokeStyle = '#2B7CE9';
+      ctx.lineWidth = noZoomScale * (this.isAnyHighlighted(d) ? 2 : 1.5);
+      ctx.fillStyle = (this.isAnyHighlighted(d) ? '#E4EFFF' : (this.isAnySelected(d) ? '#efefef' : '#fff'));
+      ctx.fill();
+      ctx.stroke();
+
+      // Node outline
+      ctx.strokeStyle = '#fff';
+      ctx.lineWidth = noZoomScale * 1.5;
+
+      // Node text
+      ctx.fillStyle = this.calculateNodeColor(d);
+      ctx.fillText(d.display_name, d.data.x - metrics.textWidth / 2, d.data.y + metrics.textActualHeight / 2);
+    });
+
+    ctx.restore();
+  }
+
+  // ========================================
+  // Event handlers
+  // ========================================
+
+  // Canvas events
+  // ---------------------------------
+
+  canvasClicked() {
+    const subject = this.getEntityAtMouse();
+    if (this.interactiveEdgeCreationState) {
+      if (subject && subject.type === GraphEntityType.Node) {
+        const node = subject.entity as UniversalGraphNode;
+        if (node !== this.interactiveEdgeCreationState.from) {
+          const label = prompt('Label please', '') || ''; // Doesn't work for 0
+          this.edges.push({
+            data: {},
+            from: this.interactiveEdgeCreationState.from.hash,
+            to: node.hash,
+            label,
+          });
+          this.interactiveEdgeCreationState = null;
+        }
+      } else {
+        this.interactiveEdgeCreationState = null;
+      }
+    } else {
+      this.select(subject);
+    }
+    this.requestRender();
+  }
+
+  canvasDoubleClicked() {
+    if (!this.interactiveEdgeCreationState) {
+      const subject = this.getEntityAtMouse();
+      if (subject && subject.type === GraphEntityType.Node) {
+        const node = subject.entity as UniversalGraphNode;
+        this.interactiveEdgeCreationState = {
+          from: node,
+          to: null,
+        };
+      }
+    }
+  }
+
+  canvasMouseMoved() {
+    const canvas = this.canvas;
+    const [mouseX, mouseY] = d3.mouse(canvas);
+    this.highlighted = this.getEntityAtMouse();
+    if (this.interactiveEdgeCreationState) {
+      this.interactiveEdgeCreationState.to = {
+        data: {
+          x: this.transform.invertX(mouseX),
+          y: this.transform.invertY(mouseY),
+        },
+      };
+    }
+    this.requestRender();
+  }
+
+  /**
+   * Handle when the mouse is first clicked to start a drag.
+   */
+  canvasDragStarted(): void {
+    const canvas = this.canvas;
+    const [mouseX, mouseY] = d3.mouse(canvas);
+    const subject: GraphEntity | undefined = d3.event.subject;
+
+    if (subject.type === GraphEntityType.Node) {
+      const node = subject.entity as UniversalGraphNode;
+
+      // We need to store the offset between the mouse and the node, because when
+      // we actually move the node, we need to move it relative to this offset
+      this.offsetBetweenNodeAndMouseInitialPosition = [
+        node.data.x - this.transform.invertX(mouseX),
+        node.data.y - this.transform.invertY(mouseY),
+      ];
+    }
+
+    this.select(subject);
+  }
+
+  /**
+   * Handle when the mouse is clicked and then dragged across the canvas.
+   */
+  canvasDragged(): void {
+    if (!this.interactiveEdgeCreationState) {
+      const canvas = this.canvas;
+      const [mouseX, mouseY] = d3.mouse(canvas);
+      const subject: GraphEntity | undefined = d3.event.subject;
+
+      if (subject.type === GraphEntityType.Node) {
+        const node = subject.entity as UniversalGraphNode;
+        node.data.x = this.transform.invertX(mouseX) + this.offsetBetweenNodeAndMouseInitialPosition[0];
+        node.data.y = this.transform.invertY(mouseY) + this.offsetBetweenNodeAndMouseInitialPosition[1];
+        // TODO: Store this in history as ONE object
+      }
+      this.requestRender();
+    }
+  }
+
+  /**
+   * Handle when the mouse is clicked, dragged across the canvas, and then let go.
+   */
+  canvasDragEnded(): void {
+  }
+
+  /**
+   * Handle when the user zooms on the canvas.
+   */
+  canvasZoomed(): void {
+    this.transform = d3.event.transform.scale(0.8).translate(700, 500);
+    this.requestRender();
+  }
+
+  // Drop events
+  // ---------------------------------
+
+  /**
+   * Handle something being dropped onto the canvas.
+   * @param event object representing a drag-and-drop event
+   */
+  drop(event: CdkDragDrop<any>) {
+    if (event.item.element.nativeElement.classList.contains('map-template')) {
+      this.mapDropped(event);
+    } else {
+      this.paletteNodeDropped(event);
+    }
+  }
+
+  /**
+   * Handle node template being dropped onto the canvas.
+   * @param event object representing a drag-and-drop event
+   */
+  paletteNodeDropped(event: CdkDragDrop<any>) {
+    const hash = makeid();
+    const label = event.item.element.nativeElement.id;
+    const displayName = `Unnamed ${label}`;
+
+    // Get DOM coordinate of dropped node relative to container DOM
+    const nodeCoord: DOMRect = document.getElementById(label)
+      .getBoundingClientRect() as DOMRect;
+    const containerCoord: DOMRect = document.getElementById('drawing-tool-view-container')
+      .getBoundingClientRect() as DOMRect;
+    const x = this.transform.invertX(nodeCoord.x - containerCoord.x + event.distance.x);
+    const y = this.transform.invertY(nodeCoord.y + event.distance.y);
+
+    this.execute(new NodeCreation(
+      `Create ${label} node`, {
+        display_name: displayName,
+        hash,
+        label,
+        sub_labels: [],
+        data: {
+          x,
+          y,
+        }
+      }
+    ));
+  }
+
+  /**
+   * Handle a map being dropped onto the canvas.
+   * @param event object representing a drag-and-drop event
+   */
+  mapDropped(event: CdkDragDrop<any>) {
+    const nativeElement = event.item.element.nativeElement;
+
+    const hash = makeid();
+    const mapId = nativeElement.id;
+    const mapName = nativeElement.children[0].textContent;
+    const source = '/dt/map/' + mapId;
+
+    // Get DOM coordinate of dropped node relative to container DOM
+    const nodeCoord: DOMRect = document.getElementById(mapId)
+      .getBoundingClientRect() as DOMRect;
+    const containerCoord: DOMRect = document.getElementById('drawing-tool-view-container')
+      .getBoundingClientRect() as DOMRect;
+    const x = this.transform.invertX(nodeCoord.x - containerCoord.x + event.distance.x + 100);
+    const y = this.transform.invertY(nodeCoord.y + event.distance.y + 80);
+
+    this.execute(new NodeCreation(
+      `Add '${mapName}' map to graph`, {
+        display_name: mapName,
+        hash,
+        label: 'map',
+        sub_labels: [],
+        data: {
+          x,
+          y,
+          source,
+        }
+      }
+    ));
+  }
+
+  /**
+   * Handle a file being dropped onto the canvas.
+   * @param node the node being dropped
+   */
+  fileDropped(node: GraphData) {
+    if (!node) {
+      return;
+    }
+
+    const hash = makeid();
+    const fileName = node.label;
+    const x = this.transform.invertX(node.x);
+    const y = this.transform.invertY(node.y);
+
+    this.execute(new NodeCreation(
+      `Add '${fileName}' map to graph`, {
+        display_name: fileName,
+        hash,
+        label: node.group,
+        sub_labels: [],
+        data: {
+          x,
+          y,
+          ...node.data,
+        }
+      }
+    ));
+  }
+
+  // ========================================
+  // Graph modification routines
+  // ========================================
+
+  /**
+   * Add the given node to the graph.
+   * @param node the node
+   */
+  addNode(node: UniversalGraphNode): void {
+    this.nodes.push(node);
+    this.requestRender();
+  }
+
+  /**
+   * Remove the given node from the graph.
+   * @param node the node
+   * @return true if the node was found
+   */
+  removeNode(node: UniversalGraphNode): boolean {
+    let found = false;
+
+    let i = this.nodes.length;
+    while (i--) {
+      if (this.nodes[i] === node) {
+        this.nodes.splice(i, 1);
+        found = true;
+      }
+    }
+
+    let j = this.edges.length;
+    while (j--) {
+      if (this.nodeReference(this.edges[j].from) === node
+        || this.nodeReference(this.edges[j].to) === node) {
+        this.edges.splice(j, 1);
+      }
+    }
+
+    return found;
+  }
+
+  /**
+   * Select an entity.
+   * @param entity the entity
+   */
+  select(entity: GraphEntity) {
+    this.selected = entity;
+    this.dataFlow.pushSelection(entity);
+  }
+
+  // ========================================
+  // History
+  // ========================================
+
+  /**
+   * Perform an undo, if there is anything to undo.
+   * @return true if there was something to undo
+   */
+  undo(): boolean {
+    // Check to see if there is anything to undo
+    if (this.nextHistoryIndex > 0) {
+      this.nextHistoryIndex--;
+      this.history[this.nextHistoryIndex].rollback(this);
+      this.requestRender();
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  /**
+   * Perform a redo, if there is anything to redo.
+   * @return true if there was something to redo
+   */
+  redo(): boolean {
+    // Check to see if there is anything to redo
+    if (this.nextHistoryIndex < this.history.length) {
+      this.history[this.nextHistoryIndex].apply(this);
+      this.nextHistoryIndex++;
+      this.requestRender();
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  /**
+   * Execute an action and store the action to the history stack, while also resetting the
+   * history pointer.
+   * @param action the action to execute
+   */
+  execute(action: GraphAction): void {
+    // We have unsaved changes
+    // this.saveState = false;  // TODO: remove this
+
+    // Drop all changes after this one
+    this.history = this.history.slice(0, this.nextHistoryIndex);
+    this.history.push(action);
+    this.nextHistoryIndex++;
+
+    // Apply the change
+    action.apply(this);
+  }
+
+  // ========================================
+  // TODO
+  // ========================================
 
   updateCursorDocumentPos(event: MouseEvent) {
     this.cursorDocumentPos = {
@@ -380,7 +1018,7 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
 
     // We need to get the cursor coords the first time the user clicks the canvas (i.e. when they focus it for the first time).
     // Otherwise they would be undefined if the user focused the canvas but didn't move the mouse at all and tried to paste.
-    (fromEvent(visCanvas, 'click') as Observable < MouseEvent > ).pipe(
+    (fromEvent(visCanvas, 'click') as Observable<MouseEvent>).pipe(
       first(),
     ).subscribe((event) => {
       this.updateCursorDocumentPos(event);
@@ -393,14 +1031,14 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
       this.mouseMoveEventStream = fromEvent(visCanvas, 'mousemove').pipe(
         debounceTime(25),
         takeUntil(this.endMouseMoveEventSource),
-      ) as Observable < MouseEvent > ;
+      ) as Observable<MouseEvent>;
 
       this.mouseMoveSub = this.mouseMoveEventStream.subscribe((event) => {
         this.updateCursorDocumentPos(event);
       });
 
       // We also want to keep track of when the "Paste" command is issued by the user
-      this.pasteEventStream = (fromEvent(visCanvas, 'keydown') as Observable < KeyboardEvent > ).pipe(
+      this.pasteEventStream = (fromEvent(visCanvas, 'keydown') as Observable<KeyboardEvent>).pipe(
         filter(event => keyCodeRepresentsPasteEvent(event)),
         takeUntil(this.endPasteEventSource),
       );
@@ -418,23 +1056,6 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
       // Similar to above
       this.endPasteEventSource.next(true);
     });
-  }
-
-  updateSelectedNodes() {
-    this.selectedNodes = this.visjsNetworkGraph.network.getSelectedNodes();
-  }
-
-  updateSelectedEdges() {
-    this.selectedEdges = this.visjsNetworkGraph.network.getSelectedEdges();
-  }
-
-  updateSelectedNodesAndEdges() {
-    this.updateSelectedNodes();
-    this.updateSelectedEdges();
-  }
-
-  hideAllTooltips() {
-    this.drawingToolContextMenuControlService.hideTooltip();
   }
 
   /**
@@ -459,302 +1080,9 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   /**
-   * Checks if an undo or redo action contains a graph update
-   * affecting the focused entity and push update to info-panel
-   * @param graph - represent a network
-   */
-  shouldIUpdateInfoPanel(graph: VisNetworkGraph) {
-    if (!this.infoPanel.graphData.id) {
-      return;
-    }
-
-    const currentEntity = this.infoPanel.graphData;
-    const currentEntityType = this.infoPanel.entityType;
-
-    if (currentEntityType === 'node') {
-      const nodeIds = graph.nodes.map(n => n.id);
-      if (nodeIds.includes(currentEntity.id)) {
-        const data = this.visjsNetworkGraph.getNode(currentEntity.id);
-        this.dataFlow.pushGraphData(data);
-      } else {
-        this.infoPanel.reset();
-      }
-    } else {
-      const edgeIds = graph.edges.map(e => e.id);
-      if (edgeIds.includes(currentEntity.id)) {
-        const data = this.visjsNetworkGraph.getEdge(currentEntity.id);
-        this.dataFlow.pushGraphData(data);
-      } else {
-        this.infoPanel.reset();
-      }
-    }
-  }
-
-  undo() {
-    // Pop the action from undo stack
-    const undoAction = this.undoStack.pop();
-
-    // Record the current state of graph into redo action
-    const redoAction = {
-      graph: Object.assign({}, this.visjsNetworkGraph.export()),
-      cmd: undoAction.cmd
-    };
-
-    // Undo action
-    this.visjsNetworkGraph.import(
-      undoAction.graph
-    );
-    this.shouldIUpdateInfoPanel(undoAction.graph);
-
-    // Push redo action into redo stack
-    this.redoStack.push(redoAction);
-
-    this.saveState = false;
-  }
-
-  redo() {
-    // Pop the action from redo stack
-    const redoAction = this.redoStack.pop();
-
-    // Record the current state of graph into undo action
-    const undoAction = {
-      graph: Object.assign({}, this.visjsNetworkGraph.export()),
-      cmd: redoAction.cmd
-    };
-
-    // Redo action
-    this.visjsNetworkGraph.import(
-      redoAction.graph
-    );
-    this.shouldIUpdateInfoPanel(redoAction.graph);
-
-    // Push undo action into undo stack
-    this.undoStack.push(undoAction);
-
-    this.saveState = false;
-  }
-
-  /**
-   * Process all modification cmd to the graph representation
-   * @param cmd The cmd to execute and push to stack
-   * @param push Whether or not to push to undo stack
-   */
-  recordCommand(cmd: Command) {
-    this.saveState = false;
-
-    this.currentGraphState = this.visjsNetworkGraph.export();
-
-    this.undoStack.push({
-      graph: Object.assign({}, this.currentGraphState),
-      cmd: cmd.action
-    });
-    this.redoStack = [];
-
-
-    switch (cmd.action) {
-      case 'add node':
-        // Add node to network graph
-        const addedNode = this.visjsNetworkGraph.addNode({
-          ...cmd.data
-        });
-        // Toggle info-panel-ui for added node
-        const data = this.visjsNetworkGraph.getNode(addedNode.id);
-        this.dataFlow.pushGraphData(data);
-        break;
-      case 'update node':
-        // Update node
-        this.visjsNetworkGraph.updateNode(
-          cmd.data.node.id, {
-            label: cmd.data.node.label,
-            group: cmd.data.node.group,
-            shape: cmd.data.node.shape || 'box',
-            icon: cmd.data.node.icon,
-            data: cmd.data.node.data
-          }
-        );
-        // Update edges of node
-        cmd.data.edges.map(e => {
-          this.visjsNetworkGraph.updateEdge(
-            e.id, {
-              label: e.label,
-              from: e.from,
-              to: e.to
-            }
-          );
-        });
-        break;
-      case 'delete node':
-        this.visjsNetworkGraph.removeNode(cmd.data.id);
-        break;
-      case 'add edge':
-        this.visjsNetworkGraph.addEdge(
-          cmd.data.edge.from,
-          cmd.data.edge.to
-        );
-        break;
-      case 'update edge':
-        this.visjsNetworkGraph.updateEdge(
-          cmd.data.edge.id,
-          cmd.data.edge
-        );
-        break;
-      case 'delete edge':
-        this.visjsNetworkGraph.removeEdge(cmd.data.id);
-        break;
-      default:
-        break;
-    }
-  }
-
-  /**
-   * Event handler for node template dropping onto canvas
-   * @param event object representing a drag-and-drop event
-   */
-  drop(event: CdkDragDrop < any > ) {
-    if (
-      event.item.element.nativeElement.classList.contains('map-template')
-    ) {
-      this.dropMap(event);
-    } else {
-      this.dropNode(event);
-    }
-  }
-
-  dropMap(event: CdkDragDrop < any > ) {
-    const nativeElement = event.item.element.nativeElement;
-
-    const mapId = nativeElement.id;
-    const label = nativeElement.children[0].textContent;
-    const source = '/dt/map/' + mapId;
-
-    // Get DOM coordinate of dropped node relative
-    // to container DOM
-    const nodeCoord: DOMRect =
-      document
-      .getElementById(mapId)
-      .getBoundingClientRect() as DOMRect;
-    const containerCoord: DOMRect =
-      document
-      .getElementById('drawing-tool-view-container')
-      .getBoundingClientRect() as DOMRect;
-    const x =
-      nodeCoord.x -
-      containerCoord.x +
-      event.distance.x + 100;
-    const y =
-      nodeCoord.y + event.distance.y + 80;
-
-    // Convert DOM coordinate to canvas coordinate
-    const coord = this.visjsNetworkGraph.network.DOMtoCanvas({
-      x,
-      y
-    });
-
-    // ADD NODE
-    const cmd = {
-      action: 'add node',
-      data: {
-        group: 'map',
-        label,
-        ...coord,
-        source
-      }
-    };
-    this.recordCommand(cmd);
-  }
-
-  /**
-   * Event handler for node template dropping onto canvas
-   * @param event object representing a drag-and-drop event
-   */
-  dropNode(event: CdkDragDrop < any > ) {
-    const nodeType = event.item.element.nativeElement.id;
-    const label = `${nodeType}-${makeid()}`;
-
-    // Get DOM coordinate of dropped node relative
-    // to container DOM
-    const nodeCoord: DOMRect =
-      document
-      .getElementById(nodeType)
-      .getBoundingClientRect() as DOMRect;
-    const containerCoord: DOMRect =
-      document
-      .getElementById('drawing-tool-view-container')
-      .getBoundingClientRect() as DOMRect;
-    const x =
-      nodeCoord.x -
-      containerCoord.x +
-      event.distance.x;
-    const y =
-      nodeCoord.y + event.distance.y + 16;
-
-    // Convert DOM coordinate to canvas coordinate
-    const coord = this.visjsNetworkGraph.network.DOMtoCanvas({
-      x,
-      y
-    });
-
-    // ADD NODE
-    const cmd = {
-      action: 'add node',
-      data: {
-        group: nodeType,
-        label,
-        ...coord
-      }
-    };
-    this.recordCommand(cmd);
-  }
-
-  /**
-   * Handle drawing node onto canvas accoridng to pdf payload
-   * @param node - represent data of new node
-   */
-  dropPdf(node: GraphData) {
-    if (!node) {
-      return;
-    }
-
-    // Convert DOM coordinate to canvas coordinate
-    const coord =
-      this.visjsNetworkGraph
-      .network.DOMtoCanvas({
-        x: node.x,
-        y: node.y
-      });
-
-    // ADD NODE
-    const cmd = {
-      action: 'add node',
-      data: {
-        label: node.label,
-        group: node.group,
-        x: coord.x,
-        y: coord.y,
-        ...node.data
-      }
-    };
-    this.recordCommand(cmd);
-  }
-
-  /**
    * Save the current representation of knowledge model
    */
   save() {
-    // Export the graph from vis_js instance object
-    const graph = this.visjsNetworkGraph.export();
-
-    // Convert it to universal representation ..
-    this.project.graph = this.projectService.vis2Universe(graph);
-    this.project.date_modified = new Date().toISOString();
-
-    // Push to backend to save
-    this.projectService.updateProject(this.project).subscribe(() => {
-      this.saveState = true;
-      this.snackBar.open('Map is saved', null, {
-        duration: 2000,
-      });
-    });
   }
 
   /**
@@ -787,6 +1115,7 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
   }
+
   /**
    * Saves and downloads the PDF version of the current map
    */
@@ -942,170 +1271,14 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   fitAll() {
-    this.visjsNetworkGraph.zoom2All();
-  }
-
-  // -- Event Handlers --
-  /**
-   * Listen for double click event from vis.js Network
-   * to handle
-   * - initating addMode for drawing edges from source node
-   * @param properties represents a double click event
-   */
-  networkDoubleClickHandler(properties) {
-    if (!properties.nodes.length) {
-      return;
-    }
-
-    // Set up rendering gesture for the node
-    this.node4AddingEdge2 = properties.nodes[0];
-    this.addMode = true;
-
-    const e = properties.event.srcEvent;
-    const canvasOffset = $('#canvas > div > canvas').offset();
-
-    // Convert DOM coordinate to canvas coordinate
-    const coord = this.visjsNetworkGraph.network.DOMtoCanvas({
-      x: e.pageX - canvasOffset.left,
-      y: e.pageY - canvasOffset.top
-    });
-
-    // Place placeholder node near mouse cursor
-    const addedNode = this.visjsNetworkGraph.addNode({
-      size: 0,
-      shape: 'dot',
-      id: 'EDGE_FORMATION_DRAGGING',
-      x: coord.x - 5,
-      y: coord.y - 5
-    });
-
-    // Add edge from selected node to placeholder node
-    this.visjsNetworkGraph.addEdge(
-      this.node4AddingEdge2,
-      addedNode.id
-    );
-  }
-  /**
-   * Listen for click events from vis.js network
-   * to handle certain events ..
-   * - if a node is clicked on
-   * - if a edge is clicked on
-   * - if a node is clicked on during addMode
-   * @param properties represents a network click event
-   */
-  networkClickHandler(properties) {
-    this.hideAllTooltips();
-
-    if (this.addMode) {
-      if (properties.nodes.length) {
-        const targetId = properties.nodes[0];
-
-        // ADD EDGE
-        const cmd = {
-          action: 'add edge',
-          data: {
-            edge: {
-              from: this.node4AddingEdge2,
-              to: targetId
-            }
-          }
-        };
-        this.recordCommand(cmd);
-      }
-
-      // Reset dragging gesture rendering
-      this.visjsNetworkGraph.removeNode(
-        'EDGE_FORMATION_DRAGGING'
-      );
-      this.addMode = false;
-    } else {
-      if (properties.nodes.length) {
-        // If a node is clicked on
-        const nodeId = properties.nodes[0];
-        const data = this.visjsNetworkGraph.getNode(nodeId);
-        this.dataFlow.pushGraphData(data);
-      } else if (properties.edges.length) {
-        // If an edge is clicked on
-        const edgeId = properties.edges[0];
-        const data = this.visjsNetworkGraph.getEdge(edgeId);
-        this.dataFlow.pushGraphData(data);
-      }
-    }
-  }
-
-  networkDragStartCallback(params: any) {
-    this.hideAllTooltips();
-  }
-
-  networkOnContextCallback(params: any) {
-    const hoveredNode = this.visjsNetworkGraph.network.getNodeAt(params.pointer.DOM);
-
-    // Stop the browser from showing the normal context
-    params.event.preventDefault();
-
-    // Update the canvas location
-    const canvas = document.querySelector('canvas').getBoundingClientRect() as DOMRect;
-
-    const contextMenuXPos = params.pointer.DOM.x + canvas.x;
-    const contextMenuYPos = params.pointer.DOM.y + canvas.y;
-
-    this.drawingToolContextMenuControlService.updatePopper(contextMenuXPos, contextMenuYPos);
-
-    const hoveredEdge = this.visjsNetworkGraph.network.getEdgeAt(params.pointer.DOM);
-    const currentlySelectedNodes = this.visjsNetworkGraph.network.getSelectedNodes();
-    const currentlySelectedEdges = this.visjsNetworkGraph.network.getSelectedEdges();
-
-    if (hoveredNode !== undefined) {
-      if (currentlySelectedNodes.length === 0 || !currentlySelectedNodes.includes(hoveredNode)) {
-        this.visjsNetworkGraph.network.selectNodes([hoveredNode], false);
-      }
-    } else if (hoveredEdge !== undefined) {
-      if (currentlySelectedEdges.length === 0 || !currentlySelectedEdges.includes(hoveredEdge)) {
-        this.visjsNetworkGraph.network.selectEdges([hoveredEdge]);
-      }
-    } else {
-      this.visjsNetworkGraph.network.unselectAll();
-    }
-
-    this.updateSelectedNodesAndEdges();
-
-    this.drawingToolContextMenuControlService.showTooltip();
-  }
-
-  /**
-   * Handler for mouse movement on canvas
-   * to render edge formation gesture in addMode
-   * @param e - used to pull vent coordinate
-   */
-  edgeFormationRenderer(e: JQuery.Event) {
-    if (!this.addMode) {
-      return;
-    }
-
-    const canvasOffset = $('#canvas > div > canvas').offset();
-
-    // Convert DOM coordinate to canvas coordinate
-    const coord = this.visjsNetworkGraph.network.DOMtoCanvas({
-      x: e.pageX - canvasOffset.left,
-      y: e.pageY - canvasOffset.top
-    });
-
-    // Render placeholder node near mouse cursor
-    this.visjsNetworkGraph.network.moveNode(
-      'EDGE_FORMATION_DRAGGING',
-      coord.x - 5,
-      coord.y - 5
-    );
   }
 
   // TODO LL-233
   removeNodes(nodes: IdType[]) {
-    nodes.map(nodeId => this.visjsNetworkGraph.removeNode(nodeId));
   }
 
   // TODO LL-233
   removeEdges(edges: IdType[]) {
-    edges.map(nodeId => this.visjsNetworkGraph.removeEdge(nodeId));
   }
 
   /**
@@ -1113,8 +1286,6 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
    * @param node the ID of the node whose neighbors are being selected
    */
   selectNeighbors(node: IdType) {
-    this.visjsNetworkGraph.network.selectNodes(this.visjsNetworkGraph.network.getConnectedNodes(node) as IdType[]);
-    this.updateSelectedNodes();
   }
 
   /**
@@ -1124,16 +1295,6 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
    * discard the edge.
    */
   copySelection() {
-    const copiedNodeIds = this.selectedNodes;
-    const copiedEdgeIds = this.selectedEdges.filter(edgeId => {
-      const connectedNodes = this.visjsNetworkGraph.network.getConnectedNodes(edgeId);
-      // If even one of the nodes connected to this edge is not in the list of copied nodes, abandon the edge
-      // (we don't want to draw edges that don't have a src/dest).
-      return connectedNodes.every(connectedNodeId => copiedNodeIds.includes(connectedNodeId));
-    });
-
-    this.copyPasteMapsService.copiedNodes = copiedNodeIds.map(nodeId => this.visjsNetworkGraph.getNode(nodeId).nodeData);
-    this.copyPasteMapsService.copiedEdges = copiedEdgeIds.map(edgeId => this.visjsNetworkGraph.getEdge(edgeId).edgeData);
   }
 
   // TODO LL-233
@@ -1142,22 +1303,63 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   async createLinkNodeFromClipboard(coords: Coords2D) {
-    const clipboardContent = await this.clipboardService.readClipboard();
-    const canvasCoords = this.visjsNetworkGraph.network.DOMtoCanvas({
-      x: coords.x,
-      y: coords.y
-    });
+  }
 
-    const cmd = {
-      action: 'add node',
-      data: {
-        icon: LINK_NODE_ICON_OBJECT,
-        group: 'note',
-        label: 'note',
-        detail: clipboardContent,
-        ...canvasCoords
+
+  // ========== to do move ============
+
+  getLinePointIntersectionDistance(x, y, x1, x2, y1, y2) {
+    if (!intersects.pointLine(x, y, x1, y1, x2, y2)) {
+      return Infinity;
+    }
+    const expectedSlope = (y2 - y1) / (x2 - x1);
+    const slope = (y - y1) / (x - x1);
+    return Math.abs(slope - expectedSlope);
+  }
+
+  pointOnRect(x, y, minX, minY, maxX, maxY, validate) {
+    if (validate && (minX < x && x < maxX) && (minY < y && y < maxY)) {
+      return {x, y};
+    }
+    const midX = (minX + maxX) / 2;
+    const midY = (minY + maxY) / 2;
+    // if (midX - x == 0) -> m == ±Inf -> minYx/maxYx == x (because value / ±Inf = ±0)
+    const m = (midY - y) / (midX - x);
+
+    if (x <= midX) { // check "left" side
+      const minXy = m * (minX - x) + y;
+      if (minY <= minXy && minXy <= maxY) {
+        return {x: minX, y: minXy};
       }
-    };
-    this.recordCommand(cmd);
+    }
+
+    if (x >= midX) { // check "right" side
+      const maxXy = m * (maxX - x) + y;
+      if (minY <= maxXy && maxXy <= maxY) {
+        return {x: maxX, y: maxXy};
+      }
+    }
+
+    if (y <= midY) { // check "top" side
+      const minYx = (minY - y) / m + x;
+      if (minX <= minYx && minYx <= maxX) {
+        return {x: minYx, y: minY};
+      }
+    }
+
+    if (y >= midY) { // check "bottom" side
+      const maxYx = (maxY - y) / m + x;
+      if (minX <= maxYx && maxYx <= maxX) {
+        return {x: maxYx, y: maxY};
+      }
+    }
+
+    // edge case when finding midpoint intersection: m = 0/0 = NaN
+    if (x === midX && y === midY) {
+      return {x, y};
+    }
+
+    // Should never happen :) If it does, please tell me!
+    return {x, y};
   }
 }

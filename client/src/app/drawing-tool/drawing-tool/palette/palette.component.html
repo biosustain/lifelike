@@ -1,30 +1,23 @@
-<div class='nav-bar'>
-  <mat-icon
-  (click)='_undo()'
-  [ngClass]='{"inactive": !undoStack.length}'>
-    undo
-  </mat-icon>
-  <mat-icon
-    (click)='_redo()'
-    [ngClass]='{"inactive": !redoStack.length}'>
-    redo
-  </mat-icon>
-  <mat-icon (click)='changeSize()' class='fr'>menu</mat-icon>
-</div>
-<div 
+<div
   cdkDropList
   class='node-palette'>
-  <div 
-    *ngFor='let n_t of nodeTemplates'
+  <div
+    *ngFor='let n_t of nodeTemplatesShown'
     cdkDrag
     [id]='n_t.label'
     class='node-template'>
-    <div 
-      class='node-square shadow-4'
+    <div
+      class='node-square'
       [ngStyle]="{'background': n_t.color}">
     </div>
     <p [ngStyle]="{'color': n_t.color}">
       {{n_t.label | titlecase}}
     </p>
+  </div>
+
+  <div class="node-palette-footer w-100" fxLayout="row" fxLayoutAlign="center center">
+    <button mat-stroked-button class="node-palette-more-button" (click)="toggleExpansion()">
+      <mat-icon>{{expanded ? 'expand_less' : 'expand_more'}}</mat-icon>
+    </button>
   </div>
 </div>
