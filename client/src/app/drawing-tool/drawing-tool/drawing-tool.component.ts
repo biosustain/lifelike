@@ -38,7 +38,8 @@ import { InfoPanelComponent } from './info-panel/info-panel.component';
 import { ExportModalComponent } from './export-modal/export-modal.component';
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { NodeCreation } from '../services/actions';
-import { DEFAULT_EDGE_STYLE, DEFAULT_NODE_STYLE, PlacedEdge, PlacedNode } from '../services/graph-renderers';
+import { DEFAULT_EDGE_STYLE, DEFAULT_NODE_STYLE, IconNodeStyle, PlacedEdge, PlacedNode } from '../services/graph-renderers';
+import { AnnotationStyle, annotationTypesMap } from '../../shared/annotation-styles';
 
 @Component({
   selector: 'app-drawing-tool',
@@ -458,7 +459,21 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy, G
    */
   placeNode(d: UniversalGraphNode, ctx: CanvasRenderingContext2D): PlacedNode {
     // TODO: Return different styles
-    return DEFAULT_NODE_STYLE.place(d, ctx, this.transform, {
+    let rendererStyle = DEFAULT_NODE_STYLE;
+
+    // TODO: Cache this stuff
+    const annotationStyle: AnnotationStyle = annotationTypesMap.get(d.label);
+    if (annotationStyle) {
+      if (annotationStyle.iconCode) {
+        rendererStyle = new IconNodeStyle(annotationStyle.iconCode);
+      }
+    }
+
+    if (d.icon) {
+      rendererStyle = new IconNodeStyle(d.icon.code, d.icon.face, d.icon.size, d.icon.color);
+    }
+
+    return rendererStyle.place(d, ctx, this.transform, {
       selected: this.isAnySelected(d),
       highlighted: this.isAnyHighlighted(d),
     });

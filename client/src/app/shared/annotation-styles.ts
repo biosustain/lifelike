@@ -213,6 +213,7 @@ function visJsGroupStyleFactory() {
 }
 
 export {
+  AnnotationStyle,
   annotationTypes,
   annotationTypesMap,
   visJsGroupStyleFactory
