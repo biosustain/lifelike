@@ -69,6 +69,8 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
   mouseDownClientX: number;
   mouseDownClientY: number;
   dragThreshold = 5;
+  isSelectionLink = false;
+  selectedElements: HTMLElement[] = [];
 
   opacity = 0.3;
 
@@ -83,7 +85,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
         (window as any).pdfViewerRef.componentFn();
       });
     };
-    (window as any).openLinkPanel = this.openAddLinkPanel;
+    (window as any).openLinkPanel = this.openAddLinkPanel.bind(this);
     (window as any).pdfViewerRef = {
       zone: this.zone,
       componentFn: () => this.openAnnotationPanel(),
@@ -117,6 +119,12 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
     jQuery(dropAreaIdentifier).droppable({
       accept: '.frictionless-annotation,.system-annotation',
       drop(event, ui) {
+        if (that.isSelectionLink) {
+          const meta: Meta = JSON.parse(ui.draggable[0].getAttribute('meta'));
+          meta.type = 'Links';
+          ui.draggable[0].setAttribute('meta', JSON.stringify(meta));
+        }
+
         that.dropEvents.emit({
           event,
           ui
@@ -133,7 +141,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
           clone.css({position: 'relative', top: Number($newPosY), left: Number($newPosX)});
           clone.removeClass('highlight');
         }
-
+        that.deleteFrictionless();
       }
     });
 
@@ -391,6 +399,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
       });
       jQuery(el).draggable('enable');
 
+      this.selectedElements.push(el);
       (jQuery(el) as any).qtip(
         {
 
@@ -433,6 +442,8 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
     this.selectedText = [];
     this.selectedTextCoords = [];
     this.allText = '';
+    this.isSelectionLink = false;
+    this.selectedElements = [];
   }
 
   openAnnotationPanel() {
@@ -456,7 +467,8 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   openAddLinkPanel() {
-    // open link panel here
+    this.isSelectionLink = true;
+    this.selectedElements.forEach(el => jQuery(el).css('border-bottom', '1px solid'));
   }
 
   clearSelection() {
