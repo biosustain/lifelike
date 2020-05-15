@@ -120,11 +120,13 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy, G
    * it is a direct copy of nodes being rendered.
    */
   nodes: UniversalGraphNode[] = [];
+
   /**
    * Collection of nodes displayed on the graph. This is not a view --
    * it is a direct copy of edges being rendered.
    */
   edges: UniversalGraphEdge[] = [];
+
   /**
    * Maps node's hashes to nodes for O(1) lookup, essential to the speed
    * of most of this graph code.
@@ -153,6 +155,9 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy, G
    * Marks that changes to the view were made so we need to re-render.
    */
   renderingRequested = false;
+
+  // TODO: TS does not have ResizeObserver defs yet
+  canvasResizeObserver: any;
 
   // Graph states
   // ---------------------------------
@@ -253,8 +258,18 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy, G
 
   ngAfterViewInit() {
     this.canvas = this.canvasChild.nativeElement as HTMLCanvasElement;
-    this.canvas.width = (this.canvas.parentNode as HTMLElement).clientWidth;
-    this.canvas.height = (this.canvas.parentNode as HTMLElement).clientHeight;
+
+    // Handle resizing of the canvas
+    const updateCanvasDimensions = () => {
+      this.canvas.width = this.canvas.clientWidth;
+      this.canvas.height = this.canvas.clientHeight;
+      this.requestRender();
+    };
+    // @ts-ignore
+    this.canvasResizeObserver = new window.ResizeObserver(updateCanvasDimensions);
+    this.canvasResizeObserver.observe(this.canvas.parentNode);
+    // TODO: Can we depend on ResizeObserver yet?
+    updateCanvasDimensions();
 
     d3.select(this.canvas)
       .on('click', this.canvasClicked.bind(this))
@@ -284,6 +299,9 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy, G
     // Complete the vis canvas element event listeners
     this.endMouseMoveEventSource.complete();
     this.endPasteEventSource.complete();
+
+    // Stop observing canvas resizes
+    this.canvasResizeObserver.disconnect();
   }
 
   // ========================================
