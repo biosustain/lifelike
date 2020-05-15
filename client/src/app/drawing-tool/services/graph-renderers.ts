@@ -121,16 +121,18 @@ export class RoundedRectangleNodeStyle implements NodeRenderStyle {
         options: PlacementOptions): PlacedNode {
     ctx.font = calculateNodeFont(d, transform, options.selected, options.highlighted);
 
+    const noZoomScale = 1 / transform.scale(1).k;
     const textSize = ctx.measureText(d.display_name);
     const textWidth = textSize.width;
     const textActualHeight = textSize.actualBoundingBoxAscent + textSize.actualBoundingBoxDescent;
-    const nodeWidth = textSize.width + 10;
-    const nodeHeight = textActualHeight + 10;
+    const padding = 10;
+    const nodeWidth = textSize.width + padding;
+    const nodeHeight = textActualHeight + padding;
     const nodeX = d.data.x - nodeWidth / 2;
     const nodeY = d.data.y - nodeHeight / 2;
     const nodeX2 = nodeX + nodeWidth;
     const nodeY2 = nodeY + nodeHeight;
-    const noZoomScale = 1 / transform.scale(1).k;
+    const highDetailLevel = transform.k >= 0.8 || options.selected || options.highlighted;
 
     return new class implements PlacedNode {
       isPointIntersecting(x: number, y: number): boolean {
@@ -153,27 +155,139 @@ export class RoundedRectangleNodeStyle implements NodeRenderStyle {
       render(): void {
         ctx.font = calculateNodeFont(d, transform, options.selected, options.highlighted);
 
-        // Node box
-        (ctx as any).roundedRect(
-          nodeX,
-          nodeY,
-          nodeWidth,
-          nodeHeight,
-          5 * noZoomScale
+        if (highDetailLevel) {
+          // Node box
+          ctx.lineWidth = noZoomScale * (options.highlighted ? 2 : 1.5);
+          ctx.fillStyle = (options.highlighted ? '#E4EFFF' : (options.selected ? '#efefef' : '#fff'));
+          (ctx as any).roundedRect(
+            nodeX,
+            nodeY,
+            nodeWidth,
+            nodeHeight,
+            5 * noZoomScale
+          );
+          ctx.fill();
+          ctx.strokeStyle = '#2B7CE9';
+          ctx.stroke();
+
+          // Node text
+          ctx.strokeStyle = '#fff';
+          ctx.lineWidth = noZoomScale * 1.5;
+          ctx.fillStyle = calculateNodeColor(d);
+          ctx.fillText(d.display_name, d.data.x - textWidth / 2, d.data.y + textActualHeight / 2);
+        } else {
+          // Node box
+          ctx.lineWidth = noZoomScale * (options.highlighted ? 2 : 1.5);
+          ctx.fillStyle = (options.highlighted ? '#E4EFFF' : (options.selected ? '#efefef' : '#fff'));
+          ctx.fillRect(
+            nodeX,
+            nodeY,
+            nodeWidth,
+            nodeHeight,
+          );
+          ctx.fill();
+          ctx.strokeStyle = '#2B7CE9';
+          ctx.rect(
+            nodeX,
+            nodeY,
+            nodeWidth,
+            nodeHeight,
+          );
+          ctx.stroke();
+        }
+      }
+    }();
+  }
+}
+
+/**
+ * Renders a node as an icon.
+ */
+export class IconNodeStyle implements NodeRenderStyle {
+  constructor(public iconString: string,
+              public fontName: string = 'FontAwesome',
+              public fontSize: number = 50,
+              public color: string = null) {
+  }
+
+  place(d: UniversalGraphNode,
+        ctx: CanvasRenderingContext2D,
+        transform: any,
+        options: PlacementOptions): PlacedNode {
+    const style = this;
+    const noZoomScale = 1 / transform.scale(1).k;
+    const iconFont = this.fontSize + 'px ' + this.fontName;
+    const displayNameFont = calculateNodeFont(d, transform, options.selected, options.highlighted);
+    const yShift = noZoomScale * 7; // Older renderer was a little off?
+    const iconLabelSpacing = 2 * noZoomScale;
+    const highDetailLevel = transform.k >= 0.8 || options.selected || options.highlighted;
+
+    ctx.font = iconFont;
+    const iconTextSize = ctx.measureText(style.iconString);
+    const iconTextWidth = iconTextSize.width;
+    const iconTextHeight = iconTextSize.actualBoundingBoxAscent + iconTextSize.actualBoundingBoxDescent;
+
+    ctx.font = displayNameFont;
+    const displayNameSize = ctx.measureText(d.display_name);
+    const displayNameTextWidth = displayNameSize.width;
+    const displayNameTextHeight = displayNameSize.actualBoundingBoxAscent + displayNameSize.actualBoundingBoxDescent;
+
+    const totalHeight = iconTextHeight + displayNameTextHeight + iconLabelSpacing;
+    const minY = d.data.y - (totalHeight / 2) + yShift;
+
+    return new class implements PlacedNode {
+      isPointIntersecting(x: number, y: number): boolean {
+        // What if the text doesn't render or it's too small? Then the user
+        // can't select this node anymore, which is bad
+        const clickableIconTextWidth = Math.max(iconTextWidth, 50);
+
+        return (
+          // Check intersection with the icon
+          x >= d.data.x - clickableIconTextWidth / 2 &&
+          x <= d.data.x + clickableIconTextWidth / 2 &&
+          y >= minY &&
+          y <= minY + totalHeight
+        ) || (
+          // Check intersection with the text
+          x >= d.data.x - displayNameTextWidth / 2 &&
+          x <= d.data.x + displayNameTextWidth / 2 &&
+          y >= minY + iconTextHeight + iconLabelSpacing &&
+          y <= minY + totalHeight
         );
-        ctx.strokeStyle = '#2B7CE9';
-        ctx.lineWidth = noZoomScale * (options.highlighted ? 2 : 1.5);
-        ctx.fillStyle = (options.highlighted ? '#E4EFFF' : (options.selected ? '#efefef' : '#fff'));
-        ctx.fill();
-        ctx.stroke();
+      }
 
-        // Node outline
-        ctx.strokeStyle = '#fff';
-        ctx.lineWidth = noZoomScale * 1.5;
+      lineIntersectionPoint(lineOriginX: number, lineOriginY: number): number[] {
+        // TODO: Polygonal intersection because we have an icon 'head' and a text 'body'
+        return [d.data.x, d.data.y];
+      }
 
-        // Node text
-        ctx.fillStyle = calculateNodeColor(d);
-        ctx.fillText(d.display_name, d.data.x - textWidth / 2, d.data.y + textActualHeight / 2);
+      render(): void {
+        // Draw icon
+        ctx.font = iconFont;
+        ctx.fillStyle = style.color || calculateNodeColor(d);
+        ctx.fillText(
+          style.iconString,
+          d.data.x - iconTextWidth / 2,
+          minY + iconTextSize.actualBoundingBoxAscent
+        );
+
+        // Either draw the text or draw a box representing the text
+        if (highDetailLevel) {
+          ctx.font = displayNameFont;
+          ctx.fillText(
+            d.display_name,
+            d.data.x - displayNameTextWidth / 2,
+            minY + iconTextHeight + iconLabelSpacing + displayNameSize.actualBoundingBoxAscent
+          );
+        } else {
+          ctx.fillStyle = '#ccc';
+          ctx.fillRect(
+            d.data.x - displayNameTextWidth / 2,
+            minY + iconTextHeight + iconLabelSpacing,
+            displayNameTextWidth,
+            displayNameTextHeight
+          );
+        }
       }
     }();
   }
@@ -196,6 +310,7 @@ export class BasicEdgeStyle implements EdgeRenderStyle {
         transform: any,
         options: PlacementOptions): PlacedEdge {
     const noZoomScale = 1 / transform.scale(1).k;
+    const highDetailLevel = transform.k >= 0.8 || options.selected || options.highlighted;
 
     return new class implements PlacedEdge {
       isPointIntersecting(x: number, y: number): boolean {
@@ -226,27 +341,29 @@ export class BasicEdgeStyle implements EdgeRenderStyle {
       }
 
       renderLayer2() {
-        const [toX, toY] = placedTo.lineIntersectionPoint(
-          from.data.x,
-          from.data.y
-        );
+        if (highDetailLevel) {
+          const [toX, toY] = placedTo.lineIntersectionPoint(
+            from.data.x,
+            from.data.y
+          );
 
-        const [fromX, fromY] = placedFrom.lineIntersectionPoint(
-          to.data.x,
-          to.data.y
-        );
+          const [fromX, fromY] = placedFrom.lineIntersectionPoint(
+            to.data.x,
+            to.data.y
+          );
 
-        ctx.font = (options.highlighted ? 'bold ' : '') + (noZoomScale * 14) + 'px Roboto';
-        const textSize = ctx.measureText(d.label);
-        const width = textSize.width;
-        const height = textSize.actualBoundingBoxAscent + textSize.actualBoundingBoxDescent;
-        const x = Math.abs(fromX - toX) / 2 + Math.min(fromX, toX) - width / 2;
-        const y = Math.abs(fromY - toY) / 2 + Math.min(fromY, toY) + height / 2;
-        ctx.strokeStyle = '#ffffff';
-        ctx.lineWidth = 3 * noZoomScale;
-        ctx.strokeText(d.label, x, y);
-        ctx.fillStyle = '#888';
-        ctx.fillText(d.label, x, y);
+          ctx.font = (options.highlighted ? 'bold ' : '') + '16px Roboto';
+          const textSize = ctx.measureText(d.label);
+          const width = textSize.width;
+          const height = textSize.actualBoundingBoxAscent + textSize.actualBoundingBoxDescent;
+          const x = Math.abs(fromX - toX) / 2 + Math.min(fromX, toX) - width / 2;
+          const y = Math.abs(fromY - toY) / 2 + Math.min(fromY, toY) + height / 2;
+          ctx.strokeStyle = '#ffffff';
+          ctx.lineWidth = 3 * noZoomScale;
+          ctx.strokeText(d.label, x, y);
+          ctx.fillStyle = '#888';
+          ctx.fillText(d.label, x, y);
+        }
       }
     }();
   }
@@ -274,8 +391,7 @@ function calculateNodeColor(d: UniversalGraphNode): string {
  */
 function calculateNodeFont(d: UniversalGraphNode, transform: any, selected: boolean, highlighted: boolean): string {
   // TODO: Refactor into reusable class
-  const scaleFactor = 1 / transform.scale(1).k;
-  return (highlighted || selected ? 'bold ' : '') + (scaleFactor * 15) + 'px Roboto';
+  return (highlighted || selected ? 'bold ' : '') + '16px Roboto';
 }
 
 // TODO: Clean up / find an alternative

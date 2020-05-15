@@ -51,7 +51,13 @@ interface UniversalGraphNode {
   display_name: string;
   hash: string;
   shape?: string;
-  icon?: any;
+  icon?: {
+    code: string,
+    color: string,
+    face: string,
+    size: number,
+    weight: string,
+  };
   label: string;
   sub_labels: string[];
   color?: any;
