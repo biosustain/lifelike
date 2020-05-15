@@ -99,8 +99,7 @@ export class FileBrowserComponent implements OnInit {
   }
 
   openFile(fileId: string) {
-    localStorage.setItem('fileIdForPdfViewer', fileId);
-    this.router.navigate(['/pdf-viewer']);
+    this.router.navigateByUrl(`pdf-viewer/${fileId}`);
   }
 
   deleteFiles() {

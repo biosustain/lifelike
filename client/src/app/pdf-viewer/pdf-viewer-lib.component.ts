@@ -1,5 +1,5 @@
 import { AfterViewInit, Component, EventEmitter, HostListener, Input, NgZone, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
-import { Subject } from 'rxjs';
+import { Observable, Subject, Subscription } from 'rxjs';
 import { Annotation, Location, Meta } from './annotation-type';
 import { PDFDocumentProxy, PDFProgressData, PDFSource } from './pdf-viewer/pdf-viewer.module';
 import { PdfViewerComponent } from './pdf-viewer/pdf-viewer.component';
@@ -13,7 +13,7 @@ declare var jQuery: any;
   // tslint:disable-next-line:component-selector
   selector: 'lib-pdf-viewer-lib',
   templateUrl: './pdf-viewer-lib.component.html',
-  styles: ['./pdf-viewer-lib.component.css']
+  styleUrls: ['./pdf-viewer-lib.component.scss']
 })
 export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
 
@@ -23,12 +23,16 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
   @Input() handleDropArea: boolean;
   @Input() goToPosition: Subject<Location>;
   @Input() debugMode: boolean;
+  @Input() entityTypeVisibilityMap: Map<string, boolean> = new Map();
+  @Input() filterChanges: Observable<void>;
+  private filterChangeSubscription: Subscription;
 
   @Input()
   set addedAnnotation(annotation: Annotation) {
     if (annotation) {
-      this.annotations.push(annotation);
       this.addAnnotation(annotation, annotation.pageNumber, true);
+      this.annotations.push(annotation);
+      this.updateAnnotationVisibility(annotation);
     }
   }
 
@@ -109,6 +113,10 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
         const meta = JSON.parse(jQuery(target).attr('meta')) as Meta;
       });
     }
+
+    if (this.filterChanges) {
+      this.filterChangeSubscription = this.filterChanges.subscribe(() => this.renderFilterSettings());
+    }
   }
 
   ngAfterViewInit(): void {
@@ -137,22 +145,37 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
       }
     });
 
+    this.pdfComponent.pdfViewerContainer.nativeElement.addEventListener('mousedown', this.mouseDown);
     this.pdfComponent.pdfViewerContainer.nativeElement.addEventListener('mouseup', this.mouseUp);
   }
 
   ngOnDestroy(): void {
+    this.pdfComponent.pdfViewerContainer.nativeElement.removeEventListener('mousedown', this.mouseDown);
     this.pdfComponent.pdfViewerContainer.nativeElement.removeEventListener('mouseup', this.mouseUp);
-  }
 
-  toolbarControlChanged(event) {
-    if (event === 'zoomin') {
-      this.incrementZoom(0.1);
-    }
-    if (event === 'zoomout') {
-      this.incrementZoom(-(0.1));
+    if (this.filterChangeSubscription) {
+      this.filterChangeSubscription.unsubscribe();
     }
   }
 
+  renderFilterSettings() {
+    for (const annotation of this.annotations) {
+      this.updateAnnotationVisibility(annotation);
+    }
+  }
+
+  updateAnnotationVisibility(annotation: Annotation) {
+    let visible = this.entityTypeVisibilityMap.get(annotation.meta.type);
+    if (visible == null) {
+      visible = true;
+    }
+    const elements = (annotation as any).refs;
+    if (elements) {
+      for (const element of elements) {
+        element.style.display = visible ? 'block' : 'none';
+      }
+    }
+  }
 
   addAnnotation(annotation: Annotation, pageNum: number, isCustomAnnotation: boolean) {
     const pdfPageView = this.pageRef[pageNum];
@@ -186,6 +209,10 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
         'left:' + left + 'px;top:' + (top) + 'px;width:' + width + 'px;height:' + height + 'px;');
       overlayContainer.appendChild(overlayDiv);
       (annotation as any).ref = overlayDiv;
+      if (!(annotation as any).refs) {
+        (annotation as any).refs = [];
+      }
+      (annotation as any).refs.push(overlayDiv);
       jQuery(overlayDiv).css('cursor', 'move');
       jQuery(overlayDiv).draggable({
         revert: true,
@@ -232,6 +259,8 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
       delete this.pendingHighlights[pageNum];
       this.addHighlightItem(pageNum, rect);
     }
+
+    this.updateAnnotationVisibility(annotation);
   }
 
   normalizeTopCoordinate(top: number, an: Annotation): number {
@@ -302,11 +331,10 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
     }
   }
 
-  @HostListener('window:mousedown', ['$event'])
-  mouseDown(event) {
+  mouseDown = event => {
     this.mouseDownClientX = event.clientX;
     this.mouseDownClientY = event.clientY;
-  }
+  };
 
   mouseUp = event => {
     if (this.selectedText && this.selectedText.length
