@@ -9,10 +9,12 @@ export enum AnnotationStatus {
 }
 
 export interface PdfFile {
+  // minimum field needed for the interface
   file_id: string;
-  filename: string;
-  creation_date: string;
-  username: string;
+  // optional
+  filename?: string;
+  creation_date?: string;
+  username?: string;
   annotation_status?: AnnotationStatus;
 }
 
