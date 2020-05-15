@@ -409,8 +409,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
         {
 
           content: `<img src="assets/images/annotate.png" onclick="openAnnotationPanel()">
-            <img src="assets/images/link.png" onclick="openLinkPanel()">
-            <img src="assets/images/trash.png" onclick="deleteFrictionless()">`,
+            <img src="assets/images/link.png" onclick="openLinkPanel()">`,
           position: {
             my: 'bottom center',
             target: 'mouse',
