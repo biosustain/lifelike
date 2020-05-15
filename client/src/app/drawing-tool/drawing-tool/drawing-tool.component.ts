@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, EventEmitter, HostListener, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, EventEmitter, HostListener, Input, NgZone, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { CdkDragDrop } from '@angular/cdk/drag-drop';
 
@@ -35,36 +35,10 @@ import { DrawingToolContextMenuControlService } from '../services/drawing-tool-c
 import { CopyPasteMapsService } from '../services/copy-paste-maps.service';
 
 import { InfoPanelComponent } from './info-panel/info-panel.component';
-
-import { annotationTypesMap } from 'app/shared/annotation-styles';
 import { ExportModalComponent } from './export-modal/export-modal.component';
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { NodeCreation } from '../services/actions';
-
-interface GraphNodeMetrics {
-  textWidth: number;
-  textActualHeight: number;
-  nodeX: number;
-  nodeY: number;
-  nodeX2: number;
-  nodeY2: number;
-  nodeWidth: number;
-  nodeHeight: number;
-}
-
-interface EdgeCreationNodeData {
-  x: number;
-  y: number;
-}
-
-interface EdgeCreationNode {
-  data: EdgeCreationNodeData;
-}
-
-interface EdgeCreationState {
-  from: UniversalGraphNode;
-  to?: EdgeCreationNode;
-}
+import { DEFAULT_EDGE_STYLE, DEFAULT_NODE_STYLE, PlacedEdge, PlacedNode } from '../services/graph-renderers';
 
 @Component({
   selector: 'app-drawing-tool',
@@ -137,20 +111,9 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy, G
   formDataSubscription: Subscription = null;
   pdfDataSubscription: Subscription = null;
 
-  /**
-   * The canvas element from the template.
-   */
-  @ViewChild('canvas', {static: true}) canvasChild;
-  /**
-   * Holds the canvas after ngAfterViewInit() is run.
-   */
-  canvas: HTMLCanvasElement;
-  /**
-   * The transform represents the current zoom of the graph, which must be
-   * taken into consideration whenever mapping between graph coordinates and
-   * viewport coordinates.
-   */
-  transform = d3.zoomIdentity.scale(0.8).translate(700, 500);
+  // Graph elements
+  // ---------------------------------
+
   /**
    * Collection of nodes displayed on the graph. This is not a view --
    * it is a direct copy of nodes being rendered.
@@ -166,11 +129,46 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy, G
    * of most of this graph code.
    */
   nodeHashMap: Map<string, UniversalGraphNode> = new Map();
+
+  // Canvas
+  // ---------------------------------
+
+  /**
+   * The canvas element from the template.
+   */
+  @ViewChild('canvas', {static: true}) canvasChild;
+
+  /**
+   * Holds the canvas after ngAfterViewInit() is run.
+   */
+  canvas: HTMLCanvasElement;
+
+  /**
+   * Set to false when the component is destroyed so we can stop rendering.
+   */
+  canvasActive = true;
+
+  /**
+   * Marks that changes to the view were made so we need to re-render.
+   */
+  renderingRequested = false;
+
+  // Graph states
+  // ---------------------------------
+
+  /**
+   * The transform represents the current zoom of the graph, which must be
+   * taken into consideration whenever mapping between graph coordinates and
+   * viewport coordinates.
+   */
+  transform = d3.zoomIdentity.scale(0.8).translate(700, 500);
+
   /**
    * Used for the double-click-to-create-an-edge function to store the from
    * node and other details regarding the connection.
    */
   interactiveEdgeCreationState: EdgeCreationState | undefined = null;
+
   /**
    * Stores the offset between the node and the initial position of the mouse
    * when clicked during the start of a drag event. Used for node position stability
@@ -178,19 +176,25 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy, G
    * so node center is the same the mouse position, and the jump is not what we want.
    */
   offsetBetweenNodeAndMouseInitialPosition: number[] = [0, 0];
+
   /**
    * Holds the currently selected node or edge.
    */
   highlighted: GraphEntity | undefined;
+
   /**
    * Holds the currently highlighted node or edge.
    */
   selected: GraphEntity | undefined;
 
+  // History
+  // ---------------------------------
+
   /**
    * Stack of actions in the history.
    */
   history: GraphAction[] = [];
+
   /**
    * Stores where we are in the history, where the number is the next free index
    * in the history array if there is nothing to redo/rollback. When the user
@@ -199,22 +203,6 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy, G
    */
   nextHistoryIndex = 0;
 
-  // Prevent the user from leaving the page
-  // if work is left un-saved
-  @HostListener('window:beforeunload')
-  canDeactivate(): Observable<boolean> | boolean {
-    return this.saveState ? true : confirm(
-      'WARNING: You have unsaved changes. Press Cancel to go back and save these changes, or OK to lose these changes.'
-    );
-  }
-
-  get saveStyle() {
-    return {
-      saved: this.saveState,
-      not_saved: !this.saveState
-    };
-  }
-
   constructor(
     private dataFlow: DataFlowService,
     private drawingToolContextMenuControlService: DrawingToolContextMenuControlService,
@@ -222,9 +210,14 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy, G
     private snackBar: MatSnackBar,
     private copyPasteMapsService: CopyPasteMapsService,
     private clipboardService: ClipboardService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private ngZone: NgZone
   ) {
   }
+
+  // ========================================
+  // Angular events
+  // ========================================
 
   ngOnInit() {
     this.endMouseMoveEventSource = new Subject();
@@ -246,6 +239,14 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy, G
     // Listen for graph update from info-panel-ui
     this.formDataSubscription = this.dataFlow.formDataSource.subscribe((action: GraphAction) => {
       this.execute(action);
+    });
+
+    this.ngZone.runOutsideAngular(() => {
+      // We can't render() every time something changes, because some events
+      // happen very frequently when they do happen (i.e. mousemove),
+      // so we'll flag a render as needed and render during an animation
+      // frame to improve performance
+      requestAnimationFrame(this.animationFrameFired.bind(this));
     });
   }
 
@@ -273,6 +274,8 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy, G
   }
 
   ngOnDestroy() {
+    this.canvasActive = false;
+
     // Unsubscribe from subscriptions
     this.formDataSubscription.unsubscribe();
     this.pdfDataSubscription.unsubscribe();
@@ -304,8 +307,7 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy, G
    * @param graph the graph to replace with
    */
   setGraph(graph: UniversalGraph): void {
-    console.log('graph loaded', graph);
-
+    // TODO: keep or nah?
     this.nodes = [...graph.nodes];
     this.edges = [...graph.edges];
 
@@ -319,7 +321,7 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy, G
   }
 
   // ========================================
-  // Accessors
+  // Utility operations
   // ========================================
 
   /**
@@ -366,68 +368,6 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy, G
     return false;
   }
 
-  // ========================================
-  // Styles
-  // ========================================
-
-  /**
-   * Calculate the primary color for the given node.
-   * @param d the node in question
-   */
-  calculateNodeColor(d: UniversalGraphNode): string {
-    return annotationTypesMap.get(d.label).color;
-  }
-
-  /**
-   * Calculate the font string for a graph node.
-   * @param d the node to calculate for
-   */
-  calculateNodeFont(d: UniversalGraphNode): string {
-    const scaleFactor = 1 / this.transform.scale(1).k;
-    return (this.isAnyHighlighted(d) || this.isAnySelected(d) ? 'bold ' : '') + (scaleFactor * 15) + 'px Roboto';
-  }
-
-  /**
-   * Calculate the font string for a graph edge.
-   * @param d the edge to calculate for
-   */
-  calculateEdgeFont(d: UniversalGraphEdge): string {
-    const scaleFactor = 1 / this.transform.scale(1).k;
-    const from = this.nodeReference(d.from);
-    const to = this.nodeReference(d.to);
-    return (this.isAnyHighlighted(d, from, to) ? 'bold ' : '')
-      + (scaleFactor * 14) + 'px Roboto';
-  }
-
-  /**
-   * Calculate the box metrics (dimensions) for a node.
-   * @param d the node in question
-   */
-  calculateNodeMetrics(d: UniversalGraphNode): GraphNodeMetrics {
-    const canvas = this.canvas;
-    const ctx = canvas.getContext('2d');
-    const textSize = ctx.measureText(d.display_name);
-    const textActualHeight = textSize.actualBoundingBoxAscent + textSize.actualBoundingBoxDescent;
-    const nodeWidth = textSize.width + 10;
-    const nodeHeight = textActualHeight + 10;
-    const nodeX = d.data.x - nodeWidth / 2;
-    const nodeY = d.data.y - nodeHeight / 2;
-    return {
-      textWidth: textSize.width,
-      textActualHeight,
-      nodeX,
-      nodeY,
-      nodeX2: nodeX + nodeWidth,
-      nodeY2: nodeY + nodeHeight,
-      nodeWidth,
-      nodeHeight,
-    };
-  }
-
-  // ========================================
-  // Utility geometric operations
-  // ========================================
-
   /**
    * Find the best matching node at the given position.
    * @param nodes list of nodes to search through
@@ -439,9 +379,7 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy, G
     const ctx = canvas.getContext('2d');
     for (let i = nodes.length - 1; i >= 0; --i) {
       const d = nodes[i];
-      ctx.font = this.calculateNodeFont(d);
-      const metrics = this.calculateNodeMetrics(d);
-      if (x >= metrics.nodeX && x <= metrics.nodeX2 && y >= metrics.nodeY && y <= metrics.nodeY2) {
+      if (this.placeNode(d, ctx).isPointIntersecting(x, y)) {
         return d;
       }
     }
@@ -510,15 +448,72 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy, G
   }
 
   // ========================================
+  // Entity into placed object conversion
+  // ========================================
+
+  /**
+   * Get the style to be rendered for the given node.
+   * @param d the node
+   * @param ctx the canvas rendering context
+   */
+  placeNode(d: UniversalGraphNode, ctx: CanvasRenderingContext2D): PlacedNode {
+    // TODO: Return different styles
+    return DEFAULT_NODE_STYLE.place(d, ctx, this.transform, {
+      selected: this.isAnySelected(d),
+      highlighted: this.isAnyHighlighted(d),
+    });
+  }
+
+  /**
+   * Get the style to be rendered for the given node.
+   * @param d the edge
+   * @param from the start node
+   * @param to the end node
+   * @param ctx the canvas rendering context
+   */
+  placeEdge(d: UniversalGraphEdge,
+            from: UniversalGraphNode,
+            to: UniversalGraphNode,
+            ctx: CanvasRenderingContext2D): PlacedEdge {
+    const placedFrom: PlacedNode = this.placeNode(from, ctx);
+    const placedTo: PlacedNode = this.placeNode(to, ctx);
+
+    // TODO: Return different styles
+    return DEFAULT_EDGE_STYLE.place(d, from, to, placedFrom, placedTo, ctx, this.transform, {
+      selected: this.isAnySelected(d, from, to),
+      highlighted: this.isAnyHighlighted(d, from, to),
+    });
+  }
+
+  // ========================================
   // Rendering
   // ========================================
 
   /**
-   * Re-render the graph.
+   * Request the graph be re-rendered in the very near future.
    */
   requestRender() {
-    // TODO: Maybe flag as a render being required and do it in requestAnimationFrame()
-    this.render();
+    this.renderingRequested = true;
+    // The graph will be re-rendered in requestAnimationFrame()
+  }
+
+  /**
+   * Fired from requestAnimationFrame(), Used to render the graph.
+   */
+  animationFrameFired() {
+    if (!this.canvasActive) {
+      // Happens when this component is destroyed
+      return;
+    }
+
+    if (this.renderingRequested) {
+      this.render();
+
+      // No point rendering every frame unless there are changes
+      this.renderingRequested = false;
+    }
+
+    requestAnimationFrame(this.animationFrameFired.bind(this));
   }
 
   /**
@@ -538,10 +533,9 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy, G
     ctx.translate(transform.x, transform.y);
     ctx.scale(transform.k, transform.k);
 
-    //
-    // Draws the elements needed for the interactive edge creation feature
-    // Note that we draw this feature below everything else
-    //
+    // Draw the interactive edge creation feature
+    // ---------------------------------
+
     if (this.interactiveEdgeCreationState && this.interactiveEdgeCreationState.to) {
       ctx.beginPath();
 
@@ -568,108 +562,37 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy, G
       ctx.fill();
     }
 
-    //
-    // Draw edge lines, without the labels (for correct z-ordering)
-    //
-    this.edges.forEach(d => {
+    // Draw edges
+    // ---------------------------------
+
+    // We need to turn edges into PlacedEdge objects before we can render them,
+    // but the process involves calculating various metrics, which we don't
+    // want to do more than once if we need to render in multiple Z-layers (line + text)
+    const edgeRenderObjects = this.edges.map(d => ({
+      d,
+      placedEdge: this.placeEdge(d, this.nodeReference(d.from), this.nodeReference(d.to), ctx),
+    }));
+
+    // Draw layer 1 (usually the line)
+    edgeRenderObjects.forEach(({d, placedEdge}) => {
       ctx.beginPath();
-
-      const from = this.nodeReference(d.from);
-      const to = this.nodeReference(d.to);
-
-      ctx.font = this.calculateNodeFont(this.nodeReference(d.to));
-      const toMetrics = this.calculateNodeMetrics(this.nodeReference(d.to));
-
-      // Because we draw an arrowhead at the end, we need the line to stop at the
-      // shape's edge and not at the node center, so we need to find the intersection between
-      // the line and the node box
-      const toCollision = this.pointOnRect(
-        this.nodeReference(d.from).data.x,
-        this.nodeReference(d.from).data.y,
-        toMetrics.nodeX,
-        toMetrics.nodeY,
-        toMetrics.nodeX2,
-        toMetrics.nodeY2,
-        true
-      );
-
-      // Draw line
-      const lineWidth = (this.isAnyHighlighted(d, from, to) ? 1 : 0.5) * noZoomScale;
-      ctx.fillStyle = (!this.highlighted || this.isAnyHighlighted(d, from, to)) ? '#2B7CE9' : '#ACCFFF';
-      (ctx as any).arrow(
-        this.nodeReference(d.from).data.x,
-        this.nodeReference(d.from).data.y,
-        toCollision.x,
-        toCollision.y,
-        [0, lineWidth, -10 * noZoomScale, lineWidth, -10 * noZoomScale, 5 * noZoomScale]);
-      ctx.fill();
+      placedEdge.render();
     });
 
-    //
-    // Draw edge labels (after we've drawn the lines, for correct z-ordering)
-    //
-    this.edges.forEach(d => {
+    // Draw layer 2 (usually text)
+    edgeRenderObjects.forEach(({d, placedEdge}) => {
       ctx.beginPath();
-
-      // Draw label
       if (d.label) {
-        const from = this.nodeReference(d.from);
-        const to = this.nodeReference(d.to);
-
-        ctx.font = this.calculateNodeFont(to);
-        const toMetrics = this.calculateNodeMetrics(to);
-        const toCollision = this.pointOnRect(from.data.x, from.data.y,
-          toMetrics.nodeX, toMetrics.nodeY, toMetrics.nodeX2, toMetrics.nodeY2, true);
-
-        ctx.font = this.calculateNodeFont(from);
-        const fromMetrics = this.calculateNodeMetrics(from);
-        const fromCollision = this.pointOnRect(to.data.x, to.data.y,
-          fromMetrics.nodeX, fromMetrics.nodeY, fromMetrics.nodeX2, fromMetrics.nodeY2, true);
-
-        ctx.font = this.calculateEdgeFont(d);
-        const textSize = ctx.measureText(d.label);
-        const width = textSize.width;
-        const height = textSize.actualBoundingBoxAscent + textSize.actualBoundingBoxDescent;
-        const x = Math.abs(fromCollision.x - toCollision.x) / 2 + Math.min(fromCollision.x, toCollision.x) - width / 2;
-        const y = Math.abs(fromCollision.y - toCollision.y) / 2 + Math.min(fromCollision.y, toCollision.y) + height / 2;
-        ctx.strokeStyle = '#ffffff';
-        ctx.lineWidth = 3 * noZoomScale;
-        ctx.strokeText(d.label, x, y);
-        ctx.fillStyle = '#888';
-        ctx.fillText(d.label, x, y);
+        placedEdge.renderLayer2();
       }
     });
 
-    //
-    // Draw node
-    //
+    // Draw nodes
+    // ---------------------------------
+
     this.nodes.forEach((d, i) => {
       ctx.beginPath();
-
-      ctx.font = this.calculateNodeFont(d);
-      const metrics = this.calculateNodeMetrics(d);
-
-      // Node box
-      (ctx as any).roundedRect(
-        metrics.nodeX,
-        metrics.nodeY,
-        metrics.nodeWidth,
-        metrics.nodeHeight,
-        5 * noZoomScale
-      );
-      ctx.strokeStyle = '#2B7CE9';
-      ctx.lineWidth = noZoomScale * (this.isAnyHighlighted(d) ? 2 : 1.5);
-      ctx.fillStyle = (this.isAnyHighlighted(d) ? '#E4EFFF' : (this.isAnySelected(d) ? '#efefef' : '#fff'));
-      ctx.fill();
-      ctx.stroke();
-
-      // Node outline
-      ctx.strokeStyle = '#fff';
-      ctx.lineWidth = noZoomScale * 1.5;
-
-      // Node text
-      ctx.fillStyle = this.calculateNodeColor(d);
-      ctx.fillText(d.display_name, d.data.x - metrics.textWidth / 2, d.data.y + metrics.textActualHeight / 2);
+      this.placeNode(d, ctx).render();
     });
 
     ctx.restore();
@@ -678,6 +601,17 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy, G
   // ========================================
   // Event handlers
   // ========================================
+
+  // General events
+  // ---------------------------------
+
+  @HostListener('window:beforeunload')
+  canDeactivate(): Observable<boolean> | boolean {
+    // Prevent the user from leaving the page if work is left un-saved
+    return this.saveState ? true : confirm(
+      'WARNING: You have unsaved changes. Press Cancel to go back and save these changes, or OK to lose these changes.'
+    );
+  }
 
   // Canvas events
   // ---------------------------------
@@ -1006,6 +940,13 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy, G
   // TODO
   // ========================================
 
+  get saveStyle() {
+    return {
+      saved: this.saveState,
+      not_saved: !this.saveState
+    };
+  }
+
   updateCursorDocumentPos(event: MouseEvent) {
     this.cursorDocumentPos = {
       x: event.clientX - 59, // The canvas is offset a bit by the toolbar menu, so we modify the x-pos a bit here
@@ -1162,7 +1103,6 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy, G
     }
   }
 
-
   /**
    * Saves and downloads the SVG version of the current map
    */
@@ -1208,7 +1148,6 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy, G
       });
     }
   }
-
 
   /**
    * Saves and downloads the PNG version of the current map
@@ -1362,4 +1301,17 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy, G
     // Should never happen :) If it does, please tell me!
     return {x, y};
   }
+}
+
+/**
+ * Used to temporarily keep track of the information we need to
+ * interactively create an edge.
+ */
+interface EdgeCreationState {
+  from: UniversalGraphNode;
+  to?: {
+    data: {
+      x, y
+    }
+  };
 }
