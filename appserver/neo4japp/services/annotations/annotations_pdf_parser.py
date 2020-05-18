@@ -36,6 +36,7 @@ class AnnotationsPDFParser:
         layout: Any,
         page_idx: int,
         char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
+        compiled_regex: re.Pattern,
     ) -> None:
         def space_exists_between_lt_chars(a: LTChar, b: LTChar):
             """Determines if a space character exists between two LTChars."""
@@ -60,13 +61,14 @@ class AnnotationsPDFParser:
                     layout=lt_obj,
                     page_idx=page_idx,
                     char_coord_objs_in_pdf=char_coord_objs_in_pdf,
+                    compiled_regex=compiled_regex,
                 )
             elif isinstance(lt_obj, LTChar) or isinstance(lt_obj, LTAnno):
                 # ignore CID fonts
                 # these are arithmetic or other symbols the parser
                 # was not able to translate
                 # usually requires a license or better algorithm from parser
-                if not re.search(r'cid:\d+', lt_obj.get_text()):
+                if not re.search(compiled_regex, lt_obj.get_text()):
                     if char_coord_objs_in_pdf:
                         prev_char = char_coord_objs_in_pdf[-1]
                         if should_add_virtual_space(prev_char, lt_obj):
@@ -93,6 +95,8 @@ class AnnotationsPDFParser:
         char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]] = []
         cropbox_in_pdf: Tuple[int, int] = None  # type: ignore
 
+        compiled_regex = re.compile(r'cid:\d+')
+
         for i, page in enumerate(PDFPage.create_pages(pdf_doc)):
             cropbox_in_pdf = (page.cropbox[0], page.cropbox[1])
             interpreter.process_page(page)
@@ -101,6 +105,7 @@ class AnnotationsPDFParser:
                 layout=layout,
                 page_idx=i,
                 char_coord_objs_in_pdf=char_coord_objs_in_pdf,
+                compiled_regex=compiled_regex,
             )
             max_idx_in_page[len(char_coord_objs_in_pdf)-1] = i+1
 
