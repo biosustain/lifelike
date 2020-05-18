@@ -32,6 +32,8 @@ from neo4japp.utils.network import read_url
 
 URL_FETCH_MAX_LENGTH = 1024 * 1024 * 30
 URL_FETCH_TIMEOUT = 10
+DOWNLOAD_USER_AGENT = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) ' \
+                      'Chrome/51.0.2704.103 Safari/537.36 Lifelike'
 
 bp = Blueprint('files', __name__, url_prefix='/files')
 
@@ -44,7 +46,10 @@ def upload_pdf():
     if 'url' in request.form:
         url = request.form['url']
         try:
-            data = read_url(url, max_length=URL_FETCH_MAX_LENGTH,
+            req = urllib.request.Request(url, headers={
+                'User-Agent': DOWNLOAD_USER_AGENT,
+            })
+            data = read_url(req, max_length=URL_FETCH_MAX_LENGTH,
                             timeout=URL_FETCH_TIMEOUT).getvalue()
         except (ValueError, URLError):
             raise BadRequestError("Your file could not be downloaded, either because it is "
