@@ -248,6 +248,12 @@ export abstract class GraphView implements GraphActionReceiver {
    */
   abstract get transform();
 
+  /**
+   * Get the current position (graph coordinates) where the user is currently
+   * hovering over if the user is doing so, otherwise undefined.
+   */
+  abstract get currentHoverPosition(): {x: number, y: number} | undefined;
+
   // ========================================
   // Object accessors
   // ========================================

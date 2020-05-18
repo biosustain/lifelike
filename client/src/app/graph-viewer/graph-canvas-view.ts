@@ -18,11 +18,17 @@ export class GraphCanvasView extends GraphView {
   d3Tansform = d3.zoomIdentity;
 
   /**
+   * The current position of the mouse (graph coordinates) if the user is
+   * hovering over the canvas.
+   */
+  hoverPosition: {x: number, y: number} | undefined;
+
+  /**
    * Keeps track of currently where the mouse (or finger) is held down at
    * so we can display an indicator at that position.
    */
   touchPosition: {
-    position: number[],
+    position: {x: number, y: number},
     entity: GraphEntity | undefined,
   } | undefined;
 
@@ -58,6 +64,7 @@ export class GraphCanvasView extends GraphView {
       .on('dblclick', this.canvasDoubleClicked.bind(this))
       .on('mousedown', this.canvasMouseDown.bind(this))
       .on('mousemove', this.canvasMouseMoved.bind(this))
+      .on('mouseleave', this.canvasMouseLeave.bind(this))
       .on('mouseup', this.canvasMouseUp.bind(this))
       .call(d3.drag()
         .container(this.canvas)
@@ -93,6 +100,10 @@ export class GraphCanvasView extends GraphView {
 
   get transform() {
     return this.d3Tansform;
+  }
+
+  get currentHoverPosition(): {x: number, y: number} | undefined {
+    return this.hoverPosition;
   }
 
   placeNode(d: UniversalGraphNode): PlacedNode {
@@ -225,7 +236,7 @@ export class GraphCanvasView extends GraphView {
         ctx.fill();
       } else {
         ctx.beginPath();
-        ctx.arc(this.touchPosition.position[0], this.touchPosition.position[1], 20 * noZoomScale, 0, 2 * Math.PI, false);
+        ctx.arc(this.touchPosition.position.x, this.touchPosition.position.y, 20 * noZoomScale, 0, 2 * Math.PI, false);
         ctx.fillStyle = 'rgba(0, 0, 0, 0.075)';
         ctx.fill();
       }
@@ -346,7 +357,6 @@ export class GraphCanvasView extends GraphView {
     }
   }
 
-
   // ========================================
   // Event handlers
   // ========================================
@@ -394,14 +404,17 @@ export class GraphCanvasView extends GraphView {
 
   canvasMouseMoved() {
     const [mouseX, mouseY] = d3.mouse(this.canvas);
+    const graphX = this.transform.invertX(mouseX);
+    const graphY = this.transform.invertY(mouseY);
 
     this.highlighted = this.getEntityAtMouse();
+    this.hoverPosition = {x: graphX, y: graphY};
 
     if (this.interactiveEdgeCreationState) {
       this.interactiveEdgeCreationState.to = {
         data: {
-          x: this.transform.invertX(mouseX),
-          y: this.transform.invertY(mouseY),
+          x: graphX,
+          y: graphY,
         },
       };
 
@@ -410,10 +423,10 @@ export class GraphCanvasView extends GraphView {
 
     if (this.mouseDown) {
       this.touchPosition = {
-        position: [
-          this.transform.invertX(mouseX),
-          this.transform.invertY(mouseY),
-        ],
+        position: {
+          x: graphX,
+          y: graphY,
+        },
         entity: null,
       };
 
@@ -421,6 +434,10 @@ export class GraphCanvasView extends GraphView {
     }
 
     this.updateMouseCursor();
+  }
+
+  canvasMouseLeave() {
+    this.hoverPosition = null;
   }
 
   canvasMouseUp() {
@@ -448,10 +465,10 @@ export class GraphCanvasView extends GraphView {
     this.select(subject ? [subject] : []);
 
     this.touchPosition = {
-      position: [
-        this.transform.invertX(mouseX),
-        this.transform.invertY(mouseY),
-      ],
+      position: {
+        x: this.transform.invertX(mouseX),
+        y: this.transform.invertY(mouseY),
+      },
       entity: subject,
     };
 
@@ -473,10 +490,10 @@ export class GraphCanvasView extends GraphView {
     }
 
     this.touchPosition = {
-      position: [
-        this.transform.invertX(mouseX),
-        this.transform.invertY(mouseY),
-      ],
+      position: {
+        x: this.transform.invertX(mouseX),
+        y: this.transform.invertY(mouseY),
+      },
       entity: subject,
     };
 
@@ -496,10 +513,10 @@ export class GraphCanvasView extends GraphView {
     this.d3Tansform = d3.event.transform;
     this.panningOrZooming = true;
     this.touchPosition = {
-      position: [
-        this.transform.invertX(mouseX),
-        this.transform.invertY(mouseY),
-      ],
+      position: {
+        x: this.transform.invertX(mouseX),
+        y: this.transform.invertY(mouseY),
+      },
       entity: null,
     };
     this.requestRender();
