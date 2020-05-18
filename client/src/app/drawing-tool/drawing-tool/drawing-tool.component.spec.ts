@@ -245,7 +245,7 @@ describe('DrawingToolComponent', () => {
 
     canvasEl.dispatchEvent(new Event('focusin'));
 
-    expect(component.pasteEventStream).toBeTruthy();
+    expect(component.keyboardEventObservable).toBeTruthy();
 
     const createLinkNodeFromClipboardSpy = spyOn(component, 'createLinkNodeFromClipboard');
 
