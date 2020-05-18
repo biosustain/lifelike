@@ -370,7 +370,7 @@ export class GraphCanvasView extends GraphView {
         this.interactiveEdgeCreationState = null;
       }
     } else {
-      this.select(subject);
+      this.select(subject ? [subject] : []);
     }
     this.requestRender();
   }
@@ -445,7 +445,7 @@ export class GraphCanvasView extends GraphView {
     }
 
     this.dragged = subject;
-    this.select(subject);
+    this.select(subject ? [subject] : []);
 
     this.touchPosition = {
       position: [

@@ -88,7 +88,7 @@ export abstract class GraphView implements GraphActionReceiver {
   /**
    * Holds the currently highlighted node or edge.
    */
-  selected: GraphEntity | undefined;
+  selected: GraphEntity[];
 
   /**
    * Holds the currently dragged node or edge.
@@ -106,7 +106,7 @@ export abstract class GraphView implements GraphActionReceiver {
   /**
    * Stream of selection changes.
    */
-  selectionObservable: Subject<GraphEntity | undefined> = new Subject();
+  selectionObservable: Subject<GraphEntity[]> = new Subject();
 
   // History
   // ---------------------------------
@@ -409,8 +409,10 @@ export abstract class GraphView implements GraphActionReceiver {
       return false;
     }
     for (const d of entities) {
-      if (this.selected.entity === d) {
-        return true;
+      for (const selected of this.selected) {
+        if (selected.entity === d) {
+          return true;
+        }
       }
     }
   }
@@ -433,11 +435,14 @@ export abstract class GraphView implements GraphActionReceiver {
 
   /**
    * Select an entity.
-   * @param entity the entity
+   * @param entities a list of entities, which could be an empty list
    */
-  select(entity: GraphEntity) {
-    this.selected = entity;
-    this.selectionObservable.next(entity);
+  select(entities: GraphEntity[]) {
+    if (entities == null) {
+      throw new Error('API use incorrect: pass empty array for no selection');
+    }
+    this.selected = entities;
+    this.selectionObservable.next(entities);
   }
 
   // ========================================
