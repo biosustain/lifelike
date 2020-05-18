@@ -259,6 +259,7 @@ export class PdfViewerComponent implements OnDestroy {
 
     // Convert form plural to singular since annotation
     // .. if no matches are made, return as entity
+    // TODO - refactor this .... plz ...
     const mapper = (plural) => {
       switch (plural) {
         case 'Compounds':
