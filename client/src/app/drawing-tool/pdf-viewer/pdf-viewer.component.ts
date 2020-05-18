@@ -78,7 +78,7 @@ export class PdfViewerComponent implements OnDestroy {
   sortedEntityTypeEntries = [];
   entityTypeVisibilityChanged = false;
 
-  //search
+  // search
   pdfQuery;
 
   @ViewChild(PdfViewerLibComponent, { static: false }) pdfViewerLib;
