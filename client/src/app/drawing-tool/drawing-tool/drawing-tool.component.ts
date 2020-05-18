@@ -166,8 +166,21 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
   project: Project = null;
   /** vis.js network graph DOM instantiation */
   visjsNetworkGraph: NetworkVis = null;
+
+  /** Communicate save state to parent component */
+  @Output() saveStateListener: EventEmitter<boolean> = new EventEmitter<boolean>();
+
   /** Whether or not graph is saved from modification */
-  saveState = true;
+  SAVE_STATE = true;
+  get saveState() {
+    return this.SAVE_STATE;
+  }
+  set saveState(val) {
+    this.SAVE_STATE = val;
+    // communicate to parent component of save state change
+    this.saveStateListener.emit(this.SAVE_STATE);
+  }
+
 
   /** Render condition for dragging gesture of edge formation */
   addMode = false;
@@ -607,6 +620,10 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
+  /**
+   * Handle drop events from the map list
+   * @param event - represent map schema through dom element
+   */
   dropMap(event: CdkDragDrop < any > ) {
     const nativeElement = event.item.element.nativeElement;
 

@@ -1,5 +1,7 @@
 from enum import Enum
+
 from neo4japp.constants import ANNOTATION_STYLES_DICT
+
 
 PDF_NEW_LINE_THRESHOLD = .30
 PDF_CHARACTER_SPACING_THRESHOLD = .325
@@ -16,7 +18,7 @@ COMMON_THREE_LETTER_WORDS = {
     'now', 'old', 'see', 'two', 'way', 'who', 'boy', 'did',
     'its', 'let', 'put', 'say', 'she', 'too', 'use', 'end',
     'min', 'far', 'set', 'key', 'tag', 'pdf', 'raw', 'low',
-    'med', 'men',
+    'med', 'men', 'led', 'add',
 }
 COMMON_FOUR_LETTER_WORDS = {
     'that', 'with', 'have', 'this', 'will', 'your', 'from',
@@ -42,20 +44,31 @@ COMMON_WORDS = set.union(*[
 MISC_SYMBOLS_AND_CHARS = {'(c)'}
 
 TYPO_SYNONYMS = {
-    # 'e coli': ['E. coli', 'Escherichia coli', 'Enterococcus coli'],
-    'multiplemitochondrialdysfunctionssyndromes': ['Multiple Mitochondrial Dysfunctions Syndrome'],  # noqa
+    'e coli': ['E. coli', 'Escherichia coli', 'Enterococcus coli'],
+    'E.coli': ['E. coli', 'Escherichia coli', 'Enterococcus coli'],
+    'Multiple Mitochondrial Dysfunctions Syndromes': ['Multiple Mitochondrial Dysfunctions Syndrome'],  # noqa
 }
 
 ENTITY_TYPE_PRECEDENCE = {
     # larger value takes precedence
-    'Chemicals': 5,
-    'Compounds': 5,
-    'Diseases': 6,
-    'Genes': 3,
-    'Proteins': 4,
-    'Species': 1,
-    'Phenotypes': 2,
+    'Chemicals': 2,
+    'Compounds': 2,
+    'Diseases': 1,
+    'Genes': 5,
+    'Proteins': 3,
+    'Species': 6,
+    'Phenotypes': 4,
 }
+
+HOMO_SAPIENS_TAX_ID = '9606'
+
+
+class OrganismCategory(Enum):
+    Archaea = 'Archaea'
+    Bacteria = 'Bacteria'
+    Eukaryota = 'Eukaryota'
+    Viruses = 'Viruses'
+    Uncategorized = 'Uncategorized'
 
 
 class EntityColor(Enum):

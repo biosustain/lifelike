@@ -255,6 +255,8 @@ def process(data_source, format='pdf'):
         }
         if 'hyperlink' in node['data'] and node['data']['hyperlink']:
             params['href'] = node['data']['hyperlink']
+        if 'source' in node['data'] and node['data']['source']:
+            params['href'] = node['data']['source']
 
         graph.node(**params)
 
