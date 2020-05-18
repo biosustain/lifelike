@@ -41,6 +41,7 @@ def cprofiled():
     # ps.print_callers()
     # print(s.getvalue())
 
+
 def create_annotations(
     annotations_service,
     pdf_parser,
@@ -52,6 +53,7 @@ def create_annotations(
             tokens=pdf_parser.extract_tokens(parsed_chars=parsed),
         )
         print('Done')
+
 
 def main():
     app = create_app('Functional Test Flask App', config='config.Testing')
