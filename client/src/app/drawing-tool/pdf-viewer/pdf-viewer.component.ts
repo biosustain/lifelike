@@ -281,6 +281,8 @@ export class PdfViewerComponent implements OnDestroy {
           return 'pathway';
         case 'Companies':
           return 'company';
+        case 'Links':
+          return 'link';
         default:
           return 'entity';
       }
@@ -289,12 +291,13 @@ export class PdfViewerComponent implements OnDestroy {
     const payload: GraphData = {
       x: mouseEvent.clientX - containerCoord.x,
       y: mouseEvent.clientY,
-      label: meta.allText,
+      label: meta.type === 'Links' ? '' : meta.allText,
       group: mapper(meta.type),
       data: {
         source,
         search,
-        hyperlink
+        hyperlink,
+        detail: meta.type === 'Links' ? meta.allText : ''
       }
     };
 
