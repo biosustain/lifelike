@@ -63,6 +63,28 @@ export function getClientOS() {
 
 }
 
+export function keyCodeRepresentsCopyEvent(event: any) {
+  const clientOS = getClientOS();
+  switch (clientOS) {
+    case OperatingSystems.MAC: {
+      if (event.code === 'KeyC' && event.metaKey === true) {
+        return true;
+      }
+      return false;
+    }
+    case OperatingSystems.LINUX:
+    case OperatingSystems.WINDOWS: {
+      if (event.code === 'KeyC' && event.ctrlKey === true) {
+        return true;
+      }
+      return false;
+    }
+    default: {
+      return false;
+    }
+  }
+}
+
 export function keyCodeRepresentsPasteEvent(event: any) {
     const clientOS = getClientOS();
     switch (clientOS) {
