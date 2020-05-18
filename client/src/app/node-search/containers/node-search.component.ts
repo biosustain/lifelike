@@ -1,6 +1,11 @@
 import {Component} from '@angular/core';
-import {FTSQueryRecord} from '../../interfaces';
-import {Observable} from 'rxjs';
+
+export interface Nodes {
+  position: number;
+  database: string;
+  type: string;
+  name: string;
+}
 
 @Component({
   selector: 'app-search-collection-page',
@@ -8,18 +13,26 @@ import {Observable} from 'rxjs';
     <app-node-search-bar
       (results)="getResults($event)"
     ></app-node-search-bar>
-    <app-node-result-list></app-node-result-list>
+    <app-node-result-list
+      [nodes]="dataSource"
+    ></app-node-result-list>
   `,
 })
 export class NodeSearchComponent {
 
-  results: Observable<FTSQueryRecord[]>;
+  dataSource: Nodes[] = [];
 
   constructor() {
   }
 
   getResults(results) {
-    this.results = results;
-    console.log(this.results)
+    this.dataSource = results.map((data, index) => {
+      return {
+        position: index,
+        name: data.node.displayName,
+        type: data.node.label,
+        database: data.node.data.id.split(':')[0]
+      };
+    });
   }
 }
