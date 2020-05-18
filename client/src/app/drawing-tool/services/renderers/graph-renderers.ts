@@ -1,5 +1,5 @@
-import { UniversalGraphEdge, UniversalGraphNode } from './interfaces';
-import { annotationTypesMap } from '../../shared/annotation-styles';
+import { UniversalGraphEdge, UniversalGraphNode } from '../interfaces';
+import { annotationTypesMap } from 'app/shared/annotation-styles';
 import intersects from 'intersects';
 
 // ========================================
