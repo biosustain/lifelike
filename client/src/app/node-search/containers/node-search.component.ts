@@ -2,9 +2,13 @@ import {Component} from '@angular/core';
 
 export interface Nodes {
   position: number;
-  database: string;
+  domain: string;
   type: string;
   name: string;
+}
+
+export interface PageActions {
+  pageIndex: number;
 }
 
 @Component({
@@ -12,15 +16,19 @@ export interface Nodes {
   template: `
     <app-node-search-bar
       (results)="getResults($event)"
+      [pageActions]="pageActions"
     ></app-node-search-bar>
     <app-node-result-list
       [nodes]="dataSource"
+      (page)="paginatorEvent($event)"
     ></app-node-result-list>
   `,
 })
 export class NodeSearchComponent {
 
   dataSource: Nodes[] = [];
+  pageActions: PageActions = {pageIndex: 1};
+
 
   constructor() {
   }
@@ -31,8 +39,19 @@ export class NodeSearchComponent {
         position: index + 1,
         name: data.node.displayName,
         type: data.node.label,
-        database: data.node.data.id.split(':')[0]
+        domain: this.getDomain(data.node.subLabels)
       };
     });
+  }
+
+  paginatorEvent(page) {
+    if (page) {
+      this.pageActions = {pageIndex: page.pageIndex};
+    }
+  }
+
+  getDomain(subLabels: string[]) {
+    return subLabels.find(element  => element.match(/^db_*/))
+      .split('_')[1];
   }
 }
