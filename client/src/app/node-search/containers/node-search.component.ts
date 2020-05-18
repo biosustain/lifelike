@@ -28,7 +28,7 @@ export class NodeSearchComponent {
   getResults(results) {
     this.dataSource = results.map((data, index) => {
       return {
-        position: index,
+        position: index + 1,
         name: data.node.displayName,
         type: data.node.label,
         database: data.node.data.id.split(':')[0]
