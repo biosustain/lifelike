@@ -10,7 +10,8 @@ import { GraphEntity, GraphEntityType, LaunchApp, UniversalGraphEdge, UniversalG
 import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { annotationTypes } from 'app/shared/annotation-styles';
-import { GraphEntityUpdate, NodeDeletion } from '../../services/actions';
+import { GraphEntityUpdate } from '../../../graph-viewer/actions/graph';
+import { NodeDeletion } from '../../../graph-viewer/actions/nodes';
 
 function emptyIfNull(s: string | undefined) {
   if (s == null) {

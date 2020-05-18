@@ -1,25 +1,22 @@
 import {
-  GraphAction,
-  GraphComponent,
   GraphEntity,
   UniversalGraph,
   UniversalGraphEdge,
   UniversalGraphEntity,
   UniversalGraphNode
-} from '../interfaces';
+} from 'app/drawing-tool/services/interfaces';
 import * as d3 from 'd3';
 import * as cola from 'webcola';
 import { InputNode, Layout } from 'webcola';
-import 'canvas-plus';
-import './canvas-arrow';
 import { Group, Link } from 'webcola/WebCola/src/layout';
 import { Subject } from 'rxjs';
-import { PlacedEdge, PlacedNode } from './graph-renderers';
+import { PlacedEdge, PlacedNode } from './styles/graph-styles';
+import { GraphAction, GraphActionReceiver } from './actions/actions';
 
 /**
  * A rendered view of a graph.
  */
-export abstract class GraphView implements GraphComponent {
+export abstract class GraphView implements GraphActionReceiver {
   /**
    * Set to false when the component is destroyed so we can stop rendering.
    */
@@ -77,20 +74,6 @@ export abstract class GraphView implements GraphComponent {
    * Initialized in {@link ngAfterViewInit}.
    */
   cola: Layout;
-
-  /**
-   * Used for the double-click-to-create-an-edge function to store the from
-   * node and other details regarding the connection.
-   */
-  interactiveEdgeCreationState: EdgeCreationState | undefined = null;
-
-  /**
-   * Stores the offset between the node and the initial position of the mouse
-   * when clicked during the start of a drag event. Used for node position stability
-   * when the user is dragging nodes on the canvas, otherwise the node 'jumps'
-   * so node center is the same the mouse position, and the jump is not what we want.
-   */
-  offsetBetweenNodeAndMouseInitialPosition: number[] = [0, 0];
 
   /**
    * Indicates whether we are panning or zooming.
@@ -655,19 +638,6 @@ export abstract class GraphView implements GraphComponent {
     this.cola.stop();
     this.automaticLayoutEnabled = false;
   }
-}
-
-/**
- * Used to temporarily keep track of the information we need to
- * interactively create an edge.
- */
-interface EdgeCreationState {
-  from: UniversalGraphNode;
-  to?: {
-    data: {
-      x, y
-    }
-  };
 }
 
 /**
