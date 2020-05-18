@@ -25,7 +25,7 @@ import {
     DuplicateVisNode,
     ExpandNodeResult,
     ExpandNodeRequest,
-    GetClusterGraphDataResult,
+    GetClusterDataResult,
     GetSnippetsResult,
     GroupRequest,
     Neo4jGraphConfig,
@@ -60,7 +60,7 @@ export class VisualizationCanvasComponent implements OnInit {
     @Output() finishedPreClustering = new EventEmitter<boolean>();
     @Output() getSnippetsFromEdge = new EventEmitter<VisEdge>();
     @Output() getSnippetsFromDuplicateEdge = new EventEmitter<DuplicateVisEdge>();
-    @Output() getClusterGraphData = new EventEmitter<ClusteredNode[]>();
+    @Output() getClusterData = new EventEmitter<ClusteredNode[]>();
     @Output() addDuplicatedEdge = new EventEmitter<number>();
     @Output() removeDuplicatedEdge = new EventEmitter<number>();
 
@@ -137,12 +137,21 @@ export class VisualizationCanvasComponent implements OnInit {
              } as SidenavEdgeEntity;
         }
     }
-    @Input() set getClusterGraphDataResult(result: GetClusterGraphDataResult) {
+    @Input() set getClusterDataResult(result: GetClusterDataResult) {
         if (!isNullOrUndefined(result)) {
             this.sidenavEntityType = SidenavEntityType.CLUSTER;
+            const clusterSnippetData = result.snippetData.results.map(snippetResult => {
+                return {
+                    to: this.nodes.get(snippetResult.toNodeId) as VisNode,
+                    from: this.nodes.get(snippetResult.fromNodeId) as VisNode,
+                    association: snippetResult.association,
+                    snippets: snippetResult.snippets,
+                } as SidenavEdgeEntity;
+            });
             this.sidenavEntity = {
-                includes: Object.keys(result.results).map(nodeId => this.nodes.get(nodeId)),
-                clusterGraphData: result,
+                includes: Object.keys(result.graphData.results).map(nodeId => this.nodes.get(nodeId)),
+                clusterSnippetData,
+                clusterGraphData: result.graphData,
             } as SidenavClusterEntity;
         }
     }
@@ -792,7 +801,7 @@ export class VisualizationCanvasComponent implements OnInit {
                         edges: this.networkGraph.getConnectedEdges(node).map(edgeId => this.edges.get(edgeId)),
                     } as ClusteredNode;
                 });
-                this.getClusterGraphData.emit(clusteredNodes);
+                this.getClusterData.emit(clusteredNodes);
             } else {
                 const node  = this.nodes.get(this.selectedNodes[0]) as VisNode;
                 this.sidenavEntity = {
