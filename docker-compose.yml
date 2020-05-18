@@ -54,9 +54,6 @@ services:
             # Neo4j
             - NEO4J_HOST=n4j-database
             - NEO4J_AUTH=neo4j/password
-            - NEO4J_ENTITIES_HOST
-            - NEO4J_ENTITIES_PASS
-            - NEO4J_ENTITIES_USER
         networks:
             - frontend
             - backend
