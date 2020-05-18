@@ -5,7 +5,7 @@ import { CdkDragDrop } from '@angular/cdk/drag-drop';
 import { Options } from '@popperjs/core';
 
 import { asyncScheduler, fromEvent, Observable, Subject, Subscription } from 'rxjs';
-import { debounceTime, filter, first, takeUntil, throttleTime } from 'rxjs/operators';
+import { filter, throttleTime } from 'rxjs/operators';
 
 import { IdType } from 'vis-network';
 
@@ -13,7 +13,7 @@ import { Coords2D } from 'app/interfaces/shared.interface';
 import { ClipboardService } from 'app/shared/services/clipboard.service';
 import { keyCodeRepresentsPasteEvent } from 'app/shared/utils';
 import { DataFlowService, makeid, ProjectsService } from '../services';
-import { GraphData, LaunchApp, Project, UniversalGraph } from '../services/interfaces';
+import { GraphData, LaunchApp, Project } from '../services/interfaces';
 import { DrawingToolContextMenuControlService } from '../services/drawing-tool-context-menu-control.service';
 import { CopyPasteMapsService } from '../services/copy-paste-maps.service';
 
@@ -31,96 +31,35 @@ import { NodeCreation } from 'app/graph-viewer/actions/nodes';
   providers: [ClipboardService],
 })
 export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
-  /** Communicate to parent component to open another app side by side */
   @Output() openApp: EventEmitter<LaunchApp> = new EventEmitter<LaunchApp>();
-  /** Communicate which app is active for app icon presentation */
   @Input() currentApp = '';
 
-  /** Communicate what map to load by map hash id */
-  CURRENT_MAP = '';
+  @Output() saveStateListener: EventEmitter<boolean> = new EventEmitter<boolean>();
 
-  get currentMap() {
-    return this.CURRENT_MAP;
-  }
+  @ViewChild(InfoPanelComponent, {static: false}) infoPanel: InfoPanelComponent;
+  @ViewChild('canvas', {static: true}) canvasChild;
 
-  @Input()
-  set currentMap(val) {
-    this.CURRENT_MAP = val;
-  }
+  @Input() currentMap: string | undefined;
+  project: Project = null;
 
-  @ViewChild(InfoPanelComponent, {
-    static: false
-  }) infoPanel: InfoPanelComponent;
+  graphCanvas: GraphCanvasView;
 
-  mouseMoveEventStream: Observable<MouseEvent>;
-  endMouseMoveEventSource: Subject<boolean>;
-  mouseMoveSub: Subscription;
+  keyboardEventObservable: Observable<KeyboardEvent>;
+  pasteEventSubscription: Subscription;
 
-  pasteEventStream: Observable<KeyboardEvent>;
-  endPasteEventSource: Subject<boolean>;
-  pasteSub: Subscription;
-
-  cursorDocumentPos: Coords2D; // Represents the position of the cursor within the document { x: number; y: number }
-
-  selectedNodes: IdType[];
-  selectedEdges: IdType[];
+  formDataSubscription: Subscription = null;
+  pdfDataSubscription: Subscription = null;
 
   contextMenuTooltipSelector: string;
   contextMenuTooltipOptions: Partial<Options>;
 
-
-  /** Obj representation of knowledge model with metadata */
-  project: Project = null;
-
-  /** Communicate save state to parent component */
-  @Output() saveStateListener: EventEmitter<boolean> = new EventEmitter<boolean>();
-
-  /** Whether or not graph is saved from modification */
-  SAVE_STATE = true;
-
-  get saveState() {
-    return this.SAVE_STATE;
-  }
-
-  set saveState(val) {
-    this.SAVE_STATE = val;
-    // communicate to parent component of save state change
-    this.saveStateListener.emit(this.SAVE_STATE);
-  }
-
-  /**
-   * Subscription for subjects
-   * to quit in destroy lifecycle
-   */
-  formDataSubscription: Subscription = null;
-  pdfDataSubscription: Subscription = null;
-
-  /**
-   * The canvas element from the template.
-   */
-  @ViewChild('canvas', {static: true}) canvasChild;
-
-  /**
-   * Stream of 'canvas needs resize' events that need to be debounced.
-   */
+  canvasResizeObserver: any; // TODO: TS does not have ResizeObserver defs yet
   canvasResizePendingSubject = new Subject<[number, number]>();
-
-  /**
-   * Subscription for the pending resize observable.
-   */
   canvasResizePendingSubscription: Subscription;
 
-  /**
-   * Observer that notices when the canvas' container resizes.
-   */
-  canvasResizeObserver: any; // TODO: TS does not have ResizeObserver defs yet
-
-  /**
-   * Observes changes in selection, which shows the edit panel.
-   */
   selectionSubscription: Subscription;
 
-  graphCanvas: GraphCanvasView;
+  SAVE_STATE = true;
 
   constructor(
     private dataFlow: DataFlowService,
@@ -139,12 +78,6 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
   // ========================================
 
   ngOnInit() {
-    this.endMouseMoveEventSource = new Subject();
-    this.endPasteEventSource = new Subject();
-
-    this.selectedNodes = [];
-    this.selectedEdges = [];
-
     this.contextMenuTooltipSelector = '#root-menu';
     this.contextMenuTooltipOptions = {
       placement: 'right-start',
@@ -163,6 +96,12 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngAfterViewInit() {
     this.graphCanvas = new GraphCanvasView(this.canvasChild.nativeElement as HTMLCanvasElement);
+
+    // Handle pasting
+    this.keyboardEventObservable = (fromEvent(window, 'keydown') as Observable<KeyboardEvent>);
+    this.pasteEventSubscription = this.keyboardEventObservable.pipe(
+      filter(event => keyCodeRepresentsPasteEvent(event)),
+    ).subscribe(this.pasted.bind(this));
 
     // Pass selections onto the data flow system
     this.selectionSubscription = this.graphCanvas.selectionObservable.subscribe(entity => {
@@ -198,21 +137,16 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    // Unsubscribe from subscriptions
     this.formDataSubscription.unsubscribe();
     this.pdfDataSubscription.unsubscribe();
-
-    // Complete the vis canvas element event listeners
-    this.endMouseMoveEventSource.complete();
-    this.endPasteEventSource.complete();
-
+    this.pasteEventSubscription.unsubscribe();
     this.canvasResizeObserver.disconnect();
     this.selectionSubscription.unsubscribe();
     this.graphCanvas.destroy();
   }
 
   // ========================================
-  // Graph I/O
+  // States
   // ========================================
 
   /**
@@ -228,24 +162,30 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
     );
   }
 
-  zoomToFit() {
-    this.graphCanvas.zoomToFit();
+  /**
+   * Save the current representation of knowledge model
+   */
+  save() {
+    this.project.graph = this.graphCanvas.getGraph();
+    this.project.date_modified = new Date().toISOString();
+
+    // Push to backend to save
+    this.projectService.updateProject(this.project).subscribe(() => {
+      this.saveState = true;
+      this.snackBar.open('Map saved', null, {
+        duration: 2000,
+      });
+    });
   }
 
-  startGraphLayout() {
-    this.graphCanvas.startGraphLayout();
+  get saveState() {
+    return this.SAVE_STATE;
   }
 
-  stopGraphLayout() {
-    this.graphCanvas.stopGraphLayout();
-  }
-
-  undo() {
-    this.graphCanvas.undo();
-  }
-
-  redo() {
-    this.graphCanvas.redo();
+  set saveState(val) {
+    this.SAVE_STATE = val;
+    // communicate to parent component of save state change
+    this.saveStateListener.emit(this.SAVE_STATE);
   }
 
   // ========================================
@@ -258,6 +198,12 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
     return this.saveState ? true : confirm(
       'WARNING: You have unsaved changes. Press Cancel to go back and save these changes, or OK to lose these changes.'
     );
+  }
+
+  /**
+   * Handle pasting from the clipboard.
+   */
+  pasted() {
   }
 
   // Drop events
@@ -371,104 +317,8 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   // ========================================
-  // TODO
+  // Download
   // ========================================
-
-  get saveStyle() {
-    return {
-      saved: this.saveState,
-      not_saved: !this.saveState
-    };
-  }
-
-  updateCursorDocumentPos(event: MouseEvent) {
-    this.cursorDocumentPos = {
-      x: event.clientX - 59, // The canvas is offset a bit by the toolbar menu, so we modify the x-pos a bit here
-      y: event.clientY,
-    };
-  }
-
-  setupCtrlVPasteOnCanvas() {
-    const visCanvas = document.querySelector('#canvas');
-
-    // We need to get the cursor coords the first time the user clicks the canvas (i.e. when they focus it for the first time).
-    // Otherwise they would be undefined if the user focused the canvas but didn't move the mouse at all and tried to paste.
-    (fromEvent(visCanvas, 'click') as Observable<MouseEvent>).pipe(
-      first(),
-    ).subscribe((event) => {
-      this.updateCursorDocumentPos(event);
-    });
-
-    // When the canvas is focused, keep track of where the mouse is so we know where to paste
-    visCanvas.addEventListener('focusin', () => {
-      // We should take great care with this listener, as it fires VERY often if we don't
-      // properly debounce it
-      this.mouseMoveEventStream = fromEvent(visCanvas, 'mousemove').pipe(
-        debounceTime(25),
-        takeUntil(this.endMouseMoveEventSource),
-      ) as Observable<MouseEvent>;
-
-      this.mouseMoveSub = this.mouseMoveEventStream.subscribe((event) => {
-        this.updateCursorDocumentPos(event);
-      });
-
-      // We also want to keep track of when the "Paste" command is issued by the user
-      this.pasteEventStream = (fromEvent(visCanvas, 'keydown') as Observable<KeyboardEvent>).pipe(
-        filter(event => keyCodeRepresentsPasteEvent(event)),
-        takeUntil(this.endPasteEventSource),
-      );
-
-      this.pasteSub = this.pasteEventStream.subscribe(() => {
-        this.createLinkNodeFromClipboard(this.cursorDocumentPos);
-      });
-    });
-
-    // If the canvas isn't focused, we don't care where the mouse is, nor do we care about catching paste events
-    visCanvas.addEventListener('focusout', () => {
-      // This will complete the mouseMoveEventStream observable, and the corresponding mouseMoveSub
-      this.endMouseMoveEventSource.next(true);
-
-      // Similar to above
-      this.endPasteEventSource.next(true);
-    });
-  }
-
-  /**
-   * Handle closing or opening apps
-   * @param app - any app such as pdf-viewer, map-search, kg-visualizer
-   */
-  toggle(app, arg = null) {
-    if (this.currentApp === app) {
-      // Shutdown app
-      this.openApp.emit(null);
-    } else {
-      // Open app
-      this.openApp.emit({
-        app,
-        arg
-      });
-    }
-  }
-
-  toggleApp(appCmd: LaunchApp) {
-    this.openApp.emit(appCmd);
-  }
-
-  /**
-   * Save the current representation of knowledge model
-   */
-  save() {
-    this.project.graph = this.graphCanvas.getGraph();
-    this.project.date_modified = new Date().toISOString();
-
-    // Push to backend to save
-    this.projectService.updateProject(this.project).subscribe(() => {
-      this.saveState = true;
-      this.snackBar.open('Map saved', null, {
-        duration: 2000,
-      });
-    });
-  }
 
   /**
    * Asks for the format to download the map
@@ -498,7 +348,6 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
       });
 
     }
-
   }
 
   /**
@@ -639,98 +488,55 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
+  // ========================================
+  // Template stuff
+  // ========================================
 
-  // -- Helpers --
-  /**
-   * Build key,value pair style dict
-   * from nodeTemplate
-   * @param nodeTemplate represents a node object
-   */
-  nodeStyleCompute(nodeTemplate) {
+  get saveStyle() {
     return {
-      color: nodeTemplate.color,
-      background: nodeTemplate.background
+      saved: this.saveState,
+      not_saved: !this.saveState
     };
   }
 
-  // TODO LL-233
-  removeNodes(nodes: IdType[]) {
+  zoomToFit() {
+    this.graphCanvas.zoomToFit();
   }
 
-  // TODO LL-233
-  removeEdges(edges: IdType[]) {
+  startGraphLayout() {
+    this.graphCanvas.startGraphLayout();
+  }
+
+  stopGraphLayout() {
+    this.graphCanvas.stopGraphLayout();
+  }
+
+  undo() {
+    this.graphCanvas.undo();
+  }
+
+  redo() {
+    this.graphCanvas.redo();
   }
 
   /**
-   * Selects the neighbors of the currently selected node.
-   * @param node the ID of the node whose neighbors are being selected
+   * Handle closing or opening apps
+   * @param app any app such as pdf-viewer, map-search, kg-visualizer
    */
-  selectNeighbors(node: IdType) {
+  toggle(app, arg = null) {
+    if (this.currentApp === app) {
+      // Shutdown app
+      this.openApp.emit(null);
+    } else {
+      // Open app
+      this.openApp.emit({
+        app,
+        arg
+      });
+    }
   }
 
-  /**
-   * Saves the selected nodes and edges to the CopyPaste service.
-   *
-   * For every edge, we check if both connected nodes have also been selected. If not, then we
-   * discard the edge.
-   */
-  copySelection() {
-  }
-
-  // TODO LL-233
-  pasteSelection() {
-    // Implement me!
-  }
-
-  async createLinkNodeFromClipboard(coords: Coords2D) {
-  }
-
-
-  // ========== to do move ============
-
-  pointOnRect(x, y, minX, minY, maxX, maxY, validate) {
-    if (validate && (minX < x && x < maxX) && (minY < y && y < maxY)) {
-      return {x, y};
-    }
-    const midX = (minX + maxX) / 2;
-    const midY = (minY + maxY) / 2;
-    // if (midX - x == 0) -> m == ±Inf -> minYx/maxYx == x (because value / ±Inf = ±0)
-    const m = (midY - y) / (midX - x);
-
-    if (x <= midX) { // check "left" side
-      const minXy = m * (minX - x) + y;
-      if (minY <= minXy && minXy <= maxY) {
-        return {x: minX, y: minXy};
-      }
-    }
-
-    if (x >= midX) { // check "right" side
-      const maxXy = m * (maxX - x) + y;
-      if (minY <= maxXy && maxXy <= maxY) {
-        return {x: maxX, y: maxXy};
-      }
-    }
-
-    if (y <= midY) { // check "top" side
-      const minYx = (minY - y) / m + x;
-      if (minX <= minYx && minYx <= maxX) {
-        return {x: minYx, y: minY};
-      }
-    }
-
-    if (y >= midY) { // check "bottom" side
-      const maxYx = (maxY - y) / m + x;
-      if (minX <= maxYx && maxYx <= maxX) {
-        return {x: maxYx, y: maxY};
-      }
-    }
-
-    // edge case when finding midpoint intersection: m = 0/0 = NaN
-    if (x === midX && y === midY) {
-      return {x, y};
-    }
-
-    // Should never happen :) If it does, please tell me!
-    return {x, y};
+  toggleApp(appCmd: LaunchApp) {
+    this.openApp.emit(appCmd);
   }
 }
