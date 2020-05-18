@@ -10,7 +10,7 @@ import { DataSet } from 'vis-network';
 import {
     ClusteredNode,
     DuplicateVisEdge,
-    GetClusterGraphDataResult,
+    GetClusterDataResult,
     GetSnippetsResult,
     GraphNode,
     GraphRelationship,
@@ -46,7 +46,7 @@ export class VisualizationComponent implements OnInit {
     networkGraphConfig: Neo4jGraphConfig;
     expandNodeResult: ExpandNodeResult;
     getSnippetsResult: GetSnippetsResult;
-    getClusterGraphDataResult: GetClusterGraphDataResult;
+    getClusterDataResult: GetClusterDataResult;
     nodes: DataSet<VisNode | GraphNode>;
     edges: DataSet<VisEdge | GraphNode>;
     duplicatedEdges = new Set<number>();
@@ -290,9 +290,9 @@ export class VisualizationComponent implements OnInit {
     // will error because the returned duplicate node ids will not exist on the
     // graph anymore. This can be fixed by creating some kind of interrupt event
     // on this subscription. Could use rxjs 'race' + an output from the child here.
-    getClusterGraphData(clusteredNodes: ClusteredNode[]) {
-        this.visService.getClusterGraphData(clusteredNodes).subscribe((result) => {
-            this.getClusterGraphDataResult = result;
+    getClusterData(clusteredNodes: ClusteredNode[]) {
+        this.visService.getClusterData(clusteredNodes).subscribe((result) => {
+            this.getClusterDataResult = result;
         });
     }
 
