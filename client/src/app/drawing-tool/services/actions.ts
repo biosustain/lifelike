@@ -75,9 +75,36 @@ export class GraphEntityUpdate implements GraphAction {
   }
 
   apply(component: GraphComponent) {
-    Object.assign(this.entity.entity, this.newData);
+    mergeDeep(this.entity.entity, this.newData);
   }
 
   rollback(component: GraphComponent) {
   }
+}
+
+// TODO: Use a library
+function isObject(item) {
+  return (item && typeof item === 'object' && !Array.isArray(item));
+}
+
+function mergeDeep(target, ...sources) {
+  if (!sources.length) {
+    return target;
+  }
+  const source = sources.shift();
+
+  if (isObject(target) && isObject(source)) {
+    for (const key in source) {
+      if (isObject(source[key])) {
+        if (!target[key]) {
+          Object.assign(target, {[key]: {}});
+        }
+        mergeDeep(target[key], source[key]);
+      } else {
+        Object.assign(target, {[key]: source[key]});
+      }
+    }
+  }
+
+  return mergeDeep(target, ...sources);
 }

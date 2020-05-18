@@ -1,5 +1,5 @@
 import { Component, EventEmitter, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
-import { FormArray, FormControl, FormGroup } from '@angular/forms';
+import { FormControl, FormGroup } from '@angular/forms';
 import { CdkTextareaAutosize } from '@angular/cdk/text-field';
 
 import * as $ from 'jquery';
@@ -19,6 +19,11 @@ function emptyIfNull(s: string | undefined) {
     return s;
   }
 }
+
+// TODO: Move this somewhere better
+type RecursivePartial<T> = {
+  [P in keyof T]?: RecursivePartial<T[P]>;
+};
 
 @Component({
   selector: 'app-info-panel',
@@ -87,8 +92,29 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
     // Handle data received from the form
     this.formSubscription = this.entityForm.valueChanges
       .pipe(filter(() => !this.pauseForm))
-      .subscribe((value: object) => {
-          this.dataFlow.pushFormChange(new GraphEntityUpdate('Update entity', this.selected, value));
+      .subscribe((value: any) => {
+          if (this.isSelectionNode()) {
+            const data: RecursivePartial<UniversalGraphNode> = {
+              display_name: value.display_name,
+              label: value.label,
+              data: {
+                hyperlink: value.hyperlink,
+                detail: value.detail
+              }
+            };
+            this.dataFlow.pushFormChange(
+              new GraphEntityUpdate('Update node properties', this.selected, data)
+            );
+          } else if (this.isSelectionEdge()) {
+            const data: RecursivePartial<UniversalGraphEdge> = {
+              label: value.display_name,
+            };
+            this.dataFlow.pushFormChange(
+              new GraphEntityUpdate('Update edge properties', this.selected, data)
+            );
+          } else {
+            throw new Error('trying to edit something that the code doesn\'t know about is ill-advised');
+          }
         }
       );
   }
