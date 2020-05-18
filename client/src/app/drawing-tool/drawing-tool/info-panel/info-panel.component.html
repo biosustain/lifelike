@@ -31,7 +31,6 @@
         matInput
         (keydown.enter)="blurInput($event)"
         formControlName='hyperlink'>
-      <mat-icon (click)='goToLink()' matSuffix>link</mat-icon>
     </mat-form-field>
 
     <mat-form-field
@@ -49,8 +48,12 @@
             </textarea>
     </mat-form-field>
 
-    <button *ngIf='selected?.data?.source' mat-button color="primary" (click)='goToSource()'>
-      Source
+    <button *ngIf='!!this.entityForm.value.hyperlink' mat-stroked-button color="primary" (click)='goToLink()'>
+      Open Hyperlink
+    </button>
+
+    <button *ngIf='selected?.data?.source' mat-stroked-button color="primary" (click)='goToSource()'>
+      Go to Source
     </button>
 
     <button (click)='delete()' mat-stroked-button color="warn" class='delete'>
