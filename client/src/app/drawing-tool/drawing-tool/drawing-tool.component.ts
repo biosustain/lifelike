@@ -630,6 +630,7 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
     const mapId = nativeElement.id;
     const label = nativeElement.children[0].textContent;
     const source = '/dt/map/' + mapId;
+    const hyperlink = window.location.host + source;
 
     // Get DOM coordinate of dropped node relative
     // to container DOM
@@ -661,7 +662,8 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
         group: 'map',
         label,
         ...coord,
-        source
+        source,
+        hyperlink
       }
     };
     this.recordCommand(cmd);
