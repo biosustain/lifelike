@@ -227,7 +227,6 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
             hash: makeid(),
             label: 'note',
             sub_labels: [],
-            icon: LINK_NODE_ICON_OBJECT,
             data: {
               x: position.x,
               y: position.y,
