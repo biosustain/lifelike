@@ -55,8 +55,8 @@ class AnnotationIntervalTree(IntervalTree):
                 lower = merged[-1]
                 if higher.range_matches(lower):  # should merge
                     current_reduced[0] = data_reducer(current_reduced[0], higher.data)
-                    lower_offset = current_reduced[0].lo_location_offset
-                    upper_offset = current_reduced[0].hi_location_offset
+                    lower_offset = current_reduced[0].lo_location_offset or None  # type: ignore
+                    upper_offset = current_reduced[0].hi_location_offset or None  # type: ignore
                     merged[-1] = Interval(lower_offset, upper_offset, current_reduced[0])
                 else:
                     new_series()
@@ -103,8 +103,8 @@ class AnnotationIntervalTree(IntervalTree):
                     higher.begin == lower.end
                 ):  # noqa  # should merge
                     current_reduced[0] = data_reducer(current_reduced[0], higher.data)
-                    lower_offset = current_reduced[0].lo_location_offset
-                    upper_offset = current_reduced[0].hi_location_offset
+                    lower_offset = current_reduced[0].lo_location_offset or None  # type: ignore
+                    upper_offset = current_reduced[0].hi_location_offset or None  # type: ignore
                     merged[-1] = Interval(lower_offset, upper_offset, current_reduced[0])
                 else:
                     new_series()

@@ -1076,7 +1076,7 @@ class AnnotationsService:
 
     def _remove_overlapping_annotations(
         self,
-        conflicting_annotations: Dict[int, List[Annotation]],
+        conflicting_annotations: List[Annotation],
     ) -> List[Annotation]:
         """Remove annotations based on rules defined in
         self.determine_entity_precedence().
