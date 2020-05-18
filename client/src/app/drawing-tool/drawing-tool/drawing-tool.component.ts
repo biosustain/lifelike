@@ -19,6 +19,7 @@ import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { GraphAction } from 'app/graph-viewer/actions/actions';
 import { GraphCanvasView } from 'app/graph-viewer/graph-canvas-view';
 import { NodeCreation } from 'app/graph-viewer/actions/nodes';
+import { LINK_NODE_ICON_OBJECT } from 'app/constants';
 
 @Component({
   selector: 'app-drawing-tool',
@@ -206,15 +207,36 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   /**
-   * Handle pasting to the clipboard.
+   * Handle copying from the clipboard.
    */
   copied() {
+    // TODO: Implement copying from the graph
   }
 
   /**
    * Handle pasting from the clipboard.
    */
   pasted() {
+    this.clipboardService.readClipboard().then(content => {
+      const position = this.graphCanvas.currentHoverPosition;
+
+      if (position != null) {
+        this.graphCanvas.execute(new NodeCreation(
+          `Paste content from clipboard`, {
+            display_name: 'note',
+            hash: makeid(),
+            label: 'note',
+            sub_labels: [],
+            icon: LINK_NODE_ICON_OBJECT,
+            data: {
+              x: position.x,
+              y: position.y,
+              detail: content,
+            }
+          }
+        ));
+      }
+    });
   }
 
   // Drop events
