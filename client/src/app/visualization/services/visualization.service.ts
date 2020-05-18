@@ -7,6 +7,7 @@ import {
     ClusteredNode,
     DuplicateNodeEdgePair,
     DuplicateVisEdge,
+    GetClusterDataResult,
     GetClusterGraphDataResult,
     GetSnippetsResult,
     Neo4jResults,
@@ -66,6 +67,12 @@ export class VisualizationService {
     getClusterGraphData(clusteredNodes: ClusteredNode[]) {
         return this.http.post<{result: GetClusterGraphDataResult}>(
             `${this.visApi}/get-cluster-graph-data`, {clusteredNodes},
+        ).pipe(map(resp => resp.result));
+    }
+
+    getClusterData(clusteredNodes: ClusteredNode[]) {
+        return this.http.post<{result: GetClusterDataResult}>(
+            `${this.visApi}/get-cluster-data`, {clusteredNodes},
         ).pipe(map(resp => resp.result));
     }
 }
