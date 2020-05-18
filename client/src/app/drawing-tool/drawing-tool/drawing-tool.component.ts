@@ -6,12 +6,8 @@ import { Options } from '@popperjs/core';
 
 import { asyncScheduler, fromEvent, Observable, Subject, Subscription } from 'rxjs';
 import { filter, throttleTime } from 'rxjs/operators';
-
-import { IdType } from 'vis-network';
-
-import { Coords2D } from 'app/interfaces/shared.interface';
 import { ClipboardService } from 'app/shared/services/clipboard.service';
-import { keyCodeRepresentsPasteEvent } from 'app/shared/utils';
+import { keyCodeRepresentsCopyEvent, keyCodeRepresentsPasteEvent } from 'app/shared/utils';
 import { DataFlowService, makeid, ProjectsService } from '../services';
 import { GraphData, LaunchApp, Project } from '../services/interfaces';
 import { DrawingToolContextMenuControlService } from '../services/drawing-tool-context-menu-control.service';
@@ -45,7 +41,8 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
   graphCanvas: GraphCanvasView;
 
   keyboardEventObservable: Observable<KeyboardEvent>;
-  pasteEventSubscription: Subscription;
+  keyboardCopyEventSubscription: Subscription;
+  keyboardPasteEventSubscription: Subscription;
 
   formDataSubscription: Subscription = null;
   pdfDataSubscription: Subscription = null;
@@ -99,13 +96,20 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
 
     // Handle pasting
     this.keyboardEventObservable = (fromEvent(window, 'keydown') as Observable<KeyboardEvent>);
-    this.pasteEventSubscription = this.keyboardEventObservable.pipe(
+    this.keyboardCopyEventSubscription = this.keyboardEventObservable.pipe(
+      filter(event => keyCodeRepresentsCopyEvent(event)),
+    ).subscribe(this.copied.bind(this));
+    this.keyboardPasteEventSubscription = this.keyboardEventObservable.pipe(
       filter(event => keyCodeRepresentsPasteEvent(event)),
     ).subscribe(this.pasted.bind(this));
 
     // Pass selections onto the data flow system
-    this.selectionSubscription = this.graphCanvas.selectionObservable.subscribe(entity => {
-      this.dataFlow.pushSelection(entity);
+    this.selectionSubscription = this.graphCanvas.selectionObservable.subscribe(selected => {
+      if (selected.length === 1) {
+        this.dataFlow.pushSelection(selected[0]);
+      } else {
+        this.dataFlow.pushSelection(null);
+      }
     });
 
     // Handle resizing of the canvas, but doing it with a throttled stream
@@ -139,7 +143,8 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
   ngOnDestroy() {
     this.formDataSubscription.unsubscribe();
     this.pdfDataSubscription.unsubscribe();
-    this.pasteEventSubscription.unsubscribe();
+    this.keyboardCopyEventSubscription.unsubscribe();
+    this.keyboardPasteEventSubscription.unsubscribe();
     this.canvasResizeObserver.disconnect();
     this.selectionSubscription.unsubscribe();
     this.graphCanvas.destroy();
@@ -198,6 +203,12 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
     return this.saveState ? true : confirm(
       'WARNING: You have unsaved changes. Press Cancel to go back and save these changes, or OK to lose these changes.'
     );
+  }
+
+  /**
+   * Handle pasting to the clipboard.
+   */
+  copied() {
   }
 
   /**
