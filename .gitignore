@@ -62,6 +62,8 @@ appserver/neo4japp/services/annotations/**/*.mdb
 appserver/neo4japp/services/annotations/**/*.csv
 appserver/neo4japp/services/annotations/**/*.tsv
 
+# profiler results
+appserver/profilers/results/
 
 # Backups
 *.backup
