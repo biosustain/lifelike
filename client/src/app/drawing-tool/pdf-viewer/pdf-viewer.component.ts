@@ -29,8 +29,7 @@ class DummyFile implements PdfFile {
 }
 
 class EntityTypeEntry {
-  constructor(public type: EntityType,
-    public annotations: Annotation[]) {
+  constructor(public type: EntityType, public annotations: Annotation[]) {
   }
 }
 
