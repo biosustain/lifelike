@@ -154,12 +154,13 @@ class AnnotationsService:
 
     def _filter_tokens(self, tokens: PDFTokenPositionsList) -> None:
         """Filter the tokens into separate matched sets in LMDB."""
+        compiled_regex = re.compile(self.regex_for_floats)
         for token in tokens.token_positions:
             word = token.keyword
 
             if word:
                 if (word.lower() not in COMMON_WORDS and
-                        not re.match(self.regex_for_floats, word) and
+                        not re.match(compiled_regex, word) and
                         word not in ascii_letters and
                         word not in digits):
 
