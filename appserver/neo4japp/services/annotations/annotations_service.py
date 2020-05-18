@@ -762,22 +762,6 @@ class AnnotationsService:
 
         return entity_frequency
 
-    def _get_entity_frequency(
-        self,
-        annotations: List[Annotation],
-    ) -> Dict[str, int]:
-        """Takes as input a list of annotation objects (intended to be of a single entity type).
-
-        Returns the frequency of each annotation entity within the document.
-        """
-        entity_frequency: Dict[str, int] = dict()
-        for annotation in annotations:
-            entity_frequency = self._update_entity_frequency_map(
-                entity_frequency=entity_frequency,
-                annotation=annotation,
-            )
-        return entity_frequency
-
     def _update_entity_location_map(
         self,
         matched_entity_locations: Dict[int, Dict[str, List[Tuple[int, int]]]],
@@ -826,22 +810,6 @@ class AnnotationsService:
                 annotation=annotation,
             )
 
-        return matched_entity_locations
-
-    def _get_entity_locations(
-        self,
-        annotations: List[Annotation],
-    ) -> Dict[int, Dict[str, List[Tuple[int, int]]]]:
-        """Takes as input a list of annotation objects (intended to be of a single entity type).
-
-        Returns the locations of the annotation entities within the document.
-        """
-        matched_entity_locations: Dict[int, Dict[str, List[Tuple[int, int]]]] = {}
-        for annotation in annotations:
-            matched_entity_locations = self._update_entity_location_map(
-                matched_entity_locations=matched_entity_locations,
-                annotation=annotation,
-            )
         return matched_entity_locations
 
     def _get_entity_frequency_and_locations(
