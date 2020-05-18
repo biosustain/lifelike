@@ -42,7 +42,7 @@ const NOTE  = '#edc949';
 const MAP = '#0277bd';
 
 const ENTITY = '#7f7f7f';
-const LINK = '#7f7f7f';
+const LINK = '#669999';
 
 // Non-Entity Types
 const CORRELATION = '#d7d9f8';
@@ -98,6 +98,7 @@ const annotationTypes: AnnotationStyle[] = [{
   {
     label: 'link',
     color: LINK,
+    iconCode: '\uf15b'
   },
   {
     label: 'entity',
