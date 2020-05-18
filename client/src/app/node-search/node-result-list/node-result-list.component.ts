@@ -1,6 +1,6 @@
-import {Component, Input, OnChanges, OnInit, SimpleChanges, ViewChild} from '@angular/core';
+import {Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, ViewChild} from '@angular/core';
 import {MatTableDataSource} from '@angular/material/table';
-import {MatPaginator} from '@angular/material/paginator';
+import {MatPaginator, PageEvent} from '@angular/material/paginator';
 import {Nodes} from '../containers/node-search.component';
 
 @Component({
@@ -11,9 +11,11 @@ import {Nodes} from '../containers/node-search.component';
 
 export class NodeResultListComponent implements OnInit, OnChanges {
   @Input() nodes: Nodes[] = [];
-  displayedColumns: string[] = ['position', 'name', 'type', 'database', 'actions'];
+  displayedColumns: string[] = ['position', 'name', 'type', 'domain', 'actions'];
   dataSource = new MatTableDataSource<Nodes>(this.nodes);
-  @ViewChild(MatPaginator, {static: true}) paginator: MatPaginator;
+  @ViewChild(MatPaginator, {static: false}) paginator: MatPaginator;
+  @Output() page = new EventEmitter<PageEvent>();
+  pageEvent: PageEvent;
 
   constructor() {
   }
@@ -24,6 +26,13 @@ export class NodeResultListComponent implements OnInit, OnChanges {
 
   ngOnChanges(changes: SimpleChanges): void {
     this.dataSource = new MatTableDataSource<Nodes>(this.nodes);
+    this.dataSource.paginator = this.paginator;
+    this.sendPageEvent(this.pageEvent);
+  }
+
+  sendPageEvent(event: PageEvent) {
+    this.page.emit(event);
+    return event;
   }
 
 
