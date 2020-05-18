@@ -1,5 +1,6 @@
 import { UniversalGraphEdge, UniversalGraphNode } from './interfaces';
 import { annotationTypesMap } from '../../shared/annotation-styles';
+import intersects from 'intersects';
 
 // ========================================
 // Interfaces
@@ -87,6 +88,16 @@ export interface PlacedObject {
  */
 export interface PlacedNode extends PlacedObject {
   /**
+   * Get the bounding box of the node.
+   */
+  getBoundingBox(): {
+    minX: number,
+    minY: number,
+    maxX: number,
+    maxY: number,
+  };
+
+  /**
    * Get the first intersection point of a line coming from outside this object
    * to the center of the object. This method is vital to figuring out if an
    * object has been clicked by the mouse.
@@ -121,7 +132,7 @@ export class RoundedRectangleNodeStyle implements NodeRenderStyle {
         options: PlacementOptions): PlacedNode {
     ctx.font = calculateNodeFont(d, transform, options.selected, options.highlighted);
 
-    const noZoomScale = 1 / transform.scale(1).k;
+    const zoomResetScale = 1 / transform.scale(1).k;
     const textSize = ctx.measureText(d.display_name);
     const textWidth = textSize.width;
     const textActualHeight = textSize.actualBoundingBoxAscent + textSize.actualBoundingBoxDescent;
@@ -132,9 +143,18 @@ export class RoundedRectangleNodeStyle implements NodeRenderStyle {
     const nodeY = d.data.y - nodeHeight / 2;
     const nodeX2 = nodeX + nodeWidth;
     const nodeY2 = nodeY + nodeHeight;
-    const highDetailLevel = transform.k >= 0.8 || options.selected || options.highlighted;
+    const highDetailLevel = transform.k >= 0.35 || options.selected || options.highlighted;
 
     return new class implements PlacedNode {
+      getBoundingBox() {
+        return {
+          minX: nodeX,
+          minY: nodeY,
+          maxX: nodeX2,
+          maxY: nodeY2,
+        };
+      }
+
       isPointIntersecting(x: number, y: number): boolean {
         return x >= nodeX && x <= nodeX2 && y >= nodeY && y <= nodeY2;
       }
@@ -157,14 +177,14 @@ export class RoundedRectangleNodeStyle implements NodeRenderStyle {
 
         if (highDetailLevel) {
           // Node box
-          ctx.lineWidth = noZoomScale * (options.highlighted ? 2 : 1.5);
+          ctx.lineWidth = zoomResetScale * (options.highlighted ? 2 : 1.5);
           ctx.fillStyle = (options.highlighted ? '#E4EFFF' : (options.selected ? '#efefef' : '#fff'));
           (ctx as any).roundedRect(
             nodeX,
             nodeY,
             nodeWidth,
             nodeHeight,
-            5 * noZoomScale
+            5
           );
           ctx.fill();
           ctx.strokeStyle = '#2B7CE9';
@@ -172,27 +192,22 @@ export class RoundedRectangleNodeStyle implements NodeRenderStyle {
 
           // Node text
           ctx.strokeStyle = '#fff';
-          ctx.lineWidth = noZoomScale * 1.5;
+          ctx.lineWidth = zoomResetScale * 1.5;
           ctx.fillStyle = calculateNodeColor(d);
           ctx.fillText(d.display_name, d.data.x - textWidth / 2, d.data.y + textActualHeight / 2);
         } else {
           // Node box
-          ctx.lineWidth = noZoomScale * (options.highlighted ? 2 : 1.5);
+          ctx.lineWidth = zoomResetScale * (options.highlighted ? 2 : 1.5);
           ctx.fillStyle = (options.highlighted ? '#E4EFFF' : (options.selected ? '#efefef' : '#fff'));
-          ctx.fillRect(
+          (ctx as any).roundedRect(
             nodeX,
             nodeY,
             nodeWidth,
             nodeHeight,
+            5
           );
           ctx.fill();
           ctx.strokeStyle = '#2B7CE9';
-          ctx.rect(
-            nodeX,
-            nodeY,
-            nodeWidth,
-            nodeHeight,
-          );
           ctx.stroke();
         }
       }
@@ -215,12 +230,12 @@ export class IconNodeStyle implements NodeRenderStyle {
         transform: any,
         options: PlacementOptions): PlacedNode {
     const style = this;
-    const noZoomScale = 1 / transform.scale(1).k;
+    const zoomResetScale = 1 / transform.scale(1).k;
     const iconFont = this.fontSize + 'px ' + this.fontName;
     const displayNameFont = calculateNodeFont(d, transform, options.selected, options.highlighted);
-    const yShift = noZoomScale * 7; // Older renderer was a little off?
-    const iconLabelSpacing = 2 * noZoomScale;
-    const highDetailLevel = transform.k >= 0.8 || options.selected || options.highlighted;
+    const yShift = zoomResetScale * 7; // Older renderer was a little off?
+    const iconLabelSpacing = 2 * zoomResetScale;
+    const highDetailLevel = transform.k >= 0.35 || options.selected || options.highlighted;
 
     ctx.font = iconFont;
     const iconTextSize = ctx.measureText(style.iconString);
@@ -236,6 +251,15 @@ export class IconNodeStyle implements NodeRenderStyle {
     const minY = d.data.y - (totalHeight / 2) + yShift;
 
     return new class implements PlacedNode {
+      getBoundingBox() {
+        return {
+          minX: d.data.x - Math.max(style.fontSize, displayNameTextWidth) / 2,
+          minY,
+          maxX: d.data.x + Math.max(style.fontSize, displayNameTextWidth) / 2,
+          maxY: minY + totalHeight,
+        };
+      }
+
       isPointIntersecting(x: number, y: number): boolean {
         // What if the text doesn't render or it's too small? Then the user
         // can't select this node anymore, which is bad
@@ -309,12 +333,16 @@ export class BasicEdgeStyle implements EdgeRenderStyle {
         ctx: CanvasRenderingContext2D,
         transform: any,
         options: PlacementOptions): PlacedEdge {
-    const noZoomScale = 1 / transform.scale(1).k;
-    const highDetailLevel = transform.k >= 0.8 || options.selected || options.highlighted;
+    const zoomResetScale = 1 / transform.scale(1).k;
+    const highDetailLevel = transform.k >= 0.35 || options.selected || options.highlighted;
 
     return new class implements PlacedEdge {
       isPointIntersecting(x: number, y: number): boolean {
-        return false;
+        const x1 = Math.min(from.data.x, to.data.x);
+        const x2 = Math.max(from.data.x, to.data.x);
+        const y1 = Math.min(from.data.y, to.data.y);
+        const y2 = Math.max(from.data.y, to.data.y);
+        return getLinePointIntersectionDistance(x, y, x1, x2, y1, y2) <= 2;
       }
 
       render(): void {
@@ -327,7 +355,7 @@ export class BasicEdgeStyle implements EdgeRenderStyle {
         );
 
         // Draw line
-        const lineWidth = (options.highlighted ? 1 : 0.5) * noZoomScale;
+        const lineWidth = (options.highlighted ? 1 : 0.5) * zoomResetScale;
         ctx.fillStyle = !options.highlighted || options.highlighted ? '#2B7CE9' : '#ACCFFF';
 
         // TODO: This ugly -- don't add methods to window objects
@@ -336,11 +364,15 @@ export class BasicEdgeStyle implements EdgeRenderStyle {
           from.data.y,
           toX,
           toY,
-          [0, lineWidth, -10 * noZoomScale, lineWidth, -10 * noZoomScale, 5 * noZoomScale]);
+          [0, lineWidth, -10, lineWidth, -10, 8]);
         ctx.fill();
       }
 
       renderLayer2() {
+        if (!d.label) {
+          return;
+        }
+
         if (highDetailLevel) {
           const [toX, toY] = placedTo.lineIntersectionPoint(
             from.data.x,
@@ -359,7 +391,7 @@ export class BasicEdgeStyle implements EdgeRenderStyle {
           const x = Math.abs(fromX - toX) / 2 + Math.min(fromX, toX) - width / 2;
           const y = Math.abs(fromY - toY) / 2 + Math.min(fromY, toY) + height / 2;
           ctx.strokeStyle = '#ffffff';
-          ctx.lineWidth = 3 * noZoomScale;
+          ctx.lineWidth = 3 * zoomResetScale;
           ctx.strokeText(d.label, x, y);
           ctx.fillStyle = '#888';
           ctx.fillText(d.label, x, y);
@@ -439,6 +471,16 @@ function pointOnRect(x, y, minX, minY, maxX, maxY, validate) {
 
   // Should never happen :) If it does, please tell me!
   return {x, y};
+}
+
+// TODO: Clean up
+function getLinePointIntersectionDistance(x, y, x1, x2, y1, y2) {
+  if (!intersects.pointLine(x, y, x1, y1, x2, y2)) {
+    return Infinity;
+  }
+  const expectedSlope = (y2 - y1) / (x2 - x1);
+  const slope = (y - y1) / (x - x1);
+  return Math.abs(slope - expectedSlope);
 }
 
 // ========================================

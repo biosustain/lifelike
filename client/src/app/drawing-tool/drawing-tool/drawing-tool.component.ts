@@ -5,12 +5,13 @@ import { CdkDragDrop } from '@angular/cdk/drag-drop';
 import { Options } from '@popperjs/core';
 
 import * as d3 from 'd3';
-import intersects from 'intersects';
+import * as cola from 'webcola';
+import { InputNode, Layout } from 'webcola';
 import 'canvas-plus';
 import './canvas-arrow';
 
-import { fromEvent, Observable, Subject, Subscription } from 'rxjs';
-import { debounceTime, filter, first, takeUntil } from 'rxjs/operators';
+import { asyncScheduler, fromEvent, Observable, Subject, Subscription } from 'rxjs';
+import { debounceTime, filter, first, takeUntil, throttleTime } from 'rxjs/operators';
 
 import { IdType } from 'vis-network';
 
@@ -40,6 +41,7 @@ import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { NodeCreation } from '../services/actions';
 import { DEFAULT_EDGE_STYLE, DEFAULT_NODE_STYLE, IconNodeStyle, PlacedEdge, PlacedNode } from '../services/graph-renderers';
 import { AnnotationStyle, annotationTypesMap } from '../../shared/annotation-styles';
+import { Group, Link } from 'webcola/WebCola/src/layout';
 
 @Component({
   selector: 'app-drawing-tool',
@@ -128,10 +130,21 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy, G
   edges: UniversalGraphEdge[] = [];
 
   /**
+   * Collection of layout groups on the graph.
+   */
+  layoutGroups: GraphLayoutGroup[] = [];
+
+  /**
    * Maps node's hashes to nodes for O(1) lookup, essential to the speed
    * of most of this graph code.
    */
   nodeHashMap: Map<string, UniversalGraphNode> = new Map();
+
+  /**
+   * Keep track of fixed X/Y positions that come from dragging nodes. These
+   * values are passed to the automatic layout routines .
+   */
+  nodePositionOverrideMap: Map<UniversalGraphNode, [number, number]> = new Map();
 
   // Canvas
   // ---------------------------------
@@ -152,12 +165,29 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy, G
   canvasActive = true;
 
   /**
+   * Stream of 'canvas needs resize' events that need to be debounced.
+   */
+  canvasResizePendingSubject = new Subject<[number, number]>();
+
+  /**
+   * Subscription for the pending resize observable.
+   */
+  canvasResizePendingSubscription: Subscription;
+
+  /**
    * Marks that changes to the view were made so we need to re-render.
    */
   renderingRequested = false;
 
-  // TODO: TS does not have ResizeObserver defs yet
-  canvasResizeObserver: any;
+  /**
+   * Observer that notices when the canvas' container resizes.
+   */
+  canvasResizeObserver: any; // TODO: TS does not have ResizeObserver defs yet
+
+  /**
+   * Indicates where a mouse button is currently down.
+   */
+  mouseDown = false;
 
   // Graph states
   // ---------------------------------
@@ -167,7 +197,18 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy, G
    * taken into consideration whenever mapping between graph coordinates and
    * viewport coordinates.
    */
-  transform = d3.zoomIdentity.scale(0.8).translate(700, 500);
+  transform = d3.zoomIdentity;
+
+  /**
+   * d3-zoom object used to handle zooming.
+   */
+  zoom: any;
+
+  /**
+   * webcola object used for automatic layout.
+   * Initialized in {@link ngAfterViewInit}.
+   */
+  cola: Layout;
 
   /**
    * Used for the double-click-to-create-an-edge function to store the from
@@ -184,6 +225,20 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy, G
   offsetBetweenNodeAndMouseInitialPosition: number[] = [0, 0];
 
   /**
+   * Keeps track of currently where the mouse (or finger) is held down at
+   * so we can display an indicator at that position.
+   */
+  touchPosition: {
+    position: number[],
+    entity: GraphEntity | undefined,
+  } | undefined;
+
+  /**
+   * Indicates whether we are panning or zooming.
+   */
+  panningOrZooming = false;
+
+  /**
    * Holds the currently selected node or edge.
    */
   highlighted: GraphEntity | undefined;
@@ -192,6 +247,16 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy, G
    * Holds the currently highlighted node or edge.
    */
   selected: GraphEntity | undefined;
+
+  /**
+   * Holds the currently dragged node or edge.
+   */
+  dragged: GraphEntity | undefined;
+
+  /**
+   * Whether nodes are arranged automatically.
+   */
+  automaticLayoutEnabled = false;
 
   // History
   // ---------------------------------
@@ -259,32 +324,52 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy, G
   ngAfterViewInit() {
     this.canvas = this.canvasChild.nativeElement as HTMLCanvasElement;
 
-    // Handle resizing of the canvas
-    const updateCanvasDimensions = () => {
-      this.canvas.width = this.canvas.clientWidth;
-      this.canvas.height = this.canvas.clientHeight;
-      this.requestRender();
-    };
-    // @ts-ignore
-    this.canvasResizeObserver = new window.ResizeObserver(updateCanvasDimensions);
-    this.canvasResizeObserver.observe(this.canvas.parentNode);
-    // TODO: Can we depend on ResizeObserver yet?
-    updateCanvasDimensions();
+    this.zoom = d3.zoom()
+      .on('zoom', this.canvasZoomed.bind(this))
+      .on('end', this.canvasZoomEnded.bind(this));
 
     d3.select(this.canvas)
       .on('click', this.canvasClicked.bind(this))
       .on('dblclick', this.canvasDoubleClicked.bind(this))
+      .on('mousedown', this.canvasMouseDown.bind(this))
       .on('mousemove', this.canvasMouseMoved.bind(this))
+      .on('mouseup', this.canvasMouseUp.bind(this))
       .call(d3.drag()
         .container(this.canvas)
         .subject(this.getEntityAtMouse.bind(this))
         .on('start', this.canvasDragStarted.bind(this))
         .on('drag', this.canvasDragged.bind(this))
         .on('end', this.canvasDragEnded.bind(this)))
-      .call(d3.zoom()
-        .scaleExtent([1 / 10, 20])
-        .on('zoom', this.canvasZoomed.bind(this)))
+      .call(this.zoom)
       .on('dblclick.zoom', null);
+
+    this.cola = cola
+      .d3adaptor(d3)
+      .on('tick', this.colaTicked.bind(this))
+      .on('end', this.colaEnded.bind(this));
+
+    // Handle resizing of the canvas, but doing it with a throttled stream
+    // so we don't burn extra CPU cycles resizing repeatedly unnecessarily
+    this.canvasResizePendingSubscription = this.canvasResizePendingSubject
+      .pipe(throttleTime(250, asyncScheduler, {
+        leading: true,
+        trailing: true
+      }))
+      .subscribe(([width, height]) => {
+        this.canvas.width = width;
+        this.canvas.height = height;
+        this.requestRender();
+      });
+    const pushResize = () =>
+      this.canvasResizePendingSubject.next([
+        this.canvas.clientWidth,
+        this.canvas.clientHeight,
+      ]);
+    // @ts-ignore
+    this.canvasResizeObserver = new window.ResizeObserver(pushResize);
+    // TODO: Can we depend on ResizeObserver yet?
+    this.canvasResizeObserver.observe(this.canvas.parentNode);
+    pushResize();
 
     this.loadMap(this.currentMap);
   }
@@ -336,7 +421,219 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy, G
       new Map()
     );
 
+    this.zoomToFit(0);
     this.requestRender();
+  }
+
+  /**
+   * Return a copy of the graph.
+   */
+  getGraph(): UniversalGraph {
+    return {
+      nodes: this.nodes,
+      edges: this.edges,
+    };
+  }
+
+  /**
+   * Zoom the graph to fit.
+   * @param duration the duration of the animation in ms
+   * @param padding padding in graph scale to add to the graph
+   */
+  zoomToFit(duration: number = 1500, padding = 50) {
+    const ctx = this.canvas.getContext('2d');
+
+    const canvasWidth = this.canvas.width;
+    const canvasHeight = this.canvas.height;
+
+    let minX = null;
+    let minY = null;
+    let maxX = null;
+    let maxY = null;
+
+    const width = maxX - minX;
+    const height = maxY - minY;
+
+    d3.select(this.canvas)
+      .transition().duration(duration)
+      .call(
+        this.zoom.transform,
+        d3.zoomIdentity
+          .translate(canvasWidth / 2, canvasHeight / 2)
+          .scale(Math.min(1, Math.min(canvasWidth / width, canvasHeight / height)))
+          .translate(-minX - width / 2, -minY - height / 2)
+      );
+
+    this.requestRender();
+  }
+
+  /**
+   * Apply a graph layout algorithm to the nodes.
+   */
+  startGraphLayout() {
+    this.automaticLayoutEnabled = true;
+
+    const nodePositionOverrideMap = this.nodePositionOverrideMap;
+
+    const layoutNodes: GraphLayoutNode[] = this.nodes.map((d, i) => new class implements GraphLayoutNode {
+      index: number = i;
+      reference: UniversalGraphNode = d;
+      vx = 0;
+      vy = 0;
+
+      get x() {
+        return d.data.x;
+      }
+
+      set x(x) {
+        d.data.x = x;
+      }
+
+      get y() {
+        return d.data.y;
+      }
+
+      set y(y) {
+        d.data.y = y;
+      }
+
+      get fixed() {
+        return nodePositionOverrideMap.has(this.reference) ? 1 : 0;
+      }
+
+      get px() {
+        const position = nodePositionOverrideMap.get(this.reference);
+        if (position) {
+          return position[0];
+        } else {
+          return null;
+        }
+      }
+
+      get py() {
+        const position = nodePositionOverrideMap.get(this.reference);
+        if (position) {
+          return position[1];
+        } else {
+          return null;
+        }
+      }
+    }());
+
+    const layoutNodeHashMap: Map<string, GraphLayoutNode> = layoutNodes.reduce(
+      (map, d) => {
+        map.set(d.reference.hash, d);
+        return map;
+      }, new Map());
+
+    const layoutLinks: GraphLayoutLink[] = this.edges.map(d => {
+      const source = layoutNodeHashMap.get(this.nodeReference(d.from).hash);
+      if (!source) {
+        throw new Error('state error - source did not link up');
+      }
+      const target = layoutNodeHashMap.get(this.nodeReference(d.to).hash);
+      if (!target) {
+        throw new Error('state error - source did not link up');
+      }
+      return {
+        reference: d,
+        source,
+        target,
+      };
+    });
+
+    // TODO: Remove test groups
+    const layoutGroups: GraphLayoutGroup[] = [
+      {
+        name: 'Bands',
+        color: '#740CAA',
+        leaves: [],
+        groups: [],
+        padding: 10,
+      },
+      {
+        name: 'Things',
+        color: '#0CAA70',
+        leaves: [],
+        groups: [],
+        padding: 10,
+      }
+    ];
+
+    for (const node of layoutNodes) {
+      const n = Math.floor(Math.random() * (layoutGroups.length + 2));
+      if (n < layoutGroups.length) {
+        layoutGroups[n].leaves.push(node);
+      }
+    }
+
+    this.layoutGroups = layoutGroups;
+
+    this.cola
+      .nodes(layoutNodes)
+      .links(layoutLinks)
+      .groups(layoutGroups)
+      .symmetricDiffLinkLengths(50)
+      .handleDisconnected(false)
+      .size([this.canvas.width, this.canvas.height])
+      .start(10);
+  }
+
+  /**
+   * Stop automatic re-arranging of nodes.
+   */
+  stopGraphLayout() {
+    this.cola.stop();
+    this.automaticLayoutEnabled = false;
+  }
+
+  /**
+   * Add the given node to the graph.
+   * @param node the node
+   */
+  addNode(node: UniversalGraphNode): void {
+    if (this.nodeHashMap.has(node.hash)) {
+      throw new Error('trying to add a node that already is in the node list is bad');
+    }
+    this.nodes.push(node);
+    this.nodeHashMap.set(node.hash, node);
+    this.requestRender();
+  }
+
+  /**
+   * Remove the given node from the graph.
+   * @param node the node
+   * @return true if the node was found
+   */
+  removeNode(node: UniversalGraphNode): boolean {
+    let found = false;
+
+    let i = this.nodes.length;
+    while (i--) {
+      if (this.nodes[i] === node) {
+        this.nodes.splice(i, 1);
+        found = true;
+      }
+    }
+
+    let j = this.edges.length;
+    while (j--) {
+      if (this.nodeReference(this.edges[j].from) === node
+        || this.nodeReference(this.edges[j].to) === node) {
+        this.edges.splice(j, 1);
+      }
+    }
+
+    return found;
+  }
+
+  /**
+   * Select an entity.
+   * @param entity the entity
+   */
+  select(entity: GraphEntity) {
+    this.selected = entity;
+    this.dataFlow.pushSelection(entity);
   }
 
   // ========================================
@@ -388,6 +685,45 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy, G
   }
 
   /**
+   * Get the bounding box containing all the given nodes.
+   * @param nodes the nodes to check
+   * @param padding padding around all the nodes
+   */
+  getBBox(nodes: UniversalGraphNode[], padding = 0) {
+    const canvas = this.canvas;
+    const ctx = canvas.getContext('2d');
+
+    let minX = null;
+    let minY = null;
+    let maxX = null;
+    let maxY = null;
+
+    for (const node of nodes) {
+      const nodeBBox = this.placeNode(node, ctx).getBoundingBox();
+
+      if (minX === null || minX > nodeBBox.minX + padding) {
+        minX = nodeBBox.minX - padding;
+      }
+      if (minY === null || minY > nodeBBox.minY + padding) {
+        minY = nodeBBox.minY - padding;
+      }
+      if (maxX === null || maxX < nodeBBox.maxX + padding) {
+        maxX = nodeBBox.maxX + padding;
+      }
+      if (maxY === null || maxY < nodeBBox.maxY + padding) {
+        maxY = nodeBBox.maxY + padding;
+      }
+    }
+
+    return {
+      minX,
+      minY,
+      maxX,
+      maxY,
+    };
+  }
+
+  /**
    * Find the best matching node at the given position.
    * @param nodes list of nodes to search through
    * @param x graph X location
@@ -412,31 +748,14 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy, G
    * @param y graph Y location
    */
   findEdge(edges: UniversalGraphEdge[], x: number, y: number): UniversalGraphEdge | undefined {
-    const candidates = [];
-    for (const edge of edges) {
-      const from = this.nodeReference(edge.from);
-      const to = this.nodeReference(edge.to);
-
-      const x1 = Math.min(from.data.x, to.data.x);
-      const x2 = Math.max(from.data.x, to.data.x);
-      const y1 = Math.min(from.data.y, to.data.y);
-      const y2 = Math.max(from.data.y, to.data.y);
-      const distance = this.getLinePointIntersectionDistance(x, y, x1, x2, y1, y2);
-
-      if (distance <= 2) {
-        candidates.push([edge, distance]);
+    const canvas = this.canvas;
+    const ctx = canvas.getContext('2d');
+    for (const d of edges) {
+      const from = this.nodeReference(d.from);
+      const to = this.nodeReference(d.to);
+      if (this.placeEdge(d, from, to, ctx).isPointIntersecting(x, y)) {
+        return d;
       }
-    }
-
-    if (candidates.length) {
-      let bestCandidate = candidates[0];
-      for (let i = 1; i < candidates.length; i++) {
-        const candidate = candidates[i];
-        if (candidate[1] < bestCandidate[1]) {
-          bestCandidate = candidate;
-        }
-      }
-      return bestCandidate[0];
     }
     return undefined;
   }
@@ -550,7 +869,7 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy, G
   }
 
   /**
-   * Re-render the graph.
+   * Re-render the graph and update the mouse cursor.
    */
   render() {
     const transform = this.transform;
@@ -565,6 +884,57 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy, G
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.translate(transform.x, transform.y);
     ctx.scale(transform.k, transform.k);
+
+    // Draw touch or mouse click position
+    // ---------------------------------
+
+    if (this.touchPosition) {
+      const touchPositionEntity = this.touchPosition.entity;
+
+      if (touchPositionEntity != null && touchPositionEntity.type === GraphEntityType.Node) {
+        ctx.beginPath();
+        const bbox = this.getBBox([touchPositionEntity.entity as UniversalGraphNode], 10);
+        ctx.rect(bbox.minX, bbox.minY, bbox.maxX - bbox.minX, bbox.maxY - bbox.minY);
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.075)';
+        ctx.fill();
+      } else {
+        ctx.beginPath();
+        ctx.arc(this.touchPosition.position[0], this.touchPosition.position[1], 20 * noZoomScale, 0, 2 * Math.PI, false);
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.075)';
+        ctx.fill();
+      }
+    }
+
+    // Draw a background behind highlighted entity
+    // ---------------------------------
+
+    if (this.highlighted && !this.touchPosition) {
+      if (this.highlighted.type === GraphEntityType.Node) {
+        ctx.beginPath();
+        const bbox = this.getBBox([this.highlighted.entity as UniversalGraphNode], 10);
+        ctx.rect(bbox.minX, bbox.minY, bbox.maxX - bbox.minX, bbox.maxY - bbox.minY);
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.075)';
+        ctx.fill();
+      }
+    }
+
+    // Draw the groups
+    // ---------------------------------
+
+    // TODO: This is currently only for demo
+    this.layoutGroups.forEach((d, i) => {
+      ctx.beginPath();
+      if (d.leaves.length) {
+        const bbox = this.getBBox(d.leaves.map(entry => entry.reference), 10);
+        ctx.fillStyle = d.color;
+        ctx.strokeStyle = d.color;
+        ctx.rect(bbox.minX, bbox.minY, bbox.maxX - bbox.minX, bbox.maxY - bbox.minY);
+        ctx.globalAlpha = 0.1;
+        ctx.fill();
+        ctx.globalAlpha = 1;
+        ctx.stroke();
+      }
+    });
 
     // Draw the interactive edge creation feature
     // ---------------------------------
@@ -615,9 +985,7 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy, G
     // Draw layer 2 (usually text)
     edgeRenderObjects.forEach(({d, placedEdge}) => {
       ctx.beginPath();
-      if (d.label) {
-        placedEdge.renderLayer2();
-      }
+      placedEdge.renderLayer2();
     });
 
     // Draw nodes
@@ -629,6 +997,27 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy, G
     });
 
     ctx.restore();
+
+    // Cursor management
+    // ---------------------------------
+
+    this.updateMouseCursor();
+  }
+
+  /**
+   * Update the current mouse cursor.
+   */
+  updateMouseCursor() {
+    const canvas = this.canvas;
+    if (this.dragged) {
+      canvas.style.cursor = 'grabbing';
+    } else if (this.panningOrZooming) {
+      canvas.style.cursor = 'move';
+    } else if (this.highlighted) {
+      canvas.style.cursor = 'grab';
+    } else {
+      canvas.style.cursor = 'default';
+    }
   }
 
   // ========================================
@@ -686,10 +1075,16 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy, G
     }
   }
 
+  canvasMouseDown() {
+    this.mouseDown = true;
+  }
+
   canvasMouseMoved() {
     const canvas = this.canvas;
     const [mouseX, mouseY] = d3.mouse(canvas);
+
     this.highlighted = this.getEntityAtMouse();
+
     if (this.interactiveEdgeCreationState) {
       this.interactiveEdgeCreationState.to = {
         data: {
@@ -697,7 +1092,28 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy, G
           y: this.transform.invertY(mouseY),
         },
       };
+
+      this.requestRender();
     }
+
+    if (this.mouseDown) {
+      this.touchPosition = {
+        position: [
+          this.transform.invertX(mouseX),
+          this.transform.invertY(mouseY),
+        ],
+        entity: null,
+      };
+
+      this.requestRender();
+    }
+
+    this.updateMouseCursor();
+  }
+
+  canvasMouseUp() {
+    this.mouseDown = false;
+    this.touchPosition = null;
     this.requestRender();
   }
 
@@ -720,40 +1136,98 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy, G
       ];
     }
 
+    this.dragged = subject;
     this.select(subject);
+
+    this.touchPosition = {
+      position: [
+        this.transform.invertX(mouseX),
+        this.transform.invertY(mouseY),
+      ],
+      entity: subject,
+    };
+
+    this.requestRender();
   }
 
   /**
    * Handle when the mouse is clicked and then dragged across the canvas.
    */
   canvasDragged(): void {
-    if (!this.interactiveEdgeCreationState) {
-      const canvas = this.canvas;
-      const [mouseX, mouseY] = d3.mouse(canvas);
-      const subject: GraphEntity | undefined = d3.event.subject;
+    const canvas = this.canvas;
+    const [mouseX, mouseY] = d3.mouse(canvas);
+    const subject: GraphEntity | undefined = d3.event.subject;
 
+    if (!this.interactiveEdgeCreationState) {
       if (subject.type === GraphEntityType.Node) {
         const node = subject.entity as UniversalGraphNode;
         node.data.x = this.transform.invertX(mouseX) + this.offsetBetweenNodeAndMouseInitialPosition[0];
         node.data.y = this.transform.invertY(mouseY) + this.offsetBetweenNodeAndMouseInitialPosition[1];
+        this.nodePositionOverrideMap.set(node, [node.data.x, node.data.y]);
         // TODO: Store this in history as ONE object
       }
-      this.requestRender();
     }
+
+    this.touchPosition = {
+      position: [
+        this.transform.invertX(mouseX),
+        this.transform.invertY(mouseY),
+      ],
+      entity: subject,
+    };
+
+    this.requestRender();
   }
 
   /**
    * Handle when the mouse is clicked, dragged across the canvas, and then let go.
    */
   canvasDragEnded(): void {
+    this.dragged = null;
+    this.nodePositionOverrideMap.clear();
+    this.mouseDown = false;
+    this.touchPosition = null;
+    this.requestRender();
   }
 
   /**
    * Handle when the user zooms on the canvas.
    */
   canvasZoomed(): void {
-    this.transform = d3.event.transform.scale(0.8).translate(700, 500);
+    const canvas = this.canvas;
+    const [mouseX, mouseY] = d3.mouse(canvas);
+    this.transform = d3.event.transform;
+    this.panningOrZooming = true;
+    this.touchPosition = {
+      position: [
+        this.transform.invertX(mouseX),
+        this.transform.invertY(mouseY),
+      ],
+      entity: null,
+    };
     this.requestRender();
+  }
+
+  canvasZoomEnded(): void {
+    this.panningOrZooming = false;
+    this.touchPosition = null;
+    this.mouseDown = false;
+    this.requestRender();
+  }
+
+  /**
+   * Called when webcola (used for layout) has ticked.
+   */
+  colaTicked(): void {
+    this.requestRender();
+  }
+
+  /**
+   * Called when webcola (used for layout) has stopped. Cola will stop after finishing
+   * performing the layout.
+   */
+  colaEnded(): void {
+    this.automaticLayoutEnabled = false;
   }
 
   // Drop events
@@ -864,55 +1338,6 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy, G
         }
       }
     ));
-  }
-
-  // ========================================
-  // Graph modification routines
-  // ========================================
-
-  /**
-   * Add the given node to the graph.
-   * @param node the node
-   */
-  addNode(node: UniversalGraphNode): void {
-    this.nodes.push(node);
-    this.requestRender();
-  }
-
-  /**
-   * Remove the given node from the graph.
-   * @param node the node
-   * @return true if the node was found
-   */
-  removeNode(node: UniversalGraphNode): boolean {
-    let found = false;
-
-    let i = this.nodes.length;
-    while (i--) {
-      if (this.nodes[i] === node) {
-        this.nodes.splice(i, 1);
-        found = true;
-      }
-    }
-
-    let j = this.edges.length;
-    while (j--) {
-      if (this.nodeReference(this.edges[j].from) === node
-        || this.nodeReference(this.edges[j].to) === node) {
-        this.edges.splice(j, 1);
-      }
-    }
-
-    return found;
-  }
-
-  /**
-   * Select an entity.
-   * @param entity the entity
-   */
-  select(entity: GraphEntity) {
-    this.selected = entity;
-    this.dataFlow.pushSelection(entity);
   }
 
   // ========================================
@@ -1059,6 +1484,16 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy, G
    * Save the current representation of knowledge model
    */
   save() {
+    this.project.graph = this.getGraph();
+    this.project.date_modified = new Date().toISOString();
+
+    // Push to backend to save
+    this.projectService.updateProject(this.project).subscribe(() => {
+      this.saveState = true;
+      this.snackBar.open('Map saved', null, {
+        duration: 2000,
+      });
+    });
   }
 
   /**
@@ -1244,9 +1679,6 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy, G
     };
   }
 
-  fitAll() {
-  }
-
   // TODO LL-233
   removeNodes(nodes: IdType[]) {
   }
@@ -1281,15 +1713,6 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy, G
 
 
   // ========== to do move ============
-
-  getLinePointIntersectionDistance(x, y, x1, x2, y1, y2) {
-    if (!intersects.pointLine(x, y, x1, y1, x2, y2)) {
-      return Infinity;
-    }
-    const expectedSlope = (y2 - y1) / (x2 - x1);
-    const slope = (y - y1) / (x - x1);
-    return Math.abs(slope - expectedSlope);
-  }
 
   pointOnRect(x, y, minX, minY, maxX, maxY, validate) {
     if (validate && (minX < x && x < maxX) && (minY < y && y < maxY)) {
@@ -1349,4 +1772,45 @@ interface EdgeCreationState {
       x, y
     }
   };
+}
+
+/**
+ * Represents the object mirroring a {@link UniversalGraphNode} that is
+ * passed to the layout algorithm.
+ */
+interface GraphLayoutNode extends InputNode {
+  /**
+   * A link to the original node that this object is mirroring.
+   */
+  reference: UniversalGraphNode;
+  index: number;
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  fx?: number;
+  fy?: number;
+}
+
+/**
+ * Represents the object mirroring a {@link UniversalGraphEdge} that is
+ * passed to the layout algorithm.
+ */
+interface GraphLayoutLink extends Link<GraphLayoutNode> {
+  /**
+   * A link to the original edge that this object is mirroring.
+   */
+  reference: UniversalGraphEdge;
+  source: GraphLayoutNode;
+  target: GraphLayoutNode;
+  index?: number;
+}
+
+/**
+ * Represents a grouping of nodes passed to the layout algorithm.
+ */
+interface GraphLayoutGroup extends Group {
+  name: string;
+  color: string;
+  leaves?: GraphLayoutNode[];
 }
