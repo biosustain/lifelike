@@ -2,7 +2,7 @@ import json
 import re
 
 from math import inf
-from string import ascii_lowercase, digits, punctuation
+from string import ascii_letters, digits, punctuation
 from typing import cast, Dict, List, Optional, Set, Tuple, Union
 
 from pdfminer.layout import LTAnno, LTChar
@@ -12,19 +12,21 @@ from .annotation_interval_tree import (
     AnnotationIntervalTree,
 )
 from .constants import (
-    COMMON_WORDS,
-    TYPO_SYNONYMS,
     DatabaseType,
     EntityColor,
     EntityIdStr,
     EntityType,
+    OrganismCategory,
+    COMMON_WORDS,
     ENTITY_HYPERLINKS,
     ENTITY_TYPE_PRECEDENCE,
-    PDF_NEW_LINE_THRESHOLD,
+    GOOGLE_LINK,
+    HOMO_SAPIENS_TAX_ID,
     NCBI_LINK,
+    PDF_NEW_LINE_THRESHOLD,
+    TYPO_SYNONYMS,
     UNIPROT_LINK,
     WIKIPEDIA_LINK,
-    GOOGLE_LINK,
 )
 from .lmdb_dao import LMDBDao
 from .util import normalize_str
@@ -33,6 +35,7 @@ from neo4japp.data_transfer_objects import (
     Annotation,
     PDFTokenPositions,
     PDFTokenPositionsList,
+    OrganismAnnotation,
 )
 from neo4japp.database import get_hybrid_neo4j_postgres_service
 from neo4japp.util import compute_hash
@@ -84,7 +87,7 @@ class AnnotationsService:
         if synonym:
             lookup_key = normalize_str(synonym).encode('utf-8')
         else:
-            lookup_key = word.encode('utf-8')
+            lookup_key = normalize_str(word).encode('utf-8')
         hashval = compute_hash(token.to_dict())
 
         gene_val = self.lmdb_session.genes_txn.get(lookup_key)
@@ -152,29 +155,29 @@ class AnnotationsService:
     def _filter_tokens(self, tokens: PDFTokenPositionsList) -> None:
         """Filter the tokens into separate matched sets in LMDB."""
         for token in tokens.token_positions:
-            token_normalized = normalize_str(token.keyword)
+            word = token.keyword
 
-            if token_normalized:
-                if (token_normalized not in COMMON_WORDS and
-                        not re.match(self.regex_for_floats, token_normalized) and
-                        token_normalized not in ascii_lowercase and
-                        token_normalized not in digits):
+            if word:
+                if (word.lower() not in COMMON_WORDS and
+                        not re.match(self.regex_for_floats, word) and
+                        word not in ascii_letters and
+                        word not in digits):
 
-                    if token_normalized in TYPO_SYNONYMS:
-                        for correct_synonym in TYPO_SYNONYMS[token_normalized]:
+                    if word in TYPO_SYNONYMS:
+                        for correct_synonym in TYPO_SYNONYMS[word]:
                             validations = self.lmdb_validation(
-                                word=token_normalized,
+                                word=word,
                                 token=token,
                                 synonym=correct_synonym,
                             )
 
                             # just get the first match is fine
                             if any(validations):
-                                self.correct_synonyms[token_normalized] = correct_synonym
+                                self.correct_synonyms[word] = correct_synonym
                                 break
                     else:
                         self.lmdb_validation(
-                            word=token_normalized,
+                            word=word,
                             token=token,
                         )
 
@@ -317,35 +320,63 @@ class AnnotationsService:
         else:
             hyperlink += entity_id  # type: ignore
 
-        meta = Annotation.Meta(
-            keyword_type=token_type,
-            color=color,
-            id=entity_id,
-            id_type=entity['id_type'],
-            id_hyperlink=cast(str, hyperlink),
-            links=Annotation.Meta.Links(
-                ncbi=NCBI_LINK + link_search_term,
-                uniprot=UNIPROT_LINK + link_search_term,
-                wikipedia=WIKIPEDIA_LINK + link_search_term,
-                google=GOOGLE_LINK + link_search_term,
-            ),
-            all_text=link_search_term,
-        )
+        if token_type == EntityType.Species.value:
+            organism_meta = OrganismAnnotation.OrganismMeta(
+                category=entity['category'],
+                keyword_type=token_type,
+                color=color,
+                id=entity_id,
+                id_type=entity['id_type'],
+                id_hyperlink=cast(str, hyperlink),
+                links=OrganismAnnotation.OrganismMeta.Links(
+                    ncbi=NCBI_LINK + link_search_term,
+                    uniprot=UNIPROT_LINK + link_search_term,
+                    wikipedia=WIKIPEDIA_LINK + link_search_term,
+                    google=GOOGLE_LINK + link_search_term,
+                ),
+                all_text=link_search_term,
+            )
+            # the `keywords` property here is to allow us to know
+            # what coordinates map to what text in the PDF
+            # we want to actually use the real name inside LMDB
+            # for the `keyword` and `keyword_length` properties
+            annotation = OrganismAnnotation(
+                page_number=token_positions.page_number,
+                rects=[pos.positions for pos in keyword_positions],  # type: ignore
+                keywords=[k.value for k in keyword_positions],
+                keyword=link_search_term,
+                keyword_length=len(link_search_term),
+                lo_location_offset=keyword_starting_idx,
+                hi_location_offset=keyword_ending_idx,
+                meta=organism_meta,
+            )
+        else:
+            meta = Annotation.Meta(
+                keyword_type=token_type,
+                color=color,
+                id=entity_id,
+                id_type=entity['id_type'],
+                id_hyperlink=cast(str, hyperlink),
+                links=Annotation.Meta.Links(
+                    ncbi=NCBI_LINK + link_search_term,
+                    uniprot=UNIPROT_LINK + link_search_term,
+                    wikipedia=WIKIPEDIA_LINK + link_search_term,
+                    google=GOOGLE_LINK + link_search_term,
+                ),
+                all_text=link_search_term,
+            )
+            annotation = Annotation(
+                page_number=token_positions.page_number,
+                rects=[pos.positions for pos in keyword_positions],  # type: ignore
+                keywords=[k.value for k in keyword_positions],
+                keyword=link_search_term,
+                keyword_length=len(link_search_term),
+                lo_location_offset=keyword_starting_idx,
+                hi_location_offset=keyword_ending_idx,
+                meta=meta,
+            )
 
-        # the `keywords` property here is to allow us to know
-        # what coordinates map to what text in the PDF
-        # we want to actually use the real name inside LMDB
-        # for the `keyword` and `keyword_length` properties
-        return Annotation(
-            page_number=token_positions.page_number,
-            rects=[pos.positions for pos in keyword_positions],  # type: ignore
-            keywords=[k.value for k in keyword_positions],
-            keyword=link_search_term,
-            keyword_length=len(link_search_term),
-            lo_location_offset=keyword_starting_idx,
-            hi_location_offset=keyword_ending_idx,
-            meta=meta,
-        )
+        return annotation, {compute_hash(annotation.to_dict()): token_positions.keyword}
 
     def _get_annotation(
         self,
@@ -357,7 +388,7 @@ class AnnotationsService:
         correct_synonyms: Dict[str, str],
         coor_obj_per_pdf_page: Dict[int, List[Union[LTChar, LTAnno]]],
         cropbox_per_page: Dict[int, Tuple[int, int]],
-    ) -> Tuple[List[Annotation], Set[str]]:
+    ) -> Tuple[List[Annotation], Set[str], Dict[str, str]]:
         """Create annotation objects for tokens.
 
         Assumption:
@@ -382,8 +413,11 @@ class AnnotationsService:
         """
         matches: List[Annotation] = []
         unwanted_matches: Set[str] = set()
+        # annotation object hash with it's keyword
+        # as appeared in pdf
+        hashed_pdf_keywords: Dict[str, str] = {}
 
-        tokens_lowercased = set(tokens.keys())
+        tokens_lowercased = set([normalize_str(s) for s in list(tokens.keys())])
 
         for word, token_positions_list in tokens.items():
             for token_positions in token_positions_list:
@@ -413,7 +447,7 @@ class AnnotationsService:
                     entity_id = entity[id_str]
 
                 if common_name_count == 1:
-                    matches.append(self._create_annotation_object(
+                    annotation, annotation_pdf_keyword = self._create_annotation_object(
                         coor_obj_per_pdf_page=coor_obj_per_pdf_page,
                         cropbox_per_page=cropbox_per_page,
                         token_positions=token_positions,
@@ -421,10 +455,12 @@ class AnnotationsService:
                         entity=entity,
                         entity_id=entity_id,
                         color=color,
-                    ))
+                    )
+                    matches.append(annotation)
+                    hashed_pdf_keywords = {**hashed_pdf_keywords, **annotation_pdf_keyword}
                 else:
                     unwanted_matches.add(word)
-        return matches, unwanted_matches
+        return matches, unwanted_matches, hashed_pdf_keywords
 
     def _get_gene_id_for_annotation(
         self,
@@ -464,7 +500,14 @@ class AnnotationsService:
                     else:
                         distance_from_gene_to_this_organism = organism_starting_idx - keyword_ending_idx  # noqa
 
-                    if distance_from_gene_to_this_organism < smallest_distance:
+                    # If the new distance is the same as the current closest distance, and either
+                    # the current closest organism is homo sapiens, or the closest organism ISN'T
+                    # homo sapiens AND the new organism IS, then prefer homo sapiens.
+                    if (distance_from_gene_to_this_organism == smallest_distance and
+                            (closest_organism == HOMO_SAPIENS_TAX_ID or
+                                (closest_organism != HOMO_SAPIENS_TAX_ID and organism_id == HOMO_SAPIENS_TAX_ID))):  # noqa
+                        closest_organism = HOMO_SAPIENS_TAX_ID
+                    elif distance_from_gene_to_this_organism < smallest_distance:
                         closest_organism = organism_id
                         smallest_distance = distance_from_gene_to_this_organism
             return organism_to_gene_pairs[closest_organism]
@@ -488,7 +531,7 @@ class AnnotationsService:
         organism_frequency: Dict[str, int],
         coor_obj_per_pdf_page: Dict[int, List[Union[LTChar, LTAnno]]],
         cropbox_per_page: Dict[int, Tuple[int, int]],
-    ) -> Tuple[List[Annotation], Set[str]]:
+    ) -> Tuple[List[Annotation], Set[str], Dict[str, str]]:
         """Gene specific annotation. Nearly identical to `_get_annotation`,
         except that we check genes against the matched organisms found in the
         document.
@@ -514,17 +557,24 @@ class AnnotationsService:
 
         matches: List[Annotation] = []
         unwanted_matches: Set[str] = set()
+        # annotation object hash with it's keyword
+        # as appeared in pdf
+        hashed_pdf_keywords: Dict[str, str] = {}
 
-        tokens_lowercased = set(tokens.keys())
+        tokens_lowercased = set([normalize_str(s) for s in list(tokens.keys())])
 
+        # TODO: do we need to normalize when searching in neo4j?
+        # some genes have punctuation
+        # see JIRA LL-802
         match_result = self.hybrid_neo4j_postgres_service.get_gene_to_organism_match_result(
-            genes=list(tokens.keys()),
+            genes=[normalize_str(s) for s in list(tokens.keys())],
             matched_organism_ids=list(organism_frequency.keys()),
         )
 
         for word, token_positions_list in tokens.items():
+            normalized_word = normalize_str(word)
             # If the "gene" is not matched to any organism in the paper, ignore it
-            if word not in match_result.keys():
+            if normalized_word not in match_result.keys():
                 continue
 
             for token_positions in token_positions_list:
@@ -554,14 +604,14 @@ class AnnotationsService:
 
                 if common_name_count == 1:
                     entity_id = self._get_gene_id_for_annotation(
-                        word=word,
+                        word=normalized_word,
                         token_positions=token_positions,
                         match_result=match_result,
                         matched_organism_locations=matched_organism_locations,
                         organism_frequency=organism_frequency,
                     )
 
-                    matches.append(self._create_annotation_object(
+                    annotation, annotation_pdf_keyword = self._create_annotation_object(
                         coor_obj_per_pdf_page=coor_obj_per_pdf_page,
                         cropbox_per_page=cropbox_per_page,
                         token_positions=token_positions,
@@ -569,17 +619,19 @@ class AnnotationsService:
                         entity=entity,
                         entity_id=entity_id,
                         color=color,
-                    ))
+                    )
+                    matches.append(annotation)
+                    hashed_pdf_keywords = {**hashed_pdf_keywords, **annotation_pdf_keyword}
                 else:
                     unwanted_matches.add(word)
-        return matches, unwanted_matches
+        return matches, unwanted_matches, hashed_pdf_keywords
 
     def _annotate_chemicals(
         self,
         entity_id_str: str,
         coor_obj_per_pdf_page: Dict[int, List[Union[LTChar, LTAnno]]],
         cropbox_per_page: Dict[int, Tuple[int, int]],
-    ) -> Tuple[List[Annotation], Set[str]]:
+    ) -> Tuple[List[Annotation], Set[str], Dict[str, str]]:
         return self._get_annotation(
             tokens=self.matched_chemicals,
             token_type=EntityType.Chemicals.value,
@@ -596,7 +648,7 @@ class AnnotationsService:
         entity_id_str: str,
         coor_obj_per_pdf_page: Dict[int, List[Union[LTChar, LTAnno]]],
         cropbox_per_page: Dict[int, Tuple[int, int]],
-    ) -> Tuple[List[Annotation], Set[str]]:
+    ) -> Tuple[List[Annotation], Set[str], Dict[str, str]]:
         return self._get_annotation(
             tokens=self.matched_compounds,
             token_type=EntityType.Compounds.value,
@@ -613,7 +665,7 @@ class AnnotationsService:
         entity_id_str: str,
         coor_obj_per_pdf_page: Dict[int, List[Union[LTChar, LTAnno]]],
         cropbox_per_page: Dict[int, Tuple[int, int]],
-    ) -> Tuple[List[Annotation], Set[str]]:
+    ) -> Tuple[List[Annotation], Set[str], Dict[str, str]]:
         return self._get_annotation(
             tokens=self.matched_proteins,
             token_type=EntityType.Proteins.value,
@@ -630,7 +682,7 @@ class AnnotationsService:
         entity_id_str: str,
         coor_obj_per_pdf_page: Dict[int, List[Union[LTChar, LTAnno]]],
         cropbox_per_page: Dict[int, Tuple[int, int]],
-    ) -> Tuple[List[Annotation], Set[str]]:
+    ) -> Tuple[List[Annotation], Set[str], Dict[str, str]]:
         return self._get_annotation(
             tokens=self.matched_species,
             token_type=EntityType.Species.value,
@@ -647,7 +699,7 @@ class AnnotationsService:
         entity_id_str: str,
         coor_obj_per_pdf_page: Dict[int, List[Union[LTChar, LTAnno]]],
         cropbox_per_page: Dict[int, Tuple[int, int]],
-    ) -> Tuple[List[Annotation], Set[str]]:
+    ) -> Tuple[List[Annotation], Set[str], Dict[str, str]]:
         return self._get_annotation(
             tokens=self.matched_diseases,
             token_type=EntityType.Diseases.value,
@@ -664,7 +716,7 @@ class AnnotationsService:
         entity_id_str: str,
         coor_obj_per_pdf_page: Dict[int, List[Union[LTChar, LTAnno]]],
         cropbox_per_page: Dict[int, Tuple[int, int]],
-    ) -> Tuple[List[Annotation], Set[str]]:
+    ) -> Tuple[List[Annotation], Set[str], Dict[str, str]]:
         return self._get_annotation(
             tokens=self.matched_phenotypes,
             token_type=EntityType.Phenotypes.value,
@@ -682,7 +734,7 @@ class AnnotationsService:
         entity_id_str: str,
         coor_obj_per_pdf_page: Dict[int, List[Union[LTChar, LTAnno]]],
         cropbox_per_page: Dict[int, Tuple[int, int]],
-    ) -> Tuple[List[Annotation], Set[str]]:
+    ) -> Tuple[List[Annotation], Set[str], Dict[str, str]]:
         funcs = {
             EntityType.Chemicals.value: self._annotate_chemicals,
             EntityType.Compounds.value: self._annotate_compounds,
@@ -733,6 +785,21 @@ class AnnotationsService:
         matched_entity_locations: Dict[int, Dict[str, List[Tuple[int, int]]]],
         annotation: Annotation,
     ) -> Dict[int, Dict[str, List[Tuple[int, int]]]]:
+        def _check_if_human_id_should_be_added(
+            matched_entity_locations: Dict[int, Dict[str, List[Tuple[int, int]]]],
+            annotation: Annotation,
+        ):
+            if isinstance(annotation.meta, OrganismAnnotation.OrganismMeta) and annotation.meta.category == OrganismCategory.Viruses.value:  # noqa
+                if matched_entity_locations[annotation.page_number].get(HOMO_SAPIENS_TAX_ID, None) is not None:  # noqa
+                    matched_entity_locations[annotation.page_number][HOMO_SAPIENS_TAX_ID].append(  # noqa
+                        (annotation.lo_location_offset, annotation.hi_location_offset)
+                    )
+                else:
+                    matched_entity_locations[annotation.page_number][HOMO_SAPIENS_TAX_ID] = [
+                        (annotation.lo_location_offset, annotation.hi_location_offset)
+                    ]
+            return matched_entity_locations
+
         if matched_entity_locations.get(annotation.page_number, None) is not None:
             if matched_entity_locations[annotation.page_number].get(annotation.meta.id, None) is not None:  # noqa
                 matched_entity_locations[annotation.page_number][annotation.meta.id].append(
@@ -742,10 +809,25 @@ class AnnotationsService:
                 matched_entity_locations[annotation.page_number][annotation.meta.id] = [
                     (annotation.lo_location_offset, annotation.hi_location_offset)
                 ]
+
+            # If the annotation represents a virus, then also mark this location as a human
+            # annotation
+            matched_entity_locations = _check_if_human_id_should_be_added(
+                matched_entity_locations=matched_entity_locations,
+                annotation=annotation,
+            )
         else:
             matched_entity_locations[annotation.page_number] = {
                 annotation.meta.id: [(annotation.lo_location_offset, annotation.hi_location_offset)]
             }
+
+            # If the annotation represents a virus, then also mark this location as a human
+            # annotation
+            matched_entity_locations = _check_if_human_id_should_be_added(
+                matched_entity_locations=matched_entity_locations,
+                annotation=annotation,
+            )
+
         return matched_entity_locations
 
     def _get_entity_locations(
@@ -796,14 +878,14 @@ class AnnotationsService:
         """
         new_matches = []
         for match in matches:
-            if normalize_str(match.keyword) not in unwanted_keywords:
+            if match.keyword not in unwanted_keywords:
                 new_matches.append(match)
         return new_matches
 
     def _create_initial_annotations_list(
         self,
         tokens: PDFTokenPositionsList,
-    ) -> Tuple[List[List[Annotation]], List[Set[str]]]:
+    ) -> Tuple[List[List[Annotation]], List[Set[str]], Dict[str, str]]:
         """Takes as input a list of keyword tokens.
 
         Returns an initial list of candidate annotation objects, as well
@@ -820,18 +902,21 @@ class AnnotationsService:
         ]
 
         matched_list, unwanted_matches_set_list = [], []
+        all_hashed_annotation_keywords: Dict[str, str] = {}
 
         for entity_type, entity_id_str in entity_type_and_id_pairs:
-            matched, unwanted = self.annotate(
+            matched, unwanted, hashed_annotation_keywords = self.annotate(
                 annotation_type=entity_type,
                 entity_id_str=entity_id_str,
                 coor_obj_per_pdf_page=tokens.coor_obj_per_pdf_page,
                 cropbox_per_page=tokens.cropbox_per_page,
             )
-            matched_list.append(matched)
-            unwanted_matches_set_list.append(unwanted)
+            matched_list.append(matched)  # type: ignore
+            unwanted_matches_set_list.append(unwanted)  # type: ignore
+            all_hashed_annotation_keywords = {
+                **all_hashed_annotation_keywords, **hashed_annotation_keywords}  # type: ignore
 
-        return matched_list, unwanted_matches_set_list
+        return matched_list, unwanted_matches_set_list, all_hashed_annotation_keywords
 
     def _get_fixed_unified_annotations(
         self,
@@ -863,6 +948,41 @@ class AnnotationsService:
             unified_annotations=unified_annotations
         )
 
+    def _get_fixed_false_positive_unified_annotations(
+        self,
+        annotations_list: List[Annotation],
+        all_hashed_annotation_keywords: Dict[str, str],
+    ) -> List[Annotation]:
+        """Removes any false positive annotations.
+
+        False positives occurred during our matching
+        because we normalize the text from the pdf and
+        the keys in lmdb.
+
+        False positives are multi length word that
+        got matched to a shorter length word due to
+        normalizing in lmdb.
+        """
+        fixed_annotations: List[Annotation] = []
+
+        for annotation in annotations_list:
+            hashval = compute_hash(annotation.to_dict())
+            keyword_from_pdf = all_hashed_annotation_keywords[hashval].split(' ')
+
+            if len(keyword_from_pdf) > 1:
+                keyword_from_annotation = annotation.keyword.split(' ')
+                if len(keyword_from_annotation) >= len(keyword_from_pdf):
+                    fixed_annotations.append(annotation)
+                else:
+                    # consider case such as `ferredoxin 2` vs `ferredoxin-2` in lmdb
+                    keyword_from_annotation = annotation.keyword.split('-')
+                    if len(keyword_from_annotation) >= len(keyword_from_pdf):
+                        fixed_annotations.append(annotation)
+            else:
+                fixed_annotations.append(annotation)
+
+        return fixed_annotations
+
     def create_annotations(
         self,
         tokens: PDFTokenPositionsList,
@@ -870,9 +990,11 @@ class AnnotationsService:
         self._filter_tokens(tokens=tokens)
 
         # Get matches for Species, Chemicals, Compounds, Diseases, Proteins, and Phenotypes
-        matched_list, unwanted_matches_list = self._create_initial_annotations_list(
+        (matched_list,
+        unwanted_matches_list,
+        all_hashed_annotation_keywords) = self._create_initial_annotations_list(
             tokens=tokens,
-        )
+        )  # noqa
 
         # Do first round of filtering on the matched list
         unwanted_matches_set_list = set.union(*unwanted_matches_list)
@@ -892,20 +1014,28 @@ class AnnotationsService:
         )
 
         # Match genes with the reduced set of organisms
-        matched_genes, unwanted_genes = self._annotate_genes(
+        matched_genes, unwanted_genes, hashed_gene_annotation_keyword = self._annotate_genes(
             matched_organism_locations=matched_organism_locations,
             organism_frequency=organism_frequency,
             coor_obj_per_pdf_page=tokens.coor_obj_per_pdf_page,
             cropbox_per_page=tokens.cropbox_per_page,
         )
+
         matched_list.append(matched_genes)
         unwanted_matches_list.append(unwanted_genes)
+        all_hashed_annotation_keywords = {
+            **all_hashed_annotation_keywords, **hashed_gene_annotation_keyword}
 
         # Do second round of filtering, now with genes
         unwanted_matches_set_list = set.union(*unwanted_matches_list)
         fixed_unified_annotations = self._get_fixed_unified_annotations(
             matched_list=matched_list,
             unwanted_matches_set_list=unwanted_matches_set_list,
+        )
+
+        fixed_unified_annotations = self._get_fixed_false_positive_unified_annotations(
+            annotations_list=fixed_unified_annotations,
+            all_hashed_annotation_keywords=all_hashed_annotation_keywords,
         )
 
         return fixed_unified_annotations
@@ -973,18 +1103,18 @@ class AnnotationsService:
         anno1: Annotation,
         anno2: Annotation,
     ) -> Annotation:
-        if anno1.keyword_length > anno2.keyword_length:
-            return anno1
-        elif anno1.keyword_length == anno2.keyword_length:
-            key1 = ENTITY_TYPE_PRECEDENCE[anno1.meta.keyword_type]
-            key2 = ENTITY_TYPE_PRECEDENCE[anno2.meta.keyword_type]
+        key1 = ENTITY_TYPE_PRECEDENCE[anno1.meta.keyword_type]
+        key2 = ENTITY_TYPE_PRECEDENCE[anno2.meta.keyword_type]
 
-            if key1 > key2:
+        if key1 > key2:
+            return anno1
+        elif key2 > key1:
+            return anno2
+        else:
+            if anno1.keyword_length > anno2.keyword_length:
                 return anno1
             else:
                 return anno2
-        else:
-            return anno2
 
     def _remove_overlapping_annotations(
         self,

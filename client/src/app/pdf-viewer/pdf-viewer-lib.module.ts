@@ -1,6 +1,5 @@
 import { NgModule } from '@angular/core';
 import { PdfViewerLibComponent } from './pdf-viewer-lib.component';
-import { ToolbarComponent } from './toolbar/toolbar.component';
 import { AnnotationPanelComponent } from './annotation-panel/annotation-panel.component';
 
 import { PdfViewerModule } from './pdf-viewer/pdf-viewer.module';
@@ -16,7 +15,7 @@ import { MatChipsModule, MatDialogModule, MatInputModule, MatSelectModule } from
 import { MatButtonModule } from '@angular/material/button';
 
 @NgModule({
-  declarations: [PdfViewerLibComponent, ToolbarComponent, AnnotationPanelComponent],
+  declarations: [PdfViewerLibComponent, AnnotationPanelComponent],
   imports: [
     PdfViewerModule,
     CommonModule,
