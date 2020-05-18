@@ -15,10 +15,6 @@ import {
 import {
   DrawingToolComponent
 } from './drawing-tool/drawing-tool.component';
-import {
-  TruncatePipe,
-  FriendlyDateStrPipe
-} from './pipes';
 
 import { CopyPasteMapsService } from './services/copy-paste-maps.service';
 
@@ -69,8 +65,6 @@ export const routes = [
     DrawingToolComponent,
     DrawingToolContextMenuComponent,
     PdfViewerComponent,
-    TruncatePipe,
-    FriendlyDateStrPipe,
     PaletteComponent,
     InfoPanelComponent,
     SplitterComponent,
