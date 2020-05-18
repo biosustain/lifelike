@@ -38,7 +38,7 @@ export class NodeSearchComponent {
       return {
         position: index + 1,
         name: data.node.displayName,
-        type: data.node.label,
+        type: this.getType(data.node.subLabels),
         domain: this.getDomain(data.node.subLabels)
       };
     });
@@ -51,7 +51,11 @@ export class NodeSearchComponent {
   }
 
   getDomain(subLabels: string[]) {
-    return subLabels.find(element  => element.match(/^db_*/))
+    return subLabels.find(element => element.match(/^db_*/))
       .split('_')[1];
+  }
+
+  getType(subLabels: string[]) {
+    return subLabels.find(element => !element.match(/^db_*/));
   }
 }
