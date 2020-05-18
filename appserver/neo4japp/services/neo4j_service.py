@@ -584,6 +584,7 @@ class Neo4JService(GraphBaseDao):
             WITH a AS association
             MATCH (association)<-[:PREDICTS]-(s:Snippet)-[:IN_PUB]-(p:Publication)
             RETURN s AS reference, p AS publication
+            ORDER BY p.pub_year DESC
         """.format(from_label, to_label)
         return query
 

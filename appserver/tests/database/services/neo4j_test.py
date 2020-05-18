@@ -59,11 +59,27 @@ def test_get_snippets_from_edge_can_get_references_for_relationship(
 
     assert get_snippets_from_edge_result is not None
     assert get_snippets_from_edge_result.association == 'alleviates, reduces'
-    assert len(get_snippets_from_edge_result.snippets) == 1
+    assert len(get_snippets_from_edge_result.snippets) == 2
 
-    reference_node = get_snippets_from_edge_result.snippets[0].reference.to_dict()
 
-    assert 'In a mouse model' in reference_node['data']['sentence']
+def test_get_snippets_from_edge_can_get_snippets_in_order_of_publication(
+    neo4j_service_dao,
+    penicillins_to_gas_gangrene_alleviates_as_vis_edge,
+    gas_gangrene_with_associations_and_references,
+):
+    get_snippets_from_edge_result = neo4j_service_dao.get_snippets_from_edge(
+        penicillins_to_gas_gangrene_alleviates_as_vis_edge,
+    )
+
+    assert get_snippets_from_edge_result is not None
+    assert get_snippets_from_edge_result.association == 'alleviates, reduces'
+    assert len(get_snippets_from_edge_result.snippets) == 2
+
+    reference_node1 = get_snippets_from_edge_result.snippets[0].reference.to_dict()
+    reference_node2 = get_snippets_from_edge_result.snippets[1].reference.to_dict()
+
+    assert 'penicillin was found to reduce' in reference_node1['data']['sentence']
+    assert 'In a mouse model' in reference_node2['data']['sentence']
 
 
 def test_get_snippets_from_duplicate_edge_returns_nothing_for_relationship_with_no_references(
@@ -91,11 +107,27 @@ def test_get_snippets_from_duplicate_edge_can_get_references_for_relationship(
 
     assert get_snippets_from_duplicate_edge_result is not None
     assert get_snippets_from_duplicate_edge_result.association == 'alleviates, reduces'
-    assert len(get_snippets_from_duplicate_edge_result.snippets) == 1
+    assert len(get_snippets_from_duplicate_edge_result.snippets) == 2
 
-    reference_node = get_snippets_from_duplicate_edge_result.snippets[0].reference.to_dict()
 
-    assert 'In a mouse model' in reference_node['data']['sentence']
+def test_get_snippets_from_duplicate_edge_can_get_snippets_in_order_of_publication(
+    neo4j_service_dao,
+    penicillins_to_gas_gangrene_alleviates_as_duplicate_vis_edge,
+    gas_gangrene_with_associations_and_references,
+):
+    get_snippets_from_edge_result = neo4j_service_dao.get_snippets_from_duplicate_edge(
+        penicillins_to_gas_gangrene_alleviates_as_duplicate_vis_edge,
+    )
+
+    assert get_snippets_from_edge_result is not None
+    assert get_snippets_from_edge_result.association == 'alleviates, reduces'
+    assert len(get_snippets_from_edge_result.snippets) == 2
+
+    reference_node1 = get_snippets_from_edge_result.snippets[0].reference.to_dict()
+    reference_node2 = get_snippets_from_edge_result.snippets[1].reference.to_dict()
+
+    assert 'penicillin was found to reduce' in reference_node1['data']['sentence']
+    assert 'In a mouse model' in reference_node2['data']['sentence']
 
 
 def test_get_reference_table_data(
