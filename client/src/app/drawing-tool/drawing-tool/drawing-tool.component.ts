@@ -4,12 +4,6 @@ import { CdkDragDrop } from '@angular/cdk/drag-drop';
 
 import { Options } from '@popperjs/core';
 
-import * as d3 from 'd3';
-import * as cola from 'webcola';
-import { InputNode, Layout } from 'webcola';
-import 'canvas-plus';
-import './canvas-arrow';
-
 import { asyncScheduler, fromEvent, Observable, Subject, Subscription } from 'rxjs';
 import { debounceTime, filter, first, takeUntil, throttleTime } from 'rxjs/operators';
 
@@ -19,19 +13,7 @@ import { Coords2D } from 'app/interfaces/shared.interface';
 import { ClipboardService } from 'app/shared/services/clipboard.service';
 import { keyCodeRepresentsPasteEvent } from 'app/shared/utils';
 import { DataFlowService, makeid, ProjectsService } from '../services';
-import {
-  GraphAction,
-  GraphComponent,
-  GraphData,
-  GraphEntity,
-  GraphEntityType,
-  LaunchApp,
-  Project,
-  UniversalGraph,
-  UniversalGraphEdge,
-  UniversalGraphEntity,
-  UniversalGraphNode
-} from '../services/interfaces';
+import { GraphAction, GraphData, LaunchApp, Project, UniversalGraph } from '../services/interfaces';
 import { DrawingToolContextMenuControlService } from '../services/drawing-tool-context-menu-control.service';
 import { CopyPasteMapsService } from '../services/copy-paste-maps.service';
 
@@ -39,9 +21,7 @@ import { InfoPanelComponent } from './info-panel/info-panel.component';
 import { ExportModalComponent } from './export-modal/export-modal.component';
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { NodeCreation } from '../services/actions';
-import { DEFAULT_EDGE_STYLE, DEFAULT_NODE_STYLE, IconNodeStyle, PlacedEdge, PlacedNode } from '../services/graph-renderers';
-import { AnnotationStyle, annotationTypesMap } from '../../shared/annotation-styles';
-import { Group, Link } from 'webcola/WebCola/src/layout';
+import { GraphCanvasView } from '../services/renderers/graph-canvas-view';
 
 @Component({
   selector: 'app-drawing-tool',
@@ -49,7 +29,7 @@ import { Group, Link } from 'webcola/WebCola/src/layout';
   styleUrls: ['./drawing-tool.component.scss'],
   providers: [ClipboardService],
 })
-export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy, GraphComponent {
+export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
   /** Communicate to parent component to open another app side by side */
   @Output() openApp: EventEmitter<LaunchApp> = new EventEmitter<LaunchApp>();
   /** Communicate which app is active for app icon presentation */
@@ -114,55 +94,10 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy, G
   formDataSubscription: Subscription = null;
   pdfDataSubscription: Subscription = null;
 
-  // Graph elements
-  // ---------------------------------
-
-  /**
-   * Collection of nodes displayed on the graph. This is not a view --
-   * it is a direct copy of nodes being rendered.
-   */
-  nodes: UniversalGraphNode[] = [];
-
-  /**
-   * Collection of nodes displayed on the graph. This is not a view --
-   * it is a direct copy of edges being rendered.
-   */
-  edges: UniversalGraphEdge[] = [];
-
-  /**
-   * Collection of layout groups on the graph.
-   */
-  layoutGroups: GraphLayoutGroup[] = [];
-
-  /**
-   * Maps node's hashes to nodes for O(1) lookup, essential to the speed
-   * of most of this graph code.
-   */
-  nodeHashMap: Map<string, UniversalGraphNode> = new Map();
-
-  /**
-   * Keep track of fixed X/Y positions that come from dragging nodes. These
-   * values are passed to the automatic layout routines .
-   */
-  nodePositionOverrideMap: Map<UniversalGraphNode, [number, number]> = new Map();
-
-  // Canvas
-  // ---------------------------------
-
   /**
    * The canvas element from the template.
    */
   @ViewChild('canvas', {static: true}) canvasChild;
-
-  /**
-   * Holds the canvas after ngAfterViewInit() is run.
-   */
-  canvas: HTMLCanvasElement;
-
-  /**
-   * Set to false when the component is destroyed so we can stop rendering.
-   */
-  canvasActive = true;
 
   /**
    * Stream of 'canvas needs resize' events that need to be debounced.
@@ -175,104 +110,16 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy, G
   canvasResizePendingSubscription: Subscription;
 
   /**
-   * Marks that changes to the view were made so we need to re-render.
-   */
-  renderingRequested = false;
-
-  /**
    * Observer that notices when the canvas' container resizes.
    */
   canvasResizeObserver: any; // TODO: TS does not have ResizeObserver defs yet
 
   /**
-   * Indicates where a mouse button is currently down.
+   * Observes changes in selection, which shows the edit panel.
    */
-  mouseDown = false;
+  selectionSubscription: Subscription;
 
-  // Graph states
-  // ---------------------------------
-
-  /**
-   * The transform represents the current zoom of the graph, which must be
-   * taken into consideration whenever mapping between graph coordinates and
-   * viewport coordinates.
-   */
-  transform = d3.zoomIdentity;
-
-  /**
-   * d3-zoom object used to handle zooming.
-   */
-  zoom: any;
-
-  /**
-   * webcola object used for automatic layout.
-   * Initialized in {@link ngAfterViewInit}.
-   */
-  cola: Layout;
-
-  /**
-   * Used for the double-click-to-create-an-edge function to store the from
-   * node and other details regarding the connection.
-   */
-  interactiveEdgeCreationState: EdgeCreationState | undefined = null;
-
-  /**
-   * Stores the offset between the node and the initial position of the mouse
-   * when clicked during the start of a drag event. Used for node position stability
-   * when the user is dragging nodes on the canvas, otherwise the node 'jumps'
-   * so node center is the same the mouse position, and the jump is not what we want.
-   */
-  offsetBetweenNodeAndMouseInitialPosition: number[] = [0, 0];
-
-  /**
-   * Keeps track of currently where the mouse (or finger) is held down at
-   * so we can display an indicator at that position.
-   */
-  touchPosition: {
-    position: number[],
-    entity: GraphEntity | undefined,
-  } | undefined;
-
-  /**
-   * Indicates whether we are panning or zooming.
-   */
-  panningOrZooming = false;
-
-  /**
-   * Holds the currently selected node or edge.
-   */
-  highlighted: GraphEntity | undefined;
-
-  /**
-   * Holds the currently highlighted node or edge.
-   */
-  selected: GraphEntity | undefined;
-
-  /**
-   * Holds the currently dragged node or edge.
-   */
-  dragged: GraphEntity | undefined;
-
-  /**
-   * Whether nodes are arranged automatically.
-   */
-  automaticLayoutEnabled = false;
-
-  // History
-  // ---------------------------------
-
-  /**
-   * Stack of actions in the history.
-   */
-  history: GraphAction[] = [];
-
-  /**
-   * Stores where we are in the history, where the number is the next free index
-   * in the history array if there is nothing to redo/rollback. When the user
-   * calls undo(), the index goes -1 and when the user calls redo(), the index
-   * goes +1.
-   */
-  nextHistoryIndex = 0;
+  graphCanvas: GraphCanvasView;
 
   constructor(
     private dataFlow: DataFlowService,
@@ -309,44 +156,17 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy, G
 
     // Listen for graph update from info-panel-ui
     this.formDataSubscription = this.dataFlow.formDataSource.subscribe((action: GraphAction) => {
-      this.execute(action);
-    });
-
-    this.ngZone.runOutsideAngular(() => {
-      // We can't render() every time something changes, because some events
-      // happen very frequently when they do happen (i.e. mousemove),
-      // so we'll flag a render as needed and render during an animation
-      // frame to improve performance
-      requestAnimationFrame(this.animationFrameFired.bind(this));
+      this.graphCanvas.execute(action);
     });
   }
 
   ngAfterViewInit() {
-    this.canvas = this.canvasChild.nativeElement as HTMLCanvasElement;
+    this.graphCanvas = new GraphCanvasView(this.canvasChild.nativeElement as HTMLCanvasElement);
 
-    this.zoom = d3.zoom()
-      .on('zoom', this.canvasZoomed.bind(this))
-      .on('end', this.canvasZoomEnded.bind(this));
-
-    d3.select(this.canvas)
-      .on('click', this.canvasClicked.bind(this))
-      .on('dblclick', this.canvasDoubleClicked.bind(this))
-      .on('mousedown', this.canvasMouseDown.bind(this))
-      .on('mousemove', this.canvasMouseMoved.bind(this))
-      .on('mouseup', this.canvasMouseUp.bind(this))
-      .call(d3.drag()
-        .container(this.canvas)
-        .subject(this.getEntityAtMouse.bind(this))
-        .on('start', this.canvasDragStarted.bind(this))
-        .on('drag', this.canvasDragged.bind(this))
-        .on('end', this.canvasDragEnded.bind(this)))
-      .call(this.zoom)
-      .on('dblclick.zoom', null);
-
-    this.cola = cola
-      .d3adaptor(d3)
-      .on('tick', this.colaTicked.bind(this))
-      .on('end', this.colaEnded.bind(this));
+    // Pass selections onto the data flow system
+    this.selectionSubscription = this.graphCanvas.selectionObservable.subscribe(entity => {
+      this.dataFlow.pushSelection(entity);
+    });
 
     // Handle resizing of the canvas, but doing it with a throttled stream
     // so we don't burn extra CPU cycles resizing repeatedly unnecessarily
@@ -356,27 +176,27 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy, G
         trailing: true
       }))
       .subscribe(([width, height]) => {
-        this.canvas.width = width;
-        this.canvas.height = height;
-        this.requestRender();
+        this.graphCanvas.setSize(width, height);
       });
     const pushResize = () =>
       this.canvasResizePendingSubject.next([
-        this.canvas.clientWidth,
-        this.canvas.clientHeight,
+        this.canvasChild.nativeElement.clientWidth,
+        this.canvasChild.nativeElement.clientHeight,
       ]);
     // @ts-ignore
     this.canvasResizeObserver = new window.ResizeObserver(pushResize);
     // TODO: Can we depend on ResizeObserver yet?
-    this.canvasResizeObserver.observe(this.canvas.parentNode);
+    this.canvasResizeObserver.observe(this.canvasChild.nativeElement.parentNode);
     pushResize();
+
+    this.ngZone.runOutsideAngular(() => {
+      this.graphCanvas.startAnimationLoop();
+    });
 
     this.loadMap(this.currentMap);
   }
 
   ngOnDestroy() {
-    this.canvasActive = false;
-
     // Unsubscribe from subscriptions
     this.formDataSubscription.unsubscribe();
     this.pdfDataSubscription.unsubscribe();
@@ -385,8 +205,9 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy, G
     this.endMouseMoveEventSource.complete();
     this.endPasteEventSource.complete();
 
-    // Stop observing canvas resizes
     this.canvasResizeObserver.disconnect();
+    this.selectionSubscription.unsubscribe();
+    this.graphCanvas.destroy();
   }
 
   // ========================================
@@ -401,631 +222,34 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy, G
     this.projectService.serveProject(hashId).subscribe(
       (resp: any) => {
         this.project = resp.project;
-        this.setGraph(this.project.graph);
+        this.graphCanvas.setGraph(this.project.graph);
       }
     );
   }
 
-  /**
-   * Replace the graph that is being rendered by the drawing tool.
-   * @param graph the graph to replace with
-   */
-  setGraph(graph: UniversalGraph): void {
-    // TODO: keep or nah?
-    this.nodes = [...graph.nodes];
-    this.edges = [...graph.edges];
-
-    // We need O(1) lookup of nodes
-    this.nodeHashMap = graph.nodes.reduce(
-      (map, node) => map.set(node.hash, node),
-      new Map()
-    );
-
-    this.zoomToFit(0);
-    this.requestRender();
+  zoomToFit() {
+    this.graphCanvas.zoomToFit();
   }
 
-  /**
-   * Return a copy of the graph.
-   */
-  getGraph(): UniversalGraph {
-    return {
-      nodes: this.nodes,
-      edges: this.edges,
-    };
-  }
-
-  /**
-   * Zoom the graph to fit.
-   * @param duration the duration of the animation in ms
-   * @param padding padding in graph scale to add to the graph
-   */
-  zoomToFit(duration: number = 1500, padding = 50) {
-    const ctx = this.canvas.getContext('2d');
-
-    const canvasWidth = this.canvas.width;
-    const canvasHeight = this.canvas.height;
-
-    let minX = null;
-    let minY = null;
-    let maxX = null;
-    let maxY = null;
-
-    const width = maxX - minX;
-    const height = maxY - minY;
-
-    d3.select(this.canvas)
-      .transition().duration(duration)
-      .call(
-        this.zoom.transform,
-        d3.zoomIdentity
-          .translate(canvasWidth / 2, canvasHeight / 2)
-          .scale(Math.min(1, Math.min(canvasWidth / width, canvasHeight / height)))
-          .translate(-minX - width / 2, -minY - height / 2)
-      );
-
-    this.requestRender();
-  }
-
-  /**
-   * Apply a graph layout algorithm to the nodes.
-   */
   startGraphLayout() {
-    this.automaticLayoutEnabled = true;
-
-    const nodePositionOverrideMap = this.nodePositionOverrideMap;
-
-    const layoutNodes: GraphLayoutNode[] = this.nodes.map((d, i) => new class implements GraphLayoutNode {
-      index: number = i;
-      reference: UniversalGraphNode = d;
-      vx = 0;
-      vy = 0;
-
-      get x() {
-        return d.data.x;
-      }
-
-      set x(x) {
-        d.data.x = x;
-      }
-
-      get y() {
-        return d.data.y;
-      }
-
-      set y(y) {
-        d.data.y = y;
-      }
-
-      get fixed() {
-        return nodePositionOverrideMap.has(this.reference) ? 1 : 0;
-      }
-
-      get px() {
-        const position = nodePositionOverrideMap.get(this.reference);
-        if (position) {
-          return position[0];
-        } else {
-          return null;
-        }
-      }
-
-      get py() {
-        const position = nodePositionOverrideMap.get(this.reference);
-        if (position) {
-          return position[1];
-        } else {
-          return null;
-        }
-      }
-    }());
-
-    const layoutNodeHashMap: Map<string, GraphLayoutNode> = layoutNodes.reduce(
-      (map, d) => {
-        map.set(d.reference.hash, d);
-        return map;
-      }, new Map());
-
-    const layoutLinks: GraphLayoutLink[] = this.edges.map(d => {
-      const source = layoutNodeHashMap.get(this.nodeReference(d.from).hash);
-      if (!source) {
-        throw new Error('state error - source did not link up');
-      }
-      const target = layoutNodeHashMap.get(this.nodeReference(d.to).hash);
-      if (!target) {
-        throw new Error('state error - source did not link up');
-      }
-      return {
-        reference: d,
-        source,
-        target,
-      };
-    });
-
-    // TODO: Remove test groups
-    const layoutGroups: GraphLayoutGroup[] = [
-      {
-        name: 'Bands',
-        color: '#740CAA',
-        leaves: [],
-        groups: [],
-        padding: 10,
-      },
-      {
-        name: 'Things',
-        color: '#0CAA70',
-        leaves: [],
-        groups: [],
-        padding: 10,
-      }
-    ];
-
-    for (const node of layoutNodes) {
-      const n = Math.floor(Math.random() * (layoutGroups.length + 2));
-      if (n < layoutGroups.length) {
-        layoutGroups[n].leaves.push(node);
-      }
-    }
-
-    this.layoutGroups = layoutGroups;
-
-    this.cola
-      .nodes(layoutNodes)
-      .links(layoutLinks)
-      .groups(layoutGroups)
-      .symmetricDiffLinkLengths(50)
-      .handleDisconnected(false)
-      .size([this.canvas.width, this.canvas.height])
-      .start(10);
+    this.graphCanvas.startGraphLayout();
   }
 
-  /**
-   * Stop automatic re-arranging of nodes.
-   */
   stopGraphLayout() {
-    this.cola.stop();
-    this.automaticLayoutEnabled = false;
+    this.graphCanvas.stopGraphLayout();
   }
 
-  /**
-   * Add the given node to the graph.
-   * @param node the node
-   */
-  addNode(node: UniversalGraphNode): void {
-    if (this.nodeHashMap.has(node.hash)) {
-      throw new Error('trying to add a node that already is in the node list is bad');
-    }
-    this.nodes.push(node);
-    this.nodeHashMap.set(node.hash, node);
-    this.requestRender();
+  undo() {
+    this.graphCanvas.undo();
   }
 
-  /**
-   * Remove the given node from the graph.
-   * @param node the node
-   * @return true if the node was found
-   */
-  removeNode(node: UniversalGraphNode): boolean {
-    let found = false;
-
-    let i = this.nodes.length;
-    while (i--) {
-      if (this.nodes[i] === node) {
-        this.nodes.splice(i, 1);
-        found = true;
-      }
-    }
-
-    let j = this.edges.length;
-    while (j--) {
-      if (this.nodeReference(this.edges[j].from) === node
-        || this.nodeReference(this.edges[j].to) === node) {
-        this.edges.splice(j, 1);
-      }
-    }
-
-    return found;
-  }
-
-  /**
-   * Select an entity.
-   * @param entity the entity
-   */
-  select(entity: GraphEntity) {
-    this.selected = entity;
-    this.dataFlow.pushSelection(entity);
-  }
-
-  // ========================================
-  // Utility operations
-  // ========================================
-
-  /**
-   * Grab the node referenced by the given hash. Throws errors if not found.
-   * Should never not be found, otherwise there is a serious data integrity problem.
-   * @param hash the hash
-   */
-  nodeReference(hash: string): UniversalGraphNode {
-    const node = this.nodeHashMap.get(hash);
-    if (node == null) {
-      throw new Error('missing node link');
-    }
-    return node;
-  }
-
-  /**
-   * Return if any one of the given items has been selected.
-   * @param entities a list of entities to check
-   */
-  isAnySelected(...entities: UniversalGraphEntity[]) {
-    if (!this.selected) {
-      return false;
-    }
-    for (const d of entities) {
-      if (this.selected.entity === d) {
-        return true;
-      }
-    }
-  }
-
-  /**
-   * Return if any one of the given items has been highlighted.
-   * @param entities a list of entities to check
-   */
-  isAnyHighlighted(...entities: UniversalGraphEntity[]) {
-    if (!this.highlighted) {
-      return false;
-    }
-    for (const d of entities) {
-      if (this.highlighted.entity === d) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  /**
-   * Get the bounding box containing all the given nodes.
-   * @param nodes the nodes to check
-   * @param padding padding around all the nodes
-   */
-  getBBox(nodes: UniversalGraphNode[], padding = 0) {
-    const canvas = this.canvas;
-    const ctx = canvas.getContext('2d');
-
-    let minX = null;
-    let minY = null;
-    let maxX = null;
-    let maxY = null;
-
-    for (const node of nodes) {
-      const nodeBBox = this.placeNode(node, ctx).getBoundingBox();
-
-      if (minX === null || minX > nodeBBox.minX + padding) {
-        minX = nodeBBox.minX - padding;
-      }
-      if (minY === null || minY > nodeBBox.minY + padding) {
-        minY = nodeBBox.minY - padding;
-      }
-      if (maxX === null || maxX < nodeBBox.maxX + padding) {
-        maxX = nodeBBox.maxX + padding;
-      }
-      if (maxY === null || maxY < nodeBBox.maxY + padding) {
-        maxY = nodeBBox.maxY + padding;
-      }
-    }
-
-    return {
-      minX,
-      minY,
-      maxX,
-      maxY,
-    };
-  }
-
-  /**
-   * Find the best matching node at the given position.
-   * @param nodes list of nodes to search through
-   * @param x graph X location
-   * @param y graph Y location
-   */
-  findNode(nodes: UniversalGraphNode[], x: number, y: number): UniversalGraphNode | undefined {
-    const canvas = this.canvas;
-    const ctx = canvas.getContext('2d');
-    for (let i = nodes.length - 1; i >= 0; --i) {
-      const d = nodes[i];
-      if (this.placeNode(d, ctx).isPointIntersecting(x, y)) {
-        return d;
-      }
-    }
-    return undefined;
-  }
-
-  /**
-   * Find the best matching edge at the given position.
-   * @param edges list of edges to search through
-   * @param x graph X location
-   * @param y graph Y location
-   */
-  findEdge(edges: UniversalGraphEdge[], x: number, y: number): UniversalGraphEdge | undefined {
-    const canvas = this.canvas;
-    const ctx = canvas.getContext('2d');
-    for (const d of edges) {
-      const from = this.nodeReference(d.from);
-      const to = this.nodeReference(d.to);
-      if (this.placeEdge(d, from, to, ctx).isPointIntersecting(x, y)) {
-        return d;
-      }
-    }
-    return undefined;
-  }
-
-  /**
-   * Get the graph entity located where the mouse is, if there is one.
-   */
-  getEntityAtMouse(): GraphEntity | undefined {
-    const canvas = this.canvas;
-    const [mouseX, mouseY] = d3.mouse(canvas);
-    const x = this.transform.invertX(mouseX);
-    const y = this.transform.invertY(mouseY);
-    const node = this.findNode(this.nodes, x, y);
-    if (node) {
-      return {
-        type: GraphEntityType.Node,
-        entity: node
-      };
-    }
-    const edge = this.findEdge(this.edges, x, y);
-    if (edge) {
-      return {
-        type: GraphEntityType.Edge,
-        entity: edge
-      };
-    }
-    return undefined;
-  }
-
-  // ========================================
-  // Entity into placed object conversion
-  // ========================================
-
-  /**
-   * Get the style to be rendered for the given node.
-   * @param d the node
-   * @param ctx the canvas rendering context
-   */
-  placeNode(d: UniversalGraphNode, ctx: CanvasRenderingContext2D): PlacedNode {
-    // TODO: Return different styles
-    let rendererStyle = DEFAULT_NODE_STYLE;
-
-    // TODO: Cache this stuff
-    const annotationStyle: AnnotationStyle = annotationTypesMap.get(d.label);
-    if (annotationStyle) {
-      if (annotationStyle.iconCode) {
-        rendererStyle = new IconNodeStyle(annotationStyle.iconCode);
-      }
-    }
-
-    if (d.icon) {
-      rendererStyle = new IconNodeStyle(d.icon.code, d.icon.face, d.icon.size, d.icon.color);
-    }
-
-    return rendererStyle.place(d, ctx, this.transform, {
-      selected: this.isAnySelected(d),
-      highlighted: this.isAnyHighlighted(d),
-    });
-  }
-
-  /**
-   * Get the style to be rendered for the given node.
-   * @param d the edge
-   * @param from the start node
-   * @param to the end node
-   * @param ctx the canvas rendering context
-   */
-  placeEdge(d: UniversalGraphEdge,
-            from: UniversalGraphNode,
-            to: UniversalGraphNode,
-            ctx: CanvasRenderingContext2D): PlacedEdge {
-    const placedFrom: PlacedNode = this.placeNode(from, ctx);
-    const placedTo: PlacedNode = this.placeNode(to, ctx);
-
-    // TODO: Return different styles
-    return DEFAULT_EDGE_STYLE.place(d, from, to, placedFrom, placedTo, ctx, this.transform, {
-      selected: this.isAnySelected(d, from, to),
-      highlighted: this.isAnyHighlighted(d, from, to),
-    });
-  }
-
-  // ========================================
-  // Rendering
-  // ========================================
-
-  /**
-   * Request the graph be re-rendered in the very near future.
-   */
-  requestRender() {
-    this.renderingRequested = true;
-    // The graph will be re-rendered in requestAnimationFrame()
-  }
-
-  /**
-   * Fired from requestAnimationFrame(), Used to render the graph.
-   */
-  animationFrameFired() {
-    if (!this.canvasActive) {
-      // Happens when this component is destroyed
-      return;
-    }
-
-    if (this.renderingRequested) {
-      this.render();
-
-      // No point rendering every frame unless there are changes
-      this.renderingRequested = false;
-    }
-
-    requestAnimationFrame(this.animationFrameFired.bind(this));
-  }
-
-  /**
-   * Re-render the graph and update the mouse cursor.
-   */
-  render() {
-    const transform = this.transform;
-    const canvas = this.canvas;
-    const ctx = canvas.getContext('2d');
-
-    // Multiply any values by this number to have it *NOT* scale with zoom
-    const noZoomScale = 1 / transform.scale(1).k;
-
-    ctx.save();
-    ctx.fillStyle = '#f2f2f2';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.translate(transform.x, transform.y);
-    ctx.scale(transform.k, transform.k);
-
-    // Draw touch or mouse click position
-    // ---------------------------------
-
-    if (this.touchPosition) {
-      const touchPositionEntity = this.touchPosition.entity;
-
-      if (touchPositionEntity != null && touchPositionEntity.type === GraphEntityType.Node) {
-        ctx.beginPath();
-        const bbox = this.getBBox([touchPositionEntity.entity as UniversalGraphNode], 10);
-        ctx.rect(bbox.minX, bbox.minY, bbox.maxX - bbox.minX, bbox.maxY - bbox.minY);
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.075)';
-        ctx.fill();
-      } else {
-        ctx.beginPath();
-        ctx.arc(this.touchPosition.position[0], this.touchPosition.position[1], 20 * noZoomScale, 0, 2 * Math.PI, false);
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.075)';
-        ctx.fill();
-      }
-    }
-
-    // Draw a background behind highlighted entity
-    // ---------------------------------
-
-    if (this.highlighted && !this.touchPosition) {
-      if (this.highlighted.type === GraphEntityType.Node) {
-        ctx.beginPath();
-        const bbox = this.getBBox([this.highlighted.entity as UniversalGraphNode], 10);
-        ctx.rect(bbox.minX, bbox.minY, bbox.maxX - bbox.minX, bbox.maxY - bbox.minY);
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.075)';
-        ctx.fill();
-      }
-    }
-
-    // Draw the groups
-    // ---------------------------------
-
-    // TODO: This is currently only for demo
-    this.layoutGroups.forEach((d, i) => {
-      ctx.beginPath();
-      if (d.leaves.length) {
-        const bbox = this.getBBox(d.leaves.map(entry => entry.reference), 10);
-        ctx.fillStyle = d.color;
-        ctx.strokeStyle = d.color;
-        ctx.rect(bbox.minX, bbox.minY, bbox.maxX - bbox.minX, bbox.maxY - bbox.minY);
-        ctx.globalAlpha = 0.1;
-        ctx.fill();
-        ctx.globalAlpha = 1;
-        ctx.stroke();
-      }
-    });
-
-    // Draw the interactive edge creation feature
-    // ---------------------------------
-
-    if (this.interactiveEdgeCreationState && this.interactiveEdgeCreationState.to) {
-      ctx.beginPath();
-
-      const {from, to} = this.interactiveEdgeCreationState;
-
-      // Draw line
-      const lineWidth = 0.5 * noZoomScale;
-      ctx.lineWidth = 3 / transform.scale(3).k;
-      ctx.fillStyle = '#2B7CE9';
-      (ctx as any).arrow(
-        from.data.x, from.data.y, to.data.x, to.data.y,
-        [0, lineWidth, -10 * noZoomScale, lineWidth, -10 * noZoomScale, 5 * noZoomScale]);
-      ctx.fill();
-
-      // Draw the 'o' node at the end of the line
-      const nodeRadius = 6 * noZoomScale;
-      const x = to.data.x;
-      const y = to.data.y;
-      ctx.moveTo(x, y);
-      ctx.arc(x, y, nodeRadius, 0, 2 * Math.PI);
-      ctx.strokeStyle = '#2B7CE9';
-      ctx.stroke();
-      ctx.fillStyle = '#97C2FC';
-      ctx.fill();
-    }
-
-    // Draw edges
-    // ---------------------------------
-
-    // We need to turn edges into PlacedEdge objects before we can render them,
-    // but the process involves calculating various metrics, which we don't
-    // want to do more than once if we need to render in multiple Z-layers (line + text)
-    const edgeRenderObjects = this.edges.map(d => ({
-      d,
-      placedEdge: this.placeEdge(d, this.nodeReference(d.from), this.nodeReference(d.to), ctx),
-    }));
-
-    // Draw layer 1 (usually the line)
-    edgeRenderObjects.forEach(({d, placedEdge}) => {
-      ctx.beginPath();
-      placedEdge.render();
-    });
-
-    // Draw layer 2 (usually text)
-    edgeRenderObjects.forEach(({d, placedEdge}) => {
-      ctx.beginPath();
-      placedEdge.renderLayer2();
-    });
-
-    // Draw nodes
-    // ---------------------------------
-
-    this.nodes.forEach((d, i) => {
-      ctx.beginPath();
-      this.placeNode(d, ctx).render();
-    });
-
-    ctx.restore();
-
-    // Cursor management
-    // ---------------------------------
-
-    this.updateMouseCursor();
-  }
-
-  /**
-   * Update the current mouse cursor.
-   */
-  updateMouseCursor() {
-    const canvas = this.canvas;
-    if (this.dragged) {
-      canvas.style.cursor = 'grabbing';
-    } else if (this.panningOrZooming) {
-      canvas.style.cursor = 'move';
-    } else if (this.highlighted) {
-      canvas.style.cursor = 'grab';
-    } else {
-      canvas.style.cursor = 'default';
-    }
+  redo() {
+    this.graphCanvas.redo();
   }
 
   // ========================================
   // Event handlers
   // ========================================
-
-  // General events
-  // ---------------------------------
 
   @HostListener('window:beforeunload')
   canDeactivate(): Observable<boolean> | boolean {
@@ -1033,201 +257,6 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy, G
     return this.saveState ? true : confirm(
       'WARNING: You have unsaved changes. Press Cancel to go back and save these changes, or OK to lose these changes.'
     );
-  }
-
-  // Canvas events
-  // ---------------------------------
-
-  canvasClicked() {
-    const subject = this.getEntityAtMouse();
-    if (this.interactiveEdgeCreationState) {
-      if (subject && subject.type === GraphEntityType.Node) {
-        const node = subject.entity as UniversalGraphNode;
-        if (node !== this.interactiveEdgeCreationState.from) {
-          const label = prompt('Label please', '') || ''; // Doesn't work for 0
-          this.edges.push({
-            data: {},
-            from: this.interactiveEdgeCreationState.from.hash,
-            to: node.hash,
-            label,
-          });
-          this.interactiveEdgeCreationState = null;
-        }
-      } else {
-        this.interactiveEdgeCreationState = null;
-      }
-    } else {
-      this.select(subject);
-    }
-    this.requestRender();
-  }
-
-  canvasDoubleClicked() {
-    if (!this.interactiveEdgeCreationState) {
-      const subject = this.getEntityAtMouse();
-      if (subject && subject.type === GraphEntityType.Node) {
-        const node = subject.entity as UniversalGraphNode;
-        this.interactiveEdgeCreationState = {
-          from: node,
-          to: null,
-        };
-      }
-    }
-  }
-
-  canvasMouseDown() {
-    this.mouseDown = true;
-  }
-
-  canvasMouseMoved() {
-    const canvas = this.canvas;
-    const [mouseX, mouseY] = d3.mouse(canvas);
-
-    this.highlighted = this.getEntityAtMouse();
-
-    if (this.interactiveEdgeCreationState) {
-      this.interactiveEdgeCreationState.to = {
-        data: {
-          x: this.transform.invertX(mouseX),
-          y: this.transform.invertY(mouseY),
-        },
-      };
-
-      this.requestRender();
-    }
-
-    if (this.mouseDown) {
-      this.touchPosition = {
-        position: [
-          this.transform.invertX(mouseX),
-          this.transform.invertY(mouseY),
-        ],
-        entity: null,
-      };
-
-      this.requestRender();
-    }
-
-    this.updateMouseCursor();
-  }
-
-  canvasMouseUp() {
-    this.mouseDown = false;
-    this.touchPosition = null;
-    this.requestRender();
-  }
-
-  /**
-   * Handle when the mouse is first clicked to start a drag.
-   */
-  canvasDragStarted(): void {
-    const canvas = this.canvas;
-    const [mouseX, mouseY] = d3.mouse(canvas);
-    const subject: GraphEntity | undefined = d3.event.subject;
-
-    if (subject.type === GraphEntityType.Node) {
-      const node = subject.entity as UniversalGraphNode;
-
-      // We need to store the offset between the mouse and the node, because when
-      // we actually move the node, we need to move it relative to this offset
-      this.offsetBetweenNodeAndMouseInitialPosition = [
-        node.data.x - this.transform.invertX(mouseX),
-        node.data.y - this.transform.invertY(mouseY),
-      ];
-    }
-
-    this.dragged = subject;
-    this.select(subject);
-
-    this.touchPosition = {
-      position: [
-        this.transform.invertX(mouseX),
-        this.transform.invertY(mouseY),
-      ],
-      entity: subject,
-    };
-
-    this.requestRender();
-  }
-
-  /**
-   * Handle when the mouse is clicked and then dragged across the canvas.
-   */
-  canvasDragged(): void {
-    const canvas = this.canvas;
-    const [mouseX, mouseY] = d3.mouse(canvas);
-    const subject: GraphEntity | undefined = d3.event.subject;
-
-    if (!this.interactiveEdgeCreationState) {
-      if (subject.type === GraphEntityType.Node) {
-        const node = subject.entity as UniversalGraphNode;
-        node.data.x = this.transform.invertX(mouseX) + this.offsetBetweenNodeAndMouseInitialPosition[0];
-        node.data.y = this.transform.invertY(mouseY) + this.offsetBetweenNodeAndMouseInitialPosition[1];
-        this.nodePositionOverrideMap.set(node, [node.data.x, node.data.y]);
-        // TODO: Store this in history as ONE object
-      }
-    }
-
-    this.touchPosition = {
-      position: [
-        this.transform.invertX(mouseX),
-        this.transform.invertY(mouseY),
-      ],
-      entity: subject,
-    };
-
-    this.requestRender();
-  }
-
-  /**
-   * Handle when the mouse is clicked, dragged across the canvas, and then let go.
-   */
-  canvasDragEnded(): void {
-    this.dragged = null;
-    this.nodePositionOverrideMap.clear();
-    this.mouseDown = false;
-    this.touchPosition = null;
-    this.requestRender();
-  }
-
-  /**
-   * Handle when the user zooms on the canvas.
-   */
-  canvasZoomed(): void {
-    const canvas = this.canvas;
-    const [mouseX, mouseY] = d3.mouse(canvas);
-    this.transform = d3.event.transform;
-    this.panningOrZooming = true;
-    this.touchPosition = {
-      position: [
-        this.transform.invertX(mouseX),
-        this.transform.invertY(mouseY),
-      ],
-      entity: null,
-    };
-    this.requestRender();
-  }
-
-  canvasZoomEnded(): void {
-    this.panningOrZooming = false;
-    this.touchPosition = null;
-    this.mouseDown = false;
-    this.requestRender();
-  }
-
-  /**
-   * Called when webcola (used for layout) has ticked.
-   */
-  colaTicked(): void {
-    this.requestRender();
-  }
-
-  /**
-   * Called when webcola (used for layout) has stopped. Cola will stop after finishing
-   * performing the layout.
-   */
-  colaEnded(): void {
-    this.automaticLayoutEnabled = false;
   }
 
   // Drop events
@@ -1259,10 +288,10 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy, G
       .getBoundingClientRect() as DOMRect;
     const containerCoord: DOMRect = document.getElementById('drawing-tool-view-container')
       .getBoundingClientRect() as DOMRect;
-    const x = this.transform.invertX(nodeCoord.x - containerCoord.x + event.distance.x);
-    const y = this.transform.invertY(nodeCoord.y + event.distance.y);
+    const x = this.graphCanvas.transform.invertX(nodeCoord.x - containerCoord.x + event.distance.x);
+    const y = this.graphCanvas.transform.invertY(nodeCoord.y + event.distance.y);
 
-    this.execute(new NodeCreation(
+    this.graphCanvas.execute(new NodeCreation(
       `Create ${label} node`, {
         display_name: displayName,
         hash,
@@ -1293,10 +322,10 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy, G
       .getBoundingClientRect() as DOMRect;
     const containerCoord: DOMRect = document.getElementById('drawing-tool-view-container')
       .getBoundingClientRect() as DOMRect;
-    const x = this.transform.invertX(nodeCoord.x - containerCoord.x + event.distance.x + 100);
-    const y = this.transform.invertY(nodeCoord.y + event.distance.y + 80);
+    const x = this.graphCanvas.transform.invertX(nodeCoord.x - containerCoord.x + event.distance.x + 100);
+    const y = this.graphCanvas.transform.invertY(nodeCoord.y + event.distance.y + 80);
 
-    this.execute(new NodeCreation(
+    this.graphCanvas.execute(new NodeCreation(
       `Add '${mapName}' map to graph`, {
         display_name: mapName,
         hash,
@@ -1322,10 +351,10 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy, G
 
     const hash = makeid();
     const fileName = node.label;
-    const x = this.transform.invertX(node.x);
-    const y = this.transform.invertY(node.y);
+    const x = this.graphCanvas.transform.invertX(node.x);
+    const y = this.graphCanvas.transform.invertY(node.y);
 
-    this.execute(new NodeCreation(
+    this.graphCanvas.execute(new NodeCreation(
       `Add '${fileName}' map to graph`, {
         display_name: fileName,
         hash,
@@ -1338,62 +367,6 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy, G
         }
       }
     ));
-  }
-
-  // ========================================
-  // History
-  // ========================================
-
-  /**
-   * Perform an undo, if there is anything to undo.
-   * @return true if there was something to undo
-   */
-  undo(): boolean {
-    // Check to see if there is anything to undo
-    if (this.nextHistoryIndex > 0) {
-      this.nextHistoryIndex--;
-      this.history[this.nextHistoryIndex].rollback(this);
-      this.requestRender();
-      return true;
-    } else {
-      return false;
-    }
-  }
-
-  /**
-   * Perform a redo, if there is anything to redo.
-   * @return true if there was something to redo
-   */
-  redo(): boolean {
-    // Check to see if there is anything to redo
-    if (this.nextHistoryIndex < this.history.length) {
-      this.history[this.nextHistoryIndex].apply(this);
-      this.nextHistoryIndex++;
-      this.requestRender();
-      return true;
-    } else {
-      return false;
-    }
-  }
-
-  /**
-   * Execute an action and store the action to the history stack, while also resetting the
-   * history pointer.
-   * @param action the action to execute
-   */
-  execute(action: GraphAction): void {
-    // We have unsaved changes
-    // this.saveState = false;  // TODO: remove this
-
-    // Drop all changes after this one
-    this.history = this.history.slice(0, this.nextHistoryIndex);
-    this.history.push(action);
-    this.nextHistoryIndex++;
-
-    // Apply the change
-    action.apply(this);
-
-    this.requestRender();
   }
 
   // ========================================
@@ -1484,7 +457,7 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy, G
    * Save the current representation of knowledge model
    */
   save() {
-    this.project.graph = this.getGraph();
+    this.project.graph = this.graphCanvas.getGraph();
     this.project.date_modified = new Date().toISOString();
 
     // Push to backend to save
@@ -1759,58 +732,4 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy, G
     // Should never happen :) If it does, please tell me!
     return {x, y};
   }
-}
-
-/**
- * Used to temporarily keep track of the information we need to
- * interactively create an edge.
- */
-interface EdgeCreationState {
-  from: UniversalGraphNode;
-  to?: {
-    data: {
-      x, y
-    }
-  };
-}
-
-/**
- * Represents the object mirroring a {@link UniversalGraphNode} that is
- * passed to the layout algorithm.
- */
-interface GraphLayoutNode extends InputNode {
-  /**
-   * A link to the original node that this object is mirroring.
-   */
-  reference: UniversalGraphNode;
-  index: number;
-  x: number;
-  y: number;
-  vx: number;
-  vy: number;
-  fx?: number;
-  fy?: number;
-}
-
-/**
- * Represents the object mirroring a {@link UniversalGraphEdge} that is
- * passed to the layout algorithm.
- */
-interface GraphLayoutLink extends Link<GraphLayoutNode> {
-  /**
-   * A link to the original edge that this object is mirroring.
-   */
-  reference: UniversalGraphEdge;
-  source: GraphLayoutNode;
-  target: GraphLayoutNode;
-  index?: number;
-}
-
-/**
- * Represents a grouping of nodes passed to the layout algorithm.
- */
-interface GraphLayoutGroup extends Group {
-  name: string;
-  color: string;
-  leaves?: GraphLayoutNode[];
 }
