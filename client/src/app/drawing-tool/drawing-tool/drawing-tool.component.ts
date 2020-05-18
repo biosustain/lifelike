@@ -673,7 +673,7 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
    */
   dropNode(event: CdkDragDrop < any > ) {
     const nodeType = event.item.element.nativeElement.id;
-    const label = `${nodeType}-${makeid()}`;
+    const label = `${nodeType}`;
 
     // Get DOM coordinate of dropped node relative
     // to container DOM
