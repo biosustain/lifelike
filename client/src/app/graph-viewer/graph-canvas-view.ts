@@ -1,8 +1,10 @@
 import * as d3 from 'd3';
 import { GraphView } from './graph-view';
-import { GraphEntity, GraphEntityType, UniversalGraphEdge, UniversalGraphNode } from '../interfaces';
-import { DEFAULT_EDGE_STYLE, DEFAULT_NODE_STYLE, IconNodeStyle, PlacedEdge, PlacedNode } from './graph-renderers';
-import { AnnotationStyle, annotationTypesMap } from '../../../shared/annotation-styles';
+import { GraphEntity, GraphEntityType, UniversalGraphEdge, UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
+import { PlacedEdge, PlacedNode } from './styles/graph-styles';
+import { AnnotationStyle, annotationTypesMap } from 'app/shared/annotation-styles';
+import { DEFAULT_NODE_STYLE, IconNodeStyle } from './styles/nodes';
+import { DEFAULT_EDGE_STYLE } from './styles/edges';
 
 /**
  * A graph view that uses renders into a <canvas> tag.
@@ -23,6 +25,20 @@ export class GraphCanvasView extends GraphView {
     position: number[],
     entity: GraphEntity | undefined,
   } | undefined;
+
+  /**
+   * Used for the double-click-to-create-an-edge function to store the from
+   * node and other details regarding the connection.
+   */
+  interactiveEdgeCreationState: EdgeCreationState | undefined = null;
+
+  /**
+   * Stores the offset between the node and the initial position of the mouse
+   * when clicked during the start of a drag event. Used for node position stability
+   * when the user is dragging nodes on the canvas, otherwise the node 'jumps'
+   * so node center is the same the mouse position, and the jump is not what we want.
+   */
+  offsetBetweenNodeAndMouseInitialPosition: number[] = [0, 0];
 
   /**
    * Create an instance of this view.
@@ -495,4 +511,17 @@ export class GraphCanvasView extends GraphView {
     this.mouseDown = false;
     this.requestRender();
   }
+}
+
+/**
+ * Used to temporarily keep track of the information we need to
+ * interactively create an edge.
+ */
+interface EdgeCreationState {
+  from: UniversalGraphNode;
+  to?: {
+    data: {
+      x, y
+    }
+  };
 }

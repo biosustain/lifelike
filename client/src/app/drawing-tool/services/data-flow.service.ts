@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Subject } from 'rxjs';
 
-import { GraphAction, GraphEntity, Project, VisNetworkGraphNode } from './interfaces';
+import { GraphEntity, Project, VisNetworkGraphNode } from './interfaces';
 import { coronavirus } from './mock_data';
+import { GraphAction } from 'app/graph-viewer/actions/actions';
 
 /**
  * Handle communication between components

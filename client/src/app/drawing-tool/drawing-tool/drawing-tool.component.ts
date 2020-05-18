@@ -13,15 +13,16 @@ import { Coords2D } from 'app/interfaces/shared.interface';
 import { ClipboardService } from 'app/shared/services/clipboard.service';
 import { keyCodeRepresentsPasteEvent } from 'app/shared/utils';
 import { DataFlowService, makeid, ProjectsService } from '../services';
-import { GraphAction, GraphData, LaunchApp, Project, UniversalGraph } from '../services/interfaces';
+import { GraphData, LaunchApp, Project, UniversalGraph } from '../services/interfaces';
 import { DrawingToolContextMenuControlService } from '../services/drawing-tool-context-menu-control.service';
 import { CopyPasteMapsService } from '../services/copy-paste-maps.service';
 
 import { InfoPanelComponent } from './info-panel/info-panel.component';
 import { ExportModalComponent } from './export-modal/export-modal.component';
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
-import { NodeCreation } from '../services/actions';
-import { GraphCanvasView } from '../services/renderers/graph-canvas-view';
+import { GraphAction } from 'app/graph-viewer/actions/actions';
+import { GraphCanvasView } from 'app/graph-viewer/graph-canvas-view';
+import { NodeCreation } from 'app/graph-viewer/actions/nodes';
 
 @Component({
   selector: 'app-drawing-tool',
