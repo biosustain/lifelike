@@ -6,7 +6,7 @@ import { AnnotationStyle, annotationTypesMap } from 'app/shared/annotation-style
 import { DEFAULT_NODE_STYLE, IconNodeStyle } from './styles/nodes';
 import { DEFAULT_EDGE_STYLE } from './styles/edges';
 import { Arrowhead } from './styles/line-terminators';
-import { throttleTime } from 'rxjs/operators';
+import { debounceTime, throttleTime } from 'rxjs/operators';
 import { asyncScheduler, Subject, Subscription } from 'rxjs';
 
 /**
@@ -72,6 +72,18 @@ export class GraphCanvasView extends GraphView {
   protected canvasResizePendingSubscription: Subscription | undefined;
 
   /**
+   * Store the last time {@link zoomToFit} was called in case the canvas is
+   * resized partly through a zoom, making the zoom operation almost useless.
+   * This seems to happen a lot with Angular.
+   */
+  protected previousZoomToFitTime = 0;
+
+  /**
+   * Used in {@link setSize} when re-applying zoom-to-fit.
+   */
+  protected previousZoomToFitPadding = 0;
+
+  /**
    * Create an instance of this view.
    * @param canvas the backing <canvas> tag
    */
@@ -79,6 +91,8 @@ export class GraphCanvasView extends GraphView {
     super();
 
     this.canvas = canvas;
+    this.canvas.width = this.canvas.clientWidth;
+    this.canvas.height = this.canvas.clientHeight;
 
     this.zoom = d3.zoom()
       .on('zoom', this.canvasZoomed.bind(this))
@@ -123,13 +137,11 @@ export class GraphCanvasView extends GraphView {
     if (this.canvasResizePendingSubscription) {
       return;
     }
+
     // Handle resizing of the canvas, but doing it with a throttled stream
     // so we don't burn extra CPU cycles resizing repeatedly unnecessarily
     this.canvasResizePendingSubscription = this.canvasResizePendingSubject
-      .pipe(throttleTime(250, asyncScheduler, {
-        leading: true,
-        trailing: true
-      }))
+      .pipe(debounceTime(250, asyncScheduler))
       .subscribe(([width, height]) => {
         this.setSize(width, height);
       });
@@ -143,7 +155,6 @@ export class GraphCanvasView extends GraphView {
     this.canvasResizeObserver = new window.ResizeObserver(pushResize);
     // TODO: Can we depend on ResizeObserver yet?
     this.canvasResizeObserver.observe(this.canvas.parentNode);
-    pushResize();
   }
 
   /**
@@ -169,9 +180,14 @@ export class GraphCanvasView extends GraphView {
   }
 
   setSize(width: number, height: number) {
-    this.canvas.width = width;
-    this.canvas.height = height;
-    super.setSize(width, height);
+    if (this.canvas.width !== width || this.canvas.height !== height) {
+      this.canvas.width = width;
+      this.canvas.height = height;
+      super.setSize(width, height);
+      if (window.performance.now() - this.previousZoomToFitTime < 500) {
+        this.applyZoomToFit(0, this.previousZoomToFitPadding);
+      }
+    }
   }
 
   get transform() {
@@ -243,7 +259,15 @@ export class GraphCanvasView extends GraphView {
   }
 
   zoomToFit(duration: number = 1500, padding = 50) {
-    const ctx = this.canvas.getContext('2d');
+    this.previousZoomToFitTime = window.performance.now();
+    this.applyZoomToFit(duration, padding);
+  }
+
+  /**
+   * The real zoom-to-fit.
+   */
+  private applyZoomToFit(duration: number = 1500, padding = 50) {
+    this.previousZoomToFitPadding = padding;
 
     const canvasWidth = this.canvas.width;
     const canvasHeight = this.canvas.height;
@@ -252,9 +276,14 @@ export class GraphCanvasView extends GraphView {
     const width = maxX - minX;
     const height = maxY - minY;
 
-    d3.select(this.canvas)
-      .transition().duration(duration)
-      .call(
+    let select = d3.select(this.canvas);
+
+    // Calling transition() causes a delay even if duration = 0
+    if (duration > 0) {
+      select = select.transition().duration(duration);
+    }
+
+    select.call(
         this.zoom.transform,
         d3.zoomIdentity
           .translate(canvasWidth / 2, canvasHeight / 2)

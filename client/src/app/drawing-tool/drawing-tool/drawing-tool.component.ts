@@ -140,6 +140,7 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
       (resp: any) => {
         this.project = resp.project;
         this.graphCanvas.setGraph(this.project.graph);
+        this.graphCanvas.zoomToFit(0);
       }
     );
   }
