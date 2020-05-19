@@ -414,6 +414,73 @@ def test_generate_annotations(
     )
 
 
+# Assumes the postgres database has been seeded with organism/gene data
+@pytest.mark.skip
+def test_escherichia_coli_pdf(
+    annotations_setup,
+):
+    annotator = get_annotations_service(
+        lmdb_dao=get_lmdb_dao()
+    )
+    pdf_parser = get_annotations_pdf_parser()
+
+    pdf = path.join(directory, f'pdf_samples/ecoli_gene_test.pdf')
+
+    with open(pdf, 'rb') as f:
+        pdf_text = pdf_parser.parse_pdf(pdf=f)
+        annotations = annotator.create_annotations(
+            tokens=pdf_parser.extract_tokens(parsed_chars=pdf_text))
+
+    keywords = {o.keyword: o.meta.keyword_type for o in annotations}
+
+    assert 'Escherichia coli' in keywords
+    assert keywords['Escherichia coli'] == 'Species'
+
+    assert 'PURA' in keywords
+    assert keywords['PURA'] == 'Genes'
+
+    assert 'purB' in keywords
+    assert keywords['purB'] == 'Genes'
+
+    assert 'purC' in keywords
+    assert keywords['purC'] == 'Genes'
+
+    assert 'purD' in keywords
+    assert keywords['purD'] == 'Genes'
+
+    assert 'purF' in keywords
+    assert keywords['purF'] == 'Genes'
+
+
+@pytest.mark.skip
+def test_human_gene_pdf(
+    annotations_setup,
+    human_gene_test_pdf_gene_and_organism_network,
+):
+    annotator = get_annotations_service(
+        lmdb_dao=get_lmdb_dao()
+    )
+    pdf_parser = get_annotations_pdf_parser()
+
+    pdf = path.join(directory, f'pdf_samples/human_gene_test.pdf')
+
+    with open(pdf, 'rb') as f:
+        pdf_text = pdf_parser.parse_pdf(pdf=f)
+        annotations = annotator.create_annotations(
+            tokens=pdf_parser.extract_tokens(parsed_chars=pdf_text))
+
+    keywords = {o.keyword: o.meta.keyword_type for o in annotations}
+
+    assert 'COVID-19' in keywords
+    assert keywords['COVID-19'] == 'Diseases'
+
+    assert 'MERS-CoV' in keywords
+    assert keywords['MERS-CoV'] == 'Species'
+
+    assert 'ACE2' in keywords
+    assert keywords['ACE2'] == 'Genes'
+
+
 @pytest.mark.skip
 def test_generate_bioc_annotations_format(annotations_setup):
     annotator = get_annotations_service()
