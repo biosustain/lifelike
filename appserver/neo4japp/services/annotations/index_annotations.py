@@ -36,6 +36,7 @@ def process_lmdb(subdirs, es):
                         }
                      }
             entries.append(entry)
-    parallel_bulk(es, entries, stats_only=True)
+    parallel_bulk(es, entries)
+
 
 main()
