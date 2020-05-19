@@ -47,6 +47,7 @@ def create_annotations(
     pdf_parser,
     pdf,
 ):
+    pdf_text = pdf_parser.parse_pdf_high_level(pdf=pdf)
     parsed = pdf_parser.parse_pdf(pdf=pdf)
     annotations = annotations_service.create_annotations(
         tokens=pdf_parser.extract_tokens(parsed_chars=parsed),
@@ -67,26 +68,28 @@ def main():
 
         for parent, subfolders, filenames in os.walk(os.path.join(directory, 'pdfs/')):
             for fn in filenames:
-                with open(os.path.join(parent, fn), 'rb') as f:
-                    annotations = create_annotions(
-                        annotations_service=service,
-                        bioc_service=bioc_service,
-                        filename=fn,
-                        pdf_parser=parser,
-                        pdf=f,
-                    )
+                if fn.lower().endswith('.pdf'):
+                    with open(os.path.join(parent, fn), 'rb') as f:
+                        annotations = create_annotations(
+                            annotations_service=service,
+                            bioc_service=bioc_service,
+                            filename=fn,
+                            pdf_parser=parser,
+                            pdf=f,
+                        )
 
-                    annotation_file = os.path.join(directory, f'annotations/{filename}')
-                    with open(annotation_file, 'w') as a_f:
+                    annotation_file = os.path.join(directory, f'annotations/{fn}.json')
+                    with open(annotation_file, 'w+') as a_f:
                         json.dump(annotations, a_f)
 
         for parent, subfolders, filenames in os.walk(os.path.join(directory, 'annotations/')):
             for fn in filenames:
-                with open(os.path.join(parent, fn), 'rb') as f:
-                    write_to_file(
-                        annotations=f,
-                        pubtator_file=pubtator_file,
-                    )
+                with open(os.path.join(parent, fn), 'r') as f:
+                    if fn.lower().endswith('.json'):
+                        write_to_file(
+                            annotations=f,
+                            pubtator_file=pubtator_file,
+                        )
     pubtator_file.close()
 
 
