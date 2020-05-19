@@ -15,6 +15,7 @@ from neo4japp.data_transfer_objects import (
 )
 from neo4japp.models import Files
 from neo4japp.services.annotations import AnnotationsService, LMDBDao
+from neo4japp.services.annotations.constants import EntityType
 
 
 # reference to this directory
@@ -34,7 +35,7 @@ directory = path.realpath(path.dirname(__file__))
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    keyword_type='Genes',
+                    keyword_type=EntityType.Genes.value,
                     color='',
                     id='',
                     id_type='',
@@ -51,7 +52,7 @@ directory = path.realpath(path.dirname(__file__))
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    keyword_type='Chemicals',
+                    keyword_type=EntityType.Genes.value,
                     color='',
                     id='',
                     id_type='',
@@ -70,7 +71,7 @@ directory = path.realpath(path.dirname(__file__))
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    keyword_type='Genes',
+                    keyword_type=EntityType.Genes.value,
                     color='',
                     id='',
                     id_type='',
@@ -87,7 +88,7 @@ directory = path.realpath(path.dirname(__file__))
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    keyword_type='Chemicals',
+                    keyword_type=EntityType.Chemicals.value,
                     color='',
                     id='',
                     id_type='',
@@ -106,7 +107,7 @@ directory = path.realpath(path.dirname(__file__))
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    keyword_type='Genes',
+                    keyword_type=EntityType.Genes.value,
                     color='',
                     id='',
                     id_type='',
@@ -123,7 +124,7 @@ directory = path.realpath(path.dirname(__file__))
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    keyword_type='Chemicals',
+                    keyword_type=EntityType.Chemicals.value,
                     color='',
                     id='',
                     id_type='',
@@ -142,7 +143,7 @@ directory = path.realpath(path.dirname(__file__))
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    keyword_type='Genes',
+                    keyword_type=EntityType.Genes.value,
                     color='',
                     id='',
                     id_type='',
@@ -159,7 +160,7 @@ directory = path.realpath(path.dirname(__file__))
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    keyword_type='Chemicals',
+                    keyword_type=EntityType.Chemicals.value,
                     color='',
                     id='',
                     id_type='',
@@ -178,7 +179,7 @@ directory = path.realpath(path.dirname(__file__))
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    keyword_type='Genes',
+                    keyword_type=EntityType.Genes.value,
                     color='',
                     id='',
                     id_type='',
@@ -197,7 +198,7 @@ directory = path.realpath(path.dirname(__file__))
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    keyword_type='Genes',
+                    keyword_type=EntityType.Genes.value,
                     color='',
                     id='',
                     id_type='',
@@ -214,7 +215,7 @@ directory = path.realpath(path.dirname(__file__))
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    keyword_type='Chemicals',
+                    keyword_type=EntityType.Chemicals.value,
                     color='',
                     id='',
                     id_type='',
@@ -231,7 +232,7 @@ directory = path.realpath(path.dirname(__file__))
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    keyword_type='Chemicals',
+                    keyword_type=EntityType.Chemicals.value,
                     color='',
                     id='',
                     id_type='',
@@ -251,7 +252,7 @@ directory = path.realpath(path.dirname(__file__))
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    keyword_type='Genes',
+                    keyword_type=EntityType.Genes.value,
                     color='',
                     id='',
                     id_type='',
@@ -268,7 +269,44 @@ directory = path.realpath(path.dirname(__file__))
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    keyword_type='Chemicals',
+                    keyword_type=EntityType.Chemicals.value,
+                    color='',
+                    id='',
+                    id_type='',
+                    id_hyperlink='',
+                    links=Annotation.Meta.Links(),
+                ),
+            ),
+        ]),
+        # adjacent intervals
+        (8, [
+            Annotation(
+                page_number=1,
+                keyword='word a',
+                lo_location_offset=17,
+                hi_location_offset=22,
+                keyword_length=6,
+                keywords=[''],
+                rects=[[1, 2]],
+                meta=Annotation.Meta(
+                    keyword_type=EntityType.Chemicals.value,
+                    color='',
+                    id='',
+                    id_type='',
+                    id_hyperlink='',
+                    links=Annotation.Meta.Links(),
+                ),
+            ),
+            Annotation(
+                page_number=1,
+                keyword='a long word',
+                lo_location_offset=22,
+                hi_location_offset=32,
+                keyword_length=10,
+                keywords=[''],
+                rects=[[1, 2]],
+                meta=Annotation.Meta(
+                    keyword_type=EntityType.Chemicals.value,
                     color='',
                     id='',
                     id_type='',
@@ -298,23 +336,27 @@ def test_fix_conflicting_annotations(annotations_setup, index, annotations):
         assert fixed[0] == annotations[1]
     elif index == 2:
         assert len(fixed) == 1
-        assert fixed[0] == annotations[1]
+        assert fixed[0] == annotations[0]
     elif index == 3:
         assert len(fixed) == 2
         assert annotations[0] in fixed
         assert annotations[1] in fixed
     elif index == 4:
         assert len(fixed) == 1
-        assert fixed[0] == annotations[1]
+        assert fixed[0] == annotations[0]
     elif index == 5:
         assert len(fixed) == 1
         assert fixed[0] == annotations[0]
     elif index == 6:
         assert len(fixed) == 2
-        assert annotations[0] not in fixed
-        assert annotations[1] in fixed
+        assert annotations[0] in fixed
+        assert annotations[1] not in fixed
         assert annotations[2] in fixed
     elif index == 7:
+        # test adjacent intervals
+        assert len(fixed) == 1
+        assert fixed[0] == annotations[0]
+    elif index == 8:
         # test adjacent intervals
         assert len(fixed) == 1
         assert fixed[0] == annotations[1]
