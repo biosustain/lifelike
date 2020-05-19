@@ -5,6 +5,7 @@ import { PlacedEdge, PlacedNode } from './styles/graph-styles';
 import { AnnotationStyle, annotationTypesMap } from 'app/shared/annotation-styles';
 import { DEFAULT_NODE_STYLE, IconNodeStyle } from './styles/nodes';
 import { DEFAULT_EDGE_STYLE } from './styles/edges';
+import { Arrowhead } from './styles/line-terminators';
 
 /**
  * A graph view that uses renders into a <canvas> tag.
@@ -280,15 +281,25 @@ export class GraphCanvasView extends GraphView {
       ctx.beginPath();
 
       const {from, to} = this.interactiveEdgeCreationState;
+      const color = '#2B7CE9';
+      const lineWidth = noZoomScale;
+
+      // Draw arrow
+      const arrow = new Arrowhead(8, {
+        fillStyle: color,
+        strokeStyle: null,
+        lineWidth,
+      });
+      const terminatorPosition = arrow.draw(ctx, from.data.x, from.data.y, to.data.x, to.data.y);
 
       // Draw line
-      const lineWidth = 0.5 * noZoomScale;
-      ctx.lineWidth = 3 / transform.scale(3).k;
-      ctx.fillStyle = '#2B7CE9';
-      (ctx as any).arrow(
-        from.data.x, from.data.y, to.data.x, to.data.y,
-        [0, lineWidth, -10 * noZoomScale, lineWidth, -10 * noZoomScale, 5 * noZoomScale]);
-      ctx.fill();
+      ctx.beginPath();
+      ctx.lineWidth = lineWidth;
+      ctx.strokeStyle = color;
+      ctx.fillStyle = color;
+      ctx.moveTo(from.data.x, from.data.y);
+      ctx.lineTo(terminatorPosition.x, terminatorPosition.y);
+      ctx.stroke();
 
       // Draw the 'o' node at the end of the line
       const nodeRadius = 6 * noZoomScale;
