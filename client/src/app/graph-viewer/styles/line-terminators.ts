@@ -30,6 +30,8 @@ export class Arrowhead implements LineTerminatorRenderer {
 
   /**
    * Create a new arrowhead instance.
+   * @param width the width of the arrowhead
+   * @param options additional options
    */
   constructor(public width: number, options: {
     length?: number;
@@ -95,6 +97,11 @@ export class CircleTerminator implements LineTerminatorRenderer {
   public strokeStyle = null;
   public lineWidth = 1;
 
+  /**
+   * Create an instance.
+   * @param radius the radius of the circle
+   * @param options additional options
+   */
   constructor(public radius: number,
               options: {
                 spacing?: number
@@ -135,6 +142,26 @@ export class CircleTerminator implements LineTerminatorRenderer {
       returnPoint = {x, y};
     }
     return returnPoint;
+  }
+}
+
+/**
+ * A terminator that combines other terminators end-to-end.
+ */
+export class CompoundTerminator implements LineTerminatorRenderer {
+  /**
+   * Create a new instance.
+   * @param children list of terminators, whether the first one is at the end
+   */
+  constructor(public children: LineTerminatorRenderer[]) {
+  }
+
+  draw(ctx: CanvasRenderingContext2D, startX: number, startY: number, endX: number, endY: number) {
+    let lastEnd = {x: endX, y: endY};
+    for (const child of this.children) {
+      lastEnd = child.draw(ctx, startX, startY, lastEnd.x, lastEnd.y);
+    }
+    return lastEnd;
   }
 }
 
