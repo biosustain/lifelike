@@ -8,9 +8,9 @@
             <input matInput required placeholder="Password" formControlName="password" type="password">
             <mat-error>Password cannot be empty.</mat-error>
         </mat-form-field>
+        <!-- TODO - bring back [disabled]="form.invalid" -->
         <button
             (click)="submit()"
-            [disabled]="form.invalid"
             class="w-100"
             mat-raised-button color="primary"
         >
