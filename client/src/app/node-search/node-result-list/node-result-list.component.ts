@@ -11,11 +11,12 @@ import {Nodes} from '../containers/node-search.component';
 
 export class NodeResultListComponent implements OnInit, OnChanges {
   @Input() nodes: Nodes[] = [];
-  displayedColumns: string[] = ['link', 'name', 'type', 'domain', 'actions'];
+  displayedColumns: string[] = ['link', 'name', 'type', 'domain'];
   dataSource = new MatTableDataSource<Nodes>(this.nodes);
   @ViewChild(MatPaginator, {static: false}) paginator: MatPaginator;
   @Output() page = new EventEmitter<PageEvent>();
   pageEvent: PageEvent;
+  childMode = false;
 
   constructor() {
   }
@@ -33,10 +34,5 @@ export class NodeResultListComponent implements OnInit, OnChanges {
   sendPageEvent(event: PageEvent) {
     this.page.emit(event);
     return event;
-  }
-
-
-  onClick() {
-
   }
 }
