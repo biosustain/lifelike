@@ -1,7 +1,7 @@
 import { UniversalGraphEdge, UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
 import { EdgeRenderStyle, PlacedEdge, PlacedNode, PlacementOptions } from './graph-styles';
 import { getLinePointIntersectionDistance } from '../utils/geometry';
-import '../utils/canvas/canvas-arrow';
+import { Arrowhead, CircleTerminator } from './line-terminators';
 
 /**
  * Renders a basic edge.
@@ -17,6 +17,13 @@ export class BasicEdgeStyle implements EdgeRenderStyle {
         options: PlacementOptions): PlacedEdge {
     const zoomResetScale = 1 / transform.scale(1).k;
     const highDetailLevel = transform.k >= 0.35 || options.selected || options.highlighted;
+    const lineWidth = (options.highlighted ? 1.5 : 1) * zoomResetScale;
+    const color = !options.highlighted || options.highlighted ? '#2B7CE9' : '#ACCFFF';
+    const endTerminator = new Arrowhead(8, {
+      fillStyle: color,
+      strokeStyle: null,
+      lineWidth,
+    });
 
     return new class implements PlacedEdge {
       isPointIntersecting(x: number, y: number): boolean {
@@ -36,18 +43,18 @@ export class BasicEdgeStyle implements EdgeRenderStyle {
           from.data.y
         );
 
-        // Draw line
-        const lineWidth = (options.highlighted ? 1 : 0.5) * zoomResetScale;
-        ctx.fillStyle = !options.highlighted || options.highlighted ? '#2B7CE9' : '#ACCFFF';
+        const terminatorPosition = endTerminator.draw(ctx, from.data.x, from.data.y, toX, toY);
 
-        // TODO: This ugly -- don't add methods to window objects
-        (ctx as any).arrow(
-          from.data.x,
-          from.data.y,
-          toX,
-          toY,
-          [0, lineWidth, -10, lineWidth, -10, 8]);
-        ctx.fill();
+        // Draw line
+        ctx.beginPath();
+        ctx.lineWidth = lineWidth;
+        ctx.strokeStyle = color;
+        ctx.fillStyle = color;
+        ctx.moveTo(from.data.x, from.data.y);
+        ctx.lineTo(terminatorPosition.x, terminatorPosition.y);
+        ctx.stroke();
+
+        ctx.setLineDash([]);
       }
 
       renderLayer2() {
