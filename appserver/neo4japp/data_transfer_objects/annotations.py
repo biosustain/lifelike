@@ -9,9 +9,10 @@ from neo4japp.util import CamelDictMixin
 
 @attr.s(frozen=True)
 class PDFParsedCharacters(CamelDictMixin):
-    coor_obj_per_pdf_page: Dict[int, List[Union[LTChar, LTAnno]]] = attr.ib()  # noqa
-    str_per_pdf_page: Dict[int, List[str]] = attr.ib()
-    cropbox_per_page: Dict[int, Tuple[int, int]] = attr.ib()
+    chars_in_pdf: List[str] = attr.ib()
+    char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]] = attr.ib()
+    cropbox_in_pdf: Tuple[int, int] = attr.ib()
+    max_idx_in_page: Dict[int, int] = attr.ib()
 
 
 @attr.s(frozen=True)
@@ -24,8 +25,8 @@ class PDFTokenPositions(CamelDictMixin):
 @attr.s(frozen=True)
 class PDFTokenPositionsList(CamelDictMixin):
     token_positions: List[PDFTokenPositions] = attr.ib()
-    coor_obj_per_pdf_page: Dict[int, List[Union[LTChar, LTAnno]]] = attr.ib()  # noqa
-    cropbox_per_page: Dict[int, Tuple[int, int]] = attr.ib()
+    char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]] = attr.ib()
+    cropbox_in_pdf: Tuple[int, int] = attr.ib()
 
 
 # IMPORTANT NOTE/TODO: JIRA LL-465
