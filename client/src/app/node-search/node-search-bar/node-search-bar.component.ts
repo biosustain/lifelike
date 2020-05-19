@@ -29,12 +29,14 @@ export class NodeSearchBarComponent implements OnInit, OnChanges {
 
   ngOnChanges(changes: SimpleChanges): void {
     for (const propertyName in changes) {
-      const propertyChanges = changes[propertyName];
-      const current = JSON.stringify(propertyChanges.currentValue);
-      const previous = JSON.stringify(propertyChanges.previousValue);
-      if (current !== previous) {
-        this.paginatorActions = this.pageActions;
-        this.onSubmit();
+      if (changes.hasOwnProperty(propertyName)) {
+        const propertyChanges = changes[propertyName];
+        const current = JSON.stringify(propertyChanges.currentValue);
+        const previous = JSON.stringify(propertyChanges.previousValue);
+        if (current !== previous) {
+          this.paginatorActions = this.pageActions;
+          this.onSubmit();
+        }
       }
     }
   }
@@ -42,7 +44,7 @@ export class NodeSearchBarComponent implements OnInit, OnChanges {
   onSubmit() {
     this.searchService.fullTextSearch(
       this.searchForm.value.searchInput,
-      this.paginatorActions.pageIndex , 25).subscribe((results) => {
+      this.paginatorActions.pageIndex, 25).subscribe((results) => {
       this.results.emit(results.nodes as FTSQueryRecord[]);
     });
   }
