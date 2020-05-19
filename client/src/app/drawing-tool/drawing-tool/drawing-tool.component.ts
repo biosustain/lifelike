@@ -696,11 +696,11 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
       y
     });
 
+    const type = data.type.toLowerCase();
     const cmd = {
       action: 'add node',
       data: {
-        group: data.type.toLowerCase() === 'snippet' ? 'study' : data.type.toLowerCase() === 'taxonomy' ?
-          'species' : data.type.toLowerCase(),
+        group: type === 'snippet' ? 'study' : type === 'taxonomy' ? 'species' : type,
         label: data.name,
         hyperlink: data.link.changingThisBreaksApplicationSecurity,
         ...coord
