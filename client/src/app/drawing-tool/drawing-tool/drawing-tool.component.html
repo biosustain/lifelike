@@ -1,9 +1,9 @@
 <div
-  id='drawing-tool-view-container' class="h-100">
+  id='drawing-tool-view-container' class="h-100 overflow-hidden">
   <div
     cdkDropList
-    (cdkDropListDropped)='drop($event)' class="h-100">
-    <canvas #canvas class="w-100 h-100" id="drawing-tool-view-canvas"></canvas>
+    (cdkDropListDropped)='drop($event)' class="h-100 relative overflow-hidden">
+    <canvas #canvas id="drawing-tool-view-canvas" class="absolute top-0 left-0 w-100 h-100"></canvas>
   </div>
   <!-- Tool UI -->
   <div id='tool-panel' class='shadow-4 ma3'>
