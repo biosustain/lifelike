@@ -2,7 +2,7 @@ import os
 import json
 import lmdb
 from elasticsearch import Elasticsearch
-from elasticsearch.helpers import bulk
+from elasticsearch.helpers import bulk, parallel_bulk
 
 
 def main():
@@ -36,6 +36,6 @@ def process_lmdb(subdirs, es):
                         }
                      }
             entries.append(entry)
-    bulk(es, entries)
+    parallel_bulk(es, entries, stats_only=True)
 
 main()
