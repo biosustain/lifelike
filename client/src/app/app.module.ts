@@ -25,7 +25,6 @@ import {NodeSearchModule} from './node-search/node-search.module';
 @NgModule({
   declarations: [
     AppComponent,
-    DialogConfirmDeletionComponent,
     KgStatisticsComponent,
   ],
   imports: [
@@ -51,9 +50,6 @@ import {NodeSearchModule} from './node-search/node-search.module';
     Title
   ],
   exports: [],
-  entryComponents: [
-    DialogConfirmDeletionComponent,
-  ],
   bootstrap: [AppComponent]
 })
 export class AppModule {

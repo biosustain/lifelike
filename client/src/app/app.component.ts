@@ -18,6 +18,7 @@ import { Title } from '@angular/platform-browser';
 export class AppComponent {
 
   appuser$: Observable<AppUser>;
+  userRoles$: Observable<string[]>;
   loggedIn$: Observable<boolean>;
 
   constructor(
@@ -28,6 +29,7 @@ export class AppComponent {
   ) {
     this.loggedIn$ = store.pipe(select(AuthSelectors.selectAuthLoginState));
     this.appuser$ = store.pipe(select(AuthSelectors.selectAuthUser));
+    this.userRoles$ = store.pipe(select(AuthSelectors.selectRoles));
     this.router.events.subscribe(event => {
       if (event instanceof NavigationEnd) {
         const child = this.activatedRoute.firstChild;
