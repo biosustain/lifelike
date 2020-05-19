@@ -33,7 +33,7 @@ export class NodeSearchComponent {
     Text: 'https://pubmed.ncbi.nlm.nih.gov/',
     NCBI_Gene: 'https://www.ncbi.nlm.nih.gov/gene/',
     NCBI_Taxonomy: 'https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id='
-  }
+  };
   dataSource: Nodes[] = [];
   pageActions: PageActions = {pageIndex: 1};
 
