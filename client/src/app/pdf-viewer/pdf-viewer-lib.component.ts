@@ -676,12 +676,16 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
       this.pdfQuery = newQuery;
       this.pdfComponent.pdfFindController.executeCommand('find', {
         query: this.pdfQuery,
-        highlightAll: true
+        highlightAll: true,
+        entireWord: true,
+        phraseSearch: true
       });
     } else {
       this.pdfComponent.pdfFindController.executeCommand('findagain', {
         query: this.pdfQuery,
-        highlightAll: true
+        highlightAll: true,
+        entireWord: true,
+        phraseSearch: true
       });
     }
   }
