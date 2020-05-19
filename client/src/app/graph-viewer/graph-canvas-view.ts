@@ -285,12 +285,12 @@ export class GraphCanvasView extends GraphView {
       const lineWidth = noZoomScale;
 
       // Draw arrow
-      const arrow = new Arrowhead(8, {
+      const arrow = new Arrowhead(16, {
         fillStyle: color,
         strokeStyle: null,
         lineWidth,
       });
-      const terminatorPosition = arrow.draw(ctx, from.data.x, from.data.y, to.data.x, to.data.y);
+      const drawnTerminator = arrow.draw(ctx, from.data.x, from.data.y, to.data.x, to.data.y);
 
       // Draw line
       ctx.beginPath();
@@ -298,7 +298,7 @@ export class GraphCanvasView extends GraphView {
       ctx.strokeStyle = color;
       ctx.fillStyle = color;
       ctx.moveTo(from.data.x, from.data.y);
-      ctx.lineTo(terminatorPosition.x, terminatorPosition.y);
+      ctx.lineTo(drawnTerminator.startX, drawnTerminator.startY);
       ctx.stroke();
 
       // Draw the 'o' node at the end of the line
