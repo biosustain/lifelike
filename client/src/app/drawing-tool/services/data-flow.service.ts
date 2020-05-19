@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Subject } from 'rxjs';
 
-import { GraphEntity, Project, VisNetworkGraphNode } from './interfaces';
+import { GraphEntity, Project, UniversalGraphNode } from './interfaces';
 import { coronavirus } from './mock_data';
 import { GraphAction } from 'app/graph-viewer/actions/actions';
 
@@ -35,9 +35,9 @@ export class DataFlowService {
   /**
    * Send dropped node to be interecepted in
    * drawing-tool.component.ts
-   * @param node a VisNetworkGraphNode object
+   * @param node a UniversalGraphNode object
    */
-  pushNode2Canvas(node: VisNetworkGraphNode) {
+  pushNode2Canvas(node: UniversalGraphNode) {
     this.pdf2Canvas.next(node);
   }
 

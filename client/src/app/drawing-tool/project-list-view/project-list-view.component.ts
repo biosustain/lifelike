@@ -19,12 +19,7 @@ import {
 } from '../services';
 import {
   Project,
-  VisNetworkGraphEdge,
-  GraphSelectionData
 } from '../services/interfaces';
-import {
-  NetworkVis
-} from '../network-vis';
 import {
   CreateProjectDialogComponent
 } from './create-project-dialog/create-project-dialog.component';
