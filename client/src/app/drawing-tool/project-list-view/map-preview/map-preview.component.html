@@ -1,47 +1,6 @@
   <!-- Network Graph Canvas -->
-  <div id='canvas'></div>
-  <!-- Read Panel -->
-  <div *ngIf='node' id='read-panel'>
-    <div [ngClass]='nodeStyle'>
-      <h3 class='roboto'>{{node?.label}}</h3>
-    </div>
-    <!-- Type -->
-    <div>
-      <p [ngClass]='nodeStyle' class='b'>
-        Type
-      </p>
-      <p class='attr'>
-        {{nodeStyle}}
-      </p>
-    </div>
-    <!-- Detail -->
-    <div *ngIf='node?.data?.detail'>
-      <p [ngClass]='nodeStyle' class='b'>
-        Detail
-      </p>
-      <p class='attr detail'>
-        {{node?.data?.detail}}
-      </p>
-    </div>
-    <!-- Link -->
-    <div *ngIf='node?.data?.hyperlink'>
-      <p [ngClass]='nodeStyle' class='b'>
-        Hyperlink
-      </p>
-      <p class='attr link' (click)='goToLink(node.data.hyperlink)'>
-        {{node?.data?.hyperlink}}
-      </p>
-    </div>
-    <!-- Edges-->
-    <div *ngIf='node?.edges.length'>
-      <p [ngClass]='nodeStyle' class='b'>Edges</p>
-      <div *ngFor='let edge of node?.edges'>
-        <p class='attr'>
-          <span [ngClass]='nodeStyle' class='edge-label i'>{{edge?.label}}&nbsp;</span>
-          <span class='target-label'>{{getNode(edge)}}</span>
-        </p>
-      </div>
-    </div>
+  <div id='canvas' class="h-100">
+    <canvas #canvas class="w-100 h-100"></canvas>
   </div>
   <!-- Tool Panel -->
   <div [ngClass]="{'childless': !childMode}" id='tool-panel'>
