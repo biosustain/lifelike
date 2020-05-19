@@ -92,6 +92,11 @@ export class KgStatisticsComponent implements OnInit, OnDestroy {
           size: 14
         }
       }
+    },
+    layout: {
+      padding: {
+        top: 25
+      }
     }
   };
   pieChartOptions: ChartOptions = {
