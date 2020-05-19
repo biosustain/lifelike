@@ -20,7 +20,7 @@ export abstract class GraphView implements GraphActionReceiver {
   /**
    * Set to false when the component is destroyed so we can stop rendering.
    */
-  active = true;
+  protected active = true;
 
   /**
    * Collection of nodes displayed on the graph. This is not a view --
@@ -43,13 +43,13 @@ export abstract class GraphView implements GraphActionReceiver {
    * Maps node's hashes to nodes for O(1) lookup, essential to the speed
    * of most of this graph code.
    */
-  nodeHashMap: Map<string, UniversalGraphNode> = new Map();
+  protected nodeHashMap: Map<string, UniversalGraphNode> = new Map();
 
   /**
    * Keep track of fixed X/Y positions that come from dragging nodes. These
    * values are passed to the automatic layout routines .
    */
-  nodePositionOverrideMap: Map<UniversalGraphNode, [number, number]> = new Map();
+  protected nodePositionOverrideMap: Map<UniversalGraphNode, [number, number]> = new Map();
 
   // Graph states
   // ---------------------------------
@@ -57,7 +57,7 @@ export abstract class GraphView implements GraphActionReceiver {
   /**
    * Marks that changes to the view were made so we need to re-render.
    */
-  renderingRequested = false;
+  protected renderingRequested = false;
 
   /**
    * Indicates where a mouse button is currently down.
@@ -67,7 +67,7 @@ export abstract class GraphView implements GraphActionReceiver {
   /**
    * d3-zoom object used to handle zooming.
    */
-  zoom: any;
+  protected zoom: any;
 
   /**
    * webcola object used for automatic layout.
@@ -122,7 +122,7 @@ export abstract class GraphView implements GraphActionReceiver {
    * calls undo(), the index goes -1 and when the user calls redo(), the index
    * goes +1.
    */
-  nextHistoryIndex = 0;
+  protected nextHistoryIndex = 0;
 
   constructor() {
     this.cola = cola

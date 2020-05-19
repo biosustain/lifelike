@@ -51,10 +51,6 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
   contextMenuTooltipSelector: string;
   contextMenuTooltipOptions: Partial<Options>;
 
-  canvasResizeObserver: any; // TODO: TS does not have ResizeObserver defs yet
-  canvasResizePendingSubject = new Subject<[number, number]>();
-  canvasResizePendingSubscription: Subscription;
-
   selectionSubscription: Subscription;
 
   SAVE_STATE = true;
@@ -94,6 +90,8 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngAfterViewInit() {
     this.graphCanvas = new GraphCanvasView(this.canvasChild.nativeElement as HTMLCanvasElement);
+    this.graphCanvas.backgroundFill = '#f2f2f2';
+    this.graphCanvas.startParentFillResizeListener();
 
     // Handle pasting
     this.keyboardEventObservable = (fromEvent(window, 'keydown') as Observable<KeyboardEvent>);
@@ -113,27 +111,6 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
       }
     });
 
-    // Handle resizing of the canvas, but doing it with a throttled stream
-    // so we don't burn extra CPU cycles resizing repeatedly unnecessarily
-    this.canvasResizePendingSubscription = this.canvasResizePendingSubject
-      .pipe(throttleTime(250, asyncScheduler, {
-        leading: true,
-        trailing: true
-      }))
-      .subscribe(([width, height]) => {
-        this.graphCanvas.setSize(width, height);
-      });
-    const pushResize = () =>
-      this.canvasResizePendingSubject.next([
-        this.canvasChild.nativeElement.clientWidth,
-        this.canvasChild.nativeElement.clientHeight,
-      ]);
-    // @ts-ignore
-    this.canvasResizeObserver = new window.ResizeObserver(pushResize);
-    // TODO: Can we depend on ResizeObserver yet?
-    this.canvasResizeObserver.observe(this.canvasChild.nativeElement.parentNode);
-    pushResize();
-
     this.ngZone.runOutsideAngular(() => {
       this.graphCanvas.startAnimationLoop();
     });
@@ -146,7 +123,6 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
     this.pdfDataSubscription.unsubscribe();
     this.keyboardCopyEventSubscription.unsubscribe();
     this.keyboardPasteEventSubscription.unsubscribe();
-    this.canvasResizeObserver.disconnect();
     this.selectionSubscription.unsubscribe();
     this.graphCanvas.destroy();
   }
