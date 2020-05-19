@@ -6,17 +6,24 @@ import { AnnotationStyle, annotationTypesMap } from 'app/shared/annotation-style
 import { DEFAULT_NODE_STYLE, IconNodeStyle } from './styles/nodes';
 import { DEFAULT_EDGE_STYLE } from './styles/edges';
 import { Arrowhead } from './styles/line-terminators';
+import { throttleTime } from 'rxjs/operators';
+import { asyncScheduler, Subject, Subscription } from 'rxjs';
 
 /**
  * A graph view that uses renders into a <canvas> tag.
  */
 export class GraphCanvasView extends GraphView {
   /**
+   * The canvas background, if any.
+   */
+  backgroundFill: string | undefined = null;
+
+  /**
    * The transform represents the current zoom of the graph, which must be
    * taken into consideration whenever mapping between graph coordinates and
    * viewport coordinates.
    */
-  d3Tansform = d3.zoomIdentity;
+  protected d3Tansform = d3.zoomIdentity;
 
   /**
    * The current position of the mouse (graph coordinates) if the user is
@@ -37,7 +44,7 @@ export class GraphCanvasView extends GraphView {
    * Used for the double-click-to-create-an-edge function to store the from
    * node and other details regarding the connection.
    */
-  interactiveEdgeCreationState: EdgeCreationState | undefined = null;
+  protected interactiveEdgeCreationState: EdgeCreationState | undefined = null;
 
   /**
    * Stores the offset between the node and the initial position of the mouse
@@ -45,7 +52,24 @@ export class GraphCanvasView extends GraphView {
    * when the user is dragging nodes on the canvas, otherwise the node 'jumps'
    * so node center is the same the mouse position, and the jump is not what we want.
    */
-  offsetBetweenNodeAndMouseInitialPosition: number[] = [0, 0];
+  protected offsetBetweenNodeAndMouseInitialPosition: number[] = [0, 0];
+
+  /**
+   * Holds the ResizeObserver to detect resizes. Only set if
+   * {@link startParentFillResizeListener} is called, but it may be
+   * unset if {@link stopParentFillResizeListener} is called.
+   */
+  protected canvasResizeObserver: any | undefined; // TODO: TS does not have ResizeObserver defs yet
+
+  /**
+   * An observable triggered when resizes are detected.
+   */
+  canvasResizePendingSubject = new Subject<[number, number]>();
+
+  /**
+   * The subscription that handles the resizes.
+   */
+  protected canvasResizePendingSubscription: Subscription | undefined;
 
   /**
    * Create an instance of this view.
@@ -77,12 +101,63 @@ export class GraphCanvasView extends GraphView {
       .on('dblclick.zoom', null);
   }
 
+  destroy() {
+    super.destroy();
+    this.stopParentFillResizeListener();
+  }
+
   startAnimationLoop() {
     // We can't render() every time something changes, because some events
     // happen very frequently when they do happen (i.e. mousemove),
     // so we'll flag a render as needed and render during an animation
     // frame to improve performance
     requestAnimationFrame(this.animationFrameFired.bind(this));
+  }
+
+  /**
+   * Start a listener that will cause the canvas to fill its parent element
+   * whenever the parent resizes. This method can be called more than once
+   * and it will not re-subscribe.
+   */
+  startParentFillResizeListener() {
+    if (this.canvasResizePendingSubscription) {
+      return;
+    }
+    // Handle resizing of the canvas, but doing it with a throttled stream
+    // so we don't burn extra CPU cycles resizing repeatedly unnecessarily
+    this.canvasResizePendingSubscription = this.canvasResizePendingSubject
+      .pipe(throttleTime(250, asyncScheduler, {
+        leading: true,
+        trailing: true
+      }))
+      .subscribe(([width, height]) => {
+        this.setSize(width, height);
+      });
+    const pushResize = () => {
+      this.canvasResizePendingSubject.next([
+        this.canvas.clientWidth,
+        this.canvas.clientHeight,
+      ]);
+    };
+    // @ts-ignore
+    this.canvasResizeObserver = new window.ResizeObserver(pushResize);
+    // TODO: Can we depend on ResizeObserver yet?
+    this.canvasResizeObserver.observe(this.canvas.parentNode);
+    pushResize();
+  }
+
+  /**
+   * Stop trying to resize the canvas to fit its parent node.
+   */
+  stopParentFillResizeListener() {
+    if (this.canvasResizePendingSubscription) {
+      this.canvasResizePendingSubscription.unsubscribe();
+      this.canvasResizePendingSubscription = null;
+    }
+    if (this.canvasResizeObserver) {
+      this.canvasResizeObserver.disconnect();
+      this.canvasResizeObserver = null;
+    }
   }
 
   get width() {
@@ -218,8 +293,12 @@ export class GraphCanvasView extends GraphView {
     const noZoomScale = 1 / transform.scale(1).k;
 
     ctx.save();
-    ctx.fillStyle = '#f2f2f2';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    if (this.backgroundFill) {
+      ctx.fillStyle = this.backgroundFill;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    } else {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
     ctx.translate(transform.x, transform.y);
     ctx.scale(transform.k, transform.k);
 

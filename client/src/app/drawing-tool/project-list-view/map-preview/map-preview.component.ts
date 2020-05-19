@@ -1,8 +1,10 @@
-import { Component, OnInit, Input } from '@angular/core';
-import { GraphSelectionData, UniversalGraph, VisNetworkGraphEdge, Project } from 'app/drawing-tool/services/interfaces';
-import { NetworkVis } from 'app/drawing-tool/network-vis';
+import { AfterViewInit, Component, Input, NgZone, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Project } from 'app/drawing-tool/services/interfaces';
 import { ProjectsService } from 'app/drawing-tool/services';
 import { ActivatedRoute } from '@angular/router';
+import { GraphCanvasView } from '../../../graph-viewer/graph-canvas-view';
+import { delay, first } from 'rxjs/operators';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-map-preview',
@@ -11,65 +13,27 @@ import { ActivatedRoute } from '@angular/router';
     './map-preview.component.scss'
   ]
 })
-export class MapPreviewComponent implements OnInit {
-  /** vis ojbect to control network-graph vis */
-  visGraph: NetworkVis = null;
-
-  /** The edge or node focused on */
-  focusedEntity: GraphSelectionData = null;
+export class MapPreviewComponent implements OnInit, AfterViewInit, OnDestroy {
+  @ViewChild('canvas', {static: true}) canvasChild;
+  graphCanvas: GraphCanvasView;
+  canvasResizePendingSubscription: Subscription;
 
   /**
-   * Decide if network graph is visualized
-   * in full-screen or preview mode
+   * Decide if network graph is visualized in full-screen or preview mode
    */
   screenMode = 'shrink';
 
   childMode = true;
 
-  // tslint:disable-next-line: variable-name
-  _project: Project = null;
-  get project() {
-    return this._project;
-  }
-
-  @Input('project')
-  set project(val: Project) {
-    this._project = val;
-
-    const g = this.projectService.universe2Vis(val.graph);
-
-    const container = document.getElementById('canvas');
-    this.visGraph = new NetworkVis(container);
-
-    setTimeout(
-      () => {
-        this.visGraph.draw(
-          g.nodes,
-          g.edges
-        );
-
-        this.visGraph.network.on(
-          'click',
-          (properties) => this.networkClickHandler(properties)
-        );
-      },
-      100
-    );
-  }
-
-  get node() {
-    if (!this.focusedEntity) { return null; }
-
-    return this.focusedEntity.nodeData;
-  }
-
-  get nodeStyle() {
-    return this.focusedEntity.nodeData.group || '';
-  }
+  /**
+   * Holds the current project.
+   */
+  currentProject: Project = null;
 
   constructor(
     private projectService: ProjectsService,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private ngZone: NgZone,
   ) {
     if (this.route.snapshot.params.hash_id) {
       this.projectService.serveProject(
@@ -88,57 +52,52 @@ export class MapPreviewComponent implements OnInit {
   }
 
   ngOnInit() {
-
   }
 
-  /**
-   * Allow user to navigate to a link in a new tab
-   * @param hyperlink - the linkto navigate to
-   */
-  goToLink(hyperlink: string) {
-    if (
-      hyperlink.includes('http')
-    ) {
-      window.open(hyperlink, '_blank');
-    } else {
-      window.open('http://' + hyperlink);
+  ngAfterViewInit() {
+    this.graphCanvas = new GraphCanvasView(this.canvasChild.nativeElement as HTMLCanvasElement);
+    this.graphCanvas.startParentFillResizeListener();
+
+    this.ngZone.runOutsideAngular(() => {
+      this.graphCanvas.startAnimationLoop();
+    });
+
+    // Layout is not finalized at this point so we have to re-zoom-to-fit
+    // the first time we open the map up
+    this.canvasResizePendingSubscription = this.graphCanvas.canvasResizePendingSubject
+      .pipe(first(), delay(500))
+      .subscribe(([width, height]) => {
+        this.graphCanvas.zoomToFit(0);
+      });
+
+    // The @Input is set before we are ready, so we update the
+    // graph here
+    if (this.currentProject) {
+      this.graphCanvas.setGraph(this.currentProject.graph);
     }
   }
 
-  /**
-   * Listen for click events from vis.js network
-   * to handle certain events ..
-   * - if a node is clicked on
-   * - if a edge is clicked on
-   * - if a node is clicked on during addMode
-   * @param properties - edge or node entity clicked on
-   */
-  networkClickHandler(properties) {
-    if (properties.nodes.length) {
-      // If a node is clicked on
-      const nodeId = properties.nodes[0];
-      this.focusedEntity = this.visGraph.getNode(nodeId);
-    } else if (properties.edges.length) {
-      // If an edge is clicked on
-      // do nothing ..
-    } else {
-      this.focusedEntity = null;
-    }
+  ngOnDestroy() {
+    this.canvasResizePendingSubscription.unsubscribe();
+    this.graphCanvas.destroy();
   }
 
-  /**
-   * Return other node connected to source in edge on a given edge
-   * @param edge - represent edge from vis.js network
-   */
-  getNode(edge: VisNetworkGraphEdge) {
-    return this.focusedEntity.otherNodes.filter(
-      node => node.id === edge.to
-    )[0].label;
+  get project() {
+    return this.currentProject;
+  }
+
+  @Input('project')
+  set project(val: Project) {
+    this.currentProject = val;
+
+    if (this.graphCanvas) {
+      this.graphCanvas.setGraph(this.currentProject.graph);
+    }
   }
 
   /** Zoom to all the nodes on canvas  */
   fit() {
-    this.visGraph.zoom2All();
+    this.graphCanvas.zoomToFit();
   }
 
   /** Switch between full-screen and preview mode of */
@@ -149,7 +108,7 @@ export class MapPreviewComponent implements OnInit {
     const listWidth = this.screenMode === 'shrink' ? '25%' : '0%';
     const previewWidth = this.screenMode === 'shrink' ? '75%' : '100%';
     const listDuration = this.screenMode === 'shrink' ? 500 : 400;
-    const previewDuration = this.screenMode === 'shrink' ? 400 : 500;
+    const previewDuration = 0;
     const containerHeight = this.screenMode === 'shrink' ? '70vh' : '100vh';
     const panelHeight = this.screenMode === 'shrink' ? '30vh' : '0vh';
 
