@@ -624,12 +624,17 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
       this.dropSearchNode(event) : this.dropNode(event);
   }
 
+  /**
+   * Handle drop events from the map list
+   * @param event - represent map schema through dom element
+   */
   dropMap(event: CdkDragDrop<any>) {
     const nativeElement = event.item.element.nativeElement;
 
     const mapId = nativeElement.id;
     const label = nativeElement.children[0].textContent;
     const source = '/dt/map/' + mapId;
+    const hyperlink = window.location.host + source;
 
     // Get DOM coordinate of dropped node relative
     // to container DOM
@@ -661,7 +666,8 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
         group: 'map',
         label,
         ...coord,
-        source
+        source,
+        hyperlink
       }
     };
     this.recordCommand(cmd);
@@ -710,7 +716,7 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
    */
   dropNode(event: CdkDragDrop<any>) {
     const nodeType = event.item.element.nativeElement.id;
-    const label = `${nodeType}-${makeid()}`;
+    const label = `${nodeType}`;
 
     // Get DOM coordinate of dropped node relative
     // to container DOM

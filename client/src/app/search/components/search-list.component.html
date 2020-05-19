@@ -7,7 +7,7 @@
       *ngFor="let n of nodes; let i = index"
       [ngSwitch]="n.node.label"
     >
-      <app-search-record-relationships [node]="n" *ngSwitchCase="'Reference'">
+      <app-search-record-relationships [node]="n" *ngSwitchCase="'Snippet'">
       </app-search-record-relationships>
       <app-search-record-node [node]="n" *ngSwitchDefault>
       </app-search-record-node>
