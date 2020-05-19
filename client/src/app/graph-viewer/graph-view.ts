@@ -162,7 +162,6 @@ export abstract class GraphView implements GraphActionReceiver {
       new Map()
     );
 
-    this.zoomToFit(0);
     this.requestRender();
   }
 

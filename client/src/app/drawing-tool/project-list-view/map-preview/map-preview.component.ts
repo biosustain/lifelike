@@ -16,7 +16,6 @@ import { Subscription } from 'rxjs';
 export class MapPreviewComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('canvas', {static: true}) canvasChild;
   graphCanvas: GraphCanvasView;
-  canvasResizePendingSubscription: Subscription;
 
   /**
    * Decide if network graph is visualized in full-screen or preview mode
@@ -62,23 +61,15 @@ export class MapPreviewComponent implements OnInit, AfterViewInit, OnDestroy {
       this.graphCanvas.startAnimationLoop();
     });
 
-    // Layout is not finalized at this point so we have to re-zoom-to-fit
-    // the first time we open the map up
-    this.canvasResizePendingSubscription = this.graphCanvas.canvasResizePendingSubject
-      .pipe(first(), delay(500))
-      .subscribe(([width, height]) => {
-        this.graphCanvas.zoomToFit(0);
-      });
-
     // The @Input is set before we are ready, so we update the
     // graph here
     if (this.currentProject) {
       this.graphCanvas.setGraph(this.currentProject.graph);
+      this.graphCanvas.zoomToFit(0);
     }
   }
 
   ngOnDestroy() {
-    this.canvasResizePendingSubscription.unsubscribe();
     this.graphCanvas.destroy();
   }
 
@@ -92,6 +83,7 @@ export class MapPreviewComponent implements OnInit, AfterViewInit, OnDestroy {
 
     if (this.graphCanvas) {
       this.graphCanvas.setGraph(this.currentProject.graph);
+      this.graphCanvas.zoomToFit(0);
     }
   }
 
