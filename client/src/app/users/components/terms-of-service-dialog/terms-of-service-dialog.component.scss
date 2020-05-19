@@ -1,0 +1,11 @@
+#agreement-container {
+  #agreement.dialog_mode {
+    overflow-y: scroll;
+    max-height: 80vh;
+    max-width: 80vh;
+  }
+}
+
+.action:nth-child(1) {
+  margin-right: 1rem;
+}
