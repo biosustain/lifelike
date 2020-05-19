@@ -9,7 +9,7 @@ import { filter, throttleTime } from 'rxjs/operators';
 import { ClipboardService } from 'app/shared/services/clipboard.service';
 import { keyCodeRepresentsCopyEvent, keyCodeRepresentsPasteEvent } from 'app/shared/utils';
 import { DataFlowService, makeid, ProjectsService } from '../services';
-import { GraphData, LaunchApp, Project } from '../services/interfaces';
+import { LaunchApp, Project, UniversalGraphNode } from '../services/interfaces';
 import { DrawingToolContextMenuControlService } from '../services/drawing-tool-context-menu-control.service';
 import { CopyPasteMapsService } from '../services/copy-paste-maps.service';
 
@@ -79,11 +79,11 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
 
     // Listen for node addition from pdf-viewer
     this.pdfDataSubscription = this.dataFlow.$pdfDataSource.subscribe(
-      (node: GraphData) => this.fileDropped(node)
+      (node) => this.fileDropped(node)
     );
 
     // Listen for graph update from info-panel-ui
-    this.formDataSubscription = this.dataFlow.formDataSource.subscribe((action: GraphAction) => {
+    this.formDataSubscription = this.dataFlow.formDataSource.subscribe(action => {
       this.graphCanvas.execute(action);
     });
   }
@@ -299,26 +299,25 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
    * Handle a file being dropped onto the canvas.
    * @param node the node being dropped
    */
-  fileDropped(node: GraphData) {
+  fileDropped(node: UniversalGraphNode) {
     if (!node) {
       return;
     }
 
     const hash = makeid();
     const fileName = node.label;
-    const x = this.graphCanvas.transform.invertX(node.x);
-    const y = this.graphCanvas.transform.invertY(node.y);
+    const x = this.graphCanvas.transform.invertX(node.data.x);
+    const y = this.graphCanvas.transform.invertY(node.data.y);
 
     this.graphCanvas.execute(new NodeCreation(
       `Add '${fileName}' map to graph`, {
-        display_name: fileName,
+        ...node,
         hash,
-        label: node.group,
         sub_labels: [],
         data: {
+          ...node.data,
           x,
           y,
-          ...node.data,
         }
       }
     ));

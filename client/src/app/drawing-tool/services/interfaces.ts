@@ -41,77 +41,6 @@ interface GraphEntity {
   entity: UniversalGraphEntity;
 }
 
-interface VisNetworkGraphNode {
-  label?: string;
-  x?: number;
-  y?: number;
-  id?: string;
-  group?: string;
-  size?: number;
-  shape?: string;
-  icon?: any;
-  widthConstraint?: any;
-  data?: {
-    hyperlink?: string;
-    detail?: string;
-    source?: string;
-    search?: Hyperlink[];
-  };
-  color?: any;
-}
-interface VisNetworkGraphEdge {
-  id?: string;
-  from?: string;
-  to?: string;
-  label?: string;
-}
-interface VisNetworkGraph {
-  nodes: VisNetworkGraphNode[];
-  edges: VisNetworkGraphEdge[];
-}
-
-/**
- * Interface for carring data relative
- * to either node or edge
- */
-interface GraphData {
-  id?: string;
-  label?: string;
-  group?: string;
-  edges?: VisNetworkGraphEdge[];
-  hyperlink?: string;
-  detail?: string;
-  x?: number;
-  y?: number;
-  data?: {
-    hyperlink?: string;
-    source?: string;
-    detail?: string;
-    search?: Hyperlink[];
-  };
-}
-
-/**
- * Interface for handling data between canvas and panels
- */
-interface GraphSelectionData {
-  edgeData?: VisNetworkGraphEdge;
-  nodeData?: {
-    id: string,
-    shape?: string,
-    group: string,
-    label: string,
-    edges: VisNetworkGraphEdge[],
-    data: {
-      hyperlink?: string;
-      detail?: string;
-      source?: string;
-      search?: Hyperlink[];
-    }
-  };
-  otherNodes?: VisNetworkGraphNode[];
-}
-
 interface Hyperlink {
   url: string;
   domain: string;
@@ -189,9 +118,6 @@ interface Project {
 
 export {
   Project,
-  VisNetworkGraph,
-  VisNetworkGraphEdge,
-  VisNetworkGraphNode,
   UniversalGraph,
   UniversalGraphEdge,
   UniversalGraphNode,
@@ -203,7 +129,5 @@ export {
   Rect,
   Links,
   Location,
-  GraphData,
-  GraphSelectionData,
   LaunchApp
 };
