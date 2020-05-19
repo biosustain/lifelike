@@ -159,34 +159,43 @@ class AnnotationsPDFParser:
         max_length = len(char_list)
         word = ''
 
-        for i, char in enumerate(char_list):
-            curr_char = clean_char(char)
-            prev_char = clean_char(char_list[i-1])
+        check_unicode = ord
 
-            if curr_char not in MISC_SYMBOLS_AND_CHARS:
-                if curr_char in whitespace and prev_char != '-':
-                    if char_idx_map:
-                        words_with_char_idx.append((word, char_idx_map))
-                        char_idx_map = {}
-                        word = ''
-                else:
-                    if i + 1 == max_length:
-                        # reached end so add whatever is left
-                        word += curr_char
-                        char_idx_map[i] = curr_char
-                        words_with_char_idx.append((word, char_idx_map))
-                        char_idx_map = {}
-                        word = ''
+        for i, char in enumerate(char_list):
+            try:
+                if check_unicode(char) not in MISC_SYMBOLS_AND_CHARS:
+                    curr_char = clean_char(char)
+                    prev_char = clean_char(char_list[i-1])
+
+                    if curr_char in whitespace and prev_char != '-':
+                        if char_idx_map:
+                            words_with_char_idx.append((word, char_idx_map))
+                            char_idx_map = {}
+                            word = ''
                     else:
-                        next_char = clean_char(char_list[i+1])
-                        if ((curr_char == '-' and next_char in whitespace) or
-                            (curr_char in whitespace and prev_char == '-')):  # noqa
-                            # word is possibly on new line
-                            # so ignore the space
-                            pass
-                        else:
+                        if i + 1 == max_length:
+                            # reached end so add whatever is left
                             word += curr_char
                             char_idx_map[i] = curr_char
+                            words_with_char_idx.append((word, char_idx_map))
+                            char_idx_map = {}
+                            word = ''
+                        else:
+                            next_char = clean_char(char_list[i+1])
+                            if ((curr_char == '-' and next_char in whitespace) or
+                                (curr_char in whitespace and prev_char == '-')):  # noqa
+                                # word is possibly on new line
+                                # so ignore the space
+                                pass
+                            else:
+                                word += curr_char
+                                char_idx_map[i] = curr_char
+            except TypeError:
+                # checking ord() failed
+                # if a char is composed of multiple characters
+                # then it is a pdf parser problem
+                # need to find a better one
+                continue
         return words_with_char_idx
 
     def extract_tokens(
