@@ -5,7 +5,7 @@ import { Hyperlink, SearchLink } from 'app/shared/constants';
 
 import { DataFlowService, PdfAnnotationsService, } from '../services';
 
-import { Annotation, GraphData, Location, Meta } from '../services/interfaces';
+import { Annotation, Location, Meta, UniversalGraphNode } from '../services/interfaces';
 
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
@@ -237,7 +237,7 @@ export class PdfViewerComponent implements OnDestroy {
 
     const containerCoord: DOMRect =
       document
-        .getElementById('drawing-tool-view-container')
+        .getElementById('drawing-tool-view-canvas')
         .getBoundingClientRect() as DOMRect;
 
     // everything that graphbuilder might need is under meta
@@ -286,19 +286,19 @@ export class PdfViewerComponent implements OnDestroy {
       }
     };
 
-    const payload: GraphData = {
-      x: mouseEvent.clientX - containerCoord.x,
-      y: mouseEvent.clientY,
-      label: meta.allText,
-      group: mapper(meta.type),
+    this.dataFlow.pushNode2Canvas({
+      hash: '', // To be replaced
+      display_name: meta.allText,
+      label: mapper(meta.type),
+      sub_labels: [],
       data: {
+        x: mouseEvent.clientX - containerCoord.x,
+        y: mouseEvent.clientY,
         source,
         search,
         hyperlink
       }
-    };
-
-    this.dataFlow.pushNode2Canvas(payload);
+    });
   }
 
   openFileDialog() {
