@@ -8,6 +8,7 @@ import { AngularMaterialModule } from 'app/shared/angular-material.module';
 import { AppRoutingModule } from 'app/app-routing.module';
 import { RouterModule } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
+import {NodeSearchModule} from '../../../node-search/node-search.module';
 
 describe('MapPreviewComponent', () => {
   let component: MapPreviewComponent;
@@ -18,6 +19,7 @@ describe('MapPreviewComponent', () => {
       imports: [
         AngularMaterialModule,
         DrawingToolModule,
+        NodeSearchModule,
         RootStoreModule,
         RouterTestingModule
       ],
