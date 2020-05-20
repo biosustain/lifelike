@@ -33,7 +33,7 @@ export class GraphCanvasView extends GraphView {
    * taken into consideration whenever mapping between graph coordinates and
    * viewport coordinates.
    */
-  protected d3Tansform = d3.zoomIdentity;
+  protected d3Transform = d3.zoomIdentity;
 
   /**
    * The current position of the mouse (graph coordinates) if the user is
@@ -210,7 +210,7 @@ export class GraphCanvasView extends GraphView {
   }
 
   get transform() {
-    return this.d3Tansform;
+    return this.d3Transform;
   }
 
   get currentHoverPosition(): { x: number, y: number } | undefined {
@@ -702,7 +702,7 @@ export class GraphCanvasView extends GraphView {
 
   canvasZoomed(): void {
     const [mouseX, mouseY] = d3.mouse(this.canvas);
-    this.d3Tansform = d3.event.transform;
+    this.d3Transform = d3.event.transform;
     this.panningOrZooming = true;
     this.touchPosition = {
       position: {
