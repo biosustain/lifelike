@@ -10,15 +10,18 @@ import {
   ViewChild,
   ViewContainerRef
 } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import {ActivatedRoute} from '@angular/router';
 
-import { PdfViewerComponent } from '../pdf-viewer/pdf-viewer.component';
-import { MapListComponent } from '../project-list-view/map-list/map-list.component';
-import { Observable, Subscription } from 'rxjs';
-import { LaunchApp, Location } from '../services/interfaces';
-import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
-import { FileSelectionDialogComponent } from '../../file-browser/file-selection-dialog.component';
-import { PdfFile } from '../../interfaces/pdf-files.interface';
+import {PdfViewerComponent} from '../pdf-viewer/pdf-viewer.component';
+import {MapListComponent} from '../project-list-view/map-list/map-list.component';
+import {Observable, Subscription} from 'rxjs';
+import {LaunchApp, Location} from '../services/interfaces';
+import {MatDialog, MatDialogConfig} from '@angular/material/dialog';
+import {FileSelectionDialogComponent} from '../../file-browser/file-selection-dialog.component';
+import {PdfFile} from '../../interfaces/pdf-files.interface';
+import {NodeSearchComponent} from '../../node-search/containers/node-search.component';
+
+
 
 @Component({
   selector: 'app-splitter',
@@ -142,6 +145,10 @@ export class SplitterComponent implements OnInit, OnDestroy, AfterViewInit {
       switch (appCmd.app) {
         case 'map-search':
           factory = this.r.resolveComponentFactory(MapListComponent);
+          this.splitPanelLength = 30;
+          break;
+        case 'node-search':
+          factory = this.r.resolveComponentFactory(NodeSearchComponent);
           this.splitPanelLength = 30;
           break;
         case 'pdf-viewer':

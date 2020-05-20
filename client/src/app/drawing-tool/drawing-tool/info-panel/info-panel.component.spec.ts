@@ -5,6 +5,7 @@ import { configureTestSuite } from 'ng-bullet';
 import { DrawingToolModule } from '../../drawing-tool.module';
 import { InfoPanelComponent } from './info-panel.component';
 import { RootStoreModule } from 'app/root-store';
+import {NodeSearchModule} from '../../../node-search/node-search.module';
 
 describe('InfoPanelComponent', () => {
     let component: InfoPanelComponent;
@@ -14,6 +15,7 @@ describe('InfoPanelComponent', () => {
         TestBed.configureTestingModule({
             imports: [
                 DrawingToolModule,
+                NodeSearchModule,
                 RootStoreModule
             ]
         });
