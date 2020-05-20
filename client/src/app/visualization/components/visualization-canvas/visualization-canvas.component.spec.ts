@@ -193,9 +193,16 @@ describe('VisualizationCanvasComponent', () => {
 
         mockReferenceTableRows = [
             {
-                nodeDisplayName: 'Mock Node 1',
+                nodeId: '2',
+                nodeDisplayName: 'Mock Node 2',
                 snippetCount: 1,
-                edge: mockEdgeGenerator(101, 1, 'to', 2),
+                edge: mockDuplicateEdgeGenerator(101, 1, 'to', 2),
+            } as ReferenceTableRow,
+            {
+                nodeId: '3',
+                nodeDisplayName: 'Mock Node 3',
+                snippetCount: 1,
+                edge: mockDuplicateEdgeGenerator(101, 1, 'to', 3),
             } as ReferenceTableRow,
         ];
 
@@ -408,7 +415,7 @@ describe('VisualizationCanvasComponent', () => {
         const clusterInfo = instance.clusters.entries().next();
         const clusterEdge = instance.networkGraph.getConnectedEdges(clusterInfo.value[0])[0];
 
-        expect(clusterInfo.value[1]).toEqual('Mock Edge');
+        expect(clusterInfo.value[1]).toEqual(mockReferenceTableRows);
         expect(instance.isNotAClusterEdge(clusterEdge)).toBeFalse();
     });
 
@@ -758,15 +765,31 @@ describe('VisualizationCanvasComponent', () => {
         expect(expandOrCollapseNodeSpy).toHaveBeenCalledWith(1);
     });
 
-    // TODO: Create a real cluster
-    it('should not open the context menu if a cluster is right-clicked', () => {
-        spyOn(instance.networkGraph, 'getNodeAt').and.returnValue(1);
-        spyOn(instance.networkGraph, 'isCluster').and.returnValue(true); // Faking the cluster for now
-        const preventDefaultSpy = spyOn(mockCallbackParams.event, 'preventDefault');
+    it('should show tooltip, update selected cluster nodes, and update sidebar if an unselected cluster is right-clicked', () => {
+        spyOn(visualizationService, 'getReferenceTableData').and.returnValue(
+            of(mockGetReferenceTableDataResult)
+        );
+
+        instance.groupNeighborsWithRelationship(mockGroupRequest);
+        const clusterInfo = instance.clusters.entries().next();
+        const clusterId = clusterInfo.value[0];
+
+        spyOn(instance.networkGraph, 'getNodeAt').and.returnValue(clusterId);
+        spyOn(instance.networkGraph, 'getEdgeAt').and.returnValue(undefined);
+        spyOn(instance.networkGraph, 'isCluster').and.returnValue(true);
+        const networkGraphSelectNodesSpy = spyOn(instance.networkGraph, 'selectNodes').and.callThrough();
+        const updateSelectedNodesAndEdgesSpy = spyOn(instance, 'updateSelectedNodesAndEdges').and.callThrough();
+        const showTooltipSpy = spyOn(contextMenuControlService, 'showTooltip');
+        const updateSidebarEntitySpy = spyOn(instance, 'updateSidebarEntity');
 
         instance.onContextCallback(mockCallbackParams);
 
-        expect(preventDefaultSpy).not.toHaveBeenCalled();
+        expect(networkGraphSelectNodesSpy).toHaveBeenCalledWith([clusterId], false);
+        expect(updateSelectedNodesAndEdgesSpy).toHaveBeenCalled();
+        expect(instance.selectedNodes.includes(clusterId)).toBeTrue();
+        expect(instance.selectedClusterNodeData.length).toEqual(2);
+        expect(showTooltipSpy).toHaveBeenCalled();
+        expect(updateSidebarEntitySpy).toHaveBeenCalled();
     });
 
     it('should select the node, show tooltip, and update sidebar if an unselected node is right-clicked', () => {
@@ -897,5 +920,58 @@ describe('VisualizationCanvasComponent', () => {
         expect(instance.selectedEdges.includes(101)).toBeTrue();
         expect(clearSelectedNodeEdgeLabelDataSpy).toHaveBeenCalled();
         expect(instance.selectedNodeEdgeLabelData.size).toEqual(0);
+    });
+
+    it('removeNodeFromCluster should pull out a single node from a cluster', async () => {
+        spyOn(visualizationService, 'getReferenceTableData').and.returnValue(
+            of(mockGetReferenceTableDataResult)
+        );
+
+        instance.groupNeighborsWithRelationship(mockGroupRequest);
+
+        const clusterInfo = instance.clusters.entries().next();
+        const clusterId = clusterInfo.value[0];
+        const clusteredNodeIdsBeforeRemoval = instance.networkGraph.getNodesInCluster(clusterId);
+
+        instance.removeNodeFromCluster(clusteredNodeIdsBeforeRemoval[0]);
+
+        const clusteredNodeIdsAfterRemoval = instance.networkGraph.getNodesInCluster(clusterId);
+
+        expect(clusteredNodeIdsAfterRemoval.length).toEqual(1);
+        expect(clusteredNodeIdsAfterRemoval[0]).toEqual(clusteredNodeIdsBeforeRemoval[1]);
+        expect(instance.nodes.get(2)).toBeTruthy();
+        expect(instance.nodes.get(3)).toBeNull();
+    });
+
+    it('removeNodeFromCluster should open the cluster if there is only one node left in it', () => {
+        spyOn(visualizationService, 'getReferenceTableData').and.returnValue(
+            of(mockGetReferenceTableDataResult)
+        );
+
+        instance.groupNeighborsWithRelationship(mockGroupRequest);
+
+        const clusterInfo = instance.clusters.entries().next();
+        const clusterId = clusterInfo.value[0];
+        const clusteredNodeIdsBeforeRemoval = instance.networkGraph.getNodesInCluster(clusterId);
+
+        // Set the selectedClusterNodeData so we can test that it is mutated properly
+        instance.selectedClusterNodeData = clusteredNodeIdsBeforeRemoval.map(nodeId => instance.nodes.get(nodeId));
+
+        // Replace the mocked reference table IDs with the duplicate IDs that were randomly generated.
+        // Otherwise the removeNodeFromCluster function won't behave properly, as it expects the actual
+        // IDs.
+        instance.clusters.get(clusterId)[0].nodeId = clusteredNodeIdsBeforeRemoval[0] as string;
+        instance.clusters.get(clusterId)[1].nodeId = clusteredNodeIdsBeforeRemoval[1] as string;
+
+        instance.removeNodeFromCluster(clusteredNodeIdsBeforeRemoval[0]);
+
+        expect(instance.selectedClusterNodeData.length).toEqual(1);
+
+        instance.removeNodeFromCluster(clusteredNodeIdsBeforeRemoval[1]);
+
+        expect(instance.selectedClusterNodeData.length).toEqual(0);
+        expect(instance.clusters.size).toEqual(0);
+        expect(instance.nodes.get(2)).toBeTruthy();
+        expect(instance.nodes.get(3)).toBeTruthy();
     });
 });
