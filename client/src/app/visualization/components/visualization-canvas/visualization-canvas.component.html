@@ -35,10 +35,12 @@ we should be careful using 'autosize', as it may lead to performance problems.--
       [selectedNodeIds]="selectedNodes"
       [selectedEdgeIds]="selectedEdges"
       [selectedNodeEdgeLabelData]="selectedNodeEdgeLabelData"
+      [selectedClusterNodeData]="selectedClusterNodeData"
       (groupNeighborsWithRelationship)="groupNeighborsWithRelationship($event)"
       (removeNodes)="removeNodes($event)"
       (removeEdges)="removeEdges($event)"
       (selectNeighbors)="selectNeighbors($event)"
+      (pullOutNodeFromCluster)="removeNodeFromCluster($event)"
     ></app-context-menu>
     <button id="sidenav-toggle-button" mat-mini-fab (click)="toggleSidenavOpened()">
       <mat-icon *ngIf="sidenavOpened">chevron_right</mat-icon>
