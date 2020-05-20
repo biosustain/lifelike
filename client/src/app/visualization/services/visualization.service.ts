@@ -7,6 +7,7 @@ import {
     ClusteredNode,
     DuplicateNodeEdgePair,
     DuplicateVisEdge,
+    GetClusterDataResult,
     GetClusterGraphDataResult,
     GetReferenceTableDataResult,
     GetSnippetsResult,
@@ -73,6 +74,12 @@ export class VisualizationService {
     getLegendForVisualizer() {
         return this.http.get<{result: NodeLegend}>(
             `${this.visApi}/get-legend-for-visualizer`,
+        ).pipe(map(resp => resp.result));
+    }
+
+    getClusterData(clusteredNodes: ClusteredNode[]) {
+        return this.http.get<{result: GetClusterDataResult}>(
+            `${this.visApi}/get-cluster-data`, {params: {clusteredNodes: JSON.stringify(clusteredNodes)}}
         ).pipe(map(resp => resp.result));
     }
 }
