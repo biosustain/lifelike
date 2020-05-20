@@ -259,6 +259,7 @@ export class PdfViewerComponent implements OnDestroy {
 
     // Convert form plural to singular since annotation
     // .. if no matches are made, return as entity
+    // TODO - refactor this .... plz ...
     const mapper = (plural) => {
       switch (plural) {
         case 'Compounds':
@@ -281,6 +282,8 @@ export class PdfViewerComponent implements OnDestroy {
           return 'pathway';
         case 'Companies':
           return 'company';
+        case 'Links':
+          return 'link';
         default:
           return 'entity';
       }
@@ -288,7 +291,7 @@ export class PdfViewerComponent implements OnDestroy {
 
     this.dataFlow.pushNode2Canvas({
       hash: '', // To be replaced
-      display_name: meta.allText,
+      display_name:  meta.type === 'Links' ? '' : meta.allText,
       label: mapper(meta.type),
       sub_labels: [],
       data: {
@@ -296,7 +299,8 @@ export class PdfViewerComponent implements OnDestroy {
         y: mouseEvent.clientY,
         source,
         search,
-        hyperlink
+        hyperlink,
+        detail: meta.type === 'Links' ? meta.allText : ''
       }
     });
   }

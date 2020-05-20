@@ -86,6 +86,42 @@ services:
         depends_on:
                 - appserver
 
+    elasticsearch:
+        container_name: n4j-elasticsearch
+        build:
+            dockerfile: Dockerfile
+            context: elasticsearch
+        environment:
+            - discovery.type=single-node
+            - http.max_content_length=200mb  #allow 200mb of content to be sent for indexing
+            - bootstrap.memory_lock=true
+            - xpack.graph.enabled=false
+            - xpack.watcher.enabled=false
+            - xpack.license.self_generated.type=basic
+        ulimits:
+            memlock:
+                soft: -1
+                hard: -1
+        ports:
+            - "9200:9200"
+            - "9300:9300"
+
+        networks:
+            - backend
+
+    kibana:
+        container_name: n4j-kibana
+        image: docker.elastic.co/kibana/kibana:7.2.0
+        ports:
+            - "5601:5601"
+        environment:
+            SERVER_NAME: localhost
+            ELASTICSEARCH_URL: http://elasticsearch:9200
+        depends_on:
+            - elasticsearch
+        networks:
+            - backend
+
 networks:
     frontend:
     backend:
