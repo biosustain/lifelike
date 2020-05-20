@@ -1,0 +1,33 @@
+table {
+  width: 100%;
+}
+
+.my-fab {
+  width: 20px;
+  height: 20px;
+  line-height: 14px;
+  font-size: 14px;
+
+  &::ng-deep .mat-button-wrapper {
+    line-height: 14px;
+    padding: 0;
+
+    .mat-icon {
+      height: 22px;
+      width: 20px;
+      font-size: 14px;
+      padding-top: 4px;
+    }
+  }
+}
+
+.mat-header-cell {
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+}
+
+.mat-cell {
+  text-align: center;
+  justify-content:center;
+}
