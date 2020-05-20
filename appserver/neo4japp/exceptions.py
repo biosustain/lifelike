@@ -67,3 +67,9 @@ class BadRequestError(BaseException):
     message should be shown to the user."""
     def __init__(self, message):
         super().__init__('Bad Request Error', message)
+
+
+class DataNotAvailableException(BaseException):
+    """Signals that the requested data is not available in a storage."""
+    def __init__(self, message):
+        super().__init__('Data Not Available Error', message)
