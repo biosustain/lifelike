@@ -1,15 +1,7 @@
 import { UniversalGraphEdge, UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
 import { EdgeRenderStyle, PlacedEdge, PlacedNode, PlacementOptions } from './graph-styles';
 import { getLinePointIntersectionDistance } from '../utils/geometry';
-import {
-  Arrowhead,
-  CircleHead,
-  CompoundTerminator,
-  CrossAxisLineHead, CustomHead,
-  DiamondHead,
-  EmptyTerminator,
-  RectangleHead
-} from './line-terminators';
+import { Arrowhead } from './line-terminators';
 
 /**
  * Renders a basic edge.
@@ -27,61 +19,11 @@ export class BasicEdgeStyle implements EdgeRenderStyle {
     const highDetailLevel = transform.k >= 0.35 || options.selected || options.highlighted;
     const lineWidth = (options.highlighted ? 1.5 : 1) * zoomResetScale;
     const color = !options.highlighted || options.highlighted ? '#2B7CE9' : '#ACCFFF';
-    const endTerminator = new CompoundTerminator([
-      new Arrowhead(16, {
-        fillStyle: color,
-        strokeStyle: null,
-        lineWidth,
-      }),
-      new EmptyTerminator(2),
-      new Arrowhead(16, {
-        fillStyle: color,
-        strokeStyle: null,
-        inset: 0.5,
-        lineWidth,
-      }),
-      new EmptyTerminator(8),
-      new Arrowhead(16, {
-        fillStyle: null,
-        strokeStyle: color,
-        lineWidth,
-      }),
-      new EmptyTerminator(4),
-      new CircleHead(16, {
-        fillStyle: color,
-        strokeStyle: null,
-      }),
-      new EmptyTerminator(4),
-      new CrossAxisLineHead(16, {
-        fillStyle: color,
-        strokeStyle: null,
-      }),
-      new EmptyTerminator(4),
-      new RectangleHead(16, 16, {
-        fillStyle: null,
-        strokeStyle: color,
-        lineWidth: 1,
-      }),
-      new EmptyTerminator(4),
-      new DiamondHead(16, 24, {
-        fillStyle: null,
-        strokeStyle: color,
-        lineWidth: 1,
-      }),
-      new EmptyTerminator(4),
-      new CustomHead([
-        -5, 5,
-        0, -7,
-        -2, 5,
-        6, -10,
-      ], [
-        0, 0
-      ], {
-        fillStyle: null,
-        strokeStyle: color,
-        lineWidth: 1,
-      })
-    ]);
+    const endTerminator = new Arrowhead(16, {
+      fillStyle: color,
+      strokeStyle: null,
+      lineWidth,
+    });
 
     return new class implements PlacedEdge {
       isPointIntersecting(x: number, y: number): boolean {
@@ -147,6 +89,7 @@ export class BasicEdgeStyle implements EdgeRenderStyle {
     }();
   }
 }
+
 
 /**
  * Default renderer used for edges.
