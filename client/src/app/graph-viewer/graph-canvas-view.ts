@@ -250,15 +250,15 @@ export class GraphCanvasView extends GraphView {
     }
   }
 
-  placeEdge(d: UniversalGraphEdge,
-            from: UniversalGraphNode,
-            to: UniversalGraphNode): PlacedEdge {
+  placeEdge(d: UniversalGraphEdge): PlacedEdge {
     let placedEdge = this.placedEdgesCache.get(d);
     if (placedEdge) {
       return placedEdge;
     } else {
       const ctx = this.canvas.getContext('2d');
 
+      const from = this.expectNodeByHash(d.from);
+      const to = this.expectNodeByHash(d.to);
       const placedFrom: PlacedNode = this.placeNode(from);
       const placedTo: PlacedNode = this.placeNode(to);
 
@@ -367,12 +367,8 @@ export class GraphCanvasView extends GraphView {
   }
 
   render() {
-    const transform = this.transform;
     const canvas = this.canvas;
     const ctx = canvas.getContext('2d');
-
-    // Multiply any values by this number to have it *NOT* scale with zoom
-    const noZoomScale = 1 / transform.scale(1).k;
 
     ctx.save();
     if (this.backgroundFill) {
@@ -381,13 +377,24 @@ export class GraphCanvasView extends GraphView {
     } else {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
     }
-    ctx.translate(transform.x, transform.y);
-    ctx.scale(transform.k, transform.k);
+    ctx.translate(this.transform.x, this.transform.y);
+    ctx.scale(this.transform.k, this.transform.k);
 
-    // Draw touch or mouse click position
-    // ---------------------------------
+    this.drawTouchPosition(ctx);
+    this.drawHighlightBackground(ctx);
+    this.drawLayoutGroups(ctx);
+    this.drawInteractiveEdgeCreation(ctx);
+    this.drawEdges(ctx);
+    this.drawNodes(ctx);
 
+    ctx.restore();
+
+    this.updateMouseCursor();
+  }
+
+  private drawTouchPosition(ctx: CanvasRenderingContext2D) {
     if (this.touchPosition) {
+      const noZoomScale = 1 / this.transform.scale(1).k;
       const touchPositionEntity = this.touchPosition.entity;
 
       if (touchPositionEntity != null && touchPositionEntity.type === GraphEntityType.Node) {
@@ -403,10 +410,9 @@ export class GraphCanvasView extends GraphView {
         ctx.fill();
       }
     }
+  }
 
-    // Draw a background behind highlighted entity
-    // ---------------------------------
-
+  private drawHighlightBackground(ctx: CanvasRenderingContext2D) {
     if (!this.touchPosition) {
       const highlighted = this.highlighting.get();
       for (const highlightedEntity of highlighted) {
@@ -419,14 +425,13 @@ export class GraphCanvasView extends GraphView {
         }
       }
     }
+  }
 
-    // Draw the groups
-    // ---------------------------------
-
+  private drawLayoutGroups(ctx: CanvasRenderingContext2D) {
     // TODO: This is currently only for demo
-    this.layoutGroups.forEach((d, i) => {
-      ctx.beginPath();
+    for (const d of this.layoutGroups) {
       if (d.leaves.length) {
+        ctx.beginPath();
         const bbox = this.getBoundingBox(d.leaves.map(entry => entry.reference), 10);
         ctx.fillStyle = d.color;
         ctx.strokeStyle = d.color;
@@ -436,10 +441,11 @@ export class GraphCanvasView extends GraphView {
         ctx.globalAlpha = 1;
         ctx.stroke();
       }
-    });
+    }
+  }
 
-    // Draw the interactive edge creation feature
-    // ---------------------------------
+  private drawInteractiveEdgeCreation(ctx: CanvasRenderingContext2D) {
+    const noZoomScale = 1 / this.transform.scale(1).k;
 
     if (this.interactiveEdgeCreationState && this.interactiveEdgeCreationState.to) {
       ctx.beginPath();
@@ -476,44 +482,47 @@ export class GraphCanvasView extends GraphView {
       ctx.fillStyle = '#97C2FC';
       ctx.fill();
     }
+  }
 
-    // Draw edges
-    // ---------------------------------
+  private drawEdges(ctx: CanvasRenderingContext2D) {
+    const transform = this.transform;
+    const placeEdge = this.placeEdge.bind(this);
+
+    // Use named functions for easier profiling
+    function linkUpEdges(d: UniversalGraphEdge) {
+      // TODO: This step is inefficient so fix it
+      return {
+        d,
+        placedEdge: placeEdge(d),
+      };
+    }
+
+    // Use named functions for easier profiling
+    function drawEdgeLines({d, placedEdge}) {
+      ctx.beginPath();
+      placedEdge.render(transform);
+    }
+
+    // Use named functions for easier profiling
+    function drawEdgeLabels({d, placedEdge}) {
+      ctx.beginPath();
+      placedEdge.renderLayer2(transform);
+    }
 
     // We need to turn edges into PlacedEdge objects before we can render them,
     // but the process involves calculating various metrics, which we don't
     // want to do more than once if we need to render in multiple Z-layers (line + text)
-    const edgeRenderObjects = this.edges.map(d => ({
-      d,
-      placedEdge: this.placeEdge(d, this.expectNodeByHash(d.from), this.expectNodeByHash(d.to)),
-    }));
+    const edgeRenderObjects = this.edges.map(linkUpEdges);
 
-    // Draw layer 1 (usually the line)
-    edgeRenderObjects.forEach(({d, placedEdge}) => {
+    edgeRenderObjects.forEach(drawEdgeLines);
+    edgeRenderObjects.forEach(drawEdgeLabels);
+  }
+
+  private drawNodes(ctx: CanvasRenderingContext2D) {
+    for (const d of this.nodes) {
       ctx.beginPath();
-      placedEdge.render(transform);
-    });
-
-    // Draw layer 2 (usually text)
-    edgeRenderObjects.forEach(({d, placedEdge}) => {
-      ctx.beginPath();
-      placedEdge.renderLayer2(transform);
-    });
-
-    // Draw nodes
-    // ---------------------------------
-
-    this.nodes.forEach((d, i) => {
-      ctx.beginPath();
-      this.placeNode(d).render(transform);
-    });
-
-    ctx.restore();
-
-    // Cursor management
-    // ---------------------------------
-
-    this.updateMouseCursor();
+      this.placeNode(d).render(this.transform);
+    }
   }
 
   /**
