@@ -518,7 +518,7 @@ export abstract class GraphView implements GraphActionReceiver {
    * @param entities a list of entities to check
    */
   isAnySelected(...entities: UniversalGraphEntity[]) {
-    if (!this.selected) {
+    if (!this.selected.length) {
       return false;
     }
     for (const d of entities) {
@@ -528,6 +528,7 @@ export abstract class GraphView implements GraphActionReceiver {
         }
       }
     }
+    return false;
   }
 
   /**
@@ -554,7 +555,13 @@ export abstract class GraphView implements GraphActionReceiver {
     if (entities == null) {
       throw new Error('API use incorrect: pass empty array for no selection');
     }
+    for (const d of this.selected) {
+      this.invalidateEntity(d);
+    }
     this.selected = entities;
+    for (const d of this.selected) {
+      this.invalidateEntity(d);
+    }
     this.selectionObservable.next(entities);
   }
 
