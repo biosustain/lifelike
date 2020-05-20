@@ -380,9 +380,7 @@ export abstract class GraphView implements GraphActionReceiver {
    */
   getEdgeAtPosition(edges: UniversalGraphEdge[], x: number, y: number): UniversalGraphEdge | undefined {
     for (const d of edges) {
-      const from = this.expectNodeByHash(d.from);
-      const to = this.expectNodeByHash(d.to);
-      if (this.placeEdge(d, from, to).isPointIntersecting(x, y)) {
+      if (this.placeEdge(d).isPointIntersecting(x, y)) {
         return d;
       }
     }
@@ -433,12 +431,8 @@ export abstract class GraphView implements GraphActionReceiver {
    * to get these metrics or use the object to render the node. The
    * returned object has the style of the edge baked into it.
    * @param d the edge
-   * @param from the start node
-   * @param to the end node
    */
-  abstract placeEdge(d: UniversalGraphEdge,
-                     from: UniversalGraphNode,
-                     to: UniversalGraphNode): PlacedEdge;
+  abstract placeEdge(d: UniversalGraphEdge): PlacedEdge;
 
   // ========================================
   // View
