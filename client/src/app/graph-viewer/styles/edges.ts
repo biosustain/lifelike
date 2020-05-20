@@ -22,6 +22,16 @@ export class BasicEdgeStyle implements EdgeRenderStyle {
       lineWidth,
     });
 
+    const font = (options.highlighted ? 'bold ' : '') + '16px Roboto';
+    const [toX, toY] = placedTo.lineIntersectionPoint(from.data.x, from.data.y);
+    const [fromX, fromY] = placedFrom.lineIntersectionPoint(to.data.x, to.data.y);
+    ctx.font = font;
+    const textSize = ctx.measureText(d.label);
+    const labelTextWidth = textSize.width;
+    const labelTextHeight = textSize.actualBoundingBoxAscent + textSize.actualBoundingBoxDescent;
+    const labelX = Math.abs(fromX - toX) / 2 + Math.min(fromX, toX) - labelTextWidth / 2;
+    const labelY = Math.abs(fromY - toY) / 2 + Math.min(fromY, toY) + labelTextHeight / 2;
+
     return new class implements PlacedEdge {
       isPointIntersecting(x: number, y: number): boolean {
         const x1 = Math.min(from.data.x, to.data.x);
@@ -32,17 +42,6 @@ export class BasicEdgeStyle implements EdgeRenderStyle {
       }
 
       render(transform: any): void {
-        const zoomResetScale = 1 / transform.scale(1).k;
-        const highDetailLevel = transform.k >= 0.35 || options.selected || options.highlighted;
-
-        // Because we draw an arrowhead at the end, we need the line to stop at the
-        // shape's edge and not at the node center, so we need to find the intersection between
-        // the line and the node box
-        const [toX, toY] = placedTo.lineIntersectionPoint(
-          from.data.x,
-          from.data.y
-        );
-
         const drawnTerminator = endTerminator.draw(ctx, from.data.x, from.data.y, toX, toY);
 
         // Draw line
@@ -62,31 +61,18 @@ export class BasicEdgeStyle implements EdgeRenderStyle {
           return;
         }
 
-        const zoomResetScale = 1 / transform.scale(1).k;
         const highDetailLevel = transform.k >= 0.35 || options.selected || options.highlighted;
 
         if (highDetailLevel) {
-          const [toX, toY] = placedTo.lineIntersectionPoint(
-            from.data.x,
-            from.data.y
-          );
-
-          const [fromX, fromY] = placedFrom.lineIntersectionPoint(
-            to.data.x,
-            to.data.y
-          );
-
-          ctx.font = (options.highlighted ? 'bold ' : '') + '16px Roboto';
-          const textSize = ctx.measureText(d.label);
-          const width = textSize.width;
-          const height = textSize.actualBoundingBoxAscent + textSize.actualBoundingBoxDescent;
-          const x = Math.abs(fromX - toX) / 2 + Math.min(fromX, toX) - width / 2;
-          const y = Math.abs(fromY - toY) / 2 + Math.min(fromY, toY) + height / 2;
+          ctx.beginPath();
+          ctx.font = font;
+          // Draw text border
           ctx.strokeStyle = '#ffffff';
-          ctx.lineWidth = 3 * zoomResetScale;
-          ctx.strokeText(d.label, x, y);
+          ctx.lineWidth = 3;
+          ctx.strokeText(d.label, labelX, labelY);
+          // Draw text fill
           ctx.fillStyle = '#888';
-          ctx.fillText(d.label, x, y);
+          ctx.fillText(d.label, labelX, labelY);
         }
       }
     }();
