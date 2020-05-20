@@ -52,13 +52,13 @@ TYPO_SYNONYMS = {
 
 ENTITY_TYPE_PRECEDENCE = {
     # larger value takes precedence
-    'Chemicals': 2,
+    'Chemicals': 3,
     'Compounds': 2,
     'Diseases': 1,
-    'Genes': 5,
-    'Proteins': 3,
-    'Species': 6,
-    'Phenotypes': 4,
+    'Genes': 6,
+    'Proteins': 4,
+    'Species': 7,
+    'Phenotypes': 5,
 }
 
 HOMO_SAPIENS_TAX_ID = '9606'
