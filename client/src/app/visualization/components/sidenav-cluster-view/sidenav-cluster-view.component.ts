@@ -2,7 +2,7 @@ import { Component, OnInit, Input } from '@angular/core';
 
 import * as Highcharts from 'highcharts';
 
-import { SidenavClusterEntity, VisNode } from 'app/interfaces';
+import { SidenavClusterEntity, VisNode, SidenavEdgeEntity } from 'app/interfaces';
 import { isNullOrUndefined } from 'util';
 
 @Component({
@@ -14,7 +14,11 @@ export class SidenavClusterViewComponent implements OnInit {
     @Input() set clusterEntity(clusterEntity: SidenavClusterEntity) {
         this.getAllLabels(clusterEntity);
         this.createChart(clusterEntity);
+        this.snippetResults = clusterEntity.clusterSnippetData;
     }
+    @Input() legend: Map<string, string[]>;
+
+    snippetResults: SidenavEdgeEntity[];
 
     labels: string[] = [];
     clusterDataChart: Highcharts.Chart;

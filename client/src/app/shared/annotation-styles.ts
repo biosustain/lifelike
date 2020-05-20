@@ -11,8 +11,10 @@
 import { isNullOrUndefined } from 'util';
 
 interface AnnotationStyle {
+  // Mandatory fields
   label: string;
   color: string;
+  // Optional fields
   iconCode?: string;
   style?: {
     // Override the border-color of the node on vis-network
@@ -40,7 +42,7 @@ const NOTE  = '#edc949';
 const MAP = '#0277bd';
 
 const ENTITY = '#7f7f7f';
-const LINK = '#7f7f7f';
+const LINK = '#669999';
 
 // Non-Entity Types
 const CORRELATION = '#d7d9f8';
@@ -96,6 +98,7 @@ const annotationTypes: AnnotationStyle[] = [{
   {
     label: 'link',
     color: LINK,
+    iconCode: '\uf15b'
   },
   {
     label: 'entity',
@@ -116,7 +119,7 @@ const annotationTypes: AnnotationStyle[] = [{
     label: 'correlation',
     color: CORRELATION,
     style: {
-      border: '#fff',
+      border: CORRELATION,
       background: CORRELATION,
       color: '#000'
     },
@@ -125,7 +128,7 @@ const annotationTypes: AnnotationStyle[] = [{
     label: 'cause',
     color: CAUSE,
     style: {
-      border: '#fff',
+      border: CAUSE,
       background: CAUSE,
       color: '#000'
     },
@@ -134,7 +137,7 @@ const annotationTypes: AnnotationStyle[] = [{
     label: 'effect',
     color: EFFECT,
     style: {
-      border: '#fff',
+      border: EFFECT,
       background: EFFECT,
       color: '#000'
     },
@@ -143,7 +146,7 @@ const annotationTypes: AnnotationStyle[] = [{
     label: 'observation',
     color: OBSERVATION,
     style: {
-      border: '#fff',
+      border: OBSERVATION,
       background: OBSERVATION,
       color: '#000'
     },
@@ -152,7 +155,7 @@ const annotationTypes: AnnotationStyle[] = [{
     label: 'association',
     color: ASSOCIATION,
     style: {
-      border: '#fff',
+      border: ASSOCIATION,
       background: ASSOCIATION,
       color: '#000'
     },

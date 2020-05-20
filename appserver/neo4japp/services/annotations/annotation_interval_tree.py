@@ -25,7 +25,7 @@ class AnnotationIntervalTree(IntervalTree):
         data_reducer,
         data_initializer=None,
     ) -> List[Annotation]:
-        """Exactly identical just override to change return type.
+        """Override to change return type and how the merged is added.
         See self.__init__ comment.
 
         Merge all annotations with equal intervals based on
@@ -54,12 +54,10 @@ class AnnotationIntervalTree(IntervalTree):
             if merged:  # series already begun
                 lower = merged[-1]
                 if higher.range_matches(lower):  # should merge
-                    upper_bound = max(lower.end, higher.end)
-                    if data_reducer is not None:
-                        current_reduced[0] = data_reducer(current_reduced[0], higher.data)
-                    else:  # annihilate the data, since we don't know how to merge it
-                        current_reduced[0] = None
-                    merged[-1] = Interval(lower.begin, upper_bound, current_reduced[0])
+                    current_reduced[0] = data_reducer(current_reduced[0], higher.data)
+                    lower_offset = current_reduced[0].lo_location_offset or None  # type: ignore
+                    upper_offset = current_reduced[0].hi_location_offset or None  # type: ignore
+                    merged[-1] = Interval(lower_offset, upper_offset, current_reduced[0])
                 else:
                     new_series()
             else:  # not merged; is first of Intervals to merge
@@ -72,7 +70,7 @@ class AnnotationIntervalTree(IntervalTree):
         data_initializer=None,
         strict=False,
     ) -> List[Annotation]:
-        """Exactly identical just override to change return type.
+        """Override to change return type and how the merged is added.
         See self.__init__ comment.
 
         Merge all annotations with overlapping intervals based on
@@ -104,12 +102,10 @@ class AnnotationIntervalTree(IntervalTree):
                     not strict and
                     higher.begin == lower.end
                 ):  # noqa  # should merge
-                    upper_bound = max(lower.end, higher.end)
-                    if data_reducer is not None:
-                        current_reduced[0] = data_reducer(current_reduced[0], higher.data)
-                    else:  # annihilate the data, since we don't know how to merge it
-                        current_reduced[0] = None
-                    merged[-1] = Interval(lower.begin, upper_bound, current_reduced[0])
+                    current_reduced[0] = data_reducer(current_reduced[0], higher.data)
+                    lower_offset = current_reduced[0].lo_location_offset or None  # type: ignore
+                    upper_offset = current_reduced[0].hi_location_offset or None  # type: ignore
+                    merged[-1] = Interval(lower_offset, upper_offset, current_reduced[0])
                 else:
                     new_series()
             else:  # not merged; is first of Intervals to merge
