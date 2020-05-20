@@ -23,6 +23,7 @@ import {
     VisNode,
     GetReferenceTableDataResult,
     ReferenceTableRow,
+    GetClusterSnippetDataResult,
 } from 'app/interfaces';
 import { RootStoreModule } from 'app/root-store';
 import { SharedModule } from 'app/shared/shared.module';
@@ -255,7 +256,7 @@ describe('VisualizationCanvasComponent', () => {
         } as SidenavEdgeEntity);
     });
 
-    it('should update sidenav entity data when getClusterGraphDataResult changes', () => {
+    it('should update sidenav entity data when getClusterDataResult changes', () => {
         const mockGetClusterGraphDataResult = {
             results: {
                 1: {
@@ -263,14 +264,35 @@ describe('VisualizationCanvasComponent', () => {
                 }
             }
         } as GetClusterGraphDataResult;
+        const mockGetClusterSnippetDataResult = {
+            results: [
+                {
+                    fromNodeId: 1,
+                    toNodeId: 2,
+                    snippets: [],
+                    association: '',
+                } as GetSnippetsResult,
+            ]
+        } as GetClusterSnippetDataResult;
 
-        instance.getClusterGraphDataResult = mockGetClusterGraphDataResult;
+        instance.getClusterDataResult = {
+            graphData: mockGetClusterGraphDataResult,
+            snippetData: mockGetClusterSnippetDataResult,
+        };
         fixture.detectChanges();
 
-        expect(instance.sidenavEntityType).toEqual(3); // 3 = EDGE
+        expect(instance.sidenavEntityType).toEqual(3); // 3 = CLUSTER
         expect(instance.sidenavEntity).toEqual({
             includes: Object.keys(mockGetClusterGraphDataResult.results).map(nodeId => instance.nodes.get(nodeId)),
             clusterGraphData: mockGetClusterGraphDataResult,
+            clusterSnippetData: mockGetClusterSnippetDataResult.results.map(snippetResult => {
+                return {
+                    to: instance.nodes.get(snippetResult.toNodeId) as VisNode,
+                    from: instance.nodes.get(snippetResult.fromNodeId) as VisNode,
+                    association: snippetResult.association,
+                    snippets: snippetResult.snippets,
+                } as SidenavEdgeEntity;
+            }),
         });
     });
 
