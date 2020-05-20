@@ -14,6 +14,12 @@ class BaseException(Exception):
         return retval
 
 
+class AnnotationError(BaseException):
+    """AN error occured during the annotation process"""
+    def __init__(self, message, additional_msgs=[]) -> None:
+        super().__init__('Annotation Error', message, additional_msgs)
+
+
 class DatabaseError(BaseException):
     """An error occured in database operation"""
     def __init__(self, message, additional_msgs=[]) -> None:
@@ -60,13 +66,6 @@ class FormatterException(BaseException):
     dict correctly."""
     def __init__(self, message):
         super().__init__('Formatter Error', message)
-
-
-class BadRequestError(BaseException):
-    """Signals that the user may have done something wrong and that the
-    message should be shown to the user."""
-    def __init__(self, message):
-        super().__init__('Bad Request Error', message)
 
 
 class DataNotAvailableException(BaseException):
