@@ -12,6 +12,24 @@ ERROR_MAX_SLEEP_TIME = 3600 * 6         # but not longer than this
 CACHE_EXPIRATION_TIME = 3600 * 24 * 14  # expire cached data
 
 
+def main():
+    next_error_sleep_time = ERROR_INITIAL_SLEEP_TIME
+    while True:
+        try:
+            statistics = get_kg_statistics()
+            cache_data("kg_statistics", statistics)
+
+            next_error_sleep_time = ERROR_INITIAL_SLEEP_TIME
+            time.sleep(SUCCESSFUL_SLEEP_TIME)
+
+        except Exception as err:
+            print(f"Error occured, will try again in {next_error_sleep_time} seconds: {err}")
+
+            time.sleep(next_error_sleep_time)
+
+            next_error_sleep_time = min(ERROR_MAX_SLEEP_TIME, next_error_sleep_time * ERROR_SLEEP_TIME_MULTIPLIER)
+
+
 def get_kg_statistics():
     graph = Graph(
         host=os.environ.get("NEO4J_HOST"),
@@ -46,24 +64,6 @@ def cache_data(key, value):
 
     finally:
         redis_server.connection_pool.disconnect()
-
-
-def main():
-    next_error_sleep_time = ERROR_INITIAL_SLEEP_TIME
-    while True:
-        try:
-            statistics = get_kg_statistics()
-            cache_data("kg_statistics", statistics)
-
-            next_error_sleep_time = ERROR_INITIAL_SLEEP_TIME
-            time.sleep(SUCCESSFUL_SLEEP_TIME)
-
-        except Exception as err:
-            print(f"Error occured, will try again in {next_error_sleep_time} seconds: {err}")
-
-            time.sleep(next_error_sleep_time)
-
-            next_error_sleep_time = min(ERROR_MAX_SLEEP_TIME, next_error_sleep_time * ERROR_SLEEP_TIME_MULTIPLIER)
 
 
 if __name__ == '__main__':

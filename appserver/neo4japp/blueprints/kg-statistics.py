@@ -1,6 +1,7 @@
 from collections import defaultdict
 from flask import Blueprint, jsonify
 from neo4japp.database import get_neo4j
+from neo4japp.exceptions import DataNotAvailableException
 import os
 import redis
 import json
@@ -23,4 +24,4 @@ def get_knowledge_graph_statistics():
     if statistics:
         return statistics, 200
 
-    raise Exception("The data is not available")
+    raise DataNotAvailableException("")
