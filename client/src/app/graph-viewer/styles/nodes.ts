@@ -23,6 +23,7 @@ export class RoundedRectangleNodeStyle implements NodeRenderStyle {
     const nodeY = d.data.y - nodeHeight / 2;
     const nodeX2 = nodeX + nodeWidth;
     const nodeY2 = nodeY + nodeHeight;
+    const color = calculateNodeColor(d);
 
     return new class implements PlacedNode {
       getBoundingBox() {
@@ -75,7 +76,7 @@ export class RoundedRectangleNodeStyle implements NodeRenderStyle {
           // Node text
           ctx.strokeStyle = '#fff';
           ctx.lineWidth = zoomResetScale * 1.5;
-          ctx.fillStyle = calculateNodeColor(d);
+          ctx.fillStyle = color;
           ctx.fillText(d.display_name, d.data.x - textWidth / 2, d.data.y + textActualHeight / 2);
         } else {
           // Node box
@@ -115,6 +116,7 @@ export class IconNodeStyle implements NodeRenderStyle {
     const displayNameFont = calculateNodeFont(d, options.selected, options.highlighted);
     const yShift = 7; // Older renderer was a little off?
     const iconLabelSpacing = 2;
+    const color = calculateNodeColor(d);
 
     ctx.font = iconFont;
     const iconTextSize = ctx.measureText(style.iconString);
@@ -165,12 +167,12 @@ export class IconNodeStyle implements NodeRenderStyle {
       }
 
       render(transform: any): void {
-        const zoomResetScale = 1 / transform.scale(1).k;
         const highDetailLevel = transform.k >= 0.35 || options.selected || options.highlighted;
+        ctx.beginPath();
 
         // Draw icon
         ctx.font = iconFont;
-        ctx.fillStyle = style.color || calculateNodeColor(d);
+        ctx.fillStyle = style.color || color;
         ctx.fillText(
           style.iconString,
           d.data.x - iconTextWidth / 2,
