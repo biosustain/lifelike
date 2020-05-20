@@ -6,6 +6,7 @@ import { PdfViewerComponent } from './pdf-viewer/pdf-viewer.component';
 import { MatDialog } from '@angular/material/dialog';
 import { PDFPageViewport } from 'pdfjs-dist';
 import { AnnotationPanelComponent } from './annotation-panel/annotation-panel.component';
+import { annotationTypes } from 'app/shared/annotation-styles';
 
 declare var jQuery: any;
 
@@ -73,6 +74,8 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
   mouseDownClientX: number;
   mouseDownClientY: number;
   dragThreshold = 5;
+  isSelectionLink = false;
+  selectedElements: HTMLElement[] = [];
 
   opacity = 0.3;
 
@@ -87,7 +90,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
         (window as any).pdfViewerRef.componentFn();
       });
     };
-    (window as any).openLinkPanel = this.openAddLinkPanel;
+    (window as any).openLinkPanel = this.openAddLinkPanel.bind(this);
     (window as any).pdfViewerRef = {
       zone: this.zone,
       componentFn: () => this.openAnnotationPanel(),
@@ -125,6 +128,12 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
     jQuery(dropAreaIdentifier).droppable({
       accept: '.frictionless-annotation,.system-annotation',
       drop(event, ui) {
+        if (that.isSelectionLink) {
+          const meta: Meta = JSON.parse(ui.draggable[0].getAttribute('meta'));
+          meta.type = 'Links';
+          ui.draggable[0].setAttribute('meta', JSON.stringify(meta));
+        }
+
         that.dropEvents.emit({
           event,
           ui
@@ -141,7 +150,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
           clone.css({position: 'relative', top: Number($newPosY), left: Number($newPosX)});
           clone.removeClass('highlight');
         }
-
+        that.deleteFrictionless();
       }
     });
 
@@ -414,17 +423,21 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
           jQuery(ui.helper).css('opacity', 1);
           jQuery(ui.helper).css('width', '');
           jQuery(ui.helper).css('height', '');
-          jQuery(ui.helper).text(meta.allText);
+          if (that.isSelectionLink) {
+            jQuery(ui.helper).html(`<span class="fa fa-file" style="color: ${annotationTypes.find(type => type.label === 'link').color}"></span>`);
+          } else {
+            jQuery(ui.helper).text(meta.allText);
+          }
         }
       });
       jQuery(el).draggable('enable');
 
+      this.selectedElements.push(el);
       (jQuery(el) as any).qtip(
         {
 
           content: `<img src="assets/images/annotate.png" onclick="openAnnotationPanel()">
-            <img src="assets/images/link.png" onclick="openLinkPanel()">
-            <img src="assets/images/trash.png" onclick="deleteFrictionless()">`,
+            <img src="assets/images/link.png" onclick="openLinkPanel()">`,
           position: {
             my: 'bottom center',
             target: 'mouse',
@@ -461,6 +474,8 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
     this.selectedText = [];
     this.selectedTextCoords = [];
     this.allText = '';
+    this.isSelectionLink = false;
+    this.selectedElements = [];
   }
 
   openAnnotationPanel() {
@@ -484,7 +499,8 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   openAddLinkPanel() {
-    // open link panel here
+    this.isSelectionLink = true;
+    this.selectedElements.forEach(el => jQuery(el).css('border-bottom', '1px solid'));
   }
 
   clearSelection() {

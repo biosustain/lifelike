@@ -154,12 +154,13 @@ class AnnotationsService:
 
     def _filter_tokens(self, tokens: PDFTokenPositionsList) -> None:
         """Filter the tokens into separate matched sets in LMDB."""
+        compiled_regex = re.compile(self.regex_for_floats)
         for token in tokens.token_positions:
             word = token.keyword
 
             if word:
                 if (word.lower() not in COMMON_WORDS and
-                        not re.match(self.regex_for_floats, word) and
+                        not re.match(compiled_regex, word) and
                         word not in ascii_letters and
                         word not in digits):
 
@@ -284,17 +285,15 @@ class AnnotationsService:
     def _create_annotation_object(
         self,
         token_positions: PDFTokenPositions,
-        coor_obj_per_pdf_page: Dict[int, List[Union[LTChar, LTAnno]]],
-        cropbox_per_page: Dict[int, Tuple[int, int]],
+        char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
+        cropbox_in_pdf: Tuple[int, int],
         token_type: str,
         entity: dict,
         entity_id: str,
         color: str,
     ):
-        # create list of positions boxes
-        curr_page_coor_obj = coor_obj_per_pdf_page[
-            token_positions.page_number]
-        cropbox = cropbox_per_page[token_positions.page_number]
+        curr_page_coor_obj = char_coord_objs_in_pdf
+        cropbox = cropbox_in_pdf
 
         keyword_positions: List[Annotation.TextPosition] = []
         char_indexes = list(token_positions.char_positions.keys())
@@ -386,8 +385,8 @@ class AnnotationsService:
         transaction,
         id_str: str,
         correct_synonyms: Dict[str, str],
-        coor_obj_per_pdf_page: Dict[int, List[Union[LTChar, LTAnno]]],
-        cropbox_per_page: Dict[int, Tuple[int, int]],
+        char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
+        cropbox_in_pdf: Tuple[int, int],
     ) -> Tuple[List[Annotation], Set[str], Dict[str, str]]:
         """Create annotation objects for tokens.
 
@@ -448,8 +447,8 @@ class AnnotationsService:
 
                 if common_name_count == 1:
                     annotation, annotation_pdf_keyword = self._create_annotation_object(
-                        coor_obj_per_pdf_page=coor_obj_per_pdf_page,
-                        cropbox_per_page=cropbox_per_page,
+                        char_coord_objs_in_pdf=char_coord_objs_in_pdf,
+                        cropbox_in_pdf=cropbox_in_pdf,
                         token_positions=token_positions,
                         token_type=token_type,
                         entity=entity,
@@ -529,8 +528,8 @@ class AnnotationsService:
         self,
         matched_organism_locations: Dict[int, Dict[str, List[Tuple[int, int]]]],
         organism_frequency: Dict[str, int],
-        coor_obj_per_pdf_page: Dict[int, List[Union[LTChar, LTAnno]]],
-        cropbox_per_page: Dict[int, Tuple[int, int]],
+        char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
+        cropbox_in_pdf: Tuple[int, int],
     ) -> Tuple[List[Annotation], Set[str], Dict[str, str]]:
         """Gene specific annotation. Nearly identical to `_get_annotation`,
         except that we check genes against the matched organisms found in the
@@ -612,8 +611,8 @@ class AnnotationsService:
                     )
 
                     annotation, annotation_pdf_keyword = self._create_annotation_object(
-                        coor_obj_per_pdf_page=coor_obj_per_pdf_page,
-                        cropbox_per_page=cropbox_per_page,
+                        char_coord_objs_in_pdf=char_coord_objs_in_pdf,
+                        cropbox_in_pdf=cropbox_in_pdf,
                         token_positions=token_positions,
                         token_type=token_type,
                         entity=entity,
@@ -629,8 +628,8 @@ class AnnotationsService:
     def _annotate_chemicals(
         self,
         entity_id_str: str,
-        coor_obj_per_pdf_page: Dict[int, List[Union[LTChar, LTAnno]]],
-        cropbox_per_page: Dict[int, Tuple[int, int]],
+        char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
+        cropbox_in_pdf: Tuple[int, int],
     ) -> Tuple[List[Annotation], Set[str], Dict[str, str]]:
         return self._get_annotation(
             tokens=self.matched_chemicals,
@@ -639,15 +638,15 @@ class AnnotationsService:
             transaction=self.lmdb_session.chemicals_txn,
             id_str=entity_id_str,
             correct_synonyms=self.correct_synonyms,
-            coor_obj_per_pdf_page=coor_obj_per_pdf_page,
-            cropbox_per_page=cropbox_per_page,
+            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
+            cropbox_in_pdf=cropbox_in_pdf,
         )
 
     def _annotate_compounds(
         self,
         entity_id_str: str,
-        coor_obj_per_pdf_page: Dict[int, List[Union[LTChar, LTAnno]]],
-        cropbox_per_page: Dict[int, Tuple[int, int]],
+        char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
+        cropbox_in_pdf: Tuple[int, int],
     ) -> Tuple[List[Annotation], Set[str], Dict[str, str]]:
         return self._get_annotation(
             tokens=self.matched_compounds,
@@ -656,15 +655,15 @@ class AnnotationsService:
             transaction=self.lmdb_session.compounds_txn,
             id_str=entity_id_str,
             correct_synonyms=self.correct_synonyms,
-            coor_obj_per_pdf_page=coor_obj_per_pdf_page,
-            cropbox_per_page=cropbox_per_page,
+            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
+            cropbox_in_pdf=cropbox_in_pdf,
         )
 
     def _annotate_proteins(
         self,
         entity_id_str: str,
-        coor_obj_per_pdf_page: Dict[int, List[Union[LTChar, LTAnno]]],
-        cropbox_per_page: Dict[int, Tuple[int, int]],
+        char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
+        cropbox_in_pdf: Tuple[int, int],
     ) -> Tuple[List[Annotation], Set[str], Dict[str, str]]:
         return self._get_annotation(
             tokens=self.matched_proteins,
@@ -673,15 +672,15 @@ class AnnotationsService:
             transaction=self.lmdb_session.proteins_txn,
             id_str=entity_id_str,
             correct_synonyms=self.correct_synonyms,
-            coor_obj_per_pdf_page=coor_obj_per_pdf_page,
-            cropbox_per_page=cropbox_per_page,
+            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
+            cropbox_in_pdf=cropbox_in_pdf,
         )
 
     def _annotate_species(
         self,
         entity_id_str: str,
-        coor_obj_per_pdf_page: Dict[int, List[Union[LTChar, LTAnno]]],
-        cropbox_per_page: Dict[int, Tuple[int, int]],
+        char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
+        cropbox_in_pdf: Tuple[int, int],
     ) -> Tuple[List[Annotation], Set[str], Dict[str, str]]:
         return self._get_annotation(
             tokens=self.matched_species,
@@ -690,15 +689,15 @@ class AnnotationsService:
             transaction=self.lmdb_session.species_txn,
             id_str=entity_id_str,
             correct_synonyms=self.correct_synonyms,
-            coor_obj_per_pdf_page=coor_obj_per_pdf_page,
-            cropbox_per_page=cropbox_per_page,
+            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
+            cropbox_in_pdf=cropbox_in_pdf,
         )
 
     def _annotate_diseases(
         self,
         entity_id_str: str,
-        coor_obj_per_pdf_page: Dict[int, List[Union[LTChar, LTAnno]]],
-        cropbox_per_page: Dict[int, Tuple[int, int]],
+        char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
+        cropbox_in_pdf: Tuple[int, int],
     ) -> Tuple[List[Annotation], Set[str], Dict[str, str]]:
         return self._get_annotation(
             tokens=self.matched_diseases,
@@ -707,15 +706,15 @@ class AnnotationsService:
             transaction=self.lmdb_session.diseases_txn,
             id_str=entity_id_str,
             correct_synonyms=self.correct_synonyms,
-            coor_obj_per_pdf_page=coor_obj_per_pdf_page,
-            cropbox_per_page=cropbox_per_page,
+            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
+            cropbox_in_pdf=cropbox_in_pdf,
         )
 
     def _annotate_phenotypes(
         self,
         entity_id_str: str,
-        coor_obj_per_pdf_page: Dict[int, List[Union[LTChar, LTAnno]]],
-        cropbox_per_page: Dict[int, Tuple[int, int]],
+        char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
+        cropbox_in_pdf: Tuple[int, int],
     ) -> Tuple[List[Annotation], Set[str], Dict[str, str]]:
         return self._get_annotation(
             tokens=self.matched_phenotypes,
@@ -724,16 +723,16 @@ class AnnotationsService:
             transaction=self.lmdb_session.phenotypes_txn,
             id_str=entity_id_str,
             correct_synonyms=self.correct_synonyms,
-            coor_obj_per_pdf_page=coor_obj_per_pdf_page,
-            cropbox_per_page=cropbox_per_page,
+            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
+            cropbox_in_pdf=cropbox_in_pdf,
         )
 
     def annotate(
         self,
         annotation_type: str,
         entity_id_str: str,
-        coor_obj_per_pdf_page: Dict[int, List[Union[LTChar, LTAnno]]],
-        cropbox_per_page: Dict[int, Tuple[int, int]],
+        char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
+        cropbox_in_pdf: Tuple[int, int],
     ) -> Tuple[List[Annotation], Set[str], Dict[str, str]]:
         funcs = {
             EntityType.Chemicals.value: self._annotate_chemicals,
@@ -747,8 +746,8 @@ class AnnotationsService:
         annotate_entities = funcs[annotation_type]
         return annotate_entities(
             entity_id_str=entity_id_str,
-            coor_obj_per_pdf_page=coor_obj_per_pdf_page,
-            cropbox_per_page=cropbox_per_page,
+            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
+            cropbox_in_pdf=cropbox_in_pdf,
         )
 
     def _update_entity_frequency_map(
@@ -762,22 +761,6 @@ class AnnotationsService:
         else:
             entity_frequency[entity_id] = 1
 
-        return entity_frequency
-
-    def _get_entity_frequency(
-        self,
-        annotations: List[Annotation],
-    ) -> Dict[str, int]:
-        """Takes as input a list of annotation objects (intended to be of a single entity type).
-
-        Returns the frequency of each annotation entity within the document.
-        """
-        entity_frequency: Dict[str, int] = dict()
-        for annotation in annotations:
-            entity_frequency = self._update_entity_frequency_map(
-                entity_frequency=entity_frequency,
-                annotation=annotation,
-            )
         return entity_frequency
 
     def _update_entity_location_map(
@@ -828,22 +811,6 @@ class AnnotationsService:
                 annotation=annotation,
             )
 
-        return matched_entity_locations
-
-    def _get_entity_locations(
-        self,
-        annotations: List[Annotation],
-    ) -> Dict[int, Dict[str, List[Tuple[int, int]]]]:
-        """Takes as input a list of annotation objects (intended to be of a single entity type).
-
-        Returns the locations of the annotation entities within the document.
-        """
-        matched_entity_locations: Dict[int, Dict[str, List[Tuple[int, int]]]] = {}
-        for annotation in annotations:
-            matched_entity_locations = self._update_entity_location_map(
-                matched_entity_locations=matched_entity_locations,
-                annotation=annotation,
-            )
         return matched_entity_locations
 
     def _get_entity_frequency_and_locations(
@@ -908,8 +875,8 @@ class AnnotationsService:
             matched, unwanted, hashed_annotation_keywords = self.annotate(
                 annotation_type=entity_type,
                 entity_id_str=entity_id_str,
-                coor_obj_per_pdf_page=tokens.coor_obj_per_pdf_page,
-                cropbox_per_page=tokens.cropbox_per_page,
+                char_coord_objs_in_pdf=tokens.char_coord_objs_in_pdf,
+                cropbox_in_pdf=tokens.cropbox_in_pdf,
             )
             matched_list.append(matched)  # type: ignore
             unwanted_matches_set_list.append(unwanted)  # type: ignore
@@ -1017,8 +984,8 @@ class AnnotationsService:
         matched_genes, unwanted_genes, hashed_gene_annotation_keyword = self._annotate_genes(
             matched_organism_locations=matched_organism_locations,
             organism_frequency=organism_frequency,
-            coor_obj_per_pdf_page=tokens.coor_obj_per_pdf_page,
-            cropbox_per_page=tokens.cropbox_per_page,
+            char_coord_objs_in_pdf=tokens.char_coord_objs_in_pdf,
+            cropbox_in_pdf=tokens.cropbox_in_pdf,
         )
 
         matched_list.append(matched_genes)
@@ -1046,39 +1013,31 @@ class AnnotationsService:
     ) -> List[Annotation]:
         """Fix any conflicting annotations.
 
-        An annotation is a conflict if it has overlapping
-        `lo_location_offset` and `hi_location_offset` with another annotation
-        or if it has adjacent intervals, meaning a `hi_location_offset` equals
-        the `lo_location_offset` of another annotation.
+        An annotation is a conflict if:
+        - it has overlapping `lo_location_offset` and `hi_location_offset` with
+            another annotation.
+        - it has adjacent intervals, meaning a `hi_location_offset` equals
+            the `lo_location_offset` of another annotation.
         """
         updated_unified_annotations: List[Annotation] = []
-        unified_annotations_dict: Dict[int, List[Annotation]] = {}
+        annotations_to_clean: List[Annotation] = []
 
-        # need to go page by page because coordinates
-        # reset on each page
-        # TODO: JIRA LL-581
         for unified in unified_annotations:
             if unified.lo_location_offset == unified.hi_location_offset:
                 # keyword is a single character
                 # should not have overlaps
                 updated_unified_annotations.append(unified)
-            elif unified.page_number in unified_annotations_dict:
-                unified_annotations_dict[unified.page_number].append(unified)
             else:
-                unified_annotations_dict[unified.page_number] = [unified]
+                annotations_to_clean.append(unified)
 
-        annotations_to_clean: Dict[int, List[Annotation]] = {}
-
-        for page_number, annotations in unified_annotations_dict.items():
-            tree = self.create_annotation_tree(annotations=annotations)
-            # first clean all annotations with equal intervals
-            # this means the same keyword was mapped to multiple entities
-            cleaned_of_equal_intervals = tree.merge_equals(
-                data_reducer=self.determine_entity_precedence)
-            annotations_to_clean[page_number] = cleaned_of_equal_intervals
+        tree = self.create_annotation_tree(annotations=annotations_to_clean)
+        # first clean all annotations with equal intervals
+        # this means the same keyword was mapped to multiple entities
+        cleaned_of_equal_intervals = tree.merge_equals(
+            data_reducer=self.determine_entity_precedence)
 
         fixed_annotations = self._remove_overlapping_annotations(
-            conflicting_annotations=annotations_to_clean)
+            conflicting_annotations=cleaned_of_equal_intervals)
 
         updated_unified_annotations.extend(fixed_annotations)
         return updated_unified_annotations
@@ -1118,22 +1077,18 @@ class AnnotationsService:
 
     def _remove_overlapping_annotations(
         self,
-        conflicting_annotations: Dict[int, List[Annotation]],
+        conflicting_annotations: List[Annotation],
     ) -> List[Annotation]:
-        """Remove annotations based on these rules:
-
-        If overlapping, then consider longest length.
-            - If overlapping but same length, then consider
-            entity precedence.
+        """Remove annotations based on rules defined in
+        self.determine_entity_precedence().
         """
         fixed_annotations: List[Annotation] = []
 
-        for _, conflicting_annos in conflicting_annotations.items():
-            if conflicting_annos:
-                tree = self.create_annotation_tree(annotations=conflicting_annos)
-                fixed_annotations.extend(
-                    tree.merge_overlaps(
-                        data_reducer=self.determine_entity_precedence,
-                    ),
-                )
+        if conflicting_annotations:
+            tree = self.create_annotation_tree(annotations=conflicting_annotations)
+            fixed_annotations.extend(
+                tree.merge_overlaps(
+                    data_reducer=self.determine_entity_precedence,
+                ),
+            )
         return fixed_annotations
