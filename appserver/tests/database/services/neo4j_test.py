@@ -167,3 +167,37 @@ def test_get_cluster_graph_data(
     edge_id = list(get_cluster_graph_data_result.results[node_id].keys())[0]
 
     assert get_cluster_graph_data_result.results[node_id][edge_id] == 1
+
+
+def test_get_cluster_data(
+    neo4j_service_dao,
+    gas_gangrene_treatment_clustered_nodes,
+    gas_gangrene_with_associations_and_references,
+):
+    get_cluster_data_result = neo4j_service_dao.get_cluster_data(
+        gas_gangrene_treatment_clustered_nodes,
+    )
+
+    graph_data = get_cluster_data_result.graph_data
+    snippet_data = get_cluster_data_result.snippet_data
+
+    # Check graph data
+    assert graph_data.results is not None
+    assert len(graph_data.results.keys()) == 1
+
+    node_id = list(graph_data.results.keys())[0]
+
+    assert len(graph_data.results[node_id].keys()) == 1
+
+    edge_id = list(graph_data.results[node_id].keys())[0]
+
+    assert graph_data.results[node_id][edge_id] == 1
+
+    # Check snippet data
+    assert snippet_data.results is not None
+    assert len(snippet_data.results) == 1
+
+    snippet = snippet_data.results[0]
+
+    assert snippet.association == 'treatment/therapy (including investigatory)'
+    assert snippet.snippets[0].reference.data['sentence'] == 'Toxin suppression and rapid bacterial killing may...'  # noqa

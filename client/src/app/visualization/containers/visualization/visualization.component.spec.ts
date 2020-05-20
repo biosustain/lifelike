@@ -192,13 +192,13 @@ describe('VisualizationComponent', () => {
         expect(getSnippetsFromDuplicateEdgeSpy).toHaveBeenCalledWith(mockDuplicateVisEdge);
     });
 
-    it('should call getClusterGraphData when child requests graph data for cluster', () => {
-        const getClusterGraphDataSpy = spyOn(instance, 'getClusterGraphData');
+    it('should call getClusterData when child requests data for cluster', () => {
+        const getClusterGraphDataSpy = spyOn(instance, 'getClusterData');
         const visualizationCanvasComponentMock = fixture.debugElement.query(
             By.directive(VisualizationCanvasComponent)
         ).componentInstance as VisualizationCanvasComponent;
 
-        visualizationCanvasComponentMock.getClusterGraphData.emit([mockClusteredNode]);
+        visualizationCanvasComponentMock.getClusterData.emit([mockClusteredNode]);
 
         expect(getClusterGraphDataSpy).toHaveBeenCalledWith([mockClusteredNode]);
     });

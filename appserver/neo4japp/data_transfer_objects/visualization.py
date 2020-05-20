@@ -128,6 +128,11 @@ class ReferenceTableDataRequest(CamelDictMixin):
 class GetGraphDataForClusterRequest(CamelDictMixin):
     clustered_nodes: List[ClusteredNode] = attr.ib()
 
+
+@attr.s(frozen=True)
+class GetDataForClusterRequest(CamelDictMixin):
+    clustered_nodes: List[ClusteredNode] = attr.ib()
+
 # End Request DTOs #
 
 # Begin Respose DTOs #
@@ -149,6 +154,17 @@ class GetSnippetCountsFromEdgesResult(CamelDictMixin):
 @attr.s(frozen=True)
 class GetClusterGraphDataResult(CamelDictMixin):
     results: Dict[int, Dict[str, int]] = attr.ib()
+
+
+@attr.s(frozen=True)
+class GetClusterSnippetDataResult(CamelDictMixin):
+    results: List[GetSnippetsFromEdgeResult] = attr.ib()
+
+
+@attr.s(frozen=True)
+class GetClusterDataResult(CamelDictMixin):
+    graph_data: GetClusterGraphDataResult = attr.ib()
+    snippet_data: GetClusterSnippetDataResult = attr.ib()
 
 
 @attr.s(frozen=True)
