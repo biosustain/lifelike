@@ -16,7 +16,6 @@ from neo4japp.data_transfer_objects import (
     PDFTokenPositions,
     PDFTokenPositionsList,
 )
-from neo4japp.util import compute_hash
 
 from .constants import (
     MISC_SYMBOLS_AND_CHARS,
@@ -159,11 +158,9 @@ class AnnotationsPDFParser:
         max_length = len(char_list)
         word = ''
 
-        check_unicode = ord
-
         for i, char in enumerate(char_list):
             try:
-                if check_unicode(char) not in MISC_SYMBOLS_AND_CHARS:
+                if ord(char) not in MISC_SYMBOLS_AND_CHARS:
                     curr_char = clean_char(char)
                     prev_char = clean_char(char_list[i-1])
 
@@ -264,21 +261,19 @@ class AnnotationsPDFParser:
                                 # insertion order
                                 break
 
+                        # whitespaces don't exist in curr_char_idx_mappings
+                        # they were added to separate words
+                        # and might've been left behind after stripping out
+                        # unwanted punctuation
                         token = PDFTokenPositions(
                             page_number=parsed_chars.max_idx_in_page[page_idx],
-                            # whitespaces don't exist in curr_char_idx_mappings
-                            # they were added to separate words
-                            # and might've been left behind after stripping out
-                            # unwanted punctuation
                             keyword=curr_keyword.strip(),
                             char_positions=curr_char_idx_mappings,
                         )
-
                         # need to do this check because
                         # could potentially have duplicates due to
-                        # the sequential increment starting over
-                        # at end of page
-                        hashval = compute_hash(token.to_dict())
+                        # removing punctuation
+                        hashval = token.to_dict_hash()
                         if hashval not in processed_tokens:
                             keyword_tokens.append(token)
                             processed_tokens.add(hashval)
