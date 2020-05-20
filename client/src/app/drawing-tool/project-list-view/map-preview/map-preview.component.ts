@@ -1,4 +1,4 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { GraphSelectionData, UniversalGraph, VisNetworkGraphEdge, Project } from 'app/drawing-tool/services/interfaces';
 import { NetworkVis } from 'app/drawing-tool/network-vis';
 import { ProjectsService } from 'app/drawing-tool/services';
@@ -12,6 +12,9 @@ import { ActivatedRoute } from '@angular/router';
   ]
 })
 export class MapPreviewComponent implements OnInit {
+  @Output() parentAPI: EventEmitter <any> = new EventEmitter <any> ();
+
+
   /** vis ojbect to control network-graph vis */
   visGraph: NetworkVis = null;
 
@@ -139,5 +142,16 @@ export class MapPreviewComponent implements OnInit {
   /** Zoom to all the nodes on canvas  */
   fit() {
     this.visGraph.zoom2All();
+  }
+
+  /**
+   * TODO - finish this ..
+   * @param param - something
+   */
+  projectAPICall(param) {
+    this.parentAPI.emit({
+      action: param,
+      project: null
+    });
   }
 }

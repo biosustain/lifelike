@@ -61,6 +61,17 @@
       <p class='description'>
         {{project?.description}}
       </p>
+      <div class='action'>
+        
+        <button (click)='projectAPICall("edit")' mat-flat-button color="accent">Edit</button>
+
+        <!-- TODO - Refactor maybe into toggle switch -->
+        <button (click)='projectAPICall("publish")' mat-flat-button color="primary">Publish</button>
+
+        <button (click)='projectAPICall("share")' mat-flat-button>Share</button>
+
+        <button (click)='projectAPICall("delete")' mat-flat-button color="warn">Delete</button>    
+      </div>
     </div>
   </div>
   <!-- Tool Panel -->
@@ -68,10 +79,4 @@
     <mat-icon matTooltip="Fit Graph" matTooltipPosition="right" class='fit' (click)='fit()'>
       zoom_out_map
     </mat-icon>
-    <!-- TODO - Add other action ui items here along with functionality -->
-    <mat-icon>share</mat-icon>
-    <mat-icon>file_copy</mat-icon>
-    <mat-icon>publish</mat-icon>
-    <mat-icon>edit</mat-icon>
-    <mat-icon>delete</mat-icon>
   </div>

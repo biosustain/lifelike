@@ -248,21 +248,31 @@ export class ProjectListViewComponent {
    * Open project in drawing-tool view's canvas
    */
   goToProject() {
-    this.dataFlow.pushProject2Canvas(this.selectedProject);
     this.route.navigateByUrl(`dt/splitter/${this.selectedProject.hash_id}`);
   }
 
   handleAPI(evt: { action: string, project: Project }) {
 
     switch (evt.action) {
-      case 'pick':
-        this.pickProject(evt.project);
+      case 'edit':
+        this.goToProject();
+        break;
+      case 'publish':
+        this.togglePublic();
+        break;
+      case 'share':
+        // TODO implement by copying sharing link to clipboard
+        // and showing a snack bar
         break;
       case 'delete':
         this.deleteProject(evt.project);
         break;
+      case 'pick':
+        this.pickProject(evt.project);
+        break;
       case 'copy':
-        this.copyProject(evt.project);
+        // TODO bring back
+        // this.copyProject(evt.project);
         break;
       default:
         break;
