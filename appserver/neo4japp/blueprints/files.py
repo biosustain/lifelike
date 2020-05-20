@@ -230,8 +230,9 @@ def annotate(filename, pdf_file_object) -> dict:
 
     try:
         tokens = pdf_parser.extract_tokens(parsed_chars=parsed_pdf_chars)
+        pdf_text_list = pdf_parser.combine_chars_into_words(parsed_pdf_chars)
+        pdf_text = ' '.join([text for text, _ in pdf_text_list])
         annotations = annotator.create_annotations(tokens=tokens)
-        pdf_text = pdf_parser.parse_pdf_high_level(pdf=pdf_file_object)
         bioc = bioc_service.read(text=pdf_text, file_uri=filename)
         return bioc_service.generate_bioc_json(annotations=annotations, bioc=bioc)
     except AnnotationError:
