@@ -93,6 +93,7 @@ export interface DuplicateNodeEdgePair {
 }
 
 export interface ReferenceTableRow {
+    nodeId: string;
     nodeDisplayName: string;
     snippetCount: number;
     edge: VisEdge;
