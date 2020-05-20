@@ -250,6 +250,7 @@ class Neo4JService(GraphBaseDao):
                 }
             ).evaluate()
             reference_table_rows.append(ReferenceTableRow(
+                node_id=node.id,
                 node_display_name=node.display_name,
                 snippet_count=count,
                 edge=edge,
