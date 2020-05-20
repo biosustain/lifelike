@@ -50,7 +50,7 @@ export abstract class GraphView implements GraphActionReceiver {
    * Keep track of fixed X/Y positions that come from dragging nodes. These
    * values are passed to the automatic layout routines .
    */
-  protected nodePositionOverrideMap: Map<UniversalGraphNode, [number, number]> = new Map();
+  protected readonly nodePositionOverrideMap: Map<UniversalGraphNode, [number, number]> = new Map();
 
   // Graph states
   // ---------------------------------
@@ -82,32 +82,24 @@ export abstract class GraphView implements GraphActionReceiver {
   panningOrZooming = false;
 
   /**
-   * Holds the currently selected node or edge.
-   */
-  private currentHighlighted: GraphEntity | undefined;
-
-  /**
    * Holds the currently highlighted node or edge.
    */
-  private currentSelected: GraphEntity[] = [];
+  readonly highlighting = new CacheGuardedEntityList(this);
+
+  /**
+   * Holds the currently selected node or edge.
+   */
+  readonly selection = new CacheGuardedEntityList(this);
 
   /**
    * Holds the currently dragged node or edge.
    */
-  private currentDragged: GraphEntity | undefined;
+  readonly dragging = new CacheGuardedEntityList(this);
 
   /**
    * Whether nodes are arranged automatically.
    */
   automaticLayoutEnabled = false;
-
-  // Events
-  // ---------------------------------
-
-  /**
-   * Stream of selection changes.
-   */
-  selectionObservable: Subject<GraphEntity[]> = new Subject();
 
   // History
   // ---------------------------------
@@ -298,61 +290,11 @@ export abstract class GraphView implements GraphActionReceiver {
     }
   }
 
-  // ========================================
-  // Focused entities
-  // ========================================
-
   /**
    * Get the current position (graph coordinates) where the user is currently
    * hovering over if the user is doing so, otherwise undefined.
    */
   abstract get currentHoverPosition(): { x: number, y: number } | undefined;
-
-  get highlighted() {
-    return this.currentHighlighted;
-  }
-
-  set highlighted(target: GraphEntity | undefined) {
-    if (target !== this.highlighted) {
-      if (this.highlighted) {
-        this.invalidateEntity(this.highlighted);
-      }
-      if (target) {
-        this.invalidateEntity(target);
-      }
-    }
-    this.currentHighlighted = target;
-  }
-
-  get selected() {
-    return this.currentSelected;
-  }
-
-  set selected(target: GraphEntity[]) {
-    for (const entity of this.currentSelected) {
-      this.invalidateEntity(entity);
-    }
-    for (const entity of target) {
-      this.invalidateEntity(entity);
-    }
-    this.currentSelected = target;
-  }
-
-  get dragged() {
-    return this.currentDragged;
-  }
-
-  set dragged(target: GraphEntity | undefined) {
-    if (target !== this.dragged) {
-      if (this.dragged) {
-        this.invalidateEntity(this.dragged);
-      }
-      if (target) {
-        this.invalidateEntity(target);
-      }
-    }
-    this.currentDragged = target;
-  }
 
   // ========================================
   // Object accessors
@@ -518,14 +460,13 @@ export abstract class GraphView implements GraphActionReceiver {
    * @param entities a list of entities to check
    */
   isAnySelected(...entities: UniversalGraphEntity[]) {
-    if (!this.selected.length) {
+    const selected = this.selection.getEntitySet();
+    if (!selected.size) {
       return false;
     }
     for (const d of entities) {
-      for (const selected of this.selected) {
-        if (selected.entity === d) {
-          return true;
-        }
+      if (selected.has(d)) {
+        return true;
       }
     }
     return false;
@@ -536,33 +477,16 @@ export abstract class GraphView implements GraphActionReceiver {
    * @param entities a list of entities to check
    */
   isAnyHighlighted(...entities: UniversalGraphEntity[]) {
-    if (!this.highlighted) {
+    const highlighted = this.highlighting.getEntitySet();
+    if (!highlighted.size) {
       return false;
     }
     for (const d of entities) {
-      if (this.highlighted.entity === d) {
+      if (highlighted.has(d)) {
         return true;
       }
     }
     return false;
-  }
-
-  /**
-   * Select an entity.
-   * @param entities a list of entities, which could be an empty list
-   */
-  select(entities: GraphEntity[]) {
-    if (entities == null) {
-      throw new Error('API use incorrect: pass empty array for no selection');
-    }
-    for (const d of this.selected) {
-      this.invalidateEntity(d);
-    }
-    this.selected = entities;
-    for (const d of this.selected) {
-      this.invalidateEntity(d);
-    }
-    this.selectionObservable.next(entities);
   }
 
   // ========================================
@@ -806,4 +730,55 @@ interface GraphLayoutGroup extends Group {
   name: string;
   color: string;
   leaves?: GraphLayoutNode[];
+}
+
+/**
+ * Manages a list of entities that will be invalidated when the set of
+ * items is updated.
+ */
+class CacheGuardedEntityList {
+  private items: GraphEntity[] = [];
+  /**
+   * Stream of changes.
+   */
+  readonly changeObservable: Subject<GraphEntity[]> = new Subject();
+
+  constructor(private readonly graphView: GraphView) {
+  }
+
+  replace(items: GraphEntity[]) {
+    if (items == null) {
+      throw new Error('API use incorrect: pass empty array for no selection');
+    }
+
+    const invalidationMap: Map<UniversalGraphEntity, GraphEntity> = new Map();
+    for (const item of this.items) {
+      invalidationMap.set(item.entity, item);
+    }
+    this.items = items;
+    for (const item of this.items) {
+      const existed = invalidationMap.delete(item.entity);
+      if (!existed) {
+        // Item is new, so invalidate!
+        this.graphView.invalidateEntity(item);
+      }
+    }
+    // Invalidate items that got removed
+    for (const item of invalidationMap.values()) {
+      this.graphView.invalidateEntity(item);
+    }
+    this.changeObservable.next([...this.items]);
+  }
+
+  get(): GraphEntity[] {
+    return this.items;
+  }
+
+  getEntitySet(): Set<UniversalGraphEntity> {
+    const set: Set<UniversalGraphEntity> = new Set();
+    for (const item of this.items) {
+      set.add(item.entity);
+    }
+    return set;
+  }
 }
