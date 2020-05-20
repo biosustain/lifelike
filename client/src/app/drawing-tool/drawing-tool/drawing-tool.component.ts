@@ -103,7 +103,7 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
     ).subscribe(this.pasted.bind(this));
 
     // Pass selections onto the data flow system
-    this.selectionSubscription = this.graphCanvas.selectionObservable.subscribe(selected => {
+    this.selectionSubscription = this.graphCanvas.selection.changeObservable.subscribe(selected => {
       if (selected.length === 1) {
         this.dataFlow.pushSelection(selected[0]);
       } else {

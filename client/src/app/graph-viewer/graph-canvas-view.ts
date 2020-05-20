@@ -39,14 +39,14 @@ export class GraphCanvasView extends GraphView {
    * The current position of the mouse (graph coordinates) if the user is
    * hovering over the canvas.
    */
-  hoverPosition: {x: number, y: number} | undefined;
+  hoverPosition: { x: number, y: number } | undefined;
 
   /**
    * Keeps track of currently where the mouse (or finger) is held down at
    * so we can display an indicator at that position.
    */
   touchPosition: {
-    position: {x: number, y: number},
+    position: { x: number, y: number },
     entity: GraphEntity | undefined,
   } | undefined;
 
@@ -213,7 +213,7 @@ export class GraphCanvasView extends GraphView {
     return this.d3Tansform;
   }
 
-  get currentHoverPosition(): {x: number, y: number} | undefined {
+  get currentHoverPosition(): { x: number, y: number } | undefined {
     return this.hoverPosition;
   }
 
@@ -336,12 +336,12 @@ export class GraphCanvasView extends GraphView {
     }
 
     select.call(
-        this.zoom.transform,
-        d3.zoomIdentity
-          .translate(canvasWidth / 2, canvasHeight / 2)
-          .scale(Math.min(1, Math.min(canvasWidth / width, canvasHeight / height)))
-          .translate(-minX - width / 2, -minY - height / 2)
-      );
+      this.zoom.transform,
+      d3.zoomIdentity
+        .translate(canvasWidth / 2, canvasHeight / 2)
+        .scale(Math.min(1, Math.min(canvasWidth / width, canvasHeight / height)))
+        .translate(-minX - width / 2, -minY - height / 2)
+    );
 
     this.invalidateAll();
     this.requestRender();
@@ -407,13 +407,16 @@ export class GraphCanvasView extends GraphView {
     // Draw a background behind highlighted entity
     // ---------------------------------
 
-    if (this.highlighted && !this.touchPosition) {
-      if (this.highlighted.type === GraphEntityType.Node) {
-        ctx.beginPath();
-        const bbox = this.getBoundingBox([this.highlighted.entity as UniversalGraphNode], 10);
-        ctx.rect(bbox.minX, bbox.minY, bbox.maxX - bbox.minX, bbox.maxY - bbox.minY);
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.075)';
-        ctx.fill();
+    if (!this.touchPosition) {
+      const highlighted = this.highlighting.get();
+      for (const highlightedEntity of highlighted) {
+        if (highlightedEntity.type === GraphEntityType.Node) {
+          ctx.beginPath();
+          const bbox = this.getBoundingBox([highlightedEntity.entity as UniversalGraphNode], 10);
+          ctx.rect(bbox.minX, bbox.minY, bbox.maxX - bbox.minX, bbox.maxY - bbox.minY);
+          ctx.fillStyle = 'rgba(0, 0, 0, 0.075)';
+          ctx.fill();
+        }
       }
     }
 
@@ -518,11 +521,11 @@ export class GraphCanvasView extends GraphView {
    */
   updateMouseCursor() {
     const canvas = this.canvas;
-    if (this.dragged) {
+    if (this.dragging) {
       canvas.style.cursor = 'grabbing';
     } else if (this.panningOrZooming) {
       canvas.style.cursor = 'move';
-    } else if (this.highlighted) {
+    } else if (this.highlighting) {
       canvas.style.cursor = 'grab';
     } else {
       canvas.style.cursor = 'default';
@@ -552,7 +555,7 @@ export class GraphCanvasView extends GraphView {
         this.interactiveEdgeCreationState = null;
       }
     } else {
-      this.select(subject ? [subject] : []);
+      this.selection.replace(subject ? [subject] : []);
     }
     this.requestRender();
   }
@@ -584,8 +587,9 @@ export class GraphCanvasView extends GraphView {
     const [mouseX, mouseY] = d3.mouse(this.canvas);
     const graphX = this.transform.invertX(mouseX);
     const graphY = this.transform.invertY(mouseY);
+    const entityAtMouse = this.getEntityAtMouse();
 
-    this.highlighted = this.getEntityAtMouse();
+    this.highlighting.replace(entityAtMouse ? [entityAtMouse] : []);
     this.hoverPosition = {x: graphX, y: graphY};
 
     if (this.interactiveEdgeCreationState) {
@@ -639,8 +643,8 @@ export class GraphCanvasView extends GraphView {
       ];
     }
 
-    this.dragged = subject;
-    this.select(subject ? [subject] : []);
+    this.dragging.replace(subject ? [subject] : []);
+    this.selection.replace(subject ? [subject] : []);
 
     this.touchPosition = {
       position: {
@@ -680,7 +684,7 @@ export class GraphCanvasView extends GraphView {
   }
 
   canvasDragEnded(): void {
-    this.dragged = null;
+    this.dragging.replace([]);
     this.nodePositionOverrideMap.clear();
     this.mouseDown = false;
     this.touchPosition = null;
