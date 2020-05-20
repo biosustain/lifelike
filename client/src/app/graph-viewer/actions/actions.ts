@@ -3,7 +3,7 @@
  * which may be committed to history for rollback or re-application.
  */
 
-import { UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
+import { UniversalGraphEdge, UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
 
 /**
  * A graph component manages a graph and may render it.
@@ -21,6 +21,18 @@ export interface GraphActionReceiver {
    * @return true if the node was found
    */
   removeNode(node: UniversalGraphNode): void;
+
+  /**
+   * Mark the node as being updated.
+   * @param node the node
+   */
+  updateNode(node: UniversalGraphNode): void;
+
+  /**
+   * Mark the edge as being updated.
+   * @param edge the node
+   */
+  updateEdge(edge: UniversalGraphEdge): void;
 }
 
 /**
