@@ -56,6 +56,15 @@ export interface GetClusterGraphDataResult {
     };
 }
 
+export interface GetClusterSnippetDataResult {
+    results: GetSnippetsResult[];
+}
+
+export interface GetClusterDataResult {
+    graphData: GetClusterGraphDataResult;
+    snippetData: GetClusterSnippetDataResult;
+}
+
 export interface GroupRequest {
     relationship: string;
     node: IdType;
@@ -93,6 +102,7 @@ export interface DuplicateNodeEdgePair {
 }
 
 export interface ReferenceTableRow {
+    nodeId: string;
     nodeDisplayName: string;
     snippetCount: number;
     edge: VisEdge;
@@ -118,4 +128,5 @@ export interface SidenavEdgeEntity {
 export interface SidenavClusterEntity {
     includes: VisNode[];
     clusterGraphData: GetClusterGraphDataResult;
+    clusterSnippetData: SidenavEdgeEntity[];
 }

@@ -1,4 +1,5 @@
 import logging
+import os
 import traceback
 from functools import partial
 
@@ -12,9 +13,18 @@ from neo4japp.encoders import CustomJSONEncoder
 from neo4japp.exceptions import (
     BaseException, JWTAuthTokenException,
     JWTTokenException, RecordNotFoundException,
-    BadRequestError)
+    )
+
+import sentry_sdk
+from sentry_sdk.integrations.flask import FlaskIntegration
+from sentry_sdk.integrations.logging import LoggingIntegration
+from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
+
 
 logger = logging.getLogger(__name__)
+
+# Commit Hash (Version) of Application
+GITHUB_HASH = os.environ.get('GITHUB_HASH', 'unspecified')
 
 # Used for registering blueprints
 BLUEPRINT_PACKAGE = __package__ + '.blueprints'
@@ -26,6 +36,21 @@ cache = Cache()
 
 
 def create_app(name='neo4japp', config='config.Development'):
+
+    if config == 'config.Staging' or config == 'config.Production':
+        sentry_logging = LoggingIntegration(
+            level=logging.INFO,
+            event_level=logging.WARNING
+        )
+        sentry_sdk.init(
+            dsn=os.environ.get('SENTRY_KEY'),
+            integrations=[
+                sentry_logging,
+                FlaskIntegration(),
+                SqlalchemyIntegration(),
+            ]
+        )
+
     app = Flask(name)
     app.config.from_object(config)
 
@@ -54,7 +79,6 @@ def create_app(name='neo4japp', config='config.Development'):
     app.register_error_handler(JWTAuthTokenException, partial(handle_error, 401))
     app.register_error_handler(JWTTokenException, partial(handle_error, 401))
     app.register_error_handler(BaseException, partial(handle_error, 400))
-    app.register_error_handler(BadRequestError, partial(handle_bad_request_exception, 400))
     app.register_error_handler(Exception, partial(handle_generic_error, 500))
     return app
 
@@ -68,17 +92,9 @@ def register_blueprints(app, pkgname):
 
 def handle_error(code: int, ex: BaseException):
     reterr = {'apiHttpError': ex.to_dict()}
+    logger.error('Request caused BaseException error', exc_info=ex)
+    reterr['version'] = GITHUB_HASH
     if current_app.debug:
-        logger.error("Request caused BaseException error", exc_info=ex)
-        reterr['detail'] = "".join(traceback.format_exception(
-            etype=type(ex), value=ex, tb=ex.__traceback__))
-    return jsonify(reterr), code
-
-
-def handle_bad_request_exception(code: int, ex: BadRequestError):
-    reterr = {'message': ex.message}
-    if current_app.debug:
-        logger.warning("Request caused BadRequestError", exc_info=ex)
         reterr['detail'] = "".join(traceback.format_exception(
             etype=type(ex), value=ex, tb=ex.__traceback__))
     return jsonify(reterr), code
@@ -86,8 +102,9 @@ def handle_bad_request_exception(code: int, ex: BadRequestError):
 
 def handle_generic_error(code: int, ex: Exception):
     reterr = {'apiHttpError': str(ex)}
+    logger.error('Request caused unhandled exception', exc_info=ex)
+    reterr['version'] = GITHUB_HASH
     if current_app.debug:
-        logger.error("Request caused unhandled exception", exc_info=ex)
         reterr['detail'] = "".join(traceback.format_exception(
             etype=type(ex), value=ex, tb=ex.__traceback__))
     return jsonify(reterr), code
