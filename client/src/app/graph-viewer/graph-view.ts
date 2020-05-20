@@ -1,5 +1,6 @@
 import {
   GraphEntity,
+  GraphEntityType,
   UniversalGraph,
   UniversalGraphEdge,
   UniversalGraphEntity,
@@ -83,17 +84,17 @@ export abstract class GraphView implements GraphActionReceiver {
   /**
    * Holds the currently selected node or edge.
    */
-  highlighted: GraphEntity | undefined;
+  private currentHighlighted: GraphEntity | undefined;
 
   /**
    * Holds the currently highlighted node or edge.
    */
-  selected: GraphEntity[];
+  private currentSelected: GraphEntity[] = [];
 
   /**
    * Holds the currently dragged node or edge.
    */
-  dragged: GraphEntity | undefined;
+  private currentDragged: GraphEntity | undefined;
 
   /**
    * Whether nodes are arranged automatically.
@@ -144,8 +145,29 @@ export abstract class GraphView implements GraphActionReceiver {
     this.active = false;
   }
 
-  // Data
-  // ---------------------------------
+  // ========================================
+  // Graph
+  // ========================================
+
+  /**
+   * Get the width of the view.
+   */
+  abstract get width();
+
+  /**
+   * Get the height of the view.
+   */
+  abstract get height();
+
+  /**
+   * Set the size of the canvas. Call this method if the backing element
+   * (i.e. the <canvas> changes size).
+   * @param width the new width
+   * @param height the new height
+   */
+  setSize(width: number, height: number) {
+    this.requestRender();
+  }
 
   /**
    * Replace the graph that is being rendered by the drawing tool.
@@ -161,6 +183,8 @@ export abstract class GraphView implements GraphActionReceiver {
       (map, node) => map.set(node.hash, node),
       new Map()
     );
+
+    this.nodePositionOverrideMap.clear();
 
     this.requestRender();
   }
@@ -213,45 +237,122 @@ export abstract class GraphView implements GraphActionReceiver {
     }
 
     this.nodeHashMap.delete(node.hash);
+    this.invalidateNode(node);
 
     return found;
   }
 
-  // Properties
-  // ---------------------------------
-
   /**
-   * Get the width of the view.
+   * Mark the node as being updated.
+   * @param node the node
    */
-  abstract get width();
-
-  /**
-   * Get the height of the view.
-   */
-  abstract get height();
-
-  /**
-   * Set the size of the canvas. Call this method if the backing element
-   * (i.e. the <canvas> changes size).
-   * @param width the new width
-   * @param height the new height
-   */
-  setSize(width: number, height: number) {
-    this.requestRender();
+  updateNode(node: UniversalGraphNode): void {
+    this.invalidateNode(node);
   }
 
   /**
-   * Get the current transform object that is based on the current
-   * zoom and pan, which can be used to convert between viewport space and
-   * graph space.
+   * Mark the edge as being updated.
+   * @param edge the node
    */
-  abstract get transform();
+  updateEdge(edge: UniversalGraphEdge): void {
+    this.invalidateEdge(edge);
+  }
+
+  /**
+   * Invalidate the whole renderer cache.
+   */
+  invalidateAll(): void {
+  }
+
+  /**
+   * Invalidate any cache entries for the given node. If changes are made
+   * that might affect how the node is rendered, this method must be called.
+   * @param d the node
+   */
+  invalidateNode(d: UniversalGraphNode): void {
+    for (const edge of this.edges) {
+      if (edge.from === d.hash || edge.to === d.hash) {
+        this.invalidateEdge(edge);
+      }
+    }
+  }
+
+  /**
+   * Invalidate any cache entries for the given edge. If changes are made
+   * that might affect how the edge is rendered, this method must be called.
+   * @param d the edge
+   */
+  invalidateEdge(d: UniversalGraphEdge): void {
+  }
+
+  /**
+   * Invalidate any cache entries for the given entity. Helper method
+   * that calls the correct invalidation method.
+   * @param entity the entity
+   */
+  invalidateEntity(entity: GraphEntity): void {
+    if (entity.type === GraphEntityType.Node) {
+      this.invalidateNode(entity.entity as UniversalGraphNode);
+    } else if (entity.type === GraphEntityType.Edge) {
+      this.invalidateEdge(entity.entity as UniversalGraphEdge);
+    }
+  }
+
+  // ========================================
+  // Focused entities
+  // ========================================
 
   /**
    * Get the current position (graph coordinates) where the user is currently
    * hovering over if the user is doing so, otherwise undefined.
    */
-  abstract get currentHoverPosition(): {x: number, y: number} | undefined;
+  abstract get currentHoverPosition(): { x: number, y: number } | undefined;
+
+  get highlighted() {
+    return this.currentHighlighted;
+  }
+
+  set highlighted(target: GraphEntity | undefined) {
+    if (target !== this.highlighted) {
+      if (this.highlighted) {
+        this.invalidateEntity(this.highlighted);
+      }
+      if (target) {
+        this.invalidateEntity(target);
+      }
+    }
+    this.currentHighlighted = target;
+  }
+
+  get selected() {
+    return this.currentSelected;
+  }
+
+  set selected(target: GraphEntity[]) {
+    for (const entity of this.currentSelected) {
+      this.invalidateEntity(entity);
+    }
+    for (const entity of target) {
+      this.invalidateEntity(entity);
+    }
+    this.currentSelected = target;
+  }
+
+  get dragged() {
+    return this.currentDragged;
+  }
+
+  set dragged(target: GraphEntity | undefined) {
+    if (target !== this.dragged) {
+      if (this.dragged) {
+        this.invalidateEntity(this.dragged);
+      }
+      if (target) {
+        this.invalidateEntity(target);
+      }
+    }
+    this.currentDragged = target;
+  }
 
   // ========================================
   // Object accessors
@@ -357,6 +458,13 @@ export abstract class GraphView implements GraphActionReceiver {
   // ========================================
 
   /**
+   * Get the current transform object that is based on the current
+   * zoom and pan, which can be used to convert between viewport space and
+   * graph space.
+   */
+  abstract get transform();
+
+  /**
    * Request the graph be re-rendered in the very near future.
    */
   requestRender() {
@@ -458,6 +566,8 @@ export abstract class GraphView implements GraphActionReceiver {
    * Called when webcola (used for layout) has ticked.
    */
   private colaTicked(): void {
+    // TODO: Turn off caching temporarily instead or do something else
+    this.invalidateAll();
     this.requestRender();
   }
 

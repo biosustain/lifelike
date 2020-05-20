@@ -1,18 +1,28 @@
 import * as d3 from 'd3';
 import { GraphView } from './graph-view';
-import { GraphEntity, GraphEntityType, UniversalGraphEdge, UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
+import { GraphEntity, GraphEntityType, UniversalGraph, UniversalGraphEdge, UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
 import { PlacedEdge, PlacedNode } from './styles/graph-styles';
 import { AnnotationStyle, annotationTypesMap } from 'app/shared/annotation-styles';
 import { DEFAULT_NODE_STYLE, IconNodeStyle } from './styles/nodes';
 import { DEFAULT_EDGE_STYLE } from './styles/edges';
 import { Arrowhead } from './styles/line-terminators';
-import { debounceTime, throttleTime } from 'rxjs/operators';
+import { debounceTime } from 'rxjs/operators';
 import { asyncScheduler, Subject, Subscription } from 'rxjs';
 
 /**
  * A graph view that uses renders into a <canvas> tag.
  */
 export class GraphCanvasView extends GraphView {
+  /**
+   * Keeps a handle on created node renderers to improve performance.
+   */
+  private placedNodesCache: Map<UniversalGraphNode, PlacedNode> = new Map();
+
+  /**
+   * Keeps a handle on created edge renderers to improve performance.
+   */
+  private placedEdgesCache: Map<UniversalGraphEdge, PlacedEdge> = new Map();
+
   /**
    * The canvas background, if any.
    */
@@ -82,6 +92,8 @@ export class GraphCanvasView extends GraphView {
    * Used in {@link setSize} when re-applying zoom-to-fit.
    */
   protected previousZoomToFitPadding = 0;
+
+  protected previousMouseMoveTime = 0;
 
   /**
    * Create an instance of this view.
@@ -171,6 +183,12 @@ export class GraphCanvasView extends GraphView {
     }
   }
 
+  setGraph(graph: UniversalGraph): void {
+    super.setGraph(graph);
+    this.placedNodesCache.clear();
+    this.placedEdgesCache.clear();
+  }
+
   get width() {
     return this.canvas.width;
   }
@@ -199,42 +217,75 @@ export class GraphCanvasView extends GraphView {
   }
 
   placeNode(d: UniversalGraphNode): PlacedNode {
-    const ctx = this.canvas.getContext('2d');
+    let placedNode = this.placedNodesCache.get(d);
+    if (placedNode) {
+      return placedNode;
+    } else {
+      const ctx = this.canvas.getContext('2d');
 
-    // TODO: Return different styles
-    let rendererStyle = DEFAULT_NODE_STYLE;
+      // TODO: Return different styles
+      let rendererStyle = DEFAULT_NODE_STYLE;
 
-    // TODO: Cache this stuff
-    const annotationStyle: AnnotationStyle = annotationTypesMap.get(d.label);
-    if (annotationStyle) {
-      if (annotationStyle.iconCode) {
-        rendererStyle = new IconNodeStyle(annotationStyle.iconCode);
+      // TODO: Cache this stuff
+      const annotationStyle: AnnotationStyle = annotationTypesMap.get(d.label);
+      if (annotationStyle) {
+        if (annotationStyle.iconCode) {
+          rendererStyle = new IconNodeStyle(annotationStyle.iconCode);
+        }
       }
-    }
 
-    if (d.icon) {
-      rendererStyle = new IconNodeStyle(d.icon.code, d.icon.face, d.icon.size, d.icon.color);
-    }
+      if (d.icon) {
+        rendererStyle = new IconNodeStyle(d.icon.code, d.icon.face, d.icon.size, d.icon.color);
+      }
 
-    return rendererStyle.place(d, ctx, this.transform, {
-      selected: this.isAnySelected(d),
-      highlighted: this.isAnyHighlighted(d),
-    });
+      placedNode = rendererStyle.place(d, ctx, this.transform, {
+        selected: this.isAnySelected(d),
+        highlighted: this.isAnyHighlighted(d),
+      });
+
+      this.placedNodesCache.set(d, placedNode);
+
+      return placedNode;
+    }
   }
 
   placeEdge(d: UniversalGraphEdge,
             from: UniversalGraphNode,
             to: UniversalGraphNode): PlacedEdge {
-    const ctx = this.canvas.getContext('2d');
+    let placedEdge = this.placedEdgesCache.get(d);
+    if (placedEdge) {
+      return placedEdge;
+    } else {
+      const ctx = this.canvas.getContext('2d');
 
-    const placedFrom: PlacedNode = this.placeNode(from);
-    const placedTo: PlacedNode = this.placeNode(to);
+      const placedFrom: PlacedNode = this.placeNode(from);
+      const placedTo: PlacedNode = this.placeNode(to);
 
-    // TODO: Return different styles
-    return DEFAULT_EDGE_STYLE.place(d, from, to, placedFrom, placedTo, ctx, this.transform, {
-      selected: this.isAnySelected(d, from, to),
-      highlighted: this.isAnyHighlighted(d, from, to),
-    });
+      // TODO: Return different styles
+      placedEdge = DEFAULT_EDGE_STYLE.place(d, from, to, placedFrom, placedTo, ctx, this.transform, {
+        selected: this.isAnySelected(d, from, to),
+        highlighted: this.isAnyHighlighted(d, from, to),
+      });
+
+      this.placedEdgesCache.set(d, placedEdge);
+
+      return placedEdge;
+    }
+  }
+
+  invalidateAll(): void {
+    this.placedNodesCache.clear();
+    this.placedEdgesCache.clear();
+  }
+
+  invalidateNode(d: UniversalGraphNode): void {
+    super.invalidateNode(d);
+    this.placedNodesCache.delete(d);
+  }
+
+  invalidateEdge(d: UniversalGraphEdge): void {
+    super.invalidateEdge(d);
+    this.placedEdgesCache.delete(d);
   }
 
   getEntityAtMouse(): GraphEntity | undefined {
@@ -522,6 +573,12 @@ export class GraphCanvasView extends GraphView {
   }
 
   canvasMouseMoved() {
+    const now = window.performance.now();
+    if (now - this.previousMouseMoveTime < 10) {
+      return;
+    }
+    this.previousMouseMoveTime = now;
+
     const [mouseX, mouseY] = d3.mouse(this.canvas);
     const graphX = this.transform.invertX(mouseX);
     const graphY = this.transform.invertY(mouseY);
@@ -604,6 +661,7 @@ export class GraphCanvasView extends GraphView {
         node.data.x = this.transform.invertX(mouseX) + this.offsetBetweenNodeAndMouseInitialPosition[0];
         node.data.y = this.transform.invertY(mouseY) + this.offsetBetweenNodeAndMouseInitialPosition[1];
         this.nodePositionOverrideMap.set(node, [node.data.x, node.data.y]);
+        this.invalidateNode(node);
         // TODO: Store this in history as ONE object
       }
     }
