@@ -28,6 +28,13 @@
       zoom_out_map
     </mat-icon>
     <mat-icon
+      [matTooltip]='currentApp==="node-search" ? "Close Node Search" : "Open Node Search"'
+      matTooltipPosition="right"
+      [ngClass]='{"active": currentApp==="node-search"}'
+      (click)='toggle("node-search")'>
+      search
+    </mat-icon>
+    <mat-icon
       [matTooltip]='currentApp==="map-search" ? "Close Map Search" : "Open Map Search"'
       matTooltipPosition="right"
       [ngClass]='{"active": currentApp==="map-search"}'
