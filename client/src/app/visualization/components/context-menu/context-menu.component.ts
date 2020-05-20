@@ -9,7 +9,7 @@ import { isNullOrUndefined } from 'util';
 
 import { IdType } from 'vis-network';
 
-import { GroupRequest, Direction } from 'app/interfaces';
+import { GroupRequest, Direction, VisNode } from 'app/interfaces';
 import { TooltipDetails } from 'app/shared/services/tooltip-control-service';
 import { TooltipComponent } from 'app/shared/components/tooltip/tooltip.component';
 
@@ -23,6 +23,7 @@ import { ContextMenuControlService } from '../../services/context-menu-control.s
 export class ContextMenuComponent extends TooltipComponent implements OnDestroy {
     @Input() selectedNodeIds: IdType[];
     @Input() selectedEdgeIds: IdType[];
+    @Input() selectedClusterNodeData: VisNode[];
     // Expect this to be null if there is not exactly one node selected
     @Input() selectedNodeEdgeLabelData: Map<string, Direction[]>;
 
@@ -30,16 +31,18 @@ export class ContextMenuComponent extends TooltipComponent implements OnDestroy 
     @Output() removeNodes: EventEmitter<IdType[]> = new EventEmitter();
     @Output() removeEdges: EventEmitter<IdType[]> = new EventEmitter();
     @Output() selectNeighbors: EventEmitter<IdType> = new EventEmitter();
+    @Output() pullOutNodeFromCluster: EventEmitter<IdType> = new EventEmitter();
 
     FADEOUT_STYLE = 'context-menu fade-out';
     DEFAULT_STYLE = 'context-menu';
 
     groupByRelSubmenuPopper: Instance;
+    pullOutNodeSubmenuPopper: Instance;
 
     contextMenuClass: string;
     subMenuClass: string;
 
-    subMenus: string[] = ['single-node-selection-group-1-submenu'];
+    subMenus: string[] = ['single-node-selection-group-1-submenu', 'pull-out-node-from-cluster-submenu'];
 
     hideContextMenuSubscription: Subscription;
     updatePopperSubscription: Subscription;
@@ -79,6 +82,21 @@ export class ContextMenuComponent extends TooltipComponent implements OnDestroy 
         this.contextMenuClass = this.DEFAULT_STYLE;
     }
 
+    showSubmenu(contextMenuItemLocator: string, tooltipLocator: string, popper: Instance) {
+        const contextMenuItem = document.querySelector(contextMenuItemLocator);
+        const tooltip = document.querySelector(tooltipLocator) as HTMLElement;
+        tooltip.style.display = 'block';
+        this.subMenuClass = this.DEFAULT_STYLE;
+
+        if (!isNullOrUndefined(popper)) {
+            popper.destroy();
+            popper = null;
+        }
+        popper = createPopper(contextMenuItem, tooltip, {
+            placement: 'right-start',
+        });
+    }
+
     showGroupByRelSubMenu() {
         // TODO: It would be very cool if the edges of the hovered relationship were highlighted
         this.hideAllSubMenus();
@@ -87,18 +105,18 @@ export class ContextMenuComponent extends TooltipComponent implements OnDestroy 
             first(),
             filter(showGroupByRel => showGroupByRel)
         ).subscribe(() => {
-            const contextMenuItem = document.querySelector('#group-by-rel-menu-item');
-            const tooltip = document.querySelector('#single-node-selection-group-1-submenu') as HTMLElement;
-            tooltip.style.display = 'block';
-            this.subMenuClass = this.DEFAULT_STYLE;
+            this.showSubmenu('#group-by-rel-menu-item', '#single-node-selection-group-1-submenu', this.groupByRelSubmenuPopper);
+        });
+    }
 
-            if (!isNullOrUndefined(this.groupByRelSubmenuPopper)) {
-                this.groupByRelSubmenuPopper.destroy();
-                this.groupByRelSubmenuPopper = null;
-            }
-            this.groupByRelSubmenuPopper = createPopper(contextMenuItem, tooltip, {
-                placement: 'right-start',
-            });
+    showPullOutNodeSubMenu() {
+        this.hideAllSubMenus();
+        this.contextMenuControlService.delayPullOutNode();
+        this.contextMenuControlService.showPullOutNodeResult$.pipe(
+            first(),
+            filter(showPullOutNode => showPullOutNode)
+        ).subscribe(() => {
+            this.showSubmenu('#pull-out-node-from-cluster-menu-item', '#pull-out-node-from-cluster-submenu', this.pullOutNodeSubmenuPopper);
         });
     }
 
@@ -109,6 +127,7 @@ export class ContextMenuComponent extends TooltipComponent implements OnDestroy 
 
     hideAllSubMenus() {
         this.contextMenuControlService.interruptGroupByRel();
+        this.contextMenuControlService.interruptPullOutNode();
         this.subMenus.forEach(subMenu => {
             const tooltip = document.querySelector(`#${subMenu}`) as HTMLElement;
             tooltip.style.display = 'none';
@@ -138,6 +157,15 @@ export class ContextMenuComponent extends TooltipComponent implements OnDestroy 
             node: this.selectedNodeIds[0],
             direction,
         });
+    }
+
+    requestPullNodeFromCluster(clusteredNode: VisNode) {
+        // If this is the last node in the cluster, update the submenu display so it is hidden
+        if (this.selectedClusterNodeData.length === 1) {
+            const tooltip = document.querySelector('#pull-out-node-from-cluster-submenu') as HTMLElement;
+            tooltip.style.display = 'none';
+        }
+        this.pullOutNodeFromCluster.emit(clusteredNode.id);
     }
 
     requestEdgeRemoval() {
