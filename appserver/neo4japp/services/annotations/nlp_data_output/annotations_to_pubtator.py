@@ -47,8 +47,9 @@ def create_annotations(
     pdf_parser,
     pdf,
 ):
-    pdf_text = pdf_parser.parse_pdf_high_level(pdf=pdf)
     parsed = pdf_parser.parse_pdf(pdf=pdf)
+    pdf_text_list = pdf_parser.combine_chars_into_words(parsed)
+    pdf_text = ' '.join([text for text, _ in pdf_text_list])
     annotations = annotations_service.create_annotations(
         tokens=pdf_parser.extract_tokens(parsed_chars=parsed),
     )
@@ -62,12 +63,12 @@ def main():
     app = create_app('Functional Test Flask App', config='config.Testing')
     pubtator_file = open(os.path.join(directory, 'pubtator.tsv'), 'w+')
     with app.app_context():
-        bioc_service = get_bioc_document_service()
-        service = get_annotations_service(lmdb_dao=get_lmdb_dao())
-        parser = get_annotations_pdf_parser()
-
         for parent, subfolders, filenames in os.walk(os.path.join(directory, 'pdfs/')):
             for fn in filenames:
+                bioc_service = get_bioc_document_service()
+                service = get_annotations_service(lmdb_dao=get_lmdb_dao())
+                parser = get_annotations_pdf_parser()
+
                 if fn.lower().endswith('.pdf'):
                     with open(os.path.join(parent, fn), 'rb') as f:
                         annotations = create_annotations(
