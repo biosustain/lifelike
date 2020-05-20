@@ -57,7 +57,7 @@ we should be careful using 'autosize', as it may lead to performance problems.--
           <app-sidenav-edge-view [edgeEntity]="sidenavEntity" [legend]="legend"></app-sidenav-edge-view>
         </div>
         <div *ngSwitchCase="sidenavEntityTypeEnum.CLUSTER">
-          <app-sidenav-cluster-view [clusterEntity]="sidenavEntity"></app-sidenav-cluster-view>
+          <app-sidenav-cluster-view [clusterEntity]="sidenavEntity" [legend]="legend"></app-sidenav-cluster-view>
         </div>
         <div *ngSwitchCase="sidenavEntityTypeEnum.EMPTY">
           <h1>Canvas Data View</h1>
