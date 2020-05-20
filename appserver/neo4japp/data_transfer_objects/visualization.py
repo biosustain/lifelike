@@ -91,6 +91,7 @@ class EdgeSnippetCount(CamelDictMixin):
 
 @attr.s(frozen=True)
 class ReferenceTableRow(CamelDictMixin):
+    node_id: str = attr.ib()
     node_display_name: str = attr.ib()
     snippet_count: int = attr.ib()
     edge: DuplicateVisEdge = attr.ib()
