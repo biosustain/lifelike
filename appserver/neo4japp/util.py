@@ -119,9 +119,14 @@ def camel_to_snake_dict(d, new_dict: dict) -> dict:
                 pass
             try:
                 v = json.loads(v)
-                new_dict.update({camel_to_snake(k): camel_to_snake_dict(v, {})})  # noqa
+                if type(v) is not list:
+                    new_dict.update({camel_to_snake(k): camel_to_snake_dict(v, {})})  # noqa
+                else:
+                    obj_list = [camel_to_snake_dict(obj, {}) for obj in v]
+                    new_dict.update({camel_to_snake(k): obj_list})
+
             except JSONDecodeError:
-                # not a string representation of dictionary or number type
+                # not a string representation of JSON or number type
                 new_dict.update({camel_to_snake(k): v})
         else:
             # for booleans, etc
