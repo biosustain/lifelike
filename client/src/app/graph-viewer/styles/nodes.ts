@@ -10,11 +10,9 @@ import 'canvas-plus';
 export class RoundedRectangleNodeStyle implements NodeRenderStyle {
   place(d: UniversalGraphNode,
         ctx: CanvasRenderingContext2D,
-        transform: any,
         options: PlacementOptions): PlacedNode {
-    ctx.font = calculateNodeFont(d, transform, options.selected, options.highlighted);
+    ctx.font = calculateNodeFont(d, options.selected, options.highlighted);
 
-    const zoomResetScale = 1 / transform.scale(1).k;
     const textSize = ctx.measureText(d.display_name);
     const textWidth = textSize.width;
     const textActualHeight = textSize.actualBoundingBoxAscent + textSize.actualBoundingBoxDescent;
@@ -25,7 +23,6 @@ export class RoundedRectangleNodeStyle implements NodeRenderStyle {
     const nodeY = d.data.y - nodeHeight / 2;
     const nodeX2 = nodeX + nodeWidth;
     const nodeY2 = nodeY + nodeHeight;
-    const highDetailLevel = transform.k >= 0.35 || options.selected || options.highlighted;
 
     return new class implements PlacedNode {
       getBoundingBox() {
@@ -54,8 +51,11 @@ export class RoundedRectangleNodeStyle implements NodeRenderStyle {
         return [x, y];
       }
 
-      render(): void {
-        ctx.font = calculateNodeFont(d, transform, options.selected, options.highlighted);
+      render(transform: any): void {
+        const zoomResetScale = 1 / transform.scale(1).k;
+        const highDetailLevel = transform.k >= 0.35 || options.selected || options.highlighted;
+
+        ctx.font = calculateNodeFont(d, options.selected, options.highlighted);
 
         if (highDetailLevel) {
           // Node box
@@ -109,15 +109,12 @@ export class IconNodeStyle implements NodeRenderStyle {
 
   place(d: UniversalGraphNode,
         ctx: CanvasRenderingContext2D,
-        transform: any,
         options: PlacementOptions): PlacedNode {
     const style = this;
-    const zoomResetScale = 1 / transform.scale(1).k;
     const iconFont = this.fontSize + 'px ' + this.fontName;
-    const displayNameFont = calculateNodeFont(d, transform, options.selected, options.highlighted);
-    const yShift = zoomResetScale * 7; // Older renderer was a little off?
-    const iconLabelSpacing = 2 * zoomResetScale;
-    const highDetailLevel = transform.k >= 0.35 || options.selected || options.highlighted;
+    const displayNameFont = calculateNodeFont(d, options.selected, options.highlighted);
+    const yShift = 7; // Older renderer was a little off?
+    const iconLabelSpacing = 2;
 
     ctx.font = iconFont;
     const iconTextSize = ctx.measureText(style.iconString);
@@ -167,7 +164,10 @@ export class IconNodeStyle implements NodeRenderStyle {
         return [d.data.x, d.data.y];
       }
 
-      render(): void {
+      render(transform: any): void {
+        const zoomResetScale = 1 / transform.scale(1).k;
+        const highDetailLevel = transform.k >= 0.35 || options.selected || options.highlighted;
+
         // Draw icon
         ctx.font = iconFont;
         ctx.fillStyle = style.color || calculateNodeColor(d);

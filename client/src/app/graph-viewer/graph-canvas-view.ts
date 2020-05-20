@@ -239,7 +239,7 @@ export class GraphCanvasView extends GraphView {
         rendererStyle = new IconNodeStyle(d.icon.code, d.icon.face, d.icon.size, d.icon.color);
       }
 
-      placedNode = rendererStyle.place(d, ctx, this.transform, {
+      placedNode = rendererStyle.place(d, ctx, {
         selected: this.isAnySelected(d),
         highlighted: this.isAnyHighlighted(d),
       });
@@ -263,7 +263,7 @@ export class GraphCanvasView extends GraphView {
       const placedTo: PlacedNode = this.placeNode(to);
 
       // TODO: Return different styles
-      placedEdge = DEFAULT_EDGE_STYLE.place(d, from, to, placedFrom, placedTo, ctx, this.transform, {
+      placedEdge = DEFAULT_EDGE_STYLE.place(d, from, to, placedFrom, placedTo, ctx, {
         selected: this.isAnySelected(d, from, to),
         highlighted: this.isAnyHighlighted(d, from, to),
       });
@@ -488,13 +488,13 @@ export class GraphCanvasView extends GraphView {
     // Draw layer 1 (usually the line)
     edgeRenderObjects.forEach(({d, placedEdge}) => {
       ctx.beginPath();
-      placedEdge.render();
+      placedEdge.render(transform);
     });
 
     // Draw layer 2 (usually text)
     edgeRenderObjects.forEach(({d, placedEdge}) => {
       ctx.beginPath();
-      placedEdge.renderLayer2();
+      placedEdge.renderLayer2(transform);
     });
 
     // Draw nodes
@@ -502,7 +502,7 @@ export class GraphCanvasView extends GraphView {
 
     this.nodes.forEach((d, i) => {
       ctx.beginPath();
-      this.placeNode(d).render();
+      this.placeNode(d).render(transform);
     });
 
     ctx.restore();

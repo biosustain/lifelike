@@ -13,11 +13,8 @@ export class BasicEdgeStyle implements EdgeRenderStyle {
         placedFrom: PlacedNode,
         placedTo: PlacedNode,
         ctx: CanvasRenderingContext2D,
-        transform: any,
         options: PlacementOptions): PlacedEdge {
-    const zoomResetScale = 1 / transform.scale(1).k;
-    const highDetailLevel = transform.k >= 0.35 || options.selected || options.highlighted;
-    const lineWidth = (options.highlighted ? 1.5 : 1) * zoomResetScale;
+    const lineWidth = (options.highlighted ? 1.5 : 1);
     const color = !options.highlighted || options.highlighted ? '#2B7CE9' : '#ACCFFF';
     const endTerminator = new Arrowhead(16, {
       fillStyle: color,
@@ -34,7 +31,10 @@ export class BasicEdgeStyle implements EdgeRenderStyle {
         return getLinePointIntersectionDistance(x, y, x1, x2, y1, y2) <= 2;
       }
 
-      render(): void {
+      render(transform: any): void {
+        const zoomResetScale = 1 / transform.scale(1).k;
+        const highDetailLevel = transform.k >= 0.35 || options.selected || options.highlighted;
+
         // Because we draw an arrowhead at the end, we need the line to stop at the
         // shape's edge and not at the node center, so we need to find the intersection between
         // the line and the node box
@@ -57,10 +57,13 @@ export class BasicEdgeStyle implements EdgeRenderStyle {
         ctx.setLineDash([]);
       }
 
-      renderLayer2() {
+      renderLayer2(transform: any) {
         if (!d.label) {
           return;
         }
+
+        const zoomResetScale = 1 / transform.scale(1).k;
+        const highDetailLevel = transform.k >= 0.35 || options.selected || options.highlighted;
 
         if (highDetailLevel) {
           const [toX, toY] = placedTo.lineIntersectionPoint(

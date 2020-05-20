@@ -9,12 +9,10 @@ export interface NodeRenderStyle {
    * that provides metrics and can render the object.
    * @param d the node
    * @param ctx the context
-   * @param transform the zoom and pan transform
    * @param options extra options for placement
    */
   place(d: UniversalGraphNode,
         ctx: CanvasRenderingContext2D,
-        transform: any,
         options: PlacementOptions): PlacedNode;
 }
 
@@ -31,7 +29,6 @@ export interface EdgeRenderStyle {
    * @param placedFrom the placed object the edge will start from
    * @param placedTo the placed object the edge will end at
    * @param ctx the context
-   * @param transform the zoom and pan transform
    * @param options extra options for placement
    */
   place(d: UniversalGraphEdge,
@@ -40,7 +37,6 @@ export interface EdgeRenderStyle {
         placedFrom: PlacedNode,
         placedTo: PlacedNode,
         ctx: CanvasRenderingContext2D,
-        transform: any,
         options: PlacementOptions): PlacedEdge;
 }
 
@@ -70,8 +66,9 @@ export interface PlacedObject {
 
   /**
    * Render the object on the canvas.
+   * @param transform the zoom and pan transform
    */
-  render(): void;
+  render(transform: any): void;
 }
 
 /**
@@ -105,6 +102,7 @@ export interface PlacedNode extends PlacedObject {
 export interface PlacedEdge extends PlacedObject {
   /**
    * Render additional things that need to be placed on a layer above render();
+   * @param transform the zoom and pan transform
    */
-  renderLayer2(): void;
+  renderLayer2(transform: any): void;
 }
