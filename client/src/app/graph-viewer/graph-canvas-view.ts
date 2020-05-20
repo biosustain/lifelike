@@ -202,6 +202,7 @@ export class GraphCanvasView extends GraphView {
       this.canvas.width = width;
       this.canvas.height = height;
       super.setSize(width, height);
+      this.invalidateAll();
       if (window.performance.now() - this.previousZoomToFitTime < 500) {
         this.applyZoomToFit(0, this.previousZoomToFitPadding);
       }
@@ -342,6 +343,7 @@ export class GraphCanvasView extends GraphView {
           .translate(-minX - width / 2, -minY - height / 2)
       );
 
+    this.invalidateAll();
     this.requestRender();
   }
 
