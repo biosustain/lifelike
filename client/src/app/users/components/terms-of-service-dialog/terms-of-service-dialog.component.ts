@@ -3,7 +3,7 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 
 export const TERMS_OF_SERVICE = {
   // ISO-8601 Timestamp update
-  updateTimestamp: '2020-05-19T00:00:00Z',
+  updateTimestamp: '2020-05-21T00:00:00Z',
 }
 
 @Component({
