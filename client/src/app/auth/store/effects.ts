@@ -52,7 +52,7 @@ export class AuthEffects {
 
                 // If not serve the terms of service dialog
                 this.dialog.open(TermsOfServiceDialogComponent, {
-                    width: '70%',
+                    width: 'fit-content',
                     data: credential
                 });
                 return AuthActions.termsOfSerivceAgreeing();
