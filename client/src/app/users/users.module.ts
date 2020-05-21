@@ -8,11 +8,15 @@ import { UserProfileComponent } from './components/user-profile.component';
 import { UserSecurityComponent } from './components/user-security.component';
 
 import { UserEffects } from './store/effects';
+import { TermsOfServiceDialogComponent } from './components/terms-of-service-dialog/terms-of-service-dialog.component';
+import { TermsOfServiceComponent } from './components/terms-of-service-dialog/terms-of-service.component';
 
 const components = [
     UserProfileComponent,
     UserSecurityComponent,
     UserSettingsComponent,
+    TermsOfServiceDialogComponent,
+    TermsOfServiceComponent
 ];
 
 @NgModule({
@@ -22,6 +26,7 @@ const components = [
     ],
     declarations: components,
     providers: [AccountService],
+    entryComponents: [TermsOfServiceDialogComponent],
     exports: components,
 })
 export class UserModule {}

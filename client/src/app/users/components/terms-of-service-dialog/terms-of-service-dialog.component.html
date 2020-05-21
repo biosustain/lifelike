@@ -1,0 +1,33 @@
+<div id='agreement-container'>
+  <div id='agreement' class='ma1 w-90 w-90-m w-50-l w-50-ns center' [ngClass]='{"dialog_mode": dialogMode}'>
+    <h1>
+      End User License Agreement
+    </h1>
+    <h2>Terms Of Service</h2>
+    <p class='lh-copy'>
+      By using the Lifelike Web application, you agree to use it only for lawful purposes.
+      <br><br>
+      Content that you share or upload (such as scholarly articles), may be protected by intellectual property laws. By uploading this content, you assert that you own the rights to this content or that the rights-holder has granted a license that allows the work to be shared for the purposes to which the work is shared.
+      <br><br>
+      For content that you create using Lifelike, you grant us a non-exclusive, royalty-free license to host, distribute and display the content in the Lifelike application. This license will end when you delete your content from the Lifelike system.
+      <br><br>
+      If you do not agree to these Terms of Use, do not use Lifelike.
+      <br><br>
+      Lifelike is developed at UC San Diego and at the Technical University of Denmark (DTU). We may revise these Terms of Use at any time by amending this page.
+    </p>
+    <h2>Privacy Policy</h2>
+    <p class='lh-copy'>
+      The data that you used to register and sign in to Lifelike will not be made available to any other parties. All of your access data will continue to be stored and used for the only purpose of allowing you to login. In this Beta version of Lifelike, your uploaded documents will be shared with other users.
+    </p>
+    <h2>Customer Ownership Rights</h2>
+    <p class='lh-copy'>
+      Customer shall retain all right, title and interest in and to the Customer Created Data and Output, and all Intellectual Property Rights therein.
+      <br><br>
+      Nothing in this Agreement will confer either or both UCSD or DTU any right of ownership or interest in the Customer Created Data and Output, or the Intellectual Property Rights therein.
+    </p>
+  </div>
+</div>
+<div *ngIf='dialogMode' class='mh1 w-100 center'>
+  <button (click)='agree()' class='action mv2' mat-flat-button color="primary">Accept</button>
+  <button (click)='disagree()' class='action mv2' mat-flat-button color="warn">Decline</button>
+</div>
