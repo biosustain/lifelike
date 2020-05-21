@@ -16,6 +16,7 @@ import { LoginGuard } from 'app/auth/guards/login-guard.service';
 import { PdfViewerComponent } from 'app/drawing-tool/pdf-viewer/pdf-viewer.component';
 import { UserSettingsComponent } from 'app/users/components/user-settings.component';
 import { KgStatisticsComponent } from './kg-statistics/kg-statistics.component';
+import { TermsOfServiceComponent } from './users/components/terms-of-service-dialog/terms-of-service.component';
 
 // TODO: Add an unprotected home page
 const routes: Routes = [
@@ -25,6 +26,7 @@ const routes: Routes = [
   { path: 'neo4j-visualizer', component: VisualizationComponent, canActivate: [AuthGuard]},
   { path: 'login', component: LoginComponent, canActivate: [LoginGuard] },
   { path: 'users/:user', component: UserSettingsComponent, canActivate: [AuthGuard] },
+  { path: 'terms-of-service', component: TermsOfServiceComponent },
   { path: 'search', component: SearchCollectionPageComponent },
   // Used as a work-around for navigation to work when navigating with
   // changing queries

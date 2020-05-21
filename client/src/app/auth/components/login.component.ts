@@ -5,6 +5,7 @@ import { Store } from '@ngrx/store';
 import { State } from 'app/***ARANGO_USERNAME***-store';
 
 import { AuthActions } from '../store';
+import { MatDialog, MatSnackBar } from '@angular/material';
 
 
 
@@ -20,13 +21,21 @@ export class LoginComponent {
     password: new FormControl('', [Validators.required])
   });
 
-  constructor(private store: Store<State>) { }
+  constructor(
+    private store: Store<State>,
+    public dialog: MatDialog,
+  ) { }
 
   /**
    * Call login API for jwt credential
    */
   submit() {
     const { email, password } = this.form.value;
-    this.store.dispatch(AuthActions.login({credential: {email, password}}));
+
+    this.store.dispatch(
+      AuthActions.checkTermsOfService(
+        {credential: {email, password}}
+      )
+    );
   }
 }

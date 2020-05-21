@@ -91,4 +91,34 @@ export class AuthenticationService {
   public getAccessToken() {
     return localStorage.getItem('access_jwt') || '';
   }
+
+  /**
+   * Write cookie to system
+   * @param name - represent id name of cookie
+   * @param value - value for cookie to store
+   * @param days - how long should cookie exist
+   */
+  setCookie(name, value, days= 30) {
+    let expires = '';
+    if (days) {
+        const date = new Date();
+        date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+        expires = '; expires=' + date.toUTCString();
+    }
+    document.cookie = name + '=' + (value || '')  + expires + '; path=/';
+  }
+  getCookie(name) {
+    const nameEQ = name + '=';
+    const ca = document.cookie.split(';');
+    // tslint:disable-next-line: prefer-for-of
+    for (let i = 0; i < ca.length; i++) {
+        let c = ca[i];
+        while (c.charAt(0) === ' ') { c = c.substring(1, c.length); }
+        if (c.indexOf(nameEQ) === 0) { return c.substring(nameEQ.length, c.length); }
+    }
+    return null;
+  }
+  eraseCookie(name) {
+    document.cookie = name + '=; Max-Age=-99999999;';
+  }
 }
