@@ -6,7 +6,7 @@
 
 #map-list-container {
   position: relative;
-  background: #ECF0F1;
+  background: #FFF;
 
   #add-project {
     @include overlay();
@@ -21,7 +21,7 @@
 }
 
 #map-preview {
-  background: #fff;
+  background: #F6F6F6;
 
   #canvas-container {
     width: 100%;

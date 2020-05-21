@@ -3,7 +3,7 @@
   <!-- Read Panel -->
   <div *ngIf='node' id='read-panel'>
     <div [ngClass]='nodeStyle'>
-      <h3 class='roboto'>{{node?.label}}</h3>
+      <h2 class='roboto'>{{node?.label}}</h2>
     </div>
     <!-- Type -->
     <div>
@@ -58,7 +58,7 @@
       <p class='date'>
         Modified {{project?.date_modified | friendlyDateStr}}
       </p>
-      <p class='description'>
+      <p class='description lh-copy'>
         {{project?.description}}
       </p>
       <div class='action'>
