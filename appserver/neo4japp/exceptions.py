@@ -66,3 +66,9 @@ class FormatterException(BaseException):
     dict correctly."""
     def __init__(self, message):
         super().__init__('Formatter Error', message)
+
+
+class DataNotAvailableException(BaseException):
+    """Signals that the requested data is not available in a storage."""
+    def __init__(self, message):
+        super().__init__('Data Not Available Error', message)
