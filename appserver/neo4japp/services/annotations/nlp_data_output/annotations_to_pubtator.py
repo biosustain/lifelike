@@ -22,7 +22,7 @@ def write_to_file(
 ):
     annotation_json = json.load(annotations)
     identifier = compute_hash(annotation_json, limit=8)
-    writer = csv.writer(pubtator_file, delimiter='|')
+    writer = csv.writer(pubtator_file, delimiter='|', quoting=csv.QUOTE_NONE, escapechar='\\')
     writer.writerow([identifier, 't', annotation_json['documents'][0]['id']])
     writer.writerow([identifier, 'a', annotation_json['documents'][0]['passages'][0]['text']])
     writer = csv.writer(pubtator_file, delimiter='\t')
@@ -61,7 +61,7 @@ def create_annotations(
 
 def main():
     app = create_app('Functional Test Flask App', config='config.Testing')
-    pubtator_file = open(os.path.join(directory, 'pubtator.tsv'), 'w')
+    pubtator_file = open(os.path.join(directory, 'pubtator.tsv'), 'w+')
     with app.app_context():
         for parent, subfolders, filenames in os.walk(os.path.join(directory, 'pdfs/')):
             for fn in filenames:
@@ -80,7 +80,7 @@ def main():
                         )
 
                     annotation_file = os.path.join(directory, f'annotations/{fn}.json')
-                    with open(annotation_file, 'w') as a_f:
+                    with open(annotation_file, 'w+') as a_f:
                         json.dump(annotations, a_f)
 
         for parent, subfolders, filenames in os.walk(os.path.join(directory, 'annotations/')):
