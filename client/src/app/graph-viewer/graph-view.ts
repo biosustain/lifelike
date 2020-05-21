@@ -50,7 +50,7 @@ export abstract class GraphView implements GraphActionReceiver {
    * Keep track of fixed X/Y positions that come from dragging nodes. These
    * values are passed to the automatic layout routines .
    */
-  protected readonly nodePositionOverrideMap: Map<UniversalGraphNode, [number, number]> = new Map();
+  readonly nodePositionOverrideMap: Map<UniversalGraphNode, [number, number]> = new Map();
 
   // Graph states
   // ---------------------------------

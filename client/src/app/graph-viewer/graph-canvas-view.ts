@@ -51,18 +51,9 @@ export class GraphCanvasView extends GraphView {
   } | undefined;
 
   /**
-   * Used for the double-click-to-create-an-edge function to store the from
-   * node and other details regarding the connection.
+   * Holds currently active behaviors. Behaviors provide UI for the graph.
    */
-  protected interactiveEdgeCreationState: EdgeCreationState | undefined = null;
-
-  /**
-   * Stores the offset between the node and the initial position of the mouse
-   * when clicked during the start of a drag event. Used for node position stability
-   * when the user is dragging nodes on the canvas, otherwise the node 'jumps'
-   * so node center is the same the mouse position, and the jump is not what we want.
-   */
-  protected offsetBetweenNodeAndMouseInitialPosition: number[] = [0, 0];
+  protected activeBehaviors = new BehaviorList();
 
   /**
    * Holds the ResizeObserver to detect resizes. Only set if
@@ -80,6 +71,11 @@ export class GraphCanvasView extends GraphView {
    * The subscription that handles the resizes.
    */
   protected canvasResizePendingSubscription: Subscription | undefined;
+
+  /**
+   * Subscription for when the selection changes.
+   */
+  private selectionChangeSubscription;
 
   /**
    * Store the last time {@link zoomToFit} was called in case the canvas is
@@ -125,10 +121,14 @@ export class GraphCanvasView extends GraphView {
         .on('end', this.canvasDragEnded.bind(this)))
       .call(this.zoom)
       .on('dblclick.zoom', null);
+
+    this.activeBehaviors.add('mover', new Mover(this), -101);
+    this.activeBehaviors.add('selector', new Selector(this), -100);
   }
 
   destroy() {
     super.destroy();
+    this.selectionChangeSubscription.unsubscribe();
     this.stopParentFillResizeListener();
   }
 
@@ -383,9 +383,9 @@ export class GraphCanvasView extends GraphView {
     this.drawTouchPosition(ctx);
     this.drawHighlightBackground(ctx);
     this.drawLayoutGroups(ctx);
-    this.drawInteractiveEdgeCreation(ctx);
     this.drawEdges(ctx);
     this.drawNodes(ctx);
+    this.drawActiveBehaviors(ctx);
 
     ctx.restore();
 
@@ -444,46 +444,6 @@ export class GraphCanvasView extends GraphView {
     }
   }
 
-  private drawInteractiveEdgeCreation(ctx: CanvasRenderingContext2D) {
-    const noZoomScale = 1 / this.transform.scale(1).k;
-
-    if (this.interactiveEdgeCreationState && this.interactiveEdgeCreationState.to) {
-      ctx.beginPath();
-
-      const {from, to} = this.interactiveEdgeCreationState;
-      const color = '#2B7CE9';
-      const lineWidth = noZoomScale;
-
-      // Draw arrow
-      const arrow = new Arrowhead(16, {
-        fillStyle: color,
-        strokeStyle: null,
-        lineWidth,
-      });
-      const drawnTerminator = arrow.draw(ctx, from.data.x, from.data.y, to.data.x, to.data.y);
-
-      // Draw line
-      ctx.beginPath();
-      ctx.lineWidth = lineWidth;
-      ctx.strokeStyle = color;
-      ctx.fillStyle = color;
-      ctx.moveTo(from.data.x, from.data.y);
-      ctx.lineTo(drawnTerminator.startX, drawnTerminator.startY);
-      ctx.stroke();
-
-      // Draw the 'o' node at the end of the line
-      const nodeRadius = 6 * noZoomScale;
-      const x = to.data.x;
-      const y = to.data.y;
-      ctx.moveTo(x, y);
-      ctx.arc(x, y, nodeRadius, 0, 2 * Math.PI);
-      ctx.strokeStyle = '#2B7CE9';
-      ctx.stroke();
-      ctx.fillStyle = '#97C2FC';
-      ctx.fill();
-    }
-  }
-
   private drawEdges(ctx: CanvasRenderingContext2D) {
     const transform = this.transform;
     const placeEdge = this.placeEdge.bind(this);
@@ -525,6 +485,12 @@ export class GraphCanvasView extends GraphView {
     }
   }
 
+  private drawActiveBehaviors(ctx: CanvasRenderingContext2D) {
+    for (const behavior of this.activeBehaviors.getBehaviors()) {
+      behavior.draw(ctx, this.transform);
+    }
+  }
+
   /**
    * Update the current mouse cursor.
    */
@@ -546,38 +512,16 @@ export class GraphCanvasView extends GraphView {
   // ========================================
 
   canvasClicked() {
-    const subject = this.getEntityAtMouse();
-    if (this.interactiveEdgeCreationState) {
-      if (subject && subject.type === GraphEntityType.Node) {
-        const node = subject.entity as UniversalGraphNode;
-        if (node !== this.interactiveEdgeCreationState.from) {
-          const label = prompt('Label please', '') || ''; // Doesn't work for 0
-          this.edges.push({
-            data: {},
-            from: this.interactiveEdgeCreationState.from.hash,
-            to: node.hash,
-            label,
-          });
-          this.interactiveEdgeCreationState = null;
-        }
-      } else {
-        this.interactiveEdgeCreationState = null;
-      }
-    } else {
-      this.selection.replace(subject ? [subject] : []);
-    }
-    this.requestRender();
+    this.activeBehaviors.apply(behavior => behavior.click());
   }
 
   canvasDoubleClicked() {
-    if (!this.interactiveEdgeCreationState) {
+    const result = this.activeBehaviors.apply(behavior => behavior.doubleClick());
+    if (result === BehaviorResult.Continue) {
       const subject = this.getEntityAtMouse();
       if (subject && subject.type === GraphEntityType.Node) {
         const node = subject.entity as UniversalGraphNode;
-        this.interactiveEdgeCreationState = {
-          from: node,
-          to: null,
-        };
+        this.activeBehaviors.add('interactive-edge', new InteractiveEdgeCreation(this, node), 10);
       }
     }
   }
@@ -601,16 +545,7 @@ export class GraphCanvasView extends GraphView {
     this.highlighting.replace(entityAtMouse ? [entityAtMouse] : []);
     this.hoverPosition = {x: graphX, y: graphY};
 
-    if (this.interactiveEdgeCreationState) {
-      this.interactiveEdgeCreationState.to = {
-        data: {
-          x: graphX,
-          y: graphY,
-        },
-      };
-
-      this.requestRender();
-    }
+    this.activeBehaviors.apply(behavior => behavior.mouseMove());
 
     if (this.mouseDown) {
       this.touchPosition = {
@@ -641,16 +576,7 @@ export class GraphCanvasView extends GraphView {
     const [mouseX, mouseY] = d3.mouse(this.canvas);
     const subject: GraphEntity | undefined = d3.event.subject;
 
-    if (subject.type === GraphEntityType.Node) {
-      const node = subject.entity as UniversalGraphNode;
-
-      // We need to store the offset between the mouse and the node, because when
-      // we actually move the node, we need to move it relative to this offset
-      this.offsetBetweenNodeAndMouseInitialPosition = [
-        node.data.x - this.transform.invertX(mouseX),
-        node.data.y - this.transform.invertY(mouseY),
-      ];
-    }
+    this.activeBehaviors.apply(behavior => behavior.dragStart());
 
     this.dragging.replace(subject ? [subject] : []);
     this.selection.replace(subject ? [subject] : []);
@@ -670,16 +596,7 @@ export class GraphCanvasView extends GraphView {
     const [mouseX, mouseY] = d3.mouse(this.canvas);
     const subject: GraphEntity | undefined = d3.event.subject;
 
-    if (!this.interactiveEdgeCreationState) {
-      if (subject.type === GraphEntityType.Node) {
-        const node = subject.entity as UniversalGraphNode;
-        node.data.x = this.transform.invertX(mouseX) + this.offsetBetweenNodeAndMouseInitialPosition[0];
-        node.data.y = this.transform.invertY(mouseY) + this.offsetBetweenNodeAndMouseInitialPosition[1];
-        this.nodePositionOverrideMap.set(node, [node.data.x, node.data.y]);
-        this.invalidateNode(node);
-        // TODO: Store this in history as ONE object
-      }
-    }
+    this.activeBehaviors.apply(behavior => behavior.drag());
 
     this.touchPosition = {
       position: {
@@ -722,15 +639,262 @@ export class GraphCanvasView extends GraphView {
   }
 }
 
-/**
- * Used to temporarily keep track of the information we need to
- * interactively create an edge.
- */
-interface EdgeCreationState {
-  from: UniversalGraphNode;
-  to?: {
+enum BehaviorResult {
+  Continue = 'CONTINUE',
+  EndProcessing = 'END',
+  Remove = 'REMOVE',
+}
+
+class BehaviorList {
+  private behaviorsMap: Map<string, {
+    priority: number,
+    behavior: Behavior
+  }> = new Map();
+
+  add(key: string, behavior: Behavior, priority: number) {
+    if (this.behaviorsMap.has(key)) {
+      throw new Error(`behavior by key '${key}' already added`);
+    }
+    const behaviors: [string, {priority: number, behavior: Behavior}][] = [
+      ...this.behaviorsMap.entries(),
+      [key, {behavior, priority}],
+    ];
+    // Slow priority queue
+    behaviors.sort((a, b) => {
+      if (a[1].priority > b[1].priority) {
+        return -1;
+      } else if (a[1].priority < b[1].priority) {
+        return 1;
+      } else {
+        return 0;
+      }
+    });
+    this.behaviorsMap = new Map(behaviors);
+  }
+
+  delete(key: string): boolean {
+    return this.behaviorsMap.delete(key);
+  }
+
+  apply(callable: (behavior: Behavior) => BehaviorResult): BehaviorResult {
+    for (const [key, {behavior, priority}] of this.behaviorsMap.entries()) {
+      const result = callable(behavior);
+      if (result === BehaviorResult.EndProcessing) {
+        return BehaviorResult.EndProcessing;
+      } else if (result === BehaviorResult.Remove) {
+        this.behaviorsMap.delete(key);
+      }
+    }
+    return BehaviorResult.Continue;
+  }
+
+  *getBehaviors() {
+    for (const [key, {behavior, priority}] of this.behaviorsMap.entries()) {
+      yield behavior;
+    }
+  }
+}
+
+interface Behavior {
+  click(): BehaviorResult;
+
+  doubleClick(): BehaviorResult;
+
+  mouseMove(): BehaviorResult;
+
+  dragStart(): BehaviorResult;
+
+  drag(): BehaviorResult;
+
+  draw(ctx: CanvasRenderingContext2D, transform: any);
+}
+
+abstract class AbstractBehavior implements Behavior {
+  click(): BehaviorResult {
+    return BehaviorResult.Continue;
+  }
+
+  doubleClick(): BehaviorResult {
+    return BehaviorResult.Continue;
+  }
+
+  mouseMove(): BehaviorResult {
+    return BehaviorResult.Continue;
+  }
+
+  dragStart(): BehaviorResult {
+    return BehaviorResult.Continue;
+  }
+
+  drag(): BehaviorResult {
+    return BehaviorResult.Continue;
+  }
+
+  draw(ctx: CanvasRenderingContext2D, transform: any) {
+  }
+}
+
+class Selector extends AbstractBehavior {
+  constructor(private readonly graphView: GraphCanvasView) {
+    super();
+  }
+
+  click(): BehaviorResult {
+    const subject = this.graphView.getEntityAtMouse(); // TODO: Cache
+    this.graphView.selection.replace(subject ? [subject] : []);
+    this.graphView.requestRender(); // TODO: Don't call unless needed
+    return BehaviorResult.Continue;
+  }
+}
+
+class Mover extends AbstractBehavior {
+  /**
+   * Stores the offset between the node and the initial position of the mouse
+   * when clicked during the start of a drag event. Used for node position stability
+   * when the user is dragging nodes on the canvas, otherwise the node 'jumps'
+   * so node center is the same the mouse position, and the jump is not what we want.
+   */
+  private offsetBetweenNodeAndMouseInitialPosition: number[] = [0, 0];
+
+  constructor(private readonly graphView: GraphCanvasView) {
+    super();
+  }
+
+  dragStart(): BehaviorResult {
+    const [mouseX, mouseY] = d3.mouse(this.graphView.canvas);
+    const transform = this.graphView.transform;
+    const subject: GraphEntity | undefined = d3.event.subject;
+
+    if (subject.type === GraphEntityType.Node) {
+      const node = subject.entity as UniversalGraphNode;
+
+      // We need to store the offset between the mouse and the node, because when
+      // we actually move the node, we need to move it relative to this offset
+      this.offsetBetweenNodeAndMouseInitialPosition = [
+        node.data.x - transform.invertX(mouseX),
+        node.data.y - transform.invertY(mouseY),
+      ];
+    }
+
+    return BehaviorResult.Continue;
+  }
+
+  drag(): BehaviorResult {
+    // TODO: cache
+    const [mouseX, mouseY] = d3.mouse(this.graphView.canvas);
+    const transform = this.graphView.transform;
+    const subject: GraphEntity | undefined = d3.event.subject;
+
+    if (subject.type === GraphEntityType.Node) {
+      const node = subject.entity as UniversalGraphNode;
+      node.data.x = transform.invertX(mouseX) + this.offsetBetweenNodeAndMouseInitialPosition[0];
+      node.data.y = transform.invertY(mouseY) + this.offsetBetweenNodeAndMouseInitialPosition[1];
+      this.graphView.nodePositionOverrideMap.set(node, [node.data.x, node.data.y]);
+      this.graphView.invalidateNode(node);
+      // TODO: Store this in history as ONE object
+    }
+
+    return BehaviorResult.Continue;
+  }
+}
+
+class InteractiveEdgeCreation extends AbstractBehavior {
+  private to: {
     data: {
       x, y
     }
-  };
+  } = null;
+
+  constructor(private readonly graphView: GraphCanvasView,
+              private readonly from: UniversalGraphNode) {
+    super();
+  }
+
+  click(): BehaviorResult {
+    const subject = this.graphView.getEntityAtMouse(); // TODO: Cache
+
+    if (subject && subject.type === GraphEntityType.Node) {
+      const node = subject.entity as UniversalGraphNode;
+      if (node !== this.from) {
+        const label = prompt('Label please', '') || ''; // Doesn't work for 0
+        // TODO: handle invalidation and history
+        this.graphView.edges.push({
+          data: {},
+          from: this.from.hash,
+          to: node.hash,
+          label,
+        });
+        this.graphView.requestRender(); // TODO: Don't call unless needed
+        return BehaviorResult.Remove;
+      }
+    } else {
+      return BehaviorResult.Remove;
+    }
+  }
+
+  doubleClick(): BehaviorResult {
+    return BehaviorResult.EndProcessing;
+  }
+
+  mouseMove(): BehaviorResult {
+    // TODO: Cache
+    const [mouseX, mouseY] = d3.mouse(this.graphView.canvas);
+    const graphX = this.graphView.transform.invertX(mouseX);
+    const graphY = this.graphView.transform.invertY(mouseY);
+    const entityAtMouse = this.graphView.getEntityAtMouse();
+
+    this.to = {
+      data: {
+        x: graphX,
+        y: graphY,
+      },
+    };
+
+    this.graphView.requestRender();
+    return BehaviorResult.Continue;
+  }
+
+  drag(): BehaviorResult {
+    return BehaviorResult.EndProcessing;
+  }
+
+  draw(ctx: CanvasRenderingContext2D, transform: any) {
+    const from = this.from;
+    const to = this.to;
+
+    if (to) {
+      ctx.beginPath();
+      const noZoomScale = 1 / transform.scale(1).k;
+      const color = '#2B7CE9';
+      const lineWidth = noZoomScale;
+
+      // Draw arrow
+      const arrow = new Arrowhead(16, {
+        fillStyle: color,
+        strokeStyle: null,
+        lineWidth,
+      });
+      const drawnTerminator = arrow.draw(ctx, from.data.x, from.data.y, to.data.x, to.data.y);
+
+      // Draw line
+      ctx.beginPath();
+      ctx.lineWidth = lineWidth;
+      ctx.strokeStyle = color;
+      ctx.fillStyle = color;
+      ctx.moveTo(from.data.x, from.data.y);
+      ctx.lineTo(drawnTerminator.startX, drawnTerminator.startY);
+      ctx.stroke();
+
+      // Draw the 'o' node at the end of the line
+      const nodeRadius = 6 * noZoomScale;
+      const x = to.data.x;
+      const y = to.data.y;
+      ctx.moveTo(x, y);
+      ctx.arc(x, y, nodeRadius, 0, 2 * Math.PI);
+      ctx.strokeStyle = '#2B7CE9';
+      ctx.stroke();
+      ctx.fillStyle = '#97C2FC';
+      ctx.fill();
+    }
+  }
 }
