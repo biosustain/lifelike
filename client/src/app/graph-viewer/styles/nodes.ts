@@ -17,8 +17,8 @@ export class RoundedRectangleNodeStyle implements NodeRenderStyle {
     const textWidth = textSize.width;
     const textActualHeight = textSize.actualBoundingBoxAscent + textSize.actualBoundingBoxDescent;
     const padding = 10;
-    const nodeWidth = textSize.width + padding;
-    const nodeHeight = textActualHeight + padding;
+    const nodeWidth = d.data.width != null ? d.data.width : textSize.width + padding;
+    const nodeHeight = d.data.height != null ? d.data.height : textActualHeight + padding;
     const nodeX = d.data.x - nodeWidth / 2;
     const nodeY = d.data.y - nodeHeight / 2;
     const nodeX2 = nodeX + nodeWidth;

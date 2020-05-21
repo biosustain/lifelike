@@ -13,6 +13,7 @@ import { Group, Link } from 'webcola/WebCola/src/layout';
 import { Subject } from 'rxjs';
 import { PlacedEdge, PlacedNode } from './styles/graph-styles';
 import { GraphAction, GraphActionReceiver } from './actions/actions';
+import { BehaviorList } from './behaviors/behaviors';
 
 /**
  * A rendered view of a graph.
@@ -101,6 +102,14 @@ export abstract class GraphView implements GraphActionReceiver {
    */
   automaticLayoutEnabled = false;
 
+  /**
+   * Holds currently active behaviors. Behaviors provide UI for the graph.
+   */
+  readonly behaviors = new BehaviorList<any>([
+    'isPointIntersectingNode',
+    'isPointIntersectingEdge',
+  ]);
+
   // History
   // ---------------------------------
 
@@ -135,6 +144,7 @@ export abstract class GraphView implements GraphActionReceiver {
    */
   destroy() {
     this.active = false;
+    this.behaviors.destroy();
   }
 
   // ========================================
@@ -365,7 +375,9 @@ export abstract class GraphView implements GraphActionReceiver {
   getNodeAtPosition(nodes: UniversalGraphNode[], x: number, y: number): UniversalGraphNode | undefined {
     for (let i = nodes.length - 1; i >= 0; --i) {
       const d = nodes[i];
-      if (this.placeNode(d).isPointIntersecting(x, y)) {
+      const placedNode = this.placeNode(d);
+      const hookResult = this.behaviors.call('isPointIntersectingNode', placedNode, x, y);
+      if ((hookResult !== undefined && hookResult) || placedNode.isPointIntersecting(x, y)) {
         return d;
       }
     }
@@ -380,7 +392,12 @@ export abstract class GraphView implements GraphActionReceiver {
    */
   getEdgeAtPosition(edges: UniversalGraphEdge[], x: number, y: number): UniversalGraphEdge | undefined {
     for (const d of edges) {
-      if (this.placeEdge(d).isPointIntersecting(x, y)) {
+      const placedEdge = this.placeEdge(d);
+      const hookResult = this.behaviors.call('isPointIntersectingEdge', placedEdge, x, y);
+      if ((hookResult !== undefined && hookResult) || placedEdge.isPointIntersecting(x, y)) {
+        return d;
+      }
+      if (placedEdge.isPointIntersecting(x, y)) {
         return d;
       }
     }
@@ -735,7 +752,7 @@ class CacheGuardedEntityList {
   /**
    * Stream of changes.
    */
-  readonly changeObservable: Subject<GraphEntity[]> = new Subject();
+  readonly changeObservable: Subject<[GraphEntity[], GraphEntity[]]> = new Subject();
 
   constructor(private readonly graphView: GraphView) {
   }
@@ -749,19 +766,25 @@ class CacheGuardedEntityList {
     for (const item of this.items) {
       invalidationMap.set(item.entity, item);
     }
-    this.items = items;
-    for (const item of this.items) {
+    for (const item of items) {
       const existed = invalidationMap.delete(item.entity);
       if (!existed) {
         // Item is new, so invalidate!
         this.graphView.invalidateEntity(item);
       }
     }
+
     // Invalidate items that got removed
     for (const item of invalidationMap.values()) {
       this.graphView.invalidateEntity(item);
     }
-    this.changeObservable.next([...this.items]);
+
+    // Emit event if it changed
+    if (!this.arraysEqual(this.items.map(item => item.entity), items.map(item => item.entity))) {
+      this.changeObservable.next([[...items], this.items]);
+    }
+
+    this.items = items;
   }
 
   get(): GraphEntity[] {
@@ -774,5 +797,18 @@ class CacheGuardedEntityList {
       set.add(item.entity);
     }
     return set;
+  }
+
+  arraysEqual<T>(a: T[], b: T[]) {
+    if (a.length !== b.length) {
+      return false;
+    }
+    const aSet = new Set(a);
+    for (const item of b) {
+      if (!aSet.has(item)) {
+        return false;
+      }
+    }
+    return true;
   }
 }

@@ -4,8 +4,8 @@ import { CdkDragDrop } from '@angular/cdk/drag-drop';
 
 import { Options } from '@popperjs/core';
 
-import { asyncScheduler, fromEvent, Observable, Subject, Subscription } from 'rxjs';
-import { filter, throttleTime } from 'rxjs/operators';
+import { fromEvent, Observable, Subscription } from 'rxjs';
+import { filter } from 'rxjs/operators';
 import { ClipboardService } from 'app/shared/services/clipboard.service';
 import { keyCodeRepresentsCopyEvent, keyCodeRepresentsPasteEvent } from 'app/shared/utils';
 import { DataFlowService, makeid, ProjectsService } from '../services';
@@ -16,10 +16,12 @@ import { CopyPasteMapsService } from '../services/copy-paste-maps.service';
 import { InfoPanelComponent } from './info-panel/info-panel.component';
 import { ExportModalComponent } from './export-modal/export-modal.component';
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
-import { GraphAction } from 'app/graph-viewer/actions/actions';
 import { GraphCanvasView } from 'app/graph-viewer/graph-canvas-view';
 import { NodeCreation } from 'app/graph-viewer/actions/nodes';
-import { LINK_NODE_ICON_OBJECT } from 'app/constants';
+import { MovableNode } from '../../graph-viewer/behaviors/node-move';
+import { SelectableEntity } from '../../graph-viewer/behaviors/selectable-entity';
+import { InteractiveEdgeCreation } from '../../graph-viewer/behaviors/interactive-edge-creation';
+import { HandleResizable } from '../../graph-viewer/behaviors/handle-resizable';
 
 @Component({
   selector: 'app-drawing-tool',
@@ -90,6 +92,10 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngAfterViewInit() {
     this.graphCanvas = new GraphCanvasView(this.canvasChild.nativeElement as HTMLCanvasElement);
+    this.graphCanvas.behaviors.add('moving', new MovableNode(this.graphCanvas), -101);
+    this.graphCanvas.behaviors.add('selection', new SelectableEntity(this.graphCanvas), -100);
+    this.graphCanvas.behaviors.add('edge-creation', new InteractiveEdgeCreation(this.graphCanvas), 0);
+    this.graphCanvas.behaviors.add('handle-resizing', new HandleResizable(this.graphCanvas), 0);
     this.graphCanvas.backgroundFill = '#f2f2f2';
     this.graphCanvas.startParentFillResizeListener();
 
@@ -103,7 +109,7 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
     ).subscribe(this.pasted.bind(this));
 
     // Pass selections onto the data flow system
-    this.selectionSubscription = this.graphCanvas.selection.changeObservable.subscribe(selected => {
+    this.selectionSubscription = this.graphCanvas.selection.changeObservable.subscribe(([selected, previousSelected]) => {
       if (selected.length === 1) {
         this.dataFlow.pushSelection(selected[0]);
       } else {
