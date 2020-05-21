@@ -29,6 +29,7 @@ export interface GraphRelationship {
 export interface VisNode extends GraphNode {
   primaryLabel?: string; // Label to display in VisJS
   color: any; // VisJS color options
+  font: any; // VisJS font options
   expanded?: boolean; // Whether a node has been expanded
 }
 
@@ -40,6 +41,7 @@ export interface DuplicateVisNode extends VisNode {
 /** VisJS Edge Representations for Client */
 export interface VisEdge extends GraphRelationship {
   arrows?: string;
+  color: any;
 }
 
 export interface DuplicateVisEdge extends VisEdge {

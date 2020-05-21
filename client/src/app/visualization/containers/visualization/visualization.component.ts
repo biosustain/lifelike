@@ -48,7 +48,7 @@ export class VisualizationComponent implements OnInit {
     getSnippetsResult: GetSnippetsResult;
     getClusterDataResult: GetClusterDataResult;
     nodes: DataSet<VisNode | GraphNode>;
-    edges: DataSet<VisEdge | GraphNode>;
+    edges: DataSet<VisEdge | GraphRelationship>;
     duplicatedEdges = new Set<number>();
 
     // TODO: Will we need to have a legend for each database? i.e. the literature
@@ -69,6 +69,9 @@ export class VisualizationComponent implements OnInit {
         private visService: VisualizationService,
     ) {
         this.legend = new Map<string, string[]>();
+    }
+
+    ngOnInit() {
         this.visService.getLegendForVisualizer().subscribe(legend => {
             Object.keys(legend).forEach(label => {
                 if (this.LITERATURE_LABELS.includes(label)) {
@@ -79,9 +82,7 @@ export class VisualizationComponent implements OnInit {
                 }
             });
         });
-    }
 
-    ngOnInit() {
         this.route.queryParams.pipe(
             filter(params => params.data),
             switchMap((params) => {
