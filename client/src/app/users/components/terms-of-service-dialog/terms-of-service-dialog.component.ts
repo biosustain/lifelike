@@ -1,5 +1,9 @@
 import { Component, OnInit, Inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { Store } from '@ngrx/store';
+
+import { State } from 'app/***ARANGO_USERNAME***-store';
+import { AuthActions } from 'app/auth/store';
 
 export const TERMS_OF_SERVICE = {
   // ISO-8601 Timestamp update
@@ -15,20 +19,38 @@ export class TermsOfServiceDialogComponent implements OnInit {
   // Whehter or not to render the agreement action buttons
   dialogMode = true;
 
-  constructor(
-    public dialogRef: MatDialogRef<TermsOfServiceDialogComponent>
-  ) {
+  credential: { email, password };
 
+  constructor(
+    public dialogRef: MatDialogRef<TermsOfServiceDialogComponent>,
+    private store: Store<State>,
+    @Inject(MAT_DIALOG_DATA) public data: any
+  ) {
+    this.credential = data;
   }
 
   ngOnInit() {
   }
 
   agree() {
-    this.dialogRef.close(TERMS_OF_SERVICE.updateTimestamp);
+    const timeStamp = TERMS_OF_SERVICE.updateTimestamp;
+    const credential = this.credential;
+
+    this.store.dispatch(
+      AuthActions.agreeTermsOfService(
+        {
+          credential,
+          timeStamp
+        }
+      )
+    );
+    this.dialogRef.close();
   }
 
   disagree() {
+    this.store.dispatch(
+      AuthActions.disagreeTermsOfService()
+    );
     this.dialogRef.close();
   }
 }

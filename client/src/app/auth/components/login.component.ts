@@ -33,7 +33,7 @@ export class LoginComponent {
     const { email, password } = this.form.value;
 
     this.store.dispatch(
-      AuthActions.login(
+      AuthActions.checkTermsOfService(
         {credential: {email, password}}
       )
     );
