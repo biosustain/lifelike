@@ -21,6 +21,11 @@ import { State } from './state';
 import { ApiHttpError } from 'app/interfaces';
 
 import * as SnackbarActions from 'app/shared/store/snackbar-actions';
+import { MatDialog, MatSnackBar } from '@angular/material';
+import {
+    TermsOfServiceDialogComponent,
+    TERMS_OF_SERVICE
+} from 'app/users/components/terms-of-service-dialog/terms-of-service-dialog.component';
 
 @Injectable()
 export class AuthEffects {
@@ -29,7 +34,63 @@ export class AuthEffects {
         private router: Router,
         private store$: Store<State>,
         private authService: AuthenticationService,
+        private dialog: MatDialog,
+        private snackbar: MatSnackBar
     ) {}
+
+    checkTermsOfService$ = createEffect(() => this.actions$.pipe(
+        ofType(AuthActions.checkTermsOfService),
+        map(({ credential }) => {
+            // Check if cookies to prove user read up to date ToS
+            const cookie = this.authService.getCookie('terms_of_service');
+
+            // Check if terms of service is up to date
+            const outOfDate = cookie ? new Date(TERMS_OF_SERVICE.updateTimestamp) > new Date(cookie) : false;
+
+            if (!cookie || outOfDate) {
+                this.authService.eraseCookie('terms_of_service');
+
+                // If not serve the terms of service dialog
+                this.dialog.open(TermsOfServiceDialogComponent, {
+                    width: 'fit-content',
+                    data: credential
+                });
+                return AuthActions.termsOfSerivceAgreeing();
+            } else {
+                return AuthActions.login({credential});
+            }
+        })
+    ));
+
+    termsOfSerivceAgreeing$ = createEffect(() => this.actions$.pipe(
+        ofType(AuthActions.termsOfSerivceAgreeing),
+    ), { dispatch: false });
+
+    agreeTermsOfService$ = createEffect(() => this.actions$.pipe(
+        ofType(AuthActions.agreeTermsOfService),
+        exhaustMap(({
+            credential,
+            timeStamp
+        }) => {
+            this.authService.setCookie('terms_of_service', timeStamp);
+            return from([
+                AuthActions.login({credential})
+            ]);
+        })
+    ));
+
+    disagreeTermsOfService$ = createEffect(() => this.actions$.pipe(
+        ofType(AuthActions.disagreeTermsOfService),
+        exhaustMap(() => {
+            return from([
+                SnackbarActions.displaySnackbar({payload: {
+                    message: 'Access can not be granted until Terms of Service are accepted',
+                    action: 'Dismiss',
+                    config: { duration: 10000 },
+                }})
+            ]);
+        })
+    ));
 
     login$ = createEffect(() => this.actions$.pipe(
         ofType(AuthActions.login),
@@ -46,8 +107,7 @@ export class AuthEffects {
                             config: { duration: 10000 },
                         }})
                     ]);
-                }
-                ),
+                }),
             );
         })
     ));
@@ -55,7 +115,7 @@ export class AuthEffects {
     loginSuccess$ = createEffect(() => this.actions$.pipe(
         ofType(AuthActions.loginSuccess),
         withLatestFrom(this.store$.pipe(select(AuthSelectors.selectAuthRedirectUrl))),
-        tap(([_, url]) => this.router.navigate([url]))
+        tap(([_, url]) => this.router.navigate([url])),
     ), { dispatch: false });
 
     loginRedirect$ = createEffect(() => this.actions$.pipe(
