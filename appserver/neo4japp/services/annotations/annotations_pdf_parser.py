@@ -136,9 +136,12 @@ class AnnotationsPDFParser:
         return char in whitespace or char == '\xa0' or char in punctuation  # noqa
 
     def _has_unwanted_punctuation(self, char: str, leading: bool = False) -> bool:
-        check = (char == ',' or char == '.' or char == ')' or char == '(' or char == ';' or char == ':' or char == '*')  # noqa
+        # want to keep things like plus, minus, etc
+        ignore_these = set(punctuation) - {'+', '-'}
+        check = char in ignore_these
         if leading:
-            check = check or char == '-' or char == '*'
+            # hyphens not minus
+            check = check or char == '-'
         return check
 
     def combine_chars_into_words(

@@ -55,6 +55,12 @@ from neo4japp.data_transfer_objects import PDFParsedCharacters
             cropbox_in_pdf=(9, 9),
             max_idx_in_page={50: 1},
         )),
+        (9, PDFParsedCharacters(
+            char_coord_objs_in_pdf=None,
+            chars_in_pdf=['-', '*', 'I', ' ', 'H', 'a', 'v', 'e', '-', ' '],
+            cropbox_in_pdf=(9, 9),
+            max_idx_in_page={50: 1},
+        )),
     ],
 )
 def test_extract_tokens(annotations_setup, index, text):
@@ -89,7 +95,7 @@ def test_extract_tokens(annotations_setup, index, text):
     elif index == 4:
         verify = {'I Havecomma', 'Havecomma', 'I'}
         assert verify == tokens
-    elif index == 5 or index == 6 or index == 7 or index == 8:
+    elif index == 5 or index == 6 or index == 7 or index == 8 or index == 9:
         verify = {'I Have', 'Have', 'I'}
         assert verify == tokens
 
