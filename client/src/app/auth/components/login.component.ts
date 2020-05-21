@@ -6,8 +6,6 @@ import { State } from 'app/root-store';
 
 import { AuthActions } from '../store';
 import { MatDialog, MatSnackBar } from '@angular/material';
-import { TermsOfServiceDialogComponent } from 'app/users/components/terms-of-service-dialog/terms-of-service-dialog.component';
-import { AccountService } from 'app/users/services/account.service';
 
 
 
@@ -26,8 +24,6 @@ export class LoginComponent {
   constructor(
     private store: Store<State>,
     public dialog: MatDialog,
-    private accService: AccountService,
-    private snackBar: MatSnackBar
   ) { }
 
   /**
