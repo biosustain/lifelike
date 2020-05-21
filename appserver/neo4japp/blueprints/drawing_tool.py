@@ -52,9 +52,12 @@ def get_map_by_hash(hash_id):
 
 @bp.route('/map/download/<string:hash_id>', methods=['GET'])
 @auth.login_required
+@requires_role('admin')
 def download_map(hash_id):
     """ Exports map to JSON format """
     user = g.current_user
+
+    yield user
 
     try:
         project = Project.query.filter_by(hash_id=hash_id).one()
@@ -63,7 +66,7 @@ def download_map(hash_id):
 
     if (project.user_id == user.id or project.public):
         project_data = json.dumps(project.graph)
-        return Response(
+        yield Response(
             project_data,
             mimetype='application/json',
             headers={'Content-Disposition': f'attachment;filename={project.label}.json'}
@@ -75,9 +78,12 @@ def download_map(hash_id):
 @bp.route('/map/upload', methods=['POST'])
 @auth.login_required
 @jsonify_with_class(DrawingUploadRequest, has_file=True)
+@requires_role('admin')
 def upload_map(req: DrawingUploadRequest):
 
     user = g.current_user
+
+    yield user
 
     map_file = req.file_input
     filename = secure_filename(map_file.filename)
@@ -99,7 +105,7 @@ def upload_map(req: DrawingUploadRequest):
     drawing_map.set_hash_id()
     db.session.commit()
 
-    return SuccessResponse(result=drawing_map.to_dict(), status_code=200)
+    yield SuccessResponse(result=drawing_map.to_dict(), status_code=200)
 
 
 @bp.route('/community', methods=['GET'])
