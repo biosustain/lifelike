@@ -54,6 +54,7 @@ describe('ContextMenuComponent', () => {
                 expanded: false,
                 primaryLabel: 'Mock Node',
                 color: null,
+                font: null,
             } as VisNode
         ];
 
