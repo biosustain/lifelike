@@ -128,7 +128,7 @@ def get_cluster_graph_data(req: GetGraphDataForClusterRequest):
     return SuccessResponse(cluster_graph_data_result, status_code=200)
 
 
-@bp.route('/get-cluster-data', methods=['GET'])
+@bp.route('/get-cluster-data', methods=['POST'])
 @jsonify_with_class(GetDataForClusterRequest)
 def get_cluster_snippet_data(req: GetDataForClusterRequest):
     neo4j = get_neo4j_service_dao()
