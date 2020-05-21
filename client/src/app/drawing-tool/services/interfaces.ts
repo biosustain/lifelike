@@ -2,6 +2,8 @@ interface UniversalGraphNode {
   data: {
     x: number;
     y: number;
+    width?: number,
+    height?: number,
     hyperlink?: string;
     detail?: string;
     source?: string;
