@@ -153,7 +153,9 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
                 group: val.group,
                 data: {
                   hyperlink: val.hyperlink,
-                  detail: val.detail
+                  detail: val.detail,
+                  source: this.graphData.data.source || '',
+                  search: this.graphData.data.search || []
                 }
               },
               edges
@@ -190,7 +192,7 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
           });
 
           // Update graphData ..
-          this.graphData = val;
+          Object.assign(this.graphData, val);
         }
       );
 
