@@ -2,6 +2,7 @@ import pytest
 import json
 from io import BytesIO
 from neo4japp.data_transfer_objects import DrawingUploadRequest
+from neo4japp.models import Project
 
 
 def generate_headers(jwt_token):
@@ -99,7 +100,7 @@ def test_can_download_map(
     assert resp.headers.get('Content-Disposition') == f'attachment;filename={proj_label}.json'
 
 
-def test_can_upload_map(client, fix_api_owner):
+def test_can_upload_map(client, fix_api_owner, session):
     login_resp = client.login_as_user(fix_api_owner.email, 'password')
     headers = generate_headers(login_resp['access_jwt'])
     mock_data = BytesIO(json.dumps({'graph': {'edges': [], 'nodes': []}}).encode('utf-8'))
@@ -113,5 +114,8 @@ def test_can_upload_map(client, fix_api_owner):
         },
         content_type='multipart/form-data'
     )
-    import pdb; pdb.set_trace()
-    assert False
+    assert res.status_code == 200
+
+    uploaded = Project.query.filter_by(label='tester').one_or_none()
+
+    assert uploaded is not None
