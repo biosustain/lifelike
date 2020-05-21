@@ -5,7 +5,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 
 import { AuthenticationService } from '../services/authentication.service';
 
-import { from, throwError, of, iif } from 'rxjs';
+import { from } from 'rxjs';
 import {
     catchError,
     exhaustMap,
