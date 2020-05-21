@@ -5,7 +5,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 
 import { AuthenticationService } from '../services/authentication.service';
 
-import { from } from 'rxjs';
+import { from, throwError, of, iif } from 'rxjs';
 import {
     catchError,
     exhaustMap,
@@ -21,6 +21,12 @@ import { State } from './state';
 import { ApiHttpError } from 'app/interfaces';
 
 import * as SnackbarActions from 'app/shared/store/snackbar-actions';
+import { MatDialog, MatSnackBar } from '@angular/material';
+import {
+    TermsOfServiceDialogComponent,
+    TERMS_OF_SERVICE
+} from 'app/users/components/terms-of-service-dialog/terms-of-service-dialog.component';
+import { isNullOrUndefined } from 'util';
 
 @Injectable()
 export class AuthEffects {
@@ -29,6 +35,8 @@ export class AuthEffects {
         private router: Router,
         private store$: Store<State>,
         private authService: AuthenticationService,
+        private dialog: MatDialog,
+        private snackbar: MatSnackBar
     ) {}
 
     login$ = createEffect(() => this.actions$.pipe(
@@ -55,7 +63,46 @@ export class AuthEffects {
     loginSuccess$ = createEffect(() => this.actions$.pipe(
         ofType(AuthActions.loginSuccess),
         withLatestFrom(this.store$.pipe(select(AuthSelectors.selectAuthRedirectUrl))),
-        tap(([_, url]) => this.router.navigate([url]))
+        tap(([_, url]) => {
+            // Check if cookies to prove user read up to date ToS
+            const cookie = this.authService.getCookie('terms_of_service');
+
+            // Check if terms of service is up to date
+            const outOfDate = cookie ? new Date(TERMS_OF_SERVICE.updateTimestamp) > new Date(cookie) : false;
+
+            if (!cookie || outOfDate) {
+                this.authService.eraseCookie('terms_of_service');
+
+                // If not serve the terms of service dialog
+                const dialogRef = this.dialog.open(TermsOfServiceDialogComponent, {
+                    width: '70%'
+                });
+
+                dialogRef.afterClosed().subscribe(
+                    acceptedVersion => {
+
+                        // If they accept .. continue with granting access
+                        if (!isNullOrUndefined(acceptedVersion)) {
+                            // continue with login process & create cookie
+                            this.authService.setCookie('terms_of_service', acceptedVersion);
+                            this.router.navigate([url]);
+                        } else {
+                            // If not log them out
+                            this.snackbar.open(
+                                'Access can not be granted until Terms of Service are accepted',
+                                null,
+                                {
+                                    duration: 2000
+                                }
+                            );
+                            this.authService.logout();
+                        }
+                    }
+                );
+            } else {
+                this.router.navigate([url]);
+            }
+        }),
     ), { dispatch: false });
 
     loginRedirect$ = createEffect(() => this.actions$.pipe(
