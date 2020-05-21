@@ -1,61 +1,49 @@
 @import "../../shared/annotation-styles.scss";
 
 .gene {
-  background: $gene !important;
-  color: darken($gene, 10) !important;
+  color: lighten($gene, 20) !important;
 }
 
 .disease {
-  background:$disease !important;
-  color: darken($disease, 10) !important;
+  color: lighten($disease, 20) !important;
 }
 
 .chemical {
-  background: $chemical !important;
-  color: darken($chemical, 10) !important;
+  color: lighten($chemical, 20) !important;
 }
 
 .mutation {
-  background: $mutation !important;
-  color: darken($mutation, 10) !important;
+  color: lighten($mutation, 20) !important;
 }
 
 .species, .map {
-  background: $species !important;
-  color: darken($species, 10) !important;
+  color: lighten($species, 20) !important;
 }
 
 .company {
-  background: $company !important;
-  color: darken($company, 10) !important;
+  color: lighten($company, 20) !important;
 }
 
 .study {
-  background: $study !important;
-  color: darken($study, 10) !important;
+  color: lighten($study, 20) !important;
 }
 
 .entity {
-  background: $entity !important;
-  color: darken($entity, 10) !important;
+  color: lighten($entity, 20) !important;
 }
 
 .protein {
-  background: $protein !important;
-  color: darken($protein, 10) !important;
+  color: lighten($protein, 20) !important;
 }
 
 .pathway {
-  background: $pathway !important;
-  color: darken($pathway, 10) !important;
+  color: lighten($pathway, 20) !important;
 }
 
 .phenotype, .note {
-  background: $note !important;
-  color: darken($note, 10) !important;
+  color: lighten($note, 20) !important;
 }
 
 .observation, .cause, .effect, .correlation, .association {
-  background: $association;
-  color: darken($association, 10) !important;
+  color: lighten($association, 20) !important;
 }
