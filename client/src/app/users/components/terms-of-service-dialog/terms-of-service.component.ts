@@ -6,8 +6,12 @@ import { Component, OnInit, Inject } from '@angular/core';
   styleUrls: ['./terms-of-service-dialog.component.scss']
 })
 export class TermsOfServiceComponent implements OnInit {
+  dialogMode = false;
 
   constructor() { }
 
   ngOnInit() { }
+
+  agree() { }
+  disagree() { }
 }
