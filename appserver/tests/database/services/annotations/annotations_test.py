@@ -362,6 +362,144 @@ def test_fix_conflicting_annotations(annotations_setup, index, annotations):
         assert fixed[0] == annotations[1]
 
 
+@pytest.mark.parametrize(
+    'index, annotations',
+    [
+        (1, [
+            Annotation(
+                page_number=1,
+                keyword='cysB',
+                lo_location_offset=17,
+                hi_location_offset=20,
+                keyword_length=4,
+                keywords=['CysB'],
+                rects=[[1, 2]],
+                meta=Annotation.Meta(
+                    keyword_type=EntityType.Proteins.value,
+                    color='',
+                    id='',
+                    id_type='',
+                    id_hyperlink='',
+                    links=Annotation.Meta.Links(),
+                ),
+            ),
+            Annotation(
+                page_number=1,
+                keyword='cysB',
+                lo_location_offset=17,
+                hi_location_offset=20,
+                keyword_length=4,
+                keywords=['cysB'],
+                rects=[[1, 2]],
+                meta=Annotation.Meta(
+                    keyword_type=EntityType.Genes.value,
+                    color='',
+                    id='',
+                    id_type='',
+                    id_hyperlink='',
+                    links=Annotation.Meta.Links(),
+                ),
+            ),
+        ]),
+        (2, [
+            Annotation(
+                page_number=1,
+                keyword='cysB',
+                lo_location_offset=17,
+                hi_location_offset=20,
+                keyword_length=4,
+                keywords=['cysB'],
+                rects=[[1, 2]],
+                meta=Annotation.Meta(
+                    keyword_type=EntityType.Proteins.value,
+                    color='',
+                    id='',
+                    id_type='',
+                    id_hyperlink='',
+                    links=Annotation.Meta.Links(),
+                ),
+            ),
+            Annotation(
+                page_number=1,
+                keyword='cysB',
+                lo_location_offset=17,
+                hi_location_offset=20,
+                keyword_length=4,
+                keywords=['cysB'],
+                rects=[[1, 2]],
+                meta=Annotation.Meta(
+                    keyword_type=EntityType.Genes.value,
+                    color='',
+                    id='',
+                    id_type='',
+                    id_hyperlink='',
+                    links=Annotation.Meta.Links(),
+                ),
+            ),
+        ]),
+        (3, [
+            Annotation(
+                page_number=1,
+                keyword='word',
+                lo_location_offset=17,
+                hi_location_offset=20,
+                keyword_length=4,
+                keywords=['Word'],
+                rects=[[1, 2]],
+                meta=Annotation.Meta(
+                    keyword_type=EntityType.Genes.value,
+                    color='',
+                    id='',
+                    id_type='',
+                    id_hyperlink='',
+                    links=Annotation.Meta.Links(),
+                ),
+            ),
+            Annotation(
+                page_number=1,
+                keyword='Test a long word',
+                lo_location_offset=5,
+                hi_location_offset=20,
+                keyword_length=16,
+                keywords=['Test a long word'],
+                rects=[[1, 2]],
+                meta=Annotation.Meta(
+                    keyword_type=EntityType.Proteins.value,
+                    color='',
+                    id='',
+                    id_type='',
+                    id_hyperlink='',
+                    links=Annotation.Meta.Links(),
+                ),
+            ),
+        ]),
+    ],
+)
+def test_fix_conflicting_gene_protein_annotations(annotations_setup, index, annotations):
+    annotation_service = AnnotationsService(
+        lmdb_session=LMDBDao(
+            genes_lmdb_path='',
+            chemicals_lmdb_path='',
+            compounds_lmdb_path='',
+            proteins_lmdb_path='',
+            species_lmdb_path='',
+            diseases_lmdb_path='',
+            phenotypes_lmdb_path='',
+        ),
+    )
+    fixed = annotation_service.fix_conflicting_annotations(unified_annotations=annotations)
+
+    if index == 1:
+        assert len(fixed) == 1
+        assert fixed[0] == annotations[0]
+    elif index == 2:
+        assert len(fixed) == 1
+        assert fixed[0] == annotations[1]
+    elif index == 3:
+        assert len(fixed) == 1
+        assert fixed[0] == annotations[0]
+
+
 @pytest.mark.skip
 @pytest.mark.parametrize(
     'file, expected_keywords',
