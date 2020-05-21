@@ -187,6 +187,12 @@ class AnnotationsPDFParser:
                             else:
                                 word += curr_char
                                 char_idx_map[i] = curr_char
+                elif i + 1 == max_length:
+                    # reached end so add whatever is left
+                    # because current char is to be ignored
+                    words_with_char_idx.append((word, char_idx_map))
+                    char_idx_map = {}
+                    word = ''
             except TypeError:
                 # checking ord() failed
                 # if a char is composed of multiple characters
