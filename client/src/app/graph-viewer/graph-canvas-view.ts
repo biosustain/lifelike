@@ -1,13 +1,9 @@
 import * as d3 from 'd3';
 import { GraphView } from './graph-view';
 import { GraphEntity, GraphEntityType, UniversalGraph, UniversalGraphEdge, UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
-import { PlacedEdge, PlacedNode } from './styles/graph-styles';
-import { AnnotationStyle, annotationTypesMap } from 'app/shared/annotation-styles';
-import { DEFAULT_NODE_STYLE, IconNodeStyle } from './styles/nodes';
-import { DEFAULT_EDGE_STYLE } from './styles/edges';
+import { EdgeRenderStyle, NodeRenderStyle, PlacedEdge, PlacedNode } from './styles/graph-styles';
 import { debounceTime } from 'rxjs/operators';
 import { asyncScheduler, Subject, Subscription } from 'rxjs';
-import { CanvasTextbox, TextAlignment } from './utils/canvas/canvas-textbox';
 
 /**
  * A graph view that uses renders into a <canvas> tag.
@@ -84,8 +80,12 @@ export class GraphCanvasView extends GraphView {
   /**
    * Create an instance of this view.
    * @param canvas the backing <canvas> tag
+   * @param nodeRenderStyle the style used to render nodes
+   * @param edgeRenderStyle the style used to render edges
    */
-  constructor(public canvas: HTMLCanvasElement) {
+  constructor(public canvas: HTMLCanvasElement,
+              readonly nodeRenderStyle: NodeRenderStyle,
+              readonly edgeRenderStyle: EdgeRenderStyle) {
     super();
 
     this.canvas = canvas;
@@ -210,28 +210,12 @@ export class GraphCanvasView extends GraphView {
     } else {
       const ctx = this.canvas.getContext('2d');
 
-      // TODO: Return different styles
-      let rendererStyle = DEFAULT_NODE_STYLE;
-
-      // TODO: Cache this stuff
-      const annotationStyle: AnnotationStyle = annotationTypesMap.get(d.label);
-      if (annotationStyle) {
-        if (annotationStyle.iconCode) {
-          rendererStyle = new IconNodeStyle(annotationStyle.iconCode);
-        }
-      }
-
-      if (d.icon) {
-        rendererStyle = new IconNodeStyle(d.icon.code, d.icon.face, d.icon.size, d.icon.color);
-      }
-
-      placedNode = rendererStyle.place(d, ctx, {
+      placedNode = this.nodeRenderStyle.place(d, ctx, {
         selected: this.isAnySelected(d),
         highlighted: this.isAnyHighlighted(d),
       });
 
       this.placedNodesCache.set(d, placedNode);
-
       return placedNode;
     }
   }
@@ -242,14 +226,12 @@ export class GraphCanvasView extends GraphView {
       return placedEdge;
     } else {
       const ctx = this.canvas.getContext('2d');
-
       const from = this.expectNodeByHash(d.from);
       const to = this.expectNodeByHash(d.to);
       const placedFrom: PlacedNode = this.placeNode(from);
       const placedTo: PlacedNode = this.placeNode(to);
 
-      // TODO: Return different styles
-      placedEdge = DEFAULT_EDGE_STYLE.place(d, from, to, placedFrom, placedTo, ctx, {
+      placedEdge = this.edgeRenderStyle.place(d, from, to, placedFrom, placedTo, ctx, {
         selected: this.isAnySelected(d, from, to),
         highlighted: this.isAnyHighlighted(d, from, to),
       });
@@ -446,13 +428,13 @@ export class GraphCanvasView extends GraphView {
     // Use named functions for easier profiling
     function drawEdgeLines({d, placedEdge}) {
       ctx.beginPath();
-      placedEdge.render(transform);
+      placedEdge.draw(transform);
     }
 
     // Use named functions for easier profiling
     function drawEdgeLabels({d, placedEdge}) {
       ctx.beginPath();
-      placedEdge.renderLayer2(transform);
+      placedEdge.drawLayer2(transform);
     }
 
     // We need to turn edges into PlacedEdge objects before we can render them,
@@ -467,7 +449,7 @@ export class GraphCanvasView extends GraphView {
   private drawNodes(ctx: CanvasRenderingContext2D) {
     for (const d of this.nodes) {
       ctx.beginPath();
-      this.placeNode(d).render(this.transform);
+      this.placeNode(d).draw(this.transform);
     }
   }
 
