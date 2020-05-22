@@ -142,7 +142,7 @@ def test_get_cluster_data(
     client,
     gas_gangrene_treatment_clustered_nodes,
 ):
-    response = client.get(
+    response = client.post(
         '/neo4j/get-cluster-data',
         data=json.dumps(dict(
             clustered_nodes=[
