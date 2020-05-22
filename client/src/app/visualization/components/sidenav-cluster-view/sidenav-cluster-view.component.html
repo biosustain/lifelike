@@ -1,6 +1,5 @@
-<div id="container" style="width:100%; height:400px;"></div>
-<div *ngIf="snippetResults && legend">
-  <div *ngFor="let result of snippetResults">
+<div *ngIf="clusterEntity && legend">
+  <div *ngFor="let result of clusterEntity.data">
     <app-node-relationship
       [leftNodeName]="result.from.displayName"
       [leftNodeLabel]="result.from.primaryLabel"
