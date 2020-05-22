@@ -31,6 +31,12 @@ class DuplicateRecord(BaseException):
         super().__init__('Duplicate record', message, additional_msgs)
 
 
+class InvalidFileNameException(BaseException):
+    """Signals invalid filename"""
+    def __init__(self, message, additional_msgs=[]):
+        super().__init__('File has incorrect filename', message, additional_msgs)
+
+
 class InvalidCredentialsException(BaseException):
     """Signals invalid credentials used"""
     def __init__(self, message, additional_msgs=[]):
