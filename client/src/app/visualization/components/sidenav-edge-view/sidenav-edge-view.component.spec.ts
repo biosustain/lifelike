@@ -2,7 +2,12 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { configureTestSuite } from 'ng-bullet';
 
-import { AssociationSnippet, Publication, Reference, SidenavEdgeEntity } from 'app/interfaces';
+import {
+    AssociationSnippet,
+    Publication,
+    Reference,
+    SidenavSnippetData
+} from 'app/interfaces';
 import { RootStoreModule } from 'app/***ARANGO_USERNAME***-store';
 import { SharedModule } from 'app/shared/shared.module';
 
@@ -13,7 +18,7 @@ describe('SidenavEdgeViewComponent', () => {
     let component: SidenavEdgeViewComponent;
     let fixture: ComponentFixture<SidenavEdgeViewComponent>;
 
-    let mockSidenavEdgeEntity: SidenavEdgeEntity;
+    let mockSidenavEdgeEntity: SidenavSnippetData;
     let mockAssociationSnippets: AssociationSnippet[];
     let mockPublication: Publication;
     let mockReference: Reference;
@@ -102,7 +107,7 @@ describe('SidenavEdgeViewComponent', () => {
         component = fixture.componentInstance;
 
         // Make a deep copy of the mock object so we get a brand new one for each test
-        component.edgeEntity = mockSidenavEdgeEntity;
+        component.edgeEntity = {data: mockSidenavEdgeEntity};
         component.legend = mockLegend;
 
         fixture.detectChanges();
