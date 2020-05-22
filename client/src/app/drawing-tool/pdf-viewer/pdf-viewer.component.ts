@@ -148,9 +148,19 @@ export class PdfViewerComponent implements OnDestroy {
     }
   }
 
+  setAllEntityTypesVisibility(state: boolean) {
+    for (const type of ENTITY_TYPES) {
+      this.entityTypeVisibilityMap.set(type.name, state);
+    }
+    this.invalidateEntityTypeVisibility();
+  }
+
   changeEntityTypeVisibility(entityType: EntityType, event: MatCheckboxChange) {
     this.entityTypeVisibilityMap.set(entityType.id, event.checked);
+    this.invalidateEntityTypeVisibility();
+  }
 
+  invalidateEntityTypeVisibility() {
     // Keep track if the user has some entity types disabled
     let entityTypeVisibilityChanged = false;
     for (const value of this.entityTypeVisibilityMap.values()) {
