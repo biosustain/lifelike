@@ -2,7 +2,7 @@ interface UniversalNodeStyle {
   fontSizeScale?: number;
   fillColor?: string;
   strokeColor?: string;
-  lineType?: number;
+  lineType?: string;
   lineWidthScale?: number;
 }
 interface UniversalGraphNode {
@@ -33,7 +33,7 @@ interface UniversalGraphNode {
 interface UniversalEdgeStyle {
   fontSizeScale?: number;
   strokeColor?: string;
-  lineType?: number;
+  lineType?: string;
   lineWidthScale?: number;
   sourceEndType?: string;
   targetEndType?: string;
