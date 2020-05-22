@@ -17,6 +17,7 @@
       <mat-icon>add</mat-icon>
     </button>
     <button
+      *ngIf="(userRoles$ | async)?.includes('admin')"
       mat-fab
       color='primary'
       id='upload-project'
@@ -85,6 +86,7 @@
             DELETE
           </button>
           <button
+            *ngIf="(userRoles$ | async)?.includes('admin')"
             mat-raised-button
             color="accent"
             (click)='downloadProject()'>

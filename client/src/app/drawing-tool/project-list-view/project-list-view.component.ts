@@ -31,12 +31,17 @@ import * as $ from 'jquery';
 
 import {AuthenticationService} from 'app/auth/services/authentication.service';
 
-import { BehaviorSubject, throwError } from 'rxjs';
+import { AuthSelectors } from 'app/auth/store';
+import { BehaviorSubject, Observable, throwError } from 'rxjs';
+import { select, Store } from '@ngrx/store';
+import { State } from 'app/***ARANGO_USERNAME***-store';
+
 import { first } from 'rxjs/operators';
 import { DrawingUploadPayload } from 'app/interfaces/drawing.interface';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { Progress, ProgressMode } from 'app/interfaces/common-dialog.interface';
 import { HttpEventType } from '@angular/common/http';
+
 
 @Component({
   selector: 'app-project-list-view',
@@ -45,6 +50,8 @@ import { HttpEventType } from '@angular/common/http';
 })
 export class ProjectListViewComponent {
   fullScreenmode = 'shrink';
+
+  userRoles$: Observable<string[]>;
 
   uploadStarted = false;
 
@@ -93,9 +100,11 @@ export class ProjectListViewComponent {
     private dataFlow: DataFlowService,
     private snackBar: MatSnackBar,
     private progressDialog: ProgressDialog,
+    private store: Store<State>,
   ) {
     this.userId = this.authService.whoAmI();
     this.refresh();
+    this.userRoles$ = store.pipe(select(AuthSelectors.selectRoles));
   }
 
   /**
