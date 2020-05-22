@@ -6,8 +6,8 @@ import {
     AssociationSnippet,
     Publication,
     Reference,
-    SidenavEdgeEntity,
-    SidenavClusterEntity
+    SidenavClusterEntity,
+    SidenavSnippetData
 } from 'app/interfaces';
 import { SharedModule } from 'app/shared/shared.module';
 import { RootStoreModule } from 'app/root-store';
@@ -19,7 +19,7 @@ describe('SidenavClusterViewComponent', () => {
     let component: SidenavClusterViewComponent;
     let fixture: ComponentFixture<SidenavClusterViewComponent>;
 
-    let mockSidenavEdgeEntity: SidenavEdgeEntity;
+    let mockSidenavSnippetData: SidenavSnippetData;
     let mockAssociationSnippets: AssociationSnippet[];
     let mockPublication: Publication;
     let mockReference: Reference;
@@ -74,7 +74,7 @@ describe('SidenavClusterViewComponent', () => {
             }
         ];
 
-        mockSidenavEdgeEntity  = {
+        mockSidenavSnippetData  = {
             from: {
                 data: {id: 'MOCK_NODE_1_ID', name: 'Mock Node 1'},
                 displayName: 'Mock Node 1',
@@ -101,46 +101,7 @@ describe('SidenavClusterViewComponent', () => {
         };
 
         mockClusterEntity  = {
-            includes: [
-                {
-                    id: 1,
-                    displayName: 'Mock Node 1',
-                    color: null,
-                    label: null,
-                    data: null,
-                    subLabels: null,
-                },
-                {
-                    id: 2,
-                    displayName: 'Mock Node 2',
-                    color: null,
-                    label: null,
-                    data: null,
-                    subLabels: null,
-                },
-                {
-                    id: 3,
-                    displayName: 'Mock Node 3',
-                    color: null,
-                    label: null,
-                    data: null,
-                    subLabels: null,
-                },
-            ],
-            clusterGraphData: {
-                results: {
-                    1: {
-                        'mock-edge-1': 1,
-                    },
-                    2: {
-                        'mock-edge-2': 4,
-                    },
-                    3: {
-                        'mock-edge-3': 2,
-                    },
-                }
-            },
-            clusterSnippetData: [mockSidenavEdgeEntity],
+            data: [mockSidenavSnippetData],
         };
 
         mockLegend = new Map<string, string[]>([
@@ -151,6 +112,7 @@ describe('SidenavClusterViewComponent', () => {
         fixture = TestBed.createComponent(SidenavClusterViewComponent);
         component = fixture.componentInstance;
 
+        component.clusterEntity = mockClusterEntity;
         component.legend = mockLegend;
 
         fixture.detectChanges();
@@ -160,25 +122,34 @@ describe('SidenavClusterViewComponent', () => {
         expect(component).toBeTruthy();
     });
 
-    it('should setup labels and create chart when data comes in', () => {
-        spyOn(component, 'getAllLabels');
-        spyOn(component, 'createChart');
+    it('should load snippet panels', () => {
+        const snippetPanels = document.getElementsByClassName('association-snippet-panel');
 
-        component.clusterEntity = mockClusterEntity;
-        fixture.detectChanges();
-
-        expect(component.getAllLabels).toHaveBeenCalledWith(mockClusterEntity);
-        expect(component.createChart).toHaveBeenCalledWith(mockClusterEntity);
+        expect(snippetPanels.length).toEqual(1);
     });
 
-    it('getAllLabels should get labels from cluster entity', () => {
-        component.getAllLabels(mockClusterEntity);
-        expect(component.labels).toEqual(['mock-edge-1', 'mock-edge-2', 'mock-edge-3']);
+    it('should show publication data on snippet panels', () => {
+        const snippetPanelTitles = document.getElementsByClassName('association-snippet-title');
+        const snippetPanelPubData = document.getElementsByClassName('association-snippet-pub-data');
+
+        expect(snippetPanelTitles.length).toEqual(1);
+        expect(snippetPanelPubData.length).toEqual(1);
+
+        const title = snippetPanelTitles[0];
+        const pubData = snippetPanelPubData[0];
+
+        expect(title.textContent).toEqual('Mock Title');
+        expect(pubData.textContent).toEqual('Mock Journal (9999)');
     });
 
-    it('createChart should create a highcharts barchart', () => {
-        component.getAllLabels(mockClusterEntity);
-        component.createChart(mockClusterEntity);
-        expect(component.clusterDataChart).toBeTruthy();
+    it('should link to pubmed', () => {
+        const pubmedLinks = document.getElementsByClassName('pubmed-link');
+
+        expect(pubmedLinks.length).toEqual(1);
+
+        const link = pubmedLinks[0];
+
+        expect(link.getAttribute('href')).toEqual('https://pubmed.ncbi.nlm.nih.gov/123456/');
+        expect(link.textContent).toEqual('123456launch'); // 'launch' is here because of the mat-icon
     });
 });

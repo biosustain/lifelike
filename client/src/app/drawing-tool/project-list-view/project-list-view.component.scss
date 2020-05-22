@@ -19,6 +19,12 @@
       @include overlay();
       bottom: 0;
     }
+
+    #upload-project {
+      @include overlay();
+      bottom: 0;
+      right: 65px;
+    }
   }
 
   #map-preview {

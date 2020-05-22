@@ -119,22 +119,24 @@ export interface GetReferenceTableDataResult {
 }
 
 
-export interface SidenavNodeEntity {
-    data: VisNode;
-    edges: VisEdge[];
-}
-
-export interface SidenavEdgeEntity {
+export interface SidenavSnippetData {
     to: VisNode;
     from: VisNode;
     association: string;
     snippets: AssociationSnippet[];
 }
 
+export interface SidenavNodeEntity {
+    data: VisNode;
+    edges: VisEdge[];
+}
+
+export interface SidenavEdgeEntity {
+    data: SidenavSnippetData;
+}
+
 export interface SidenavClusterEntity {
-    includes: VisNode[];
-    clusterGraphData: GetClusterGraphDataResult;
-    clusterSnippetData: SidenavEdgeEntity[];
+    data: SidenavSnippetData[];
 }
 
 export interface SettingsFormControl {
