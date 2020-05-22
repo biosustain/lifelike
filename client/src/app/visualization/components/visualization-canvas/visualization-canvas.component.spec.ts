@@ -1,5 +1,6 @@
 import { TestBed, ComponentFixture } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 import { configureTestSuite } from 'ng-bullet';
 
@@ -9,6 +10,7 @@ import { of } from 'rxjs';
 
 import { DataSet } from 'vis-network';
 
+import { MAX_CLUSTER_ROWS } from 'app/constants';
 import {
     Direction,
     DuplicateNodeEdgePair,
@@ -24,6 +26,7 @@ import {
     GetReferenceTableDataResult,
     ReferenceTableRow,
     GetClusterSnippetDataResult,
+    SettingsFormValues,
 } from 'app/interfaces';
 import { RootStoreModule } from 'app/***ARANGO_USERNAME***-store';
 import { SharedModule } from 'app/shared/shared.module';
@@ -38,7 +41,7 @@ import { SidenavEdgeViewComponent } from '../sidenav-edge-view/sidenav-edge-view
 import { SidenavNodeViewComponent } from '../sidenav-node-view/sidenav-node-view.component';
 import { VisualizationQuickbarComponent } from '../../components/visualization-quickbar/visualization-quickbar.component';
 import { VisualizationCanvasComponent } from '../visualization-canvas/visualization-canvas.component';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { VisualizationSettingsComponent } from '../visualization-settings/visualization-settings.component';
 
 describe('VisualizationCanvasComponent', () => {
     let fixture: ComponentFixture<VisualizationCanvasComponent>;
@@ -55,6 +58,7 @@ describe('VisualizationCanvasComponent', () => {
     let mockGroupRequest: GroupRequest;
     let mockConfig: Neo4jGraphConfig;
     let mockLegend: Map<string, string[]>;
+    let mockSettingsFormValues: SettingsFormValues;
     let mockCallbackParams: any;
 
     function mockNodeGenerator(nodeId: number, nodeDisplayName: string, nodeData?: any): VisNode {
@@ -117,6 +121,7 @@ describe('VisualizationCanvasComponent', () => {
                     SidenavNodeViewComponent,
                     VisualizationCanvasComponent,
                     VisualizationQuickbarComponent,
+                    VisualizationSettingsComponent,
                 ),
             ],
             providers: [
@@ -214,6 +219,17 @@ describe('VisualizationCanvasComponent', () => {
             ['Chemical', ['#CD5D67', '#410B13']]
         ]);
 
+        mockSettingsFormValues = {
+            maxClusterShownRows: {
+                value: MAX_CLUSTER_ROWS,
+                valid: true,
+            },
+            Chemical: {
+                value: true,
+                valid: true,
+            }
+        } as SettingsFormValues;
+
         mockCallbackParams = {
             event: {
                 preventDefault() { /*Do nothing*/ },
@@ -235,6 +251,7 @@ describe('VisualizationCanvasComponent', () => {
         instance.edges = mockEdges;
         instance.config = mockConfig;
         instance.legend = mockLegend;
+        instance.settingsFormValues = mockSettingsFormValues;
 
         fixture.detectChanges();
     });

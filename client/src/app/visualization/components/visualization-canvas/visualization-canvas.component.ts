@@ -5,12 +5,6 @@ import {
     OnInit,
     Output,
 } from '@angular/core';
-import {
-    FormGroup,
-    FormBuilder,
-    Validators,
-    FormControl
-} from '@angular/forms';
 
 import { Options } from '@popperjs/core';
 
@@ -21,7 +15,6 @@ import { isNullOrUndefined } from 'util';
 
 import { Network, DataSet, IdType } from 'vis-network';
 
-import { MAX_CLUSTER_ROWS } from 'app/constants';
 import {
     ClusteredNode,
     DuplicateNodeEdgePair,
@@ -35,6 +28,7 @@ import {
     GroupRequest,
     Neo4jGraphConfig,
     ReferenceTableRow,
+    SettingsFormValues,
     SidenavClusterEntity,
     SidenavNodeEntity,
     SidenavEdgeEntity,
@@ -164,6 +158,8 @@ export class VisualizationCanvasComponent implements OnInit {
     @Input() config: Neo4jGraphConfig;
     @Input() legend: Map<string, string[]>;
 
+    legendLabels: string[];
+
     // Need to create a reference to the enum so we can use it in the template
     sidenavEntityTypeEnum = SidenavEntityType;
 
@@ -187,14 +183,15 @@ export class VisualizationCanvasComponent implements OnInit {
     referenceTableTooltipSelector: string;
     referenceTableTooltipOptions: Partial<Options>;
 
-    expandNodeForm: FormGroup;
+    settingsFormValues: SettingsFormValues;
 
     constructor(
         private contextMenuControlService: ContextMenuControlService,
         private messageDialog: MessageDialog,
         private visService: VisualizationService,
-        private fb: FormBuilder,
     ) {
+        this.legendLabels = [];
+
         this.sidenavOpened = false;
         this.sidenavEntity = null;
         this.sidenavEntityType = SidenavEntityType.EMPTY;
@@ -218,18 +215,11 @@ export class VisualizationCanvasComponent implements OnInit {
         this.openClusteringRequests = 0;
         this.clusterCreatedSource = new Subject<boolean>();
         this.selectedClusterNodeData = [];
-
-        this.expandNodeForm = new FormGroup({
-            maxClusterShownRows: new FormControl(
-                MAX_CLUSTER_ROWS, [Validators.required, Validators.min(1), Validators.pattern(/^-?[0-9][^\.]*$/)]
-            ),
-            Chemical: new FormControl(true),
-            Disease: new FormControl(true),
-            Gene: new FormControl(true),
-        });
     }
 
     ngOnInit() {
+        this.legendLabels = Array.from(this.legend.keys());
+
         const container = document.getElementById('network-viz');
         const data = {
             nodes: this.nodes,
@@ -237,6 +227,20 @@ export class VisualizationCanvasComponent implements OnInit {
         };
         this.networkGraph = new Network(container, data, this.config);
         this.visualizerSetupEventBinds();
+    }
+
+    updateSettings(event: SettingsFormValues) {
+        // First time we get the settings form values we do a full copy (these are the default values)
+        if (isNullOrUndefined(this.settingsFormValues)) {
+            this.settingsFormValues = event;
+        } else {
+            // On subsequent emissions, we only update a property if it is valid
+            Object.keys(event).forEach(key => {
+                if (event[key].valid) {
+                    this.settingsFormValues[key] = event[key];
+                }
+            });
+        }
     }
 
     /**
@@ -321,7 +325,7 @@ export class VisualizationCanvasComponent implements OnInit {
             this.collapseNeighbors(nodeRef);
         } else {
             // Need to request new data from the parent when nodes are expanded
-            const filterLabels = Object.keys(this.expandNodeForm.value).filter((key) => this.expandNodeForm.value[key]);
+            const filterLabels = Array.from(this.legend.keys()).filter((key) => this.settingsFormValues[key].value);
             this.expandNode.emit({
                 nodeId,
                 filterLabels,
@@ -416,11 +420,11 @@ export class VisualizationCanvasComponent implements OnInit {
     createClusterSvg(referenceTableRows: ReferenceTableRow[]) {
         referenceTableRows.sort((a, b) => b.snippetCount - a.snippetCount);
         const maxSnippetCount = referenceTableRows[0].snippetCount;
-        const maxRowsToShow = this.expandNodeForm.get('maxClusterShownRows').value;
+        const maxRowsToShow = this.settingsFormValues.maxClusterShownRows.value;
 
+        let maxNodesCellText = '';
         const rowsHTMLString = referenceTableRows.slice(0, maxRowsToShow).map((row, index) => {
             const percentOfMax = row.snippetCount === 0 ? row.snippetCount : (row.snippetCount / maxSnippetCount) * 100;
-
             let rowHTMLString = `
             <tr class="reference-table-row">
                 <td class="entity-name-container">${row.nodeDisplayName}</td>
@@ -429,10 +433,11 @@ export class VisualizationCanvasComponent implements OnInit {
                     <div class="snippet-bar-repr" style="width: ${percentOfMax}px;"></div>
                 </td>
             </tr>`;
-            if (index === maxRowsToShow - 1) {
+            if (referenceTableRows.length !== maxRowsToShow && index === maxRowsToShow - 1) {
+                maxNodesCellText = `Showing ${maxRowsToShow} of ${referenceTableRows.length} clustered nodes`;
                 rowHTMLString += `
                 <tr class="reference-table-row">
-                    <td class="max-nodes-cell" colspan="3">Showing ${maxRowsToShow} of ${referenceTableRows.length} clustered nodes</td>
+                    <td class="max-nodes-cell" colspan="3">${maxNodesCellText}</td>
                 </tr>
                 `;
                 return rowHTMLString;
@@ -444,12 +449,28 @@ export class VisualizationCanvasComponent implements OnInit {
         const longestName = referenceTableRows.slice(0, maxRowsToShow).sort(
             (a, b) => ctx.measureText(b.nodeDisplayName).width - ctx.measureText(a.nodeDisplayName).width
         )[0].nodeDisplayName;
-        // width of biggest name + width of counts + max width of bars + padding width + border width
-        const svgWidth = Math.floor((ctx.measureText(longestName).width * 1.25) +
-            (ctx.measureText(`(${maxRowsToShow}+)`).width * 1.25) + 100 + 21 + 6);
-        // (height of rows + padding height + border height) * (# of rows + 1 or 0 depending on how many rows are in the table)
-        const svgHeight = (15 + 5 + 4) *
-            (referenceTableRows.slice(0, maxRowsToShow).length + (referenceTableRows.length > maxRowsToShow ? 1 : 0));
+
+        // Get width of SVG
+        const FLUFF_WIDTH =  21 + 6; // padding + border
+        const WIDTH_MULTIPLIER = 1.5; // multiplier to massage the width to about what we want
+        const svgWidth = Math.max(
+            // width of biggest name + max width of counts + max width of bars + constant width
+            Math.floor(
+                ctx.measureText(longestName).width * WIDTH_MULTIPLIER +
+                ctx.measureText(`(${maxSnippetCount})`).width * WIDTH_MULTIPLIER +
+                100 + FLUFF_WIDTH
+            ),
+            // OR width of the max-nodes-cell + constant width
+            Math.floor(ctx.measureText(maxNodesCellText).width * WIDTH_MULTIPLIER + FLUFF_WIDTH)
+        );
+
+        // Get height of SVG
+        const FLUFF_HEIGHT = (15 + 5 + 4); // height of rows + padding height + border height
+        // Possibly add a single extra row to accomodate the max-nodes-cell
+        const numRows = (referenceTableRows.slice(0, maxRowsToShow).length + (referenceTableRows.length > maxRowsToShow ? 1 : 0));
+        // constant height * # of rows
+        const svgHeight = FLUFF_HEIGHT * numRows;
+
         const svg =
         `<svg xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 ${svgWidth} ${svgHeight}" width="${svgWidth}" height="${svgHeight}" preserveAspectRatio="xMinYMin meet">
