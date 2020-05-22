@@ -3,6 +3,24 @@ import { createAction, props } from '@ngrx/store';
 import { AppUser, Credential } from 'app/interfaces';
 import { LOGOUT_SUCCESS } from 'app/constants';
 
+export const checkTermsOfService = createAction(
+    '[Auth] Check Terms Of Serivce',
+    props<{credential: Credential}>(),
+);
+
+export const termsOfSerivceAgreeing = createAction(
+    '[Auth] Open dialog to Terms Of Serivce',
+);
+
+export const agreeTermsOfService = createAction(
+    '[Auth] Agree to Terms Of Serivce',
+    props<{ credential: Credential, timeStamp: string }>()
+);
+
+export const disagreeTermsOfService = createAction(
+    '[Auth] Disagree to Terms Of Serivce',
+);
+
 export const login = createAction(
     '[Auth] Login',
     props<{credential: Credential}>(),

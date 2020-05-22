@@ -362,9 +362,6 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
             (properties) => {
               // Dragging a node doesn't fire node selection, but it is selected after dragging finishes, so update
               this.updateSelectedNodes();
-              if (properties.nodes.length) {
-                this.saveState = false;
-              }
             }
           );
           // Listen for mouse movement on canvas to feed to handler
@@ -1084,6 +1081,15 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
 
   networkDragStartCallback(params: any) {
     this.hideAllTooltips();
+    if (params.nodes.length) {
+      this.saveState = false;
+
+      // Track momvement of node
+      this.recordCommand({
+        action: 'move',
+        data: null
+      });
+    }
   }
 
   networkOnContextCallback(params: any) {
