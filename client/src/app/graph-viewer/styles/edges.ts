@@ -1,12 +1,21 @@
-import { UniversalGraphEdge, UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
+import { UniversalEdgeStyle, UniversalGraphEdge, UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
 import { EdgeRenderStyle, PlacedEdge, PlacedNode, PlacementOptions } from './graph-styles';
 import { getLinePointIntersectionDistance } from '../utils/geometry';
-import { Arrowhead } from './line-terminators';
+import { Arrowhead, DiamondHead } from './line-terminators';
+import { nullCoalesce } from '../utils/types';
 
 /**
  * Renders a basic edge.
  */
 export class BasicEdgeStyle implements EdgeRenderStyle {
+  fontSizeScale = 1;
+  strokeColor?: string;
+  lineType = 'solid';
+  lineWidth = 1.5;
+  lineWidthScale = 1;
+  sourceEndType = 'arrow';
+  targetEndType = 'arrow';
+
   place(d: UniversalGraphEdge,
         from: UniversalGraphNode,
         to: UniversalGraphNode,
@@ -14,15 +23,28 @@ export class BasicEdgeStyle implements EdgeRenderStyle {
         placedTo: PlacedNode,
         ctx: CanvasRenderingContext2D,
         options: PlacementOptions): PlacedEdge {
-    const lineWidth = (options.highlighted ? 1.5 : 1);
-    const color = !options.highlighted || options.highlighted ? '#2B7CE9' : '#ACCFFF';
-    const endTerminator = new Arrowhead(16, {
-      fillStyle: color,
-      strokeStyle: null,
-      lineWidth,
-    });
+    const styleData: UniversalEdgeStyle = nullCoalesce(d.style, {});
+    const fontSizeScale = nullCoalesce(styleData.fontSizeScale, this.fontSizeScale);
+    const strokeColor = nullCoalesce(styleData.strokeColor, this.strokeColor, '#2B7CE9');
+    const lineType = nullCoalesce(styleData.lineType, this.lineType);
+    const lineWidthScale = nullCoalesce(styleData.lineWidthScale, this.lineWidthScale);
+    const lineWidth = this.lineWidth * lineWidthScale * (options.highlighted ? 1.5 : 1);
+    const sourceEndType = nullCoalesce(styleData.sourceEndType, this.sourceEndType);
+    const targetEndType = nullCoalesce(styleData.targetEndType, this.targetEndType);
 
-    const font = (options.highlighted ? 'bold ' : '') + '16px Roboto';
+    const endTerminator = targetEndType === 'diamond'
+      ? new DiamondHead(16 + lineWidth, 16 + lineWidth, {
+        fillStyle: strokeColor,
+        strokeStyle: null,
+      })
+      : new Arrowhead(16 + lineWidth, {
+        fillStyle: strokeColor,
+        strokeStyle: null,
+        length: 16,
+        lineWidth,
+      });
+
+    const font = (options.highlighted ? 'bold ' : '') + (16 * fontSizeScale) + 'px Roboto';
     const [toX, toY] = placedTo.lineIntersectionPoint(from.data.x, from.data.y);
     const [fromX, fromY] = placedFrom.lineIntersectionPoint(to.data.x, to.data.y);
     ctx.font = font;
@@ -46,13 +68,15 @@ export class BasicEdgeStyle implements EdgeRenderStyle {
 
         // Draw line
         ctx.beginPath();
+        ctx.lineJoin = 'miter';
+        ctx.lineCap = 'butt';
         ctx.lineWidth = lineWidth;
-        ctx.strokeStyle = color;
-        ctx.fillStyle = color;
+        ctx.strokeStyle = strokeColor;
+        ctx.fillStyle = strokeColor;
         ctx.moveTo(from.data.x, from.data.y);
         ctx.lineTo(drawnTerminator.startX, drawnTerminator.startY);
+        ctx.setLineDash(lineType === 'dashed' ? [15, 5] : []);
         ctx.stroke();
-
         ctx.setLineDash([]);
       }
 

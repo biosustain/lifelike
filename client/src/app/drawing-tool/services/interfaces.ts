@@ -1,3 +1,10 @@
+interface UniversalNodeStyle {
+  fontSizeScale?: number;
+  fillColor?: string;
+  strokeColor?: string;
+  lineType?: number;
+  lineWidthScale?: number;
+}
 interface UniversalGraphNode {
   data: {
     x: number;
@@ -21,13 +28,21 @@ interface UniversalGraphNode {
   };
   label: string;
   sub_labels: string[];
-  color?: any;
+  style?: UniversalNodeStyle;
+}
+interface UniversalEdgeStyle {
+  fontSizeScale?: number;
+  strokeColor?: string;
+  lineType?: number;
+  lineWidthScale?: number;
+  sourceEndType?: string;
+  targetEndType?: string;
 }
 interface UniversalGraphEdge {
   label: string;
-  data: any;
   from: string;
   to: string;
+  style?: UniversalEdgeStyle;
 }
 interface UniversalGraph {
   nodes: UniversalGraphNode[];
@@ -121,6 +136,8 @@ interface Project {
 export {
   Project,
   UniversalGraph,
+  UniversalNodeStyle,
+  UniversalEdgeStyle,
   UniversalGraphEdge,
   UniversalGraphNode,
   UniversalGraphEntity,
