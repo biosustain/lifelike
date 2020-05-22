@@ -13,9 +13,17 @@ import { annotationTypes } from 'app/shared/annotation-styles';
 import { GraphEntityUpdate } from '../../../graph-viewer/actions/graph';
 import { NodeDeletion } from '../../../graph-viewer/actions/nodes';
 
-function emptyIfNull(s: string | undefined) {
+function emptyIfNull(s: any) {
   if (s == null) {
     return '';
+  } else {
+    return '' + s;
+  }
+}
+
+function nullIfEmpty(s: any) {
+  if (!s.length) {
+    return null;
   } else {
     return s;
   }
@@ -43,7 +51,14 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
     display_name: new FormControl(),
     label: new FormControl(),
     hyperlink: new FormControl(),
-    detail: new FormControl()
+    detail: new FormControl(),
+    fontSizeScale: new FormControl(),
+    fillColor: new FormControl(),
+    strokeColor: new FormControl(),
+    lineType: new FormControl(),
+    lineWidthScale: new FormControl(),
+    sourceEndType: new FormControl(),
+    targetEndType: new FormControl(),
   }, {
     updateOn: 'blur'
   });
@@ -68,19 +83,35 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
       if (selected) {
         if (selected.type === GraphEntityType.Node) {
           const node = selected.entity as UniversalGraphNode;
+          const style = node.style || {};
           this.entityForm.setValue({
             display_name: emptyIfNull(node.display_name),
             label: node.label,
             hyperlink: emptyIfNull(node.data.hyperlink),
             detail: emptyIfNull(node.data.detail),
+            fontSizeScale: emptyIfNull(style.fontSizeScale),
+            fillColor: emptyIfNull(style.fillColor),
+            strokeColor: emptyIfNull(style.strokeColor),
+            lineType: emptyIfNull(style.lineType),
+            lineWidthScale: emptyIfNull(style.lineWidthScale),
+            sourceEndType: '',
+            targetEndType: '',
           }, {emitEvent: false});
         } else if (selected.type === GraphEntityType.Edge) {
           const edge = selected.entity as UniversalGraphEdge;
+          const style = edge.style || {};
           this.entityForm.setValue({
             display_name: edge.label,
             label: '',
             hyperlink: '',
             detail: '',
+            fontSizeScale: emptyIfNull(style.fontSizeScale),
+            fillColor: '',
+            strokeColor: emptyIfNull(style.strokeColor),
+            lineType: emptyIfNull(style.lineType),
+            lineWidthScale: emptyIfNull(style.lineWidthScale),
+            sourceEndType: emptyIfNull(style.sourceEndType),
+            targetEndType: emptyIfNull(style.targetEndType),
           }, {emitEvent: false});
         }
       }
@@ -93,7 +124,7 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
     // Handle data received from the form
     this.formSubscription = this.entityForm.valueChanges
       .pipe(filter(() => !this.pauseForm))
-      .subscribe((value: any) => {
+      .subscribe((value) => {
           if (this.isSelectionNode()) {
             const data: RecursivePartial<UniversalGraphNode> = {
               display_name: value.display_name,
@@ -101,6 +132,13 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
               data: {
                 hyperlink: value.hyperlink,
                 detail: value.detail
+              },
+              style: {
+                fontSizeScale: nullIfEmpty(value.fontSizeScale),
+                fillColor: nullIfEmpty(value.fillColor),
+                strokeColor: nullIfEmpty(value.strokeColor),
+                lineType: nullIfEmpty(value.lineType),
+                lineWidthScale: nullIfEmpty(value.lineWidthScale),
               }
             };
             this.dataFlow.pushFormChange(
@@ -109,6 +147,14 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
           } else if (this.isSelectionEdge()) {
             const data: RecursivePartial<UniversalGraphEdge> = {
               label: value.display_name,
+              style: {
+                fontSizeScale: nullIfEmpty(value.fontSizeScale),
+                strokeColor: nullIfEmpty(value.strokeColor),
+                lineType: nullIfEmpty(value.lineType),
+                lineWidthScale: nullIfEmpty(value.lineWidthScale),
+                sourceEndType: nullIfEmpty(value.sourceEndType),
+                targetEndType: nullIfEmpty(value.targetEndType),
+              }
             };
             this.dataFlow.pushFormChange(
               new GraphEntityUpdate('Update edge properties', this.selected, data)

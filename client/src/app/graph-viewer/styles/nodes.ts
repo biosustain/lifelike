@@ -1,32 +1,48 @@
-import { UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
+import { UniversalGraphNode, UniversalNodeStyle } from 'app/drawing-tool/services/interfaces';
 import { NodeRenderStyle, PlacedNode, PlacementOptions } from './graph-styles';
 import { calculateNodeColor, calculateNodeFont } from './shared';
 import { pointOnRect } from '../utils/geometry';
 import 'canvas-plus';
 import { CanvasTextbox, TextAlignment } from '../utils/canvas/canvas-textbox';
+import { nullCoalesce } from '../utils/types';
+
+
 
 /**
  * Renders a node as a rounded rectangle.
  */
 export class RoundedRectangleNodeStyle implements NodeRenderStyle {
+  fontSizeScale = 1;
+  fillColor: string;
+  strokeColor: string;
+  lineType = 'solid';
+  lineWidth = 1.5;
+  lineWidthScale = 1;
+  padding = 10;
+
   place(d: UniversalGraphNode,
         ctx: CanvasRenderingContext2D,
         options: PlacementOptions): PlacedNode {
-    const color = calculateNodeColor(d);
+    const styleData: UniversalNodeStyle = nullCoalesce(d.style, {});
+    const fontSizeScale = nullCoalesce(styleData.fontSizeScale, this.fontSizeScale);
+    const fillColor = nullCoalesce(styleData.fillColor, this.fillColor, calculateNodeColor(d));
+    const strokeColor = nullCoalesce(styleData.strokeColor, this.strokeColor, '#2B7CE9');
+    const lineType = nullCoalesce(styleData.lineType, this.lineType);
+    const lineWidthScale = nullCoalesce(styleData.lineWidthScale, this.lineWidthScale);
+    const lineWidth = this.lineWidth * lineWidthScale;
+
     const textbox = new CanvasTextbox(ctx, {
       width: d.data.width,
       height: d.data.height,
       text: d.display_name,
-      font: calculateNodeFont(d, options.selected, options.highlighted),
-      fillStyle: color,
+      font: calculateNodeFont(d, options.selected, options.highlighted, fontSizeScale),
+      fillStyle: fillColor,
       strokeStyle: null,
       horizontalAlign: TextAlignment.Center,
       verticalAlign: TextAlignment.Center,
     });
-
-    const padding = 10;
-    const nodeWidth = (d.data.width != null ? d.data.width : textbox.actualWidth) + padding;
-    const nodeHeight = (d.data.height != null ? d.data.height : textbox.actualHeight) + padding;
+    const nodeWidth = (d.data.width != null ? d.data.width : textbox.actualWidth) + this.padding;
+    const nodeHeight = (d.data.height != null ? d.data.height : textbox.actualHeight) + this.padding;
     const nodeX = d.data.x - nodeWidth / 2;
     const nodeY = d.data.y - nodeHeight / 2;
     const nodeX2 = nodeX + nodeWidth;
@@ -63,12 +79,12 @@ export class RoundedRectangleNodeStyle implements NodeRenderStyle {
         const zoomResetScale = 1 / transform.scale(1).k;
         const highDetailLevel = transform.k >= 0.35 || options.selected || options.highlighted;
 
-        ctx.font = calculateNodeFont(d, options.selected, options.highlighted);
-
         if (highDetailLevel) {
           // Node box
-          ctx.lineWidth = zoomResetScale * (options.highlighted ? 2 : 1.5);
+          ctx.save();
+          ctx.lineWidth = zoomResetScale * lineWidth * (options.highlighted ? 1.3 : 1);
           ctx.fillStyle = (options.highlighted ? '#E4EFFF' : (options.selected ? '#efefef' : '#fff'));
+          ctx.setLineDash(lineType === 'dashed' ? [15, 5] : []);
           (ctx as any).roundedRect(
             nodeX,
             nodeY,
@@ -77,13 +93,14 @@ export class RoundedRectangleNodeStyle implements NodeRenderStyle {
             5
           );
           ctx.fill();
-          ctx.strokeStyle = '#2B7CE9';
+          ctx.strokeStyle = strokeColor;
           ctx.stroke();
+          ctx.restore();
 
           textbox.drawCenteredAt(d.data.x, d.data.y);
         } else {
           // Node box
-          ctx.lineWidth = zoomResetScale * (options.highlighted ? 2 : 1.5);
+          ctx.lineWidth = zoomResetScale * lineWidth * (options.highlighted ? 1.3 : 1);
           ctx.fillStyle = (options.highlighted ? '#E4EFFF' : (options.selected ? '#efefef' : '#fff'));
           (ctx as any).roundedRect(
             nodeX,
@@ -93,7 +110,7 @@ export class RoundedRectangleNodeStyle implements NodeRenderStyle {
             5
           );
           ctx.fill();
-          ctx.strokeStyle = '#2B7CE9';
+          ctx.strokeStyle = strokeColor;
           ctx.stroke();
         }
       }

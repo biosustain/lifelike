@@ -48,6 +48,72 @@
             </textarea>
     </mat-form-field>
 
+    <mat-form-field
+      class="w-100">
+      <mat-label>Font Size Scale</mat-label>
+      <input
+        matInput
+        (keydown.enter)="blurInput($event)"
+        formControlName='fontSizeScale'>
+    </mat-form-field>
+
+    <mat-form-field
+      *ngIf='isSelectionNode()'
+      class="w-100">
+      <mat-label>Fill Color</mat-label>
+      <input
+        matInput
+        (keydown.enter)="blurInput($event)"
+        formControlName='fillColor'>
+    </mat-form-field>
+
+    <mat-form-field
+      class="w-100">
+      <mat-label>Stroke Color</mat-label>
+      <input
+        matInput
+        (keydown.enter)="blurInput($event)"
+        formControlName='strokeColor'>
+    </mat-form-field>
+
+    <mat-form-field
+      class="w-100">
+      <mat-label>Line Style</mat-label>
+      <input
+        matInput
+        (keydown.enter)="blurInput($event)"
+        formControlName='lineType'>
+    </mat-form-field>
+
+    <mat-form-field
+      class="w-100">
+      <mat-label>Line Width Scale</mat-label>
+      <input
+        matInput
+        (keydown.enter)="blurInput($event)"
+        formControlName='lineWidthScale'>
+    </mat-form-field>
+
+    <mat-form-field
+      *ngIf='isSelectionEdge()'
+      class="w-100">
+      <mat-label>Source End Style</mat-label>
+      <input
+        matInput
+        (keydown.enter)="blurInput($event)"
+        formControlName='sourceEndType'>
+    </mat-form-field>
+
+    <mat-form-field
+      *ngIf='isSelectionEdge()'
+      class="w-100">
+      <mat-label>Target End Style</mat-label>
+      <input
+        matInput
+        (keydown.enter)="blurInput($event)"
+        formControlName='targetEndType'>
+    </mat-form-field>
+
     <button *ngIf='!!this.entityForm.value.hyperlink' mat-stroked-button color="primary" (click)='goToLink()'>
       Open Hyperlink
     </button>
