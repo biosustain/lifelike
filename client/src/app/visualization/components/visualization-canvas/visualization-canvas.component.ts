@@ -507,6 +507,7 @@ export class VisualizationCanvasComponent implements OnInit {
             primaryLabel: duplicateNode.primaryLabel,
             expanded: duplicateNode.expanded,
             color: duplicateNode.color,
+            font: duplicateNode.font,
         } as VisNode;
     }
 
@@ -529,6 +530,7 @@ export class VisualizationCanvasComponent implements OnInit {
             toLabel: duplicateEdge.toLabel,
             fromLabel: duplicateEdge.fromLabel,
             arrows: duplicateEdge.arrows,
+            color: duplicateEdge.color,
         } as VisEdge;
     }
 
