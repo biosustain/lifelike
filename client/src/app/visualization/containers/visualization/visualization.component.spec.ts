@@ -166,7 +166,7 @@ describe('VisualizationComponent', () => {
             label: mockGraphRelationship.data.description,
             arrows: 'to',
             color: {
-                color: instance.legend.get(mockGraphRelationship.fromLabel)[0],
+                color: '#3797DB',
             }
         });
     });

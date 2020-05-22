@@ -13,7 +13,7 @@ from neo4japp.encoders import CustomJSONEncoder
 from neo4japp.exceptions import (
     BaseException, JWTAuthTokenException,
     JWTTokenException, RecordNotFoundException,
-    )
+    DataNotAvailableException)
 
 import sentry_sdk
 from sentry_sdk.integrations.flask import FlaskIntegration
@@ -80,6 +80,7 @@ def create_app(name='neo4japp', config='config.Development'):
     app.register_error_handler(JWTTokenException, partial(handle_error, 401))
     app.register_error_handler(BaseException, partial(handle_error, 400))
     app.register_error_handler(Exception, partial(handle_generic_error, 500))
+    app.register_error_handler(DataNotAvailableException, partial(handle_error, 500))
     return app
 
 
