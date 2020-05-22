@@ -243,7 +243,7 @@ export class VisualizationComponent implements OnInit {
         return {
             ...e,
             color: {
-                color: this.legend.get(e.fromLabel)[0],
+                color: '#3797DB',
             },
             label: e.data.description,
             arrows: 'to'
