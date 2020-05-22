@@ -109,7 +109,7 @@ def test_can_upload_map(client, fix_api_owner, session):
         headers=headers,
         data={
             'description': 'test',
-            'project_name': 'tester',
+            'projectName': 'tester',
             'fileInput': (mock_data, 'testfile.json')
         },
         content_type='multipart/form-data'

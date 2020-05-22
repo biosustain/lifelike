@@ -3,7 +3,7 @@ import os
 import json
 from datetime import datetime
 
-from flask import request, Blueprint, g, Response
+from flask import request, Blueprint, g, Response, jsonify
 from werkzeug.utils import secure_filename
 
 from sqlalchemy.orm.exc import NoResultFound
@@ -16,7 +16,6 @@ from neo4japp.data_transfer_objects import DrawingUploadRequest
 from neo4japp.exceptions import InvalidFileNameException, RecordNotFoundException
 from neo4japp.models import Project, ProjectSchema
 from neo4japp.constants import ANNOTATION_STYLES_DICT
-from neo4japp.util import jsonify_with_class, SuccessResponse
 
 import graphviz as gv
 from PyPDF4 import PdfFileReader, PdfFileWriter
@@ -77,15 +76,17 @@ def download_map(hash_id):
 
 @bp.route('/map/upload', methods=['POST'])
 @auth.login_required
-@jsonify_with_class(DrawingUploadRequest, has_file=True)
 @requires_role('admin')
-def upload_map(req: DrawingUploadRequest):
+def upload_map():
+
+    proj_name = request.form['projectName']
+    proj_description = request.form['description']
 
     user = g.current_user
 
     yield user
 
-    map_file = req.file_input
+    map_file = request.files['fileInput']
     filename = secure_filename(map_file.filename)
     _, extension = os.path.splitext(filename)
     if extension != '.json':
@@ -93,8 +94,8 @@ def upload_map(req: DrawingUploadRequest):
     map_data = json.load(map_file)
     drawing_map = Project(
         author=f'{user.first_name} {user.last_name}',
-        label=req.project_name,
-        description=req.description,
+        label=proj_name,
+        description=proj_description,
         date_modified=datetime.now(),
         graph=map_data,
         user_id=user.id,
@@ -105,7 +106,7 @@ def upload_map(req: DrawingUploadRequest):
     drawing_map.set_hash_id()
     db.session.commit()
 
-    yield SuccessResponse(result=drawing_map.to_dict(), status_code=200)
+    yield jsonify(result=dict(hashId=drawing_map.hash_id)), 200
 
 
 @bp.route('/community', methods=['GET'])
