@@ -18,6 +18,7 @@ import { Network, DataSet, IdType } from 'vis-network';
 
 import { MAX_CLUSTER_ROWS } from 'app/constants';
 import {
+    ClusterData,
     ClusteredNode,
     DuplicateNodeEdgePair,
     Direction,
@@ -171,7 +172,7 @@ export class VisualizationCanvasComponent implements OnInit {
     selectedNodeEdgeLabelData: Map<string, Direction[]>;
     selectedEdges: IdType[];
     referenceTableData: DuplicateNodeEdgePair[];
-    clusters: Map<string, ReferenceTableRow[]>;
+    clusters: Map<string, ClusterData>;
     openClusteringRequests: number;
     selectedClusterNodeData: VisNode[];
 
@@ -209,7 +210,7 @@ export class VisualizationCanvasComponent implements OnInit {
             placement: 'right-start',
         };
 
-        this.clusters = new Map<string, ReferenceTableRow[]>();
+        this.clusters = new Map<string, ClusterData>();
         this.openClusteringRequests = 0;
         this.clusterCreatedSource = new Subject<boolean>();
         this.selectedClusterNodeData = [];
@@ -703,9 +704,34 @@ export class VisualizationCanvasComponent implements OnInit {
         this.cleanUpDuplicates(nodesInCluster);
     }
 
+    destroyCluster(clusterNodeId: IdType) {
+        const nodesInCluster = this.networkGraph.getNodesInCluster(clusterNodeId);
+        const edgesInCluster = [];
+
+        nodesInCluster.forEach(nodeId => {
+            this.networkGraph.getConnectedEdges(nodeId).forEach(edgeId => edgesInCluster.push(edgeId));
+        });
+
+        // Destroy the cluster
+        this.networkGraph.openCluster(clusterNodeId);
+        this.clusters.delete(clusterNodeId as string);
+
+        this.nodes.remove(nodesInCluster);
+        this.edges.remove(edgesInCluster);
+    }
+
     createCluster(originNode: IdType, relationship: string, duplicateNodeEdgePairs: DuplicateNodeEdgePair[]) {
         this.openClusteringRequests += 1;
         this.visService.getReferenceTableData(duplicateNodeEdgePairs).subscribe(result => {
+            // Remove any existing clusters connected to the origin node on this relationship first. Any
+            // nodes within should have been included in the duplicateNodeEdgePairs array sent to the appserver.
+            this.networkGraph.getConnectedNodes(originNode).forEach(nodeId => {
+                if (this.networkGraph.isCluster(nodeId)) {
+                    if (this.clusters.get(nodeId).relationship === relationship) {
+                        this.destroyCluster(nodeId);
+                    }
+                }
+            });
 
             this.updateGraphWithDuplicates(duplicateNodeEdgePairs);
 
@@ -734,7 +760,7 @@ export class VisualizationCanvasComponent implements OnInit {
                 },
                 processProperties: (clusterOptions) => {
                     const newClusterId = `cluster:${uuidv4()}`;
-                    this.clusters.set(newClusterId, referenceTableRows);
+                    this.clusters.set(newClusterId, {referenceTableRows, relationship});
                     return {...clusterOptions, id: newClusterId};
                 }
             });
@@ -745,6 +771,24 @@ export class VisualizationCanvasComponent implements OnInit {
         });
     }
 
+    getDuplicateNodeEdgePairsFromCluster(clusterNodeId: IdType) {
+        const clusteredNodeIds = this.networkGraph.getNodesInCluster(clusterNodeId);
+        const duplicateNodeEdgePairs = [];
+
+        clusteredNodeIds.forEach(nodeId => {
+            this.networkGraph.getConnectedEdges(nodeId).forEach(edgeId => {
+                duplicateNodeEdgePairs.push(
+                    {
+                        node: this.nodes.get(nodeId),
+                        edge: this.edges.get(edgeId),
+                    } as DuplicateNodeEdgePair
+                );
+            });
+        });
+
+        return duplicateNodeEdgePairs;
+    }
+
     /**
      * Creates a cluster node of all the neighbors connected to the currently selected
      * node connected by the input relationship.
@@ -752,11 +796,32 @@ export class VisualizationCanvasComponent implements OnInit {
      */
     groupNeighborsWithRelationship(groupRequest: GroupRequest) {
         const { relationship, node, direction } = groupRequest;
+        let duplicateNodeEdgePairs: DuplicateNodeEdgePair[] = [];
+
         const neighborNodesWithRel = this.getNeighborsWithRelationship(relationship, node, direction);
 
-        let duplicateNodeEdgePairs: DuplicateNodeEdgePair[];
         try {
-            duplicateNodeEdgePairs = this.createDuplicateNodesAndEdges(neighborNodesWithRel, relationship, node, direction);
+            const duplicateNodeEdgePairsOutsideCluster = this.createDuplicateNodesAndEdges(
+                neighborNodesWithRel, relationship, node, direction
+            );
+            duplicateNodeEdgePairs = duplicateNodeEdgePairs.concat(duplicateNodeEdgePairsOutsideCluster);
+
+            this.networkGraph.getConnectedNodes(node).forEach(nodeId => {
+                if (this.networkGraph.isCluster(nodeId)) {
+                    if (this.clusters.get(nodeId).relationship === relationship) {
+                        // If the hub node is already connected to a cluster on the given relationship,
+                        // we should include all the nodes in that cluster.
+                        const duplicateNodesEdgePairsInCluster = this.getDuplicateNodeEdgePairsFromCluster(
+                            nodeId
+                        ).filter(
+                            // It is possible that some of the nodes inside the cluster sre also outside it. So,
+                            // get rid of duplicates.
+                            (pair: DuplicateNodeEdgePair) => !neighborNodesWithRel.includes(pair.node.duplicateOf)
+                        );
+                        duplicateNodeEdgePairs = duplicateNodeEdgePairs.concat(duplicateNodesEdgePairsInCluster);
+                    }
+                }
+            });
         } catch (e) {
             console.log(e);
             this.messageDialog.display(
@@ -988,7 +1053,7 @@ export class VisualizationCanvasComponent implements OnInit {
 
         if (this.networkGraph.isCluster(hoveredNode)) {
             const nodeIdToSnippetCountMap = new Map<string, number>();
-            this.clusters.get(hoveredNode).forEach(nodeRow =>
+            this.clusters.get(hoveredNode).referenceTableRows.forEach(nodeRow =>
                 nodeIdToSnippetCountMap.set(nodeRow.nodeId, nodeRow.snippetCount)
             );
             this.selectedClusterNodeData = this.networkGraph.getNodesInCluster(hoveredNode).map(
