@@ -1,0 +1,39 @@
+<div *ngIf="legendLabels" id="settings-container">
+  <mat-expansion-panel>
+    <mat-expansion-panel-header>
+      <mat-panel-title>
+        Canvas Settings
+      </mat-panel-title>
+    </mat-expansion-panel-header>
+
+    <form [formGroup]="settingsForm" fxLayout="column" fxLayoutAlign="space-between start">
+      <div>Max rows shown in clusters:</div>
+      <mat-form-field>
+        <input
+          id="max-cluster-rows-input"
+          type="number"
+          step="1"
+          matInput
+          formControlName="maxClusterShownRows"
+          name="firstName"
+        />
+        <mat-error *ngIf="settingsForm.get('maxClusterShownRows').hasError('required')">
+          Max rows cannot be empty!
+        </mat-error>
+        <mat-error *ngIf="settingsForm.get('maxClusterShownRows').hasError('min')">
+          Max rows cannot be less than 1!
+        </mat-error>
+        <mat-error *ngIf="settingsForm.get('maxClusterShownRows').hasError('pattern')">
+          Max rows must be a whole number!
+        </mat-error>
+      </mat-form-field>
+
+      <div>Include in Expand Node Result:</div>
+      <mat-checkbox
+        *ngFor="let label of legendLabels"
+        [formControlName]="label"
+      >{{ label }}</mat-checkbox>
+    </form>
+
+  </mat-expansion-panel>
+</div>
