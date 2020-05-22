@@ -32,8 +32,9 @@ import {
     Neo4jGraphConfig,
     ReferenceTableRow,
     SidenavClusterEntity,
-    SidenavNodeEntity,
     SidenavEdgeEntity,
+    SidenavNodeEntity,
+    SidenavSnippetData,
     VisEdge,
     VisNode,
 } from 'app/interfaces';
@@ -131,29 +132,27 @@ export class VisualizationCanvasComponent implements OnInit {
         if (!isNullOrUndefined(result)) {
             this.sidenavEntityType = SidenavEntityType.EDGE;
             this.sidenavEntity = {
-                to: this.nodes.get(result.toNodeId) as VisNode,
-                from: this.nodes.get(result.fromNodeId) as VisNode,
-                association: result.association,
-                snippets: result.snippets,
-             } as SidenavEdgeEntity;
+                data: {
+                    to: this.nodes.get(result.toNodeId) as VisNode,
+                    from: this.nodes.get(result.fromNodeId) as VisNode,
+                    association: result.association,
+                    snippets: result.snippets,
+                } as SidenavSnippetData
+            } as SidenavEdgeEntity;
         }
     }
     @Input() set getClusterDataResult(result: GetClusterDataResult) {
         if (!isNullOrUndefined(result)) {
             this.sidenavEntityType = SidenavEntityType.CLUSTER;
-            const clusterSnippetData = result.snippetData.results.map(snippetResult => {
+            const data = result.snippetData.results.map(snippetResult => {
                 return {
                     to: this.nodes.get(snippetResult.toNodeId) as VisNode,
                     from: this.nodes.get(snippetResult.fromNodeId) as VisNode,
                     association: snippetResult.association,
                     snippets: snippetResult.snippets,
-                } as SidenavEdgeEntity;
+                } as SidenavSnippetData;
             });
-            this.sidenavEntity = {
-                includes: Object.keys(result.graphData.results).map(nodeId => this.nodes.get(nodeId)),
-                clusterSnippetData,
-                clusterGraphData: result.graphData,
-            } as SidenavClusterEntity;
+            this.sidenavEntity = { data } as SidenavClusterEntity;
         }
     }
     // Configuration for the graph view. See vis.js docs
