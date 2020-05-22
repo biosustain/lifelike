@@ -1,16 +1,16 @@
-<div *ngIf="edgeEntity && legend">
+<div *ngIf="edgeEntity.data && legend">
   <app-node-relationship
-    [leftNodeName]="edgeEntity.from.displayName"
-    [leftNodeLabel]="edgeEntity.from.primaryLabel"
-    [leftNodeColor]="legend.get(this.edgeEntity.from.primaryLabel)[0]"
-    [rightNodeColor]="legend.get(this.edgeEntity.to.primaryLabel)[0]"
-    [rightNodeName]="edgeEntity.to.displayName"
-    [rightNodeLabel]="edgeEntity.to.primaryLabel"
-    [edge]="edgeEntity.association"
+    [leftNodeName]="edgeEntity.data.from.displayName"
+    [leftNodeLabel]="edgeEntity.data.from.primaryLabel"
+    [leftNodeColor]="legend.get(this.edgeEntity.data.from.primaryLabel)[0]"
+    [rightNodeColor]="legend.get(this.edgeEntity.data.to.primaryLabel)[0]"
+    [rightNodeName]="edgeEntity.data.to.displayName"
+    [rightNodeLabel]="edgeEntity.data.to.primaryLabel"
+    [edge]="edgeEntity.data.association"
   ></app-node-relationship>
 
-  <div id="association-snippet-container" *ngIf="edgeEntity.snippets.length > 0; else noSnippets">
-    <mat-expansion-panel class="association-snippet-panel" *ngFor="let snippet of edgeEntity.snippets">
+  <div id="association-snippet-container" *ngIf="edgeEntity.data.snippets.length > 0; else noSnippets">
+    <mat-expansion-panel class="association-snippet-panel" *ngFor="let snippet of edgeEntity.data.snippets">
       <mat-expansion-panel-header [collapsedHeight]="'80px'" [expandedHeight]="'80px'">
         <mat-panel-title class="association-snippet-title">{{ snippet.publication.data.title }}</mat-panel-title>
         <mat-panel-description class="association-snippet-pub-data">
@@ -23,8 +23,8 @@
           [snippet]="snippet.reference.data.sentence"
           [entry1Text]="snippet.reference.data.entry1Text"
           [entry2Text]="snippet.reference.data.entry2Text"
-          [entry1Colors]="legend.get(this.edgeEntity.from.primaryLabel)"
-          [entry2Colors]="legend.get(this.edgeEntity.to.primaryLabel)"
+          [entry1Colors]="legend.get(this.edgeEntity.data.from.primaryLabel)"
+          [entry2Colors]="legend.get(this.edgeEntity.data.to.primaryLabel)"
         ></app-highlight-snippet>
         <div fxLayout="row" fxLayoutAlign="space-between center">
           <strong>PubMed ID: </strong>
