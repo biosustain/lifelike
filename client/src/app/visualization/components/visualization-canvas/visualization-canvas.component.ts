@@ -5,7 +5,12 @@ import {
     OnInit,
     Output,
 } from '@angular/core';
-import { FormGroup, FormBuilder } from '@angular/forms';
+import {
+    FormGroup,
+    FormBuilder,
+    Validators,
+    FormControl
+} from '@angular/forms';
 
 import { Options } from '@popperjs/core';
 
@@ -214,10 +219,13 @@ export class VisualizationCanvasComponent implements OnInit {
         this.clusterCreatedSource = new Subject<boolean>();
         this.selectedClusterNodeData = [];
 
-        this.expandNodeForm = this.fb.group({
-            Chemical: true,
-            Disease: true,
-            Gene: true,
+        this.expandNodeForm = new FormGroup({
+            maxClusterShownRows: new FormControl(
+                MAX_CLUSTER_ROWS, [Validators.required, Validators.min(1), Validators.pattern(/^-?[0-9][^\.]*$/)]
+            ),
+            Chemical: new FormControl(true),
+            Disease: new FormControl(true),
+            Gene: new FormControl(true),
         });
     }
 
@@ -408,7 +416,9 @@ export class VisualizationCanvasComponent implements OnInit {
     createClusterSvg(referenceTableRows: ReferenceTableRow[]) {
         referenceTableRows.sort((a, b) => b.snippetCount - a.snippetCount);
         const maxSnippetCount = referenceTableRows[0].snippetCount;
-        const rowsHTMLString = referenceTableRows.slice(0, MAX_CLUSTER_ROWS).map((row, index) => {
+        const maxRowsToShow = this.expandNodeForm.get('maxClusterShownRows').value;
+
+        const rowsHTMLString = referenceTableRows.slice(0, maxRowsToShow).map((row, index) => {
             const percentOfMax = row.snippetCount === 0 ? row.snippetCount : (row.snippetCount / maxSnippetCount) * 100;
 
             let rowHTMLString = `
@@ -419,10 +429,10 @@ export class VisualizationCanvasComponent implements OnInit {
                     <div class="snippet-bar-repr" style="width: ${percentOfMax}px;"></div>
                 </td>
             </tr>`;
-            if (index === MAX_CLUSTER_ROWS - 1) {
+            if (index === maxRowsToShow - 1) {
                 rowHTMLString += `
                 <tr class="reference-table-row">
-                    <td class="max-nodes-cell" colspan="3">Showing 20 of ${referenceTableRows.length} clustered nodes</td>
+                    <td class="max-nodes-cell" colspan="3">Showing ${maxRowsToShow} of ${referenceTableRows.length} clustered nodes</td>
                 </tr>
                 `;
                 return rowHTMLString;
@@ -431,13 +441,15 @@ export class VisualizationCanvasComponent implements OnInit {
             }
         }).join('\n');
         const ctx = document.getElementsByTagName('canvas')[0].getContext('2d');
-        const longestName = referenceTableRows.slice(0, 20).sort(
+        const longestName = referenceTableRows.slice(0, maxRowsToShow).sort(
             (a, b) => ctx.measureText(b.nodeDisplayName).width - ctx.measureText(a.nodeDisplayName).width
         )[0].nodeDisplayName;
         // width of biggest name + width of counts + max width of bars + padding width + border width
-        const svgWidth = Math.floor((ctx.measureText(longestName).width * 1.25) + (ctx.measureText('(20+)').width * 1.25) + 100 + 21 + 6);
-        // (height of rows + padding height + border height) * # of rows
-        const svgHeight = (15 + 5 + 4) * referenceTableRows.slice(0, 20).length;
+        const svgWidth = Math.floor((ctx.measureText(longestName).width * 1.25) +
+            (ctx.measureText(`(${maxRowsToShow}+)`).width * 1.25) + 100 + 21 + 6);
+        // (height of rows + padding height + border height) * (# of rows + 1 or 0 depending on how many rows are in the table)
+        const svgHeight = (15 + 5 + 4) *
+            (referenceTableRows.slice(0, maxRowsToShow).length + (referenceTableRows.length > maxRowsToShow ? 1 : 0));
         const svg =
         `<svg xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 ${svgWidth} ${svgHeight}" width="${svgWidth}" height="${svgHeight}" preserveAspectRatio="xMinYMin meet">

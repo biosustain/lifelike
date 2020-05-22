@@ -8,22 +8,49 @@ we should be careful using 'autosize', as it may lead to performance problems.--
 
     <!-- TODO: This should probably be its own component... -->
     <div id="expand-node-type-filter-container">
-      <form [formGroup]="expandNodeForm" fxLayout="column" fxLayoutAlign="space-between start">
-        <div>Include in Expand Node Result:</div>
+      <mat-expansion-panel>
+        <mat-expansion-panel-header>
+          <mat-panel-title>
+            Canvas Settings
+          </mat-panel-title>
+        </mat-expansion-panel-header>
 
-        <mat-checkbox
-          formControlName="Chemical"
-        >Chemical</mat-checkbox>
+        <form [formGroup]="expandNodeForm" fxLayout="column" fxLayoutAlign="space-between start">
+          <div>Max rows shown in clusters:</div>
+          <mat-form-field>
+            <input
+              type="number"
+              step="1"
+              matInput
+              formControlName="maxClusterShownRows"
+              name="firstName"
+            />
+            <mat-error *ngIf="expandNodeForm.get('maxClusterShownRows').hasError('required')">
+              Max rows cannot be empty!
+            </mat-error>
+            <mat-error *ngIf="expandNodeForm.get('maxClusterShownRows').hasError('min')">
+              Max rows cannot be less than 1!
+            </mat-error>
+            <mat-error *ngIf="expandNodeForm.get('maxClusterShownRows').hasError('pattern')">
+              Max rows must be a whole number!
+            </mat-error>
+          </mat-form-field>
 
-        <mat-checkbox
-          formControlName="Gene"
-        >Gene</mat-checkbox>
+          <div>Include in Expand Node Result:</div>
+          <mat-checkbox
+            formControlName="Chemical"
+          >Chemical</mat-checkbox>
 
-        <mat-checkbox
-          formControlName="Disease"
-        >Disease</mat-checkbox>
+          <mat-checkbox
+            formControlName="Gene"
+          >Gene</mat-checkbox>
 
-      </form>
+          <mat-checkbox
+            formControlName="Disease"
+          >Disease</mat-checkbox>
+        </form>
+
+      </mat-expansion-panel>
     </div>
 
     <div id="network-viz"></div>
