@@ -78,8 +78,8 @@ export class VisualizationService {
     }
 
     getClusterData(clusteredNodes: ClusteredNode[]) {
-        return this.http.get<{result: GetClusterDataResult}>(
-            `${this.visApi}/get-cluster-data`, {params: {clusteredNodes: JSON.stringify(clusteredNodes)}}
+        return this.http.post<{result: GetClusterDataResult}>(
+            `${this.visApi}/get-cluster-data`, {clusteredNodes}
         ).pipe(map(resp => resp.result));
     }
 }
