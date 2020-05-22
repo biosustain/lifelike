@@ -44,6 +44,9 @@ export class VisualizationSettingsComponent implements OnInit {
         });
     }
 
+    /**
+     * Gets the settings form values/validity as a SettingsFormValues object.
+     */
     getSettingsFormValuesObject() {
         const settingsFormValues = {
             maxClusterShownRows: {
