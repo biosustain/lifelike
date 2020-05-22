@@ -13,6 +13,9 @@ import {
   CopyProjectDialogComponent
 } from './project-list-view/copy-project-dialog/copy-project-dialog.component';
 import {
+  UploadProjectDialogComponent
+} from './project-list-view/upload-project-dialog/upload-project-dialog.component';
+import {
   DrawingToolComponent
 } from './drawing-tool/drawing-tool.component';
 
@@ -63,6 +66,7 @@ export const routes = [
     CreateProjectDialogComponent,
     DeleteProjectDialogComponent,
     CopyProjectDialogComponent,
+    UploadProjectDialogComponent,
     DrawingToolComponent,
     DrawingToolContextMenuComponent,
     PdfViewerComponent,
@@ -77,6 +81,7 @@ export const routes = [
     CreateProjectDialogComponent,
     DeleteProjectDialogComponent,
     CopyProjectDialogComponent,
+    UploadProjectDialogComponent,
     MapListComponent,
     ProjectListViewComponent,
     PdfViewerComponent,
