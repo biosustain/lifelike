@@ -150,6 +150,7 @@ def lmdb_setup(app, request):
     request.addfinalizer(teardown)
 
 
+# doc on how to monkeypatch: https://docs.pytest.org/en/latest/monkeypatch.html
 @pytest.fixture(scope='function')
 def mock_get_gene_to_organism_match_result(monkeypatch):
     def get_match_result(*args, **kwargs):
