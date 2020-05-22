@@ -42,6 +42,11 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
   // tslint:disable
   @Output('custom-annotation-created') annotationCreated = new EventEmitter();
 
+  /**
+   * Stores a mapping of annotations to the HTML elements that are used to show it.
+   */
+  private readonly annotationHighlightElementMap: Map<Annotation, HTMLElement[]>  = new Map();
+
   pendingHighlights = {};
 
   error: any;
@@ -178,7 +183,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
     if (visible == null) {
       visible = true;
     }
-    const elements = (annotation as any).refs;
+    const elements = this.annotationHighlightElementMap.get(annotation);
     if (elements) {
       for (const element of elements) {
         element.style.display = visible ? 'block' : 'none';
@@ -195,6 +200,9 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
     if (!annotation.meta.allText || annotation.meta.allText === '') {
       annotation.meta.allText = allText;
     }
+
+    const elementRefs = [];
+    this.annotationHighlightElementMap.set(annotation, elementRefs);
 
     for (const rect of annotation.rects) {
       const bounds = viewPort.convertToViewportRectangle(rect);
@@ -218,10 +226,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
         'left:' + left + 'px;top:' + (top) + 'px;width:' + width + 'px;height:' + height + 'px;');
       overlayContainer.appendChild(overlayDiv);
       (annotation as any).ref = overlayDiv;
-      if (!(annotation as any).refs) {
-        (annotation as any).refs = [];
-      }
-      (annotation as any).refs.push(overlayDiv);
+      elementRefs.push(overlayDiv);
       jQuery(overlayDiv).css('cursor', 'move');
       jQuery(overlayDiv).draggable({
         revert: true,
