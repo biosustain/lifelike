@@ -70,6 +70,7 @@ describe('VisualizationCanvasComponent', () => {
             expanded: false,
             primaryLabel: 'Mock Node',
             color: null,
+            font: null,
         } as VisNode;
     }
 
@@ -91,6 +92,7 @@ describe('VisualizationCanvasComponent', () => {
             toLabel: 'Mock Node',
             fromLabel: 'Mock Node',
             arrows: arrowDirection,
+            color: null,
         } as VisEdge;
     }
 
