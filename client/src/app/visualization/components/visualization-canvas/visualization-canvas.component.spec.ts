@@ -24,6 +24,7 @@ import {
     GetReferenceTableDataResult,
     ReferenceTableRow,
     GetClusterSnippetDataResult,
+    ClusterData,
     SidenavSnippetData,
     SidenavClusterEntity,
 } from 'app/interfaces';
@@ -417,7 +418,12 @@ describe('VisualizationCanvasComponent', () => {
         const clusterInfo = instance.clusters.entries().next();
         const clusterEdge = instance.networkGraph.getConnectedEdges(clusterInfo.value[0])[0];
 
-        expect(clusterInfo.value[1]).toEqual(mockReferenceTableRows);
+        expect(clusterInfo.value[1]).toEqual(
+            {
+                referenceTableRows: mockReferenceTableRows,
+                relationship: 'Mock Edge',
+            } as ClusterData
+        );
         expect(instance.isNotAClusterEdge(clusterEdge)).toBeFalse();
     });
 
@@ -924,7 +930,7 @@ describe('VisualizationCanvasComponent', () => {
         expect(instance.selectedNodeEdgeLabelData.size).toEqual(0);
     });
 
-    it('removeNodeFromCluster should pull out a single node from a cluster', async () => {
+    it('removeNodeFromCluster should pull out a single node from a cluster, but also not mutate the cluster', async () => {
         spyOn(visualizationService, 'getReferenceTableData').and.returnValue(
             of(mockGetReferenceTableDataResult)
         );
@@ -939,41 +945,9 @@ describe('VisualizationCanvasComponent', () => {
 
         const clusteredNodeIdsAfterRemoval = instance.networkGraph.getNodesInCluster(clusterId);
 
-        expect(clusteredNodeIdsAfterRemoval.length).toEqual(1);
-        expect(clusteredNodeIdsAfterRemoval[0]).toEqual(clusteredNodeIdsBeforeRemoval[1]);
+        expect(clusteredNodeIdsAfterRemoval.length).toEqual(2);
+        expect(clusteredNodeIdsAfterRemoval).toEqual(clusteredNodeIdsBeforeRemoval);
         expect(instance.nodes.get(2)).toBeTruthy();
         expect(instance.nodes.get(3)).toBeNull();
-    });
-
-    it('removeNodeFromCluster should open the cluster if there is only one node left in it', () => {
-        spyOn(visualizationService, 'getReferenceTableData').and.returnValue(
-            of(mockGetReferenceTableDataResult)
-        );
-
-        instance.groupNeighborsWithRelationship(mockGroupRequest);
-
-        const clusterInfo = instance.clusters.entries().next();
-        const clusterId = clusterInfo.value[0];
-        const clusteredNodeIdsBeforeRemoval = instance.networkGraph.getNodesInCluster(clusterId);
-
-        // Set the selectedClusterNodeData so we can test that it is mutated properly
-        instance.selectedClusterNodeData = clusteredNodeIdsBeforeRemoval.map(nodeId => instance.nodes.get(nodeId));
-
-        // Replace the mocked reference table IDs with the duplicate IDs that were randomly generated.
-        // Otherwise the removeNodeFromCluster function won't behave properly, as it expects the actual
-        // IDs.
-        instance.clusters.get(clusterId)[0].nodeId = clusteredNodeIdsBeforeRemoval[0] as string;
-        instance.clusters.get(clusterId)[1].nodeId = clusteredNodeIdsBeforeRemoval[1] as string;
-
-        instance.removeNodeFromCluster(clusteredNodeIdsBeforeRemoval[0]);
-
-        expect(instance.selectedClusterNodeData.length).toEqual(1);
-
-        instance.removeNodeFromCluster(clusteredNodeIdsBeforeRemoval[1]);
-
-        expect(instance.selectedClusterNodeData.length).toEqual(0);
-        expect(instance.clusters.size).toEqual(0);
-        expect(instance.nodes.get(2)).toBeTruthy();
-        expect(instance.nodes.get(3)).toBeTruthy();
     });
 });
