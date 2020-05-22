@@ -421,8 +421,9 @@ export class VisualizationCanvasComponent implements OnInit {
         referenceTableRows.sort((a, b) => b.snippetCount - a.snippetCount);
         const maxSnippetCount = referenceTableRows[0].snippetCount;
         const maxRowsToShow = this.settingsFormValues.maxClusterShownRows.value;
+        const numRowsToShow = referenceTableRows.length > maxRowsToShow ? maxRowsToShow : referenceTableRows.length;
 
-        let maxNodesCellText = '';
+        const maxNodesCellText = `Showing ${numRowsToShow} of ${referenceTableRows.length} clustered nodes`;
         const rowsHTMLString = referenceTableRows.slice(0, maxRowsToShow).map((row, index) => {
             const percentOfMax = row.snippetCount === 0 ? row.snippetCount : (row.snippetCount / maxSnippetCount) * 100;
             let rowHTMLString = `
@@ -433,17 +434,14 @@ export class VisualizationCanvasComponent implements OnInit {
                     <div class="snippet-bar-repr" style="width: ${percentOfMax}px;"></div>
                 </td>
             </tr>`;
-            if (referenceTableRows.length !== maxRowsToShow && index === maxRowsToShow - 1) {
-                maxNodesCellText = `Showing ${maxRowsToShow} of ${referenceTableRows.length} clustered nodes`;
+            if (index === numRowsToShow - 1) {
                 rowHTMLString += `
                 <tr class="reference-table-row">
                     <td class="max-nodes-cell" colspan="3">${maxNodesCellText}</td>
                 </tr>
                 `;
-                return rowHTMLString;
-            } else {
-                return rowHTMLString;
             }
+            return rowHTMLString;
         }).join('\n');
         const ctx = document.getElementsByTagName('canvas')[0].getContext('2d');
         const longestName = referenceTableRows.slice(0, maxRowsToShow).sort(
@@ -466,8 +464,8 @@ export class VisualizationCanvasComponent implements OnInit {
 
         // Get height of SVG
         const FLUFF_HEIGHT = (15 + 5 + 4); // height of rows + padding height + border height
-        // Possibly add a single extra row to accomodate the max-nodes-cell
-        const numRows = (referenceTableRows.slice(0, maxRowsToShow).length + (referenceTableRows.length > maxRowsToShow ? 1 : 0));
+        // Add a single extra row to accomodate the max-nodes-cell
+        const numRows = referenceTableRows.slice(0, maxRowsToShow).length + 1;
         // constant height * # of rows
         const svgHeight = FLUFF_HEIGHT * numRows;
 
