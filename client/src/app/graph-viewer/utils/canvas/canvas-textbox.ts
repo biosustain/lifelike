@@ -1,3 +1,16 @@
+interface TextboxOptions {
+  width?: number;
+  height?: number;
+  text: string;
+  font: string;
+  lineHeight?: number;
+  fillStyle?: string;
+  strokeWidth?: number;
+  strokeStyle?: string;
+  verticalAlign?: TextAlignment;
+  horizontalAlign?: TextAlignment;
+}
+
 /**
  * Draws text oriented around a point or within a box, with support for
  * alignment, wrapping, and cut off.
@@ -10,6 +23,7 @@ export class CanvasTextbox {
   readonly lineHeight: number = 1.2;
   readonly actualLineHeight: number;
   readonly fillStyle: string | undefined = '#000';
+  readonly strokeWidth: number = 1;
   readonly strokeStyle: string | undefined = null;
   readonly verticalAlign: TextAlignment = TextAlignment.Center;
   readonly horizontalAlign: TextAlignment = TextAlignment.Center;
@@ -214,14 +228,15 @@ export class CanvasTextbox {
     for (let i = 0; i < this.lines.length; i++) {
       const line = this.lines[i];
       if (!line.horizontalOverflow) {
+        if (this.strokeStyle) {
+          this.ctx.lineWidth = this.strokeWidth;
+          this.ctx.strokeStyle = this.strokeStyle;
+          this.ctx.strokeText(line.text, minX + line.xOffset,
+            minY + this.yOffset + (i * this.actualLineHeight) + this.lineMetrics.actualBoundingBoxAscent);
+        }
         if (this.fillStyle) {
           this.ctx.fillStyle = this.fillStyle;
           this.ctx.fillText(line.text, minX + line.xOffset,
-            minY + this.yOffset + (i * this.actualLineHeight) + this.lineMetrics.actualBoundingBoxAscent);
-        }
-        if (this.strokeStyle) {
-          this.ctx.strokeStyle = this.strokeStyle;
-          this.ctx.strokeText(line.text, minX + line.xOffset,
             minY + this.yOffset + (i * this.actualLineHeight) + this.lineMetrics.actualBoundingBoxAscent);
         }
       } else {
@@ -246,18 +261,6 @@ export enum TextAlignment {
   Start = 'start',
   Center = 'center',
   End = 'end',
-}
-
-interface TextboxOptions {
-  width: number | undefined;
-  height: number | undefined;
-  text: string;
-  font: string;
-  lineHeight?: number;
-  fillStyle: string;
-  strokeStyle: string;
-  verticalAlign?: TextAlignment;
-  horizontalAlign?: TextAlignment;
 }
 
 interface ComputedLine {

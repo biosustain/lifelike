@@ -68,7 +68,7 @@ export interface PlacedObject {
    * Render the object on the canvas.
    * @param transform the zoom and pan transform
    */
-  render(transform: any): void;
+  draw(transform: any): void;
 }
 
 /**
@@ -104,5 +104,5 @@ export interface PlacedEdge extends PlacedObject {
    * Render additional things that need to be placed on a layer above render();
    * @param transform the zoom and pan transform
    */
-  renderLayer2(transform: any): void;
+  drawLayer2(transform: any): void;
 }

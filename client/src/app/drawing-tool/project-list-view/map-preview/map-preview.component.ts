@@ -5,6 +5,8 @@ import { ActivatedRoute } from '@angular/router';
 import { GraphCanvasView } from '../../../graph-viewer/graph-canvas-view';
 import { delay, first } from 'rxjs/operators';
 import { Subscription } from 'rxjs';
+import { KnowledgeGraphNodeStyle } from '../../../graph-viewer/styles/node-styles';
+import { KnowledgeGraphEdgeStyle } from '../../../graph-viewer/styles/edge-styles';
 
 @Component({
   selector: 'app-map-preview',
@@ -54,7 +56,11 @@ export class MapPreviewComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit() {
-    this.graphCanvas = new GraphCanvasView(this.canvasChild.nativeElement as HTMLCanvasElement);
+    this.graphCanvas = new GraphCanvasView(
+      this.canvasChild.nativeElement as HTMLCanvasElement,
+      new KnowledgeGraphNodeStyle(),
+      new KnowledgeGraphEdgeStyle(),
+    );
     this.graphCanvas.startParentFillResizeListener();
 
     this.ngZone.runOutsideAngular(() => {
