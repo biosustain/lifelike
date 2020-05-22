@@ -24,6 +24,8 @@ import {
     GetReferenceTableDataResult,
     ReferenceTableRow,
     GetClusterSnippetDataResult,
+    SidenavSnippetData,
+    SidenavClusterEntity,
 } from 'app/interfaces';
 import { RootStoreModule } from 'app/***ARANGO_USERNAME***-store';
 import { SharedModule } from 'app/shared/shared.module';
@@ -258,10 +260,12 @@ describe('VisualizationCanvasComponent', () => {
 
         expect(instance.sidenavEntityType).toEqual(2); // 2 = EDGE
         expect(instance.sidenavEntity).toEqual({
-            to: instance.nodes.get(mockGetSnippetsResult.toNodeId) as VisNode,
-            from: instance.nodes.get(mockGetSnippetsResult.fromNodeId) as VisNode,
-            association: mockGetSnippetsResult.association,
-            snippets: mockGetSnippetsResult.snippets,
+            data: {
+                to: instance.nodes.get(mockGetSnippetsResult.toNodeId) as VisNode,
+                from: instance.nodes.get(mockGetSnippetsResult.fromNodeId) as VisNode,
+                association: mockGetSnippetsResult.association,
+                snippets: mockGetSnippetsResult.snippets,
+            } as SidenavSnippetData
         } as SidenavEdgeEntity);
     });
 
@@ -292,17 +296,15 @@ describe('VisualizationCanvasComponent', () => {
 
         expect(instance.sidenavEntityType).toEqual(3); // 3 = CLUSTER
         expect(instance.sidenavEntity).toEqual({
-            includes: Object.keys(mockGetClusterGraphDataResult.results).map(nodeId => instance.nodes.get(nodeId)),
-            clusterGraphData: mockGetClusterGraphDataResult,
-            clusterSnippetData: mockGetClusterSnippetDataResult.results.map(snippetResult => {
+            data: mockGetClusterSnippetDataResult.results.map(snippetResult => {
                 return {
                     to: instance.nodes.get(snippetResult.toNodeId) as VisNode,
                     from: instance.nodes.get(snippetResult.fromNodeId) as VisNode,
                     association: snippetResult.association,
                     snippets: snippetResult.snippets,
-                } as SidenavEdgeEntity;
+                } as SidenavSnippetData;
             }),
-        });
+        } as SidenavClusterEntity);
     });
 
     it('should turn animation off if quickbar component animationStatus emits false', () => {
