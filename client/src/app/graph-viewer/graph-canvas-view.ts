@@ -7,6 +7,7 @@ import { DEFAULT_NODE_STYLE, IconNodeStyle } from './styles/nodes';
 import { DEFAULT_EDGE_STYLE } from './styles/edges';
 import { debounceTime } from 'rxjs/operators';
 import { asyncScheduler, Subject, Subscription } from 'rxjs';
+import { CanvasTextbox, TextAlignment } from './utils/canvas/canvas-textbox';
 
 /**
  * A graph view that uses renders into a <canvas> tag.

@@ -3,6 +3,7 @@ import { NodeRenderStyle, PlacedNode, PlacementOptions } from './graph-styles';
 import { calculateNodeColor, calculateNodeFont } from './shared';
 import { pointOnRect } from '../utils/geometry';
 import 'canvas-plus';
+import { CanvasTextbox, TextAlignment } from '../utils/canvas/canvas-textbox';
 
 /**
  * Renders a node as a rounded rectangle.
@@ -11,19 +12,25 @@ export class RoundedRectangleNodeStyle implements NodeRenderStyle {
   place(d: UniversalGraphNode,
         ctx: CanvasRenderingContext2D,
         options: PlacementOptions): PlacedNode {
-    ctx.font = calculateNodeFont(d, options.selected, options.highlighted);
+    const color = calculateNodeColor(d);
+    const textbox = new CanvasTextbox(ctx, {
+      width: d.data.width,
+      height: d.data.height,
+      text: d.display_name,
+      font: calculateNodeFont(d, options.selected, options.highlighted),
+      fillStyle: color,
+      strokeStyle: null,
+      horizontalAlign: TextAlignment.Center,
+      verticalAlign: TextAlignment.Center,
+    });
 
-    const textSize = ctx.measureText(d.display_name);
-    const textWidth = textSize.width;
-    const textActualHeight = textSize.actualBoundingBoxAscent + textSize.actualBoundingBoxDescent;
     const padding = 10;
-    const nodeWidth = d.data.width != null ? d.data.width : textSize.width + padding;
-    const nodeHeight = d.data.height != null ? d.data.height : textActualHeight + padding;
+    const nodeWidth = (d.data.width != null ? d.data.width : textbox.actualWidth) + padding;
+    const nodeHeight = (d.data.height != null ? d.data.height : textbox.actualHeight) + padding;
     const nodeX = d.data.x - nodeWidth / 2;
     const nodeY = d.data.y - nodeHeight / 2;
     const nodeX2 = nodeX + nodeWidth;
     const nodeY2 = nodeY + nodeHeight;
-    const color = calculateNodeColor(d);
 
     return new class implements PlacedNode {
       getBoundingBox() {
@@ -73,11 +80,7 @@ export class RoundedRectangleNodeStyle implements NodeRenderStyle {
           ctx.strokeStyle = '#2B7CE9';
           ctx.stroke();
 
-          // Node text
-          ctx.strokeStyle = '#fff';
-          ctx.lineWidth = zoomResetScale * 1.5;
-          ctx.fillStyle = color;
-          ctx.fillText(d.display_name, d.data.x - textWidth / 2, d.data.y + textActualHeight / 2);
+          textbox.drawCenteredAt(d.data.x, d.data.y);
         } else {
           // Node box
           ctx.lineWidth = zoomResetScale * (options.highlighted ? 2 : 1.5);
