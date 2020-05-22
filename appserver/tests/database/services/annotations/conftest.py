@@ -154,6 +154,7 @@ def lmdb_setup(app, request):
 @pytest.fixture(scope='function')
 def mock_get_gene_to_organism_match_result(monkeypatch):
     def get_match_result(*args, **kwargs):
+        # match to 'Moniliophthora roreri' in create_species_lmdb()
         return {'hyp27': {'221103': '10446085'}}
 
     monkeypatch.setattr(
