@@ -36,6 +36,11 @@ export interface Reference extends GraphNode {
     };
 }
 
+export interface ClusterData {
+    referenceTableRows: ReferenceTableRow[];
+    relationship: string;
+}
+
 export interface ClusteredNode {
     nodeId: number;
     edges: DuplicateVisEdge[];
