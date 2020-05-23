@@ -48,9 +48,11 @@ export class VisualizationComponent implements OnInit {
     getSnippetsResult: GetSnippetsResult;
     getClusterDataResult: GetClusterDataResult;
     nodes: DataSet<VisNode | GraphNode>;
-    edges: DataSet<VisEdge | GraphNode>;
+    edges: DataSet<VisEdge | GraphRelationship>;
     duplicatedEdges = new Set<number>();
 
+    // TODO: Will we need to have a legend for each database? i.e. the literature
+    // data, biocyc, etc...
     legend: Map<string, string[]>;
 
     dontShowDialogAgain = false;
@@ -58,18 +60,29 @@ export class VisualizationComponent implements OnInit {
 
     autoClusterDialogRef: MatDialogRef<AutoClusterDialogComponent>;
 
+    // TODO: Will we need to add more of these?
+    LITERATURE_LABELS = ['disease', 'chemical', 'gene'];
+
     constructor(
         public dialog: MatDialog,
         private route: ActivatedRoute,
         private visService: VisualizationService,
     ) {
         this.legend = new Map<string, string[]>();
-        this.legend.set('Gene', ['#78CDD7', '#247B7B']);
-        this.legend.set('Disease', ['#8FA6CB', '#7D84B2']);
-        this.legend.set('Chemical', ['#CD5D67', '#410B13']);
     }
 
     ngOnInit() {
+        this.visService.getLegendForVisualizer().subscribe(legend => {
+            Object.keys(legend).forEach(label => {
+                if (this.LITERATURE_LABELS.includes(label)) {
+                    // Keys of the result dict are all lowercase, need to change the first character
+                    // to uppercase to match Neo4j labels
+                    const formattedLabel = label.slice(0, 1).toUpperCase() + label.slice(1);
+                    this.legend.set(formattedLabel, [legend[label].color, '#3797DB']);
+                }
+            });
+        });
+
         this.route.queryParams.pipe(
             filter(params => params.data),
             switchMap((params) => {
@@ -207,15 +220,18 @@ export class VisualizationComponent implements OnInit {
             ...n,
             expanded: false,
             primaryLabel: n.label,
+            font: {
+                color: this.legend.get(n.label)[0],
+            },
             color: {
-                background: this.legend.get(n.label)[0],
+                background: '#FFFFFF',
                 border: this.legend.get(n.label)[1],
                 hover: {
-                    background: this.legend.get(n.label)[0],
+                    background: '#FFFFFF',
                     border: this.legend.get(n.label)[1],
                 },
                 highlight: {
-                    background: this.legend.get(n.label)[0],
+                    background: '#FFFFFF',
                     border: this.legend.get(n.label)[1],
                 }
             },
@@ -224,7 +240,14 @@ export class VisualizationComponent implements OnInit {
     }
 
     convertEdgeToVisJSFormat(e: GraphRelationship) {
-        return {...e, label: e.data.description, arrows: 'to'};
+        return {
+            ...e,
+            color: {
+                color: '#3797DB',
+            },
+            label: e.data.description,
+            arrows: 'to'
+        };
     }
 
     expandNode(expandNodeRequest: ExpandNodeRequest) {
