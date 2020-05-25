@@ -14,7 +14,6 @@ export class NodeSearchBarComponent implements OnInit {
 
   @Input() error = '';
   @Output() results = new EventEmitter<any>();
-  paginatorActions: PageActions;
   searchForm = new FormGroup({
     searchInput: new FormControl(''),
   });
