@@ -29,8 +29,6 @@
         [cdkDragDisabled]="childMode"></tr>
   </table>
   <mat-paginator
-    [pageSize]="5"
     [pageSizeOptions]="[5, 10, 20]"
-    (page)="pageEvent = sendPageEvent($event)"
     showFirstLastButtons></mat-paginator>
 </div>

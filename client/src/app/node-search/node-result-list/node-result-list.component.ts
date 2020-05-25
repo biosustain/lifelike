@@ -14,8 +14,6 @@ export class NodeResultListComponent implements OnInit, OnChanges {
   displayedColumns: string[] = ['link', 'name', 'type', 'domain'];
   dataSource = new MatTableDataSource<Nodes>(this.nodes);
   @ViewChild(MatPaginator, {static: false}) paginator: MatPaginator;
-  @Output() page = new EventEmitter<PageEvent>();
-  pageEvent: PageEvent;
   childMode = false;
 
   constructor() {
@@ -28,11 +26,5 @@ export class NodeResultListComponent implements OnInit, OnChanges {
   ngOnChanges(changes: SimpleChanges): void {
     this.dataSource = new MatTableDataSource<Nodes>(this.nodes);
     this.dataSource.paginator = this.paginator;
-    this.sendPageEvent(this.pageEvent);
-  }
-
-  sendPageEvent(event: PageEvent) {
-    this.page.emit(event);
-    return event;
   }
 }
