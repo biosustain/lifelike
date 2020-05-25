@@ -5,18 +5,22 @@
         Filters
       </mat-panel-title>
       <mat-panel-description>
-        Refine your search
+        Refine your search by domain or entity type
       </mat-panel-description>
     </mat-expansion-panel-header>
-
-    <mat-form-field>
-      <mat-label>First name</mat-label>
-      <input matInput>
-    </mat-form-field>
-
-    <mat-form-field>
-      <mat-label>Age</mat-label>
-      <input matInput type="number" min="1">
-    </mat-form-field>
+    <div class="filter-section">
+      <mat-selection-list #domains>
+        <div mat-subheader>Domains</div>
+        <mat-list-option color="primary" *ngFor="let domain of typeOfDomains">
+          {{domain}}
+        </mat-list-option>
+      </mat-selection-list>
+      <mat-selection-list #entities>
+         <div mat-subheader>Type</div>
+        <mat-list-option color="primary" *ngFor="let entity of typesOfEntities">
+          {{entity}}
+        </mat-list-option>
+      </mat-selection-list>
+    </div>
   </mat-expansion-panel>
 </mat-accordion>
