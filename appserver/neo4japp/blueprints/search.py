@@ -14,6 +14,7 @@ class SearchRequest(CamelDictMixin):
     page: int = attr.ib()
     limit: int = attr.ib()
 
+
 @attr.s(frozen=True)
 class SimpleSearchRequest(CamelDictMixin):
     query: str = attr.ib()
@@ -28,6 +29,7 @@ def fulltext_search(req: SearchRequest):
     search_dao = get_search_service_dao()
     results = search_dao.fulltext_search(req.query, req.page, req.limit)
     return SuccessResponse(result=results, status_code=200)
+
 
 @bp.route('/simple-search', methods=['POST'])
 @jsonify_with_class(SimpleSearchRequest)
