@@ -59,7 +59,6 @@ export class NodeSearchComponent {
   }
 
   getDomain(subLabels: string[]) {
-
     this.removeUnneededLabels(subLabels);
     return subLabels.length === 1 && subLabels[0] === 'Snippet' ? 'Literature' : subLabels
       .find(element => element.match(/^db_*/)).split('_')[1];
@@ -76,8 +75,8 @@ export class NodeSearchComponent {
   }
 
   getType(subLabels: string[]) {
-    const type = subLabels.find(element => !element.match(/^db_*/));
-    return type === 'TopicalDescriptor' ? 'Disease' : type;
+    this.removeUnneededLabels(subLabels);
+    return subLabels.find(element => !element.match(/^db_*/));
   }
 
   getLink(data) {
