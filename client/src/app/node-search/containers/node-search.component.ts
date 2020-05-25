@@ -18,6 +18,7 @@ export interface PageActions {
     <app-node-search-bar
       (results)="getResults($event)"
     ></app-node-search-bar>
+    <app-node-result-filter></app-node-result-filter>
     <app-node-result-list
       [nodes]="dataSource"
     ></app-node-result-list>
