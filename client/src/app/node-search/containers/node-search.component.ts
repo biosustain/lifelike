@@ -17,11 +17,9 @@ export interface PageActions {
   template: `
     <app-node-search-bar
       (results)="getResults($event)"
-      [pageActions]="pageActions"
     ></app-node-search-bar>
     <app-node-result-list
       [nodes]="dataSource"
-      (page)="paginatorEvent($event)"
     ></app-node-result-list>
   `,
 })
@@ -52,11 +50,6 @@ export class NodeSearchComponent {
     });
   }
 
-  paginatorEvent(page) {
-    if (page) {
-      this.pageActions = {pageIndex: page.pageIndex};
-    }
-  }
 
   getDomain(subLabels: string[]) {
     return subLabels.find(element => element.match(/^db_*/))
