@@ -27,6 +27,7 @@ class SearchService(GraphBaseDao):
             """ Adds an escape '\' to reserved Lucene characters"""
             char = m.group(1)
             return r'\{c}'.format(c=char)
+
         query = re.sub(lucene_chars, escape, query).strip()
         if not query:
             return query
@@ -124,11 +125,13 @@ class SearchService(GraphBaseDao):
             total_query, parameters={'search_term': query_term}).evaluate()
         return FTSResult(term, records, total_results, page, limit)
 
-    def simple_text_search(self, term: str, page: int = 1, limit: int = 100, filter: str = 'labels(node)') -> FTSResult:
+    def simple_text_search(self, term: str, page: int = 1,
+                           limit: int = 100, filter: str = 'labels(node)') -> FTSResult:
         query_term = self._fulltext_query_sanitizer(term)
         if not query_term:
             return FTSResult(query_term, [], 0, page, limit)
-        cypher_query = str.format('CALL db.index.fulltext.queryNodes("namesEvidenceAndId", $search_term) \
+        cypher_query = \
+            str.format('CALL db.index.fulltext.queryNodes("namesEvidenceAndId", $search_term) \
             YIELD node, score \
             WHERE {} \
             RETURN distinct node, score \
