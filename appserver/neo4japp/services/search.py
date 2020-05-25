@@ -124,6 +124,33 @@ class SearchService(GraphBaseDao):
             total_query, parameters={'search_term': query_term}).evaluate()
         return FTSResult(term, records, total_results, page, limit)
 
+    def simple_text_search(self, term: str, page: int = 1, limit: int = 100, filter: str = 'labels(node)') -> FTSResult:
+        query_term = self._fulltext_query_sanitizer(term)
+        if not query_term:
+            return FTSResult(query_term, [], 0, page, limit)
+        cypher_query = str.format('CALL db.index.fulltext.queryNodes("namesEvidenceAndId", $search_term) \
+            YIELD node, score \
+            WHERE {} \
+            RETURN distinct node, score \
+            LIMIT $limit', filter)
+
+        results = self.graph.run(
+            cypher_query,
+            parameters={'limit': limit,
+                        'search_term': query_term,
+                        }).data()
+
+        records = self._fulltext_result_formatter(results)
+
+        total_query = """
+                    CALL db.index.fulltext.queryNodes("namesEvidenceAndId", $search_term)
+                    YIELD node
+                    RETURN COUNT(node) as total
+                """
+        total_results = self.graph.run(
+            total_query, parameters={'search_term': query_term}).evaluate()
+        return FTSResult(term, records, total_results, page, limit)
+
     def predictive_search(self, term: str, limit: int = 5):
         """ Performs a predictive search; not necessarily a prefix based autocomplete.
         # TODO: FIX the search algorithm to perform a proper prefix based autocomplete"""
