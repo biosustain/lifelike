@@ -25,9 +25,9 @@ export class NodeSearchBarComponent implements OnInit {
   }
 
   onSubmit() {
-    this.searchService.fullTextSearch(
+    this.searchService.simpleFullTextSearch(
       this.searchForm.value.searchInput,
-      1, 100).subscribe((results) => {
+      1, 100, 'labels(node)').subscribe((results) => {
       this.results.emit(results.nodes as FTSQueryRecord[]);
     });
   }
