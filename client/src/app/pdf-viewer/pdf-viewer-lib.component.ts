@@ -515,7 +515,14 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
 
   openAddLinkPanel() {
     this.isSelectionLink = true;
-    this.selectedElements.forEach(el => jQuery(el).css('border-bottom', '1px solid'));
+    // TODO: remove workaround and fix the issue with the selectedRects
+    // Currently selection.getRangeAt(0).getClientRects() gives duplicates
+    // for each selected line except the first and the last ones
+    this.selectedElements.forEach((el, index) => {
+      if (index === 0 || index === this.selectedElements.length - 1 || index % 2 !== 0) {
+        jQuery(el).css('border-bottom', '1px solid');
+      }
+    });
   }
 
   clearSelection() {
