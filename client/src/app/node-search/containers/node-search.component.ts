@@ -17,8 +17,13 @@ export interface PageActions {
   template: `
     <app-node-search-bar
       (results)="getResults($event)"
+      [domainFilter]="domainsFilter"
+      [typesFilter]="typesFilter"
     ></app-node-search-bar>
-    <app-node-result-filter></app-node-result-filter>
+    <app-node-result-filter
+      (domainsFilter)="getDomainsFilter($event)"
+      (typesFilter)="getTypesFilter($event)"
+    ></app-node-result-filter>
     <app-node-result-list
       [nodes]="dataSource"
     ></app-node-result-list>
@@ -34,8 +39,8 @@ export class NodeSearchComponent {
     NCBI_Taxonomy: 'https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id='
   };
   dataSource: Nodes[] = [];
-  pageActions: PageActions = {pageIndex: 1};
-
+  domainsFilter = '';
+  typesFilter = '';
 
   constructor(private sanitizer: DomSanitizer) {
   }
@@ -84,7 +89,7 @@ export class NodeSearchComponent {
         data.node.data.id);
     } else if (domain === 'Literature') {
       return this.sanitizer.bypassSecurityTrustUrl(this.DOMAINS_URL[domain] +
-        data.publicationId);
+        data.node.data.id);
     } else {
       return this.sanitizer.bypassSecurityTrustUrl(this.DOMAINS_URL[domain] +
         data.node.data.id.split(':')[1]);
@@ -92,6 +97,37 @@ export class NodeSearchComponent {
   }
 
   getName(data) {
-    return data.node.displayName;
+    const type = this.getType(data.node.subLabels);
+    return type === 'Snippet' ? data.node.data.sentence : data.node.displayName;
+  }
+
+  getDomainsFilter(selectedDomains: string[]) {
+    let domainsPredicate = '(';
+    if (selectedDomains.length === 0) {
+      this.domainsFilter = '';
+      return;
+    }
+    selectedDomains.forEach((domain, index) => {
+      if (selectedDomains.length - 1 === index) {
+        return domainsPredicate += domain + ')';
+      }
+      domainsPredicate += domain + ' OR ';
+    });
+    this.domainsFilter = domainsPredicate;
+  }
+
+  getTypesFilter(selectedTypes: string[]) {
+    let typesPredicate = '(';
+    if (selectedTypes.length === 0) {
+      this.typesFilter = '';
+      return;
+    }
+    selectedTypes.forEach((type, index) => {
+      if (selectedTypes.length - 1 === index) {
+        return typesPredicate += type + ')';
+      }
+      typesPredicate += type + ' OR ';
+    });
+    this.typesFilter = typesPredicate;
   }
 }
