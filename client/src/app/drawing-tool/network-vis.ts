@@ -205,7 +205,7 @@ export class NetworkVis {
    * @param data represents the data of the node
    */
   updateNode(id, data) {
-    let updatedNode: any = {
+    const updatedNode: any = {
         id,
         label: data.label,
         group: data.group,
@@ -214,20 +214,7 @@ export class NetworkVis {
         shape: data.shape,
     };
 
-    switch (data.group) {
-      case 'link': {
-          updatedNode = {
-              ...updatedNode,
-              label: data.shape === 'icon' ? '' : data.data.detail,
-          };
-          this.visNodes.update(updatedNode);
-          break;
-      }
-      default: {
-          this.visNodes.update(updatedNode);
-          break;
-      }
-    }
+    this.visNodes.update(updatedNode);
   }
 
   /**
