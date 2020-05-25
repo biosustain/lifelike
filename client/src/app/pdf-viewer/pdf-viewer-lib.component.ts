@@ -429,7 +429,11 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
           jQuery(ui.helper).css('width', '');
           jQuery(ui.helper).css('height', '');
           if (that.isSelectionLink) {
-            jQuery(ui.helper).html(`<span class="fa fa-file" style="color: ${annotationTypes.find(type => type.label === 'link').color}"></span>`);
+            jQuery(ui.helper).html(`
+              <span class="fa" style="color: ${annotationTypes.find(type => type.label === 'link').color}">
+                ${annotationTypes.find(type => type.label === 'link').iconCode}
+              </span>
+            `);
           } else {
             jQuery(ui.helper).text(meta.allText);
           }
