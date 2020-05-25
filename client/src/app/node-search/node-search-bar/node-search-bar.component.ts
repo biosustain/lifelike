@@ -2,7 +2,6 @@ import {Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges
 import {FormControl, FormGroup} from '@angular/forms';
 import {SearchService} from '../../search/services/search.service';
 import {FTSQueryRecord} from '../../interfaces';
-import {PageActions} from '../containers/node-search.component';
 
 
 @Component({
