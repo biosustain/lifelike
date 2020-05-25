@@ -9,15 +9,15 @@
       </mat-panel-description>
     </mat-expansion-panel-header>
     <div class="filter-section">
-      <mat-selection-list #domains>
+      <mat-selection-list #domains (selectionChange)="getDomains(domains.selectedOptions.selected)">
         <div mat-subheader>Domains</div>
-        <mat-list-option color="primary" *ngFor="let domain of typeOfDomains">
+        <mat-list-option color="primary" *ngFor="let domain of typeOfDomains" [value]="domain">
           {{domain}}
         </mat-list-option>
       </mat-selection-list>
-      <mat-selection-list #entities>
+      <mat-selection-list #entities (selectionChange)="getTypes(entities.selectedOptions.selected)">
          <div mat-subheader>Type</div>
-        <mat-list-option color="primary" *ngFor="let entity of typesOfEntities">
+        <mat-list-option color="primary" *ngFor="let entity of typesOfEntities" [value]="entity">
           {{entity}}
         </mat-list-option>
       </mat-selection-list>

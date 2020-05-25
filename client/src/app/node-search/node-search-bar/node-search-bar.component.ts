@@ -9,9 +9,11 @@ import {FTSQueryRecord} from '../../interfaces';
   templateUrl: './node-search-bar.component.html',
   styleUrls: ['./node-search-bar.component.scss']
 })
-export class NodeSearchBarComponent implements OnInit {
+export class NodeSearchBarComponent implements OnInit, OnChanges {
 
-  @Input() error = '';
+  @Input() domainFilter = '';
+  @Input() typesFilter = '';
+  filter = 'labels(node)';
   @Output() results = new EventEmitter<any>();
   searchForm = new FormGroup({
     searchInput: new FormControl(''),
@@ -23,12 +25,28 @@ export class NodeSearchBarComponent implements OnInit {
   ngOnInit() {
   }
 
+  ngOnChanges(changes: SimpleChanges): void {
+    for (const propertyName in changes) {
+      if (changes.hasOwnProperty(propertyName)) {
+        const propertyChanges = changes[propertyName];
+        const current = JSON.stringify(propertyChanges.currentValue);
+        const previous = JSON.stringify(propertyChanges.previousValue);
+        if (current !== previous) {
+          this.filter = this.domainFilter === '' && this.typesFilter === '' ?
+            'labels(node)' : this.domainFilter !== '' && this.typesFilter === '' ?
+              this.domainFilter : this.domainFilter === '' && this.typesFilter !== '' ?
+                this.typesFilter : this.domainFilter + ' AND ' + this.typesFilter;
+          this.onSubmit();
+        }
+      }
+    }
+  }
+
   onSubmit() {
     this.searchService.simpleFullTextSearch(
       this.searchForm.value.searchInput,
-      1, 100, 'labels(node)').subscribe((results) => {
+      1, 100, this.filter).subscribe((results) => {
       this.results.emit(results.nodes as FTSQueryRecord[]);
     });
   }
-
 }
