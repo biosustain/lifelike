@@ -15,7 +15,7 @@ interface TextboxOptions {
  * Draws text oriented around a point or within a box, with support for
  * alignment, wrapping, and cut off.
  */
-export class CanvasTextbox {
+export class TextElement {
   readonly width: number | undefined;
   readonly height: number | undefined;
   readonly text: string;

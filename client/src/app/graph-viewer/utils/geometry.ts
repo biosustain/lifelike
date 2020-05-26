@@ -56,3 +56,62 @@ export function getLinePointIntersectionDistance(x, y, x1, x2, y1, y2) {
   const slope = (y - y1) / (x - x1);
   return Math.abs(slope - expectedSlope);
 }
+
+/**
+ * Use the given line segment from [startX, startY] to [endX, endY] to
+ * calculate the revolution that must be applied to the point [x, y] if
+ * revolved around [endX, endY].
+ * @param startX the start X
+ * @param startY the start Y
+ * @param endX the end X
+ * @param endY the end Y
+ * @param x the X to transform
+ * @param y the Y to transform
+ */
+export function transformControlPoint(startX: number,
+                                      startY: number,
+                                      endX: number,
+                                      endY: number,
+                                      x: number,
+                                      y: number): [number, number] {
+  const dx = endX - startX;
+  const dy = endY - startY;
+  const len = Math.sqrt(dx * dx + dy * dy);
+  const sin = dy / len;
+  const cos = dx / len;
+
+  return [
+    x * cos - y * sin + endX,
+    x * sin + y * cos + endY
+  ];
+}
+
+/**
+ * Use the given line segment from [startX, startY] to [endX, endY] to
+ * calculate the revolution that must be applied to the provided points if
+ * revolved around [endX, endY].
+ * @param startX the start X
+ * @param startY the start Y
+ * @param endX the end X
+ * @param endY the end Y
+ * @param points a list of points
+ */
+export function* transformControlPoints(startX: number,
+                                        startY: number,
+                                        endX: number,
+                                        endY: number,
+                                        points: number[]) {
+  const dx = endX - startX;
+  const dy = endY - startY;
+  const len = Math.sqrt(dx * dx + dy * dy);
+  const sin = dy / len;
+  const cos = dx / len;
+
+  for (let i = 0; i < points.length; i += 2) {
+    const x = points[i] * cos - points[i + 1] * sin + endX;
+    const y = points[i] * sin + points[i + 1] * cos + endY;
+    yield {
+      x, y, i: i / 2
+    };
+  }
+}
