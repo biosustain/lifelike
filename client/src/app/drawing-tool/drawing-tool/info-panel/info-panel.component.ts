@@ -15,7 +15,7 @@ import { EdgeDeletion, NodeDeletion } from '../../../graph-viewer/actions/nodes'
 export class InfoPanelComponent implements OnInit, OnDestroy {
   @Output() openApp: EventEmitter<LaunchApp> = new EventEmitter<LaunchApp>();
 
-  private selected: GraphEntity | undefined;
+  selected: GraphEntity | undefined;
 
   private graphDataSubscription: Subscription = null;
 
