@@ -124,5 +124,5 @@ ENTITY_HYPERLINKS = {
         EntityType.Genes.value: 'https://www.ncbi.nlm.nih.gov/gene/',
         EntityType.Species.value: 'https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=',
     },
-    DatabaseType.Biocyc.value: '',
+    DatabaseType.Biocyc.value: 'https://biocyc.org/compound?orgid=META&id=',
 }

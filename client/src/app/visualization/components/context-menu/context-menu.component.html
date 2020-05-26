@@ -1,5 +1,13 @@
 <!-- Root Context Menus -->
 <div id="***ARANGO_USERNAME***-menu" [ngClass]="contextMenuClass">
+  <div *ngIf="selectedClusterNodeData.length > 0">
+    <div id="cluster-node-selection-group-1" class="context-menu-group">
+      <div id="pull-out-node-from-cluster-menu-item" class="context-menu-item" fxLayout="row" fxLayoutAlign="space-between center" (mouseenter)="showPullOutNodeSubMenu()" (mouseleave)="mouseLeaveNodeRow()">
+        <div>Pull out node from cluster</div>
+        <mat-icon>arrow_right</mat-icon>
+      </div>
+    </div>
+  </div>
   <div *ngIf="!((selectedNodeIds.length === 1 && selectedEdgeIds.length === 0) || (selectedNodeIds.length === 0 && selectedEdgeIds.length === 1)); else singleSelection">
     <div *ngIf="selectedNodeIds.length > 0">
       <ng-template [ngTemplateOutlet]="nodeSelectionGroup"></ng-template>
@@ -50,6 +58,14 @@
   <div class="context-menu-group">
     <div *ngFor="let edgeLabelData of selectedNodeEdgeLabelData | keyvalue">
       <div class="context-menu-item" *ngFor="let direction of edgeLabelData.value" (click)="requestGroupByRelationship(edgeLabelData.key, direction)">{{ edgeLabelData.key }} -- ({{ direction }})</div>
+    </div>
+  </div>
+</div>
+
+<div id="pull-out-node-from-cluster-submenu" [ngClass]="subMenuClass">
+  <div class="context-menu-group">
+    <div *ngFor="let clusteredNode of selectedClusterNodeData">
+      <div class="context-menu-item" (click)="requestPullNodeFromCluster(clusteredNode)">{{clusteredNode.displayName}}</div>
     </div>
   </div>
 </div>

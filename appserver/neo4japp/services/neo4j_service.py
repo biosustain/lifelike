@@ -6,7 +6,9 @@ from neo4japp.data_transfer_objects.visualization import (
     DuplicateNodeEdgePair,
     DuplicateVisEdge,
     EdgeSnippetCount,
+    GetClusterDataResult,
     GetClusterGraphDataResult,
+    GetClusterSnippetDataResult,
     GetReferenceTableDataResult,
     GetSnippetCountsFromEdgesResult,
     GetSnippetsFromEdgeResult,
@@ -174,8 +176,15 @@ class Neo4JService(GraphBaseDao):
         return self._query_neo4j(query)
 
     def get_snippets_from_edge(self, edge: VisEdge):
-        query = self.get_snippets_from_edge_query(edge.from_, edge.to, edge.label)
-        data = self.graph.run(query).data()
+        query = self.get_snippets_from_edge_query(edge.from_label, edge.to_label)
+        data = self.graph.run(
+            query,
+            {
+                'from_id': edge.from_,
+                'to_id': edge.to,
+                'description': edge.label,
+            }
+        ).data()
         snippets = [Snippet(
             reference=GraphNode.from_py2neo(
                 result['reference'],
@@ -197,9 +206,15 @@ class Neo4JService(GraphBaseDao):
         )
 
     def get_snippets_from_duplicate_edge(self, edge: DuplicateVisEdge):
-        query = self.get_snippets_from_edge_query(edge.original_from, edge.original_to, edge.label)
-
-        data = self.graph.run(query).data()
+        query = self.get_snippets_from_edge_query(edge.from_label, edge.to_label)
+        data = self.graph.run(
+            query,
+            {
+                'from_id': edge.original_from,
+                'to_id': edge.original_to,
+                'description': edge.label,
+            }
+        ).data()
         snippets = [Snippet(
             reference=GraphNode.from_py2neo(
                 result['reference'],
@@ -250,6 +265,7 @@ class Neo4JService(GraphBaseDao):
                 }
             ).evaluate()
             reference_table_rows.append(ReferenceTableRow(
+                node_id=node.id,
                 node_display_name=node.display_name,
                 snippet_count=count,
                 edge=edge,
@@ -280,6 +296,31 @@ class Neo4JService(GraphBaseDao):
 
         return GetClusterGraphDataResult(
             results=results,
+        )
+
+    def get_cluster_data(
+        self,
+        clustered_nodes: List[ClusteredNode]
+    ) -> GetClusterDataResult:
+        graph_data: Dict[int, Dict[str, int]] = dict()
+        snippet_data: List[GetSnippetsFromEdgeResult] = []
+
+        for node in clustered_nodes:
+            for edge in node.edges:
+                result = self.get_snippets_from_duplicate_edge(edge)
+                count = len(result.snippets)
+                if (graph_data.get(node.node_id, None) is not None):
+                    graph_data[node.node_id][edge.label] = count
+                else:
+                    graph_data[node.node_id] = {edge.label: count}
+
+                snippet_data.append(result)
+
+        snippet_data.sort(key=lambda x: len(x.snippets), reverse=True)
+
+        return GetClusterDataResult(
+            graph_data=GetClusterGraphDataResult(results=graph_data),
+            snippet_data=GetClusterSnippetDataResult(results=snippet_data),
         )
 
     def get_genes_to_organisms(
@@ -537,15 +578,15 @@ class Neo4JService(GraphBaseDao):
 
         return query
 
-    def get_snippets_from_edge_query(self, from_node: int, to_node: int, association: str):
+    def get_snippets_from_edge_query(self, from_label: str, to_label: str):
         query = """
-            MATCH (f)-[:HAS_ASSOCIATION]->(a:Association)-[:HAS_ASSOCIATION]->(t)
-            WHERE ID(f)={} AND ID(t)={} AND a.description='{}'
+            MATCH (f:{})-[:HAS_ASSOCIATION]->(a:Association)-[:HAS_ASSOCIATION]->(t:{})
+            WHERE ID(f)=$from_id AND ID(t)=$to_id AND a.description=$description
             WITH a AS association
             MATCH (association)<-[:PREDICTS]-(s:Snippet)-[:IN_PUB]-(p:Publication)
             RETURN s AS reference, p AS publication
             ORDER BY p.pub_year DESC
-        """.format(from_node, to_node, association)
+        """.format(from_label, to_label)
         return query
 
     def get_association_snippet_count_query(self, from_label: str, to_label: str):
