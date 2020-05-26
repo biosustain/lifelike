@@ -55,6 +55,12 @@ from neo4japp.data_transfer_objects import PDFParsedCharacters
             cropbox_in_pdf=(9, 9),
             max_idx_in_page={50: 1},
         )),
+        (9, PDFParsedCharacters(
+            char_coord_objs_in_pdf=None,
+            chars_in_pdf=['-', '*', 'I', ' ', 'H', 'a', 'v', 'e', '-', ' '],
+            cropbox_in_pdf=(9, 9),
+            max_idx_in_page={50: 1},
+        )),
     ],
 )
 def test_extract_tokens(annotations_setup, index, text):
@@ -89,7 +95,7 @@ def test_extract_tokens(annotations_setup, index, text):
     elif index == 4:
         verify = {'I Havecomma', 'Havecomma', 'I'}
         assert verify == tokens
-    elif index == 5 or index == 6 or index == 7 or index == 8:
+    elif index == 5 or index == 6 or index == 7 or index == 8 or index == 9:
         verify = {'I Have', 'Have', 'I'}
         assert verify == tokens
 
@@ -112,6 +118,18 @@ def test_extract_tokens(annotations_setup, index, text):
         (3, PDFParsedCharacters(
             char_coord_objs_in_pdf=None,
             chars_in_pdf=['T', 'y', 'p', 'h', '-', 'i', 'm', 'u', 'r', 'i', 'u', 'm'],  # noqa
+            cropbox_in_pdf=(9, 9),
+            max_idx_in_page={50: 1},
+        )),
+        (4, PDFParsedCharacters(
+            char_coord_objs_in_pdf=None,
+            chars_in_pdf=['Ti', '©', 'p', 'h', '-', 'i', 'm', 'u', 'r', 'i', 'u', 'm'],  # noqa
+            cropbox_in_pdf=(9, 9),
+            max_idx_in_page={50: 1},
+        )),
+        (5, PDFParsedCharacters(
+            char_coord_objs_in_pdf=None,
+            chars_in_pdf=['J', 'u', 's', 't', ' ', 's', 'a', 'y', 'i', 'n', 'g', '…'],  # noqa
             cropbox_in_pdf=(9, 9),
             max_idx_in_page={50: 1},
         )),
@@ -144,5 +162,19 @@ def test_combine_char_into_word(annotations_setup, index, chars):
                 2: 'p', 3: 'h',
                 4: '-', 5: 'i',
                 6: 'm', 7: 'u', 8: 'r', 9: 'i', 10: 'u', 11: 'm'}),
+        ]
+        assert combined == words
+    elif index == 4:
+        combined = [
+            ('ph-imurium', {
+                2: 'p', 3: 'h',
+                4: '-', 5: 'i',
+                6: 'm', 7: 'u', 8: 'r', 9: 'i', 10: 'u', 11: 'm'}),
+        ]
+        assert combined == words
+    elif index == 5:
+        combined = [
+            ('Just', {0: 'J', 1: 'u', 2: 's', 3: 't'}),
+            ('saying', {5: 's', 6: 'a', 7: 'y', 8: 'i', 9: 'n', 10: 'g'}),
         ]
         assert combined == words

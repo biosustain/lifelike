@@ -29,8 +29,7 @@ class DummyFile implements PdfFile {
 }
 
 class EntityTypeEntry {
-  constructor(public type: EntityType,
-              public annotations: Annotation[]) {
+  constructor(public type: EntityType, public annotations: Annotation[]) {
   }
 }
 
@@ -56,6 +55,7 @@ export class PdfViewerComponent implements OnDestroy {
   @Output() filterChangeSubject = new Subject<void>();
   filterPopupOpen = false;
 
+  searchChanged: Subject<string> = new Subject<string>();
   goToPosition: Subject<Location> = new Subject<Location>();
   loadTask: BackgroundTask<[PdfFile, Location], [ArrayBuffer, any]> =
     new BackgroundTask(([file, loc]) => {
@@ -77,7 +77,10 @@ export class PdfViewerComponent implements OnDestroy {
   sortedEntityTypeEntries = [];
   entityTypeVisibilityChanged = false;
 
-  @ViewChild(PdfViewerLibComponent, {static: false}) pdfViewerLib;
+  // search
+  pdfQuery;
+
+  @ViewChild(PdfViewerLibComponent, { static: false }) pdfViewerLib;
 
   constructor(
     private pdfAnnService: PdfAnnotationsService,
@@ -148,9 +151,19 @@ export class PdfViewerComponent implements OnDestroy {
     }
   }
 
+  setAllEntityTypesVisibility(state: boolean) {
+    for (const type of ENTITY_TYPES) {
+      this.entityTypeVisibilityMap.set(type.name, state);
+    }
+    this.invalidateEntityTypeVisibility();
+  }
+
   changeEntityTypeVisibility(entityType: EntityType, event: MatCheckboxChange) {
     this.entityTypeVisibilityMap.set(entityType.id, event.checked);
+    this.invalidateEntityTypeVisibility();
+  }
 
+  invalidateEntityTypeVisibility() {
     // Keep track if the user has some entity types disabled
     let entityTypeVisibilityChanged = false;
     for (const value of this.entityTypeVisibilityMap.values()) {
@@ -402,4 +415,9 @@ export class PdfViewerComponent implements OnDestroy {
   close() {
     this.requestClose.emit(null);
   }
+
+  searchQueryChanged(query) {
+    this.searchChanged.next(query);
+  }
+
 }

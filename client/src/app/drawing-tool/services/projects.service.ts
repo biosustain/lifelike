@@ -10,6 +10,10 @@ import {
 } from './interfaces';
 
 import {
+  DrawingUploadPayload
+} from 'app/interfaces/drawing.interface';
+
+import {
   utiProject,
   microbiomeProject
 } from './mock_data';
@@ -59,6 +63,37 @@ export class ProjectsService {
       };
     }
     return httpOptions;
+  }
+
+  /**
+   * Downloads map as JSON by hashId
+   * @param hashId - act as uri for map
+   */
+  public downloadProject(hashId) {
+    return this.http.get(
+      this.baseUrl + `/map/download/${hashId}`,
+      this.createHttpOptions(true)
+    );
+  }
+
+  /**
+   * Uploads map as JSON
+   */
+  public uploadProject(payload: DrawingUploadPayload) {
+    const formData: FormData = new FormData();
+    formData.append('fileInput', payload.files[0]);
+    formData.append('projectName', payload.label);
+    formData.append('description', payload.description);
+    formData.append('filename', payload.filename);
+    return this.http.post<{result: {hashId: string}}>(
+      `${this.baseUrl}/map/upload`,
+      formData,
+      {
+        headers: {Authorization: 'Bearer ' + localStorage.getItem('access_jwt')},
+        observe: 'events',
+        reportProgress: true,
+      }
+    );
   }
 
   /**
