@@ -44,6 +44,7 @@ fi
 if [ "$TARGET" = demo ]; then
     cd /srv
     export $(cat demo.env | xargs)
+fi
 
 # Sets permission for CloudSQL to Cloud Bucket Storage
 CLOUD_SQL_SERVICE_ACCOUNT=$(sudo gcloud sql instances describe --format="value(serviceAccountEmailAddress)" $CLOUD_SQL_ALIAS)
