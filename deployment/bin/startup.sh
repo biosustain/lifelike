@@ -5,7 +5,7 @@ print_usage() {
     ================================= USAGE =================================
     Used for starting up the staging or production environment
 
-    -t          <target: either staging or production>
+    -t          <target: either staging or production or demo>
 
     e.g. ->
         ./startup.sh -t staging (starts the staging process)
@@ -43,6 +43,19 @@ then
     sudo docker pull gcr.io/$PROJECT_ID/kg-cache-service-staging:latest
     sudo gsutil cp gs://kg-secrets/docker-compose.ci.yml docker-compose.ci.yml
     sudo docker-compose -f docker-compose.ci.yml up -d
+fi
+
+if [ "$TARGET" = demo ]
+then
+    echo "Starting up production"
+    cd /srv
+    export $(cat demo.env | xargs)
+    sudo docker login -u $DOCKER_USER -p "$(cat keyfile.json)" https://gcr.io
+    sudo docker pull gcr.io/$PROJECT_ID/kg-appserver-prod:$GITHUB_SHA
+    sudo docker pull gcr.io/$PROJECT_ID/kg-webserver-prod:$GITHUB_SHA
+    sudo docker pull gcr.io/$PROJECT_ID/kg-cache-service-prod:$GITHUB_SHA
+    sudo gsutil cp gs://kg-secrets/docker-compose.demo.yml docker-compose.demo.yml
+    sudo docker-compose -f docker-compose.demo.yml up -d
 fi
 
 if [ "$TARGET" = production ]
