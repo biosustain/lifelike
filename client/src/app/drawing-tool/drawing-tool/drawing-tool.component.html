@@ -56,8 +56,8 @@
     <div class="tool-panel-group">
       <mat-icon
         matTooltip="Apply Automatic Layout"
-        (click)='automaticLayoutEnabled ? stopGraphLayout() : startGraphLayout()'
-        [ngClass]='automaticLayoutEnabled ? "not_saved" : ""'>
+        (click)='graphCanvas.automaticLayoutEnabled ? stopGraphLayout() : startGraphLayout()'
+        [ngClass]='graphCanvas && graphCanvas.automaticLayoutEnabled ? "not_saved" : ""'>
         offline_bolt
       </mat-icon>
     </div>
