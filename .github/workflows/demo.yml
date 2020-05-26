@@ -57,7 +57,7 @@ jobs:
                 username: _json_key
                 password: ${{ secrets.GCE_SA_KEY }}
                 registry: gcr.io
-                repository: gcr.io/${{ secrets.GCE_PROJECT }}
+                repository: ${{ secrets.GCE_PROJECT }}/kg-appserver-demo
                 tags: ${{ github.sha }}, latest
                 path: ./appserver
                 dockerfile: ./appserver/Dockerfile.prod
@@ -68,7 +68,7 @@ jobs:
                 username: _json_key
                 password: ${{ secrets.GCE_SA_KEY }}
                 registry: gcr.io
-                repository: gcr.io/${{ secrets.GCE_PROJECT }}
+                repository: ${{ secrets.GCE_PROJECT }}/kg-webserver-demo
                 tags: ${{ github.sha }}, latest
                 path: ./client
                 dockerfile: ./client/Dockerfile.demo
@@ -79,7 +79,7 @@ jobs:
                 username: _json_key
                 password: ${{ secrets.GCE_SA_KEY }}
                 registry: gcr.io
-                repository: gcr.io/${{ secrets.GCE_PROJECT }}
+                repository: ${{ secrets.GCE_PROJECT }}/kg-cache-service-demo
                 tags: ${{ github.sha }}, latest
                 path: ./cache-invalidator
                 dockerfile: ./cache-invalidator/Dockerfile
