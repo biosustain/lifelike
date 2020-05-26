@@ -1,12 +1,12 @@
 import { PlacedEdge } from 'app/graph-viewer/styles/styles';
 import { getLinePointIntersectionDistance } from '../geometry';
-import { CanvasTextbox } from './canvas-textbox';
-import { LineHeadRenderer } from 'app/graph-viewer/utils/canvas/line-terminators';
+import { TextElement } from './text-element';
+import { LineHeadRenderer } from './line-heads/line-heads';
 
 export interface StandardEdgeOptions {
   source: { x: number, y: number };
   target: { x: number, y: number };
-  textbox?: CanvasTextbox;
+  textbox?: TextElement;
   sourceTerminator?: LineHeadRenderer;
   targetTerminator?: LineHeadRenderer;
   strokeColor?: string;
@@ -18,7 +18,7 @@ export interface StandardEdgeOptions {
 export class StandardEdge implements PlacedEdge {
   readonly source: { x: number, y: number };
   readonly target: { x: number, y: number };
-  readonly textbox: CanvasTextbox | undefined;
+  readonly textbox: TextElement | undefined;
   readonly sourceTerminator: LineHeadRenderer | undefined;
   readonly targetTerminator: LineHeadRenderer | undefined;
   readonly strokeColor: string;

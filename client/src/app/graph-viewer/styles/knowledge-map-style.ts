@@ -2,11 +2,12 @@ import { UniversalEdgeStyle, UniversalGraphEdge, UniversalGraphNode, UniversalNo
 import { EdgeRenderStyle, NodeRenderStyle, PlacedEdge, PlacedNode, PlacementOptions } from 'app/graph-viewer/styles/styles';
 import { nullCoalesce } from 'app/graph-viewer/utils/types';
 import { RectangleNode } from 'app/graph-viewer/utils/canvas/rectangle-node';
-import { CanvasTextbox } from 'app/graph-viewer/utils/canvas/canvas-textbox';
+import { TextElement } from 'app/graph-viewer/utils/canvas/text-element';
 import { FontIconNode } from 'app/graph-viewer/utils/canvas/font-icon-node';
 import { AnnotationStyle, annotationTypesMap } from 'app/shared/annotation-styles';
-import { Arrowhead, DiamondHead } from 'app/graph-viewer/utils/canvas/line-terminators';
 import { StandardEdge } from 'app/graph-viewer/utils/canvas/standard-edge';
+import { Arrowhead } from '../utils/canvas/line-heads/arrow';
+import { DiamondHead } from '../utils/canvas/line-heads/diamond';
 
 export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
   placeNode(d: UniversalGraphNode, ctx: CanvasRenderingContext2D, placementOptions: PlacementOptions): PlacedNode {
@@ -36,13 +37,13 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
       const iconFontFace = nullCoalesce(d.icon ? d.icon.face : null, 'FontAwesome');
       const iconFont = `${iconSize}px ${iconFontFace}`;
 
-      const iconTextbox = new CanvasTextbox(ctx, {
+      const iconTextbox = new TextElement(ctx, {
         text: nullCoalesce(iconCode, '?'),
         font: iconFont,
         fillStyle: iconLabelColor,
       });
 
-      const labelTextbox = new CanvasTextbox(ctx, {
+      const labelTextbox = new TextElement(ctx, {
         text: d.display_name,
         font: labelFont,
         fillStyle: iconLabelColor,
@@ -56,7 +57,7 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
         forceHighDetailLevel,
       });
     } else {
-      const textbox = new CanvasTextbox(ctx, {
+      const textbox = new TextElement(ctx, {
         width: d.data.width,
         height: d.data.height,
         text: d.display_name,
@@ -111,7 +112,7 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
     const [toX, toY] = placedTo.lineIntersectionPoint(from.data.x, from.data.y);
     const [fromX, fromY] = placedFrom.lineIntersectionPoint(to.data.x, to.data.y);
 
-    const textbox = d.label ? new CanvasTextbox(ctx, {
+    const textbox = d.label ? new TextElement(ctx, {
       text: d.label,
       font: (placementOptions.highlighted ? 'bold ' : '') + (16 * fontSizeScale) + 'px Roboto',
       fillStyle: '#888',
