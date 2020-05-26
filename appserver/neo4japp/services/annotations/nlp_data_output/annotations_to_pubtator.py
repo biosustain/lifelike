@@ -1,4 +1,3 @@
-import csv
 import json
 import os
 
@@ -22,22 +21,23 @@ def write_to_file(
 ):
     annotation_json = json.load(annotations)
     identifier = compute_hash(annotation_json, limit=8)
-    writer = csv.writer(pubtator_file, delimiter='|', quoting=csv.QUOTE_NONE, escapechar='\\')
-    writer.writerow([identifier, 't', annotation_json['documents'][0]['id']])
-    writer.writerow([identifier, 'a', annotation_json['documents'][0]['passages'][0]['text']])
-    writer = csv.writer(pubtator_file, delimiter='\t')
+    title = annotation_json['documents'][0]['id']
+    text = annotation_json['documents'][0]['passages'][0]['text']
+    print(f'{identifier}|t|{title}', file=pubtator_file)
+    print(f'{identifier}|a|{text}', file=pubtator_file)
 
     annotations = annotation_json['documents'][0]['passages'][0]['annotations']
 
     for annotation in annotations:
-        writer.writerow([
-            identifier,
-            annotation['loLocationOffset'],
-            annotation['hiLocationOffset'],
-            annotation['keyword'],
-            annotation['meta']['keywordType'],
-            annotation['meta']['id'],
-        ])
+        lo_offset = annotation['loLocationOffset']
+        hi_offset = annotation['hiLocationOffset']
+        keyword = annotation['keyword']
+        keyword_type = annotation['meta']['keywordType']
+        id = annotation['meta']['id']
+        print(
+            f'{identifier}\t{lo_offset}\t{hi_offset}\t{keyword}\t{keyword_type}\t{id}',
+            file=pubtator_file,
+        )
 
 
 def create_annotations(
@@ -61,7 +61,7 @@ def create_annotations(
 
 def main():
     app = create_app('Functional Test Flask App', config='config.Testing')
-    pubtator_file = open(os.path.join(directory, 'pubtator.tsv'), 'w+')
+    pubtator_file = open(os.path.join(directory, 'pubtator.txt'), 'w+')
     with app.app_context():
         for parent, subfolders, filenames in os.walk(os.path.join(directory, 'pdfs/')):
             for fn in filenames:
