@@ -16,14 +16,13 @@ import { CopyPasteMapsService } from '../services/copy-paste-maps.service';
 import { InfoPanelComponent } from './info-panel/info-panel.component';
 import { ExportModalComponent } from './export-modal/export-modal.component';
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
-import { GraphCanvasView } from 'app/graph-viewer/graph-canvas-view';
 import { NodeCreation } from 'app/graph-viewer/actions/nodes';
-import { MovableNode } from '../../graph-viewer/behaviors/node-move';
-import { SelectableEntity } from '../../graph-viewer/behaviors/selectable-entity';
-import { InteractiveEdgeCreation } from '../../graph-viewer/behaviors/interactive-edge-creation';
-import { HandleResizable } from '../../graph-viewer/behaviors/handle-resizable';
-import { KnowledgeGraphNodeStyle } from '../../graph-viewer/styles/node-styles';
-import { KnowledgeGraphEdgeStyle } from 'app/graph-viewer/styles/edge-styles';
+import { KnowledgeMapStyle } from 'app/graph-viewer/styles/knowledge-map-style';
+import { GraphCanvasView } from 'app/graph-viewer/renderers/canvas/graph-canvas-view';
+import { MovableNode } from 'app/graph-viewer/renderers/canvas/behaviors/node-move';
+import { SelectableEntity } from 'app/graph-viewer/renderers/canvas/behaviors/selectable-entity';
+import { InteractiveEdgeCreation } from 'app/graph-viewer/renderers/canvas/behaviors/interactive-edge-creation';
+import { HandleResizable } from 'app/graph-viewer/renderers/canvas/behaviors/handle-resizable';
 
 @Component({
   selector: 'app-drawing-tool',
@@ -93,11 +92,8 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit() {
-    this.graphCanvas = new GraphCanvasView(
-      this.canvasChild.nativeElement as HTMLCanvasElement,
-      new KnowledgeGraphNodeStyle(),
-      new KnowledgeGraphEdgeStyle(),
-    );
+    const style = new KnowledgeMapStyle();
+    this.graphCanvas = new GraphCanvasView(this.canvasChild.nativeElement as HTMLCanvasElement, style, style);
     this.graphCanvas.behaviors.add('moving', new MovableNode(this.graphCanvas), -101);
     this.graphCanvas.behaviors.add('selection', new SelectableEntity(this.graphCanvas), -100);
     this.graphCanvas.behaviors.add('edge-creation', new InteractiveEdgeCreation(this.graphCanvas), 0);

@@ -11,9 +11,9 @@ import * as cola from 'webcola';
 import { InputNode, Layout } from 'webcola';
 import { Group, Link } from 'webcola/WebCola/src/layout';
 import { Subject } from 'rxjs';
-import { PlacedEdge, PlacedNode } from './styles/graph-styles';
-import { GraphAction, GraphActionReceiver } from './actions/actions';
-import { BehaviorList } from './behaviors/behaviors';
+import { PlacedEdge, PlacedNode } from '../styles/styles';
+import { GraphAction, GraphActionReceiver } from '../actions/actions';
+import { BehaviorList } from './behaviors';
 
 /**
  * A rendered view of a graph.

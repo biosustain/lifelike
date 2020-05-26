@@ -1,7 +1,7 @@
 import * as d3 from 'd3';
-import { GraphEntity, GraphEntityType, UniversalGraphNode } from '../../drawing-tool/services/interfaces';
+import { GraphEntity, GraphEntityType, UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
 import { GraphCanvasView } from '../graph-canvas-view';
-import { AbstractCanvasBehavior, BehaviorResult } from './behaviors';
+import { AbstractCanvasBehavior, BehaviorResult } from '../../behaviors';
 
 export class MovableNode extends AbstractCanvasBehavior {
   /**
