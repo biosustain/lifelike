@@ -41,6 +41,7 @@ import { DrawingUploadPayload } from 'app/interfaces/drawing.interface';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { Progress, ProgressMode } from 'app/interfaces/common-dialog.interface';
 import { HttpEventType } from '@angular/common/http';
+import { EditProjectDialogComponent } from '../project-list/edit-project-dialog/edit-project-dialog.component';
 
 
 @Component({
@@ -183,6 +184,43 @@ export class ProjectListViewComponent {
             }
           );
       }
+    });
+  }
+
+  /**
+   * Spin up dialog to allow user to update meta-data of project
+   */
+  editProject() {
+    const dialogRef = this.dialog.open(EditProjectDialogComponent, {
+      width: '40%',
+      data: this.selectedProject
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (!result) {
+        return;
+      }
+
+      this.selectedProject = result;
+
+      this.projectService.updateProject(this.selectedProject)
+        .subscribe(
+          data => {
+            this.projects = this.projects.map(
+              (proj: Project) => {
+                if (proj.hash_id === this.selectedProject.hash_id) {
+                  return this.selectedProject;
+                } else {
+                  return proj;
+                }
+              }
+            );
+
+            this.snackBar.open(`Project is updated`, null, {
+              duration: 2000,
+            });
+          }
+        );
     });
   }
 
