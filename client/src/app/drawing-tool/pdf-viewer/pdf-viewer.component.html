@@ -32,10 +32,16 @@
         <div class="shadow-4 filter-popup" *ngIf="filterPopupOpen">
           <h4 class="mt0 mb1">Annotation Visibility</h4>
           <div>
-              <div *ngFor="let entityTypeEntry of sortedEntityTypeEntries"
-              [ngClass]="entityTypeEntry.annotations.length ? '' : 'o-20'">
-           <mat-checkbox [checked]="isEntityTypeVisible(entityTypeEntry.type)"
-                         (change)="changeEntityTypeVisibility(entityTypeEntry.type, $event)">
+            <div class="mt2 mb2" fxLayout="column">
+              <button *ngIf="!entityTypeVisibilityChanged" mat-stroked-button fxFlexFill
+                      (click)="setAllEntityTypesVisibility(false)">Hide All</button>
+              <button *ngIf="entityTypeVisibilityChanged" mat-stroked-button fxFlexFill
+                      (click)="setAllEntityTypesVisibility(true)">Show All</button>
+            </div>
+            <div *ngFor="let entityTypeEntry of sortedEntityTypeEntries"
+                 [ngClass]="entityTypeEntry.annotations.length ? '' : 'o-20'">
+              <mat-checkbox [checked]="isEntityTypeVisible(entityTypeEntry.type)"
+                            (change)="changeEntityTypeVisibility(entityTypeEntry.type, $event)">
                 <span class="entity-type-legend" [ngStyle]="{background: entityTypeEntry.type.color}">
                 </span> {{entityTypeEntry.type.name}} <span *ngIf="!!entityTypeEntry.annotations.length">
                   ({{entityTypeEntry.annotations.length}})

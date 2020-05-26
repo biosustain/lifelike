@@ -401,4 +401,9 @@ if __name__ == '__main__':
 
     # covid-19
     prepare_lmdb_diseases_database(filename='datasets/covid19_disease.csv')
-    prepare_lmdb_species_database(filename='datasets/covid19_taxonomy.tsv')
+
+    prepare_lmdb_species_database(filename='datasets/cdiff_taxonomy.tsv')
+    prepare_lmdb_species_database(filename='datasets/ecoli_taxonomy.tsv')
+    prepare_lmdb_species_database(filename='datasets/pseudomonas_aerug_taxonomy.tsv')
+    prepare_lmdb_species_database(filename='datasets/staph_aureus_taxonomy.tsv')
+    prepare_lmdb_species_database(filename='datasets/yeast_taxonomy.tsv')
