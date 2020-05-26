@@ -5858,7 +5858,7 @@ pbkdf2@^3.0.3:
 
 pdfjs-dist@2.2.228:
   version "2.2.228"
-  resolved "git+https://8a6e387c4df4efe82b82790132da7efd7477ebce:x-oauth-basic@github.com/sbrg/pdf.js#78c300316d1fd3f27376038518510a60d16134a2"
+  resolved "https://registry.yarnpkg.com/pdfjs-dist/-/pdfjs-dist-2.2.228.tgz"
   dependencies:
     node-ensure "^0.0.0"
     worker-loader "^2.0.0"
