@@ -24,7 +24,7 @@
     </ng-container>
 
     <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-    <tr mat-row cdkDropList cdkDrag class="node-search-template" [cdkDragData]="row"
+    <tr mat-row cdkDropList cdkDrag class="node-search-template my-row" [cdkDragData]="row"
         *matRowDef="let row; columns: displayedColumns;"
         [cdkDragDisabled]="childMode"></tr>
   </table>
