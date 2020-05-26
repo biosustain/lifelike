@@ -1,5 +1,6 @@
 import { AfterViewInit, Component, EventEmitter, HostListener, Input, NgZone, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
-import { Observable, Subject, Subscription } from 'rxjs';
+import { Observable, Subject, Subscription  } from 'rxjs';
+import { debounceTime } from 'rxjs/operators';
 import { Annotation, Location, Meta } from './annotation-type';
 import { PDFDocumentProxy, PDFProgressData, PDFSource } from './pdf-viewer/pdf-viewer.module';
 import { PdfViewerComponent } from './pdf-viewer/pdf-viewer.component';
@@ -18,6 +19,8 @@ declare var jQuery: any;
 })
 export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
 
+  @Input() searchChanged: Subject<string>;
+  private searchChangedSub: Subscription;
   @Input() pdfSrc: string | PDFSource | ArrayBuffer;
   @Input() annotations: Annotation[];
   @Input() dropAreaIdentifier: string;
@@ -41,6 +44,11 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
   @Output() dropEvents = new EventEmitter();
   // tslint:disable
   @Output('custom-annotation-created') annotationCreated = new EventEmitter();
+
+  /**
+   * Stores a mapping of annotations to the HTML elements that are used to show it.
+   */
+  private readonly annotationHighlightElementMap: Map<Annotation, HTMLElement[]>  = new Map();
 
   pendingHighlights = {};
 
@@ -84,7 +92,11 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
 
   constructor(private dialog: MatDialog, private zone: NgZone) {
 
-    (window as any).deleteFrictionless = this.deleteFrictionless.bind(this);
+    (window as any).copySelectedText = () => {
+      (window as any).pdfViewerRef.zone.run(() => {
+        (window as any).pdfViewerRef.copySelectedText();
+      });
+    }
     (window as any).openAnnotationPanel = () => {
       (window as any).pdfViewerRef.zone.run(() => {
         (window as any).pdfViewerRef.componentFn();
@@ -94,6 +106,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
     (window as any).pdfViewerRef = {
       zone: this.zone,
       componentFn: () => this.openAnnotationPanel(),
+      copySelectedText: () => this.copySelectedText(),
       component: this
     };
   }
@@ -120,6 +133,11 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
     if (this.filterChanges) {
       this.filterChangeSubscription = this.filterChanges.subscribe(() => this.renderFilterSettings());
     }
+
+    this.searchChangedSub = this.searchChanged.pipe(
+      debounceTime(250)).subscribe((query) => {
+      this.searchQueryChanged(query);
+    });
   }
 
   ngAfterViewInit(): void {
@@ -165,6 +183,11 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
     if (this.filterChangeSubscription) {
       this.filterChangeSubscription.unsubscribe();
     }
+
+    if(this.searchChangedSub) {
+      this.searchChangedSub.unsubscribe();
+    }
+
   }
 
   renderFilterSettings() {
@@ -178,7 +201,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
     if (visible == null) {
       visible = true;
     }
-    const elements = (annotation as any).refs;
+    const elements = this.annotationHighlightElementMap.get(annotation);
     if (elements) {
       for (const element of elements) {
         element.style.display = visible ? 'block' : 'none';
@@ -195,6 +218,9 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
     if (!annotation.meta.allText || annotation.meta.allText === '') {
       annotation.meta.allText = allText;
     }
+
+    const elementRefs = [];
+    this.annotationHighlightElementMap.set(annotation, elementRefs);
 
     for (const rect of annotation.rects) {
       const bounds = viewPort.convertToViewportRectangle(rect);
@@ -218,10 +244,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
         'left:' + left + 'px;top:' + (top) + 'px;width:' + width + 'px;height:' + height + 'px;');
       overlayContainer.appendChild(overlayDiv);
       (annotation as any).ref = overlayDiv;
-      if (!(annotation as any).refs) {
-        (annotation as any).refs = [];
-      }
-      (annotation as any).refs.push(overlayDiv);
+      elementRefs.push(overlayDiv);
       jQuery(overlayDiv).css('cursor', 'move');
       jQuery(overlayDiv).draggable({
         revert: true,
@@ -437,6 +460,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
         {
 
           content: `<img src="assets/images/annotate.png" onclick="openAnnotationPanel()">
+                <img src="assets/images/copy.png" onclick="copySelectedText()">
             <img src="assets/images/link.png" onclick="openLinkPanel()">`,
           position: {
             my: 'bottom center',
@@ -648,6 +672,9 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
       this.isLoadCompleted = true;
       setTimeout(() => {
         this.loadCompleted.emit(true);
+        const tagName = (this.pdfComponent as any).element.nativeElement.tagName.toLowerCase();
+        jQuery(tagName).css('height','100vh');
+        jQuery(tagName).css('display','block');
       }, 1000);
     }
     const pageNum = (e as any).pageNumber;
@@ -660,12 +687,16 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
       this.pdfQuery = newQuery;
       this.pdfComponent.pdfFindController.executeCommand('find', {
         query: this.pdfQuery,
-        highlightAll: true
+        highlightAll: true,
+        entireWord: true,
+        phraseSearch: true
       });
     } else {
       this.pdfComponent.pdfFindController.executeCommand('findagain', {
         query: this.pdfQuery,
-        highlightAll: true
+        highlightAll: true,
+        entireWord: true,
+        phraseSearch: true
       });
     }
   }
@@ -676,6 +707,21 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
       return;
     }
     this.scrollToPage(Number(pageNumber));
+  }
+
+  copySelectedText() {
+    let listener = (e: ClipboardEvent) => {
+      let clipboard = e.clipboardData || window["clipboardData"];
+      clipboard.setData("text", this.allText);
+      e.preventDefault();
+    };
+
+    document.addEventListener("copy", listener, false)
+    document.execCommand("copy");
+    document.removeEventListener("copy", listener, false);
+
+    this.deleteFrictionless();
+
   }
 
 }
