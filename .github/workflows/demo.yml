@@ -51,19 +51,38 @@ jobs:
             - run: |-
                 gcloud --quiet auth configure-docker
 
-            # Build the Docker images
-            - name: Build
-              run: |-
-                docker build --tag "gcr.io/$PROJECT_ID/kg-appserver-demo:$GITHUB_HASH" --tag "latest" -f ./appserver/Dockerfile.prod ./appserver/
-                docker build --tag "gcr.io/$PROJECT_ID/kg-webserver-demo:$GITHUB_HASH" --tag "latest" -f ./client/Dockerfile.demo ./client/
-                docker build --tag "gcr.io/$PROJECT_ID/kg-cache-service-demo:$GITHUB_HASH" ./cache-invalidator/
+            - name: Build Appserver Image
+              uses: docker/build-push-action@v1
+              with:
+                username: _json_key
+                password: $GCE_SERVICE_ACCOUNT
+                registry: gcr.io
+                repository: gcr.io/$PROJECT_ID
+                tags: ${{ github.sha }}, latest
+                path: ./appserver
+                dockerfile: ./appserver/Dockerfile.prod
 
-            # # Push Docker image to Google Container Registry
-            - name: Publish
-              run: |-
-                docker push "gcr.io/$PROJECT_ID/kg-appserver-demo:$GITHUB_HASH"
-                docker push "gcr.io/$PROJECT_ID/kg-webserver-demo:$GITHUB_HASH"
-                docker push "gcr.io/$PROJECT_ID/kg-cache-service-demo:$GITHUB_HASH"
+            - name: Build Client and Nginx Image
+              uses: docker/build-push-action@v1
+              with:
+                username: _json_key
+                password: $GCE_SERVICE_ACCOUNT
+                registry: gcr.io
+                repository: gcr.io/$PROJECT_ID
+                tags: ${{ github.sha }}, latest
+                path: ./client
+                dockerfile: ./client/Dockerfile.demo
+
+            - name: Build Redis
+              uses: docker/build-push-action@v1
+              with:
+                username: _json_key
+                password: $GCE_SERVICE_ACCOUNT
+                registry: gcr.io
+                repository: gcr.io/$PROJECT_ID
+                tags: ${{ github.sha }}, latest
+                path: ./cache-invalidator
+                dockerfile: ./cache-invalidator/Dockerfile
 
             - name: Deploy Setup
               run: |-
