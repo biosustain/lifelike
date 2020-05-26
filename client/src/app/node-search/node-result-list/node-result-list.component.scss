@@ -31,3 +31,12 @@ table {
   text-align: center;
   justify-content:center;
 }
+
+.my-row{
+  cursor: grab;
+
+}
+
+.my-row:active{
+  cursor: grabbing;
+}
