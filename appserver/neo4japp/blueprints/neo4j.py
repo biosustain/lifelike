@@ -145,3 +145,9 @@ def load_reaction_graph(req: ReactionRequest):
     neo4j = get_neo4j_service_dao()
     result = neo4j.load_reaction_graph(req.biocyc_id)
     return SuccessResponse(result=result, status_code=200)
+
+
+@bp.route('/get-legend-for-visualizer', methods=['GET'])
+@jsonify_with_class()
+def get_legend_for_visualizer():
+    return SuccessResponse(result=ANNOTATION_STYLES_DICT, status_code=200)

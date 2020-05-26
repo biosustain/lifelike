@@ -84,6 +84,7 @@ describe('SidenavClusterViewComponent', () => {
                 expanded: true,
                 primaryLabel: 'MockNode1',
                 color: null,
+                font: null,
             },
             to:
             {
@@ -95,6 +96,7 @@ describe('SidenavClusterViewComponent', () => {
                 expanded: true,
                 primaryLabel: 'MockNode2',
                 color: null,
+                font: null,
             },
             association: 'Mock Association',
             snippets: mockAssociationSnippets,
