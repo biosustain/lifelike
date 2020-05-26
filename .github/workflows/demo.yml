@@ -55,7 +55,7 @@ jobs:
               uses: docker/build-push-action@v1
               with:
                 username: _json_key
-                password: $GCE_SERVICE_ACCOUNT
+                password: ${{ secrets.GCE_SA_KEY }}
                 registry: gcr.io
                 repository: gcr.io/$PROJECT_ID
                 tags: ${{ github.sha }}, latest
@@ -66,7 +66,7 @@ jobs:
               uses: docker/build-push-action@v1
               with:
                 username: _json_key
-                password: $GCE_SERVICE_ACCOUNT
+                password: ${{ secrets.GCE_SA_KEY }}
                 registry: gcr.io
                 repository: gcr.io/$PROJECT_ID
                 tags: ${{ github.sha }}, latest
@@ -77,7 +77,7 @@ jobs:
               uses: docker/build-push-action@v1
               with:
                 username: _json_key
-                password: $GCE_SERVICE_ACCOUNT
+                password: ${{ secrets.GCE_SA_KEY }}
                 registry: gcr.io
                 repository: gcr.io/$PROJECT_ID
                 tags: ${{ github.sha }}, latest
