@@ -1,11 +1,12 @@
-interface UniversalNodeStyle {
+export interface UniversalNodeStyle {
   fontSizeScale?: number;
   fillColor?: string;
   strokeColor?: string;
   lineType?: string;
   lineWidthScale?: number;
 }
-interface UniversalGraphNode {
+
+export interface UniversalGraphNode {
   data: {
     x: number;
     y: number;
@@ -30,52 +31,58 @@ interface UniversalGraphNode {
   sub_labels: string[];
   style?: UniversalNodeStyle;
 }
-interface UniversalEdgeStyle {
+
+export interface UniversalEdgeStyle {
   fontSizeScale?: number;
   strokeColor?: string;
   lineType?: string;
   lineWidthScale?: number;
-  sourceEndType?: string;
-  targetEndType?: string;
+  sourceHeadType?: string;
+  targetHeadType?: string;
 }
-interface UniversalGraphEdge {
+
+export interface UniversalGraphEdge {
   label: string;
   from: string;
   to: string;
   style?: UniversalEdgeStyle;
 }
-interface UniversalGraph {
+
+export interface UniversalGraph {
   nodes: UniversalGraphNode[];
   edges: UniversalGraphEdge[];
 }
-declare type UniversalGraphEntity = UniversalGraphNode | UniversalGraphEdge;
-enum GraphEntityType {
+
+export declare type UniversalGraphEntity = UniversalGraphNode | UniversalGraphEdge;
+
+export enum GraphEntityType {
   Node = 'node',
   Edge = 'edge',
 }
-interface GraphEntity {
+
+export interface GraphEntity {
   type: GraphEntityType;
   entity: UniversalGraphEntity;
 }
 
-interface Hyperlink {
+export interface Hyperlink {
   url: string;
   domain: string;
 }
 
-interface Location {
+export interface Location {
   pageNumber: number;
   rect: Rect;
 }
 
-interface Links {
+export interface Links {
   ncbi?: string;
   uniprot?: string;
   wikipedia?: string;
   google?: string;
 }
 
-interface Meta {
+export interface Meta {
   type: string;
   color: string;
   id?: string;
@@ -86,11 +93,11 @@ interface Meta {
   links?: Links;
 }
 
-interface Rect {
+export interface Rect {
   [index: number]: number;
 }
 
-interface Annotation {
+export interface Annotation {
   pageNumber: number;
   keywords: string[];
   rects: Rect[];
@@ -100,7 +107,7 @@ interface Annotation {
 /**
  * Interface for launching app wit parameters
  */
-interface LaunchApp {
+export interface LaunchApp {
   app: string;
   arg?: {
     // For pdf-viewer, coordinate of the nnoation of pd
@@ -112,11 +119,10 @@ interface LaunchApp {
   };
 }
 
-
 /**
  * Project schema definition
  */
-interface Project {
+export interface Project {
   id?: string | number;
   author?: string;
   label: string;
@@ -132,21 +138,3 @@ interface Project {
   /** ID of the user who made the project */
   user_id?: number;
 }
-
-export {
-  Project,
-  UniversalGraph,
-  UniversalNodeStyle,
-  UniversalEdgeStyle,
-  UniversalGraphEdge,
-  UniversalGraphNode,
-  UniversalGraphEntity,
-  GraphEntityType,
-  GraphEntity,
-  Annotation,
-  Meta,
-  Rect,
-  Links,
-  Location,
-  LaunchApp
-};

@@ -4,7 +4,7 @@ import { transformControlPoint } from '../../geometry';
 /**
  * A terminator that just takes up space.
  */
-export class EmptyTerminator implements LineHeadRenderer {
+export class EmptyLineHead implements LineHeadRenderer {
   /**
    * Create an instance.
    * @param spacing the amount of dead weight to take up

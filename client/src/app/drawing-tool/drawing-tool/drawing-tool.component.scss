@@ -119,18 +119,10 @@
     width: 16rem;
     top: 0;
     right: 0;
-    transform: translateY(-2rem);
-    opacity: 0;
-    transition: transform ease-out 0.2s, opacity ease 0.1s;
     max-height: calc(100vh - 2rem);
     background-color: #fff;
     @include overlay;
     @include scrollbars(.25em, #3797DB);
-
-    &.in {
-      transform: translateY(0);
-      opacity: 1;
-    }
   }
 
   #palette-panel::-webkit-scrollbar {
