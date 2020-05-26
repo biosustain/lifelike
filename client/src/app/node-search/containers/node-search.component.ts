@@ -30,7 +30,7 @@ export class NodeSearchComponent {
   DOMAINS_URL = {
     CHEBI: 'https://www.ebi.ac.uk/chebi/searchId.do?chebiId=',
     MESH: 'https://www.ncbi.nlm.nih.gov/mesh/?term=',
-    Text: 'https://pubmed.ncbi.nlm.nih.gov/',
+    Literature: 'https://pubmed.ncbi.nlm.nih.gov/',
     NCBI_Gene: 'https://www.ncbi.nlm.nih.gov/gene/',
     NCBI_Taxonomy: 'https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id='
   };
@@ -59,13 +59,24 @@ export class NodeSearchComponent {
   }
 
   getDomain(subLabels: string[]) {
-    return subLabels.find(element => element.match(/^db_*/))
-      .split('_')[1];
+    this.removeUnneededLabels(subLabels);
+    return subLabels.length === 1 && subLabels[0] === 'Snippet' ? 'Literature' : subLabels
+      .find(element => element.match(/^db_*/)).split('_')[1];
+  }
+
+  private removeUnneededLabels(subLabels: string[]) {
+    const tobeRemovedLabels = ['db_Literature', 'TopicalDescriptor'];
+    tobeRemovedLabels.forEach(label => {
+      const index = subLabels.indexOf(label);
+      if (index !== -1) {
+        subLabels.splice(index, 1);
+      }
+    });
   }
 
   getType(subLabels: string[]) {
-    const type = subLabels.find(element => !element.match(/^db_*/));
-    return type === 'TopicalDescriptor' ? 'Disease' : type;
+    this.removeUnneededLabels(subLabels);
+    return subLabels.find(element => !element.match(/^db_*/));
   }
 
   getLink(data) {
@@ -77,7 +88,7 @@ export class NodeSearchComponent {
     } else if (domain === 'NCBI' && type === 'Taxonomy') {
       return this.sanitizer.bypassSecurityTrustUrl(this.DOMAINS_URL[domain + '_' + type] +
         data.node.data.id);
-    } else if (domain === 'Text') {
+    } else if (domain === 'Literature') {
       return this.sanitizer.bypassSecurityTrustUrl(this.DOMAINS_URL[domain] +
         data.publicationId);
     } else {
