@@ -374,9 +374,12 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
     }
   }
 
+  @HostListener('window:mouseup', ['$event'])
   mouseUp = event => {
     this.dragAndDropDestinationHoverCount = jQuery('.textLayer > span:hover').length || 0;
     if(this.dragAndDropDestinationHoverCount !== 1 || this.dragAndDropOriginHoverCount !==1) {
+      this.dragAndDropOriginHoverCount = 0;
+      this.dragAndDropDestinationHoverCount = 0;
       this.deleteFrictionless();
       this.clearSelection();
     }
