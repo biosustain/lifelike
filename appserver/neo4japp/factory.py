@@ -13,7 +13,7 @@ from neo4japp.encoders import CustomJSONEncoder
 from neo4japp.exceptions import (
     BaseException, JWTAuthTokenException,
     JWTTokenException, RecordNotFoundException,
-    )
+    DataNotAvailableException)
 
 import sentry_sdk
 from sentry_sdk.integrations.flask import FlaskIntegration
@@ -80,6 +80,7 @@ def create_app(name='neo4japp', config='config.Development'):
     app.register_error_handler(JWTTokenException, partial(handle_error, 401))
     app.register_error_handler(BaseException, partial(handle_error, 400))
     app.register_error_handler(Exception, partial(handle_generic_error, 500))
+    app.register_error_handler(DataNotAvailableException, partial(handle_error, 500))
     return app
 
 
@@ -92,9 +93,9 @@ def register_blueprints(app, pkgname):
 
 def handle_error(code: int, ex: BaseException):
     reterr = {'apiHttpError': ex.to_dict()}
+    logger.error('Request caused BaseException error', exc_info=ex)
+    reterr['version'] = GITHUB_HASH
     if current_app.debug:
-        logger.error('Request caused BaseException error', exc_info=ex)
-        reterr['version'] = GITHUB_HASH
         reterr['detail'] = "".join(traceback.format_exception(
             etype=type(ex), value=ex, tb=ex.__traceback__))
     return jsonify(reterr), code
@@ -102,9 +103,9 @@ def handle_error(code: int, ex: BaseException):
 
 def handle_generic_error(code: int, ex: Exception):
     reterr = {'apiHttpError': str(ex)}
+    logger.error('Request caused unhandled exception', exc_info=ex)
+    reterr['version'] = GITHUB_HASH
     if current_app.debug:
-        logger.error('Request caused unhandled exception', exc_info=ex)
-        reterr['version'] = GITHUB_HASH
         reterr['detail'] = "".join(traceback.format_exception(
             etype=type(ex), value=ex, tb=ex.__traceback__))
     return jsonify(reterr), code

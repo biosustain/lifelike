@@ -13,12 +13,11 @@ import {
   CopyProjectDialogComponent
 } from './project-list-view/copy-project-dialog/copy-project-dialog.component';
 import {
+  UploadProjectDialogComponent
+} from './project-list-view/upload-project-dialog/upload-project-dialog.component';
+import {
   DrawingToolComponent
 } from './drawing-tool/drawing-tool.component';
-import {
-  TruncatePipe,
-  FriendlyDateStrPipe
-} from './pipes';
 
 import { CopyPasteMapsService } from './services/copy-paste-maps.service';
 
@@ -41,6 +40,7 @@ import { PdfViewerLibModule } from 'app/pdf-viewer/pdf-viewer-lib.module';
 import { FileBrowserModule } from '../file-browser/file-browser.module';
 import { EdgeFormComponent } from './drawing-tool/info-panel/edge-form.component';
 import { NodeFormComponent } from './drawing-tool/info-panel/node-form.component';
+import {NodeSearchComponent} from '../node-search/containers/node-search.component';
 
 export const routes = [
   {
@@ -68,11 +68,10 @@ export const routes = [
     CreateProjectDialogComponent,
     DeleteProjectDialogComponent,
     CopyProjectDialogComponent,
+    UploadProjectDialogComponent,
     DrawingToolComponent,
     DrawingToolContextMenuComponent,
     PdfViewerComponent,
-    TruncatePipe,
-    FriendlyDateStrPipe,
     PaletteComponent,
     InfoPanelComponent,
     SplitterComponent,
@@ -86,10 +85,12 @@ export const routes = [
     CreateProjectDialogComponent,
     DeleteProjectDialogComponent,
     CopyProjectDialogComponent,
+    UploadProjectDialogComponent,
     MapListComponent,
     ProjectListViewComponent,
     PdfViewerComponent,
-    ExportModalComponent
+    ExportModalComponent,
+    NodeSearchComponent
   ],
   imports: [
     SharedModule,

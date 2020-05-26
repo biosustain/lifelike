@@ -23,6 +23,10 @@ import {
     VisNode,
     GetReferenceTableDataResult,
     ReferenceTableRow,
+    GetClusterSnippetDataResult,
+    ClusterData,
+    SidenavSnippetData,
+    SidenavClusterEntity,
 } from 'app/interfaces';
 import { RootStoreModule } from 'app/root-store';
 import { SharedModule } from 'app/shared/shared.module';
@@ -66,6 +70,7 @@ describe('VisualizationCanvasComponent', () => {
             expanded: false,
             primaryLabel: 'Mock Node',
             color: null,
+            font: null,
         } as VisNode;
     }
 
@@ -87,6 +92,7 @@ describe('VisualizationCanvasComponent', () => {
             toLabel: 'Mock Node',
             fromLabel: 'Mock Node',
             arrows: arrowDirection,
+            color: null,
         } as VisEdge;
     }
 
@@ -192,9 +198,16 @@ describe('VisualizationCanvasComponent', () => {
 
         mockReferenceTableRows = [
             {
-                nodeDisplayName: 'Mock Node 1',
+                nodeId: '2',
+                nodeDisplayName: 'Mock Node 2',
                 snippetCount: 1,
-                edge: mockEdgeGenerator(101, 1, 'to', 2),
+                edge: mockDuplicateEdgeGenerator(101, 1, 'to', 2),
+            } as ReferenceTableRow,
+            {
+                nodeId: '3',
+                nodeDisplayName: 'Mock Node 3',
+                snippetCount: 1,
+                edge: mockDuplicateEdgeGenerator(101, 1, 'to', 3),
             } as ReferenceTableRow,
         ];
 
@@ -248,14 +261,16 @@ describe('VisualizationCanvasComponent', () => {
 
         expect(instance.sidenavEntityType).toEqual(2); // 2 = EDGE
         expect(instance.sidenavEntity).toEqual({
-            to: instance.nodes.get(mockGetSnippetsResult.toNodeId) as VisNode,
-            from: instance.nodes.get(mockGetSnippetsResult.fromNodeId) as VisNode,
-            association: mockGetSnippetsResult.association,
-            snippets: mockGetSnippetsResult.snippets,
+            data: {
+                to: instance.nodes.get(mockGetSnippetsResult.toNodeId) as VisNode,
+                from: instance.nodes.get(mockGetSnippetsResult.fromNodeId) as VisNode,
+                association: mockGetSnippetsResult.association,
+                snippets: mockGetSnippetsResult.snippets,
+            } as SidenavSnippetData
         } as SidenavEdgeEntity);
     });
 
-    it('should update sidenav entity data when getClusterGraphDataResult changes', () => {
+    it('should update sidenav entity data when getClusterDataResult changes', () => {
         const mockGetClusterGraphDataResult = {
             results: {
                 1: {
@@ -263,15 +278,34 @@ describe('VisualizationCanvasComponent', () => {
                 }
             }
         } as GetClusterGraphDataResult;
+        const mockGetClusterSnippetDataResult = {
+            results: [
+                {
+                    fromNodeId: 1,
+                    toNodeId: 2,
+                    snippets: [],
+                    association: '',
+                } as GetSnippetsResult,
+            ]
+        } as GetClusterSnippetDataResult;
 
-        instance.getClusterGraphDataResult = mockGetClusterGraphDataResult;
+        instance.getClusterDataResult = {
+            graphData: mockGetClusterGraphDataResult,
+            snippetData: mockGetClusterSnippetDataResult,
+        };
         fixture.detectChanges();
 
-        expect(instance.sidenavEntityType).toEqual(3); // 3 = EDGE
+        expect(instance.sidenavEntityType).toEqual(3); // 3 = CLUSTER
         expect(instance.sidenavEntity).toEqual({
-            includes: Object.keys(mockGetClusterGraphDataResult.results).map(nodeId => instance.nodes.get(nodeId)),
-            clusterGraphData: mockGetClusterGraphDataResult,
-        });
+            data: mockGetClusterSnippetDataResult.results.map(snippetResult => {
+                return {
+                    to: instance.nodes.get(snippetResult.toNodeId) as VisNode,
+                    from: instance.nodes.get(snippetResult.fromNodeId) as VisNode,
+                    association: snippetResult.association,
+                    snippets: snippetResult.snippets,
+                } as SidenavSnippetData;
+            }),
+        } as SidenavClusterEntity);
     });
 
     it('should turn animation off if quickbar component animationStatus emits false', () => {
@@ -386,7 +420,12 @@ describe('VisualizationCanvasComponent', () => {
         const clusterInfo = instance.clusters.entries().next();
         const clusterEdge = instance.networkGraph.getConnectedEdges(clusterInfo.value[0])[0];
 
-        expect(clusterInfo.value[1]).toEqual('Mock Edge');
+        expect(clusterInfo.value[1]).toEqual(
+            {
+                referenceTableRows: mockReferenceTableRows,
+                relationship: 'Mock Edge',
+            } as ClusterData
+        );
         expect(instance.isNotAClusterEdge(clusterEdge)).toBeFalse();
     });
 
@@ -736,15 +775,31 @@ describe('VisualizationCanvasComponent', () => {
         expect(expandOrCollapseNodeSpy).toHaveBeenCalledWith(1);
     });
 
-    // TODO: Create a real cluster
-    it('should not open the context menu if a cluster is right-clicked', () => {
-        spyOn(instance.networkGraph, 'getNodeAt').and.returnValue(1);
-        spyOn(instance.networkGraph, 'isCluster').and.returnValue(true); // Faking the cluster for now
-        const preventDefaultSpy = spyOn(mockCallbackParams.event, 'preventDefault');
+    it('should show tooltip, update selected cluster nodes, and update sidebar if an unselected cluster is right-clicked', () => {
+        spyOn(visualizationService, 'getReferenceTableData').and.returnValue(
+            of(mockGetReferenceTableDataResult)
+        );
+
+        instance.groupNeighborsWithRelationship(mockGroupRequest);
+        const clusterInfo = instance.clusters.entries().next();
+        const clusterId = clusterInfo.value[0];
+
+        spyOn(instance.networkGraph, 'getNodeAt').and.returnValue(clusterId);
+        spyOn(instance.networkGraph, 'getEdgeAt').and.returnValue(undefined);
+        spyOn(instance.networkGraph, 'isCluster').and.returnValue(true);
+        const networkGraphSelectNodesSpy = spyOn(instance.networkGraph, 'selectNodes').and.callThrough();
+        const updateSelectedNodesAndEdgesSpy = spyOn(instance, 'updateSelectedNodesAndEdges').and.callThrough();
+        const showTooltipSpy = spyOn(contextMenuControlService, 'showTooltip');
+        const updateSidebarEntitySpy = spyOn(instance, 'updateSidebarEntity');
 
         instance.onContextCallback(mockCallbackParams);
 
-        expect(preventDefaultSpy).not.toHaveBeenCalled();
+        expect(networkGraphSelectNodesSpy).toHaveBeenCalledWith([clusterId], false);
+        expect(updateSelectedNodesAndEdgesSpy).toHaveBeenCalled();
+        expect(instance.selectedNodes.includes(clusterId)).toBeTrue();
+        expect(instance.selectedClusterNodeData.length).toEqual(2);
+        expect(showTooltipSpy).toHaveBeenCalled();
+        expect(updateSidebarEntitySpy).toHaveBeenCalled();
     });
 
     it('should select the node, show tooltip, and update sidebar if an unselected node is right-clicked', () => {
@@ -875,5 +930,26 @@ describe('VisualizationCanvasComponent', () => {
         expect(instance.selectedEdges.includes(101)).toBeTrue();
         expect(clearSelectedNodeEdgeLabelDataSpy).toHaveBeenCalled();
         expect(instance.selectedNodeEdgeLabelData.size).toEqual(0);
+    });
+
+    it('removeNodeFromCluster should pull out a single node from a cluster, but also not mutate the cluster', async () => {
+        spyOn(visualizationService, 'getReferenceTableData').and.returnValue(
+            of(mockGetReferenceTableDataResult)
+        );
+
+        instance.groupNeighborsWithRelationship(mockGroupRequest);
+
+        const clusterInfo = instance.clusters.entries().next();
+        const clusterId = clusterInfo.value[0];
+        const clusteredNodeIdsBeforeRemoval = instance.networkGraph.getNodesInCluster(clusterId);
+
+        instance.removeNodeFromCluster(clusteredNodeIdsBeforeRemoval[0]);
+
+        const clusteredNodeIdsAfterRemoval = instance.networkGraph.getNodesInCluster(clusterId);
+
+        expect(clusteredNodeIdsAfterRemoval.length).toEqual(2);
+        expect(clusteredNodeIdsAfterRemoval).toEqual(clusteredNodeIdsBeforeRemoval);
+        expect(instance.nodes.get(2)).toBeTruthy();
+        expect(instance.nodes.get(3)).toBeNull();
     });
 });
