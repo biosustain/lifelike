@@ -237,18 +237,18 @@ export class VisualizationCanvasComponent implements OnInit {
             // On subsequent emissions, we only update a property if it is valid
             Object.keys(event).forEach(key => {
                 if (event[key].valid) {
-                    if (key === 'maxClusterShownRows') {
-                        const prevMaxRows = this.settingsFormValues[key];
+                    const prevVal = this.settingsFormValues[key].value;
+                    this.settingsFormValues[key] = event[key];
 
+                    if (key === 'maxClusterShownRows') {
                         // If the user updated the max row count, update all the cluster SVGs to show the new amount
-                        if (prevMaxRows !== event[key]) {
+                        if (prevVal !== event[key].value) {
                             this.clusters.forEach((_, clusterId) => {
                                 const newClusterSvg = this.createClusterSvg(this.clusters.get(clusterId).referenceTableRows);
                                 this.networkGraph.updateClusteredNode(clusterId, {image: newClusterSvg});
                             });
                         }
                     }
-                    this.settingsFormValues[key] = event[key];
                 }
             });
         }
