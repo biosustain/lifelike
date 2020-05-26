@@ -480,13 +480,14 @@ describe('VisualizationCanvasComponent', () => {
         expect(instance.edges.get(102)).toBeNull();
     });
 
-    it('expandOrCollapseNode should open any connected clusters of the given node', () => {
+    it('expandOrCollapseNode should destroy any connected clusters of the given node', () => {
         spyOn(visualizationService, 'getReferenceTableData').and.returnValue(
             of(mockGetReferenceTableDataResult)
         );
 
-        const node1 = instance.nodes.get(1);
-        node1.expanded = true;
+        const nodeRef = instance.nodes.get(1) as VisNode;
+        const updatedNodeState = {...nodeRef, expanded: true};
+        instance.nodes.update(updatedNodeState);
 
         instance.groupNeighborsWithRelationship(mockGroupRequest);
         instance.expandOrCollapseNode(1);
@@ -494,11 +495,11 @@ describe('VisualizationCanvasComponent', () => {
         expect(instance.clusters.size).toEqual(0);
 
         expect(instance.nodes.get(1)).toBeTruthy();
-        expect(instance.nodes.get(2)).toBeTruthy();
-        expect(instance.nodes.get(3)).toBeTruthy();
+        expect(instance.nodes.get(2)).toBeNull();
+        expect(instance.nodes.get(3)).toBeNull();
 
-        expect(instance.edges.get(101)).toBeTruthy();
-        expect(instance.edges.get(102)).toBeTruthy();
+        expect(instance.edges.get(101)).toBeNull();
+        expect(instance.edges.get(102)).toBeNull();
     });
 
     it('expandOrCollapseNode should request a node expansion from the parent if the node is collapsed', () => {
