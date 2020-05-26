@@ -1,130 +1,16 @@
-<div class='w-100 info-panel-content'>
-  <form [formGroup]='entityForm'>
+<div class="w-100 info-panel-content">
+  <app-node-form *ngIf="isSelectionNode()"
+                 [node]="selected.entity"
+                 (save)="save($event)"
+                 (delete)="deleteNode(selected.entity)"
+                 (appOpen)="openApp.next($event)"></app-node-form>
 
-    <mat-form-field class="w-100 mt3">
-      <mat-label>Name</mat-label>
-      <input
-        matInput
-        (keydown.enter)="blurInput($event)"
-        formControlName='display_name'>
-    </mat-form-field>
+  <app-edge-form *ngIf="isSelectionEdge()"
+                 [edge]="selected.entity"
+                 (save)="save($event)"
+                 (delete)="deleteEdge(selected.entity)"></app-edge-form>
 
-    <mat-form-field
-      *ngIf='isSelectionNode()'
-      class='w-100'>
-      <mat-label>Type</mat-label>
-      <mat-select
-        formControlName='label'>
-        <mat-option
-          *ngFor="let type of nodeTemplates"
-          [value]='type.label'>
-          {{type.label | titlecase}}
-        </mat-option>
-      </mat-select>
-    </mat-form-field>
-
-    <mat-form-field
-      *ngIf='isSelectionNode()'
-      class="w-100">
-      <mat-label>Hyperlink</mat-label>
-      <input
-        matInput
-        (keydown.enter)="blurInput($event)"
-        formControlName='hyperlink'>
-    </mat-form-field>
-
-    <mat-form-field
-      *ngIf='isSelectionNode()'
-      class="w-100">
-      <mat-label>Detail</mat-label>
-      <textarea
-        id='textArea'
-        rows="6"
-        matInput
-        cdkTextareaAutosize
-        #autosize="cdkTextareaAutosize"
-        (keydown.enter)="blurInput($event)"
-        formControlName='detail'>
-            </textarea>
-    </mat-form-field>
-
-    <mat-form-field
-      class="w-100">
-      <mat-label>Font Size Scale</mat-label>
-      <input
-        matInput
-        (keydown.enter)="blurInput($event)"
-        formControlName='fontSizeScale'>
-    </mat-form-field>
-
-    <mat-form-field
-      *ngIf='isSelectionNode()'
-      class="w-100">
-      <mat-label>Fill Color</mat-label>
-      <input
-        matInput
-        (keydown.enter)="blurInput($event)"
-        formControlName='fillColor'>
-    </mat-form-field>
-
-    <mat-form-field
-      class="w-100">
-      <mat-label>Stroke Color</mat-label>
-      <input
-        matInput
-        (keydown.enter)="blurInput($event)"
-        formControlName='strokeColor'>
-    </mat-form-field>
-
-    <mat-form-field
-      class="w-100">
-      <mat-label>Line Style</mat-label>
-      <input
-        matInput
-        (keydown.enter)="blurInput($event)"
-        formControlName='lineType'>
-    </mat-form-field>
-
-    <mat-form-field
-      class="w-100">
-      <mat-label>Line Width Scale</mat-label>
-      <input
-        matInput
-        (keydown.enter)="blurInput($event)"
-        formControlName='lineWidthScale'>
-    </mat-form-field>
-
-    <mat-form-field
-      *ngIf='isSelectionEdge()'
-      class="w-100">
-      <mat-label>Source End Style</mat-label>
-      <input
-        matInput
-        (keydown.enter)="blurInput($event)"
-        formControlName='sourceEndType'>
-    </mat-form-field>
-
-    <mat-form-field
-      *ngIf='isSelectionEdge()'
-      class="w-100">
-      <mat-label>Target End Style</mat-label>
-      <input
-        matInput
-        (keydown.enter)="blurInput($event)"
-        formControlName='targetEndType'>
-    </mat-form-field>
-
-    <button *ngIf='!!this.entityForm.value.hyperlink' mat-stroked-button color="primary" (click)='goToLink()'>
-      Open Hyperlink
-    </button>
-
-    <button *ngIf='selected?.data?.source' mat-stroked-button color="primary" (click)='goToSource()'>
-      Go to Source
-    </button>
-
-    <button (click)='delete()' mat-stroked-button color="warn" class='delete'>
-      Delete
-    </button>
-
-  </form>
+  <div *ngIf="!isSelectionNode() && !isSelectionEdge()">
+    Select a node or edge to edit it.
+  </div>
 </div>

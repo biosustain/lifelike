@@ -39,6 +39,8 @@ import { RouterModule } from '@angular/router';
 import { PdfViewerComponent } from './pdf-viewer/pdf-viewer.component';
 import { PdfViewerLibModule } from 'app/pdf-viewer/pdf-viewer-lib.module';
 import { FileBrowserModule } from '../file-browser/file-browser.module';
+import { EdgeFormComponent } from './drawing-tool/info-panel/edge-form.component';
+import { NodeFormComponent } from './drawing-tool/info-panel/node-form.component';
 
 export const routes = [
   {
@@ -76,7 +78,9 @@ export const routes = [
     SplitterComponent,
     MapPreviewComponent,
     MapListComponent,
-    ExportModalComponent
+    ExportModalComponent,
+    NodeFormComponent,
+    EdgeFormComponent,
   ],
   entryComponents: [
     CreateProjectDialogComponent,

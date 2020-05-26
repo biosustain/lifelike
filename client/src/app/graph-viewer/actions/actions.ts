@@ -18,15 +18,30 @@ export interface GraphActionReceiver {
   /**
    * Remove the given node from the graph.
    * @param node the node
-   * @return true if the node was found
    */
-  removeNode(node: UniversalGraphNode): void;
+  removeNode(node: UniversalGraphNode): {
+    found: boolean,
+    removedEdges: UniversalGraphEdge[],
+  };
 
   /**
    * Mark the node as being updated.
    * @param node the node
    */
   updateNode(node: UniversalGraphNode): void;
+
+  /**
+   * Add the given edge to the graph.
+   * @param edge the edge
+   */
+  addEdge(edge: UniversalGraphEdge): void;
+
+  /**
+   * Remove the given edge from the graph.
+   * @param edge the edge
+   * @return true if the edge was found
+   */
+  removeEdge(edge: UniversalGraphEdge): boolean;
 
   /**
    * Mark the edge as being updated.

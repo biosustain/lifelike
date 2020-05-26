@@ -1,0 +1,67 @@
+<button *ngIf="!!node.data.hyperlink" mat-stroked-button color="primary" (click)="goToLink()" class="w-100">
+  Open Hyperlink
+</button>
+
+<button *ngIf="node.data.source" mat-stroked-button color="primary" (click)="goToSource()" class="w-100">
+  Go to Source
+</button>
+
+<mat-form-field class="w-100" appearance="standard">
+  <mat-label>Label</mat-label>
+  <input [(ngModel)]="node.display_name" matInput (change)="doSave()">
+</mat-form-field>
+
+<mat-form-field class="w-100" appearance="standard">
+  <mat-label>Node Type</mat-label>
+  <mat-select [(ngModel)]="node.label" (selectionChange)="doSave()">
+    <mat-option *ngFor="let choice of nodeTypeChoices" [value]="choice.label">
+      {{choice.label | titlecase}}
+    </mat-option>
+  </mat-select>
+</mat-form-field>
+
+<mat-form-field class="w-100" appearance="standard">
+  <mat-label>URL</mat-label>
+  <input [(ngModel)]="node.data.hyperlink" matInput (change)="doSave()">
+</mat-form-field>
+
+<mat-form-field class="w-100" appearance="standard">
+  <mat-label>Detail</mat-label>
+  <textarea [(ngModel)]="node.data.detail" rows="6" matInput (change)="doSave()">
+  </textarea>
+</mat-form-field>
+
+<mat-form-field class="w-100" appearance="standard">
+  <mat-label>Font Size Scale</mat-label>
+  <input type="number" min="0.01" step="0.1"
+         [(ngModel)]="node.style.fontSizeScale" matInput (change)="doSave()">
+</mat-form-field>
+
+<mat-form-field class="w-100" appearance="standard">
+  <mat-label>Fill Color</mat-label>
+  <input [(ngModel)]="node.style.fillColor" matInput (change)="doSave()">
+</mat-form-field>
+
+<mat-form-field class="w-100" appearance="standard">
+  <mat-label>Line Color</mat-label>
+  <input [(ngModel)]="node.style.strokeColor" matInput (change)="doSave()">
+</mat-form-field>
+
+<mat-form-field class="w-100" appearance="standard">
+  <mat-label>Line Type</mat-label>
+  <mat-select [(ngModel)]="node.style.lineType" (selectionChange)="doSave()">
+    <mat-option *ngFor="let choice of lineTypeChoices" [value]="choice[0]">
+      {{choice[1].name}}
+    </mat-option>
+  </mat-select>
+</mat-form-field>
+
+<mat-form-field class="w-100" appearance="standard">
+  <mat-label>Line Thickness Scale</mat-label>
+  <input type="number" min="0.01" step="0.1"
+         [(ngModel)]="node.style.lineWidthScale" matInput (change)="doSave()">
+</mat-form-field>
+
+<button (click)="doDelete()" mat-stroked-button color="warn" class="delete" class="w-100">
+  Delete
+</button>

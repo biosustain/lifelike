@@ -1,0 +1,52 @@
+<mat-form-field class="w-100" appearance="standard">
+  <mat-label>Label</mat-label>
+  <input [(ngModel)]="edge.label" matInput (change)="doSave()">
+</mat-form-field>
+
+<mat-form-field class="w-100" appearance="standard">
+  <mat-label>Font Size Scale</mat-label>
+  <input type="number" min="0.01" step="0.1"
+         [(ngModel)]="edge.style.fontSizeScale" matInput (change)="doSave()">
+</mat-form-field>
+
+<mat-form-field class="w-100" appearance="standard">
+  <mat-label>Line Color</mat-label>
+  <input [(ngModel)]="edge.style.strokeColor" matInput (change)="doSave()">
+</mat-form-field>
+
+<mat-form-field class="w-100" appearance="standard">
+  <mat-label>Line Type</mat-label>
+  <mat-select [(ngModel)]="edge.style.lineType" (selectionChange)="doSave()">
+    <mat-option *ngFor="let choice of lineTypeChoices" [value]="choice[0]">
+      {{choice[1].name}}
+    </mat-option>
+  </mat-select>
+</mat-form-field>
+
+<mat-form-field class="w-100" appearance="standard">
+  <mat-label>Line Thickness Scale</mat-label>
+  <input type="number" min="0.01" step="0.1"
+         [(ngModel)]="edge.style.lineWidthScale" matInput (change)="doSave()">
+</mat-form-field>
+
+<mat-form-field class="w-100" appearance="standard">
+  <mat-label>Line Source Head</mat-label>
+  <mat-select [(ngModel)]="edge.style.sourceHeadType" (selectionChange)="doSave()">
+    <mat-option *ngFor="let choice of lineHeadTypeChoices" [value]="choice[0]">
+      {{choice[1].name}}
+    </mat-option>
+  </mat-select>
+</mat-form-field>
+
+<mat-form-field class="w-100" appearance="standard">
+  <mat-label>Line Target Head</mat-label>
+  <mat-select [(ngModel)]="edge.style.targetHeadType" (selectionChange)="doSave()">
+    <mat-option *ngFor="let choice of lineHeadTypeChoices" [value]="choice[0]">
+      {{choice[1].name}}
+    </mat-option>
+  </mat-select>
+</mat-form-field>
+
+<button (click)="doDelete()" mat-stroked-button color="warn" class="delete w-100">
+  Delete
+</button>
