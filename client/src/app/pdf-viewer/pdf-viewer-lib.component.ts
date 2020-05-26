@@ -92,7 +92,11 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
 
   constructor(private dialog: MatDialog, private zone: NgZone) {
 
-    (window as any).deleteFrictionless = this.deleteFrictionless.bind(this);
+    (window as any).copySelectedText = () => {
+      (window as any).pdfViewerRef.zone.run(() => {
+        (window as any).pdfViewerRef.copySelectedText();
+      });
+    }
     (window as any).openAnnotationPanel = () => {
       (window as any).pdfViewerRef.zone.run(() => {
         (window as any).pdfViewerRef.componentFn();
@@ -102,6 +106,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
     (window as any).pdfViewerRef = {
       zone: this.zone,
       componentFn: () => this.openAnnotationPanel(),
+      copySelectedText: () => this.copySelectedText(),
       component: this
     };
   }
@@ -455,6 +460,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
         {
 
           content: `<img src="assets/images/annotate.png" onclick="openAnnotationPanel()">
+                <img src="assets/images/copy.png" onclick="copySelectedText()">
             <img src="assets/images/link.png" onclick="openLinkPanel()">`,
           position: {
             my: 'bottom center',
@@ -701,6 +707,21 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
       return;
     }
     this.scrollToPage(Number(pageNumber));
+  }
+
+  copySelectedText() {
+    let listener = (e: ClipboardEvent) => {
+      let clipboard = e.clipboardData || window["clipboardData"];
+      clipboard.setData("text", this.allText);
+      e.preventDefault();
+    };
+
+    document.addEventListener("copy", listener, false)
+    document.execCommand("copy");
+    document.removeEventListener("copy", listener, false);
+
+    this.deleteFrictionless();
+
   }
 
 }
