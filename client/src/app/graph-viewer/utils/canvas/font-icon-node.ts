@@ -1,4 +1,4 @@
-import { PlacedNode } from '../../styles/graph-styles';
+import { PlacedNode } from 'app/graph-viewer/styles/styles';
 import { CanvasTextbox } from './canvas-textbox';
 
 export interface IconNodeOptions {

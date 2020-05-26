@@ -1,7 +1,7 @@
-import { PlacedEdge } from '../../styles/graph-styles';
+import { PlacedEdge } from 'app/graph-viewer/styles/styles';
 import { getLinePointIntersectionDistance } from '../geometry';
 import { CanvasTextbox } from './canvas-textbox';
-import { LineHeadRenderer } from '../../styles/line-terminators';
+import { LineHeadRenderer } from 'app/graph-viewer/utils/canvas/line-terminators';
 
 export interface StandardEdgeOptions {
   source: { x: number, y: number };

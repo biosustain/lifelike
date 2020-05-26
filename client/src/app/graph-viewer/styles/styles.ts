@@ -11,9 +11,9 @@ export interface NodeRenderStyle {
    * @param ctx the context
    * @param options extra options for placement
    */
-  place(d: UniversalGraphNode,
-        ctx: CanvasRenderingContext2D,
-        options: PlacementOptions): PlacedNode;
+  placeNode(d: UniversalGraphNode,
+            ctx: CanvasRenderingContext2D,
+            options: PlacementOptions): PlacedNode;
 }
 
 /**
@@ -31,13 +31,13 @@ export interface EdgeRenderStyle {
    * @param ctx the context
    * @param options extra options for placement
    */
-  place(d: UniversalGraphEdge,
-        from: UniversalGraphNode,
-        to: UniversalGraphNode,
-        placedFrom: PlacedNode,
-        placedTo: PlacedNode,
-        ctx: CanvasRenderingContext2D,
-        options: PlacementOptions): PlacedEdge;
+  placeEdge(d: UniversalGraphEdge,
+            from: UniversalGraphNode,
+            to: UniversalGraphNode,
+            placedFrom: PlacedNode,
+            placedTo: PlacedNode,
+            ctx: CanvasRenderingContext2D,
+            options: PlacementOptions): PlacedEdge;
 }
 
 /**

@@ -1,9 +1,9 @@
 import * as d3 from 'd3';
 
-import { GraphEntityType, UniversalGraphNode } from '../../drawing-tool/services/interfaces';
-import { Arrowhead } from '../styles/line-terminators';
+import { GraphEntityType, UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
+import { Arrowhead } from 'app/graph-viewer/utils/canvas/line-terminators';
 import { GraphCanvasView } from '../graph-canvas-view';
-import { AbstractCanvasBehavior, BehaviorResult } from './behaviors';
+import { AbstractCanvasBehavior, BehaviorResult } from '../../behaviors';
 
 export class InteractiveEdgeCreation extends AbstractCanvasBehavior {
   constructor(private readonly graphView: GraphCanvasView) {

@@ -1,5 +1,5 @@
 import 'canvas-plus';
-import { PlacedNode } from '../../styles/graph-styles';
+import { PlacedNode } from 'app/graph-viewer/styles/styles';
 import { CanvasTextbox } from './canvas-textbox';
 import { pointOnRect } from '../geometry';
 

@@ -1,9 +1,9 @@
 import * as d3 from 'd3';
 
-import { GraphEntity, GraphEntityType, UniversalGraphNode } from '../../drawing-tool/services/interfaces';
-import { PlacedNode } from '../styles/graph-styles';
+import { GraphEntity, GraphEntityType, UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
+import { PlacedNode } from 'app/graph-viewer/styles/styles';
 import { GraphCanvasView } from '../graph-canvas-view';
-import { AbstractCanvasBehavior, BehaviorResult } from './behaviors';
+import { AbstractCanvasBehavior, BehaviorResult } from '../../behaviors';
 
 const BEHAVIOR_KEY = '_handle-resizable/active';
 

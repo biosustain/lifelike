@@ -1,7 +1,7 @@
 import * as d3 from 'd3';
-import { GraphView } from './graph-view';
+import { GraphView } from '../graph-view';
 import { GraphEntity, GraphEntityType, UniversalGraph, UniversalGraphEdge, UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
-import { EdgeRenderStyle, NodeRenderStyle, PlacedEdge, PlacedNode } from './styles/graph-styles';
+import { EdgeRenderStyle, NodeRenderStyle, PlacedEdge, PlacedNode } from 'app/graph-viewer/styles/styles';
 import { debounceTime } from 'rxjs/operators';
 import { asyncScheduler, Subject, Subscription } from 'rxjs';
 
@@ -210,7 +210,7 @@ export class GraphCanvasView extends GraphView {
     } else {
       const ctx = this.canvas.getContext('2d');
 
-      placedNode = this.nodeRenderStyle.place(d, ctx, {
+      placedNode = this.nodeRenderStyle.placeNode(d, ctx, {
         selected: this.isAnySelected(d),
         highlighted: this.isAnyHighlighted(d),
       });
@@ -231,7 +231,7 @@ export class GraphCanvasView extends GraphView {
       const placedFrom: PlacedNode = this.placeNode(from);
       const placedTo: PlacedNode = this.placeNode(to);
 
-      placedEdge = this.edgeRenderStyle.place(d, from, to, placedFrom, placedTo, ctx, {
+      placedEdge = this.edgeRenderStyle.placeEdge(d, from, to, placedFrom, placedTo, ctx, {
         selected: this.isAnySelected(d, from, to),
         highlighted: this.isAnyHighlighted(d, from, to),
       });
