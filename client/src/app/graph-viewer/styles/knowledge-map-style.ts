@@ -1,6 +1,6 @@
 import { UniversalEdgeStyle, UniversalGraphEdge, UniversalGraphNode, UniversalNodeStyle } from 'app/drawing-tool/services/interfaces';
 import { EdgeRenderStyle, NodeRenderStyle, PlacedEdge, PlacedNode, PlacementOptions } from 'app/graph-viewer/styles/styles';
-import { nullCoalesce } from 'app/graph-viewer/utils/types';
+import { nullCoalesce, nullIfEmpty } from 'app/graph-viewer/utils/types';
 import { RectangleNode } from 'app/graph-viewer/utils/canvas/rectangle-node';
 import { TextElement } from 'app/graph-viewer/utils/canvas/text-element';
 import { FontIconNode } from 'app/graph-viewer/utils/canvas/font-icon-node';
@@ -8,8 +8,18 @@ import { AnnotationStyle, annotationTypesMap } from 'app/shared/annotation-style
 import { StandardEdge } from 'app/graph-viewer/utils/canvas/standard-edge';
 import { Arrowhead } from '../utils/canvas/line-heads/arrow';
 import { DiamondHead } from '../utils/canvas/line-heads/diamond';
+import { LineHeadRenderer } from '../utils/canvas/line-heads/line-heads';
+import { CircleHead } from '../utils/canvas/line-heads/circle';
+import { CrossAxisLineHead } from '../utils/canvas/line-heads/cross-axis';
+import { EmptyLineHead } from '../utils/canvas/line-heads/empty';
+import { CompoundLineHead } from '../utils/canvas/line-heads/compound';
+import { RectangleHead } from '../utils/canvas/line-heads/rectangle';
 
 export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
+  private readonly defaultSourceLineEndDescriptor: string = null;
+  private readonly defaultTargetLineEndDescriptor = 'arrow';
+  private readonly lineEndBaseSize = 16;
+
   placeNode(d: UniversalGraphNode, ctx: CanvasRenderingContext2D, placementOptions: PlacementOptions): PlacedNode {
     const styleData: UniversalNodeStyle = nullCoalesce(d.style, {});
     const labelFontSizeScale = nullCoalesce(styleData.fontSizeScale, 1);
@@ -94,20 +104,22 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
     const lineType = nullCoalesce(styleData.lineType, 'solid');
     const lineWidthScale = nullCoalesce(styleData.lineWidthScale, 1);
     const lineWidth = lineWidthScale * (placementOptions.highlighted ? 1.5 : 1);
-    const sourceEndType = styleData.sourceEndType;
-    const targetEndType = styleData.targetEndType;
+    const sourceHeadType = styleData.sourceHeadType;
+    const targetHeadType = styleData.targetHeadType;
 
-    const targetTerminator = targetEndType === 'diamond'
-      ? new DiamondHead(16 + lineWidth, 16 + lineWidth, {
-        fillStyle: strokeColor,
-        strokeStyle: null,
-      })
-      : new Arrowhead(16 + lineWidth, {
-        fillStyle: strokeColor,
-        strokeStyle: null,
-        length: 16,
-        lineWidth,
-      });
+    const sourceLineEnd = this.createHead(
+      nullIfEmpty(sourceHeadType),
+      lineWidth,
+      strokeColor,
+      this.defaultSourceLineEndDescriptor
+    );
+
+    const targetLineEnd = this.createHead(
+      nullIfEmpty(targetHeadType),
+      lineWidth,
+      strokeColor,
+      this.defaultTargetLineEndDescriptor
+    );
 
     const [toX, toY] = placedTo.lineIntersectionPoint(from.data.x, from.data.y);
     const [fromX, fromY] = placedFrom.lineIntersectionPoint(to.data.x, to.data.y);
@@ -130,11 +142,81 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
         y: toY,
       },
       textbox,
-      targetTerminator,
+      sourceLineEnd,
+      targetLineEnd,
       strokeColor,
       lineType,
       lineWidth,
       forceHighDetailLevel: placementOptions.selected || placementOptions.highlighted,
     });
+  }
+
+  createHead(descriptor: string | undefined,
+             lineWidth: number,
+             strokeColor: string,
+             defaultDescriptor: string | undefined = ''): LineHeadRenderer | undefined {
+    const effectiveDescriptor = nullCoalesce(descriptor, defaultDescriptor);
+
+    if (effectiveDescriptor == null) {
+      return null;
+    }
+
+    return new CompoundLineHead(
+      effectiveDescriptor.split(',').map(token => {
+        switch (token) {
+          case 'spacer':
+            return [
+              new EmptyLineHead(this.lineEndBaseSize * 0.3),
+            ];
+          case 'cross-axis':
+            return [
+              new EmptyLineHead(this.lineEndBaseSize * 0.3),
+              new CrossAxisLineHead(this.lineEndBaseSize, {
+                fillStyle: strokeColor,
+                strokeStyle: strokeColor,
+              }),
+            ];
+          case 'circle':
+            return [
+              new CircleHead(
+                this.lineEndBaseSize + lineWidth, {
+                  fillStyle: strokeColor,
+                  strokeStyle: null,
+                })
+            ];
+          case 'diamond':
+            return [
+              new DiamondHead(
+                this.lineEndBaseSize + lineWidth,
+                this.lineEndBaseSize + lineWidth, {
+                  fillStyle: strokeColor,
+                  strokeStyle: null,
+                })
+            ];
+          case 'square':
+            return [
+              new RectangleHead(
+                this.lineEndBaseSize + lineWidth,
+                this.lineEndBaseSize + lineWidth, {
+                  fillStyle: strokeColor,
+                  strokeStyle: null,
+                })
+            ];
+          default:
+            return [new Arrowhead(
+              this.lineEndBaseSize + lineWidth, {
+                fillStyle: strokeColor,
+                strokeStyle: null,
+                length: this.lineEndBaseSize,
+                lineWidth,
+              })];
+        }
+      }).reduce((compound, lineEnds) => {
+        for (const lineEnd of lineEnds) {
+          compound.push(lineEnd);
+        }
+        return compound;
+      }, [])
+    );
   }
 }

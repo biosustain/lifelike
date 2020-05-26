@@ -7,8 +7,8 @@ export interface StandardEdgeOptions {
   source: { x: number, y: number };
   target: { x: number, y: number };
   textbox?: TextElement;
-  sourceTerminator?: LineHeadRenderer;
-  targetTerminator?: LineHeadRenderer;
+  sourceLineEnd?: LineHeadRenderer;
+  targetLineEnd?: LineHeadRenderer;
   strokeColor?: string;
   lineType?: string;
   lineWidth?: number;
@@ -19,8 +19,8 @@ export class StandardEdge implements PlacedEdge {
   readonly source: { x: number, y: number };
   readonly target: { x: number, y: number };
   readonly textbox: TextElement | undefined;
-  readonly sourceTerminator: LineHeadRenderer | undefined;
-  readonly targetTerminator: LineHeadRenderer | undefined;
+  readonly sourceLineEnd: LineHeadRenderer | undefined;
+  readonly targetLineEnd: LineHeadRenderer | undefined;
   readonly strokeColor: string;
   readonly lineType: string = 'solid';
   readonly lineWidth: number = 1;
@@ -50,16 +50,16 @@ export class StandardEdge implements PlacedEdge {
   draw(transform: any): void {
     const ctx = this.ctx;
 
-    if (this.sourceTerminator) {
-      this.sourceTerminator.draw(
+    if (this.sourceLineEnd) {
+      this.sourceLineEnd.draw(
         ctx,
         this.target.x, this.target.y,
         this.source.x, this.source.y,
       );
     }
 
-    if (this.targetTerminator) {
-      this.targetTerminator.draw(
+    if (this.targetLineEnd) {
+      this.targetLineEnd.draw(
         ctx,
         this.source.x, this.source.y,
         this.target.x, this.target.y,

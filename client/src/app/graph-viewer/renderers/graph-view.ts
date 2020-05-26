@@ -219,21 +219,28 @@ export abstract class GraphView implements GraphActionReceiver {
    * @param node the node
    * @return true if the node was found
    */
-  removeNode(node: UniversalGraphNode): boolean {
-    let found = false;
+  removeNode(node: UniversalGraphNode): {
+    found: boolean,
+    removedEdges: UniversalGraphEdge[],
+  } {
+    const removedEdges = [];
+    let foundNode = false;
 
     let i = this.nodes.length;
     while (i--) {
       if (this.nodes[i] === node) {
         this.nodes.splice(i, 1);
-        found = true;
+        foundNode = true;
+        break;
       }
     }
 
     let j = this.edges.length;
     while (j--) {
-      if (this.expectNodeByHash(this.edges[j].from) === node
-        || this.expectNodeByHash(this.edges[j].to) === node) {
+      const edge = this.edges[j];
+      if (this.expectNodeByHash(edge.from) === node
+        || this.expectNodeByHash(edge.to) === node) {
+        removedEdges.push(edge);
         this.edges.splice(j, 1);
       }
     }
@@ -241,7 +248,13 @@ export abstract class GraphView implements GraphActionReceiver {
     this.nodeHashMap.delete(node.hash);
     this.invalidateNode(node);
 
-    return found;
+    // TODO: Only adjust selection if needed
+    this.selection.replace([]);
+
+    return {
+      found: foundNode,
+      removedEdges,
+    };
   }
 
   /**
@@ -250,6 +263,46 @@ export abstract class GraphView implements GraphActionReceiver {
    */
   updateNode(node: UniversalGraphNode): void {
     this.invalidateNode(node);
+  }
+
+  /**
+   * Add the given edge to the graph.
+   * @param edge the edge
+   */
+  addEdge(edge: UniversalGraphEdge): void {
+    const from = this.expectNodeByHash(edge.from);
+    const to = this.expectNodeByHash(edge.to);
+    this.edges.push(edge);
+    this.invalidateNode(from);
+    this.invalidateNode(to);
+  }
+
+  /**
+   * Remove the given edge from the graph.
+   * @param edge the edge
+   * @return true if the edge was found
+   */
+  removeEdge(edge: UniversalGraphEdge): boolean {
+    let foundNode = false;
+    const from = this.expectNodeByHash(edge.from);
+    const to = this.expectNodeByHash(edge.to);
+
+    let j = this.edges.length;
+    while (j--) {
+      if (this.edges[j] === edge) {
+        this.edges.splice(j, 1);
+        foundNode = true;
+        break;
+      }
+    }
+
+    this.invalidateNode(from);
+    this.invalidateNode(to);
+
+    // TODO: Only adjust selection if needed
+    this.selection.replace([]);
+
+    return foundNode;
   }
 
   /**
