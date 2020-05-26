@@ -60,7 +60,6 @@ def get_dummy_LTChar(text):
         def get_descent(self):
             return 0
 
-
     return LTChar(
         text=text,
         matrix=(0, 0, 0, 0, 0, 0),
