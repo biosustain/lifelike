@@ -11,6 +11,7 @@ from neo4japp.database import get_neo4j_service_dao
 from neo4japp.data_transfer_objects.visualization import (
     GetGraphDataForClusterRequest,
     GetSnippetCountsFromEdgesRequest,
+    GetDataForClusterRequest,
     GetSnippetsFromDuplicateEdgeRequest,
     GetSnippetsFromEdgeRequest,
     ReferenceTableDataRequest,
@@ -126,6 +127,17 @@ def get_cluster_graph_data(req: GetGraphDataForClusterRequest):
     )
     return SuccessResponse(cluster_graph_data_result, status_code=200)
 
+
+@bp.route('/get-cluster-data', methods=['POST'])
+@jsonify_with_class(GetDataForClusterRequest)
+def get_cluster_snippet_data(req: GetDataForClusterRequest):
+    neo4j = get_neo4j_service_dao()
+    cluster_data_result = neo4j.get_cluster_data(
+        req.clustered_nodes,
+    )
+    return SuccessResponse(cluster_data_result, status_code=200)
+
+
 # TODO: Is this in use by anything?
 @bp.route('/reaction', methods=['POST'])
 @jsonify_with_class(ReactionRequest)
@@ -133,3 +145,9 @@ def load_reaction_graph(req: ReactionRequest):
     neo4j = get_neo4j_service_dao()
     result = neo4j.load_reaction_graph(req.biocyc_id)
     return SuccessResponse(result=result, status_code=200)
+
+
+@bp.route('/get-legend-for-visualizer', methods=['GET'])
+@jsonify_with_class()
+def get_legend_for_visualizer():
+    return SuccessResponse(result=ANNOTATION_STYLES_DICT, status_code=200)
