@@ -1,11 +1,11 @@
 import { PlacedNode } from 'app/graph-viewer/styles/styles';
-import { CanvasTextbox } from './canvas-textbox';
+import { TextElement } from './text-element';
 
 export interface IconNodeOptions {
   x: number;
   y: number;
-  iconTextbox: CanvasTextbox;
-  labelTextbox: CanvasTextbox;
+  iconTextbox: TextElement;
+  labelTextbox: TextElement;
   forceHighDetailLevel?: boolean;
 }
 
@@ -15,8 +15,8 @@ export interface IconNodeOptions {
 export class FontIconNode implements PlacedNode {
   readonly x: number;
   readonly y: number;
-  readonly iconTextbox: CanvasTextbox;
-  readonly labelTextbox: CanvasTextbox;
+  readonly iconTextbox: TextElement;
+  readonly labelTextbox: TextElement;
   readonly forceHighDetailLevel = false;
 
   readonly minimumBBoxSize = 10;

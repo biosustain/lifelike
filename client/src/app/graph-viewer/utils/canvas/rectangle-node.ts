@@ -1,6 +1,6 @@
 import 'canvas-plus';
 import { PlacedNode } from 'app/graph-viewer/styles/styles';
-import { CanvasTextbox } from './canvas-textbox';
+import { TextElement } from './text-element';
 import { pointOnRect } from '../geometry';
 
 export interface RectangleNodeOptions {
@@ -8,7 +8,7 @@ export interface RectangleNodeOptions {
   y: number;
   width: number;
   height: number;
-  textbox: CanvasTextbox;
+  textbox: TextElement;
   shapeFillColor?: string;
   shapeStrokeColor?: string;
   lineType?: string;
@@ -25,7 +25,7 @@ export class RectangleNode implements PlacedNode {
   readonly y: number;
   readonly width: number;
   readonly height: number;
-  readonly textbox: CanvasTextbox;
+  readonly textbox: TextElement;
   readonly shapeFillColor: string;
   readonly shapeStrokeColor: string;
   readonly lineType: string = 'solid';
