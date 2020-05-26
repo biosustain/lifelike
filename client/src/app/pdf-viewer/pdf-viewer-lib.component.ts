@@ -79,13 +79,16 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
   selectedText: string[];
   selectedTextCoords: any[];
   currentPage: number;
-  mouseDownClientX: number;
-  mouseDownClientY: number;
-  dragThreshold = 5;
   isSelectionLink = false;
   selectedElements: HTMLElement[] = [];
 
   opacity = 0.3;
+
+  dragAndDropOriginCoord;
+  dragAndDropOriginHoverCount;
+  dragAndDropDestinationCoord;
+  dragAndDropDestinationHoverCount;
+  topBottomFixedMargin = 15;
 
   @ViewChild(PdfViewerComponent, {static: false})
   private pdfComponent: PdfViewerComponent;
@@ -167,13 +170,9 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
       }
     });
 
-    this.pdfComponent.pdfViewerContainer.nativeElement.addEventListener('mousedown', this.mouseDown);
-    this.pdfComponent.pdfViewerContainer.nativeElement.addEventListener('mouseup', this.mouseUp);
   }
 
   ngOnDestroy(): void {
-    this.pdfComponent.pdfViewerContainer.nativeElement.removeEventListener('mousedown', this.mouseDown);
-    this.pdfComponent.pdfViewerContainer.nativeElement.removeEventListener('mouseup', this.mouseUp);
 
     if (this.filterChangeSubscription) {
       this.filterChangeSubscription.unsubscribe();
@@ -358,19 +357,29 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
     }
   }
 
-  mouseDown = event => {
-    this.mouseDownClientX = event.clientX;
-    this.mouseDownClientY = event.clientY;
-  };
+  @HostListener('window:mousedown', ['$event'])
+  mouseDown(event: MouseEvent) {
+    let target = event.target as any;
+    let parent = target.closest('.textLayer');
+    if (parent) {
+      // coming from pdf-viewer
+      // prepare it for drag and drop
+      this.dragAndDropOriginCoord = {
+        pageX: event.pageX,
+        pageY: event.pageY,
+        clientX: event.clientX,
+        clientY: event.clientY
+      };
+     this.dragAndDropOriginHoverCount = jQuery('.textLayer > span:hover').length || 0;
+    }
+  }
 
   mouseUp = event => {
-    if (this.selectedText && this.selectedText.length
-      && Math.abs(this.mouseDownClientX - event.clientX) < this.dragThreshold
-      && Math.abs(this.mouseDownClientY - event.clientY) < this.dragThreshold) {
+    this.dragAndDropDestinationHoverCount = jQuery('.textLayer > span:hover').length || 0;
+    if(this.dragAndDropDestinationHoverCount !== 1 || this.dragAndDropOriginHoverCount !==1) {
       this.deleteFrictionless();
-      return;
+      this.clearSelection();
     }
-    const i = 0;
     const selection = window.getSelection() as any;
     const baseNode = selection.baseNode;
     const parent = baseNode && baseNode.parentNode as any;
@@ -394,22 +403,50 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
     this.deleteFrictionless();
     this.allText = selection.toString();
     const documentFragment = selection.getRangeAt(0).cloneContents();
+    let children = documentFragment.childNodes;
+    this.dragAndDropDestinationCoord = {
+      clientX: event.clientX,
+      clientY: event.clientY,
+      pageX: event.pageX,
+      pageY: event.pageY
+    };
+    this.selectedText = Array.from(children).map((node: any) => node.textContent);
     this.selectedText = Array.from(documentFragment.childNodes).map((node: any) => node.textContent);
     this.currentPage = parseInt(parent.closest('.page').getAttribute('data-page-number'), 10);
     const pdfPageView = this.pageRef[this.currentPage];
     const viewport = pdfPageView.viewport;
     const pageElement = pdfPageView.div;
     const pageRect = pdfPageView.canvas.getClientRects()[0];
+    let originConverted = viewport.convertToPdfPoint(this.dragAndDropOriginCoord.clientX - pageRect.left, this.dragAndDropOriginCoord.clientY - pageRect.top);
+    let destinationConverted = viewport.convertToPdfPoint(this.dragAndDropDestinationCoord.clientX - pageRect.left , this.dragAndDropDestinationCoord.clientY - pageRect.top); 
+    let mouseMoveRectangular = viewport.convertToViewportRectangle([].concat(originConverted).concat(destinationConverted));
+    let mouseRectTop = Math.min(mouseMoveRectangular[1], mouseMoveRectangular[3]);
+    let mouseRecTopBorder = mouseRectTop - this.topBottomFixedMargin;
+    let mouseRectHeight = Math.abs(mouseMoveRectangular[1] - mouseMoveRectangular[3]);
+    let mouseRectBottomBorder = mouseRectTop + mouseRectHeight + this.topBottomFixedMargin;
 
     this.selectedTextCoords = [];
     const that = this;
-    const selected = jQuery.map(selectedRects, r => {
+    let avgHeight = 0;
+    let rectHeights = [];
+    jQuery.each(selectedRects, (idx,r) => {
 
       const rect = viewport.convertToPdfPoint(r.left - pageRect.left, r.top - pageRect.top)
         .concat(viewport.convertToPdfPoint(r.right - pageRect.left, r.bottom - pageRect.top));
       that.selectedTextCoords.push(rect);
       const bounds = viewport.convertToViewportRectangle(rect);
-      // if (i % 2 == 0) { // verify if not odd (must be pair)
+      let left = Math.min(bounds[0], bounds[2]);
+      let top = Math.min(bounds[1], bounds[3]);
+      let width = Math.abs(bounds[0] - bounds[2]);
+      let height = Math.abs(bounds[1] - bounds[3]);
+      rectHeights.push(height);
+      avgHeight = rectHeights.reduce((a, b) => a + b) / rectHeights.length;
+      if ((avgHeight * 2) < height) {
+        // rejected by line average
+        rectHeights.pop();
+        return; //continue
+      }
+
       const el = document.createElement('div');
       const meta: Meta = {
         allText: that.allText,
@@ -424,10 +461,13 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
       el.setAttribute('meta', JSON.stringify(meta));
       el.setAttribute('class', 'frictionless-annotation');
       el.setAttribute('style', 'position: absolute; background-color: rgba(255, 255, 51, 0.3);' +
-        'left:' + Math.min(bounds[0], bounds[2]) + 'px; top:' + (Math.min(bounds[1], bounds[3]) + 2) + 'px;' +
-        'width:' + Math.abs(bounds[0] - bounds[2]) + 'px; height:' + Math.abs(bounds[1] - bounds[3]) + 'px;');
-      el.setAttribute('id', 'newElement' + i);
-      pageElement.appendChild(el);
+        'left:' + left + 'px; top:' + (top + 2) + 'px;' +
+        'width:' + width + 'px; height:' + height + 'px;');
+      el.setAttribute('id', 'newElement' + 0);
+
+      if(mouseRecTopBorder <= top && mouseRectBottomBorder >= top) {
+        pageElement.appendChild(el);
+      }
 
       jQuery(el).css('cursor', 'move');
       jQuery(el).draggable({
@@ -479,8 +519,6 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
           }
         }
       );
-      // }
-      // i++;
     });
 
     this.clearSelection();
