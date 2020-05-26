@@ -1,15 +1,16 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-import { configureTestSuite } from 'ng-bullet';
+import {async, ComponentFixture, TestBed} from '@angular/core/testing';
+import {configureTestSuite} from 'ng-bullet';
 
-import { MapListComponent } from './map-list.component';
-import { RouterModule } from '@angular/router';
-import { RootStoreModule } from 'app/root-store';
-import { DrawingToolModule } from 'app/drawing-tool/drawing-tool.module';
-import { AngularMaterialModule } from 'app/shared/angular-material.module';
-import { ProjectsService } from 'app/drawing-tool/services';
-import { Injectable } from '@angular/core';
-import { Observable, of } from 'rxjs';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import {MapListComponent} from './map-list.component';
+import {RouterModule} from '@angular/router';
+import {RootStoreModule} from 'app/root-store';
+import {DrawingToolModule} from 'app/drawing-tool/drawing-tool.module';
+import {AngularMaterialModule} from 'app/shared/angular-material.module';
+import {ProjectsService} from 'app/drawing-tool/services';
+import {Injectable} from '@angular/core';
+import {Observable, of} from 'rxjs';
+import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
+import {NodeSearchModule} from '../../../node-search/node-search.module';
 
 
 @Injectable()
@@ -34,13 +35,14 @@ describe('MapListComponent', () => {
         DrawingToolModule,
         RootStoreModule,
         RouterModule,
-        BrowserAnimationsModule
+        BrowserAnimationsModule,
+        NodeSearchModule
       ],
       providers: [
         ProjectsService
       ]
     })
-    .compileComponents();
+      .compileComponents();
     TestBed.overrideProvider(ProjectsService, {useValue: new MockProjectsService(null)});
   });
 
