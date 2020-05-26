@@ -20,7 +20,7 @@ def write_to_file(
     pubtator_file,
 ):
     annotation_json = json.load(annotations)
-    identifier = compute_hash(annotation_json, limit=8)
+    identifier = int(compute_hash(annotation_json), 16) % 10**8
     title = annotation_json['documents'][0]['id']
     text = annotation_json['documents'][0]['passages'][0]['text']
     print(f'{identifier}|t|{title}', file=pubtator_file)
