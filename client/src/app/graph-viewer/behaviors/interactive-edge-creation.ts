@@ -41,7 +41,6 @@ class ActiveEdgeCreation extends AbstractCanvasBehavior {
         const label = prompt('Label please', '') || ''; // Doesn't work for 0
         // TODO: handle invalidation and history
         this.graphView.edges.push({
-          data: {},
           from: this.from.hash,
           to: node.hash,
           label,
