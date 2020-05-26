@@ -7,6 +7,8 @@ import { configureTestSuite } from 'ng-bullet';
 
 import { MockComponents } from 'ng-mocks';
 
+import { of } from 'rxjs';
+
 import { DataSet } from 'vis-data';
 
 import {
@@ -31,6 +33,8 @@ import { VisualizationCanvasComponent } from '../../components/visualization-can
 describe('VisualizationComponent', () => {
     let fixture: ComponentFixture<VisualizationComponent>;
     let instance: VisualizationComponent;
+
+    let visualizationService: VisualizationService;
 
     let mockGraphNode: GraphNode;
     let mockGraphRelationship: GraphRelationship;
@@ -85,6 +89,7 @@ describe('VisualizationComponent', () => {
         mockVisEdge = {
             ...mockGraphRelationship,
             arrows: 'to',
+            color: null,
         };
 
         mockDuplicateVisEdge = {
@@ -102,6 +107,22 @@ describe('VisualizationComponent', () => {
 
         fixture = TestBed.createComponent(VisualizationComponent);
         instance = fixture.debugElement.componentInstance;
+        visualizationService = fixture.debugElement.injector.get(VisualizationService);
+
+        spyOn(visualizationService, 'getLegendForVisualizer').and.returnValue(of({
+            gene: {
+                color: '#673ab7',
+                label: 'gene',
+            },
+            chemical: {
+                color: '#4caf50',
+                label: 'chemical',
+            },
+            disease: {
+                color: '#ff9800',
+                label: 'disease',
+            }
+        }));
 
         instance.legend.set('Mock Node', ['#FFFFFF', '#FFFFFF']);
         instance.networkGraphData = instance.setupInitialProperties(mockNeo4jResults);
@@ -119,15 +140,18 @@ describe('VisualizationComponent', () => {
             ...mockGraphNode,
             expanded: false,
             primaryLabel: mockGraphNode.label,
+            font: {
+                color: instance.legend.get(mockGraphNode.label)[0],
+            },
             color: {
-                background: instance.legend.get(mockGraphNode.label)[0],
+                background: '#FFFFFF',
                 border: instance.legend.get(mockGraphNode.label)[1],
                 hover: {
-                    background: instance.legend.get(mockGraphNode.label)[0],
+                    background: '#FFFFFF',
                     border: instance.legend.get(mockGraphNode.label)[1],
                 },
                 highlight: {
-                    background: instance.legend.get(mockGraphNode.label)[0],
+                    background: '#FFFFFF',
                     border: instance.legend.get(mockGraphNode.label)[1],
                 }
             },
@@ -141,6 +165,9 @@ describe('VisualizationComponent', () => {
             ...mockGraphRelationship,
             label: mockGraphRelationship.data.description,
             arrows: 'to',
+            color: {
+                color: '#3797DB',
+            }
         });
     });
 

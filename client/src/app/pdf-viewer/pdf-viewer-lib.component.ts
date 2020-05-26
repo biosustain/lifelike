@@ -1,5 +1,6 @@
 import { AfterViewInit, Component, EventEmitter, HostListener, Input, NgZone, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
-import { Observable, Subject, Subscription } from 'rxjs';
+import { Observable, Subject, Subscription  } from 'rxjs';
+import { debounceTime } from 'rxjs/operators';
 import { Annotation, Location, Meta } from './annotation-type';
 import { PDFDocumentProxy, PDFProgressData, PDFSource } from './pdf-viewer/pdf-viewer.module';
 import { PdfViewerComponent } from './pdf-viewer/pdf-viewer.component';
@@ -18,6 +19,8 @@ declare var jQuery: any;
 })
 export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
 
+  @Input() searchChanged: Subject<string>;
+  private searchChangedSub: Subscription;
   @Input() pdfSrc: string | PDFSource | ArrayBuffer;
   @Input() annotations: Annotation[];
   @Input() dropAreaIdentifier: string;
@@ -125,6 +128,11 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
     if (this.filterChanges) {
       this.filterChangeSubscription = this.filterChanges.subscribe(() => this.renderFilterSettings());
     }
+
+    this.searchChangedSub = this.searchChanged.pipe(
+      debounceTime(250)).subscribe((query) => {
+      this.searchQueryChanged(query);
+    });
   }
 
   ngAfterViewInit(): void {
@@ -170,6 +178,11 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
     if (this.filterChangeSubscription) {
       this.filterChangeSubscription.unsubscribe();
     }
+
+    if(this.searchChangedSub) {
+      this.searchChangedSub.unsubscribe();
+    }
+
   }
 
   renderFilterSettings() {
@@ -653,6 +666,9 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
       this.isLoadCompleted = true;
       setTimeout(() => {
         this.loadCompleted.emit(true);
+        const tagName = (this.pdfComponent as any).element.nativeElement.tagName.toLowerCase();
+        jQuery(tagName).css('height','100vh');
+        jQuery(tagName).css('display','block');
       }, 1000);
     }
     const pageNum = (e as any).pageNumber;
@@ -665,12 +681,16 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
       this.pdfQuery = newQuery;
       this.pdfComponent.pdfFindController.executeCommand('find', {
         query: this.pdfQuery,
-        highlightAll: true
+        highlightAll: true,
+        entireWord: true,
+        phraseSearch: true
       });
     } else {
       this.pdfComponent.pdfFindController.executeCommand('findagain', {
         query: this.pdfQuery,
-        highlightAll: true
+        highlightAll: true,
+        entireWord: true,
+        phraseSearch: true
       });
     }
   }
