@@ -56,9 +56,9 @@ ENTITY_TYPE_PRECEDENCE = {
     'Compounds': 2,
     'Diseases': 1,
     'Genes': 6,
-    'Proteins': 4,
+    'Proteins': 5,
     'Species': 7,
-    'Phenotypes': 5,
+    'Phenotypes': 4,
 }
 
 HOMO_SAPIENS_TAX_ID = '9606'

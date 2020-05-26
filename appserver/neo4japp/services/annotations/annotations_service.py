@@ -1065,6 +1065,22 @@ class AnnotationsService:
         key1 = ENTITY_TYPE_PRECEDENCE[anno1.meta.keyword_type]
         key2 = ENTITY_TYPE_PRECEDENCE[anno2.meta.keyword_type]
 
+        if ((anno1.meta.keyword_type == EntityType.Proteins.value or
+                anno1.meta.keyword_type == EntityType.Genes.value) and
+            (anno2.meta.keyword_type == EntityType.Proteins.value or
+                anno2.meta.keyword_type == EntityType.Genes.value)):  # noqa
+            if anno1.meta.keyword_type != anno2.meta.keyword_type and normalize_str(anno1.keyword) == normalize_str(anno2.keyword):  # noqa
+                # protein vs gene
+                # protein has capital first letter: CysB vs cysB
+                # if start of a new sentence go with protein can't infer
+                if anno1.meta.keyword_type == EntityType.Proteins.value and len(anno1.keywords) == 1 and anno1.keywords[0][0].isupper():  # noqa
+                    # checked the keyword text from pdf
+                    return anno1
+
+                if anno2.meta.keyword_type == EntityType.Proteins.value and len(anno2.keywords) == 1 and anno2.keywords[0][0].isupper():  # noqa
+                    # checked the keyword text from pdf
+                    return anno2
+
         if key1 > key2:
             return anno1
         elif key2 > key1:
