@@ -88,7 +88,6 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
   dragAndDropOriginHoverCount;
   dragAndDropDestinationCoord;
   dragAndDropDestinationHoverCount;
-  topBottomFixedMargin = 15;
 
   @ViewChild(PdfViewerComponent, {static: false})
   private pdfComponent: PdfViewerComponent;
@@ -420,13 +419,12 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
     const viewport = pdfPageView.viewport;
     const pageElement = pdfPageView.div;
     const pageRect = pdfPageView.canvas.getClientRects()[0];
-    let originConverted = viewport.convertToPdfPoint(this.dragAndDropOriginCoord.clientX - pageRect.left, this.dragAndDropOriginCoord.clientY - pageRect.top);
-    let destinationConverted = viewport.convertToPdfPoint(this.dragAndDropDestinationCoord.clientX - pageRect.left , this.dragAndDropDestinationCoord.clientY - pageRect.top); 
-    let mouseMoveRectangular = viewport.convertToViewportRectangle([].concat(originConverted).concat(destinationConverted));
-    let mouseRectTop = Math.min(mouseMoveRectangular[1], mouseMoveRectangular[3]);
-    let mouseRecTopBorder = mouseRectTop - this.topBottomFixedMargin;
-    let mouseRectHeight = Math.abs(mouseMoveRectangular[1] - mouseMoveRectangular[3]);
-    let mouseRectBottomBorder = mouseRectTop + mouseRectHeight + this.topBottomFixedMargin;
+    const originConverted = viewport.convertToPdfPoint(this.dragAndDropOriginCoord.clientX - pageRect.left, this.dragAndDropOriginCoord.clientY - pageRect.top);
+    const destinationConverted = viewport.convertToPdfPoint(this.dragAndDropDestinationCoord.clientX - pageRect.left , this.dragAndDropDestinationCoord.clientY - pageRect.top); 
+    const mouseMoveRectangular = viewport.convertToViewportRectangle([].concat(originConverted).concat(destinationConverted));
+    const mouseRectTop = Math.min(mouseMoveRectangular[1], mouseMoveRectangular[3]);
+    const mouseRectHeight = Math.abs(mouseMoveRectangular[1] - mouseMoveRectangular[3]);
+
 
     this.selectedTextCoords = [];
     const that = this;
@@ -449,6 +447,9 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
         rectHeights.pop();
         return; //continue
       }
+
+      const mouseRecTopBorder = mouseRectTop - Number(avgHeight * 1.2);
+      const mouseRectBottomBorder = mouseRectTop + mouseRectHeight + Number(avgHeight * 1.2);
 
       const el = document.createElement('div');
       const meta: Meta = {
