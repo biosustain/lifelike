@@ -239,7 +239,6 @@ export class VisualizationCanvasComponent implements OnInit {
                 if (event[key].valid) {
                     if (key === 'maxClusterShownRows') {
                         const prevMaxRows = this.settingsFormValues[key];
-                        this.settingsFormValues[key] = event[key];
 
                         // If the user updated the max row count, update all the cluster SVGs to show the new amount
                         if (prevMaxRows !== event[key]) {
@@ -249,6 +248,7 @@ export class VisualizationCanvasComponent implements OnInit {
                             });
                         }
                     }
+                    this.settingsFormValues[key] = event[key];
                 }
             });
         }
