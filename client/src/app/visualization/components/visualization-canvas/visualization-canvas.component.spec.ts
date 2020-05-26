@@ -61,7 +61,8 @@ describe('VisualizationCanvasComponent', () => {
     let mockGroupRequest: GroupRequest;
     let mockConfig: Neo4jGraphConfig;
     let mockLegend: Map<string, string[]>;
-    let mockSettingsFormValues: SettingsFormValues;
+    let mockValidSettingsFormValues: SettingsFormValues;
+    let mockInvalidSettingsFormValues: SettingsFormValues;
     let mockCallbackParams: any;
 
     function mockNodeGenerator(nodeId: number, nodeDisplayName: string, nodeData?: any): VisNode {
@@ -224,10 +225,21 @@ describe('VisualizationCanvasComponent', () => {
             ['Chemical', ['#CD5D67', '#410B13']]
         ]);
 
-        mockSettingsFormValues = {
+        mockValidSettingsFormValues = {
             maxClusterShownRows: {
                 value: MAX_CLUSTER_ROWS,
                 valid: true,
+            },
+            Chemical: {
+                value: true,
+                valid: true,
+            }
+        } as SettingsFormValues;
+
+        mockInvalidSettingsFormValues = {
+            maxClusterShownRows: {
+                value: -1,
+                valid: false,
             },
             Chemical: {
                 value: true,
@@ -256,13 +268,61 @@ describe('VisualizationCanvasComponent', () => {
         instance.edges = mockEdges;
         instance.config = mockConfig;
         instance.legend = mockLegend;
-        instance.settingsFormValues = mockSettingsFormValues;
+        instance.settingsFormValues = mockValidSettingsFormValues;
 
         fixture.detectChanges();
     });
 
     it('should create', () => {
         expect(fixture).toBeTruthy();
+    });
+
+    it('updateSettings should update settings values if inputs are valid', () => {
+        const newSettings = {
+            maxClusterShownRows: {
+                value: 10,
+                valid: true,
+            },
+            Chemical: {
+                value: true,
+                valid: true,
+            },
+            Gene: {
+                value: true,
+                valid: true,
+            },
+            Diseases: {
+                value: true,
+                valid: true,
+            },
+        } as SettingsFormValues;
+
+        instance.updateSettings(newSettings);
+        expect(instance.settingsFormValues).toEqual(newSettings);
+    });
+
+    it('updateSettings should not update update settings values if inputs are invalid', () => {
+        const newSettings = {
+            maxClusterShownRows: {
+                value: 2,
+                valid: false,
+            },
+            Chemical: {
+                value: true,
+                valid: false,
+            },
+            Gene: {
+                value: true,
+                valid: false,
+            },
+            Diseases: {
+                value: true,
+                valid: false,
+            },
+        } as SettingsFormValues;
+
+        instance.updateSettings(newSettings);
+        expect(instance.settingsFormValues).toEqual(mockValidSettingsFormValues);
     });
 
     it('should update sidenav entity data when getSnippetsResult changes', () => {
