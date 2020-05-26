@@ -38,6 +38,7 @@ def write_to_file(
             f'{identifier}\t{lo_offset}\t{hi_offset}\t{keyword}\t{keyword_type}\t{id}',
             file=pubtator_file,
         )
+    print('', file=pubtator_file)
 
 
 def create_annotations(
