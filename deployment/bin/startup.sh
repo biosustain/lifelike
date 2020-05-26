@@ -51,9 +51,9 @@ then
     cd /srv
     export $(cat demo.env | xargs)
     sudo docker login -u $DOCKER_USER -p "$(cat keyfile.json)" https://gcr.io
-    sudo docker pull gcr.io/$PROJECT_ID/kg-appserver-prod:$GITHUB_SHA
-    sudo docker pull gcr.io/$PROJECT_ID/kg-webserver-prod:$GITHUB_SHA
-    sudo docker pull gcr.io/$PROJECT_ID/kg-cache-service-prod:$GITHUB_SHA
+    sudo docker pull gcr.io/$PROJECT_ID/kg-appserver-demo:latest
+    sudo docker pull gcr.io/$PROJECT_ID/kg-webserver-demo:latest
+    sudo docker pull gcr.io/$PROJECT_ID/kg-cache-service-demo:latest
     sudo gsutil cp gs://kg-secrets/docker-compose.demo.yml docker-compose.demo.yml
     sudo docker-compose -f docker-compose.demo.yml up -d
 fi
