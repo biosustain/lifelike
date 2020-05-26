@@ -233,7 +233,15 @@ describe('VisualizationCanvasComponent', () => {
             Chemical: {
                 value: true,
                 valid: true,
-            }
+            },
+            Gene: {
+                value: true,
+                valid: true,
+            },
+            Diseases: {
+                value: true,
+                valid: true,
+            },
         } as SettingsFormValues;
 
         mockInvalidSettingsFormValues = {
@@ -244,7 +252,15 @@ describe('VisualizationCanvasComponent', () => {
             Chemical: {
                 value: true,
                 valid: true,
-            }
+            },
+            Gene: {
+                value: true,
+                valid: true,
+            },
+            Diseases: {
+                value: true,
+                valid: true,
+            },
         } as SettingsFormValues;
 
         mockCallbackParams = {
