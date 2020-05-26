@@ -3772,11 +3772,6 @@ hash.js@^1.0.0, hash.js@^1.0.3:
     inherits "^2.0.3"
     minimalistic-assert "^1.0.1"
 
-highcharts@^8.0.0:
-  version "8.0.0"
-  resolved "https://registry.yarnpkg.com/highcharts/-/highcharts-8.0.0.tgz#fcf77a511d6ea477b9d8447afd9dedbfc85e2727"
-  integrity sha512-jRKLiP0i29zKSEgMDASyrfpivrM3e8V8yTv8YUZtRzB2mXR+hsBNHWZw2hNRZVxqq1QCVmW/9Z/BLFvYlJELqA==
-
 hmac-drbg@^1.0.0:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/hmac-drbg/-/hmac-drbg-1.0.1.tgz#d2745701025a6c775a6c545793ed502fc0c649a1"
@@ -5863,7 +5858,7 @@ pbkdf2@^3.0.3:
 
 pdfjs-dist@2.2.228:
   version "2.2.228"
-  resolved "git+https://8a6e387c4df4efe82b82790132da7efd7477ebce:x-oauth-basic@github.com/sbrg/pdf.js#78c300316d1fd3f27376038518510a60d16134a2"
+  resolved "https://registry.yarnpkg.com/pdfjs-dist/-/pdfjs-dist-2.2.228.tgz"
   dependencies:
     node-ensure "^0.0.0"
     worker-loader "^2.0.0"
