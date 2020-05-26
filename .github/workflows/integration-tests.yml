@@ -26,7 +26,6 @@ jobs:
 
             - name: Pytests
               run: |-
-                docker-compose exec -T appserver chmod -R +r tests/database/services/annotations/lmdb
                 docker-compose exec -T appserver pytest tests
 
             - name: Migration Integrity Check
