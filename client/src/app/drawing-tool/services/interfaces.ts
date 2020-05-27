@@ -1,3 +1,10 @@
+export interface UniversalEntityData {
+  hyperlink?: string;
+  detail?: string;
+  source?: string;
+  search?: Hyperlink[];
+}
+
 export interface UniversalNodeStyle {
   fontSizeScale?: number;
   fillColor?: string;
@@ -12,11 +19,7 @@ export interface UniversalGraphNode {
     y: number;
     width?: number,
     height?: number,
-    hyperlink?: string;
-    detail?: string;
-    source?: string;
-    search?: Hyperlink[];
-  };
+  } & UniversalEntityData;
   display_name: string;
   hash: string;
   shape?: string;
@@ -42,6 +45,7 @@ export interface UniversalEdgeStyle {
 }
 
 export interface UniversalGraphEdge {
+  data?: UniversalEntityData;
   label: string;
   from: string;
   to: string;

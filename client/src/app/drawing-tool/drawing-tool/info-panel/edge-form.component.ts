@@ -5,6 +5,7 @@ import { UniversalGraphEdge, UniversalGraphNode } from '../../services/interface
 import { LINE_HEAD_TYPES } from '../../services/line-head-types';
 import { LINE_TYPES } from '../../services/line-types';
 import { RecursivePartial } from '../../../graph-viewer/utils/types';
+import { openLink } from '../../../shared/utils/browser';
 
 @Component({
   selector: 'app-edge-form',
@@ -33,6 +34,7 @@ export class EdgeFormComponent {
     updatedData: RecursivePartial<UniversalGraphEdge>
   }>();
   @Output() delete = new EventEmitter<object>();
+  @Output() sourceOpen = new EventEmitter<string>();
 
   get edge() {
     return this.updatedEdge;
@@ -41,9 +43,11 @@ export class EdgeFormComponent {
   @Input()
   set edge(edge) {
     this.originalEdge = cloneDeep(edge);
+    this.originalEdge.data = this.originalEdge.data || {};
     this.originalEdge.style = this.originalEdge.style || {};
 
     this.updatedEdge = cloneDeep(edge);
+    this.updatedEdge.data = this.updatedEdge.data || {};
     this.updatedEdge.style = this.updatedEdge.style || {};
   }
 
@@ -51,6 +55,10 @@ export class EdgeFormComponent {
     this.save.next({
       originalData: {
         label: this.originalEdge.label,
+        data: {
+          hyperlink: this.originalEdge.data.hyperlink,
+          detail: this.originalEdge.data.detail,
+        },
         style: {
           fontSizeScale: this.originalEdge.style.fontSizeScale,
           strokeColor: this.originalEdge.style.strokeColor,
@@ -62,6 +70,10 @@ export class EdgeFormComponent {
       },
       updatedData: {
         label: this.updatedEdge.label,
+        data: {
+          hyperlink: this.updatedEdge.data.hyperlink,
+          detail: this.updatedEdge.data.detail,
+        },
         style: {
           fontSizeScale: this.updatedEdge.style.fontSizeScale,
           strokeColor: this.updatedEdge.style.strokeColor,
@@ -77,6 +89,22 @@ export class EdgeFormComponent {
 
   doDelete(): void {
     this.delete.next();
+  }
+
+  /**
+   * Allow user to navigate to a link in a new tab
+   */
+  goToLink() {
+    openLink(this.edge.data.hyperlink);
+  }
+
+  /**
+   * Bring user to original source of node information
+   */
+  goToSource(): void {
+    if (this.edge.data.source) {
+      this.sourceOpen.next(this.edge.data.source);
+    }
   }
 
 }
