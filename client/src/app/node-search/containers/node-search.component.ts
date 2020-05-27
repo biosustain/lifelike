@@ -1,4 +1,4 @@
-import {Component, SecurityContext} from '@angular/core';
+import {Component} from '@angular/core';
 import {DomSanitizer} from '@angular/platform-browser';
 
 export interface Nodes {
@@ -8,20 +8,18 @@ export interface Nodes {
   name: string;
 }
 
-export interface PageActions {
-  pageIndex: number;
-}
-
 @Component({
   selector: 'app-search-collection-page',
   template: `
     <app-node-search-bar
       (results)="getResults($event)"
-      [domainFilter]="domainsFilter"
+      [domainsFilter]="domainsFilter"
+      [goClassesFilter]="goClassesFilter"
       [typesFilter]="typesFilter"
     ></app-node-search-bar>
     <app-node-result-filter
       (domainsFilter)="getDomainsFilter($event)"
+      (goClassesFilter)="getGoClassesFilter($event)"
       (typesFilter)="getTypesFilter($event)"
     ></app-node-result-filter>
     <app-node-result-list
@@ -34,12 +32,14 @@ export class NodeSearchComponent {
   DOMAINS_URL = {
     CHEBI: 'https://www.ebi.ac.uk/chebi/searchId.do?chebiId=',
     MESH: 'https://www.ncbi.nlm.nih.gov/mesh/?term=',
-    Literature: 'https://pubmed.ncbi.nlm.nih.gov/',
+    UniProt: 'https://www.uniprot.org/uniprot/',
+    GO: 'http://amigo.geneontology.org/amigo/term/',
     NCBI_Gene: 'https://www.ncbi.nlm.nih.gov/gene/',
     NCBI_Taxonomy: 'https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id='
   };
   dataSource: Nodes[] = [];
   domainsFilter = '';
+  goClassesFilter = '';
   typesFilter = '';
 
   constructor(private sanitizer: DomSanitizer) {
@@ -59,8 +59,8 @@ export class NodeSearchComponent {
 
   getDomain(subLabels: string[]) {
     this.removeUnneededLabels(subLabels);
-    return subLabels.length === 1 && subLabels[0] === 'Snippet' ? 'Literature' : subLabels
-      .find(element => element.match(/^db_*/)).split('_')[1];
+    return  subLabels.find(element => element.match(/^db_*/))
+      .split('_')[1];
   }
 
   private removeUnneededLabels(subLabels: string[]) {
@@ -87,7 +87,7 @@ export class NodeSearchComponent {
     } else if (domain === 'NCBI' && type === 'Taxonomy') {
       return this.sanitizer.bypassSecurityTrustUrl(this.DOMAINS_URL[domain + '_' + type] +
         data.node.data.id);
-    } else if (domain === 'Literature') {
+    } else if (domain === 'GO' || domain === 'UniProt') {
       return this.sanitizer.bypassSecurityTrustUrl(this.DOMAINS_URL[domain] +
         data.node.data.id);
     } else {
@@ -97,8 +97,7 @@ export class NodeSearchComponent {
   }
 
   getName(data) {
-    const type = this.getType(data.node.subLabels);
-    return type === 'Snippet' ? data.node.data.sentence : data.node.displayName;
+    return data.node.displayName;
   }
 
   getDomainsFilter(selectedDomains: string[]) {
@@ -114,6 +113,21 @@ export class NodeSearchComponent {
       domainsPredicate += domain + ' OR ';
     });
     this.domainsFilter = domainsPredicate;
+  }
+
+  getGoClassesFilter(selectedGoClasses: string[]) {
+    let goclassesPredicate = '(';
+    if (selectedGoClasses.length === 0) {
+      this.goClassesFilter = '';
+      return;
+    }
+    selectedGoClasses.forEach((domain, index) => {
+      if (selectedGoClasses.length - 1 === index) {
+        return goclassesPredicate += domain + ')';
+      }
+      goclassesPredicate += domain + ' OR ';
+    });
+    this.goClassesFilter = goclassesPredicate;
   }
 
   getTypesFilter(selectedTypes: string[]) {
