@@ -26,7 +26,6 @@ export function nullIfEmpty(s: any) {
   }
 }
 
-// TODO: Move this somewhere better
-type RecursivePartial<T> = {
+export type RecursivePartial<T> = {
   [P in keyof T]?: RecursivePartial<T[P]>;
 };
