@@ -5,7 +5,15 @@
       Drag and Drop any result into the canvas
     </mat-label>
   </div>
-
+  <mat-slide-toggle color="primary" [matTooltip]="customFilterTooltip" [(ngModel)]="hiddenCustomFilter">
+  </mat-slide-toggle>
+  <mat-form-field id="filter-full-width" *ngIf="hiddenCustomFilter">
+    <button mat-button matPrefix mat-icon-button>
+      <mat-icon>search</mat-icon>
+    </button>
+    <input matInput (keyup)="applyFilter($event)"
+           placeholder="Type here to filter the result list">
+  </mat-form-field>
   <table mat-table [dataSource]="dataSource">
     <!-- Position Column -->
     <ng-container matColumnDef="id">
@@ -13,7 +21,7 @@
       <td mat-cell *matCellDef="let element"><a [href]="element.link" target="_blank">{{element.id}}</a></td>
     </ng-container>
     <!-- Name Column -->
-    <ng-container matColumnDef="name" >
+    <ng-container matColumnDef="name">
       <th mat-header-cell *matHeaderCellDef> Name</th>
       <td mat-cell *matCellDef="let element"> {{element.name}} </td>
     </ng-container>
@@ -30,13 +38,13 @@
       <td mat-cell *matCellDef="let element"> {{element.domain}} </td>
     </ng-container>
 
-     <!-- TaxonomyID Column -->
+    <!-- TaxonomyID Column -->
     <ng-container matColumnDef="taxonomyId">
       <th mat-header-cell *matHeaderCellDef> Tax. ID</th>
       <td mat-cell *matCellDef="let element"> {{element.taxonomyId}} </td>
     </ng-container>
 
-     <!-- TaxonomyName Column -->
+    <!-- TaxonomyName Column -->
     <ng-container matColumnDef="taxonomyName">
       <th mat-header-cell *matHeaderCellDef> Tax. Name</th>
       <td mat-cell *matCellDef="let element"> {{element.taxonomyName}} </td>

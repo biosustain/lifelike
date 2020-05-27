@@ -15,6 +15,8 @@ export class NodeResultListComponent implements OnInit, OnChanges {
   dataSource = new MatTableDataSource<Nodes>(this.nodes);
   @ViewChild(MatPaginator, {static: false}) paginator: MatPaginator;
   childMode = false;
+  hiddenCustomFilter = false;
+  customFilterTooltip = 'Enable custom filter, this will only filter the result list.';
 
   constructor() {
   }
@@ -26,5 +28,10 @@ export class NodeResultListComponent implements OnInit, OnChanges {
   ngOnChanges(changes: SimpleChanges): void {
     this.dataSource = new MatTableDataSource<Nodes>(this.nodes);
     this.dataSource.paginator = this.paginator;
+  }
+
+  applyFilter(event: Event) {
+    const filterValue = (event.target as HTMLInputElement).value;
+    this.dataSource.filter = filterValue.trim().toLowerCase();
   }
 }
