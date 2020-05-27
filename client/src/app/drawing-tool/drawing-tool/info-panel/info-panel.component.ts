@@ -41,9 +41,9 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
     return this.selected && this.selected.type === GraphEntityType.Edge;
   }
 
-  save(data) {
+  save({originalData, updatedData}: { originalData: object, updatedData: object }) {
     this.dataFlow.pushFormChange(
-      new GraphEntityUpdate('Update properties', this.selected, data)
+      new GraphEntityUpdate('Update properties', this.selected, updatedData, originalData)
     );
   }
 

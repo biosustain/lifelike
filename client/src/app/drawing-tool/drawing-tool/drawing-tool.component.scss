@@ -106,6 +106,9 @@
       color: #e74c3c;
       transition: color .2s ease-in;
     }
+    mat-icon.inactive {
+      color: #ddd;
+    }
 
     mat-icon.saved {
       color: #3797DB

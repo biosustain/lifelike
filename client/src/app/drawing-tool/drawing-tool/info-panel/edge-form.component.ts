@@ -25,30 +25,54 @@ export class EdgeFormComponent {
     ...LINE_HEAD_TYPES.entries(),
   ];
 
-  targetEdge: UniversalGraphEdge;
+  originalEdge: UniversalGraphEdge;
+  updatedEdge: UniversalGraphEdge;
 
-  @Output() save = new EventEmitter<object>();
+  @Output() save = new EventEmitter<{
+    originalData: RecursivePartial<UniversalGraphEdge>,
+    updatedData: RecursivePartial<UniversalGraphEdge>
+  }>();
   @Output() delete = new EventEmitter<object>();
 
   get edge() {
-    return this.targetEdge;
+    return this.updatedEdge;
   }
 
   @Input()
   set edge(edge) {
-    const targetEdge = cloneDeep(edge);
-    targetEdge.style = targetEdge.style || {};
-    this.targetEdge = targetEdge;
+    this.originalEdge = cloneDeep(edge);
+    this.originalEdge.style = this.originalEdge.style || {};
+
+    this.updatedEdge = cloneDeep(edge);
+    this.updatedEdge.style = this.updatedEdge.style || {};
   }
 
   doSave() {
-    // Only update the fields that are affected
-    const savedEdge: RecursivePartial<UniversalGraphEdge> = {
-      label: this.targetEdge.label,
-      style: this.targetEdge.style,
-    };
-
-    this.save.next(savedEdge);
+    this.save.next({
+      originalData: {
+        label: this.originalEdge.label,
+        style: {
+          fontSizeScale: this.originalEdge.style.fontSizeScale,
+          strokeColor: this.originalEdge.style.strokeColor,
+          lineType: this.originalEdge.style.lineType,
+          lineWidthScale: this.originalEdge.style.lineWidthScale,
+          sourceHeadType: this.originalEdge.style.sourceHeadType,
+          targetHeadType: this.originalEdge.style.targetHeadType,
+        },
+      },
+      updatedData: {
+        label: this.updatedEdge.label,
+        style: {
+          fontSizeScale: this.updatedEdge.style.fontSizeScale,
+          strokeColor: this.updatedEdge.style.strokeColor,
+          lineType: this.updatedEdge.style.lineType,
+          lineWidthScale: this.updatedEdge.style.lineWidthScale,
+          sourceHeadType: this.updatedEdge.style.sourceHeadType,
+          targetHeadType: this.updatedEdge.style.targetHeadType,
+        },
+      }
+    });
+    this.originalEdge = cloneDeep(this.updatedEdge);
   }
 
   doDelete(): void {
