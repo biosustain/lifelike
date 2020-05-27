@@ -8,6 +8,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { PDFPageViewport } from 'pdfjs-dist';
 import { AnnotationPanelComponent } from './annotation-panel/annotation-panel.component';
 import { annotationTypes } from 'app/shared/annotation-styles';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 declare var jQuery: any;
 
@@ -92,7 +93,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
   @ViewChild(PdfViewerComponent, {static: false})
   private pdfComponent: PdfViewerComponent;
 
-  constructor(private dialog: MatDialog, private zone: NgZone) {
+  constructor(private dialog: MatDialog, private zone: NgZone, private snackBar: MatSnackBar) {
 
     (window as any).openAnnotationPanel = () => {
       (window as any).pdfViewerRef.zone.run(() => {
@@ -102,6 +103,11 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
     (window as any).openLinkPanel = () => {
       (window as any).pdfViewerRef.zone.run(() => {
         (window as any).pdfViewerRef.openLinkPanel();
+      });
+    }
+    (window as any).copySelectedText = () => {
+      (window as any).pdfViewerRef.zone.run(() => {
+        (window as any).pdfViewerRef.copySelectedText();
       });
     }
     (window as any).pdfViewerRef = {
@@ -763,6 +769,8 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
 
     this.deleteFrictionless();
 
+    this.snackBar.open('it has been copied to clipboard', 'Close', {duration: 5000});
+  
   }
 
 }
