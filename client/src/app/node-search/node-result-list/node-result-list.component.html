@@ -1,9 +1,16 @@
 <div class="mat-elevation-z8" [ngClass]='{"childless": !childMode}'>
+  <div class="my-parent">
+    <mat-icon class="my-icon" color="primary">pan_tool</mat-icon>
+    <mat-label class="my-label">
+      Drag and Drop any result into the canvas
+    </mat-label>
+  </div>
+
   <table mat-table [dataSource]="dataSource">
     <!-- Position Column -->
-    <ng-container matColumnDef="link">
-      <th mat-header-cell *matHeaderCellDef> Link</th>
-      <td mat-cell *matCellDef="let element"><a [href]="element.link"  target="_blank">Preview</a></td>
+    <ng-container matColumnDef="id">
+      <th mat-header-cell *matHeaderCellDef> Id</th>
+      <td mat-cell *matCellDef="let element"><a [href]="element.link" target="_blank">{{element.id}}</a></td>
     </ng-container>
     <!-- Name Column -->
     <ng-container matColumnDef="name">
