@@ -48,6 +48,7 @@ TYPO_SYNONYMS = {
     'e coli': ['E. coli', 'Escherichia coli', 'Enterococcus coli'],
     'E.coli': ['E. coli', 'Escherichia coli', 'Enterococcus coli'],
     'Multiple Mitochondrial Dysfunctions Syndromes': ['Multiple Mitochondrial Dysfunctions Syndrome'],  # noqa
+    'S-Phase kinase associated protein 2': ['S-Phase kinase-associated protein 2'],
 }
 
 ENTITY_TYPE_PRECEDENCE = {
