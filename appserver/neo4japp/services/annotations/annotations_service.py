@@ -549,8 +549,8 @@ class AnnotationsService:
             3. No organism matches for a given gene
         """
         tokens: Dict[str, List[PDFTokenPositions]] = self.matched_genes
-        token_type: str = EntityType.Genes.value
-        color: str = EntityColor.Genes.value
+        token_type: str = EntityType.Gene.value
+        color: str = EntityColor.Gene.value
         transaction = self.lmdb_session.genes_txn
         correct_synonyms: Dict[str, str] = self.correct_synonyms
 
@@ -633,8 +633,8 @@ class AnnotationsService:
     ) -> Tuple[List[Annotation], Set[str], Dict[str, str]]:
         return self._get_annotation(
             tokens=self.matched_chemicals,
-            token_type=EntityType.Chemicals.value,
-            color=EntityColor.Chemicals.value,
+            token_type=EntityType.Chemical.value,
+            color=EntityColor.Chemical.value,
             transaction=self.lmdb_session.chemicals_txn,
             id_str=entity_id_str,
             correct_synonyms=self.correct_synonyms,
@@ -650,8 +650,8 @@ class AnnotationsService:
     ) -> Tuple[List[Annotation], Set[str], Dict[str, str]]:
         return self._get_annotation(
             tokens=self.matched_compounds,
-            token_type=EntityType.Compounds.value,
-            color=EntityColor.Compounds.value,
+            token_type=EntityType.Compound.value,
+            color=EntityColor.Compound.value,
             transaction=self.lmdb_session.compounds_txn,
             id_str=entity_id_str,
             correct_synonyms=self.correct_synonyms,
@@ -667,8 +667,8 @@ class AnnotationsService:
     ) -> Tuple[List[Annotation], Set[str], Dict[str, str]]:
         return self._get_annotation(
             tokens=self.matched_proteins,
-            token_type=EntityType.Proteins.value,
-            color=EntityColor.Proteins.value,
+            token_type=EntityType.Protein.value,
+            color=EntityColor.Protein.value,
             transaction=self.lmdb_session.proteins_txn,
             id_str=entity_id_str,
             correct_synonyms=self.correct_synonyms,
@@ -701,8 +701,8 @@ class AnnotationsService:
     ) -> Tuple[List[Annotation], Set[str], Dict[str, str]]:
         return self._get_annotation(
             tokens=self.matched_diseases,
-            token_type=EntityType.Diseases.value,
-            color=EntityColor.Diseases.value,
+            token_type=EntityType.Disease.value,
+            color=EntityColor.Disease.value,
             transaction=self.lmdb_session.diseases_txn,
             id_str=entity_id_str,
             correct_synonyms=self.correct_synonyms,
@@ -718,8 +718,8 @@ class AnnotationsService:
     ) -> Tuple[List[Annotation], Set[str], Dict[str, str]]:
         return self._get_annotation(
             tokens=self.matched_phenotypes,
-            token_type=EntityType.Phenotypes.value,
-            color=EntityColor.Phenotypes.value,
+            token_type=EntityType.Phenotype.value,
+            color=EntityColor.Phenotype.value,
             transaction=self.lmdb_session.phenotypes_txn,
             id_str=entity_id_str,
             correct_synonyms=self.correct_synonyms,
@@ -735,12 +735,12 @@ class AnnotationsService:
         cropbox_in_pdf: Tuple[int, int],
     ) -> Tuple[List[Annotation], Set[str], Dict[str, str]]:
         funcs = {
-            EntityType.Chemicals.value: self._annotate_chemicals,
-            EntityType.Compounds.value: self._annotate_compounds,
-            EntityType.Proteins.value: self._annotate_proteins,
+            EntityType.Chemical.value: self._annotate_chemicals,
+            EntityType.Compound.value: self._annotate_compounds,
+            EntityType.Protein.value: self._annotate_proteins,
             EntityType.Species.value: self._annotate_species,
-            EntityType.Diseases.value: self._annotate_diseases,
-            EntityType.Phenotypes.value: self._annotate_phenotypes,
+            EntityType.Disease.value: self._annotate_diseases,
+            EntityType.Phenotype.value: self._annotate_phenotypes,
         }
 
         annotate_entities = funcs[annotation_type]
@@ -861,11 +861,11 @@ class AnnotationsService:
         """
         entity_type_and_id_pairs = [
             (EntityType.Species.value, EntityIdStr.Species.value),
-            (EntityType.Chemicals.value, EntityIdStr.Chemicals.value),
-            (EntityType.Compounds.value, EntityIdStr.Compounds.value),
-            (EntityType.Proteins.value, EntityIdStr.Proteins.value),
-            (EntityType.Diseases.value, EntityIdStr.Diseases.value),
-            (EntityType.Phenotypes.value, EntityIdStr.Phenotypes.value),
+            (EntityType.Chemical.value, EntityIdStr.Chemical.value),
+            (EntityType.Compound.value, EntityIdStr.Compound.value),
+            (EntityType.Protein.value, EntityIdStr.Protein.value),
+            (EntityType.Disease.value, EntityIdStr.Disease.value),
+            (EntityType.Phenotype.value, EntityIdStr.Phenotype.value),
         ]
 
         matched_list, unwanted_matches_set_list = [], []
@@ -1065,19 +1065,19 @@ class AnnotationsService:
         key1 = ENTITY_TYPE_PRECEDENCE[anno1.meta.keyword_type]
         key2 = ENTITY_TYPE_PRECEDENCE[anno2.meta.keyword_type]
 
-        if ((anno1.meta.keyword_type == EntityType.Proteins.value or
-                anno1.meta.keyword_type == EntityType.Genes.value) and
-            (anno2.meta.keyword_type == EntityType.Proteins.value or
-                anno2.meta.keyword_type == EntityType.Genes.value)):  # noqa
+        if ((anno1.meta.keyword_type == EntityType.Protein.value or
+                anno1.meta.keyword_type == EntityType.Gene.value) and
+            (anno2.meta.keyword_type == EntityType.Protein.value or
+                anno2.meta.keyword_type == EntityType.Gene.value)):  # noqa
             if anno1.meta.keyword_type != anno2.meta.keyword_type and normalize_str(anno1.keyword) == normalize_str(anno2.keyword):  # noqa
                 # protein vs gene
                 # protein has capital first letter: CysB vs cysB
                 # if start of a new sentence go with protein can't infer
-                if anno1.meta.keyword_type == EntityType.Proteins.value and len(anno1.keywords) == 1 and anno1.keywords[0][0].isupper():  # noqa
+                if anno1.meta.keyword_type == EntityType.Protein.value and len(anno1.keywords) == 1 and anno1.keywords[0][0].isupper():  # noqa
                     # checked the keyword text from pdf
                     return anno1
 
-                if anno2.meta.keyword_type == EntityType.Proteins.value and len(anno2.keywords) == 1 and anno2.keywords[0][0].isupper():  # noqa
+                if anno2.meta.keyword_type == EntityType.Protein.value and len(anno2.keywords) == 1 and anno2.keywords[0][0].isupper():  # noqa
                     # checked the keyword text from pdf
                     return anno2
 
