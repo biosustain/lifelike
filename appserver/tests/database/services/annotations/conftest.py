@@ -13,9 +13,9 @@ from neo4japp.services.annotations.util import normalize_str
 directory = path.realpath(path.dirname(__file__))
 
 
-def create_chemical_lmdb():
+def create_chemicals_lmdb():
     map_size = 1099511627776
-    db = lmdb.open(path.join(directory, 'lmdb/chemical'), map_size=map_size)
+    db = lmdb.open(path.join(directory, 'lmdb/chemicals'), map_size=map_size)
     with db.begin(write=True) as transaction:
         # TODO: create chemical test lmdb
         transaction.put(
@@ -23,9 +23,9 @@ def create_chemical_lmdb():
             json.dumps({}).encode('utf-8'))
 
 
-def create_compound_lmdb():
+def create_compounds_lmdb():
     map_size = 1099511627776
-    db = lmdb.open(path.join(directory, 'lmdb/compound'), map_size=map_size)
+    db = lmdb.open(path.join(directory, 'lmdb/compounds'), map_size=map_size)
     with db.begin(write=True) as transaction:
         # TODO: create compound test lmdb
         transaction.put(
@@ -33,9 +33,9 @@ def create_compound_lmdb():
             json.dumps({}).encode('utf-8'))
 
 
-def create_disease_lmdb():
+def create_diseases_lmdb():
     map_size = 1099511627776
-    db = lmdb.open(path.join(directory, 'lmdb/disease'), map_size=map_size)
+    db = lmdb.open(path.join(directory, 'lmdb/diseases'), map_size=map_size)
     with db.begin(write=True) as transaction:
         # TODO: create disease test lmdb
         transaction.put(
@@ -43,9 +43,9 @@ def create_disease_lmdb():
             json.dumps({}).encode('utf-8'))
 
 
-def create_gene_lmdb():
+def create_genes_lmdb():
     map_size = 1099511627776
-    db = lmdb.open(path.join(directory, 'lmdb/gene'), map_size=map_size)
+    db = lmdb.open(path.join(directory, 'lmdb/genes'), map_size=map_size)
     with db.begin(write=True) as transaction:
         gene_name = 'hyp27'
         gene = {
@@ -60,9 +60,9 @@ def create_gene_lmdb():
             json.dumps(gene).encode('utf-8'))
 
 
-def create_phenotype_lmdb():
+def create_phenotypes_lmdb():
     map_size = 1099511627776
-    db = lmdb.open(path.join(directory, 'lmdb/phenotype'), map_size=map_size)
+    db = lmdb.open(path.join(directory, 'lmdb/phenotypes'), map_size=map_size)
     with db.begin(write=True) as transaction:
         # TODO: create phenotype test lmdb
         transaction.put(
@@ -70,9 +70,9 @@ def create_phenotype_lmdb():
             json.dumps({}).encode('utf-8'))
 
 
-def create_protein_lmdb():
+def create_proteins_lmdb():
     map_size = 1099511627776
-    db = lmdb.open(path.join(directory, 'lmdb/protein'), map_size=map_size)
+    db = lmdb.open(path.join(directory, 'lmdb/proteins'), map_size=map_size)
     with db.begin(write=True) as transaction:
         protein_id = 'Y1954_CLOPE'
         protein_name = 'Hyp27'
@@ -133,12 +133,12 @@ def create_species_lmdb():
 
 @pytest.fixture(scope='function')
 def lmdb_setup(app, request):
-    create_chemical_lmdb()
-    create_compound_lmdb()
-    create_disease_lmdb()
-    create_gene_lmdb()
-    create_phenotype_lmdb()
-    create_protein_lmdb()
+    create_chemicals_lmdb()
+    create_compounds_lmdb()
+    create_diseases_lmdb()
+    create_genes_lmdb()
+    create_phenotypes_lmdb()
+    create_proteins_lmdb()
     create_species_lmdb()
 
     def teardown():
