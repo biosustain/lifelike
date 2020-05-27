@@ -94,16 +94,20 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
 
   constructor(private dialog: MatDialog, private zone: NgZone) {
 
-    (window as any).deleteFrictionless = this.deleteFrictionless.bind(this);
     (window as any).openAnnotationPanel = () => {
       (window as any).pdfViewerRef.zone.run(() => {
         (window as any).pdfViewerRef.componentFn();
       });
     };
-    (window as any).openLinkPanel = this.openAddLinkPanel.bind(this);
+    (window as any).openLinkPanel = () => {
+      (window as any).pdfViewerRef.zone.run(() => {
+        (window as any).pdfViewerRef.openLinkPanel();
+      });
+    }
     (window as any).pdfViewerRef = {
       zone: this.zone,
       componentFn: () => this.openAnnotationPanel(),
+      openLinkPanel: () => this.openAddLinkPanel(),
       component: this
     };
   }
@@ -166,6 +170,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
           clone.removeClass('highlight');
         }
         that.deleteFrictionless();
+        that.resetSelection();
       }
     });
 
@@ -375,8 +380,10 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
 
   @HostListener('window:mouseup', ['$event'])
   mouseUp = event => {
+    const isItToolTip = event.target.closest('.qtip-content');
     this.dragAndDropDestinationHoverCount = jQuery('.textLayer > span:hover').length || 0;
-    if(this.dragAndDropDestinationHoverCount !== 1 || this.dragAndDropOriginHoverCount !==1) {
+    const spanCheck = this.dragAndDropDestinationHoverCount !== 1 || this.dragAndDropOriginHoverCount !==1;
+    if(spanCheck && !isItToolTip) {
       this.dragAndDropOriginHoverCount = 0;
       this.dragAndDropDestinationHoverCount = 0;
       this.deleteFrictionless();
@@ -413,7 +420,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
       pageY: event.pageY
     };
     this.selectedText = Array.from(children).map((node: any) => node.textContent);
-    this.selectedText = Array.from(documentFragment.childNodes).map((node: any) => node.textContent);
+    //this.selectedText = Array.from(documentFragment.childNodes).map((node: any) => node.textContent);
     this.currentPage = parseInt(parent.closest('.page').getAttribute('data-page-number'), 10);
     const pdfPageView = this.pageRef[this.currentPage];
     const viewport = pdfPageView.viewport;
@@ -467,10 +474,11 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
       el.setAttribute('style', 'position: absolute; background-color: rgba(255, 255, 51, 0.3);' +
         'left:' + left + 'px; top:' + (top + 2) + 'px;' +
         'width:' + width + 'px; height:' + height + 'px;');
-      el.setAttribute('id', 'newElement' + 0);
+      el.setAttribute('id', 'newElement' + idx);
 
       if(mouseRecTopBorder <= top && mouseRectBottomBorder >= top) {
         pageElement.appendChild(el);
+        this.selectedElements.push(el);
       }
 
       jQuery(el).css('cursor', 'move');
@@ -494,7 +502,6 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
       });
       jQuery(el).draggable('enable');
 
-      this.selectedElements.push(el);
       (jQuery(el) as any).qtip(
         {
 
@@ -531,6 +538,9 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
   deleteFrictionless() {
     jQuery('.frictionless-annotation').qtip('destroy');
     jQuery('.frictionless-annotation').remove();
+  }
+
+  resetSelection() {
     this.selectedText = [];
     this.selectedTextCoords = [];
     this.allText = '';
@@ -554,6 +564,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
       if (annotation) {
         this.annotationCreated.emit(annotation);
         this.deleteFrictionless();
+        this.resetSelection();
       }
     });
   }
@@ -736,13 +747,4 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
       });
     }
   }
-
-  annotationListItemClick($event, ref, pageNumber: number) {
-    if (ref) {
-      ref.scrollIntoView();
-      return;
-    }
-    this.scrollToPage(Number(pageNumber));
-  }
-
 }
