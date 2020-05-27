@@ -609,22 +609,22 @@ def test_escherichia_coli_pdf(
     keywords = {o.keyword: o.meta.keyword_type for o in annotations}
 
     assert 'Escherichia coli' in keywords
-    assert keywords['Escherichia coli'] == 'Species'
+    assert keywords['Escherichia coli'] == EntityType.Species.value
 
     assert 'purA' in keywords
-    assert keywords['purA'] == 'Genes'
+    assert keywords['purA'] == EntityType.Genes.value
 
     assert 'purB' in keywords
-    assert keywords['purB'] == 'Genes'
+    assert keywords['purB'] == EntityType.Genes.value
 
     assert 'purC' in keywords
-    assert keywords['purC'] == 'Genes'
+    assert keywords['purC'] == EntityType.Genes.value
 
     assert 'purD' in keywords
-    assert keywords['purD'] == 'Genes'
+    assert keywords['purD'] == EntityType.Genes.value
 
     assert 'purF' in keywords
-    assert keywords['purF'] == 'Genes'
+    assert keywords['purF'] == EntityType.Genes.value
 
 
 def test_human_gene_pdf(
@@ -653,13 +653,13 @@ def test_human_gene_pdf(
     keywords = {o.keyword: o.meta.keyword_type for o in annotations}
 
     assert 'COVID-19' in keywords
-    assert keywords['COVID-19'] == 'Diseases'
+    assert keywords['COVID-19'] == EntityType.Diseases.value
 
     assert 'MERS-CoV' in keywords
-    assert keywords['MERS-CoV'] == 'Species'
+    assert keywords['MERS-CoV'] == EntityType.Species.value
 
     assert 'ACE2' in keywords
-    assert keywords['ACE2'] == 'Genes'
+    assert keywords['ACE2'] == EntityType.Genes.value
 
 
 @pytest.mark.parametrize(
