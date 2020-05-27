@@ -291,6 +291,7 @@ class AnnotationsService:
         entity: dict,
         entity_id: str,
         color: str,
+        correct_synonyms: Dict[str, str],
     ):
         curr_page_coor_obj = char_coord_objs_in_pdf
         cropbox = cropbox_in_pdf
@@ -375,7 +376,12 @@ class AnnotationsService:
                 meta=meta,
             )
 
-        return annotation, {annotation.to_dict_hash(): token_positions.keyword}
+        real_keyword = token_positions.keyword if token_positions.keyword not in correct_synonyms else correct_synonyms[token_positions.keyword]  # noqa
+        # return annotation and the original text from PDF
+        # because we the real lmdb name in annotation.keyword
+        # but need the original text from PDF
+        # to clean false positives
+        return annotation, {annotation.to_dict_hash(): real_keyword}
 
     def _get_annotation(
         self,
@@ -454,6 +460,7 @@ class AnnotationsService:
                         entity=entity,
                         entity_id=entity_id,
                         color=color,
+                        correct_synonyms=correct_synonyms,
                     )
                     matches.append(annotation)
                     hashed_pdf_keywords = {**hashed_pdf_keywords, **annotation_pdf_keyword}
@@ -618,6 +625,7 @@ class AnnotationsService:
                         entity=entity,
                         entity_id=entity_id,
                         color=color,
+                        correct_synonyms=correct_synonyms,
                     )
                     matches.append(annotation)
                     hashed_pdf_keywords = {**hashed_pdf_keywords, **annotation_pdf_keyword}
