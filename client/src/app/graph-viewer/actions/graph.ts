@@ -8,11 +8,12 @@ import { mergeDeep } from 'app/graph-viewer/utils/objects';
 export class GraphEntityUpdate implements GraphAction {
   constructor(public description: string,
               public entity: GraphEntity,
-              public newData: object) {
+              public updatedData: object,
+              public originalData: object) {
   }
 
   apply(component: GraphActionReceiver) {
-    mergeDeep(this.entity.entity, this.newData);
+    mergeDeep(this.entity.entity, this.updatedData);
     if (this.entity.type === GraphEntityType.Node) {
       component.updateNode(this.entity.entity as UniversalGraphNode);
     } else if (this.entity.type === GraphEntityType.Edge) {
@@ -21,5 +22,11 @@ export class GraphEntityUpdate implements GraphAction {
   }
 
   rollback(component: GraphActionReceiver) {
+    mergeDeep(this.entity.entity, this.originalData);
+    if (this.entity.type === GraphEntityType.Node) {
+      component.updateNode(this.entity.entity as UniversalGraphNode);
+    } else if (this.entity.type === GraphEntityType.Edge) {
+      component.updateEdge(this.entity.entity as UniversalGraphEdge);
+    }
   }
 }

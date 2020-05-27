@@ -21,36 +21,63 @@ export class NodeFormComponent {
     ...LINE_TYPES.entries()
   ];
 
-  targetNode: UniversalGraphNode;
+  originalNode: UniversalGraphNode;
+  updatedNode: UniversalGraphNode;
 
-  @Output() save = new EventEmitter<object>();
+  @Output() save = new EventEmitter<{
+    originalData: RecursivePartial<UniversalGraphNode>,
+    updatedData: RecursivePartial<UniversalGraphNode>,
+  }>();
   @Output() delete = new EventEmitter<object>();
   @Output() appOpen = new EventEmitter<LaunchApp>();
 
   get node() {
-    return this.targetNode;
+    return this.updatedNode;
   }
 
   @Input()
   set node(node) {
-    const targetNode = cloneDeep(node);
-    targetNode.style = targetNode.style || {};
-    this.targetNode = targetNode;
+    this.originalNode = cloneDeep(node);
+    this.originalNode.style = this.originalNode.style || {};
+
+    this.updatedNode = cloneDeep(node);
+    this.updatedNode.style = this.updatedNode.style || {};
   }
 
   doSave() {
-    // Only update the fields that are affected
-    const savedNode: RecursivePartial<UniversalGraphNode> = {
-      data: {
-        hyperlink: this.targetNode.data.hyperlink,
-        detail: this.targetNode.data.detail,
+    this.save.next({
+      originalData: {
+        data: {
+          hyperlink: this.originalNode.data.hyperlink,
+          detail: this.originalNode.data.detail,
+        },
+        display_name: this.originalNode.display_name,
+        label: this.originalNode.label,
+        style: {
+          fontSizeScale: this.originalNode.style.fontSizeScale,
+          fillColor: this.originalNode.style.fillColor,
+          strokeColor: this.originalNode.style.strokeColor,
+          lineType: this.originalNode.style.lineType,
+          lineWidthScale: this.originalNode.style.lineWidthScale,
+        },
       },
-      display_name: this.targetNode.display_name,
-      label: this.targetNode.label,
-      style: this.targetNode.style,
-    };
-
-    this.save.next(savedNode);
+      updatedData: {
+        data: {
+          hyperlink: this.updatedNode.data.hyperlink,
+          detail: this.updatedNode.data.detail,
+        },
+        display_name: this.updatedNode.display_name,
+        label: this.updatedNode.label,
+        style: {
+          fontSizeScale: this.updatedNode.style.fontSizeScale,
+          fillColor: this.updatedNode.style.fillColor,
+          strokeColor: this.updatedNode.style.strokeColor,
+          lineType: this.updatedNode.style.lineType,
+          lineWidthScale: this.updatedNode.style.lineWidthScale,
+        },
+      },
+    });
+    this.originalNode = cloneDeep(this.updatedNode);
   }
 
   /**

@@ -579,12 +579,26 @@ export abstract class GraphView implements GraphActionReceiver {
   // ========================================
 
   /**
+   * Check whether there is anything to undo.
+   */
+  canUndo() {
+    return this.nextHistoryIndex > 0;
+  }
+
+  /**
+   * Check whether there is anything to redo.
+   */
+  canRedo() {
+    return this.nextHistoryIndex < this.history.length;
+  }
+
+  /**
    * Perform an undo, if there is anything to undo.
    * @return true if there was something to undo
    */
   undo(): boolean {
     // Check to see if there is anything to undo
-    if (this.nextHistoryIndex > 0) {
+    if (this.canUndo()) {
       this.nextHistoryIndex--;
       this.history[this.nextHistoryIndex].rollback(this);
       this.requestRender();
@@ -600,7 +614,7 @@ export abstract class GraphView implements GraphActionReceiver {
    */
   redo(): boolean {
     // Check to see if there is anything to redo
-    if (this.nextHistoryIndex < this.history.length) {
+    if (this.canRedo()) {
       this.history[this.nextHistoryIndex].apply(this);
       this.nextHistoryIndex++;
       this.requestRender();
