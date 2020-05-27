@@ -4,6 +4,7 @@ import { GraphEntityType, UniversalGraphNode } from 'app/drawing-tool/services/i
 import { GraphCanvasView } from '../graph-canvas-view';
 import { AbstractCanvasBehavior, BehaviorResult } from '../../behaviors';
 import { Arrowhead } from '../../../utils/canvas/line-heads/arrow';
+import { EdgeCreation } from '../../../actions/edges';
 
 export class InteractiveEdgeCreation extends AbstractCanvasBehavior {
   constructor(private readonly graphView: GraphCanvasView) {
@@ -38,14 +39,12 @@ class ActiveEdgeCreation extends AbstractCanvasBehavior {
     if (subject && subject.type === GraphEntityType.Node) {
       const node = subject.entity as UniversalGraphNode;
       if (node !== this.from) {
-        const label = prompt('Label please', '') || ''; // Doesn't work for 0
-        // TODO: handle invalidation and history
-        this.graphView.edges.push({
+        this.graphView.execute(new EdgeCreation('Create connection', {
           from: this.from.hash,
           to: node.hash,
-          label,
-        });
-        this.graphView.requestRender(); // TODO: Don't call unless needed
+          label: null,
+        }));
+        this.graphView.requestRender();
         return BehaviorResult.RemoveAndContinue;
       }
     } else {
@@ -62,7 +61,6 @@ class ActiveEdgeCreation extends AbstractCanvasBehavior {
     const [mouseX, mouseY] = d3.mouse(this.graphView.canvas);
     const graphX = this.graphView.transform.invertX(mouseX);
     const graphY = this.graphView.transform.invertY(mouseY);
-    const entityAtMouse = this.graphView.getEntityAtMouse();
 
     this.to = {
       data: {
