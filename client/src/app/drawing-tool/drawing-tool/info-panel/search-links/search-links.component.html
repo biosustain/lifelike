@@ -1,0 +1,6 @@
+<div *ngIf='graphData?.data?.search?.length'>
+  <h4 class='blue'>Search</h4>
+  <div class="flex pointer items-center dim mb1" *ngFor='let h of graphData?.data?.search' (click)='goToLink(h?.url)'>
+      <mat-icon class='dib' matSuffix>link</mat-icon><span class='dib f6'>{{h.domain | titlecase}}</span>
+  </div>
+</div>
