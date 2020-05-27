@@ -413,6 +413,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
       const width = firstRect.width;
       if (width < 1) {
         this.clearSelection();
+        this.deleteFrictionless();
         return false;
       }
     }
