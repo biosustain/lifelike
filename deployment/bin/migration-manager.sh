@@ -5,7 +5,7 @@ print_usage() {
     ================================= USAGE =================================
     Used for applying database migrations for PostgreSQL using Alembic
 
-    -t          <target: either staging or production>
+    -t          <target: either staging or production or demo>
 
     e.g. ->
         ./migration-manager.sh -t staging
@@ -39,6 +39,11 @@ fi
 if [ "$TARGET" = production ]; then
     cd /srv
     export $(cat prod.env | xargs)
+fi
+
+if [ "$TARGET" = demo ]; then
+    cd /srv
+    export $(cat demo.env | xargs)
 fi
 
 # Sets permission for CloudSQL to Cloud Bucket Storage

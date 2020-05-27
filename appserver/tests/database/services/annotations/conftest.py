@@ -99,12 +99,12 @@ def default_lmdb_setup(app, request):
     )
 
     entities = [
-        ('chemical', []),  # TODO: Create test chemical data
-        ('compound', []),  # TODO: Create test compound data
-        ('disease', []),  # TODO: Create test disease data
-        ('gene', [hyp27_gene]),
-        ('phenotype', []),  # TODO: Create test phenotype data
-        ('protein', [hyp27_protein]),
+        ('chemicals', []),  # TODO: Create test chemical data
+        ('compounds', []),  # TODO: Create test compound data
+        ('diseases', []),  # TODO: Create test disease data
+        ('genes', [hyp27_gene]),
+        ('phenotypes', []),  # TODO: Create test phenotype data
+        ('proteins', [hyp27_protein]),
         ('species', [human, moniliophthora_roreri]),
     ]
     for entity, data in entities:
@@ -144,12 +144,12 @@ def human_gene_pdf_lmdb_setup(app, request):
     )
 
     entities = [
-        ('chemical', []),
-        ('compound', []),
-        ('disease', [covid_19]),
-        ('gene', [ace2]),
-        ('phenotype', []),
-        ('protein', []),
+        ('chemicals', []),
+        ('compounds', []),
+        ('diseases', [covid_19]),
+        ('genes', [ace2]),
+        ('phenotypes', []),
+        ('proteins', []),
         ('species', [mers_cov]),
     ]
     for entity, data in entities:
@@ -206,12 +206,12 @@ def escherichia_coli_pdf_lmdb_setup(app, request):
     )
 
     entities = [
-        ('chemical', []),
-        ('compound', []),
-        ('disease', []),
-        ('gene', [purA, purB, purC, purD, purF]),
-        ('phenotype', []),
-        ('protein', []),
+        ('chemicals', []),
+        ('compounds', []),
+        ('diseases', []),
+        ('genes', [purA, purB, purC, purD, purF]),
+        ('phenotypes', []),
+        ('proteins', []),
         ('species', [e_coli]),
     ]
     for entity, data in entities:
