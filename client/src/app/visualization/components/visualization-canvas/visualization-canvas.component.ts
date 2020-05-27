@@ -398,6 +398,9 @@ export class VisualizationCanvasComponent implements OnInit {
      */
     getConnectedEdgeLabels(selectedNode: IdType): Map<string, Direction[]> {
         const labels = new Map<string, Direction[]>();
+        const clustersConnectedToSelectedNode = (this.networkGraph.getConnectedNodes(selectedNode) as IdType[]).filter(
+            nodeId => this.networkGraph.isCluster(nodeId)
+        );
 
         this.networkGraph.getConnectedEdges(selectedNode).filter(
             edge => this.isNotAClusterEdge(edge)
@@ -405,6 +408,25 @@ export class VisualizationCanvasComponent implements OnInit {
             edgeId => {
                 const edge = this.edges.get(edgeId) as VisEdge;
                 const { label, from, to } = edge;
+
+                // TODO: Need to validate that this is the expected behavior
+                const connectedClustersOnRel = clustersConnectedToSelectedNode.filter(
+                    (clusterId: string) => this.clusters.get(clusterId).relationship === label
+                );
+                if (connectedClustersOnRel.length > 0) {
+                    const nonHubNode = selectedNode === to ? from : to;
+                    // Check if the non-hub node is present in any of the existing clusters connected
+                    // to the hub node
+                    const nonHubNodeIsInConnectedCluster = connectedClustersOnRel.map(clusterId => {
+                        return this.networkGraph.getNodesInCluster(clusterId).map(duplicateNodeId => {
+                            return (this.nodes.get(duplicateNodeId) as DuplicateVisNode).duplicateOf;
+                        }).includes(nonHubNode);
+                    }).some(nonHubNodeInACluster => nonHubNodeInACluster);
+
+                    if (nonHubNodeIsInConnectedCluster) {
+                        return;
+                    }
+                }
 
                 if (!isNullOrUndefined(labels.get(label))) {
                     // Either `TO` or `FROM` is already in the direction list for this label, so check to see which one we need to add
@@ -414,11 +436,7 @@ export class VisualizationCanvasComponent implements OnInit {
                         labels.set(label, [Direction.TO, Direction.FROM]);
                     }
                 } else {
-                    if (selectedNode === to) {
-                        labels.set(label, [Direction.TO]);
-                    } else {
-                        labels.set(label, [Direction.FROM]);
-                    }
+                    labels.set(label, [selectedNode === to ? Direction.TO : Direction.FROM]);
                 }
             }
         );
@@ -720,9 +738,12 @@ export class VisualizationCanvasComponent implements OnInit {
                 // If the original node is being clustered on its last unclustered edge,
                 // remove it entirely from the canvas.
                 nodesToRemove.push(duplicateNode.duplicateOf);
+                edgesToRemove.push(duplicateEdge.duplicateOf);
+            } else if (this.networkGraph.getConnectedNodes(duplicateNode.duplicateOf).length === 1) {
+                // Otherwise, don't remove the original node, and only remove the original edge if the
+                // candidate node is not connected to any other node.
+                edgesToRemove.push(duplicateEdge.duplicateOf);
             }
-
-            edgesToRemove.push(duplicateEdge.duplicateOf);
         });
 
         this.edges.remove(edgesToRemove);
