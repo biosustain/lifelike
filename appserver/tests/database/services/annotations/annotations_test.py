@@ -87,7 +87,7 @@ def get_dummy_LTChar(text):
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    keyword_type=EntityType.Genes.value,
+                    keyword_type=EntityType.Gene.value,
                     color='',
                     id='',
                     id_type='',
@@ -104,7 +104,7 @@ def get_dummy_LTChar(text):
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    keyword_type=EntityType.Genes.value,
+                    keyword_type=EntityType.Gene.value,
                     color='',
                     id='',
                     id_type='',
@@ -123,7 +123,7 @@ def get_dummy_LTChar(text):
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    keyword_type=EntityType.Genes.value,
+                    keyword_type=EntityType.Gene.value,
                     color='',
                     id='',
                     id_type='',
@@ -140,7 +140,7 @@ def get_dummy_LTChar(text):
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    keyword_type=EntityType.Chemicals.value,
+                    keyword_type=EntityType.Chemical.value,
                     color='',
                     id='',
                     id_type='',
@@ -159,7 +159,7 @@ def get_dummy_LTChar(text):
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    keyword_type=EntityType.Genes.value,
+                    keyword_type=EntityType.Gene.value,
                     color='',
                     id='',
                     id_type='',
@@ -176,7 +176,7 @@ def get_dummy_LTChar(text):
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    keyword_type=EntityType.Chemicals.value,
+                    keyword_type=EntityType.Chemical.value,
                     color='',
                     id='',
                     id_type='',
@@ -195,7 +195,7 @@ def get_dummy_LTChar(text):
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    keyword_type=EntityType.Genes.value,
+                    keyword_type=EntityType.Gene.value,
                     color='',
                     id='',
                     id_type='',
@@ -212,7 +212,7 @@ def get_dummy_LTChar(text):
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    keyword_type=EntityType.Chemicals.value,
+                    keyword_type=EntityType.Chemical.value,
                     color='',
                     id='',
                     id_type='',
@@ -231,7 +231,7 @@ def get_dummy_LTChar(text):
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    keyword_type=EntityType.Genes.value,
+                    keyword_type=EntityType.Gene.value,
                     color='',
                     id='',
                     id_type='',
@@ -250,7 +250,7 @@ def get_dummy_LTChar(text):
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    keyword_type=EntityType.Genes.value,
+                    keyword_type=EntityType.Gene.value,
                     color='',
                     id='',
                     id_type='',
@@ -267,7 +267,7 @@ def get_dummy_LTChar(text):
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    keyword_type=EntityType.Chemicals.value,
+                    keyword_type=EntityType.Chemical.value,
                     color='',
                     id='',
                     id_type='',
@@ -284,7 +284,7 @@ def get_dummy_LTChar(text):
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    keyword_type=EntityType.Chemicals.value,
+                    keyword_type=EntityType.Chemical.value,
                     color='',
                     id='',
                     id_type='',
@@ -304,7 +304,7 @@ def get_dummy_LTChar(text):
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    keyword_type=EntityType.Genes.value,
+                    keyword_type=EntityType.Gene.value,
                     color='',
                     id='',
                     id_type='',
@@ -321,7 +321,7 @@ def get_dummy_LTChar(text):
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    keyword_type=EntityType.Chemicals.value,
+                    keyword_type=EntityType.Chemical.value,
                     color='',
                     id='',
                     id_type='',
@@ -341,7 +341,7 @@ def get_dummy_LTChar(text):
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    keyword_type=EntityType.Chemicals.value,
+                    keyword_type=EntityType.Chemical.value,
                     color='',
                     id='',
                     id_type='',
@@ -358,7 +358,7 @@ def get_dummy_LTChar(text):
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    keyword_type=EntityType.Chemicals.value,
+                    keyword_type=EntityType.Chemical.value,
                     color='',
                     id='',
                     id_type='',
@@ -417,7 +417,7 @@ def test_fix_conflicting_annotations(annotations_setup, index, annotations):
                 keywords=['CysB'],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    keyword_type=EntityType.Proteins.value,
+                    keyword_type=EntityType.Protein.value,
                     color='',
                     id='',
                     id_type='',
@@ -434,7 +434,7 @@ def test_fix_conflicting_annotations(annotations_setup, index, annotations):
                 keywords=['cysB'],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    keyword_type=EntityType.Genes.value,
+                    keyword_type=EntityType.Gene.value,
                     color='',
                     id='',
                     id_type='',
@@ -453,7 +453,7 @@ def test_fix_conflicting_annotations(annotations_setup, index, annotations):
                 keywords=['cysB'],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    keyword_type=EntityType.Proteins.value,
+                    keyword_type=EntityType.Protein.value,
                     color='',
                     id='',
                     id_type='',
@@ -470,7 +470,7 @@ def test_fix_conflicting_annotations(annotations_setup, index, annotations):
                 keywords=['cysB'],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    keyword_type=EntityType.Genes.value,
+                    keyword_type=EntityType.Gene.value,
                     color='',
                     id='',
                     id_type='',
@@ -489,7 +489,7 @@ def test_fix_conflicting_annotations(annotations_setup, index, annotations):
                 keywords=['Word'],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    keyword_type=EntityType.Genes.value,
+                    keyword_type=EntityType.Gene.value,
                     color='',
                     id='',
                     id_type='',
@@ -506,7 +506,7 @@ def test_fix_conflicting_annotations(annotations_setup, index, annotations):
                 keywords=['Test a long word'],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    keyword_type=EntityType.Proteins.value,
+                    keyword_type=EntityType.Protein.value,
                     color='',
                     id='',
                     id_type='',
@@ -620,13 +620,13 @@ def test_annotations_gene_vs_protein(
     tokens,
 ):
     annotation_service = get_test_annotations_service(
-        genes_lmdb_path=path.join(directory, 'lmdb/gene'),
-        chemicals_lmdb_path=path.join(directory, 'lmdb/chemical'),
-        compounds_lmdb_path=path.join(directory, 'lmdb/compound'),
-        proteins_lmdb_path=path.join(directory, 'lmdb/protein'),
+        genes_lmdb_path=path.join(directory, 'lmdb/genes'),
+        chemicals_lmdb_path=path.join(directory, 'lmdb/chemicals'),
+        compounds_lmdb_path=path.join(directory, 'lmdb/compounds'),
+        proteins_lmdb_path=path.join(directory, 'lmdb/proteins'),
         species_lmdb_path=path.join(directory, 'lmdb/species'),
-        diseases_lmdb_path=path.join(directory, 'lmdb/disease'),
-        phenotypes_lmdb_path=path.join(directory, 'lmdb/phenotype'),
+        diseases_lmdb_path=path.join(directory, 'lmdb/diseases'),
+        phenotypes_lmdb_path=path.join(directory, 'lmdb/phenotypes'),
     )
 
     char_coord_objs_in_pdf = []
@@ -645,13 +645,13 @@ def test_annotations_gene_vs_protein(
 
     assert len(annotations) == 4
     assert annotations[0].keyword == 'hyp27'
-    assert annotations[0].meta.keyword_type == EntityType.Genes.value
+    assert annotations[0].meta.keyword_type == EntityType.Gene.value
 
     assert annotations[1].keyword == 'Moniliophthora roreri'
     assert annotations[1].meta.keyword_type == EntityType.Species.value
 
     assert annotations[2].keyword == 'Hyp27'
-    assert annotations[2].meta.keyword_type == EntityType.Proteins.value
+    assert annotations[2].meta.keyword_type == EntityType.Protein.value
 
     assert annotations[3].keyword == 'human'
     assert annotations[3].meta.keyword_type == EntityType.Species.value

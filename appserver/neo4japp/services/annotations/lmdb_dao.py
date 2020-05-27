@@ -16,7 +16,7 @@ class LMDBDao:
         proteins_lmdb_path: str = 'lmdb/proteins',
         species_lmdb_path: str = 'lmdb/species',
         diseases_lmdb_path: str = 'lmdb/diseases',
-        phenotypes_lmdb_path: str = 'lmdb/phenotype',
+        phenotypes_lmdb_path: str = 'lmdb/phenotypes',
     ) -> None:
         if all([
             genes_lmdb_path,
