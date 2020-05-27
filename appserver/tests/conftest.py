@@ -452,7 +452,7 @@ def example4_pdf_gene_and_organism_network(
 
 
 @pytest.fixture(scope='function')
-def human_gene_test_pdf_gene_and_organism_network(
+def human_gene_pdf_gene_and_organism_network(
     graph,
 ):
     tx = graph.begin()
