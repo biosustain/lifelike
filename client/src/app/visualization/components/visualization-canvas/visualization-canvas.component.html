@@ -6,25 +6,10 @@ we should be careful using 'autosize', as it may lead to performance problems.--
 
     <app-legend [legend]="legend"></app-legend>
 
-    <!-- TODO: This should probably be its own component... -->
-    <div id="expand-node-type-filter-container">
-      <form [formGroup]="expandNodeForm" fxLayout="column" fxLayoutAlign="space-between start">
-        <div>Include in Expand Node Result:</div>
-
-        <mat-checkbox
-          formControlName="Chemical"
-        >Chemical</mat-checkbox>
-
-        <mat-checkbox
-          formControlName="Gene"
-        >Gene</mat-checkbox>
-
-        <mat-checkbox
-          formControlName="Disease"
-        >Disease</mat-checkbox>
-
-      </form>
-    </div>
+    <app-visualization-settings
+      [legendLabels]="legendLabels"
+      (settingsFormChanges)="updateSettings($event)"
+    ></app-visualization-settings>
 
     <div id="network-viz"></div>
 
