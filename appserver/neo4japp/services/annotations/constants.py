@@ -51,6 +51,7 @@ TYPO_SYNONYMS = {
     'S-Phase kinase associated protein 2': ['S-Phase kinase-associated protein 2'],
 }
 
+
 class EntityType(Enum):
     Chemical = 'Chemical'
     Compound = 'Compound'
