@@ -1,5 +1,6 @@
 import { TestBed, ComponentFixture } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 import { configureTestSuite } from 'ng-bullet';
 
@@ -9,6 +10,7 @@ import { of } from 'rxjs';
 
 import { DataSet } from 'vis-network';
 
+import { MAX_CLUSTER_ROWS } from 'app/constants';
 import {
     Direction,
     DuplicateNodeEdgePair,
@@ -24,6 +26,7 @@ import {
     GetReferenceTableDataResult,
     ReferenceTableRow,
     GetClusterSnippetDataResult,
+    SettingsFormValues,
     ClusterData,
     SidenavSnippetData,
     SidenavClusterEntity,
@@ -41,7 +44,7 @@ import { SidenavEdgeViewComponent } from '../sidenav-edge-view/sidenav-edge-view
 import { SidenavNodeViewComponent } from '../sidenav-node-view/sidenav-node-view.component';
 import { VisualizationQuickbarComponent } from '../../components/visualization-quickbar/visualization-quickbar.component';
 import { VisualizationCanvasComponent } from '../visualization-canvas/visualization-canvas.component';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { VisualizationSettingsComponent } from '../visualization-settings/visualization-settings.component';
 
 describe('VisualizationCanvasComponent', () => {
     let fixture: ComponentFixture<VisualizationCanvasComponent>;
@@ -58,6 +61,8 @@ describe('VisualizationCanvasComponent', () => {
     let mockGroupRequest: GroupRequest;
     let mockConfig: Neo4jGraphConfig;
     let mockLegend: Map<string, string[]>;
+    let mockValidSettingsFormValues: SettingsFormValues;
+    let mockInvalidSettingsFormValues: SettingsFormValues;
     let mockCallbackParams: any;
 
     function mockNodeGenerator(nodeId: number, nodeDisplayName: string, nodeData?: any): VisNode {
@@ -122,6 +127,7 @@ describe('VisualizationCanvasComponent', () => {
                     SidenavNodeViewComponent,
                     VisualizationCanvasComponent,
                     VisualizationQuickbarComponent,
+                    VisualizationSettingsComponent,
                 ),
             ],
             providers: [
@@ -219,6 +225,44 @@ describe('VisualizationCanvasComponent', () => {
             ['Chemical', ['#CD5D67', '#410B13']]
         ]);
 
+        mockValidSettingsFormValues = {
+            maxClusterShownRows: {
+                value: MAX_CLUSTER_ROWS,
+                valid: true,
+            },
+            Chemical: {
+                value: true,
+                valid: true,
+            },
+            Gene: {
+                value: true,
+                valid: true,
+            },
+            Diseases: {
+                value: true,
+                valid: true,
+            },
+        } as SettingsFormValues;
+
+        mockInvalidSettingsFormValues = {
+            maxClusterShownRows: {
+                value: -1,
+                valid: false,
+            },
+            Chemical: {
+                value: true,
+                valid: true,
+            },
+            Gene: {
+                value: true,
+                valid: true,
+            },
+            Diseases: {
+                value: true,
+                valid: true,
+            },
+        } as SettingsFormValues;
+
         mockCallbackParams = {
             event: {
                 preventDefault() { /*Do nothing*/ },
@@ -240,12 +284,61 @@ describe('VisualizationCanvasComponent', () => {
         instance.edges = mockEdges;
         instance.config = mockConfig;
         instance.legend = mockLegend;
+        instance.settingsFormValues = mockValidSettingsFormValues;
 
         fixture.detectChanges();
     });
 
     it('should create', () => {
         expect(fixture).toBeTruthy();
+    });
+
+    it('updateSettings should update settings values if inputs are valid', () => {
+        const newSettings = {
+            maxClusterShownRows: {
+                value: 10,
+                valid: true,
+            },
+            Chemical: {
+                value: true,
+                valid: true,
+            },
+            Gene: {
+                value: true,
+                valid: true,
+            },
+            Diseases: {
+                value: true,
+                valid: true,
+            },
+        } as SettingsFormValues;
+
+        instance.updateSettings(newSettings);
+        expect(instance.settingsFormValues).toEqual(newSettings);
+    });
+
+    it('updateSettings should not update update settings values if inputs are invalid', () => {
+        const newSettings = {
+            maxClusterShownRows: {
+                value: 2,
+                valid: false,
+            },
+            Chemical: {
+                value: true,
+                valid: false,
+            },
+            Gene: {
+                value: true,
+                valid: false,
+            },
+            Diseases: {
+                value: true,
+                valid: false,
+            },
+        } as SettingsFormValues;
+
+        instance.updateSettings(newSettings);
+        expect(instance.settingsFormValues).toEqual(mockValidSettingsFormValues);
     });
 
     it('should update sidenav entity data when getSnippetsResult changes', () => {
