@@ -584,13 +584,18 @@ def test_generate_annotations(
     )
 
 
-# Assumes the postgres database has been seeded with organism/gene data
-@pytest.mark.skip
 def test_escherichia_coli_pdf(
-    annotations_setup,
+    escherichia_coli_pdf_lmdb_setup,
+    mock_get_gene_to_organism_match_result_for_escherichia_coli_pdf,
 ):
-    annotator = get_annotations_service(
-        lmdb_dao=get_lmdb_dao()
+    annotation_service = get_test_annotations_service(
+        genes_lmdb_path=path.join(directory, 'lmdb/gene'),
+        chemicals_lmdb_path=path.join(directory, 'lmdb/chemical'),
+        compounds_lmdb_path=path.join(directory, 'lmdb/compound'),
+        proteins_lmdb_path=path.join(directory, 'lmdb/protein'),
+        species_lmdb_path=path.join(directory, 'lmdb/species'),
+        diseases_lmdb_path=path.join(directory, 'lmdb/disease'),
+        phenotypes_lmdb_path=path.join(directory, 'lmdb/phenotype'),
     )
     pdf_parser = get_annotations_pdf_parser()
 
@@ -598,7 +603,7 @@ def test_escherichia_coli_pdf(
 
     with open(pdf, 'rb') as f:
         pdf_text = pdf_parser.parse_pdf(pdf=f)
-        annotations = annotator.create_annotations(
+        annotations = annotation_service.create_annotations(
             tokens=pdf_parser.extract_tokens(parsed_chars=pdf_text))
 
     keywords = {o.keyword: o.meta.keyword_type for o in annotations}
@@ -606,8 +611,8 @@ def test_escherichia_coli_pdf(
     assert 'Escherichia coli' in keywords
     assert keywords['Escherichia coli'] == 'Species'
 
-    assert 'PURA' in keywords
-    assert keywords['PURA'] == 'Genes'
+    assert 'purA' in keywords
+    assert keywords['purA'] == 'Genes'
 
     assert 'purB' in keywords
     assert keywords['purB'] == 'Genes'
@@ -622,13 +627,19 @@ def test_escherichia_coli_pdf(
     assert keywords['purF'] == 'Genes'
 
 
-@pytest.mark.skip
 def test_human_gene_pdf(
-    annotations_setup,
-    human_gene_test_pdf_gene_and_organism_network,
+    human_gene_pdf_lmdb_setup,
+    human_gene_pdf_gene_and_organism_network,
+    mock_get_gene_to_organism_match_result_for_human_gene_pdf,
 ):
-    annotator = get_annotations_service(
-        lmdb_dao=get_lmdb_dao()
+    annotation_service = get_test_annotations_service(
+        genes_lmdb_path=path.join(directory, 'lmdb/gene'),
+        chemicals_lmdb_path=path.join(directory, 'lmdb/chemical'),
+        compounds_lmdb_path=path.join(directory, 'lmdb/compound'),
+        proteins_lmdb_path=path.join(directory, 'lmdb/protein'),
+        species_lmdb_path=path.join(directory, 'lmdb/species'),
+        diseases_lmdb_path=path.join(directory, 'lmdb/disease'),
+        phenotypes_lmdb_path=path.join(directory, 'lmdb/phenotype'),
     )
     pdf_parser = get_annotations_pdf_parser()
 
@@ -636,7 +647,7 @@ def test_human_gene_pdf(
 
     with open(pdf, 'rb') as f:
         pdf_text = pdf_parser.parse_pdf(pdf=f)
-        annotations = annotator.create_annotations(
+        annotations = annotation_service.create_annotations(
             tokens=pdf_parser.extract_tokens(parsed_chars=pdf_text))
 
     keywords = {o.keyword: o.meta.keyword_type for o in annotations}
@@ -682,7 +693,7 @@ def test_human_gene_pdf(
     ],
 )
 def test_annotations_gene_vs_protein(
-    lmdb_setup,
+    default_lmdb_setup,
     mock_get_gene_to_organism_match_result,
     tokens,
 ):
