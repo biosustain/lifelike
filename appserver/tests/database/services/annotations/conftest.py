@@ -243,7 +243,7 @@ def mock_get_gene_to_organism_match_result(monkeypatch):
 @pytest.fixture(scope='function')
 def mock_get_gene_to_organism_match_result_for_human_gene_pdf(monkeypatch):
     def get_match_result(*args, **kwargs):
-        return { 'ace2': {'9606': '59272'}}
+        return {'ace2': {'9606': '59272'}}
 
     monkeypatch.setattr(
         HybridNeo4jPostgresService,
