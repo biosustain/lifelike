@@ -38,7 +38,6 @@ from neo4japp.data_transfer_objects import (
     OrganismAnnotation,
 )
 from neo4japp.database import get_hybrid_neo4j_postgres_service
-from neo4japp.util import compute_hash
 
 
 class AnnotationsService:
@@ -88,7 +87,7 @@ class AnnotationsService:
             lookup_key = normalize_str(synonym).encode('utf-8')
         else:
             lookup_key = normalize_str(word).encode('utf-8')
-        hashval = compute_hash(token.to_dict())
+        hashval = token.to_dict_hash()
 
         gene_val = self.lmdb_session.genes_txn.get(lookup_key)
         if gene_val and hashval not in self.validated_genes_tokens:
@@ -155,6 +154,7 @@ class AnnotationsService:
     def _filter_tokens(self, tokens: PDFTokenPositionsList) -> None:
         """Filter the tokens into separate matched sets in LMDB."""
         compiled_regex = re.compile(self.regex_for_floats)
+
         for token in tokens.token_positions:
             word = token.keyword
 
@@ -375,7 +375,7 @@ class AnnotationsService:
                 meta=meta,
             )
 
-        return annotation, {compute_hash(annotation.to_dict()): token_positions.keyword}
+        return annotation, {annotation.to_dict_hash(): token_positions.keyword}
 
     def _get_annotation(
         self,
@@ -933,7 +933,7 @@ class AnnotationsService:
         fixed_annotations: List[Annotation] = []
 
         for annotation in annotations_list:
-            hashval = compute_hash(annotation.to_dict())
+            hashval = annotation.to_dict_hash()
             keyword_from_pdf = all_hashed_annotation_keywords[hashval].split(' ')
 
             if len(keyword_from_pdf) > 1:
@@ -1064,6 +1064,22 @@ class AnnotationsService:
     ) -> Annotation:
         key1 = ENTITY_TYPE_PRECEDENCE[anno1.meta.keyword_type]
         key2 = ENTITY_TYPE_PRECEDENCE[anno2.meta.keyword_type]
+
+        if ((anno1.meta.keyword_type == EntityType.Proteins.value or
+                anno1.meta.keyword_type == EntityType.Genes.value) and
+            (anno2.meta.keyword_type == EntityType.Proteins.value or
+                anno2.meta.keyword_type == EntityType.Genes.value)):  # noqa
+            if anno1.meta.keyword_type != anno2.meta.keyword_type and normalize_str(anno1.keyword) == normalize_str(anno2.keyword):  # noqa
+                # protein vs gene
+                # protein has capital first letter: CysB vs cysB
+                # if start of a new sentence go with protein can't infer
+                if anno1.meta.keyword_type == EntityType.Proteins.value and len(anno1.keywords) == 1 and anno1.keywords[0][0].isupper():  # noqa
+                    # checked the keyword text from pdf
+                    return anno1
+
+                if anno2.meta.keyword_type == EntityType.Proteins.value and len(anno2.keywords) == 1 and anno2.keywords[0][0].isupper():  # noqa
+                    # checked the keyword text from pdf
+                    return anno2
 
         if key1 > key2:
             return anno1
