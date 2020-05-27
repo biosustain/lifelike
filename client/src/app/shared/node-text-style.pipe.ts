@@ -12,7 +12,7 @@ export class NodeTextStylePipe implements PipeTransform {
     if (isUppercase) {
       return value;
     } else {
-      const titleCasePipe = new TitleCasePipe()
+      const titleCasePipe = new TitleCasePipe();
       return titleCasePipe.transform(value);
     }
   }
