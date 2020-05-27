@@ -4,6 +4,7 @@ import { cloneDeep } from 'lodash';
 import { LaunchApp, UniversalGraphNode } from '../../services/interfaces';
 import { LINE_TYPES } from '../../services/line-types';
 import { annotationTypes } from '../../../shared/annotation-styles';
+import { RecursivePartial } from '../../../graph-viewer/utils/types';
 
 @Component({
   selector: 'app-node-form',
@@ -38,7 +39,18 @@ export class NodeFormComponent {
   }
 
   doSave() {
-    this.save.next(this.targetNode);
+    // Only update the fields that are affected
+    const savedNode: RecursivePartial<UniversalGraphNode> = {
+      data: {
+        hyperlink: this.targetNode.data.hyperlink,
+        detail: this.targetNode.data.detail,
+      },
+      display_name: this.targetNode.display_name,
+      label: this.targetNode.label,
+      style: this.targetNode.style,
+    };
+
+    this.save.next(savedNode);
   }
 
   /**

@@ -1,9 +1,10 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 
 import { cloneDeep } from 'lodash';
-import { UniversalGraphEdge } from '../../services/interfaces';
+import { UniversalGraphEdge, UniversalGraphNode } from '../../services/interfaces';
 import { LINE_HEAD_TYPES } from '../../services/line-head-types';
 import { LINE_TYPES } from '../../services/line-types';
+import { RecursivePartial } from '../../../graph-viewer/utils/types';
 
 @Component({
   selector: 'app-edge-form',
@@ -41,7 +42,13 @@ export class EdgeFormComponent {
   }
 
   doSave() {
-    this.save.next(this.targetEdge);
+    // Only update the fields that are affected
+    const savedEdge: RecursivePartial<UniversalGraphEdge> = {
+      label: this.targetEdge.label,
+      style: this.targetEdge.style,
+    };
+
+    this.save.next(savedEdge);
   }
 
   doDelete(): void {
