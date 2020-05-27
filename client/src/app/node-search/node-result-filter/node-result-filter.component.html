@@ -15,8 +15,14 @@
           {{domain}}
         </mat-list-option>
       </mat-selection-list>
+      <mat-selection-list #goClasses (selectionChange)="getGoClasses(goClasses.selectedOptions.selected)">
+        <div mat-subheader>Go Classes</div>
+        <mat-list-option color="primary" *ngFor="let goClass of typeOfGoClasses" [value]="goClass">
+          {{goClass}}
+        </mat-list-option>
+      </mat-selection-list>
       <mat-selection-list #entities (selectionChange)="getTypes(entities.selectedOptions.selected)">
-         <div mat-subheader>Type</div>
+        <div mat-subheader>Type</div>
         <mat-list-option color="primary" *ngFor="let entity of typesOfEntities" [value]="entity">
           {{entity}}
         </mat-list-option>
