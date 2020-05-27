@@ -769,7 +769,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
 
     this.deleteFrictionless();
 
-    this.snackBar.open('it has been copied to clipboard', 'Close', {duration: 5000});
+    this.snackBar.open('It has been copied to clipboard', 'Close', {duration: 5000});
   
   }
 
