@@ -49,7 +49,6 @@ export class VisualizationComponent implements OnInit {
     getClusterDataResult: GetClusterDataResult;
     nodes: DataSet<VisNode | GraphNode>;
     edges: DataSet<VisEdge | GraphRelationship>;
-    duplicatedEdges = new Set<number>();
 
     // TODO: Will we need to have a legend for each database? i.e. the literature
     // data, biocyc, etc...
@@ -261,7 +260,8 @@ export class VisualizationComponent implements OnInit {
         this.visService.expandNode(nodeId, filterLabels, NODE_EXPANSION_LIMIT).subscribe((r: Neo4jResults) => {
             const nodeRef = this.nodes.get(nodeId) as VisNode;
             const visJSDataFormat = this.convertToVisJSFormat(r);
-            let { edges, nodes } = visJSDataFormat;
+            let { nodes } = visJSDataFormat;
+            const { edges } = visJSDataFormat;
 
             // If the expanded node has no connecting relationships, notify the user
             if (edges.length === 0) {
@@ -276,7 +276,6 @@ export class VisualizationComponent implements OnInit {
                 }
                 return n;
             });
-            edges = edges.filter(candidateEdge => !this.duplicatedEdges.has(candidateEdge.id));
 
             // If the user didn't manually disable the dialog, or if the expanded node has more relationships than the
             // recommendation, re-open the dialog
@@ -328,13 +327,5 @@ export class VisualizationComponent implements OnInit {
 
     hideCanvas(state: boolean) {
         this.hideDisplay = state;
-    }
-
-    addDuplicatedEdge(edge: number) {
-        this.duplicatedEdges.add(edge);
-    }
-
-    removeDuplicatedEdge(edge: number) {
-        this.duplicatedEdges.delete(edge);
     }
 }

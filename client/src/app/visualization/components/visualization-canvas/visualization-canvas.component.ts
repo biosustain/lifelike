@@ -62,8 +62,6 @@ export class VisualizationCanvasComponent implements OnInit {
     @Output() getSnippetsFromEdge = new EventEmitter<VisEdge>();
     @Output() getSnippetsFromDuplicateEdge = new EventEmitter<DuplicateVisEdge>();
     @Output() getClusterData = new EventEmitter<ClusteredNode[]>();
-    @Output() addDuplicatedEdge = new EventEmitter<number>();
-    @Output() removeDuplicatedEdge = new EventEmitter<number>();
 
     @Input() nodes: DataSet<any, any>;
     @Input() edges: DataSet<any, any>;
@@ -115,7 +113,6 @@ export class VisualizationCanvasComponent implements OnInit {
                             nodesToRemove.push(duplicateNode.duplicateOf);
                         }
 
-                        this.addDuplicatedEdge.emit(duplicateEdge.duplicateOf as number);
                         edgesToRemove.push(duplicateEdge.duplicateOf);
                     });
 
@@ -305,6 +302,13 @@ export class VisualizationCanvasComponent implements OnInit {
         // Get all the nodes connected to the root node, before removing edges
         const connectedNodes = this.networkGraph.getConnectedNodes(rootNode.id) as IdType[];
 
+        // Remove every cluster connected to the root node
+        connectedNodes.forEach(connectedNode => {
+            if (this.networkGraph.isCluster(connectedNode)) {
+                this.destroyCluster(connectedNode);
+            }
+        });
+
         this.edges.remove(this.networkGraph.getConnectedEdges(rootNode.id) as IdType[]);
 
         // If a previously connected node has no remaining edges (i.e. it is not connected
@@ -320,13 +324,6 @@ export class VisualizationCanvasComponent implements OnInit {
 
     expandOrCollapseNode(nodeId: number) {
         const nodeRef = this.nodes.get(nodeId) as VisNode;
-        const connectedNodes = this.networkGraph.getConnectedNodes(nodeId);
-
-        connectedNodes.forEach(connectedNode => {
-            if (this.networkGraph.isCluster(connectedNode)) {
-                this.safelyOpenCluster(connectedNode);
-            }
-        });
 
         if (nodeRef.expanded) {
             // Updates node expand state
@@ -635,7 +632,6 @@ export class VisualizationCanvasComponent implements OnInit {
             this.networkGraph.getConnectedEdges(duplicateNodeId).map(
                 duplicateEdgeId => this.edges.get(duplicateEdgeId)
             ).forEach(duplicateEdge => {
-                this.removeDuplicatedEdge.emit(duplicateEdge.duplicateOf);
                 edgesToRemove.push(duplicateEdge.id);
                 edgesToAdd.push(this.createOriginalEdgeFromDuplicate(duplicateEdge));
             });
@@ -726,7 +722,6 @@ export class VisualizationCanvasComponent implements OnInit {
                 nodesToRemove.push(duplicateNode.duplicateOf);
             }
 
-            this.addDuplicatedEdge.emit(duplicateEdge.duplicateOf as number);
             edgesToRemove.push(duplicateEdge.duplicateOf);
         });
 
