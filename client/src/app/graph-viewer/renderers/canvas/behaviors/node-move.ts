@@ -1,7 +1,9 @@
+import { cloneDeep } from 'lodash';
 import * as d3 from 'd3';
 import { GraphEntity, GraphEntityType, UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
 import { GraphCanvasView } from '../graph-canvas-view';
 import { AbstractCanvasBehavior, BehaviorResult } from '../../behaviors';
+import { GraphEntityUpdate } from '../../../actions/graph';
 
 export class MovableNode extends AbstractCanvasBehavior {
   /**
@@ -11,6 +13,8 @@ export class MovableNode extends AbstractCanvasBehavior {
    * so node center is the same the mouse position, and the jump is not what we want.
    */
   private offsetBetweenNodeAndMouseInitialPosition: number[] = [0, 0];
+  private target: UniversalGraphNode | undefined;
+  private originalTarget: UniversalGraphNode | undefined;
 
   constructor(protected readonly graphView: GraphCanvasView) {
     super();
@@ -30,6 +34,9 @@ export class MovableNode extends AbstractCanvasBehavior {
         node.data.x - transform.invertX(mouseX),
         node.data.y - transform.invertY(mouseY),
       ];
+
+      this.target = node;
+      this.originalTarget = cloneDeep(this.target);
     }
 
     return BehaviorResult.Continue;
@@ -39,10 +46,9 @@ export class MovableNode extends AbstractCanvasBehavior {
     // TODO: cache
     const [mouseX, mouseY] = d3.mouse(this.graphView.canvas);
     const transform = this.graphView.transform;
-    const subject: GraphEntity | undefined = d3.event.subject;
 
-    if (subject.type === GraphEntityType.Node) {
-      const node = subject.entity as UniversalGraphNode;
+    if (this.target) {
+      const node = this.target;
       node.data.x = transform.invertX(mouseX) + this.offsetBetweenNodeAndMouseInitialPosition[0];
       node.data.y = transform.invertY(mouseY) + this.offsetBetweenNodeAndMouseInitialPosition[1];
       this.graphView.nodePositionOverrideMap.set(node, [node.data.x, node.data.y]);
@@ -50,6 +56,27 @@ export class MovableNode extends AbstractCanvasBehavior {
       // TODO: Store this in history as ONE object
     }
 
+    return BehaviorResult.Continue;
+  }
+
+  dragEnd(): BehaviorResult {
+    if (this.target) {
+      this.graphView.execute(new GraphEntityUpdate('Move node', {
+        type: GraphEntityType.Node,
+        entity: this.target,
+      }, {
+        data: {
+          x: this.target.data.x,
+          y: this.target.data.y,
+        }
+      } as Partial<UniversalGraphNode>, {
+        data: {
+          x: this.originalTarget.data.x,
+          y: this.originalTarget.data.y,
+        }
+      } as Partial<UniversalGraphNode>));
+      this.target = null;
+    }
     return BehaviorResult.Continue;
   }
 

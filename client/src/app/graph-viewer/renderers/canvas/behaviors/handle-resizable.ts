@@ -1,9 +1,11 @@
+import { cloneDeep } from 'lodash';
 import * as d3 from 'd3';
 
 import { GraphEntity, GraphEntityType, UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
 import { PlacedNode } from 'app/graph-viewer/styles/styles';
 import { GraphCanvasView } from '../graph-canvas-view';
 import { AbstractCanvasBehavior, BehaviorResult } from '../../behaviors';
+import { GraphEntityUpdate } from '../../../actions/graph';
 
 const BEHAVIOR_KEY = '_handle-resizable/active';
 
@@ -39,11 +41,13 @@ export class ActiveResize extends AbstractCanvasBehavior {
   private originalSize: { width: number, height: number } | undefined;
   private dragStartPosition: { x: number, y: number } = {x: 0, y: 0};
   private handle: DragHandle | undefined;
+  private originalTarget: UniversalGraphNode;
 
   constructor(private readonly graphView: GraphCanvasView,
               private readonly target: UniversalGraphNode,
               private size = 10) {
     super();
+    this.originalTarget = cloneDeep(this.target);
   }
 
   dragStart(): BehaviorResult {
@@ -81,6 +85,21 @@ export class ActiveResize extends AbstractCanvasBehavior {
   dragEnd(): BehaviorResult {
     this.drag();
     this.handle = null;
+    this.graphView.execute(new GraphEntityUpdate('Resize node', {
+      type: GraphEntityType.Node,
+      entity: this.target,
+    }, {
+      data: {
+        width: this.target.data.width,
+        height: this.target.data.height,
+      }
+    } as Partial<UniversalGraphNode>, {
+      data: {
+        width: this.originalTarget.data.width,
+        height: this.originalTarget.data.height,
+      }
+    } as Partial<UniversalGraphNode>));
+    this.originalTarget = cloneDeep(this.target);
     return BehaviorResult.Continue;
   }
 
