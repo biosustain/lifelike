@@ -26,3 +26,20 @@ class Files(RDBMSBase):  # type: ignore
     annotations = db.Column(postgresql.JSONB, nullable=False, server_default='[]')
     project = db.Column(db.Integer(), db.ForeignKey('projects.id'), nullable=False)
     custom_annotations = db.Column(postgresql.JSONB, nullable=False, server_default='[]')
+    dir_id = db.Column(db.Integer, db.ForeignKey('directory.id'), nullable=False)
+
+
+class Directory(RDBMSBase):
+    id = db.Column(db.BigInteger, primary_key=True, autoincrement=True)
+    name = db.Column(db.String(200), nullable=False)
+    directory_parent_id = db.Column(
+        db.BigInteger,
+        db.ForeignKey('directory.id'),
+        nullable=True,  # original parent is null
+    )
+    projects_id = db.Column(
+        db.Integer,
+        db.ForeignKey('projects.id'),
+        nullable=False,
+    )
+    files = db.relationship('Files')
