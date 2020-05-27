@@ -43,13 +43,13 @@
       <mat-icon
         matTooltip="Undo"
         (click)='undo()'
-        [ngClass]='{"inactive": false}'>
+        [ngClass]='{"inactive": !graphCanvas || !graphCanvas.canUndo()}'>
         undo
       </mat-icon>
       <mat-icon
         matTooltip="Redo"
         (click)='redo()'
-        [ngClass]='{"inactive": false}'>
+        [ngClass]='{"inactive": !graphCanvas || !graphCanvas.canRedo()}'>
         redo
       </mat-icon>
     </div>
