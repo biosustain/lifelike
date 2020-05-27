@@ -62,6 +62,7 @@ export class NodeSearchComponent {
 
 
   getDomain(subLabels: string[]) {
+    console.log(subLabels);
     this.removeUnneededLabels(subLabels);
     return subLabels.find(element => element.match(/^db_*/))
       .split('_')[1];
