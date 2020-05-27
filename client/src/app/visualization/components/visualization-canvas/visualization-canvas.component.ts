@@ -1000,16 +1000,8 @@ export class VisualizationCanvasComponent implements OnInit {
             this.onSelectNodeCallback(params);
         });
 
-        this.networkGraph.on('deselectNode', (params) => {
-            this.onDeselectNodeCallback(params);
-        });
-
         this.networkGraph.on('selectEdge', (params) => {
             this.onSelectEdgeCallback(params);
-        });
-
-        this.networkGraph.on('deselectEdge', (params) => {
-            this.onDeselectEdgeCallback(params);
         });
 
         this.networkGraph.on('doubleClick', (params) => {
@@ -1071,26 +1063,13 @@ export class VisualizationCanvasComponent implements OnInit {
     }
 
     onSelectNodeCallback(params: any) {
-        this.updateSelectedNodes();
+        this.updateSelectedNodesAndEdges();
         this.updateSidebarEntity();
-    }
-
-    onDeselectNodeCallback(params: any) {
-        // TODO: Minor bug: this is causing the context-menu to briefly show the
-        // "no selected entities" menu template during the fade-out animation. Could
-        // add a timeout here equal to the length of the animation, but maybe there's
-        // a better solution?
-        this.updateSelectedNodes();
     }
 
     onSelectEdgeCallback(params: any) {
-        this.updateSelectedEdges();
+        this.updateSelectedNodesAndEdges();
         this.updateSidebarEntity();
-    }
-
-    onDeselectEdgeCallback(params: any) {
-        // TODO: Same bug as described in "onDeselectNodeCallback"
-        this.updateSelectedEdges();
     }
 
     onDoubleClickCallback(params: any) {
