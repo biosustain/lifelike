@@ -1,6 +1,25 @@
+<button *ngIf="!!edge.data.hyperlink" mat-stroked-button color="primary" (click)="goToLink()" class="w-100">
+  Open Hyperlink
+</button>
+
+<button *ngIf="edge.data.source" mat-stroked-button color="primary" (click)="goToSource()" class="w-100">
+  Go to Source
+</button>
+
 <mat-form-field class="w-100" appearance="standard">
   <mat-label>Label</mat-label>
   <input [(ngModel)]="edge.label" matInput (change)="doSave()">
+</mat-form-field>
+
+<mat-form-field class="w-100" appearance="standard">
+  <mat-label>URL</mat-label>
+  <input [(ngModel)]="edge.data.hyperlink" matInput (change)="doSave()">
+</mat-form-field>
+
+<mat-form-field class="w-100" appearance="standard">
+  <mat-label>Detail</mat-label>
+  <textarea [(ngModel)]="edge.data.detail" rows="6" matInput (change)="doSave()">
+  </textarea>
 </mat-form-field>
 
 <mat-form-field class="w-100" appearance="standard">
