@@ -9,11 +9,11 @@
   <table mat-table [dataSource]="dataSource">
     <!-- Position Column -->
     <ng-container matColumnDef="id">
-      <th mat-header-cell *matHeaderCellDef> Id</th>
+      <th mat-header-cell *matHeaderCellDef> ID</th>
       <td mat-cell *matCellDef="let element"><a [href]="element.link" target="_blank">{{element.id}}</a></td>
     </ng-container>
     <!-- Name Column -->
-    <ng-container matColumnDef="name">
+    <ng-container matColumnDef="name" >
       <th mat-header-cell *matHeaderCellDef> Name</th>
       <td mat-cell *matCellDef="let element"> {{element.name}} </td>
     </ng-container>
@@ -28,6 +28,18 @@
     <ng-container matColumnDef="domain">
       <th mat-header-cell *matHeaderCellDef> Domain</th>
       <td mat-cell *matCellDef="let element"> {{element.domain}} </td>
+    </ng-container>
+
+     <!-- TaxonomyID Column -->
+    <ng-container matColumnDef="taxonomyId">
+      <th mat-header-cell *matHeaderCellDef> Tax. ID</th>
+      <td mat-cell *matCellDef="let element"> {{element.taxonomyId}} </td>
+    </ng-container>
+
+     <!-- TaxonomyName Column -->
+    <ng-container matColumnDef="taxonomyName">
+      <th mat-header-cell *matHeaderCellDef> Tax. Name</th>
+      <td mat-cell *matCellDef="let element"> {{element.taxonomyName}} </td>
     </ng-container>
 
     <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>

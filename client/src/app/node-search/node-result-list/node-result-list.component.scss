@@ -30,11 +30,12 @@ table {
 .mat-cell {
   text-align: center;
   justify-content:center;
+  max-width: 100px;
+  word-break: break-word;
 }
 
 .my-row{
   cursor: grab;
-
 }
 
 .my-row:active{

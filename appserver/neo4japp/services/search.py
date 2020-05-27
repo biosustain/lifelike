@@ -103,9 +103,9 @@ class SearchService(GraphBaseDao):
                 node=graph_node,
                 score=score,
                 taxonomy_id=taxonomy_id if taxonomy_id is not None
-                else 'Taxonomy not available',
+                else 'N/A',
                 taxonomy_name=taxonomy_name if taxonomy_name is not None
-                else 'Taxonomy not available'
+                else 'N/A'
             ))
         return formatted_results
 
@@ -151,7 +151,8 @@ class SearchService(GraphBaseDao):
         if not query_term:
             return FTSResult(query_term, [], 0, page, limit)
         cypher_query = 'CALL db.index.fulltext.queryNodes("synonymIdx", $search_term) ' \
-                       'YIELD node, score WITH node, score MATCH (node)-[]-(n) WHERE %s ' \
+                       'YIELD node, score WITH node, score MATCH (node)-[]-(n) ' \
+                       'WHERE %s AND NOT n:TopicalDescriptor ' \
                        'WITH node, score, n optional MATCH (n)-[:HAS_TAXONOMY]-(t:Taxonomy) ' \
                        'RETURN n as node, score, t.id AS taxonomy_id, t.name AS taxonomy_name ' \
                        'LIMIT $limit' % filter
