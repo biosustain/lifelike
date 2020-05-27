@@ -6,6 +6,7 @@ import { GraphEntity, GraphEntityType, LaunchApp } from '../../services/interfac
 import { Subscription } from 'rxjs';
 import { GraphEntityUpdate } from '../../../graph-viewer/actions/graph';
 import { EdgeDeletion, NodeDeletion } from '../../../graph-viewer/actions/nodes';
+import { openLink } from '../../../shared/utils/browser';
 
 @Component({
   selector: 'app-info-panel',
@@ -53,5 +54,40 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
 
   deleteEdge(edge) {
     this.dataFlow.pushFormChange(new EdgeDeletion('Delete edge', edge));
+  }
+
+  /**
+   * Bring user to original source of node information
+   */
+  openSource(source: string): void {
+    if (source.includes('/dt/pdf')) {
+      const prefixLink = '/dt/pdf/';
+      const [
+        fileId,
+        page,
+        coordA,
+        coordB,
+        coordC,
+        coordD
+      ] = source.replace(prefixLink, '').split('/');
+      // Emit app command with annotation payload
+      this.openApp.emit({
+          app: 'pdf-viewer',
+          arg: {
+            // tslint:disable-next-line: radix
+            pageNumber: parseInt(page),
+            fileId,
+            coords: [
+              parseFloat(coordA),
+              parseFloat(coordB),
+              parseFloat(coordC),
+              parseFloat(coordD)
+            ]
+          }
+        }
+      );
+    } else if (source.includes('/dt/map')) {
+      openLink(window.location.origin + source, '_blank');
+    }
   }
 }

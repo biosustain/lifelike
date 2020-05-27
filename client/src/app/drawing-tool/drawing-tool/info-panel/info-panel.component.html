@@ -3,12 +3,13 @@
                  [node]="selected.entity"
                  (save)="save($event)"
                  (delete)="deleteNode(selected.entity)"
-                 (appOpen)="openApp.next($event)"></app-node-form>
+                 (sourceOpen)="openSource($event)"></app-node-form>
 
   <app-edge-form *ngIf="isSelectionEdge()"
                  [edge]="selected.entity"
                  (save)="save($event)"
-                 (delete)="deleteEdge(selected.entity)"></app-edge-form>
+                 (delete)="deleteEdge(selected.entity)"
+                 (sourceOpen)="openSource($event)"></app-edge-form>
 
   <div *ngIf="!isSelectionNode() && !isSelectionEdge()">
     Select a node or edge to edit it.
