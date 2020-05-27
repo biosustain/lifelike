@@ -224,20 +224,13 @@ export class ProjectListViewComponent {
               proj => proj.hash_id === this.selectedProject.hash_id
             );
 
-            console.log(
-              isPublic,
-              insideList
-            );
-
             if (isPublic && !insideList) {
               // add to public list
-              console.log('adding');
               this.publicProjects = this.publicProjects.concat(
                 [this.selectedProject]
               );
             } else if (!isPublic && insideList) {
               // remove from public list
-              console.log('removing');
               this.publicProjects = this.publicProjects.filter(
                 proj => proj.hash_id !== this.selectedProject.hash_id
               );
@@ -444,7 +437,6 @@ export class ProjectListViewComponent {
 
   toggleFullscreen(screenMode) {
     this.fullScreenmode = screenMode;
-    console.log(this.fullScreenmode);
   }
 
   goToSearch() {
