@@ -41,7 +41,8 @@ COMMON_WORDS = set.union(*[
     COMMON_MISC_WORDS,
 ])
 
-MISC_SYMBOLS_AND_CHARS = {'(c)'}
+# utf-32 unicode
+MISC_SYMBOLS_AND_CHARS = {169, 8230}
 
 TYPO_SYNONYMS = {
     'e coli': ['E. coli', 'Escherichia coli', 'Enterococcus coli'],
@@ -51,12 +52,12 @@ TYPO_SYNONYMS = {
 
 ENTITY_TYPE_PRECEDENCE = {
     # larger value takes precedence
-    'Chemicals': 2,
+    'Chemicals': 3,
     'Compounds': 2,
     'Diseases': 1,
-    'Genes': 5,
-    'Proteins': 3,
-    'Species': 6,
+    'Genes': 6,
+    'Proteins': 5,
+    'Species': 7,
     'Phenotypes': 4,
 }
 
