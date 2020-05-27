@@ -769,6 +769,13 @@ class AnnotationsService:
         else:
             entity_frequency[entity_id] = 1
 
+        # If this annotation is a virus then we also have to update the homo sapiens frequency
+        if isinstance(annotation.meta, OrganismAnnotation.OrganismMeta) and annotation.meta.category == OrganismCategory.Viruses.value:  # noqa
+            if entity_frequency.get(HOMO_SAPIENS_TAX_ID, None) is not None:
+                entity_frequency[HOMO_SAPIENS_TAX_ID] += 1
+            else:
+                entity_frequency[HOMO_SAPIENS_TAX_ID] = 1
+
         return entity_frequency
 
     def _update_entity_location_map(
