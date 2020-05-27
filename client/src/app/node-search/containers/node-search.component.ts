@@ -7,6 +7,8 @@ export interface Nodes {
   domain: string;
   type: string;
   name: string;
+  taxonomyId: string;
+  taxonomyName: string;
 }
 
 @Component({
@@ -49,12 +51,14 @@ export class NodeSearchComponent {
   getResults(results) {
     this.dataSource = results.map((data) => {
       return {
-        id: data.node.data.id,
+        id: this.getId(data),
         link: this.getLink(data),
         name: this.getName(data),
         type: this.getType(data.node.subLabels),
-        domain: this.getDomain(data.node.subLabels)
-      };
+        domain: this.getDomain(data.node.subLabels),
+        taxonomyId: data.taxonomyId,
+        taxonomyName: data.taxonomyName
+      } as Nodes;
     });
   }
 
@@ -100,6 +104,10 @@ export class NodeSearchComponent {
 
   getName(data) {
     return data.node.displayName;
+  }
+
+  getId(data) {
+    return data.node.data.id;
   }
 
   getDomainsFilter(selectedDomains: string[]) {
