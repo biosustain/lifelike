@@ -2,6 +2,7 @@ import {Component} from '@angular/core';
 import {DomSanitizer} from '@angular/platform-browser';
 
 export interface Nodes {
+  id: string;
   link: string;
   domain: string;
   type: string;
@@ -48,6 +49,7 @@ export class NodeSearchComponent {
   getResults(results) {
     this.dataSource = results.map((data) => {
       return {
+        id: data.node.data.id,
         link: this.getLink(data),
         name: this.getName(data),
         type: this.getType(data.node.subLabels),
@@ -59,7 +61,7 @@ export class NodeSearchComponent {
 
   getDomain(subLabels: string[]) {
     this.removeUnneededLabels(subLabels);
-    return  subLabels.find(element => element.match(/^db_*/))
+    return subLabels.find(element => element.match(/^db_*/))
       .split('_')[1];
   }
 

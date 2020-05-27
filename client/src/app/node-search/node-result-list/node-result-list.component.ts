@@ -11,7 +11,7 @@ import {Nodes} from '../containers/node-search.component';
 
 export class NodeResultListComponent implements OnInit, OnChanges {
   @Input() nodes: Nodes[] = [];
-  displayedColumns: string[] = ['link', 'name', 'type', 'domain'];
+  displayedColumns: string[] = ['id', 'name', 'type', 'domain'];
   dataSource = new MatTableDataSource<Nodes>(this.nodes);
   @ViewChild(MatPaginator, {static: false}) paginator: MatPaginator;
   childMode = false;

@@ -40,3 +40,22 @@ table {
 .my-row:active{
   cursor: grabbing;
 }
+
+.my-label {
+  font-size: 10px;
+  color: rgba(8, 140, 170, 1);
+}
+
+.my-icon {
+  font-size: 12px;
+  margin-top: 11px;
+  margin-right: -8px;
+}
+
+.my-parent {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 0.3em;
+  margin-left: 1em;
+}
