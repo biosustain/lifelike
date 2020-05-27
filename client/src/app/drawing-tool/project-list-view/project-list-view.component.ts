@@ -201,11 +201,12 @@ export class ProjectListViewComponent {
         return;
       }
 
-      this.selectedProject = result;
-
-      this.projectService.updateProject(this.selectedProject)
+      this.projectService.updateProject(result)
         .subscribe(
           data => {
+            this.selectedProject = result;
+
+            // Update list of personal projects
             this.projects = this.projects.map(
               (proj: Project) => {
                 if (proj.hash_id === this.selectedProject.hash_id) {
@@ -215,6 +216,32 @@ export class ProjectListViewComponent {
                 }
               }
             );
+
+            // Check if selected project is public?
+            const isPublic = this.selectedProject.public;
+            // Check if inside list
+            const insideList = this.publicProjects.some(
+              proj => proj.hash_id === this.selectedProject.hash_id
+            );
+
+            console.log(
+              isPublic,
+              insideList
+            );
+
+            if (isPublic && !insideList) {
+              // add to public list
+              console.log('adding');
+              this.publicProjects = this.publicProjects.concat(
+                [this.selectedProject]
+              );
+            } else if (!isPublic && insideList) {
+              // remove from public list
+              console.log('removing');
+              this.publicProjects = this.publicProjects.filter(
+                proj => proj.hash_id !== this.selectedProject.hash_id
+              );
+            }
 
             this.snackBar.open(`Project is updated`, null, {
               duration: 2000,
