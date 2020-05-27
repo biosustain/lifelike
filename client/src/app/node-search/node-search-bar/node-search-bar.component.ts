@@ -11,7 +11,8 @@ import {FTSQueryRecord} from '../../interfaces';
 })
 export class NodeSearchBarComponent implements OnInit, OnChanges {
 
-  @Input() domainFilter = '';
+  @Input() domainsFilter = '';
+  @Input() goClassesFilter = '';
   @Input() typesFilter = '';
   filter = 'labels(node)';
   @Output() results = new EventEmitter<any>();
@@ -32,14 +33,30 @@ export class NodeSearchBarComponent implements OnInit, OnChanges {
         const current = JSON.stringify(propertyChanges.currentValue);
         const previous = JSON.stringify(propertyChanges.previousValue);
         if (current !== previous) {
-          this.filter = this.domainFilter === '' && this.typesFilter === '' ?
-            'labels(node)' : this.domainFilter !== '' && this.typesFilter === '' ?
-              this.domainFilter : this.domainFilter === '' && this.typesFilter !== '' ?
-                this.typesFilter : this.domainFilter + ' AND ' + this.typesFilter;
+          this.filter = this.filterComposer();
           this.onSubmit();
         }
       }
     }
+  }
+
+  private filterComposer() {
+    const filters = [this.domainsFilter, this.goClassesFilter, this.typesFilter];
+    const isEmpty = (currentValue) => currentValue === '';
+    if (filters.every(isEmpty)) {
+      return 'labels(n)';
+    }
+    const hasContent = (currentValue) => currentValue !== '';
+    const appliedFilters = filters.filter(hasContent);
+    let filterString = '';
+    appliedFilters.forEach((filter, index) => {
+      if (appliedFilters.length - 1 === index) {
+        filterString += filter;
+        return;
+       }
+      filterString += filter + ' AND ';
+    });
+    return filterString;
   }
 
   onSubmit() {
