@@ -101,11 +101,7 @@ export class TextElement {
         return 0;
       }
     } else {
-      if (this.height != null) {
-        return 0;
-      } else {
-        return width;
-      }
+      return 0;
     }
   }
 

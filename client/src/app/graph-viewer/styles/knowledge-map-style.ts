@@ -53,6 +53,7 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
         text: d.data.detail,
         font: labelFont,
         fillStyle: nullCoalesce(styleData.fillColor, '#999'),
+        horizontalAlign: TextAlignment.Start,
       });
 
       return new RectangleNode(ctx, {
