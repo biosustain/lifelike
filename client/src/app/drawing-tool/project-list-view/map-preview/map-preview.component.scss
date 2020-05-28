@@ -6,6 +6,11 @@
     height: 100%;
   }
 
+  .ma1 {
+    margin: 0.5rem !important;
+  }
+  
+
   #meta-panel {
     @include overlay;
     @include no-select;
@@ -15,6 +20,10 @@
     width: 40%;
     min-width: 300px;
     max-width: 500px;
+
+    max-height: 30vh;
+    overflow-y: auto;
+
     background-color: rgba(255, 255, 255, 0.8);
     border-radius: 2%;
 
@@ -34,6 +43,16 @@
       margin-bottom: 1rem;
       color: $blue;
     }
+
+    .can-hide {
+      max-height: inherit;
+      transition: max-height 0.15s ease-out;
+    }
+    .can-hide.hidden {
+      max-height: 0;
+      transition: max-height 0.15s ease-out;
+      overflow: hidden;
+    }
   }
 
   #meta-panel:hover {
@@ -47,7 +66,7 @@
     top: 0;
     right: 0;
     width: 300px;
-    background-color: rgba(255, 255, 255, 0.8);
+    background-color: rgba(255, 255, 255, 1);
     border-radius: 2%;
     overflow-y: scroll;
     padding: 1rem;
@@ -79,10 +98,6 @@
     p.blue {
       color: $blue !important;
     }
-  }
-  #read-panel:hover {
-    background-color: rgba(255, 255, 255, 1);
-    transition: background-color ease-in;
   }
 
   #tool-panel {

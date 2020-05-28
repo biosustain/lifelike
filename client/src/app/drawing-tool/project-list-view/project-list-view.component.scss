@@ -14,16 +14,15 @@
     right: 0;
   }
 
-    #search {
-      @include overlay();
-      bottom: 0;
-    }
+  #search {
+    @include overlay();
+    bottom: 0;
+  }
 
-    #upload-project {
-      @include overlay();
-      bottom: 0;
-      right: 65px;
-    }
+  #upload-project {
+    @include overlay();
+    bottom: 0;
+    right: 65px;
   }
 }
 
@@ -48,6 +47,7 @@
       margin-bottom: 1rem;
       color: #3177B8;
     }
+
     p.author {
       color: $blue;
     }
@@ -68,6 +68,8 @@
 
 .empty {
   min-width: unset !important;
+  background-color: rgb(246, 246, 246);
+
   p {
     font-size: 2.25rem;
     color: #707070;
@@ -79,7 +81,7 @@
     background-color: rgba(38, 132, 255, 1) !important;
   }
 
-  .as-dragged	 {
+  .as-dragged {
     background-color: rgba(38, 132, 255, 1) !important;
   }
 

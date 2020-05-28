@@ -42,16 +42,16 @@ import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { Progress, ProgressMode } from 'app/interfaces/common-dialog.interface';
 import { HttpEventType } from '@angular/common/http';
 import { EditProjectDialogComponent } from '../project-list/edit-project-dialog/edit-project-dialog.component';
+import { ClipboardService } from 'app/shared/services/clipboard.service';
 
 
 @Component({
   selector: 'app-project-list-view',
   templateUrl: './project-list-view.component.html',
-  styleUrls: ['./project-list-view.component.scss']
+  styleUrls: ['./project-list-view.component.scss'],
+  providers: [ClipboardService]
 })
 export class ProjectListViewComponent {
-  fullScreenmode = 'shrink';
-
   userRoles$: Observable<string[]>;
 
   uploadStarted = false;
@@ -102,6 +102,7 @@ export class ProjectListViewComponent {
     private snackBar: MatSnackBar,
     private progressDialog: ProgressDialog,
     private store: Store<State>,
+    private clipboard: ClipboardService
   ) {
     this.userId = this.authService.whoAmI();
     this.refresh();
@@ -423,12 +424,18 @@ export class ProjectListViewComponent {
       case 'edit':
         this.goToProject();
         break;
-      case 'publish':
-        this.togglePublic();
+      case 'settings':
+        this.editProject();
         break;
       case 'share':
         // TODO implement by copying sharing link to clipboard
         // and showing a snack bar
+        const source = '/dt/map/' + this.selectedProject.hash_id;
+        const hyperlink = window.location.host + source;
+        this.clipboard.writeToClipboard(hyperlink);
+        this.snackBar.open(`Link copied to clipboard`, null, {
+          duration: 2000,
+        });
         break;
       case 'delete':
         this.deleteProject(evt.project);
@@ -439,6 +446,9 @@ export class ProjectListViewComponent {
       case 'copy':
         // TODO bring back
         // this.copyProject(evt.project);
+        break;
+      case 'download':
+        this.downloadProject();
         break;
       default:
         break;

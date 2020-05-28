@@ -45,13 +45,14 @@
   </div>
   <!-- Meta Panel -->
   <div id='meta-panel'>
-    <div class='fr'>
-      <mat-icon class='dib fr ma1 white'>minimize</mat-icon>
-      <!-- TODO - connect to dialog for updating project detail information -->
-      <mat-icon class='dib fr ma1 white'>edit</mat-icon>
+    <div class='cant-hide'>
+      <div class='fr'>
+        <mat-icon (click)='toggleHidden()' class='dib fr ma1 white'>minimize</mat-icon>
+        <mat-icon *ngIf='childMode' (click)='projectAPICall("edit")' class='dib fr ma1 white'>edit</mat-icon>
+      </div>
+      <h2>{{project?.label}}</h2>
     </div>
-    <h2>{{project?.label}}</h2>
-    <div class='can-hide'>
+    <div class='can-hide' [ngClass]='{"hidden": minimized}'>
       <p class='author'>
         By {{project?.author}}
       </p>
@@ -61,16 +62,28 @@
       <p class='description lh-copy'>
         {{project?.description}}
       </p>
-      <div class='action'>
+      <div *ngIf='childMode' fxLayout='row wrap' class='action'>
         
-        <button (click)='projectAPICall("edit")' mat-flat-button color="accent">Edit</button>
+        <button class='ma1' (click)='projectAPICall("edit")' mat-flat-button color="accent">Edit</button>
 
-        <!-- TODO - Refactor maybe into toggle switch -->
-        <button (click)='projectAPICall("publish")' mat-flat-button color="primary">Publish</button>
+        <button class='ma1' (click)='projectAPICall("share")' mat-flat-button color='primary'>Share</button>
 
-        <button (click)='projectAPICall("share")' mat-flat-button>Share</button>
-
-        <button (click)='projectAPICall("delete")' mat-flat-button color="warn">Delete</button>    
+        <button class='ma1' (click)='projectAPICall("delete")' mat-flat-button color="warn">Delete</button>    
+        <button
+          class='ma1'
+          mat-flat-button
+          color="primary"
+          (click)='projectAPICall("settings")'>
+          Settings
+        </button>
+        <button
+          class='ma1'
+          *ngIf="(userRoles$ | async)?.includes('admin')"
+          mat-flat-button
+          color="accent"
+          (click)='projectAPICall("download")'>
+          Download
+        </button>
       </div>
     </div>
   </div>
