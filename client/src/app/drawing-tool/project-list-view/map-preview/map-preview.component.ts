@@ -1,8 +1,12 @@
-import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, Input, Output, EventEmitter, HostBinding } from '@angular/core';
 import { GraphSelectionData, UniversalGraph, VisNetworkGraphEdge, Project } from 'app/drawing-tool/services/interfaces';
 import { NetworkVis } from 'app/drawing-tool/network-vis';
 import { ProjectsService } from 'app/drawing-tool/services';
 import { ActivatedRoute } from '@angular/router';
+import { Observable } from 'rxjs';
+import { Store, select } from '@ngrx/store';
+import { State } from 'app/root-store';
+import { AuthSelectors } from 'app/auth/store';
 
 @Component({
   selector: 'app-map-preview',
@@ -14,6 +18,7 @@ import { ActivatedRoute } from '@angular/router';
 export class MapPreviewComponent implements OnInit {
   @Output() parentAPI: EventEmitter <any> = new EventEmitter <any> ();
 
+  minimized = false;
 
   /** vis ojbect to control network-graph vis */
   visGraph: NetworkVis = null;
@@ -21,13 +26,8 @@ export class MapPreviewComponent implements OnInit {
   /** The edge or node focused on */
   focusedEntity: GraphSelectionData = null;
 
-  /**
-   * Decide if network graph is visualized
-   * in full-screen or preview mode
-   */
-  screenMode = 'shrink';
-
   childMode = true;
+  @HostBinding('class.relative') value = true;
 
   // tslint:disable-next-line: variable-name
   _project: Project = null;
@@ -70,9 +70,12 @@ export class MapPreviewComponent implements OnInit {
     return this.focusedEntity.nodeData.group || '';
   }
 
+  userRoles$: Observable<string[]>;
+
   constructor(
     private projectService: ProjectsService,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private store: Store<State>,
   ) {
     if (this.route.snapshot.params.hash_id) {
       this.projectService.serveProject(
@@ -88,6 +91,8 @@ export class MapPreviewComponent implements OnInit {
         }
       );
     }
+
+    this.userRoles$ = store.pipe(select(AuthSelectors.selectRoles));
   }
 
   ngOnInit() {
@@ -145,7 +150,8 @@ export class MapPreviewComponent implements OnInit {
   }
 
   /**
-   * TODO - finish this ..
+   * Call API functions in project-list view
+   * component
    * @param param - something
    */
   projectAPICall(param) {
@@ -153,5 +159,12 @@ export class MapPreviewComponent implements OnInit {
       action: param,
       project: null
     });
+  }
+
+  /**
+   * Hide or show meta-panel content
+   */
+  toggleHidden() {
+    this.minimized = !this.minimized;
   }
 }

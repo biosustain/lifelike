@@ -1,8 +1,8 @@
-<div [ngClass]='{"childless": !childMode}' id='map-list'>
+<div (resized)="onResized($event)" [ngClass]='{"childless": !childMode}' id='map-list'>
   <h1>Maps</h1>
   <mat-tab-group [selectedIndex]="displayIndex" (selectedTabChange)="toggleView($event)">
     <mat-tab label="Personal">
-      <div fxLayout='row wrap' fxLayoutAlign='flex-start flex-start' class='w-100' cdkDropList>
+      <div [fxLayout]='layout' [fxLayoutAlign]='layoutAlign' class='w-100' cdkDropList>
         <div class='map-template map shadow' *ngFor='let project of projects' [id]='project.hash_id'
           (contextmenu)="open($event, project)" (click)='clickHandler("pick", project)' cdkDrag
           [cdkDragDisabled]='childMode'>
