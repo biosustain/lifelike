@@ -125,6 +125,11 @@ export class ContextMenuComponent extends TooltipComponent implements OnDestroy 
         this.hideAllSubMenus();
     }
 
+    hideSubmenu(tooltipSelector: string) {
+        const tooltip = document.querySelector(tooltipSelector) as HTMLElement;
+        tooltip.style.display = 'none';
+    }
+
     hideAllSubMenus() {
         this.contextMenuControlService.interruptGroupByRel();
         this.contextMenuControlService.interruptPullOutNode();
@@ -152,6 +157,10 @@ export class ContextMenuComponent extends TooltipComponent implements OnDestroy 
     }
 
     requestGroupByRelationship(rel: string, direction: Direction) {
+        // If this is the last possible label, update the submenu display so it is hidden
+        if (this.selectedNodeEdgeLabelData.size === 1) {
+            this.hideSubmenu('#single-node-selection-group-1-submenu');
+        }
         this.groupNeighborsWithRelationship.emit({
             relationship: rel,
             node: this.selectedNodeIds[0],
@@ -162,8 +171,7 @@ export class ContextMenuComponent extends TooltipComponent implements OnDestroy 
     requestPullNodeFromCluster(clusteredNode: VisNode) {
         // If this is the last node in the cluster, update the submenu display so it is hidden
         if (this.selectedClusterNodeData.length === 1) {
-            const tooltip = document.querySelector('#pull-out-node-from-cluster-submenu') as HTMLElement;
-            tooltip.style.display = 'none';
+            this.hideSubmenu('#pull-out-node-from-cluster-submenu');
         }
         this.pullOutNodeFromCluster.emit(clusteredNode.id);
     }
