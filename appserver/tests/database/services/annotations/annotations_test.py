@@ -738,8 +738,7 @@ def test_annotations_gene_vs_protein(
 @pytest.mark.parametrize(
     'index, tokens',
     [
-        (1,
-            [
+        (1, [
                 PDFTokenPositions(
                     page_number=1,
                     keyword='SerpinA1',
@@ -752,8 +751,7 @@ def test_annotations_gene_vs_protein(
                 ),
             ],
         ),
-        (2,
-            [
+        (2, [
                 PDFTokenPositions(
                     page_number=1,
                     keyword='Serpin A1',
@@ -767,8 +765,7 @@ def test_annotations_gene_vs_protein(
             ],
         ),
         # overlapping intervals
-        (3,
-            [
+        (3, [
                 PDFTokenPositions(
                     page_number=1,
                     keyword='SerpinA1',
@@ -786,8 +783,7 @@ def test_annotations_gene_vs_protein(
                 ),
             ],
         ),
-        (4,
-            [
+        (4, [
                 PDFTokenPositions(
                     page_number=1,
                     keyword='serpin A1',
