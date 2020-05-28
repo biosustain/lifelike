@@ -749,8 +749,7 @@ def test_annotations_gene_vs_protein(
                     keyword='human',
                     char_positions={9: 'h', 10: 'u', 11: 'm', 12: 'a', 13: 'n'},
                 ),
-            ],
-        ),
+        ]),
         (2, [
                 PDFTokenPositions(
                     page_number=1,
@@ -762,8 +761,7 @@ def test_annotations_gene_vs_protein(
                     keyword='human',
                     char_positions={10: 'h', 11: 'u', 12: 'm', 13: 'a', 14: 'n'},
                 ),
-            ],
-        ),
+        ]),
         # overlapping intervals
         (3, [
                 PDFTokenPositions(
@@ -781,8 +779,7 @@ def test_annotations_gene_vs_protein(
                     keyword='human',
                     char_positions={10: 'h', 11: 'u', 12: 'm', 13: 'a', 14: 'n'},
                 ),
-            ],
-        ),
+        ]),
         (4, [
                 PDFTokenPositions(
                     page_number=1,
@@ -794,8 +791,7 @@ def test_annotations_gene_vs_protein(
                     keyword='human',
                     char_positions={10: 'h', 11: 'u', 12: 'm', 13: 'a', 14: 'n'},
                 ),
-            ],
-        ),
+        ]),
     ],
 )
 def test_annotations_gene_vs_protein_serpina1_cases(
