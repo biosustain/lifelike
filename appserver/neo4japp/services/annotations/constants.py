@@ -42,7 +42,7 @@ COMMON_WORDS = set.union(*[
 ])
 
 # utf-32 unicode
-MISC_SYMBOLS_AND_CHARS = {169, 8230}
+MISC_SYMBOLS_AND_CHARS = {169, 8230, 174}
 
 TYPO_SYNONYMS = {
     'e coli': ['E. coli', 'Escherichia coli', 'Enterococcus coli'],

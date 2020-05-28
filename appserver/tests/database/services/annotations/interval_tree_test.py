@@ -77,8 +77,16 @@ def test_merge_adjacent_intervals_with_same_type(annotations_setup, annotations)
             phenotypes_lmdb_path='',
         ),
     )
+
+    annotations_text_in_document = {}
+    for anno in annotations:
+        annotations_text_in_document[anno.to_dict_hash()] = anno.keyword
+
     tree = create_tree(annotations=annotations, tree=AnnotationIntervalTree())
-    fixed = tree.merge_overlaps(data_reducer=annotation_service.determine_entity_precedence)
+    fixed = tree.merge_overlaps(
+        data_reducer=annotation_service.determine_entity_precedence,
+        annotations_text_in_document=annotations_text_in_document,
+    )
     assert len(fixed) == 1
     assert fixed[0] == annotations[1]
 
@@ -136,8 +144,16 @@ def test_merge_adjacent_intervals_with_different_type(annotations_setup, annotat
             phenotypes_lmdb_path='',
         ),
     )
+
+    annotations_text_in_document = {}
+    for anno in annotations:
+        annotations_text_in_document[anno.to_dict_hash()] = anno.keyword
+
     tree = create_tree(annotations=annotations, tree=AnnotationIntervalTree())
-    fixed = tree.merge_overlaps(data_reducer=annotation_service.determine_entity_precedence)
+    fixed = tree.merge_overlaps(
+        data_reducer=annotation_service.determine_entity_precedence,
+        annotations_text_in_document=annotations_text_in_document,
+    )
     assert len(fixed) == 1
     assert fixed[0] == annotations[1]
 
@@ -195,8 +211,16 @@ def test_merge_equal_intervals_with_same_type(annotations_setup, annotations):
             phenotypes_lmdb_path='',
         ),
     )
+
+    annotations_text_in_document = {}
+    for anno in annotations:
+        annotations_text_in_document[anno.to_dict_hash()] = anno.keyword
+
     tree = create_tree(annotations=annotations, tree=AnnotationIntervalTree())
-    fixed = tree.merge_overlaps(data_reducer=annotation_service.determine_entity_precedence)
+    fixed = tree.merge_overlaps(
+        data_reducer=annotation_service.determine_entity_precedence,
+        annotations_text_in_document=annotations_text_in_document,
+    )
     assert len(fixed) == 1
     assert fixed[0] == annotations[1]
 
@@ -254,7 +278,15 @@ def test_merge_equal_intervals_with_different_type(annotations_setup, annotation
             phenotypes_lmdb_path='',
         ),
     )
+
+    annotations_text_in_document = {}
+    for anno in annotations:
+        annotations_text_in_document[anno.to_dict_hash()] = anno.keyword
+
     tree = create_tree(annotations=annotations, tree=AnnotationIntervalTree())
-    fixed = tree.merge_overlaps(data_reducer=annotation_service.determine_entity_precedence)
+    fixed = tree.merge_overlaps(
+        data_reducer=annotation_service.determine_entity_precedence,
+        annotations_text_in_document=annotations_text_in_document,
+    )
     assert len(fixed) == 1
     assert fixed[0] == annotations[0]
