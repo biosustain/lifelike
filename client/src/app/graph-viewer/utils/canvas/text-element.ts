@@ -1,6 +1,11 @@
+import { nullCoalesce } from '../types';
+
 interface TextboxOptions {
   width?: number;
+  maxWidth?: number;
   height?: number;
+  maxHeight?: number;
+  maxLines?: number;
   text: string;
   font: string;
   lineHeight?: number;
@@ -17,7 +22,10 @@ interface TextboxOptions {
  */
 export class TextElement {
   readonly width: number | undefined;
+  readonly maxWidth: number | undefined;
   readonly height: number | undefined;
+  readonly maxHeight: number | undefined;
+  readonly maxLines: number | undefined;
   readonly text: string;
   readonly font: string;
   readonly lineHeight: number = 1.2;
@@ -74,17 +82,21 @@ export class TextElement {
     }
   }
 
-  calculateComputedLineMinX(metrics: TextMetrics): number {
+  calculateComputedLineMinX(metrics: TextMetrics, actualWidth: number | undefined): number {
     const width = metrics.width;
     if (this.horizontalAlign === TextAlignment.End) {
       if (this.width != null) {
         return this.width - width;
+      } else if (actualWidth != null) {
+        return actualWidth - width;
       } else {
         return -width;
       }
     } else if (this.horizontalAlign === TextAlignment.Center) {
       if (this.width != null) {
         return (this.width - width) / 2;
+      } else if (actualWidth != null) {
+        return (actualWidth - width) / 2;
       } else {
         return 0;
       }
@@ -97,122 +109,155 @@ export class TextElement {
     }
   }
 
+  private getEffectiveWidth() {
+    if (this.width != null && this.maxWidth != null) {
+      return Math.min(this.width, this.maxWidth);
+    } else if (this.width != null) {
+      return this.width;
+    } else {
+      return this.maxWidth;
+    }
+  }
+
+  private getEffectiveHeight() {
+    if (this.height != null && this.maxHeight != null) {
+      return Math.min(this.height, this.maxHeight);
+    } else if (this.height != null) {
+      return this.height;
+    } else {
+      return this.maxHeight;
+    }
+  }
+
   computeLines(): {
     lines: ComputedLine[],
     verticalOverflow: boolean,
     horizontalOverflow: boolean,
     actualWidth: number,
   } {
-    // TODO: Clean up this disaster
-    const lines: ComputedLine[] = [];
-    const tokens = this.text.split(/ +/g);
-    let horizontalOverflow = false;
-    let actualWidth = 0;
+    const effectiveWidth = this.getEffectiveWidth();
+    const effectiveHeight = this.getEffectiveHeight();
 
-    if (!tokens.length) {
-      return {
-        lines,
-        verticalOverflow: false,
-        horizontalOverflow,
-        actualWidth,
-      };
-    }
+    if (this.actualLineHeight > effectiveHeight || (this.maxLines != null && this.maxLines <= 0)) {
+      // If the box is too small to fit even one line of text
+      const metrics = this.ctx.measureText(this.text);
 
-    if (this.actualLineHeight > this.height) {
       return {
-        lines,
+        lines: [],
         verticalOverflow: true,
-        horizontalOverflow,
-        actualWidth,
+        horizontalOverflow: true,
+        actualWidth: nullCoalesce(this.width, this.maxWidth, metrics.width),
       };
-    }
 
-    if (this.width != null) {
-      let currentLineTokens = [tokens[0]];
-      let laggingLineMetrics: TextMetrics = this.ctx.measureText(currentLineTokens.join(' '));
+    } else if (effectiveWidth != null) {
+      // If we have a width to confirm to
+      let boxHorizontalOverflow = false;
+      let boxVerticalOverflow = true;
+      let actualWidth = 0;
+      const tokens = this.text.split(/ +/g);
+      const lines: ComputedLine[] = [];
 
-      for (let i = 1; i < tokens.length; i++) {
-        const token = tokens[i];
-        currentLineTokens.push(token);
-        const currentLine = currentLineTokens.join(' ');
-        const metrics = this.ctx.measureText(currentLine);
+      for (const {line, metrics, remainingTokens} of this.getWidthFittedLines(tokens, effectiveWidth)) {
+        const lineHorizontalOverflow = metrics.width > effectiveWidth;
 
-        if (metrics.width > this.width) {
-          currentLineTokens.pop();
-
-          if (laggingLineMetrics.width > this.width) {
-            horizontalOverflow = true;
-            actualWidth = this.width;
-          } else {
-            if (laggingLineMetrics.width > actualWidth) {
-              actualWidth = laggingLineMetrics.width;
-            }
-          }
-
-          lines.push({
-            text: currentLineTokens.join(' '),
-            metrics: laggingLineMetrics,
-            xOffset: this.calculateComputedLineMinX(laggingLineMetrics),
-            horizontalOverflow: laggingLineMetrics.width > this.width,
-          });
-
-          // We've overflowed the height
-          if (this.height != null && (lines.length + 1) * this.actualLineHeight > this.height) {
-            return {
-              lines,
-              verticalOverflow: true,
-              horizontalOverflow,
-              actualWidth,
-            };
-          }
-
-          currentLineTokens = [
-            token
-          ];
-          laggingLineMetrics = this.ctx.measureText(currentLineTokens.join(' '));
-        } else {
-          laggingLineMetrics = metrics;
-        }
-      }
-
-      // Left over token
-      if (currentLineTokens.length) {
-        if (laggingLineMetrics.width > this.width) {
-          horizontalOverflow = true;
-          actualWidth = this.width;
-        } else {
-          if (laggingLineMetrics.width > actualWidth) {
-            actualWidth = laggingLineMetrics.width;
-          }
+        if (lineHorizontalOverflow) {
+          // If this line overflows, make sure to mark the box as overflowing and
+          // update the width of the box
+          boxHorizontalOverflow = true;
+          actualWidth = effectiveWidth;
+        } else if (metrics.width > actualWidth) {
+          // If the line isn't overflowing but this line's width is longer than the
+          // running actual width, update that
+          actualWidth = metrics.width;
         }
 
         lines.push({
-          text: currentLineTokens.join(' '),
-          metrics: laggingLineMetrics,
-          xOffset: this.calculateComputedLineMinX(laggingLineMetrics),
-          horizontalOverflow: laggingLineMetrics.width > this.width,
+          text: line,
+          metrics,
+          xOffset: 0, // We'll update later
+          horizontalOverflow: lineHorizontalOverflow,
         });
+
+        // We've overflow the height if we add another line
+        if (remainingTokens && (
+          (effectiveHeight != null && (lines.length + 1) * this.actualLineHeight > effectiveHeight)
+          || (this.maxLines != null && lines.length >= this.maxLines))
+        ) {
+          boxVerticalOverflow = true;
+          break;
+        }
+      }
+
+      // Do X offset for center and other alignments
+      // Do this in a second phase because actualWidth is still being calculated
+      for (const line of lines) {
+        line.xOffset = this.calculateComputedLineMinX(line.metrics, actualWidth);
       }
 
       return {
         lines,
-        verticalOverflow: false,
-        horizontalOverflow,
+        verticalOverflow: boxVerticalOverflow,
+        horizontalOverflow: boxHorizontalOverflow,
         actualWidth,
       };
     } else {
+      // If we have no width to conform to at all
       const metrics = this.ctx.measureText(this.text);
 
       return {
         lines: [{
           text: this.text,
           metrics,
-          xOffset: this.calculateComputedLineMinX(metrics),
+          xOffset: this.calculateComputedLineMinX(metrics, metrics.width),
           horizontalOverflow: false,
         }],
         verticalOverflow: false,
         horizontalOverflow: false,
         actualWidth: metrics.width,
+      };
+    }
+  }
+
+  * getWidthFittedLines(tokens: string[], maxWidth: number):
+    IterableIterator<{ line: string, metrics: TextMetrics, remainingTokens: boolean }> {
+    if (!tokens.length) {
+      return;
+    }
+
+    let lineTokens = [tokens[0]];
+    let line = tokens[0];
+    let metrics: TextMetrics = this.ctx.measureText(lineTokens.join(' '));
+
+    for (let i = 1; i < tokens.length; i++) {
+      const token = tokens[i];
+      lineTokens.push(token);
+      const lineTokensWithToken = lineTokens.join(' ');
+      lineTokens.pop();
+      const metricsWithToken = this.ctx.measureText(lineTokensWithToken);
+
+      if (metricsWithToken.width > maxWidth) {
+        yield {
+          line,
+          metrics,
+          remainingTokens: true,
+        };
+
+        lineTokens = [token];
+        line = token;
+        metrics = this.ctx.measureText(line);
+      } else {
+        lineTokens.push(token);
+        line = lineTokensWithToken;
+        metrics = metricsWithToken;
+      }
+    }
+
+    // Left over token
+    if (lineTokens.length) {
+      yield {
+        line,
+        metrics,
+        remainingTokens: false,
       };
     }
   }
