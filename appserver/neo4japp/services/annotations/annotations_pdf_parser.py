@@ -164,6 +164,14 @@ class AnnotationsPDFParser:
         for i, char in enumerate(char_list):
             try:
                 if ord(char) not in MISC_SYMBOLS_AND_CHARS:
+                    # need to clean because some times hyphens
+                    # are parsed as a char that's represented by a
+                    # unicode and doesn't match the string hyphen
+                    # this means we have to ignore some using ord()
+                    # because they can be cleaned into something like
+                    # `(c)`` and when we strip the parenthesis this creates
+                    # an index error because each char gets one index
+                    # and `(c)` is one char
                     curr_char = clean_char(char)
                     prev_char = clean_char(char_list[i-1])
 
