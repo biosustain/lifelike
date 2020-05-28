@@ -43,6 +43,7 @@ export class MapPreviewComponent implements OnInit {
 
     const container = document.getElementById('canvas');
     this.visGraph = new NetworkVis(container);
+    this.focusedEntity = null;
 
     setTimeout(
       () => {
