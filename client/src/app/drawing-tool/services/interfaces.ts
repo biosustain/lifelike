@@ -11,6 +11,7 @@ export interface UniversalNodeStyle {
   strokeColor?: string;
   lineType?: string;
   lineWidthScale?: number;
+  showDetail?: boolean;
 }
 
 export interface UniversalGraphNode {

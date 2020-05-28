@@ -10,10 +10,10 @@ import * as d3 from 'd3';
 import * as cola from 'webcola';
 import { InputNode, Layout } from 'webcola';
 import { Group, Link } from 'webcola/WebCola/src/layout';
-import { Subject } from 'rxjs';
 import { PlacedEdge, PlacedNode } from '../styles/styles';
 import { GraphAction, GraphActionReceiver } from '../actions/actions';
 import { BehaviorList } from './behaviors';
+import { CacheGuardedEntityList } from '../utils/cache-guarded-entity-list';
 
 /**
  * A rendered view of a graph.
@@ -250,6 +250,9 @@ export abstract class GraphView implements GraphActionReceiver {
 
     // TODO: Only adjust selection if needed
     this.selection.replace([]);
+    this.dragging.replace([]);
+    this.highlighting.replace([]);
+    this.requestRender();
 
     return {
       found: foundNode,
@@ -263,6 +266,7 @@ export abstract class GraphView implements GraphActionReceiver {
    */
   updateNode(node: UniversalGraphNode): void {
     this.invalidateNode(node);
+    this.requestRender();
   }
 
   /**
@@ -301,6 +305,10 @@ export abstract class GraphView implements GraphActionReceiver {
 
     // TODO: Only adjust selection if needed
     this.selection.replace([]);
+    this.dragging.replace([]);
+    this.highlighting.replace([]);
+
+    this.requestRender();
 
     return foundNode;
   }
@@ -311,6 +319,7 @@ export abstract class GraphView implements GraphActionReceiver {
    */
   updateEdge(edge: UniversalGraphEdge): void {
     this.invalidateEdge(edge);
+    this.requestRender();
   }
 
   /**
@@ -808,74 +817,4 @@ interface GraphLayoutGroup extends Group {
   name: string;
   color: string;
   leaves?: GraphLayoutNode[];
-}
-
-/**
- * Manages a list of entities that will be invalidated when the set of
- * items is updated.
- */
-class CacheGuardedEntityList {
-  private items: GraphEntity[] = [];
-  /**
-   * Stream of changes.
-   */
-  readonly changeObservable: Subject<[GraphEntity[], GraphEntity[]]> = new Subject();
-
-  constructor(private readonly graphView: GraphView) {
-  }
-
-  replace(items: GraphEntity[]) {
-    if (items == null) {
-      throw new Error('API use incorrect: pass empty array for no selection');
-    }
-
-    const invalidationMap: Map<UniversalGraphEntity, GraphEntity> = new Map();
-    for (const item of this.items) {
-      invalidationMap.set(item.entity, item);
-    }
-    for (const item of items) {
-      const existed = invalidationMap.delete(item.entity);
-      if (!existed) {
-        // Item is new, so invalidate!
-        this.graphView.invalidateEntity(item);
-      }
-    }
-
-    // Invalidate items that got removed
-    for (const item of invalidationMap.values()) {
-      this.graphView.invalidateEntity(item);
-    }
-
-    // Emit event if it changed
-    if (!this.arraysEqual(this.items.map(item => item.entity), items.map(item => item.entity))) {
-      this.changeObservable.next([[...items], this.items]);
-    }
-
-    this.items = items;
-  }
-
-  get(): GraphEntity[] {
-    return this.items;
-  }
-
-  getEntitySet(): Set<UniversalGraphEntity> {
-    const set: Set<UniversalGraphEntity> = new Set();
-    for (const item of this.items) {
-      set.add(item.entity);
-    }
-    return set;
-  }
-
-  arraysEqual<T>(a: T[], b: T[]) {
-    if (a.length !== b.length) {
-      return false;
-    }
-    const aSet = new Set(a);
-    for (const item of b) {
-      if (!aSet.has(item)) {
-        return false;
-      }
-    }
-    return true;
-  }
 }

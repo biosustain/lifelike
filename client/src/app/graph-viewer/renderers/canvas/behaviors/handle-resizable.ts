@@ -24,7 +24,8 @@ export class HandleResizable extends AbstractCanvasBehavior {
 
   setup() {
     this.selectionChangeSubscription = this.graphView.selection.changeObservable.subscribe(([newSelection, oldSelection]) => {
-      if (newSelection.length === 1 && newSelection[0].type === GraphEntityType.Node) {
+      if (newSelection.length === 1 && newSelection[0].type === GraphEntityType.Node &&
+        this.graphView.placeNode(newSelection[0].entity as UniversalGraphNode).resizable) {
         this.graphView.behaviors.delete(BEHAVIOR_KEY);
         this.graphView.behaviors.add(BEHAVIOR_KEY, new ActiveResize(this.graphView, newSelection[0].entity as UniversalGraphNode), 100);
       } else {
@@ -50,7 +51,7 @@ export class ActiveResize extends AbstractCanvasBehavior {
     this.originalTarget = cloneDeep(this.target);
   }
 
-  dragStart(): BehaviorResult {
+  dragStart(event: MouseEvent): BehaviorResult {
     const transform = this.graphView.transform;
     const [mouseX, mouseY] = d3.mouse(this.graphView.canvas);
     const graphX = transform.invertX(mouseX);
@@ -66,7 +67,7 @@ export class ActiveResize extends AbstractCanvasBehavior {
     return BehaviorResult.Continue;
   }
 
-  drag(): BehaviorResult {
+  drag(event: MouseEvent): BehaviorResult {
     if (this.handle) {
       const transform = this.graphView.transform;
       const [mouseX, mouseY] = d3.mouse(this.graphView.canvas);
@@ -82,24 +83,27 @@ export class ActiveResize extends AbstractCanvasBehavior {
     }
   }
 
-  dragEnd(): BehaviorResult {
-    this.drag();
+  dragEnd(event: MouseEvent): BehaviorResult {
+    this.drag(event);
     this.handle = null;
-    this.graphView.execute(new GraphEntityUpdate('Resize node', {
-      type: GraphEntityType.Node,
-      entity: this.target,
-    }, {
-      data: {
-        width: this.target.data.width,
-        height: this.target.data.height,
-      }
-    } as Partial<UniversalGraphNode>, {
-      data: {
-        width: this.originalTarget.data.width,
-        height: this.originalTarget.data.height,
-      }
-    } as Partial<UniversalGraphNode>));
-    this.originalTarget = cloneDeep(this.target);
+    if (this.target.data.width !== this.originalTarget.data.width ||
+      this.target.data.height !== this.originalTarget.data.height) {
+      this.graphView.execute(new GraphEntityUpdate('Resize node', {
+        type: GraphEntityType.Node,
+        entity: this.target,
+      }, {
+        data: {
+          width: this.target.data.width,
+          height: this.target.data.height,
+        }
+      } as Partial<UniversalGraphNode>, {
+        data: {
+          width: this.originalTarget.data.width,
+          height: this.originalTarget.data.height,
+        }
+      } as Partial<UniversalGraphNode>));
+      this.originalTarget = cloneDeep(this.target);
+    }
     return BehaviorResult.Continue;
   }
 
