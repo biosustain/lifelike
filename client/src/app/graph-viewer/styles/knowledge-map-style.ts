@@ -20,6 +20,8 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
   private readonly defaultSourceLineEndDescriptor: string = null;
   private readonly defaultTargetLineEndDescriptor = 'arrow';
   private readonly lineEndBaseSize = 16;
+  private readonly maxWidthIfUnsized = 400;
+  private readonly maxHeightIfUnsized = 400;
 
   placeNode(d: UniversalGraphNode, ctx: CanvasRenderingContext2D, placementOptions: PlacementOptions): PlacedNode {
     const styleData: UniversalNodeStyle = nullCoalesce(d.style, {});
@@ -43,11 +45,11 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
     }
 
     if (d.label === 'note' && styleData.showDetail) {
-      const effectiveWidth = nullCoalesce(d.data.width, 150);
-
       const textbox = new TextElement(ctx, {
-        width: effectiveWidth,
+        width: d.data.width,
         height: d.data.height,
+        maxWidth: this.maxWidthIfUnsized,
+        maxHeight: this.maxHeightIfUnsized,
         text: d.data.detail,
         font: labelFont,
         fillStyle: nullCoalesce(styleData.fillColor, '#999'),
@@ -56,7 +58,7 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
       return new RectangleNode(ctx, {
         x: d.data.x,
         y: d.data.y,
-        width: effectiveWidth,
+        width: nullCoalesce(d.data.width, textbox.actualWidth),
         height: nullCoalesce(d.data.height, textbox.actualHeight),
         textbox,
         shapeStrokeColor: nullCoalesce(styleData.strokeColor, '#999'),
@@ -79,6 +81,8 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
       });
 
       const labelTextbox = new TextElement(ctx, {
+        maxWidth: this.maxWidthIfUnsized,
+        maxLines: 1,
         text: d.display_name,
         font: labelFont,
         fillStyle: iconLabelColor,
@@ -94,7 +98,9 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
     } else {
       const textbox = new TextElement(ctx, {
         width: d.data.width,
+        maxWidth: d.data.width ? null : this.maxWidthIfUnsized,
         height: d.data.height,
+        maxHeight: d.data.height ? null : this.maxHeightIfUnsized,
         text: d.display_name,
         font: labelFont,
         fillStyle: nullCoalesce(styleData.fillColor, color),
