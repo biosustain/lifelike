@@ -1,6 +1,7 @@
 import { Directive, ElementRef, Input } from '@angular/core';
 import * as $ from 'jquery';
 import 'jqueryui';
+import { isNullOrUndefined } from 'util';
 
 @Directive({
   selector: '[appResizable]'
@@ -12,6 +13,12 @@ export class ResizableDirective {
   constructor(el: ElementRef) {
 
     setTimeout(() => {
+      if (isNullOrUndefined(
+        el.nativeElement
+      )) {
+        return;
+      }
+
       $(`#${el.nativeElement.id}`).resizable({
         handles: this.handles,
         maxWidth: 500,

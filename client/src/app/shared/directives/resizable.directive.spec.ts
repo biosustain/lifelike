@@ -6,7 +6,7 @@ import { configureTestSuite } from 'ng-bullet';
 
 // Simple test component that will not in the actual app
 @Component({
-  template: '<p dtCapitalize>Testing Directives is awesome!</p>'
+  template: '<p id="hello">Testing Directives is awesome!</p>'
 })
 class TestComponent {
   // clickCount is not necessary but it's used here to verify that the component
