@@ -75,9 +75,9 @@
           </button>
           <button
             mat-raised-button
-            [color]="selectedProject?.public === false ? 'primary' : 'accent'"
-            (click)='togglePublic()'>
-            {{selectedProject?.public === false ? 'MAKE PUBLIC' : 'MAKE PRIVATE'}}
+            color="primary"
+            (click)='editProject()'>
+            SETTINGS
           </button>
           <button
             mat-raised-button
