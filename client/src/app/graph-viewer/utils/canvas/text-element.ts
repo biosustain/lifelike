@@ -74,11 +74,7 @@ export class TextElement {
         this.yOffset = 0;
       }
     } else {
-      if (this.height != null) {
-        this.yOffset = 0;
-      } else {
-        this.yOffset = this.actualHeight;
-      }
+      this.yOffset = 0;
     }
   }
 
