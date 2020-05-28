@@ -1,82 +1,82 @@
-# Deploying the Application
-
-## Deployment to Gloud for Lifelike
----
-
 ## Table of Contents
-- [How do I set up the infrastructure](#how-do-i-set-up-the-infrastructure)
+- [Current Infrastructure](#current-infrastructure)
+- [How do I deploy to Google Cloud?](#how-do-i-deploy-to-google-cloud)
+  - [Important Notes](#important-notes)
+- [How do I update the LMDB database?](#how-do-i-update-the-lmdb-database)
 
-- [How do I deploy the application?](#how-do-i-deploy-the-application)
+# Current Infrastructure
+There are currently three VMs
+1. kg-prod - https://kg.lifelike.bio
+   **Description**: The production server. This is currently released in an ad-hoc manner.
+2. kg-staging - https://test.lifelike.bio
+   **Description**: The staging server for QA to run their manual tests and for developers to run any other test before pushing into production. This will be updated each time someone merges into master on GitHub.
+3. kg-demo - http://104.197.221.147/
+   **Description**: The demo server is for testing anything in its own sandbox without affecting any other instances.
 
-- [How do I update the Nginx configuration?](#how-do-i-update-the-nginx-configuration)
 
-# How do I set up the infrastructure?
+# How do I deploy to Google Cloud?
 
-Creation of servers and databases are done through Terraform. This does not include deployment of the server application nor the client bundle. We do those in another step.
+All GitHub actions in progress can be viewed here
+https://github.com/SBRG/kg-prototypes/actions
 
-Terraform Docs:
-- https://www.terraform.io/docs/provisioners/index.html
-- https://www.terraform.io/docs/providers/google/index.html
-- https://www.terraform.io/docs/modules/index.html
+__Staging__
 
-1. Download and install Terraform
-   - https://www.terraform.io/downloads.html
-   - Test the installation was done correctly by running `terraform --version`
+Deploying to staging is done automatically through the workflow file in GitHub actions. The build is triggered anytime someone merges into master. The file can be found [here](./../../.github/workflows/staging.yml).
 
-2. Get the **Terraform service account key file** from Google Cloud Reconstruction project.
+__Demo__
+Deploying to demo requires a user to use the "label" function in a pull request. To push a build to demo
+1. Make a pull request
+2. On the right hand side, select "demo" as the label
+3. GitHub actions will now build to demo
+4. Unlabel and Re-label to trigger the build again
 
-To navigate there
-- Go to Google Cloud project Reconstruction
-- Go to **IAM & Admin** > **Service Accounts**
-- Select **terraform**
-- Select **create key** and rename this file to `terraform-gcloud.json` to the `appserver/terraform` folder.
-*This file should not be comitted and `.gitignore` ignores it*
+__Production__
+Deploying to production also uses GitHub actions, but the trigger is manual.
 
-3. Install Google Cloud CLI
-- On MacOS, try `brew cask install google-cloud-sdk`. Be sure to install the cloud_sql_proxy as well by running the command `gcloud components install cloud_sql_proxy`.
-
-4. (Optional) Add ssh key to keychain (MacOS)
-- If you are regularly seeing requests for your ssh key passcode (i.e. `Enter passphrase for key '/Users/.../.ssh/google_compute_engine.`), then try adding it to the MacOS keychain via `sudo ssh-add -k ~/.ssh/google_compute_engine`
-
-5. Log into Google Cloud via Command Line
+To deploy to production, follow these steps
+1. Go to the master branch and make sure its updated
+```bash
+git checkout master && git pull origin master
 ```
-gcloud beta auth revoke --all # Logout of any active accounts
-gcloud beta auth login # Log into Reconstruction (you will have to use your account credentials)
-gcloud beta config set project able-goods-221820 # Set the current project
+2. Tag the master branch to be used for the production build
+
+*To view all of the current tags*
+```bash
+git tag --list
+```
+*To tag the branch for building*
+```bash
+git tag <some-tag>
 ```
 
-6. Deployment of the Compute Engine Instances and Cloud SQL using Terraform
+3. Go to https://github.com/SBRG/kg-prototypes/releases
+4. Go to **Draft a new release* or https://github.com/SBRG/kg-prototypes/releases/new
+5. Use the tag just created for "tag version" and fill out of the rest of the form
+6. Click **Publish Request** and the build will start
 
-The Terraform will create the following infrastructure
-- A VM for a nginx proxy
-  - The initialization step will use Docker to create a SSL/TLS enabled nginx proxy. As of this update, all variables are currently hardcoded so this proxy will be to https://kg.lifelike.bio
-- A VM for an application server (Flask)
-- A VM for a test Neo4j instance
-  - The initialization step will also update the secret `deploy.env` file to contain the Neo4j VM IP address.
-- A managed Cloud SQL (PostgreSQL) instance
+## Important Notes
+The docker files for each of the servers are located in Google Cloud Bucket under `gs://kg-secrets`. These are used to combine the `appserver (flask)` and the `webserver (nginx+angular bundle)`. These should be updated if the infrastructure ever changes.
 
-7. Run Terraform
--  There is a wrapper script `terraform/run-terraform` which you should run instead of using `terraform` command directly. The reason is because we need to pull/push the `terraform.tfstate` file into a persistent storage and if you don't use the script, you may forget to do that. The script will handle the pulling/pulling of the state file.
+To get the files, simply run the following
+```bash
+gsutil cp gs://kg-secrets/path/to/file path/to/local/drive
+```
 
-# How do I deploy the application?
+To upload the new version
+```bash
+gsutil cp path/from/local/drive gs://kg-secrets/path/to/file
+```
 
-Currently the deployment is done through shell scripts under the `deployment` directory. There are two scripts
-- `deploy-appserver`
-  - This script will be used to build the application server, connect to Neo4j and run any necessary migrations to PostgreSQL.
-  - Run this using
-  ```
-    ./deploy-appserver -m <migration flag> -r <fetch flag>
-  ```
-  - `-m` flag is used for setting the PostgreSQL migration to either `fresh` or `upgrade`. Most of the time, we'd want to use `upgrade` since we'd ideally only want to set up the infrastructure only once and subsequently
-  - `-r` flag is used to fetch the latest master for building and deploying; `true` or `false`
-- `deploy-client`
-  - This script will be used to build the Angular bundle and SCP this into the nginx proxy VM.
-  - Run this using
-  ```
-    ./deploy-client -r <fetch flag>
-  ```
-  - `-r` flag is used to fetch the latest master for building and deploying; `true` or `false`
+There is currently a volume mount that contains the LMDB database. Having the correct path here is important for LMDB to function properly.
 
-# How do I update the Nginx configuration?
+# How do I update the LMDB database?
 
-The configuration file is volume linked to our Nginx proxy in `/docker/letsencrypt-docker-nginx/src/production` under `production.conf`. Add changes to `nginx.conf` file found in `terraform/gateway-init/production` and use the shell script `update-nginx-conf` within the directory to update it. **Be sure to commit these changes to GitHub.**
+This is a manual step which currently requires a user to ssh into the server and pulls the new images in from the Google Cloud Bucket. The bucket is named *lmdb_database*
+
+A script should already be be in **kg-production** and **kg-staging** so all thats required is to run the `update-lmdb.sh` script to pull in the required data. This should automatically update the LMDB as it is volume mounted.
+
+for example, on **Staging**
+
+```bash
+gcloud compute ssh kg-staging --zone us-central1-a --command="sudo ./update-lmdb.sh";
+```
