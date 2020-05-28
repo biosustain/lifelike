@@ -54,15 +54,16 @@ services:
             # Neo4j
             - NEO4J_HOST=n4j-database
             - NEO4J_AUTH=neo4j/password
-            - NEO4J_ENTITIES_HOST
-            - NEO4J_ENTITIES_PASS
-            - NEO4J_ENTITIES_USER
+            # Redis
+            - REDIS_HOST=redis
+            - REDIS_PORT=6379
         networks:
             - frontend
             - backend
         depends_on:
             - database
             - pgdatabase
+            - redis
         stdin_open: true
         volumes:
             - ./appserver:/home/n4j
@@ -84,7 +85,65 @@ services:
         networks:
             - frontend
         depends_on:
-                - appserver
+            - appserver
+
+    redis:
+        container_name: redis
+        image: redis:6.0.3-alpine
+        networks:
+            - backend
+
+    cache-invalidator:
+        container_name: cache-invalidator
+        build: ./cache-invalidator
+        volumes:
+            - ./cache-invalidator:/app
+        networks:
+            - backend
+        environment:
+            - NEO4J_HOST=n4j-database
+            - NEO4J_AUTH=neo4j/password
+            - REDIS_HOST=redis
+            - REDIS_PORT=6379
+        depends_on:
+            - database
+            - redis
+
+    elasticsearch:
+        container_name: n4j-elasticsearch
+        build:
+            dockerfile: Dockerfile
+            context: elasticsearch
+        environment:
+            - discovery.type=single-node
+            - http.max_content_length=200mb  #allow 200mb of content to be sent for indexing
+            - bootstrap.memory_lock=true
+            - xpack.graph.enabled=false
+            - xpack.watcher.enabled=false
+            - xpack.license.self_generated.type=basic
+        ulimits:
+            memlock:
+                soft: -1
+                hard: -1
+        ports:
+            - "9200:9200"
+            - "9300:9300"
+
+        networks:
+            - backend
+
+    kibana:
+        container_name: n4j-kibana
+        image: docker.elastic.co/kibana/kibana:7.2.0
+        ports:
+            - "5601:5601"
+        environment:
+            SERVER_NAME: localhost
+            ELASTICSEARCH_URL: http://elasticsearch:9200
+        depends_on:
+            - elasticsearch
+        networks:
+            - backend
 
 networks:
     frontend:

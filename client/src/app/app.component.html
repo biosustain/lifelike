@@ -8,15 +8,15 @@
        routerLink="/file-browser">
       <mat-icon>folder_shared</mat-icon>
     </a>
-    <a matTooltip="Relationship Maps" matTooltipPosition="after" fxLayoutAlign="center center"
+    <a matTooltip="Knowledge Reconstruction" matTooltipPosition="after" fxLayoutAlign="center center"
        routerLink="/dt/project-list">
       <mat-icon>rate_review</mat-icon>
     </a>
-    <a matTooltip="KG Visualizer" matTooltipPosition="after" fxLayoutAlign="center center"
+    <a matTooltip="Knowledge Graph Explorer" matTooltipPosition="after" fxLayoutAlign="center center"
        routerLink="/neo4j-visualizer">
       <mat-icon>search</mat-icon>
     </a>
-    <a matTooltip="Knowledge Graph statistics" matTooltipPosition="after" fxLayoutAlign="center center"
+    <a matTooltip="Knowledge Graph Statistics" matTooltipPosition="after" fxLayoutAlign="center center"
        routerLink="kg-statistics">
       <mat-icon>bar_chart</mat-icon>
     </a>
@@ -38,6 +38,10 @@
 
 <mat-menu #userMenu="matMenu" xPosition="after">
   <ng-container *ngIf="(loggedIn$ | async); else loggedOut">
+    <button *ngIf="(userRoles$ | async)?.includes('admin')" mat-menu-item [routerLink]="['/admin']">
+      <mat-icon>gavel</mat-icon>
+      Admin
+    </button>
     <button mat-menu-item [routerLink]="['/users', (appuser$ | async)?.username]">
       <mat-icon>person</mat-icon>
       {{ (appuser$ | async)?.username }}

@@ -5,6 +5,7 @@ import { DrawingToolModule } from '../../drawing-tool.module';
 import { MatDialogRef} from '@angular/material/dialog';
 import {configureTestSuite} from 'ng-bullet';
 import {RootStoreModule} from '../../../root-store';
+import {NodeSearchModule} from '../../../node-search/node-search.module';
 
 describe('ExportModalComponent', () => {
   let component: ExportModalComponent;
@@ -14,6 +15,7 @@ describe('ExportModalComponent', () => {
       TestBed.configureTestingModule({
           imports: [
             DrawingToolModule,
+            NodeSearchModule,
             RootStoreModule
           ],
           providers: [{

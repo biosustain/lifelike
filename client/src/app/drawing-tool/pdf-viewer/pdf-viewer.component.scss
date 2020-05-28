@@ -20,3 +20,26 @@ mat-sidenav {
   padding: 10px 1rem;
   background: #F2F2F2;
 }
+
+// The popup menu that lets users customize which annotations are shown
+.filter-popup {
+  position: absolute;
+  min-width: 14rem;
+  max-width: 20rem;
+  max-height: calc(100vh - 100px);
+  padding: 1.25rem;
+  right: 0;
+  top: calc(100% + 0.25rem);
+  background: #fff;
+  border-radius: 0.5rem;
+  overflow: auto;
+  z-index: 10;
+}
+
+// The little dot next to each entity type indicating the color
+.entity-type-legend {
+  display: inline-block;
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 10rem;
+}

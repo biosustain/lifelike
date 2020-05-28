@@ -1,13 +1,19 @@
 import io
+import os
+import json
 from datetime import datetime
 
-from flask import request, Blueprint, g
+from flask import request, Blueprint, g, Response, jsonify
+from werkzeug.utils import secure_filename
+
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy_searchable import search
 
 from neo4japp.blueprints.auth import auth
+from neo4japp.blueprints.permissions import requires_role
 from neo4japp.database import db
-from neo4japp.exceptions import RecordNotFoundException
+from neo4japp.data_transfer_objects import DrawingUploadRequest
+from neo4japp.exceptions import InvalidFileNameException, RecordNotFoundException
 from neo4japp.models import Project, ProjectSchema
 from neo4japp.constants import ANNOTATION_STYLES_DICT
 
@@ -41,6 +47,66 @@ def get_map_by_hash(hash_id):
     # Else complain to user not fonud
     else:
         raise RecordNotFoundException('not found :-( ')
+
+
+@bp.route('/map/download/<string:hash_id>', methods=['GET'])
+@auth.login_required
+@requires_role('admin')
+def download_map(hash_id):
+    """ Exports map to JSON format """
+    user = g.current_user
+
+    yield user
+
+    try:
+        project = Project.query.filter_by(hash_id=hash_id).one()
+    except NoResultFound:
+        raise RecordNotFoundException('not found :( ')
+
+    if (project.user_id == user.id or project.public):
+        project_data = json.dumps(project.graph)
+        yield Response(
+            project_data,
+            mimetype='application/json',
+            headers={'Content-Disposition': f'attachment;filename={project.label}.json'}
+        )
+    else:
+        raise RecordNotFoundException('not found :-( ')
+
+
+@bp.route('/map/upload', methods=['POST'])
+@auth.login_required
+@requires_role('admin')
+def upload_map():
+
+    proj_name = request.form['projectName']
+    proj_description = request.form['description']
+
+    user = g.current_user
+
+    yield user
+
+    map_file = request.files['fileInput']
+    filename = secure_filename(map_file.filename)
+    _, extension = os.path.splitext(filename)
+    if extension != '.json':
+        raise InvalidFileNameException('Only .json files are accepted')
+    map_data = json.load(map_file)
+    drawing_map = Project(
+        author=f'{user.first_name} {user.last_name}',
+        label=proj_name,
+        description=proj_description,
+        date_modified=datetime.now(),
+        graph=map_data,
+        user_id=user.id,
+    )
+
+    db.session.add(drawing_map)
+    db.session.flush()
+    drawing_map.set_hash_id()
+    db.session.commit()
+
+    yield jsonify(result=dict(hashId=drawing_map.hash_id)), 200
 
 
 @bp.route('/community', methods=['GET'])
@@ -255,6 +321,8 @@ def process(data_source, format='pdf'):
         }
         if 'hyperlink' in node['data'] and node['data']['hyperlink']:
             params['href'] = node['data']['hyperlink']
+        if 'source' in node['data'] and node['data']['source']:
+            params['href'] = node['data']['source']
 
         graph.node(**params)
 

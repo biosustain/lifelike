@@ -1,17 +1,10 @@
 import {
   Component,
-  ViewChild,
-  TemplateRef,
-  ViewContainerRef, OnInit
 } from '@angular/core';
 import {
   MatDialog
 } from '@angular/material/dialog';
 import {Router} from '@angular/router';
-import {OverlayRef, Overlay} from '@angular/cdk/overlay';
-import {Subscription, fromEvent} from 'rxjs';
-import {TemplatePortal} from '@angular/cdk/portal';
-import {filter, take} from 'rxjs/operators';
 
 import {
   ProjectsService,
@@ -19,12 +12,7 @@ import {
 } from '../services';
 import {
   Project,
-  VisNetworkGraphEdge,
-  GraphSelectionData
 } from '../services/interfaces';
-import {
-  NetworkVis
-} from '../network-vis';
 import {
   CreateProjectDialogComponent
 } from './create-project-dialog/create-project-dialog.component';
@@ -34,12 +22,27 @@ import {
 import {
   CopyProjectDialogComponent
 } from './copy-project-dialog/copy-project-dialog.component';
-import {MatSnackBar, MatTabChangeEvent} from '@angular/material';
+import {
+ UploadProjectDialogComponent
+} from './upload-project-dialog/upload-project-dialog.component';
+import {MatSnackBar} from '@angular/material';
 
 import * as $ from 'jquery';
 
-import {isNullOrUndefined} from 'util';
 import {AuthenticationService} from 'app/auth/services/authentication.service';
+
+import { AuthSelectors } from 'app/auth/store';
+import { BehaviorSubject, Observable, throwError } from 'rxjs';
+import { select, Store } from '@ngrx/store';
+import { State } from 'app/root-store';
+
+import { first } from 'rxjs/operators';
+import { DrawingUploadPayload } from 'app/interfaces/drawing.interface';
+import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
+import { Progress, ProgressMode } from 'app/interfaces/common-dialog.interface';
+import { HttpEventType } from '@angular/common/http';
+import { EditProjectDialogComponent } from '../project-list/edit-project-dialog/edit-project-dialog.component';
+
 
 @Component({
   selector: 'app-project-list-view',
@@ -48,6 +51,10 @@ import {AuthenticationService} from 'app/auth/services/authentication.service';
 })
 export class ProjectListViewComponent {
   fullScreenmode = 'shrink';
+
+  userRoles$: Observable<string[]>;
+
+  uploadStarted = false;
 
   /**
    * ID of the user
@@ -92,10 +99,13 @@ export class ProjectListViewComponent {
     private projectService: ProjectsService,
     private authService: AuthenticationService,
     private dataFlow: DataFlowService,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private progressDialog: ProgressDialog,
+    private store: Store<State>,
   ) {
     this.userId = this.authService.whoAmI();
     this.refresh();
+    this.userRoles$ = store.pipe(select(AuthSelectors.selectRoles));
   }
 
   /**
@@ -178,6 +188,63 @@ export class ProjectListViewComponent {
   }
 
   /**
+   * Spin up dialog to allow user to update meta-data of project
+   */
+  editProject() {
+    const dialogRef = this.dialog.open(EditProjectDialogComponent, {
+      width: '40%',
+      data: this.selectedProject
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (!result) {
+        return;
+      }
+
+      this.projectService.updateProject(result)
+        .subscribe(
+          data => {
+            this.selectedProject = result;
+
+            // Update list of personal projects
+            this.projects = this.projects.map(
+              (proj: Project) => {
+                if (proj.hash_id === this.selectedProject.hash_id) {
+                  return this.selectedProject;
+                } else {
+                  return proj;
+                }
+              }
+            );
+
+            // Check if selected project is public?
+            const isPublic = this.selectedProject.public;
+            // Check if inside list
+            const insideList = this.publicProjects.some(
+              proj => proj.hash_id === this.selectedProject.hash_id
+            );
+
+            if (isPublic && !insideList) {
+              // add to public list
+              this.publicProjects = this.publicProjects.concat(
+                [this.selectedProject]
+              );
+            } else if (!isPublic && insideList) {
+              // remove from public list
+              this.publicProjects = this.publicProjects.filter(
+                proj => proj.hash_id !== this.selectedProject.hash_id
+              );
+            }
+
+            this.snackBar.open(`Project is updated`, null, {
+              duration: 2000,
+            });
+          }
+        );
+    });
+  }
+
+  /**
    * Spin up dialog to confirm creation of project with
    * title and description, then call create API on project
    */
@@ -208,6 +275,67 @@ export class ProjectListViewComponent {
   }
 
   /**
+   * Uploads a drawing project from a JSON file
+   * TODO: Set as user feature? This is only for admins at the moment
+   */
+  uploadProject() {
+    const dialogRef = this.dialog.open(UploadProjectDialogComponent, {
+      width: '40%',
+      data: {},
+    });
+
+    dialogRef.afterClosed().subscribe((data: DrawingUploadPayload) => {
+      if (data) {
+        this.upload(data);
+      }
+    });
+  }
+
+  upload(data: DrawingUploadPayload) {
+    // The user shouldn't be able to initiate a new file upload
+    if (this.uploadStarted) { return; }
+    this.uploadStarted = true;
+
+    const progressObservable = new BehaviorSubject<Progress>(new Progress({
+      status: 'Preparing file for upload...',
+    }));
+    const progressDialogRef = this.progressDialog.display({
+      title: `Adding ${data.filename}`,
+      progressObservable,
+    });
+
+    this.projectService.uploadProject(data).subscribe(event => {
+      if (event.type === HttpEventType.UploadProgress) {
+        if (event.loaded >= event.total) {
+          progressObservable.next(new Progress({
+            mode: ProgressMode.Buffer,
+            status: 'Creating annotations in file...',
+            value: event.loaded / event.total
+          }));
+        } else {
+          progressObservable.next(new Progress({
+            mode: ProgressMode.Determinate,
+            status: 'Uploaded file...',
+            value: event.loaded / event.total
+          }));
+        }
+      } else if (event.type === HttpEventType.Response) {
+        progressDialogRef.close();
+        this.uploadStarted = false;
+        this.snackBar.open(`File uploaded: ${data.filename}`, 'Close', {duration: 5000});
+        const hashId = event.body.result.hashId;
+        this.route.navigateByUrl(`dt/splitter/${hashId}`);
+      }
+    },
+    err => {
+      progressDialogRef.close();
+      this.uploadStarted = false;
+      return throwError(err);
+    });
+
+  }
+
+  /**
    * Make a duplicate of a project and its data with a new uid
    * through a confirmation dialog, then call create API on project
    * @param project represents a project object
@@ -232,6 +360,44 @@ export class ProjectListViewComponent {
           this.projects = this.projects.concat([data.project]);
         });
     });
+  }
+
+  /**
+   * Downloads the selected project as a JSON file
+   * TODO: Only admin feature at the moment. Enable for all users?
+   */
+  downloadProject() {
+    this.projectService.downloadProject(
+      this.selectedProject.hash_id).pipe(first()).subscribe((payload) => {
+        const jsonData = JSON.stringify(payload);
+        const blob = new Blob([jsonData], {type: 'text/json'});
+
+        // IE doesn't allow using a blob object directly as link href
+        // instead it is necessary to use msSaveOrOpenBlob
+        if (window.navigator && window.navigator.msSaveOrOpenBlob) {
+          window.navigator.msSaveOrOpenBlob(blob);
+          return;
+        }
+
+        // For other browsers:
+        // Create a link pointing to the ObjectURL containing the blob.
+        const data = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = data;
+        link.download = this.selectedProject.label + '.json';
+        // this is necessary as link.click() does not work on the latest firefox
+        link.dispatchEvent(new MouseEvent('click', {
+          bubbles: true,
+          cancelable: true,
+          view: window
+        }));
+
+        setTimeout(() => {
+          // For Firefox it is necessary to delay revoking the ObjectURL
+          window.URL.revokeObjectURL(data);
+          link.remove();
+        }, 100);
+      });
   }
 
   /**

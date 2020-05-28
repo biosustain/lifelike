@@ -17,10 +17,13 @@ bp = Blueprint('accounts', __name__, url_prefix='/accounts')
 @requires_role('admin')
 def create_user(req: UserRequest):
     account_dao = get_account_service()
+
     yield g.current_user
 
     # TODO: Allow for adding specific roles
     new_user = account_dao.create_user(
+        first_name=req.first_name,
+        last_name=req.last_name,
         username=req.username,
         email=req.email,
         password=req.password,

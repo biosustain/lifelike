@@ -24,6 +24,8 @@ env:
     CLOUD_SQL_ALIAS: ${{ secrets.PROD_CLOUD_SQL_ALIAS }}
     GCE_BACKUP_BUCKET: ${{ secrets.POSTGRES_BACKUP_BUCKET }}
     SENTRY_KEY: ${{ secrets.SENTRY_KEY }}
+    REDIS_HOST: ${{ secrets.REDIS_HOST }}
+    REDIS_PORT: ${{ secrets.REDIS_PORT }}
 
 jobs:
     setup-build-publish-deploy:
@@ -52,12 +54,14 @@ jobs:
               run: |-
                 docker build --tag "gcr.io/$PROJECT_ID/kg-appserver-prod:latest" -f ./appserver/Dockerfile.prod ./appserver/
                 docker build --tag "gcr.io/$PROJECT_ID/kg-webserver-prod:latest" -f ./client/Dockerfile.prod ./client/
+                docker build --tag "gcr.io/$PROJECT_ID/kg-cache-service-prod:latest" ./cache-invalidator/
 
             # # Push Docker image to Google Container Registry
             - name: Publish
               run: |-
                 docker push "gcr.io/$PROJECT_ID/kg-appserver-prod:latest"
                 docker push "gcr.io/$PROJECT_ID/kg-webserver-prod:latest"
+                docker push "gcr.io/$PROJECT_ID/kg-cache-service-prod:latest"
 
             - name: Deploy Setup
               run: |-
@@ -75,11 +79,12 @@ jobs:
                 echo "PROJECT_ID=$PROJECT_ID" >> prod.env
                 echo "CLOUD_SQL_ALIAS=$CLOUD_SQL_ALIAS" >> prod.env
                 echo "GCE_BACKUP_BUCKET=$GCE_BACKUP_BUCKET" >> prod.env
-                echo "SERVICE_ACCOUNT_CRED=$GCE_SERVICE_ACCOUNT" >> prod.env
-                echo "GITHUB_HASH=$GITHUB_HASH >> prod.env"
+                echo "GITHUB_HASH=temporarily-disable >> prod.env"
                 GITHUB_COMMIT_TIMESTAMP=$(git log -1 --format=%cI)
                 echo "GITHUB_COMMIT_TIMESTAMP=$GITHUB_COMMIT_TIMESTAMP" >> prod.env
                 echo "SENTRY_KEY=$SENTRY_KEY" >> prod.env
+                echo "REDIS_HOST=$REDIS_HOST" >> prod.env
+                echo "REDIS_PORT=$REDIS_PORT" >> prod.env
                 echo "$GCE_SERVICE_ACCOUNT" >> keyfile.json
                 gcloud compute scp prod.env root@$GCE_INSTANCE:/srv --zone $GCE_INSTANCE_ZONE
                 gcloud compute scp keyfile.json root@$GCE_INSTANCE:/srv --zone $GCE_INSTANCE_ZONE
