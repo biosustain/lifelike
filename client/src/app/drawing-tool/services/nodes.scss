@@ -1,49 +1,49 @@
 @import "../../shared/annotation-styles.scss";
 
 .gene {
-  color: lighten($gene, 20) !important;
+  color: darken($gene, 5) !important;
 }
 
 .disease {
-  color: lighten($disease, 20) !important;
+  color: darken($disease, 5) !important;
 }
 
 .chemical {
-  color: lighten($chemical, 20) !important;
+  color: darken($chemical, 5) !important;
 }
 
 .mutation {
-  color: lighten($mutation, 20) !important;
+  color: darken($mutation, 5) !important;
 }
 
 .species, .map {
-  color: lighten($species, 20) !important;
+  color: darken($species, 5) !important;
 }
 
 .company {
-  color: lighten($company, 20) !important;
+  color: darken($company, 5) !important;
 }
 
 .study {
-  color: lighten($study, 20) !important;
+  color: darken($study, 5) !important;
 }
 
 .entity {
-  color: lighten($entity, 20) !important;
+  color: darken($entity, 5) !important;
 }
 
 .protein {
-  color: lighten($protein, 20) !important;
+  color: darken($protein, 5) !important;
 }
 
 .pathway {
-  color: lighten($pathway, 20) !important;
+  color: darken($pathway, 5) !important;
 }
 
 .phenotype, .note {
-  color: lighten($note, 20) !important;
+  color: darken($note, 5) !important;
 }
 
 .observation, .cause, .effect, .correlation, .association {
-  color: lighten($association, 20) !important;
+  color: darken($association, 5) !important;
 }
