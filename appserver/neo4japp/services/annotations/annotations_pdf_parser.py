@@ -169,8 +169,9 @@ class AnnotationsPDFParser:
                     # unicode and doesn't match the string hyphen
                     # this means we have to ignore some using ord()
                     # because they can be cleaned into something like
-                    # (c) and when we strip the parenthesis this creates
+                    # `(c)`` and when we strip the parenthesis this creates
                     # an index error because each char gets one index
+                    # and `(c)` is one char
                     curr_char = clean_char(char)
                     prev_char = clean_char(char_list[i-1])
 
