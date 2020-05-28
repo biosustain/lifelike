@@ -5,6 +5,7 @@ import { isCtrlOrMetaPressed } from 'app/shared/utils';
 import { makeid } from 'app/drawing-tool/services';
 import { GraphEntity, GraphEntityType, UniversalGraphNode } from '../../../../drawing-tool/services/interfaces';
 import { CompoundAction, GraphAction } from '../../../actions/actions';
+import { smartTruncate } from '../../../utils/strings';
 
 interface GraphClipboardData {
   lifelike: true;
@@ -91,7 +92,7 @@ export class ClipboardKeyboardShortcut extends AbstractCanvasBehavior {
 
     return new NodeCreation(
       `Paste content from clipboard`, {
-        display_name: 'note',
+        display_name: smartTruncate(content, 20),
         hash: makeid(),
         label: 'note',
         sub_labels: [],
