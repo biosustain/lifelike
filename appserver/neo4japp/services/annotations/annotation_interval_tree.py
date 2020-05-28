@@ -23,6 +23,7 @@ class AnnotationIntervalTree(IntervalTree):
     def merge_equals(
         self,
         data_reducer,
+        annotations_text_in_document,
         data_initializer=None,
     ) -> List[Annotation]:
         """Override to change return type and how the merged is added.
@@ -47,14 +48,14 @@ class AnnotationIntervalTree(IntervalTree):
                 return
             else:  # data_initializer is not None
                 current_reduced[0] = copy(data_initializer)
-                current_reduced[0] = data_reducer(current_reduced[0], higher.data)
+                current_reduced[0] = data_reducer(current_reduced[0], higher.data, annotations_text_in_document)  # noqa
                 merged.append(Interval(higher.begin, higher.end, current_reduced[0]))
 
         for higher in sorted_intervals:
             if merged:  # series already begun
                 lower = merged[-1]
                 if higher.range_matches(lower):  # should merge
-                    current_reduced[0] = data_reducer(current_reduced[0], higher.data)
+                    current_reduced[0] = data_reducer(current_reduced[0], higher.data, annotations_text_in_document)  # noqa
                     lower_offset = current_reduced[0].lo_location_offset or None  # type: ignore
                     upper_offset = current_reduced[0].hi_location_offset or None  # type: ignore
                     merged[-1] = Interval(lower_offset, upper_offset, current_reduced[0])
@@ -67,6 +68,7 @@ class AnnotationIntervalTree(IntervalTree):
     def merge_overlaps(
         self,
         data_reducer,
+        annotations_text_in_document,
         data_initializer=None,
         strict=False,
     ) -> List[Annotation]:
@@ -92,7 +94,7 @@ class AnnotationIntervalTree(IntervalTree):
                 return
             else:  # data_initializer is not None
                 current_reduced[0] = copy(data_initializer)
-                current_reduced[0] = data_reducer(current_reduced[0], higher.data)
+                current_reduced[0] = data_reducer(current_reduced[0], higher.data, annotations_text_in_document)  # noqa
                 merged.append(Interval(higher.begin, higher.end, current_reduced[0]))
 
         for higher in sorted_intervals:
@@ -102,7 +104,7 @@ class AnnotationIntervalTree(IntervalTree):
                     not strict and
                     higher.begin == lower.end
                 ):  # noqa  # should merge
-                    current_reduced[0] = data_reducer(current_reduced[0], higher.data)
+                    current_reduced[0] = data_reducer(current_reduced[0], higher.data, annotations_text_in_document)  # noqa
                     lower_offset = current_reduced[0].lo_location_offset or None  # type: ignore
                     upper_offset = current_reduced[0].hi_location_offset or None  # type: ignore
                     merged[-1] = Interval(lower_offset, upper_offset, current_reduced[0])
