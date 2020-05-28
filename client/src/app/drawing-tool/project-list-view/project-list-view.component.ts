@@ -41,6 +41,7 @@ import { DrawingUploadPayload } from 'app/interfaces/drawing.interface';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { Progress, ProgressMode } from 'app/interfaces/common-dialog.interface';
 import { HttpEventType } from '@angular/common/http';
+import { EditProjectDialogComponent } from '../project-list/edit-project-dialog/edit-project-dialog.component';
 
 
 @Component({
@@ -183,6 +184,63 @@ export class ProjectListViewComponent {
             }
           );
       }
+    });
+  }
+
+  /**
+   * Spin up dialog to allow user to update meta-data of project
+   */
+  editProject() {
+    const dialogRef = this.dialog.open(EditProjectDialogComponent, {
+      width: '40%',
+      data: this.selectedProject
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (!result) {
+        return;
+      }
+
+      this.projectService.updateProject(result)
+        .subscribe(
+          data => {
+            this.selectedProject = result;
+
+            // Update list of personal projects
+            this.projects = this.projects.map(
+              (proj: Project) => {
+                if (proj.hash_id === this.selectedProject.hash_id) {
+                  return this.selectedProject;
+                } else {
+                  return proj;
+                }
+              }
+            );
+
+            // Check if selected project is public?
+            const isPublic = this.selectedProject.public;
+            // Check if inside list
+            const insideList = this.publicProjects.some(
+              proj => proj.hash_id === this.selectedProject.hash_id
+            );
+
+            if (isPublic && !insideList) {
+              // add to public list
+              this.publicProjects = this.publicProjects.concat(
+                [this.selectedProject]
+              );
+            } else if (!isPublic && insideList) {
+              // remove from public list
+              this.publicProjects = this.publicProjects.filter(
+                proj => proj.hash_id !== this.selectedProject.hash_id
+              );
+            }
+
+            this.snackBar.open(`Project is updated`, null, {
+              duration: 2000,
+            });
+          }
+        );
     });
   }
 
@@ -379,7 +437,6 @@ export class ProjectListViewComponent {
 
   toggleFullscreen(screenMode) {
     this.fullScreenmode = screenMode;
-    console.log(this.fullScreenmode);
   }
 
   goToSearch() {
