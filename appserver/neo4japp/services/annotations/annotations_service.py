@@ -291,6 +291,7 @@ class AnnotationsService:
         entity: dict,
         entity_id: str,
         color: str,
+        correct_synonyms: Dict[str, str],
     ):
         curr_page_coor_obj = char_coord_objs_in_pdf
         cropbox = cropbox_in_pdf
@@ -375,7 +376,12 @@ class AnnotationsService:
                 meta=meta,
             )
 
-        return annotation, {annotation.to_dict_hash(): token_positions.keyword}
+        real_keyword = token_positions.keyword if token_positions.keyword not in correct_synonyms else correct_synonyms[token_positions.keyword]  # noqa
+        # return annotation and the original text from PDF
+        # because we the real lmdb name in annotation.keyword
+        # but need the original text from PDF
+        # to clean false positives
+        return annotation, {annotation.to_dict_hash(): real_keyword}
 
     def _get_annotation(
         self,
@@ -459,6 +465,7 @@ class AnnotationsService:
                         entity=entity,
                         entity_id=entity_id,
                         color=color,
+                        correct_synonyms=correct_synonyms,
                     )
                     matches.append(annotation)
                     annotations_text_in_document = {
@@ -562,8 +569,8 @@ class AnnotationsService:
             - the original text in the document for an annotation
         """
         tokens: Dict[str, List[PDFTokenPositions]] = self.matched_genes
-        token_type: str = EntityType.Genes.value
-        color: str = EntityColor.Genes.value
+        token_type: str = EntityType.Gene.value
+        color: str = EntityColor.Gene.value
         transaction = self.lmdb_session.genes_txn
         correct_synonyms: Dict[str, str] = self.correct_synonyms
 
@@ -631,6 +638,7 @@ class AnnotationsService:
                         entity=entity,
                         entity_id=entity_id,
                         color=color,
+                        correct_synonyms=correct_synonyms,
                     )
                     matches.append(annotation)
                     annotations_text_in_document = {
@@ -649,8 +657,8 @@ class AnnotationsService:
     ) -> Tuple[List[Annotation], Set[str], Dict[str, str]]:
         return self._get_annotation(
             tokens=self.matched_chemicals,
-            token_type=EntityType.Chemicals.value,
-            color=EntityColor.Chemicals.value,
+            token_type=EntityType.Chemical.value,
+            color=EntityColor.Chemical.value,
             transaction=self.lmdb_session.chemicals_txn,
             id_str=entity_id_str,
             correct_synonyms=self.correct_synonyms,
@@ -666,8 +674,8 @@ class AnnotationsService:
     ) -> Tuple[List[Annotation], Set[str], Dict[str, str]]:
         return self._get_annotation(
             tokens=self.matched_compounds,
-            token_type=EntityType.Compounds.value,
-            color=EntityColor.Compounds.value,
+            token_type=EntityType.Compound.value,
+            color=EntityColor.Compound.value,
             transaction=self.lmdb_session.compounds_txn,
             id_str=entity_id_str,
             correct_synonyms=self.correct_synonyms,
@@ -683,8 +691,8 @@ class AnnotationsService:
     ) -> Tuple[List[Annotation], Set[str], Dict[str, str]]:
         return self._get_annotation(
             tokens=self.matched_proteins,
-            token_type=EntityType.Proteins.value,
-            color=EntityColor.Proteins.value,
+            token_type=EntityType.Protein.value,
+            color=EntityColor.Protein.value,
             transaction=self.lmdb_session.proteins_txn,
             id_str=entity_id_str,
             correct_synonyms=self.correct_synonyms,
@@ -717,8 +725,8 @@ class AnnotationsService:
     ) -> Tuple[List[Annotation], Set[str], Dict[str, str]]:
         return self._get_annotation(
             tokens=self.matched_diseases,
-            token_type=EntityType.Diseases.value,
-            color=EntityColor.Diseases.value,
+            token_type=EntityType.Disease.value,
+            color=EntityColor.Disease.value,
             transaction=self.lmdb_session.diseases_txn,
             id_str=entity_id_str,
             correct_synonyms=self.correct_synonyms,
@@ -734,8 +742,8 @@ class AnnotationsService:
     ) -> Tuple[List[Annotation], Set[str], Dict[str, str]]:
         return self._get_annotation(
             tokens=self.matched_phenotypes,
-            token_type=EntityType.Phenotypes.value,
-            color=EntityColor.Phenotypes.value,
+            token_type=EntityType.Phenotype.value,
+            color=EntityColor.Phenotype.value,
             transaction=self.lmdb_session.phenotypes_txn,
             id_str=entity_id_str,
             correct_synonyms=self.correct_synonyms,
@@ -751,12 +759,12 @@ class AnnotationsService:
         cropbox_in_pdf: Tuple[int, int],
     ) -> Tuple[List[Annotation], Set[str], Dict[str, str]]:
         funcs = {
-            EntityType.Chemicals.value: self._annotate_chemicals,
-            EntityType.Compounds.value: self._annotate_compounds,
-            EntityType.Proteins.value: self._annotate_proteins,
+            EntityType.Chemical.value: self._annotate_chemicals,
+            EntityType.Compound.value: self._annotate_compounds,
+            EntityType.Protein.value: self._annotate_proteins,
             EntityType.Species.value: self._annotate_species,
-            EntityType.Diseases.value: self._annotate_diseases,
-            EntityType.Phenotypes.value: self._annotate_phenotypes,
+            EntityType.Disease.value: self._annotate_diseases,
+            EntityType.Phenotype.value: self._annotate_phenotypes,
         }
 
         annotate_entities = funcs[annotation_type]
@@ -776,6 +784,13 @@ class AnnotationsService:
             entity_frequency[entity_id] += 1
         else:
             entity_frequency[entity_id] = 1
+
+        # If this annotation is a virus then we also have to update the homo sapiens frequency
+        if isinstance(annotation.meta, OrganismAnnotation.OrganismMeta) and annotation.meta.category == OrganismCategory.Viruses.value:  # noqa
+            if entity_frequency.get(HOMO_SAPIENS_TAX_ID, None) is not None:
+                entity_frequency[HOMO_SAPIENS_TAX_ID] += 1
+            else:
+                entity_frequency[HOMO_SAPIENS_TAX_ID] = 1
 
         return entity_frequency
 
@@ -877,11 +892,11 @@ class AnnotationsService:
         """
         entity_type_and_id_pairs = [
             (EntityType.Species.value, EntityIdStr.Species.value),
-            (EntityType.Chemicals.value, EntityIdStr.Chemicals.value),
-            (EntityType.Compounds.value, EntityIdStr.Compounds.value),
-            (EntityType.Proteins.value, EntityIdStr.Proteins.value),
-            (EntityType.Diseases.value, EntityIdStr.Diseases.value),
-            (EntityType.Phenotypes.value, EntityIdStr.Phenotypes.value),
+            (EntityType.Chemical.value, EntityIdStr.Chemical.value),
+            (EntityType.Compound.value, EntityIdStr.Compound.value),
+            (EntityType.Protein.value, EntityIdStr.Protein.value),
+            (EntityType.Disease.value, EntityIdStr.Disease.value),
+            (EntityType.Phenotype.value, EntityIdStr.Phenotype.value),
         ]
 
         matched_list, unwanted_matches_set_list = [], []
