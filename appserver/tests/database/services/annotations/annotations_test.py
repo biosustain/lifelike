@@ -735,6 +735,126 @@ def test_annotations_gene_vs_protein(
     assert annotations[3].meta.keyword_type == EntityType.Species.value
 
 
+@pytest.mark.parametrize(
+    'index, tokens',
+    [
+        (1,
+            [
+                PDFTokenPositions(
+                    page_number=1,
+                    keyword='SerpinA1',
+                    char_positions={0: 'S', 1: 'e', 2: 'r', 3: 'p', 4: 'i', 5: 'n', 6: 'A', 7: '1'},
+                ),
+                PDFTokenPositions(
+                    page_number=1,
+                    keyword='human',
+                    char_positions={9: 'h', 10: 'u', 11: 'm', 12: 'a', 13: 'n'},
+                ),
+            ],
+        ),
+        (2,
+            [
+                PDFTokenPositions(
+                    page_number=1,
+                    keyword='Serpin A1',
+                    char_positions={0: 'S', 1: 'e', 2: 'r', 3: 'p', 4: 'i', 5: 'n', 7: 'A', 8: '1'},
+                ),
+                PDFTokenPositions(
+                    page_number=1,
+                    keyword='human',
+                    char_positions={10: 'h', 11: 'u', 12: 'm', 13: 'a', 14: 'n'},
+                ),
+            ],
+        ),
+        # overlapping intervals
+        (3,
+            [
+                PDFTokenPositions(
+                    page_number=1,
+                    keyword='SerpinA1',
+                    char_positions={0: 'S', 1: 'e', 2: 'r', 3: 'p', 4: 'i', 5: 'n', 6: 'A', 7: '1'},
+                ),
+                PDFTokenPositions(
+                    page_number=1,
+                    keyword='Serpin A1',
+                    char_positions={0: 'S', 1: 'e', 2: 'r', 3: 'p', 4: 'i', 5: 'n', 7: 'A', 8: '1'},
+                ),
+                PDFTokenPositions(
+                    page_number=1,
+                    keyword='human',
+                    char_positions={10: 'h', 11: 'u', 12: 'm', 13: 'a', 14: 'n'},
+                ),
+            ],
+        ),
+        (4,
+            [
+                PDFTokenPositions(
+                    page_number=1,
+                    keyword='serpin A1',
+                    char_positions={0: 'S', 1: 'e', 2: 'r', 3: 'p', 4: 'i', 5: 'n', 7: 'A', 8: '1'},
+                ),
+                PDFTokenPositions(
+                    page_number=1,
+                    keyword='human',
+                    char_positions={10: 'h', 11: 'u', 12: 'm', 13: 'a', 14: 'n'},
+                ),
+            ],
+        ),
+    ],
+)
+def test_annotations_gene_vs_protein_serpina1_cases(
+    default_lmdb_setup,
+    mock_get_gene_to_organism_serpina1_match_result,
+    index,
+    tokens,
+):
+    annotation_service = get_test_annotations_service(
+        genes_lmdb_path=path.join(directory, 'lmdb/genes'),
+        chemicals_lmdb_path=path.join(directory, 'lmdb/chemicals'),
+        compounds_lmdb_path=path.join(directory, 'lmdb/compounds'),
+        proteins_lmdb_path=path.join(directory, 'lmdb/proteins'),
+        species_lmdb_path=path.join(directory, 'lmdb/species'),
+        diseases_lmdb_path=path.join(directory, 'lmdb/diseases'),
+        phenotypes_lmdb_path=path.join(directory, 'lmdb/phenotypes'),
+    )
+
+    char_coord_objs_in_pdf = []
+    for t in tokens:
+        for c in t.keyword:
+            char_coord_objs_in_pdf.append(get_dummy_LTChar(text=c))
+        char_coord_objs_in_pdf.append(get_dummy_LTChar(text=' '))
+
+    annotations = annotation_service.create_annotations(
+        tokens=PDFTokenPositionsList(
+            token_positions=tokens,
+            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
+            cropbox_in_pdf=(5, 5),
+        ),
+    )
+
+    if index == 1:
+        assert len(annotations) == 2
+        assert annotations[0].keyword == 'SERPINA1'
+        assert annotations[0].meta.keyword_type == EntityType.Gene.value
+
+        assert annotations[1].keyword == 'human'
+        assert annotations[1].meta.keyword_type == EntityType.Species.value
+    elif index == 2 or index == 4:
+        assert len(annotations) == 2
+        assert annotations[0].keyword == 'Serpin A1'
+        assert annotations[0].meta.keyword_type == EntityType.Protein.value
+
+        assert annotations[1].keyword == 'human'
+        assert annotations[1].meta.keyword_type == EntityType.Species.value
+    elif index == 3:
+        assert len(annotations) == 2
+        assert annotations[0].keyword == 'SERPINA1'
+        assert annotations[0].meta.keyword_type == EntityType.Gene.value
+
+        assert annotations[1].keyword == 'human'
+        assert annotations[1].meta.keyword_type == EntityType.Species.value
+
+
 @pytest.mark.skip
 def test_generate_bioc_annotations_format(annotations_setup):
     annotator = get_annotations_service()
