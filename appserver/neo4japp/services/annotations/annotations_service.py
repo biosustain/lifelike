@@ -951,7 +951,7 @@ class AnnotationsService:
     def _get_fixed_false_positive_unified_annotations(
         self,
         annotations_list: List[Annotation],
-        all_hashed_annotation_keywords: Dict[str, str],
+        annotations_text_in_document: Dict[str, str],
     ) -> List[Annotation]:
         """Removes any false positive annotations.
 
@@ -967,7 +967,7 @@ class AnnotationsService:
 
         for annotation in annotations_list:
             hashval = annotation.to_dict_hash()
-            keyword_from_pdf = all_hashed_annotation_keywords[hashval].split(' ')
+            keyword_from_pdf = annotations_text_in_document[hashval].split(' ')
 
             if len(keyword_from_pdf) > 1:
                 keyword_from_annotation = annotation.keyword.split(' ')
@@ -1110,10 +1110,10 @@ class AnnotationsService:
         # exact intervals
         # because that means the same normalized text was matched
         # to both
-        if ((anno1.meta.keyword_type == EntityType.Proteins.value or
-                anno1.meta.keyword_type == EntityType.Genes.value) and
-            (anno2.meta.keyword_type == EntityType.Proteins.value or
-                anno2.meta.keyword_type == EntityType.Genes.value) and
+        if ((anno1.meta.keyword_type == EntityType.Protein.value or
+                anno1.meta.keyword_type == EntityType.Gene.value) and
+            (anno2.meta.keyword_type == EntityType.Protein.value or
+                anno2.meta.keyword_type == EntityType.Gene.value) and
             (anno1.lo_location_offset == anno2.lo_location_offset and
                 anno1.hi_location_offset == anno2.hi_location_offset)):  # noqa
             if anno1.meta.keyword_type != anno2.meta.keyword_type:
