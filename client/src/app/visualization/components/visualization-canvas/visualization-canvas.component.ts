@@ -111,9 +111,12 @@ export class VisualizationCanvasComponent implements OnInit {
                             // If the original node is being clustered on its last unclustered edge,
                             // remove it entirely from the canvas.
                             nodesToRemove.push(duplicateNode.duplicateOf);
+                            edgesToRemove.push(duplicateEdge.duplicateOf);
+                        } else if (this.networkGraph.getConnectedNodes(duplicateNode.duplicateOf).length === 1) {
+                            // Otherwise, don't remove the original node, and only remove the original edge if the
+                            // candidate node is not connected to any other node.
+                            edgesToRemove.push(duplicateEdge.duplicateOf);
                         }
-
-                        edgesToRemove.push(duplicateEdge.duplicateOf);
                     });
 
                     this.edges.remove(edgesToRemove);
@@ -873,7 +876,7 @@ export class VisualizationCanvasComponent implements OnInit {
                         const duplicateNodesEdgePairsInCluster = this.getDuplicateNodeEdgePairsFromCluster(
                             nodeId
                         ).filter(
-                            // It is possible that some of the nodes inside the cluster sre also outside it. So,
+                            // It is possible that some of the nodes inside the cluster are also outside it. So,
                             // get rid of duplicates.
                             (pair: DuplicateNodeEdgePair) => !neighborNodesWithRel.includes(pair.node.duplicateOf)
                         );
