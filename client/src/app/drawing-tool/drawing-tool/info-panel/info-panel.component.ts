@@ -397,13 +397,6 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
     switch (this.paletteMode) {
       case 'minimized':
         $('#info-panel').animate({
-          height: '36rem'
-        }, 500, () => {
-          this.paletteMode = 'normal';
-        });
-        break;
-      case 'normal':
-        $('#info-panel').animate({
           height: '80vh'
         }, 500, () => {
           this.paletteMode = 'maximized';
