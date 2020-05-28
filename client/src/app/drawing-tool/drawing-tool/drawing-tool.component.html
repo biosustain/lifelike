@@ -63,11 +63,16 @@
   </div>
   <!-- Info Panel UI -->
   <app-info-panel
+    appResizable
+    [minHeight]='300'
+    handles='w'
     id='info-panel'
     (openApp)='toggleApp($event)'>
   </app-info-panel>
   <!-- Palette UI -->
   <app-palette
+    appResizable
+    handles='n,e'
     id='palette-panel'
     [undoStack]='undoStack'
     [redoStack]='redoStack'
