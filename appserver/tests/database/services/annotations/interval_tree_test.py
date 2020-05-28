@@ -37,7 +37,7 @@ def create_tree(annotations, tree):
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    keyword_type=EntityType.Chemicals.value,
+                    keyword_type=EntityType.Chemical.value,
                     color='',
                     id='',
                     id_type='',
@@ -54,7 +54,7 @@ def create_tree(annotations, tree):
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    keyword_type=EntityType.Chemicals.value,
+                    keyword_type=EntityType.Chemical.value,
                     color='',
                     id='',
                     id_type='',
@@ -96,7 +96,7 @@ def test_merge_adjacent_intervals_with_same_type(annotations_setup, annotations)
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    keyword_type=EntityType.Chemicals.value,
+                    keyword_type=EntityType.Chemical.value,
                     color='',
                     id='',
                     id_type='',
@@ -113,7 +113,7 @@ def test_merge_adjacent_intervals_with_same_type(annotations_setup, annotations)
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    keyword_type=EntityType.Proteins.value,
+                    keyword_type=EntityType.Protein.value,
                     color='',
                     id='',
                     id_type='',
@@ -155,7 +155,7 @@ def test_merge_adjacent_intervals_with_different_type(annotations_setup, annotat
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    keyword_type=EntityType.Chemicals.value,
+                    keyword_type=EntityType.Chemical.value,
                     color='',
                     id='',
                     id_type='',
@@ -172,7 +172,7 @@ def test_merge_adjacent_intervals_with_different_type(annotations_setup, annotat
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    keyword_type=EntityType.Chemicals.value,
+                    keyword_type=EntityType.Chemical.value,
                     color='',
                     id='',
                     id_type='',
@@ -214,7 +214,7 @@ def test_merge_equal_intervals_with_same_type(annotations_setup, annotations):
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    keyword_type=EntityType.Genes.value,
+                    keyword_type=EntityType.Gene.value,
                     color='',
                     id='',
                     id_type='',
@@ -231,7 +231,7 @@ def test_merge_equal_intervals_with_same_type(annotations_setup, annotations):
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    keyword_type=EntityType.Chemicals.value,
+                    keyword_type=EntityType.Chemical.value,
                     color='',
                     id='',
                     id_type='',
