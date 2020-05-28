@@ -14,6 +14,12 @@ class BaseException(Exception):
         return retval
 
 
+class AnnotationError(BaseException):
+    """AN error occured during the annotation process"""
+    def __init__(self, message, additional_msgs=[]) -> None:
+        super().__init__('Annotation Error', message, additional_msgs)
+
+
 class DatabaseError(BaseException):
     """An error occured in database operation"""
     def __init__(self, message, additional_msgs=[]) -> None:
@@ -23,6 +29,12 @@ class DatabaseError(BaseException):
 class DuplicateRecord(BaseException):
     def __init__(self, message, additional_msgs=[]):
         super().__init__('Duplicate record', message, additional_msgs)
+
+
+class InvalidFileNameException(BaseException):
+    """Signals invalid filename"""
+    def __init__(self, message, additional_msgs=[]):
+        super().__init__('File has incorrect filename', message, additional_msgs)
 
 
 class InvalidCredentialsException(BaseException):
@@ -62,8 +74,7 @@ class FormatterException(BaseException):
         super().__init__('Formatter Error', message)
 
 
-class BadRequestError(BaseException):
-    """Signals that the user may have done something wrong and that the
-    message should be shown to the user."""
+class DataNotAvailableException(BaseException):
+    """Signals that the requested data is not available in a storage."""
     def __init__(self, message):
-        super().__init__('Bad Request Error', message)
+        super().__init__('Data Not Available Error', message)

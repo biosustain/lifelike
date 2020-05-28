@@ -5,7 +5,6 @@ import {
     OnInit,
     Output,
 } from '@angular/core';
-import { FormGroup, FormBuilder } from '@angular/forms';
 
 import { Options } from '@popperjs/core';
 
@@ -16,8 +15,8 @@ import { isNullOrUndefined } from 'util';
 
 import { Network, DataSet, IdType } from 'vis-network';
 
-import { MAX_CLUSTER_ROWS } from 'app/constants';
 import {
+    ClusterData,
     ClusteredNode,
     DuplicateNodeEdgePair,
     Direction,
@@ -25,14 +24,16 @@ import {
     DuplicateVisNode,
     ExpandNodeResult,
     ExpandNodeRequest,
-    GetClusterGraphDataResult,
+    GetClusterDataResult,
     GetSnippetsResult,
     GroupRequest,
     Neo4jGraphConfig,
     ReferenceTableRow,
+    SettingsFormValues,
     SidenavClusterEntity,
-    SidenavNodeEntity,
     SidenavEdgeEntity,
+    SidenavNodeEntity,
+    SidenavSnippetData,
     VisEdge,
     VisNode,
 } from 'app/interfaces';
@@ -60,9 +61,7 @@ export class VisualizationCanvasComponent implements OnInit {
     @Output() finishedPreClustering = new EventEmitter<boolean>();
     @Output() getSnippetsFromEdge = new EventEmitter<VisEdge>();
     @Output() getSnippetsFromDuplicateEdge = new EventEmitter<DuplicateVisEdge>();
-    @Output() getClusterGraphData = new EventEmitter<ClusteredNode[]>();
-    @Output() addDuplicatedEdge = new EventEmitter<number>();
-    @Output() removeDuplicatedEdge = new EventEmitter<number>();
+    @Output() getClusterData = new EventEmitter<ClusteredNode[]>();
 
     @Input() nodes: DataSet<any, any>;
     @Input() edges: DataSet<any, any>;
@@ -114,7 +113,6 @@ export class VisualizationCanvasComponent implements OnInit {
                             nodesToRemove.push(duplicateNode.duplicateOf);
                         }
 
-                        this.addDuplicatedEdge.emit(duplicateEdge.duplicateOf as number);
                         edgesToRemove.push(duplicateEdge.duplicateOf);
                     });
 
@@ -130,25 +128,34 @@ export class VisualizationCanvasComponent implements OnInit {
         if (!isNullOrUndefined(result)) {
             this.sidenavEntityType = SidenavEntityType.EDGE;
             this.sidenavEntity = {
-                to: this.nodes.get(result.toNodeId) as VisNode,
-                from: this.nodes.get(result.fromNodeId) as VisNode,
-                association: result.association,
-                snippets: result.snippets,
-             } as SidenavEdgeEntity;
+                data: {
+                    to: this.nodes.get(result.toNodeId) as VisNode,
+                    from: this.nodes.get(result.fromNodeId) as VisNode,
+                    association: result.association,
+                    snippets: result.snippets,
+                } as SidenavSnippetData
+            } as SidenavEdgeEntity;
         }
     }
-    @Input() set getClusterGraphDataResult(result: GetClusterGraphDataResult) {
+    @Input() set getClusterDataResult(result: GetClusterDataResult) {
         if (!isNullOrUndefined(result)) {
             this.sidenavEntityType = SidenavEntityType.CLUSTER;
-            this.sidenavEntity = {
-                includes: Object.keys(result.results).map(nodeId => this.nodes.get(nodeId)),
-                clusterGraphData: result,
-            } as SidenavClusterEntity;
+            const data = result.snippetData.results.map(snippetResult => {
+                return {
+                    to: this.nodes.get(snippetResult.toNodeId) as VisNode,
+                    from: this.nodes.get(snippetResult.fromNodeId) as VisNode,
+                    association: snippetResult.association,
+                    snippets: snippetResult.snippets,
+                } as SidenavSnippetData;
+            });
+            this.sidenavEntity = { data } as SidenavClusterEntity;
         }
     }
     // Configuration for the graph view. See vis.js docs
     @Input() config: Neo4jGraphConfig;
     @Input() legend: Map<string, string[]>;
+
+    legendLabels: string[];
 
     // Need to create a reference to the enum so we can use it in the template
     sidenavEntityTypeEnum = SidenavEntityType;
@@ -162,8 +169,9 @@ export class VisualizationCanvasComponent implements OnInit {
     selectedNodeEdgeLabelData: Map<string, Direction[]>;
     selectedEdges: IdType[];
     referenceTableData: DuplicateNodeEdgePair[];
-    clusters: Map<string, string>;
+    clusters: Map<string, ClusterData>;
     openClusteringRequests: number;
+    selectedClusterNodeData: VisNode[];
 
     clusterCreatedSource: Subject<boolean>;
 
@@ -172,14 +180,15 @@ export class VisualizationCanvasComponent implements OnInit {
     referenceTableTooltipSelector: string;
     referenceTableTooltipOptions: Partial<Options>;
 
-    expandNodeForm: FormGroup;
+    settingsFormValues: SettingsFormValues;
 
     constructor(
         private contextMenuControlService: ContextMenuControlService,
         private messageDialog: MessageDialog,
         private visService: VisualizationService,
-        private fb: FormBuilder,
     ) {
+        this.legendLabels = [];
+
         this.sidenavOpened = false;
         this.sidenavEntity = null;
         this.sidenavEntityType = SidenavEntityType.EMPTY;
@@ -199,18 +208,15 @@ export class VisualizationCanvasComponent implements OnInit {
             placement: 'right-start',
         };
 
-        this.clusters = new Map<string, string>();
+        this.clusters = new Map<string, ClusterData>();
         this.openClusteringRequests = 0;
         this.clusterCreatedSource = new Subject<boolean>();
-
-        this.expandNodeForm = this.fb.group({
-            Chemical: true,
-            Disease: true,
-            Gene: true,
-        });
+        this.selectedClusterNodeData = [];
     }
 
     ngOnInit() {
+        this.legendLabels = Array.from(this.legend.keys());
+
         const container = document.getElementById('network-viz');
         const data = {
             nodes: this.nodes,
@@ -218,6 +224,31 @@ export class VisualizationCanvasComponent implements OnInit {
         };
         this.networkGraph = new Network(container, data, this.config);
         this.visualizerSetupEventBinds();
+    }
+
+    updateSettings(event: SettingsFormValues) {
+        // First time we get the settings form values we do a full copy (these are the default values)
+        if (isNullOrUndefined(this.settingsFormValues)) {
+            this.settingsFormValues = event;
+        } else {
+            // On subsequent emissions, we only update a property if it is valid
+            Object.keys(event).forEach(key => {
+                if (event[key].valid) {
+                    const prevVal = this.settingsFormValues[key].value;
+                    this.settingsFormValues[key] = event[key];
+
+                    if (key === 'maxClusterShownRows') {
+                        // If the user updated the max row count, update all the cluster SVGs to show the new amount
+                        if (prevVal !== event[key].value) {
+                            this.clusters.forEach((_, clusterId) => {
+                                const newClusterSvg = this.createClusterSvg(this.clusters.get(clusterId).referenceTableRows);
+                                this.networkGraph.updateClusteredNode(clusterId, {image: newClusterSvg});
+                            });
+                        }
+                    }
+                }
+            });
+        }
     }
 
     /**
@@ -271,6 +302,13 @@ export class VisualizationCanvasComponent implements OnInit {
         // Get all the nodes connected to the root node, before removing edges
         const connectedNodes = this.networkGraph.getConnectedNodes(rootNode.id) as IdType[];
 
+        // Remove every cluster connected to the root node
+        connectedNodes.forEach(connectedNode => {
+            if (this.networkGraph.isCluster(connectedNode)) {
+                this.destroyCluster(connectedNode);
+            }
+        });
+
         this.edges.remove(this.networkGraph.getConnectedEdges(rootNode.id) as IdType[]);
 
         // If a previously connected node has no remaining edges (i.e. it is not connected
@@ -286,13 +324,6 @@ export class VisualizationCanvasComponent implements OnInit {
 
     expandOrCollapseNode(nodeId: number) {
         const nodeRef = this.nodes.get(nodeId) as VisNode;
-        const connectedNodes = this.networkGraph.getConnectedNodes(nodeId);
-
-        connectedNodes.forEach(connectedNode => {
-            if (this.networkGraph.isCluster(connectedNode)) {
-                this.safelyOpenCluster(connectedNode);
-            }
-        });
 
         if (nodeRef.expanded) {
             // Updates node expand state
@@ -302,7 +333,7 @@ export class VisualizationCanvasComponent implements OnInit {
             this.collapseNeighbors(nodeRef);
         } else {
             // Need to request new data from the parent when nodes are expanded
-            const filterLabels = Object.keys(this.expandNodeForm.value).filter((key) => this.expandNodeForm.value[key]);
+            const filterLabels = Array.from(this.legend.keys()).filter((key) => this.settingsFormValues[key].value);
             this.expandNode.emit({
                 nodeId,
                 filterLabels,
@@ -397,9 +428,12 @@ export class VisualizationCanvasComponent implements OnInit {
     createClusterSvg(referenceTableRows: ReferenceTableRow[]) {
         referenceTableRows.sort((a, b) => b.snippetCount - a.snippetCount);
         const maxSnippetCount = referenceTableRows[0].snippetCount;
-        const rowsHTMLString = referenceTableRows.slice(0, MAX_CLUSTER_ROWS).map((row, index) => {
-            const percentOfMax = row.snippetCount === 0 ? row.snippetCount : (row.snippetCount / maxSnippetCount) * 100;
+        const maxRowsToShow = this.settingsFormValues.maxClusterShownRows.value;
+        const numRowsToShow = referenceTableRows.length > maxRowsToShow ? maxRowsToShow : referenceTableRows.length;
 
+        const maxNodesCellText = `Showing ${numRowsToShow} of ${referenceTableRows.length} clustered nodes`;
+        const rowsHTMLString = referenceTableRows.slice(0, maxRowsToShow).map((row, index) => {
+            const percentOfMax = row.snippetCount === 0 ? row.snippetCount : (row.snippetCount / maxSnippetCount) * 100;
             let rowHTMLString = `
             <tr class="reference-table-row">
                 <td class="entity-name-container">${row.nodeDisplayName}</td>
@@ -408,25 +442,41 @@ export class VisualizationCanvasComponent implements OnInit {
                     <div class="snippet-bar-repr" style="width: ${percentOfMax}px;"></div>
                 </td>
             </tr>`;
-            if (index === MAX_CLUSTER_ROWS - 1) {
+            if (index === numRowsToShow - 1) {
                 rowHTMLString += `
                 <tr class="reference-table-row">
-                    <td class="max-nodes-cell" colspan="3">Showing 20 of ${referenceTableRows.length} clustered nodes</td>
+                    <td class="max-nodes-cell" colspan="3">${maxNodesCellText}</td>
                 </tr>
                 `;
-                return rowHTMLString;
-            } else {
-                return rowHTMLString;
             }
+            return rowHTMLString;
         }).join('\n');
         const ctx = document.getElementsByTagName('canvas')[0].getContext('2d');
-        const longestName = referenceTableRows.slice(0, 20).sort(
+        const longestName = referenceTableRows.slice(0, maxRowsToShow).sort(
             (a, b) => ctx.measureText(b.nodeDisplayName).width - ctx.measureText(a.nodeDisplayName).width
         )[0].nodeDisplayName;
-        // width of biggest name + width of counts + max width of bars + padding width + border width
-        const svgWidth = Math.floor((ctx.measureText(longestName).width * 1.25) + (ctx.measureText('(20+)').width * 1.25) + 100 + 21 + 6);
-        // (height of rows + padding height + border height) * # of rows
-        const svgHeight = (15 + 5 + 4) * referenceTableRows.slice(0, 20).length;
+
+        // Get width of SVG
+        const FLUFF_WIDTH =  21 + 6; // padding + border
+        const WIDTH_MULTIPLIER = 1.5; // multiplier to massage the width to about what we want
+        const svgWidth = Math.max(
+            // width of biggest name + max width of counts + max width of bars + constant width
+            Math.floor(
+                ctx.measureText(longestName).width * WIDTH_MULTIPLIER +
+                ctx.measureText(`(${maxSnippetCount})`).width * WIDTH_MULTIPLIER +
+                100 + FLUFF_WIDTH
+            ),
+            // OR width of the max-nodes-cell + constant width
+            Math.floor(ctx.measureText(maxNodesCellText).width * WIDTH_MULTIPLIER + FLUFF_WIDTH)
+        );
+
+        // Get height of SVG
+        const FLUFF_HEIGHT = (15 + 5 + 4); // height of rows + padding height + border height
+        // Add a single extra row to accomodate the max-nodes-cell
+        const numRows = referenceTableRows.slice(0, maxRowsToShow).length + 1;
+        // constant height * # of rows
+        const svgHeight = FLUFF_HEIGHT * numRows;
+
         const svg =
         `<svg xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 ${svgWidth} ${svgHeight}" width="${svgWidth}" height="${svgHeight}" preserveAspectRatio="xMinYMin meet">
@@ -496,6 +546,7 @@ export class VisualizationCanvasComponent implements OnInit {
             primaryLabel: duplicateNode.primaryLabel,
             expanded: duplicateNode.expanded,
             color: duplicateNode.color,
+            font: duplicateNode.font,
         } as VisNode;
     }
 
@@ -518,6 +569,7 @@ export class VisualizationCanvasComponent implements OnInit {
             toLabel: duplicateEdge.toLabel,
             fromLabel: duplicateEdge.fromLabel,
             arrows: duplicateEdge.arrows,
+            color: duplicateEdge.color,
         } as VisEdge;
     }
 
@@ -532,6 +584,30 @@ export class VisualizationCanvasComponent implements OnInit {
             originalFrom: originalEdge.from,
             originalTo: originalEdge.to,
         } as DuplicateVisEdge;
+    }
+
+    /**
+     * Pulls out a node from a cluster given a duplicate node ID. We find the cluster containing the given
+     * ID, and then re-create the original node from the duplicate. This DOES NOT remove the duplicate
+     * from the cluster! It simply re-draws the original using the duplicate's info. Also redraws the
+     * original edge.
+     *
+     * @param duplicateNodeId ID of the duplicate node we wish to find
+     */
+    removeNodeFromCluster(duplicateNodeId: IdType) {
+        const duplicateNode = this.nodes.get(duplicateNodeId) as DuplicateVisNode;
+
+        // If the original node is not currently drawn on the canvas, redraw it.
+        if (isNullOrUndefined(this.nodes.get(duplicateNode.duplicateOf))) {
+            this.nodes.update(this.createOriginalNodeFromDuplicate(duplicateNode));
+        }
+
+        // Redraw the original edge
+        this.networkGraph.getConnectedEdges(duplicateNodeId).map(
+            duplicateEdgeId => this.edges.get(duplicateEdgeId)
+        ).forEach(duplicateEdge => {
+            this.edges.update(this.createOriginalEdgeFromDuplicate(duplicateEdge));
+        });
     }
 
     /**
@@ -556,7 +632,6 @@ export class VisualizationCanvasComponent implements OnInit {
             this.networkGraph.getConnectedEdges(duplicateNodeId).map(
                 duplicateEdgeId => this.edges.get(duplicateEdgeId)
             ).forEach(duplicateEdge => {
-                this.removeDuplicatedEdge.emit(duplicateEdge.duplicateOf);
                 edgesToRemove.push(duplicateEdge.id);
                 edgesToAdd.push(this.createOriginalEdgeFromDuplicate(duplicateEdge));
             });
@@ -647,7 +722,6 @@ export class VisualizationCanvasComponent implements OnInit {
                 nodesToRemove.push(duplicateNode.duplicateOf);
             }
 
-            this.addDuplicatedEdge.emit(duplicateEdge.duplicateOf as number);
             edgesToRemove.push(duplicateEdge.duplicateOf);
         });
 
@@ -668,9 +742,34 @@ export class VisualizationCanvasComponent implements OnInit {
         this.cleanUpDuplicates(nodesInCluster);
     }
 
+    destroyCluster(clusterNodeId: IdType) {
+        const nodesInCluster = this.networkGraph.getNodesInCluster(clusterNodeId);
+        const edgesInCluster = [];
+
+        nodesInCluster.forEach(nodeId => {
+            this.networkGraph.getConnectedEdges(nodeId).forEach(edgeId => edgesInCluster.push(edgeId));
+        });
+
+        // Destroy the cluster
+        this.networkGraph.openCluster(clusterNodeId);
+        this.clusters.delete(clusterNodeId as string);
+
+        this.nodes.remove(nodesInCluster);
+        this.edges.remove(edgesInCluster);
+    }
+
     createCluster(originNode: IdType, relationship: string, duplicateNodeEdgePairs: DuplicateNodeEdgePair[]) {
         this.openClusteringRequests += 1;
         this.visService.getReferenceTableData(duplicateNodeEdgePairs).subscribe(result => {
+            // Remove any existing clusters connected to the origin node on this relationship first. Any
+            // nodes within should have been included in the duplicateNodeEdgePairs array sent to the appserver.
+            this.networkGraph.getConnectedNodes(originNode).forEach(nodeId => {
+                if (this.networkGraph.isCluster(nodeId)) {
+                    if (this.clusters.get(nodeId).relationship === relationship) {
+                        this.destroyCluster(nodeId);
+                    }
+                }
+            });
 
             this.updateGraphWithDuplicates(duplicateNodeEdgePairs);
 
@@ -699,7 +798,7 @@ export class VisualizationCanvasComponent implements OnInit {
                 },
                 processProperties: (clusterOptions) => {
                     const newClusterId = `cluster:${uuidv4()}`;
-                    this.clusters.set(newClusterId, relationship);
+                    this.clusters.set(newClusterId, {referenceTableRows, relationship});
                     return {...clusterOptions, id: newClusterId};
                 }
             });
@@ -710,6 +809,24 @@ export class VisualizationCanvasComponent implements OnInit {
         });
     }
 
+    getDuplicateNodeEdgePairsFromCluster(clusterNodeId: IdType) {
+        const clusteredNodeIds = this.networkGraph.getNodesInCluster(clusterNodeId);
+        const duplicateNodeEdgePairs = [];
+
+        clusteredNodeIds.forEach(nodeId => {
+            this.networkGraph.getConnectedEdges(nodeId).forEach(edgeId => {
+                duplicateNodeEdgePairs.push(
+                    {
+                        node: this.nodes.get(nodeId),
+                        edge: this.edges.get(edgeId),
+                    } as DuplicateNodeEdgePair
+                );
+            });
+        });
+
+        return duplicateNodeEdgePairs;
+    }
+
     /**
      * Creates a cluster node of all the neighbors connected to the currently selected
      * node connected by the input relationship.
@@ -717,11 +834,32 @@ export class VisualizationCanvasComponent implements OnInit {
      */
     groupNeighborsWithRelationship(groupRequest: GroupRequest) {
         const { relationship, node, direction } = groupRequest;
+        let duplicateNodeEdgePairs: DuplicateNodeEdgePair[] = [];
+
         const neighborNodesWithRel = this.getNeighborsWithRelationship(relationship, node, direction);
 
-        let duplicateNodeEdgePairs: DuplicateNodeEdgePair[];
         try {
-            duplicateNodeEdgePairs = this.createDuplicateNodesAndEdges(neighborNodesWithRel, relationship, node, direction);
+            const duplicateNodeEdgePairsOutsideCluster = this.createDuplicateNodesAndEdges(
+                neighborNodesWithRel, relationship, node, direction
+            );
+            duplicateNodeEdgePairs = duplicateNodeEdgePairs.concat(duplicateNodeEdgePairsOutsideCluster);
+
+            this.networkGraph.getConnectedNodes(node).forEach(nodeId => {
+                if (this.networkGraph.isCluster(nodeId)) {
+                    if (this.clusters.get(nodeId).relationship === relationship) {
+                        // If the hub node is already connected to a cluster on the given relationship,
+                        // we should include all the nodes in that cluster.
+                        const duplicateNodesEdgePairsInCluster = this.getDuplicateNodeEdgePairsFromCluster(
+                            nodeId
+                        ).filter(
+                            // It is possible that some of the nodes inside the cluster sre also outside it. So,
+                            // get rid of duplicates.
+                            (pair: DuplicateNodeEdgePair) => !neighborNodesWithRel.includes(pair.node.duplicateOf)
+                        );
+                        duplicateNodeEdgePairs = duplicateNodeEdgePairs.concat(duplicateNodesEdgePairsInCluster);
+                    }
+                }
+            });
         } catch (e) {
             console.log(e);
             this.messageDialog.display(
@@ -792,7 +930,7 @@ export class VisualizationCanvasComponent implements OnInit {
                         edges: this.networkGraph.getConnectedEdges(node).map(edgeId => this.edges.get(edgeId)),
                     } as ClusteredNode;
                 });
-                this.getClusterGraphData.emit(clusteredNodes);
+                this.getClusterData.emit(clusteredNodes);
             } else {
                 const node  = this.nodes.get(this.selectedNodes[0]) as VisNode;
                 this.sidenavEntity = {
@@ -805,43 +943,6 @@ export class VisualizationCanvasComponent implements OnInit {
             const edge = this.edges.get(this.selectedEdges[0]) as VisEdge;
             this.getAssociationsWithEdge(edge);
         }
-    }
-
-    getNodeEdgePairsInCluster(clusterNodeId: string) {
-        const clusterEdgeRelationship = this.clusters.get(clusterNodeId);
-        return this.networkGraph.getNodesInCluster(clusterNodeId).map(
-            duplicateNodeId => {
-                // Get each clustered node and edge. There should be EXACTLY
-                // one edge connected to this node, and both the node and edge are
-                // duplicates.
-                try {
-                    if (typeof duplicateNodeId !== 'string') {
-                        throw Error(`Cluster node ID was of type ${typeof duplicateNodeId}! Should be 'string'`);
-                    } else if (this.networkGraph.getConnectedEdges(duplicateNodeId).length !== 1) {
-                        throw Error(
-                            `Cluster node with id ${duplicateNodeId} has ` +
-                            `${this.networkGraph.getConnectedEdges(duplicateNodeId).length} edges! Should be 1.`
-                        );
-                    }
-
-                    const duplicateEdgeId = this.networkGraph.getConnectedEdges(duplicateNodeId).pop();
-
-                    if (this.edges.get(duplicateEdgeId).label !== clusterEdgeRelationship) {
-                        throw Error(
-                            `Edge ${duplicateEdgeId} of node ${duplicateNodeId} had label ` +
-                            `${this.edges.get(duplicateEdgeId).label}! Should be ${clusterEdgeRelationship}` +
-                            `Clustered edges should all have the same label.`
-                        );
-                    }
-                    return {
-                        node: this.nodes.get(duplicateNodeId),
-                        edge: this.edges.get(duplicateEdgeId),
-                    } as DuplicateNodeEdgePair;
-                } catch (e) {
-                    console.log(e);
-                }
-            }
-        );
     }
 
     /**
@@ -986,10 +1087,20 @@ export class VisualizationCanvasComponent implements OnInit {
     }
 
     onContextCallback(params: any) {
-        const hoveredNode = this.networkGraph.getNodeAt(params.pointer.DOM);
+        const hoveredNode = this.networkGraph.getNodeAt(params.pointer.DOM) as string;
 
         if (this.networkGraph.isCluster(hoveredNode)) {
-            return;
+            const nodeIdToSnippetCountMap = new Map<string, number>();
+            this.clusters.get(hoveredNode).referenceTableRows.forEach(nodeRow =>
+                nodeIdToSnippetCountMap.set(nodeRow.nodeId, nodeRow.snippetCount)
+            );
+            this.selectedClusterNodeData = this.networkGraph.getNodesInCluster(hoveredNode).map(
+                nodeId => this.nodes.get(nodeId) as VisNode
+            ).sort(
+                (a, b) => nodeIdToSnippetCountMap.get(b.id.toString()) - nodeIdToSnippetCountMap.get(a.id.toString())
+            ).slice(0, this.settingsFormValues.maxClusterShownRows.value);
+        } else {
+            this.selectedClusterNodeData = [];
         }
 
         // Stop the browser from showing the normal context

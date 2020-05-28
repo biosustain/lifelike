@@ -1,6 +1,12 @@
 import { IdType } from 'vis-network';
 
-import { GraphNode, VisEdge, VisNode, DuplicateVisNode, DuplicateVisEdge } from './neo4j.interface';
+import {
+    GraphNode,
+    VisEdge,
+    VisNode,
+    DuplicateVisNode,
+    DuplicateVisEdge
+} from './neo4j.interface';
 
 export enum Direction {
     TO = 'Incoming',
@@ -30,6 +36,11 @@ export interface Reference extends GraphNode {
     };
 }
 
+export interface ClusterData {
+    referenceTableRows: ReferenceTableRow[];
+    relationship: string;
+}
+
 export interface ClusteredNode {
     nodeId: number;
     edges: DuplicateVisEdge[];
@@ -54,6 +65,15 @@ export interface GetClusterGraphDataResult {
             [key: string]: number
         }
     };
+}
+
+export interface GetClusterSnippetDataResult {
+    results: GetSnippetsResult[];
+}
+
+export interface GetClusterDataResult {
+    graphData: GetClusterGraphDataResult;
+    snippetData: GetClusterSnippetDataResult;
 }
 
 export interface GroupRequest {
@@ -93,6 +113,7 @@ export interface DuplicateNodeEdgePair {
 }
 
 export interface ReferenceTableRow {
+    nodeId: string;
     nodeDisplayName: string;
     snippetCount: number;
     edge: VisEdge;
@@ -103,19 +124,32 @@ export interface GetReferenceTableDataResult {
 }
 
 
-export interface SidenavNodeEntity {
-    data: VisNode;
-    edges: VisEdge[];
-}
-
-export interface SidenavEdgeEntity {
+export interface SidenavSnippetData {
     to: VisNode;
     from: VisNode;
     association: string;
     snippets: AssociationSnippet[];
 }
 
+export interface SidenavNodeEntity {
+    data: VisNode;
+    edges: VisEdge[];
+}
+
+export interface SidenavEdgeEntity {
+    data: SidenavSnippetData;
+}
+
 export interface SidenavClusterEntity {
-    includes: VisNode[];
-    clusterGraphData: GetClusterGraphDataResult;
+    data: SidenavSnippetData[];
+}
+
+export interface SettingsFormControl {
+    value: any;
+    valid: boolean;
+}
+
+export interface SettingsFormValues {
+    maxClusterShownRows: SettingsFormControl;
+    [key: string]: SettingsFormControl; // Could be any number of node entity checkboxes
 }

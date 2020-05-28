@@ -1,8 +1,14 @@
-<div class='pdf-viewer-container' [class.debugmode]="debugMode">
-    <app-pdf-viewer-lib-toolbar (onControlChanged)="toolbarControlChanged($event)"></app-pdf-viewer-lib-toolbar>
-    <div *ngIf="!isLoadCompleted" class='pdf-load-screen'>Loading {{currentRenderedPage}}/{{allPages}}</div>
-    <app-pdf-viewer-lib [src]="pdfSrc" [(page)]="page" [rotation]="rotation" [original-size]="originalSize" [fit-to-page]="fitToPage"
-        (after-load-complete)="afterLoadComplete($event)" [zoom]="zoom" [show-all]="showAll" [stick-to-page]="stickToPage"
-        [render-text]="renderText" [external-link-target]="'blank'" [autoresize]="autoresize" (error)="onError($event)"
-        (on-progress)="onProgress($event)" (page-rendered)="pageRendered($event)"></app-pdf-viewer-lib>
+<div class="pdf-viewer-container" [class.debugmode]="debugMode">
+  <div *ngIf="!isLoadCompleted" class="pdf-loading-box shadow-4">
+    Loading<span *ngIf="allPages"> page {{currentRenderedPage}} of {{allPages}}</span>...
+  </div>
+  <div class="pdf-viewer-document">
+    <app-pdf-viewer-lib [src]="pdfSrc" [(page)]="page" [rotation]="rotation" [original-size]="originalSize"
+                        [fit-to-page]="fitToPage"
+                        (after-load-complete)="afterLoadComplete($event)" [zoom]="zoom" [show-all]="showAll"
+                        [stick-to-page]="stickToPage"
+                        [render-text]="renderText" [external-link-target]="'blank'" [autoresize]="autoresize"
+                        (error)="onError($event)"
+                        (on-progress)="onProgress($event)" (page-rendered)="pageRendered($event)"></app-pdf-viewer-lib>
+  </div>
 </div>

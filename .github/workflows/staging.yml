@@ -1,8 +1,9 @@
 name: Staging Deployment
 
 on:
-  pull_request:
-    types: [labeled]
+  push:
+    branches:
+      - master
 
 env:
     POSTGRES_HOST: ${{ secrets.STAGING_POSTGRES_HOST }}
@@ -23,6 +24,8 @@ env:
     CLOUD_SQL_ALIAS: ${{ secrets.STAGING_CLOUD_SQL_ALIAS }}
     GCE_BACKUP_BUCKET: ${{ secrets.POSTGRES_BACKUP_BUCKET }}
     SENTRY_KEY: ${{ secrets.SENTRY_KEY }}
+    REDIS_HOST: ${{ secrets.REDIS_HOST }}
+    REDIS_PORT: ${{ secrets.REDIS_PORT }}
 
 jobs:
 
@@ -30,8 +33,6 @@ jobs:
 
         name: Setup, Build, Publish, and Deploy
         runs-on: ubuntu-latest
-
-        if: contains(github.event.pull_request.labels.*.name, 'staging')
 
         steps:
             - name: Checkout
@@ -54,12 +55,14 @@ jobs:
               run: |-
                 docker build --tag "gcr.io/$PROJECT_ID/kg-appserver-staging:latest" -f ./appserver/Dockerfile.prod ./appserver/
                 docker build --tag "gcr.io/$PROJECT_ID/kg-webserver-staging:latest" -f ./client/Dockerfile.staging ./client/
+                docker build --tag "gcr.io/$PROJECT_ID/kg-cache-service-staging:latest" ./cache-invalidator/
 
             # # Push Docker image to Google Container Registry
             - name: Publish
               run: |-
                 docker push "gcr.io/$PROJECT_ID/kg-appserver-staging:latest"
                 docker push "gcr.io/$PROJECT_ID/kg-webserver-staging:latest"
+                docker push "gcr.io/$PROJECT_ID/kg-cache-service-staging:latest"
 
             - name: Deploy Setup
               run: |-
@@ -77,11 +80,12 @@ jobs:
                 echo "PROJECT_ID=$PROJECT_ID" >> staging.env
                 echo "CLOUD_SQL_ALIAS=$CLOUD_SQL_ALIAS" >> staging.env
                 echo "GCE_BACKUP_BUCKET=$GCE_BACKUP_BUCKET" >> staging.env
-                echo "SERVICE_ACCOUNT_CRED=$GCE_SERVICE_ACCOUNT" >> staging.env
                 GITHUB_COMMIT_TIMESTAMP=$(git log -1 --format=%cI)
                 echo "GITHUB_COMMIT_TIMESTAMP=$GITHUB_COMMIT_TIMESTAMP" >> staging.env
                 echo "GITHUB_HASH=temporarily-disabled" >> staging.env
                 echo "SENTRY_KEY=$SENTRY_KEY" >> staging.env
+                echo "REDIS_HOST=$REDIS_HOST" >> staging.env
+                echo "REDIS_PORT=$REDIS_PORT" >> staging.env
                 echo "$GCE_SERVICE_ACCOUNT" >> keyfile.json
                 gcloud compute scp staging.env $GCE_INSTANCE:/srv --zone $GCE_INSTANCE_ZONE
                 gcloud compute scp keyfile.json $GCE_INSTANCE:/srv --zone $GCE_INSTANCE_ZONE

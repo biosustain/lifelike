@@ -313,7 +313,7 @@ def prepare_lmdb_diseases_database(filename: str):
 def prepare_lmdb_phenotypes_database(filename: str):
     with open(path.join(directory, filename), 'r') as f:
         map_size = 1099511627776
-        db = lmdb.open(path.join(directory, 'lmdb/phenotype'), map_size=map_size)
+        db = lmdb.open(path.join(directory, 'lmdb/phenotypes'), map_size=map_size)
         with db.begin(write=True) as transaction:
             reader = csv.reader(f, delimiter=',', quotechar='"')
             # skip headers
@@ -401,4 +401,9 @@ if __name__ == '__main__':
 
     # covid-19
     prepare_lmdb_diseases_database(filename='datasets/covid19_disease.csv')
-    prepare_lmdb_species_database(filename='datasets/covid19_taxonomy.tsv')
+
+    prepare_lmdb_species_database(filename='datasets/cdiff_taxonomy.tsv')
+    prepare_lmdb_species_database(filename='datasets/ecoli_taxonomy.tsv')
+    prepare_lmdb_species_database(filename='datasets/pseudomonas_aerug_taxonomy.tsv')
+    prepare_lmdb_species_database(filename='datasets/staph_aureus_taxonomy.tsv')
+    prepare_lmdb_species_database(filename='datasets/yeast_taxonomy.tsv')

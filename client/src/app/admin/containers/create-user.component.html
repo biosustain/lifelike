@@ -11,6 +11,32 @@
 							<input
 								type="text"
                 matInput
+                formControlName="firstName"
+                name="firstName"
+                placeholder="First Name"
+                required
+              />
+              <mat-error *ngIf="firstName.hasError('required')">
+								First name cannot be empty
+							</mat-error>
+            </mat-form-field>
+            <mat-form-field class="field-width">
+							<input
+								type="text"
+                matInput
+                formControlName="lastName"
+                name="lastName"
+                placeholder="Last Name"
+                required
+              />
+              <mat-error *ngIf="lastName.hasError('required')">
+								Last name cannot be empty
+							</mat-error>
+            </mat-form-field>
+            <mat-form-field class="field-width">
+							<input
+								type="text"
+                matInput
                 formControlName="username"
                 name="username"
                 placeholder="Username"
@@ -43,6 +69,7 @@
                 formControlName="email"
                 name="email"
                 placeholder="Email"
+                required
               />
               <mat-error *ngIf="email.hasError('required')">
 								E-mail cannot be empty

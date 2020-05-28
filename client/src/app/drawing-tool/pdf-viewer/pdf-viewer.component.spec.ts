@@ -7,6 +7,7 @@ import { DrawingToolModule } from '../drawing-tool.module';
 import { PdfViewerComponent } from './pdf-viewer.component';
 import { configureTestSuite } from 'ng-bullet';
 import { RootStoreModule } from 'app/root-store';
+import {NodeSearchModule} from '../../node-search/node-search.module';
 
 describe('PdfViewerComponent', () => {
     let component: PdfViewerComponent;
@@ -17,6 +18,7 @@ describe('PdfViewerComponent', () => {
             imports: [
                 DrawingToolModule,
                 RouterTestingModule,
+                NodeSearchModule,
                 RootStoreModule
             ],
             providers: [

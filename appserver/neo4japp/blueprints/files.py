@@ -6,12 +6,18 @@ import uuid
 from datetime import datetime
 from enum import Enum
 from typing import Dict
+import urllib.request
+from urllib.error import URLError
 
 from flask import Blueprint, current_app, request, jsonify, g, make_response
+
 from sqlalchemy.orm.exc import NoResultFound
+
+from werkzeug.datastructures import FileStorage
 from werkzeug.utils import secure_filename
 
 from neo4japp.blueprints.auth import auth
+from neo4japp.blueprints.permissions import requires_role
 from neo4japp.database import (
     db,
     get_annotations_service,
@@ -19,10 +25,15 @@ from neo4japp.database import (
     get_bioc_document_service,
     get_lmdb_dao,
 )
-from neo4japp.exceptions import RecordNotFoundException, BadRequestError
+from neo4japp.exceptions import AnnotationError, RecordNotFoundException
 from neo4japp.models import AppUser
 from neo4japp.models.files import Files, FileContent
-from neo4japp.blueprints.permissions import requires_role
+from neo4japp.utils.network import read_url
+
+URL_FETCH_MAX_LENGTH = 1024 * 1024 * 30
+URL_FETCH_TIMEOUT = 10
+DOWNLOAD_USER_AGENT = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) ' \
+                      'Chrome/51.0.2704.103 Safari/537.36 Lifelike'
 
 bp = Blueprint('files', __name__, url_prefix='/files')
 
@@ -30,14 +41,33 @@ bp = Blueprint('files', __name__, url_prefix='/files')
 @bp.route('/upload', methods=['POST'])
 @auth.login_required
 def upload_pdf():
-    pdf = request.files['file']
+    filename = None
+    pdf = None
+    if 'url' in request.form:
+        url = request.form['url']
+        try:
+            req = urllib.request.Request(url, headers={
+                'User-Agent': DOWNLOAD_USER_AGENT,
+            })
+            data = read_url(req, max_length=URL_FETCH_MAX_LENGTH,
+                            timeout=URL_FETCH_TIMEOUT).getvalue()
+        except (ValueError, URLError):
+            raise AnnotationError("Your file could not be downloaded, either because it is "
+                                  "inaccessible or another problem occurred. Please double "
+                                  "check the spelling of the URL.")
+        filename = secure_filename(request.form['filename'])
+        if not filename.lower().endswith('.pdf'):
+            filename += '.pdf'
+        pdf = FileStorage(io.BytesIO(data), filename)
+    else:
+        filename = secure_filename(request.files['file'].filename)
+        pdf = request.files['file']
     pdf_content = pdf.read()  # TODO: don't work with whole file in memory
     pdf.stream.seek(0)
     project = '1'  # TODO: remove hard coded project
     checksum_sha256 = hashlib.sha256(pdf_content).digest()
     user = g.current_user
 
-    filename = secure_filename(request.files['file'].filename)
     # Make sure that the filename is not longer than the DB column permits
     max_filename_length = Files.filename.property.columns[0].type.length
     if len(filename) > max_filename_length:
@@ -195,17 +225,18 @@ def annotate(filename, pdf_file_object) -> dict:
     # TODO: Miguel: need to update file_uri with file path
     try:
         parsed_pdf_chars = pdf_parser.parse_pdf(pdf=pdf_file_object)
-    except Exception as e:
-        raise BadRequestError("Your file could not be imported. Please check if it is a valid PDF.")
+    except AnnotationError:
+        raise AnnotationError('Your file could not be imported. Please check if it is a valid PDF.')
 
     try:
         tokens = pdf_parser.extract_tokens(parsed_chars=parsed_pdf_chars)
+        pdf_text_list = pdf_parser.combine_chars_into_words(parsed_pdf_chars)
+        pdf_text = ' '.join([text for text, _ in pdf_text_list])
         annotations = annotator.create_annotations(tokens=tokens)
-        pdf_text = pdf_parser.parse_pdf_high_level(pdf=pdf_file_object)
         bioc = bioc_service.read(text=pdf_text, file_uri=filename)
         return bioc_service.generate_bioc_json(annotations=annotations, bioc=bioc)
-    except Exception as e:
-        raise BadRequestError("Your file could not be annotated and your PDF file was not saved.")
+    except AnnotationError:
+        raise AnnotationError('Your file could not be annotated and your PDF file was not saved.')
 
 
 class AnnotationOutcome(Enum):
