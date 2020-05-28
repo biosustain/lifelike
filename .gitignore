@@ -59,8 +59,8 @@ outputs/
 
 # LMDB files
 appserver/neo4japp/services/annotations/**/*.mdb
-appserver/neo4japp/services/annotations/**/*.csv
-appserver/neo4japp/services/annotations/**/*.tsv
+appserver/neo4japp/services/annotations/datasets/**/*.csv
+appserver/neo4japp/services/annotations/datasets/**/*.tsv
 
 # profiler results
 appserver/profilers/results/
