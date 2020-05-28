@@ -68,6 +68,7 @@ appserver/profilers/results/
 # nlp pdfs
 appserver/neo4japp/services/annotations/nlp_data_output/pdfs/*.pdf
 appserver/neo4japp/services/annotations/nlp_data_output/annotations/*.json
+appserver/neo4japp/services/annotations/nlp_data_output/*.txt
 
 # Backups
 *.backup
