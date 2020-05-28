@@ -22,6 +22,10 @@ services:
             'bin/start-dev',
         ]
         build:
+            # use different Dockerfile for ci because
+            # we change user with USER cmd
+            # only root has write permission in GITHUB_WORKSPACE
+            # which is used by github actions
             context: ./appserver
             dockerfile: Dockerfile.test
         ports:
