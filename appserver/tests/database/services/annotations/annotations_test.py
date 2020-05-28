@@ -371,7 +371,14 @@ def get_dummy_LTChar(text):
 )
 def test_fix_conflicting_annotations(annotations_setup, index, annotations):
     annotation_service = get_test_annotations_service()
-    fixed = annotation_service.fix_conflicting_annotations(unified_annotations=annotations)
+
+    annotations_text_in_document = {}
+    for anno in annotations:
+        annotations_text_in_document[anno.to_dict_hash()] = anno.keyword
+    fixed = annotation_service.fix_conflicting_annotations(
+        unified_annotations=annotations,
+        annotations_text_in_document=annotations_text_in_document,
+    )
 
     if index == 1:
         assert len(fixed) == 1
@@ -519,7 +526,14 @@ def test_fix_conflicting_annotations(annotations_setup, index, annotations):
 )
 def test_fix_conflicting_gene_protein_annotations(annotations_setup, index, annotations):
     annotation_service = get_test_annotations_service()
-    fixed = annotation_service.fix_conflicting_annotations(unified_annotations=annotations)
+
+    annotations_text_in_document = {}
+    for anno in annotations:
+        annotations_text_in_document[anno.to_dict_hash()] = anno.keyword
+    fixed = annotation_service.fix_conflicting_annotations(
+        unified_annotations=annotations,
+        annotations_text_in_document=annotations_text_in_document,
+    )
 
     if index == 1:
         assert len(fixed) == 1
