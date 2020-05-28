@@ -387,6 +387,11 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
 
   @HostListener('window:mouseup', ['$event'])
   mouseUp = event => {
+    const targetTagName = event.target.tagName;
+    if(targetTagName === 'INPUT') {
+      return false;
+    }
+
     const isItToolTip = event.target.closest('.qtip-content');
     this.dragAndDropDestinationHoverCount = jQuery('.textLayer > span:hover').length || 0;
     const spanCheck = this.dragAndDropDestinationHoverCount !== 1 || this.dragAndDropOriginHoverCount !==1;
