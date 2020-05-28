@@ -1,16 +1,23 @@
-import { UniversalGraphEdge, UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
+import { GraphEntityType, UniversalGraphEdge, UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
 import { GraphAction, GraphActionReceiver } from './actions';
 
 /**
  * Represents a new node addition to the graph.
  */
 export class NodeCreation implements GraphAction {
-  constructor(public description: string,
-              public node: UniversalGraphNode) {
+  constructor(public readonly description: string,
+              public readonly node: UniversalGraphNode,
+              public readonly select = false) {
   }
 
   apply(component: GraphActionReceiver) {
     component.addNode(this.node);
+    if (this.select) {
+      component.selection.replace([{
+        type: GraphEntityType.Node,
+        entity: this.node,
+      }]);
+    }
   }
 
   rollback(component: GraphActionReceiver) {

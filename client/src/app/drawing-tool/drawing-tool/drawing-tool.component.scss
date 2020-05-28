@@ -61,6 +61,7 @@
     background-color: rgba(255,255,255, 0);
     box-shadow: unset;
     color: #3797DB;
+    overflow: hidden;
   }
 
   #tool-panel {
@@ -122,7 +123,7 @@
     width: 16rem;
     top: 0;
     right: 0;
-    max-height: calc(100vh - 2rem);
+    max-height: calc(100vh - 5rem);
     background-color: #fff;
     @include overlay;
     @include scrollbars(.25em, #3797DB);

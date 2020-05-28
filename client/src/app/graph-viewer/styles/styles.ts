@@ -75,6 +75,8 @@ export interface PlacedObject {
  * A placed node.
  */
 export interface PlacedNode extends PlacedObject {
+  resizable: boolean;
+
   /**
    * Get the bounding box of the node.
    */

@@ -3,7 +3,8 @@ import { GraphView } from '../graph-view';
 import { GraphEntity, GraphEntityType, UniversalGraph, UniversalGraphEdge, UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
 import { EdgeRenderStyle, NodeRenderStyle, PlacedEdge, PlacedNode } from 'app/graph-viewer/styles/styles';
 import { debounceTime } from 'rxjs/operators';
-import { asyncScheduler, Subject, Subscription } from 'rxjs';
+import { asyncScheduler, fromEvent, Subject, Subscription } from 'rxjs';
+import { isStopResult } from '../behaviors';
 
 /**
  * A graph view that uses renders into a <canvas> tag.
@@ -54,6 +55,11 @@ export class GraphCanvasView extends GraphView {
   protected canvasResizeObserver: any | undefined; // TODO: TS does not have ResizeObserver defs yet
 
   /**
+   * Holds the subscription for key down events on the canvas.
+   */
+  private canvasKeyDownSubscription: Subscription;
+
+  /**
    * An observable triggered when resizes are detected.
    */
   canvasResizePendingSubject = new Subject<[number, number]>();
@@ -89,6 +95,7 @@ export class GraphCanvasView extends GraphView {
     super();
 
     this.canvas = canvas;
+    this.canvas.tabIndex = 0;
     this.canvas.width = this.canvas.clientWidth;
     this.canvas.height = this.canvas.clientHeight;
 
@@ -111,11 +118,15 @@ export class GraphCanvasView extends GraphView {
         .on('end', this.canvasDragEnded.bind(this)))
       .call(this.zoom)
       .on('dblclick.zoom', null);
+
+    this.canvasKeyDownSubscription = fromEvent(this.canvas, 'keyup')
+      .subscribe(this.canvasKeyDown.bind(this));
   }
 
   destroy() {
     super.destroy();
     this.stopParentFillResizeListener();
+    this.canvasKeyDownSubscription.unsubscribe();
   }
 
   startAnimationLoop() {
@@ -173,6 +184,25 @@ export class GraphCanvasView extends GraphView {
     super.setGraph(graph);
     this.placedNodesCache.clear();
     this.placedEdgesCache.clear();
+  }
+
+  removeNode(node: UniversalGraphNode): { found: boolean; removedEdges: UniversalGraphEdge[] } {
+    const result = super.removeNode(node);
+    if (result.found) {
+      this.placedNodesCache.delete(node);
+      for (const edge of result.removedEdges) {
+        this.placedEdgesCache.delete(edge);
+      }
+    }
+    return result;
+  }
+
+  removeEdge(edge: UniversalGraphEdge): boolean {
+    const found = super.removeEdge(edge);
+    if (found) {
+      this.placedEdgesCache.delete(edge);
+    }
+    return found;
   }
 
   get width() {
@@ -464,11 +494,11 @@ export class GraphCanvasView extends GraphView {
    */
   updateMouseCursor() {
     const canvas = this.canvas;
-    if (this.dragging) {
+    if (this.dragging.get().length) {
       canvas.style.cursor = 'grabbing';
     } else if (this.panningOrZooming) {
       canvas.style.cursor = 'move';
-    } else if (this.highlighting) {
+    } else if (this.highlighting.get().length) {
       canvas.style.cursor = 'grab';
     } else {
       canvas.style.cursor = 'default';
@@ -479,12 +509,18 @@ export class GraphCanvasView extends GraphView {
   // Event handlers
   // ========================================
 
-  canvasClicked() {
-    this.behaviors.apply(behavior => behavior.click());
+  canvasKeyDown(event) {
+    if (isStopResult(this.behaviors.apply(behavior => behavior.keyDown(event)))) {
+      event.preventDefault();
+    }
+  }
+
+  canvasClicked(event) {
+    this.behaviors.apply(behavior => behavior.click(d3.event));
   }
 
   canvasDoubleClicked() {
-    const result = this.behaviors.apply(behavior => behavior.doubleClick());
+    this.behaviors.apply(behavior => behavior.doubleClick(d3.event));
   }
 
   canvasMouseDown() {
@@ -537,7 +573,7 @@ export class GraphCanvasView extends GraphView {
     const [mouseX, mouseY] = d3.mouse(this.canvas);
     const subject: GraphEntity | undefined = d3.event.subject;
 
-    this.behaviors.apply(behavior => behavior.dragStart());
+    this.behaviors.apply(behavior => behavior.dragStart(d3.event.sourceEvent));
 
     this.dragging.replace(subject ? [subject] : []);
     this.selection.replace(subject ? [subject] : []);
@@ -557,7 +593,7 @@ export class GraphCanvasView extends GraphView {
     const [mouseX, mouseY] = d3.mouse(this.canvas);
     const subject: GraphEntity | undefined = d3.event.subject;
 
-    this.behaviors.apply(behavior => behavior.drag());
+    this.behaviors.apply(behavior => behavior.drag(d3.event.sourceEvent));
 
     this.touchPosition = {
       position: {
@@ -571,7 +607,7 @@ export class GraphCanvasView extends GraphView {
   }
 
   canvasDragEnded(): void {
-    this.behaviors.apply(behavior => behavior.dragEnd());
+    this.behaviors.apply(behavior => behavior.dragEnd(d3.event.sourceEvent));
     this.dragging.replace([]);
     this.nodePositionOverrideMap.clear();
     this.mouseDown = false;

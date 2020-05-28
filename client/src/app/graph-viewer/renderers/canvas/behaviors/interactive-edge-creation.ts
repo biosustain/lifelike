@@ -5,13 +5,14 @@ import { GraphCanvasView } from '../graph-canvas-view';
 import { AbstractCanvasBehavior, BehaviorResult } from '../../behaviors';
 import { Arrowhead } from '../../../utils/canvas/line-heads/arrow';
 import { EdgeCreation } from '../../../actions/edges';
+import { isCtrlOrMetaPressed } from '../../../../shared/utils';
 
 export class InteractiveEdgeCreation extends AbstractCanvasBehavior {
   constructor(private readonly graphView: GraphCanvasView) {
     super();
   }
 
-  doubleClick(): BehaviorResult {
+  doubleClick(event: MouseEvent): BehaviorResult {
     const subject = this.graphView.getEntityAtMouse();
     if (subject && subject.type === GraphEntityType.Node) {
       const node = subject.entity as UniversalGraphNode;
@@ -33,7 +34,12 @@ class ActiveEdgeCreation extends AbstractCanvasBehavior {
     super();
   }
 
-  click(): BehaviorResult {
+  keyDown(event: KeyboardEvent): BehaviorResult {
+    // We can't let someone press delete right now
+    return BehaviorResult.Stop;
+  }
+
+  click(event: MouseEvent): BehaviorResult {
     const subject = this.graphView.getEntityAtMouse(); // TODO: Cache
 
     if (subject && subject.type === GraphEntityType.Node) {
@@ -52,11 +58,11 @@ class ActiveEdgeCreation extends AbstractCanvasBehavior {
     }
   }
 
-  doubleClick(): BehaviorResult {
+  doubleClick(event: MouseEvent): BehaviorResult {
     return BehaviorResult.Stop;
   }
 
-  mouseMove(): BehaviorResult {
+  mouseMove(event: MouseEvent): BehaviorResult {
     // TODO: Cache
     const [mouseX, mouseY] = d3.mouse(this.graphView.canvas);
     const graphX = this.graphView.transform.invertX(mouseX);
@@ -73,7 +79,7 @@ class ActiveEdgeCreation extends AbstractCanvasBehavior {
     return BehaviorResult.Continue;
   }
 
-  drag(): BehaviorResult {
+  drag(event: MouseEvent): BehaviorResult {
     return BehaviorResult.Stop;
   }
 
