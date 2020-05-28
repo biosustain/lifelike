@@ -812,40 +812,28 @@ describe('VisualizationCanvasComponent', () => {
         expect(updatedSelectedNodesSpy).toHaveBeenCalled();
     });
 
-    it('should update selected nodes and sidebar entity when a node is selected', () => {
+    it('should update selected nodes/edges and sidebar entity when a node is selected', () => {
         const updateSelectedNodesSpy = spyOn(instance, 'updateSelectedNodes');
+        const updateSelectedEdgesSpy = spyOn(instance, 'updateSelectedEdges');
         const updateSidebarEntitySpy = spyOn(instance, 'updateSidebarEntity');
 
         instance.onSelectNodeCallback(null);
 
         expect(updateSelectedNodesSpy).toHaveBeenCalled();
+        expect(updateSelectedEdgesSpy).toHaveBeenCalled();
         expect(updateSidebarEntitySpy).toHaveBeenCalled();
     });
 
-    it('should update selected nodes when a node is deselected', () => {
-        const updateSelectedNodesSpy = spyOn(instance, 'updateSelectedNodes');
-
-        instance.onDeselectNodeCallback(null);
-
-        expect(updateSelectedNodesSpy).toHaveBeenCalled();
-    });
-
-    it('should update selected edges when an edge is selected', () => {
+    it('should update selected edges/nodes and sidebar entity when an edge is selected', () => {
         const updateSelectedEdgesSpy = spyOn(instance, 'updateSelectedEdges');
+        const updateSelectedNodesSpy = spyOn(instance, 'updateSelectedNodes');
         const updateSidebarEntitySpy = spyOn(instance, 'updateSidebarEntity');
 
         instance.onSelectEdgeCallback(null);
 
         expect(updateSelectedEdgesSpy).toHaveBeenCalled();
+        expect(updateSelectedNodesSpy).toHaveBeenCalled();
         expect(updateSidebarEntitySpy).toHaveBeenCalled();
-    });
-
-    it('should update selected edges when an edge is deselected', () => {
-        const updateSelectedEdgesSpy = spyOn(instance, 'updateSelectedEdges');
-
-        instance.onDeselectEdgeCallback(null);
-
-        expect(updateSelectedEdgesSpy).toHaveBeenCalled();
     });
 
     // TODO: Should create a real cluster to test here
