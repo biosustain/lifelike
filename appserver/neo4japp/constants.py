@@ -79,6 +79,38 @@ ANNOTATION_STYLES = [{
         "label": "mutation",
     },
     {
+        "label": "SNP",
+        "color": "#5d4037"
+    },
+    {
+        "label": "SUB",
+        "color": "#5d4037"
+    },
+    {
+        "label": "DEL",
+        "color": "#5d4037"
+    },
+    {
+        "label": "INS",
+        "color": "#5d4037"
+    },
+    {
+        "label": "MOB",
+        "color": "#5d4037"
+    },
+    {
+        "label": "AMP",
+        "color": "#5d4037"
+    },
+    {
+        "label": "CON",
+        "color": "#5d4037"
+    },
+    {
+        "label": "INV",
+        "color": "#5d4037"
+    },
+    {
         "color": '#0277bd',
         "label": "species",
     },

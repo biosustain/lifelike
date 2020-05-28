@@ -24,6 +24,14 @@
           <mat-icon>add</mat-icon>
         </button>
         <button
+          *ngIf="(userRoles$ | async)?.includes('admin')"
+          mat-fab
+          color='primary'
+          id='upload-project'
+          (click)='uploadProject()'>
+          <mat-icon>cloud_upload</mat-icon>
+        </button>
+        <button
           mat-fab
           color='primary'
           id='search'

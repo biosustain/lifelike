@@ -384,42 +384,42 @@ def example4_pdf_gene_and_organism_network(
     tx = graph.begin()
 
     cysB = Node(
-        'db_NCBI',
+        'Gene',
         name='cysB',
         locus_tag='b1275',
         id='945771'
     )
 
     mcrB = Node(
-        'db_NCBI',
+        'Gene',
         name='mcrB',
         locus_tag='b4346',
         id='949122'
     )
 
     oxyR_e_coli = Node(
-        'db_NCBI',
+        'Gene',
         name='oxyR',
         locus_tag='b3961',
         id='948462'
     )
 
     oxyR_salmonella = Node(
-        'db_NCBI',
+        'Gene',
         name='cysB',
         locus_tag='STM4125',
         id='1255651'
     )
 
     e_coli = Node(
-        'db_NCBI',
+        'Taxonomy',
         name='Escherichia coli',
         rank='species',
         id='562',
     )
 
     salmonella = Node(
-        'db_NCBI',
+        'Taxonomy',
         name='Salmonella enterica',
         rank='species',
         id='28901',
@@ -445,6 +445,36 @@ def example4_pdf_gene_and_organism_network(
     tx.create(mcrB_has_taxonomy_e_coli)
     tx.create(oxyR_has_taxonomy_e_coli)
     tx.create(oxyR_has_taxonomy_salmonella)
+
+    tx.commit()
+
+    return graph
+
+
+@pytest.fixture(scope='function')
+def human_gene_pdf_gene_and_organism_network(
+    graph,
+):
+    tx = graph.begin()
+
+    ace2 = Node(
+        'Gene',
+        name='ace2',
+        id='59272'
+    )
+
+    human = Node(
+        'Taxonomy',
+        name='Homo Sapiens',
+        rank='species',
+        id='9606',
+    )
+
+    ace2_has_taxonomy_homo_sapiens = Relationship(
+        ace2, 'HAS_TAXONOMY', human,
+    )
+
+    tx.create(ace2_has_taxonomy_homo_sapiens)
 
     tx.commit()
 

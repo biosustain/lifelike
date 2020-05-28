@@ -1,10 +1,59 @@
 <div class="w-100 vh-100 relative" fxLayout="column">
-  <div class="sidebar-toolbar" fxLayout="row">
-    <div>
-      <button mat-raised-button (click)="openFileDialog()">
+  <div class="sidebar-toolbar" fxLayout="row" fxLayoutAlign="space-between">
+    <div fxLayoutGap="0.25rem">
+      <button mat-button (click)="openFileDialog()" matTooltip="Open a new document">
         <mat-icon>folder_open</mat-icon>
         Open
       </button>
+    </div>
+    <div fxLayout="row" fxLayoutGap="0.25rem">
+      <button mat-button (click)="zoomIn()" [disabled]="!pdfViewerReady" matTooltip="Zoom in">
+        <mat-icon>zoom_in</mat-icon>
+      </button>
+      <button mat-button (click)="zoomOut()" [disabled]="!pdfViewerReady" matTooltip="Zoom out">
+        <mat-icon>zoom_out</mat-icon>
+      </button>
+      <mat-form-field>
+          <mat-label>Search</mat-label>
+          <input #queryInp matInput (input)="searchQueryChanged($event.target.value)" (keyup.enter)="searchQueryChanged(queryInp.value)" placeholder="Search" value="">
+        </mat-form-field>
+    </div>
+    <div fxLayout="row" fxLayoutGap="0.25rem">
+      <div class="relative">
+          <button mat-button
+                  (click)="toggleFilterPopup()"
+                  [disabled]="!pdfViewerReady"
+                  [matTooltip]="!filterPopupOpen ? 'Choose which annotations to hide' : null"
+                  matTooltipPosition="left">
+          Filters<span [style.visibility]="entityTypeVisibilityChanged ? 'visible' : 'hidden'">*</span>
+          <mat-icon *ngIf="!filterPopupOpen">expand_more</mat-icon>
+          <mat-icon *ngIf="filterPopupOpen">expand_less</mat-icon>
+        </button>
+        <div class="shadow-4 filter-popup" *ngIf="filterPopupOpen">
+          <h4 class="mt0 mb1">Annotation Visibility</h4>
+          <div>
+            <div class="mt2 mb2" fxLayout="column">
+              <button *ngIf="!entityTypeVisibilityChanged" mat-stroked-button fxFlexFill
+                      (click)="setAllEntityTypesVisibility(false)">Hide All</button>
+              <button *ngIf="entityTypeVisibilityChanged" mat-stroked-button fxFlexFill
+                      (click)="setAllEntityTypesVisibility(true)">Show All</button>
+            </div>
+            <div *ngFor="let entityTypeEntry of sortedEntityTypeEntries"
+                 [ngClass]="entityTypeEntry.annotations.length ? '' : 'o-20'">
+              <mat-checkbox [checked]="isEntityTypeVisible(entityTypeEntry.type)"
+                            (change)="changeEntityTypeVisibility(entityTypeEntry.type, $event)">
+                <span class="entity-type-legend" [ngStyle]="{background: entityTypeEntry.type.color}">
+                </span> {{entityTypeEntry.type.name}} <span *ngIf="!!entityTypeEntry.annotations.length">
+                  ({{entityTypeEntry.annotations.length}})
+                </span>
+              </mat-checkbox>
+            </div>
+            <div class="mt2" fxLayout="column">
+              <button mat-stroked-button fxFlexFill (click)="closeFilterPopup()">Done</button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
   <div class="overflow-auto">
@@ -23,6 +72,9 @@
         [handleDropArea]="false"
         [goToPosition]="goToPosition"
         [addedAnnotation]="addedAnnotation"
+        [entityTypeVisibilityMap]="entityTypeVisibilityMap"
+        [filterChanges]="filterChangeSubject"
+        [searchChanged]="searchChanged"
         (dropEvents)="drop($event)"
         (custom-annotation-created)="annotationCreated($event)"
         (loadCompleted)="loadCompleted($event)"

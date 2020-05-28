@@ -4,7 +4,7 @@ import { configureTestSuite } from 'ng-bullet';
 
 import { IdType } from 'vis-network';
 
-import { Direction } from 'app/interfaces';
+import { Direction, VisNode } from 'app/interfaces';
 import { SharedModule } from 'app/shared/shared.module';
 import { RootStoreModule } from 'app/***ARANGO_USERNAME***-store';
 import { ContextMenuControlService } from 'app/visualization/services/context-menu-control.service';
@@ -20,6 +20,7 @@ describe('ContextMenuComponent', () => {
     let mockSelectedNodeIds: IdType[];
     let mockSelectedEdgeIds: IdType[];
     let mockSelectedNodeEdgeLabelData: Map<string, Direction[]>;
+    let mockSelectedClusterNodeData: VisNode[];
 
     configureTestSuite(() => {
         TestBed.configureTestingModule({
@@ -43,6 +44,19 @@ describe('ContextMenuComponent', () => {
                 ['Mock Edge 2', [Direction.FROM]]
             ]
         );
+        mockSelectedClusterNodeData = [
+            {
+                id: 1,
+                label: 'Mock Node',
+                data: {},
+                subLabels: ['Mock Node'],
+                displayName: 'My Mock Node',
+                expanded: false,
+                primaryLabel: 'Mock Node',
+                color: null,
+                font: null,
+            } as VisNode
+        ];
 
         fixture = TestBed.createComponent(ContextMenuComponent);
         component = fixture.componentInstance;
@@ -51,6 +65,7 @@ describe('ContextMenuComponent', () => {
         component.selectedNodeIds = [];
         component.selectedEdgeIds = [];
         component.selectedNodeEdgeLabelData = new Map<string, Direction[]>();
+        component.selectedClusterNodeData = [];
 
         component.tooltipSelector = '#***ARANGO_USERNAME***-menu';
         component.tooltipOptions = {
@@ -188,6 +203,98 @@ describe('ContextMenuComponent', () => {
             await fixture.whenStable().then(() => {
                 const groupByRelSubmenuElement = document.getElementById('single-node-selection-group-1-submenu');
                 expect(groupByRelSubmenuElement.style.display).toBe('none');
+                jasmine.clock().uninstall();
+            });
+        });
+    });
+
+    it('should show \'Group by Relationship\' option if a single node with at least one connecting edge is selected', async () => {
+        component.selectedClusterNodeData = mockSelectedClusterNodeData;
+        component.showTooltip();
+        fixture.detectChanges();
+
+        await fixture.whenStable().then(() => {
+            const pullOutNodeElement = document.getElementById('pull-out-node-from-cluster-menu-item');
+            expect(pullOutNodeElement).toBeTruthy();
+        });
+    });
+
+    it('should show submenu when \'Pull out node from cluster\' is hovered', async () => {
+        const showGroupByRelSubMenuSpy = spyOn(component, 'showPullOutNodeSubMenu');
+        component.selectedClusterNodeData = mockSelectedClusterNodeData;
+        component.showTooltip();
+        fixture.detectChanges();
+
+        await fixture.whenStable().then(() => {
+            const groupByRelRowElement = document.getElementById('pull-out-node-from-cluster-menu-item');
+            groupByRelRowElement.dispatchEvent(new Event('mouseenter'));
+            expect(showGroupByRelSubMenuSpy).toHaveBeenCalled();
+        });
+    });
+
+    it('should show pull out node submenu after a delay', async () => {
+        jasmine.clock().install();
+
+        const delayPullOutNodeSpy = spyOn(contextMenuControlService, 'delayPullOutNode').and.callThrough();
+        component.selectedClusterNodeData = mockSelectedClusterNodeData;
+        component.showTooltip();
+        fixture.detectChanges();
+
+        await fixture.whenStable().then(async () => {
+            component.showPullOutNodeSubMenu();
+            expect(delayPullOutNodeSpy).toHaveBeenCalled();
+
+            // wait for the delay to expire
+            jasmine.clock().tick(250);
+
+            fixture.detectChanges();
+            await fixture.whenStable().then(() => {
+                const groupByRelSubmenuElement = document.getElementById('pull-out-node-from-cluster-submenu');
+                expect(groupByRelSubmenuElement.style.display).toBe('block');
+
+                jasmine.clock().uninstall();
+            });
+        });
+    });
+
+    it('should interrupt showing the pull out node submenu if the user hovers away', async () => {
+        const mouseLeaveNodeRowSpy = spyOn(component, 'mouseLeaveNodeRow').and.callThrough();
+        const interruptPullOutNodeSpy = spyOn(contextMenuControlService, 'interruptPullOutNode');
+        component.selectedClusterNodeData = mockSelectedClusterNodeData;
+        component.showTooltip();
+        fixture.detectChanges();
+
+        await fixture.whenStable().then(() => {
+            const groupByRelRowElement = document.getElementById('pull-out-node-from-cluster-menu-item');
+            groupByRelRowElement.dispatchEvent(new Event('mouseleave'));
+
+            expect(mouseLeaveNodeRowSpy).toHaveBeenCalled();
+            expect(interruptPullOutNodeSpy).toHaveBeenCalled();
+        });
+    });
+
+    it('should not show the pull out node submenu if an interrupt is sent', async () => {
+        jasmine.clock().install();
+
+        const delayPullOutNodeSpy = spyOn(contextMenuControlService, 'delayPullOutNode').and.callThrough();
+        component.selectedClusterNodeData = mockSelectedClusterNodeData;
+        component.showTooltip();
+        fixture.detectChanges();
+
+        await fixture.whenStable().then(async () => {
+            component.showPullOutNodeSubMenu();
+            expect(delayPullOutNodeSpy).toHaveBeenCalled();
+
+            // wait a bit before interrupting
+            jasmine.clock().tick(50);
+            contextMenuControlService.interruptPullOutNode();
+            // wait for the remainder of the normal delay time
+            jasmine.clock().tick(155);
+
+            fixture.detectChanges();
+            await fixture.whenStable().then(() => {
+                const pullOutNodeSubmenuElement = document.getElementById('pull-out-node-from-cluster-submenu');
+                expect(pullOutNodeSubmenuElement.style.display).toBe('none');
                 jasmine.clock().uninstall();
             });
         });

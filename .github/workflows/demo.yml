@@ -1,0 +1,127 @@
+name: Demo (aka Sandbox) Deployment
+
+on:
+  pull_request:
+    types: [labeled]
+
+env:
+    POSTGRES_HOST: ${{ secrets.DEMO_POSTGRES_HOST }}
+    POSTGRES_PORT: ${{ secrets.DEMO_POSTGRES_PORT }}
+    POSTGRES_USER: ${{ secrets.DEMO_POSTGRES_USER }}
+    POSTGRES_PASSWORD: ${{ secrets.DEMO_POSTGRES_PASSWORD }}
+    POSTGRES_DB: ${{ secrets.DEMO_POSTGRES_DB }}
+    NEO4J_HOST: ${{ secrets.STAGING_NEO4J_HOST }}
+    NEO4J_AUTH: ${{ secrets.STAGING_NEO4J_AUTH }}
+    FLASK_APP: app
+    FLASK_APP_CONFIG: Testing
+    FLASK_ENV: development
+    PROJECT_ID: ${{ secrets.GCE_PROJECT }}
+    GITHUB_HASH: ${{ github.sha }}
+    GCE_INSTANCE: kg-demo
+    GCE_INSTANCE_ZONE: us-central1-a
+    GCE_SERVICE_ACCOUNT: ${{ secrets.GCE_SA_KEY }}
+    CLOUD_SQL_ALIAS: kg-demo
+    GCE_BACKUP_BUCKET: kg-***ARANGO_DB_NAME***-sql-backups
+    SENTRY_KEY: ${{ secrets.SENTRY_KEY }}
+    REDIS_HOST: ${{ secrets.REDIS_HOST }}
+    REDIS_PORT: ${{ secrets.REDIS_PORT }}
+
+jobs:
+
+    setup-build-publish-deploy:
+
+        name: Setup, Build, Publish, and Deploy
+        runs-on: ubuntu-latest
+
+        if: contains(github.event.pull_request.labels.*.name, 'demo')
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v2
+
+            # Setup gcloud CLI
+            # https://github.com/GoogleCloudPlatform/github-actions
+            - uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
+              with:
+                version: '286.0.0'
+                service_account_key: ${{ secrets.GCE_SA_KEY }}
+                project_id: ${{ secrets.GCE_PROJECT }}
+
+            # Configure Docker to use gcloud command line tool
+            - run: |-
+                gcloud --quiet auth configure-docker
+
+            - name: Build Appserver Image
+              uses: docker/build-push-action@v1
+              with:
+                username: _json_key
+                password: ${{ secrets.GCE_SA_KEY }}
+                registry: gcr.io
+                repository: ${{ secrets.GCE_PROJECT }}/kg-appserver-demo
+                tags: ${{ github.sha }}, latest
+                path: ./appserver
+                dockerfile: ./appserver/Dockerfile.prod
+
+            - name: Build Client and Nginx Image
+              uses: docker/build-push-action@v1
+              with:
+                username: _json_key
+                password: ${{ secrets.GCE_SA_KEY }}
+                registry: gcr.io
+                repository: ${{ secrets.GCE_PROJECT }}/kg-webserver-demo
+                tags: ${{ github.sha }}, latest
+                path: ./client
+                dockerfile: ./client/Dockerfile.demo
+
+            - name: Build Redis
+              uses: docker/build-push-action@v1
+              with:
+                username: _json_key
+                password: ${{ secrets.GCE_SA_KEY }}
+                registry: gcr.io
+                repository: ${{ secrets.GCE_PROJECT }}/kg-cache-service-demo
+                tags: ${{ github.sha }}, latest
+                path: ./cache-invalidator
+                dockerfile: ./cache-invalidator/Dockerfile
+
+            - name: Deploy Setup
+              run: |-
+                echo "POSTGRES_HOST=$POSTGRES_HOST" >> demo.env
+                echo "POSTGRES_PORT=$POSTGRES_PORT" >> demo.env
+                echo "POSTGRES_USER=$POSTGRES_USER" >> demo.env
+                echo "POSTGRES_PASSWORD=$POSTGRES_PASSWORD" >> demo.env
+                echo "POSTGRES_DB=$POSTGRES_DB" >> demo.env
+                echo "NEO4J_HOST=$NEO4J_HOST" >> demo.env
+                echo "NEO4J_AUTH=$NEO4J_AUTH" >> demo.env
+                echo "FLASK_APP=$FLASK_APP" >> demo.env
+                echo "FLASK_APP_CONFIG=$FLASK_APP_CONFIG" >> demo.env
+                echo "FLASK_ENV=$FLASK_ENV" >> demo.env
+                echo "DOCKER_USER=_json_key" >> demo.env
+                echo "PROJECT_ID=$PROJECT_ID" >> demo.env
+                echo "CLOUD_SQL_ALIAS=$CLOUD_SQL_ALIAS" >> demo.env
+                echo "GCE_BACKUP_BUCKET=$GCE_BACKUP_BUCKET" >> demo.env
+                GITHUB_COMMIT_TIMESTAMP=$(git log -1 --format=%cI)
+                echo "GITHUB_COMMIT_TIMESTAMP=$GITHUB_COMMIT_TIMESTAMP" >> demo.env
+                echo "GITHUB_HASH=$GITHUB_HASH" >> demo.env
+                echo "SENTRY_KEY=$SENTRY_KEY" >> demo.env
+                echo "REDIS_HOST=$REDIS_HOST" >> demo.env
+                echo "REDIS_PORT=$REDIS_PORT" >> demo.env
+                echo "$GCE_SERVICE_ACCOUNT" >> keyfile.json
+                gcloud compute scp demo.env $GCE_INSTANCE:/srv --zone $GCE_INSTANCE_ZONE
+                gcloud compute scp keyfile.json $GCE_INSTANCE:/srv --zone $GCE_INSTANCE_ZONE
+                gcloud compute scp ./deployment/bin/startup.sh $GCE_INSTANCE:/srv --zone $GCE_INSTANCE_ZONE
+                gcloud compute scp ./deployment/bin/migration-manager.sh $GCE_INSTANCE:/srv --zone $GCE_INSTANCE_ZONE
+                gcloud compute ssh $GCE_INSTANCE --zone $GCE_INSTANCE_ZONE --command='sudo chmod a+x /srv/startup.sh';
+                gcloud compute ssh $GCE_INSTANCE --zone $GCE_INSTANCE_ZONE --command='sudo chmod a+x /srv/migration-manager.sh';
+
+            - name: Deploy
+              run: |-
+                gcloud compute ssh $GCE_INSTANCE --zone $GCE_INSTANCE_ZONE --command='sudo /srv/startup.sh -t demo';
+
+            - name: Applying database migrations
+              run: |-
+                gcloud compute ssh $GCE_INSTANCE --zone $GCE_INSTANCE_ZONE --command='sudo /srv/migration-manager.sh -t demo';
+
+            - name: Clean up images
+              run: |-
+                gcloud compute ssh $GCE_INSTANCE --zone $GCE_INSTANCE_ZONE --command='sudo docker system prune -f';

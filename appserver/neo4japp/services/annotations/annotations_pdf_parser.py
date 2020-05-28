@@ -16,7 +16,6 @@ from neo4japp.data_transfer_objects import (
     PDFTokenPositions,
     PDFTokenPositionsList,
 )
-from neo4japp.util import compute_hash
 
 from .constants import (
     MISC_SYMBOLS_AND_CHARS,
@@ -35,7 +34,8 @@ class AnnotationsPDFParser:
         self,
         layout: Any,
         page_idx: int,
-        coor_obj_per_pdf_page: Dict[int, List[Union[LTChar, LTAnno]]],
+        char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
+        compiled_regex: re.Pattern,
     ) -> None:
         def space_exists_between_lt_chars(a: LTChar, b: LTChar):
             """Determines if a space character exists between two LTChars."""
@@ -59,23 +59,21 @@ class AnnotationsPDFParser:
                 self._get_lt_char(
                     layout=lt_obj,
                     page_idx=page_idx,
-                    coor_obj_per_pdf_page=coor_obj_per_pdf_page,
+                    char_coord_objs_in_pdf=char_coord_objs_in_pdf,
+                    compiled_regex=compiled_regex,
                 )
             elif isinstance(lt_obj, LTChar) or isinstance(lt_obj, LTAnno):
                 # ignore CID fonts
                 # these are arithmetic or other symbols the parser
                 # was not able to translate
                 # usually requires a license or better algorithm from parser
-                if not re.search(r'cid:\d+', lt_obj.get_text()):
-                    if page_idx + 1 in coor_obj_per_pdf_page:
-                        prev_char = coor_obj_per_pdf_page[page_idx+1][-1]
+                if not re.search(compiled_regex, lt_obj.get_text()):
+                    if char_coord_objs_in_pdf:
+                        prev_char = char_coord_objs_in_pdf[-1]
                         if should_add_virtual_space(prev_char, lt_obj):
                             virtual_space_char = LTAnno(' ')
-                            coor_obj_per_pdf_page[page_idx+1].append(virtual_space_char)
-
-                        coor_obj_per_pdf_page[page_idx+1].append(lt_obj)
-                    else:
-                        coor_obj_per_pdf_page[page_idx+1] = [lt_obj]
+                            char_coord_objs_in_pdf.append(virtual_space_char)
+                    char_coord_objs_in_pdf.append(lt_obj)
 
     def parse_pdf_high_level(self, pdf) -> str:
         return high_level.extract_text(pdf)
@@ -91,39 +89,40 @@ class AnnotationsPDFParser:
         device = PDFPageAggregator(rsrcmgr=rsrcmgr, laparams=LAParams())
         interpreter = PDFPageInterpreter(rsrcmgr=rsrcmgr, device=device)
 
-        str_per_pdf_page: Dict[int, List[str]] = {}
-        coor_obj_per_pdf_page: Dict[int, List[Union[LTChar, LTAnno]]] = {}
-        cropbox_per_page: Dict[int, Tuple[int, int]] = {}
+        max_idx_in_page: Dict[int, int] = {}
+        chars_in_pdf: List[str] = []
+        char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]] = []
+        cropbox_in_pdf: Tuple[int, int] = None  # type: ignore
+
+        compiled_regex = re.compile(r'cid:\d+')
 
         for i, page in enumerate(PDFPage.create_pages(pdf_doc)):
-            cropbox_per_page[i+1] = (page.cropbox[0], page.cropbox[1])
+            cropbox_in_pdf = (page.cropbox[0], page.cropbox[1])
             interpreter.process_page(page)
             layout = device.get_result()
             self._get_lt_char(
                 layout=layout,
                 page_idx=i,
-                coor_obj_per_pdf_page=coor_obj_per_pdf_page,
+                char_coord_objs_in_pdf=char_coord_objs_in_pdf,
+                compiled_regex=compiled_regex,
             )
+            max_idx_in_page[len(char_coord_objs_in_pdf)-1] = i+1
 
-        for page_idx, lt_char_list in coor_obj_per_pdf_page.items():
-            for lt_char in lt_char_list:
-                # LTAnno are 'virtual' characters inserted by the parser
-                # don't really care for \n so make them whitespace
-                # cannot simply deleted because after being parsed, some
-                # PDFs use \n as a space between words
-                # consider this when extracting tokens in @extract_tokens()
-                if isinstance(lt_char, LTAnno) and lt_char.get_text() == '\n':
-                    lt_char._text = ' '
-
-        for page_num, lt_char_list in coor_obj_per_pdf_page.items():
-            str_per_pdf_page[page_num] = []
-            for lt_char in lt_char_list:
-                str_per_pdf_page[page_num].append(lt_char.get_text())
+        for lt_char in char_coord_objs_in_pdf:
+            # LTAnno are 'virtual' characters inserted by the parser
+            # don't really care for \n so make them whitespace
+            # cannot simply deleted because after being parsed, some
+            # PDFs use \n as a space between words
+            # consider this when extracting tokens in @extract_tokens()
+            if isinstance(lt_char, LTAnno) and lt_char.get_text() == '\n':
+                lt_char._text = ' '
+            chars_in_pdf.append(lt_char.get_text())
 
         return PDFParsedCharacters(
-            coor_obj_per_pdf_page=coor_obj_per_pdf_page,
-            str_per_pdf_page=str_per_pdf_page,
-            cropbox_per_page=cropbox_per_page,
+            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
+            chars_in_pdf=chars_in_pdf,
+            cropbox_in_pdf=cropbox_in_pdf,
+            max_idx_in_page=max_idx_in_page,
         )
 
     def _not_all_whitespace_or_punctuation(self, text: str) -> bool:
@@ -133,64 +132,76 @@ class AnnotationsPDFParser:
         return False
 
     def _is_whitespace_or_punctuation(self, char: str) -> bool:
+        # whitespace contains newline
         return char in whitespace or char == '\xa0' or char in punctuation  # noqa
 
-    def _is_whitespace(self, char: str) -> bool:
-        # whitespace contains newline
-        return char in whitespace or char == '\xa0'
-
     def _has_unwanted_punctuation(self, char: str, leading: bool = False) -> bool:
-        check = (char == ',' or char == '.' or char == ')' or char == '(')
+        # want to keep things like plus, minus, etc
+        ignore_these = set(punctuation) - {'+', '-'}
+        check = char in ignore_these
         if leading:
+            # hyphens not minus
             check = check or char == '-'
         return check
 
     def combine_chars_into_words(
         self,
         parsed_chars: PDFParsedCharacters,
-    ) -> Dict[int, List[Tuple[str, Dict[int, str]]]]:
-        """Combines a list of char into a list of words.
+    ) -> List[Tuple[str, Dict[int, str]]]:
+        """Combines a list of char into a list of words with the
+        position index of each char in the word.
 
         E.g ['H', 'e', 'l', 'l', 'o', ' ', 'T', 'h', 'e', 'r', 'e']
         becomes ['Hello', 'There']
         """
-        words_with_char_idx: Dict[int, List[Tuple[str, Dict[int, str]]]] = {}
+        char_list = parsed_chars.chars_in_pdf
 
-        # first combine each character into single words
-        # and save each character's index relative to page it's on
-        for page_idx, char_list in parsed_chars.str_per_pdf_page.items():
-            word_list: List[Tuple[str, Dict[int, str]]] = []
-            char_idx_map: Dict[int, str] = {}
-            max_length = len(char_list)
-            word = ''
+        words_with_char_idx: List[Tuple[str, Dict[int, str]]] = []
+        char_idx_map: Dict[int, str] = {}
+        max_length = len(char_list)
+        word = ''
 
-            for i, char in enumerate(char_list):
-                curr_char = clean_char(char)
-                prev_char = clean_char(char_list[i-1])
+        for i, char in enumerate(char_list):
+            try:
+                if ord(char) not in MISC_SYMBOLS_AND_CHARS:
+                    curr_char = clean_char(char)
+                    prev_char = clean_char(char_list[i-1])
 
-                if curr_char not in MISC_SYMBOLS_AND_CHARS:
                     if curr_char in whitespace and prev_char != '-':
                         if char_idx_map:
-                            word_list.append((word, char_idx_map))
+                            words_with_char_idx.append((word, char_idx_map))
                             char_idx_map = {}
                             word = ''
-                    elif curr_char in whitespace and prev_char == '-':
-                        # word is possibly on new line
-                        # so ignore the space
-                        pass
                     else:
                         if i + 1 == max_length:
                             # reached end so add whatever is left
                             word += curr_char
                             char_idx_map[i] = curr_char
-                            word_list.append((word, char_idx_map))
+                            words_with_char_idx.append((word, char_idx_map))
                             char_idx_map = {}
                             word = ''
                         else:
-                            word += curr_char
-                            char_idx_map[i] = curr_char
-
-            words_with_char_idx[page_idx] = word_list
+                            next_char = clean_char(char_list[i+1])
+                            if ((curr_char == '-' and next_char in whitespace) or
+                                (curr_char in whitespace and prev_char == '-')):  # noqa
+                                # word is possibly on new line
+                                # so ignore the space
+                                pass
+                            else:
+                                word += curr_char
+                                char_idx_map[i] = curr_char
+                elif i + 1 == max_length:
+                    # reached end so add whatever is left
+                    # because current char is to be ignored
+                    words_with_char_idx.append((word, char_idx_map))
+                    char_idx_map = {}
+                    word = ''
+            except TypeError:
+                # checking ord() failed
+                # if a char is composed of multiple characters
+                # then it is a pdf parser problem
+                # need to find a better one
+                continue
         return words_with_char_idx
 
     def extract_tokens(
@@ -202,76 +213,87 @@ class AnnotationsPDFParser:
         Returns a token list of sequentially concatentated
         words up to the @self.max_word_length. Each token object
         in the list will contain the keyword, and the index of
-        each keyword.
+        each char in the keyword.
 
         E.g ['A', 'B', 'C', 'D', 'E'] -> ['A', 'A B', 'A B C', 'B', 'B C', ...]
             - NOTE: each character here represents a word
         """
         keyword_tokens: List[PDFTokenPositions] = []
-        words_with_char_idx = self.combine_chars_into_words(parsed_chars=parsed_chars)
-
-        curr_max_words = 1
         processed_tokens: Set[str] = set()
 
+        # first combine the chars into words
+        words_with_char_idx = self.combine_chars_into_words(parsed_chars=parsed_chars)
+
+        end_idx = curr_max_words = 1
+        max_length = len(words_with_char_idx)
+
         # now create keyword tokens up to self.max_word_length
-        for page_idx, words_char_idx_list in words_with_char_idx.items():
-            end_idx = 1
-            max_length = len(words_char_idx_list)
+        for i, _ in enumerate(words_with_char_idx):
+            while curr_max_words <= self.max_word_length and end_idx <= max_length:  # noqa
+                word_char_idx_map_pairing = words_with_char_idx[i:end_idx]
+                words = [word for word, _ in word_char_idx_map_pairing]
+                char_idx_maps = [char_idx_map for _, char_idx_map in word_char_idx_map_pairing]  # noqa
 
-            for i, _ in enumerate(words_char_idx_list):
-                while curr_max_words <= self.max_word_length and end_idx <= max_length:  # noqa
-                    word_char_idx_map_pairing = words_char_idx_list[i:end_idx]
-                    words = [word for word, _ in word_char_idx_map_pairing]
-                    char_idx_maps = [char_idx_map for _, char_idx_map in word_char_idx_map_pairing]  # noqa
+                curr_keyword = ' '.join(words)
 
-                    curr_keyword = ' '.join(words)
+                if not self._is_whitespace_or_punctuation(curr_keyword) and self._not_all_whitespace_or_punctuation(curr_keyword):  # noqa
+                    curr_char_idx_mappings: Dict[int, str] = {}
 
-                    if not self._is_whitespace_or_punctuation(curr_keyword) and self._not_all_whitespace_or_punctuation(curr_keyword):  # noqa
-                        curr_char_idx_mappings: Dict[int, str] = {}
+                    # need to keep order here so can't unpack (?)
+                    last_char_idx_in_curr_keyword = -1
+                    for char_map in char_idx_maps:
+                        for k, v in char_map.items():
+                            curr_char_idx_mappings[k] = v
+                            last_char_idx_in_curr_keyword = k
 
-                        # need to keep order here so can't unpack (?)
-                        for char_map in char_idx_maps:
-                            for k, v in char_map.items():
-                                curr_char_idx_mappings[k] = v
+                    # strip out trailing punctuations
+                    while curr_keyword and self._has_unwanted_punctuation(curr_keyword[-1]):
+                        dict_keys = list(curr_char_idx_mappings.keys())
+                        last = dict_keys[-1]
+                        curr_char_idx_mappings.pop(last)
+                        curr_keyword = curr_keyword[:-1]
 
-                        # strip out trailing punctuations
-                        while curr_keyword and self._has_unwanted_punctuation(curr_keyword[-1]):
-                            dict_keys = list(curr_char_idx_mappings.keys())
-                            last = dict_keys[-1]
-                            curr_char_idx_mappings.pop(last)
-                            curr_keyword = curr_keyword[:-1]
+                    # strip out leading punctuations
+                    while curr_keyword and self._has_unwanted_punctuation(curr_keyword[0], leading=True):  # noqa
+                        dict_keys = list(curr_char_idx_mappings.keys())
+                        first = dict_keys[0]
+                        curr_char_idx_mappings.pop(first)
+                        curr_keyword = curr_keyword[1:]
 
-                        # strip out leading punctuations
-                        while curr_keyword and self._has_unwanted_punctuation(curr_keyword[0], leading=True):  # noqa
-                            dict_keys = list(curr_char_idx_mappings.keys())
-                            first = dict_keys[0]
-                            curr_char_idx_mappings.pop(first)
-                            curr_keyword = curr_keyword[1:]
+                    # keyword could've been all punctuation
+                    if curr_keyword:
+                        page_idx = -1
+                        for max_page_idx in list(parsed_chars.max_idx_in_page):
+                            if last_char_idx_in_curr_keyword <= max_page_idx:
+                                page_idx = max_page_idx
+                                # reminder: can break here because dict in python 3.8+ are
+                                # insertion order
+                                break
 
-                        # keyword could've been all punctuation
-                        if curr_keyword:
-                            token = PDFTokenPositions(
-                                page_number=page_idx,
-                                keyword=curr_keyword,
-                                char_positions=curr_char_idx_mappings,
-                            )
+                        # whitespaces don't exist in curr_char_idx_mappings
+                        # they were added to separate words
+                        # and might've been left behind after stripping out
+                        # unwanted punctuation
+                        token = PDFTokenPositions(
+                            page_number=parsed_chars.max_idx_in_page[page_idx],
+                            keyword=curr_keyword.strip(),
+                            char_positions=curr_char_idx_mappings,
+                        )
+                        # need to do this check because
+                        # could potentially have duplicates due to
+                        # removing punctuation
+                        hashval = token.to_dict_hash()
+                        if hashval not in processed_tokens:
+                            keyword_tokens.append(token)
+                            processed_tokens.add(hashval)
 
-                            # need to do this check because
-                            # could potentially have duplicates due to
-                            # the sequential increment starting over
-                            # at end of page
-                            hashval = compute_hash(token.to_dict())
-                            if hashval not in processed_tokens:
-                                keyword_tokens.append(token)
-                                processed_tokens.add(hashval)
-
-                    curr_max_words += 1
-                    end_idx += 1
-                curr_max_words = 1
-                end_idx = i + 2
+                curr_max_words += 1
+                end_idx += 1
+            curr_max_words = 1
+            end_idx = i + 2
 
         return PDFTokenPositionsList(
             token_positions=keyword_tokens,
-            coor_obj_per_pdf_page=parsed_chars.coor_obj_per_pdf_page,
-            cropbox_per_page=parsed_chars.cropbox_per_page,
+            char_coord_objs_in_pdf=parsed_chars.char_coord_objs_in_pdf,
+            cropbox_in_pdf=parsed_chars.cropbox_in_pdf,
         )

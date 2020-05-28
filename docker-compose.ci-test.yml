@@ -21,7 +21,13 @@ services:
             'bin/wait-for-neo4j',
             'bin/start-dev',
         ]
-        build: ./appserver
+        build:
+            # use different Dockerfile for ci because
+            # we change user with USER cmd
+            # only ***ARANGO_USERNAME*** has write permission in GITHUB_WORKSPACE
+            # which is used by github actions
+            context: ./appserver
+            dockerfile: Dockerfile.test
         ports:
             - "5000:5000"
         environment:

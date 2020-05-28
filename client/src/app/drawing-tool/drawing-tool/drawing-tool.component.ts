@@ -79,7 +79,7 @@ import {
   InfoPanelComponent
 } from './info-panel/info-panel.component';
 
-import { annotationTypes } from 'app/shared/annotation-styles';
+import {annotationTypes} from 'app/shared/annotation-styles';
 import {ExportModalComponent} from './export-modal/export-modal.component';
 import {MatDialog, MatDialogConfig} from '@angular/material/dialog';
 
@@ -88,24 +88,27 @@ interface Update {
   type: string;
   data: object | string | number;
 }
+
 interface Graph {
   edges: VisNetworkGraphEdge[];
   nodes: VisNetworkGraphNode[];
 }
+
 interface Command {
   action: string;
   data: {
-    id ?: string;
-    label ?: string;
-    group ?: string;
-    x ?: number;
-    y ?: number;
-    source ?: string;
-    node ?: VisNetworkGraphNode;
-    edges ?: VisNetworkGraphEdge[]
-    edge ?: VisNetworkGraphEdge;
+    id?: string;
+    label?: string;
+    group?: string;
+    x?: number;
+    y?: number;
+    source?: string;
+    node?: VisNetworkGraphNode;
+    edges?: VisNetworkGraphEdge[]
+    edge?: VisNetworkGraphEdge;
   };
 }
+
 export interface Action {
   cmd: string;
   graph: Graph;
@@ -119,15 +122,17 @@ export interface Action {
 })
 export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
   /** Communicate to parent component to open another app side by side */
-  @Output() openApp: EventEmitter < LaunchApp > = new EventEmitter < LaunchApp > ();
+  @Output() openApp: EventEmitter<LaunchApp> = new EventEmitter<LaunchApp>();
   /** Communicate which app is active for app icon presentation */
   @Input() currentApp = '';
 
   /** Communicate what map to load by map hash id */
   CURRENT_MAP = '';
+
   get currentMap() {
     return this.CURRENT_MAP;
   }
+
   @Input()
   set currentMap(val) {
     this.CURRENT_MAP = val;
@@ -137,12 +142,12 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
     static: false
   }) infoPanel: InfoPanelComponent;
 
-  mouseMoveEventStream: Observable < MouseEvent > ;
-  endMouseMoveEventSource: Subject < boolean > ;
+  mouseMoveEventStream: Observable<MouseEvent>;
+  endMouseMoveEventSource: Subject<boolean>;
   mouseMoveSub: Subscription;
 
-  pasteEventStream: Observable < KeyboardEvent > ;
-  endPasteEventSource: Subject < boolean > ;
+  pasteEventStream: Observable<KeyboardEvent>;
+  endPasteEventSource: Subject<boolean>;
   pasteSub: Subscription;
 
   cursorDocumentPos: Coords2D; // Represents the position of the cursor within the document { x: number; y: number }
@@ -151,7 +156,7 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
   selectedEdges: IdType[];
 
   contextMenuTooltipSelector: string;
-  contextMenuTooltipOptions: Partial < Options > ;
+  contextMenuTooltipOptions: Partial<Options>;
 
   /** The current graph representation on canvas */
   currentGraphState: {
@@ -172,9 +177,11 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
 
   /** Whether or not graph is saved from modification */
   SAVE_STATE = true;
+
   get saveState() {
     return this.SAVE_STATE;
   }
+
   set saveState(val) {
     this.SAVE_STATE = val;
     // communicate to parent component of save state change
@@ -200,7 +207,7 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
   // Prevent the user from leaving the page
   // if work is left un-saved
   @HostListener('window:beforeunload')
-  canDeactivate(): Observable < boolean > | boolean {
+  canDeactivate(): Observable<boolean> | boolean {
     return this.saveState ? true : confirm(
       'WARNING: You have unsaved changes. Press Cancel to go back and save these changes, or OK to lose these changes.'
     );
@@ -221,7 +228,8 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
     private copyPasteMapsService: CopyPasteMapsService,
     private clipboardService: ClipboardService,
     private dialog: MatDialog
-  ) {}
+  ) {
+  }
 
   ngOnInit() {
     this.endMouseMoveEventSource = new Subject();
@@ -354,9 +362,6 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
             (properties) => {
               // Dragging a node doesn't fire node selection, but it is selected after dragging finishes, so update
               this.updateSelectedNodes();
-              if (properties.nodes.length) {
-                this.saveState = false;
-              }
             }
           );
           // Listen for mouse movement on canvas to feed to handler
@@ -380,7 +385,7 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
 
     // We need to get the cursor coords the first time the user clicks the canvas (i.e. when they focus it for the first time).
     // Otherwise they would be undefined if the user focused the canvas but didn't move the mouse at all and tried to paste.
-    (fromEvent(visCanvas, 'click') as Observable < MouseEvent > ).pipe(
+    (fromEvent(visCanvas, 'click') as Observable<MouseEvent>).pipe(
       first(),
     ).subscribe((event) => {
       this.updateCursorDocumentPos(event);
@@ -393,14 +398,14 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
       this.mouseMoveEventStream = fromEvent(visCanvas, 'mousemove').pipe(
         debounceTime(25),
         takeUntil(this.endMouseMoveEventSource),
-      ) as Observable < MouseEvent > ;
+      ) as Observable<MouseEvent>;
 
       this.mouseMoveSub = this.mouseMoveEventStream.subscribe((event) => {
         this.updateCursorDocumentPos(event);
       });
 
       // We also want to keep track of when the "Paste" command is issued by the user
-      this.pasteEventStream = (fromEvent(visCanvas, 'keydown') as Observable < KeyboardEvent > ).pipe(
+      this.pasteEventStream = (fromEvent(visCanvas, 'keydown') as Observable<KeyboardEvent>).pipe(
         filter(event => keyCodeRepresentsPasteEvent(event)),
         takeUntil(this.endPasteEventSource),
       );
@@ -610,33 +615,34 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
    * Event handler for node template dropping onto canvas
    * @param event object representing a drag-and-drop event
    */
-  drop(event: CdkDragDrop < any > ) {
-    if (
-      event.item.element.nativeElement.classList.contains('map-template')
-    ) {
-      this.dropMap(event);
-    } else {
-      this.dropNode(event);
-    }
+  drop(event: CdkDragDrop<any>) {
+    event.item.element.nativeElement.classList.contains('map-template') ?
+      this.dropMap(event) : event.item.element.nativeElement.classList.contains('node-search-template') ?
+      this.dropSearchNode(event) : this.dropNode(event);
   }
 
-  dropMap(event: CdkDragDrop < any > ) {
+  /**
+   * Handle drop events from the map list
+   * @param event - represent map schema through dom element
+   */
+  dropMap(event: CdkDragDrop<any>) {
     const nativeElement = event.item.element.nativeElement;
 
     const mapId = nativeElement.id;
     const label = nativeElement.children[0].textContent;
     const source = '/dt/map/' + mapId;
+    const hyperlink = window.location.host + source;
 
     // Get DOM coordinate of dropped node relative
     // to container DOM
     const nodeCoord: DOMRect =
       document
-      .getElementById(mapId)
-      .getBoundingClientRect() as DOMRect;
+        .getElementById(mapId)
+        .getBoundingClientRect() as DOMRect;
     const containerCoord: DOMRect =
       document
-      .getElementById('drawing-tool-view-container')
-      .getBoundingClientRect() as DOMRect;
+        .getElementById('drawing-tool-view-container')
+        .getBoundingClientRect() as DOMRect;
     const x =
       nodeCoord.x -
       containerCoord.x +
@@ -657,30 +663,68 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
         group: 'map',
         label,
         ...coord,
-        source
+        source,
+        hyperlink
       }
     };
     this.recordCommand(cmd);
+  }
+
+  dropSearchNode(event: CdkDragDrop<any>) {
+    const data = event.item.data;
+    const nativeElement = event.item.element.nativeElement;
+    const nodeId = nativeElement.id;
+    const nodeCoord: DOMRect =
+      document
+        .getElementById(nodeId)
+        .getBoundingClientRect() as DOMRect;
+    const containerCoord: DOMRect =
+      document
+        .getElementById('drawing-tool-view-container')
+        .getBoundingClientRect() as DOMRect;
+    const x =
+      nodeCoord.x -
+      containerCoord.x +
+      event.distance.x + 100;
+    const y =
+      nodeCoord.y + event.distance.y + 80;
+    const coord = this.visjsNetworkGraph.network.DOMtoCanvas({
+      x,
+      y
+    });
+
+    const type = data.type.toLowerCase();
+    const cmd = {
+      action: 'add node',
+      data: {
+        group: type === 'snippet' ? 'study' : type === 'taxonomy' ? 'species' : type,
+        label: data.name,
+        hyperlink: data.link.changingThisBreaksApplicationSecurity,
+        ...coord
+      }
+    };
+    this.recordCommand(cmd);
+
   }
 
   /**
    * Event handler for node template dropping onto canvas
    * @param event object representing a drag-and-drop event
    */
-  dropNode(event: CdkDragDrop < any > ) {
+  dropNode(event: CdkDragDrop<any>) {
     const nodeType = event.item.element.nativeElement.id;
-    const label = `${nodeType}-${makeid()}`;
+    const label = `${nodeType}`;
 
     // Get DOM coordinate of dropped node relative
     // to container DOM
     const nodeCoord: DOMRect =
       document
-      .getElementById(nodeType)
-      .getBoundingClientRect() as DOMRect;
+        .getElementById(nodeType)
+        .getBoundingClientRect() as DOMRect;
     const containerCoord: DOMRect =
       document
-      .getElementById('drawing-tool-view-container')
-      .getBoundingClientRect() as DOMRect;
+        .getElementById('drawing-tool-view-container')
+        .getBoundingClientRect() as DOMRect;
     const x =
       nodeCoord.x -
       containerCoord.x +
@@ -718,7 +762,7 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
     // Convert DOM coordinate to canvas coordinate
     const coord =
       this.visjsNetworkGraph
-      .network.DOMtoCanvas({
+        .network.DOMtoCanvas({
         x: node.x,
         y: node.y
       });
@@ -787,6 +831,7 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
   }
+
   /**
    * Saves and downloads the PDF version of the current map
    */
@@ -985,6 +1030,7 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
       addedNode.id
     );
   }
+
   /**
    * Listen for click events from vis.js network
    * to handle certain events ..
@@ -1035,6 +1081,15 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
 
   networkDragStartCallback(params: any) {
     this.hideAllTooltips();
+    if (params.nodes.length) {
+      this.saveState = false;
+
+      // Track momvement of node
+      this.recordCommand({
+        action: 'move',
+        data: null
+      });
+    }
   }
 
   networkOnContextCallback(params: any) {

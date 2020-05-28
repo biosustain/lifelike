@@ -8,60 +8,58 @@ from neo4japp.data_transfer_objects import PDFParsedCharacters
     'index, text',
     [
         (1, PDFParsedCharacters(
-            coor_obj_per_pdf_page=None,
-            str_per_pdf_page={
-                1: ['I', ' ', 'a', 'm', ' ', 'a', ' ', 's', 'e', 'n', 't', 'e', 'n', 'c', 'e', '\n'],  # noqa
-            },
-            cropbox_per_page={1: [9, 9]},
+            char_coord_objs_in_pdf=None,
+            chars_in_pdf=['I', ' ', 'a', 'm', ' ', 'a', ' ', 's', 'e', 'n', 't', 'e', 'n', 'c', 'e', '\n'],  # noqa
+            cropbox_in_pdf=(9, 9),
+            max_idx_in_page={50: 1},
         )),
         (2, PDFParsedCharacters(
-            coor_obj_per_pdf_page=None,
-            str_per_pdf_page={
-                1: ['E', '.', ' ', '\n', 'C', 'o', 'l', 'i'],
-            },
-            cropbox_per_page={1: [9, 9]},
+            char_coord_objs_in_pdf=None,
+            chars_in_pdf=['E', '.', ' ', '\n', 'C', 'o', 'l', 'i'],
+            cropbox_in_pdf=(9, 9),
+            max_idx_in_page={50: 1},
         )),
         (3, PDFParsedCharacters(
-            coor_obj_per_pdf_page=None,
-            str_per_pdf_page={
-                1: ['T', 'y', 'p', 'h', '-', 'i', 'm', 'u', 'r', 'i', 'u', 'm'],
-            },
-            cropbox_per_page={1: [9, 9]},
+            char_coord_objs_in_pdf=None,
+            chars_in_pdf=['T', 'y', 'p', 'h', '-', 'i', 'm', 'u', 'r', 'i', 'u', 'm'],
+            cropbox_in_pdf=(9, 9),
+            max_idx_in_page={50: 1},
         )),
         (4, PDFParsedCharacters(
-            coor_obj_per_pdf_page=None,
-            str_per_pdf_page={
-                1: ['I', ' ', 'H', 'a', 'v', 'e', 'c', 'o', 'm', 'm', 'a', ','],
-            },
-            cropbox_per_page={1: [9, 9]},
+            char_coord_objs_in_pdf=None,
+            chars_in_pdf=['I', ' ', 'H', 'a', 'v', 'e', 'c', 'o', 'm', 'm', 'a', ','],
+            cropbox_in_pdf=(9, 9),
+            max_idx_in_page={50: 1},
         )),
         (5, PDFParsedCharacters(
-            coor_obj_per_pdf_page=None,
-            str_per_pdf_page={
-                1: ['I', ' ', 'H', 'a', 'v', 'e', ')'],
-            },
-            cropbox_per_page={1: [9, 9]},
+            char_coord_objs_in_pdf=None,
+            chars_in_pdf=['I', ' ', 'H', 'a', 'v', 'e', ')'],
+            cropbox_in_pdf=(9, 9),
+            max_idx_in_page={50: 1},
         )),
         (6, PDFParsedCharacters(
-            coor_obj_per_pdf_page=None,
-            str_per_pdf_page={
-                1: ['I', ' ', 'H', 'a', 'v', 'e', '.'],
-            },
-            cropbox_per_page={1: [9, 9]},
+            char_coord_objs_in_pdf=None,
+            chars_in_pdf=['I', ' ', 'H', 'a', 'v', 'e', '.'],
+            cropbox_in_pdf=(9, 9),
+            max_idx_in_page={50: 1},
         )),
         (7, PDFParsedCharacters(
-            coor_obj_per_pdf_page=None,
-            str_per_pdf_page={
-                1: ['I', ' ', 'H', 'a', 'v', 'e', '.', ')', ','],
-            },
-            cropbox_per_page={1: [9, 9]},
+            char_coord_objs_in_pdf=None,
+            chars_in_pdf=['I', ' ', 'H', 'a', 'v', 'e', '.', ')', ','],
+            cropbox_in_pdf=(9, 9),
+            max_idx_in_page={50: 1},
         )),
         (8, PDFParsedCharacters(
-            coor_obj_per_pdf_page=None,
-            str_per_pdf_page={
-                1: ['(', ',', 'I', ' ', 'H', 'a', 'v', 'e', '.', ')', ','],
-            },
-            cropbox_per_page={1: [9, 9]},
+            char_coord_objs_in_pdf=None,
+            chars_in_pdf=['(', ',', 'I', ' ', 'H', 'a', 'v', 'e', '.', ')', ','],
+            cropbox_in_pdf=(9, 9),
+            max_idx_in_page={50: 1},
+        )),
+        (9, PDFParsedCharacters(
+            char_coord_objs_in_pdf=None,
+            chars_in_pdf=['-', '*', 'I', ' ', 'H', 'a', 'v', 'e', '-', ' '],
+            cropbox_in_pdf=(9, 9),
+            max_idx_in_page={50: 1},
         )),
     ],
 )
@@ -97,7 +95,7 @@ def test_extract_tokens(annotations_setup, index, text):
     elif index == 4:
         verify = {'I Havecomma', 'Havecomma', 'I'}
         assert verify == tokens
-    elif index == 5 or index == 6 or index == 7 or index == 8:
+    elif index == 5 or index == 6 or index == 7 or index == 8 or index == 9:
         verify = {'I Have', 'Have', 'I'}
         assert verify == tokens
 
@@ -106,25 +104,34 @@ def test_extract_tokens(annotations_setup, index, text):
     'index, chars',
     [
         (1, PDFParsedCharacters(
-            coor_obj_per_pdf_page=None,
-            str_per_pdf_page={
-                1: ['I', ' ', 'a', 'm', ' ', 'a', ' ', 's', 'e', 'n', 't', 'e', 'n', 'c', 'e', '\n'],  # noqa
-            },
-            cropbox_per_page={1: [9, 9]},
+            char_coord_objs_in_pdf=None,
+            chars_in_pdf=['I', ' ', 'a', 'm', ' ', 'a', ' ', 's', 'e', 'n', 't', 'e', 'n', 'c', 'e', '\n'],  # noqa
+            cropbox_in_pdf=(9, 9),
+            max_idx_in_page={50: 1},
         )),
         (2, PDFParsedCharacters(
-            coor_obj_per_pdf_page=None,
-            str_per_pdf_page={
-                1: ['E', '.', ' ', '\n', 'C', 'o', 'l', 'i'],  # noqa
-            },
-            cropbox_per_page={1: [9, 9]},
+            char_coord_objs_in_pdf=None,
+            chars_in_pdf=['E', '.', ' ', '\n', 'C', 'o', 'l', 'i'],
+            cropbox_in_pdf=(9, 9),
+            max_idx_in_page={50: 1},
         )),
         (3, PDFParsedCharacters(
-            coor_obj_per_pdf_page=None,
-            str_per_pdf_page={
-                1: ['T', 'y', 'p', 'h', '-', 'i', 'm', 'u', 'r', 'i', 'u', 'm'],  # noqa
-            },
-            cropbox_per_page={1: [9, 9]},
+            char_coord_objs_in_pdf=None,
+            chars_in_pdf=['T', 'y', 'p', 'h', '-', 'i', 'm', 'u', 'r', 'i', 'u', 'm'],  # noqa
+            cropbox_in_pdf=(9, 9),
+            max_idx_in_page={50: 1},
+        )),
+        (4, PDFParsedCharacters(
+            char_coord_objs_in_pdf=None,
+            chars_in_pdf=['Ti', '©', 'p', 'h', '-', 'i', 'm', 'u', 'r', 'i', 'u', 'm'],  # noqa
+            cropbox_in_pdf=(9, 9),
+            max_idx_in_page={50: 1},
+        )),
+        (5, PDFParsedCharacters(
+            char_coord_objs_in_pdf=None,
+            chars_in_pdf=['J', 'u', 's', 't', ' ', 's', 'a', 'y', 'i', 'n', 'g', '…'],  # noqa
+            cropbox_in_pdf=(9, 9),
+            max_idx_in_page={50: 1},
         )),
     ],
 )
@@ -133,27 +140,41 @@ def test_combine_char_into_word(annotations_setup, index, chars):
     words = pdf_parser.combine_chars_into_words(parsed_chars=chars)
 
     if index == 1:
-        combined = {1: [
+        combined = [
             ('I', {0: 'I'}),
             ('am', {2: 'a', 3: 'm'}),
             ('a', {5: 'a'}),
             ('sentence', {
                 7: 's', 8: 'e',
                 9: 'n', 10: 't', 11: 'e', 12: 'n', 13: 'c', 14: 'e'}),
-        ]}
+        ]
         assert combined == words
     elif index == 2:
-        combined = {1: [
+        combined = [
             ('E.', {0: 'E', 1: '.'}),
             ('Coli', {4: 'C', 5: 'o', 6: 'l', 7: 'i'}),
-        ]}
+        ]
         assert combined == words
     elif index == 3:
-        combined = {1: [
+        combined = [
             ('Typh-imurium', {
                 0: 'T', 1: 'y',
                 2: 'p', 3: 'h',
                 4: '-', 5: 'i',
                 6: 'm', 7: 'u', 8: 'r', 9: 'i', 10: 'u', 11: 'm'}),
-        ]}
+        ]
+        assert combined == words
+    elif index == 4:
+        combined = [
+            ('ph-imurium', {
+                2: 'p', 3: 'h',
+                4: '-', 5: 'i',
+                6: 'm', 7: 'u', 8: 'r', 9: 'i', 10: 'u', 11: 'm'}),
+        ]
+        assert combined == words
+    elif index == 5:
+        combined = [
+            ('Just', {0: 'J', 1: 'u', 2: 's', 3: 't'}),
+            ('saying', {5: 's', 6: 'a', 7: 'y', 8: 'i', 9: 'n', 10: 'g'}),
+        ]
         assert combined == words

@@ -1,6 +1,7 @@
 import { Component, Inject, ViewEncapsulation } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { Annotation } from '../annotation-type';
+import { ENTITY_TYPE_MAP, ENTITY_TYPES } from '../../shared/annotation-types';
 
 export interface DialogData {
   allText: string;
@@ -23,19 +24,10 @@ export class AnnotationPanelComponent {
     wikipedia: '',
     google: ''
   };
-  // TODO: align colors for entities among all apps
-  entityTypes = [
-    { name: 'Genes', color: '#8f7cbf' },
-    { name: 'Proteins', color: '#bcbd22' },
-    { name: 'Diseases', color: '#fae0b8' },
-    { name: 'Species', color: '#3177b8' },
-    { name: 'Companies', color: '#ff7f7f' },
-    { name: 'Mutations', color: '#8b5d2e' },
-    { name: 'Chemicals', color: '#cee5cb' },
-    { name: 'Phenotypes', color: '#edc949' },
-    { name: 'Pathways', color: '#90eebf' },
-    { name: 'Entities', color: '#7f7f7f' }
-  ];
+
+  get entityTypes() {
+    return ENTITY_TYPES;
+  }
 
   constructor(
     private dialogRef: MatDialogRef<AnnotationPanelComponent>,
@@ -43,6 +35,9 @@ export class AnnotationPanelComponent {
   ) { }
 
   createAnnotation() {
+    if (ENTITY_TYPE_MAP[this.entityType] === undefined) {
+      throw new Error(`unknown entity type ${this.entityType}`);
+    }
     const annotation: Annotation = {
       pageNumber: this.data.pageNumber,
       keywords: this.data.text,
@@ -51,7 +46,7 @@ export class AnnotationPanelComponent {
       }),
       meta: {
         type: this.entityType,
-        color: this.entityTypes.find(entity => entity.name === this.entityType).color,
+        color: ENTITY_TYPE_MAP[this.entityType].color,
         links: this.links,
         isCustom: true,
         allText: this.data.allText

@@ -1,5 +1,5 @@
-import { Component, EventEmitter, OnDestroy, Output } from '@angular/core';
-import { BehaviorSubject, combineLatest, Subject, Subscription } from 'rxjs';
+import { Component, EventEmitter, OnDestroy, Output, ViewChild } from '@angular/core';
+import { combineLatest, Subject, Subscription } from 'rxjs';
 import { PdfFilesService } from 'app/shared/services/pdf-files.service';
 import { Hyperlink, SearchLink } from 'app/shared/constants';
 
@@ -12,6 +12,10 @@ import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { PdfFile } from '../../interfaces/pdf-files.interface';
 import { FileSelectionDialogComponent } from '../../file-browser/file-selection-dialog.component';
 import { BackgroundTask } from '../../shared/rxjs/background-task';
+import { PdfViewerLibComponent } from '../../pdf-viewer/pdf-viewer-lib.component';
+import { ENTITY_TYPE_MAP, ENTITY_TYPES, EntityType } from 'app/shared/annotation-types';
+import { MatCheckboxChange } from '@angular/material';
+import { ActivatedRoute } from '@angular/router';
 
 class DummyFile implements PdfFile {
   constructor(
@@ -21,6 +25,11 @@ class DummyFile implements PdfFile {
     // tslint:disable-next-line
     public creation_date: string = null,
     public username: string = null) {
+  }
+}
+
+class EntityTypeEntry {
+  constructor(public type: EntityType, public annotations: Annotation[]) {
   }
 }
 
@@ -35,7 +44,18 @@ export class PdfViewerComponent implements OnDestroy {
   @Output() fileOpen: EventEmitter<PdfFile> = new EventEmitter();
 
   annotations: Annotation[] = [];
+  // We don't want to modify the above array when we add annotations, because
+  // data flow right now is very messy
+  addedAnnotations: Annotation[] = [];
+  /**
+   * A mapping of annotation type (i.e. Genes) to a list of those annotations.
+   */
+  annotationEntityTypeMap: Map<string, Annotation[]> = new Map();
+  entityTypeVisibilityMap: Map<string, boolean> = new Map();
+  @Output() filterChangeSubject = new Subject<void>();
+  filterPopupOpen = false;
 
+  searchChanged: Subject<string> = new Subject<string>();
   goToPosition: Subject<Location> = new Subject<Location>();
   loadTask: BackgroundTask<[PdfFile, Location], [ArrayBuffer, any]> =
     new BackgroundTask(([file, loc]) => {
@@ -54,6 +74,13 @@ export class PdfViewerComponent implements OnDestroy {
   addedAnnotation: Annotation;
   addAnnotationSub: Subscription;
   pdfFileLoaded = false;
+  sortedEntityTypeEntries = [];
+  entityTypeVisibilityChanged = false;
+
+  // search
+  pdfQuery;
+
+  @ViewChild(PdfViewerLibComponent, { static: false }) pdfViewerLib;
 
   constructor(
     private pdfAnnService: PdfAnnotationsService,
@@ -61,23 +88,104 @@ export class PdfViewerComponent implements OnDestroy {
     private snackBar: MatSnackBar,
     private dataFlow: DataFlowService,
     public dialog: MatDialog,
+    private route: ActivatedRoute
   ) {
     // Listener for file open
     this.openPdfSub = this.loadTask.observable.subscribe(([[pdfFileContent, ann], [file, loc]]) => {
-      this.pdfData = { data: new Uint8Array(pdfFileContent) };
+      this.pdfData = {data: new Uint8Array(pdfFileContent)};
       this.annotations = ann;
+      this.updateAnnotationIndex();
+      this.updateSortedEntityTypeEntries();
+
       this.currentFileId = file.file_id;
       setTimeout(() => {
         this.pdfViewerReady = true;
       }, 10);
     });
 
-    // Handles opening a pdf from other pages
-    const linkedFileId = localStorage.getItem('fileIdForPdfViewer');
-    if (linkedFileId) {
-      localStorage.removeItem('fileIdForPdfViewer');
+    // Check if the component was loaded with a url to parse fileId
+    // from
+    if (this.route.snapshot.params.file_id) {
+      const linkedFileId = this.route.snapshot.params.file_id;
       this.openPdf(new DummyFile(linkedFileId));
     }
+  }
+
+  updateAnnotationIndex() {
+    // Create index of annotation types
+    this.annotationEntityTypeMap.clear();
+    for (const annotation of [...this.annotations, ...this.addedAnnotations]) {
+      const entityType: EntityType = ENTITY_TYPE_MAP[annotation.meta.type];
+      if (!entityType) {
+        throw new Error(`unknown entity type ${annotation.meta.type} not in ENTITY_TYPE_MAP`);
+      }
+      let typeAnnotations = this.annotationEntityTypeMap.get(entityType.id);
+      if (!typeAnnotations) {
+        typeAnnotations = [];
+        this.annotationEntityTypeMap.set(entityType.id, typeAnnotations);
+      }
+      typeAnnotations.push(annotation);
+    }
+  }
+
+  updateSortedEntityTypeEntries() {
+    this.sortedEntityTypeEntries = ENTITY_TYPES
+      .map(entityType => new EntityTypeEntry(entityType, this.annotationEntityTypeMap.get(entityType.id) || []))
+      .sort((a, b) => {
+        if (a.annotations.length && !b.annotations.length) {
+          return -1;
+        } else if (!a.annotations.length && b.annotations.length) {
+          return 1;
+        } else {
+          return a.type.name.localeCompare(b.type.name);
+        }
+      });
+  }
+
+  isEntityTypeVisible(entityType: EntityType) {
+    const value = this.entityTypeVisibilityMap.get(entityType.id);
+    if (value === undefined) {
+      return true;
+    } else {
+      return value;
+    }
+  }
+
+  setAllEntityTypesVisibility(state: boolean) {
+    for (const type of ENTITY_TYPES) {
+      this.entityTypeVisibilityMap.set(type.name, state);
+    }
+    this.invalidateEntityTypeVisibility();
+  }
+
+  changeEntityTypeVisibility(entityType: EntityType, event: MatCheckboxChange) {
+    this.entityTypeVisibilityMap.set(entityType.id, event.checked);
+    this.invalidateEntityTypeVisibility();
+  }
+
+  invalidateEntityTypeVisibility() {
+    // Keep track if the user has some entity types disabled
+    let entityTypeVisibilityChanged = false;
+    for (const value of this.entityTypeVisibilityMap.values()) {
+      if (!value) {
+        entityTypeVisibilityChanged = true;
+        break;
+      }
+    }
+    this.entityTypeVisibilityChanged = entityTypeVisibilityChanged;
+
+    this.filterChangeSubject.next();
+  }
+
+  toggleFilterPopup() {
+    if (!this.pdfViewerReady) {
+      return;
+    }
+    this.filterPopupOpen = !this.filterPopupOpen;
+  }
+
+  closeFilterPopup() {
+    this.filterPopupOpen = false;
   }
 
   annotationCreated(annotation: Annotation) {
@@ -125,6 +233,10 @@ export class PdfViewerComponent implements OnDestroy {
         this.snackBar.open(`Error: failed to add annotation`, 'Close', {duration: 10000});
       }
     );
+
+    this.addedAnnotations.push(annotation);
+    this.updateAnnotationIndex();
+    this.updateSortedEntityTypeEntries();
   }
 
   /**
@@ -160,6 +272,7 @@ export class PdfViewerComponent implements OnDestroy {
 
     // Convert form plural to singular since annotation
     // .. if no matches are made, return as entity
+    // TODO - refactor this .... plz ...
     const mapper = (plural) => {
       switch (plural) {
         case 'Compounds':
@@ -173,7 +286,7 @@ export class PdfViewerComponent implements OnDestroy {
         case 'Species':
           return 'species';
         case 'Mutations':
-            return 'mutation';
+          return 'mutation';
         case 'Chemicals':
           return 'chemical';
         case 'Phenotypes':
@@ -182,6 +295,8 @@ export class PdfViewerComponent implements OnDestroy {
           return 'pathway';
         case 'Companies':
           return 'company';
+        case 'Links':
+          return 'link';
         default:
           return 'entity';
       }
@@ -190,12 +305,13 @@ export class PdfViewerComponent implements OnDestroy {
     const payload: GraphData = {
       x: mouseEvent.clientX - containerCoord.x,
       y: mouseEvent.clientY,
-      label: meta.allText,
+      label: meta.type === 'Links' ? '' : meta.allText,
       group: mapper(meta.type),
       data: {
         source,
         search,
-        hyperlink
+        hyperlink,
+        detail: meta.type === 'Links' ? meta.allText : ''
       }
     };
 
@@ -216,6 +332,14 @@ export class PdfViewerComponent implements OnDestroy {
         this.openPdf(file);
       }
     });
+  }
+
+  zoomIn() {
+    this.pdfViewerLib.incrementZoom(0.1);
+  }
+
+  zoomOut() {
+    this.pdfViewerLib.incrementZoom(-0.1);
   }
 
   /**
@@ -291,4 +415,9 @@ export class PdfViewerComponent implements OnDestroy {
   close() {
     this.requestClose.emit(null);
   }
+
+  searchQueryChanged(query) {
+    this.searchChanged.next(query);
+  }
+
 }

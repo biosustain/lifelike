@@ -1,5 +1,6 @@
 import { TestBed, ComponentFixture } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 import { configureTestSuite } from 'ng-bullet';
 
@@ -9,6 +10,7 @@ import { of } from 'rxjs';
 
 import { DataSet } from 'vis-network';
 
+import { MAX_CLUSTER_ROWS } from 'app/constants';
 import {
     Direction,
     DuplicateNodeEdgePair,
@@ -23,6 +25,11 @@ import {
     VisNode,
     GetReferenceTableDataResult,
     ReferenceTableRow,
+    GetClusterSnippetDataResult,
+    SettingsFormValues,
+    ClusterData,
+    SidenavSnippetData,
+    SidenavClusterEntity,
 } from 'app/interfaces';
 import { RootStoreModule } from 'app/***ARANGO_USERNAME***-store';
 import { SharedModule } from 'app/shared/shared.module';
@@ -37,7 +44,7 @@ import { SidenavEdgeViewComponent } from '../sidenav-edge-view/sidenav-edge-view
 import { SidenavNodeViewComponent } from '../sidenav-node-view/sidenav-node-view.component';
 import { VisualizationQuickbarComponent } from '../../components/visualization-quickbar/visualization-quickbar.component';
 import { VisualizationCanvasComponent } from '../visualization-canvas/visualization-canvas.component';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { VisualizationSettingsComponent } from '../visualization-settings/visualization-settings.component';
 
 describe('VisualizationCanvasComponent', () => {
     let fixture: ComponentFixture<VisualizationCanvasComponent>;
@@ -54,6 +61,8 @@ describe('VisualizationCanvasComponent', () => {
     let mockGroupRequest: GroupRequest;
     let mockConfig: Neo4jGraphConfig;
     let mockLegend: Map<string, string[]>;
+    let mockValidSettingsFormValues: SettingsFormValues;
+    let mockInvalidSettingsFormValues: SettingsFormValues;
     let mockCallbackParams: any;
 
     function mockNodeGenerator(nodeId: number, nodeDisplayName: string, nodeData?: any): VisNode {
@@ -66,6 +75,7 @@ describe('VisualizationCanvasComponent', () => {
             expanded: false,
             primaryLabel: 'Mock Node',
             color: null,
+            font: null,
         } as VisNode;
     }
 
@@ -87,6 +97,7 @@ describe('VisualizationCanvasComponent', () => {
             toLabel: 'Mock Node',
             fromLabel: 'Mock Node',
             arrows: arrowDirection,
+            color: null,
         } as VisEdge;
     }
 
@@ -116,6 +127,7 @@ describe('VisualizationCanvasComponent', () => {
                     SidenavNodeViewComponent,
                     VisualizationCanvasComponent,
                     VisualizationQuickbarComponent,
+                    VisualizationSettingsComponent,
                 ),
             ],
             providers: [
@@ -192,9 +204,16 @@ describe('VisualizationCanvasComponent', () => {
 
         mockReferenceTableRows = [
             {
-                nodeDisplayName: 'Mock Node 1',
+                nodeId: '2',
+                nodeDisplayName: 'Mock Node 2',
                 snippetCount: 1,
-                edge: mockEdgeGenerator(101, 1, 'to', 2),
+                edge: mockDuplicateEdgeGenerator(101, 1, 'to', 2),
+            } as ReferenceTableRow,
+            {
+                nodeId: '3',
+                nodeDisplayName: 'Mock Node 3',
+                snippetCount: 1,
+                edge: mockDuplicateEdgeGenerator(101, 1, 'to', 3),
             } as ReferenceTableRow,
         ];
 
@@ -205,6 +224,44 @@ describe('VisualizationCanvasComponent', () => {
         mockLegend = new Map<string, string[]>([
             ['Chemical', ['#CD5D67', '#410B13']]
         ]);
+
+        mockValidSettingsFormValues = {
+            maxClusterShownRows: {
+                value: MAX_CLUSTER_ROWS,
+                valid: true,
+            },
+            Chemical: {
+                value: true,
+                valid: true,
+            },
+            Gene: {
+                value: true,
+                valid: true,
+            },
+            Diseases: {
+                value: true,
+                valid: true,
+            },
+        } as SettingsFormValues;
+
+        mockInvalidSettingsFormValues = {
+            maxClusterShownRows: {
+                value: -1,
+                valid: false,
+            },
+            Chemical: {
+                value: true,
+                valid: true,
+            },
+            Gene: {
+                value: true,
+                valid: true,
+            },
+            Diseases: {
+                value: true,
+                valid: true,
+            },
+        } as SettingsFormValues;
 
         mockCallbackParams = {
             event: {
@@ -227,12 +284,61 @@ describe('VisualizationCanvasComponent', () => {
         instance.edges = mockEdges;
         instance.config = mockConfig;
         instance.legend = mockLegend;
+        instance.settingsFormValues = mockValidSettingsFormValues;
 
         fixture.detectChanges();
     });
 
     it('should create', () => {
         expect(fixture).toBeTruthy();
+    });
+
+    it('updateSettings should update settings values if inputs are valid', () => {
+        const newSettings = {
+            maxClusterShownRows: {
+                value: 10,
+                valid: true,
+            },
+            Chemical: {
+                value: true,
+                valid: true,
+            },
+            Gene: {
+                value: true,
+                valid: true,
+            },
+            Diseases: {
+                value: true,
+                valid: true,
+            },
+        } as SettingsFormValues;
+
+        instance.updateSettings(newSettings);
+        expect(instance.settingsFormValues).toEqual(newSettings);
+    });
+
+    it('updateSettings should not update update settings values if inputs are invalid', () => {
+        const newSettings = {
+            maxClusterShownRows: {
+                value: 2,
+                valid: false,
+            },
+            Chemical: {
+                value: true,
+                valid: false,
+            },
+            Gene: {
+                value: true,
+                valid: false,
+            },
+            Diseases: {
+                value: true,
+                valid: false,
+            },
+        } as SettingsFormValues;
+
+        instance.updateSettings(newSettings);
+        expect(instance.settingsFormValues).toEqual(mockValidSettingsFormValues);
     });
 
     it('should update sidenav entity data when getSnippetsResult changes', () => {
@@ -248,14 +354,16 @@ describe('VisualizationCanvasComponent', () => {
 
         expect(instance.sidenavEntityType).toEqual(2); // 2 = EDGE
         expect(instance.sidenavEntity).toEqual({
-            to: instance.nodes.get(mockGetSnippetsResult.toNodeId) as VisNode,
-            from: instance.nodes.get(mockGetSnippetsResult.fromNodeId) as VisNode,
-            association: mockGetSnippetsResult.association,
-            snippets: mockGetSnippetsResult.snippets,
+            data: {
+                to: instance.nodes.get(mockGetSnippetsResult.toNodeId) as VisNode,
+                from: instance.nodes.get(mockGetSnippetsResult.fromNodeId) as VisNode,
+                association: mockGetSnippetsResult.association,
+                snippets: mockGetSnippetsResult.snippets,
+            } as SidenavSnippetData
         } as SidenavEdgeEntity);
     });
 
-    it('should update sidenav entity data when getClusterGraphDataResult changes', () => {
+    it('should update sidenav entity data when getClusterDataResult changes', () => {
         const mockGetClusterGraphDataResult = {
             results: {
                 1: {
@@ -263,15 +371,34 @@ describe('VisualizationCanvasComponent', () => {
                 }
             }
         } as GetClusterGraphDataResult;
+        const mockGetClusterSnippetDataResult = {
+            results: [
+                {
+                    fromNodeId: 1,
+                    toNodeId: 2,
+                    snippets: [],
+                    association: '',
+                } as GetSnippetsResult,
+            ]
+        } as GetClusterSnippetDataResult;
 
-        instance.getClusterGraphDataResult = mockGetClusterGraphDataResult;
+        instance.getClusterDataResult = {
+            graphData: mockGetClusterGraphDataResult,
+            snippetData: mockGetClusterSnippetDataResult,
+        };
         fixture.detectChanges();
 
-        expect(instance.sidenavEntityType).toEqual(3); // 3 = EDGE
+        expect(instance.sidenavEntityType).toEqual(3); // 3 = CLUSTER
         expect(instance.sidenavEntity).toEqual({
-            includes: Object.keys(mockGetClusterGraphDataResult.results).map(nodeId => instance.nodes.get(nodeId)),
-            clusterGraphData: mockGetClusterGraphDataResult,
-        });
+            data: mockGetClusterSnippetDataResult.results.map(snippetResult => {
+                return {
+                    to: instance.nodes.get(snippetResult.toNodeId) as VisNode,
+                    from: instance.nodes.get(snippetResult.fromNodeId) as VisNode,
+                    association: snippetResult.association,
+                    snippets: snippetResult.snippets,
+                } as SidenavSnippetData;
+            }),
+        } as SidenavClusterEntity);
     });
 
     it('should turn animation off if quickbar component animationStatus emits false', () => {
@@ -386,7 +513,12 @@ describe('VisualizationCanvasComponent', () => {
         const clusterInfo = instance.clusters.entries().next();
         const clusterEdge = instance.networkGraph.getConnectedEdges(clusterInfo.value[0])[0];
 
-        expect(clusterInfo.value[1]).toEqual('Mock Edge');
+        expect(clusterInfo.value[1]).toEqual(
+            {
+                referenceTableRows: mockReferenceTableRows,
+                relationship: 'Mock Edge',
+            } as ClusterData
+        );
         expect(instance.isNotAClusterEdge(clusterEdge)).toBeFalse();
     });
 
@@ -441,13 +573,14 @@ describe('VisualizationCanvasComponent', () => {
         expect(instance.edges.get(102)).toBeNull();
     });
 
-    it('expandOrCollapseNode should open any connected clusters of the given node', () => {
+    it('expandOrCollapseNode should destroy any connected clusters of the given node', () => {
         spyOn(visualizationService, 'getReferenceTableData').and.returnValue(
             of(mockGetReferenceTableDataResult)
         );
 
-        const node1 = instance.nodes.get(1);
-        node1.expanded = true;
+        const nodeRef = instance.nodes.get(1) as VisNode;
+        const updatedNodeState = {...nodeRef, expanded: true};
+        instance.nodes.update(updatedNodeState);
 
         instance.groupNeighborsWithRelationship(mockGroupRequest);
         instance.expandOrCollapseNode(1);
@@ -455,11 +588,11 @@ describe('VisualizationCanvasComponent', () => {
         expect(instance.clusters.size).toEqual(0);
 
         expect(instance.nodes.get(1)).toBeTruthy();
-        expect(instance.nodes.get(2)).toBeTruthy();
-        expect(instance.nodes.get(3)).toBeTruthy();
+        expect(instance.nodes.get(2)).toBeNull();
+        expect(instance.nodes.get(3)).toBeNull();
 
-        expect(instance.edges.get(101)).toBeTruthy();
-        expect(instance.edges.get(102)).toBeTruthy();
+        expect(instance.edges.get(101)).toBeNull();
+        expect(instance.edges.get(102)).toBeNull();
     });
 
     it('expandOrCollapseNode should request a node expansion from the parent if the node is collapsed', () => {
@@ -736,15 +869,31 @@ describe('VisualizationCanvasComponent', () => {
         expect(expandOrCollapseNodeSpy).toHaveBeenCalledWith(1);
     });
 
-    // TODO: Create a real cluster
-    it('should not open the context menu if a cluster is right-clicked', () => {
-        spyOn(instance.networkGraph, 'getNodeAt').and.returnValue(1);
-        spyOn(instance.networkGraph, 'isCluster').and.returnValue(true); // Faking the cluster for now
-        const preventDefaultSpy = spyOn(mockCallbackParams.event, 'preventDefault');
+    it('should show tooltip, update selected cluster nodes, and update sidebar if an unselected cluster is right-clicked', () => {
+        spyOn(visualizationService, 'getReferenceTableData').and.returnValue(
+            of(mockGetReferenceTableDataResult)
+        );
+
+        instance.groupNeighborsWithRelationship(mockGroupRequest);
+        const clusterInfo = instance.clusters.entries().next();
+        const clusterId = clusterInfo.value[0];
+
+        spyOn(instance.networkGraph, 'getNodeAt').and.returnValue(clusterId);
+        spyOn(instance.networkGraph, 'getEdgeAt').and.returnValue(undefined);
+        spyOn(instance.networkGraph, 'isCluster').and.returnValue(true);
+        const networkGraphSelectNodesSpy = spyOn(instance.networkGraph, 'selectNodes').and.callThrough();
+        const updateSelectedNodesAndEdgesSpy = spyOn(instance, 'updateSelectedNodesAndEdges').and.callThrough();
+        const showTooltipSpy = spyOn(contextMenuControlService, 'showTooltip');
+        const updateSidebarEntitySpy = spyOn(instance, 'updateSidebarEntity');
 
         instance.onContextCallback(mockCallbackParams);
 
-        expect(preventDefaultSpy).not.toHaveBeenCalled();
+        expect(networkGraphSelectNodesSpy).toHaveBeenCalledWith([clusterId], false);
+        expect(updateSelectedNodesAndEdgesSpy).toHaveBeenCalled();
+        expect(instance.selectedNodes.includes(clusterId)).toBeTrue();
+        expect(instance.selectedClusterNodeData.length).toEqual(2);
+        expect(showTooltipSpy).toHaveBeenCalled();
+        expect(updateSidebarEntitySpy).toHaveBeenCalled();
     });
 
     it('should select the node, show tooltip, and update sidebar if an unselected node is right-clicked', () => {
@@ -875,5 +1024,26 @@ describe('VisualizationCanvasComponent', () => {
         expect(instance.selectedEdges.includes(101)).toBeTrue();
         expect(clearSelectedNodeEdgeLabelDataSpy).toHaveBeenCalled();
         expect(instance.selectedNodeEdgeLabelData.size).toEqual(0);
+    });
+
+    it('removeNodeFromCluster should pull out a single node from a cluster, but also not mutate the cluster', async () => {
+        spyOn(visualizationService, 'getReferenceTableData').and.returnValue(
+            of(mockGetReferenceTableDataResult)
+        );
+
+        instance.groupNeighborsWithRelationship(mockGroupRequest);
+
+        const clusterInfo = instance.clusters.entries().next();
+        const clusterId = clusterInfo.value[0];
+        const clusteredNodeIdsBeforeRemoval = instance.networkGraph.getNodesInCluster(clusterId);
+
+        instance.removeNodeFromCluster(clusteredNodeIdsBeforeRemoval[0]);
+
+        const clusteredNodeIdsAfterRemoval = instance.networkGraph.getNodesInCluster(clusterId);
+
+        expect(clusteredNodeIdsAfterRemoval.length).toEqual(2);
+        expect(clusteredNodeIdsAfterRemoval).toEqual(clusteredNodeIdsBeforeRemoval);
+        expect(instance.nodes.get(2)).toBeTruthy();
+        expect(instance.nodes.get(3)).toBeNull();
     });
 });

@@ -3,7 +3,7 @@ import { HttpClient, HttpEvent } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { AuthenticationService } from 'app/auth/services/authentication.service';
-import { PdfFiles, PdfFile, PdfFileUpload } from 'app/interfaces/pdf-files.interface';
+import { PdfFiles, PdfFile, PdfFileUpload, UploadPayload, UploadType } from 'app/interfaces/pdf-files.interface';
 
 @Injectable({
   providedIn: '***ARANGO_USERNAME***'
@@ -44,9 +44,14 @@ export class PdfFilesService {
     return this.http.request('DELETE', `${this.baseUrl}/bulk_delete`, options);
   }
 
-  uploadFile(file: File): Observable<HttpEvent<PdfFileUpload>> {
+  uploadFile(data: UploadPayload): Observable<HttpEvent<PdfFileUpload>> {
     const formData: FormData = new FormData();
-    formData.append('file', file);
+    if (data.type === UploadType.Files) {
+      formData.append('file', data.files[0]);
+    } else {
+      formData.append('filename', data.filename);
+      formData.append('url', data.url);
+    }
     return this.http.post<PdfFileUpload>(`${this.baseUrl}/upload`, formData, {
       headers: this.getAuthHeader(),
       observe: 'events',

@@ -10,16 +10,18 @@ import {
   ViewChild,
   ViewContainerRef
 } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import {ActivatedRoute} from '@angular/router';
 
-import { PdfViewerComponent } from '../pdf-viewer/pdf-viewer.component';
-import { MapListComponent } from '../project-list-view/map-list/map-list.component';
-import { Observable, Subscription } from 'rxjs';
-import { LaunchApp } from '../services/interfaces';
-import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
-import { FileSelectionDialogComponent } from '../../file-browser/file-selection-dialog.component';
-import { PdfFile } from '../../interfaces/pdf-files.interface';
-import { ClipboardService } from '../../shared/services/clipboard.service';
+import {PdfViewerComponent} from '../pdf-viewer/pdf-viewer.component';
+import {MapListComponent} from '../project-list-view/map-list/map-list.component';
+import {Observable, Subscription} from 'rxjs';
+import {LaunchApp, Location} from '../services/interfaces';
+import {MatDialog, MatDialogConfig} from '@angular/material/dialog';
+import {FileSelectionDialogComponent} from '../../file-browser/file-selection-dialog.component';
+import {PdfFile} from '../../interfaces/pdf-files.interface';
+import {NodeSearchComponent} from '../../node-search/containers/node-search.component';
+
+
 
 @Component({
   selector: 'app-splitter',
@@ -94,37 +96,36 @@ export class SplitterComponent implements OnInit, OnDestroy, AfterViewInit {
     this.splitPanelLength = 0;
   }
 
+  /**
+   * A pre-cursor function before launching app
+   * that assemble argument to open other apps
+   * through dialog if they haven't been specified
+   * @param appCmd - represent the app instruction schema to open app as desired
+   */
   openApp(appCmd: LaunchApp) {
-    // Check to see
-    // - if the appCmd is NOT null
-    // - if current app is NOT the same as new app to be opened
-    // - if the app being opened is pdf-viewer
-    // - if an argument is NOT supplied with the command
-    if (
-      appCmd &&
-      this.currentApp !== appCmd.app &&
-      appCmd.app === 'pdf-viewer' &&
-      appCmd.arg === null
-    ) {
-      if (this.lastFileOpened) {
-          localStorage.setItem('fileIdForPdfViewer', this.lastFileOpened.file_id);
-          this._openApp(appCmd);
-      } else {
-        const dialogConfig = new MatDialogConfig();
 
-        dialogConfig.width = '600px';
-        dialogConfig.disableClose = true;
-        dialogConfig.autoFocus = true;
-        dialogConfig.data = {};
+    if (!appCmd) {
+      this.close();
+      return;
+    } else if (appCmd.app === 'pdf-viewer' && appCmd.arg === null) {
+      // If the app being opened is a pdf-viewer with arg field set to null,
+      // prompt a dialog for the user to pick a file and create the arg field
+      // from the user's file chocie
 
-        const dialogRef = this.dialog.open(FileSelectionDialogComponent, dialogConfig);
-        dialogRef.beforeClosed().subscribe((file: PdfFile) => {
-          if (file !== null) {
-            localStorage.setItem('fileIdForPdfViewer', file.file_id);
-            this._openApp(appCmd);
-          }
-        });
-      }
+      const dialogConfig = new MatDialogConfig();
+
+      dialogConfig.width = '600px';
+      dialogConfig.disableClose = true;
+      dialogConfig.autoFocus = true;
+      dialogConfig.data = {};
+
+      const dialogRef = this.dialog.open(FileSelectionDialogComponent, dialogConfig);
+      dialogRef.beforeClosed().subscribe((file: PdfFile) => {
+        appCmd.arg = {
+          fileId: file.file_id
+        };
+        this._openApp(appCmd);
+      });
     } else {
       this._openApp(appCmd);
     }
@@ -135,10 +136,6 @@ export class SplitterComponent implements OnInit, OnDestroy, AfterViewInit {
    * @param app - app such as pdf-viewer or kg-visualizer
    */
   _openApp(appCmd: LaunchApp) {
-    if (!appCmd) {
-      this.close();
-      return;
-    }
 
     // Don't waste time trying to re-open the app
     // if it's already opened
@@ -150,6 +147,10 @@ export class SplitterComponent implements OnInit, OnDestroy, AfterViewInit {
           factory = this.r.resolveComponentFactory(MapListComponent);
           this.splitPanelLength = 30;
           break;
+        case 'node-search':
+          factory = this.r.resolveComponentFactory(NodeSearchComponent);
+          this.splitPanelLength = 30;
+          break;
         case 'pdf-viewer':
           factory = this.r.resolveComponentFactory(PdfViewerComponent);
           this.splitPanelLength = 50;
@@ -158,41 +159,32 @@ export class SplitterComponent implements OnInit, OnDestroy, AfterViewInit {
           break;
       }
 
-      if (this.requestCloseSubscription) {
-        this.requestCloseSubscription.unsubscribe();
-      }
-      if (this.fileOpenSubscription) {
-        this.fileOpenSubscription.unsubscribe();
-      }
-
       this.leftPanel.clear();
       this.currentApp = appCmd.app;
 
       this.dynamicComponentRef = this.leftPanel.createComponent(factory);
-
-      if (this.dynamicComponentRef.instance.requestClose) {
-        this.requestCloseSubscription = this.dynamicComponentRef.instance.requestClose.subscribe(() => {
-          this.openApp(null);
-        });
-      }
-
-      if (this.dynamicComponentRef.instance.fileOpen) {
-        this.fileOpenSubscription = this.dynamicComponentRef.instance.fileOpen.subscribe(file => {
-          this.lastFileOpened = file;
-        });
-      }
 
       this.dynamicComponentRef.changeDetectorRef.detectChanges();
     }
 
     // If an argument is supplied, inject into dynamic component
     if (this.currentApp === 'pdf-viewer' && appCmd.arg !== null) {
+      // Form argument parameter signature for the openPDF function call
+      // from the arg field of the app cmd
+      const pdfFile: PdfFile = {
+        file_id: appCmd.arg.fileId
+      };
+
+      // If no other parameters provided for opening the pdf ann ..
+      // default to null
+      const loc: Location = appCmd.arg.pageNumber !== null ? {
+        pageNumber: appCmd.arg.pageNumber,
+        rect: appCmd.arg.coords
+      } : null;
+
       this.dynamicComponentRef.instance.openPdf(
-        appCmd.arg.fileId,
-        {
-          rect: appCmd.arg.coords,
-          pageNumber: appCmd.arg.pageNumber
-        }
+        pdfFile,
+        loc
       );
     }
   }

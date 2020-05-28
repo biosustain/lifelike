@@ -1,7 +1,10 @@
+import attr
 import json
 import pytest
 
 from os import path
+
+from pdfminer.layout import LTChar
 
 from neo4japp.database import (
     get_annotations_service,
@@ -11,14 +14,64 @@ from neo4japp.database import (
 )
 from neo4japp.data_transfer_objects import (
     Annotation,
-    PDFParsedCharacters
+    PDFParsedCharacters,
+    PDFTokenPositions,
+    PDFTokenPositionsList,
 )
 from neo4japp.models import Files
 from neo4japp.services.annotations import AnnotationsService, LMDBDao
+from neo4japp.services.annotations.constants import EntityType
 
 
 # reference to this directory
 directory = path.realpath(path.dirname(__file__))
+
+
+def get_test_annotations_service(
+    genes_lmdb_path='',
+    chemicals_lmdb_path='',
+    compounds_lmdb_path='',
+    proteins_lmdb_path='',
+    species_lmdb_path='',
+    diseases_lmdb_path='',
+    phenotypes_lmdb_path='',
+):
+    return AnnotationsService(
+        lmdb_session=LMDBDao(
+            genes_lmdb_path=genes_lmdb_path,
+            chemicals_lmdb_path=chemicals_lmdb_path,
+            compounds_lmdb_path=compounds_lmdb_path,
+            proteins_lmdb_path=proteins_lmdb_path,
+            species_lmdb_path=species_lmdb_path,
+            diseases_lmdb_path=diseases_lmdb_path,
+            phenotypes_lmdb_path=phenotypes_lmdb_path,
+        ),
+    )
+
+
+def get_dummy_LTChar(text):
+    @attr.s(frozen=True)
+    class Font():
+        fontname: str = attr.ib()
+
+        def is_vertical(self):
+            return False
+
+        def get_descent(self):
+            return 0
+
+    return LTChar(
+        text=text,
+        matrix=(0, 0, 0, 0, 0, 0),
+        font=Font(fontname='font'),
+        fontsize=0,
+        scaling=0,
+        rise=0,
+        textwidth=0,
+        textdisp=None,
+        ncs=None,
+        graphicstate=None,
+    )
 
 
 @pytest.mark.parametrize(
@@ -34,7 +87,7 @@ directory = path.realpath(path.dirname(__file__))
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    keyword_type='Genes',
+                    keyword_type=EntityType.Gene.value,
                     color='',
                     id='',
                     id_type='',
@@ -51,7 +104,7 @@ directory = path.realpath(path.dirname(__file__))
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    keyword_type='Chemicals',
+                    keyword_type=EntityType.Gene.value,
                     color='',
                     id='',
                     id_type='',
@@ -70,7 +123,7 @@ directory = path.realpath(path.dirname(__file__))
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    keyword_type='Genes',
+                    keyword_type=EntityType.Gene.value,
                     color='',
                     id='',
                     id_type='',
@@ -87,7 +140,7 @@ directory = path.realpath(path.dirname(__file__))
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    keyword_type='Chemicals',
+                    keyword_type=EntityType.Chemical.value,
                     color='',
                     id='',
                     id_type='',
@@ -106,7 +159,7 @@ directory = path.realpath(path.dirname(__file__))
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    keyword_type='Genes',
+                    keyword_type=EntityType.Gene.value,
                     color='',
                     id='',
                     id_type='',
@@ -123,7 +176,7 @@ directory = path.realpath(path.dirname(__file__))
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    keyword_type='Chemicals',
+                    keyword_type=EntityType.Chemical.value,
                     color='',
                     id='',
                     id_type='',
@@ -142,7 +195,7 @@ directory = path.realpath(path.dirname(__file__))
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    keyword_type='Genes',
+                    keyword_type=EntityType.Gene.value,
                     color='',
                     id='',
                     id_type='',
@@ -159,7 +212,7 @@ directory = path.realpath(path.dirname(__file__))
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    keyword_type='Chemicals',
+                    keyword_type=EntityType.Chemical.value,
                     color='',
                     id='',
                     id_type='',
@@ -178,7 +231,7 @@ directory = path.realpath(path.dirname(__file__))
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    keyword_type='Genes',
+                    keyword_type=EntityType.Gene.value,
                     color='',
                     id='',
                     id_type='',
@@ -197,7 +250,7 @@ directory = path.realpath(path.dirname(__file__))
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    keyword_type='Genes',
+                    keyword_type=EntityType.Gene.value,
                     color='',
                     id='',
                     id_type='',
@@ -214,7 +267,7 @@ directory = path.realpath(path.dirname(__file__))
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    keyword_type='Chemicals',
+                    keyword_type=EntityType.Chemical.value,
                     color='',
                     id='',
                     id_type='',
@@ -231,7 +284,7 @@ directory = path.realpath(path.dirname(__file__))
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    keyword_type='Chemicals',
+                    keyword_type=EntityType.Chemical.value,
                     color='',
                     id='',
                     id_type='',
@@ -251,7 +304,7 @@ directory = path.realpath(path.dirname(__file__))
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    keyword_type='Genes',
+                    keyword_type=EntityType.Gene.value,
                     color='',
                     id='',
                     id_type='',
@@ -268,7 +321,44 @@ directory = path.realpath(path.dirname(__file__))
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    keyword_type='Chemicals',
+                    keyword_type=EntityType.Chemical.value,
+                    color='',
+                    id='',
+                    id_type='',
+                    id_hyperlink='',
+                    links=Annotation.Meta.Links(),
+                ),
+            ),
+        ]),
+        # adjacent intervals
+        (8, [
+            Annotation(
+                page_number=1,
+                keyword='word a',
+                lo_location_offset=17,
+                hi_location_offset=22,
+                keyword_length=6,
+                keywords=[''],
+                rects=[[1, 2]],
+                meta=Annotation.Meta(
+                    keyword_type=EntityType.Chemical.value,
+                    color='',
+                    id='',
+                    id_type='',
+                    id_hyperlink='',
+                    links=Annotation.Meta.Links(),
+                ),
+            ),
+            Annotation(
+                page_number=1,
+                keyword='a long word',
+                lo_location_offset=22,
+                hi_location_offset=32,
+                keyword_length=10,
+                keywords=[''],
+                rects=[[1, 2]],
+                meta=Annotation.Meta(
+                    keyword_type=EntityType.Chemical.value,
                     color='',
                     id='',
                     id_type='',
@@ -280,17 +370,7 @@ directory = path.realpath(path.dirname(__file__))
     ],
 )
 def test_fix_conflicting_annotations(annotations_setup, index, annotations):
-    annotation_service = AnnotationsService(
-        lmdb_session=LMDBDao(
-            genes_lmdb_path='',
-            chemicals_lmdb_path='',
-            compounds_lmdb_path='',
-            proteins_lmdb_path='',
-            species_lmdb_path='',
-            diseases_lmdb_path='',
-            phenotypes_lmdb_path='',
-        ),
-    )
+    annotation_service = get_test_annotations_service()
     fixed = annotation_service.fix_conflicting_annotations(unified_annotations=annotations)
 
     if index == 1:
@@ -298,26 +378,158 @@ def test_fix_conflicting_annotations(annotations_setup, index, annotations):
         assert fixed[0] == annotations[1]
     elif index == 2:
         assert len(fixed) == 1
-        assert fixed[0] == annotations[1]
+        assert fixed[0] == annotations[0]
     elif index == 3:
         assert len(fixed) == 2
         assert annotations[0] in fixed
         assert annotations[1] in fixed
     elif index == 4:
         assert len(fixed) == 1
-        assert fixed[0] == annotations[1]
+        assert fixed[0] == annotations[0]
     elif index == 5:
         assert len(fixed) == 1
         assert fixed[0] == annotations[0]
     elif index == 6:
         assert len(fixed) == 2
-        assert annotations[0] not in fixed
-        assert annotations[1] in fixed
+        assert annotations[0] in fixed
+        assert annotations[1] not in fixed
         assert annotations[2] in fixed
     elif index == 7:
         # test adjacent intervals
         assert len(fixed) == 1
+        assert fixed[0] == annotations[0]
+    elif index == 8:
+        # test adjacent intervals
+        assert len(fixed) == 1
         assert fixed[0] == annotations[1]
+
+
+@pytest.mark.parametrize(
+    'index, annotations',
+    [
+        (1, [
+            Annotation(
+                page_number=1,
+                keyword='cysB',
+                lo_location_offset=17,
+                hi_location_offset=20,
+                keyword_length=4,
+                keywords=['CysB'],
+                rects=[[1, 2]],
+                meta=Annotation.Meta(
+                    keyword_type=EntityType.Protein.value,
+                    color='',
+                    id='',
+                    id_type='',
+                    id_hyperlink='',
+                    links=Annotation.Meta.Links(),
+                ),
+            ),
+            Annotation(
+                page_number=1,
+                keyword='cysB',
+                lo_location_offset=17,
+                hi_location_offset=20,
+                keyword_length=4,
+                keywords=['cysB'],
+                rects=[[1, 2]],
+                meta=Annotation.Meta(
+                    keyword_type=EntityType.Gene.value,
+                    color='',
+                    id='',
+                    id_type='',
+                    id_hyperlink='',
+                    links=Annotation.Meta.Links(),
+                ),
+            ),
+        ]),
+        (2, [
+            Annotation(
+                page_number=1,
+                keyword='cysB',
+                lo_location_offset=17,
+                hi_location_offset=20,
+                keyword_length=4,
+                keywords=['cysB'],
+                rects=[[1, 2]],
+                meta=Annotation.Meta(
+                    keyword_type=EntityType.Protein.value,
+                    color='',
+                    id='',
+                    id_type='',
+                    id_hyperlink='',
+                    links=Annotation.Meta.Links(),
+                ),
+            ),
+            Annotation(
+                page_number=1,
+                keyword='cysB',
+                lo_location_offset=17,
+                hi_location_offset=20,
+                keyword_length=4,
+                keywords=['cysB'],
+                rects=[[1, 2]],
+                meta=Annotation.Meta(
+                    keyword_type=EntityType.Gene.value,
+                    color='',
+                    id='',
+                    id_type='',
+                    id_hyperlink='',
+                    links=Annotation.Meta.Links(),
+                ),
+            ),
+        ]),
+        (3, [
+            Annotation(
+                page_number=1,
+                keyword='word',
+                lo_location_offset=17,
+                hi_location_offset=20,
+                keyword_length=4,
+                keywords=['Word'],
+                rects=[[1, 2]],
+                meta=Annotation.Meta(
+                    keyword_type=EntityType.Gene.value,
+                    color='',
+                    id='',
+                    id_type='',
+                    id_hyperlink='',
+                    links=Annotation.Meta.Links(),
+                ),
+            ),
+            Annotation(
+                page_number=1,
+                keyword='Test a long word',
+                lo_location_offset=5,
+                hi_location_offset=20,
+                keyword_length=16,
+                keywords=['Test a long word'],
+                rects=[[1, 2]],
+                meta=Annotation.Meta(
+                    keyword_type=EntityType.Protein.value,
+                    color='',
+                    id='',
+                    id_type='',
+                    id_hyperlink='',
+                    links=Annotation.Meta.Links(),
+                ),
+            ),
+        ]),
+    ],
+)
+def test_fix_conflicting_gene_protein_annotations(annotations_setup, index, annotations):
+    annotation_service = get_test_annotations_service()
+    fixed = annotation_service.fix_conflicting_annotations(unified_annotations=annotations)
+
+    if index == 1:
+        assert len(fixed) == 1
+        assert fixed[0] == annotations[0]
+    elif index == 2:
+        assert len(fixed) == 1
+        assert fixed[0] == annotations[1]
+    elif index == 3:
+        assert len(fixed) == 1
+        assert fixed[0] == annotations[0]
 
 
 @pytest.mark.skip
@@ -370,6 +582,157 @@ def test_generate_annotations(
         (expected_keyword in keywords)
         for expected_keyword in expected_keywords]
     )
+
+
+def test_escherichia_coli_pdf(
+    escherichia_coli_pdf_lmdb_setup,
+    mock_get_gene_to_organism_match_result_for_escherichia_coli_pdf,
+):
+    annotation_service = get_test_annotations_service(
+        genes_lmdb_path=path.join(directory, 'lmdb/genes'),
+        chemicals_lmdb_path=path.join(directory, 'lmdb/chemicals'),
+        compounds_lmdb_path=path.join(directory, 'lmdb/compounds'),
+        proteins_lmdb_path=path.join(directory, 'lmdb/proteins'),
+        species_lmdb_path=path.join(directory, 'lmdb/species'),
+        diseases_lmdb_path=path.join(directory, 'lmdb/diseases'),
+        phenotypes_lmdb_path=path.join(directory, 'lmdb/phenotypes'),
+    )
+    pdf_parser = get_annotations_pdf_parser()
+
+    pdf = path.join(directory, f'pdf_samples/ecoli_gene_test.pdf')
+
+    with open(pdf, 'rb') as f:
+        pdf_text = pdf_parser.parse_pdf(pdf=f)
+        annotations = annotation_service.create_annotations(
+            tokens=pdf_parser.extract_tokens(parsed_chars=pdf_text))
+
+    keywords = {o.keyword: o.meta.keyword_type for o in annotations}
+
+    assert 'Escherichia coli' in keywords
+    assert keywords['Escherichia coli'] == EntityType.Species.value
+
+    assert 'purA' in keywords
+    assert keywords['purA'] == EntityType.Gene.value
+
+    assert 'purB' in keywords
+    assert keywords['purB'] == EntityType.Gene.value
+
+    assert 'purC' in keywords
+    assert keywords['purC'] == EntityType.Gene.value
+
+    assert 'purD' in keywords
+    assert keywords['purD'] == EntityType.Gene.value
+
+    assert 'purF' in keywords
+    assert keywords['purF'] == EntityType.Gene.value
+
+
+def test_human_gene_pdf(
+    human_gene_pdf_lmdb_setup,
+    human_gene_pdf_gene_and_organism_network,
+    mock_get_gene_to_organism_match_result_for_human_gene_pdf,
+):
+    annotation_service = get_test_annotations_service(
+        genes_lmdb_path=path.join(directory, 'lmdb/genes'),
+        chemicals_lmdb_path=path.join(directory, 'lmdb/chemicals'),
+        compounds_lmdb_path=path.join(directory, 'lmdb/compounds'),
+        proteins_lmdb_path=path.join(directory, 'lmdb/proteins'),
+        species_lmdb_path=path.join(directory, 'lmdb/species'),
+        diseases_lmdb_path=path.join(directory, 'lmdb/diseases'),
+        phenotypes_lmdb_path=path.join(directory, 'lmdb/phenotypes'),
+    )
+    pdf_parser = get_annotations_pdf_parser()
+
+    pdf = path.join(directory, f'pdf_samples/human_gene_test.pdf')
+
+    with open(pdf, 'rb') as f:
+        pdf_text = pdf_parser.parse_pdf(pdf=f)
+        annotations = annotation_service.create_annotations(
+            tokens=pdf_parser.extract_tokens(parsed_chars=pdf_text))
+
+    keywords = {o.keyword: o.meta.keyword_type for o in annotations}
+
+    assert 'COVID-19' in keywords
+    assert keywords['COVID-19'] == EntityType.Disease.value
+
+    assert 'MERS-CoV' in keywords
+    assert keywords['MERS-CoV'] == EntityType.Species.value
+
+    assert 'ACE2' in keywords
+    assert keywords['ACE2'] == EntityType.Gene.value
+
+
+@pytest.mark.parametrize(
+    'tokens',
+    [
+        [
+            PDFTokenPositions(
+                page_number=1,
+                keyword='hyp27',
+                char_positions={0: 'h', 1: 'y', 2: 'p', 3: '2', 4: '7'},
+            ),
+            PDFTokenPositions(
+                page_number=1,
+                keyword='Moniliophthora roreri',
+                char_positions={
+                    6: 'M', 7: 'o', 8: 'n', 9: 'i', 10: 'l', 11: 'i',
+                    12: 'o', 13: 'p', 14: 'h', 15: 't', 16: 'h', 17: 'o',
+                    18: 'r', 19: 'a', 21: 'r', 22: 'o', 23: 'r', 24: 'e', 25: 'r', 26: 'i'},
+            ),
+            PDFTokenPositions(
+                page_number=1,
+                keyword='Hyp27',
+                char_positions={28: 'H', 29: 'y', 30: 'p', 31: '2', 32: '7'},
+            ),
+            PDFTokenPositions(
+                page_number=1,
+                keyword='human',
+                char_positions={34: 'h', 35: 'u', 36: 'm', 37: 'a', 38: 'n'},
+            ),
+        ]
+    ],
+)
+def test_annotations_gene_vs_protein(
+    default_lmdb_setup,
+    mock_get_gene_to_organism_match_result,
+    tokens,
+):
+    annotation_service = get_test_annotations_service(
+        genes_lmdb_path=path.join(directory, 'lmdb/genes'),
+        chemicals_lmdb_path=path.join(directory, 'lmdb/chemicals'),
+        compounds_lmdb_path=path.join(directory, 'lmdb/compounds'),
+        proteins_lmdb_path=path.join(directory, 'lmdb/proteins'),
+        species_lmdb_path=path.join(directory, 'lmdb/species'),
+        diseases_lmdb_path=path.join(directory, 'lmdb/diseases'),
+        phenotypes_lmdb_path=path.join(directory, 'lmdb/phenotypes'),
+    )
+
+    char_coord_objs_in_pdf = []
+    for t in tokens:
+        for c in t.keyword:
+            char_coord_objs_in_pdf.append(get_dummy_LTChar(text=c))
+        char_coord_objs_in_pdf.append(get_dummy_LTChar(text=' '))
+
+    annotations = annotation_service.create_annotations(
+        tokens=PDFTokenPositionsList(
+            token_positions=tokens,
+            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
+            cropbox_in_pdf=(5, 5),
+        ),
+    )
+
+    assert len(annotations) == 4
+    assert annotations[0].keyword == 'hyp27'
+    assert annotations[0].meta.keyword_type == EntityType.Gene.value
+
+    assert annotations[1].keyword == 'Moniliophthora roreri'
+    assert annotations[1].meta.keyword_type == EntityType.Species.value
+
+    assert annotations[2].keyword == 'Hyp27'
+    assert annotations[2].meta.keyword_type == EntityType.Protein.value
+
+    assert annotations[3].keyword == 'human'
+    assert annotations[3].meta.keyword_type == EntityType.Species.value
 
 
 @pytest.mark.skip

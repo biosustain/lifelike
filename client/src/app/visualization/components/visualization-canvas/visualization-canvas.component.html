@@ -6,25 +6,10 @@ we should be careful using 'autosize', as it may lead to performance problems.--
 
     <app-legend [legend]="legend"></app-legend>
 
-    <!-- TODO: This should probably be its own component... -->
-    <div id="expand-node-type-filter-container">
-      <form [formGroup]="expandNodeForm" fxLayout="column" fxLayoutAlign="space-between start">
-        <div>Include in Expand Node Result:</div>
-
-        <mat-checkbox
-          formControlName="Chemical"
-        >Chemical</mat-checkbox>
-
-        <mat-checkbox
-          formControlName="Gene"
-        >Gene</mat-checkbox>
-
-        <mat-checkbox
-          formControlName="Disease"
-        >Disease</mat-checkbox>
-
-      </form>
-    </div>
+    <app-visualization-settings
+      [legendLabels]="legendLabels"
+      (settingsFormChanges)="updateSettings($event)"
+    ></app-visualization-settings>
 
     <div id="network-viz"></div>
 
@@ -35,10 +20,12 @@ we should be careful using 'autosize', as it may lead to performance problems.--
       [selectedNodeIds]="selectedNodes"
       [selectedEdgeIds]="selectedEdges"
       [selectedNodeEdgeLabelData]="selectedNodeEdgeLabelData"
+      [selectedClusterNodeData]="selectedClusterNodeData"
       (groupNeighborsWithRelationship)="groupNeighborsWithRelationship($event)"
       (removeNodes)="removeNodes($event)"
       (removeEdges)="removeEdges($event)"
       (selectNeighbors)="selectNeighbors($event)"
+      (pullOutNodeFromCluster)="removeNodeFromCluster($event)"
     ></app-context-menu>
     <button id="sidenav-toggle-button" mat-mini-fab (click)="toggleSidenavOpened()">
       <mat-icon *ngIf="sidenavOpened">chevron_right</mat-icon>
@@ -57,7 +44,7 @@ we should be careful using 'autosize', as it may lead to performance problems.--
           <app-sidenav-edge-view [edgeEntity]="sidenavEntity" [legend]="legend"></app-sidenav-edge-view>
         </div>
         <div *ngSwitchCase="sidenavEntityTypeEnum.CLUSTER">
-          <app-sidenav-cluster-view [clusterEntity]="sidenavEntity"></app-sidenav-cluster-view>
+          <app-sidenav-cluster-view [clusterEntity]="sidenavEntity" [legend]="legend"></app-sidenav-cluster-view>
         </div>
         <div *ngSwitchCase="sidenavEntityTypeEnum.EMPTY">
           <h1>Canvas Data View</h1>

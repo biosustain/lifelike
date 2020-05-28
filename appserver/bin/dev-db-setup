@@ -8,4 +8,5 @@ echo "Seeding PostgreSQL"
 flask seed
 echo "Setting up neo4j indexes"
 # Sets up the indexes for neo4j
-flask init-neo4j
+echo "Set up the indexes manually by running"
+echo "docker-compose exec appserver flask init-neo4j"

@@ -4,14 +4,15 @@ from typing import Dict, List, Tuple, Union
 
 from pdfminer.layout import LTAnno, LTChar
 
-from neo4japp.util import CamelDictMixin
+from neo4japp.util import CamelDictMixin, compute_hash
 
 
 @attr.s(frozen=True)
 class PDFParsedCharacters(CamelDictMixin):
-    coor_obj_per_pdf_page: Dict[int, List[Union[LTChar, LTAnno]]] = attr.ib()  # noqa
-    str_per_pdf_page: Dict[int, List[str]] = attr.ib()
-    cropbox_per_page: Dict[int, Tuple[int, int]] = attr.ib()
+    chars_in_pdf: List[str] = attr.ib()
+    char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]] = attr.ib()
+    cropbox_in_pdf: Tuple[int, int] = attr.ib()
+    max_idx_in_page: Dict[int, int] = attr.ib()
 
 
 @attr.s(frozen=True)
@@ -20,12 +21,19 @@ class PDFTokenPositions(CamelDictMixin):
     keyword: str = attr.ib()
     char_positions: Dict[int, str] = attr.ib()
 
+    def to_dict_hash(self):
+        return compute_hash({
+            'page_number': self.page_number,
+            'keyword': self.keyword,
+            'char_positions': self.char_positions,
+        })
+
 
 @attr.s(frozen=True)
 class PDFTokenPositionsList(CamelDictMixin):
     token_positions: List[PDFTokenPositions] = attr.ib()
-    coor_obj_per_pdf_page: Dict[int, List[Union[LTChar, LTAnno]]] = attr.ib()  # noqa
-    cropbox_per_page: Dict[int, Tuple[int, int]] = attr.ib()
+    char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]] = attr.ib()
+    cropbox_in_pdf: Tuple[int, int] = attr.ib()
 
 
 # IMPORTANT NOTE/TODO: JIRA LL-465
@@ -50,6 +58,14 @@ class Annotation(CamelDictMixin):
             wikipedia: str = attr.ib(default='')
             google: str = attr.ib(default='')
 
+            def to_dict_hash(self):
+                return compute_hash({
+                    'ncbi': self.ncbi,
+                    'uniprot': self.uniprot,
+                    'wikipedia': self.wikipedia,
+                    'google': self.google,
+                })
+
         keyword_type: str = attr.ib()
         color: str = attr.ib()
         links: Links = attr.ib()
@@ -59,6 +75,18 @@ class Annotation(CamelDictMixin):
         is_custom: bool = attr.ib(default=False)
         all_text: str = attr.ib(default='')
 
+        def to_dict_hash(self):
+            return compute_hash({
+                'keyword_type': self.keyword_type,
+                'color': self.color,
+                'links': self.links.to_dict_hash(),
+                'id': self.id,
+                'id_type': self.id_type,
+                'id_hyperlink': self.id_hyperlink,
+                'is_custom': self.is_custom,
+                'all_text': self.all_text,
+            })
+
     @attr.s(frozen=True)
     class TextPosition(CamelDictMixin):
         # [x1, y1, x2, y2]
@@ -67,18 +95,36 @@ class Annotation(CamelDictMixin):
     #     lower_left: Dict[str, float] = attr.ib()
     #     upper_right: Dict[str, float] = attr.ib()
 
+        def to_dict_hash(self):
+            return compute_hash({
+                'positions': self.positions,
+                'value': self.value,
+            })
+
     page_number: int = attr.ib()
     # keywords and rects are a pair
     # each index in the list correspond to the other
     # these two replaced the old lower_left/upper_right in TextPosition
     keywords: List[str] = attr.ib()
-    rects: List[TextPosition] = attr.ib()
+    rects: List[float] = attr.ib()
     # the untouched str keyword
     keyword: str = attr.ib()
     keyword_length: int = attr.ib()
     lo_location_offset: int = attr.ib()
     hi_location_offset: int = attr.ib()
     meta: Meta = attr.ib()
+
+    def to_dict_hash(self):
+        return compute_hash({
+            'page_number': self.page_number,
+            'keywords': self.keywords,
+            'rects': self.rects,
+            'keyword': self.keywords,
+            'keyword_length': self.keyword_length,
+            'lo_location_offset': self.lo_location_offset,
+            'hi_location_offset': self.hi_location_offset,
+            'meta': self.meta.to_dict_hash(),
+        })
 
 
 @attr.s(frozen=True)
