@@ -6,7 +6,7 @@ export class SelectableEntity extends AbstractCanvasBehavior {
     super();
   }
 
-  click(): BehaviorResult {
+  click(event: MouseEvent): BehaviorResult {
     const subject = this.graphView.getEntityAtMouse(); // TODO: Cache
     this.graphView.selection.replace(subject ? [subject] : []);
     this.graphView.requestRender(); // TODO: Don't call unless needed

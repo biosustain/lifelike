@@ -21,6 +21,8 @@ export interface RectangleNodeOptions {
  * Draws a rectangle node.
  */
 export class RectangleNode implements PlacedNode {
+  readonly resizable = true;
+
   readonly x: number;
   readonly y: number;
   readonly width: number;
@@ -85,15 +87,15 @@ export class RectangleNode implements PlacedNode {
     if (highDetailLevel) {
       // Node shape
       ctx.save();
+      (ctx as any).roundedRect(
+        this.nodeX,
+        this.nodeY,
+        this.nodeWidth,
+        this.nodeHeight,
+        5
+      );
       if (this.shapeFillColor) {
         ctx.fillStyle = this.shapeFillColor;
-        (ctx as any).roundedRect(
-          this.nodeX,
-          this.nodeY,
-          this.nodeWidth,
-          this.nodeHeight,
-          5
-        );
         ctx.fill();
       }
       if (this.shapeStrokeColor) {
@@ -109,15 +111,15 @@ export class RectangleNode implements PlacedNode {
     } else {
       // Node shape
       ctx.save();
+      (ctx as any).roundedRect(
+        this.nodeX,
+        this.nodeY,
+        this.nodeWidth,
+        this.nodeHeight,
+        3
+      );
       if (this.shapeFillColor) {
         ctx.fillStyle = this.shapeFillColor;
-        (ctx as any).roundedRect(
-          this.nodeX,
-          this.nodeY,
-          this.nodeWidth,
-          this.nodeHeight,
-          3
-        );
         ctx.fill();
       }
       if (this.shapeStrokeColor) {

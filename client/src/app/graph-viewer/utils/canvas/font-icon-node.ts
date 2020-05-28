@@ -13,6 +13,8 @@ export interface IconNodeOptions {
  * Draw a font icon and a label below it.
  */
 export class FontIconNode implements PlacedNode {
+  readonly resizable = false;
+
   readonly x: number;
   readonly y: number;
   readonly iconTextbox: TextElement;

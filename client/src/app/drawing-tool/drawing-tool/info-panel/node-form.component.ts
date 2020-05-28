@@ -60,6 +60,7 @@ export class NodeFormComponent {
           strokeColor: this.originalNode.style.strokeColor,
           lineType: this.originalNode.style.lineType,
           lineWidthScale: this.originalNode.style.lineWidthScale,
+          showDetail: this.originalNode.style.showDetail,
         },
       },
       updatedData: {
@@ -75,6 +76,7 @@ export class NodeFormComponent {
           strokeColor: this.updatedNode.style.strokeColor,
           lineType: this.updatedNode.style.lineType,
           lineWidthScale: this.updatedNode.style.lineWidthScale,
+          showDetail: this.updatedNode.style.showDetail,
         },
       },
     });

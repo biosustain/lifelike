@@ -4,10 +4,8 @@ import { CdkDragDrop } from '@angular/cdk/drag-drop';
 
 import { Options } from '@popperjs/core';
 
-import { fromEvent, Observable, Subscription } from 'rxjs';
-import { filter } from 'rxjs/operators';
+import { Observable, Subscription } from 'rxjs';
 import { ClipboardService } from 'app/shared/services/clipboard.service';
-import { keyCodeRepresentsCopyEvent, keyCodeRepresentsPasteEvent } from 'app/shared/utils';
 import { DataFlowService, makeid, ProjectsService } from '../services';
 import { LaunchApp, Project, UniversalGraphNode } from '../services/interfaces';
 import { DrawingToolContextMenuControlService } from '../services/drawing-tool-context-menu-control.service';
@@ -23,6 +21,9 @@ import { MovableNode } from 'app/graph-viewer/renderers/canvas/behaviors/node-mo
 import { SelectableEntity } from 'app/graph-viewer/renderers/canvas/behaviors/selectable-entity';
 import { InteractiveEdgeCreation } from 'app/graph-viewer/renderers/canvas/behaviors/interactive-edge-creation';
 import { HandleResizable } from 'app/graph-viewer/renderers/canvas/behaviors/handle-resizable';
+import { DeleteKeyboardShortcut } from '../../graph-viewer/renderers/canvas/behaviors/delete-keyboard-shortcut';
+import { ClipboardKeyboardShortcut } from '../../graph-viewer/renderers/canvas/behaviors/clipboard-keyboard-shortcut';
+import { HistoryKeyboardShortcuts } from '../../graph-viewer/renderers/canvas/behaviors/history-keyboard-shortcuts';
 
 @Component({
   selector: 'app-drawing-tool',
@@ -43,10 +44,6 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
   project: Project = null;
 
   graphCanvas: GraphCanvasView;
-
-  keyboardEventObservable: Observable<KeyboardEvent>;
-  keyboardCopyEventSubscription: Subscription;
-  keyboardPasteEventSubscription: Subscription;
 
   formDataSubscription: Subscription = null;
   pdfDataSubscription: Subscription = null;
@@ -94,21 +91,15 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
   ngAfterViewInit() {
     const style = new KnowledgeMapStyle();
     this.graphCanvas = new GraphCanvasView(this.canvasChild.nativeElement as HTMLCanvasElement, style, style);
-    this.graphCanvas.behaviors.add('moving', new MovableNode(this.graphCanvas), -101);
-    this.graphCanvas.behaviors.add('selection', new SelectableEntity(this.graphCanvas), -100);
-    this.graphCanvas.behaviors.add('edge-creation', new InteractiveEdgeCreation(this.graphCanvas), 0);
-    this.graphCanvas.behaviors.add('handle-resizing', new HandleResizable(this.graphCanvas), 0);
+    this.graphCanvas.behaviors.add('delete-keyboard-shortcut', new DeleteKeyboardShortcut(this.graphCanvas), -100);
+    this.graphCanvas.behaviors.add('clipboard-keyboard-shortcut', new ClipboardKeyboardShortcut(this.graphCanvas), -100);
+    this.graphCanvas.behaviors.add('history-keyboard-shorts', new HistoryKeyboardShortcuts(this.graphCanvas), -100);
+    this.graphCanvas.behaviors.add('moving', new MovableNode(this.graphCanvas), 0);
+    this.graphCanvas.behaviors.add('selection', new SelectableEntity(this.graphCanvas), 0);
+    this.graphCanvas.behaviors.add('resize-handles', new HandleResizable(this.graphCanvas), 0);
+    this.graphCanvas.behaviors.add('edge-creation', new InteractiveEdgeCreation(this.graphCanvas), 100);
     this.graphCanvas.backgroundFill = '#f2f2f2';
     this.graphCanvas.startParentFillResizeListener();
-
-    // Handle pasting
-    this.keyboardEventObservable = (fromEvent(window, 'keydown') as Observable<KeyboardEvent>);
-    this.keyboardCopyEventSubscription = this.keyboardEventObservable.pipe(
-      filter(event => keyCodeRepresentsCopyEvent(event)),
-    ).subscribe(this.copied.bind(this));
-    this.keyboardPasteEventSubscription = this.keyboardEventObservable.pipe(
-      filter(event => keyCodeRepresentsPasteEvent(event)),
-    ).subscribe(this.pasted.bind(this));
 
     // Pass selections onto the data flow system
     this.selectionSubscription = this.graphCanvas.selection.changeObservable.subscribe(([selected, previousSelected]) => {
@@ -129,8 +120,6 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
   ngOnDestroy() {
     this.formDataSubscription.unsubscribe();
     this.pdfDataSubscription.unsubscribe();
-    this.keyboardCopyEventSubscription.unsubscribe();
-    this.keyboardPasteEventSubscription.unsubscribe();
     this.selectionSubscription.unsubscribe();
     this.graphCanvas.destroy();
   }
@@ -189,38 +178,6 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
     return this.saveState ? true : confirm(
       'WARNING: You have unsaved changes. Press Cancel to go back and save these changes, or OK to lose these changes.'
     );
-  }
-
-  /**
-   * Handle copying from the clipboard.
-   */
-  copied() {
-    // TODO: Implement copying from the graph
-  }
-
-  /**
-   * Handle pasting from the clipboard.
-   */
-  pasted() {
-    this.clipboardService.readClipboard().then(content => {
-      const position = this.graphCanvas.currentHoverPosition;
-
-      if (position != null) {
-        this.graphCanvas.execute(new NodeCreation(
-          `Paste content from clipboard`, {
-            display_name: 'note',
-            hash: makeid(),
-            label: 'note',
-            sub_labels: [],
-            data: {
-              x: position.x,
-              y: position.y,
-              detail: content,
-            }
-          }
-        ));
-      }
-    });
   }
 
   // Drop events

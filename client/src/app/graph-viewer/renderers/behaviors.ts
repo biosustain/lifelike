@@ -160,6 +160,14 @@ export enum BehaviorResult {
 }
 
 /**
+ * Check if the result means to 'stop processing.'
+ * @param result the result to check
+ */
+export function isStopResult(result: BehaviorResult): boolean {
+  return result === BehaviorResult.Stop || result === BehaviorResult.RemoveAndStop;
+}
+
+/**
  * A behavior adds way to interact with a graph.
  */
 export interface Behavior {
@@ -172,12 +180,13 @@ export interface Behavior {
  * A behavior that is for the canvas renderer.
  */
 export interface CanvasBehavior extends Behavior {
-  click(): BehaviorResult;
-  doubleClick(): BehaviorResult;
-  mouseMove(): BehaviorResult;
-  dragStart(): BehaviorResult;
-  drag(): BehaviorResult;
-  dragEnd(): BehaviorResult;
+  keyDown(event: KeyboardEvent): BehaviorResult;
+  click(event: MouseEvent): BehaviorResult;
+  doubleClick(event: MouseEvent): BehaviorResult;
+  mouseMove(event: MouseEvent): BehaviorResult;
+  dragStart(event: MouseEvent): BehaviorResult;
+  drag(event: MouseEvent): BehaviorResult;
+  dragEnd(event: MouseEvent): BehaviorResult;
   draw(ctx: CanvasRenderingContext2D, transform: any);
 }
 
@@ -191,27 +200,31 @@ export abstract class AbstractCanvasBehavior implements CanvasBehavior {
   destroy() {
   }
 
-  click(): BehaviorResult {
+  keyDown(event: KeyboardEvent): BehaviorResult {
     return BehaviorResult.Continue;
   }
 
-  doubleClick(): BehaviorResult {
+  click(event: MouseEvent): BehaviorResult {
     return BehaviorResult.Continue;
   }
 
-  mouseMove(): BehaviorResult {
+  doubleClick(event: MouseEvent): BehaviorResult {
     return BehaviorResult.Continue;
   }
 
-  dragStart(): BehaviorResult {
+  mouseMove(event: MouseEvent): BehaviorResult {
     return BehaviorResult.Continue;
   }
 
-  drag(): BehaviorResult {
+  dragStart(event: MouseEvent): BehaviorResult {
     return BehaviorResult.Continue;
   }
 
-  dragEnd(): BehaviorResult {
+  drag(event: MouseEvent): BehaviorResult {
+    return BehaviorResult.Continue;
+  }
+
+  dragEnd(event: MouseEvent): BehaviorResult {
     return BehaviorResult.Continue;
   }
 

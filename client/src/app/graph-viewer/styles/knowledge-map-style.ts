@@ -2,7 +2,7 @@ import { UniversalEdgeStyle, UniversalGraphEdge, UniversalGraphNode, UniversalNo
 import { EdgeRenderStyle, NodeRenderStyle, PlacedEdge, PlacedNode, PlacementOptions } from 'app/graph-viewer/styles/styles';
 import { nullCoalesce, nullIfEmpty } from 'app/graph-viewer/utils/types';
 import { RectangleNode } from 'app/graph-viewer/utils/canvas/rectangle-node';
-import { TextElement } from 'app/graph-viewer/utils/canvas/text-element';
+import { TextAlignment, TextElement } from 'app/graph-viewer/utils/canvas/text-element';
 import { FontIconNode } from 'app/graph-viewer/utils/canvas/font-icon-node';
 import { AnnotationStyle, annotationTypesMap } from 'app/shared/annotation-styles';
 import { StandardEdge } from 'app/graph-viewer/utils/canvas/standard-edge';
@@ -14,6 +14,7 @@ import { CrossAxisLineHead } from '../utils/canvas/line-heads/cross-axis';
 import { EmptyLineHead } from '../utils/canvas/line-heads/empty';
 import { CompoundLineHead } from '../utils/canvas/line-heads/compound';
 import { RectangleHead } from '../utils/canvas/line-heads/rectangle';
+import { LINE_HEAD_TYPES, LineHeadType } from '../../drawing-tool/services/line-head-types';
 
 export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
   private readonly defaultSourceLineEndDescriptor: string = null;
@@ -41,7 +42,31 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
       }
     }
 
-    if (iconCode) {
+    if (d.label === 'note' && styleData.showDetail) {
+      const effectiveWidth = nullCoalesce(d.data.width, 150);
+
+      const textbox = new TextElement(ctx, {
+        width: effectiveWidth,
+        height: d.data.height,
+        text: d.data.detail,
+        font: labelFont,
+        fillStyle: nullCoalesce(styleData.fillColor, '#999'),
+      });
+
+      return new RectangleNode(ctx, {
+        x: d.data.x,
+        y: d.data.y,
+        width: effectiveWidth,
+        height: nullCoalesce(d.data.height, textbox.actualHeight),
+        textbox,
+        shapeStrokeColor: nullCoalesce(styleData.strokeColor, '#999'),
+        shapeFillColor: null,
+        lineType: nullCoalesce(styleData.lineType, 'dashed'),
+        lineWidth: nullCoalesce(styleData.lineWidthScale, 1) *
+          (placementOptions.selected || placementOptions.highlighted ? 1.3 : 1),
+        forceHighDetailLevel,
+      });
+    } else if (iconCode) {
       const iconLabelColor = nullCoalesce(d.icon ? d.icon.color : null, color);
       const iconSize = nullCoalesce(d.icon ? d.icon.size : null, 50);
       const iconFontFace = nullCoalesce(d.icon ? d.icon.face : null, 'FontAwesome');
@@ -151,18 +176,26 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
     });
   }
 
-  createHead(descriptor: string | undefined,
+  createHead(type: string | undefined,
              lineWidth: number,
              strokeColor: string,
-             defaultDescriptor: string | undefined = ''): LineHeadRenderer | undefined {
-    const effectiveDescriptor = nullCoalesce(descriptor, defaultDescriptor);
+             defaultType: string | undefined = null): LineHeadRenderer | undefined {
+    const effectiveType = nullCoalesce(nullIfEmpty(type), nullIfEmpty(defaultType));
 
-    if (effectiveDescriptor == null) {
+    if (effectiveType == null) {
+      return null;
+    }
+
+    let descriptor;
+    const lineHeadType: LineHeadType = LINE_HEAD_TYPES.get(effectiveType);
+    if (lineHeadType) {
+      descriptor = lineHeadType.descriptor;
+    } else {
       return null;
     }
 
     return new CompoundLineHead(
-      effectiveDescriptor.split(',').map(token => {
+      descriptor.split(',').map(token => {
         switch (token) {
           case 'spacer':
             return [

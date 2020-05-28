@@ -4,11 +4,14 @@
  */
 
 import { UniversalGraphEdge, UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
+import { CacheGuardedEntityList } from '../utils/cache-guarded-entity-list';
 
 /**
  * A graph component manages a graph and may render it.
  */
 export interface GraphActionReceiver {
+  selection: CacheGuardedEntityList;
+
   /**
    * Add the given node to the graph.
    * @param node the node
@@ -71,4 +74,31 @@ export interface GraphAction {
    * @param component the component with the graph
    */
   rollback: (component: GraphActionReceiver) => void;
+}
+
+/**
+ * Combines a list of actions together as one.
+ */
+export class CompoundAction implements GraphAction {
+  /**
+   * Create a new instance.
+   * @param description description of this compound action
+   * @param actions first action is applied first, rolled back last
+   */
+  constructor(readonly description: string,
+              readonly actions: GraphAction[]) {
+  }
+
+  apply(component: GraphActionReceiver) {
+    // tslint:disable-next-line:prefer-for-of
+    for (let i = 0; i < this.actions.length; i++) {
+      this.actions[i].apply(component);
+    }
+  }
+
+  rollback(component: GraphActionReceiver) {
+    for (let i = this.actions.length - 1; i >= 0; i--) {
+      this.actions[i].rollback(component);
+    }
+  }
 }
