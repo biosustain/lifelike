@@ -1,4 +1,4 @@
-import { Directive, ElementRef } from '@angular/core';
+import { Directive, ElementRef, Input } from '@angular/core';
 import * as $ from 'jquery';
 import 'jqueryui';
 
@@ -6,16 +6,20 @@ import 'jqueryui';
   selector: '[appResizable]'
 })
 export class ResizableDirective {
+  @Input() handles = 'n,w,s,e';
+  @Input() minHeight = 52;
 
   constructor(el: ElementRef) {
-    el.nativeElement.style.backgroundColor = 'yellow';
 
-    $('#info-panel').resizable({
-      handles: 'n,w,s,e',
-      minWidth: 256,
-      maxWidth: 400
-    });
-    console.log(el.nativeElement.id);
+    setTimeout(() => {
+      $(`#${el.nativeElement.id}`).resizable({
+        handles: this.handles,
+        maxWidth: 500,
+        minWidth: 256,
+        maxHeight: 500,
+        minHeight: this.minHeight
+      });
+    }, 200);
   }
 
 }
