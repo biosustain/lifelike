@@ -107,6 +107,7 @@ jobs:
                 echo "REDIS_HOST=$REDIS_HOST" >> demo.env
                 echo "REDIS_PORT=$REDIS_PORT" >> demo.env
                 echo "$GCE_SERVICE_ACCOUNT" >> keyfile.json
+                gsutil cp demo.env gs://kg-secrets
                 gcloud compute scp demo.env $GCE_INSTANCE:/srv/.env --zone $GCE_INSTANCE_ZONE
                 gcloud compute scp keyfile.json $GCE_INSTANCE:/srv --zone $GCE_INSTANCE_ZONE
                 gcloud compute scp ./deployment/bin/startup.sh $GCE_INSTANCE:/srv --zone $GCE_INSTANCE_ZONE
