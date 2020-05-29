@@ -78,7 +78,7 @@ export class MovableNode extends AbstractCanvasBehavior {
           }
         } as Partial<UniversalGraphNode>));
       }
-      
+
       this.target = null;
     }
 
