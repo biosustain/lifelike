@@ -9,6 +9,7 @@ import { isStopResult } from '../behaviors';
 export interface CanvasGraphViewOptions {
   nodeRenderStyle: NodeRenderStyle;
   edgeRenderStyle: EdgeRenderStyle;
+  backgroundFill?: string;
 }
 
 /**
@@ -17,6 +18,16 @@ export interface CanvasGraphViewOptions {
 export class CanvasGraphView extends GraphView {
   // Options
   // ---------------------------------
+
+  /**
+   * Style used to render nodes.
+   */
+  nodeRenderStyle: NodeRenderStyle;
+
+  /**
+   * Style used to render edges.
+   */
+  edgeRenderStyle: EdgeRenderStyle;
 
   /**
    * The canvas background, if any.
