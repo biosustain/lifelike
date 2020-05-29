@@ -23,7 +23,7 @@ export interface DrawnLineHead {
 /**
  * A renderer for a line end.
  */
-export interface LineHeadRenderer {
+export interface LineHead {
   /**
    * Draws the line end at the provided position.
    * @param ctx the drawing context
@@ -52,7 +52,7 @@ export interface ShapeTerminatorOptions {
 /**
  * Abstract class for a terminator handles the fill and stroke properties.
  */
-export abstract class AbstractShapeHead implements LineHeadRenderer {
+export abstract class AbstractShapeHead implements LineHead {
   public fillStyle = '#000';
   public strokeStyle = null;
   public lineWidth = 1;

@@ -8,7 +8,7 @@ import { AnnotationStyle, annotationTypesMap } from 'app/shared/annotation-style
 import { StandardEdge } from 'app/graph-viewer/utils/canvas/standard-edge';
 import { Arrowhead } from '../utils/canvas/line-heads/arrow';
 import { DiamondHead } from '../utils/canvas/line-heads/diamond';
-import { LineHeadRenderer } from '../utils/canvas/line-heads/line-heads';
+import { LineHead } from '../utils/canvas/line-heads/line-heads';
 import { CircleHead } from '../utils/canvas/line-heads/circle';
 import { CrossAxisLineHead } from '../utils/canvas/line-heads/cross-axis';
 import { EmptyLineHead } from '../utils/canvas/line-heads/empty';
@@ -250,7 +250,7 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
   private createHead(type: string | undefined,
                      lineWidth: number,
                      strokeColor: string,
-                     defaultType: string | undefined = null): LineHeadRenderer | undefined {
+                     defaultType: string | undefined = null): LineHead | undefined {
     const effectiveType = nullCoalesce(nullIfEmpty(type), nullIfEmpty(defaultType));
 
     if (effectiveType == null) {
