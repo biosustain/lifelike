@@ -32,9 +32,20 @@ export class LineEdge implements PlacedEdge {
   readonly labelMaxX: number;
   readonly labelMinY: number;
   readonly labelMaxY: number;
+  readonly boundingBox: { minX: number; minY: number; maxX: number; maxY: number };
 
   constructor(private ctx: CanvasRenderingContext2D, options: StandardEdgeOptions) {
     Object.assign(this, options);
+
+    const xBounds = [
+      this.source.x,
+      this.target.x,
+    ];
+    const yBounds = [
+      this.source.y,
+      this.target.y,
+    ];
+
     if (this.textbox) {
       this.labelX = Math.abs(this.source.x - this.target.x) / 2 +
         Math.min(this.source.x, this.target.x);
@@ -46,7 +57,21 @@ export class LineEdge implements PlacedEdge {
       this.labelMaxX = this.labelX + this.textbox.actualWidth / 2;
       this.labelMinY = this.labelY - this.textbox.actualHeight / 2;
       this.labelMaxY = this.labelY + this.textbox.actualHeight / 2;
+
+      xBounds.push(this.labelMinX, this.labelMaxX);
+      yBounds.push(this.labelMinY, this.labelMaxY);
     }
+
+    this.boundingBox = {
+      minX: Math.min(...xBounds),
+      maxX: Math.max(...xBounds),
+      minY: Math.min(...yBounds),
+      maxY: Math.max(...yBounds),
+    };
+  }
+
+  getBoundingBox(): { minX: number; minY: number; maxX: number; maxY: number } {
+    return this.boundingBox;
   }
 
   isPointIntersecting(x: number, y: number): boolean {
