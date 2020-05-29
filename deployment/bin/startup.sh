@@ -32,7 +32,7 @@ print_usage() {
 set -o errexit                  # exit on command failure; use <cmd> || true to allow for exception
 set -o nounset                  # exit when script tries to use undeclared variables
 
-if [ $# -ne 2 ];
+if [ $# -lt 2 ];
 then
     echo "Illegal number of arguments -- you must include the following"
     print_usage && exit 1
@@ -64,7 +64,7 @@ fi
 
 if [ "$TARGET" = demo ]
 then
-    echo "Starting up production"
+    echo "Starting up demo"
     cd /srv
     export $(cat demo.env | xargs)
     sudo docker login -u $DOCKER_USER -p "$(cat keyfile.json)" https://gcr.io
