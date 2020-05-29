@@ -1,11 +1,11 @@
 import { UniversalEdgeStyle, UniversalGraphEdge, UniversalGraphNode, UniversalNodeStyle } from 'app/drawing-tool/services/interfaces';
 import { EdgeRenderStyle, NodeRenderStyle, PlacedEdge, PlacedNode, PlacementOptions } from 'app/graph-viewer/styles/styles';
 import { nullCoalesce, nullIfEmpty } from 'app/graph-viewer/utils/types';
-import { RectangleNode } from 'app/graph-viewer/utils/canvas/rectangle-node';
+import { RectangleNode } from 'app/graph-viewer/utils/canvas/graph-nodes/rectangle-node';
 import { TextAlignment, TextElement } from 'app/graph-viewer/utils/canvas/text-element';
-import { FontIconNode } from 'app/graph-viewer/utils/canvas/font-icon-node';
+import { FontIconNode } from 'app/graph-viewer/utils/canvas/graph-nodes/font-icon-node';
 import { AnnotationStyle, annotationTypesMap } from 'app/shared/annotation-styles';
-import { StandardEdge } from 'app/graph-viewer/utils/canvas/standard-edge';
+import { LineEdge } from 'app/graph-viewer/utils/canvas/graph-edges/line-edge';
 import { Arrowhead } from '../utils/canvas/line-heads/arrow';
 import { DiamondHead } from '../utils/canvas/line-heads/diamond';
 import { LineHead } from '../utils/canvas/line-heads/line-heads';
@@ -197,7 +197,7 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
       strokeWidth: 3,
     }) : null;
 
-    return new StandardEdge(ctx, {
+    return new LineEdge(ctx, {
       source: {
         x: fromX,
         y: fromY,
