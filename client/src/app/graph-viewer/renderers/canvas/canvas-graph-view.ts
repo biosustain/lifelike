@@ -98,7 +98,13 @@ export class CanvasGraphView extends GraphView {
    * Keeps track of the time since last render to keep the number of
    * render cycles down.
    */
-  protected previousRenderTime = 0;
+  protected previousRenderQueueCreationTime = 0;
+
+  /**
+   * Holds a queue of things to render to allow spreading rendering over several ticks.
+   * Cleared when {@link requestRender} is called and re-created in {@link render}.
+   */
+  private renderQueue: IterableIterator<any>;
 
   // Events
   // ---------------------------------
@@ -124,12 +130,6 @@ export class CanvasGraphView extends GraphView {
    * The subscription that handles the resizes.
    */
   protected canvasResizePendingSubscription: Subscription | undefined;
-
-  /**
-   * Holds a queue of things to render to allow spreading rendering over several ticks.
-   * Cleared when {@link requestRender} is called and re-created in {@link render}.
-   */
-  private renderQueue: IterableIterator<any>;
 
   // ========================================
 
@@ -415,8 +415,13 @@ export class CanvasGraphView extends GraphView {
     this.requestRender();
   }
 
+  // ========================================
+  // Rendering
+  // ========================================
+
   /**
-   * Fired from requestAnimationFrame(), Used to render the graph.
+   * Fired from requestAnimationFrame() and used to render the graph
+   * in the background as necessary.
    */
   animationFrameFired() {
     if (!this.active) {
@@ -424,56 +429,90 @@ export class CanvasGraphView extends GraphView {
       return;
     }
 
-    // Only render when we need to
+    // Instead of rendering on every animation frame, we keep track of a flag
+    // that gets set to true whenever the graph changes and so we need to re-draw it
     if (this.renderingRequested) {
       const now = window.performance.now();
 
-      // Throttle rendering to keep CPU usage down
-      if (now - this.previousRenderTime > this.renderMinimumInterval) {
-        this.renderQueue = this.getRenderables();
-        this.renderingRequested = false;
-        this.previousRenderTime = now;
+      // But even then, we'll still throttle the number of time we restart rendering
+      // in case the flag is set to true too frequently in a period
+      if (now - this.previousRenderQueueCreationTime > this.renderMinimumInterval) {
+        this.emptyCanvas(); // Clears canvas
 
-        this.startRender();
+        // But we actually won't necessarily render the whole graph at once: we'll
+        // build a queue of things to render and render the graph in batches,
+        // limiting the amount we render in a batch so we never exceed our
+        // expected FPS
+        this.renderQueue = this.generateRenderQueue();
+
+        // Reset flags so we don't do this again until a render is requested
+        this.renderingRequested = false;
+        this.previousRenderQueueCreationTime = now;
       }
     }
 
+    // It looks like we have a list of things we need to render, so let's
+    // work through it and draw as much as possible until we hit the 'render time budget'
     if (this.renderQueue) {
       const startTime = window.performance.now();
-      this.preRenderQueue();
+
+      // ctx.save(), ctx.translate(), ctx.scale()
+      this.startCurrentRenderBatch();
+
       while (true) {
         const result = this.renderQueue.next();
+
         if (result.done) {
+          // Finished rendering!
           this.renderQueue = null;
           break;
         }
+
+        // Check render time budget and abort
+        // We'll get back to this point on the next animation frame
         if (window.performance.now() - startTime > this.animationFrameRenderTimeBudget) {
           break;
         }
       }
-      this.postRenderQueue();
+
+      // ctx.restore()
+      this.endCurrentRenderBatch();
     }
 
+    // Need to call this every time so we keep running
     requestAnimationFrame(this.animationFrameFired.bind(this));
   }
 
   render() {
+    // Since we're rendering in one shot, clear any queue that we may have started
     this.renderQueue = null;
-    this.startRender();
-    this.preRenderQueue();
-    const queue = this.getRenderables();
+
+    // Clears canvas
+    this.emptyCanvas();
+
+    // ctx.save(), ctx.translate(), ctx.scale()
+    this.startCurrentRenderBatch();
+
+    // Render everything in the queue all at once
+    const queue = this.generateRenderQueue();
     while (true) {
       const result = queue.next();
       if (result.done) {
         break;
       }
     }
-    this.postRenderQueue();
+
+    // ctx.save()
+    this.endCurrentRenderBatch();
   }
 
-  private startRender() {
+  /**
+   * Clears the canvas for a brand new render.
+   */
+  private emptyCanvas() {
     const canvas = this.canvas;
     const ctx = canvas.getContext('2d');
+
     if (this.backgroundFill) {
       ctx.fillStyle = this.backgroundFill;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -482,7 +521,12 @@ export class CanvasGraphView extends GraphView {
     }
   }
 
-  private preRenderQueue() {
+  /**
+   * Save the context and set the canvas transform. Call this before performing
+   * any draw actions during a render batch. Note that a render consists of one or
+   * more batches, so call this method for EVERY batch.
+   */
+  private startCurrentRenderBatch() {
     const ctx = this.canvas.getContext('2d');
 
     ctx.save();
@@ -490,7 +534,12 @@ export class CanvasGraphView extends GraphView {
     ctx.scale(this.transform.k, this.transform.k);
   }
 
-  private postRenderQueue() {
+  /**
+   * Restore the context. Call this after performing any draw actions
+   * during a render. Note that a render consists of one or more batches, so call
+   * this method for EVERY batch.
+   */
+  private endCurrentRenderBatch() {
     const ctx = this.canvas.getContext('2d');
 
     ctx.restore();
@@ -498,7 +547,13 @@ export class CanvasGraphView extends GraphView {
     this.updateMouseCursor();
   }
 
-  * getRenderables() {
+  /**
+   * Builds an iterable that will draw the graph. Before
+   * actually iterating through, first call {@link startCurrentRenderBatch} at the
+   * start of every rendering batch and then at the end of any batch,
+   * call {@link endCurrentRenderBatch}.
+   */
+  * generateRenderQueue() {
     const ctx = this.canvas.getContext('2d');
 
     yield* this.drawTouchPosition(ctx);

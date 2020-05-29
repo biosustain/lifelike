@@ -541,7 +541,11 @@ export abstract class GraphView implements GraphActionReceiver {
   }
 
   /**
-   * Re-render the graph and update the mouse cursor.
+   * Re-render the graph and update the mouse cursor in one shot,
+   * freezing up the current thread else until the render completes. If you are just
+   * display the graph for the user, never call this method directly. Instead,
+   * call {@link requestRender} if a render is needed and make sure to start
+   * the animation loop with {@link startAnimationLoop}.
    */
   abstract render();
 
