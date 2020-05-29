@@ -3,6 +3,7 @@
 - [How do I deploy to Google Cloud?](#how-do-i-deploy-to-google-cloud)
   - [Important Notes](#important-notes)
 - [How do I update the LMDB database?](#how-do-i-update-the-lmdb-database)
+- [How do I rollback to a previous build?](#how-do-i-rollback-to-a-previous-build)
 
 # Current Infrastructure
 There are currently three VMs
@@ -80,3 +81,18 @@ for example, on **Staging**
 ```bash
 gcloud compute ssh kg-staging --zone us-central1-a --command="sudo ./update-lmdb.sh";
 ```
+
+# How do I rollback to a previous build?
+
+__Overview__
+A rollback is when we want to revert the appserver and webserver images back to another version. We tag each Docker image build with the git commit hash which means we know the history of the images.
+
+To perform a rollback, use the script found [here](/deployment/bin/rollback.sh).
+```bash
+./rollback.sh -t kg-demo -h f7e9086acec83464d7fd633eb5282ddf7c45f34e
+```
+
+__Important Notes__
+1. The docker-compose files use whatever image that's specified in the `.env` file thats located in the same directory. The `.env` file contains the `GITHUB_HASH` which determines which build to use when running the application.
+
+2. Rollbacks DO NOT change the database in anyway. This means a rollback can potentially break the application as old code might not be compatible with new changes in the database. This should be handled separately.
