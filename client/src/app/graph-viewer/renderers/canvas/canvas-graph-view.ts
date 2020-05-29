@@ -39,6 +39,11 @@ export class CanvasGraphView extends GraphView {
    */
   renderMinimumInterval = 20;
 
+  /**
+   * The maximum number of ms to spend drawing per every animation frame.
+   */
+  animationFrameRenderTimeBudget = 33; // 33 = 30fps
+
   // Caches
   // ---------------------------------
 
@@ -119,6 +124,12 @@ export class CanvasGraphView extends GraphView {
    * The subscription that handles the resizes.
    */
   protected canvasResizePendingSubscription: Subscription | undefined;
+
+  /**
+   * Holds a queue of things to render to allow spreading rendering over several ticks.
+   * Cleared when {@link requestRender} is called and re-created in {@link render}.
+   */
+  private renderQueue: IterableIterator<any>;
 
   // ========================================
 
@@ -419,43 +430,88 @@ export class CanvasGraphView extends GraphView {
 
       // Throttle rendering to keep CPU usage down
       if (now - this.previousRenderTime > this.renderMinimumInterval) {
-        this.render();
-
+        this.renderQueue = this.getRenderables();
         this.renderingRequested = false;
         this.previousRenderTime = now;
+
+        this.startRender();
       }
+    }
+
+    if (this.renderQueue) {
+      const startTime = window.performance.now();
+      this.preRenderQueue();
+      while (true) {
+        const result = this.renderQueue.next();
+        if (result.done) {
+          this.renderQueue = null;
+          break;
+        }
+        if (window.performance.now() - startTime > this.animationFrameRenderTimeBudget) {
+          break;
+        }
+      }
+      this.postRenderQueue();
     }
 
     requestAnimationFrame(this.animationFrameFired.bind(this));
   }
 
   render() {
+    this.renderQueue = null;
+    this.startRender();
+    this.preRenderQueue();
+    const queue = this.getRenderables();
+    while (true) {
+      const result = queue.next();
+      if (result.done) {
+        break;
+      }
+    }
+    this.postRenderQueue();
+  }
+
+  private startRender() {
     const canvas = this.canvas;
     const ctx = canvas.getContext('2d');
-
-    ctx.save();
     if (this.backgroundFill) {
       ctx.fillStyle = this.backgroundFill;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
     } else {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
     }
+  }
+
+  private preRenderQueue() {
+    const ctx = this.canvas.getContext('2d');
+
+    ctx.save();
     ctx.translate(this.transform.x, this.transform.y);
     ctx.scale(this.transform.k, this.transform.k);
+  }
 
-    this.drawTouchPosition(ctx);
-    this.drawHighlightBackground(ctx);
-    this.drawLayoutGroups(ctx);
-    this.drawEdges(ctx);
-    this.drawNodes(ctx);
-    this.drawActiveBehaviors(ctx);
+  private postRenderQueue() {
+    const ctx = this.canvas.getContext('2d');
 
     ctx.restore();
 
     this.updateMouseCursor();
   }
 
-  private drawTouchPosition(ctx: CanvasRenderingContext2D) {
+  * getRenderables() {
+    const ctx = this.canvas.getContext('2d');
+
+    yield* this.drawTouchPosition(ctx);
+    yield* this.drawHighlightBackground(ctx);
+    yield* this.drawLayoutGroups(ctx);
+    yield* this.drawEdges(ctx);
+    yield* this.drawNodes(ctx);
+    yield* this.drawActiveBehaviors(ctx);
+  }
+
+  private* drawTouchPosition(ctx: CanvasRenderingContext2D) {
+    yield null;
+
     if (this.touchPosition) {
       const noZoomScale = 1 / this.transform.scale(1).k;
       const touchPositionEntity = this.touchPosition.entity;
@@ -475,7 +531,9 @@ export class CanvasGraphView extends GraphView {
     }
   }
 
-  private drawHighlightBackground(ctx: CanvasRenderingContext2D) {
+  private* drawHighlightBackground(ctx: CanvasRenderingContext2D) {
+    yield null;
+
     if (!this.touchPosition) {
       const highlighted = this.highlighting.get();
       for (const highlightedEntity of highlighted) {
@@ -488,7 +546,9 @@ export class CanvasGraphView extends GraphView {
     }
   }
 
-  private drawLayoutGroups(ctx: CanvasRenderingContext2D) {
+  private* drawLayoutGroups(ctx: CanvasRenderingContext2D) {
+    yield null;
+
     // TODO: This is currently only for demo
     for (const d of this.layoutGroups) {
       if (d.leaves.length) {
@@ -505,48 +565,47 @@ export class CanvasGraphView extends GraphView {
     }
   }
 
-  private drawEdges(ctx: CanvasRenderingContext2D) {
+  private* drawEdges(ctx: CanvasRenderingContext2D) {
+    yield null;
+
     const transform = this.transform;
     const placeEdge = this.placeEdge.bind(this);
-
-    // Use named functions for easier profiling
-    function linkUpEdges(d: UniversalGraphEdge) {
-      return {
-        d,
-        placedEdge: placeEdge(d),
-      };
-    }
-
-    // Use named functions for easier profiling
-    function drawEdgeLines({d, placedEdge}) {
-      ctx.beginPath();
-      placedEdge.draw(transform);
-    }
-
-    // Use named functions for easier profiling
-    function drawEdgeLabels({d, placedEdge}) {
-      ctx.beginPath();
-      placedEdge.drawLayer2(transform);
-    }
 
     // We need to turn edges into PlacedEdge objects before we can render them,
     // but the process involves calculating various metrics, which we don't
     // want to do more than once if we need to render in multiple Z-layers (line + text)
-    const edgeRenderObjects = this.edges.map(linkUpEdges);
+    const edgeRenderObjects = [];
 
-    edgeRenderObjects.forEach(drawEdgeLines);
-    edgeRenderObjects.forEach(drawEdgeLabels);
+    for (const d of this.edges) {
+      yield null;
+      edgeRenderObjects.push({
+        d,
+        placedEdge: placeEdge(d),
+      });
+    }
+
+    for (const {d, placedEdge} of edgeRenderObjects) {
+      yield null;
+      placedEdge.draw(transform);
+    }
+
+    for (const {d, placedEdge} of edgeRenderObjects) {
+      yield null;
+      placedEdge.drawLayer2(transform);
+    }
   }
 
-  private drawNodes(ctx: CanvasRenderingContext2D) {
+  private* drawNodes(ctx: CanvasRenderingContext2D) {
     for (const d of this.nodes) {
+      yield null;
       ctx.beginPath();
       this.placeNode(d).draw(this.transform);
     }
   }
 
-  private drawActiveBehaviors(ctx: CanvasRenderingContext2D) {
+  private* drawActiveBehaviors(ctx: CanvasRenderingContext2D) {
     for (const behavior of this.behaviors.getBehaviors()) {
+      yield null;
       behavior.draw(ctx, this.transform);
     }
   }
