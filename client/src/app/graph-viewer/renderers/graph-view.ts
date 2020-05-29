@@ -603,33 +603,35 @@ export abstract class GraphView implements GraphActionReceiver {
 
   /**
    * Perform an undo, if there is anything to undo.
-   * @return true if there was something to undo
+   * @return the action that was undone, if any
    */
-  undo(): boolean {
+  undo(): GraphAction | undefined {
     // Check to see if there is anything to undo
     if (this.canUndo()) {
       this.nextHistoryIndex--;
-      this.history[this.nextHistoryIndex].rollback(this);
+      const action = this.history[this.nextHistoryIndex];
+      action.rollback(this);
       this.requestRender();
-      return true;
+      return action;
     } else {
-      return false;
+      return null;
     }
   }
 
   /**
    * Perform a redo, if there is anything to redo.
-   * @return true if there was something to redo
+   * @return the action that was redone, if any
    */
-  redo(): boolean {
+  redo(): GraphAction | undefined {
     // Check to see if there is anything to redo
     if (this.canRedo()) {
-      this.history[this.nextHistoryIndex].apply(this);
+      const action = this.history[this.nextHistoryIndex];
+      action.apply(this);
       this.nextHistoryIndex++;
       this.requestRender();
-      return true;
+      return action;
     } else {
-      return false;
+      return null;
     }
   }
 

@@ -15,6 +15,9 @@ import { EmptyLineHead } from '../utils/canvas/line-heads/empty';
 import { CompoundLineHead } from '../utils/canvas/line-heads/compound';
 import { RectangleHead } from '../utils/canvas/line-heads/rectangle';
 import { LINE_HEAD_TYPES, LineHeadType } from '../../drawing-tool/services/line-head-types';
+import { Line } from '../utils/canvas/lines/lines';
+import { SolidLine } from '../utils/canvas/lines/solid';
+import { DashedLine } from '../utils/canvas/lines/dashed';
 
 export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
   private readonly defaultSourceLineEndDescriptor: string = null;
@@ -48,8 +51,8 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
       const textbox = new TextElement(ctx, {
         width: d.data.width,
         height: d.data.height,
-        maxWidth: this.maxWidthIfUnsized,
-        maxHeight: this.maxHeightIfUnsized,
+        maxWidth: !d.data.width ? this.maxWidthIfUnsized : null,
+        maxHeight: !d.data.height ? this.maxHeightIfUnsized : null,
         text: d.data.detail,
         font: labelFont,
         fillStyle: nullCoalesce(styleData.fillColor, '#999'),
@@ -63,11 +66,13 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
         width: nullCoalesce(d.data.width, textbox.actualWidth),
         height: nullCoalesce(d.data.height, textbox.actualHeight),
         textbox,
-        shapeStrokeColor: nullCoalesce(styleData.strokeColor, '#999'),
-        shapeFillColor: null,
-        lineType: nullCoalesce(styleData.lineType, 'dashed'),
-        lineWidth: nullCoalesce(styleData.lineWidthScale, 1) *
+        stroke: this.createLine(
+          nullCoalesce(styleData.lineType, 'dashed'),
+          nullCoalesce(styleData.lineWidthScale, 1) *
           (placementOptions.selected || placementOptions.highlighted ? 1.3 : 1),
+          nullCoalesce(styleData.strokeColor, '#999')
+        ),
+        shapeFillColor: null,
         forceHighDetailLevel,
       });
     } else if (iconCode) {
@@ -114,11 +119,13 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
         width: nullCoalesce(d.data.width, textbox.actualWidth),
         height: nullCoalesce(d.data.height, textbox.actualHeight),
         textbox,
-        shapeStrokeColor: nullCoalesce(styleData.strokeColor, '#2B7CE9'),
-        shapeFillColor: (placementOptions.highlighted ? '#E4EFFF' : (placementOptions.selected ? '#efefef' : '#fff')),
-        lineType: nullCoalesce(styleData.lineType, 'solid'),
-        lineWidth: nullCoalesce(styleData.lineWidthScale, 1) *
+        stroke: this.createLine(
+          nullCoalesce(styleData.lineType, 'solid'),
+          nullCoalesce(styleData.lineWidthScale, 1) *
           (placementOptions.selected || placementOptions.highlighted ? 1.3 : 1),
+          nullCoalesce(styleData.strokeColor, '#2B7CE9')
+        ),
+        shapeFillColor: (placementOptions.highlighted ? '#E4EFFF' : (placementOptions.selected ? '#efefef' : '#fff')),
         forceHighDetailLevel,
       });
     }
@@ -177,11 +184,29 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
       textbox,
       sourceLineEnd,
       targetLineEnd,
-      strokeColor,
-      lineType,
-      lineWidth,
+      stroke: this.createLine(
+        lineType,
+        lineWidth,
+        strokeColor,
+      ),
       forceHighDetailLevel: placementOptions.selected || placementOptions.highlighted,
     });
+  }
+
+  createLine(type: string | undefined,
+             width: number,
+             style: string): Line | undefined {
+    if (type == null) {
+      return null;
+    }
+
+    if (type === 'none') {
+      return null;
+    } else if (type === 'dashed') {
+      return new DashedLine(width, style, [15, 10]);
+    } else {
+      return new SolidLine(width, style);
+    }
   }
 
   createHead(type: string | undefined,
