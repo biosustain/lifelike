@@ -291,6 +291,7 @@ class AnnotationsService:
         entity: dict,
         entity_id: str,
         color: str,
+        correct_synonyms: Dict[str, str],
     ):
         curr_page_coor_obj = char_coord_objs_in_pdf
         cropbox = cropbox_in_pdf
@@ -375,7 +376,12 @@ class AnnotationsService:
                 meta=meta,
             )
 
-        return annotation, {annotation.to_dict_hash(): token_positions.keyword}
+        real_keyword = token_positions.keyword if token_positions.keyword not in correct_synonyms else correct_synonyms[token_positions.keyword]  # noqa
+        # return annotation and the original text from PDF
+        # because we the real lmdb name in annotation.keyword
+        # but need the original text from PDF
+        # to clean false positives
+        return annotation, {annotation.to_dict_hash(): real_keyword}
 
     def _get_annotation(
         self,
@@ -409,12 +415,17 @@ class AnnotationsService:
             - TODO: Considerations:
                 (1) A synonym that is also a common name, and the other common name appears
                     (1a) how to handle? Currently ignore synonym because can't infer (?)
+
+        Returns tuple:
+            - matched annotation keywords
+            - unwanted keywords
+            - the original text in the document for an annotation
         """
         matches: List[Annotation] = []
         unwanted_matches: Set[str] = set()
         # annotation object hash with it's keyword
         # as appeared in pdf
-        hashed_pdf_keywords: Dict[str, str] = {}
+        annotations_text_in_document: Dict[str, str] = {}
 
         tokens_lowercased = set([normalize_str(s) for s in list(tokens.keys())])
 
@@ -446,7 +457,7 @@ class AnnotationsService:
                     entity_id = entity[id_str]
 
                 if common_name_count == 1:
-                    annotation, annotation_pdf_keyword = self._create_annotation_object(
+                    annotation, annotation_text_in_document = self._create_annotation_object(
                         char_coord_objs_in_pdf=char_coord_objs_in_pdf,
                         cropbox_in_pdf=cropbox_in_pdf,
                         token_positions=token_positions,
@@ -454,12 +465,16 @@ class AnnotationsService:
                         entity=entity,
                         entity_id=entity_id,
                         color=color,
+                        correct_synonyms=correct_synonyms,
                     )
                     matches.append(annotation)
-                    hashed_pdf_keywords = {**hashed_pdf_keywords, **annotation_pdf_keyword}
+                    annotations_text_in_document = {
+                        **annotations_text_in_document,
+                        **annotation_text_in_document,
+                    }
                 else:
                     unwanted_matches.add(word)
-        return matches, unwanted_matches, hashed_pdf_keywords
+        return matches, unwanted_matches, annotations_text_in_document
 
     def _get_gene_id_for_annotation(
         self,
@@ -547,10 +562,15 @@ class AnnotationsService:
             1. Exactly one organism match for a given gene
             2. More than one organism match for a given gene
             3. No organism matches for a given gene
+
+        Returns tuple:
+            - matched annotation keywords
+            - unwanted keywords
+            - the original text in the document for an annotation
         """
         tokens: Dict[str, List[PDFTokenPositions]] = self.matched_genes
-        token_type: str = EntityType.Genes.value
-        color: str = EntityColor.Genes.value
+        token_type: str = EntityType.Gene.value
+        color: str = EntityColor.Gene.value
         transaction = self.lmdb_session.genes_txn
         correct_synonyms: Dict[str, str] = self.correct_synonyms
 
@@ -558,7 +578,7 @@ class AnnotationsService:
         unwanted_matches: Set[str] = set()
         # annotation object hash with it's keyword
         # as appeared in pdf
-        hashed_pdf_keywords: Dict[str, str] = {}
+        annotations_text_in_document: Dict[str, str] = {}
 
         tokens_lowercased = set([normalize_str(s) for s in list(tokens.keys())])
 
@@ -610,7 +630,7 @@ class AnnotationsService:
                         organism_frequency=organism_frequency,
                     )
 
-                    annotation, annotation_pdf_keyword = self._create_annotation_object(
+                    annotation, annotation_text_in_document = self._create_annotation_object(
                         char_coord_objs_in_pdf=char_coord_objs_in_pdf,
                         cropbox_in_pdf=cropbox_in_pdf,
                         token_positions=token_positions,
@@ -618,12 +638,16 @@ class AnnotationsService:
                         entity=entity,
                         entity_id=entity_id,
                         color=color,
+                        correct_synonyms=correct_synonyms,
                     )
                     matches.append(annotation)
-                    hashed_pdf_keywords = {**hashed_pdf_keywords, **annotation_pdf_keyword}
+                    annotations_text_in_document = {
+                        **annotations_text_in_document,
+                        **annotation_text_in_document,
+                    }
                 else:
                     unwanted_matches.add(word)
-        return matches, unwanted_matches, hashed_pdf_keywords
+        return matches, unwanted_matches, annotations_text_in_document
 
     def _annotate_chemicals(
         self,
@@ -633,8 +657,8 @@ class AnnotationsService:
     ) -> Tuple[List[Annotation], Set[str], Dict[str, str]]:
         return self._get_annotation(
             tokens=self.matched_chemicals,
-            token_type=EntityType.Chemicals.value,
-            color=EntityColor.Chemicals.value,
+            token_type=EntityType.Chemical.value,
+            color=EntityColor.Chemical.value,
             transaction=self.lmdb_session.chemicals_txn,
             id_str=entity_id_str,
             correct_synonyms=self.correct_synonyms,
@@ -650,8 +674,8 @@ class AnnotationsService:
     ) -> Tuple[List[Annotation], Set[str], Dict[str, str]]:
         return self._get_annotation(
             tokens=self.matched_compounds,
-            token_type=EntityType.Compounds.value,
-            color=EntityColor.Compounds.value,
+            token_type=EntityType.Compound.value,
+            color=EntityColor.Compound.value,
             transaction=self.lmdb_session.compounds_txn,
             id_str=entity_id_str,
             correct_synonyms=self.correct_synonyms,
@@ -667,8 +691,8 @@ class AnnotationsService:
     ) -> Tuple[List[Annotation], Set[str], Dict[str, str]]:
         return self._get_annotation(
             tokens=self.matched_proteins,
-            token_type=EntityType.Proteins.value,
-            color=EntityColor.Proteins.value,
+            token_type=EntityType.Protein.value,
+            color=EntityColor.Protein.value,
             transaction=self.lmdb_session.proteins_txn,
             id_str=entity_id_str,
             correct_synonyms=self.correct_synonyms,
@@ -701,8 +725,8 @@ class AnnotationsService:
     ) -> Tuple[List[Annotation], Set[str], Dict[str, str]]:
         return self._get_annotation(
             tokens=self.matched_diseases,
-            token_type=EntityType.Diseases.value,
-            color=EntityColor.Diseases.value,
+            token_type=EntityType.Disease.value,
+            color=EntityColor.Disease.value,
             transaction=self.lmdb_session.diseases_txn,
             id_str=entity_id_str,
             correct_synonyms=self.correct_synonyms,
@@ -718,8 +742,8 @@ class AnnotationsService:
     ) -> Tuple[List[Annotation], Set[str], Dict[str, str]]:
         return self._get_annotation(
             tokens=self.matched_phenotypes,
-            token_type=EntityType.Phenotypes.value,
-            color=EntityColor.Phenotypes.value,
+            token_type=EntityType.Phenotype.value,
+            color=EntityColor.Phenotype.value,
             transaction=self.lmdb_session.phenotypes_txn,
             id_str=entity_id_str,
             correct_synonyms=self.correct_synonyms,
@@ -735,12 +759,12 @@ class AnnotationsService:
         cropbox_in_pdf: Tuple[int, int],
     ) -> Tuple[List[Annotation], Set[str], Dict[str, str]]:
         funcs = {
-            EntityType.Chemicals.value: self._annotate_chemicals,
-            EntityType.Compounds.value: self._annotate_compounds,
-            EntityType.Proteins.value: self._annotate_proteins,
+            EntityType.Chemical.value: self._annotate_chemicals,
+            EntityType.Compound.value: self._annotate_compounds,
+            EntityType.Protein.value: self._annotate_proteins,
             EntityType.Species.value: self._annotate_species,
-            EntityType.Diseases.value: self._annotate_diseases,
-            EntityType.Phenotypes.value: self._annotate_phenotypes,
+            EntityType.Disease.value: self._annotate_diseases,
+            EntityType.Phenotype.value: self._annotate_phenotypes,
         }
 
         annotate_entities = funcs[annotation_type]
@@ -760,6 +784,13 @@ class AnnotationsService:
             entity_frequency[entity_id] += 1
         else:
             entity_frequency[entity_id] = 1
+
+        # If this annotation is a virus then we also have to update the homo sapiens frequency
+        if isinstance(annotation.meta, OrganismAnnotation.OrganismMeta) and annotation.meta.category == OrganismCategory.Viruses.value:  # noqa
+            if entity_frequency.get(HOMO_SAPIENS_TAX_ID, None) is not None:
+                entity_frequency[HOMO_SAPIENS_TAX_ID] += 1
+            else:
+                entity_frequency[HOMO_SAPIENS_TAX_ID] = 1
 
         return entity_frequency
 
@@ -861,18 +892,18 @@ class AnnotationsService:
         """
         entity_type_and_id_pairs = [
             (EntityType.Species.value, EntityIdStr.Species.value),
-            (EntityType.Chemicals.value, EntityIdStr.Chemicals.value),
-            (EntityType.Compounds.value, EntityIdStr.Compounds.value),
-            (EntityType.Proteins.value, EntityIdStr.Proteins.value),
-            (EntityType.Diseases.value, EntityIdStr.Diseases.value),
-            (EntityType.Phenotypes.value, EntityIdStr.Phenotypes.value),
+            (EntityType.Chemical.value, EntityIdStr.Chemical.value),
+            (EntityType.Compound.value, EntityIdStr.Compound.value),
+            (EntityType.Protein.value, EntityIdStr.Protein.value),
+            (EntityType.Disease.value, EntityIdStr.Disease.value),
+            (EntityType.Phenotype.value, EntityIdStr.Phenotype.value),
         ]
 
         matched_list, unwanted_matches_set_list = [], []
-        all_hashed_annotation_keywords: Dict[str, str] = {}
+        annotations_text_in_document: Dict[str, str] = {}
 
         for entity_type, entity_id_str in entity_type_and_id_pairs:
-            matched, unwanted, hashed_annotation_keywords = self.annotate(
+            matched, unwanted, annotation_text_in_document = self.annotate(
                 annotation_type=entity_type,
                 entity_id_str=entity_id_str,
                 char_coord_objs_in_pdf=tokens.char_coord_objs_in_pdf,
@@ -880,15 +911,16 @@ class AnnotationsService:
             )
             matched_list.append(matched)  # type: ignore
             unwanted_matches_set_list.append(unwanted)  # type: ignore
-            all_hashed_annotation_keywords = {
-                **all_hashed_annotation_keywords, **hashed_annotation_keywords}  # type: ignore
+            annotations_text_in_document = {
+                **annotations_text_in_document, **annotation_text_in_document}  # type: ignore
 
-        return matched_list, unwanted_matches_set_list, all_hashed_annotation_keywords
+        return matched_list, unwanted_matches_set_list, annotations_text_in_document
 
     def _get_fixed_unified_annotations(
         self,
         matched_list: List[List[Annotation]],
         unwanted_matches_set_list: Set[str],
+        annotations_text_in_document: Dict[str, str],
     ) -> List[Annotation]:
         """Takes as input a list of annotations, and a set of unwanted keywords.
         Annotations and keywords may span multiple entity types (e.g. compounds,
@@ -912,13 +944,14 @@ class AnnotationsService:
             unified_annotations.extend(updated_annotation_set)
 
         return self.fix_conflicting_annotations(
-            unified_annotations=unified_annotations
+            unified_annotations=unified_annotations,
+            annotations_text_in_document=annotations_text_in_document,
         )
 
     def _get_fixed_false_positive_unified_annotations(
         self,
         annotations_list: List[Annotation],
-        all_hashed_annotation_keywords: Dict[str, str],
+        annotations_text_in_document: Dict[str, str],
     ) -> List[Annotation]:
         """Removes any false positive annotations.
 
@@ -934,7 +967,7 @@ class AnnotationsService:
 
         for annotation in annotations_list:
             hashval = annotation.to_dict_hash()
-            keyword_from_pdf = all_hashed_annotation_keywords[hashval].split(' ')
+            keyword_from_pdf = annotations_text_in_document[hashval].split(' ')
 
             if len(keyword_from_pdf) > 1:
                 keyword_from_annotation = annotation.keyword.split(' ')
@@ -959,7 +992,7 @@ class AnnotationsService:
         # Get matches for Species, Chemicals, Compounds, Diseases, Proteins, and Phenotypes
         (matched_list,
         unwanted_matches_list,
-        all_hashed_annotation_keywords) = self._create_initial_annotations_list(
+        annotations_text_in_document) = self._create_initial_annotations_list(
             tokens=tokens,
         )  # noqa
 
@@ -968,6 +1001,7 @@ class AnnotationsService:
         fixed_unified_annotations = self._get_fixed_unified_annotations(
             matched_list=matched_list,
             unwanted_matches_set_list=unwanted_matches_set_list,
+            annotations_text_in_document=annotations_text_in_document,
         )
 
         # Create a list of species annotations
@@ -990,19 +1024,20 @@ class AnnotationsService:
 
         matched_list.append(matched_genes)
         unwanted_matches_list.append(unwanted_genes)
-        all_hashed_annotation_keywords = {
-            **all_hashed_annotation_keywords, **hashed_gene_annotation_keyword}
+        annotations_text_in_document = {
+            **annotations_text_in_document, **hashed_gene_annotation_keyword}
 
         # Do second round of filtering, now with genes
         unwanted_matches_set_list = set.union(*unwanted_matches_list)
         fixed_unified_annotations = self._get_fixed_unified_annotations(
             matched_list=matched_list,
             unwanted_matches_set_list=unwanted_matches_set_list,
+            annotations_text_in_document=annotations_text_in_document,
         )
 
         fixed_unified_annotations = self._get_fixed_false_positive_unified_annotations(
             annotations_list=fixed_unified_annotations,
-            all_hashed_annotation_keywords=all_hashed_annotation_keywords,
+            annotations_text_in_document=annotations_text_in_document,
         )
 
         return fixed_unified_annotations
@@ -1010,6 +1045,7 @@ class AnnotationsService:
     def fix_conflicting_annotations(
         self,
         unified_annotations: List[Annotation],
+        annotations_text_in_document: Dict[str, str],
     ) -> List[Annotation]:
         """Fix any conflicting annotations.
 
@@ -1034,10 +1070,14 @@ class AnnotationsService:
         # first clean all annotations with equal intervals
         # this means the same keyword was mapped to multiple entities
         cleaned_of_equal_intervals = tree.merge_equals(
-            data_reducer=self.determine_entity_precedence)
+            data_reducer=self.determine_entity_precedence,
+            annotations_text_in_document=annotations_text_in_document,
+        )
 
         fixed_annotations = self._remove_overlapping_annotations(
-            conflicting_annotations=cleaned_of_equal_intervals)
+            conflicting_annotations=cleaned_of_equal_intervals,
+            annotations_text_in_document=annotations_text_in_document,
+        )
 
         updated_unified_annotations.extend(fixed_annotations)
         return updated_unified_annotations
@@ -1061,24 +1101,47 @@ class AnnotationsService:
         self,
         anno1: Annotation,
         anno2: Annotation,
+        annotations_text_in_document: Dict[str, str],
     ) -> Annotation:
         key1 = ENTITY_TYPE_PRECEDENCE[anno1.meta.keyword_type]
         key2 = ENTITY_TYPE_PRECEDENCE[anno2.meta.keyword_type]
 
-        if ((anno1.meta.keyword_type == EntityType.Proteins.value or
-                anno1.meta.keyword_type == EntityType.Genes.value) and
-            (anno2.meta.keyword_type == EntityType.Proteins.value or
-                anno2.meta.keyword_type == EntityType.Genes.value)):  # noqa
-            if anno1.meta.keyword_type != anno2.meta.keyword_type and normalize_str(anno1.keyword) == normalize_str(anno2.keyword):  # noqa
+        # only do special gene vs protein comparison if they have
+        # exact intervals
+        # because that means the same normalized text was matched
+        # to both
+        if ((anno1.meta.keyword_type == EntityType.Protein.value or
+                anno1.meta.keyword_type == EntityType.Gene.value) and
+            (anno2.meta.keyword_type == EntityType.Protein.value or
+                anno2.meta.keyword_type == EntityType.Gene.value) and
+            (anno1.lo_location_offset == anno2.lo_location_offset and
+                anno1.hi_location_offset == anno2.hi_location_offset)):  # noqa
+            if anno1.meta.keyword_type != anno2.meta.keyword_type:
                 # protein vs gene
-                # protein has capital first letter: CysB vs cysB
-                # if start of a new sentence go with protein can't infer
-                if anno1.meta.keyword_type == EntityType.Proteins.value and len(anno1.keywords) == 1 and anno1.keywords[0][0].isupper():  # noqa
-                    # checked the keyword text from pdf
-                    return anno1
+                # protein has capital first letter: CysB
+                # gene has lowercase: cysB
+                # also cases like gene SerpinA1 vs protein Serpin A1
+                hashval1 = anno1.to_dict_hash()
+                hashval2 = anno2.to_dict_hash()
+                anno1_text_in_document = annotations_text_in_document[hashval1]
+                anno2_text_in_document = annotations_text_in_document[hashval2]
 
-                if anno2.meta.keyword_type == EntityType.Proteins.value and len(anno2.keywords) == 1 and anno2.keywords[0][0].isupper():  # noqa
-                    # checked the keyword text from pdf
+                # first check for exact match
+                if anno1_text_in_document == anno1.keyword:
+                    return anno1
+                if anno2_text_in_document == anno2.keyword:
+                    return anno2
+
+                # no exact match so check substrings
+                # e.g `Serpin A1` matched to `serpin A1`
+                # e.g `SerpinA1` matched to `serpin A1`
+                # we take the first case
+                # will not count hyphens separated
+                # because hard to infer if it was used
+                # as a space
+                if len(anno1_text_in_document.split(' ')) == len(anno1.keyword.split(' ')):
+                    return anno1
+                if len(anno2_text_in_document.split(' ')) == len(anno2.keyword.split(' ')):
                     return anno2
 
         if key1 > key2:
@@ -1094,6 +1157,7 @@ class AnnotationsService:
     def _remove_overlapping_annotations(
         self,
         conflicting_annotations: List[Annotation],
+        annotations_text_in_document: Dict[str, str],
     ) -> List[Annotation]:
         """Remove annotations based on rules defined in
         self.determine_entity_precedence().
@@ -1105,6 +1169,7 @@ class AnnotationsService:
             fixed_annotations.extend(
                 tree.merge_overlaps(
                     data_reducer=self.determine_entity_precedence,
+                    annotations_text_in_document=annotations_text_in_document,
                 ),
             )
         return fixed_annotations

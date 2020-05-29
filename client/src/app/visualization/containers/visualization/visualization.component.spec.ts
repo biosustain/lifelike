@@ -230,28 +230,6 @@ describe('VisualizationComponent', () => {
         expect(getClusterGraphDataSpy).toHaveBeenCalledWith([mockClusteredNode]);
     });
 
-    it('should call addDuplicatedEdge when child requests that a new duplicate edge be added to the set', () => {
-        const addDuplicateEdgeSpy = spyOn(instance, 'addDuplicatedEdge');
-        const visualizationCanvasComponentMock = fixture.debugElement.query(
-            By.directive(VisualizationCanvasComponent)
-        ).componentInstance as VisualizationCanvasComponent;
-
-        visualizationCanvasComponentMock.addDuplicatedEdge.emit(1);
-
-        expect(addDuplicateEdgeSpy).toHaveBeenCalledWith(1);
-    });
-
-    it('should call removeDuplicatedEdge when child requests that a duplicate edge be removed from the set', () => {
-        const removeDuplicateEdgeSpy = spyOn(instance, 'removeDuplicatedEdge');
-        const visualizationCanvasComponentMock = fixture.debugElement.query(
-            By.directive(VisualizationCanvasComponent)
-        ).componentInstance as VisualizationCanvasComponent;
-
-        visualizationCanvasComponentMock.removeDuplicatedEdge.emit(1);
-
-        expect(removeDuplicateEdgeSpy).toHaveBeenCalledWith(1);
-    });
-
     it('updateCanvasWithSingleNode should clear the canvas and add a single node', () => {
         instance.nodes = new DataSet<VisNode | GraphNode>(instance.networkGraphData.nodes);
         instance.edges = new DataSet<VisEdge | GraphRelationship>(instance.networkGraphData.edges);
@@ -263,30 +241,5 @@ describe('VisualizationComponent', () => {
 
         expect(instance.nodes.length).toEqual(1);
         expect(instance.edges.length).toEqual(0);
-    });
-
-    it('addDuplicatedEdge should attempt to add an edge to the set of duplicates', () => {
-        instance.addDuplicatedEdge(1);
-        instance.addDuplicatedEdge(1);
-        instance.addDuplicatedEdge(2);
-
-        expect(instance.duplicatedEdges.size).toEqual(2);
-        expect(instance.duplicatedEdges.has(1)).toBeTrue();
-        expect(instance.duplicatedEdges.has(2)).toBeTrue();
-    });
-
-    it('removeDuplicatedEdge should remove an edge from the set of duplicates', () => {
-        instance.addDuplicatedEdge(1);
-        instance.addDuplicatedEdge(2);
-
-        instance.removeDuplicatedEdge(1);
-
-        expect(instance.duplicatedEdges.size).toEqual(1);
-        expect(instance.duplicatedEdges.has(1)).toBeFalse();
-
-        instance.removeDuplicatedEdge(2);
-
-        expect(instance.duplicatedEdges.size).toEqual(0);
-        expect(instance.duplicatedEdges.has(2)).toBeFalse();
     });
 });
