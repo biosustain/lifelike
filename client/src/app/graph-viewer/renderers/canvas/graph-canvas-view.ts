@@ -2,7 +2,7 @@ import * as d3 from 'd3';
 import { GraphView } from '../graph-view';
 import { GraphEntity, GraphEntityType, UniversalGraph, UniversalGraphEdge, UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
 import { EdgeRenderStyle, NodeRenderStyle, PlacedEdge, PlacedNode } from 'app/graph-viewer/styles/styles';
-import { debounceTime } from 'rxjs/operators';
+import { debounceTime, throttleTime } from 'rxjs/operators';
 import { asyncScheduler, fromEvent, Subject, Subscription } from 'rxjs';
 import { isStopResult } from '../behaviors';
 
@@ -10,6 +10,24 @@ import { isStopResult } from '../behaviors';
  * A graph view that uses renders into a <canvas> tag.
  */
 export class GraphCanvasView extends GraphView {
+  // ========================================
+  // Options
+  // ========================================
+
+  /**
+   * The canvas background, if any.
+   */
+  backgroundFill: string | undefined = null;
+
+  /**
+   * The minimum interval in ms between renders to keep CPU down.
+   */
+  renderMinimumInterval = 20;
+
+  // ========================================
+  // Caches
+  // ========================================
+
   /**
    * Keeps a handle on created node renderers to improve performance.
    */
@@ -20,10 +38,9 @@ export class GraphCanvasView extends GraphView {
    */
   private placedEdgesCache: Map<UniversalGraphEdge, PlacedEdge> = new Map();
 
-  /**
-   * The canvas background, if any.
-   */
-  backgroundFill: string | undefined = null;
+  // ========================================
+  // States
+  // ========================================
 
   /**
    * The transform represents the current zoom of the graph, which must be
@@ -48,28 +65,6 @@ export class GraphCanvasView extends GraphView {
   } | undefined;
 
   /**
-   * Holds the ResizeObserver to detect resizes. Only set if
-   * {@link startParentFillResizeListener} is called, but it may be
-   * unset if {@link stopParentFillResizeListener} is called.
-   */
-  protected canvasResizeObserver: any | undefined; // TODO: TS does not have ResizeObserver defs yet
-
-  /**
-   * Holds the subscription for key down events on the canvas.
-   */
-  private canvasKeyDownSubscription: Subscription;
-
-  /**
-   * An observable triggered when resizes are detected.
-   */
-  canvasResizePendingSubject = new Subject<[number, number]>();
-
-  /**
-   * The subscription that handles the resizes.
-   */
-  protected canvasResizePendingSubscription: Subscription | undefined;
-
-  /**
    * Store the last time {@link zoomToFit} was called in case the canvas is
    * resized partly through a zoom, making the zoom operation almost useless.
    * This seems to happen a lot with Angular.
@@ -81,7 +76,39 @@ export class GraphCanvasView extends GraphView {
    */
   protected previousZoomToFitPadding = 0;
 
-  protected previousMouseMoveTime = 0;
+  /**
+   * Keeps track of the time since last render to keep the number of
+   * render cycles down.
+   */
+  protected previousRenderTime = 0;
+
+  // ========================================
+  // Events
+  // ========================================
+
+  /**
+   * Holds the ResizeObserver to detect resizes. Only set if
+   * {@link startParentFillResizeListener} is called, but it may be
+   * unset if {@link stopParentFillResizeListener} is called.
+   */
+  protected canvasResizeObserver: any | undefined; // TODO: TS does not have ResizeObserver defs yet
+
+  /**
+   * An observable triggered when resizes are detected.
+   */
+  canvasResizePendingSubject = new Subject<[number, number]>();
+
+  /**
+   * Holds subscriptions to remove when this component is removed.
+   */
+  private trackedSubscriptions: Subscription[] = [];
+
+  /**
+   * The subscription that handles the resizes.
+   */
+  protected canvasResizePendingSubscription: Subscription | undefined;
+
+  // ========================================
 
   /**
    * Create an instance of this view.
@@ -103,11 +130,16 @@ export class GraphCanvasView extends GraphView {
       .on('zoom', this.canvasZoomed.bind(this))
       .on('end', this.canvasZoomEnded.bind(this));
 
+    // We use rxjs to limit the number of mousemove events
+    const canvasMouseMoveSubject = new Subject<any>();
+
     d3.select(this.canvas)
       .on('click', this.canvasClicked.bind(this))
       .on('dblclick', this.canvasDoubleClicked.bind(this))
       .on('mousedown', this.canvasMouseDown.bind(this))
-      .on('mousemove', this.canvasMouseMoved.bind(this))
+      .on('mousemove', () => {
+        canvasMouseMoveSubject.next(d3.mouse(this.canvas));
+      })
       .on('mouseleave', this.canvasMouseLeave.bind(this))
       .on('mouseup', this.canvasMouseUp.bind(this))
       .call(d3.drag()
@@ -119,14 +151,27 @@ export class GraphCanvasView extends GraphView {
       .call(this.zoom)
       .on('dblclick.zoom', null);
 
-    this.canvasKeyDownSubscription = fromEvent(this.canvas, 'keyup')
-      .subscribe(this.canvasKeyDown.bind(this));
+    this.trackedSubscriptions.push(
+      canvasMouseMoveSubject
+      .pipe(throttleTime(100, asyncScheduler, {
+        leading: true,
+        trailing: true
+      }))
+      .subscribe(this.canvasMouseMoved.bind(this))
+    );
+
+    this.trackedSubscriptions.push(
+      fromEvent(this.canvas, 'keyup')
+      .subscribe(this.canvasKeyDown.bind(this))
+    );
   }
 
   destroy() {
     super.destroy();
     this.stopParentFillResizeListener();
-    this.canvasKeyDownSubscription.unsubscribe();
+    for (const subscription of this.trackedSubscriptions) {
+      subscription.unsubscribe();
+    }
   }
 
   startAnimationLoop() {
@@ -291,6 +336,10 @@ export class GraphCanvasView extends GraphView {
     const [mouseX, mouseY] = d3.mouse(this.canvas);
     const x = this.transform.invertX(mouseX);
     const y = this.transform.invertY(mouseY);
+    return this.getEntityAtPosition(x, y);
+  }
+
+  getEntityAtPosition(x: number, y: number): GraphEntity | undefined {
     const node = this.getNodeAtPosition(this.nodes, x, y);
     if (node) {
       return {
@@ -354,11 +403,17 @@ export class GraphCanvasView extends GraphView {
       return;
     }
 
+    // Only render when we need to
     if (this.renderingRequested) {
-      this.render();
+      const now = window.performance.now();
 
-      // No point rendering every frame unless there are changes
-      this.renderingRequested = false;
+      // Throttle rendering to keep CPU usage down
+      if (now - this.previousRenderTime > this.renderMinimumInterval) {
+        this.render();
+
+        this.renderingRequested = false;
+        this.previousRenderTime = now;
+      }
     }
 
     requestAnimationFrame(this.animationFrameFired.bind(this));
@@ -448,7 +503,6 @@ export class GraphCanvasView extends GraphView {
 
     // Use named functions for easier profiling
     function linkUpEdges(d: UniversalGraphEdge) {
-      // TODO: This step is inefficient so fix it
       return {
         d,
         placedEdge: placeEdge(d),
@@ -527,17 +581,10 @@ export class GraphCanvasView extends GraphView {
     this.mouseDown = true;
   }
 
-  canvasMouseMoved() {
-    const now = window.performance.now();
-    if (now - this.previousMouseMoveTime < 10) {
-      return;
-    }
-    this.previousMouseMoveTime = now;
-
-    const [mouseX, mouseY] = d3.mouse(this.canvas);
+  canvasMouseMoved([mouseX, mouseY]) {
     const graphX = this.transform.invertX(mouseX);
     const graphY = this.transform.invertY(mouseY);
-    const entityAtMouse = this.getEntityAtMouse();
+    const entityAtMouse = this.getEntityAtPosition(graphX, graphY);
 
     this.highlighting.replace(entityAtMouse ? [entityAtMouse] : []);
     this.hoverPosition = {x: graphX, y: graphY};

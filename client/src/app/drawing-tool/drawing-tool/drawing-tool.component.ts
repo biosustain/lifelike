@@ -93,7 +93,7 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
     this.graphCanvas = new GraphCanvasView(this.canvasChild.nativeElement as HTMLCanvasElement, style, style);
     this.graphCanvas.behaviors.add('delete-keyboard-shortcut', new DeleteKeyboardShortcut(this.graphCanvas), -100);
     this.graphCanvas.behaviors.add('clipboard-keyboard-shortcut', new ClipboardKeyboardShortcut(this.graphCanvas), -100);
-    this.graphCanvas.behaviors.add('history-keyboard-shorts', new HistoryKeyboardShortcuts(this.graphCanvas), -100);
+    this.graphCanvas.behaviors.add('history-keyboard-shorts', new HistoryKeyboardShortcuts(this.graphCanvas, this.snackBar), -100);
     this.graphCanvas.behaviors.add('moving', new MovableNode(this.graphCanvas), 0);
     this.graphCanvas.behaviors.add('selection', new SelectableEntity(this.graphCanvas), 0);
     this.graphCanvas.behaviors.add('resize-handles', new HandleResizable(this.graphCanvas), 0);

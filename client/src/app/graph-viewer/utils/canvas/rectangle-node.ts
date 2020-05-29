@@ -2,6 +2,7 @@ import 'canvas-plus';
 import { PlacedNode } from 'app/graph-viewer/styles/styles';
 import { TextElement } from './text-element';
 import { pointOnRect } from '../geometry';
+import { Line } from './lines/lines';
 
 export interface RectangleNodeOptions {
   x: number;
@@ -10,9 +11,7 @@ export interface RectangleNodeOptions {
   height: number;
   textbox: TextElement;
   shapeFillColor?: string;
-  shapeStrokeColor?: string;
-  lineType?: string;
-  lineWidth?: number;
+  stroke?: Line;
   padding?: number;
   forceHighDetailLevel?: boolean;
 }
@@ -29,9 +28,7 @@ export class RectangleNode implements PlacedNode {
   readonly height: number;
   readonly textbox: TextElement;
   readonly shapeFillColor: string;
-  readonly shapeStrokeColor: string;
-  readonly lineType: string = 'solid';
-  readonly lineWidth: number = 1;
+  readonly stroke: Line | undefined;
   readonly padding: number = 10;
   readonly forceHighDetailLevel = false;
 
@@ -98,10 +95,9 @@ export class RectangleNode implements PlacedNode {
         ctx.fillStyle = this.shapeFillColor;
         ctx.fill();
       }
-      if (this.shapeStrokeColor) {
-        ctx.lineWidth = zoomResetScale * this.lineWidth;
-        ctx.strokeStyle = this.shapeStrokeColor;
-        ctx.setLineDash(this.lineType === 'dashed' ? [15, 5] : []);
+      if (this.stroke) {
+        this.stroke.setContext(ctx);
+        ctx.lineWidth = zoomResetScale * ctx.lineWidth;
         ctx.stroke();
       }
       ctx.restore();
@@ -122,9 +118,9 @@ export class RectangleNode implements PlacedNode {
         ctx.fillStyle = this.shapeFillColor;
         ctx.fill();
       }
-      if (this.shapeStrokeColor) {
-        ctx.lineWidth = zoomResetScale * this.lineWidth;
-        ctx.strokeStyle = this.shapeStrokeColor;
+      if (this.stroke) {
+        this.stroke.setContext(ctx);
+        ctx.lineWidth = zoomResetScale * ctx.lineWidth;
         ctx.stroke();
       }
       ctx.restore();
