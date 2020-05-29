@@ -3,7 +3,7 @@ import { Project } from 'app/drawing-tool/services/interfaces';
 import { ProjectsService } from 'app/drawing-tool/services';
 import { ActivatedRoute } from '@angular/router';
 import { KnowledgeMapStyle } from 'app/graph-viewer/styles/knowledge-map-style';
-import { GraphCanvasView } from 'app/graph-viewer/renderers/canvas/graph-canvas-view';
+import { CanvasGraphView } from 'app/graph-viewer/renderers/canvas/canvas-graph-view';
 
 @Component({
   selector: 'app-map-preview',
@@ -14,7 +14,7 @@ import { GraphCanvasView } from 'app/graph-viewer/renderers/canvas/graph-canvas-
 })
 export class MapPreviewComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('canvas', {static: true}) canvasChild;
-  graphCanvas: GraphCanvasView;
+  graphCanvas: CanvasGraphView;
 
   /**
    * Decide if network graph is visualized in full-screen or preview mode
@@ -54,7 +54,7 @@ export class MapPreviewComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngAfterViewInit() {
     const style = new KnowledgeMapStyle();
-    this.graphCanvas = new GraphCanvasView(this.canvasChild.nativeElement as HTMLCanvasElement, style, style);
+    this.graphCanvas = new CanvasGraphView(this.canvasChild.nativeElement as HTMLCanvasElement, style, style);
     this.graphCanvas.startParentFillResizeListener();
 
     this.ngZone.runOutsideAngular(() => {
