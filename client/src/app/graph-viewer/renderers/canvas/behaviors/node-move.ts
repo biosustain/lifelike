@@ -60,24 +60,28 @@ export class MovableNode extends AbstractCanvasBehavior {
   }
 
   dragEnd(event: MouseEvent): BehaviorResult {
-    if (this.target && (this.target.data.x !== this.originalTarget.data.x ||
-      this.target.data.y !== this.originalTarget.data.y)) {
-      this.graphView.execute(new GraphEntityUpdate('Move node', {
-        type: GraphEntityType.Node,
-        entity: this.target,
-      }, {
-        data: {
-          x: this.target.data.x,
-          y: this.target.data.y,
-        }
-      } as Partial<UniversalGraphNode>, {
-        data: {
-          x: this.originalTarget.data.x,
-          y: this.originalTarget.data.y,
-        }
-      } as Partial<UniversalGraphNode>));
+    if (this.target) {
+      if (this.target.data.x !== this.originalTarget.data.x ||
+        this.target.data.y !== this.originalTarget.data.y) {
+        this.graphView.execute(new GraphEntityUpdate('Move node', {
+          type: GraphEntityType.Node,
+          entity: this.target,
+        }, {
+          data: {
+            x: this.target.data.x,
+            y: this.target.data.y,
+          }
+        } as Partial<UniversalGraphNode>, {
+          data: {
+            x: this.originalTarget.data.x,
+            y: this.originalTarget.data.y,
+          }
+        } as Partial<UniversalGraphNode>));
+      }
+      
       this.target = null;
     }
+
     return BehaviorResult.Continue;
   }
 
