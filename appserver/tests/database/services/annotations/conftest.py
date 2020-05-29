@@ -6,6 +6,7 @@ from os import path, remove, walk
 
 from neo4japp.higher_order_services import HybridNeo4jPostgresService
 from neo4japp.services.annotations import prepare_databases
+from neo4japp.services.annotations.constants import DatabaseType, OrganismCategory
 from neo4japp.services.annotations.util import normalize_str
 
 
@@ -72,29 +73,41 @@ def default_lmdb_setup(app, request):
     # Create gene data
     hyp27_gene = lmdb_gene_factory(
         gene_id='2846957',
-        id_type='NCBI',
+        id_type=DatabaseType.Ncbi.value,
         name='hyp27',
+    )
+
+    serpina1_gene = lmdb_gene_factory(
+        gene_id='5265',
+        id_type=DatabaseType.Ncbi.value,
+        name='SERPINA1',
     )
 
     # Create protein data
     hyp27_protein = lmdb_protein_factory(
         protein_id='Y1954_CLOPE',
-        id_type='UNIPROT',
+        id_type=DatabaseType.Uniprot.value,
         name='Hyp27'
+    )
+
+    serpina1_protein = lmdb_protein_factory(
+        protein_id='A1AT_PONAB',
+        id_type=DatabaseType.Uniprot.value,
+        name='Serpin A1',
     )
 
     # Create species data
     human = lmdb_species_factory(
         tax_id='9606',
-        category='Eukaryota',
-        id_type='NCBI',
+        category=OrganismCategory.Eukaryota.value,
+        id_type=DatabaseType.Ncbi.value,
         name='human',
     )
 
     moniliophthora_roreri = lmdb_species_factory(
         tax_id='221103',
-        category='Eukaryota',
-        id_type='NCBI',
+        category=OrganismCategory.Eukaryota.value,
+        id_type=DatabaseType.Ncbi.value,
         name='Moniliophthora roreri',
     )
 
@@ -102,9 +115,9 @@ def default_lmdb_setup(app, request):
         ('chemicals', []),  # TODO: Create test chemical data
         ('compounds', []),  # TODO: Create test compound data
         ('diseases', []),  # TODO: Create test disease data
-        ('genes', [hyp27_gene]),
+        ('genes', [hyp27_gene, serpina1_gene]),
         ('phenotypes', []),  # TODO: Create test phenotype data
-        ('proteins', [hyp27_protein]),
+        ('proteins', [hyp27_protein, serpina1_protein]),
         ('species', [human, moniliophthora_roreri]),
     ]
     for entity, data in entities:
@@ -124,22 +137,22 @@ def human_gene_pdf_lmdb_setup(app, request):
     # Create gene data
     ace2 = lmdb_gene_factory(
         gene_id='59272',
-        id_type='NCBI',
+        id_type=DatabaseType.Ncbi.value,
         name='ACE2',
     )
 
     # Create disease data
     covid_19 = lmdb_disease_factory(
         disease_id='MESH:C000657245',
-        id_type='MESH',
+        id_type=DatabaseType.Mesh.value,
         name='COVID-19',
     )
 
     # Create species data
     mers_cov = lmdb_species_factory(
         tax_id='1335626',
-        category='Viruses',
-        id_type='NCBI',
+        category=OrganismCategory.Viruses.value,
+        id_type=DatabaseType.Ncbi.value,
         name='MERS-CoV',
     )
 
@@ -169,39 +182,39 @@ def escherichia_coli_pdf_lmdb_setup(app, request):
     # Create gene data
     purA = lmdb_gene_factory(
         gene_id='948695',
-        id_type='NCBI',
+        id_type=DatabaseType.Ncbi.value,
         name='purA',
     )
 
     purB = lmdb_gene_factory(
         gene_id='945695',
-        id_type='NCBI',
+        id_type=DatabaseType.Ncbi.value,
         name='purB',
     )
 
     purC = lmdb_gene_factory(
         gene_id='946957',
-        id_type='NCBI',
+        id_type=DatabaseType.Ncbi.value,
         name='purC',
     )
 
     purD = lmdb_gene_factory(
         gene_id='948504',
-        id_type='NCBI',
+        id_type=DatabaseType.Ncbi.value,
         name='purF',
     )
 
     purF = lmdb_gene_factory(
         gene_id='946794',
-        id_type='NCBI',
+        id_type=DatabaseType.Ncbi.value,
         name='purD',
     )
 
     # Create species data
     e_coli = lmdb_species_factory(
         tax_id='562',
-        category='Bacteria',
-        id_type='NCBI',
+        category=OrganismCategory.Bacteria.value,
+        id_type=DatabaseType.Ncbi.value,
         name='Escherichia coli',
     )
 
@@ -226,12 +239,27 @@ def escherichia_coli_pdf_lmdb_setup(app, request):
     request.addfinalizer(teardown)
 
 
+################################################################################
+# Start monkeypatch mocks here
 # doc on how to monkeypatch: https://docs.pytest.org/en/latest/monkeypatch.html
+###############################################################################
 @pytest.fixture(scope='function')
 def mock_get_gene_to_organism_match_result(monkeypatch):
     def get_match_result(*args, **kwargs):
         # match to 'Moniliophthora roreri' in create_species_lmdb()
         return {'hyp27': {'221103': '10446085'}}
+
+    monkeypatch.setattr(
+        HybridNeo4jPostgresService,
+        'get_gene_to_organism_match_result',
+        get_match_result,
+    )
+
+
+@pytest.fixture(scope='function')
+def mock_get_gene_to_organism_serpina1_match_result(monkeypatch):
+    def get_match_result(*args, **kwargs):
+        return {'serpina1': {'9606': '5265'}}
 
     monkeypatch.setattr(
         HybridNeo4jPostgresService,
