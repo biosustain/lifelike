@@ -161,19 +161,6 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
               edges
             };
 
-            switch (val.group) {
-                case 'link': {
-                    data.node.shape = this.nodeIsIcon ? 'icon' : 'box';
-                    data.node.icon = this.nodeIsIcon ? LINK_NODE_ICON_OBJECT : null;
-                    data.node.label = this.nodeIsIcon ? '' : val.detail;
-                    break;
-                }
-                default: {
-                    data.node.shape = 'box';
-                    data.node.icon = null;
-                    break;
-                }
-            }
           } else {
             // Get edge data
             data = {
