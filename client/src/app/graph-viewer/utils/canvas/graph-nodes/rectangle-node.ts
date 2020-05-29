@@ -1,8 +1,8 @@
 import 'canvas-plus';
 import { PlacedNode } from 'app/graph-viewer/styles/styles';
-import { TextElement } from './text-element';
-import { pointOnRect } from '../geometry';
-import { Line } from './lines/lines';
+import { TextElement } from '../text-element';
+import { pointOnRect } from '../../geometry';
+import { Line } from '../lines/lines';
 
 export interface RectangleNodeOptions {
   x: number;

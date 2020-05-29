@@ -1,8 +1,8 @@
 import { PlacedEdge } from 'app/graph-viewer/styles/styles';
-import { getLinePointIntersectionDistance } from '../geometry';
-import { TextElement } from './text-element';
-import { LineHead } from './line-heads/line-heads';
-import { Line } from './lines/lines';
+import { getLinePointIntersectionDistance } from '../../geometry';
+import { TextElement } from '../text-element';
+import { LineHead } from '../line-heads/line-heads';
+import { Line } from '../lines/lines';
 
 export interface StandardEdgeOptions {
   source: { x: number, y: number };
@@ -14,7 +14,10 @@ export interface StandardEdgeOptions {
   forceHighDetailLevel?: boolean;
 }
 
-export class StandardEdge implements PlacedEdge {
+/**
+ * Draws an edge using a {@link Line}.
+ */
+export class LineEdge implements PlacedEdge {
   readonly source: { x: number, y: number };
   readonly target: { x: number, y: number };
   readonly textbox: TextElement | undefined;
