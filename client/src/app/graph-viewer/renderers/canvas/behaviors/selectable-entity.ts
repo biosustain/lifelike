@@ -1,8 +1,8 @@
-import { GraphCanvasView } from '../graph-canvas-view';
+import { CanvasGraphView } from '../canvas-graph-view';
 import { AbstractCanvasBehavior, BehaviorResult } from '../../behaviors';
 
 export class SelectableEntity extends AbstractCanvasBehavior {
-  constructor(private readonly graphView: GraphCanvasView) {
+  constructor(private readonly graphView: CanvasGraphView) {
     super();
   }
 

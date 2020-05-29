@@ -1,5 +1,5 @@
 import { AbstractCanvasBehavior, BehaviorResult } from '../../behaviors';
-import { GraphCanvasView } from '../graph-canvas-view';
+import { CanvasGraphView } from '../canvas-graph-view';
 import { NodeCreation } from '../../../actions/nodes';
 import { isCtrlOrMetaPressed } from 'app/shared/utils';
 import { makeid } from 'app/drawing-tool/services';
@@ -81,7 +81,7 @@ export class ClipboardKeyboardShortcut extends AbstractCanvasBehavior {
     );
   }
 
-  constructor(private readonly graphView: GraphCanvasView) {
+  constructor(private readonly graphView: CanvasGraphView) {
     super();
     document.addEventListener('paste', this.boundPaste);
   }

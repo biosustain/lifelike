@@ -1,5 +1,5 @@
 import { AbstractCanvasBehavior, BehaviorResult } from '../../behaviors';
-import { GraphCanvasView } from '../graph-canvas-view';
+import { CanvasGraphView } from '../canvas-graph-view';
 import { GraphEntityType, UniversalGraphEdge, UniversalGraphNode } from '../../../../drawing-tool/services/interfaces';
 import { EdgeDeletion, NodeDeletion } from '../../../actions/nodes';
 
@@ -7,7 +7,7 @@ import { EdgeDeletion, NodeDeletion } from '../../../actions/nodes';
  * Implements the 'delete' key.
  */
 export class DeleteKeyboardShortcut extends AbstractCanvasBehavior {
-  constructor(private readonly graphView: GraphCanvasView) {
+  constructor(private readonly graphView: CanvasGraphView) {
     super();
   }
 

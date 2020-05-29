@@ -16,7 +16,7 @@ import { ExportModalComponent } from './export-modal/export-modal.component';
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { NodeCreation } from 'app/graph-viewer/actions/nodes';
 import { KnowledgeMapStyle } from 'app/graph-viewer/styles/knowledge-map-style';
-import { GraphCanvasView } from 'app/graph-viewer/renderers/canvas/graph-canvas-view';
+import { CanvasGraphView } from 'app/graph-viewer/renderers/canvas/canvas-graph-view';
 import { MovableNode } from 'app/graph-viewer/renderers/canvas/behaviors/node-move';
 import { SelectableEntity } from 'app/graph-viewer/renderers/canvas/behaviors/selectable-entity';
 import { InteractiveEdgeCreation } from 'app/graph-viewer/renderers/canvas/behaviors/interactive-edge-creation';
@@ -43,7 +43,7 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
   @Input() currentMap: string | undefined;
   project: Project = null;
 
-  graphCanvas: GraphCanvasView;
+  graphCanvas: CanvasGraphView;
 
   formDataSubscription: Subscription = null;
   pdfDataSubscription: Subscription = null;
@@ -90,7 +90,7 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngAfterViewInit() {
     const style = new KnowledgeMapStyle();
-    this.graphCanvas = new GraphCanvasView(this.canvasChild.nativeElement as HTMLCanvasElement, style, style);
+    this.graphCanvas = new CanvasGraphView(this.canvasChild.nativeElement as HTMLCanvasElement, style, style);
     this.graphCanvas.behaviors.add('delete-keyboard-shortcut', new DeleteKeyboardShortcut(this.graphCanvas), -100);
     this.graphCanvas.behaviors.add('clipboard-keyboard-shortcut', new ClipboardKeyboardShortcut(this.graphCanvas), -100);
     this.graphCanvas.behaviors.add('history-keyboard-shorts', new HistoryKeyboardShortcuts(this.graphCanvas, this.snackBar), -100);

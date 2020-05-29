@@ -9,7 +9,7 @@ import { isStopResult } from '../behaviors';
 /**
  * A graph view that uses renders into a <canvas> tag.
  */
-export class GraphCanvasView extends GraphView {
+export class CanvasGraphView extends GraphView {
   // ========================================
   // Options
   // ========================================

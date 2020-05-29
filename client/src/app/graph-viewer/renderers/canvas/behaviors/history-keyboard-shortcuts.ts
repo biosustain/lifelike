@@ -1,5 +1,5 @@
 import { AbstractCanvasBehavior, BehaviorResult } from '../../behaviors';
-import { GraphCanvasView } from '../graph-canvas-view';
+import { CanvasGraphView } from '../canvas-graph-view';
 import { isCtrlOrMetaPressed } from '../../../../shared/utils';
 import { MatSnackBar } from '@angular/material';
 
@@ -7,7 +7,7 @@ import { MatSnackBar } from '@angular/material';
  * Implements CTRL/CMD-Z and CTRL/CMD-Y.
  */
 export class HistoryKeyboardShortcuts extends AbstractCanvasBehavior {
-  constructor(private readonly graphView: GraphCanvasView,
+  constructor(private readonly graphView: CanvasGraphView,
               private readonly snackBar: MatSnackBar) {
     super();
   }

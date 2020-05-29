@@ -3,7 +3,7 @@ import * as d3 from 'd3';
 
 import { GraphEntity, GraphEntityType, UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
 import { PlacedNode } from 'app/graph-viewer/styles/styles';
-import { GraphCanvasView } from '../graph-canvas-view';
+import { CanvasGraphView } from '../canvas-graph-view';
 import { AbstractCanvasBehavior, BehaviorResult } from '../../behaviors';
 import { GraphEntityUpdate } from '../../../actions/graph';
 
@@ -18,7 +18,7 @@ export class HandleResizable extends AbstractCanvasBehavior {
    */
   private selectionChangeSubscription;
 
-  constructor(private readonly graphView: GraphCanvasView) {
+  constructor(private readonly graphView: CanvasGraphView) {
     super();
   }
 
@@ -44,7 +44,7 @@ export class ActiveResize extends AbstractCanvasBehavior {
   private handle: DragHandle | undefined;
   private originalTarget: UniversalGraphNode;
 
-  constructor(private readonly graphView: GraphCanvasView,
+  constructor(private readonly graphView: CanvasGraphView,
               private readonly target: UniversalGraphNode,
               private size = 10) {
     super();
