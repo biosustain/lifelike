@@ -37,7 +37,7 @@ export class CanvasGraphView extends GraphView {
   /**
    * The minimum interval in ms between renders to keep CPU down.
    */
-  renderMinimumInterval = 20;
+  renderMinimumInterval = 15;
 
   /**
    * The maximum number of ms to spend drawing per every animation frame.
@@ -434,7 +434,7 @@ export class CanvasGraphView extends GraphView {
     if (this.renderingRequested) {
       const now = window.performance.now();
 
-      // But even then, we'll still throttle the number of time we restart rendering
+      // But even then, we'll still throttle the number of times we restart rendering
       // in case the flag is set to true too frequently in a period
       if (now - this.previousRenderQueueCreationTime > this.renderMinimumInterval) {
         this.emptyCanvas(); // Clears canvas
