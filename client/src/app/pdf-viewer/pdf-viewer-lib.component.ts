@@ -507,10 +507,20 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
           jQuery(ui.helper).css('width', '');
           jQuery(ui.helper).css('height', '');
           if (that.isSelectionLink) {
-            jQuery(ui.helper).html(`<span class="fa fa-file" style="color: ${annotationTypes.find(type => type.label === 'link').color}"></span>`);
+            jQuery(ui.helper).css('border', 'none');
+            jQuery(ui.helper).css('background-color', 'transparent');
+            jQuery(ui.helper).html(`
+              <span class="fa" style="color: ${annotationTypes.find(type => type.label === 'link').color}; font-size: 30px">
+                ${annotationTypes.find(type => type.label === 'link').iconCode}
+              </span>
+            `);
+            jQuery(el).draggable('instance').offset.click = {
+              left: ui.helper.width(),
+              top: ui.helper.height()
+            };
           } else {
             jQuery(ui.helper).text(meta.allText);
-          }
+          };
         }
       });
       jQuery(el).draggable('enable');
@@ -585,7 +595,14 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
 
   openAddLinkPanel() {
     this.isSelectionLink = true;
-    this.selectedElements.forEach(el => jQuery(el).css('border-bottom', '1px solid'));
+    // TODO: remove workaround and fix the issue with the selectedRects
+    // Currently selection.getRangeAt(0).getClientRects() gives duplicates
+    // for each selected line except the first and the last ones
+    this.selectedElements.forEach((el, index) => {
+      if (index === 0 || index === this.selectedElements.length - 1 || index % 2 !== 0) {
+        jQuery(el).css('border-bottom', '1px solid');
+      }
+    });
   }
 
   clearSelection() {
