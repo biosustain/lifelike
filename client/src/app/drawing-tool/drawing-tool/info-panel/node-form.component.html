@@ -29,16 +29,28 @@
   <mat-label>Font Size Scale</mat-label>
   <input type="number" min="0.01" step="0.1" max="5"
          [(ngModel)]="node.style.fontSizeScale" matInput (change)="doSave()">
+  <button *ngIf="node.style.fontSizeScale != null && node.style.fontSizeScale !== ''"
+          mat-icon-button matSuffix (click)="node.style.fontSizeScale = null;doSave()">
+    <mat-icon>clear</mat-icon>
+  </button>
 </mat-form-field>
 
 <mat-form-field class="w-100" appearance="standard">
   <mat-label>Fill Color</mat-label>
   <input type="color" [(ngModel)]="node.style.fillColor" matInput (change)="doSave()">
+  <button *ngIf="node.style.fillColor != null && node.style.fillColor !== ''"
+          mat-icon-button matSuffix (click)="node.style.fillColor = null;doSave()">
+    <mat-icon>clear</mat-icon>
+  </button>
 </mat-form-field>
 
 <mat-form-field class="w-100" appearance="standard">
   <mat-label>Line Color</mat-label>
   <input type="color" [(ngModel)]="node.style.strokeColor" matInput (change)="doSave()">
+  <button *ngIf="node.style.strokeColor != null && node.style.strokeColor !== ''"
+          mat-icon-button matSuffix (click)="node.style.strokeColor = null;doSave()">
+    <mat-icon>clear</mat-icon>
+  </button>
 </mat-form-field>
 
 <mat-form-field class="w-100" appearance="standard">
@@ -54,6 +66,10 @@
   <mat-label>Line Thickness Scale</mat-label>
   <input type="number" min="0.01" step="0.1" max="5"
          [(ngModel)]="node.style.lineWidthScale" matInput (change)="doSave()">
+  <button *ngIf="node.style.lineWidthScale != null && node.style.lineWidthScale !== ''"
+          mat-icon-button matSuffix (click)="node.style.lineWidthScale = null;doSave()">
+    <mat-icon>clear</mat-icon>
+  </button>
 </mat-form-field>
 
 <div *ngIf="!!node.data.hyperlink" class="mb2">

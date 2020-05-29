@@ -2,6 +2,7 @@ import { PlacedEdge } from 'app/graph-viewer/styles/styles';
 import { getLinePointIntersectionDistance } from '../geometry';
 import { TextElement } from './text-element';
 import { LineHeadRenderer } from './line-heads/line-heads';
+import { Line } from './lines/lines';
 
 export interface StandardEdgeOptions {
   source: { x: number, y: number };
@@ -9,9 +10,7 @@ export interface StandardEdgeOptions {
   textbox?: TextElement;
   sourceLineEnd?: LineHeadRenderer;
   targetLineEnd?: LineHeadRenderer;
-  strokeColor?: string;
-  lineType?: string;
-  lineWidth?: number;
+  stroke?: Line;
   forceHighDetailLevel?: boolean;
 }
 
@@ -21,9 +20,7 @@ export class StandardEdge implements PlacedEdge {
   readonly textbox: TextElement | undefined;
   readonly sourceLineEnd: LineHeadRenderer | undefined;
   readonly targetLineEnd: LineHeadRenderer | undefined;
-  readonly strokeColor: string;
-  readonly lineType: string = 'solid';
-  readonly lineWidth: number = 1;
+  readonly stroke: Line | undefined;
   readonly forceHighDetailLevel = false;
 
   readonly labelX: number;
@@ -67,18 +64,17 @@ export class StandardEdge implements PlacedEdge {
     }
 
     // Draw line
-    ctx.save();
-    ctx.beginPath();
-    ctx.lineJoin = 'miter';
-    ctx.lineCap = 'butt';
-    ctx.lineWidth = this.lineWidth;
-    ctx.strokeStyle = this.strokeColor;
-    ctx.fillStyle = this.strokeColor;
-    ctx.moveTo(this.source.x, this.source.y);
-    ctx.lineTo(this.target.x, this.target.y);
-    ctx.setLineDash(this.lineType === 'dashed' ? [15, 5] : []);
-    ctx.stroke();
-    ctx.restore();
+    if (this.stroke) {
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(this.source.x, this.source.y);
+      ctx.lineTo(this.target.x, this.target.y);
+      this.stroke.setContext(ctx);
+      ctx.lineJoin = 'miter';
+      ctx.lineCap = 'butt';
+      ctx.stroke();
+      ctx.restore();
+    }
   }
 
   drawLayer2(transform: any) {
