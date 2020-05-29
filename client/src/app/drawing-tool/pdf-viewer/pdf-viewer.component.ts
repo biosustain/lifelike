@@ -304,7 +304,7 @@ export class PdfViewerComponent implements OnDestroy {
 
     this.dataFlow.pushNode2Canvas({
       hash: '', // To be replaced
-      display_name:  meta.type === 'Links' ? '' : meta.allText,
+      display_name:  meta.type === 'Links' ? 'Link' : meta.allText,
       label: mapper(meta.type),
       sub_labels: [],
       data: {
