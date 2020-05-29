@@ -3,7 +3,7 @@
 Different graph renderers are stored inside here, although as of writing, there is
 only one renderer (a HTML5 canvas-based one).
 
-* [Canvas renderer](canvas/README.md)
+* [Canvas renderer](canvas/)
 
 ## Behaviors
 
