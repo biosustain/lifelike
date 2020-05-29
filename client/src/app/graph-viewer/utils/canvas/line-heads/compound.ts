@@ -1,14 +1,14 @@
-import { DrawnLineHead, LineHeadRenderer } from './line-heads';
+import { DrawnLineHead, LineHead } from './line-heads';
 
 /**
  * A terminator that combines other terminators end-to-end.
  */
-export class CompoundLineHead implements LineHeadRenderer {
+export class CompoundLineHead implements LineHead {
   /**
    * Create a new instance.
    * @param children list of terminators, whether the first one is at the end
    */
-  constructor(public children: LineHeadRenderer[]) {
+  constructor(public children: LineHead[]) {
   }
 
   draw(ctx: CanvasRenderingContext2D, startX: number, startY: number, endX: number, endY: number) {

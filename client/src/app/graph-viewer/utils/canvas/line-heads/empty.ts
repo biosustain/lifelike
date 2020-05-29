@@ -1,10 +1,10 @@
-import { DrawnLineHead, LineHeadRenderer } from './line-heads';
+import { DrawnLineHead, LineHead } from './line-heads';
 import { transformControlPoint } from '../../geometry';
 
 /**
  * A terminator that just takes up space.
  */
-export class EmptyLineHead implements LineHeadRenderer {
+export class EmptyLineHead implements LineHead {
   /**
    * Create an instance.
    * @param spacing the amount of dead weight to take up

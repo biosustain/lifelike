@@ -1,15 +1,15 @@
 import { PlacedEdge } from 'app/graph-viewer/styles/styles';
 import { getLinePointIntersectionDistance } from '../geometry';
 import { TextElement } from './text-element';
-import { LineHeadRenderer } from './line-heads/line-heads';
+import { LineHead } from './line-heads/line-heads';
 import { Line } from './lines/lines';
 
 export interface StandardEdgeOptions {
   source: { x: number, y: number };
   target: { x: number, y: number };
   textbox?: TextElement;
-  sourceLineEnd?: LineHeadRenderer;
-  targetLineEnd?: LineHeadRenderer;
+  sourceLineEnd?: LineHead;
+  targetLineEnd?: LineHead;
   stroke?: Line;
   forceHighDetailLevel?: boolean;
 }
@@ -18,8 +18,8 @@ export class StandardEdge implements PlacedEdge {
   readonly source: { x: number, y: number };
   readonly target: { x: number, y: number };
   readonly textbox: TextElement | undefined;
-  readonly sourceLineEnd: LineHeadRenderer | undefined;
-  readonly targetLineEnd: LineHeadRenderer | undefined;
+  readonly sourceLineEnd: LineHead | undefined;
+  readonly targetLineEnd: LineHead | undefined;
   readonly stroke: Line | undefined;
   readonly forceHighDetailLevel = false;
 
