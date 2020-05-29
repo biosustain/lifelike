@@ -24,9 +24,10 @@ import { TooltipComponent } from './components/tooltip/tooltip.component';
 import { SharedDirectivesModule } from './directives/shareddirectives.module';
 import { SharedNgrxEffects } from './store/effects';
 import {
-    TruncatePipe,
-    FriendlyDateStrPipe
-  } from './pipes';
+  TruncatePipe,
+  FriendlyDateStrPipe
+} from './pipes';
+import { NodeTextStylePipe } from './node-text-style.pipe';
 
 const components = [
   MessageDialogComponent,
@@ -59,7 +60,8 @@ const components = [
   declarations: [
       ...components,
       TruncatePipe,
-      FriendlyDateStrPipe
+      FriendlyDateStrPipe,
+      NodeTextStylePipe
   ],
   providers: [SharedNgrxEffects],
   // exported modules are visible to modules that import this one
@@ -80,6 +82,7 @@ const components = [
     ...components,
     TruncatePipe,
     FriendlyDateStrPipe,
+    NodeTextStylePipe
   ],
 })
 export class SharedModule {

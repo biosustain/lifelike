@@ -1,6 +1,12 @@
 import { IdType } from 'vis-network';
 
-import { GraphNode, VisEdge, VisNode, DuplicateVisNode, DuplicateVisEdge } from './neo4j.interface';
+import {
+    GraphNode,
+    VisEdge,
+    VisNode,
+    DuplicateVisNode,
+    DuplicateVisEdge
+} from './neo4j.interface';
 
 export enum Direction {
     TO = 'Incoming',
@@ -136,4 +142,14 @@ export interface SidenavEdgeEntity {
 
 export interface SidenavClusterEntity {
     data: SidenavSnippetData[];
+}
+
+export interface SettingsFormControl {
+    value: any;
+    valid: boolean;
+}
+
+export interface SettingsFormValues {
+    maxClusterShownRows: SettingsFormControl;
+    [key: string]: SettingsFormControl; // Could be any number of node entity checkboxes
 }

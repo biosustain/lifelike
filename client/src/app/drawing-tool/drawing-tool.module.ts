@@ -1,29 +1,15 @@
 import { NgModule } from '@angular/core';
 
-import {
-  ProjectListViewComponent
-} from './project-list-view/project-list-view.component';
-import {
-  CreateProjectDialogComponent
-} from './project-list-view/create-project-dialog/create-project-dialog.component';
-import {
-  DeleteProjectDialogComponent
-} from './project-list-view/delete-project-dialog/delete-project-dialog.component';
-import {
-  CopyProjectDialogComponent
-} from './project-list-view/copy-project-dialog/copy-project-dialog.component';
-import {
-  UploadProjectDialogComponent
-} from './project-list-view/upload-project-dialog/upload-project-dialog.component';
-import {
-  DrawingToolComponent
-} from './drawing-tool/drawing-tool.component';
+import { ProjectListViewComponent } from './project-list-view/project-list-view.component';
+import { CreateProjectDialogComponent } from './project-list-view/create-project-dialog/create-project-dialog.component';
+import { DeleteProjectDialogComponent } from './project-list-view/delete-project-dialog/delete-project-dialog.component';
+import { CopyProjectDialogComponent } from './project-list-view/copy-project-dialog/copy-project-dialog.component';
+import { UploadProjectDialogComponent } from './project-list-view/upload-project-dialog/upload-project-dialog.component';
+import { DrawingToolComponent } from './drawing-tool/drawing-tool.component';
 
 import { CopyPasteMapsService } from './services/copy-paste-maps.service';
 
-import {
-  PendingChangesGuard
-} from './guards';
+import { PendingChangesGuard } from './guards';
 
 import { DrawingToolContextMenuComponent } from './drawing-tool/drawing-tool-context-menu/drawing-tool-context-menu.component';
 import { PaletteComponent } from './drawing-tool/palette/palette.component';
@@ -40,7 +26,8 @@ import { PdfViewerLibModule } from 'app/pdf-viewer/pdf-viewer-lib.module';
 import { FileBrowserModule } from '../file-browser/file-browser.module';
 import { EdgeFormComponent } from './drawing-tool/info-panel/edge-form.component';
 import { NodeFormComponent } from './drawing-tool/info-panel/node-form.component';
-import {NodeSearchComponent} from '../node-search/containers/node-search.component';
+import { NodeSearchComponent } from '../node-search/containers/node-search.component';
+import { EditProjectDialogComponent } from './project-list/edit-project-dialog/edit-project-dialog.component';
 
 export const routes = [
   {
@@ -80,12 +67,14 @@ export const routes = [
     ExportModalComponent,
     NodeFormComponent,
     EdgeFormComponent,
+    EditProjectDialogComponent,
   ],
   entryComponents: [
     CreateProjectDialogComponent,
     DeleteProjectDialogComponent,
     CopyProjectDialogComponent,
     UploadProjectDialogComponent,
+    EditProjectDialogComponent,
     MapListComponent,
     ProjectListViewComponent,
     PdfViewerComponent,
@@ -113,4 +102,5 @@ export const routes = [
     PdfViewerLibModule
   ]
 })
-export class DrawingToolModule { }
+export class DrawingToolModule {
+}
