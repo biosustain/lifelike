@@ -6,13 +6,17 @@ import { debounceTime, throttleTime } from 'rxjs/operators';
 import { asyncScheduler, fromEvent, Subject, Subscription } from 'rxjs';
 import { isStopResult } from '../behaviors';
 
+export interface CanvasGraphViewOptions {
+  nodeRenderStyle: NodeRenderStyle;
+  edgeRenderStyle: EdgeRenderStyle;
+}
+
 /**
  * A graph view that uses renders into a <canvas> tag.
  */
 export class CanvasGraphView extends GraphView {
-  // ========================================
   // Options
-  // ========================================
+  // ---------------------------------
 
   /**
    * The canvas background, if any.
@@ -24,9 +28,8 @@ export class CanvasGraphView extends GraphView {
    */
   renderMinimumInterval = 20;
 
-  // ========================================
   // Caches
-  // ========================================
+  // ---------------------------------
 
   /**
    * Keeps a handle on created node renderers to improve performance.
@@ -38,9 +41,8 @@ export class CanvasGraphView extends GraphView {
    */
   private placedEdgesCache: Map<UniversalGraphEdge, PlacedEdge> = new Map();
 
-  // ========================================
   // States
-  // ========================================
+  // ---------------------------------
 
   /**
    * The transform represents the current zoom of the graph, which must be
@@ -82,9 +84,8 @@ export class CanvasGraphView extends GraphView {
    */
   protected previousRenderTime = 0;
 
-  // ========================================
   // Events
-  // ========================================
+  // ---------------------------------
 
   /**
    * Holds the ResizeObserver to detect resizes. Only set if
@@ -113,13 +114,11 @@ export class CanvasGraphView extends GraphView {
   /**
    * Create an instance of this view.
    * @param canvas the backing <canvas> tag
-   * @param nodeRenderStyle the style used to render nodes
-   * @param edgeRenderStyle the style used to render edges
+   * @param options for the view
    */
-  constructor(public canvas: HTMLCanvasElement,
-              readonly nodeRenderStyle: NodeRenderStyle,
-              readonly edgeRenderStyle: EdgeRenderStyle) {
+  constructor(public canvas: HTMLCanvasElement, options: CanvasGraphViewOptions) {
     super();
+    Object.assign(this, options);
 
     this.canvas = canvas;
     this.canvas.tabIndex = 0;

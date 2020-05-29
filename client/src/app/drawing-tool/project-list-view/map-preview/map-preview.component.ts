@@ -54,7 +54,10 @@ export class MapPreviewComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngAfterViewInit() {
     const style = new KnowledgeMapStyle();
-    this.graphCanvas = new CanvasGraphView(this.canvasChild.nativeElement as HTMLCanvasElement, style, style);
+    this.graphCanvas = new CanvasGraphView(this.canvasChild.nativeElement as HTMLCanvasElement, {
+      nodeRenderStyle: style,
+      edgeRenderStyle: style,
+    });
     this.graphCanvas.startParentFillResizeListener();
 
     this.ngZone.runOutsideAngular(() => {
