@@ -93,7 +93,9 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
     this.graphCanvas = new CanvasGraphView(this.canvasChild.nativeElement as HTMLCanvasElement, {
       nodeRenderStyle: style,
       edgeRenderStyle: style,
+      backgroundFill: '#f2f2f2',
     });
+
     this.graphCanvas.behaviors.add('delete-keyboard-shortcut', new DeleteKeyboardShortcut(this.graphCanvas), -100);
     this.graphCanvas.behaviors.add('clipboard-keyboard-shortcut', new ClipboardKeyboardShortcut(this.graphCanvas), -100);
     this.graphCanvas.behaviors.add('history-keyboard-shorts', new HistoryKeyboardShortcuts(this.graphCanvas, this.snackBar), -100);
@@ -101,8 +103,11 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
     this.graphCanvas.behaviors.add('selection', new SelectableEntity(this.graphCanvas), 0);
     this.graphCanvas.behaviors.add('resize-handles', new HandleResizable(this.graphCanvas), 0);
     this.graphCanvas.behaviors.add('edge-creation', new InteractiveEdgeCreation(this.graphCanvas), 100);
-    this.graphCanvas.backgroundFill = '#f2f2f2';
+
     this.graphCanvas.startParentFillResizeListener();
+    this.ngZone.runOutsideAngular(() => {
+      this.graphCanvas.startAnimationLoop();
+    });
 
     // Pass selections onto the data flow system
     this.selectionSubscription = this.graphCanvas.selection.changeObservable.subscribe(([selected, previousSelected]) => {
@@ -111,10 +116,6 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
       } else {
         this.dataFlow.pushSelection(null);
       }
-    });
-
-    this.ngZone.runOutsideAngular(() => {
-      this.graphCanvas.startAnimationLoop();
     });
 
     this.loadMap(this.currentMap);
