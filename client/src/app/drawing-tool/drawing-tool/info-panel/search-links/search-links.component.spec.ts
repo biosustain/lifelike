@@ -3,7 +3,8 @@ import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { configureTestSuite } from 'ng-bullet';
 
 import { SearchLinksComponent } from './search-links.component';
-import { DrawingToolModule } from 'app/drawing-tool/drawing-tool.module';
+import { SharedModule } from 'app/shared/shared.module';
+import { RootStoreModule } from 'app/***ARANGO_USERNAME***-store';
 
 describe('SearchLinksComponent', () => {
   let component: SearchLinksComponent;
@@ -12,18 +13,20 @@ describe('SearchLinksComponent', () => {
   configureTestSuite(() => {
     TestBed.configureTestingModule({
         imports: [
-            DrawingToolModule,
+            SharedModule,
+            RootStoreModule
+        ],
+        declarations: [
+          SearchLinksComponent
         ]
     });
-  });
 
-  beforeEach(() => {
     fixture = TestBed.createComponent(SearchLinksComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
 
-  xit('should create', () => {
+  it('should create', () => {
     expect(component).toBeTruthy();
   });
 });
