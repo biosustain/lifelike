@@ -103,6 +103,13 @@ export interface PlacedNode extends PlacedObject {
  */
 export interface PlacedEdge extends PlacedObject {
   /**
+   * Get the shortest distance (unsquared) between the given point and this object.
+   * @param x the X coordinate to check
+   * @param y the Y coordinate to check
+   */
+  getPointDistanceUnsq(x: number, y: number): number;
+
+  /**
    * Render additional things that need to be placed on a layer above render();
    * @param transform the zoom and pan transform
    */

@@ -453,16 +453,32 @@ export abstract class GraphView implements GraphActionReceiver {
    * @param y graph Y location
    */
   getEdgeAtPosition(edges: UniversalGraphEdge[], x: number, y: number): UniversalGraphEdge | undefined {
+    let bestCandidate: { edge: UniversalGraphEdge, distanceUnsq: number } = null;
+    const distanceUnsqThreshold = 5 * 5;
+
     for (const d of edges) {
       const placedEdge = this.placeEdge(d);
+
       const hookResult = this.behaviors.call('isPointIntersectingEdge', placedEdge, x, y);
       if ((hookResult !== undefined && hookResult) || placedEdge.isPointIntersecting(x, y)) {
         return d;
       }
-      if (placedEdge.isPointIntersecting(x, y)) {
-        return d;
+
+      const distanceUnsq = placedEdge.getPointDistanceUnsq(x, y);
+      if (distanceUnsq <= distanceUnsqThreshold) {
+        if (bestCandidate == null || bestCandidate.distanceUnsq >= distanceUnsq) {
+          bestCandidate = {
+            edge: d,
+            distanceUnsq,
+          };
+        }
       }
     }
+
+    if (bestCandidate != null) {
+      return bestCandidate.edge;
+    }
+
     return undefined;
   }
 

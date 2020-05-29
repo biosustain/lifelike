@@ -57,6 +57,16 @@ export function getLinePointIntersectionDistance(x, y, x1, x2, y1, y2) {
   return Math.abs(slope - expectedSlope);
 }
 
+export function distanceUnsq(x0: number, y0: number, x1: number, y1: number): number {
+  const dx = x1 - x0;
+  const dy = y1 - y0;
+  return dx * dx + dy * dy;
+}
+
+export function distanceSq(x0: number, y0: number, x1: number, y1: number): number {
+  return Math.sqrt(distanceUnsq(x0, y0, x1, y1));
+}
+
 /**
  * Use the given line segment from [startX, startY] to [endX, endY] to
  * calculate the revolution that must be applied to the point [x, y] if
