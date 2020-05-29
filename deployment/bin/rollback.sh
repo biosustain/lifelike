@@ -62,5 +62,6 @@ echo "Rolling back to commit ${GIT_HASH}"
 # Rolling back requires us to reset the current environmental variable to use the older hash
 # It's important we change the .env file since docker-compose reads the .env file from where it resides for variable substitution
 gcloud compute ssh $TARGET --zone us-central1-a --command="sudo sed -i 's/^GITHUB_HASH.*$/GITHUB_HASH=${GIT_HASH}/' /srv/.env && \
+    sudo chown 1000:1000 /srv/.env && \
     sudo /srv/startup.sh -t $SERVER_MODE -h $GIT_HASH"
 
