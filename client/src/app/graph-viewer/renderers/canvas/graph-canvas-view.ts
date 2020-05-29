@@ -138,7 +138,7 @@ export class GraphCanvasView extends GraphView {
       .on('dblclick', this.canvasDoubleClicked.bind(this))
       .on('mousedown', this.canvasMouseDown.bind(this))
       .on('mousemove', () => {
-        canvasMouseMoveSubject.next(d3.mouse(this.canvas));
+        canvasMouseMoveSubject.next();
       })
       .on('mouseleave', this.canvasMouseLeave.bind(this))
       .on('mouseup', this.canvasMouseUp.bind(this))
@@ -153,9 +153,9 @@ export class GraphCanvasView extends GraphView {
 
     this.trackedSubscriptions.push(
       canvasMouseMoveSubject
-      .pipe(throttleTime(100, asyncScheduler, {
+      .pipe(throttleTime(this.renderMinimumInterval, asyncScheduler, {
         leading: true,
-        trailing: true
+        trailing: false,
       }))
       .subscribe(this.canvasMouseMoved.bind(this))
     );
@@ -581,7 +581,8 @@ export class GraphCanvasView extends GraphView {
     this.mouseDown = true;
   }
 
-  canvasMouseMoved([mouseX, mouseY]) {
+  canvasMouseMoved() {
+    const [mouseX, mouseY] = d3.mouse(this.canvas);
     const graphX = this.transform.invertX(mouseX);
     const graphY = this.transform.invertY(mouseY);
     const entityAtMouse = this.getEntityAtPosition(graphX, graphY);
