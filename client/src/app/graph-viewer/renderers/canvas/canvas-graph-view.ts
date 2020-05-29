@@ -163,16 +163,16 @@ export class CanvasGraphView extends GraphView {
 
     this.trackedSubscriptions.push(
       canvasMouseMoveSubject
-      .pipe(throttleTime(this.renderMinimumInterval, asyncScheduler, {
-        leading: true,
-        trailing: false,
-      }))
-      .subscribe(this.canvasMouseMoved.bind(this))
+        .pipe(throttleTime(this.renderMinimumInterval, asyncScheduler, {
+          leading: true,
+          trailing: false,
+        }))
+        .subscribe(this.canvasMouseMoved.bind(this))
     );
 
     this.trackedSubscriptions.push(
       fromEvent(this.canvas, 'keyup')
-      .subscribe(this.canvasKeyDown.bind(this))
+        .subscribe(this.canvasKeyDown.bind(this))
     );
   }
 
@@ -381,7 +381,7 @@ export class CanvasGraphView extends GraphView {
     const canvasWidth = this.canvas.width;
     const canvasHeight = this.canvas.height;
 
-    const {minX, minY, maxX, maxY} = this.getBoundingBox(this.nodes, padding);
+    const {minX, minY, maxX, maxY} = this.getNodeBoundingBox(this.nodes, padding);
     const width = maxX - minX;
     const height = maxY - minY;
 
@@ -460,9 +460,9 @@ export class CanvasGraphView extends GraphView {
       const noZoomScale = 1 / this.transform.scale(1).k;
       const touchPositionEntity = this.touchPosition.entity;
 
-      if (touchPositionEntity != null && touchPositionEntity.type === GraphEntityType.Node) {
+      if (touchPositionEntity != null) {
         ctx.beginPath();
-        const bbox = this.getBoundingBox([touchPositionEntity.entity as UniversalGraphNode], 10);
+        const bbox = this.getEntityBoundingBox([touchPositionEntity], 10);
         ctx.rect(bbox.minX, bbox.minY, bbox.maxX - bbox.minX, bbox.maxY - bbox.minY);
         ctx.fillStyle = 'rgba(0, 0, 0, 0.075)';
         ctx.fill();
@@ -479,13 +479,11 @@ export class CanvasGraphView extends GraphView {
     if (!this.touchPosition) {
       const highlighted = this.highlighting.get();
       for (const highlightedEntity of highlighted) {
-        if (highlightedEntity.type === GraphEntityType.Node) {
-          ctx.beginPath();
-          const bbox = this.getBoundingBox([highlightedEntity.entity as UniversalGraphNode], 10);
-          ctx.rect(bbox.minX, bbox.minY, bbox.maxX - bbox.minX, bbox.maxY - bbox.minY);
-          ctx.fillStyle = 'rgba(0, 0, 0, 0.075)';
-          ctx.fill();
-        }
+        ctx.beginPath();
+        const bbox = this.getEntityBoundingBox([highlightedEntity], 10);
+        ctx.rect(bbox.minX, bbox.minY, bbox.maxX - bbox.minX, bbox.maxY - bbox.minY);
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.075)';
+        ctx.fill();
       }
     }
   }
@@ -495,7 +493,7 @@ export class CanvasGraphView extends GraphView {
     for (const d of this.layoutGroups) {
       if (d.leaves.length) {
         ctx.beginPath();
-        const bbox = this.getBoundingBox(d.leaves.map(entry => entry.reference), 10);
+        const bbox = this.getNodeBoundingBox(d.leaves.map(entry => entry.reference), 10);
         ctx.fillStyle = d.color;
         ctx.strokeStyle = d.color;
         ctx.rect(bbox.minX, bbox.minY, bbox.maxX - bbox.minX, bbox.maxY - bbox.minY);

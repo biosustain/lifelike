@@ -58,6 +58,16 @@ export interface PlacementOptions {
  */
 export interface PlacedObject {
   /**
+   * Get the bounding box.
+   */
+  getBoundingBox(): {
+    minX: number,
+    minY: number,
+    maxX: number,
+    maxY: number,
+  };
+
+  /**
    * Check to see if the given coordinates intersects with the object.
    * @param x the X coordinate to check
    * @param y the Y coordinate to check
@@ -76,16 +86,6 @@ export interface PlacedObject {
  */
 export interface PlacedNode extends PlacedObject {
   resizable: boolean;
-
-  /**
-   * Get the bounding box of the node.
-   */
-  getBoundingBox(): {
-    minX: number,
-    minY: number,
-    maxX: number,
-    maxY: number,
-  };
 
   /**
    * Get the first intersection point of a line coming from outside this object
