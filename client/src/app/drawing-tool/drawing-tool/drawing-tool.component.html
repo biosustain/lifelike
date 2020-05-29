@@ -53,14 +53,6 @@
         redo
       </mat-icon>
     </div>
-    <div class="tool-panel-group">
-      <mat-icon
-        matTooltip="Apply Automatic Layout"
-        (click)='graphCanvas.automaticLayoutEnabled ? stopGraphLayout() : startGraphLayout()'
-        [ngClass]='graphCanvas && graphCanvas.automaticLayoutEnabled ? "not_saved" : ""'>
-        offline_bolt
-      </mat-icon>
-    </div>
   </div>
   <!-- Info Panel UI -->
   <app-info-panel
