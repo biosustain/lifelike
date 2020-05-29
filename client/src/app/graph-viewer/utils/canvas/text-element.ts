@@ -43,6 +43,11 @@ export class TextElement {
   readonly horizontalOverflow: boolean;
   readonly verticalOverflow: boolean;
 
+  /**
+   * Create a new instance.
+   * @param ctx rendering context
+   * @param options textbox options
+   */
   constructor(private ctx: CanvasRenderingContext2D, options: TextboxOptions) {
     Object.assign(this, options);
 
@@ -61,24 +66,39 @@ export class TextElement {
 
     // Calculate vertical alignment
     this.actualHeight = this.lines.length * this.actualLineHeight - this.lineMetrics.actualBoundingBoxDescent;
+    this.yOffset = this.calculateElementTopOffset(this.actualHeight);
+  }
+
+  /**
+   * Calculate the top offset of all the lines based on the vertical alignment.
+   * @param actualHeight the height of the element
+   */
+  private calculateElementTopOffset(actualHeight: number | undefined) {
+    // TODO: This might not actually work properly for all alignments
     if (this.verticalAlign === TextAlignment.End) {
       if (this.height != null) {
-        this.yOffset = this.height - this.actualHeight;
+        return this.height - actualHeight;
       } else {
-        this.yOffset = -this.actualHeight;
+        return -actualHeight;
       }
     } else if (this.verticalAlign === TextAlignment.Center) {
       if (this.height != null) {
-        this.yOffset = (this.height - this.actualHeight) / 2;
+        return (this.height - actualHeight) / 2;
       } else {
-        this.yOffset = 0;
+        return 0;
       }
     } else {
-      this.yOffset = 0;
+      return 0;
     }
   }
 
-  calculateComputedLineMinX(metrics: TextMetrics, actualWidth: number | undefined): number {
+  /**
+   * Calculate the left offset for a given line based on the horizontal alignment.
+   * @param metrics metrics of the line
+   * @param actualWidth actual width of the whole text element
+   */
+  private calculateComputedLineLeftOffset(metrics: TextMetrics, actualWidth: number | undefined): number {
+    // TODO: This might not actually work properly for all alignments
     const width = metrics.width;
     if (this.horizontalAlign === TextAlignment.End) {
       if (this.width != null) {
@@ -101,6 +121,10 @@ export class TextElement {
     }
   }
 
+  /**
+   * Get the width that we need to adhere to, based on the set width
+   * or set max width.
+   */
   private getEffectiveWidth() {
     if (this.width != null && this.maxWidth != null) {
       return Math.min(this.width, this.maxWidth);
@@ -111,6 +135,10 @@ export class TextElement {
     }
   }
 
+  /**
+   * Get the height that we need to adhere to, based on the set height
+   * or set max height.
+   */
   private getEffectiveHeight() {
     if (this.height != null && this.maxHeight != null) {
       return Math.min(this.height, this.maxHeight);
@@ -121,7 +149,10 @@ export class TextElement {
     }
   }
 
-  computeLines(): {
+  /**
+   * Split up the text into lines based on width and height.
+   */
+  private computeLines(): {
     lines: ComputedLine[],
     verticalOverflow: boolean,
     horizontalOverflow: boolean,
@@ -183,7 +214,7 @@ export class TextElement {
       // Do X offset for center and other alignments
       // Do this in a second phase because actualWidth is still being calculated
       for (const line of lines) {
-        line.xOffset = this.calculateComputedLineMinX(line.metrics, actualWidth);
+        line.xOffset = this.calculateComputedLineLeftOffset(line.metrics, actualWidth);
       }
 
       return {
@@ -200,7 +231,7 @@ export class TextElement {
         lines: [{
           text: this.text,
           metrics,
-          xOffset: this.calculateComputedLineMinX(metrics, metrics.width),
+          xOffset: this.calculateComputedLineLeftOffset(metrics, metrics.width),
           horizontalOverflow: false,
         }],
         verticalOverflow: false,
@@ -210,7 +241,13 @@ export class TextElement {
     }
   }
 
-  * getWidthFittedLines(tokens: string[], maxWidth: number):
+  /**
+   * Helper method that iteratively measures the text of lines as
+   * words are added one by one until it exceeds the line width.
+   * @param tokens the words
+   * @param maxWidth the width to not exceed
+   */
+  private* getWidthFittedLines(tokens: string[], maxWidth: number):
     IterableIterator<{ line: string, metrics: TextMetrics, remainingTokens: boolean }> {
     if (!tokens.length) {
       return;
@@ -254,12 +291,22 @@ export class TextElement {
     }
   }
 
+  /**
+   * Draw the text centered at the given coordinates.
+   * @param x centered X
+   * @param y center Y
+   */
   drawCenteredAt(x: number, y: number) {
     const width = this.width != null ? this.width : this.actualWidth;
     const height = this.height != null ? this.height : this.actualHeight;
     this.draw(x - width / 2, y - height / 2);
   }
 
+  /**
+   * Draw the text using the top left X and Y coordinates.
+   * @param minX top left X
+   * @param minY top left Y
+   */
   draw(minX: number, minY: number) {
     this.ctx.font = this.font;
     for (let i = 0; i < this.lines.length; i++) {
@@ -294,15 +341,34 @@ export class TextElement {
   }
 }
 
+/**
+ * Orientation of text.
+ */
 export enum TextAlignment {
   Start = 'start',
   Center = 'center',
   End = 'end',
 }
 
+/**
+ * Stores the metrics for a given line in the text element.
+ */
 interface ComputedLine {
+  /**
+   * The line.
+   */
   text: string;
+  /**
+   * Metrics about the line.
+   */
   metrics: TextMetrics;
+  /**
+   * X offset of the line that is set when calculating horizontal alignment.
+   */
   xOffset: number;
+  /**
+   * Whether this line is actually too long for the text element and
+   * perhaps it should not be rendered.
+   */
   horizontalOverflow: boolean;
 }
