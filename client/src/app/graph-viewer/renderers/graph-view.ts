@@ -373,30 +373,64 @@ export abstract class GraphView implements GraphActionReceiver {
   // ========================================
 
   /**
+   * Get the bounding box containing all the given entities.
+   * @param entities the entities to check
+   * @param padding padding around all the entities
+   */
+  getEntityBoundingBox(entities: GraphEntity[], padding = 0) {
+    return this.getGroupBoundingBox(entities.map(entity => {
+      if (entity.type === GraphEntityType.Node) {
+        return this.placeNode(entity.entity as UniversalGraphNode).getBoundingBox();
+      } else if (entity.type === GraphEntityType.Edge) {
+        return this.placeEdge(entity.entity as UniversalGraphEdge).getBoundingBox();
+      } else {
+        throw new Error('unknown entity type: ' + entity.type);
+      }
+    }), padding);
+  }
+
+  /**
    * Get the bounding box containing all the given nodes.
    * @param nodes the nodes to check
    * @param padding padding around all the nodes
    */
-  getBoundingBox(nodes: UniversalGraphNode[], padding = 0) {
+  getNodeBoundingBox(nodes: UniversalGraphNode[], padding = 0) {
+    return this.getGroupBoundingBox(nodes.map(node => this.placeNode(node).getBoundingBox()), padding);
+  }
+
+  /**
+   * Get the bounding box containing all the given edges.
+   * @param edges the edges to check
+   * @param padding padding around all the edges
+   */
+  getEdgeBoundingBox(edges: UniversalGraphEdge[], padding = 0) {
+    return this.getGroupBoundingBox(edges.map(edge => this.placeEdge(edge).getBoundingBox()), padding);
+  }
+
+  /**
+   * Get the bounding box containing all the given bounding boxes.
+   * @param boundingBoxes bounding boxes to check
+   * @param padding padding around all the bounding boxes
+   */
+  getGroupBoundingBox(boundingBoxes: { minX: number, maxX: number, minY: number, maxY: number }[],
+                      padding = 0) {
     let minX = null;
     let minY = null;
     let maxX = null;
     let maxY = null;
 
-    for (const node of nodes) {
-      const nodeBBox = this.placeNode(node).getBoundingBox();
-
-      if (minX === null || minX > nodeBBox.minX + padding) {
-        minX = nodeBBox.minX - padding;
+    for (const bbox of boundingBoxes) {
+      if (minX === null || minX > bbox.minX + padding) {
+        minX = bbox.minX - padding;
       }
-      if (minY === null || minY > nodeBBox.minY + padding) {
-        minY = nodeBBox.minY - padding;
+      if (minY === null || minY > bbox.minY + padding) {
+        minY = bbox.minY - padding;
       }
-      if (maxX === null || maxX < nodeBBox.maxX + padding) {
-        maxX = nodeBBox.maxX + padding;
+      if (maxX === null || maxX < bbox.maxX + padding) {
+        maxX = bbox.maxX + padding;
       }
-      if (maxY === null || maxY < nodeBBox.maxY + padding) {
-        maxY = nodeBBox.maxY + padding;
+      if (maxY === null || maxY < bbox.maxY + padding) {
+        maxY = bbox.maxY + padding;
       }
     }
 
