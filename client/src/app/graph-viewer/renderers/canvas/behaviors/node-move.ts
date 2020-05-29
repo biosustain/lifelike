@@ -1,7 +1,7 @@
 import { cloneDeep } from 'lodash';
 import * as d3 from 'd3';
 import { GraphEntity, GraphEntityType, UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
-import { GraphCanvasView } from '../graph-canvas-view';
+import { CanvasGraphView } from '../canvas-graph-view';
 import { AbstractCanvasBehavior, BehaviorResult } from '../../behaviors';
 import { GraphEntityUpdate } from '../../../actions/graph';
 
@@ -16,7 +16,7 @@ export class MovableNode extends AbstractCanvasBehavior {
   private target: UniversalGraphNode | undefined;
   private originalTarget: UniversalGraphNode | undefined;
 
-  constructor(protected readonly graphView: GraphCanvasView) {
+  constructor(protected readonly graphView: CanvasGraphView) {
     super();
   }
 

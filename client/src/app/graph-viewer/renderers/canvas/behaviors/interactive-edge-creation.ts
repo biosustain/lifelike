@@ -1,14 +1,14 @@
 import * as d3 from 'd3';
 
 import { GraphEntityType, UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
-import { GraphCanvasView } from '../graph-canvas-view';
+import { CanvasGraphView } from '../canvas-graph-view';
 import { AbstractCanvasBehavior, BehaviorResult } from '../../behaviors';
 import { Arrowhead } from '../../../utils/canvas/line-heads/arrow';
 import { EdgeCreation } from '../../../actions/edges';
 import { isCtrlOrMetaPressed } from '../../../../shared/utils';
 
 export class InteractiveEdgeCreation extends AbstractCanvasBehavior {
-  constructor(private readonly graphView: GraphCanvasView) {
+  constructor(private readonly graphView: CanvasGraphView) {
     super();
   }
 
@@ -29,7 +29,7 @@ class ActiveEdgeCreation extends AbstractCanvasBehavior {
     }
   } = null;
 
-  constructor(private readonly graphView: GraphCanvasView,
+  constructor(private readonly graphView: CanvasGraphView,
               private readonly from: UniversalGraphNode) {
     super();
   }
