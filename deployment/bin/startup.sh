@@ -53,7 +53,7 @@ if [ "$TARGET" = staging ]
 then
     echo "Starting up staging"
     cd /srv
-    export $(cat staging.env | xargs)
+    export $(cat .env | xargs)
     sudo docker login -u $DOCKER_USER -p "$(cat keyfile.json)" https://gcr.io
     sudo docker pull gcr.io/$PROJECT_ID/kg-appserver-staging:$DOCKER_TAG
     sudo docker pull gcr.io/$PROJECT_ID/kg-webserver-staging:$DOCKER_TAG
@@ -66,7 +66,7 @@ if [ "$TARGET" = demo ]
 then
     echo "Starting up demo"
     cd /srv
-    export $(cat demo.env | xargs)
+    export $(cat .env | xargs)
     sudo docker login -u $DOCKER_USER -p "$(cat keyfile.json)" https://gcr.io
     sudo docker pull gcr.io/$PROJECT_ID/kg-appserver-demo:$DOCKER_TAG
     sudo docker pull gcr.io/$PROJECT_ID/kg-webserver-demo:$DOCKER_TAG
@@ -79,7 +79,7 @@ if [ "$TARGET" = production ]
 then
     echo "Starting up production"
     cd /srv
-    export $(cat prod.env | xargs)
+    export $(cat .env | xargs)
     sudo docker login -u $DOCKER_USER -p "$(cat keyfile.json)" https://gcr.io
     sudo docker pull gcr.io/$PROJECT_ID/kg-appserver-prod:$DOCKER_TAG
     sudo docker pull gcr.io/$PROJECT_ID/kg-webserver-prod:$DOCKER_TAG

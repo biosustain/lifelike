@@ -106,7 +106,7 @@ jobs:
                 echo "REDIS_HOST=$REDIS_HOST" >> staging.env
                 echo "REDIS_PORT=$REDIS_PORT" >> staging.env
                 echo "$GCE_SERVICE_ACCOUNT" >> keyfile.json
-                gcloud compute scp staging.env $GCE_INSTANCE:/srv --zone $GCE_INSTANCE_ZONE
+                gcloud compute scp staging.env $GCE_INSTANCE:/srv/.env --zone $GCE_INSTANCE_ZONE
                 gcloud compute scp keyfile.json $GCE_INSTANCE:/srv --zone $GCE_INSTANCE_ZONE
                 gcloud compute scp ./deployment/bin/startup.sh $GCE_INSTANCE:/srv --zone $GCE_INSTANCE_ZONE
                 gcloud compute scp ./deployment/bin/migration-manager.sh $GCE_INSTANCE:/srv --zone $GCE_INSTANCE_ZONE
