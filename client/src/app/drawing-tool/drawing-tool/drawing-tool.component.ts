@@ -90,7 +90,10 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngAfterViewInit() {
     const style = new KnowledgeMapStyle();
-    this.graphCanvas = new CanvasGraphView(this.canvasChild.nativeElement as HTMLCanvasElement, style, style);
+    this.graphCanvas = new CanvasGraphView(this.canvasChild.nativeElement as HTMLCanvasElement, {
+      nodeRenderStyle: style,
+      edgeRenderStyle: style,
+    });
     this.graphCanvas.behaviors.add('delete-keyboard-shortcut', new DeleteKeyboardShortcut(this.graphCanvas), -100);
     this.graphCanvas.behaviors.add('clipboard-keyboard-shortcut', new ClipboardKeyboardShortcut(this.graphCanvas), -100);
     this.graphCanvas.behaviors.add('history-keyboard-shorts', new HistoryKeyboardShortcuts(this.graphCanvas, this.snackBar), -100);
