@@ -13,8 +13,13 @@ export class SearchLinksComponent implements OnInit {
 
   @Input()
   set graphData(val: GraphData) {
+    // Check if search links are empty or undefined
+    const isEmpty = isNullOrUndefined(val.data.search) ?
+      true :
+      val.data.search.length ? false : true;
+
     if (
-      isNullOrUndefined(val.data.search)
+      isEmpty
     ) {
       val.data.search = this.generateSearchLinks(
         val.label
