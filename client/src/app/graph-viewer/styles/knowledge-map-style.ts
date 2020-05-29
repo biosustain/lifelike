@@ -19,6 +19,9 @@ import { Line } from '../utils/canvas/lines/lines';
 import { SolidLine } from '../utils/canvas/lines/solid';
 import { DashedLine } from '../utils/canvas/lines/dashed';
 
+/**
+ * Implements the style used on the Knowledge Graph.
+ */
 export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
   private readonly defaultSourceLineEndDescriptor: string = null;
   private readonly defaultTargetLineEndDescriptor = 'arrow';
@@ -36,7 +39,7 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
     let iconCode = null;
     let color = '#000';
 
-    // Check if there's some annotation styles to apply
+    // Pull style from the annotation types map
     const annotationStyle: AnnotationStyle = annotationTypesMap.get(d.label);
     if (annotationStyle) {
       if (annotationStyle.color) {
@@ -48,6 +51,10 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
     }
 
     if (d.label === 'note' && styleData.showDetail) {
+      // ---------------------------------
+      // Note WITH detail
+      // ---------------------------------
+
       const textbox = new TextElement(ctx, {
         width: d.data.width,
         height: d.data.height,
@@ -75,18 +82,25 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
         shapeFillColor: null,
         forceHighDetailLevel,
       });
+
     } else if (iconCode) {
+      // ---------------------------------
+      // Generic icon node + Note
+      // ---------------------------------
+
       const iconLabelColor = nullCoalesce(d.icon ? d.icon.color : null, color);
       const iconSize = nullCoalesce(d.icon ? d.icon.size : null, 50);
       const iconFontFace = nullCoalesce(d.icon ? d.icon.face : null, 'FontAwesome');
       const iconFont = `${iconSize}px ${iconFontFace}`;
 
+      // Textbox to draw the icon
       const iconTextbox = new TextElement(ctx, {
         text: nullCoalesce(iconCode, '?'),
         font: iconFont,
         fillStyle: iconLabelColor,
       });
 
+      // Textbox for the label below the icon
       const labelTextbox = new TextElement(ctx, {
         maxWidth: this.maxWidthIfUnsized,
         maxLines: 1,
@@ -102,7 +116,13 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
         labelTextbox,
         forceHighDetailLevel,
       });
+
     } else {
+      // ---------------------------------
+      // All other nodes
+      // ---------------------------------
+
+      // The text content of the node
       const textbox = new TextElement(ctx, {
         width: d.data.width,
         maxWidth: d.data.width ? null : this.maxWidthIfUnsized,
@@ -147,6 +167,12 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
     const sourceHeadType = styleData.sourceHeadType;
     const targetHeadType = styleData.targetHeadType;
 
+    // Find where the line intersects with the source and target nodes
+    // TODO: Consider using the 'closest point to bbox' instead of intersection point
+    const [toX, toY] = placedTo.lineIntersectionPoint(from.data.x, from.data.y);
+    const [fromX, fromY] = placedFrom.lineIntersectionPoint(to.data.x, to.data.y);
+
+    // Arrow/whatever at the beginning of the line
     const sourceLineEnd = this.createHead(
       nullIfEmpty(sourceHeadType),
       lineWidth,
@@ -154,6 +180,7 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
       this.defaultSourceLineEndDescriptor
     );
 
+    // Arrow/whatever at the end of the line
     const targetLineEnd = this.createHead(
       nullIfEmpty(targetHeadType),
       lineWidth,
@@ -161,9 +188,7 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
       this.defaultTargetLineEndDescriptor
     );
 
-    const [toX, toY] = placedTo.lineIntersectionPoint(from.data.x, from.data.y);
-    const [fromX, fromY] = placedFrom.lineIntersectionPoint(to.data.x, to.data.y);
-
+    // Label textbox, if any
     const textbox = d.label ? new TextElement(ctx, {
       text: d.label,
       font: (placementOptions.highlighted ? 'bold ' : '') + (16 * fontSizeScale) + 'px Roboto',
@@ -193,9 +218,15 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
     });
   }
 
-  createLine(type: string | undefined,
-             width: number,
-             style: string): Line | undefined {
+  /**
+   * Generate a line object (if any) based on the parameters.
+   * @param type the type of line
+   * @param width the width of the line
+   * @param style the color style
+   */
+  private createLine(type: string | undefined,
+                     width: number,
+                     style: string): Line | undefined {
     if (type == null) {
       return null;
     }
@@ -209,10 +240,17 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
     }
   }
 
-  createHead(type: string | undefined,
-             lineWidth: number,
-             strokeColor: string,
-             defaultType: string | undefined = null): LineHeadRenderer | undefined {
+  /**
+   * Generate a line head object (if any) based on the parameters.
+   * @param type the type of head
+   * @param lineWidth the width of the line
+   * @param strokeColor the stroke color
+   * @param defaultType the default fallback type
+   */
+  private createHead(type: string | undefined,
+                     lineWidth: number,
+                     strokeColor: string,
+                     defaultType: string | undefined = null): LineHeadRenderer | undefined {
     const effectiveType = nullCoalesce(nullIfEmpty(type), nullIfEmpty(defaultType));
 
     if (effectiveType == null) {
