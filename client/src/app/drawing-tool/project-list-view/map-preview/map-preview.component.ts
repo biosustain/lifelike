@@ -27,7 +27,7 @@ export class MapPreviewComponent implements OnInit {
   focusedEntity: GraphSelectionData = null;
 
   childMode = true;
-  @HostBinding('class.relative') value = true;
+  @HostBinding('class.relative') childPosition = false;
 
   // tslint:disable-next-line: variable-name
   _project: Project = null;
@@ -84,6 +84,7 @@ export class MapPreviewComponent implements OnInit {
       ).subscribe(
         resp => {
           this.childMode = false;
+          this.childPosition = true;
           // tslint:disable-next-line: no-string-literal
           this.project = resp['project'];
         },
