@@ -35,8 +35,12 @@ class ActiveEdgeCreation extends AbstractCanvasBehavior {
   }
 
   keyDown(event: KeyboardEvent): BehaviorResult {
-    // We can't let someone press delete right now
-    return BehaviorResult.Stop;
+    if (event.key === 'Escape' || event.key === 'Delete') {
+      this.graphView.requestRender();
+      return BehaviorResult.RemoveAndStop;
+    } else {
+      return BehaviorResult.Stop;
+    }
   }
 
   click(event: MouseEvent): BehaviorResult {
