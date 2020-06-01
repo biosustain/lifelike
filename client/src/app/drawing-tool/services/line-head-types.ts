@@ -4,7 +4,7 @@ export interface LineHeadType {
 }
 
 export const LINE_HEAD_TYPES: Map<string, LineHeadType> = new Map([
-  ['none', {name: 'None', descriptor: ''}],
+  ['none', {name: 'Blank', descriptor: ''}],
   ['arrow', {name: 'Arrow', descriptor: 'arrow'}],
   ['circle-arrow', {name: 'Circle Arrow', descriptor: 'arrow,spacer,circle'}],
   ['square-arrow', {name: 'Square Arrow', descriptor: 'arrow,spacer,square'}],
