@@ -271,6 +271,10 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
       return null;
     }
 
+    if (descriptor === 'none') {
+      return null;
+    }
+
     return new CompoundLineHead(
       descriptor.split(',').map(token => {
         switch (token) {
