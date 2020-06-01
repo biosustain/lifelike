@@ -5,7 +5,7 @@ import os
 from flask import render_template
 from sqlalchemy.sql.expression import text
 from neo4japp.factory import create_app
-from neo4japp.models import AppRole, AppUser, Project, Projects, OrganismGeneMatch
+from neo4japp.models import AppRole, AppUser, Directory, Project, Projects, OrganismGeneMatch
 
 from neo4japp.database import db, get_account_service
 
@@ -51,6 +51,15 @@ def seed():
 
                     db.session.add(proj)
                     db.session.flush()
+
+                    directory = Directory(
+                        name='home',
+                        projects_id=proj.id,
+                    )
+
+                    db.session.add(directory)
+                    db.session.flush()
+
                     db.session.commit()
 
             elif fix["table"] == "project":
@@ -65,7 +74,8 @@ def seed():
                         public=r["public"],
                         author=r["author"],
                         # temporary fix
-                        user_id=idx+1
+                        user_id=idx+1,
+                        dir_id=db.session.query(Directory).first().id,
                     )
 
                     db.session.add(draw_proj)

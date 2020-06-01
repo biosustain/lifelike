@@ -1,8 +1,10 @@
 from sqlalchemy.dialects import postgresql
+from sqlalchemy.orm.query import Query
 
 from neo4japp.database import db
 from neo4japp.models import AppUser
 from neo4japp.models.common import RDBMSBase
+
 
 
 class FileContent(RDBMSBase):
@@ -43,3 +45,14 @@ class Directory(RDBMSBase):
         nullable=False,
     )
     files = db.relationship('Files')
+
+    @classmethod
+    def query_child_directories(cls, dir_id: int) -> Query:
+        base_query = db.session.query(cls).filter(cls.id == dir_id).cte(recursive=True)
+        query = base_query.union_all(
+            db.session.query(cls).join(
+                base_query,
+                base_query.c.id == cls.directory_parent_id
+            )
+        )
+        return query
