@@ -52,7 +52,17 @@ def upgrade():
     session = Session(op.get_bind())
 
     # There's only one hardcoded project right now
-    projects = Projects.query.one()
+    projects = session.query(Projects).one_or_none()
+
+    # This will only be true in development
+    if not projects:
+        projects = Projects(
+            project_name='default',
+            description='',
+            users=[],
+        )
+        session.add(projects)
+        session.flush()
 
     # Bucket everything into a single directory
     directory = Directory(
@@ -66,9 +76,11 @@ def upgrade():
 
     for fi in session.query(Files).all():
         setattr(fi, 'dir_id', directory.id)
+        session.add(fi)
 
     for proj in session.query(Project).all():
         setattr(proj, 'dir_id', directory.id)
+        session.add(proj)
 
     session.commit()
 
