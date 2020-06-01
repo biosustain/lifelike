@@ -108,6 +108,8 @@ export abstract class AbstractShapeHead implements LineHead {
        startY: number,
        endX: number,
        endY: number): DrawnLineHead {
+    ctx.beginPath();
+
     // Create path
     this.createPath(ctx, startX, startY, endX, endY);
 
