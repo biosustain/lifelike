@@ -29,7 +29,6 @@ export interface DuplicateNodeEdgePair {
     edge: DuplicateVisEdge;
 }
 
-// TODO LL-906: Remove if unused
 export interface Publication extends GraphNode {
     data: {
         journal: string;
@@ -39,7 +38,6 @@ export interface Publication extends GraphNode {
     };
 }
 
-// TODO LL-906: Remove if unused
 export interface Reference extends GraphNode {
     data: {
         entry1Text: string;
@@ -141,11 +139,6 @@ export interface GetClusterSnippetsResult {
     queryData: DuplicateVisEdge[];
     snippetData: GetSnippetsResult[];
     totalResults: number;
-}
-
-// TODO LL-906: Remove if unused
-export interface GetLabelsResult {
-    labels: Set<string>;
 }
 
 // TODO LL-906: Consider re-naming this and related functions/services
