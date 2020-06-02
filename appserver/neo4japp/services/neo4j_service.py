@@ -2,10 +2,8 @@ import attr
 from typing import Dict, List, Optional, Union
 
 from neo4japp.data_transfer_objects.visualization import (
-    ClusteredNode,
     DuplicateNodeEdgePair,
     DuplicateVisEdge,
-    GetClusterGraphDataResult,
     GetClusterSnippetsResult,
     GetEdgeSnippetsResult,
     GetReferenceTableDataResult,
@@ -256,31 +254,6 @@ class Neo4JService(GraphBaseDao):
             ))
         return GetReferenceTableDataResult(
             reference_table_rows=reference_table_rows
-        )
-
-    # TODO LL-906: Remove me
-    def get_cluster_graph_data(self, clustered_nodes: List[ClusteredNode]):
-        results: Dict[int, Dict[str, int]] = dict()
-
-        for node in clustered_nodes:
-            for edge in node.edges:
-                query = self.get_association_snippet_count_query(edge.from_label, edge.to_label)
-                count = self.graph.run(
-                    query,
-                    {
-                        'from_id': edge.original_from,
-                        'to_id': edge.original_to,
-                        'description': edge.label
-                    }
-                ).evaluate()
-
-                if (results.get(node.node_id, None) is not None):
-                    results[node.node_id][edge.label] = count
-                else:
-                    results[node.node_id] = {edge.label: count}
-
-        return GetClusterGraphDataResult(
-            results=results,
         )
 
     def get_snippets_for_edge(

@@ -9,7 +9,6 @@ from neo4japp.constants import *
 from neo4japp.database import get_neo4j_service_dao
 
 from neo4japp.data_transfer_objects.visualization import (
-    GetGraphDataForClusterRequest,
     GetSnippetsForEdgeRequest,
     GetSnippetsForClusterRequest,
     GetSnippetsFromEdgeRequest,
@@ -77,6 +76,7 @@ def expand_graph_node(req: ExpandNodeRequest):
     return SuccessResponse(result=node, status_code=200)
 
 
+# TODO LL-906: Remove if unused
 @bp.route('/get-snippets-from-edge', methods=['POST'])
 @jsonify_with_class(GetSnippetsFromEdgeRequest)
 def get_snippets_from_edge(req: GetSnippetsFromEdgeRequest):
@@ -95,17 +95,6 @@ def get_reference_table_data(req: ReferenceTableDataRequest):
         req.node_edge_pairs,
     )
     return SuccessResponse(reference_table_data, status_code=200)
-
-
-# TODO LL-906: Remove me
-@bp.route('/get-cluster-graph-data', methods=['POST'])
-@jsonify_with_class(GetGraphDataForClusterRequest)
-def get_cluster_graph_data(req: GetGraphDataForClusterRequest):
-    neo4j = get_neo4j_service_dao()
-    cluster_graph_data_result = neo4j.get_cluster_graph_data(
-        req.clustered_nodes,
-    )
-    return SuccessResponse(cluster_graph_data_result, status_code=200)
 
 
 @bp.route('/get-snippets-for-edge', methods=['POST'])

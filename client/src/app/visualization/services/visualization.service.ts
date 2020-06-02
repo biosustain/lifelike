@@ -4,14 +4,10 @@ import { HttpClient } from '@angular/common/http';
 import { map } from 'rxjs/operators';
 
 import {
-    ClusteredNode,
     DuplicateNodeEdgePair,
-    DuplicateVisEdge,
     GetClusterSnippetsResult,
     GetEdgeSnippetsResult,
-    GetClusterGraphDataResult,
     GetReferenceTableDataResult,
-    GetSnippetsResult,
     Neo4jResults,
     NewClusterSnippetsPageRequest,
     NewEdgeSnippetsPageRequest,
@@ -45,13 +41,6 @@ export class VisualizationService {
     getReferenceTableData(nodeEdgePairs: DuplicateNodeEdgePair[]) {
         return this.http.post<{result: GetReferenceTableDataResult}>(
             `${this.visApi}/get-reference-table-data`, {nodeEdgePairs},
-        ).pipe(map(resp => resp.result));
-    }
-
-    // TODO LL-906: Remove me
-    getClusterGraphData(clusteredNodes: ClusteredNode[]) {
-        return this.http.post<{result: GetClusterGraphDataResult}>(
-            `${this.visApi}/get-cluster-graph-data`, {clusteredNodes},
         ).pipe(map(resp => resp.result));
     }
 

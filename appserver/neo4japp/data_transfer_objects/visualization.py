@@ -79,12 +79,6 @@ class DuplicateNodeEdgePair(CamelDictMixin):
 
 
 @attr.s(frozen=True)
-class ClusteredNode(CamelDictMixin):
-    node_id: int = attr.ib()
-    edges: List[DuplicateVisEdge] = attr.ib()
-
-
-@attr.s(frozen=True)
 class ReferenceTableRow(CamelDictMixin):
     node_id: str = attr.ib()
     node_display_name: str = attr.ib()
@@ -111,11 +105,6 @@ class ReferenceTableDataRequest(CamelDictMixin):
 
 
 @attr.s(frozen=True)
-class GetGraphDataForClusterRequest(CamelDictMixin):
-    clustered_nodes: List[ClusteredNode] = attr.ib()
-
-
-@attr.s(frozen=True)
 class GetSnippetsForEdgeRequest(CamelDictMixin):
     page: int = attr.ib()
     limit: int = attr.ib()
@@ -139,12 +128,6 @@ class GetSnippetsFromEdgeResult(CamelDictMixin):
     to_node_id: int = attr.ib()
     association: str = attr.ib()
     snippets: List[Snippet] = attr.ib()
-
-
-# TODO LL-906: Remove me
-@attr.s(frozen=True)
-class GetClusterGraphDataResult(CamelDictMixin):
-    results: Dict[int, Dict[str, int]] = attr.ib()
 
 
 @attr.s(frozen=True)
