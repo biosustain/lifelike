@@ -36,12 +36,6 @@ export interface DuplicateNodeEdgePair {
 }
 
 // TODO LL-906: Remove if unused
-export interface EdgeSnippetCount {
-    edge: VisEdge;
-    count: number;
-}
-
-// TODO LL-906: Remove if unused
 export interface NodeEdgePair {
     node: VisNode;
     edge: VisEdge;
@@ -179,11 +173,6 @@ export interface GetLabelsResult {
 // TODO LL-906: Consider re-naming this and related functions/services
 export interface GetReferenceTableDataResult {
     referenceTableRows: ReferenceTableRow[];
-}
-
-// TODO LL-906: Remove if unused
-export interface GetSnippetCountsFromEdgesResult {
-    edgeSnippetCounts: EdgeSnippetCount[];
 }
 
 export interface GetSnippetsResult {
