@@ -6,9 +6,9 @@ from neo4japp.data_transfer_objects.visualization import (
     DuplicateNodeEdgePair,
     DuplicateVisEdge,
     EdgeSnippetCount,
-    GetClusterDataResult,
     GetClusterGraphDataResult,
-    GetClusterSnippetDataResult,
+    GetClusterSnippetsResult,
+    GetEdgeSnippetsResult,
     GetReferenceTableDataResult,
     GetSnippetCountsFromEdgesResult,
     GetSnippetsFromEdgeResult,
@@ -235,6 +235,7 @@ class Neo4JService(GraphBaseDao):
             snippets=snippets
         )
 
+    # TODO LL-906 Remove if unused
     # Currently unused
     # def get_snippet_counts_from_edges(self, edges: List[VisEdge]):
     #     edge_snippet_counts: List[EdgeSnippetCount] = []
@@ -274,6 +275,7 @@ class Neo4JService(GraphBaseDao):
             reference_table_rows=reference_table_rows
         )
 
+    # TODO LL-906: Remove me
     def get_cluster_graph_data(self, clustered_nodes: List[ClusteredNode]):
         results: Dict[int, Dict[str, int]] = dict()
 
@@ -298,29 +300,110 @@ class Neo4JService(GraphBaseDao):
             results=results,
         )
 
-    def get_cluster_data(
+    def get_snippets_for_edge(
         self,
-        clustered_nodes: List[ClusteredNode]
-    ) -> GetClusterDataResult:
-        graph_data: Dict[int, Dict[str, int]] = dict()
+        edge: VisEdge,
+        page: int,
+        limit: int,
+    ) -> GetEdgeSnippetsResult:
+        result = self.get_snippets_from_edge(edge)
+        total_results = len(result.snippets)
+
+        starting_idx = (page - 1) * limit
+        ending_idx = (page * limit) - 1
+        found_start = False
+        idx = 0
+
+        new_snippets_result = GetSnippetsFromEdgeResult(
+            from_node_id=result.from_node_id,
+            to_node_id=result.to_node_id,
+            association=result.association,
+            snippets=[]
+        )
+
+        for snippet in result.snippets:
+            if idx < starting_idx:
+                idx += 1
+                continue
+            elif idx > ending_idx:
+                # Reached the end of the result limit before hitting the end of the bucket
+                return GetEdgeSnippetsResult(
+                    snippet_data=new_snippets_result,
+                    total_results=total_results,
+                    query_data=edge,
+                )
+            elif idx == starting_idx:
+                found_start = True
+
+            if found_start:
+                new_snippets_result.snippets.append(snippet)
+
+            idx += 1
+
+        # Reached the end of the buckets and didn't hit the result limit
+        return GetEdgeSnippetsResult(
+            snippet_data=new_snippets_result,
+            total_results=total_results,
+            query_data=edge,
+        )
+
+    def get_snippets_for_cluster(
+        self,
+        edges: List[DuplicateVisEdge],
+        page: int,
+        limit: int,
+    ) -> GetClusterSnippetsResult:
         snippet_data: List[GetSnippetsFromEdgeResult] = []
+        total_results = 0
 
-        for node in clustered_nodes:
-            for edge in node.edges:
-                result = self.get_snippets_from_duplicate_edge(edge)
-                count = len(result.snippets)
-                if (graph_data.get(node.node_id, None) is not None):
-                    graph_data[node.node_id][edge.label] = count
-                else:
-                    graph_data[node.node_id] = {edge.label: count}
-
-                snippet_data.append(result)
+        for edge in edges:
+            result = self.get_snippets_from_duplicate_edge(edge)
+            snippet_data.append(result)
+            total_results += len(result.snippets)
 
         snippet_data.sort(key=lambda x: len(x.snippets), reverse=True)
 
-        return GetClusterDataResult(
-            graph_data=GetClusterGraphDataResult(results=graph_data),
-            snippet_data=GetClusterSnippetDataResult(results=snippet_data),
+        new_snippet_data = []
+        starting_idx = (page - 1) * limit
+        ending_idx = (page * limit) - 1
+        found_start = False
+        idx = 0
+        for result in snippet_data:
+            new_snippets_result = GetSnippetsFromEdgeResult(
+                from_node_id=result.from_node_id,
+                to_node_id=result.to_node_id,
+                association=result.association,
+                snippets=[]
+            )
+
+            for snippet in result.snippets:
+                if idx < starting_idx:
+                    idx += 1
+                    continue
+                elif idx > ending_idx:
+                    # Reached the end of the result limit before hitting the end of the bucket
+                    new_snippet_data.append(new_snippets_result)
+                    return GetClusterSnippetsResult(
+                        snippet_data=new_snippet_data,
+                        total_results=total_results,
+                        query_data=edges,
+                    )
+                elif idx == starting_idx:
+                    found_start = True
+
+                if found_start:
+                    new_snippets_result.snippets.append(snippet)
+
+                idx += 1
+
+            if found_start:
+                new_snippet_data.append(new_snippets_result)
+
+        # Reached the end of the buckets and didn't hit the result limit
+        return GetClusterSnippetsResult(
+            snippet_data=new_snippet_data,
+            total_results=total_results,
+            query_data=edges,
         )
 
     def get_genes_to_organisms(
