@@ -179,7 +179,26 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
           });
 
           // Update graphData ..
-          Object.assign(this.graphData, val);
+          const {
+            id,
+            label,
+            group,
+            edges,
+            hyperlink,
+            detail
+          } = val;
+
+          this.graphData = {
+            id,
+            label,
+            group,
+            edges,
+            hyperlink,
+            detail,
+            data: this.graphData.data
+          };
+
+          console.log(this.graphData);
         }
       );
 
