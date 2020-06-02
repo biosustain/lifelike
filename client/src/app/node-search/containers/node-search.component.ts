@@ -17,12 +17,10 @@ export interface Nodes {
     <app-node-search-bar
       (results)="getResults($event)"
       [domainsFilter]="domainsFilter"
-      [goClassesFilter]="goClassesFilter"
       [typesFilter]="typesFilter"
     ></app-node-search-bar>
     <app-node-result-filter
       (domainsFilter)="getDomainsFilter($event)"
-      (goClassesFilter)="getGoClassesFilter($event)"
       (typesFilter)="getTypesFilter($event)"
     ></app-node-result-filter>
     <app-node-result-list
@@ -42,7 +40,6 @@ export class NodeSearchComponent {
   };
   dataSource: Nodes[] = [];
   domainsFilter = '';
-  goClassesFilter = '';
   typesFilter = '';
 
   constructor(private sanitizer: DomSanitizer) {
@@ -123,21 +120,6 @@ export class NodeSearchComponent {
       domainsPredicate += domain + ' OR ';
     });
     this.domainsFilter = domainsPredicate;
-  }
-
-  getGoClassesFilter(selectedGoClasses: string[]) {
-    let goclassesPredicate = '(';
-    if (selectedGoClasses.length === 0) {
-      this.goClassesFilter = '';
-      return;
-    }
-    selectedGoClasses.forEach((domain, index) => {
-      if (selectedGoClasses.length - 1 === index) {
-        return goclassesPredicate += domain + ')';
-      }
-      goclassesPredicate += domain + ' OR ';
-    });
-    this.goClassesFilter = goclassesPredicate;
   }
 
   getTypesFilter(selectedTypes: string[]) {

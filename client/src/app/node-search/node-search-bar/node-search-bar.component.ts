@@ -12,7 +12,6 @@ import {FTSQueryRecord} from '../../interfaces';
 export class NodeSearchBarComponent implements OnInit, OnChanges {
 
   @Input() domainsFilter = '';
-  @Input() goClassesFilter = '';
   @Input() typesFilter = '';
   filter = 'labels(node)';
   @Output() results = new EventEmitter<any>();
@@ -41,7 +40,7 @@ export class NodeSearchBarComponent implements OnInit, OnChanges {
   }
 
   private filterComposer() {
-    const filters = [this.domainsFilter, this.goClassesFilter, this.typesFilter];
+    const filters = [this.domainsFilter, this.typesFilter];
     const isEmpty = (currentValue) => currentValue === '';
     if (filters.every(isEmpty)) {
       return 'labels(n)';
