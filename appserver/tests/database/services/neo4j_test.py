@@ -148,27 +148,6 @@ def test_get_reference_table_data(
     assert reference_table_rows[0].snippet_count == 1
 
 
-def test_get_cluster_graph_data(
-    neo4j_service_dao,
-    gas_gangrene_treatment_clustered_nodes,
-    gas_gangrene_with_associations_and_references,
-):
-    get_cluster_graph_data_result = neo4j_service_dao.get_cluster_graph_data(
-        gas_gangrene_treatment_clustered_nodes,
-    )
-
-    assert get_cluster_graph_data_result.results is not None
-    assert len(get_cluster_graph_data_result.results.keys()) == 1
-
-    node_id = list(get_cluster_graph_data_result.results.keys())[0]
-
-    assert len(get_cluster_graph_data_result.results[node_id].keys()) == 1
-
-    edge_id = list(get_cluster_graph_data_result.results[node_id].keys())[0]
-
-    assert get_cluster_graph_data_result.results[node_id][edge_id] == 1
-
-
 # TODO LL-906 Should update this
 def test_get_cluster_data(
     neo4j_service_dao,

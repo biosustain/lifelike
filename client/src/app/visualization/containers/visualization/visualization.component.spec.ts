@@ -12,7 +12,6 @@ import { of } from 'rxjs';
 import { DataSet } from 'vis-data';
 
 import {
-    ClusteredNode,
     DuplicateVisEdge,
     ExpandNodeRequest,
     GraphNode,
@@ -41,7 +40,6 @@ describe('VisualizationComponent', () => {
     let mockNeo4jResults: Neo4jResults;
     let mockVisEdge: VisEdge;
     let mockDuplicateVisEdge: DuplicateVisEdge;
-    let mockClusteredNode: ClusteredNode;
 
     configureTestSuite(() => {
         TestBed.configureTestingModule({
@@ -98,11 +96,6 @@ describe('VisualizationComponent', () => {
             duplicateOf: 1,
             originalFrom: 2,
             originalTo: 1,
-        };
-
-        mockClusteredNode = {
-            nodeId: 1,
-            edges: [mockDuplicateVisEdge],
         };
 
         fixture = TestBed.createComponent(VisualizationComponent);
