@@ -85,12 +85,6 @@ class ClusteredNode(CamelDictMixin):
 
 
 @attr.s(frozen=True)
-class EdgeSnippetCount(CamelDictMixin):
-    edge: VisEdge = attr.ib()
-    count: int = attr.ib()
-
-
-@attr.s(frozen=True)
 class ReferenceTableRow(CamelDictMixin):
     node_id: str = attr.ib()
     node_display_name: str = attr.ib()
@@ -114,11 +108,6 @@ class GetSnippetsFromEdgeRequest(CamelDictMixin):
 @attr.s(frozen=True)
 class GetSnippetsFromDuplicateEdgeRequest(CamelDictMixin):
     edge: DuplicateVisEdge = attr.ib()
-
-
-@attr.s(frozen=True)
-class GetSnippetCountsFromEdgesRequest(CamelDictMixin):
-    edges: List[VisEdge] = attr.ib()
 
 
 @attr.s(frozen=True)
@@ -155,11 +144,6 @@ class GetSnippetsFromEdgeResult(CamelDictMixin):
     to_node_id: int = attr.ib()
     association: str = attr.ib()
     snippets: List[Snippet] = attr.ib()
-
-
-@attr.s(frozen=True)
-class GetSnippetCountsFromEdgesResult(CamelDictMixin):
-    edge_snippet_counts: List[EdgeSnippetCount] = attr.ib()
 
 
 # TODO LL-906: Remove me

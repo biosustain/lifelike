@@ -5,12 +5,10 @@ from neo4japp.data_transfer_objects.visualization import (
     ClusteredNode,
     DuplicateNodeEdgePair,
     DuplicateVisEdge,
-    EdgeSnippetCount,
     GetClusterGraphDataResult,
     GetClusterSnippetsResult,
     GetEdgeSnippetsResult,
     GetReferenceTableDataResult,
-    GetSnippetCountsFromEdgesResult,
     GetSnippetsFromEdgeResult,
     ReferenceTableRow,
     Snippet,
@@ -234,21 +232,6 @@ class Neo4JService(GraphBaseDao):
             association=edge.label,
             snippets=snippets
         )
-
-    # TODO LL-906 Remove if unused
-    # Currently unused
-    # def get_snippet_counts_from_edges(self, edges: List[VisEdge]):
-    #     edge_snippet_counts: List[EdgeSnippetCount] = []
-    #     for edge in edges:
-    #         query = self.get_association_snippet_count_query(edge.from_, edge.to, edge.label)
-    #         count = self.graph.run(query).evaluate()
-    #         edge_snippet_counts.append(EdgeSnippetCount(
-    #             edge=edge,
-    #             count=count,
-    #         ))
-    #     return GetSnippetCountsFromEdgesResult(
-    #         edge_snippet_counts=edge_snippet_counts,
-    #     )
 
     def get_reference_table_data(self, node_edge_pairs: List[DuplicateNodeEdgePair]):
         reference_table_rows: List[ReferenceTableRow] = []
