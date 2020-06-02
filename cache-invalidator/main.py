@@ -5,7 +5,7 @@ import time
 import redis
 import json
 
-SUCCESSFUL_SLEEP_TIME = 3600 * 24 * 7   # refresh cached data this often
+SUCCESSFUL_SLEEP_TIME = 3600 * 24       # refresh cached data this often
 ERROR_INITIAL_SLEEP_TIME = 60           # if error occurs, try again sooner
 ERROR_SLEEP_TIME_MULTIPLIER = 2         # on subsequent errors, sleep longer
 ERROR_MAX_SLEEP_TIME = 3600 * 6         # but not longer than this
