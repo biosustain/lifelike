@@ -11,7 +11,6 @@ from neo4japp.database import get_neo4j_service_dao
 from neo4japp.data_transfer_objects.visualization import (
     GetSnippetsForEdgeRequest,
     GetSnippetsForClusterRequest,
-    GetSnippetsFromEdgeRequest,
     ReferenceTableDataRequest,
 )
 from neo4japp.util import CamelDictMixin, SuccessResponse, jsonify_with_class
@@ -74,17 +73,6 @@ def expand_graph_node(req: ExpandNodeRequest):
     neo4j = get_neo4j_service_dao()
     node = neo4j.expand_graph(req.node_id, req.filter_labels, req.limit)
     return SuccessResponse(result=node, status_code=200)
-
-
-# TODO LL-906: Remove if unused
-@bp.route('/get-snippets-from-edge', methods=['POST'])
-@jsonify_with_class(GetSnippetsFromEdgeRequest)
-def get_snippets_from_edge(req: GetSnippetsFromEdgeRequest):
-    neo4j = get_neo4j_service_dao()
-    snippets_result = neo4j.get_snippets_from_edge(
-        req.edge,
-    )
-    return SuccessResponse(result=snippets_result, status_code=200)
 
 
 @bp.route('/get-reference-table-data', methods=['POST'])
