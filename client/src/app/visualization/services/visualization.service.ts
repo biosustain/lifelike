@@ -7,13 +7,15 @@ import {
     ClusteredNode,
     DuplicateNodeEdgePair,
     DuplicateVisEdge,
-    GetClusterDataResult,
+    GetClusterSnippetsResult,
+    GetEdgeSnippetsResult,
     GetClusterGraphDataResult,
     GetReferenceTableDataResult,
     GetSnippetsResult,
     Neo4jResults,
+    NewClusterSnippetsPageRequest,
+    NewEdgeSnippetsPageRequest,
     NodeLegend,
-    VisEdge,
 } from 'app/interfaces';
 import { NODE_EXPANSION_LIMIT } from 'app/shared/constants';
 
@@ -40,18 +42,14 @@ export class VisualizationService {
         ).pipe(map(resp => resp.result));
     }
 
-    getSnippetsFromEdge(edge: VisEdge) {
-        return this.http.post<{result: GetSnippetsResult}>(
-            `${this.visApi}/get-snippets-from-edge`, {edge},
-        ).pipe(map(resp => resp.result));
-    }
-
+    // TODO LL-906 remove me if unused
     getSnippetsFromDuplicateEdge(edge: DuplicateVisEdge) {
         return this.http.post<{result: GetSnippetsResult}>(
             `${this.visApi}/get-snippets-from-duplicate-edge`, {edge},
         ).pipe(map(resp => resp.result));
     }
 
+    // TODO LL-906 Remove if unused
     // Currently unused
     // getSnippetCountsFromEdges(edges: VisEdge[]) {
     //     return this.http.post<{result: GetSnippetCountsFromEdgesResult}>(
@@ -65,6 +63,7 @@ export class VisualizationService {
         ).pipe(map(resp => resp.result));
     }
 
+    // TODO LL-906: Remove me
     getClusterGraphData(clusteredNodes: ClusteredNode[]) {
         return this.http.post<{result: GetClusterGraphDataResult}>(
             `${this.visApi}/get-cluster-graph-data`, {clusteredNodes},
@@ -77,9 +76,25 @@ export class VisualizationService {
         ).pipe(map(resp => resp.result));
     }
 
-    getClusterData(clusteredNodes: ClusteredNode[]) {
-        return this.http.post<{result: GetClusterDataResult}>(
-            `${this.visApi}/get-cluster-data`, {clusteredNodes}
+    // TODO LL-906: Need to replace `edges` with an appropriate data structure (VisEdge is extraneous)
+    getSnippetsForEdge(request: NewEdgeSnippetsPageRequest) {
+        return this.http.post<{result: GetEdgeSnippetsResult}>(
+            `${this.visApi}/get-snippets-for-edge`, {
+                page: request.page,
+                limit: request.limit,
+                edge: request.queryData,
+            }
+        ).pipe(map(resp => resp.result));
+    }
+
+    // TODO LL-906: Need to replace `edges` with an appropriate data structure (DuplicateVisEdge is extraneous)
+    getSnippetsForCluster(request: NewClusterSnippetsPageRequest) {
+        return this.http.post<{result: GetClusterSnippetsResult}>(
+            `${this.visApi}/get-snippets-for-cluster`, {
+                page: request.page,
+                limit: request.limit,
+                edges: request.queryData,
+            }
         ).pipe(map(resp => resp.result));
     }
 }

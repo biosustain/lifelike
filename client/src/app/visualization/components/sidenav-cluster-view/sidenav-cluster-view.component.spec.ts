@@ -15,6 +15,7 @@ import { RootStoreModule } from 'app/***ARANGO_USERNAME***-store';
 import { SidenavClusterViewComponent } from './sidenav-cluster-view.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
+// TODO LL-906: Update tests
 describe('SidenavClusterViewComponent', () => {
     let component: SidenavClusterViewComponent;
     let fixture: ComponentFixture<SidenavClusterViewComponent>;

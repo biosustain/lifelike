@@ -12,24 +12,24 @@ import { DataSet } from 'vis-network';
 
 import { MAX_CLUSTER_ROWS } from 'app/constants';
 import {
+    ClusterData,
     Direction,
     DuplicateNodeEdgePair,
     DuplicateVisNode,
     DuplicateVisEdge,
-    GetSnippetsResult,
     GetClusterGraphDataResult,
+    GetClusterSnippetsResult,
+    GetReferenceTableDataResult,
+    GetSnippetsResult,
     GroupRequest,
     Neo4jGraphConfig,
+    ReferenceTableRow,
+    SettingsFormValues,
+    SidenavClusterEntity,
     SidenavEdgeEntity,
+    SidenavSnippetData,
     VisEdge,
     VisNode,
-    GetReferenceTableDataResult,
-    ReferenceTableRow,
-    GetClusterSnippetDataResult,
-    SettingsFormValues,
-    ClusterData,
-    SidenavSnippetData,
-    SidenavClusterEntity,
 } from 'app/interfaces';
 import { RootStoreModule } from 'app/***ARANGO_USERNAME***-store';
 import { SharedModule } from 'app/shared/shared.module';
@@ -46,6 +46,7 @@ import { VisualizationQuickbarComponent } from '../../components/visualization-q
 import { VisualizationCanvasComponent } from '../visualization-canvas/visualization-canvas.component';
 import { VisualizationSettingsComponent } from '../visualization-settings/visualization-settings.component';
 
+// TODO LL-906: Update tests
 describe('VisualizationCanvasComponent', () => {
     let fixture: ComponentFixture<VisualizationCanvasComponent>;
     let instance: VisualizationCanvasComponent;
@@ -363,7 +364,7 @@ describe('VisualizationCanvasComponent', () => {
         } as SidenavEdgeEntity);
     });
 
-    it('should update sidenav entity data when getClusterDataResult changes', () => {
+    it('should update sidenav entity data when getClusterSnippetsResult changes', () => {
         const mockGetClusterGraphDataResult = {
             results: {
                 1: {
@@ -380,10 +381,9 @@ describe('VisualizationCanvasComponent', () => {
                     association: '',
                 } as GetSnippetsResult,
             ]
-        } as GetClusterSnippetDataResult;
+        } as GetClusterSnippetsResult;
 
-        instance.getClusterDataResult = {
-            graphData: mockGetClusterGraphDataResult,
+        instance.getClusterSnippetsResult = {
             snippetData: mockGetClusterSnippetDataResult,
         };
         fixture.detectChanges();

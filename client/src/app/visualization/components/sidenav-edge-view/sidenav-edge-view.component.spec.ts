@@ -14,6 +14,7 @@ import { SharedModule } from 'app/shared/shared.module';
 import { SidenavEdgeViewComponent } from './sidenav-edge-view.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
+// TODO LL-906: Update tests
 describe('SidenavEdgeViewComponent', () => {
     let component: SidenavEdgeViewComponent;
     let fixture: ComponentFixture<SidenavEdgeViewComponent>;
