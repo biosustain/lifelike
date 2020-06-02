@@ -1,9 +1,24 @@
 <div class="mat-elevation-z8" [ngClass]='{"childless": !childMode}'>
+  <div class="my-parent">
+    <mat-icon class="my-icon" color="primary">pan_tool</mat-icon>
+    <mat-label class="my-label">
+      Drag and Drop any result into the canvas
+    </mat-label>
+  </div>
+  <mat-slide-toggle color="primary" [matTooltip]="customFilterTooltip" [(ngModel)]="hiddenCustomFilter">
+  </mat-slide-toggle>
+  <mat-form-field id="filter-full-width" *ngIf="hiddenCustomFilter">
+    <button mat-button matPrefix mat-icon-button>
+      <mat-icon>search</mat-icon>
+    </button>
+    <input matInput (keyup)="applyFilter($event)"
+           placeholder="Type here to filter the result list">
+  </mat-form-field>
   <table mat-table [dataSource]="dataSource">
     <!-- Position Column -->
-    <ng-container matColumnDef="link">
-      <th mat-header-cell *matHeaderCellDef> Link</th>
-      <td mat-cell *matCellDef="let element"><a [href]="element.link"  target="_blank">Preview</a></td>
+    <ng-container matColumnDef="id">
+      <th mat-header-cell *matHeaderCellDef> ID</th>
+      <td mat-cell *matCellDef="let element"><a [href]="element.link" target="_blank">{{element.id}}</a></td>
     </ng-container>
     <!-- Name Column -->
     <ng-container matColumnDef="name">
@@ -23,14 +38,24 @@
       <td mat-cell *matCellDef="let element"> {{element.domain}} </td>
     </ng-container>
 
+    <!-- TaxonomyID Column -->
+    <ng-container matColumnDef="taxonomyId">
+      <th mat-header-cell *matHeaderCellDef> Tax. ID</th>
+      <td mat-cell *matCellDef="let element"> {{element.taxonomyId}} </td>
+    </ng-container>
+
+    <!-- TaxonomyName Column -->
+    <ng-container matColumnDef="taxonomyName">
+      <th mat-header-cell *matHeaderCellDef> Tax. Name</th>
+      <td mat-cell *matCellDef="let element"> {{element.taxonomyName}} </td>
+    </ng-container>
+
     <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-    <tr mat-row cdkDropList cdkDrag class="node-search-template" [cdkDragData]="row"
+    <tr mat-row cdkDropList cdkDrag class="node-search-template my-row" [cdkDragData]="row"
         *matRowDef="let row; columns: displayedColumns;"
         [cdkDragDisabled]="childMode"></tr>
   </table>
   <mat-paginator
-    [pageSize]="5"
     [pageSizeOptions]="[5, 10, 20]"
-    (page)="pageEvent = sendPageEvent($event)"
     showFirstLastButtons></mat-paginator>
 </div>
