@@ -4,7 +4,7 @@ import pytest
 from datetime import date
 from os import path
 
-from neo4japp.models import AppUser, Project
+from neo4japp.models import AppUser, Directory, Project, Projects
 from neo4japp.services.annotations import prepare_databases
 
 
@@ -39,7 +39,31 @@ def test_user(session) -> AppUser:
 
 
 @pytest.fixture(scope='function')
-def fix_project(fix_owner, session) -> Project:
+def fix_projects(session) -> Projects:
+    projects = Projects(
+        project_name='test-project',
+        description='test project',
+        users=[],
+    )
+    session.add(projects)
+    session.flush()
+    return projects
+
+
+@pytest.fixture(scope='function')
+def fix_directory(session, fix_projects) -> Directory:
+    directory = Directory(
+        name='home',
+        directory_parent_id=None,
+        projects_id=fix_projects.id,
+    )
+    session.add(directory)
+    session.flush()
+    return directory
+
+
+@pytest.fixture(scope='function')
+def fix_project(fix_owner, fix_directory, session) -> Project:
     project = Project(
         id=100,
         label='Project1',
@@ -48,6 +72,7 @@ def fix_project(fix_owner, session) -> Project:
         date_modified=str(date.today()),
         graph=json.dumps({'project': 'project 1'}),
         user_id=fix_owner.id,
+        dir_id=fix_directory.id,
     )
     session.add(project)
     session.flush()
