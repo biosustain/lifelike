@@ -50,7 +50,7 @@ export class VisualizationService {
         ).pipe(map(resp => resp.result));
     }
 
-    // TODO LL-906: Need to replace `edges` with an appropriate data structure (VisEdge is extraneous)
+    // TODO LL-906: Need to replace `edge` with an appropriate data structure (VisEdge is extraneous)
     getSnippetsForEdge(request: NewEdgeSnippetsPageRequest) {
         return this.http.post<{result: GetEdgeSnippetsResult}>(
             `${this.visApi}/get-snippets-for-edge`, {
