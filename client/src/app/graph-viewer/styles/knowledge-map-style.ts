@@ -23,6 +23,7 @@ import { DashedLine } from '../utils/canvas/lines/dashed';
  * Implements the style used on the Knowledge Graph.
  */
 export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
+  private readonly font = 'Roboto, "Helvetica Neue", sans-serif';
   private readonly defaultSourceLineEndDescriptor: string = null;
   private readonly defaultTargetLineEndDescriptor = 'arrow';
   private readonly lineEndBaseSize = 16;
@@ -33,7 +34,7 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
     const styleData: UniversalNodeStyle = nullCoalesce(d.style, {});
     const labelFontSizeScale = nullCoalesce(styleData.fontSizeScale, 1);
     const labelFont = (placementOptions.highlighted || placementOptions.selected ? 'bold ' : '') +
-      (16 * labelFontSizeScale) + 'px Roboto';
+      (16 * labelFontSizeScale) + 'px ' + this.font;
     const forceHighDetailLevel = placementOptions.selected || placementOptions.highlighted;
 
     let iconCode = null;
@@ -191,7 +192,7 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
     // Label textbox, if any
     const textbox = d.label ? new TextElement(ctx, {
       text: d.label,
-      font: (placementOptions.highlighted ? 'bold ' : '') + (16 * fontSizeScale) + 'px Roboto',
+      font: (placementOptions.highlighted ? 'bold ' : '') + (16 * fontSizeScale) + 'px ' + this.font,
       fillStyle: '#888',
       strokeStyle: '#fff',
       strokeWidth: 3,
