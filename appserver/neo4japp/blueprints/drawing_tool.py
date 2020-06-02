@@ -79,8 +79,9 @@ def download_map(hash_id):
 @requires_role('admin')
 def upload_map():
 
-    proj_name = request.form['projectName']
+    draw_proj_name = request.form['projectName']
     proj_description = request.form['description']
+    dir_id = request.form['dirId']
 
     user = g.current_user
 
@@ -94,11 +95,12 @@ def upload_map():
     map_data = json.load(map_file)
     drawing_map = Project(
         author=f'{user.first_name} {user.last_name}',
-        label=proj_name,
+        label=draw_proj_name,
         description=proj_description,
         date_modified=datetime.now(),
         graph=map_data,
         user_id=user.id,
+        dir_id=dir_id,
     )
 
     db.session.add(drawing_map)
