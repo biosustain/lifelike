@@ -115,7 +115,7 @@ def fix_project(test_user, session):
 @pytest.fixture(scope='function')
 def fix_directory(fix_project, session):
     directory = Directory(
-        name='home',
+        name='/',
         directory_parent_id=None,
         projects_id=fix_project.id,
     )
