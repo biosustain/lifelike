@@ -88,6 +88,7 @@ export class ProjectsService {
     formData.append('projectName', payload.label);
     formData.append('description', payload.description);
     formData.append('filename', payload.filename);
+    formData.append('dirId', payload.dirId.toString());
     return this.http.post<{result: {hashId: string}}>(
       `${this.baseUrl}/map/upload`,
       formData,
