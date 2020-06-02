@@ -66,7 +66,7 @@ def upgrade():
 
     # Bucket everything into a single directory
     directory = Directory(
-        name='uncategorized',
+        name='/',
         directory_parent_id=None,
         projects_id=projects.id,
     )

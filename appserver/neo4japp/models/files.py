@@ -6,7 +6,6 @@ from neo4japp.models import AppUser
 from neo4japp.models.common import RDBMSBase
 
 
-
 class FileContent(RDBMSBase):
     __tablename__ = 'files_content'
     id = db.Column(db.Integer(), primary_key=True, autoincrement=True)

@@ -53,7 +53,7 @@ def fix_projects(session) -> Projects:
 @pytest.fixture(scope='function')
 def fix_directory(session, fix_projects) -> Directory:
     directory = Directory(
-        name='home',
+        name='/',
         directory_parent_id=None,
         projects_id=fix_projects.id,
     )
