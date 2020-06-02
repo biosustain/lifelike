@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { MatDialog, MatDialogRef } from '@angular/material';
 import { ActivatedRoute } from '@angular/router';
 
-import { EMPTY as empty, Subject, merge, Subscription } from 'rxjs';
+import { EMPTY as empty, Subject, merge, Subscription, of } from 'rxjs';
 import { filter, take, switchMap, map, first } from 'rxjs/operators';
 
 import { DataSet } from 'vis-network';
@@ -10,7 +10,6 @@ import { DataSet } from 'vis-network';
 import { isArray } from 'util';
 
 import {
-    DuplicateVisEdge,
     ExpandNodeResult,
     ExpandNodeRequest,
     GetEdgeSnippetsResult,
@@ -58,6 +57,8 @@ export class VisualizationComponent implements OnInit, OnDestroy {
     getClusterSnippetsSubject: Subject<NewClusterSnippetsPageRequest>;
     getSnippetsSubscription: Subscription;
 
+    nodeSelectedSubject: Subject<boolean>;
+
     // TODO: Will we need to have a legend for each database? i.e. the literature
     // data, biocyc, etc...
     legend: Map<string, string[]>;
@@ -79,23 +80,32 @@ export class VisualizationComponent implements OnInit, OnDestroy {
 
         this.getClusterSnippetsSubject = new Subject<NewClusterSnippetsPageRequest>();
         this.getEdgeSnippetsSubject = new Subject<NewEdgeSnippetsPageRequest>();
+        this.nodeSelectedSubject = new Subject<boolean>();
 
         this.getSnippetsSubscription = merge(
-            // Merge the two streams, so we can cancel one if the other emits; We always take the most recent
-            // emission betweent the two streams.
+            // Merge the streams, so we can cancel one if the other emits; We always take the most recent
+            // emission betweent the streams.
             this.getClusterSnippetsSubject,
-            this.getEdgeSnippetsSubject
+            this.getEdgeSnippetsSubject,
+            this.nodeSelectedSubject,
         ).pipe(
-            switchMap((request: NewClusterSnippetsPageRequest | NewEdgeSnippetsPageRequest) => {
-                // If queryData is an array then we are getting snippets for a cluster
-                if (isArray(request.queryData)) {
+            switchMap((request: NewClusterSnippetsPageRequest | NewEdgeSnippetsPageRequest | boolean) => {
+                if (typeof request === 'boolean') {
+                    // We don't currently need to do anything if the request was for node data
+                    return of(request);
+                } else if (isArray(request.queryData)) {
+                    // If queryData is an array then we are getting snippets for a cluster
                     return this.visService.getSnippetsForCluster(request as NewClusterSnippetsPageRequest);
+                } else {
+                    return this.visService.getSnippetsForEdge(request as NewEdgeSnippetsPageRequest);
                 }
-                return this.visService.getSnippetsForEdge(request as NewEdgeSnippetsPageRequest);
             })
-        ).subscribe((resp: GetClusterSnippetsResult | GetEdgeSnippetsResult) => {
-            // If snippetData is an array then we are getting snippets for a cluster
-            if (isArray(resp.snippetData)) {
+        ).subscribe((resp: GetClusterSnippetsResult | GetEdgeSnippetsResult | boolean) => {
+            if (typeof resp === 'boolean') {
+                // We don't currently need to do anything if the request was for node data
+                return;
+            } else if (isArray(resp.snippetData)) {
+                // If snippetData is an array then we are getting snippets for a cluster
                 this.getClusterSnippetsResult = resp as GetClusterSnippetsResult;
             } else {
                 this.getEdgeSnippetsResult = resp as GetEdgeSnippetsResult;
@@ -346,6 +356,10 @@ export class VisualizationComponent implements OnInit, OnDestroy {
     // on this subscription. Could use rxjs 'race' + an output from the child here.
     getSnippetsForCluster(request: NewClusterSnippetsPageRequest) {
         this.getClusterSnippetsSubject.next(request);
+    }
+
+    nodeSelectedCallback() {
+        this.nodeSelectedSubject.next(true);
     }
 
     updateCanvasWithSingleNode(data: GraphNode) {

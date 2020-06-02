@@ -10,6 +10,7 @@
   [config]="networkGraphConfig"
   (expandNode)="expandNode($event)"
   (finishedPreClustering)="finishedPreClustering($event)"
+  (getNodeData)="nodeSelectedCallback($event)"
   (getSnippetsForEdge)="getSnippetsForEdge($event)"
   (getSnippetsForCluster)="getSnippetsForCluster($event)"
 ></app-visualization-canvas>
