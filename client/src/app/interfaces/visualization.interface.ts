@@ -19,12 +19,6 @@ export interface ClusterData {
     relationship: string;
 }
 
-// TODO LL-906: Remove this, no longer used
-export interface ClusteredNode {
-    nodeId: number;
-    edges: DuplicateVisEdge[];
-}
-
 export enum Direction {
     TO = 'Incoming',
     FROM = 'Outgoing',
@@ -141,16 +135,6 @@ export interface ExpandNodeResult {
     expandedNode: number;
     nodes: VisNode[];
     edges: VisEdge[];
-}
-
-export interface GetClusterGraphDataResult {
-    results: {
-        // Node ID
-        [key: number]: {
-            // Edge label : Snippet count
-            [key: string]: number
-        }
-    };
 }
 
 export interface GetEdgeSnippetsResult {

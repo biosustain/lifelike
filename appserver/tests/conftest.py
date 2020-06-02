@@ -11,7 +11,6 @@ from py2neo import (
 from neo4japp.constants import DISPLAY_NAME_MAP
 from neo4japp.database import db, reset_dao
 from neo4japp.data_transfer_objects.visualization import (
-    ClusteredNode,
     DuplicateNodeEdgePair,
     DuplicateVisEdge,
     DuplicateVisNode,
@@ -785,21 +784,6 @@ def gas_gangrene_treatment_cluster_node_edge_pairs(
         DuplicateNodeEdgePair(
             node=penicillins_duplicate_vis_node,
             edge=penicillins_to_gas_gangrene_treatment_as_duplicate_vis_edge,
-        )
-    ]
-
-
-@pytest.fixture(scope='function')
-def gas_gangrene_treatment_clustered_nodes(
-    penicillins_duplicate_vis_node,
-    penicillins_to_gas_gangrene_treatment_as_duplicate_vis_edge,
-):
-    """Returns a list of ClusteredNode objects. Used for testing the
-    cluster graph data endpoints and services."""
-    return [
-        ClusteredNode(
-            node_id=penicillins_duplicate_vis_node.id,
-            edges=[penicillins_to_gas_gangrene_treatment_as_duplicate_vis_edge],
         )
     ]
 
