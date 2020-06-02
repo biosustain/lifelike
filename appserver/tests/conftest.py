@@ -14,7 +14,6 @@ from neo4japp.data_transfer_objects.visualization import (
     DuplicateNodeEdgePair,
     DuplicateVisEdge,
     DuplicateVisNode,
-    NodeEdgePair,
     VisEdge,
     VisNode,
 )

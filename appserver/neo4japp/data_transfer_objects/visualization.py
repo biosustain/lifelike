@@ -65,13 +65,6 @@ class DuplicateVisEdge(VisEdge):
     original_to: int = attr.ib()
 
 
-# TODO LL-906: Remove if unused
-@attr.s(frozen=True)
-class NodeEdgePair(CamelDictMixin):
-    node: VisNode = attr.ib()
-    edge: VisEdge = attr.ib()
-
-
 @attr.s(frozen=True)
 class DuplicateNodeEdgePair(CamelDictMixin):
     node: DuplicateVisNode = attr.ib()
