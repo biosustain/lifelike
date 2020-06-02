@@ -208,17 +208,6 @@ describe('VisualizationComponent', () => {
         expect(getSnippetsFromEdgeSpy).toHaveBeenCalledWith(mockVisEdge);
     });
 
-    it('should call getSnippetsFromDuplicateEdge when child requests snippets for duplicate edge', () => {
-        const getSnippetsFromDuplicateEdgeSpy = spyOn(instance, 'getSnippetsFromDuplicateEdge');
-        const visualizationCanvasComponentMock = fixture.debugElement.query(
-            By.directive(VisualizationCanvasComponent)
-        ).componentInstance as VisualizationCanvasComponent;
-
-        visualizationCanvasComponentMock.getSnippetsFromDuplicateEdge.emit(mockDuplicateVisEdge);
-
-        expect(getSnippetsFromDuplicateEdgeSpy).toHaveBeenCalledWith(mockDuplicateVisEdge);
-    });
-
     it('should call getClusterData when child requests data for cluster', () => {
         const getClusterGraphDataSpy = spyOn(instance, 'getClusterData');
         const visualizationCanvasComponentMock = fixture.debugElement.query(

@@ -38,32 +38,6 @@ def test_get_snippets_from_edge(
     assert response.status_code == 200
 
 
-def test_get_snippets_from_duplicate_edge(
-    client,
-    penicillins_to_gas_gangrene_alleviates_as_duplicate_vis_edge,
-):
-    response = client.post(
-        '/neo4j/get-snippets-from-duplicate-edge',
-        data=json.dumps(dict(
-            edge=dict(
-                id='duplicateEdge:1',
-                label='ASSOCIATED',
-                data=dict(),
-                to='duplicateNode:1',
-                from_='duplicateNode:2',
-                to_label='Disease',
-                from_label='Chemical',
-                arrows='to',
-                duplicate_of=1,
-                original_from=2,
-                original_to=1,
-            ),
-        )), content_type='application/json'
-    )
-
-    assert response.status_code == 200
-
-
 def test_get_reference_table_data(
     client,
     gas_gangrene_treatment_cluster_node_edge_pairs,

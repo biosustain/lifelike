@@ -767,21 +767,6 @@ describe('VisualizationCanvasComponent', () => {
         expect(getSnippetsFromEdgeEmitSpy).toHaveBeenCalledWith(mockEdges.get(1));
     });
 
-    it('getAssociationsWithDuplicateEdge should request association snippets for the given duplicate edge', () => {
-        const getAssociationSnippetsFromEdgeEmitSpy = spyOn(instance.getSnippetsFromDuplicateEdge, 'emit');
-        const mockDuplicateEdge = {
-            ...mockEdges.get(1),
-            id: 'duplicateEdge:1234',
-            duplicateOf: 1,
-            originalFrom: 1,
-            originalTo: 2,
-        } as DuplicateVisEdge;
-
-        instance.getAssociationsWithDuplicateEdge(mockDuplicateEdge);
-
-        expect(getAssociationSnippetsFromEdgeEmitSpy).toHaveBeenCalledWith(mockDuplicateEdge);
-    });
-
     it('should tell all tooltips to hide if hideTooltips is called', () => {
         const tooltipControlServiceHideTooltipSpy = spyOn(contextMenuControlService, 'hideTooltip');
 
