@@ -30,12 +30,6 @@ export interface DuplicateNodeEdgePair {
 }
 
 // TODO LL-906: Remove if unused
-export interface NodeEdgePair {
-    node: VisNode;
-    edge: VisEdge;
-}
-
-// TODO LL-906: Remove if unused
 export interface Publication extends GraphNode {
     data: {
         journal: string;
