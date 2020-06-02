@@ -15,29 +15,6 @@ def test_expand(client, gas_gangrene):
     assert response.status_code == 200
 
 
-def test_get_snippets_from_edge(
-    client,
-    penicillins_to_gas_gangrene_alleviates_as_vis_edge,
-):
-    response = client.post(
-        '/neo4j/get-snippets-from-edge',
-        data=json.dumps(dict(
-            edge=dict(
-                id=1,
-                label='ASSOCIATED',
-                data=dict(),
-                to=1,
-                from_=2,
-                to_label='Disease',
-                from_label='Chemical',
-                arrows='to',
-            ),
-        )), content_type='application/json'
-    )
-
-    assert response.status_code == 200
-
-
 def test_get_reference_table_data(
     client,
     gas_gangrene_treatment_cluster_node_edge_pairs,
