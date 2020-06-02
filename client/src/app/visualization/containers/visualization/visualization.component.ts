@@ -339,13 +339,6 @@ export class VisualizationComponent implements OnInit, OnDestroy {
         this.getEdgeSnippetsSubject.next(request);
     }
 
-    // TODO LL-906: Remove me
-    getSnippetsFromDuplicateEdge(edge: DuplicateVisEdge) {
-        // this.visService.getSnippetsFromDuplicateEdge(edge).subscribe((result) => {
-        //     this.getEdgeSnippetsResult = result;
-        // });
-    }
-
     // TODO: There is a bug here: If the user opens a cluster after clicking it
     // but before the cluster graph data response is received, then the sidenav
     // will error because the returned duplicate node ids will not exist on the
