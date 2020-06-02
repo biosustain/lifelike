@@ -8,6 +8,7 @@ import pytest
 from datetime import date, datetime
 from neo4japp.models import (
     AppUser,
+    Directory,
     Project,
     Projects,
     FileContent,
@@ -63,7 +64,8 @@ def test_user_2(session) -> AppUser:
 
 
 @pytest.fixture(scope='function')
-def test_user_with_pdf(session, test_user, fix_project, pdf_dir) -> Files:
+def test_user_with_pdf(
+        session, test_user, fix_project, fix_directory, pdf_dir) -> Files:
     pdf_path = os.path.join(pdf_dir, 'example3.pdf')
     pdf_file = open(pdf_path, 'rb')
     pdf_content = pdf_file.read()
@@ -86,6 +88,7 @@ def test_user_with_pdf(session, test_user, fix_project, pdf_dir) -> Files:
         annotations={},
         project=fix_project.id,
         custom_annotations={},
+        dir_id=fix_directory.id,
     )
     session.add(fake_file)
     session.flush()
@@ -110,7 +113,19 @@ def fix_project(test_user, session):
 
 
 @pytest.fixture(scope='function')
-def private_fix_project(fix_api_owner, session) -> Project:
+def fix_directory(fix_project, session):
+    directory = Directory(
+        name='home',
+        directory_parent_id=None,
+        projects_id=fix_project.id,
+    )
+    session.add(directory)
+    session.flush()
+    return directory
+
+
+@pytest.fixture(scope='function')
+def private_fix_project(fix_api_owner, fix_directory, session) -> Project:
     project = Project(
         id=100,
         label='Project1',
@@ -118,6 +133,7 @@ def private_fix_project(fix_api_owner, session) -> Project:
         author='Jim Melancholy',
         graph=json.dumps({'project': 'project 1'}),
         user_id=fix_api_owner.id,
+        dir_id=fix_directory.id,
     )
     session.add(project)
     session.flush()

@@ -100,7 +100,7 @@ def test_can_download_map(
     assert resp.headers.get('Content-Disposition') == f'attachment;filename={proj_label}.json'
 
 
-def test_can_upload_map(client, fix_api_owner, session):
+def test_can_upload_map(client, fix_api_owner, fix_directory, session):
     login_resp = client.login_as_user(fix_api_owner.email, 'password')
     headers = generate_headers(login_resp['access_jwt'])
     mock_data = BytesIO(json.dumps({'graph': {'edges': [], 'nodes': []}}).encode('utf-8'))
@@ -110,6 +110,7 @@ def test_can_upload_map(client, fix_api_owner, session):
         data={
             'description': 'test',
             'projectName': 'tester',
+            'dirId': f'{fix_directory.id}',
             'fileInput': (mock_data, 'testfile.json')
         },
         content_type='multipart/form-data'
