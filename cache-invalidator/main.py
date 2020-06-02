@@ -43,8 +43,9 @@ def get_kg_statistics():
     for db in db_labels:
         for entity in entity_labels:
             query = f"MATCH (:`{db}`:`{entity}`) RETURN count(*) as count"
-            count = graph.run(query).data()[0]["count"]
+            count = graph.run(query).evaluate()
             if count > 0:
+                # start from 4th character to remove 'db_' prefix
                 statistics[db[3:]][entity] = count
     return statistics
 
