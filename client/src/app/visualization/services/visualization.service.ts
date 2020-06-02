@@ -49,14 +49,6 @@ export class VisualizationService {
         ).pipe(map(resp => resp.result));
     }
 
-    // TODO LL-906 Remove if unused
-    // Currently unused
-    // getSnippetCountsFromEdges(edges: VisEdge[]) {
-    //     return this.http.post<{result: GetSnippetCountsFromEdgesResult}>(
-    //         `${this.visApi}/get-snippet-counts-from-edges`, {edges},
-    //     ).pipe(map(resp => resp.result));
-    // }
-
     getReferenceTableData(nodeEdgePairs: DuplicateNodeEdgePair[]) {
         return this.http.post<{result: GetReferenceTableDataResult}>(
             `${this.visApi}/get-reference-table-data`, {nodeEdgePairs},
