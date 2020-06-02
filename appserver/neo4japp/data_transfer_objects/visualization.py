@@ -106,11 +106,6 @@ class GetSnippetsFromEdgeRequest(CamelDictMixin):
 
 
 @attr.s(frozen=True)
-class GetSnippetsFromDuplicateEdgeRequest(CamelDictMixin):
-    edge: DuplicateVisEdge = attr.ib()
-
-
-@attr.s(frozen=True)
 class ReferenceTableDataRequest(CamelDictMixin):
     node_edge_pairs: List[DuplicateNodeEdgePair] = attr.ib()
 

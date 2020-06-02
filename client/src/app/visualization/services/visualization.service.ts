@@ -42,13 +42,6 @@ export class VisualizationService {
         ).pipe(map(resp => resp.result));
     }
 
-    // TODO LL-906 remove me if unused
-    getSnippetsFromDuplicateEdge(edge: DuplicateVisEdge) {
-        return this.http.post<{result: GetSnippetsResult}>(
-            `${this.visApi}/get-snippets-from-duplicate-edge`, {edge},
-        ).pipe(map(resp => resp.result));
-    }
-
     getReferenceTableData(nodeEdgePairs: DuplicateNodeEdgePair[]) {
         return this.http.post<{result: GetReferenceTableDataResult}>(
             `${this.visApi}/get-reference-table-data`, {nodeEdgePairs},

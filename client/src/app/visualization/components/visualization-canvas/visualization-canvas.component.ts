@@ -62,7 +62,6 @@ export class VisualizationCanvasComponent implements OnInit {
     @Output() expandNode = new EventEmitter<ExpandNodeRequest>();
     @Output() finishedPreClustering = new EventEmitter<boolean>();
     @Output() getSnippetsForEdge = new EventEmitter<NewEdgeSnippetsPageRequest>();
-    @Output() getSnippetsFromDuplicateEdge = new EventEmitter<DuplicateVisEdge>(); // LL-906: Remove if unused
     @Output() getSnippetsForCluster = new EventEmitter<NewClusterSnippetsPageRequest>();
 
     @Input() nodes: DataSet<any, any>;
@@ -946,11 +945,6 @@ export class VisualizationCanvasComponent implements OnInit {
     selectNeighbors(node: IdType) {
         this.networkGraph.selectNodes(this.networkGraph.getConnectedNodes(node) as IdType[]);
         this.updateSelectedNodes();
-    }
-
-    // TODO LL-906: Remove me
-    getAssociationsWithDuplicateEdge(edge: DuplicateVisEdge) {
-        this.getSnippetsFromDuplicateEdge.emit(edge);
     }
 
     updateSidebarEntity() {

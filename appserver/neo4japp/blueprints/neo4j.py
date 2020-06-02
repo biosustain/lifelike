@@ -12,7 +12,6 @@ from neo4japp.data_transfer_objects.visualization import (
     GetGraphDataForClusterRequest,
     GetSnippetsForEdgeRequest,
     GetSnippetsForClusterRequest,
-    GetSnippetsFromDuplicateEdgeRequest,
     GetSnippetsFromEdgeRequest,
     ReferenceTableDataRequest,
 )
@@ -83,16 +82,6 @@ def expand_graph_node(req: ExpandNodeRequest):
 def get_snippets_from_edge(req: GetSnippetsFromEdgeRequest):
     neo4j = get_neo4j_service_dao()
     snippets_result = neo4j.get_snippets_from_edge(
-        req.edge,
-    )
-    return SuccessResponse(result=snippets_result, status_code=200)
-
-
-@bp.route('/get-snippets-from-duplicate-edge', methods=['POST'])
-@jsonify_with_class(GetSnippetsFromDuplicateEdgeRequest)
-def get_snippets_from_duplicate_edge(req: GetSnippetsFromDuplicateEdgeRequest):
-    neo4j = get_neo4j_service_dao()
-    snippets_result = neo4j.get_snippets_from_duplicate_edge(
         req.edge,
     )
     return SuccessResponse(result=snippets_result, status_code=200)
