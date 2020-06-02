@@ -8,7 +8,7 @@
       </ng-template>
     </ng-template>
 
-    <mat-form-field>
+    <mat-form-field *ngIf="totalResults !== 0">
       <mat-label>Page Limit</mat-label>
       <mat-select [(ngModel)]="pageLimit" (selectionChange)="onLimitChange()">
         <mat-option *ngFor="let limit of pageLimitList" [value]="limit">{{ limit }}</mat-option>
