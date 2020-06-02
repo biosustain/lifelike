@@ -65,6 +65,7 @@ class DuplicateVisEdge(VisEdge):
     original_to: int = attr.ib()
 
 
+# TODO LL-906: Remove if unused
 @attr.s(frozen=True)
 class NodeEdgePair(CamelDictMixin):
     node: VisNode = attr.ib()
@@ -131,8 +132,17 @@ class GetGraphDataForClusterRequest(CamelDictMixin):
 
 
 @attr.s(frozen=True)
-class GetDataForClusterRequest(CamelDictMixin):
-    clustered_nodes: List[ClusteredNode] = attr.ib()
+class GetSnippetsForEdgeRequest(CamelDictMixin):
+    page: int = attr.ib()
+    limit: int = attr.ib()
+    edge: VisEdge = attr.ib()
+
+
+@attr.s(frozen=True)
+class GetSnippetsForClusterRequest(CamelDictMixin):
+    page: int = attr.ib()
+    limit: int = attr.ib()
+    edges: List[DuplicateVisEdge] = attr.ib()
 
 # End Request DTOs #
 
@@ -152,20 +162,24 @@ class GetSnippetCountsFromEdgesResult(CamelDictMixin):
     edge_snippet_counts: List[EdgeSnippetCount] = attr.ib()
 
 
+# TODO LL-906: Remove me
 @attr.s(frozen=True)
 class GetClusterGraphDataResult(CamelDictMixin):
     results: Dict[int, Dict[str, int]] = attr.ib()
 
 
 @attr.s(frozen=True)
-class GetClusterSnippetDataResult(CamelDictMixin):
-    results: List[GetSnippetsFromEdgeResult] = attr.ib()
+class GetEdgeSnippetsResult(CamelDictMixin):
+    snippet_data: GetSnippetsFromEdgeResult = attr.ib()
+    total_results: int = attr.ib()
+    query_data: VisEdge = attr.ib()
 
 
 @attr.s(frozen=True)
-class GetClusterDataResult(CamelDictMixin):
-    graph_data: GetClusterGraphDataResult = attr.ib()
-    snippet_data: GetClusterSnippetDataResult = attr.ib()
+class GetClusterSnippetsResult(CamelDictMixin):
+    snippet_data: List[GetSnippetsFromEdgeResult] = attr.ib()
+    total_results: int = attr.ib()
+    query_data: List[DuplicateVisEdge] = attr.ib()
 
 
 @attr.s(frozen=True)

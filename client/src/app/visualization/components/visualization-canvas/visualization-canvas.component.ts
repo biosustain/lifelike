@@ -17,17 +17,18 @@ import { Network, DataSet, IdType } from 'vis-network';
 
 import {
     ClusterData,
-    ClusteredNode,
     DuplicateNodeEdgePair,
     Direction,
     DuplicateVisEdge,
     DuplicateVisNode,
     ExpandNodeResult,
     ExpandNodeRequest,
-    GetClusterDataResult,
-    GetSnippetsResult,
+    GetClusterSnippetsResult,
+    GetEdgeSnippetsResult,
     GroupRequest,
     Neo4jGraphConfig,
+    NewClusterSnippetsPageRequest,
+    NewEdgeSnippetsPageRequest,
     ReferenceTableRow,
     SettingsFormValues,
     SidenavClusterEntity,
@@ -38,6 +39,7 @@ import {
     VisNode,
 } from 'app/interfaces';
 import { MessageType } from 'app/interfaces/message-dialog.interface';
+import { SNIPPET_PAGE_LIMIT } from 'app/shared/constants';
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { uuidv4 } from 'app/shared/utils';
 import { ContextMenuControlService } from 'app/visualization/services/context-menu-control.service';
@@ -59,9 +61,9 @@ enum SidenavEntityType {
 export class VisualizationCanvasComponent implements OnInit {
     @Output() expandNode = new EventEmitter<ExpandNodeRequest>();
     @Output() finishedPreClustering = new EventEmitter<boolean>();
-    @Output() getSnippetsFromEdge = new EventEmitter<VisEdge>();
-    @Output() getSnippetsFromDuplicateEdge = new EventEmitter<DuplicateVisEdge>();
-    @Output() getClusterData = new EventEmitter<ClusteredNode[]>();
+    @Output() getSnippetsForEdge = new EventEmitter<NewEdgeSnippetsPageRequest>();
+    @Output() getSnippetsFromDuplicateEdge = new EventEmitter<DuplicateVisEdge>(); // LL-906: Remove if unused
+    @Output() getSnippetsForCluster = new EventEmitter<NewClusterSnippetsPageRequest>();
 
     @Input() nodes: DataSet<any, any>;
     @Input() edges: DataSet<any, any>;
@@ -127,23 +129,29 @@ export class VisualizationCanvasComponent implements OnInit {
             });
         }
     }
-    @Input() set getSnippetsResult(result: GetSnippetsResult) {
+    @Input() set getEdgeSnippetsResult(result: GetEdgeSnippetsResult) {
         if (!isNullOrUndefined(result)) {
+            // TODO LL-906: This is wrong, should update the type elsewhere (this is why we get the laggy responses
+            // when clicking on cluster/node/edge)
             this.sidenavEntityType = SidenavEntityType.EDGE;
             this.sidenavEntity = {
-                data: {
-                    to: this.nodes.get(result.toNodeId) as VisNode,
-                    from: this.nodes.get(result.fromNodeId) as VisNode,
-                    association: result.association,
-                    snippets: result.snippets,
-                } as SidenavSnippetData
+                snippetData: {
+                    to: this.nodes.get(result.snippetData.toNodeId) as VisNode,
+                    from: this.nodes.get(result.snippetData.fromNodeId) as VisNode,
+                    association: result.snippetData.association,
+                    snippets: result.snippetData.snippets,
+                } as SidenavSnippetData,
+                queryData: result.queryData,
+                totalResults: result.totalResults,
             } as SidenavEdgeEntity;
         }
     }
-    @Input() set getClusterDataResult(result: GetClusterDataResult) {
+    @Input() set getClusterSnippetsResult(result: GetClusterSnippetsResult) {
         if (!isNullOrUndefined(result)) {
+            // TODO LL-906: This is wrong, should update the type elsewhere (this is why we get the laggy responses
+            // when clicking on cluster/node/edge)
             this.sidenavEntityType = SidenavEntityType.CLUSTER;
-            const data = result.snippetData.results.map(snippetResult => {
+            const data = result.snippetData.map(snippetResult => {
                 return {
                     to: this.nodes.get(snippetResult.toNodeId) as VisNode,
                     from: this.nodes.get(snippetResult.fromNodeId) as VisNode,
@@ -151,7 +159,11 @@ export class VisualizationCanvasComponent implements OnInit {
                     snippets: snippetResult.snippets,
                 } as SidenavSnippetData;
             });
-            this.sidenavEntity = { data } as SidenavClusterEntity;
+            this.sidenavEntity = {
+                queryData: result.queryData,
+                totalResults: result.totalResults,
+                snippetData: data,
+            } as SidenavClusterEntity;
         }
     }
     // Configuration for the graph view. See vis.js docs
@@ -166,6 +178,8 @@ export class VisualizationCanvasComponent implements OnInit {
     sidenavOpened: boolean;
     sidenavEntity: SidenavNodeEntity | SidenavEdgeEntity | SidenavClusterEntity;
     sidenavEntityType: SidenavEntityType;
+    isNewClusterSidenavEntity: boolean;
+    isNewEdgeSidenavEntity: boolean;
 
     networkGraph: Network;
     selectedNodes: IdType[];
@@ -195,6 +209,8 @@ export class VisualizationCanvasComponent implements OnInit {
         this.sidenavOpened = false;
         this.sidenavEntity = null;
         this.sidenavEntityType = SidenavEntityType.EMPTY;
+        this.isNewClusterSidenavEntity = true;
+        this.isNewEdgeSidenavEntity = true;
 
         this.selectedNodes = [];
         this.selectedEdges = [];
@@ -932,14 +948,7 @@ export class VisualizationCanvasComponent implements OnInit {
         this.updateSelectedNodes();
     }
 
-    /**
-     * Opens the metadata sidebar with the input node's data
-     * @param edge represents a non-cluster edge on the canvas
-     */
-    getAssociationsWithEdge(edge: VisEdge) {
-        this.getSnippetsFromEdge.emit(edge);
-    }
-
+    // TODO LL-906: Remove me
     getAssociationsWithDuplicateEdge(edge: DuplicateVisEdge) {
         this.getSnippetsFromDuplicateEdge.emit(edge);
     }
@@ -948,13 +957,18 @@ export class VisualizationCanvasComponent implements OnInit {
         if (this.selectedNodes.length === 1 && this.selectedEdges.length === 0) {
             if (this.networkGraph.isCluster(this.selectedNodes[0])) {
                 const cluster = this.selectedNodes[0];
-                const clusteredNodes = this.networkGraph.getNodesInCluster(cluster).map(node => {
-                    return {
-                        nodeId: node,
-                        edges: this.networkGraph.getConnectedEdges(node).map(edgeId => this.edges.get(edgeId)),
-                    } as ClusteredNode;
-                });
-                this.getClusterData.emit(clusteredNodes);
+                const edges = [];
+                this.networkGraph.getNodesInCluster(cluster).forEach(node =>
+                    this.networkGraph.getConnectedEdges(node).forEach(
+                        edgeId => edges.push(this.edges.get(edgeId))
+                    )
+                );
+                this.isNewClusterSidenavEntity = true;
+                this.getSnippetsForCluster.emit({
+                    page: 1,
+                    limit: SNIPPET_PAGE_LIMIT,
+                    queryData: edges,
+                } as NewClusterSnippetsPageRequest);
             } else {
                 const node  = this.nodes.get(this.selectedNodes[0]) as VisNode;
                 this.sidenavEntity = {
@@ -965,8 +979,23 @@ export class VisualizationCanvasComponent implements OnInit {
             }
         } else if (this.selectedNodes.length === 0 && this.selectedEdges.length === 1) {
             const edge = this.edges.get(this.selectedEdges[0]) as VisEdge;
-            this.getAssociationsWithEdge(edge);
+            this.isNewEdgeSidenavEntity = true;
+            this.getSnippetsForEdge.emit({
+                page: 1,
+                limit: SNIPPET_PAGE_LIMIT,
+                queryData: edge,
+            } as NewEdgeSnippetsPageRequest);
         }
+    }
+
+    requestNewClusterSnippetsPage(request: NewClusterSnippetsPageRequest) {
+        this.isNewClusterSidenavEntity = false;
+        this.getSnippetsForCluster.emit(request);
+    }
+
+    requestNewEdgeSnippetsPage(request: NewEdgeSnippetsPageRequest) {
+        this.isNewEdgeSidenavEntity = false;
+        this.getSnippetsForEdge.emit(request);
     }
 
     /**

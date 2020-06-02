@@ -169,12 +169,13 @@ def test_get_cluster_graph_data(
     assert get_cluster_graph_data_result.results[node_id][edge_id] == 1
 
 
+# TODO LL-906 Should update this
 def test_get_cluster_data(
     neo4j_service_dao,
     gas_gangrene_treatment_clustered_nodes,
     gas_gangrene_with_associations_and_references,
 ):
-    get_cluster_data_result = neo4j_service_dao.get_cluster_data(
+    get_cluster_data_result = neo4j_service_dao.get_snippets_for_cluster(
         gas_gangrene_treatment_clustered_nodes,
     )
 

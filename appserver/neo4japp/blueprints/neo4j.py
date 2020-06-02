@@ -10,8 +10,8 @@ from neo4japp.database import get_neo4j_service_dao
 
 from neo4japp.data_transfer_objects.visualization import (
     GetGraphDataForClusterRequest,
-    GetSnippetCountsFromEdgesRequest,
-    GetDataForClusterRequest,
+    GetSnippetsForEdgeRequest,
+    GetSnippetsForClusterRequest,
     GetSnippetsFromDuplicateEdgeRequest,
     GetSnippetsFromEdgeRequest,
     ReferenceTableDataRequest,
@@ -97,6 +97,7 @@ def get_snippets_from_duplicate_edge(req: GetSnippetsFromDuplicateEdgeRequest):
     )
     return SuccessResponse(result=snippets_result, status_code=200)
 
+# TODO LL-906: Remove this if its unused, can always look at the git history
 # Currently unused
 # @bp.route('/get-snippet-counts-from-edges', methods=['POST'])
 # @jsonify_with_class(GetSnippetCountsFromEdgesRequest)
@@ -118,6 +119,7 @@ def get_reference_table_data(req: ReferenceTableDataRequest):
     return SuccessResponse(reference_table_data, status_code=200)
 
 
+# TODO LL-906: Remove me
 @bp.route('/get-cluster-graph-data', methods=['POST'])
 @jsonify_with_class(GetGraphDataForClusterRequest)
 def get_cluster_graph_data(req: GetGraphDataForClusterRequest):
@@ -128,12 +130,26 @@ def get_cluster_graph_data(req: GetGraphDataForClusterRequest):
     return SuccessResponse(cluster_graph_data_result, status_code=200)
 
 
-@bp.route('/get-cluster-data', methods=['POST'])
-@jsonify_with_class(GetDataForClusterRequest)
-def get_cluster_snippet_data(req: GetDataForClusterRequest):
+@bp.route('/get-snippets-for-edge', methods=['POST'])
+@jsonify_with_class(GetSnippetsForEdgeRequest)
+def get_edge_snippet_data(req: GetSnippetsForEdgeRequest):
     neo4j = get_neo4j_service_dao()
-    cluster_data_result = neo4j.get_cluster_data(
-        req.clustered_nodes,
+    cluster_data_result = neo4j.get_snippets_for_edge(
+        page=req.page,
+        limit=req.limit,
+        edge=req.edge,
+    )
+    return SuccessResponse(cluster_data_result, status_code=200)
+
+
+@bp.route('/get-snippets-for-cluster', methods=['POST'])
+@jsonify_with_class(GetSnippetsForClusterRequest)
+def get_cluster_snippet_data(req: GetSnippetsForClusterRequest):
+    neo4j = get_neo4j_service_dao()
+    cluster_data_result = neo4j.get_snippets_for_cluster(
+        page=req.page,
+        limit=req.limit,
+        edges=req.edges,
     )
     return SuccessResponse(cluster_data_result, status_code=200)
 
