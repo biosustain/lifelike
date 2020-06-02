@@ -63,6 +63,7 @@ export class VisualizationCanvasComponent implements OnInit {
     @Output() finishedPreClustering = new EventEmitter<boolean>();
     @Output() getSnippetsForEdge = new EventEmitter<NewEdgeSnippetsPageRequest>();
     @Output() getSnippetsForCluster = new EventEmitter<NewClusterSnippetsPageRequest>();
+    @Output() getNodeData = new EventEmitter<boolean>();
 
     @Input() nodes: DataSet<any, any>;
     @Input() edges: DataSet<any, any>;
@@ -130,9 +131,6 @@ export class VisualizationCanvasComponent implements OnInit {
     }
     @Input() set getEdgeSnippetsResult(result: GetEdgeSnippetsResult) {
         if (!isNullOrUndefined(result)) {
-            // TODO LL-906: This is wrong, should update the type elsewhere (this is why we get the laggy responses
-            // when clicking on cluster/node/edge)
-            this.sidenavEntityType = SidenavEntityType.EDGE;
             this.sidenavEntity = {
                 snippetData: {
                     to: this.nodes.get(result.snippetData.toNodeId) as VisNode,
@@ -147,9 +145,6 @@ export class VisualizationCanvasComponent implements OnInit {
     }
     @Input() set getClusterSnippetsResult(result: GetClusterSnippetsResult) {
         if (!isNullOrUndefined(result)) {
-            // TODO LL-906: This is wrong, should update the type elsewhere (this is why we get the laggy responses
-            // when clicking on cluster/node/edge)
-            this.sidenavEntityType = SidenavEntityType.CLUSTER;
             const data = result.snippetData.map(snippetResult => {
                 return {
                     to: this.nodes.get(snippetResult.toNodeId) as VisNode,
@@ -958,6 +953,8 @@ export class VisualizationCanvasComponent implements OnInit {
                     )
                 );
                 this.isNewClusterSidenavEntity = true;
+                this.sidenavEntityType = SidenavEntityType.CLUSTER;
+                this.sidenavEntity = null; // Set as null until data is returned by parent
                 this.getSnippetsForCluster.emit({
                     page: 1,
                     limit: SNIPPET_PAGE_LIMIT,
@@ -970,10 +967,16 @@ export class VisualizationCanvasComponent implements OnInit {
                     edges: this.networkGraph.getConnectedEdges(node.id).map(edgeId => this.edges.get(edgeId))
                 } as SidenavNodeEntity;
                 this.sidenavEntityType = SidenavEntityType.NODE;
+
+                // Need to tell the parent that we selected a node so it can cancel any pending requests for edge/cluster data.
+                // We don't actually need any data from the parent...at the moment!
+                this.getNodeData.emit(true);
             }
         } else if (this.selectedNodes.length === 0 && this.selectedEdges.length === 1) {
             const edge = this.edges.get(this.selectedEdges[0]) as VisEdge;
             this.isNewEdgeSidenavEntity = true;
+            this.sidenavEntityType = SidenavEntityType.EDGE;
+            this.sidenavEntity = null; // Set as null until data is returned by parent
             this.getSnippetsForEdge.emit({
                 page: 1,
                 limit: SNIPPET_PAGE_LIMIT,
