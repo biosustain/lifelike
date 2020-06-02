@@ -10,10 +10,8 @@ import {MatListOption} from '@angular/material/list';
 
 export class NodeResultFilterComponent implements OnInit {
   typeOfDomains: string[] = ['CHEBI', 'MESH', 'NCBI', 'GO', 'UNIPROT'].sort();
-  typeOfGoClasses: string[] = ['MOLECULAR_FUNCTION', 'CELLULAR_COMPONENT', 'BIOLOGICAL_PROCESS'].sort();
   typesOfEntities: string[] = ['GENE', 'CHEMICAL', 'DISEASES', 'TAXONOMY', 'PROTEIN'].sort();
   selectedDomains: string[] = [];
-  selectedGoClasses: string[] = [];
   selectedTypes: string[] = [];
   @Output() domainsFilter = new EventEmitter<string[]>();
   @Output() goClassesFilter = new EventEmitter<string[]>();
@@ -38,13 +36,6 @@ export class NodeResultFilterComponent implements OnInit {
       return this.DOMAINS_LABEL[option.value];
     });
     this.domainsFilter.emit(this.selectedDomains);
-  }
-
-  getGoClasses(options: MatListOption[]) {
-    this.selectedGoClasses = options.map(option => {
-      return 'n.namespace="' + (option.value).toString().toLowerCase() + '"';
-    });
-    this.goClassesFilter.emit(this.selectedGoClasses);
   }
 
   getTypes(options: MatListOption[]) {
