@@ -120,7 +120,7 @@ const annotationTypes: AnnotationStyle[] = [{
   {
     label: 'link',
     color: LINK,
-    iconCode: '\uf15b'
+    iconCode: ''
   },
   {
     label: 'entity',

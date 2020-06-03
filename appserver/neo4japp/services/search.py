@@ -1,5 +1,6 @@
 import re
-from neo4japp.data_transfer_objects import FTSQueryRecord, FTSReferenceRecord, FTSResult
+from neo4japp.data_transfer_objects import FTSQueryRecord, FTSReferenceRecord, \
+    FTSResult, FTSTaxonomyRecord
 from neo4japp.services.common import GraphBaseDao
 from neo4japp.models import GraphNode
 from py2neo import cypher
@@ -27,6 +28,7 @@ class SearchService(GraphBaseDao):
             """ Adds an escape '\' to reserved Lucene characters"""
             char = m.group(1)
             return r'\{c}'.format(c=char)
+
         query = re.sub(lucene_chars, escape, query).strip()
         if not query:
             return query
@@ -88,6 +90,25 @@ class SearchService(GraphBaseDao):
                 formatted_results.append(FTSQueryRecord(graph_node, score))
         return formatted_results
 
+    def _simple_fulltext_result_formatter(self, results) -> List[FTSQueryRecord]:
+        formatted_results: List[FTSQueryRecord] = []
+        for result in results:
+            node = result['node']
+            score = result['score']
+            taxonomy_id = result.get('taxonomy_id', '')
+            taxonomy_name = result.get('taxonomy_name', '')
+            graph_node = GraphNode.from_py2neo(
+                node, display_fn=lambda x: x.get('name'))
+            formatted_results.append(FTSTaxonomyRecord(
+                node=graph_node,
+                score=score,
+                taxonomy_id=taxonomy_id if taxonomy_id is not None
+                else 'N/A',
+                taxonomy_name=taxonomy_name if taxonomy_name is not None
+                else 'N/A'
+            ))
+        return formatted_results
+
     def fulltext_search(self, term: str, page: int = 1, limit: int = 10) -> FTSResult:
         query_term = self._fulltext_query_sanitizer(term)
         if not query_term:
@@ -123,6 +144,29 @@ class SearchService(GraphBaseDao):
         total_results = self.graph.run(
             total_query, parameters={'search_term': query_term}).evaluate()
         return FTSResult(term, records, total_results, page, limit)
+
+    def simple_text_search(self, term: str, page: int = 1,
+                           limit: int = 100, filter: str = 'labels(node)') -> FTSResult:
+        query_term = self._fulltext_query_sanitizer(term)
+        if not query_term:
+            return FTSResult(query_term, [], 0, page, limit)
+        cypher_query = 'CALL db.index.fulltext.queryNodes("synonymIdx", $search_term) ' \
+                       'YIELD node, score WITH node, score MATCH (node)-[]-(n) ' \
+                       'WHERE %s AND NOT n:TopicalDescriptor ' \
+                       'WITH node, score, n optional MATCH (n)-[:HAS_TAXONOMY]-(t:Taxonomy) ' \
+                       'RETURN DISTINCT n as node, score, t.id AS taxonomy_id,' \
+                       ' t.name AS taxonomy_name ' \
+                       'LIMIT $limit' % filter
+
+        results = self.graph.run(
+            cypher_query,
+            parameters={'limit': limit,
+                        'search_term': query_term,
+                        }).data()
+
+        records = self._simple_fulltext_result_formatter(results)
+
+        return FTSResult(term, records, limit, page, limit)
 
     def predictive_search(self, term: str, limit: int = 5):
         """ Performs a predictive search; not necessarily a prefix based autocomplete.
