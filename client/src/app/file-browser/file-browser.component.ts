@@ -1,5 +1,5 @@
 import { Component, Inject, OnDestroy, OnInit } from '@angular/core';
-import { FormControl } from '@angular/forms';
+import { AbstractControl, FormControl, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { SelectionModel } from '@angular/cdk/collections';
 import { MatTableDataSource } from '@angular/material/table';
@@ -19,7 +19,7 @@ import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
   styleUrls: ['./file-browser.component.scss'],
 })
 export class FileBrowserComponent implements OnInit {
-  displayedColumns: string[] = ['select', 'filename', 'creationDate', 'username', 'annotation'];
+  displayedColumns: string[] = ['select', 'filename', 'description', 'creationDate', 'username', 'annotation'];
   dataSource = new MatTableDataSource<PdfFile>([]);
   selection = new SelectionModel<PdfFile>(true, []);
   isReannotating = false;
@@ -201,6 +201,26 @@ export class FileBrowserComponent implements OnInit {
       }
     });
   }
+
+  openEditDialog(selected: PdfFile) {
+    const dialogRef = this.dialog.open(DialogEditFileComponent, {
+      data: {
+        filename: selected.filename,
+        description: selected.description,
+      },
+      width: '640px',
+    });
+
+    dialogRef.afterClosed().subscribe(data => {
+      this.pdf.updateFile(
+        selected.file_id,
+        data.filename,
+        data.description
+      ).subscribe(() => {
+        this.updateDataSource();
+      });
+    });
+  }
 }
 
 @Component({
@@ -249,6 +269,7 @@ export class DialogUploadComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    this.filenameChange.unsubscribe();
     this.urlChange.unsubscribe();
     this.tabChange.unsubscribe();
   }
@@ -274,5 +295,35 @@ export class DialogUploadComponent implements OnInit, OnDestroy {
     } else { // UploadType.Url
       this.forbidUpload = !(filenameIsOk && urlIsOk);
     }
+  }
+}
+
+@Component({
+  selector: 'app-dialog-edit-file',
+  templateUrl: './dialog-edit-file.html',
+  styleUrls: ['./dialog-edit-file.scss'],
+})
+export class DialogEditFileComponent {
+  filename = new FormControl('', [
+    Validators.required,
+    (control: AbstractControl): {[key: string]: any} | null => { // validate against whitespace-only strings
+      const filename = control.value;
+      const forbidden = filename.trim().length <= 0;
+      return forbidden ? {'forbiddenFilename': {value: filename}} : null;
+    },
+  ]);
+
+  description = new FormControl('');
+
+  constructor(@Inject(MAT_DIALOG_DATA) private data: any) {
+    this.filename.setValue(data.filename);
+    this.description.setValue(data.description);
+  }
+
+  returnPayload() {
+    return {
+      filename: this.filename.value,
+      description: this.description.value || '',
+    };
   }
 }
