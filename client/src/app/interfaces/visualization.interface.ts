@@ -83,17 +83,13 @@ export interface SettingsFormValues {
 }
 
 export interface SidenavClusterEntity {
-    // TODO LL-906: Should change this to a new data structure containing only the necessary data,
-    // same for SidenavEdgeEntity
-    queryData: DuplicateVisEdge[];
+    queryData: DuplicateEdgeConnectionData[];
     snippetData: SidenavSnippetData[];
     totalResults: number;
 }
 
 export interface SidenavEdgeEntity {
-    // TODO LL-906: Should change this to a new data structure containing only the necessary data,
-    // same for SidenavClusterEntity
-    queryData: VisEdge;
+    queryData: EdgeConnectionData;
     snippetData: SidenavSnippetData;
     totalResults: number;
 }
@@ -164,7 +160,6 @@ export interface GetClusterSnippetsResult {
     totalResults: number;
 }
 
-// TODO LL-906: Consider re-naming this and related functions/services
 export interface GetReferenceTableDataResult {
     referenceTableRows: ReferenceTableRow[];
 }
