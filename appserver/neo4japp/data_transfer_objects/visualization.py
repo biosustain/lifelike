@@ -84,6 +84,31 @@ class Snippet(CamelDictMixin):
     reference: GraphNode = attr.ib()
     publication: GraphNode = attr.ib()
 
+
+@attr.s(frozen=True)
+class EdgeConnectionData(CamelDictMixin):
+    from_label: str = attr.ib()
+    to_label: str = attr.ib()
+    from_: int = attr.ib()
+    to: int = attr.ib()
+    label: str = attr.ib()
+
+    # 'from_' will be formatted as 'from' because it is coming from the client.
+    # Need to re-format it here to the expected value
+    def build_from_dict_formatter(self, edge_data_input_dict: dict):
+        edge_data_input_dict['from'] = edge_data_input_dict['from_']
+        del edge_data_input_dict['from_']
+        return edge_data_input_dict
+
+
+@attr.s(frozen=True)
+class DuplicateEdgeConnectionData(CamelDictMixin):
+    from_label: str = attr.ib()
+    to_label: str = attr.ib()
+    original_from: int = attr.ib()
+    original_to: int = attr.ib()
+    label: str = attr.ib()
+
 # Begin Request DTOs #
 
 
@@ -96,14 +121,14 @@ class ReferenceTableDataRequest(CamelDictMixin):
 class GetSnippetsForEdgeRequest(CamelDictMixin):
     page: int = attr.ib()
     limit: int = attr.ib()
-    edge: VisEdge = attr.ib()
+    edge: EdgeConnectionData = attr.ib()
 
 
 @attr.s(frozen=True)
 class GetSnippetsForClusterRequest(CamelDictMixin):
     page: int = attr.ib()
     limit: int = attr.ib()
-    edges: List[DuplicateVisEdge] = attr.ib()
+    edges: List[DuplicateEdgeConnectionData] = attr.ib()
 
 # End Request DTOs #
 
@@ -122,14 +147,14 @@ class GetSnippetsFromEdgeResult(CamelDictMixin):
 class GetEdgeSnippetsResult(CamelDictMixin):
     snippet_data: GetSnippetsFromEdgeResult = attr.ib()
     total_results: int = attr.ib()
-    query_data: VisEdge = attr.ib()
+    query_data: EdgeConnectionData = attr.ib()
 
 
 @attr.s(frozen=True)
 class GetClusterSnippetsResult(CamelDictMixin):
     snippet_data: List[GetSnippetsFromEdgeResult] = attr.ib()
     total_results: int = attr.ib()
-    query_data: List[DuplicateVisEdge] = attr.ib()
+    query_data: List[DuplicateEdgeConnectionData] = attr.ib()
 
 
 @attr.s(frozen=True)
