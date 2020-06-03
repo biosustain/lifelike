@@ -19,8 +19,10 @@ import {
     ClusterData,
     DuplicateNodeEdgePair,
     Direction,
+    DuplicateEdgeConnectionData,
     DuplicateVisEdge,
     DuplicateVisNode,
+    EdgeConnectionData,
     ExpandNodeResult,
     ExpandNodeRequest,
     GetClusterSnippetsResult,
@@ -29,6 +31,7 @@ import {
     Neo4jGraphConfig,
     NewClusterSnippetsPageRequest,
     NewEdgeSnippetsPageRequest,
+    NodeDisplayInfo,
     ReferenceTableRow,
     SettingsFormValues,
     SidenavClusterEntity,
@@ -131,10 +134,18 @@ export class VisualizationCanvasComponent implements OnInit {
     }
     @Input() set getEdgeSnippetsResult(result: GetEdgeSnippetsResult) {
         if (!isNullOrUndefined(result)) {
+            const toNode = this.nodes.get(result.snippetData.toNodeId) as VisNode;
+            const fromNode = this.nodes.get(result.snippetData.fromNodeId) as VisNode;
             this.sidenavEntity = {
                 snippetData: {
-                    to: this.nodes.get(result.snippetData.toNodeId) as VisNode,
-                    from: this.nodes.get(result.snippetData.fromNodeId) as VisNode,
+                    to: {
+                        primaryLabel: toNode.primaryLabel,
+                        displayName: toNode.displayName,
+                    } as NodeDisplayInfo,
+                    from: {
+                        primaryLabel: fromNode.primaryLabel,
+                        displayName: fromNode.displayName,
+                    } as NodeDisplayInfo,
                     association: result.snippetData.association,
                     snippets: result.snippetData.snippets,
                 } as SidenavSnippetData,
@@ -146,9 +157,17 @@ export class VisualizationCanvasComponent implements OnInit {
     @Input() set getClusterSnippetsResult(result: GetClusterSnippetsResult) {
         if (!isNullOrUndefined(result)) {
             const data = result.snippetData.map(snippetResult => {
+                const toNode = this.nodes.get(snippetResult.toNodeId) as VisNode;
+                const fromNode = this.nodes.get(snippetResult.fromNodeId) as VisNode;
                 return {
-                    to: this.nodes.get(snippetResult.toNodeId) as VisNode,
-                    from: this.nodes.get(snippetResult.fromNodeId) as VisNode,
+                    to: {
+                        primaryLabel: toNode.primaryLabel,
+                        displayName: toNode.displayName,
+                    } as NodeDisplayInfo,
+                    from: {
+                        primaryLabel: fromNode.primaryLabel,
+                        displayName: fromNode.displayName,
+                    } as NodeDisplayInfo,
                     association: snippetResult.association,
                     snippets: snippetResult.snippets,
                 } as SidenavSnippetData;
@@ -949,7 +968,18 @@ export class VisualizationCanvasComponent implements OnInit {
                 const edges = [];
                 this.networkGraph.getNodesInCluster(cluster).forEach(node =>
                     this.networkGraph.getConnectedEdges(node).forEach(
-                        edgeId => edges.push(this.edges.get(edgeId))
+                        edgeId => {
+                            const edge = this.edges.get(edgeId);
+                            edges.push(
+                                {
+                                    originalFrom: edge.from,
+                                    originalTo: edge.to,
+                                    fromLabel: edge.fromLabel,
+                                    toLabel: edge.toLabel,
+                                    label: edge.label,
+                                } as DuplicateEdgeConnectionData,
+                            );
+                        }
                     )
                 );
                 this.isNewClusterSidenavEntity = true;
@@ -980,7 +1010,13 @@ export class VisualizationCanvasComponent implements OnInit {
             this.getSnippetsForEdge.emit({
                 page: 1,
                 limit: SNIPPET_PAGE_LIMIT,
-                queryData: edge,
+                queryData: {
+                    from: edge.from,
+                    to: edge.to,
+                    fromLabel: edge.fromLabel,
+                    toLabel: edge.toLabel,
+                    label: edge.label,
+                } as EdgeConnectionData,
             } as NewEdgeSnippetsPageRequest);
         }
     }

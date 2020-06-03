@@ -4,11 +4,11 @@ import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
 import {
-    DuplicateVisEdge,
+    EdgeConnectionData,
+    DuplicateEdgeConnectionData,
     NewClusterSnippetsPageRequest,
     NewEdgeSnippetsPageRequest,
     SidenavSnippetData,
-    VisEdge
 } from 'app/interfaces';
 import { SNIPPET_PAGE_LIMIT, SNIPPET_RESULT_LIMIT } from 'app/shared/constants';
 
@@ -31,7 +31,7 @@ export class SnippetDisplayComponent implements OnDestroy {
         this.dataLoaded = true;
         this.loadingDataSource.next(true);
     }
-    @Input() queryData: VisEdge | DuplicateVisEdge[];
+    @Input() queryData: EdgeConnectionData | DuplicateEdgeConnectionData[];
     @Input() legend: Map<string, string[]>;
 
     snippets: SidenavSnippetData[];
