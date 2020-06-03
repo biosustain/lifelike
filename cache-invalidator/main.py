@@ -45,8 +45,7 @@ def get_kg_statistics():
             query = f"MATCH (:`{db}`:`{entity}`) RETURN count(*) as count"
             count = graph.run(query).evaluate()
             if count > 0:
-                # start from 4th character to remove 'db_' prefix
-                statistics[db[3:]][entity] = count
+                statistics[db.replace("db_", "", 1)][entity] = count
     return statistics
 
 
