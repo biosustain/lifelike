@@ -309,7 +309,7 @@ export class DialogEditFileComponent {
     (control: AbstractControl): {[key: string]: any} | null => { // validate against whitespace-only strings
       const filename = control.value;
       const forbidden = filename.trim().length <= 0;
-      return forbidden ? {'forbiddenFilename': {value: filename}} : null;
+      return forbidden ? {forbiddenFilename: {value: filename}} : null;
     },
   ]);
 
