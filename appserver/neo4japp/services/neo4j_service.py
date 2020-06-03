@@ -3,7 +3,9 @@ from typing import Dict, List, Optional, Union
 
 from neo4japp.data_transfer_objects.visualization import (
     DuplicateNodeEdgePair,
+    DuplicateEdgeConnectionData,
     DuplicateVisEdge,
+    EdgeConnectionData,
     GetClusterSnippetsResult,
     GetEdgeSnippetsResult,
     GetReferenceTableDataResult,
@@ -171,7 +173,7 @@ class Neo4JService(GraphBaseDao):
         query = self.get_expand_query(node_id, connected_node_ids)
         return self._query_neo4j(query)
 
-    def get_snippets_from_edge(self, edge: VisEdge):
+    def get_snippets_from_edge(self, edge: EdgeConnectionData):
         query = self.get_snippets_from_edge_query(edge.from_label, edge.to_label)
         data = self.graph.run(
             query,
@@ -201,7 +203,7 @@ class Neo4JService(GraphBaseDao):
             snippets=snippets,
         )
 
-    def get_snippets_from_duplicate_edge(self, edge: DuplicateVisEdge):
+    def get_snippets_from_duplicate_edge(self, edge: DuplicateEdgeConnectionData):
         query = self.get_snippets_from_edge_query(edge.from_label, edge.to_label)
         data = self.graph.run(
             query,
@@ -258,7 +260,7 @@ class Neo4JService(GraphBaseDao):
 
     def get_snippets_for_edge(
         self,
-        edge: VisEdge,
+        edge: EdgeConnectionData,
         page: int,
         limit: int,
     ) -> GetEdgeSnippetsResult:
@@ -305,7 +307,7 @@ class Neo4JService(GraphBaseDao):
 
     def get_snippets_for_cluster(
         self,
-        edges: List[DuplicateVisEdge],
+        edges: List[DuplicateEdgeConnectionData],
         page: int,
         limit: int,
     ) -> GetClusterSnippetsResult:

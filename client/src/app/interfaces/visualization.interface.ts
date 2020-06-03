@@ -24,9 +24,25 @@ export enum Direction {
     FROM = 'Outgoing',
 }
 
+export interface DuplicateEdgeConnectionData {
+    originalFrom: number;
+    originalTo: number;
+    fromLabel: string;
+    toLabel: string;
+    label: string;
+}
+
 export interface DuplicateNodeEdgePair {
     node: DuplicateVisNode;
     edge: DuplicateVisEdge;
+}
+
+export interface EdgeConnectionData {
+    from: number;
+    to: number;
+    fromLabel: string;
+    toLabel: string;
+    label: string;
 }
 
 export interface Publication extends GraphNode {
@@ -85,9 +101,14 @@ export interface SidenavNodeEntity {
     edges: VisEdge[];
 }
 
+export interface NodeDisplayInfo {
+    primaryLabel: string;
+    displayName: string;
+}
+
 export interface SidenavSnippetData {
-    to: VisNode; // TODO LL-906: Should change these VisNode to just the primaryLabel + displayName
-    from: VisNode;
+    to: NodeDisplayInfo;
+    from: NodeDisplayInfo;
     association: string;
     snippets: AssociationSnippet[];
 }
@@ -108,13 +129,13 @@ export interface GroupRequest {
 }
 
 export interface NewClusterSnippetsPageRequest {
-    queryData: DuplicateVisEdge[];
+    queryData: DuplicateEdgeConnectionData[];
     page: number;
     limit: number;
 }
 
 export interface NewEdgeSnippetsPageRequest {
-    queryData: VisEdge;
+    queryData: EdgeConnectionData;
     page: number;
     limit: number;
 }
@@ -130,13 +151,13 @@ export interface ExpandNodeResult {
 }
 
 export interface GetEdgeSnippetsResult {
-    queryData: VisEdge;
+    queryData: EdgeConnectionData;
     snippetData: GetSnippetsResult;
     totalResults: number;
 }
 
 export interface GetClusterSnippetsResult {
-    queryData: DuplicateVisEdge[];
+    queryData: DuplicateEdgeConnectionData[];
     snippetData: GetSnippetsResult[];
     totalResults: number;
 }
