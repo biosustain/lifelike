@@ -64,6 +64,14 @@ export class PdfFilesService {
     return this.http.post(`${this.baseUrl}/reannotate`, ids, options);
   }
 
+  updateFile(id: string, filename: string, description: string = ''): Observable<string> {
+    const options = { headers: this.getAuthHeader() };
+    const formData: FormData = new FormData();
+    formData.append('filename', filename);
+    formData.append('description', description);
+    return this.http.patch<string>(`${this.baseUrl}/${id}`, formData, options);
+  }
+
   private getAuthHeader() {
     return { Authorization: `Bearer ${this.auth.getAccessToken()}` };
   }
