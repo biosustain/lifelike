@@ -1,15 +1,14 @@
-import {Component, SecurityContext} from '@angular/core';
+import {Component} from '@angular/core';
 import {DomSanitizer} from '@angular/platform-browser';
 
 export interface Nodes {
+  id: string;
   link: string;
   domain: string;
   type: string;
   name: string;
-}
-
-export interface PageActions {
-  pageIndex: number;
+  taxonomyId: string;
+  taxonomyName: string;
 }
 
 @Component({
@@ -17,11 +16,15 @@ export interface PageActions {
   template: `
     <app-node-search-bar
       (results)="getResults($event)"
-      [pageActions]="pageActions"
+      [domainsFilter]="domainsFilter"
+      [typesFilter]="typesFilter"
     ></app-node-search-bar>
+    <app-node-result-filter
+      (domainsFilter)="getDomainsFilter($event)"
+      (typesFilter)="getTypesFilter($event)"
+    ></app-node-result-filter>
     <app-node-result-list
       [nodes]="dataSource"
-      (page)="paginatorEvent($event)"
     ></app-node-result-list>
   `,
 })
@@ -30,13 +33,14 @@ export class NodeSearchComponent {
   DOMAINS_URL = {
     CHEBI: 'https://www.ebi.ac.uk/chebi/searchId.do?chebiId=',
     MESH: 'https://www.ncbi.nlm.nih.gov/mesh/?term=',
-    Literature: 'https://pubmed.ncbi.nlm.nih.gov/',
+    UniProt: 'https://www.uniprot.org/uniprot/',
+    GO: 'http://amigo.geneontology.org/amigo/term/',
     NCBI_Gene: 'https://www.ncbi.nlm.nih.gov/gene/',
     NCBI_Taxonomy: 'https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id='
   };
   dataSource: Nodes[] = [];
-  pageActions: PageActions = {pageIndex: 1};
-
+  domainsFilter = '';
+  typesFilter = '';
 
   constructor(private sanitizer: DomSanitizer) {
   }
@@ -44,24 +48,22 @@ export class NodeSearchComponent {
   getResults(results) {
     this.dataSource = results.map((data) => {
       return {
+        id: this.getId(data),
         link: this.getLink(data),
         name: this.getName(data),
         type: this.getType(data.node.subLabels),
-        domain: this.getDomain(data.node.subLabels)
-      };
+        domain: this.getDomain(data.node.subLabels),
+        taxonomyId: data.taxonomyId,
+        taxonomyName: data.taxonomyName
+      } as Nodes;
     });
   }
 
-  paginatorEvent(page) {
-    if (page) {
-      this.pageActions = {pageIndex: page.pageIndex};
-    }
-  }
 
   getDomain(subLabels: string[]) {
     this.removeUnneededLabels(subLabels);
-    return subLabels.length === 1 && subLabels[0] === 'Snippet' ? 'Literature' : subLabels
-      .find(element => element.match(/^db_*/)).split('_')[1];
+    return subLabels.find(element => element.match(/^db_*/))
+      .split('_')[1];
   }
 
   private removeUnneededLabels(subLabels: string[]) {
@@ -88,9 +90,9 @@ export class NodeSearchComponent {
     } else if (domain === 'NCBI' && type === 'Taxonomy') {
       return this.sanitizer.bypassSecurityTrustUrl(this.DOMAINS_URL[domain + '_' + type] +
         data.node.data.id);
-    } else if (domain === 'Literature') {
+    } else if (domain === 'GO' || domain === 'UniProt') {
       return this.sanitizer.bypassSecurityTrustUrl(this.DOMAINS_URL[domain] +
-        data.publicationId);
+        data.node.data.id);
     } else {
       return this.sanitizer.bypassSecurityTrustUrl(this.DOMAINS_URL[domain] +
         data.node.data.id.split(':')[1]);
@@ -99,5 +101,39 @@ export class NodeSearchComponent {
 
   getName(data) {
     return data.node.displayName;
+  }
+
+  getId(data) {
+    return data.node.data.id;
+  }
+
+  getDomainsFilter(selectedDomains: string[]) {
+    let domainsPredicate = '(';
+    if (selectedDomains.length === 0) {
+      this.domainsFilter = '';
+      return;
+    }
+    selectedDomains.forEach((domain, index) => {
+      if (selectedDomains.length - 1 === index) {
+        return domainsPredicate += domain + ')';
+      }
+      domainsPredicate += domain + ' OR ';
+    });
+    this.domainsFilter = domainsPredicate;
+  }
+
+  getTypesFilter(selectedTypes: string[]) {
+    let typesPredicate = '(';
+    if (selectedTypes.length === 0) {
+      this.typesFilter = '';
+      return;
+    }
+    selectedTypes.forEach((type, index) => {
+      if (selectedTypes.length - 1 === index) {
+        return typesPredicate += type + ')';
+      }
+      typesPredicate += type + ' OR ';
+    });
+    this.typesFilter = typesPredicate;
   }
 }

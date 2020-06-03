@@ -97,7 +97,20 @@ class AnnotationsPDFParser:
         compiled_regex = re.compile(r'cid:\d+')
 
         for i, page in enumerate(PDFPage.create_pages(pdf_doc)):
-            cropbox_in_pdf = (page.cropbox[0], page.cropbox[1])
+            # get the cropbox left and bottom offset
+            # these values will be added to the coordinates
+            #
+            # cropboxes are used to tell a pdf viewer what the
+            # actual visible area of a pdf page is
+            #
+            # as of JIRA LL-837 it seems the pdf viewer library
+            # we're using is using the mediabox values
+            # this might change if we switch pdf viewer library
+            #
+            # in most cases, both cropboxes and mediaboxes have the
+            # same values, but the pdf in JIRA LL-837 had different
+            # values
+            cropbox_in_pdf = (page.mediabox[0], page.mediabox[1])
             interpreter.process_page(page)
             layout = device.get_result()
             self._get_lt_char(
