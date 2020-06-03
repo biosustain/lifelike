@@ -56,34 +56,46 @@ def test_get_reference_table_data(
     assert response.status_code == 200
 
 
-# TODO LL-906: Need to update this
-def test_get_cluster_data(
+def test_get_snippets_for_edge(
     client,
-    gas_gangrene_treatment_clustered_nodes,
+):
+    response = client.post(
+        '/neo4j/get-snippets-for-edge',
+        data=json.dumps(dict(
+            page=1,
+            limit=25,
+            edge={
+                'to': 1,
+                'from': 2,
+                'fromLabel': 'Chemical',
+                'toLabel': 'Disease',
+                'label': 'ASSOCIATED',
+            }
+        )), content_type='application/json'
+    )
+
+    assert response.status_code == 200
+
+
+def test_get_snippets_for_cluster(
+    client,
 ):
     response = client.post(
         '/neo4j/get-snippets-for-cluster',
         data=json.dumps(dict(
-            clustered_nodes=[
-                dict(
-                    node_id='duplicateNode:1',
-                    edges=[
-                        dict(
-                            id='duplicateEdge:1',
-                            label='ASSOCIATED',
-                            data=dict(),
-                            to='duplicateNode:1',
-                            from_='duplicateNode:2',
-                            to_label='Disease',
-                            from_label='Chemical',
-                            arrows='to',
-                            duplicate_of=1,
-                            original_from=2,
-                            original_to=1,
-                        ),
-                    ],
-                ),
-            ],
+            page=1,
+            limit=25,
+            edges=[
+                {
+                    'to': 'duplicateNode:1',
+                    'from': 'duplicateNode:2',
+                    'originalFrom': 2,
+                    'originalTo': 1,
+                    'fromLabel': 'Chemical',
+                    'toLabel': 'Disease',
+                    'label': 'ASSOCIATED',
+                }
+            ]
         )), content_type='application/json'
     )
 

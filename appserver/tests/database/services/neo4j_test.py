@@ -145,39 +145,114 @@ def test_get_reference_table_data(
 
     assert len(reference_table_rows) == 1
     assert reference_table_rows[0].node_display_name == 'Penicillins'
-    assert reference_table_rows[0].snippet_count == 1
+    assert reference_table_rows[0].snippet_count == 2
 
 
-# TODO LL-906 Should update this
-def test_get_cluster_data(
+def test_get_snippets_for_edge(
     neo4j_service_dao,
-    gas_gangrene_treatment_clustered_nodes,
+    gas_gangrene_treatement_edge_data,
+    gas_gangrene_with_associations_and_references,
+):
+    get_edge_data_result = neo4j_service_dao.get_snippets_for_edge(
+        edge=gas_gangrene_treatement_edge_data,
+        page=1,
+        limit=25,
+    )
+
+    snippet_data = get_edge_data_result.snippet_data
+
+    # Check snippet data
+    assert len(snippet_data.snippets) == 2
+    assert snippet_data.association == 'treatment/therapy (including investigatory)'
+
+    sentences = [
+        'Toxin suppression and rapid bacterial killing may...',
+        '...suppresses toxins and rapidly kills bacteria...',
+    ]
+
+    assert snippet_data.snippets[0].reference.data['sentence'] in sentences
+    assert snippet_data.snippets[1].reference.data['sentence'] in sentences
+
+
+def test_get_snippets_for_edge_low_limit(
+    neo4j_service_dao,
+    gas_gangrene_treatement_edge_data,
+    gas_gangrene_with_associations_and_references,
+):
+    get_edge_data_result = neo4j_service_dao.get_snippets_for_edge(
+        edge=gas_gangrene_treatement_edge_data,
+        page=1,
+        limit=1,
+    )
+
+    snippet_data = get_edge_data_result.snippet_data
+
+    # Check snippet data
+    assert len(snippet_data.snippets) == 1
+    assert snippet_data.association == 'treatment/therapy (including investigatory)'
+
+    sentences = [
+        'Toxin suppression and rapid bacterial killing may...',
+        '...suppresses toxins and rapidly kills bacteria...',
+    ]
+
+    assert snippet_data.snippets[0].reference.data['sentence'] in sentences
+
+
+def test_get_snippets_for_cluster(
+    neo4j_service_dao,
+    gas_gangrene_treatement_duplicate_edge_data,
     gas_gangrene_with_associations_and_references,
 ):
     get_cluster_data_result = neo4j_service_dao.get_snippets_for_cluster(
-        gas_gangrene_treatment_clustered_nodes,
+        edges=gas_gangrene_treatement_duplicate_edge_data,
+        page=1,
+        limit=25,
     )
 
-    graph_data = get_cluster_data_result.graph_data
     snippet_data = get_cluster_data_result.snippet_data
 
-    # Check graph data
-    assert graph_data.results is not None
-    assert len(graph_data.results.keys()) == 1
+    # Check snippet data
+    assert len(snippet_data) == 1
 
-    node_id = list(graph_data.results.keys())[0]
+    snippet = snippet_data[0]
 
-    assert len(graph_data.results[node_id].keys()) == 1
+    assert len(snippet.snippets) == 2
+    assert snippet.association == 'treatment/therapy (including investigatory)'
 
-    edge_id = list(graph_data.results[node_id].keys())[0]
+    sentences = [
+        'Toxin suppression and rapid bacterial killing may...',
+        '...suppresses toxins and rapidly kills bacteria...',
+    ]
 
-    assert graph_data.results[node_id][edge_id] == 1
+    assert snippet.snippets[0].reference.data['sentence'] in sentences
+    assert snippet.snippets[1].reference.data['sentence'] in sentences
+
+
+def test_get_snippets_for_cluster_low_limit(
+    neo4j_service_dao,
+    gas_gangrene_treatement_duplicate_edge_data,
+    gas_gangrene_with_associations_and_references,
+):
+    get_cluster_data_result = neo4j_service_dao.get_snippets_for_cluster(
+        edges=gas_gangrene_treatement_duplicate_edge_data,
+        page=1,
+        limit=1,
+    )
+
+    snippet_data = get_cluster_data_result.snippet_data
 
     # Check snippet data
-    assert snippet_data.results is not None
-    assert len(snippet_data.results) == 1
+    assert len(snippet_data) == 1
 
-    snippet = snippet_data.results[0]
+    snippet = snippet_data[0]
 
+    assert len(snippet.snippets) == 1
     assert snippet.association == 'treatment/therapy (including investigatory)'
-    assert snippet.snippets[0].reference.data['sentence'] == 'Toxin suppression and rapid bacterial killing may...'  # noqa
+
+    sentences = [
+        'Toxin suppression and rapid bacterial killing may...',
+        '...suppresses toxins and rapidly kills bacteria...',
+    ]
+
+    assert snippet.snippets[0].reference.data['sentence'] in sentences
