@@ -96,6 +96,7 @@ def upload_pdf():
     file = Files(
         file_id=file_id,
         filename=filename,
+        description='',
         content_id=file_content.id,
         user_id=user.id,
         annotations=annotations,
@@ -124,12 +125,14 @@ def list_files():
         'id': row.id,  # TODO: is this of any use?
         'file_id': row.file_id,
         'filename': row.filename,
+        'description': row.description,
         'username': row.username,
         'creation_date': row.creation_date,
     } for row in db.session.query(
         Files.id,
         Files.file_id,
         Files.filename,
+        Files.description,
         Files.user_id,
         AppUser.username,
         Files.creation_date)
@@ -140,9 +143,30 @@ def list_files():
     return jsonify({'files': files})
 
 
-@bp.route('/<id>', methods=['GET'])
+@bp.route('/<id>', methods=['GET', 'PATCH'])
 @auth.login_required
 def get_pdf(id):
+    if request.method == 'PATCH':
+        filename = request.form['filename'].strip()
+        description = request.form['description'].strip()
+        try:
+            file = Files.query.filter_by(file_id=id).one()
+        except NoResultFound:
+            raise RecordNotFoundException('Requested PDF file not found.')
+        else:
+            if filename and filename != file.filename:
+                filename = secure_filename(filename)
+                if not filename.lower().endswith('.pdf'):
+                    filename += '.pdf'
+                db.session.query(Files).filter(Files.file_id == id).update({
+                    'filename': filename,
+                })
+            if description != file.description:
+                db.session.query(Files).filter(Files.file_id == id).update({
+                    'description': description,
+                })
+            db.session.commit()
+        return ''
     try:
         entry = db.session \
             .query(Files.id, FileContent.raw_file) \
