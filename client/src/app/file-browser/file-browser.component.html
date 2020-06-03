@@ -1,62 +1,119 @@
-<mat-toolbar>File Browser</mat-toolbar>
-<div class="container" fxLayout="column" fxLayoutAlign="start start">
-  <div fxLayoutGap="8px">
-    <button mat-raised-button (click)="openUploadDialog()"><mat-icon>add_box</mat-icon> Upload</button>
-    <button
-      mat-raised-button
-      [disabled]="selection.selected.length === 0"
-      (click)="openDeleteDialog()"
-      color="warn"
-    >
-      Delete
-    </button>
-    <button mat-raised-button [disabled]="selection.selected.length === 0 || isReannotating" (click)="reannotate()">Reannotate</button>
+<div class="module module-centered">
+  <div class="module-header-container">
+    <div class="module-header">
+      <div class="module-title">
+        File Browser
+      </div>
+      <div class="module-toolbar">
+        <div class="input-group">
+        <span class="input-group-prepend">
+          <div class="input-group-text bg-transparent border-right-0">
+            <i class="fa fa-search"></i>
+          </div>
+        </span>
+          <input class="form-control py-2 border-left-0 border" (keyup)="applyFilter($event.target.value)"
+                 placeholder="Search files..." [disabled]="loadTask.running" maxlength="40">
+        </div>
+      </div>
+    </div>
   </div>
 
-  <mat-form-field fxFlexOffset="16px">
-    <input matInput (keyup)="applyFilter($event.target.value)" placeholder="Filter by name">
-  </mat-form-field>
+  <div class="module-body">
+    <div class="mb-4">
+      <button class="btn btn-primary" (click)="openUploadDialog()">
+        <i class="fa fa-plus"></i>
+        Add File
+      </button>
+      <button class="btn btn-outline-secondary ml-2"
+              [disabled]="selection.selected.length === 0 || isReannotating" (click)="reannotate()">
+        Reannotate
+      </button>
+      <button class="btn btn-outline-secondary ml-2"
+              [disabled]="selection.selected.length === 0"
+              (click)="openDeleteDialog()">
+        Delete
+      </button>
+    </div>
 
-  <mat-table [dataSource]="dataSource" class="mat-elevation-z1">
-    <ng-container matColumnDef="select">
-      <mat-header-cell *matHeaderCellDef fxFlex="nogrow">
-        <mat-checkbox (change)="$event ? masterToggle() : null"
-                      [checked]="selection.hasValue() && selection.selected.length === dataSource.data.length"
-                      [indeterminate]="selection.hasValue() && selection.selected.length !== dataSource.data.length"></mat-checkbox>
-      </mat-header-cell>
-      <mat-cell *matCellDef="let element" fxFlex="nogrow">
-        <mat-checkbox (click)="$event.stopPropagation()"
-                      (change)="$event ? selection.toggle(element) : null"
-                      [checked]="selection.isSelected(element)">
-        </mat-checkbox>
-      </mat-cell>
-    </ng-container>
+    <ol class="breadcrumb mb-4">
+      <li class="breadcrumb-item">Shared Files</li>
+      <li class="breadcrumb-item active">Home</li>
+    </ol>
 
-    <ng-container matColumnDef="filename">
-      <mat-header-cell *matHeaderCellDef> Name </mat-header-cell>
-      <mat-cell *matCellDef="let element">
-        <button mat-button (click)="openFile(element.file_id)"> {{element.filename}} </button>
-      </mat-cell>
-    </ng-container>
+    <table class="table">
+      <colgroup>
+        <col>
+        <col style="width: 25%">
+        <col style="width: 30%">
+        <col style="width: 1%">
+      </colgroup>
+      <thead>
+      <tr>
+        <th>
+          <div class="custom-control custom-checkbox">
+            <input type="checkbox" class="custom-control-input" id="select-all">
+            <label class="custom-control-label" for="select-all">
+              Name
+            </label>
+          </div>
+        </th>
+        <th>Modified</th>
+        <th>Submitter</th>
+      </tr>
+      </thead>
+      <tbody *ngIf="loadTask.loaded">
+      <tr *ngFor="let file of shownFiles">
+        <td class="align-middle">
+          <div class="custom-control custom-checkbox">
+            <input type="checkbox" class="custom-control-input" id="file-{{ file.file_id }}">
+            <label class="custom-control-label d-flex align-items-center" for="file-{{ file.file_id }}">
+              <a href="#" (click)="openFile(file.file_id); $event.preventDefault()">{{ file.filename }}</a>
+            </label>
+          </div>
+        </td>
+        <td class="align-middle">
+          {{ file.creation_date | date:'short' }}
+        </td>
+        <td class="align-middle">
+          {{ file.username }}
+        </td>
+      </tr>
+      </tbody>
+      <tbody *ngIf="!loadTask.loaded">
+      <tr>
+        <td>
+          <span class="placeholder-box">Loading loading</span>
+        </td>
+        <td>
+          <span class="placeholder-box">Loading loading</span>
+        </td>
+        <td>
+          <span class="placeholder-box">Loading loading</span>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <span class="placeholder-box">Loading loading loading</span>
+        </td>
+        <td>
+          <span class="placeholder-box">Loading loading</span>
+        </td>
+        <td>
+          <span class="placeholder-box">Loading loading loading</span>
+        </td>
+      </tr>
+      </tbody>
+    </table>
 
-    <ng-container matColumnDef="creationDate">
-      <mat-header-cell *matHeaderCellDef> Created </mat-header-cell>
-      <mat-cell *matCellDef="let element"> {{element.creation_date}} </mat-cell>
-    </ng-container>
+    <div *ngIf="loadTask.loaded && files.length == 0" class="text-center mt-4">
+      There are no files to show, but you can
+      <a href="#" (click)="openUploadDialog(); $event.preventDefault()">add some of your own files</a>.
+    </div>
 
-    <ng-container matColumnDef="username">
-      <mat-header-cell *matHeaderCellDef> Created By </mat-header-cell>
-      <mat-cell *matCellDef="let element"> {{element.username}} </mat-cell>
-    </ng-container>
+    <div *ngIf="loadTask.loaded && files.length && shownFiles.length == 0" class="text-center mt-4">
+      <i class="fa fa-search"></i>
+      Your search for "{{filterQuery}}" yielded no results.
+    </div>
+  </div>
 
-    <ng-container matColumnDef="annotation">
-      <mat-header-cell *matHeaderCellDef> Annotation </mat-header-cell>
-      <mat-cell *matCellDef="let element"> {{element.annotation_status}} </mat-cell>
-    </ng-container>
-
-    <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
-    <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
-  </mat-table>
-
-  <p *ngIf="dataSource.data.length === 0">No files found.</p>
 </div>

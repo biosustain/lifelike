@@ -28,6 +28,7 @@ import {
   FriendlyDateStrPipe
 } from './pipes';
 import { NodeTextStylePipe } from './node-text-style.pipe';
+import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 
 const components = [
   MessageDialogComponent,
@@ -56,6 +57,7 @@ const components = [
     DragDropModule,
     EffectsModule.forFeature([SharedNgrxEffects]),
     TextFieldModule,
+    NgbModule,
   ],
   declarations: [
       ...components,
@@ -82,7 +84,8 @@ const components = [
     ...components,
     TruncatePipe,
     FriendlyDateStrPipe,
-    NodeTextStylePipe
+    NodeTextStylePipe,
+    NgbModule,
   ],
 })
 export class SharedModule {

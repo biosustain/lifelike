@@ -1,8 +1,7 @@
-import { Component, Inject, OnDestroy, OnInit } from '@angular/core';
+import { Component, Inject, Input, OnDestroy, OnInit } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { Router } from '@angular/router';
 import { SelectionModel } from '@angular/cdk/collections';
-import { MatTableDataSource } from '@angular/material/table';
 import { MAT_DIALOG_DATA, MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { BehaviorSubject, Subscription, throwError } from 'rxjs';
@@ -11,6 +10,8 @@ import { PdfFilesService } from 'app/shared/services/pdf-files.service';
 import { HttpEventType } from '@angular/common/http';
 import { Progress, ProgressMode } from 'app/interfaces/common-dialog.interface';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
+import { BackgroundTask } from '../shared/rxjs/background-task';
+import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 
 @Component({
@@ -18,9 +19,12 @@ import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
   templateUrl: './file-browser.component.html',
   styleUrls: ['./file-browser.component.scss'],
 })
-export class FileBrowserComponent implements OnInit {
-  displayedColumns: string[] = ['select', 'filename', 'creationDate', 'username', 'annotation'];
-  dataSource = new MatTableDataSource<PdfFile>([]);
+export class FileBrowserComponent implements OnInit, OnDestroy {
+  files: PdfFile[];
+  shownFiles: PdfFile[];
+  filterQuery = '';
+  loadTask: BackgroundTask<void, PdfFile[]> = new BackgroundTask(() => this.pdf.getFiles());
+  loadTaskSubscription: Subscription;
   selection = new SelectionModel<PdfFile>(true, []);
   isReannotating = false;
   uploadStarted = false;
@@ -29,26 +33,33 @@ export class FileBrowserComponent implements OnInit {
     private pdf: PdfFilesService,
     private router: Router,
     private snackBar: MatSnackBar,
-    private dialog: MatDialog,
+    private ngbModal: NgbModal,
     private progressDialog: ProgressDialog,
-  ) {}
-
-  ngOnInit() {
-    this.updateDataSource();
+  ) {
   }
 
-  updateDataSource() {
-    this.pdf.getFiles().subscribe(
-      (files: PdfFile[]) => {
+  ngOnInit() {
+    this.loadTaskSubscription = this.loadTask.observable.subscribe(([files]) => {
         // We assume that fetched files are correctly annotated
         files.forEach((file: PdfFile) => file.annotation_status = AnnotationStatus.Success);
-        this.dataSource.data = files;
+        this.files = files;
+        this.updateFilter();
       },
       err => {
         this.snackBar.open(`Cannot fetch list of files: ${err}`, 'Close', {duration: 10000});
       }
     );
+
+    this.updateDataSource();
+  }
+
+  ngOnDestroy(): void {
+    this.loadTaskSubscription.unsubscribe();
+  }
+
+  updateDataSource() {
     this.selection.clear();
+    this.loadTask.update();
   }
 
   upload(data: UploadPayload) {
@@ -140,7 +151,7 @@ export class FileBrowserComponent implements OnInit {
       (res) => {
         for (const id of ids) {
           // pick file by id
-          const file: PdfFile = this.dataSource.data.find((f: PdfFile) => f.file_id === id);
+          const file: PdfFile = this.files.find((f: PdfFile) => f.file_id === id);
           // set its annotation status
           file.annotation_status = res[id] === 'Annotated' ? AnnotationStatus.Success : AnnotationStatus.Failure;
         }
@@ -151,7 +162,7 @@ export class FileBrowserComponent implements OnInit {
       err => {
         for (const id of ids) {
           // pick file by id
-          const file: PdfFile = this.dataSource.data.find((f: PdfFile) => f.file_id === id);
+          const file: PdfFile = this.files.find((f: PdfFile) => f.file_id === id);
           // mark it as failed
           file.annotation_status = AnnotationStatus.Failure;
         }
@@ -164,23 +175,27 @@ export class FileBrowserComponent implements OnInit {
 
   // Adapted from https://v8.material.angular.io/components/table/overview#selection
   masterToggle() {
-    if (this.selection.selected.length === this.dataSource.data.length) {
+    if (this.selection.selected.length === this.files.length) {
       this.selection.clear();
     } else {
-      this.selection.select(...this.dataSource.data);
+      this.selection.select(...this.files);
     }
   }
 
-  applyFilter(filterValue: string) {
-    this.dataSource.filter = filterValue.trim().toLowerCase();
+  applyFilter(query: string) {
+    this.filterQuery = query.trim();
+    this.updateFilter();
+  }
+
+  private updateFilter() {
+    this.shownFiles = this.filterQuery.length ? this.files.filter(file => file.filename.includes(this.filterQuery)) : this.files;
   }
 
   openDeleteDialog() {
-    const dialogRef = this.dialog.open(DialogConfirmDeletionComponent, {
-      data: { files: this.selection.selected },
-    });
+    const dialogRef = this.ngbModal.open(DialogConfirmDeletionComponent);
+    dialogRef.componentInstance.files = this.selection.selected;
 
-    dialogRef.afterClosed().subscribe(shouldDelete => {
+    dialogRef.result.then(shouldDelete => {
       if (shouldDelete) {
         this.deleteFiles();
       }
@@ -190,12 +205,10 @@ export class FileBrowserComponent implements OnInit {
   openUploadDialog() {
     const uploadData: UploadPayload = {type: UploadType.Files}; // doesn't matter what we set it to, but it needs a value
 
-    const dialogRef = this.dialog.open(DialogUploadComponent, {
-      data: { payload: uploadData },
-      width: '640px',
-    });
+    const dialogRef = this.ngbModal.open(DialogUploadComponent);
+    dialogRef.componentInstance.payload = uploadData;
 
-    dialogRef.afterClosed().subscribe((runUpload: boolean) => {
+    dialogRef.result.then((runUpload: boolean) => {
       if (runUpload) {
         this.upload(uploadData);
       }
@@ -208,7 +221,9 @@ export class FileBrowserComponent implements OnInit {
   templateUrl: './dialog-confirm-deletion.html',
 })
 export class DialogConfirmDeletionComponent {
-  constructor(@Inject(MAT_DIALOG_DATA) public data: any) { }
+  @Input() files;
+  constructor(public activeModal: NgbActiveModal) {
+  }
 }
 
 @Component({
@@ -219,7 +234,7 @@ export class DialogConfirmDeletionComponent {
 export class DialogUploadComponent implements OnInit, OnDestroy {
   forbidUpload = true;
   pickedFileName: string;
-  payload: UploadPayload; // to avoid writing this.data.payload everywhere
+  @Input() payload: UploadPayload; // to avoid writing this.data.payload everywhere
 
   selectedTab = new FormControl(0);
   tabChange: Subscription;
@@ -229,8 +244,9 @@ export class DialogUploadComponent implements OnInit, OnDestroy {
   url = new FormControl('');
   urlChange: Subscription;
 
-  constructor(@Inject(MAT_DIALOG_DATA) private data: any) {
-    this.payload = this.data.payload;
+  activeTab: string;
+
+  constructor(public activeModal: NgbActiveModal) {
   }
 
   ngOnInit() {

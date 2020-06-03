@@ -1,6 +1,6 @@
-<div id='map-channel' fxFlex fxLayout class='w-100 vh-100'>
+<div class="d-flex w-100 h-100">
   <!-- Map List -->
-  <div *ngIf='fullScreenmode==="shrink"' id='map-list-container' class='h-100' fxFlex="30">
+  <div *ngIf='fullScreenmode==="shrink"' style="flex: 1 1 30%">
     <app-map-list
       childMode='true'
       [projects]='projects'
@@ -34,7 +34,7 @@
       <mat-icon>search</mat-icon>
     </button>
   </div>
-  <div *ngIf='selectedProject else empty;' class='h-100' fxFill [fxFlex]="fullScreenmode === 'shrink' ? 70 : 100" fxLayout='column' fxLayoutAlign="start center">
+  <div *ngIf='selectedProject else empty;' class='h-100'>
     <!-- Map Preview Panel -->
     <div class='bg-green' fxFill [fxFlex]="fullScreenmode === 'shrink' ? 70 : 100" fxLayoutAlign="center center">
       <div
