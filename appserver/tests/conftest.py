@@ -11,9 +11,11 @@ from py2neo import (
 from neo4japp.constants import DISPLAY_NAME_MAP
 from neo4japp.database import db, reset_dao
 from neo4japp.data_transfer_objects.visualization import (
+    DuplicateEdgeConnectionData,
     DuplicateNodeEdgePair,
     DuplicateVisEdge,
     DuplicateVisNode,
+    EdgeConnectionData,
     VisEdge,
     VisNode,
 )
@@ -291,6 +293,13 @@ def gas_gangrene_with_associations_and_references(
         id=9810348,
         sentence='...penicillin was found to reduce the affect of...',
     )
+    penicillins_to_gas_gangrene_snippet_node4 = Node(
+        'Snippet',
+        entry1_text='penicillin',
+        entry2_text='gas gangrene',
+        id=9810346,
+        sentence='...suppresses toxins and rapidly kills bacteria...',
+    )
 
     # Publication Nodes
     penicillins_to_gas_gangrene_publication_node1 = Node(
@@ -350,9 +359,15 @@ def gas_gangrene_with_associations_and_references(
     penicillins_treatment_association_to_snippet_edge = Relationship(
         penicillins_to_gas_gangrene_snippet_node2, 'PREDICTS', penicillins_to_gas_gangrene_association_node2,   # noqa
     )
+
+    penicillins_treatment_association_to_snippet_edge2 = Relationship(
+        penicillins_to_gas_gangrene_snippet_node4, 'PREDICTS', penicillins_to_gas_gangrene_association_node2,   # noqa
+    )
+
     tx.create(penicillins_alleviates_reduces_association_to_snippet_edge)
     tx.create(penicillins_alleviates_reduces_association_to_snippet_edge2)
     tx.create(penicillins_treatment_association_to_snippet_edge)
+    tx.create(penicillins_treatment_association_to_snippet_edge2)
 
     # Snippet -> Publication Relationships
     penicillins_alleviates_reduces_snippet_to_publication_edge = Relationship(
@@ -366,9 +381,15 @@ def gas_gangrene_with_associations_and_references(
     penicillins_treatment_snippet_to_publication_edge = Relationship(
         penicillins_to_gas_gangrene_snippet_node2, 'IN_PUB', penicillins_to_gas_gangrene_publication_node2  # noqa
     )
+
+    penicillins_treatment_snippet_to_publication_edge2 = Relationship(
+        penicillins_to_gas_gangrene_snippet_node4, 'IN_PUB', penicillins_to_gas_gangrene_publication_node2  # noqa
+    )
+
     tx.create(penicillins_alleviates_reduces_snippet_to_publication_edge)
     tx.create(penicillins_alleviates_reduces_snippet_to_publication_edge2)
     tx.create(penicillins_treatment_snippet_to_publication_edge)
+    tx.create(penicillins_treatment_snippet_to_publication_edge2)
 
     tx.commit()
 
@@ -784,6 +805,44 @@ def gas_gangrene_treatment_cluster_node_edge_pairs(
             node=penicillins_duplicate_vis_node,
             edge=penicillins_to_gas_gangrene_treatment_as_duplicate_vis_edge,
         )
+    ]
+
+
+@pytest.fixture(scope='function')
+def gas_gangrene_treatement_edge_data(
+    penicillins_to_gas_gangrene_treatment_edge
+):
+    edge_as_graph_relationship = GraphRelationship.from_py2neo(
+        penicillins_to_gas_gangrene_treatment_edge,
+    )
+
+    return EdgeConnectionData(
+        label=edge_as_graph_relationship.data['description'],
+        to=edge_as_graph_relationship.to,
+        from_=edge_as_graph_relationship._from,
+        to_label='Disease',
+        from_label='Chemical',
+    )
+
+
+@pytest.fixture(scope='function')
+def gas_gangrene_treatement_duplicate_edge_data(
+    penicillins_to_gas_gangrene_treatment_edge
+):
+    edge_as_graph_relationship = GraphRelationship.from_py2neo(
+        penicillins_to_gas_gangrene_treatment_edge,
+    )
+
+    return [
+            DuplicateEdgeConnectionData(
+                label=edge_as_graph_relationship.data['description'],
+                to=f'duplicateNode:{edge_as_graph_relationship.to}',
+                from_=f'duplicateNode:{edge_as_graph_relationship._from}',
+                to_label='Disease',
+                from_label='Chemical',
+                original_from=edge_as_graph_relationship._from,
+                original_to=edge_as_graph_relationship.to,
+            )
     ]
 
 # End DTO Fixtures #

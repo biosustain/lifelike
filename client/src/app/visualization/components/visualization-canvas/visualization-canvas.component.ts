@@ -64,6 +64,9 @@ enum SidenavEntityType {
 export class VisualizationCanvasComponent implements OnInit {
     @Output() expandNode = new EventEmitter<ExpandNodeRequest>();
     @Output() finishedPreClustering = new EventEmitter<boolean>();
+    // TODO LL-974: I believe we can merge getSnippetsForEdge and getSnippetsForCluster...whatever the reason was
+    // for keeping them separate seems to no longer apply. This will greatly simplify the code related to
+    // snippet queries.
     @Output() getSnippetsForEdge = new EventEmitter<NewEdgeSnippetsPageRequest>();
     @Output() getSnippetsForCluster = new EventEmitter<NewClusterSnippetsPageRequest>();
     @Output() getNodeData = new EventEmitter<boolean>();
