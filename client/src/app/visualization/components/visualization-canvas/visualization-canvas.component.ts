@@ -8,8 +8,8 @@ import {
 
 import { Options } from '@popperjs/core';
 
-import { Subject } from 'rxjs';
-import { skip, first } from 'rxjs/operators';
+import { Subject, of } from 'rxjs';
+import { skip, first, delay } from 'rxjs/operators';
 
 import { isNullOrUndefined } from 'util';
 
@@ -259,6 +259,12 @@ export class VisualizationCanvasComponent implements OnInit {
         };
         this.networkGraph = new Network(container, data, this.config);
         this.visualizerSetupEventBinds();
+
+        // For some reason, after adding the `as-split` component, the network does not automatically fit the graph.
+        // Moreover, we have to wait a second before any actions can be taken on the networkGraph.
+        of(null).pipe(delay(1000)).subscribe(() => {
+            this.networkGraph.fit();
+        });
     }
 
     updateSettings(event: SettingsFormValues) {
