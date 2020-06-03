@@ -9,7 +9,6 @@ import { isNullOrUndefined } from 'util';
   styleUrls: ['./search-links.component.scss']
 })
 export class SearchLinksComponent implements OnInit {
-  GRAPH_DATA: GraphData;
   searchLinks: Hyperlink[] = [];
 
   @Input()
@@ -28,12 +27,6 @@ export class SearchLinksComponent implements OnInit {
     } else {
       this.searchLinks = val.data.search;
     }
-
-    this.GRAPH_DATA = val;
-  }
-
-  get graphData() {
-    return this.GRAPH_DATA;
   }
 
   searchLinkTemplates = [
