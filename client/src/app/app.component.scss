@@ -1,21 +1,5 @@
-@import "lifelike-theme.scss";
-
-.vertical-nav {
-  background-color: mat-color($lifelike-primary);
-
-  a {
-    height: 54px;
-    width: 54px;
-    outline: none; /* no dotted line upon click */
-    text-decoration: none; /* no underline */
-
-    &:hover {
-      background: rgba(0, 0, 0, 0.16);
-      cursor: pointer; /* workaround to show pointer on last item, the menu */
-    }
-
-    mat-icon {
-      color: $light-primary-text;
-    }
-  }
+// Make the content fill the whole screen
+// There's no better way to do this due to limitations in Angular
+router-outlet + ::ng-deep * {
+  height: 100%;
 }
