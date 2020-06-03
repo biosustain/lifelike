@@ -25,6 +25,8 @@ export enum Direction {
 }
 
 export interface DuplicateEdgeConnectionData {
+    from: number;
+    to: number;
     originalFrom: number;
     originalTo: number;
     fromLabel: string;
