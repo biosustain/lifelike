@@ -156,7 +156,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
       drop(event, ui) {
         if (that.isSelectionLink) {
           const meta: Meta = JSON.parse(ui.draggable[0].getAttribute('meta'));
-          meta.type = 'Links';
+          meta.type = 'Link';
           ui.draggable[0].setAttribute('meta', JSON.stringify(meta));
         }
 
