@@ -241,7 +241,7 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
     } else if (type === 'dotted') {
       return new DashedLine(width, style, [1, 2]);
     } else if (type === 'two-dashed') {
-      return new DashedLine(width, style, [1, 2, 5, 2]);
+      return new DashedLine(width, style, [4, 8, 20, 8]);
     } else {
       return new SolidLine(width, style);
     }
