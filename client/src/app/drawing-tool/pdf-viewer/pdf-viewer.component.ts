@@ -270,42 +270,10 @@ export class PdfViewerComponent implements OnDestroy {
       };
     });
 
-    // Convert form plural to singular since annotation
-    // .. if no matches are made, return as entity
-    // TODO - refactor this .... plz ...
-    const mapper = (plural) => {
-      switch (plural) {
-        case 'Compounds':
-          return 'compound';
-        case 'Diseases':
-          return 'disease';
-        case 'Genes':
-          return 'gene';
-        case 'Proteins':
-          return 'protein';
-        case 'Species':
-          return 'species';
-        case 'Mutations':
-          return 'mutation';
-        case 'Chemicals':
-          return 'chemical';
-        case 'Phenotypes':
-          return 'phenotype';
-        case 'Pathways':
-          return 'pathway';
-        case 'Companies':
-          return 'company';
-        case 'Links':
-          return 'link';
-        default:
-          return 'entity';
-      }
-    };
-
     this.dataFlow.pushNode2Canvas({
       hash: '', // To be replaced
       display_name:  meta.type === 'Links' ? 'Link' : meta.allText,
-      label: mapper(meta.type),
+      label: meta.type.toLowerCase(),
       sub_labels: [],
       data: {
         x: mouseEvent.clientX - containerCoord.x,
@@ -313,7 +281,7 @@ export class PdfViewerComponent implements OnDestroy {
         source,
         search,
         hyperlink,
-        detail: meta.type === 'Links' ? meta.allText : ''
+        detail: meta.type === 'Link' ? meta.allText : ''
       }
     });
   }
