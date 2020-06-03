@@ -1,0 +1,86 @@
+$primary: #0c8caa;
+$modal-header-padding: 2rem 2.5rem 1rem;
+$modal-body-padding: 1rem 2.5rem;
+$modal-footer-padding: 1rem 2.5rem 2rem;
+
+@import '~bootstrap/scss/bootstrap';
+@import './placeholders';
+@import './vertical-menu';
+
+.table {
+  thead th {
+    padding: ($table-cell-padding / 2) $table-cell-padding;
+    font-size: $font-size-sm;
+    border-top: 0;
+    border-bottom: $table-border-width solid $table-border-color;
+    color: $gray-600;
+  }
+}
+
+.modal-header {
+  padding: $modal-header-padding;
+  border-bottom: 0;
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.modal-body {
+  padding: $modal-body-padding;
+}
+
+.modal-footer {
+  padding: $modal-footer-padding;
+  border-top: 0;
+}
+
+.breadcrumb {
+  background: none;
+  padding: 0;
+  margin: 0;
+  color: $gray-600;
+}
+
+.breadcrumb-item {
+  display: flex;
+
+  + .breadcrumb-item {
+    &::before {
+      position: relative;
+      top: 25%;
+      font-family: FontAwesome, sans-serif;
+      font-size: 60%;
+      content: '\f054';
+    }
+  }
+}
+
+.module {
+}
+
+.module-header-container {
+  border-bottom: 1px solid $gray-200;
+}
+
+.module-header {
+  display: flex;
+  padding: 2rem 0;
+  align-items: center;
+}
+
+.module-title {
+  font-size: $font-size-base * 2;
+  font-weight: bold;
+}
+
+.module-toolbar {
+  margin-left: auto;
+}
+
+.module-header, .module-body {
+  margin: auto;
+  width: map-get($container-max-widths, 'lg');
+}
+
+.module-body {
+  margin-top: $spacer * 2;
+}

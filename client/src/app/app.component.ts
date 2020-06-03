@@ -10,26 +10,30 @@ import { Observable } from 'rxjs';
 import { AppUser } from 'app/interfaces';
 import { Title } from '@angular/platform-browser';
 
+/**
+ * Root of the application that creates the left menu and the content section.
+ */
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent {
-
-  appuser$: Observable<AppUser>;
-  userRoles$: Observable<string[]>;
-  loggedIn$: Observable<boolean>;
+  private readonly appUser$: Observable<AppUser>;
+  private readonly userRoles$: Observable<string[]>;
+  private readonly loggedIn$: Observable<boolean>;
 
   constructor(
-    private store: Store<State>,
-    private router: Router,
-    private activatedRoute: ActivatedRoute,
-    private titleService: Title,
+    private readonly store: Store<State>,
+    private readonly router: Router,
+    private readonly activatedRoute: ActivatedRoute,
+    private readonly titleService: Title,
   ) {
     this.loggedIn$ = store.pipe(select(AuthSelectors.selectAuthLoginState));
-    this.appuser$ = store.pipe(select(AuthSelectors.selectAuthUser));
+    this.appUser$ = store.pipe(select(AuthSelectors.selectAuthUser));
     this.userRoles$ = store.pipe(select(AuthSelectors.selectRoles));
+
+    // Set the title of the document based on the route
     this.router.events.subscribe(event => {
       if (event instanceof NavigationEnd) {
         const child = this.activatedRoute.firstChild;
@@ -38,12 +42,17 @@ export class AppComponent {
     });
   }
 
+  /**
+   * Navigate to the login page.
+   */
   login() {
     this.router.navigate(['/login']);
   }
 
+  /**
+   * Log the user out.
+   */
   logout() {
     this.store.dispatch(AuthActions.logout());
   }
-
 }
