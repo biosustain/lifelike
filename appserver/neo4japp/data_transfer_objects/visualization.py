@@ -96,8 +96,8 @@ class EdgeConnectionData(CamelDictMixin):
     # 'from_' will be formatted as 'from' because it is coming from the client.
     # Need to re-format it here to the expected value
     def build_from_dict_formatter(self, edge_data_input_dict: dict):
-        edge_data_input_dict['from'] = edge_data_input_dict['from_']
-        del edge_data_input_dict['from_']
+        edge_data_input_dict['from_'] = edge_data_input_dict['from']
+        del edge_data_input_dict['from']
         return edge_data_input_dict
 
 
@@ -105,9 +105,16 @@ class EdgeConnectionData(CamelDictMixin):
 class DuplicateEdgeConnectionData(CamelDictMixin):
     from_label: str = attr.ib()
     to_label: str = attr.ib()
+    from_: int = attr.ib()
+    to: int = attr.ib()
     original_from: int = attr.ib()
     original_to: int = attr.ib()
     label: str = attr.ib()
+
+    def build_from_dict_formatter(self, edge_data_input_dict: dict):
+        edge_data_input_dict['from_'] = edge_data_input_dict['from']
+        del edge_data_input_dict['from']
+        return edge_data_input_dict
 
 # Begin Request DTOs #
 
@@ -149,12 +156,23 @@ class GetEdgeSnippetsResult(CamelDictMixin):
     total_results: int = attr.ib()
     query_data: EdgeConnectionData = attr.ib()
 
+    def to_dict_formatter(self, edge_data_output_dict: dict):
+        edge_data_output_dict['query_data']['from'] = edge_data_output_dict['query_data']['from_']
+        del edge_data_output_dict['query_data']['from_']
+        return edge_data_output_dict
+
 
 @attr.s(frozen=True)
 class GetClusterSnippetsResult(CamelDictMixin):
     snippet_data: List[GetSnippetsFromEdgeResult] = attr.ib()
     total_results: int = attr.ib()
     query_data: List[DuplicateEdgeConnectionData] = attr.ib()
+
+    def to_dict_formatter(self, edge_data_output_dict: dict):
+        for item in edge_data_output_dict['query_data']:
+            item['from'] = item['from_']
+            del item['from_']
+        return edge_data_output_dict
 
 
 @attr.s(frozen=True)

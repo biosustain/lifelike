@@ -969,11 +969,13 @@ export class VisualizationCanvasComponent implements OnInit {
                 this.networkGraph.getNodesInCluster(cluster).forEach(node =>
                     this.networkGraph.getConnectedEdges(node).forEach(
                         edgeId => {
-                            const edge = this.edges.get(edgeId);
+                            const edge = this.edges.get(edgeId) as DuplicateVisEdge;
                             edges.push(
                                 {
-                                    originalFrom: edge.from,
-                                    originalTo: edge.to,
+                                    from: edge.from,
+                                    to: edge.to,
+                                    originalFrom: edge.originalFrom,
+                                    originalTo: edge.originalTo,
                                     fromLabel: edge.fromLabel,
                                     toLabel: edge.toLabel,
                                     label: edge.label,

@@ -89,24 +89,24 @@ def get_reference_table_data(req: ReferenceTableDataRequest):
 @jsonify_with_class(GetSnippetsForEdgeRequest)
 def get_edge_snippet_data(req: GetSnippetsForEdgeRequest):
     neo4j = get_neo4j_service_dao()
-    cluster_data_result = neo4j.get_snippets_for_edge(
+    edge_snippets_result = neo4j.get_snippets_for_edge(
         page=req.page,
         limit=req.limit,
         edge=req.edge,
     )
-    return SuccessResponse(cluster_data_result, status_code=200)
+    return SuccessResponse(edge_snippets_result, status_code=200)
 
 
 @bp.route('/get-snippets-for-cluster', methods=['POST'])
 @jsonify_with_class(GetSnippetsForClusterRequest)
 def get_cluster_snippet_data(req: GetSnippetsForClusterRequest):
     neo4j = get_neo4j_service_dao()
-    cluster_data_result = neo4j.get_snippets_for_cluster(
+    cluster_snippets_result = neo4j.get_snippets_for_cluster(
         page=req.page,
         limit=req.limit,
         edges=req.edges,
     )
-    return SuccessResponse(cluster_data_result, status_code=200)
+    return SuccessResponse(cluster_snippets_result, status_code=200)
 
 
 # TODO: Is this in use by anything?
