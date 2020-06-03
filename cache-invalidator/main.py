@@ -5,7 +5,7 @@ import time
 import redis
 import json
 
-SUCCESSFUL_SLEEP_TIME = 3600 * 24 * 7   # refresh cached data this often
+SUCCESSFUL_SLEEP_TIME = 3600 * 24       # refresh cached data this often
 ERROR_INITIAL_SLEEP_TIME = 60           # if error occurs, try again sooner
 ERROR_SLEEP_TIME_MULTIPLIER = 2         # on subsequent errors, sleep longer
 ERROR_MAX_SLEEP_TIME = 3600 * 6         # but not longer than this
@@ -35,21 +35,18 @@ def get_kg_statistics():
         host=os.environ.get("NEO4J_HOST"),
         auth=os.environ.get('NEO4J_AUTH').split('/')
     )
-    labels_raw = graph.run("call db.labels()").data()
-    labels = [label['label'] for label in labels_raw]
-    domains = set([label for label in labels if label.startswith('db_')])
-    entities = set([label for label in labels if not label.startswith('db_')])
-    statistics = defaultdict(lambda: defaultdict(int))
-    result = graph.run("match (n) return labels(n) as labels, count(n) as count").data()
-
-    for row in result:
-        labels = set(row["labels"])
-        domain = domains & labels
-        entity = entities & labels
-        if domain and entity:
-            statistics[domain.pop()][entity.pop()] += row["count"]
-
-    return dict((db_name[3:], count) for db_name, count in statistics.items())
+    labels_raw = graph.run("CALL db.labels()").data()
+    labels = [label["label"] for label in labels_raw]
+    db_labels = [label for label in labels if label.startswith('db_')]
+    entity_labels = [label for label in labels if not label.startswith('db_') and label != 'Synonym']
+    statistics = defaultdict(lambda: defaultdict())
+    for db in db_labels:
+        for entity in entity_labels:
+            query = f"MATCH (:`{db}`:`{entity}`) RETURN count(*) as count"
+            count = graph.run(query).evaluate()
+            if count > 0:
+                statistics[db.replace("db_", "", 1)][entity] = count
+    return statistics
 
 
 def cache_data(key, value):
