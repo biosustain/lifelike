@@ -14,6 +14,7 @@ export interface PdfFile {
   // optional
   filename?: string;
   creation_date?: string;
+  description?: string;
   username?: string;
   annotation_status?: AnnotationStatus;
 }
