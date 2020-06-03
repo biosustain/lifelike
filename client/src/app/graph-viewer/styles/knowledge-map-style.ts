@@ -193,7 +193,7 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
     const textbox = d.label ? new TextElement(ctx, {
       text: d.label,
       font: (placementOptions.highlighted ? 'bold ' : '') + (16 * fontSizeScale) + 'px ' + this.font,
-      fillStyle: '#888',
+      fillStyle: '#444',
       strokeStyle: '#fff',
       strokeWidth: 3,
     }) : null;
