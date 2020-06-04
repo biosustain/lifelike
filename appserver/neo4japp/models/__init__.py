@@ -1,4 +1,5 @@
 from .common import NEO4JBase, RDBMSBase, ModelConverter
+from .files import Directory, Files, FileContent
 from .auth import (
     AccessActionType,
     AccessControlPolicy,
@@ -7,8 +8,7 @@ from .auth import (
     AppUser,
     AppUserSchema,
 )
+from .projects import Projects, ProjectsCollaboratorRole, ProjectsRole
 from .drawing_tool import Project, ProjectSchema
 from .neo4j import GraphNode, GraphRelationship
-from .files import Directory, Files, FileContent
-from .projects import Projects
 from .organism_match import OrganismGeneMatch
