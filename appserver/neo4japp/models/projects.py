@@ -1,14 +1,29 @@
 import enum
 from neo4japp.database import db
 from neo4japp.models import RDBMSBase
-from sqlalchemy.ext.associationproxy import association_proxy
 
 
-class ProjectsRole(enum.Enum):
-    """ Project roles """
-    ADMIN = 'admin'
-    READ = 'read'
-    WRITE = 'write'
+projects_collaborator_role = db.Table(
+    'projects_collaborator_role',
+    db.Column(
+        'appuser_id',
+        db.Integer,
+        db.ForeignKey('appuser.id', ondelete='CASCADE'),
+        primary_key=True,
+    ),
+    db.Column(
+        'app_role_id',
+        db.Integer,
+        db.ForeignKey('app_role.id', ondelete='CASCADE'),
+        primary_key=True,
+    ),
+    db.Column(
+        'projects_id',
+        db.Integer,
+        db.ForeignKey('projects.id', ondelete='CASCADE'),
+        primary_key=True,
+    )
+)
 
 
 class Projects(RDBMSBase):  # type: ignore
@@ -20,20 +35,3 @@ class Projects(RDBMSBase):  # type: ignore
     users = db.Column(db.ARRAY(db.Integer), nullable=False)
 
     directories = db.relationship('Directory')
-    appusers = association_proxy('projects_appusers', 'appuser')
-
-
-class ProjectsCollaboratorRole(db.Model):  # type: ignore
-    __tablename__ = 'projects_collaborator_role'
-    appuser_id = db.Column(db.Integer, db.ForeignKey('appuser.id'), primary_key=True)
-    projects_id = db.Column(db.Integer, db.ForeignKey('projects.id'), primary_key=True)
-    project_role = db.Column(db.String(20), nullable=False)
-
-    appuser = db.relationship('AppUser')
-    projects = db.relationship(
-        Projects, backref=db.backref('projects_appusers', cascade='all, delete-orphan'))
-
-    def __init__(self, appuser=None, projects=None, project_role=None):
-        self.projects = projects
-        self.appuser = appuser
-        self.project_role = project_role

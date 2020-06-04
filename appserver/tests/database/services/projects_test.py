@@ -3,10 +3,11 @@ import os
 from pathlib import Path
 from sqlalchemy import and_
 from neo4japp.models import (
+    AppRole,
+    AppUser,
     Directory,
     Projects,
-    ProjectsCollaboratorRole,
-    ProjectsRole,
+    projects_collaborator_role,
 )
 from neo4japp.services import ProjectsService
 from typing import Sequence
@@ -109,17 +110,39 @@ def test_can_get_root_dir(session, fix_projects, fix_directory):
 
 
 @pytest.mark.parametrize('role', [
-    ProjectsRole.ADMIN,
-    ProjectsRole.READ,
-    ProjectsRole.WRITE,
+    'project-admin',
+    'project-read',
+    'project-write',
 ])
 def test_can_set_user_role(session, test_user, fix_projects, role):
-    pcr = ProjectsCollaboratorRole(test_user, fix_projects, role)
-    session.add(pcr)
+    app_role = AppRole(name=role)
+    session.add(app_role)
     session.flush()
 
-    pcr = session.query(ProjectsCollaboratorRole).filter(
-        ProjectsCollaboratorRole.project_role == role,
-    ).one()
+    session.execute(
+        projects_collaborator_role.insert(),
+        [dict(
+            appuser_id=test_user.id,
+            app_role_id=app_role.id,
+            projects_id=fix_projects.id,
+        )]
+    )
+    session.flush()
 
-    assert pcr.project_role == role
+    user_has_role = session.query(
+        AppUser,
+    ).filter(
+        AppUser.id == test_user.id,
+    ).join(
+        projects_collaborator_role
+    ).join(
+        AppRole
+    ).filter(
+        AppRole.name == role,
+    ).join(
+        Projects
+    ).filter(
+        Projects.id == fix_projects.id,
+    ).one_or_none()
+
+    assert user_has_role is not None

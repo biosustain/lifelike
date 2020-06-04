@@ -8,7 +8,7 @@ from .auth import (
     AppUser,
     AppUserSchema,
 )
-from .projects import Projects, ProjectsCollaboratorRole, ProjectsRole
+from .projects import Projects, projects_collaborator_role
 from .drawing_tool import Project, ProjectSchema
 from .neo4j import GraphNode, GraphRelationship
 from .organism_match import OrganismGeneMatch
