@@ -215,13 +215,15 @@ export class FileBrowserComponent implements OnInit {
     });
 
     dialogRef.afterClosed().subscribe(data => {
-      this.pdf.updateFile(
-        selected.file_id,
-        data.filename,
-        data.description
-      ).subscribe(() => {
-        this.updateDataSource();
-      });
+      if (data) {
+        this.pdf.updateFile(
+          selected.file_id,
+          data.filename,
+          data.description
+        ).subscribe(() => {
+          this.updateDataSource();
+        });
+      }
     });
   }
 }
