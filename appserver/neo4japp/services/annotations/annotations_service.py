@@ -21,7 +21,7 @@ from .constants import (
     COMMON_WORDS,
     CHEMICAL_EXCLUSION,
     COMPOUND_EXCLUSION,
-    TAXONOMY_EXCLUSION,
+    SPECIES_EXCLUSION,
     # end exclusion lists
     ENTITY_HYPERLINKS,
     ENTITY_TYPE_PRECEDENCE,
@@ -131,7 +131,7 @@ class AnnotationsService:
             else:
                 self.matched_proteins[word] = [token]
 
-        if word.lower() not in TAXONOMY_EXCLUSION:
+        if word.lower() not in SPECIES_EXCLUSION:
             species_val = self.lmdb_session.species_txn.get(lookup_key)
             if species_val and hashval not in self.validated_species_tokens:
                 self.validated_species_tokens.add(hashval)
