@@ -117,11 +117,11 @@ class AuthService(RDBMSBaseDao):
         action: str,
         asset: RDBMSBase,
     ) -> bool:
-        # TODO: Add other principal types
-        if isinstance(principal, AppUser):
-            if (type(asset) is Project):
-                return self.user_is_allowed_project_action(
-                    principal, action, asset)
+        # # TODO: Add other principal types
+        # if isinstance(principal, AppUser):
+        #     if (type(asset) is Project):
+        #         return self.user_is_allowed_project_action(
+        #             principal, action, asset)
         raise NotImplementedError
 
     def user_is_allowed_project_action(
@@ -131,17 +131,18 @@ class AuthService(RDBMSBaseDao):
         project: Project,
     ) -> bool:
         """ Return whether user has given access to a project. """
-        # anyone can read the public project
-        if not project.is_private and action == 'read':
-            return True
-        # only is always allowed
-        elif user.id == project.user_id:
-            return True
-        return self.has_allow_and_no_deny(
-            AccessControlPolicy.query_by_user_and_project_id(
-                user.id, project.id, action
-            )
-        )
+        raise NotImplementedError
+        # # anyone can read the public project
+        # if not project.is_private and action == 'read':
+        #     return True
+        # # only is always allowed
+        # elif user.id == project.user_id:
+        #     return True
+        # return self.has_allow_and_no_deny(
+        #     AccessControlPolicy.query_by_user_and_project_id(
+        #         user.id, project.id, action
+        #     )
+        # )
 
     def has_allow_and_no_deny(
         self,

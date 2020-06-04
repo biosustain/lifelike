@@ -8,7 +8,6 @@ from sqlalchemy.orm.query import Query
 
 from neo4japp.database import db, ma
 from neo4japp.models.common import RDBMSBase
-from neo4japp.models.drawing_tool import Project
 
 
 user_role = db.Table(
@@ -120,23 +119,6 @@ class AccessControlPolicy(RDBMSBase):
             'principal_id',
         ),
     )
-
-    @classmethod
-    def query_by_user_and_project_id(
-        cls,
-        user_id: int,
-        project_id: int,
-        action: str,
-    ) -> Query:
-        return cls.query.filter(
-            and_(
-                cls.action == action,
-                cls.asset_type == Project.__tablename__,
-                cls.asset_id == project_id,
-                cls.principal_type == AppUser.__tablename__,
-                cls.principal_id == user_id,
-            )
-        )
 
 
 class AccessControlPolicySchema(ma.ModelSchema):  # type: ignore

@@ -2,7 +2,6 @@ from sqlalchemy.dialects import postgresql
 from sqlalchemy.orm.query import Query
 
 from neo4japp.database import db
-from neo4japp.models import AppUser
 from neo4japp.models.common import RDBMSBase
 
 

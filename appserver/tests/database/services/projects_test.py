@@ -2,7 +2,12 @@ import pytest
 import os
 from pathlib import Path
 from sqlalchemy import and_
-from neo4japp.models import Directory
+from neo4japp.models import (
+    Directory,
+    Projects,
+    ProjectsCollaboratorRole,
+    ProjectsRole,
+)
 from neo4japp.services import ProjectsService
 from typing import Sequence
 
@@ -101,3 +106,20 @@ def test_get_all_child_dirs(session, fix_projects, nested_dirs, ***ARANGO_USERNA
 def test_can_get_***ARANGO_USERNAME***_dir(session, fix_projects, fix_directory):
     proj_service = ProjectsService(session)
     assert proj_service.get_***ARANGO_USERNAME***_dir(fix_projects).name == '/'
+
+
+@pytest.mark.parametrize('role', [
+    ProjectsRole.ADMIN,
+    ProjectsRole.READ,
+    ProjectsRole.WRITE,
+])
+def test_can_set_user_role(session, test_user, fix_projects, role):
+    pcr = ProjectsCollaboratorRole(test_user, fix_projects, role)
+    session.add(pcr)
+    session.flush()
+
+    pcr = session.query(ProjectsCollaboratorRole).filter(
+        ProjectsCollaboratorRole.project_role == role,
+    ).one()
+
+    assert pcr.project_role == role
