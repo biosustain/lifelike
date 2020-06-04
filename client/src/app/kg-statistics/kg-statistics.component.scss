@@ -9,9 +9,8 @@
   width: 40vw;
 }
 
-// TODO: fix vertical scroll issue (toolbar should not scroll) for all components in a centralized way
-:host {
-  height: 100%;
-  display: flex;
-  overflow: auto;
+.chart-container-total {
+  position: relative;
+  height: 50vh;
+  width: 75vw;
 }
