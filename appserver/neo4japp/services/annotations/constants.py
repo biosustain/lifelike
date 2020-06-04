@@ -30,7 +30,7 @@ COMMON_FOUR_LETTER_WORDS = {
 COMMON_MISC_WORDS = {
     'patch', 'membrane', 'walker', 'group', 'cluster',
     'protein', 'transporter', 'toxin', 'molecule', 'vitamin',
-    'light', 'mixture', 'solution', 'other', 'unknown',
+    'light', 'mixture', 'solution', 'other', 'unknown', 'damage',
 }
 
 COMMON_WORDS = set.union(*[
