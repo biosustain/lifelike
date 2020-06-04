@@ -188,7 +188,10 @@ export class FileBrowserComponent implements OnInit {
   }
 
   openUploadDialog() {
-    const uploadData: UploadPayload = {type: UploadType.Files}; // doesn't matter what we set it to, but it needs a value
+    const uploadData: UploadPayload = {
+      type: UploadType.Files,
+      filename: '',
+    };
 
     const dialogRef = this.dialog.open(DialogUploadComponent, {
       data: { payload: uploadData },
@@ -260,10 +263,17 @@ export class DialogUploadComponent implements OnInit, OnDestroy {
     });
     this.urlChange = this.url.valueChanges.subscribe((value: string) => {
       this.payload.url = value;
+      this.filename.setValue(this.extractFilenameFromUrl(value));
       this.validatePayload();
     });
     this.tabChange = this.selectedTab.valueChanges.subscribe(value => {
       this.payload.type = value === 0 ? UploadType.Files : UploadType.Url;
+      // Reset all the fields and the payload (but not `this.payload.type`)
+      this.pickedFileName = '';
+      this.filename.setValue('');
+      this.url.setValue('');
+      this.payload.files = [];
+      this.payload.description = '';
       this.validatePayload();
     });
   }
@@ -276,25 +286,38 @@ export class DialogUploadComponent implements OnInit, OnDestroy {
 
   /** Called upon picking a file from the Browse button */
   onFilesPick(fileList: FileList) {
-    const files: File[] = [];
-    for (let i = 0; i < fileList.length; ++i) {
-      files.push(fileList.item(i));
-    }
-    this.payload.files = files;
+    this.payload.files = this.transformFileList(fileList);
     this.pickedFileName = fileList.length ? fileList[0].name : '';
+    this.filename.setValue(this.pickedFileName);
     this.validatePayload();
   }
 
   /** Validates if the Upload button should be enabled or disabled */
   validatePayload() {
     const filesIsOk = this.payload.files && this.payload.files.length > 0;
-    const filenameIsOk = this.payload.filename && this.payload.filename.length > 0;
-    const urlIsOk = this.payload.url && this.payload.url.length > 0;
+    const filenameIsOk = this.filename.valid;
+    const urlIsOk = this.url.valid;
     if (this.payload.type === UploadType.Files) {
-      this.forbidUpload = !filesIsOk;
+      this.forbidUpload = !(filenameIsOk && filesIsOk);
     } else { // UploadType.Url
       this.forbidUpload = !(filenameIsOk && urlIsOk);
     }
+  }
+
+  /** Transforms a FileList to a File[]
+   * Not sure why, but I can't pass a FileList back to the parent component
+   */
+  private transformFileList(fileList: FileList): File[] {
+    const files: File[] = [];
+    for (let i = 0; i < fileList.length; ++i) {
+      files.push(fileList.item(i));
+    }
+    return files;
+  }
+
+  /** Attempts to extract a filename from a URL */
+  private extractFilenameFromUrl(url: string): string {
+    return url.substring(url.lastIndexOf('/') + 1);
   }
 }
 
