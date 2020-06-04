@@ -1,4 +1,4 @@
-<div *ngIf="clusterEntity && legend">
+<div *ngIf="clusterEntity && legend; else loadingSpinner">
   <app-snippet-display
     [snippetData]="clusterEntity.snippetData"
     [queryData]="clusterEntity.queryData"
@@ -8,3 +8,8 @@
     (requestNewPageEmitter)="requestPage($event)"
   ></app-snippet-display>
 </div>
+<ng-template #loadingSpinner>
+  <div id="loading-spinner-container" fxLayout="row" fxLayoutAlign="center center">
+    <mat-spinner></mat-spinner>
+  </div>
+</ng-template>
