@@ -38,10 +38,17 @@ DOWNLOAD_USER_AGENT = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML
 bp = Blueprint('files', __name__, url_prefix='/files')
 
 
+def sanitize_filename(name: str) -> str:
+    filename = secure_filename(name)
+    if not filename.lower().endswith('.pdf'):
+        filename += '.pdf'
+    return filename
+
+
 @bp.route('/upload', methods=['POST'])
 @auth.login_required
 def upload_pdf():
-    filename = None
+    filename = sanitize_filename(request.form['filename'])
     pdf = None
     if 'url' in request.form:
         url = request.form['url']
@@ -55,12 +62,8 @@ def upload_pdf():
             raise AnnotationError("Your file could not be downloaded, either because it is "
                                   "inaccessible or another problem occurred. Please double "
                                   "check the spelling of the URL.")
-        filename = secure_filename(request.form['filename'])
-        if not filename.lower().endswith('.pdf'):
-            filename += '.pdf'
         pdf = FileStorage(io.BytesIO(data), filename)
     else:
-        filename = secure_filename(request.files['file'].filename)
         pdf = request.files['file']
     pdf_content = pdf.read()  # TODO: don't work with whole file in memory
     pdf.stream.seek(0)
@@ -68,6 +71,8 @@ def upload_pdf():
     checksum_sha256 = hashlib.sha256(pdf_content).digest()
     user = g.current_user
 
+    # TODO: Should the following code be part of `sanitize_filename()`?
+    # TODO: Should `pdf.filename` be in sync with the final filename?
     # Make sure that the filename is not longer than the DB column permits
     max_filename_length = Files.filename.property.columns[0].type.length
     if len(filename) > max_filename_length:
@@ -93,10 +98,12 @@ def upload_pdf():
         db.session.add(file_content)
         db.session.commit()
 
+    description = request.form['description'] if 'description' in request.form else ''
+
     file = Files(
         file_id=file_id,
         filename=filename,
-        description='',
+        description=description,
         content_id=file_content.id,
         user_id=user.id,
         annotations=annotations,
