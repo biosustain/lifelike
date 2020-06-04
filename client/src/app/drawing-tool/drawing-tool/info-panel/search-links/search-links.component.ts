@@ -9,7 +9,7 @@ import { isNullOrUndefined } from 'util';
   styleUrls: ['./search-links.component.scss']
 })
 export class SearchLinksComponent implements OnInit {
-  GRAPH_DATA: GraphData;
+  searchLinks: Hyperlink[] = [];
 
   @Input()
   set graphData(val: GraphData) {
@@ -21,19 +21,15 @@ export class SearchLinksComponent implements OnInit {
     if (
       isEmpty
     ) {
-      val.data.search = this.generateSearchLinks(
+      this.searchLinks = this.generateSearchLinks(
         val.label
       );
+    } else {
+      this.searchLinks = val.data.search;
     }
-
-    this.GRAPH_DATA = val;
   }
 
-  get graphData() {
-    return this.GRAPH_DATA;
-  }
-
-  searchLinks = [
+  searchLinkTemplates = [
     {
       queryUrl: SearchLink.Google,
       domain: 'Google'
@@ -59,7 +55,7 @@ export class SearchLinksComponent implements OnInit {
   }
 
   generateSearchLinks(entity): Hyperlink[] {
-    return this.searchLinks.map(
+    return this.searchLinkTemplates.map(
       s => {
         const url = s.queryUrl + entity;
         const domain = s.domain;
