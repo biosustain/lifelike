@@ -73,8 +73,8 @@ export class PdfFilesService {
   updateFile(id: string, filename: string, description: string = ''): Observable<string> {
     const options = { headers: this.getAuthHeader() };
     const formData: FormData = new FormData();
-    formData.append('filename', filename);
-    formData.append('description', description);
+    formData.append('filename', filename.substring(0, this.filenameMaxLength));
+    formData.append('description', description.substring(0, this.descriptionMaxLength));
     return this.http.patch<string>(`${this.baseUrl}/${id}`, formData, options);
   }
 
