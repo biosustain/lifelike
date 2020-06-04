@@ -10,24 +10,31 @@
             <canvas baseChart 
                     [datasets]="data.value"
                     [labels]="chartLabelsEntitiesByDomain[data.key]"
-                    [options]="barChartOptions"
+                    [options]="chartOptions"
                     [plugins]="chartPlugins"
-                    [colors]="barChartColorsByDomain[data.key]"
+                    [colors]="chartColorsEntitiesByDomain[data.key]"
                     [legend]="false"
                     chartType="bar">
             </canvas>
           </div>
         </div>
       </div>
-      <div fxLayoutAlign="center" fxLayoutGap="28px">
-        <div class="chart-container">
+      <div fxLayout="column" fxLayoutAlign="center center">
+        <div fxLayout="row" fxLayoutAlign="center" fxLayoutGap="8px">
+          <h2 class="mat-title">Total</h2>
+          <mat-chip-list>
+            <mat-chip color="primary" selected>{{totalCount | number}}</mat-chip>
+          </mat-chip-list>
+        </div>
+        <div class="chart-container-total">
           <canvas baseChart
-                  [data]="chartDataAllDomains"
+                  [datasets]="chartDataAllDomains"
                   [labels]="chartLabelsDomains"
-                  [colors]="pieChartColors"
-                  [options]="pieChartOptions"
+                  [colors]="chartColorsDomains"
+                  [options]="chartOptions"
                   [plugins]="chartPlugins"
-                  chartType="pie">
+                  [legend]="false"
+                  chartType="horizontalBar">
           </canvas>
         </div>
       </div>   
