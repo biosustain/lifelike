@@ -47,6 +47,7 @@ def fix_projects(session) -> Projects:
     )
     session.add(projects)
     session.flush()
+
     return projects
 
 

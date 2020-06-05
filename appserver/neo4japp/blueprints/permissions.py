@@ -44,6 +44,29 @@ def requires_permission(action: AccessActionType):
     return check_permission
 
 
+def requires_project_permission(action: AccessActionType):
+    """ Returns a check project permission decorator """
+    def check_project_permission(f):
+        @functools.wraps(f)
+        def decorator(*args, **kwargs):
+            gen = f(*args, **kwargs)
+            try:
+                user, projects = next(gen)
+                auth = get_authorization_service()
+                proj = get_projects_service()
+                role = proj.has_role(user, projects)
+                if role is None or not auth.is_allowed(role, action, projects):
+                    raise NotAuthorizedException(
+                        f'{user.username} does not have required role: {role}'
+                    )
+                retval = next(gen)
+            finally:
+                gen.close()
+            return retval
+        return decorator
+    return check_project_permission
+
+
 def requires_project_role(role: str):
     """ Returns a check project role decorator """
     def check_project_role(f):

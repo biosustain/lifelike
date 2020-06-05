@@ -1,5 +1,6 @@
 from sqlalchemy import and_
 from sqlalchemy.orm.session import Session
+from neo4japp.exceptions import DuplicateRecord
 from neo4japp.services.common import RDBMSBaseDao
 from neo4japp.models import (
     AppUser,
@@ -86,6 +87,29 @@ class ProjectsService(RDBMSBaseDao):
             )
         )
         self.session.commit()
+
+    def add_directory(
+            self, projects: Projects, dir_name: str, root_dir: Directory = None) -> Directory:
+        """ Adds a directory to a project """
+
+        # Default directory is top level
+        if root_dir is None:
+            root_dir = self.get_root_dir(projects)
+
+        existing_dirs = self.get_all_child_dirs(projects, root_dir)
+        if dir_name in [d.name for d in existing_dirs]:
+            raise DuplicateRecord(f'{dir_name} already exists')
+
+        new_dir = Directory(name=dir_name, directory_parent_id=root_dir.id, projects_id=projects.id)
+        self.session.add(new_dir)
+        self.session.commit()
+        return new_dir
+
+    def delete_directory(self):
+        # TODO: Should we 'soft' delete or 'hard delete?'
+        # This is so users don't lose ALL of their data
+        # How will the cascade work?
+        raise NotImplementedError()
 
     def get_all_child_dirs(self, projects: Projects, current_dir: Directory) -> Sequence[Directory]:
         """ Gets all of the children and the parent, starting from the specified directory
