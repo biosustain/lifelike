@@ -2,13 +2,13 @@ from sqlalchemy import and_
 from sqlalchemy.orm.session import Session
 
 from neo4japp.services.common import RDBMSBaseDao
-from neo4japp.models import (
-    RDBMSBase,
+from neo4japp.models.common import RDBMSBase
+from neo4japp.models.drawing_tool import Project
+from neo4japp.models.auth import (
     AccessActionType,
     AccessControlPolicy,
     AccessRuleType,
     AppUser,
-    Project,
 )
 
 from typing import Iterable, Sequence, Union
@@ -20,7 +20,7 @@ class AuthService(RDBMSBaseDao):
 
     def grant(
         self,
-        permission: str,
+        permission: AccessActionType,
         asset: RDBMSBase,
         user: AppUser,
         commit_now: bool = True,
@@ -59,9 +59,10 @@ class AuthService(RDBMSBaseDao):
             retval.append(policy)
 
             # 'write' permission implies 'read' permission
-            if permission == 'write' and 'read' not in existing_permissions:
+            if (permission == AccessActionType.WRITE and
+                    AccessActionType.READ not in existing_permissions):
                 p2 = AccessControlPolicy(
-                    action='read',
+                    action=AccessActionType.READ,
                     asset_type=asset.__tablename__,
                     asset_id=asset.id,
                     principal_type=user.__tablename__,
@@ -75,26 +76,26 @@ class AuthService(RDBMSBaseDao):
 
     def revoke(
         self,
-        permission: str,
+        permission: AccessActionType,
         asset: RDBMSBase,
         user: AppUser,
         commit_now: bool = True,
     ) -> None:
         """ Revokes a permission, or priviledge on an asset to a user """
         # only removes the write permission on the specific asset
-        if permission == 'write':
+        if permission == AccessActionType.WRITE:
             AccessControlPolicy.query.filter(
                 and_(
-                    AccessControlPolicy.action == 'write',
+                    AccessControlPolicy.action == AccessActionType.WRITE,
                     AccessControlPolicy.asset_id == asset.id,
                     AccessControlPolicy.principal_id == user.id,
                     AccessControlPolicy.rule_type == AccessRuleType.ALLOW,
                 )
             ).delete()
-        elif permission == 'read':
+        elif permission == AccessActionType.READ:
             AccessControlPolicy.query.filter(
                 and_(
-                    AccessControlPolicy.action == 'read',
+                    AccessControlPolicy.action == AccessActionType.READ,
                     AccessControlPolicy.asset_id == asset.id,
                     AccessControlPolicy.rule_type == AccessRuleType.ALLOW,
                 )

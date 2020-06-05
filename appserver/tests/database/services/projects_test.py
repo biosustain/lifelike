@@ -2,15 +2,19 @@ import pytest
 import os
 from pathlib import Path
 from sqlalchemy import and_
-from neo4japp.models import (
-    AppRole,
-    AppUser,
-    Directory,
+from typing import Sequence
+
+from neo4japp.models.files import Directory
+from neo4japp.models.projects import (
     Projects,
     projects_collaborator_role,
 )
+from neo4japp.models.auth import (
+    AccessControlPolicy,
+    AppRole,
+    AppUser,
+)
 from neo4japp.services import ProjectsService
-from typing import Sequence
 
 
 @pytest.fixture(scope='function')
@@ -115,9 +119,12 @@ def test_can_get_root_dir(session, fix_projects, fix_directory):
     'project-write',
 ])
 def test_can_set_user_role(session, test_user, fix_projects, role):
-    app_role = AppRole(name=role)
-    session.add(app_role)
-    session.flush()
+
+    # NOTE: This already exists since there's an event
+    # that creates roles anytime a "Projects" is created.
+    # "fixed_projects" creates a "Projects"
+    # @event.listens_for(Projects, 'after_insert')
+    app_role = AppRole.query.filter(AppRole.name == role).one()
 
     session.execute(
         projects_collaborator_role.insert(),
@@ -146,3 +153,32 @@ def test_can_set_user_role(session, test_user, fix_projects, role):
     ).one_or_none()
 
     assert user_has_role is not None
+
+
+def test_projects_init_with_roles(session):
+
+    p = Projects(
+        project_name='they-see-me',
+        description='rolling',
+        users=[],
+    )
+    session.add(p)
+    session.flush()
+
+    acp_roles = session.query(
+        AccessControlPolicy.id,
+        AppRole.name,
+    ).filter(
+        AccessControlPolicy.principal_type == AppRole.__tablename__,
+    ).filter(
+        AccessControlPolicy.asset_type == Projects.__tablename__,
+        AccessControlPolicy.asset_id == p.id,
+    ).join(
+        AppRole,
+        AppRole.id == AccessControlPolicy.principal_id,
+    ).all()
+
+    roles = [role for _, role in acp_roles]
+    assert 'project-admin' in roles
+    assert 'project-read' in roles
+    assert 'project-write' in roles
