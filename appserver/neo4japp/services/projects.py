@@ -1,7 +1,14 @@
 from sqlalchemy import and_
 from sqlalchemy.orm.session import Session
 from neo4japp.services.common import RDBMSBaseDao
-from neo4japp.models import Directory, Projects
+from neo4japp.models import (
+    AppUser,
+    AppRole,
+    Directory,
+    Projects,
+    projects_collaborator_role,
+
+)
 from typing import Sequence
 
 
@@ -9,6 +16,60 @@ class ProjectsService(RDBMSBaseDao):
 
     def __init__(self, session: Session):
         super().__init__(session)
+
+    def create_projects(self, user: AppUser, projects: Projects) -> Projects:
+        self.session.add(projects)
+        self.session.flush()
+
+        # Create a default directory for every project
+        default_dir = Directory(name='/', directory_parent_id=None, projects_id=projects.id)
+
+        self.session.add(default_dir)
+        self.session.flush()
+
+        # Set default ownership
+        proj_admin_role = AppRole.query.filter(AppRole.name == 'project-admin').one()
+        self.add_role(user, proj_admin_role, projects)
+
+        return projects
+
+    def add_role(self, user: AppUser, role: AppRole, projects: Projects):
+        """ Grants access to a project """
+        existing_role = self.session.execute(
+            projects_collaborator_role.select().where(
+                and_(
+                    projects_collaborator_role.c.appuser_id == user.id,
+                    projects_collaborator_role.c.projects_id == projects.id,
+                )
+            )
+        ).fetchone()
+
+        # Removes existing role if it exists
+        if existing_role and existing_role != role:
+            self.delete_role(user, role, projects)
+
+        self.session.execute(
+            projects_collaborator_role.insert(),
+            [dict(
+                appuser_id=user.id,
+                app_role_id=role.id,
+                projects_id=projects.id,
+            )]
+        )
+
+        self.session.commit()
+
+    def delete_role(self, user: AppUser, role: AppRole, projects: Projects):
+        """ Delete role to project """
+        self.session.execute(
+            projects_collaborator_role.delete().where(
+                and_(
+                    projects_collaborator_role.c.appuser_id == user.id,
+                    projects_collaborator_role.c.projects_id == projects.id,
+                )
+            )
+        )
+        self.session.commit()
 
     def get_all_child_dirs(self, projects: Projects, current_dir: Directory) -> Sequence[Directory]:
         """ Gets all of the children and the parent, starting from the specified directory

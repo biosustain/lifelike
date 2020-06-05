@@ -113,72 +113,79 @@ def test_can_get_root_dir(session, fix_projects, fix_directory):
     assert proj_service.get_root_dir(fix_projects).name == '/'
 
 
-@pytest.mark.parametrize('role', [
-    'project-admin',
-    'project-read',
-    'project-write',
-])
-def test_can_set_user_role(session, test_user, fix_projects, role):
-
-    # NOTE: This already exists since there's an event
-    # that creates roles anytime a "Projects" is created.
-    # "fixed_projects" creates a "Projects"
-    # @event.listens_for(Projects, 'after_insert')
-    app_role = AppRole.query.filter(AppRole.name == role).one()
-
-    session.execute(
-        projects_collaborator_role.insert(),
-        [dict(
-            appuser_id=test_user.id,
-            app_role_id=app_role.id,
-            projects_id=fix_projects.id,
-        )]
-    )
-    session.flush()
+def test_can_add_project_role(session, fix_projects, test_user):
+    proj_service = ProjectsService(session)
+    role = AppRole.query.filter(AppRole.name == 'project-read').one()
+    proj_service.add_role(test_user, role, fix_projects)
 
     user_has_role = session.query(
         AppUser,
     ).filter(
-        AppUser.id == test_user.id,
+        AppUser.id == test_user.id
     ).join(
         projects_collaborator_role
     ).join(
         AppRole
     ).filter(
-        AppRole.name == role,
+        AppRole.name == 'project-read'
     ).join(
         Projects
     ).filter(
-        Projects.id == fix_projects.id,
+        Projects.id == fix_projects.id
     ).one_or_none()
 
     assert user_has_role is not None
 
 
-def test_projects_init_with_roles(session):
+def test_can_delete_project_role(session, fix_projects, test_user):
+    proj_service = ProjectsService(session)
+    role = AppRole.query.filter(AppRole.name == 'project-read').one()
+    proj_service.delete_role(test_user, role, fix_projects)
 
-    p = Projects(
-        project_name='they-see-me',
-        description='rolling',
+    user_has_role = session.query(
+        AppUser,
+    ).filter(
+        AppUser.id == test_user.id
+    ).join(
+        projects_collaborator_role
+    ).join(
+        AppRole
+    ).filter(
+        AppRole.name == 'project-read'
+    ).join(
+        Projects
+    ).filter(
+        Projects.id == fix_projects.id
+    ).one_or_none()
+
+    assert user_has_role is None
+
+
+def test_owner_gets_default_admin_permission(session, test_user):
+    proj_service = ProjectsService(session)
+    projects = Projects(
+        project_name='cookie',
+        description='monster',
         users=[],
     )
-    session.add(p)
+    session.add(projects)
     session.flush()
+    new_project = proj_service.create_projects(test_user, projects)
 
-    acp_roles = session.query(
-        AccessControlPolicy.id,
-        AppRole.name,
+    user_has_role = session.query(
+        AppUser,
     ).filter(
-        AccessControlPolicy.principal_type == AppRole.__tablename__,
-    ).filter(
-        AccessControlPolicy.asset_type == Projects.__tablename__,
-        AccessControlPolicy.asset_id == p.id,
+        AppUser.id == test_user.id
     ).join(
-        AppRole,
-        AppRole.id == AccessControlPolicy.principal_id,
-    ).all()
+        projects_collaborator_role
+    ).join(
+        AppRole
+    ).filter(
+        AppRole.name == 'project-admin'
+    ).join(
+        Projects
+    ).filter(
+        Projects.id == new_project.id
+    ).one_or_none()
 
-    roles = [role for _, role in acp_roles]
-    assert 'project-admin' in roles
-    assert 'project-read' in roles
-    assert 'project-write' in roles
+    assert user_has_role is not None
