@@ -9,6 +9,7 @@ import { NoResultsFromExpandDialogComponent } from './components/no-results-from
 import { SidenavClusterViewComponent } from './components/sidenav-cluster-view/sidenav-cluster-view.component';
 import { SidenavEdgeViewComponent } from './components/sidenav-edge-view/sidenav-edge-view.component';
 import { SidenavNodeViewComponent } from './components/sidenav-node-view/sidenav-node-view.component';
+import { SnippetDisplayComponent } from './components/snippet-display/snippet-display.component';
 import { VisualizationService } from './services/visualization.service';
 import { VisualizationCanvasComponent } from './components/visualization-canvas/visualization-canvas.component';
 import { VisualizationQuickbarComponent } from './components/visualization-quickbar/visualization-quickbar.component';
@@ -22,6 +23,7 @@ const components = [
     SidenavClusterViewComponent,
     SidenavEdgeViewComponent,
     SidenavNodeViewComponent,
+    SnippetDisplayComponent,
     VisualizationComponent,
     VisualizationCanvasComponent,
     VisualizationQuickbarComponent,
