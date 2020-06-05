@@ -7,7 +7,7 @@
       size="30"
       #area1="asSplitArea">
       <!-- Map List -->
-      <div id='map-list-container' class='h-100 w-100'>
+      <div id='map-list-container' class='vh-100 w-100'>
         <app-map-list
           childMode='true'
           [projects]='projects'
@@ -44,7 +44,7 @@
     <as-split-area
       size="70"
       #area2="asSplitArea">
-      <div *ngIf='selectedProject else empty;' class='h-100 w-100'>
+      <div *ngIf='selectedProject else empty;' class='vh-100 w-100'>
         <!-- Map Preview Panel -->
         <div class='w-100 h-100'>
           <div
