@@ -48,6 +48,8 @@ def add_projects():
     default_dir = Directory(name='/', directory_parent_id=None, projects_id=projects.id)
 
     db.session.add(default_dir)
+    db.session.flush()
+
     db.session.commit()
 
     return jsonify(dict(results=projects.to_dict())), 200
