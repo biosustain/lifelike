@@ -121,6 +121,18 @@ class AccessControlPolicy(RDBMSBase):
         ),
     )
 
+    @classmethod
+    def query_acp(cls, principal: RDBMSBase, asset: RDBMSBase, action: AccessActionType) -> Query:
+        return AccessControlPolicy.query.filter(
+            and_(
+                cls.asset_id == asset.id,
+                cls.asset_type == asset.__tablename__,
+                cls.principal_id == principal.id,
+                cls.principal_type == principal.__tablename__,
+                cls.action == action,
+            )
+        )
+
 
 class AccessControlPolicySchema(ma.ModelSchema):  # type: ignore
     class Meta:

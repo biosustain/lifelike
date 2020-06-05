@@ -3,12 +3,14 @@ from sqlalchemy.orm.session import Session
 
 from neo4japp.services.common import RDBMSBaseDao
 from neo4japp.models.common import RDBMSBase
+from neo4japp.models.projects import Projects
 from neo4japp.models.drawing_tool import Project
 from neo4japp.models.auth import (
     AccessActionType,
     AccessControlPolicy,
     AccessRuleType,
     AppUser,
+    AppRole,
 )
 
 from typing import Iterable, Sequence, Union
@@ -115,35 +117,14 @@ class AuthService(RDBMSBaseDao):
     def is_allowed(
         self,
         principal: RDBMSBase,
-        action: str,
+        action: AccessActionType,
         asset: RDBMSBase,
     ) -> bool:
-        # # TODO: Add other principal types
-        # if isinstance(principal, AppUser):
-        #     if (type(asset) is Project):
-        #         return self.user_is_allowed_project_action(
-        #             principal, action, asset)
-        raise NotImplementedError
-
-    def user_is_allowed_project_action(
-        self,
-        user: AppUser,
-        action: str,
-        project: Project,
-    ) -> bool:
-        """ Return whether user has given access to a project. """
-        raise NotImplementedError
-        # # anyone can read the public project
-        # if not project.is_private and action == 'read':
-        #     return True
-        # # only is always allowed
-        # elif user.id == project.user_id:
-        #     return True
-        # return self.has_allow_and_no_deny(
-        #     AccessControlPolicy.query_by_user_and_project_id(
-        #         user.id, project.id, action
-        #     )
-        # )
+        return self.has_allow_and_no_deny(
+            AccessControlPolicy.query_acp(
+                principal, asset, action
+            ).all()
+        )
 
     def has_allow_and_no_deny(
         self,

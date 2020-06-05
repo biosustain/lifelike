@@ -1,5 +1,6 @@
 import functools
 
+from neo4japp.models.auth import AccessActionType
 from neo4japp.database import (
     get_authorization_service,
     get_projects_service,
@@ -7,7 +8,7 @@ from neo4japp.database import (
 from neo4japp.exceptions import NotAuthorizedException
 
 
-def requires_permission(action: str):
+def requires_permission(action: AccessActionType):
     """Returns a check-permission decorator
 
      For use by flask endpoints to easily add request access control.
@@ -52,7 +53,8 @@ def requires_project_role(role: str):
             try:
                 principal, asset = next(gen)
                 proj = get_projects_service()
-                if not proj.has_role(principal, role, asset):
+                roles = proj.has_role(principal, asset)
+                if roles is None or roles.name != role:
                     raise NotAuthorizedException(
                         f'{principal} does not have required role: {role}'
                     )
