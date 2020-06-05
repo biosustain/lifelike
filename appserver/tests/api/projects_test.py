@@ -1,7 +1,13 @@
 import pytest
 import json
 from sqlalchemy import and_
-from neo4japp.models import Projects, Directory
+from neo4japp.models import (
+    AppUser,
+    AppRole,
+    Projects,
+    projects_collaborator_role,
+    Directory
+)
 
 
 def generate_headers(jwt_token):
@@ -58,3 +64,51 @@ def test_can_get_list_of_projects(client, session, test_user):
     projects_count = Projects.query.count()
     assert projects_count != 0
     assert len(response_data) == projects_count
+
+
+@pytest.mark.parametrize('email, expected_status', [
+    ('test@***ARANGO_DB_NAME***.bio', 200),
+    ('pleblife@hut.org', 400),
+])
+def test_only_admins_can_add_roles(
+        client, session, fix_project, test_user, test_user_2, email, expected_status):
+
+    login_resp = client.login_as_user(email, 'password')
+    headers = generate_headers(login_resp['access_jwt'])
+
+    response = client.post(
+        '/projects/collaborators/add',
+        data=json.dumps({
+            'projectName': fix_project.project_name,
+            'role': 'project-read',
+            'email': email,
+        }),
+        headers=headers,
+        content_type='application/json',
+    )
+
+    assert response.status_code == expected_status
+
+
+@pytest.mark.parametrize('email, expected_status', [
+    ('test@***ARANGO_DB_NAME***.bio', 200),
+    ('pleblife@hut.org', 400),
+])
+def test_only_admins_can_remove_roles(
+        client, session, fix_project, test_user, test_user_2, email, expected_status):
+
+    login_resp = client.login_as_user(email, 'password')
+    headers = generate_headers(login_resp['access_jwt'])
+
+    response = client.post(
+        '/projects/collaborators/remove',
+        data=json.dumps({
+            'projectName': fix_project.project_name,
+            'role': 'project-read',
+            'email': email,
+        }),
+        headers=headers,
+        content_type='application/json',
+    )
+
+    assert response.status_code == expected_status

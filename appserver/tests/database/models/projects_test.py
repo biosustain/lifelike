@@ -93,20 +93,8 @@ def test_can_set_user_role(session, role):
     )
     session.flush()
 
-    user_has_role = session.query(
-        AppUser,
-    ).filter(
-        AppUser.id == test_user.id
-    ).join(
-        projects_collaborator_role
-    ).join(
-        AppRole
-    ).filter(
-        AppRole.name == role
-    ).join(
-        Projects
-    ).filter(
-        Projects.id == new_projects.id
+    user_has_role = Projects.query_has_project_role(
+        test_user.id, role, new_projects.id
     ).one_or_none()
 
     assert user_has_role is not None

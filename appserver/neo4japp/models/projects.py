@@ -1,6 +1,7 @@
 import enum
 from neo4japp.database import db
 from sqlalchemy import event
+from sqlalchemy.orm.query import Query
 from .common import RDBMSBase
 
 from .auth import (
@@ -44,6 +45,24 @@ class Projects(RDBMSBase):  # type: ignore
     users = db.Column(db.ARRAY(db.Integer), nullable=False)
 
     directories = db.relationship('Directory')
+
+    @classmethod
+    def query_has_project_role(cls, user_id: int, role: str, project_id: int) -> Query:
+        return db.session.query(
+            AppUser
+        ).filter(
+            AppUser.id == user_id
+        ).join(
+            projects_collaborator_role
+        ).join(
+            AppRole
+        ).filter(
+            AppRole.name == role
+        ).join(
+            cls
+        ).filter(
+            cls.id == project_id
+        )
 
 
 @event.listens_for(Projects, 'after_insert')
