@@ -1,3 +1,4 @@
+import { HttpErrorResponse } from '@angular/common/http';
 import {
     Component,
     Input,
@@ -32,6 +33,8 @@ import {
     NewClusterSnippetsPageRequest,
     NewEdgeSnippetsPageRequest,
     NodeDisplayInfo,
+    ReferenceTableDataRequest,
+    ReferenceTablePair,
     ReferenceTableRow,
     SettingsFormValues,
     SidenavClusterEntity,
@@ -64,9 +67,6 @@ enum SidenavEntityType {
 export class VisualizationCanvasComponent implements OnInit {
     @Output() expandNode = new EventEmitter<ExpandNodeRequest>();
     @Output() finishedPreClustering = new EventEmitter<boolean>();
-    // TODO LL-974: I believe we can merge getSnippetsForEdge and getSnippetsForCluster...whatever the reason was
-    // for keeping them separate seems to no longer apply. This will greatly simplify the code related to
-    // snippet queries.
     @Output() getSnippetsForEdge = new EventEmitter<NewEdgeSnippetsPageRequest>();
     @Output() getSnippetsForCluster = new EventEmitter<NewClusterSnippetsPageRequest>();
     @Output() getNodeData = new EventEmitter<boolean>();
@@ -182,6 +182,7 @@ export class VisualizationCanvasComponent implements OnInit {
             } as SidenavClusterEntity;
         }
     }
+    @Input() getSnippetsError: HttpErrorResponse;
     // Configuration for the graph view. See vis.js docs
     @Input() config: Neo4jGraphConfig;
     @Input() legend: Map<string, string[]>;
@@ -816,7 +817,24 @@ export class VisualizationCanvasComponent implements OnInit {
 
     createCluster(originNode: IdType, relationship: string, duplicateNodeEdgePairs: DuplicateNodeEdgePair[]) {
         this.openClusteringRequests += 1;
-        this.visService.getReferenceTableData(duplicateNodeEdgePairs).subscribe(result => {
+
+        const referenceTableDataRequest = {
+            nodeEdgePairs: duplicateNodeEdgePairs.map((pair) => {
+                return {
+                    node: {
+                        id: pair.node.id,
+                        displayName: pair.node.displayName,
+                    },
+                    edge: {
+                        originalFrom: pair.edge.originalFrom,
+                        originalTo: pair.edge.originalTo,
+                        label: pair.edge.label,
+                    }
+                } as ReferenceTablePair;
+            })
+        } as ReferenceTableDataRequest;
+
+        this.visService.getReferenceTableData(referenceTableDataRequest).subscribe(result => {
             // Remove any existing clusters connected to the origin node on this relationship first. Any
             // nodes within should have been included in the duplicateNodeEdgePairs array sent to the appserver.
             this.networkGraph.getConnectedNodes(originNode).forEach(nodeId => {
