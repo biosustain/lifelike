@@ -113,28 +113,27 @@ def test_can_get_root_dir(session, fix_projects, fix_directory):
     assert proj_service.get_root_dir(fix_projects).name == '/'
 
 
-def test_can_add_project_role(session, fix_projects, test_user):
+def test_can_add_project_collaborator(session, fix_projects, test_user):
     proj_service = ProjectsService(session)
     role = AppRole.query.filter(AppRole.name == 'project-read').one()
-    proj_service.add_role(test_user, role, fix_projects)
+    proj_service.add_collaborator(test_user, role, fix_projects)
 
-    user_has_role = Projects.query_has_project_role(
-        test_user.id, 'project-read', fix_projects.id
+    user_role = Projects.query_project_roles(
+        test_user.id, fix_projects.id
     ).one_or_none()
 
-    assert user_has_role is not None
+    assert user_role.name == 'project-read'
 
 
-def test_can_delete_project_role(session, fix_projects, test_user):
+def test_can_delete_project_collaborator(session, fix_projects, test_user):
     proj_service = ProjectsService(session)
-    role = AppRole.query.filter(AppRole.name == 'project-read').one()
-    proj_service.remove_role(test_user, role, fix_projects)
+    proj_service.remove_collaborator(test_user, fix_projects)
 
-    user_has_role = Projects.query_has_project_role(
-        test_user.id, 'project-read', fix_projects.id
+    user_role = Projects.query_project_roles(
+        test_user.id, fix_projects.id
     ).one_or_none()
 
-    assert user_has_role is None
+    assert user_role is None
 
 
 def test_owner_gets_default_admin_permission(session, test_user):
@@ -148,8 +147,8 @@ def test_owner_gets_default_admin_permission(session, test_user):
     session.flush()
     new_project = proj_service.create_projects(test_user, projects)
 
-    user_has_role = Projects.query_has_project_role(
-        test_user.id, 'project-admin', new_project.id
+    user_role = Projects.query_project_roles(
+        test_user.id, new_project.id
     ).one_or_none()
 
-    assert user_has_role is not None
+    assert user_role.name == 'project-admin'

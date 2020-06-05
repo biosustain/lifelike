@@ -1,13 +1,15 @@
 from flask import request, jsonify, Blueprint, g, abort
 from neo4japp.blueprints.auth import auth
-from neo4japp.blueprints.permissions import requires_project_role
+from neo4japp.blueprints.permissions import requires_project_role, requires_permission
 from neo4japp.database import db, get_projects_service
-from neo4japp.exceptions import RecordNotFoundException
+from neo4japp.exceptions import RecordNotFoundException, NotAuthorizedException
 from neo4japp.models import (
+    AccessActionType,
     AppRole,
     AppUser,
     Directory,
     Projects,
+    projects_collaborator_role,
 )
 
 bp = Blueprint('projects', __name__, url_prefix='/projects')
@@ -52,24 +54,63 @@ def add_projects():
     return jsonify(dict(results=projects.to_dict())), 200
 
 
-@bp.route('/collaborators', methods=['GET'])
+@bp.route('/<string:project_name>/collaborators', methods=['GET'])
 @auth.login_required
-def get_project_collaborators():
-    pass
+@requires_permission(AccessActionType.READ)
+def get_project_collaborators(project_name):
+    proj_service = get_projects_service()
+
+    projects = Projects.query.filter(
+        Projects.project_name == project_name
+    ).one_or_none()
+
+    if projects is None:
+        raise RecordNotFoundException(f'No such projects: {project_name}')
+
+    user = g.current_user
+
+    user_role = proj_service.has_role(user, projects)
+    if user_role is None:
+        raise NotAuthorizedException(
+            f'{user.username} has no access to {projects.project_name}'
+        )
+
+    yield user_role, projects
+
+    collaborators = db.session.query(
+        AppUser.id,
+        AppUser.username,
+        AppRole.name,
+    ).filter(
+        AppUser.id == user.id
+    ).join(
+        projects_collaborator_role,
+        projects_collaborator_role.c.appuser_id == AppUser.id
+    ).join(
+        Projects
+    ).filter(
+        Projects.id == projects.id
+    ).join(
+        AppRole
+    ).all()  # TODO: paginate
+
+    yield jsonify(dict(results=[{
+        'id': id,
+        'username': username,
+        'role': role,
+    } for id, username, role in collaborators])), 200
 
 
-@bp.route('/collaborators/add', methods=['POST'])
+@bp.route('/<string:project_name>/collaborators/<string:username>', methods=['POST'])
 @auth.login_required
 @requires_project_role('project-admin')
-def add_collaborator():
+def add_collaborator(project_name: str, username: str):
 
     proj_service = get_projects_service()
 
     data = request.get_json()
 
-    project_name = data['projectName']
     project_role = data['role']
-    collab_email = data['email']
 
     projects = Projects.query.filter(
         Projects.project_name == project_name
@@ -79,35 +120,30 @@ def add_collaborator():
         raise RecordNotFoundException(f'No such projects: {project_name}')
 
     new_collaborator = AppUser.query.filter(
-        AppUser.email == collab_email
+        AppUser.username == username
     ).one_or_none()
 
     if new_collaborator is None:
-        raise RecordNotFoundException(f'No such user email: {collab_email}')
+        raise RecordNotFoundException(f'No such username {username}')
 
     user = g.current_user
 
     yield user, projects
 
     new_role = AppRole.query.filter(AppRole.name == project_role).one()
-    proj_service.add_role(new_collaborator, new_role, projects)
+    proj_service.add_collaborator(new_collaborator, new_role, projects)
 
     yield jsonify(dict(result='success')), 200
 
 
-@bp.route('/collaborators/remove', methods=['POST'])
+@bp.route('/<string:project_name>/collaborators/<string:username>', methods=['DELETE'])
 @auth.login_required
 @requires_project_role('project-admin')
-def remove_collaborator():
+def remove_collaborator(project_name: str, username: str):
 
     proj_service = get_projects_service()
 
-    data = request.get_json()
     user = g.current_user
-
-    project_name = data['projectName']
-    project_role = data['role']
-    collab_email = data['email']
 
     projects = Projects.query.filter(
         Projects.project_name == project_name
@@ -117,14 +153,13 @@ def remove_collaborator():
         raise RecordNotFoundException(f'No such projects: {project_name}')
 
     new_collaborator = AppUser.query.filter(
-        AppUser.email == collab_email
+        AppUser.username == username
     ).one_or_none()
 
     user = g.current_user
 
     yield user, projects
 
-    new_role = AppRole.query.filter(AppRole.name == project_role).one()
-    proj_service.remove_role(new_collaborator, new_role, projects)
+    proj_service.remove_collaborator(new_collaborator, projects)
 
     yield jsonify(dict(result='success')), 200
