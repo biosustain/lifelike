@@ -65,11 +65,22 @@ export interface Reference extends GraphNode {
     };
 }
 
+export interface ReferenceTablePair {
+    node: {
+        id: string;
+        displayName: string;
+    };
+    edge: {
+        originalFrom: number;
+        originalTo: number;
+        label: string;
+    };
+}
+
 export interface ReferenceTableRow {
     nodeId: string;
     nodeDisplayName: string;
     snippetCount: number;
-    edge: VisEdge;
 }
 
 export interface SettingsFormControl {
@@ -136,6 +147,10 @@ export interface NewEdgeSnippetsPageRequest {
     queryData: EdgeConnectionData;
     page: number;
     limit: number;
+}
+
+export interface ReferenceTableDataRequest {
+    nodeEdgePairs: ReferenceTablePair[];
 }
 
 // End Request Interfaces
