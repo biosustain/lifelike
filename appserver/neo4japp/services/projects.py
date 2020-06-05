@@ -33,6 +33,12 @@ class ProjectsService(RDBMSBaseDao):
 
         return projects
 
+    def has_role(self, user: AppUser, role: str, projects: Projects) -> bool:
+        user_has_role = Projects.query_has_project_role(
+            user.id, role, projects.id
+        ).one_or_none()
+        return user_has_role is not None
+
     def add_role(self, user: AppUser, role: AppRole, projects: Projects):
         """ Grants access to a project """
         existing_role = self.session.execute(
@@ -46,7 +52,7 @@ class ProjectsService(RDBMSBaseDao):
 
         # Removes existing role if it exists
         if existing_role and existing_role != role:
-            self.delete_role(user, role, projects)
+            self.remove_role(user, role, projects)
 
         self.session.execute(
             projects_collaborator_role.insert(),
@@ -59,7 +65,7 @@ class ProjectsService(RDBMSBaseDao):
 
         self.session.commit()
 
-    def delete_role(self, user: AppUser, role: AppRole, projects: Projects):
+    def remove_role(self, user: AppUser, role: AppRole, projects: Projects):
         """ Delete role to project """
         self.session.execute(
             projects_collaborator_role.delete().where(

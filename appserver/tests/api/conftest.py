@@ -7,10 +7,12 @@ import hashlib
 import pytest
 from datetime import date, datetime
 from neo4japp.models import (
+    AppRole,
     AppUser,
     Directory,
     Project,
     Projects,
+    projects_collaborator_role,
     FileContent,
     Files,
 )
@@ -108,6 +110,20 @@ def fix_project(test_user, session):
         users=[test_user.id],
     )
     session.add(project)
+    session.flush()
+
+    role = AppRole.query.filter(
+        AppRole.name == 'project-admin'
+    ).one()
+
+    session.execute(
+        projects_collaborator_role.insert(),
+        [dict(
+            appuser_id=test_user.id,
+            app_role_id=role.id,
+            projects_id=project.id,
+        )]
+    )
     session.flush()
     return project
 
