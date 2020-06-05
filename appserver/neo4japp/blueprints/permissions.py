@@ -1,6 +1,9 @@
 import functools
 
-from neo4japp.database import get_authorization_service
+from neo4japp.database import (
+    get_authorization_service,
+    get_projects_service,
+)
 from neo4japp.exceptions import NotAuthorizedException
 
 
@@ -38,6 +41,27 @@ def requires_permission(action: str):
             return retval
         return decorator
     return check_permission
+
+
+def requires_project_role(role: str):
+    """ Returns a check project role decorator """
+    def check_project_role(f):
+        @functools.wraps(f)
+        def decorator(*args, **kwargs):
+            gen = f(*args, **kwargs)
+            try:
+                principal, asset = next(gen)
+                proj = get_projects_service()
+                if not proj.has_role(principal, role, asset):
+                    raise NotAuthorizedException(
+                        f'{principal} does not have required role: {role}'
+                    )
+                retval = next(gen)
+            finally:
+                gen.close()
+            return retval
+        return decorator
+    return check_project_role
 
 
 def requires_role(role: str):
