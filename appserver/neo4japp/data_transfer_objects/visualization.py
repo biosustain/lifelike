@@ -66,27 +66,20 @@ class DuplicateVisEdge(VisEdge):
 
 
 @attr.s(frozen=True)
-class NodeEdgePair(CamelDictMixin):
-    node: VisNode = attr.ib()
-    edge: VisEdge = attr.ib()
+class ReferenceTablePair(CamelDictMixin):
+    @attr.s(frozen=True)
+    class NodeData(CamelDictMixin):
+        id: str = attr.ib()
+        display_name: str = attr.ib()
 
+    @attr.s(frozen=True)
+    class EdgeData(CamelDictMixin):
+        original_from: int = attr.ib()
+        original_to: int = attr.ib()
+        label: str = attr.ib()
 
-@attr.s(frozen=True)
-class DuplicateNodeEdgePair(CamelDictMixin):
-    node: DuplicateVisNode = attr.ib()
-    edge: DuplicateVisEdge = attr.ib()
-
-
-@attr.s(frozen=True)
-class ClusteredNode(CamelDictMixin):
-    node_id: int = attr.ib()
-    edges: List[DuplicateVisEdge] = attr.ib()
-
-
-@attr.s(frozen=True)
-class EdgeSnippetCount(CamelDictMixin):
-    edge: VisEdge = attr.ib()
-    count: int = attr.ib()
+    node: NodeData = attr.ib()
+    edge: EdgeData = attr.ib()
 
 
 @attr.s(frozen=True)
@@ -94,7 +87,6 @@ class ReferenceTableRow(CamelDictMixin):
     node_id: str = attr.ib()
     node_display_name: str = attr.ib()
     snippet_count: int = attr.ib()
-    edge: DuplicateVisEdge = attr.ib()
 
 
 @attr.s(frozen=True)
@@ -102,37 +94,58 @@ class Snippet(CamelDictMixin):
     reference: GraphNode = attr.ib()
     publication: GraphNode = attr.ib()
 
+
+@attr.s(frozen=True)
+class EdgeConnectionData(CamelDictMixin):
+    from_label: str = attr.ib()
+    to_label: str = attr.ib()
+    from_: int = attr.ib()
+    to: int = attr.ib()
+    label: str = attr.ib()
+
+    # 'from_' will be formatted as 'from' because it is coming from the client.
+    # Need to re-format it here to the expected value
+    def build_from_dict_formatter(self, edge_data_input_dict: dict):
+        edge_data_input_dict['from_'] = edge_data_input_dict['from']
+        del edge_data_input_dict['from']
+        return edge_data_input_dict
+
+
+@attr.s(frozen=True)
+class DuplicateEdgeConnectionData(CamelDictMixin):
+    from_label: str = attr.ib()
+    to_label: str = attr.ib()
+    from_: int = attr.ib()
+    to: int = attr.ib()
+    original_from: int = attr.ib()
+    original_to: int = attr.ib()
+    label: str = attr.ib()
+
+    def build_from_dict_formatter(self, edge_data_input_dict: dict):
+        edge_data_input_dict['from_'] = edge_data_input_dict['from']
+        del edge_data_input_dict['from']
+        return edge_data_input_dict
+
 # Begin Request DTOs #
 
 
 @attr.s(frozen=True)
-class GetSnippetsFromEdgeRequest(CamelDictMixin):
-    edge: VisEdge = attr.ib()
-
-
-@attr.s(frozen=True)
-class GetSnippetsFromDuplicateEdgeRequest(CamelDictMixin):
-    edge: DuplicateVisEdge = attr.ib()
-
-
-@attr.s(frozen=True)
-class GetSnippetCountsFromEdgesRequest(CamelDictMixin):
-    edges: List[VisEdge] = attr.ib()
-
-
-@attr.s(frozen=True)
 class ReferenceTableDataRequest(CamelDictMixin):
-    node_edge_pairs: List[DuplicateNodeEdgePair] = attr.ib()
+    node_edge_pairs: List[ReferenceTablePair] = attr.ib()
 
 
 @attr.s(frozen=True)
-class GetGraphDataForClusterRequest(CamelDictMixin):
-    clustered_nodes: List[ClusteredNode] = attr.ib()
+class GetSnippetsForEdgeRequest(CamelDictMixin):
+    page: int = attr.ib()
+    limit: int = attr.ib()
+    edge: EdgeConnectionData = attr.ib()
 
 
 @attr.s(frozen=True)
-class GetDataForClusterRequest(CamelDictMixin):
-    clustered_nodes: List[ClusteredNode] = attr.ib()
+class GetSnippetsForClusterRequest(CamelDictMixin):
+    page: int = attr.ib()
+    limit: int = attr.ib()
+    edges: List[DuplicateEdgeConnectionData] = attr.ib()
 
 # End Request DTOs #
 
@@ -148,36 +161,32 @@ class GetSnippetsFromEdgeResult(CamelDictMixin):
 
 
 @attr.s(frozen=True)
-class GetSnippetCountsFromEdgesResult(CamelDictMixin):
-    edge_snippet_counts: List[EdgeSnippetCount] = attr.ib()
+class GetEdgeSnippetsResult(CamelDictMixin):
+    snippet_data: GetSnippetsFromEdgeResult = attr.ib()
+    total_results: int = attr.ib()
+    query_data: EdgeConnectionData = attr.ib()
+
+    def to_dict_formatter(self, edge_data_output_dict: dict):
+        edge_data_output_dict['query_data']['from'] = edge_data_output_dict['query_data']['from_']
+        del edge_data_output_dict['query_data']['from_']
+        return edge_data_output_dict
 
 
 @attr.s(frozen=True)
-class GetClusterGraphDataResult(CamelDictMixin):
-    results: Dict[int, Dict[str, int]] = attr.ib()
+class GetClusterSnippetsResult(CamelDictMixin):
+    snippet_data: List[GetSnippetsFromEdgeResult] = attr.ib()
+    total_results: int = attr.ib()
+    query_data: List[DuplicateEdgeConnectionData] = attr.ib()
 
-
-@attr.s(frozen=True)
-class GetClusterSnippetDataResult(CamelDictMixin):
-    results: List[GetSnippetsFromEdgeResult] = attr.ib()
-
-
-@attr.s(frozen=True)
-class GetClusterDataResult(CamelDictMixin):
-    graph_data: GetClusterGraphDataResult = attr.ib()
-    snippet_data: GetClusterSnippetDataResult = attr.ib()
+    def to_dict_formatter(self, edge_data_output_dict: dict):
+        for item in edge_data_output_dict['query_data']:
+            item['from'] = item['from_']
+            del item['from_']
+        return edge_data_output_dict
 
 
 @attr.s(frozen=True)
 class GetReferenceTableDataResult(CamelDictMixin):
     reference_table_rows: List[ReferenceTableRow] = attr.ib()
-
-    # Override the default formatter to convert 'from_' attribute of edges
-    def to_dict_formatter(self, get_reference_table_data_result_dict: dict):
-        for row in get_reference_table_data_result_dict['reference_table_rows']:
-            edge = row['edge']
-            edge['from'] = edge['from_']
-            del edge['from_']
-        return get_reference_table_data_result_dict
 
 # End Response DTOs #

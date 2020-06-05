@@ -1,0 +1,53 @@
+#association-snippet-container {
+  margin-top: 10px;
+}
+
+#num-snippets-container {
+  padding-bottom: 15px;
+}
+
+#pagination-button-container {
+  padding: 15px 0;
+}
+
+.association-snippet-panel {
+  margin: 20px 0 20px 0;
+}
+
+.association-snippet-pub-data {
+  text-align: right;
+}
+
+.mat-icon {
+  font-size: 12px;
+}
+
+.material-icons {
+  vertical-align: middle;
+}
+
+.pagination-button {
+  background-color: #ffffff;
+  border: thin solid;
+  border-radius: 5px;
+  margin: 0 2.5px;
+  padding: 0 12px;
+  height: 45px;
+}
+.pagination-button:hover {
+  background-color: #efefef;
+  cursor: pointer;
+}
+.pagination-button.current-page {
+  border: thin solid #0c8caa;
+  color: #0c8caa;
+}
+
+.pubmed-link {
+  margin-left: 10px;
+  text-decoration: none;
+}
+
+.pubmed-link:hover {
+  text-decoration: underline;
+}
