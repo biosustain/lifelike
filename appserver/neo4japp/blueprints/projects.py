@@ -1,6 +1,6 @@
 from flask import request, jsonify, Blueprint, g, abort
 from neo4japp.blueprints.auth import auth
-from neo4japp.database import db
+from neo4japp.database import db, get_projects_service
 from neo4japp.exceptions import RecordNotFoundException
 from neo4japp.models import Directory, Projects
 
@@ -41,15 +41,6 @@ def add_projects():
         users=[user.id],  # TODO: deprecate once migration is complete
     )
 
-    db.session.add(projects)
-    db.session.flush()
-
-    # Create a default directory for every project
-    default_dir = Directory(name='/', directory_parent_id=None, projects_id=projects.id)
-
-    db.session.add(default_dir)
-    db.session.flush()
-
-    db.session.commit()
-
+    proj_service = get_projects_service()
+    proj_service.create_projects(user, projects)
     return jsonify(dict(results=projects.to_dict())), 200
