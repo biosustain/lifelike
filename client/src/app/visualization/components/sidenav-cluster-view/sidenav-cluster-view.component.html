@@ -1,15 +1,20 @@
-<div *ngIf="clusterEntity && legend; else loadingSpinner">
-  <app-snippet-display
-    [snippetData]="clusterEntity.snippetData"
-    [queryData]="clusterEntity.queryData"
-    [totalResults]="clusterEntity.totalResults"
-    [isNewEntity]="isNewEntity"
-    [legend]="legend"
-    (requestNewPageEmitter)="requestPage($event)"
-  ></app-snippet-display>
+<div *ngIf="error; else notError">
+  <span>Could not load snippet data for this cluster. Please try again later.</span>
 </div>
-<ng-template #loadingSpinner>
-  <div id="loading-spinner-container" fxLayout="row" fxLayoutAlign="center center">
-    <mat-spinner></mat-spinner>
+<ng-template #notError>
+  <div *ngIf="clusterEntity && legend; else loadingSpinner">
+    <app-snippet-display
+      [snippetData]="clusterEntity.snippetData"
+      [queryData]="clusterEntity.queryData"
+      [totalResults]="clusterEntity.totalResults"
+      [isNewEntity]="isNewEntity"
+      [legend]="legend"
+      (requestNewPageEmitter)="requestPage($event)"
+    ></app-snippet-display>
   </div>
+  <ng-template #loadingSpinner>
+    <div id="loading-spinner-container" fxLayout="row" fxLayoutAlign="center center">
+      <mat-spinner></mat-spinner>
+    </div>
+  </ng-template>
 </ng-template>

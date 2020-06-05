@@ -6,11 +6,12 @@
   [expandNodeResult]="expandNodeResult"
   [getEdgeSnippetsResult]="getEdgeSnippetsResult"
   [getClusterSnippetsResult]="getClusterSnippetsResult"
+  [getSnippetsError]="getSnippetsError"
   [legend]="legend"
   [config]="networkGraphConfig"
   (expandNode)="expandNode($event)"
   (finishedPreClustering)="finishedPreClustering($event)"
-  (getNodeData)="nodeSelectedCallback($event)"
+  (getNodeData)="nodeSelectedCallback()"
   (getSnippetsForEdge)="getSnippetsForEdge($event)"
   (getSnippetsForCluster)="getSnippetsForCluster($event)"
 ></app-visualization-canvas>

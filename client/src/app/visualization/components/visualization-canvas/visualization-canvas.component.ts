@@ -1,15 +1,17 @@
+import { HttpErrorResponse } from '@angular/common/http';
 import {
     Component,
     Input,
     EventEmitter,
     OnInit,
     Output,
+    AfterViewInit,
 } from '@angular/core';
 
 import { Options } from '@popperjs/core';
 
-import { Subject, of } from 'rxjs';
-import { skip, first, delay } from 'rxjs/operators';
+import { Subject } from 'rxjs';
+import { skip, first } from 'rxjs/operators';
 
 import { isNullOrUndefined } from 'util';
 
@@ -32,6 +34,8 @@ import {
     NewClusterSnippetsPageRequest,
     NewEdgeSnippetsPageRequest,
     NodeDisplayInfo,
+    ReferenceTableDataRequest,
+    ReferenceTablePair,
     ReferenceTableRow,
     SettingsFormValues,
     SidenavClusterEntity,
@@ -61,12 +65,9 @@ enum SidenavEntityType {
     styleUrls: ['./visualization-canvas.component.scss'],
     providers: [ContextMenuControlService],
 })
-export class VisualizationCanvasComponent implements OnInit {
+export class VisualizationCanvasComponent implements OnInit, AfterViewInit {
     @Output() expandNode = new EventEmitter<ExpandNodeRequest>();
     @Output() finishedPreClustering = new EventEmitter<boolean>();
-    // TODO LL-974: I believe we can merge getSnippetsForEdge and getSnippetsForCluster...whatever the reason was
-    // for keeping them separate seems to no longer apply. This will greatly simplify the code related to
-    // snippet queries.
     @Output() getSnippetsForEdge = new EventEmitter<NewEdgeSnippetsPageRequest>();
     @Output() getSnippetsForCluster = new EventEmitter<NewClusterSnippetsPageRequest>();
     @Output() getNodeData = new EventEmitter<boolean>();
@@ -182,6 +183,7 @@ export class VisualizationCanvasComponent implements OnInit {
             } as SidenavClusterEntity;
         }
     }
+    @Input() getSnippetsError: HttpErrorResponse;
     // Configuration for the graph view. See vis.js docs
     @Input() config: Neo4jGraphConfig;
     @Input() legend: Map<string, string[]>;
@@ -251,7 +253,11 @@ export class VisualizationCanvasComponent implements OnInit {
 
     ngOnInit() {
         this.legendLabels = Array.from(this.legend.keys());
+    }
 
+    // Need to initialize the network after the view is initialized, otherwise we get weird re-sizing issues
+    // for Vis.js
+    ngAfterViewInit() {
         const container = document.getElementById('network-viz');
         const data = {
             nodes: this.nodes,
@@ -259,12 +265,6 @@ export class VisualizationCanvasComponent implements OnInit {
         };
         this.networkGraph = new Network(container, data, this.config);
         this.visualizerSetupEventBinds();
-
-        // For some reason, after adding the `as-split` component, the network does not automatically fit the graph.
-        // Moreover, we have to wait a second before any actions can be taken on the networkGraph.
-        of(null).pipe(delay(1000)).subscribe(() => {
-            this.networkGraph.fit();
-        });
     }
 
     updateSettings(event: SettingsFormValues) {
@@ -822,7 +822,24 @@ export class VisualizationCanvasComponent implements OnInit {
 
     createCluster(originNode: IdType, relationship: string, duplicateNodeEdgePairs: DuplicateNodeEdgePair[]) {
         this.openClusteringRequests += 1;
-        this.visService.getReferenceTableData(duplicateNodeEdgePairs).subscribe(result => {
+
+        const referenceTableDataRequest = {
+            nodeEdgePairs: duplicateNodeEdgePairs.map((pair) => {
+                return {
+                    node: {
+                        id: pair.node.id,
+                        displayName: pair.node.displayName,
+                    },
+                    edge: {
+                        originalFrom: pair.edge.originalFrom,
+                        originalTo: pair.edge.originalTo,
+                        label: pair.edge.label,
+                    }
+                } as ReferenceTablePair;
+            })
+        } as ReferenceTableDataRequest;
+
+        this.visService.getReferenceTableData(referenceTableDataRequest).subscribe(result => {
             // Remove any existing clusters connected to the origin node on this relationship first. Any
             // nodes within should have been included in the duplicateNodeEdgePairs array sent to the appserver.
             this.networkGraph.getConnectedNodes(originNode).forEach(nodeId => {

@@ -14,6 +14,7 @@
           <app-sidenav-edge-view
             [edgeEntity]="sidenavEntity"
             [isNewEntity]="isNewEdgeSidenavEntity"
+            [error]="getSnippetsError"
             [legend]="legend"
             (requestNewPageEmitter)="requestNewEdgeSnippetsPage($event)"
           ></app-sidenav-edge-view>
@@ -22,6 +23,7 @@
           <app-sidenav-cluster-view
             [clusterEntity]="sidenavEntity"
             [isNewEntity]="isNewClusterSidenavEntity"
+            [error]="getSnippetsError"
             [legend]="legend"
             (requestNewPageEmitter)="requestNewClusterSnippetsPage($event)"
           ></app-sidenav-cluster-view>

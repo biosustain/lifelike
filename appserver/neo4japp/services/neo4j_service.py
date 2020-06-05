@@ -2,7 +2,6 @@ import attr
 from typing import Dict, List, Optional, Union
 
 from neo4japp.data_transfer_objects.visualization import (
-    DuplicateNodeEdgePair,
     DuplicateEdgeConnectionData,
     DuplicateVisEdge,
     EdgeConnectionData,
@@ -10,6 +9,7 @@ from neo4japp.data_transfer_objects.visualization import (
     GetEdgeSnippetsResult,
     GetReferenceTableDataResult,
     GetSnippetsFromEdgeResult,
+    ReferenceTablePair,
     ReferenceTableRow,
     Snippet,
     VisEdge,
@@ -173,87 +173,76 @@ class Neo4JService(GraphBaseDao):
         query = self.get_expand_query(node_id, connected_node_ids)
         return self._query_neo4j(query)
 
-    def get_snippets_from_edge(self, edge: EdgeConnectionData):
-        query = self.get_snippets_from_edge_query(edge.from_label, edge.to_label)
-        data = self.graph.run(
+    def get_snippets_from_edges(
+        self,
+        from_ids: List[int],
+        to_ids: List[int],
+        description: str,
+        page: int,
+        limit: int
+    ):
+        query = self.get_snippets_from_edges_query()
+        return self.graph.run(
             query,
             {
-                'from_id': edge.from_,
-                'to_id': edge.to,
-                'description': edge.label,
+                'from_ids': from_ids,
+                'to_ids': to_ids,
+                'description': description,  # All the edges should have the same label
+                'skip': (page - 1) * limit,
+                'limit': limit,
             }
         ).data()
-        snippets = [Snippet(
-            reference=GraphNode.from_py2neo(
-                result['reference'],
-                display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label(result['reference'])]),  # type: ignore  # noqa
-                primary_label_fn=get_first_known_label,
-            ),
-            publication=GraphNode.from_py2neo(
-                result['publication'],
-                display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label(result['publication'])]),  # type: ignore  # noqa
-                primary_label_fn=get_first_known_label,
-            )
-        ) for result in data]
 
-        return GetSnippetsFromEdgeResult(
-            from_node_id=edge.from_,
-            to_node_id=edge.to,
-            association=edge.label,
-            snippets=snippets,
-        )
-
-    def get_snippets_from_duplicate_edge(self, edge: DuplicateEdgeConnectionData):
-        query = self.get_snippets_from_edge_query(edge.from_label, edge.to_label)
-        data = self.graph.run(
+    def get_snippet_count_from_edges(
+        self,
+        from_ids: List[int],
+        to_ids: List[int],
+        description: str,
+    ):
+        query = self.get_snippet_count_from_edges_query()
+        return self.graph.run(
             query,
             {
-                'from_id': edge.original_from,
-                'to_id': edge.original_to,
-                'description': edge.label,
+                'from_ids': from_ids,
+                'to_ids': to_ids,
+                'description': description,  # All the edges should have the same label
+            }
+        ).evaluate()
+
+    def get_reference_table_data(self, node_edge_pairs: List[ReferenceTablePair]):
+        # For duplicate edges, We need to remember which true node ID pairs map to which
+        # duplicate node ID pairs, otherwise when we send the data back to the frontend
+        # we won't know which duplicate nodes we should match the snippet data with
+        ids_to_pairs = {
+            (pair.edge.original_from, pair.edge.original_to): pair
+            for pair in node_edge_pairs
+        }
+
+        # One of these lists will have all duplicates (depends on the direction
+        # of the cluster edge). We remove the duplicates so we don't get weird query results.
+        from_ids = list({pair.edge.original_from for pair in node_edge_pairs})
+        to_ids = list({pair.edge.original_to for pair in node_edge_pairs})
+        description = node_edge_pairs[0].edge.label  # Every edge should have the same label
+
+        query = self.get_individual_snippet_count_from_edges_query()
+        counts = self.graph.run(
+            query,
+            {
+                'from_ids': from_ids,
+                'to_ids': to_ids,
+                'description': description,
             }
         ).data()
-        snippets = [Snippet(
-            reference=GraphNode.from_py2neo(
-                result['reference'],
-                display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label(result['reference'])]),  # type: ignore  # noqa
-                primary_label_fn=get_first_known_label,
-            ),
-            publication=GraphNode.from_py2neo(
-                result['publication'],
-                display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label(result['publication'])]),  # type: ignore  # noqa
-                primary_label_fn=get_first_known_label,
-            )
-        ) for result in data]
 
-        return GetSnippetsFromEdgeResult(
-            from_node_id=edge.from_,
-            to_node_id=edge.to,
-            association=edge.label,
-            snippets=snippets
-        )
-
-    def get_reference_table_data(self, node_edge_pairs: List[DuplicateNodeEdgePair]):
         reference_table_rows: List[ReferenceTableRow] = []
-        for pair in node_edge_pairs:
-            node = pair.node
-            edge = pair.edge
-
-            query = self.get_association_snippet_count_query(edge.from_label, edge.to_label)
-            count = self.graph.run(
-                query,
-                {
-                    'from_id': edge.original_from,
-                    'to_id': edge.original_to,
-                    'description': edge.label,
-                }
-            ).evaluate()
+        for row in counts:
+            pair = ids_to_pairs[(row['from_id'], row['to_id'])]
             reference_table_rows.append(ReferenceTableRow(
-                node_id=node.id,
-                node_display_name=node.display_name,
-                snippet_count=count,
-                edge=edge,
+                node_id=pair.node.id,
+                node_display_name=pair.node.display_name,
+                snippet_count=row['count'],
             ))
+
         return GetReferenceTableDataResult(
             reference_table_rows=reference_table_rows
         )
@@ -264,43 +253,41 @@ class Neo4JService(GraphBaseDao):
         page: int,
         limit: int,
     ) -> GetEdgeSnippetsResult:
-        result = self.get_snippets_from_edge(edge)
-        total_results = len(result.snippets)
+        from_ids = [edge.from_]
+        to_ids = [edge.to]
+        description = edge.label  # Every edge should have the same label
 
-        starting_idx = (page - 1) * limit
-        ending_idx = (page * limit) - 1
-        found_start = False
-        idx = 0
+        data = self.get_snippets_from_edges(from_ids, to_ids, description, page, limit)
+        total_results = self.get_snippet_count_from_edges(from_ids, to_ids, description)
 
-        new_snippets_result = GetSnippetsFromEdgeResult(
-            from_node_id=result.from_node_id,
-            to_node_id=result.to_node_id,
-            association=result.association,
-            snippets=[]
+        # `data` is either length 0 or 1
+        snippets = []
+        for row in data:
+            for reference in row['references']:
+                snippets.append(
+                    Snippet(
+                        reference=GraphNode.from_py2neo(
+                            reference['snippet'],
+                            display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label(reference['snippet'])]),  # type: ignore  # noqa
+                            primary_label_fn=get_first_known_label,
+                        ),
+                        publication=GraphNode.from_py2neo(
+                            reference['publication'],
+                            display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label(reference['publication'])]),  # type: ignore  # noqa
+                            primary_label_fn=get_first_known_label,
+                        )
+                    )
+                )
+
+        result = GetSnippetsFromEdgeResult(
+            from_node_id=edge.from_,
+            to_node_id=edge.to,
+            association=edge.label,
+            snippets=snippets
         )
 
-        for snippet in result.snippets:
-            if idx < starting_idx:
-                idx += 1
-                continue
-            elif idx > ending_idx:
-                # Reached the end of the result limit before hitting the end of the bucket
-                return GetEdgeSnippetsResult(
-                    snippet_data=new_snippets_result,
-                    total_results=total_results,
-                    query_data=edge,
-                )
-            elif idx == starting_idx:
-                found_start = True
-
-            if found_start:
-                new_snippets_result.snippets.append(snippet)
-
-            idx += 1
-
-        # Reached the end of the buckets and didn't hit the result limit
         return GetEdgeSnippetsResult(
-            snippet_data=new_snippets_result,
+            snippet_data=result,
             total_results=total_results,
             query_data=edge,
         )
@@ -311,55 +298,45 @@ class Neo4JService(GraphBaseDao):
         page: int,
         limit: int,
     ) -> GetClusterSnippetsResult:
-        snippet_data: List[GetSnippetsFromEdgeResult] = []
-        total_results = 0
+        # For duplicate edges, We need to remember which true node ID pairs map to which
+        # duplicate node ID pairs, otherwise when we send the data back to the frontend
+        # we won't know which duplicate nodes we should match the snippet data with
+        id_pairs = {
+            (edge.original_from, edge.original_to): {'from': edge.from_, 'to': edge.to}
+            for edge in edges
+        }
 
-        for edge in edges:
-            result = self.get_snippets_from_duplicate_edge(edge)
-            snippet_data.append(result)
-            total_results += len(result.snippets)
+        # One of these lists will have all duplicates (depends on the direction
+        # of the cluster edge). We remove the duplicates so we don't get weird query results.
+        from_ids = list({edge.original_from for edge in edges})
+        to_ids = list({edge.original_to for edge in edges})
+        description = edges[0].label  # Every edge should have the same label
 
-        snippet_data.sort(key=lambda x: len(x.snippets), reverse=True)
+        data = self.get_snippets_from_edges(from_ids, to_ids, description, page, limit)
+        total_results = self.get_snippet_count_from_edges(from_ids, to_ids, description)
 
-        new_snippet_data = []
-        starting_idx = (page - 1) * limit
-        ending_idx = (page * limit) - 1
-        found_start = False
-        idx = 0
-        for result in snippet_data:
-            new_snippets_result = GetSnippetsFromEdgeResult(
-                from_node_id=result.from_node_id,
-                to_node_id=result.to_node_id,
-                association=result.association,
-                snippets=[]
-            )
-
-            for snippet in result.snippets:
-                if idx < starting_idx:
-                    idx += 1
-                    continue
-                elif idx > ending_idx:
-                    # Reached the end of the result limit before hitting the end of the bucket
-                    new_snippet_data.append(new_snippets_result)
-                    return GetClusterSnippetsResult(
-                        snippet_data=new_snippet_data,
-                        total_results=total_results,
-                        query_data=edges,
+        results = [
+            GetSnippetsFromEdgeResult(
+                from_node_id=id_pairs[(row['from_id'], row['to_id'])]['from'],
+                to_node_id=id_pairs[(row['from_id'], row['to_id'])]['to'],
+                association=row['description'],
+                snippets=[Snippet(
+                    reference=GraphNode.from_py2neo(
+                        reference['snippet'],
+                        display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label(reference['snippet'])]),  # type: ignore  # noqa
+                        primary_label_fn=get_first_known_label,
+                    ),
+                    publication=GraphNode.from_py2neo(
+                        reference['publication'],
+                        display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label(reference['publication'])]),  # type: ignore  # noqa
+                        primary_label_fn=get_first_known_label,
                     )
-                elif idx == starting_idx:
-                    found_start = True
+                ) for reference in row['references']]
+            ) for row in data
+        ]
 
-                if found_start:
-                    new_snippets_result.snippets.append(snippet)
-
-                idx += 1
-
-            if found_start:
-                new_snippet_data.append(new_snippets_result)
-
-        # Reached the end of the buckets and didn't hit the result limit
         return GetClusterSnippetsResult(
-            snippet_data=new_snippet_data,
+            snippet_data=results,
             total_results=total_results,
             query_data=edges,
         )
@@ -630,14 +607,67 @@ class Neo4JService(GraphBaseDao):
         """.format(from_label, to_label)
         return query
 
-    def get_association_snippet_count_query(self, from_label: str, to_label: str):
+    def get_snippets_from_edges_query(self):
+        return """
+            MATCH (f)-[:HAS_ASSOCIATION]->(a:Association)-[:HAS_ASSOCIATION]->(t)
+            WHERE
+                ID(f) IN $from_ids AND
+                ID(t) IN $to_ids AND
+                a.description=$description
+            WITH
+                a AS association,
+                ID(f) as from_id,
+                ID(t) as to_id,
+                a.description as description
+            MATCH (association)<-[:PREDICTS]-(s:Snippet)-[:IN_PUB]-(p:Publication)
+            WITH
+                COUNT(s) as snippet_count,
+                collect({snippet:s, publication:p}) as references,
+                max(p.pub_year) as max_pub_year,
+                from_id,
+                to_id,
+                description
+            ORDER BY snippet_count DESC, max_pub_year DESC
+            UNWIND references as reference
+            WITH
+                snippet_count,
+                reference,
+                from_id,
+                to_id,
+                description
+            ORDER BY snippet_count DESC, reference.publication.pub_year DESC
+            SKIP $skip LIMIT $limit
+            RETURN collect(reference) as references, from_id, to_id, description
+        """
+
+    def get_snippet_count_from_edges_query(self):
+        return """
+            MATCH (f)-[:HAS_ASSOCIATION]->(a:Association)-[:HAS_ASSOCIATION]->(t)
+            WHERE
+                ID(f) IN $from_ids AND
+                ID(t) IN $to_ids AND
+                a.description=$description
+            WITH
+                a AS association,
+                ID(f) as from_id,
+                ID(t) as to_id
+            MATCH (association)<-[:PREDICTS]-(s:Snippet)-[:IN_PUB]-(p:Publication)
+            RETURN COUNT(s) as snippet_count
+        """
+
+    def get_individual_snippet_count_from_edges_query(self):
         query = f"""
-            MATCH
-            (f:{from_label})-[:HAS_ASSOCIATION]->(a:Association)-[:HAS_ASSOCIATION]->(t:{to_label})
-            WHERE ID(f)=$from_id AND ID(t)=$to_id AND a.description=$description
-            WITH ID(a) AS association_id MATCH (a:Association)<-[:PREDICTS]-(s:Snippet)
-            WHERE ID(a)=association_id
-            RETURN COUNT(s) as count
+            MATCH (f)-[:HAS_ASSOCIATION]->(a:Association)-[:HAS_ASSOCIATION]->(t)
+            WHERE
+                ID(f) IN $from_ids AND
+                ID(t) IN $to_ids AND
+                a.description=$description
+            WITH
+                a as association,
+                ID(f) as from_id,
+                ID(t) as to_id
+            MATCH (association)<-[:PREDICTS]-(s:Snippet)
+            RETURN from_id, to_id, COUNT(s) as count
         """
         return query
 
