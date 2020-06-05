@@ -9,7 +9,7 @@ from neo4japp.models import (
     projects_collaborator_role,
 
 )
-from typing import Sequence
+from typing import Sequence, Optional
 
 
 class ProjectsService(RDBMSBaseDao):
@@ -29,18 +29,16 @@ class ProjectsService(RDBMSBaseDao):
 
         # Set default ownership
         proj_admin_role = AppRole.query.filter(AppRole.name == 'project-admin').one()
-        self.add_role(user, proj_admin_role, projects)
+        self.add_collaborator(user, proj_admin_role, projects)
 
         return projects
 
-    def has_role(self, user: AppUser, role: str, projects: Projects) -> bool:
-        user_has_role = Projects.query_has_project_role(
-            user.id, role, projects.id
-        ).one_or_none()
-        return user_has_role is not None
+    def has_role(self, user: AppUser, projects: Projects) -> Optional[AppRole]:
+        user_role = Projects.query_project_roles(user.id, projects.id).one_or_none()
+        return user_role
 
-    def add_role(self, user: AppUser, role: AppRole, projects: Projects):
-        """ Grants access to a project """
+    def add_collaborator(self, user: AppUser, role: AppRole, projects: Projects):
+        """ Add a collaborator to a project or modify existing role """
         existing_role = self.session.execute(
             projects_collaborator_role.select().where(
                 and_(
@@ -52,7 +50,7 @@ class ProjectsService(RDBMSBaseDao):
 
         # Removes existing role if it exists
         if existing_role and existing_role != role:
-            self.remove_role(user, role, projects)
+            self._remove_role(user, role, projects)
 
         self.session.execute(
             projects_collaborator_role.insert(),
@@ -65,13 +63,25 @@ class ProjectsService(RDBMSBaseDao):
 
         self.session.commit()
 
-    def remove_role(self, user: AppUser, role: AppRole, projects: Projects):
-        """ Delete role to project """
+    def remove_collaborator(self, user: AppUser, projects: Projects):
+        """ Removes a collaborator """
         self.session.execute(
             projects_collaborator_role.delete().where(
                 and_(
                     projects_collaborator_role.c.appuser_id == user.id,
                     projects_collaborator_role.c.projects_id == projects.id,
+                )
+            )
+        )
+
+    def _remove_role(self, user: AppUser, role: AppRole, projects: Projects):
+        """ Remove a role """
+        self.session.execute(
+            projects_collaborator_role.delete().where(
+                and_(
+                    projects_collaborator_role.c.appuser_id == user.id,
+                    projects_collaborator_role.c.projects_id == projects.id,
+                    projects_collaborator_role.c.app_role_id == role.id,
                 )
             )
         )

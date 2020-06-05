@@ -66,23 +66,19 @@ def test_can_get_list_of_projects(client, session, test_user):
     assert len(response_data) == projects_count
 
 
-@pytest.mark.parametrize('email, expected_status', [
-    ('test@***ARANGO_DB_NAME***.bio', 200),
-    ('pleblife@hut.org', 400),
+@pytest.mark.parametrize('username, email, expected_status', [
+    ('test', 'test@***ARANGO_DB_NAME***.bio', 200),
+    ('pleb', 'pleblife@hut.org', 400),
 ])
-def test_only_admins_can_add_roles(
-        client, session, fix_project, test_user, test_user_2, email, expected_status):
+def test_only_admins_can_add_collaborators(
+        client, session, fix_project, test_user, test_user_2, username, email, expected_status):
 
     login_resp = client.login_as_user(email, 'password')
     headers = generate_headers(login_resp['access_jwt'])
 
     response = client.post(
-        '/projects/collaborators/add',
-        data=json.dumps({
-            'projectName': fix_project.project_name,
-            'role': 'project-read',
-            'email': email,
-        }),
+        f'/projects/{fix_project.project_name}/collaborators/{username}',
+        data=json.dumps({'role': 'project-read'}),
         headers=headers,
         content_type='application/json',
     )
@@ -90,25 +86,50 @@ def test_only_admins_can_add_roles(
     assert response.status_code == expected_status
 
 
-@pytest.mark.parametrize('email, expected_status', [
-    ('test@***ARANGO_DB_NAME***.bio', 200),
-    ('pleblife@hut.org', 400),
+@pytest.mark.parametrize('username, email, expected_status', [
+    ('test', 'test@***ARANGO_DB_NAME***.bio', 200),
+    ('pleb', 'pleblife@hut.org', 400),
 ])
-def test_only_admins_can_remove_roles(
-        client, session, fix_project, test_user, test_user_2, email, expected_status):
+def test_only_admins_can_remove_collaborators(
+        client, session, fix_project, test_user, test_user_2, username, email, expected_status):
 
     login_resp = client.login_as_user(email, 'password')
     headers = generate_headers(login_resp['access_jwt'])
 
-    response = client.post(
-        '/projects/collaborators/remove',
-        data=json.dumps({
-            'projectName': fix_project.project_name,
-            'role': 'project-read',
-            'email': email,
-        }),
+    response = client.delete(
+        f'/projects/{fix_project.project_name}/collaborators/{username}',
         headers=headers,
         content_type='application/json',
     )
 
     assert response.status_code == expected_status
+
+
+def test_can_get_collaborators(client, session, fix_project, test_user):
+    login_resp = client.login_as_user(test_user.email, 'password')
+    headers = generate_headers(login_resp['access_jwt'])
+
+    response = client.get(
+        f'/projects/{fix_project.project_name}/collaborators',
+        headers=headers,
+        content_type='application/json',
+    )
+
+    assert response.status_code == 200
+
+    data = response.get_json()['results']
+    collaborators = [c['username'] for c in data]
+    assert test_user.username in collaborators
+
+
+def test_noncollaborators_cannot_view(client, session, fix_project, test_user_2):
+    login_resp = client.login_as_user(test_user_2.email, 'password')
+    headers = generate_headers(login_resp['access_jwt'])
+
+    response = client.get(
+        f'/projects/{fix_project.project_name}/collaborators',
+        headers=headers,
+        content_type='application/json',
+    )
+
+    assert response.status_code == 400

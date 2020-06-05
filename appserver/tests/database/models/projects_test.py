@@ -93,11 +93,11 @@ def test_can_set_user_role(session, role):
     )
     session.flush()
 
-    user_has_role = Projects.query_has_project_role(
-        test_user.id, role, new_projects.id
+    user_role = Projects.query_project_roles(
+        test_user.id, new_projects.id
     ).one_or_none()
 
-    assert user_has_role is not None
+    assert user_role.name == role
 
 
 def test_projects_init_with_roles(session):
