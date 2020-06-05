@@ -7,7 +7,8 @@ from sqlalchemy import and_
 from sqlalchemy.orm.query import Query
 
 from neo4japp.database import db, ma
-from neo4japp.models.common import RDBMSBase
+
+from .common import RDBMSBase
 
 
 user_role = db.Table(
@@ -100,7 +101,7 @@ class AccessActionType(enum.Enum):
 class AccessControlPolicy(RDBMSBase):
     """ Which user, group, etc have what access to protected resources """
     id = db.Column(db.Integer, primary_key=True)
-    action = db.Column(db.String(50), nullable=False)
+    action = db.Column(db.Enum(AccessActionType), nullable=False)
     asset_type = db.Column(db.String(200), nullable=False)
     asset_id = db.Column(db.Integer, nullable=True)
     principal_type = db.Column(db.String(50), nullable=False)

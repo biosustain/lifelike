@@ -5,9 +5,16 @@ import os
 from flask import render_template
 from sqlalchemy.sql.expression import text
 from neo4japp.factory import create_app
-from neo4japp.models import AppRole, AppUser, Directory, Project, Projects, OrganismGeneMatch
-
 from neo4japp.database import db, get_account_service
+
+from neo4japp.models import (
+    AppRole,
+    AppUser,
+    Project,
+    Directory,
+    Projects,
+    OrganismGeneMatch,
+)
 
 app_config = os.environ['FLASK_APP_CONFIG']
 app = create_app(config=f'config.{app_config}')

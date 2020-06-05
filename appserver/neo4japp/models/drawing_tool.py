@@ -1,7 +1,7 @@
 import hashlib
 
 from neo4japp.database import db, ma
-from neo4japp.models import RDBMSBase, ModelConverter
+from neo4japp.models.common import RDBMSBase, ModelConverter
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy_searchable import make_searchable
 from sqlalchemy_utils.types import TSVectorType
