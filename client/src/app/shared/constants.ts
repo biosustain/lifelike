@@ -1,6 +1,6 @@
 export const NODE_EXPANSION_LIMIT = 500;
 export const NODE_EXPANSION_CLUSTERING_RECOMMENDATION = 200;
-export const SNIPPET_RESULT_LIMIT = 1000;
+export const SNIPPET_RESULT_LIMIT = 10000;
 export const SNIPPET_PAGE_LIMIT = 25;
 export const PubMedURL = 'https://pubmed.ncbi.nlm.nih.gov/';
 

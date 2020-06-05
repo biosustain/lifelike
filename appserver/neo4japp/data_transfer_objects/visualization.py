@@ -66,9 +66,20 @@ class DuplicateVisEdge(VisEdge):
 
 
 @attr.s(frozen=True)
-class DuplicateNodeEdgePair(CamelDictMixin):
-    node: DuplicateVisNode = attr.ib()
-    edge: DuplicateVisEdge = attr.ib()
+class ReferenceTablePair(CamelDictMixin):
+    @attr.s(frozen=True)
+    class NodeData(CamelDictMixin):
+        id: str = attr.ib()
+        display_name: str = attr.ib()
+
+    @attr.s(frozen=True)
+    class EdgeData(CamelDictMixin):
+        original_from: int = attr.ib()
+        original_to: int = attr.ib()
+        label: str = attr.ib()
+
+    node: NodeData = attr.ib()
+    edge: EdgeData = attr.ib()
 
 
 @attr.s(frozen=True)
@@ -76,7 +87,6 @@ class ReferenceTableRow(CamelDictMixin):
     node_id: str = attr.ib()
     node_display_name: str = attr.ib()
     snippet_count: int = attr.ib()
-    edge: DuplicateVisEdge = attr.ib()
 
 
 @attr.s(frozen=True)
@@ -121,7 +131,7 @@ class DuplicateEdgeConnectionData(CamelDictMixin):
 
 @attr.s(frozen=True)
 class ReferenceTableDataRequest(CamelDictMixin):
-    node_edge_pairs: List[DuplicateNodeEdgePair] = attr.ib()
+    node_edge_pairs: List[ReferenceTablePair] = attr.ib()
 
 
 @attr.s(frozen=True)
@@ -178,13 +188,5 @@ class GetClusterSnippetsResult(CamelDictMixin):
 @attr.s(frozen=True)
 class GetReferenceTableDataResult(CamelDictMixin):
     reference_table_rows: List[ReferenceTableRow] = attr.ib()
-
-    # Override the default formatter to convert 'from_' attribute of edges
-    def to_dict_formatter(self, get_reference_table_data_result_dict: dict):
-        for row in get_reference_table_data_result_dict['reference_table_rows']:
-            edge = row['edge']
-            edge['from'] = edge['from_']
-            del edge['from_']
-        return get_reference_table_data_result_dict
 
 # End Response DTOs #

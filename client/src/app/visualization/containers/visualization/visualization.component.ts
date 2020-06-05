@@ -1,3 +1,4 @@
+import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { MatDialog, MatDialogRef } from '@angular/material';
 import { ActivatedRoute } from '@angular/router';
@@ -7,7 +8,7 @@ import { filter, take, switchMap, map, first } from 'rxjs/operators';
 
 import { DataSet } from 'vis-network';
 
-import { isArray } from 'util';
+import { isArray, isNullOrUndefined } from 'util';
 
 import {
     ExpandNodeResult,
@@ -52,6 +53,7 @@ export class VisualizationComponent implements OnInit, OnDestroy {
     expandNodeResult: ExpandNodeResult;
     getEdgeSnippetsResult: GetEdgeSnippetsResult;
     getClusterSnippetsResult: GetClusterSnippetsResult;
+    getSnippetsError: HttpErrorResponse;
 
     getEdgeSnippetsSubject: Subject<NewEdgeSnippetsPageRequest>;
     getClusterSnippetsSubject: Subject<NewClusterSnippetsPageRequest>;
@@ -82,6 +84,8 @@ export class VisualizationComponent implements OnInit, OnDestroy {
         this.getEdgeSnippetsSubject = new Subject<NewEdgeSnippetsPageRequest>();
         this.nodeSelectedSubject = new Subject<boolean>();
 
+        // We don't want to kill the subscription if an error is returned! This is the default behavior for
+        // subscriptions.
         this.getSnippetsSubscription = merge(
             // Merge the streams, so we can cancel one if the other emits; We always take the most recent
             // emission betweent the streams.
@@ -99,18 +103,28 @@ export class VisualizationComponent implements OnInit, OnDestroy {
                 } else {
                     return this.visService.getSnippetsForEdge(request as NewEdgeSnippetsPageRequest);
                 }
-            })
-        ).subscribe((resp: GetClusterSnippetsResult | GetEdgeSnippetsResult | boolean) => {
-            if (typeof resp === 'boolean') {
-                // We don't currently need to do anything if the request was for node data
-                return;
-            } else if (isArray(resp.snippetData)) {
-                // If snippetData is an array then we are getting snippets for a cluster
-                this.getClusterSnippetsResult = resp as GetClusterSnippetsResult;
-            } else {
-                this.getEdgeSnippetsResult = resp as GetEdgeSnippetsResult;
-            }
-        });
+            }),
+        ).subscribe(
+            // resp might be any of GetClusterSnippetsResult | GetEdgeSnippetsResult | boolean | HttpErrorResponse
+            (resp: any) => {
+                if (typeof resp === 'boolean') {
+                    // We don't currently need to do anything if the request was for node data
+                    return;
+                } else if (!isNullOrUndefined(resp.error)) {
+                    // Response was an error
+                    this.getSnippetsError = resp;
+                    this.getClusterSnippetsResult = null;
+                    this.getEdgeSnippetsResult = null;
+                } else if (isArray(resp.snippetData)) {
+                    // If snippetData is an array then we are getting snippets for a cluster
+                    this.getClusterSnippetsResult = resp as GetClusterSnippetsResult;
+                    this.getSnippetsError = null;
+                } else {
+                    this.getEdgeSnippetsResult = resp as GetEdgeSnippetsResult;
+                    this.getSnippetsError = null;
+                }
+            },
+        );
     }
 
     ngOnInit() {

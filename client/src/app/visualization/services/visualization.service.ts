@@ -1,10 +1,10 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 
-import { map } from 'rxjs/operators';
+import { of } from 'rxjs';
+import { map, catchError } from 'rxjs/operators';
 
 import {
-    DuplicateNodeEdgePair,
     GetClusterSnippetsResult,
     GetEdgeSnippetsResult,
     GetReferenceTableDataResult,
@@ -12,6 +12,7 @@ import {
     NewClusterSnippetsPageRequest,
     NewEdgeSnippetsPageRequest,
     NodeLegend,
+    ReferenceTableDataRequest,
 } from 'app/interfaces';
 import { NODE_EXPANSION_LIMIT } from 'app/shared/constants';
 
@@ -38,9 +39,9 @@ export class VisualizationService {
         ).pipe(map(resp => resp.result));
     }
 
-    getReferenceTableData(nodeEdgePairs: DuplicateNodeEdgePair[]) {
+    getReferenceTableData(request: ReferenceTableDataRequest) {
         return this.http.post<{result: GetReferenceTableDataResult}>(
-            `${this.visApi}/get-reference-table-data`, {nodeEdgePairs},
+            `${this.visApi}/get-reference-table-data`, {nodeEdgePairs: request.nodeEdgePairs},
         ).pipe(map(resp => resp.result));
     }
 
@@ -57,7 +58,10 @@ export class VisualizationService {
                 limit: request.limit,
                 edge: request.queryData,
             }
-        ).pipe(map(resp => resp.result));
+        ).pipe(
+            map(resp => resp.result),
+            catchError(error => of(error)),
+        );
     }
 
     getSnippetsForCluster(request: NewClusterSnippetsPageRequest) {
@@ -67,6 +71,9 @@ export class VisualizationService {
                 limit: request.limit,
                 edges: request.queryData,
             }
-        ).pipe(map(resp => resp.result));
+        ).pipe(
+            map(resp => resp.result),
+            catchError(error => of(error)),
+        );
     }
 }
