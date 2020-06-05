@@ -1,44 +1,20 @@
-<div *ngIf="clusterEntity && legend">
-  <div *ngFor="let result of clusterEntity.data">
-    <app-node-relationship
-      [leftNodeName]="result.from.displayName"
-      [leftNodeLabel]="result.from.primaryLabel"
-      [leftNodeColor]="legend.get(result.from.primaryLabel)[0]"
-      [rightNodeColor]="legend.get(result.to.primaryLabel)[0]"
-      [rightNodeName]="result.to.displayName"
-      [rightNodeLabel]="result.to.primaryLabel"
-      [edge]="result.association"
-    ></app-node-relationship>
-
-    <div id="association-snippet-container" *ngIf="result.snippets.length > 0; else noSnippets">
-      <mat-expansion-panel class="association-snippet-panel" *ngFor="let snippet of result.snippets">
-        <mat-expansion-panel-header [collapsedHeight]="'80px'" [expandedHeight]="'80px'">
-          <mat-panel-title class="association-snippet-title">{{ (snippet.publication.data.title || 'Unknown') | truncate:['240'] }}</mat-panel-title>
-          <mat-panel-description class="association-snippet-pub-data">
-            <i>{{ (snippet.publication.data.journal || 'Unknown') | truncate:['100'] }} ({{ snippet.publication.data.pubYear || 'Unknown' }})</i>
-          </mat-panel-description>
-        </mat-expansion-panel-header>
-
-        <div fxLayout="column" fxLayoutAlign="space-between start">
-          <app-highlight-snippet
-            [snippet]="snippet.reference.data.sentence"
-            [entry1Text]="snippet.reference.data.entry1Text"
-            [entry2Text]="snippet.reference.data.entry2Text"
-            [entry1Colors]="legend.get(result.from.primaryLabel)"
-            [entry2Colors]="legend.get(result.to.primaryLabel)"
-          ></app-highlight-snippet>
-          <div fxLayout="row" fxLayoutAlign="space-between center">
-            <strong>PubMed ID: </strong>
-            <a *ngIf="snippet.publication.data.pmid; else unknownPmid" class="pubmed-link" fxLayout="row" fxLayoutAlign="space-between center" [href]="'https://pubmed.ncbi.nlm.nih.gov/' + snippet.publication.data.pmid + '/'" target="_blank">
-              <div>{{ snippet.publication.data.pmid }}</div>
-              <mat-icon>launch</mat-icon>
-            </a>
-            <ng-template #unknownPmid>Unknown</ng-template>
-          </div>
-        </div>
-
-      </mat-expansion-panel>
-    </div>
-    <ng-template #noSnippets>No Association Snippets Found!</ng-template>
-  </div>
+<div *ngIf="error; else notError">
+  <span>Could not load snippet data for this cluster. Please try again later.</span>
 </div>
+<ng-template #notError>
+  <div *ngIf="clusterEntity && legend; else loadingSpinner">
+    <app-snippet-display
+      [snippetData]="clusterEntity.snippetData"
+      [queryData]="clusterEntity.queryData"
+      [totalResults]="clusterEntity.totalResults"
+      [isNewEntity]="isNewEntity"
+      [legend]="legend"
+      (requestNewPageEmitter)="requestPage($event)"
+    ></app-snippet-display>
+  </div>
+  <ng-template #loadingSpinner>
+    <div id="loading-spinner-container" fxLayout="row" fxLayoutAlign="center center">
+      <mat-spinner></mat-spinner>
+    </div>
+  </ng-template>
+</ng-template>
