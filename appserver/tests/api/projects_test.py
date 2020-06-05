@@ -133,3 +133,17 @@ def test_noncollaborators_cannot_view(client, session, fix_project, test_user_2)
     )
 
     assert response.status_code == 400
+
+
+def test_can_add_directory(client, session, fix_project, fix_directory, test_user):
+    login_resp = client.login_as_user(test_user.email, 'password')
+    headers = generate_headers(login_resp['access_jwt'])
+
+    response = client.post(
+        f'/projects/{fix_project.project_name}/directories',
+        data=json.dumps(dict(dirname='new-dir')),
+        headers=headers,
+        content_type='application/json',
+    )
+
+    assert response.status_code == 200

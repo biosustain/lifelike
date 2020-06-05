@@ -113,6 +113,18 @@ def test_can_get_root_dir(session, fix_projects, fix_directory):
     assert proj_service.get_root_dir(fix_projects).name == '/'
 
 
+def test_can_add_directory(session, fix_projects, fix_directory):
+    proj_service = ProjectsService(session)
+    new_dir = proj_service.add_directory(
+        projects=fix_projects,
+        dir_name='purple_rain',
+    )
+    created_dir = session.query(Directory).filter(
+        Directory.name == new_dir.name
+    ).one_or_none()
+    assert created_dir is not None
+
+
 def test_can_add_project_collaborator(session, fix_projects, test_user):
     proj_service = ProjectsService(session)
     role = AppRole.query.filter(AppRole.name == 'project-read').one()
