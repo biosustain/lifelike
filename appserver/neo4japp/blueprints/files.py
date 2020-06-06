@@ -17,7 +17,10 @@ from werkzeug.datastructures import FileStorage
 from werkzeug.utils import secure_filename
 
 from neo4japp.blueprints.auth import auth
-from neo4japp.blueprints.permissions import requires_role
+from neo4japp.blueprints.permissions import (
+    requires_role,
+    requires_project_permission,
+)
 from neo4japp.database import (
     db,
     get_annotations_service,
@@ -25,10 +28,17 @@ from neo4japp.database import (
     get_bioc_document_service,
     get_lmdb_dao,
 )
+from neo4japp.models import (
+    AccessActionType,
+    AppUser,
+    Files,
+    FileContent,
+    Directory,
+    Projects,
+)
 from neo4japp.exceptions import AnnotationError, RecordNotFoundException
-from neo4japp.models import AppUser
-from neo4japp.models.files import Files, FileContent
 from neo4japp.utils.network import read_url
+
 
 URL_FETCH_MAX_LENGTH = 1024 * 1024 * 30
 URL_FETCH_TIMEOUT = 10
@@ -40,9 +50,25 @@ bp = Blueprint('files', __name__, url_prefix='/files')
 
 @bp.route('/upload', methods=['POST'])
 @auth.login_required
+@requires_project_permission(AccessActionType.WRITE)
 def upload_pdf():
+
+    user = g.current_user
+
     filename = None
     pdf = None
+
+    # TODO: Deprecate and make mandatory (no default) this once LL-415 is implemented
+    dir_id = request.form.get('directoryId', 1)
+
+    try:
+        directory = Directory.query.get(dir_id)
+        projects = Projects.query.get(directory.projects_id)
+    except NoResultFound as err:
+        raise RecordNotFoundException(f'No record found: {err}')
+
+    yield user, projects
+
     if 'url' in request.form:
         url = request.form['url']
         try:
@@ -64,9 +90,8 @@ def upload_pdf():
         pdf = request.files['file']
     pdf_content = pdf.read()  # TODO: don't work with whole file in memory
     pdf.stream.seek(0)
-    project = '1'  # TODO: remove hard coded project
+
     checksum_sha256 = hashlib.sha256(pdf_content).digest()
-    user = g.current_user
 
     # Make sure that the filename is not longer than the DB column permits
     max_filename_length = Files.filename.property.columns[0].type.length
@@ -99,12 +124,13 @@ def upload_pdf():
         content_id=file_content.id,
         user_id=user.id,
         annotations=annotations,
-        project=project
+        project=projects.id,
+        dir_id=dir_id
     )
     db.session.add(file)
     db.session.commit()
 
-    return jsonify({
+    yield jsonify({
         'file_id': file_id,
         'filename': filename,
         'status': 'Successfully uploaded'

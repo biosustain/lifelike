@@ -50,3 +50,58 @@ def test_admin_can_delete_pdf_without_permission(client, test_user_with_pdf, fix
     assert delete_resp.status_code == 200
     resp_json = [resp for resp in delete_resp.get_json().values()]
     assert 'Not an owner' not in resp_json
+
+
+def test_can_upload_pdf(monkeypatch, client, test_user, fix_project, fix_directory):
+    from neo4japp.blueprints import files
+
+    login_resp = client.login_as_user(test_user.email, 'password')
+    headers = generate_headers(login_resp['access_jwt'])
+
+    def mockannotate(filename, pdf):
+        """ Mocks out the 'annotate' function in the module
+        since we don't care about the annotation process """
+        return dict()
+
+    monkeypatch.setattr(files, 'annotate', mockannotate)
+    mock_pdf = BytesIO(json.dumps(dict()).encode('utf-8'))
+
+    resp = client.post(
+        '/files/upload',
+        headers=headers,
+        data={
+            'file': (mock_pdf, 'mock.pdf'),
+            'directoryId': fix_directory.id,
+        },
+        content_type='multipart/form-data'
+    )
+
+    assert resp.status_code == 200
+
+
+def test_cannot_upload_if_no_write_permission(
+        monkeypatch, client, test_user, test_user_2, fix_project, fix_directory):
+    from neo4japp.blueprints import files
+
+    login_resp = client.login_as_user(test_user_2.email, 'password')
+    headers = generate_headers(login_resp['access_jwt'])
+
+    def mockannotate(filename, pdf):
+        """ Mocks out the 'annotate' function in the module
+        since we don't care about the annotation process """
+        return dict()
+
+    monkeypatch.setattr(files, 'annotate', mockannotate)
+    mock_pdf = BytesIO(json.dumps(dict()).encode('utf-8'))
+
+    resp = client.post(
+        '/files/upload',
+        headers=headers,
+        data={
+            'file': (mock_pdf, 'mock.pdf'),
+            'directoryId': fix_directory.id,
+        },
+        content_type='multipart/form-data'
+    )
+
+    assert resp.status_code == 400
