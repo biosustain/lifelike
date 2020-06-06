@@ -57,7 +57,7 @@ def upgrade():
     # This will only be true in development
     if not projects:
         projects = Projects(
-            project_name='default',
+            project_name='beta-project',
             description='',
             users=[],
         )
