@@ -118,10 +118,8 @@ export class VisualizationComponent implements OnInit, OnDestroy {
                 } else if (isArray(resp.snippetData)) {
                     // If snippetData is an array then we are getting snippets for a cluster
                     this.getClusterSnippetsResult = resp as GetClusterSnippetsResult;
-                    this.getSnippetsError = null;
                 } else {
                     this.getEdgeSnippetsResult = resp as GetEdgeSnippetsResult;
-                    this.getSnippetsError = null;
                 }
             },
         );
@@ -363,12 +361,7 @@ export class VisualizationComponent implements OnInit, OnDestroy {
         this.getEdgeSnippetsSubject.next(request);
     }
 
-    // TODO: There is a bug here: If the user opens a cluster after clicking it
-    // but before the cluster graph data response is received, then the sidenav
-    // will error because the returned duplicate node ids will not exist on the
-    // graph anymore. This can be fixed by creating some kind of interrupt event
-    // on this subscription. Could use rxjs 'race' + an output from the child here.
-    getSnippetsForCluster(request: NewClusterSnippetsPageRequest) {
+   getSnippetsForCluster(request: NewClusterSnippetsPageRequest) {
         this.getClusterSnippetsSubject.next(request);
     }
 

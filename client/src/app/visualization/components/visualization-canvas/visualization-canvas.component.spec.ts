@@ -811,7 +811,7 @@ describe('VisualizationCanvasComponent', () => {
     it('should update selected nodes/edges and sidebar entity when a node is selected', () => {
         const updateSelectedNodesSpy = spyOn(instance, 'updateSelectedNodes');
         const updateSelectedEdgesSpy = spyOn(instance, 'updateSelectedEdges');
-        const updateSidebarEntitySpy = spyOn(instance, 'updateSidebarEntity');
+        const updateSidebarEntitySpy = spyOn(instance, 'updateSidenavEntity');
 
         instance.onSelectNodeCallback(null);
 
@@ -823,7 +823,7 @@ describe('VisualizationCanvasComponent', () => {
     it('should update selected edges/nodes and sidebar entity when an edge is selected', () => {
         const updateSelectedEdgesSpy = spyOn(instance, 'updateSelectedEdges');
         const updateSelectedNodesSpy = spyOn(instance, 'updateSelectedNodes');
-        const updateSidebarEntitySpy = spyOn(instance, 'updateSidebarEntity');
+        const updateSidebarEntitySpy = spyOn(instance, 'updateSidenavEntity');
 
         instance.onSelectEdgeCallback(null);
 
@@ -868,7 +868,7 @@ describe('VisualizationCanvasComponent', () => {
         const networkGraphSelectNodesSpy = spyOn(instance.networkGraph, 'selectNodes').and.callThrough();
         const updateSelectedNodesAndEdgesSpy = spyOn(instance, 'updateSelectedNodesAndEdges').and.callThrough();
         const showTooltipSpy = spyOn(contextMenuControlService, 'showTooltip');
-        const updateSidebarEntitySpy = spyOn(instance, 'updateSidebarEntity');
+        const updateSidebarEntitySpy = spyOn(instance, 'updateSidenavEntity');
 
         instance.onContextCallback(mockCallbackParams);
 
@@ -886,7 +886,7 @@ describe('VisualizationCanvasComponent', () => {
         const networkGraphSelectNodesSpy = spyOn(instance.networkGraph, 'selectNodes').and.callThrough();
         const updateSelectedNodesAndEdgesSpy = spyOn(instance, 'updateSelectedNodesAndEdges').and.callThrough();
         const showTooltipSpy = spyOn(contextMenuControlService, 'showTooltip');
-        const updateSidebarEntitySpy = spyOn(instance, 'updateSidebarEntity');
+        const updateSidebarEntitySpy = spyOn(instance, 'updateSidenavEntity');
 
         instance.onContextCallback(mockCallbackParams);
 
@@ -914,7 +914,7 @@ describe('VisualizationCanvasComponent', () => {
         const networkGraphSelectNodesSpy = spyOn(instance.networkGraph, 'selectEdges').and.callThrough();
         const updateSelectedNodesAndEdgesSpy = spyOn(instance, 'updateSelectedNodesAndEdges').and.callThrough();
         const showTooltipSpy = spyOn(contextMenuControlService, 'showTooltip');
-        const updateSidebarEntitySpy = spyOn(instance, 'updateSidebarEntity');
+        const updateSidebarEntitySpy = spyOn(instance, 'updateSidenavEntity');
 
         instance.onContextCallback(mockCallbackParams);
 
@@ -942,7 +942,7 @@ describe('VisualizationCanvasComponent', () => {
         const networkGraphUnselectAllSpy = spyOn(instance.networkGraph, 'unselectAll').and.callThrough();
         const updateSelectedNodesAndEdgesSpy = spyOn(instance, 'updateSelectedNodesAndEdges').and.callThrough();
         const showTooltipSpy = spyOn(contextMenuControlService, 'showTooltip');
-        const updateSidebarEntitySpy = spyOn(instance, 'updateSidebarEntity');
+        const updateSidebarEntitySpy = spyOn(instance, 'updateSidenavEntity');
 
         // Select a node and edge to begin with
         instance.networkGraph.selectEdges([101]);
