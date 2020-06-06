@@ -103,13 +103,17 @@ def main():
 
                 if fn.lower().endswith('.pdf'):
                     with open(os.path.join(parent, fn), 'rb') as f:
-                        annotations = create_annotations(
-                            annotations_service=service,
-                            bioc_service=bioc_service,
-                            filename=fn,
-                            pdf_parser=parser,
-                            pdf=f,
-                        )
+                        try:
+                            annotations = create_annotations(
+                                annotations_service=service,
+                                bioc_service=bioc_service,
+                                filename=fn,
+                                pdf_parser=parser,
+                                pdf=f,
+                            )
+                        except Exception:
+                            print(f'Failed to annotate PDF {fn}')
+                            continue
 
                     annotation_file = os.path.join(directory, f'annotations/{fn}.json')
                     with open(annotation_file, 'w+') as a_f:
