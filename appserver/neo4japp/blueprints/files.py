@@ -17,10 +17,7 @@ from werkzeug.datastructures import FileStorage
 from werkzeug.utils import secure_filename
 
 from neo4japp.blueprints.auth import auth
-from neo4japp.blueprints.permissions import (
-    requires_role,
-    requires_project_permission,
-)
+from neo4japp.blueprints.permissions import requires_project_permission
 from neo4japp.database import (
     db,
     get_annotations_service,
@@ -59,7 +56,6 @@ def upload_pdf(project_name: str):
     user = g.current_user
 
     filename = None
-    pdf = None
 
     # TODO: Deprecate and make mandatory (no default) this once LL-415 is implemented
     dir_id = request.form.get('directoryId', 1)
