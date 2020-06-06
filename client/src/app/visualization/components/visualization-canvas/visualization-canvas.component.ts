@@ -1,4 +1,3 @@
-import { HttpErrorResponse } from '@angular/common/http';
 import {
     Component,
     Input,
@@ -138,52 +137,73 @@ export class VisualizationCanvasComponent implements OnInit, AfterViewInit {
     }
     @Input() set getEdgeSnippetsResult(result: GetEdgeSnippetsResult) {
         if (!isNullOrUndefined(result)) {
-            const toNode = this.nodes.get(result.snippetData.toNodeId) as VisNode;
-            const fromNode = this.nodes.get(result.snippetData.fromNodeId) as VisNode;
-            this.sidenavEntity = {
-                snippetData: {
-                    to: {
-                        primaryLabel: toNode.primaryLabel,
-                        displayName: toNode.displayName,
-                    } as NodeDisplayInfo,
-                    from: {
-                        primaryLabel: fromNode.primaryLabel,
-                        displayName: fromNode.displayName,
-                    } as NodeDisplayInfo,
-                    association: result.snippetData.association,
-                    snippets: result.snippetData.snippets,
-                } as SidenavSnippetData,
-                queryData: result.queryData,
-                totalResults: result.totalResults,
-            } as SidenavEdgeEntity;
+            try {
+                const toNode = this.nodes.get(result.snippetData.toNodeId) as VisNode;
+                const fromNode = this.nodes.get(result.snippetData.fromNodeId) as VisNode;
+
+                if (isNullOrUndefined(toNode) || isNullOrUndefined(fromNode)) {
+                    throw Error('One or more returned nodes do not exist on the network!');
+                }
+
+                this.sidenavEntity = {
+                    snippetData: {
+                        to: {
+                            primaryLabel: toNode.primaryLabel,
+                            displayName: toNode.displayName,
+                        } as NodeDisplayInfo,
+                        from: {
+                            primaryLabel: fromNode.primaryLabel,
+                            displayName: fromNode.displayName,
+                        } as NodeDisplayInfo,
+                        association: result.snippetData.association,
+                        snippets: result.snippetData.snippets,
+                    } as SidenavSnippetData,
+                    queryData: result.queryData,
+                    totalResults: result.totalResults,
+                } as SidenavEdgeEntity;
+            } catch (error) {
+                this.getSnippetsError = error;
+                this.sidenavEntity = null;
+            }
         }
     }
     @Input() set getClusterSnippetsResult(result: GetClusterSnippetsResult) {
         if (!isNullOrUndefined(result)) {
-            const data = result.snippetData.map(snippetResult => {
-                const toNode = this.nodes.get(snippetResult.toNodeId) as VisNode;
-                const fromNode = this.nodes.get(snippetResult.fromNodeId) as VisNode;
-                return {
-                    to: {
-                        primaryLabel: toNode.primaryLabel,
-                        displayName: toNode.displayName,
-                    } as NodeDisplayInfo,
-                    from: {
-                        primaryLabel: fromNode.primaryLabel,
-                        displayName: fromNode.displayName,
-                    } as NodeDisplayInfo,
-                    association: snippetResult.association,
-                    snippets: snippetResult.snippets,
-                } as SidenavSnippetData;
-            });
-            this.sidenavEntity = {
-                queryData: result.queryData,
-                totalResults: result.totalResults,
-                snippetData: data,
-            } as SidenavClusterEntity;
+            try {
+                const data = result.snippetData.map(snippetResult => {
+                    const toNode = this.nodes.get(snippetResult.toNodeId) as VisNode;
+                    const fromNode = this.nodes.get(snippetResult.fromNodeId) as VisNode;
+
+                    if (isNullOrUndefined(toNode) || isNullOrUndefined(fromNode)) {
+                        throw Error('One or more returned nodes do not exist on the network!');
+                    }
+
+                    return {
+                        to: {
+                            primaryLabel: toNode.primaryLabel,
+                            displayName: toNode.displayName,
+                        } as NodeDisplayInfo,
+                        from: {
+                            primaryLabel: fromNode.primaryLabel,
+                            displayName: fromNode.displayName,
+                        } as NodeDisplayInfo,
+                        association: snippetResult.association,
+                        snippets: snippetResult.snippets,
+                    } as SidenavSnippetData;
+                });
+                this.sidenavEntity = {
+                    queryData: result.queryData,
+                    totalResults: result.totalResults,
+                    snippetData: data,
+                } as SidenavClusterEntity;
+            } catch (error) {
+                this.getSnippetsError = error;
+                this.sidenavEntity = null;
+            }
         }
     }
-    @Input() getSnippetsError: HttpErrorResponse;
+    @Input() getSnippetsError: Error;
+
     // Configuration for the graph view. See vis.js docs
     @Input() config: Neo4jGraphConfig;
     @Input() legend: Map<string, string[]>;
@@ -987,7 +1007,9 @@ export class VisualizationCanvasComponent implements OnInit, AfterViewInit {
         this.updateSelectedNodes();
     }
 
-    updateSidebarEntity() {
+    updateSidenavEntity() {
+        this.sidenavOpened = true;
+
         if (this.selectedNodes.length === 1 && this.selectedEdges.length === 0) {
             if (this.networkGraph.isCluster(this.selectedNodes[0])) {
                 const cluster = this.selectedNodes[0];
@@ -1013,6 +1035,7 @@ export class VisualizationCanvasComponent implements OnInit, AfterViewInit {
                 this.isNewClusterSidenavEntity = true;
                 this.sidenavEntityType = SidenavEntityType.CLUSTER;
                 this.sidenavEntity = null; // Set as null until data is returned by parent
+                this.getSnippetsError = null; // Clear any errors if any
                 this.getSnippetsForCluster.emit({
                     page: 1,
                     limit: SNIPPET_PAGE_LIMIT,
@@ -1035,6 +1058,7 @@ export class VisualizationCanvasComponent implements OnInit, AfterViewInit {
             this.isNewEdgeSidenavEntity = true;
             this.sidenavEntityType = SidenavEntityType.EDGE;
             this.sidenavEntity = null; // Set as null until data is returned by parent
+            this.getSnippetsError = null; // Clear any errors if any
             this.getSnippetsForEdge.emit({
                 page: 1,
                 limit: SNIPPET_PAGE_LIMIT,
@@ -1127,7 +1151,7 @@ export class VisualizationCanvasComponent implements OnInit, AfterViewInit {
 
     onHoverNodeCallback(params: any) {
         if (this.networkGraph.isCluster(params.node)) {
-            // TODO: Add on-hover cluster effects
+            // TODO LL-974: Add on-hover cluster effects
         } else if (!this.nodes.get(params.node)) {
             // TODO: Add on-hover edge effects
         } else {
@@ -1157,12 +1181,10 @@ export class VisualizationCanvasComponent implements OnInit, AfterViewInit {
 
     onSelectNodeCallback(params: any) {
         this.updateSelectedNodesAndEdges();
-        this.updateSidebarEntity();
     }
 
     onSelectEdgeCallback(params: any) {
         this.updateSelectedNodesAndEdges();
-        this.updateSidebarEntity();
     }
 
     onDoubleClickCallback(params: any) {
@@ -1181,6 +1203,7 @@ export class VisualizationCanvasComponent implements OnInit, AfterViewInit {
 
     onContextCallback(params: any) {
         const hoveredNode = this.networkGraph.getNodeAt(params.pointer.DOM) as string;
+        const hoveredEdge = this.networkGraph.getEdgeAt(params.pointer.DOM);
 
         if (this.networkGraph.isCluster(hoveredNode)) {
             const nodeIdToSnippetCountMap = new Map<string, number>();
@@ -1207,7 +1230,6 @@ export class VisualizationCanvasComponent implements OnInit, AfterViewInit {
 
         this.contextMenuControlService.updatePopper(contextMenuXPos, contextMenuYPos);
 
-        const hoveredEdge = this.networkGraph.getEdgeAt(params.pointer.DOM);
         const currentlySelectedNodes = this.networkGraph.getSelectedNodes();
         const currentlySelectedEdges = this.networkGraph.getSelectedEdges();
 
@@ -1233,7 +1255,6 @@ export class VisualizationCanvasComponent implements OnInit, AfterViewInit {
             this.clearSelectedNodeEdgeLabelData();
         }
         this.contextMenuControlService.showTooltip();
-        this.updateSidebarEntity(); // oncontext does not select the hovered entity by default, so update
       }
 
       // End Callback Functions

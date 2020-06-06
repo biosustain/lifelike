@@ -32,6 +32,7 @@ export class ContextMenuComponent extends TooltipComponent implements OnDestroy 
     @Output() removeEdges: EventEmitter<IdType[]> = new EventEmitter();
     @Output() selectNeighbors: EventEmitter<IdType> = new EventEmitter();
     @Output() pullOutNodeFromCluster: EventEmitter<IdType> = new EventEmitter();
+    @Output() openDataSidebar: EventEmitter<boolean> = new EventEmitter();
 
     FADEOUT_STYLE = 'context-menu fade-out';
     DEFAULT_STYLE = 'context-menu';
@@ -193,5 +194,10 @@ export class ContextMenuComponent extends TooltipComponent implements OnDestroy 
         }
         this.selectNeighbors.emit(this.selectedNodeIds[0]);
         this.beginContextMenuFade();
+    }
+
+    requestDataSidenav() {
+        this.openDataSidebar.emit(true);
+        this.hideTooltip();
     }
 }
