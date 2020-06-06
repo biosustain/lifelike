@@ -141,13 +141,51 @@ def fix_directory(fix_project, session):
 
 
 @pytest.fixture(scope='function')
-def private_fix_project(fix_api_owner, fix_directory, session) -> Project:
+def private_fix_map(fix_api_owner, fix_directory, session) -> Project:
+    example_data = {
+        "edges": [],
+        "nodes": [
+            {
+                "data": {
+                    "x": -251,
+                    "y": -323,
+                    "hyperlink": "https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=511145",  # noqa
+                    "detail": "dddd",
+                    "source": "/dt/pdf/0df1c8e0-50a4-4770-9942-621bc1f1cb28/1/98.064/706.8/121.47984/717.8399999999999",  # noqa
+                    "search": [
+                        {
+                            "domain": "google",
+                            "url": "https://www.google.com/search?q=E. coli"
+                        },
+                        {
+                            "domain": "ncbi",
+                            "url": "https://www.ncbi.nlm.nih.gov/gene/?query=E. coli"
+                        },
+                        {
+                            "domain": "uniprot",
+                            "url": "https://www.uniprot.org/uniprot/?sort=score&query=E. coli"
+                        },
+                        {
+                            "domain": "wikipedia",
+                            "url": "https://www.google.com/search?q=site:+wikipedia.org+E. coli"
+                        }
+                    ]
+                },
+                "display_name": "E. coli",
+                "hash": "dae84a2f-17ef-444e-b875-13b732a71794",
+                "shape": "box",
+                "label": "species",
+                "sub_labels": []
+            }
+        ]
+    }
+
     project = Project(
         id=100,
         label='Project1',
         description='a test project',
         author='Jim Melancholy',
-        graph=json.dumps({'project': 'project 1'}),
+        graph=example_data,
         user_id=fix_api_owner.id,
         dir_id=fix_directory.id,
     )
