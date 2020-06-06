@@ -52,7 +52,7 @@ def upgrade():
     session = Session(op.get_bind())
 
     # There's only one hardcoded project right now
-    projects = session.query(Projects).one_or_none()
+    projects = session.query(Projects).filter(Projects.project_name == 'beta-project').one_or_none()
 
     # This will only be true in development
     if not projects:
