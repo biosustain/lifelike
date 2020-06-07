@@ -39,7 +39,7 @@ bp = Blueprint('drawing_tool', __name__, url_prefix='/drawing-tool')
 @newbp.route('/<string:projects_name>/map/<string:hash_id>', methods=['GET'])
 @auth.login_required
 @requires_project_permission(AccessActionType.READ)
-def get_map_by_hash(projects_name: str, hash_id: str):
+def get_map_by_hash(hash_id: str, projects_name: str = ''):
     """ Serve map by hash_id lookup """
     user = g.current_user
 
@@ -67,7 +67,7 @@ def get_map_by_hash(projects_name: str, hash_id: str):
 @newbp.route('/<string:projects_name>/map/<string:hash_id>/download', methods=['GET'])
 @auth.login_required
 @requires_project_permission(AccessActionType.READ)
-def download_map(projects_name: str, hash_id: str):
+def download_map(hash_id: str, projects_name: str = ''):
     """ Exports map to JSON format """
     user = g.current_user
 
@@ -97,7 +97,7 @@ def download_map(projects_name: str, hash_id: str):
 @newbp.route('/<string:projects_name>/map/upload', methods=['POST'])
 @auth.login_required
 @requires_project_permission(AccessActionType.WRITE)
-def upload_map(projects_name: str):
+def upload_map(projects_name: str = ''):
 
     draw_proj_name = request.form['projectName']
     proj_description = request.form['description']
@@ -171,7 +171,7 @@ def get_project():
 @newbp.route('/<string:projects_name>/map', methods=['POST'])
 @auth.login_required
 @requires_project_permission(AccessActionType.WRITE)
-def add_project(projects_name: str):
+def add_project(projects_name: str = ''):
     """ Create a new project under a user """
     data = request.get_json()
     user = g.current_user
@@ -229,7 +229,7 @@ def add_project(projects_name: str):
 @newbp.route('/<string:projects_name>/map/<string:project_id>', methods=['PUT', 'PATCH'])
 @auth.login_required
 @requires_project_permission(AccessActionType.WRITE)
-def update_project(projects_name: str, project_id: str):
+def update_project(project_id: str, projects_name: str = ''):
     """ Update the project's content and its metadata. """
     user = g.current_user
     data = request.get_json()
@@ -267,7 +267,7 @@ def update_project(projects_name: str, project_id: str):
 @newbp.route('/<string:projects_name>/map/<string:project_id>', methods=['DELETE'])
 @auth.login_required
 @requires_project_permission(AccessActionType.WRITE)
-def delete_project(projects_name: str, project_id: str):
+def delete_project(project_id: str, projects_name: str = ''):
     """ Delete object owned by user """
     user = g.current_user
 
@@ -297,7 +297,7 @@ def delete_project(projects_name: str, project_id: str):
 @newbp.route('/<string:projects_name>/map/<string:project_id>/pdf', methods=['GET'])
 @auth.login_required
 @requires_project_permission(AccessActionType.READ)
-def get_project_pdf(projects_name: str, project_id: str):
+def get_project_pdf(project_id: str, projects_name: str = ''):
     """ Gets a PDF file from the project drawing """
 
     unprocessed = []

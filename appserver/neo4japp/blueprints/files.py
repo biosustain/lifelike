@@ -51,7 +51,7 @@ bp = Blueprint('files', __name__, url_prefix='/files')
 @newbp.route('/<string:project_name>/files', methods=['POST'])  # TODO: use this once LL-415 done
 @auth.login_required
 @requires_project_permission(AccessActionType.WRITE)
-def upload_pdf(project_name: str):
+def upload_pdf(project_name: str = ''):
 
     user = g.current_user
 
@@ -140,7 +140,7 @@ def upload_pdf(project_name: str):
 @newbp.route('/<string:project_name>/files', methods=['GET'])  # TODO: use this once LL-415 done
 @auth.login_required
 @requires_project_permission(AccessActionType.READ)
-def list_files(project_name: str):
+def list_files(project_name: str = ''):
     """TODO: See JIRA LL-322"""
     # TODO: remove hard coded project
 
@@ -180,7 +180,7 @@ def list_files(project_name: str):
 @newbp.route('/<string:project_name>/files/<string:id>', methods=['GET'])  # TODO: LL-415
 @auth.login_required
 @requires_project_permission(AccessActionType.READ)
-def get_pdf(project_name: str, id: str):
+def get_pdf(id: str, project_name: str = ''):
 
     user = g.current_user
 
@@ -243,7 +243,7 @@ def map_annotations_to_correct_format(unformatted_annotations: dict):
 @newbp.route('/<string:project_name>/files/<string:id>/annotations', methods=['GET'])
 @auth.login_required
 @requires_project_permission(AccessActionType.READ)
-def get_annotations(project_name: str, id: str):
+def get_annotations(id: str, project_name: str = ''):
 
     # LL-415 - remove default once GUI deprecates old API
     projects = Projects.query.filter(Projects.project_name == 'beta-project').one()
@@ -270,7 +270,7 @@ def get_annotations(project_name: str, id: str):
 @newbp.route('/<string:project_name>/files/<string:id>/annotations', methods=['PATCH'])
 @auth.login_required
 @requires_project_permission(AccessActionType.WRITE)
-def add_custom_annotation(project_name: str, id: str):
+def add_custom_annotation(id: str, project_name: str = ''):
 
     # LL-415 - remove default once GUI deprecates old API
     projects = Projects.query.filter(Projects.project_name == 'beta-project').one()
@@ -325,7 +325,7 @@ class AnnotationOutcome(Enum):
 @newbp.route('/<string:project_name>/files/<string:id>/reannotate', methods=['POST'])
 @auth.login_required
 @requires_project_permission(AccessActionType.WRITE)
-def reannotate(project_name: str, id: str):
+def reannotate(id: str, project_name: str = ''):
 
     user = g.current_user
 
@@ -377,7 +377,7 @@ class DeletionOutcome(Enum):
 @newbp.route('/<string:project_name>/files', methods=['DELETE'])
 @auth.login_required
 @requires_project_permission(AccessActionType.WRITE)
-def delete_files(project_name: str):
+def delete_files(project_name: str = ''):
     curr_user = g.current_user
     # LL-415 - remove default once GUI deprecates old API
     projects = Projects.query.filter(Projects.project_name == 'beta-project').one()
