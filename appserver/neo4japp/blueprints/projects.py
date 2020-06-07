@@ -57,7 +57,7 @@ def add_projects():
 @bp.route('/<string:project_name>/collaborators', methods=['GET'])
 @auth.login_required
 @requires_project_permission(AccessActionType.READ)
-def get_project_collaborators(project_name: str):
+def get_project_collaborators(project_name: str = ''):
     proj_service = get_projects_service()
 
     projects = Projects.query.filter(
@@ -98,7 +98,7 @@ def get_project_collaborators(project_name: str):
 @bp.route('/<string:project_name>/collaborators/<string:username>', methods=['POST'])
 @auth.login_required
 @requires_project_role('project-admin')
-def add_collaborator(project_name: str, username: str):
+def add_collaborator(username: str, project_name: str = ''):
 
     proj_service = get_projects_service()
 
@@ -133,7 +133,7 @@ def add_collaborator(project_name: str, username: str):
 @bp.route('/<string:project_name>/collaborators/<string:username>', methods=['DELETE'])
 @auth.login_required
 @requires_project_role('project-admin')
-def remove_collaborator(project_name: str, username: str):
+def remove_collaborator(username: str, project_name: str = ''):
 
     proj_service = get_projects_service()
 
@@ -162,7 +162,7 @@ def remove_collaborator(project_name: str, username: str):
 @bp.route('/<string:project_name>/directories', methods=['GET'])
 @auth.login_required
 @requires_project_permission(AccessActionType.READ)
-def get_top_level_directories(project_name: str):
+def get_top_level_directories(project_name: str = ''):
     proj_service = get_projects_service()
     projects = Projects.query.filter(
         Projects.project_name == project_name
@@ -182,7 +182,7 @@ def get_top_level_directories(project_name: str):
 @bp.route('/<string:project_name>/directories', methods=['POST'])
 @auth.login_required
 @requires_project_permission(AccessActionType.WRITE)
-def add_directory(project_name: str):
+def add_directory(project_name: str = ''):
     proj_service = get_projects_service()
     projects = Projects.query.filter(
         Projects.project_name == project_name
@@ -204,7 +204,7 @@ def add_directory(project_name: str):
 @bp.route('/<string:project_name>/directories/<int:current_dir_id>', methods=['GET'])
 @auth.login_required
 @requires_project_permission(AccessActionType.READ)
-def get_child_directories(project_name: str, current_dir_id: int):
+def get_child_directories(current_dir_id: int, project_name: str = ''):
     """ Used similar to a 'next' function """
     proj_service = get_projects_service()
     projects = Projects.query.filter(
