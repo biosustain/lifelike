@@ -13,7 +13,15 @@ import sqlalchemy as sa
 
 from sqlalchemy.orm.session import Session
 
-from neo4japp.models import Directory, Files, Project, Projects
+from neo4japp.models import (
+    AppRole,
+    AppUser,
+    Directory,
+    Files,
+    Project,
+    Projects,
+    projects_collaborator_role,
+)
 
 # revision identifiers, used by Alembic.
 revision = '3720d5f44849'
@@ -73,6 +81,21 @@ def upgrade():
 
     session.add(directory)
     session.flush()
+
+    # Get writer role
+    write_role = AppRole.query.filter(AppRole.name == 'project-read').one()
+
+    # Set all existing users to write role
+    for user in AppUser.query.all():
+        session.execute(
+            projects_collaborator_role.insert(),
+            [dict(
+                appuser_id=user.id,
+                projects_id=projects.id,
+                app_role_id=write_role.id,
+            )]
+        )
+        session.flush()
 
     for fi in session.query(Files).all():
         setattr(fi, 'dir_id', directory.id)
