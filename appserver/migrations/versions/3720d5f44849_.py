@@ -83,10 +83,12 @@ def upgrade():
     session.flush()
 
     # Get writer role
-    write_role = AppRole.query.filter(AppRole.name == 'project-read').one()
+    write_role = session.query(AppRole).filter(
+        AppRole.name == 'project-write'
+    ).one()
 
     # Set all existing users to write role
-    for user in AppUser.query.all():
+    for user in session.query(AppUser).all():
         session.execute(
             projects_collaborator_role.insert(),
             [dict(
