@@ -12,14 +12,16 @@ import { of } from 'rxjs';
 import { DataSet } from 'vis-data';
 
 import {
-    ClusteredNode,
-    DuplicateVisEdge,
     ExpandNodeRequest,
     GraphNode,
     GraphRelationship,
     Neo4jResults,
     VisEdge,
     VisNode,
+    NewEdgeSnippetsPageRequest,
+    EdgeConnectionData,
+    NewClusterSnippetsPageRequest,
+    DuplicateEdgeConnectionData,
 } from 'app/interfaces';
 import { RootStoreModule } from 'app/root-store';
 import { SearchGraphComponent } from 'app/search/containers/search-graph.component';
@@ -29,6 +31,7 @@ import { VisualizationComponent } from './visualization.component';
 
 import { VisualizationService } from '../../services/visualization.service';
 import { VisualizationCanvasComponent } from '../../components/visualization-canvas/visualization-canvas.component';
+import { SNIPPET_PAGE_LIMIT } from 'app/shared/constants';
 
 describe('VisualizationComponent', () => {
     let fixture: ComponentFixture<VisualizationComponent>;
@@ -39,9 +42,8 @@ describe('VisualizationComponent', () => {
     let mockGraphNode: GraphNode;
     let mockGraphRelationship: GraphRelationship;
     let mockNeo4jResults: Neo4jResults;
-    let mockVisEdge: VisEdge;
-    let mockDuplicateVisEdge: DuplicateVisEdge;
-    let mockClusteredNode: ClusteredNode;
+    let mockNewEdgeSnippetsPageRequest: NewEdgeSnippetsPageRequest;
+    let mockNewClusterSnippetsPageRequest: NewClusterSnippetsPageRequest;
 
     configureTestSuite(() => {
         TestBed.configureTestingModule({
@@ -85,24 +87,32 @@ describe('VisualizationComponent', () => {
             edges: [mockGraphRelationship],
         };
 
-        // Mock Vis JS data
-        mockVisEdge = {
-            ...mockGraphRelationship,
-            arrows: 'to',
-            color: null,
+        mockNewEdgeSnippetsPageRequest = {
+            page: 1,
+            limit: SNIPPET_PAGE_LIMIT,
+            queryData: {
+                from: 1,
+                to: 2,
+                fromLabel: 'MockNode1',
+                toLabel: 'MockNode2',
+                label: 'Mock Association',
+            } as EdgeConnectionData,
         };
 
-        mockDuplicateVisEdge = {
-            ...mockVisEdge,
-            id: 'duplicateEdge:' + `${1}`,
-            duplicateOf: 1,
-            originalFrom: 2,
-            originalTo: 1,
-        };
-
-        mockClusteredNode = {
-            nodeId: 1,
-            edges: [mockDuplicateVisEdge],
+        mockNewClusterSnippetsPageRequest = {
+            page: 1,
+            limit: SNIPPET_PAGE_LIMIT,
+            queryData: [
+                {
+                    originalFrom: 1,
+                    originalTo: 2,
+                    from: 101,
+                    to: 102,
+                    fromLabel: 'MockNode1',
+                    toLabel: 'MockNode2',
+                    label: 'Mock Association',
+                }
+            ] as DuplicateEdgeConnectionData[],
         };
 
         fixture = TestBed.createComponent(VisualizationComponent);
@@ -197,59 +207,26 @@ describe('VisualizationComponent', () => {
         expect(expandNodeSpy).toHaveBeenCalledWith(mockExpandNodeRequest);
     });
 
-    it('should call getSnippetsFromEdge service when child requests snippets for edge', () => {
-        const getSnippetsFromEdgeSpy = spyOn(instance, 'getSnippetsFromEdge');
+    it('should emit getSnippetsForEdge subject when child requests snippets for edge', () => {
+        const getSnippetsFromEdgeSpy = spyOn(instance.getEdgeSnippetsSubject, 'next');
         const visualizationCanvasComponentMock = fixture.debugElement.query(
             By.directive(VisualizationCanvasComponent)
         ).componentInstance as VisualizationCanvasComponent;
 
-        visualizationCanvasComponentMock.getSnippetsFromEdge.emit(mockVisEdge);
+        visualizationCanvasComponentMock.getSnippetsForEdge.emit(mockNewEdgeSnippetsPageRequest);
 
-        expect(getSnippetsFromEdgeSpy).toHaveBeenCalledWith(mockVisEdge);
-    });
-
-    it('should call getSnippetsFromDuplicateEdge when child requests snippets for duplicate edge', () => {
-        const getSnippetsFromDuplicateEdgeSpy = spyOn(instance, 'getSnippetsFromDuplicateEdge');
-        const visualizationCanvasComponentMock = fixture.debugElement.query(
-            By.directive(VisualizationCanvasComponent)
-        ).componentInstance as VisualizationCanvasComponent;
-
-        visualizationCanvasComponentMock.getSnippetsFromDuplicateEdge.emit(mockDuplicateVisEdge);
-
-        expect(getSnippetsFromDuplicateEdgeSpy).toHaveBeenCalledWith(mockDuplicateVisEdge);
+        expect(getSnippetsFromEdgeSpy).toHaveBeenCalledWith(mockNewEdgeSnippetsPageRequest);
     });
 
     it('should call getClusterData when child requests data for cluster', () => {
-        const getClusterGraphDataSpy = spyOn(instance, 'getClusterData');
+        const getClusterGraphDataSpy = spyOn(instance.getClusterSnippetsSubject, 'next');
         const visualizationCanvasComponentMock = fixture.debugElement.query(
             By.directive(VisualizationCanvasComponent)
         ).componentInstance as VisualizationCanvasComponent;
 
-        visualizationCanvasComponentMock.getClusterData.emit([mockClusteredNode]);
+        visualizationCanvasComponentMock.getSnippetsForCluster.emit(mockNewClusterSnippetsPageRequest);
 
-        expect(getClusterGraphDataSpy).toHaveBeenCalledWith([mockClusteredNode]);
-    });
-
-    it('should call addDuplicatedEdge when child requests that a new duplicate edge be added to the set', () => {
-        const addDuplicateEdgeSpy = spyOn(instance, 'addDuplicatedEdge');
-        const visualizationCanvasComponentMock = fixture.debugElement.query(
-            By.directive(VisualizationCanvasComponent)
-        ).componentInstance as VisualizationCanvasComponent;
-
-        visualizationCanvasComponentMock.addDuplicatedEdge.emit(1);
-
-        expect(addDuplicateEdgeSpy).toHaveBeenCalledWith(1);
-    });
-
-    it('should call removeDuplicatedEdge when child requests that a duplicate edge be removed from the set', () => {
-        const removeDuplicateEdgeSpy = spyOn(instance, 'removeDuplicatedEdge');
-        const visualizationCanvasComponentMock = fixture.debugElement.query(
-            By.directive(VisualizationCanvasComponent)
-        ).componentInstance as VisualizationCanvasComponent;
-
-        visualizationCanvasComponentMock.removeDuplicatedEdge.emit(1);
-
-        expect(removeDuplicateEdgeSpy).toHaveBeenCalledWith(1);
+        expect(getClusterGraphDataSpy).toHaveBeenCalledWith(mockNewClusterSnippetsPageRequest);
     });
 
     it('updateCanvasWithSingleNode should clear the canvas and add a single node', () => {
@@ -263,30 +240,5 @@ describe('VisualizationComponent', () => {
 
         expect(instance.nodes.length).toEqual(1);
         expect(instance.edges.length).toEqual(0);
-    });
-
-    it('addDuplicatedEdge should attempt to add an edge to the set of duplicates', () => {
-        instance.addDuplicatedEdge(1);
-        instance.addDuplicatedEdge(1);
-        instance.addDuplicatedEdge(2);
-
-        expect(instance.duplicatedEdges.size).toEqual(2);
-        expect(instance.duplicatedEdges.has(1)).toBeTrue();
-        expect(instance.duplicatedEdges.has(2)).toBeTrue();
-    });
-
-    it('removeDuplicatedEdge should remove an edge from the set of duplicates', () => {
-        instance.addDuplicatedEdge(1);
-        instance.addDuplicatedEdge(2);
-
-        instance.removeDuplicatedEdge(1);
-
-        expect(instance.duplicatedEdges.size).toEqual(1);
-        expect(instance.duplicatedEdges.has(1)).toBeFalse();
-
-        instance.removeDuplicatedEdge(2);
-
-        expect(instance.duplicatedEdges.size).toEqual(0);
-        expect(instance.duplicatedEdges.has(2)).toBeFalse();
     });
 });

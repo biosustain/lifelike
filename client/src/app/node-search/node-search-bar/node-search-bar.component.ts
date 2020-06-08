@@ -2,7 +2,6 @@ import {Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges
 import {FormControl, FormGroup} from '@angular/forms';
 import {SearchService} from '../../search/services/search.service';
 import {FTSQueryRecord} from '../../interfaces';
-import {PageActions} from '../containers/node-search.component';
 
 
 @Component({
@@ -12,10 +11,10 @@ import {PageActions} from '../containers/node-search.component';
 })
 export class NodeSearchBarComponent implements OnInit, OnChanges {
 
-  @Input() error = '';
+  @Input() domainsFilter = '';
+  @Input() typesFilter = '';
+  filter = 'labels(node)';
   @Output() results = new EventEmitter<any>();
-  @Input() pageActions: PageActions = {pageIndex: 1};
-  paginatorActions: PageActions;
   searchForm = new FormGroup({
     searchInput: new FormControl(''),
   });
@@ -24,7 +23,6 @@ export class NodeSearchBarComponent implements OnInit, OnChanges {
   }
 
   ngOnInit() {
-    this.paginatorActions = this.pageActions;
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -34,19 +32,37 @@ export class NodeSearchBarComponent implements OnInit, OnChanges {
         const current = JSON.stringify(propertyChanges.currentValue);
         const previous = JSON.stringify(propertyChanges.previousValue);
         if (current !== previous) {
-          this.paginatorActions = this.pageActions;
+          this.filter = this.filterComposer();
           this.onSubmit();
         }
       }
     }
   }
 
+  private filterComposer() {
+    const filters = [this.domainsFilter, this.typesFilter];
+    const isEmpty = (currentValue) => currentValue === '';
+    if (filters.every(isEmpty)) {
+      return 'labels(n)';
+    }
+    const hasContent = (currentValue) => currentValue !== '';
+    const appliedFilters = filters.filter(hasContent);
+    let filterString = '';
+    appliedFilters.forEach((filter, index) => {
+      if (appliedFilters.length - 1 === index) {
+        filterString += filter;
+        return;
+       }
+      filterString += filter + ' AND ';
+    });
+    return filterString;
+  }
+
   onSubmit() {
-    this.searchService.fullTextSearch(
+    this.searchService.simpleFullTextSearch(
       this.searchForm.value.searchInput,
-      this.paginatorActions.pageIndex, 25).subscribe((results) => {
+      1, 100, this.filter).subscribe((results) => {
       this.results.emit(results.nodes as FTSQueryRecord[]);
     });
   }
-
 }

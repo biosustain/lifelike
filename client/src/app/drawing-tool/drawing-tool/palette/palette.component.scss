@@ -1,3 +1,5 @@
+@import '../../../../styles.scss';
+
 @mixin noselect {
     -webkit-touch-callout: none; /* iOS Safari */
       -webkit-user-select: none; /* Safari */
@@ -35,8 +37,10 @@
     background: #3797DB;
     position: sticky;
     top: 0;
-    width: 16rem;
+    width: 100%;
     height: 52px;
+
+    @include no-select;
 }
 
 mat-icon {

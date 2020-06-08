@@ -136,8 +136,9 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
 
           if (this.entityType === 'node') {
             // Get node data
-            const edges = val.edges.map((e: VisNetworkGraphEdge) => {
 
+            // tslint:disable-next-line: no-shadowed-variable
+            const edges = val.edges.map((e: VisNetworkGraphEdge) => {
               return {
                 id: e.id,
                 label: e.label,
@@ -161,19 +162,6 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
               edges
             };
 
-            switch (val.group) {
-                case 'link': {
-                    data.node.shape = this.nodeIsIcon ? 'icon' : 'box';
-                    data.node.icon = this.nodeIsIcon ? LINK_NODE_ICON_OBJECT : null;
-                    data.node.label = this.nodeIsIcon ? '' : val.detail;
-                    break;
-                }
-                default: {
-                    data.node.shape = 'box';
-                    data.node.icon = null;
-                    break;
-                }
-            }
           } else {
             // Get edge data
             data = {
@@ -192,7 +180,24 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
           });
 
           // Update graphData ..
-          Object.assign(this.graphData, val);
+          const {
+            id,
+            label,
+            group,
+            edges,
+            hyperlink,
+            detail
+          } = val;
+
+          this.graphData = {
+            id,
+            label,
+            group,
+            edges,
+            hyperlink,
+            detail,
+            data: this.graphData.data
+          };
         }
       );
 
@@ -396,13 +401,6 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
 
     switch (this.paletteMode) {
       case 'minimized':
-        $('#info-panel').animate({
-          height: '36rem'
-        }, 500, () => {
-          this.paletteMode = 'normal';
-        });
-        break;
-      case 'normal':
         $('#info-panel').animate({
           height: '80vh'
         }, 500, () => {

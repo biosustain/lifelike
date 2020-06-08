@@ -3,7 +3,6 @@ import { Subscription } from 'rxjs';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { HttpClient } from '@angular/common/http';
 import { ChartOptions, ChartDataSets } from 'chart.js';
-import { SingleDataSet } from 'ng2-charts';
 import * as pluginDataLabels from 'chartjs-plugin-datalabels';
 
 interface StatisticsDataResponse {
@@ -17,33 +16,31 @@ const ENTITY_COLORS = [
   'rgba(235, 149, 50, 0.9)',
   'rgba(226, 106, 106, 0.9)',
   'rgba(31, 58, 147, 0.9)',
-  'rgba(51, 0, 102, 0.9)',
-  'rgba(44, 130, 201, 0.9)',
   'rgba(242, 120, 75, 0.9)',
   'rgba(153, 0, 102, 0.9)',
   'rgba(144, 198, 149, 0.9)',
   'rgba(27, 163, 156, 0.9)',
   'rgba(153, 102, 0, 0.9)',
+  'rgba(44, 130, 201, 0.9)',
   'rgba(150, 40, 27, 0.9)',
   'rgba(153, 204, 204, 0.9)',
   'rgba(78, 205, 196, 0.9)',
   'rgba(137, 196, 244, 0.9)',
   'rgba(51, 110, 123, 0.9)',
   'rgba(58, 83, 155, 0.9)',
-  'rgba(189, 195, 199, 0.9)',
+  'rgba(51, 0, 102, 0.9)',
 ];
 
 const DOMAIN_COLORS = [
   'rgba(34, 167, 240, 0.9)',
-  'rgba(236, 100, 75, 0.9)',
   'rgba(169, 109, 173, 0.9)',
   'rgba(38, 194, 129, 0.9)',
   'rgba(245, 230, 83, 0.9)',
   'rgba(242, 121, 53, 0.9)',
   'rgba(149, 165, 166, 0.9)',
-  'rgba(174, 168, 211, 0.9)',
-  'rgba(169, 109, 173, 0.9)',
-  'rgba(83, 51, 237, 0.9)'
+  'rgba(129, 207, 224, 0.9)',
+  'rgba(250, 190, 88, 0.9)',
+  'rgba(0, 181, 204, 0.9)',
 ];
 
 @Component({
@@ -52,7 +49,7 @@ const DOMAIN_COLORS = [
   styleUrls: ['./kg-statistics.component.scss']
 })
 export class KgStatisticsComponent implements OnInit, OnDestroy {
-  chartDataAllDomains: SingleDataSet;
+  chartDataAllDomains: ChartDataSets[];
   chartDataEntitiesByDomain: {
     [domain: string]: ChartDataSets[];
   };
@@ -60,33 +57,36 @@ export class KgStatisticsComponent implements OnInit, OnDestroy {
   chartLabelsEntitiesByDomain: {
     [domain: string]: string[];
   };
-  barChartColorsByDomain: {
+  chartColorsEntitiesByDomain: {
     [domain: string]: {
       backgroundColor: string[]
     }[];
   };
-  pieChartColors: {
+  chartColorsDomains: {
     backgroundColor: string[];
   }[];
-  barChartOptions: ChartOptions = {
+  chartOptions: ChartOptions = {
     responsive: true,
     maintainAspectRatio: false,
     scales: {
       yAxes: [{
         ticks: {
-          beginAtZero: true
+          beginAtZero: true,
+          callback: (value, index, values) => this.addThousandSeparator(value.toString())
         },
       }],
       xAxes: [{
         ticks: {
-          fontSize: 14
+          beginAtZero: true,
+          callback: (value, index, values) => this.addThousandSeparator(value.toString())
         }
       }]
     },
     plugins: {
       datalabels: {
+        formatter: (value, context) => this.addThousandSeparator(value.toString()),
         anchor: 'end',
-        offset: -4,
+        offset: 0,
         align: 'end',
         font: {
           size: 14
@@ -95,24 +95,13 @@ export class KgStatisticsComponent implements OnInit, OnDestroy {
     },
     layout: {
       padding: {
-        top: 25
-      }
-    }
-  };
-  pieChartOptions: ChartOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    legend: {
-      labels: {
-        fontSize: 16
+        top: 25,
+        right: 50
       }
     },
-    plugins: {
-      datalabels: {
-        display: 'auto',
-        font: {
-          size: 14
-        }
+    tooltips: {
+      callbacks: {
+        label: (tooltipItem, data) => this.addThousandSeparator(tooltipItem.value)
       }
     }
   };
@@ -120,6 +109,7 @@ export class KgStatisticsComponent implements OnInit, OnDestroy {
   subscription: Subscription;
   isLoading = true;
   hasFetchError = false;
+  totalCount: any;
 
   constructor(private http: HttpClient, private snackBar: MatSnackBar) { }
 
@@ -153,7 +143,7 @@ export class KgStatisticsComponent implements OnInit, OnDestroy {
 
     this.chartDataEntitiesByDomain = {};
     this.chartLabelsEntitiesByDomain = {};
-    this.barChartColorsByDomain = {};
+    this.chartColorsEntitiesByDomain = {};
     for (const [domain, domainData] of Object.entries(statisticsData)) {
       this.chartLabelsEntitiesByDomain[domain] = [];
       const dataset = { data: [], barPercentage: 0.12 * Object.keys(domainData).length };
@@ -163,19 +153,25 @@ export class KgStatisticsComponent implements OnInit, OnDestroy {
         colors.backgroundColor.push(entityToColor[entity]);
         this.chartLabelsEntitiesByDomain[domain].push(entity);
       }
-      this.barChartColorsByDomain[domain] = [ colors ];
+      this.chartColorsEntitiesByDomain[domain] = [ colors ];
       this.chartDataEntitiesByDomain[domain] = [ dataset ];
     }
   }
 
   private _getChartDataAllDomains(statisticsData) {
-    this.pieChartColors = [{ backgroundColor: DOMAIN_COLORS }];
-    this.chartDataAllDomains = [];
+    this.chartColorsDomains = [{ backgroundColor: DOMAIN_COLORS }];
+    const data = [];
     this.chartLabelsDomains = [];
     for (const [domain, domainData] of Object.entries(statisticsData)) {
-      this.chartDataAllDomains.push(Object.values(domainData).reduce((a, b) => a + b, 0));
+      data.push(Object.values(domainData).reduce((a, b) => a + b, 0));
       this.chartLabelsDomains.push(domain);
     }
+    this.chartDataAllDomains = [{ data }];
+    this.totalCount = data.reduce((a, b) => a + b, 0);
+  }
+
+  addThousandSeparator(value) {
+    return value.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
   }
 
   ngOnDestroy() {

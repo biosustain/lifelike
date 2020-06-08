@@ -9,11 +9,8 @@ from neo4japp.constants import *
 from neo4japp.database import get_neo4j_service_dao
 
 from neo4japp.data_transfer_objects.visualization import (
-    GetGraphDataForClusterRequest,
-    GetSnippetCountsFromEdgesRequest,
-    GetDataForClusterRequest,
-    GetSnippetsFromDuplicateEdgeRequest,
-    GetSnippetsFromEdgeRequest,
+    GetSnippetsForEdgeRequest,
+    GetSnippetsForClusterRequest,
     ReferenceTableDataRequest,
 )
 from neo4japp.util import CamelDictMixin, SuccessResponse, jsonify_with_class
@@ -78,36 +75,6 @@ def expand_graph_node(req: ExpandNodeRequest):
     return SuccessResponse(result=node, status_code=200)
 
 
-@bp.route('/get-snippets-from-edge', methods=['POST'])
-@jsonify_with_class(GetSnippetsFromEdgeRequest)
-def get_snippets_from_edge(req: GetSnippetsFromEdgeRequest):
-    neo4j = get_neo4j_service_dao()
-    snippets_result = neo4j.get_snippets_from_edge(
-        req.edge,
-    )
-    return SuccessResponse(result=snippets_result, status_code=200)
-
-
-@bp.route('/get-snippets-from-duplicate-edge', methods=['POST'])
-@jsonify_with_class(GetSnippetsFromDuplicateEdgeRequest)
-def get_snippets_from_duplicate_edge(req: GetSnippetsFromDuplicateEdgeRequest):
-    neo4j = get_neo4j_service_dao()
-    snippets_result = neo4j.get_snippets_from_duplicate_edge(
-        req.edge,
-    )
-    return SuccessResponse(result=snippets_result, status_code=200)
-
-# Currently unused
-# @bp.route('/get-snippet-counts-from-edges', methods=['POST'])
-# @jsonify_with_class(GetSnippetCountsFromEdgesRequest)
-# def get_snippet_count_for_edges(req: GetSnippetCountsFromEdgesRequest):
-#     neo4j = get_neo4j_service_dao()
-#     edge_snippet_count_result = neo4j.get_snippet_counts_from_edges(
-#         req.edges,
-#     )
-#     return SuccessResponse(edge_snippet_count_result, status_code=200)
-
-
 @bp.route('/get-reference-table-data', methods=['POST'])
 @jsonify_with_class(ReferenceTableDataRequest)
 def get_reference_table_data(req: ReferenceTableDataRequest):
@@ -118,24 +85,28 @@ def get_reference_table_data(req: ReferenceTableDataRequest):
     return SuccessResponse(reference_table_data, status_code=200)
 
 
-@bp.route('/get-cluster-graph-data', methods=['POST'])
-@jsonify_with_class(GetGraphDataForClusterRequest)
-def get_cluster_graph_data(req: GetGraphDataForClusterRequest):
+@bp.route('/get-snippets-for-edge', methods=['POST'])
+@jsonify_with_class(GetSnippetsForEdgeRequest)
+def get_edge_snippet_data(req: GetSnippetsForEdgeRequest):
     neo4j = get_neo4j_service_dao()
-    cluster_graph_data_result = neo4j.get_cluster_graph_data(
-        req.clustered_nodes,
+    edge_snippets_result = neo4j.get_snippets_for_edge(
+        page=req.page,
+        limit=req.limit,
+        edge=req.edge,
     )
-    return SuccessResponse(cluster_graph_data_result, status_code=200)
+    return SuccessResponse(edge_snippets_result, status_code=200)
 
 
-@bp.route('/get-cluster-data', methods=['POST'])
-@jsonify_with_class(GetDataForClusterRequest)
-def get_cluster_snippet_data(req: GetDataForClusterRequest):
+@bp.route('/get-snippets-for-cluster', methods=['POST'])
+@jsonify_with_class(GetSnippetsForClusterRequest)
+def get_cluster_snippet_data(req: GetSnippetsForClusterRequest):
     neo4j = get_neo4j_service_dao()
-    cluster_data_result = neo4j.get_cluster_data(
-        req.clustered_nodes,
+    cluster_snippets_result = neo4j.get_snippets_for_cluster(
+        page=req.page,
+        limit=req.limit,
+        edges=req.edges,
     )
-    return SuccessResponse(cluster_data_result, status_code=200)
+    return SuccessResponse(cluster_snippets_result, status_code=200)
 
 
 # TODO: Is this in use by anything?

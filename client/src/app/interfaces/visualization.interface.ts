@@ -1,15 +1,50 @@
 import { IdType } from 'vis-network';
 
-import { GraphNode, VisEdge, VisNode, DuplicateVisNode, DuplicateVisEdge } from './neo4j.interface';
+import {
+    GraphNode,
+    VisEdge,
+    VisNode,
+    DuplicateVisNode,
+    DuplicateVisEdge
+} from './neo4j.interface';
+
+// Begin Misc. Interfaces
+export interface AssociationSnippet {
+    reference: Reference;
+    publication: Publication;
+}
+
+export interface ClusterData {
+    referenceTableRows: ReferenceTableRow[];
+    relationship: string;
+}
 
 export enum Direction {
     TO = 'Incoming',
     FROM = 'Outgoing',
 }
 
-export interface AssociationSnippet {
-    reference: Reference;
-    publication: Publication;
+export interface DuplicateEdgeConnectionData {
+    from: number;
+    to: number;
+    originalFrom: number;
+    originalTo: number;
+    fromLabel: string;
+    toLabel: string;
+    label: string;
+}
+
+export interface DuplicateNodeEdgePair {
+    node: DuplicateVisNode;
+    edge: DuplicateVisEdge;
+}
+
+export interface EdgeConnectionData {
+    from: number;
+    to: number;
+    fromLabel: string;
+    toLabel: string;
+    label: string;
 }
 
 export interface Publication extends GraphNode {
@@ -30,44 +65,70 @@ export interface Reference extends GraphNode {
     };
 }
 
-export interface ClusterData {
-    referenceTableRows: ReferenceTableRow[];
-    relationship: string;
+export interface ReferenceTablePair {
+    node: {
+        id: string;
+        displayName: string;
+    };
+    edge: {
+        originalFrom: number;
+        originalTo: number;
+        label: string;
+    };
 }
 
-export interface ClusteredNode {
-    nodeId: number;
-    edges: DuplicateVisEdge[];
+export interface ReferenceTableRow {
+    nodeId: string;
+    nodeDisplayName: string;
+    snippetCount: number;
 }
+
+export interface SettingsFormControl {
+    value: any;
+    valid: boolean;
+}
+
+export interface SettingsFormValues {
+    maxClusterShownRows: SettingsFormControl;
+    [key: string]: SettingsFormControl; // Could be any number of node entity checkboxes
+}
+
+export interface SidenavClusterEntity {
+    queryData: DuplicateEdgeConnectionData[];
+    snippetData: SidenavSnippetData[];
+    totalResults: number;
+}
+
+export interface SidenavEdgeEntity {
+    queryData: EdgeConnectionData;
+    snippetData: SidenavSnippetData;
+    totalResults: number;
+}
+
+export interface SidenavNodeEntity {
+    data: VisNode;
+    edges: VisEdge[];
+}
+
+export interface NodeDisplayInfo {
+    primaryLabel: string;
+    displayName: string;
+}
+
+export interface SidenavSnippetData {
+    to: NodeDisplayInfo;
+    from: NodeDisplayInfo;
+    association: string;
+    snippets: AssociationSnippet[];
+}
+
+// End Misc. Interfaces
+
+// Begin Request Interfaces
 
 export interface ExpandNodeRequest {
     nodeId: number;
     filterLabels: string[];
-}
-
-export interface ExpandNodeResult {
-    expandedNode: number;
-    nodes: VisNode[];
-    edges: VisEdge[];
-}
-
-export interface GetClusterGraphDataResult {
-    results: {
-        // Node ID
-        [key: number]: {
-            // Edge label : Snippet count
-            [key: string]: number
-        }
-    };
-}
-
-export interface GetClusterSnippetDataResult {
-    results: GetSnippetsResult[];
-}
-
-export interface GetClusterDataResult {
-    graphData: GetClusterGraphDataResult;
-    snippetData: GetClusterSnippetDataResult;
 }
 
 export interface GroupRequest {
@@ -76,8 +137,46 @@ export interface GroupRequest {
     direction: Direction;
 }
 
-export interface GetLabelsResult {
-    labels: Set<string>;
+export interface NewClusterSnippetsPageRequest {
+    queryData: DuplicateEdgeConnectionData[];
+    page: number;
+    limit: number;
+}
+
+export interface NewEdgeSnippetsPageRequest {
+    queryData: EdgeConnectionData;
+    page: number;
+    limit: number;
+}
+
+export interface ReferenceTableDataRequest {
+    nodeEdgePairs: ReferenceTablePair[];
+}
+
+// End Request Interfaces
+
+// Begin Response Interfaces
+
+export interface ExpandNodeResult {
+    expandedNode: number;
+    nodes: VisNode[];
+    edges: VisEdge[];
+}
+
+export interface GetEdgeSnippetsResult {
+    queryData: EdgeConnectionData;
+    snippetData: GetSnippetsResult;
+    totalResults: number;
+}
+
+export interface GetClusterSnippetsResult {
+    queryData: DuplicateEdgeConnectionData[];
+    snippetData: GetSnippetsResult[];
+    totalResults: number;
+}
+
+export interface GetReferenceTableDataResult {
+    referenceTableRows: ReferenceTableRow[];
 }
 
 export interface GetSnippetsResult {
@@ -87,53 +186,4 @@ export interface GetSnippetsResult {
     association: string;
 }
 
-export interface EdgeSnippetCount {
-    edge: VisEdge;
-    count: number;
-}
-
-export interface GetSnippetCountsFromEdgesResult {
-    edgeSnippetCounts: EdgeSnippetCount[];
-}
-
-export interface NodeEdgePair {
-    node: VisNode;
-    edge: VisEdge;
-}
-
-export interface DuplicateNodeEdgePair {
-    node: DuplicateVisNode;
-    edge: DuplicateVisEdge;
-}
-
-export interface ReferenceTableRow {
-    nodeId: string;
-    nodeDisplayName: string;
-    snippetCount: number;
-    edge: VisEdge;
-}
-
-export interface GetReferenceTableDataResult {
-    referenceTableRows: ReferenceTableRow[];
-}
-
-
-export interface SidenavSnippetData {
-    to: VisNode;
-    from: VisNode;
-    association: string;
-    snippets: AssociationSnippet[];
-}
-
-export interface SidenavNodeEntity {
-    data: VisNode;
-    edges: VisEdge[];
-}
-
-export interface SidenavEdgeEntity {
-    data: SidenavSnippetData;
-}
-
-export interface SidenavClusterEntity {
-    data: SidenavSnippetData[];
-}
+// End Response Interfaces

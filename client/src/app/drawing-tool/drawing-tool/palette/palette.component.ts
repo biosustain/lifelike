@@ -23,8 +23,6 @@ export class PaletteComponent implements OnInit {
   @Output() undo: EventEmitter<any> = new EventEmitter();
   @Output() redo: EventEmitter<any> = new EventEmitter();
 
-  paletteMode = 1;
-
   /** Build the palette ui with node templates defined */
   nodeTemplates = annotationTypes;
 
@@ -39,33 +37,5 @@ export class PaletteComponent implements OnInit {
   }
   _redo() {
     if (this.redoStack.length) { this.redo.emit(); }
-  }
-
-  changeSize() {
-    switch (this.paletteMode) {
-      case 0:
-        $('#palette-panel').animate({
-          height: '20rem'
-        }, 500, () => {
-          this.paletteMode = 1;
-        });
-        break;
-      case 1:
-        $('#palette-panel').animate({
-          height: '36rem'
-        }, 500, () => {
-          this.paletteMode = 2;
-        });
-        break;
-      case 2:
-        $('#palette-panel').animate({
-          height: '52px'
-        }, 500, () => {
-          this.paletteMode = 0;
-        });
-        break;
-      default:
-        break;
-    }
   }
 }
