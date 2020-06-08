@@ -22,3 +22,15 @@ class AnnotationStyle(RDBMSBase):
     style_border = db.Column(db.String(8), nullable=True)
     style_background = db.Column(db.String(8), nullable=True)
     style_color = db.Column(db.String(8), nullable=True)
+
+    def get_as_json(self):
+        return {
+            'label': self.label,
+            'color': self.color,
+            'icon_code': self.icon_code,
+            'style': {
+                'border': self.style_border,
+                'background': self.style_background,
+                'color': self.style_color
+            }
+        }
