@@ -20,7 +20,7 @@ export class UploadProjectDialogComponent {
 
     payload: File[];
     pickedFileName: string;
-    directoryId: number = 1; // TODO: Create a directory GUI here - LL-415
+    directoryId = 1; // TODO: Create a directory GUI here - LL-415
 
     form: FormGroup = new FormGroup({
         label: new FormControl('', Validators.required),
