@@ -1,25 +1,28 @@
-import { Component, OnInit } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { MatDialog, MatDialogRef } from '@angular/material';
 import { ActivatedRoute } from '@angular/router';
 
-import { EMPTY as empty } from 'rxjs';
+import { EMPTY as empty, Subject, merge, Subscription, of } from 'rxjs';
 import { filter, take, switchMap, map, first } from 'rxjs/operators';
 
 import { DataSet } from 'vis-network';
 
+import { isArray, isNullOrUndefined } from 'util';
+
 import {
-    ClusteredNode,
-    DuplicateVisEdge,
-    GetClusterDataResult,
-    GetSnippetsResult,
+    ExpandNodeResult,
+    ExpandNodeRequest,
+    GetEdgeSnippetsResult,
+    GetClusterSnippetsResult,
     GraphNode,
     GraphRelationship,
     Neo4jResults,
     Neo4jGraphConfig,
+    NewClusterSnippetsPageRequest,
+    NewEdgeSnippetsPageRequest,
     VisNode,
     VisEdge,
-    ExpandNodeResult,
-    ExpandNodeRequest,
 } from 'app/interfaces';
 import {
     NODE_EXPANSION_LIMIT,
@@ -37,19 +40,26 @@ import { VisualizationService } from '../../services/visualization.service';
     templateUrl: './visualization.component.html',
     styleUrls: ['./visualization.component.scss'],
 })
-export class VisualizationComponent implements OnInit {
+export class VisualizationComponent implements OnInit, OnDestroy {
 
     // Shows/Hide the component
     hideDisplay = false;
 
     networkGraphData: Neo4jResults;
     networkGraphConfig: Neo4jGraphConfig;
-    expandNodeResult: ExpandNodeResult;
-    getSnippetsResult: GetSnippetsResult;
-    getClusterDataResult: GetClusterDataResult;
     nodes: DataSet<VisNode | GraphNode>;
     edges: DataSet<VisEdge | GraphRelationship>;
-    duplicatedEdges = new Set<number>();
+
+    expandNodeResult: ExpandNodeResult;
+    getEdgeSnippetsResult: GetEdgeSnippetsResult;
+    getClusterSnippetsResult: GetClusterSnippetsResult;
+    getSnippetsError: HttpErrorResponse;
+
+    getEdgeSnippetsSubject: Subject<NewEdgeSnippetsPageRequest>;
+    getClusterSnippetsSubject: Subject<NewClusterSnippetsPageRequest>;
+    getSnippetsSubscription: Subscription;
+
+    nodeSelectedSubject: Subject<boolean>;
 
     // TODO: Will we need to have a legend for each database? i.e. the literature
     // data, biocyc, etc...
@@ -69,6 +79,52 @@ export class VisualizationComponent implements OnInit {
         private visService: VisualizationService,
     ) {
         this.legend = new Map<string, string[]>();
+
+        this.getClusterSnippetsSubject = new Subject<NewClusterSnippetsPageRequest>();
+        this.getEdgeSnippetsSubject = new Subject<NewEdgeSnippetsPageRequest>();
+        this.nodeSelectedSubject = new Subject<boolean>();
+
+        // We don't want to kill the subscription if an error is returned! This is the default behavior for
+        // subscriptions.
+        this.getSnippetsSubscription = merge(
+            // Merge the streams, so we can cancel one if the other emits; We always take the most recent
+            // emission betweent the streams.
+            this.getClusterSnippetsSubject,
+            this.getEdgeSnippetsSubject,
+            this.nodeSelectedSubject,
+        ).pipe(
+            switchMap((request: NewClusterSnippetsPageRequest | NewEdgeSnippetsPageRequest | boolean) => {
+                if (typeof request === 'boolean') {
+                    // We don't currently need to do anything if the request was for node data
+                    return of(request);
+                } else if (isArray(request.queryData)) {
+                    // If queryData is an array then we are getting snippets for a cluster
+                    return this.visService.getSnippetsForCluster(request as NewClusterSnippetsPageRequest);
+                } else {
+                    return this.visService.getSnippetsForEdge(request as NewEdgeSnippetsPageRequest);
+                }
+            }),
+        ).subscribe(
+            // resp might be any of GetClusterSnippetsResult | GetEdgeSnippetsResult | boolean | HttpErrorResponse
+            (resp: any) => {
+                if (typeof resp === 'boolean') {
+                    // We don't currently need to do anything if the request was for node data
+                    return;
+                } else if (!isNullOrUndefined(resp.error)) {
+                    // Response was an error
+                    this.getSnippetsError = resp;
+                    this.getClusterSnippetsResult = null;
+                    this.getEdgeSnippetsResult = null;
+                } else if (isArray(resp.snippetData)) {
+                    // If snippetData is an array then we are getting snippets for a cluster
+                    this.getClusterSnippetsResult = resp as GetClusterSnippetsResult;
+                    this.getSnippetsError = null;
+                } else {
+                    this.getEdgeSnippetsResult = resp as GetEdgeSnippetsResult;
+                    this.getSnippetsError = null;
+                }
+            },
+        );
     }
 
     ngOnInit() {
@@ -102,7 +158,8 @@ export class VisualizationComponent implements OnInit {
             }
         });
 
-        this.getSnippetsResult = null;
+        this.getClusterSnippetsResult = null;
+        this.getEdgeSnippetsResult = null;
 
         this.networkGraphConfig = {
             interaction: {
@@ -135,6 +192,12 @@ export class VisualizationComponent implements OnInit {
                 // TODO: Investigate the 'scaling' property for dynamic resizing of 'box' shape nodes
             },
         };
+    }
+
+    ngOnDestroy() {
+        this.getClusterSnippetsSubject.complete();
+        this.getEdgeSnippetsSubject.complete();
+        this.getSnippetsSubscription.unsubscribe();
     }
 
     openAutoClusterDialog(expandResult: ExpandNodeResult): void {
@@ -261,7 +324,8 @@ export class VisualizationComponent implements OnInit {
         this.visService.expandNode(nodeId, filterLabels, NODE_EXPANSION_LIMIT).subscribe((r: Neo4jResults) => {
             const nodeRef = this.nodes.get(nodeId) as VisNode;
             const visJSDataFormat = this.convertToVisJSFormat(r);
-            let { edges, nodes } = visJSDataFormat;
+            let { nodes } = visJSDataFormat;
+            const { edges } = visJSDataFormat;
 
             // If the expanded node has no connecting relationships, notify the user
             if (edges.length === 0) {
@@ -276,7 +340,6 @@ export class VisualizationComponent implements OnInit {
                 }
                 return n;
             });
-            edges = edges.filter(candidateEdge => !this.duplicatedEdges.has(candidateEdge.id));
 
             // If the user didn't manually disable the dialog, or if the expanded node has more relationships than the
             // recommendation, re-open the dialog
@@ -296,16 +359,8 @@ export class VisualizationComponent implements OnInit {
         });
     }
 
-    getSnippetsFromEdge(edge: VisEdge) {
-        this.visService.getSnippetsFromEdge(edge).subscribe((result) => {
-            this.getSnippetsResult = result;
-        });
-    }
-
-    getSnippetsFromDuplicateEdge(edge: DuplicateVisEdge) {
-        this.visService.getSnippetsFromDuplicateEdge(edge).subscribe((result) => {
-            this.getSnippetsResult = result;
-        });
+    getSnippetsForEdge(request: NewEdgeSnippetsPageRequest) {
+        this.getEdgeSnippetsSubject.next(request);
     }
 
     // TODO: There is a bug here: If the user opens a cluster after clicking it
@@ -313,10 +368,12 @@ export class VisualizationComponent implements OnInit {
     // will error because the returned duplicate node ids will not exist on the
     // graph anymore. This can be fixed by creating some kind of interrupt event
     // on this subscription. Could use rxjs 'race' + an output from the child here.
-    getClusterData(clusteredNodes: ClusteredNode[]) {
-        this.visService.getClusterData(clusteredNodes).subscribe((result) => {
-            this.getClusterDataResult = result;
-        });
+    getSnippetsForCluster(request: NewClusterSnippetsPageRequest) {
+        this.getClusterSnippetsSubject.next(request);
+    }
+
+    nodeSelectedCallback() {
+        this.nodeSelectedSubject.next(true);
     }
 
     updateCanvasWithSingleNode(data: GraphNode) {
@@ -328,13 +385,5 @@ export class VisualizationComponent implements OnInit {
 
     hideCanvas(state: boolean) {
         this.hideDisplay = state;
-    }
-
-    addDuplicatedEdge(edge: number) {
-        this.duplicatedEdges.add(edge);
-    }
-
-    removeDuplicatedEdge(edge: number) {
-        this.duplicatedEdges.delete(edge);
     }
 }

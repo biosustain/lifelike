@@ -25,7 +25,7 @@
                 <mat-option
                     *ngFor="let type of nodeTemplates"
                     [value]='type.label'>
-                    {{type.label | titlecase}}
+                    {{type.label | nodeTextStyle}}
                 </mat-option>
             </mat-select>
         </mat-form-field>
@@ -55,12 +55,9 @@
             </textarea>
         </mat-form-field>
 
-        <div *ngIf='graphData?.data?.search?.length'>
-            <h4 class='blue'>Search</h4>
-            <div class="flex pointer items-center dim" *ngFor='let h of graphData?.data?.search' (click)='goToLink(h?.url)'>
-                <mat-icon class='dib' matSuffix>link</mat-icon><span class='dib f6'>{{h.domain | titlecase}}</span>
-            </div>
-        </div>
+        <app-search-links
+            [graphData]='graphData'>
+        </app-search-links>
 
         <button *ngIf='graphData?.data?.source' mat-button color="primary" (click)='goToSource()'>
             Source

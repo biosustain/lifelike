@@ -1,17 +1,25 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 
-import { SidenavClusterEntity } from 'app/interfaces';
+import { NewClusterSnippetsPageRequest, SidenavClusterEntity } from 'app/interfaces';
 
 @Component({
     selector: 'app-sidenav-cluster-view',
     templateUrl: './sidenav-cluster-view.component.html',
     styleUrls: ['./sidenav-cluster-view.component.scss']
 })
-export class SidenavClusterViewComponent implements OnInit {
+export class SidenavClusterViewComponent {
+    @Output() requestNewPageEmitter: EventEmitter<NewClusterSnippetsPageRequest>;
     @Input() clusterEntity: SidenavClusterEntity;
+    @Input() isNewEntity: boolean;
+    @Input() error: HttpErrorResponse;
     @Input() legend: Map<string, string[]>;
 
-    constructor() {}
+    constructor() {
+        this.requestNewPageEmitter = new EventEmitter<NewClusterSnippetsPageRequest>();
+    }
 
-    ngOnInit() {}
+    requestPage(request: NewClusterSnippetsPageRequest) {
+        this.requestNewPageEmitter.emit(request);
+    }
 }

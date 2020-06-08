@@ -41,23 +41,36 @@ COMMON_WORDS = set.union(*[
     COMMON_MISC_WORDS,
 ])
 
-MISC_SYMBOLS_AND_CHARS = {'(c)'}
+# utf-32 unicode
+MISC_SYMBOLS_AND_CHARS = {169, 8230, 174}
 
 TYPO_SYNONYMS = {
     'e coli': ['E. coli', 'Escherichia coli', 'Enterococcus coli'],
     'E.coli': ['E. coli', 'Escherichia coli', 'Enterococcus coli'],
     'Multiple Mitochondrial Dysfunctions Syndromes': ['Multiple Mitochondrial Dysfunctions Syndrome'],  # noqa
+    'S-Phase kinase associated protein 2': ['S-Phase kinase-associated protein 2'],
 }
+
+
+class EntityType(Enum):
+    Chemical = 'Chemical'
+    Compound = 'Compound'
+    Disease = 'Disease'
+    Gene = 'Gene'
+    Protein = 'Protein'
+    Species = 'Species'
+    Phenotype = 'Phenotype'
+
 
 ENTITY_TYPE_PRECEDENCE = {
     # larger value takes precedence
-    'Chemicals': 2,
-    'Compounds': 2,
-    'Diseases': 1,
-    'Genes': 5,
-    'Proteins': 3,
-    'Species': 6,
-    'Phenotypes': 4,
+    EntityType.Chemical.value: 3,
+    EntityType.Compound.value: 2,
+    EntityType.Disease.value: 1,
+    EntityType.Gene.value: 6,
+    EntityType.Protein.value: 5,
+    EntityType.Species.value: 7,
+    EntityType.Phenotype.value: 4,
 }
 
 HOMO_SAPIENS_TAX_ID = '9606'
@@ -72,33 +85,23 @@ class OrganismCategory(Enum):
 
 
 class EntityColor(Enum):
-    Chemicals = ANNOTATION_STYLES_DICT['chemical']['color']
-    Compounds = ANNOTATION_STYLES_DICT['compound']['color']
-    Diseases = ANNOTATION_STYLES_DICT['disease']['color']
-    Genes = ANNOTATION_STYLES_DICT['gene']['color']
-    Proteins = ANNOTATION_STYLES_DICT['protein']['color']
+    Chemical = ANNOTATION_STYLES_DICT['chemical']['color']
+    Compound = ANNOTATION_STYLES_DICT['compound']['color']
+    Disease = ANNOTATION_STYLES_DICT['disease']['color']
+    Gene = ANNOTATION_STYLES_DICT['gene']['color']
+    Protein = ANNOTATION_STYLES_DICT['protein']['color']
     Species = ANNOTATION_STYLES_DICT['species']['color']
-    Phenotypes = ANNOTATION_STYLES_DICT['phenotype']['color']
+    Phenotype = ANNOTATION_STYLES_DICT['phenotype']['color']
 
 
 class EntityIdStr(Enum):
-    Chemicals = 'chemical_id'
-    Compounds = 'compound_id'
-    Diseases = 'disease_id'
-    Genes = 'gene_id'
-    Proteins = 'protein_id'
+    Chemical = 'chemical_id'
+    Compound = 'compound_id'
+    Disease = 'disease_id'
+    Gene = 'gene_id'
+    Protein = 'protein_id'
     Species = 'tax_id'
-    Phenotypes = 'phenotype_id'
-
-
-class EntityType(Enum):
-    Chemicals = 'Chemicals'
-    Compounds = 'Compounds'
-    Diseases = 'Diseases'
-    Genes = 'Genes'
-    Proteins = 'Proteins'
-    Species = 'Species'
-    Phenotypes = 'Phenotypes'
+    Phenotype = 'phenotype_id'
 
 
 class DatabaseType(Enum):
@@ -121,7 +124,7 @@ ENTITY_HYPERLINKS = {
     DatabaseType.Mesh.value: 'https://www.ncbi.nlm.nih.gov/mesh/',
     DatabaseType.Uniprot.value: 'https://www.uniprot.org/uniprot/?sort=score&query=',
     DatabaseType.Ncbi.value: {
-        EntityType.Genes.value: 'https://www.ncbi.nlm.nih.gov/gene/',
+        EntityType.Gene.value: 'https://www.ncbi.nlm.nih.gov/gene/',
         EntityType.Species.value: 'https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=',
     },
     DatabaseType.Biocyc.value: 'https://biocyc.org/compound?orgid=META&id=',

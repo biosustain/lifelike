@@ -187,5 +187,6 @@ export {
   Location,
   GraphData,
   GraphSelectionData,
-  LaunchApp
+  LaunchApp,
+  Hyperlink
 };

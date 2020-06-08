@@ -18,6 +18,7 @@ class Files(RDBMSBase):  # type: ignore
     id = db.Column(db.Integer(), primary_key=True, autoincrement=True)
     file_id = db.Column(db.String(36), unique=True, nullable=False)
     filename = db.Column(db.String(200), nullable=False)
+    description = db.Column(db.String(2048), nullable=True)
     content_id = db.Column(db.Integer,
                            db.ForeignKey('files_content.id', ondelete='CASCADE'),
                            nullable=False)

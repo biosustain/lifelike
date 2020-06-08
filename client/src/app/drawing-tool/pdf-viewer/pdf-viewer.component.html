@@ -13,14 +13,18 @@
       <button mat-button (click)="zoomOut()" [disabled]="!pdfViewerReady" matTooltip="Zoom out">
         <mat-icon>zoom_out</mat-icon>
       </button>
+      <mat-form-field>
+          <mat-label>Search</mat-label>
+          <input #queryInp matInput (input)="searchQueryChanged($event.target.value)" (keyup.enter)="searchQueryChanged(queryInp.value)" placeholder="Search" value="">
+        </mat-form-field>
     </div>
     <div fxLayout="row" fxLayoutGap="0.25rem">
       <div class="relative">
-        <button mat-button
-                (click)="toggleFilterPopup()"
-                [disabled]="!pdfViewerReady"
-                [matTooltip]="!filterPopupOpen ? 'Choose which annotations to hide' : null"
-                matTooltipPosition="left">
+          <button mat-button
+                  (click)="toggleFilterPopup()"
+                  [disabled]="!pdfViewerReady"
+                  [matTooltip]="!filterPopupOpen ? 'Choose which annotations to hide' : null"
+                  matTooltipPosition="left">
           Filters<span [style.visibility]="entityTypeVisibilityChanged ? 'visible' : 'hidden'">*</span>
           <mat-icon *ngIf="!filterPopupOpen">expand_more</mat-icon>
           <mat-icon *ngIf="filterPopupOpen">expand_less</mat-icon>
@@ -40,8 +44,8 @@
                             (change)="changeEntityTypeVisibility(entityTypeEntry.type, $event)">
                 <span class="entity-type-legend" [ngStyle]="{background: entityTypeEntry.type.color}">
                 </span> {{entityTypeEntry.type.name}} <span *ngIf="!!entityTypeEntry.annotations.length">
-                ({{entityTypeEntry.annotations.length}})
-              </span>
+                  ({{entityTypeEntry.annotations.length}})
+                </span>
               </mat-checkbox>
             </div>
             <div class="mt2" fxLayout="column">
@@ -70,6 +74,7 @@
         [addedAnnotation]="addedAnnotation"
         [entityTypeVisibilityMap]="entityTypeVisibilityMap"
         [filterChanges]="filterChangeSubject"
+        [searchChanged]="searchChanged"
         (dropEvents)="drop($event)"
         (custom-annotation-created)="annotationCreated($event)"
         (loadCompleted)="loadCompleted($event)"

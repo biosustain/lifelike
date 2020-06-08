@@ -39,6 +39,8 @@ import { PdfViewerComponent } from './pdf-viewer/pdf-viewer.component';
 import { PdfViewerLibModule } from 'app/pdf-viewer/pdf-viewer-lib.module';
 import { FileBrowserModule } from '../file-browser/file-browser.module';
 import {NodeSearchComponent} from '../node-search/containers/node-search.component';
+import { EditProjectDialogComponent } from './project-list/edit-project-dialog/edit-project-dialog.component';
+import { SearchLinksComponent } from './drawing-tool/info-panel/search-links/search-links.component';
 
 export const routes = [
   {
@@ -75,13 +77,16 @@ export const routes = [
     SplitterComponent,
     MapPreviewComponent,
     MapListComponent,
-    ExportModalComponent
+    ExportModalComponent,
+    EditProjectDialogComponent,
+    SearchLinksComponent
   ],
   entryComponents: [
     CreateProjectDialogComponent,
     DeleteProjectDialogComponent,
     CopyProjectDialogComponent,
     UploadProjectDialogComponent,
+    EditProjectDialogComponent,
     MapListComponent,
     ProjectListViewComponent,
     PdfViewerComponent,

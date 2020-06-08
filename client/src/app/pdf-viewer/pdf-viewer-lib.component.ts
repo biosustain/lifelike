@@ -1,5 +1,6 @@
 import { AfterViewInit, Component, EventEmitter, HostListener, Input, NgZone, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
-import { Observable, Subject, Subscription } from 'rxjs';
+import { Observable, Subject, Subscription  } from 'rxjs';
+import { debounceTime } from 'rxjs/operators';
 import { Annotation, Location, Meta } from './annotation-type';
 import { PDFDocumentProxy, PDFProgressData, PDFSource } from './pdf-viewer/pdf-viewer.module';
 import { PdfViewerComponent } from './pdf-viewer/pdf-viewer.component';
@@ -7,6 +8,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { PDFPageViewport } from 'pdfjs-dist';
 import { AnnotationPanelComponent } from './annotation-panel/annotation-panel.component';
 import { annotationTypes } from 'app/shared/annotation-styles';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 declare var jQuery: any;
 
@@ -18,6 +20,8 @@ declare var jQuery: any;
 })
 export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
 
+  @Input() searchChanged: Subject<string>;
+  private searchChangedSub: Subscription;
   @Input() pdfSrc: string | PDFSource | ArrayBuffer;
   @Input() annotations: Annotation[];
   @Input() dropAreaIdentifier: string;
@@ -76,29 +80,41 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
   selectedText: string[];
   selectedTextCoords: any[];
   currentPage: number;
-  mouseDownClientX: number;
-  mouseDownClientY: number;
-  dragThreshold = 5;
   isSelectionLink = false;
   selectedElements: HTMLElement[] = [];
 
   opacity = 0.3;
 
+  dragAndDropOriginCoord;
+  dragAndDropOriginHoverCount;
+  dragAndDropDestinationCoord;
+  dragAndDropDestinationHoverCount;
+
   @ViewChild(PdfViewerComponent, {static: false})
   private pdfComponent: PdfViewerComponent;
 
-  constructor(private dialog: MatDialog, private zone: NgZone) {
+  constructor(private dialog: MatDialog, private zone: NgZone, private snackBar: MatSnackBar) {
 
-    (window as any).deleteFrictionless = this.deleteFrictionless.bind(this);
     (window as any).openAnnotationPanel = () => {
       (window as any).pdfViewerRef.zone.run(() => {
         (window as any).pdfViewerRef.componentFn();
       });
     };
-    (window as any).openLinkPanel = this.openAddLinkPanel.bind(this);
+    (window as any).openLinkPanel = () => {
+      (window as any).pdfViewerRef.zone.run(() => {
+        (window as any).pdfViewerRef.openLinkPanel();
+      });
+    }
+    (window as any).copySelectedText = () => {
+      (window as any).pdfViewerRef.zone.run(() => {
+        (window as any).pdfViewerRef.copySelectedText();
+      });
+    }
     (window as any).pdfViewerRef = {
       zone: this.zone,
       componentFn: () => this.openAnnotationPanel(),
+      openLinkPanel: () => this.openAddLinkPanel(),
+      copySelectedText: () => this.copySelectedText(),
       component: this
     };
   }
@@ -125,6 +141,11 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
     if (this.filterChanges) {
       this.filterChangeSubscription = this.filterChanges.subscribe(() => this.renderFilterSettings());
     }
+
+    this.searchChangedSub = this.searchChanged.pipe(
+      debounceTime(250)).subscribe((query) => {
+      this.searchQueryChanged(query);
+    });
   }
 
   ngAfterViewInit(): void {
@@ -135,7 +156,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
       drop(event, ui) {
         if (that.isSelectionLink) {
           const meta: Meta = JSON.parse(ui.draggable[0].getAttribute('meta'));
-          meta.type = 'Links';
+          meta.type = 'Link';
           ui.draggable[0].setAttribute('meta', JSON.stringify(meta));
         }
 
@@ -156,20 +177,22 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
           clone.removeClass('highlight');
         }
         that.deleteFrictionless();
+        that.resetSelection();
       }
     });
 
-    this.pdfComponent.pdfViewerContainer.nativeElement.addEventListener('mousedown', this.mouseDown);
-    this.pdfComponent.pdfViewerContainer.nativeElement.addEventListener('mouseup', this.mouseUp);
   }
 
   ngOnDestroy(): void {
-    this.pdfComponent.pdfViewerContainer.nativeElement.removeEventListener('mousedown', this.mouseDown);
-    this.pdfComponent.pdfViewerContainer.nativeElement.removeEventListener('mouseup', this.mouseUp);
 
     if (this.filterChangeSubscription) {
       this.filterChangeSubscription.unsubscribe();
     }
+
+    if(this.searchChangedSub) {
+      this.searchChangedSub.unsubscribe();
+    }
+
   }
 
   renderFilterSettings() {
@@ -289,20 +312,10 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
 
   normalizeOpacityLevel(an: Annotation) {
     const t = an.meta.type.toLowerCase();
-    if (t.indexOf('chemic') > -1 || t.indexOf('disea') > -1) {
-      return this.opacity + 0.1;
-    }
     return this.opacity;
   }
 
   normalizeBackgroundColor(an: Annotation): string {
-    const t = an.meta.type.toLowerCase();
-    if (t.indexOf('chemic') > -1) {
-      return '#9cda94';
-    }
-    if (t.indexOf('disea') > -1) {
-      return '#f2ce97';
-    }
     return an.meta.color;
   }
 
@@ -345,19 +358,39 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
     }
   }
 
-  mouseDown = event => {
-    this.mouseDownClientX = event.clientX;
-    this.mouseDownClientY = event.clientY;
-  };
-
-  mouseUp = event => {
-    if (this.selectedText && this.selectedText.length
-      && Math.abs(this.mouseDownClientX - event.clientX) < this.dragThreshold
-      && Math.abs(this.mouseDownClientY - event.clientY) < this.dragThreshold) {
-      this.deleteFrictionless();
-      return;
+  @HostListener('window:mousedown', ['$event'])
+  mouseDown(event: MouseEvent) {
+    let target = event.target as any;
+    let parent = target.closest('.textLayer');
+    if (parent) {
+      // coming from pdf-viewer
+      // prepare it for drag and drop
+      this.dragAndDropOriginCoord = {
+        pageX: event.pageX,
+        pageY: event.pageY,
+        clientX: event.clientX,
+        clientY: event.clientY
+      };
+     this.dragAndDropOriginHoverCount = jQuery('.textLayer > span:hover').length || 0;
     }
-    const i = 0;
+  }
+
+  @HostListener('window:mouseup', ['$event'])
+  mouseUp = event => {
+    const targetTagName = event.target.tagName;
+    if(targetTagName === 'INPUT') {
+      return false;
+    }
+
+    const isItToolTip = event.target.closest('.qtip-content');
+    this.dragAndDropDestinationHoverCount = jQuery('.textLayer > span:hover').length || 0;
+    const spanCheck = this.dragAndDropDestinationHoverCount !== 1 || this.dragAndDropOriginHoverCount !==1;
+    if(spanCheck && !isItToolTip) {
+      this.dragAndDropOriginHoverCount = 0;
+      this.dragAndDropDestinationHoverCount = 0;
+      this.deleteFrictionless();
+      this.clearSelection();
+    }
     const selection = window.getSelection() as any;
     const baseNode = selection.baseNode;
     const parent = baseNode && baseNode.parentNode as any;
@@ -375,28 +408,59 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
       const width = firstRect.width;
       if (width < 1) {
         this.clearSelection();
+        this.deleteFrictionless();
         return false;
       }
     }
     this.deleteFrictionless();
     this.allText = selection.toString();
     const documentFragment = selection.getRangeAt(0).cloneContents();
-    this.selectedText = Array.from(documentFragment.childNodes).map((node: any) => node.textContent);
+    let children = documentFragment.childNodes;
+    this.dragAndDropDestinationCoord = {
+      clientX: event.clientX,
+      clientY: event.clientY,
+      pageX: event.pageX,
+      pageY: event.pageY
+    };
+    this.selectedText = Array.from(children).map((node: any) => node.textContent);
+    //this.selectedText = Array.from(documentFragment.childNodes).map((node: any) => node.textContent);
     this.currentPage = parseInt(parent.closest('.page').getAttribute('data-page-number'), 10);
     const pdfPageView = this.pageRef[this.currentPage];
     const viewport = pdfPageView.viewport;
     const pageElement = pdfPageView.div;
     const pageRect = pdfPageView.canvas.getClientRects()[0];
+    const originConverted = viewport.convertToPdfPoint(this.dragAndDropOriginCoord.clientX - pageRect.left, this.dragAndDropOriginCoord.clientY - pageRect.top);
+    const destinationConverted = viewport.convertToPdfPoint(this.dragAndDropDestinationCoord.clientX - pageRect.left , this.dragAndDropDestinationCoord.clientY - pageRect.top); 
+    const mouseMoveRectangular = viewport.convertToViewportRectangle([].concat(originConverted).concat(destinationConverted));
+    const mouseRectTop = Math.min(mouseMoveRectangular[1], mouseMoveRectangular[3]);
+    const mouseRectHeight = Math.abs(mouseMoveRectangular[1] - mouseMoveRectangular[3]);
+
 
     this.selectedTextCoords = [];
     const that = this;
-    const selected = jQuery.map(selectedRects, r => {
+    let avgHeight = 0;
+    let rectHeights = [];
+    jQuery.each(selectedRects, (idx,r) => {
 
       const rect = viewport.convertToPdfPoint(r.left - pageRect.left, r.top - pageRect.top)
         .concat(viewport.convertToPdfPoint(r.right - pageRect.left, r.bottom - pageRect.top));
       that.selectedTextCoords.push(rect);
       const bounds = viewport.convertToViewportRectangle(rect);
-      // if (i % 2 == 0) { // verify if not odd (must be pair)
+      let left = Math.min(bounds[0], bounds[2]);
+      let top = Math.min(bounds[1], bounds[3]);
+      let width = Math.abs(bounds[0] - bounds[2]);
+      let height = Math.abs(bounds[1] - bounds[3]);
+      rectHeights.push(height);
+      avgHeight = rectHeights.reduce((a, b) => a + b) / rectHeights.length;
+      if ((avgHeight * 2) < height) {
+        // rejected by line average
+        rectHeights.pop();
+        return; //continue
+      }
+
+      const mouseRecTopBorder = mouseRectTop - Number(avgHeight * 1.2);
+      const mouseRectBottomBorder = mouseRectTop + mouseRectHeight + Number(avgHeight * 1.2);
+
       const el = document.createElement('div');
       const meta: Meta = {
         allText: that.allText,
@@ -411,10 +475,14 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
       el.setAttribute('meta', JSON.stringify(meta));
       el.setAttribute('class', 'frictionless-annotation');
       el.setAttribute('style', 'position: absolute; background-color: rgba(255, 255, 51, 0.3);' +
-        'left:' + Math.min(bounds[0], bounds[2]) + 'px; top:' + (Math.min(bounds[1], bounds[3]) + 2) + 'px;' +
-        'width:' + Math.abs(bounds[0] - bounds[2]) + 'px; height:' + Math.abs(bounds[1] - bounds[3]) + 'px;');
-      el.setAttribute('id', 'newElement' + i);
-      pageElement.appendChild(el);
+        'left:' + left + 'px; top:' + (top + 2) + 'px;' +
+        'width:' + width + 'px; height:' + height + 'px;');
+      el.setAttribute('id', 'newElement' + idx);
+
+      if(mouseRecTopBorder <= top && mouseRectBottomBorder >= top) {
+        pageElement.appendChild(el);
+        this.selectedElements.push(el);
+      }
 
       jQuery(el).css('cursor', 'move');
       jQuery(el).draggable({
@@ -429,19 +497,29 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
           jQuery(ui.helper).css('width', '');
           jQuery(ui.helper).css('height', '');
           if (that.isSelectionLink) {
-            jQuery(ui.helper).html(`<span class="fa fa-file" style="color: ${annotationTypes.find(type => type.label === 'link').color}"></span>`);
+            jQuery(ui.helper).css('border', 'none');
+            jQuery(ui.helper).css('background-color', 'transparent');
+            jQuery(ui.helper).html(`
+              <span class="fa" style="color: ${annotationTypes.find(type => type.label === 'link').color}; font-size: 30px">
+                ${annotationTypes.find(type => type.label === 'link').iconCode}
+              </span>
+            `);
+            jQuery(el).draggable('instance').offset.click = {
+              left: ui.helper.width(),
+              top: ui.helper.height()
+            };
           } else {
             jQuery(ui.helper).text(meta.allText);
-          }
+          };
         }
       });
       jQuery(el).draggable('enable');
 
-      this.selectedElements.push(el);
       (jQuery(el) as any).qtip(
         {
 
           content: `<img src="assets/images/annotate.png" onclick="openAnnotationPanel()">
+                <img src="assets/images/copy.png" onclick="copySelectedText()">
             <img src="assets/images/link.png" onclick="openLinkPanel()">`,
           position: {
             my: 'bottom center',
@@ -466,8 +544,6 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
           }
         }
       );
-      // }
-      // i++;
     });
 
     this.clearSelection();
@@ -476,6 +552,9 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
   deleteFrictionless() {
     jQuery('.frictionless-annotation').qtip('destroy');
     jQuery('.frictionless-annotation').remove();
+  }
+
+  resetSelection() {
     this.selectedText = [];
     this.selectedTextCoords = [];
     this.allText = '';
@@ -499,13 +578,21 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
       if (annotation) {
         this.annotationCreated.emit(annotation);
         this.deleteFrictionless();
+        this.resetSelection();
       }
     });
   }
 
   openAddLinkPanel() {
     this.isSelectionLink = true;
-    this.selectedElements.forEach(el => jQuery(el).css('border-bottom', '1px solid'));
+    // TODO: remove workaround and fix the issue with the selectedRects
+    // Currently selection.getRangeAt(0).getClientRects() gives duplicates
+    // for each selected line except the first and the last ones
+    this.selectedElements.forEach((el, index) => {
+      if (index === 0 || index === this.selectedElements.length - 1 || index % 2 !== 0) {
+        jQuery(el).css('border-bottom', '1px solid');
+      }
+    });
   }
 
   clearSelection() {
@@ -653,6 +740,9 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
       this.isLoadCompleted = true;
       setTimeout(() => {
         this.loadCompleted.emit(true);
+        const tagName = (this.pdfComponent as any).element.nativeElement.tagName.toLowerCase();
+        jQuery(tagName).css('height','100vh');
+        jQuery(tagName).css('display','block');
       }, 1000);
     }
     const pageNum = (e as any).pageNumber;
@@ -665,22 +755,35 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
       this.pdfQuery = newQuery;
       this.pdfComponent.pdfFindController.executeCommand('find', {
         query: this.pdfQuery,
-        highlightAll: true
+        highlightAll: true,
+        entireWord: true,
+        phraseSearch: true
       });
     } else {
       this.pdfComponent.pdfFindController.executeCommand('findagain', {
         query: this.pdfQuery,
-        highlightAll: true
+        highlightAll: true,
+        entireWord: true,
+        phraseSearch: true
       });
     }
   }
 
-  annotationListItemClick($event, ref, pageNumber: number) {
-    if (ref) {
-      ref.scrollIntoView();
-      return;
-    }
-    this.scrollToPage(Number(pageNumber));
+  copySelectedText() {
+    let listener = (e: ClipboardEvent) => {
+      let clipboard = e.clipboardData || window["clipboardData"];
+      clipboard.setData("text", this.allText);
+      e.preventDefault();
+    };
+
+    document.addEventListener("copy", listener, false)
+    document.execCommand("copy");
+    document.removeEventListener("copy", listener, false);
+
+    this.deleteFrictionless();
+
+    this.snackBar.open('It has been copied to clipboard', 'Close', {duration: 5000});
+  
   }
 
 }
