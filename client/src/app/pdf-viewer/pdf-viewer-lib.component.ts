@@ -312,20 +312,10 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
 
   normalizeOpacityLevel(an: Annotation) {
     const t = an.meta.type.toLowerCase();
-    if (t.indexOf('chemic') > -1 || t.indexOf('disea') > -1) {
-      return this.opacity + 0.1;
-    }
     return this.opacity;
   }
 
   normalizeBackgroundColor(an: Annotation): string {
-    const t = an.meta.type.toLowerCase();
-    if (t.indexOf('chemic') > -1) {
-      return '#9cda94';
-    }
-    if (t.indexOf('disea') > -1) {
-      return '#f2ce97';
-    }
     return an.meta.color;
   }
 
