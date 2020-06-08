@@ -15,15 +15,21 @@
     <mat-tab label="From URL">
       <div class="tab-content" fxLayout="column">
         <mat-form-field fxFlex>
-          <input matInput [formControl]="url" placeholder="Enter a URL">
-        </mat-form-field>
-        <mat-form-field fxFlex>
-          <input matInput [formControl]="filename" placeholder="Enter a filename">
+          <input matInput [formControl]="url" placeholder="Enter a URL" required>
         </mat-form-field>
       </div>
     </mat-tab>
 
   </mat-tab-group>
+
+  <div class="tab-content" fxLayout="column">
+    <mat-form-field fxFlex>
+      <input matInput [formControl]="filename" placeholder="Enter a filename" required>
+    </mat-form-field>
+    <mat-form-field fxFlex>
+      <textarea matInput [(ngModel)]="payload.description" placeholder="Enter a description" maxlength="2048"></textarea>
+    </mat-form-field>
+  </div>
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">
