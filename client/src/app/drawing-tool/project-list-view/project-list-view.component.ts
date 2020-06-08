@@ -42,16 +42,16 @@ import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { Progress, ProgressMode } from 'app/interfaces/common-dialog.interface';
 import { HttpEventType } from '@angular/common/http';
 import { EditProjectDialogComponent } from '../project-list/edit-project-dialog/edit-project-dialog.component';
+import { ClipboardService } from 'app/shared/services/clipboard.service';
 
 
 @Component({
   selector: 'app-project-list-view',
   templateUrl: './project-list-view.component.html',
-  styleUrls: ['./project-list-view.component.scss']
+  styleUrls: ['./project-list-view.component.scss'],
+  providers: [ClipboardService]
 })
 export class ProjectListViewComponent {
-  fullScreenmode = 'shrink';
-
   userRoles$: Observable<string[]>;
 
   uploadStarted = false;
@@ -102,6 +102,7 @@ export class ProjectListViewComponent {
     private snackBar: MatSnackBar,
     private progressDialog: ProgressDialog,
     private store: Store<State>,
+    private clipboard: ClipboardService
   ) {
     this.userId = this.authService.whoAmI();
     this.refresh();
@@ -414,29 +415,44 @@ export class ProjectListViewComponent {
    * Open project in drawing-tool view's canvas
    */
   goToProject() {
-    this.dataFlow.pushProject2Canvas(this.selectedProject);
     this.route.navigateByUrl(`dt/splitter/${this.selectedProject.hash_id}`);
   }
 
   handleAPI(evt: { action: string, project: Project }) {
 
     switch (evt.action) {
-      case 'pick':
-        this.pickProject(evt.project);
+      case 'edit':
+        this.goToProject();
+        break;
+      case 'settings':
+        this.editProject();
+        break;
+      case 'share':
+        // TODO implement by copying sharing link to clipboard
+        // and showing a snack bar
+        const source = '/dt/map/' + this.selectedProject.hash_id;
+        const hyperlink = window.location.host + source;
+        this.clipboard.writeToClipboard(hyperlink);
+        this.snackBar.open(`Link copied to clipboard`, null, {
+          duration: 2000,
+        });
         break;
       case 'delete':
         this.deleteProject(evt.project);
         break;
+      case 'pick':
+        this.pickProject(evt.project);
+        break;
       case 'copy':
-        this.copyProject(evt.project);
+        // TODO bring back
+        // this.copyProject(evt.project);
+        break;
+      case 'download':
+        this.downloadProject();
         break;
       default:
         break;
     }
-  }
-
-  toggleFullscreen(screenMode) {
-    this.fullScreenmode = screenMode;
   }
 
   goToSearch() {
