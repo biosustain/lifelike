@@ -162,9 +162,7 @@ def get_pdf(id):
             raise RecordNotFoundException('Requested PDF file not found.')
         else:
             if filename and filename != file.filename:
-                filename = secure_filename(filename)
-                if not filename.lower().endswith('.pdf'):
-                    filename += '.pdf'
+                filename = sanitize_filename(filename)
                 db.session.query(Files).filter(Files.file_id == id).update({
                     'filename': filename,
                 })
