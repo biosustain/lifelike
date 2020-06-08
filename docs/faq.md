@@ -41,12 +41,16 @@ docker-compose exec appserver flask init-neo4j
 **Note:** Do not run this command when connected to the production database.
 
 
-__(Optional)__
-To setup `node_modules` folder for local development, run the following command
+__(Optionals)__
+1. To setup `node_modules` folder for local development, run the following command
 ```
 yarn install --frozen-lockfile
 ```
 
+2. To seed the application with mock data, run the following command
+```
+docker-compose exec appserver flask seed
+```
 
 ## How do I add new packages to package.json?
 1. Run the following
