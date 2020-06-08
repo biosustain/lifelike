@@ -44,6 +44,8 @@ export interface VisEdge extends GraphRelationship {
   color: any;
 }
 
+// TODO: For DuplicateVisEdge, `to` and `from` are actually string types in the shape 'duplicateEdge:{hash}'.
+// We may want to update this interface so the type is reflected properly.
 export interface DuplicateVisEdge extends VisEdge {
     id: any;
     duplicateOf: number | null;
