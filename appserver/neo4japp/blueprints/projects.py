@@ -193,11 +193,12 @@ def add_directory(project_name: str = ''):
 
     data = request.get_json()
     dir_name = data['dirname']
+    parent_dir = data.get('parentDir', None)
 
     user = g.current_user
 
     yield user, projects
-    new_dir = proj_service.add_directory(projects, dir_name)
+    new_dir = proj_service.add_directory(projects, dir_name, parent_dir)
     yield jsonify(dict(results=new_dir.to_dict()))
 
 
