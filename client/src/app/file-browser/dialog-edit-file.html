@@ -1,0 +1,17 @@
+<h2 mat-dialog-title>Update file</h2>
+
+<mat-dialog-content>
+  <div class="tab-content" fxLayout="column">
+    <mat-form-field fxFlex>
+      <input matInput [formControl]="filename" placeholder="Enter a filename">
+    </mat-form-field>
+    <mat-form-field fxFlex>
+      <textarea matInput [formControl]="description" placeholder="Enter a description" maxlength="2048"></textarea>
+    </mat-form-field>
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button [mat-dialog-close]="false">Cancel</button>
+  <button mat-raised-button [mat-dialog-close]="returnPayload()" color="primary" [disabled]="filename.invalid">Update</button>
+</mat-dialog-actions>
