@@ -136,8 +136,9 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
 
           if (this.entityType === 'node') {
             // Get node data
-            const edges = val.edges.map((e: VisNetworkGraphEdge) => {
 
+            // tslint:disable-next-line: no-shadowed-variable
+            const edges = val.edges.map((e: VisNetworkGraphEdge) => {
               return {
                 id: e.id,
                 label: e.label,
@@ -179,7 +180,24 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
           });
 
           // Update graphData ..
-          Object.assign(this.graphData, val);
+          const {
+            id,
+            label,
+            group,
+            edges,
+            hyperlink,
+            detail
+          } = val;
+
+          this.graphData = {
+            id,
+            label,
+            group,
+            edges,
+            hyperlink,
+            detail,
+            data: this.graphData.data
+          };
         }
       );
 
