@@ -65,8 +65,6 @@ def upload_pdf(project_name: str = ''):
     # TODO: Deprecate and make mandatory (no default) this once LL-415 is implemented
     dir_id = request.form.get('directoryId', 1)
 
-    pdf = None
-
     try:
         directory = Directory.query.get(dir_id)
         projects = Projects.query.get(directory.projects_id)
