@@ -7,8 +7,7 @@ export interface Nodes {
   domain: string;
   type: string;
   name: string;
-  taxonomyId: string;
-  taxonomyName: string;
+  description: string;
 }
 
 @Component({
@@ -53,8 +52,8 @@ export class NodeSearchComponent {
         name: this.getName(data),
         type: this.getType(data.node.subLabels),
         domain: this.getDomain(data.node.subLabels),
-        taxonomyId: data.taxonomyId,
-        taxonomyName: data.taxonomyName
+        description: data.taxonomyId === 'N/A' ? 'N/A' :
+          data.taxonomyName + ' (' + data.taxonomyId + ')',
       } as Nodes;
     });
   }
