@@ -55,7 +55,6 @@ export class ContextMenuComponent extends TooltipComponent implements OnDestroy,
     hideContextMenuSubscription: Subscription;
     updatePopperSubscription: Subscription;
 
-    edgesAndNodesSelected: boolean;
     exactlyOneSelectedEdge: boolean;
     exactlyOneSelectedNode: boolean;
     singleSelection: boolean;
@@ -80,10 +79,14 @@ export class ContextMenuComponent extends TooltipComponent implements OnDestroy,
         this.updatePopperSubscription = this.contextMenuControlService.updatePopper$.subscribe((details: TooltipDetails) => {
             this.updatePopper(details.posX, details.posY);
         });
+
+        this.exactlyOneSelectedNode = false;
+        this.exactlyOneSelectedEdge = false;
+        this.singleSelection = false;
+        this.clusterSelected = false;
     }
 
     ngOnChanges() {
-        this.edgesAndNodesSelected = this.selectedNodeIds.length > 0 && this.selectedEdgeIds.length > 0;
         this.exactlyOneSelectedNode = this.selectedNodeIds.length === 1;
         this.exactlyOneSelectedEdge = this.selectedEdgeIds.length === 1;
         this.singleSelection = (

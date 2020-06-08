@@ -446,6 +446,25 @@ describe('VisualizationCanvasComponent', () => {
         expect(networkGraphSetOptionsSpy).toHaveBeenCalledWith({physics: true});
     });
 
+    it('should toggle the sidenav if quickbar component toggleSidenav emits', () => {
+        instance.sidenavOpened = false;
+
+        const toggleSidenavOpenedSpy = spyOn(instance, 'toggleSidenavOpened').and.callThrough();
+        const visualizationQuickbarComponentMock = fixture.debugElement.query(
+            By.directive(VisualizationQuickbarComponent)
+        ).componentInstance as VisualizationQuickbarComponent;
+
+        visualizationQuickbarComponentMock.toggleSidenav.emit(true);
+
+        expect(toggleSidenavOpenedSpy).toHaveBeenCalled();
+        expect(instance.sidenavOpened).toEqual(true);
+
+        visualizationQuickbarComponentMock.toggleSidenav.emit(true);
+
+        expect(toggleSidenavOpenedSpy).toHaveBeenCalled();
+        expect(instance.sidenavOpened).toEqual(false);
+    });
+
     it('toggleSidenavOpened should flip the value of sidenavOpened', () => {
         // instance.sidenavOpened defaults to 'false'
         instance.toggleSidenavOpened();
@@ -811,25 +830,21 @@ describe('VisualizationCanvasComponent', () => {
     it('should update selected nodes/edges and sidebar entity when a node is selected', () => {
         const updateSelectedNodesSpy = spyOn(instance, 'updateSelectedNodes');
         const updateSelectedEdgesSpy = spyOn(instance, 'updateSelectedEdges');
-        const updateSidebarEntitySpy = spyOn(instance, 'updateSidenavEntity');
 
         instance.onSelectNodeCallback(null);
 
         expect(updateSelectedNodesSpy).toHaveBeenCalled();
         expect(updateSelectedEdgesSpy).toHaveBeenCalled();
-        expect(updateSidebarEntitySpy).toHaveBeenCalled();
     });
 
     it('should update selected edges/nodes and sidebar entity when an edge is selected', () => {
         const updateSelectedEdgesSpy = spyOn(instance, 'updateSelectedEdges');
         const updateSelectedNodesSpy = spyOn(instance, 'updateSelectedNodes');
-        const updateSidebarEntitySpy = spyOn(instance, 'updateSidenavEntity');
 
         instance.onSelectEdgeCallback(null);
 
         expect(updateSelectedEdgesSpy).toHaveBeenCalled();
         expect(updateSelectedNodesSpy).toHaveBeenCalled();
-        expect(updateSidebarEntitySpy).toHaveBeenCalled();
     });
 
     // TODO: Should create a real cluster to test here
@@ -853,7 +868,7 @@ describe('VisualizationCanvasComponent', () => {
         expect(expandOrCollapseNodeSpy).toHaveBeenCalledWith(1);
     });
 
-    it('should show tooltip, update selected cluster nodes, and update sidebar if an unselected cluster is right-clicked', () => {
+    it('should show tooltip and update selected cluster nodes if an unselected cluster is right-clicked', () => {
         spyOn(visualizationService, 'getReferenceTableData').and.returnValue(
             of(mockGetReferenceTableDataResult)
         );
@@ -868,7 +883,6 @@ describe('VisualizationCanvasComponent', () => {
         const networkGraphSelectNodesSpy = spyOn(instance.networkGraph, 'selectNodes').and.callThrough();
         const updateSelectedNodesAndEdgesSpy = spyOn(instance, 'updateSelectedNodesAndEdges').and.callThrough();
         const showTooltipSpy = spyOn(contextMenuControlService, 'showTooltip');
-        const updateSidebarEntitySpy = spyOn(instance, 'updateSidenavEntity');
 
         instance.onContextCallback(mockCallbackParams);
 
@@ -877,16 +891,14 @@ describe('VisualizationCanvasComponent', () => {
         expect(instance.selectedNodes.includes(clusterId)).toBeTrue();
         expect(instance.selectedClusterNodeData.length).toEqual(2);
         expect(showTooltipSpy).toHaveBeenCalled();
-        expect(updateSidebarEntitySpy).toHaveBeenCalled();
     });
 
-    it('should select the node, show tooltip, and update sidebar if an unselected node is right-clicked', () => {
+    it('should select the node and show tooltip if an unselected node is right-clicked', () => {
         spyOn(instance.networkGraph, 'getNodeAt').and.returnValue(1);
         spyOn(instance.networkGraph, 'getEdgeAt').and.returnValue(undefined);
         const networkGraphSelectNodesSpy = spyOn(instance.networkGraph, 'selectNodes').and.callThrough();
         const updateSelectedNodesAndEdgesSpy = spyOn(instance, 'updateSelectedNodesAndEdges').and.callThrough();
         const showTooltipSpy = spyOn(contextMenuControlService, 'showTooltip');
-        const updateSidebarEntitySpy = spyOn(instance, 'updateSidenavEntity');
 
         instance.onContextCallback(mockCallbackParams);
 
@@ -894,7 +906,6 @@ describe('VisualizationCanvasComponent', () => {
         expect(updateSelectedNodesAndEdgesSpy).toHaveBeenCalled();
         expect(instance.selectedNodes.includes(1)).toBeTrue();
         expect(showTooltipSpy).toHaveBeenCalled();
-        expect(updateSidebarEntitySpy).toHaveBeenCalled();
     });
 
     it('should not unselect selected nodes if a selected node is right-clicked', () => {
@@ -908,13 +919,12 @@ describe('VisualizationCanvasComponent', () => {
         expect(instance.selectedNodes).toEqual([1, 2]);
     });
 
-    it('should select the edge, show tooltip, and update sidebar if an unselected edge is right-clicked', () => {
+    it('should select the edge and show tooltip if an unselected edge is right-clicked', () => {
         spyOn(instance.networkGraph, 'getNodeAt').and.returnValue(undefined);
         spyOn(instance.networkGraph, 'getEdgeAt').and.returnValue(101);
         const networkGraphSelectNodesSpy = spyOn(instance.networkGraph, 'selectEdges').and.callThrough();
         const updateSelectedNodesAndEdgesSpy = spyOn(instance, 'updateSelectedNodesAndEdges').and.callThrough();
         const showTooltipSpy = spyOn(contextMenuControlService, 'showTooltip');
-        const updateSidebarEntitySpy = spyOn(instance, 'updateSidenavEntity');
 
         instance.onContextCallback(mockCallbackParams);
 
@@ -922,7 +932,6 @@ describe('VisualizationCanvasComponent', () => {
         expect(updateSelectedNodesAndEdgesSpy).toHaveBeenCalled();
         expect(instance.selectedEdges.includes(101)).toBeTrue();
         expect(showTooltipSpy).toHaveBeenCalled();
-        expect(updateSidebarEntitySpy).toHaveBeenCalled();
     });
 
     it('should not unselect selected edges if a selected edge is right-clicked', () => {
@@ -936,13 +945,12 @@ describe('VisualizationCanvasComponent', () => {
         expect(instance.selectedEdges).toEqual([101, 102]);
     });
 
-    it('should unselect all, show tooltip, and update sidebar if nothing is hovered when opening the context menu', () => {
+    it('should unselect all and show tooltip if nothing is hovered when opening the context menu', () => {
         spyOn(instance.networkGraph, 'getNodeAt').and.returnValue(undefined);
         spyOn(instance.networkGraph, 'getEdgeAt').and.returnValue(undefined);
         const networkGraphUnselectAllSpy = spyOn(instance.networkGraph, 'unselectAll').and.callThrough();
         const updateSelectedNodesAndEdgesSpy = spyOn(instance, 'updateSelectedNodesAndEdges').and.callThrough();
         const showTooltipSpy = spyOn(contextMenuControlService, 'showTooltip');
-        const updateSidebarEntitySpy = spyOn(instance, 'updateSidenavEntity');
 
         // Select a node and edge to begin with
         instance.networkGraph.selectEdges([101]);
@@ -958,7 +966,6 @@ describe('VisualizationCanvasComponent', () => {
         expect(instance.selectedEdges.length).toEqual(0);
         expect(instance.selectedNodes.length).toEqual(0);
         expect(showTooltipSpy).toHaveBeenCalled();
-        expect(updateSidebarEntitySpy).toHaveBeenCalled();
     });
 
     it('should update selected edge labels if exactly one node is selected and right-clicked', () => {
