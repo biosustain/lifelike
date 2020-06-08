@@ -16,7 +16,6 @@ from neo4japp.data_transfer_objects import (
     PDFTokenPositions,
     PDFTokenPositionsList,
 )
-from neo4japp.util import compute_hash
 
 from .constants import (
     MISC_SYMBOLS_AND_CHARS,
@@ -98,7 +97,20 @@ class AnnotationsPDFParser:
         compiled_regex = re.compile(r'cid:\d+')
 
         for i, page in enumerate(PDFPage.create_pages(pdf_doc)):
-            cropbox_in_pdf = (page.cropbox[0], page.cropbox[1])
+            # get the cropbox left and bottom offset
+            # these values will be added to the coordinates
+            #
+            # cropboxes are used to tell a pdf viewer what the
+            # actual visible area of a pdf page is
+            #
+            # as of JIRA LL-837 it seems the pdf viewer library
+            # we're using is using the mediabox values
+            # this might change if we switch pdf viewer library
+            #
+            # in most cases, both cropboxes and mediaboxes have the
+            # same values, but the pdf in JIRA LL-837 had different
+            # values
+            cropbox_in_pdf = (page.mediabox[0], page.mediabox[1])
             interpreter.process_page(page)
             layout = device.get_result()
             self._get_lt_char(
@@ -137,9 +149,12 @@ class AnnotationsPDFParser:
         return char in whitespace or char == '\xa0' or char in punctuation  # noqa
 
     def _has_unwanted_punctuation(self, char: str, leading: bool = False) -> bool:
-        check = (char == ',' or char == '.' or char == ')' or char == '(' or char == ';' or char == ':' or char == '*')  # noqa
+        # want to keep things like plus, minus, etc
+        ignore_these = set(punctuation) - {'+', '-'}
+        check = char in ignore_these
         if leading:
-            check = check or char == '-' or char == '*'
+            # hyphens not minus
+            check = check or char == '-'
         return check
 
     def combine_chars_into_words(
@@ -160,33 +175,54 @@ class AnnotationsPDFParser:
         word = ''
 
         for i, char in enumerate(char_list):
-            curr_char = clean_char(char)
-            prev_char = clean_char(char_list[i-1])
+            try:
+                if ord(char) not in MISC_SYMBOLS_AND_CHARS:
+                    # need to clean because some times hyphens
+                    # are parsed as a char that's represented by a
+                    # unicode and doesn't match the string hyphen
+                    # this means we have to ignore some using ord()
+                    # because they can be cleaned into something like
+                    # `(c)`` and when we strip the parenthesis this creates
+                    # an index error because each char gets one index
+                    # and `(c)` is one char
+                    curr_char = clean_char(char)
+                    prev_char = clean_char(char_list[i-1])
 
-            if curr_char not in MISC_SYMBOLS_AND_CHARS:
-                if curr_char in whitespace and prev_char != '-':
-                    if char_idx_map:
-                        words_with_char_idx.append((word, char_idx_map))
-                        char_idx_map = {}
-                        word = ''
-                else:
-                    if i + 1 == max_length:
-                        # reached end so add whatever is left
-                        word += curr_char
-                        char_idx_map[i] = curr_char
-                        words_with_char_idx.append((word, char_idx_map))
-                        char_idx_map = {}
-                        word = ''
+                    if curr_char in whitespace and prev_char != '-':
+                        if char_idx_map:
+                            words_with_char_idx.append((word, char_idx_map))
+                            char_idx_map = {}
+                            word = ''
                     else:
-                        next_char = clean_char(char_list[i+1])
-                        if ((curr_char == '-' and next_char in whitespace) or
-                            (curr_char in whitespace and prev_char == '-')):  # noqa
-                            # word is possibly on new line
-                            # so ignore the space
-                            pass
-                        else:
+                        if i + 1 == max_length:
+                            # reached end so add whatever is left
                             word += curr_char
                             char_idx_map[i] = curr_char
+                            words_with_char_idx.append((word, char_idx_map))
+                            char_idx_map = {}
+                            word = ''
+                        else:
+                            next_char = clean_char(char_list[i+1])
+                            if ((curr_char == '-' and next_char in whitespace) or
+                                (curr_char in whitespace and prev_char == '-')):  # noqa
+                                # word is possibly on new line
+                                # so ignore the space
+                                pass
+                            else:
+                                word += curr_char
+                                char_idx_map[i] = curr_char
+                elif i + 1 == max_length:
+                    # reached end so add whatever is left
+                    # because current char is to be ignored
+                    words_with_char_idx.append((word, char_idx_map))
+                    char_idx_map = {}
+                    word = ''
+            except TypeError:
+                # checking ord() failed
+                # if a char is composed of multiple characters
+                # then it is a pdf parser problem
+                # need to find a better one
+                continue
         return words_with_char_idx
 
     def extract_tokens(
@@ -255,21 +291,19 @@ class AnnotationsPDFParser:
                                 # insertion order
                                 break
 
+                        # whitespaces don't exist in curr_char_idx_mappings
+                        # they were added to separate words
+                        # and might've been left behind after stripping out
+                        # unwanted punctuation
                         token = PDFTokenPositions(
                             page_number=parsed_chars.max_idx_in_page[page_idx],
-                            # whitespaces don't exist in curr_char_idx_mappings
-                            # they were added to separate words
-                            # and might've been left behind after stripping out
-                            # unwanted punctuation
                             keyword=curr_keyword.strip(),
                             char_positions=curr_char_idx_mappings,
                         )
-
                         # need to do this check because
                         # could potentially have duplicates due to
-                        # the sequential increment starting over
-                        # at end of page
-                        hashval = compute_hash(token.to_dict())
+                        # removing punctuation
+                        hashval = token.to_dict_hash()
                         if hashval not in processed_tokens:
                             keyword_tokens.append(token)
                             processed_tokens.add(hashval)

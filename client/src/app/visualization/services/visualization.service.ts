@@ -1,19 +1,18 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 
-import { map } from 'rxjs/operators';
+import { of } from 'rxjs';
+import { map, catchError } from 'rxjs/operators';
 
 import {
-    ClusteredNode,
-    DuplicateNodeEdgePair,
-    DuplicateVisEdge,
-    GetClusterDataResult,
-    GetClusterGraphDataResult,
+    GetClusterSnippetsResult,
+    GetEdgeSnippetsResult,
     GetReferenceTableDataResult,
-    GetSnippetsResult,
     Neo4jResults,
+    NewClusterSnippetsPageRequest,
+    NewEdgeSnippetsPageRequest,
     NodeLegend,
-    VisEdge,
+    ReferenceTableDataRequest,
 } from 'app/interfaces';
 import { NODE_EXPANSION_LIMIT } from 'app/shared/constants';
 
@@ -40,34 +39,9 @@ export class VisualizationService {
         ).pipe(map(resp => resp.result));
     }
 
-    getSnippetsFromEdge(edge: VisEdge) {
-        return this.http.post<{result: GetSnippetsResult}>(
-            `${this.visApi}/get-snippets-from-edge`, {edge},
-        ).pipe(map(resp => resp.result));
-    }
-
-    getSnippetsFromDuplicateEdge(edge: DuplicateVisEdge) {
-        return this.http.post<{result: GetSnippetsResult}>(
-            `${this.visApi}/get-snippets-from-duplicate-edge`, {edge},
-        ).pipe(map(resp => resp.result));
-    }
-
-    // Currently unused
-    // getSnippetCountsFromEdges(edges: VisEdge[]) {
-    //     return this.http.post<{result: GetSnippetCountsFromEdgesResult}>(
-    //         `${this.visApi}/get-snippet-counts-from-edges`, {edges},
-    //     ).pipe(map(resp => resp.result));
-    // }
-
-    getReferenceTableData(nodeEdgePairs: DuplicateNodeEdgePair[]) {
+    getReferenceTableData(request: ReferenceTableDataRequest) {
         return this.http.post<{result: GetReferenceTableDataResult}>(
-            `${this.visApi}/get-reference-table-data`, {nodeEdgePairs},
-        ).pipe(map(resp => resp.result));
-    }
-
-    getClusterGraphData(clusteredNodes: ClusteredNode[]) {
-        return this.http.post<{result: GetClusterGraphDataResult}>(
-            `${this.visApi}/get-cluster-graph-data`, {clusteredNodes},
+            `${this.visApi}/get-reference-table-data`, {nodeEdgePairs: request.nodeEdgePairs},
         ).pipe(map(resp => resp.result));
     }
 
@@ -77,9 +51,29 @@ export class VisualizationService {
         ).pipe(map(resp => resp.result));
     }
 
-    getClusterData(clusteredNodes: ClusteredNode[]) {
-        return this.http.post<{result: GetClusterDataResult}>(
-            `${this.visApi}/get-cluster-data`, {clusteredNodes}
-        ).pipe(map(resp => resp.result));
+    getSnippetsForEdge(request: NewEdgeSnippetsPageRequest) {
+        return this.http.post<{result: GetEdgeSnippetsResult}>(
+            `${this.visApi}/get-snippets-for-edge`, {
+                page: request.page,
+                limit: request.limit,
+                edge: request.queryData,
+            }
+        ).pipe(
+            map(resp => resp.result),
+            catchError(error => of(error)),
+        );
+    }
+
+    getSnippetsForCluster(request: NewClusterSnippetsPageRequest) {
+        return this.http.post<{result: GetClusterSnippetsResult}>(
+            `${this.visApi}/get-snippets-for-cluster`, {
+                page: request.page,
+                limit: request.limit,
+                edges: request.queryData,
+            }
+        ).pipe(
+            map(resp => resp.result),
+            catchError(error => of(error)),
+        );
     }
 }

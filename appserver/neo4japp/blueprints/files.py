@@ -47,6 +47,13 @@ DOWNLOAD_USER_AGENT = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML
 bp = Blueprint('files', __name__, url_prefix='/files')
 
 
+def sanitize_filename(name: str) -> str:
+    filename = secure_filename(name)
+    if not filename.lower().endswith('.pdf'):
+        filename += '.pdf'
+    return filename
+
+
 @bp.route('/upload', methods=['POST'])
 @newbp.route('/<string:project_name>/files', methods=['POST'])  # TODO: use this once LL-415 done
 @auth.login_required
@@ -54,11 +61,11 @@ bp = Blueprint('files', __name__, url_prefix='/files')
 def upload_pdf(project_name: str = ''):
 
     user = g.current_user
-
-    filename = None
-
+    filename = sanitize_filename(request.form['filename'])
     # TODO: Deprecate and make mandatory (no default) this once LL-415 is implemented
     dir_id = request.form.get('directoryId', 1)
+
+    pdf = None
 
     try:
         directory = Directory.query.get(dir_id)
@@ -80,18 +87,16 @@ def upload_pdf(project_name: str = ''):
             raise AnnotationError("Your file could not be downloaded, either because it is "
                                   "inaccessible or another problem occurred. Please double "
                                   "check the spelling of the URL.")
-        filename = secure_filename(request.form['filename'])
-        if not filename.lower().endswith('.pdf'):
-            filename += '.pdf'
         pdf = FileStorage(io.BytesIO(data), filename)
     else:
-        filename = secure_filename(request.files['file'].filename)
         pdf = request.files['file']
     pdf_content = pdf.read()  # TODO: don't work with whole file in memory
     pdf.stream.seek(0)
 
     checksum_sha256 = hashlib.sha256(pdf_content).digest()
 
+    # TODO: Should the following code be part of `sanitize_filename()`?
+    # TODO: Should `pdf.filename` be in sync with the final filename?
     # Make sure that the filename is not longer than the DB column permits
     max_filename_length = Files.filename.property.columns[0].type.length
     if len(filename) > max_filename_length:
@@ -117,9 +122,12 @@ def upload_pdf(project_name: str = ''):
         db.session.add(file_content)
         db.session.commit()
 
+    description = request.form['description'] if 'description' in request.form else ''
+
     file = Files(
         file_id=file_id,
         filename=filename,
+        description=description,
         content_id=file_content.id,
         user_id=user.id,
         annotations=annotations,
@@ -160,12 +168,14 @@ def list_files(project_name: str = ''):
         'id': row.id,  # TODO: is this of any use?
         'file_id': row.file_id,
         'filename': row.filename,
+        'description': row.description,
         'username': row.username,
         'creation_date': row.creation_date,
     } for row in db.session.query(
         Files.id,
         Files.file_id,
         Files.filename,
+        Files.description,
         Files.user_id,
         AppUser.username,
         Files.creation_date)
@@ -176,8 +186,8 @@ def list_files(project_name: str = ''):
     yield jsonify({'files': files})
 
 
-@bp.route('/<id>', methods=['GET'])
-@newbp.route('/<string:project_name>/files/<string:id>', methods=['GET'])  # TODO: LL-415
+@bp.route('/<id>', methods=['GET', 'PATCH'])
+@newbp.route('/<string:project_name>/files/<string:id>', methods=['GET', 'PATCH'])  # TODO: LL-415
 @auth.login_required
 @requires_project_permission(AccessActionType.READ)
 def get_pdf(id: str, project_name: str = ''):
@@ -192,6 +202,25 @@ def get_pdf(id: str, project_name: str = ''):
 
     yield user, projects
 
+    if request.method == 'PATCH':
+        filename = request.form['filename'].strip()
+        description = request.form['description'].strip()
+        try:
+            file = Files.query.filter_by(file_id=id).one()
+        except NoResultFound:
+            raise RecordNotFoundException('Requested PDF file not found.')
+        else:
+            if filename and filename != file.filename:
+                filename = sanitize_filename(filename)
+                db.session.query(Files).filter(Files.file_id == id).update({
+                    'filename': filename,
+                })
+            if description != file.description:
+                db.session.query(Files).filter(Files.file_id == id).update({
+                    'description': description,
+                })
+            db.session.commit()
+        return ''
     try:
         entry = db.session \
             .query(Files.id, FileContent.raw_file) \

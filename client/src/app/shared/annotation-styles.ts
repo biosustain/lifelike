@@ -1,13 +1,3 @@
-// TODO - Create sub-types for mutation
-// - snp
-// - sub
-// - del
-// - ins
-// - mob
-// - amp
-// - con
-// - inv
-
 import { isNullOrUndefined } from 'util';
 
 interface AnnotationStyle {
@@ -72,6 +62,38 @@ const annotationTypes: AnnotationStyle[] = [{
     color: MUTATION,
   },
   {
+    label: 'SNP',
+    color: MUTATION
+  },
+  {
+    label: 'SUB',
+    color: MUTATION
+  },
+  {
+    label: 'DEL',
+    color: MUTATION
+  },
+  {
+    label: 'INS',
+    color: MUTATION
+  },
+  {
+    label: 'MOB',
+    color: MUTATION
+  },
+  {
+    label: 'AMP',
+    color: MUTATION
+  },
+  {
+    label: 'CON',
+    color: MUTATION
+  },
+  {
+    label: 'INV',
+    color: MUTATION
+  },
+  {
     label: 'species',
     color: SPECIES,
   },
@@ -98,7 +120,7 @@ const annotationTypes: AnnotationStyle[] = [{
   {
     label: 'link',
     color: LINK,
-    iconCode: '\uf15b'
+    iconCode: ''
   },
   {
     label: 'entity',
