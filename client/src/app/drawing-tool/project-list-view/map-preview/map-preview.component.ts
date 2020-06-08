@@ -1,8 +1,12 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, OnInit, Input, Output, EventEmitter, HostBinding } from '@angular/core';
 import { GraphSelectionData, UniversalGraph, VisNetworkGraphEdge, Project } from 'app/drawing-tool/services/interfaces';
 import { NetworkVis } from 'app/drawing-tool/network-vis';
 import { ProjectsService } from 'app/drawing-tool/services';
 import { ActivatedRoute } from '@angular/router';
+import { Observable } from 'rxjs';
+import { Store, select } from '@ngrx/store';
+import { State } from 'app/***ARANGO_USERNAME***-store';
+import { AuthSelectors } from 'app/auth/store';
 
 @Component({
   selector: 'app-map-preview',
@@ -12,19 +16,18 @@ import { ActivatedRoute } from '@angular/router';
   ]
 })
 export class MapPreviewComponent implements OnInit {
+  @Output() parentAPI: EventEmitter <any> = new EventEmitter <any> ();
+
+  minimized = false;
+
   /** vis ojbect to control network-graph vis */
   visGraph: NetworkVis = null;
 
   /** The edge or node focused on */
   focusedEntity: GraphSelectionData = null;
 
-  /**
-   * Decide if network graph is visualized
-   * in full-screen or preview mode
-   */
-  screenMode = 'shrink';
-
   childMode = true;
+  @HostBinding('class.relative') childPosition = false;
 
   // tslint:disable-next-line: variable-name
   _project: Project = null;
@@ -40,6 +43,7 @@ export class MapPreviewComponent implements OnInit {
 
     const container = document.getElementById('canvas');
     this.visGraph = new NetworkVis(container);
+    this.focusedEntity = null;
 
     setTimeout(
       () => {
@@ -67,9 +71,12 @@ export class MapPreviewComponent implements OnInit {
     return this.focusedEntity.nodeData.group || '';
   }
 
+  userRoles$: Observable<string[]>;
+
   constructor(
     private projectService: ProjectsService,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private store: Store<State>,
   ) {
     if (this.route.snapshot.params.hash_id) {
       this.projectService.serveProject(
@@ -77,6 +84,7 @@ export class MapPreviewComponent implements OnInit {
       ).subscribe(
         resp => {
           this.childMode = false;
+          this.childPosition = true;
           // tslint:disable-next-line: no-string-literal
           this.project = resp['project'];
         },
@@ -85,6 +93,8 @@ export class MapPreviewComponent implements OnInit {
         }
       );
     }
+
+    this.userRoles$ = store.pipe(select(AuthSelectors.selectRoles));
   }
 
   ngOnInit() {
@@ -141,22 +151,22 @@ export class MapPreviewComponent implements OnInit {
     this.visGraph.zoom2All();
   }
 
-  /** Switch between full-screen and preview mode of */
-  toggle() {
-    this.screenMode = this.screenMode === 'shrink' ? 'grow' : 'shrink';
+  /**
+   * Call API functions in project-list view
+   * component
+   * @param param - something
+   */
+  projectAPICall(param) {
+    this.parentAPI.emit({
+      action: param,
+      project: null
+    });
+  }
 
-    // Calculate the parameters for our animation
-    const listWidth = this.screenMode === 'shrink' ? '25%' : '0%';
-    const previewWidth = this.screenMode === 'shrink' ? '75%' : '100%';
-    const listDuration = this.screenMode === 'shrink' ? 500 : 400;
-    const previewDuration = this.screenMode === 'shrink' ? 400 : 500;
-    const containerHeight = this.screenMode === 'shrink' ? '70vh' : '100vh';
-    const panelHeight = this.screenMode === 'shrink' ? '30vh' : '0vh';
-
-    $('#map-list-container').animate({width: listWidth}, listDuration);
-    $('#map-preview').animate({width: previewWidth}, previewDuration);
-
-    $('#canvas-container').animate({height: containerHeight}, 600);
-    $('#map-panel').animate({height: panelHeight}, 600);
+  /**
+   * Hide or show meta-panel content
+   */
+  toggleHidden() {
+    this.minimized = !this.minimized;
   }
 }
