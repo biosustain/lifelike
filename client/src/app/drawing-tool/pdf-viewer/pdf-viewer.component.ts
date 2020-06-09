@@ -55,7 +55,7 @@ export class PdfViewerComponent implements OnDestroy {
   @Output() filterChangeSubject = new Subject<void>();
   filterPopupOpen = false;
 
-  searchChanged: Subject<{keyword:string, findPrevious:boolean }> = new Subject<{keyword:string, findPrevious:boolean }>();
+  searchChanged: Subject<{keyword: string, findPrevious: boolean }> = new Subject<{keyword: string, findPrevious: boolean }>();
   goToPosition: Subject<Location> = new Subject<Location>();
   loadTask: BackgroundTask<[PdfFile, Location], [ArrayBuffer, any]> =
     new BackgroundTask(([file, loc]) => {
