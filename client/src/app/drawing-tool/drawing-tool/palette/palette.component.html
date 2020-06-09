@@ -1,14 +1,6 @@
-<div
-  cdkDropList
-  class='node-palette'>
-  <div
-    *ngFor='let n_t of nodeTemplatesShown'
-    cdkDrag
-    [id]='n_t.label'
-    class='node-template'>
-    <div
-      class='node-square'
-      [ngStyle]="{'background': n_t.color}">
+<div cdkDropList cdkDropListSortingDisabled class="palette-container">
+  <div *ngFor='let n_t of nodeTemplatesShown' cdkDrag [id]='n_t.label' class='node-template'>
+    <div class='node-square' [ngStyle]="{'background': n_t.color}">
     </div>
     <p [ngStyle]="{'color': n_t.color}">
       {{n_t.label | titlecase}}

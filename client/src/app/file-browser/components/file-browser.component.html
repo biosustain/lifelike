@@ -11,7 +11,7 @@
             <i class="fa fa-search"></i>
           </div>
         </span>
-          <input class="form-control py-2 border-left-0 border" (keyup)="applyFilter($event.target.value)"
+          <input class="form-control py-2 pl-0 border-left-0 border" (keyup)="applyFilter($event.target.value)"
                  placeholder="Search files..." [disabled]="loadTask.running" maxlength="40">
         </div>
       </div>
@@ -21,7 +21,7 @@
   <div class="module-body">
     <div class="mb-4">
       <button class="btn btn-primary" (click)="openUploadDialog()">
-        <i class="fa fa-plus"></i>
+        <i class="fa fa-fw fa-file-upload"></i>
         Add File
       </button>
       <button class="btn btn-outline-secondary ml-2"
@@ -48,6 +48,7 @@
         <col style="width: 1%">
       </colgroup>
       <thead>
+      <tr>
       <tr>
         <th>
           <div class="custom-control custom-checkbox">
@@ -105,12 +106,12 @@
       </tbody>
     </table>
 
-    <div *ngIf="loadTask.loaded && files.length == 0" class="text-center mt-4">
+    <div *ngIf="loadTask.loaded && files.length == 0" class="text-center my-4">
       There are no files to show, but you can
       <a href="#" (click)="openUploadDialog(); $event.preventDefault()">add some of your own files</a>.
     </div>
 
-    <div *ngIf="loadTask.loaded && files.length && shownFiles.length == 0" class="text-center mt-4">
+    <div *ngIf="loadTask.loaded && files.length && shownFiles.length == 0" class="text-center my-4">
       <i class="fa fa-search"></i>
       Your search for "{{filterQuery}}" yielded no results.
     </div>

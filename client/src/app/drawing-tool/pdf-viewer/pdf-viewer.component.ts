@@ -10,7 +10,7 @@ import { Annotation, Location, Meta, UniversalGraphNode } from '../services/inte
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { PdfFile } from '../../interfaces/pdf-files.interface';
-import { FileSelectionDialogComponent } from '../../file-browser/file-selection-dialog.component';
+import { FileSelectionDialogComponent } from '../../file-browser/components/file-selection-dialog.component';
 import { BackgroundTask } from '../../shared/rxjs/background-task';
 import { PdfViewerLibComponent } from '../../pdf-viewer/pdf-viewer-lib.component';
 import { ENTITY_TYPE_MAP, ENTITY_TYPES, EntityType } from 'app/shared/annotation-types';
@@ -91,7 +91,7 @@ export class PdfViewerComponent implements OnDestroy {
     private route: ActivatedRoute
   ) {
     // Listener for file open
-    this.openPdfSub = this.loadTask.observable.subscribe(([[pdfFileContent, ann], [file, loc]]) => {
+    this.openPdfSub = this.loadTask.results$.subscribe(([[pdfFileContent, ann], [file, loc]]) => {
       this.pdfData = {data: new Uint8Array(pdfFileContent)};
       this.annotations = ann;
       this.updateAnnotationIndex();
