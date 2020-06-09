@@ -63,7 +63,8 @@ def add_projects():
             users=[user.id]
         )
 
-        current_app.logger.info(f'User created projects: <{g.current_user.email}:{project.project_name}>')
+        current_app.logger.info(
+            f'User created projects: <{g.current_user.email}:{project.project_name}>')
 
         db.session.add(project)
         db.session.commit()
