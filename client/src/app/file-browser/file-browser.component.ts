@@ -1,5 +1,5 @@
 import { Component, Inject, OnDestroy, OnInit } from '@angular/core';
-import { FormControl } from '@angular/forms';
+import { AbstractControl, FormControl, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { SelectionModel } from '@angular/cdk/collections';
 import { MatTableDataSource } from '@angular/material/table';
@@ -19,7 +19,7 @@ import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
   styleUrls: ['./file-browser.component.scss'],
 })
 export class FileBrowserComponent implements OnInit {
-  displayedColumns: string[] = ['select', 'filename', 'creationDate', 'username', 'annotation'];
+  displayedColumns: string[] = ['select', 'filename', 'description', 'creationDate', 'username', 'annotation'];
   dataSource = new MatTableDataSource<PdfFile>([]);
   selection = new SelectionModel<PdfFile>(true, []);
   isReannotating = false;
@@ -188,7 +188,10 @@ export class FileBrowserComponent implements OnInit {
   }
 
   openUploadDialog() {
-    const uploadData: UploadPayload = {type: UploadType.Files}; // doesn't matter what we set it to, but it needs a value
+    const uploadData: UploadPayload = {
+      type: UploadType.Files,
+      filename: '',
+    };
 
     const dialogRef = this.dialog.open(DialogUploadComponent, {
       data: { payload: uploadData },
@@ -198,6 +201,28 @@ export class FileBrowserComponent implements OnInit {
     dialogRef.afterClosed().subscribe((runUpload: boolean) => {
       if (runUpload) {
         this.upload(uploadData);
+      }
+    });
+  }
+
+  openEditDialog(selected: PdfFile) {
+    const dialogRef = this.dialog.open(DialogEditFileComponent, {
+      data: {
+        filename: selected.filename,
+        description: selected.description,
+      },
+      width: '640px',
+    });
+
+    dialogRef.afterClosed().subscribe(data => {
+      if (data) {
+        this.pdf.updateFile(
+          selected.file_id,
+          data.filename,
+          data.description
+        ).subscribe(() => {
+          this.updateDataSource();
+        });
       }
     });
   }
@@ -240,39 +265,90 @@ export class DialogUploadComponent implements OnInit, OnDestroy {
     });
     this.urlChange = this.url.valueChanges.subscribe((value: string) => {
       this.payload.url = value;
+      this.filename.setValue(this.extractFilenameFromUrl(value));
       this.validatePayload();
     });
     this.tabChange = this.selectedTab.valueChanges.subscribe(value => {
       this.payload.type = value === 0 ? UploadType.Files : UploadType.Url;
+      // Reset all the fields and the payload (but not `this.payload.type`)
+      this.pickedFileName = '';
+      this.filename.setValue('');
+      this.url.setValue('');
+      this.payload.files = [];
+      this.payload.description = '';
       this.validatePayload();
     });
   }
 
   ngOnDestroy() {
+    this.filenameChange.unsubscribe();
     this.urlChange.unsubscribe();
     this.tabChange.unsubscribe();
   }
 
   /** Called upon picking a file from the Browse button */
   onFilesPick(fileList: FileList) {
-    const files: File[] = [];
-    for (let i = 0; i < fileList.length; ++i) {
-      files.push(fileList.item(i));
-    }
-    this.payload.files = files;
+    this.payload.files = this.transformFileList(fileList);
     this.pickedFileName = fileList.length ? fileList[0].name : '';
+    this.filename.setValue(this.pickedFileName);
     this.validatePayload();
   }
 
   /** Validates if the Upload button should be enabled or disabled */
   validatePayload() {
     const filesIsOk = this.payload.files && this.payload.files.length > 0;
-    const filenameIsOk = this.payload.filename && this.payload.filename.length > 0;
-    const urlIsOk = this.payload.url && this.payload.url.length > 0;
+    const filenameIsOk = this.filename.valid;
+    const urlIsOk = this.url.valid;
     if (this.payload.type === UploadType.Files) {
-      this.forbidUpload = !filesIsOk;
+      this.forbidUpload = !(filenameIsOk && filesIsOk);
     } else { // UploadType.Url
       this.forbidUpload = !(filenameIsOk && urlIsOk);
     }
+  }
+
+  /** Transforms a FileList to a File[]
+   * Not sure why, but I can't pass a FileList back to the parent component
+   */
+  private transformFileList(fileList: FileList): File[] {
+    const files: File[] = [];
+    for (let i = 0; i < fileList.length; ++i) {
+      files.push(fileList.item(i));
+    }
+    return files;
+  }
+
+  /** Attempts to extract a filename from a URL */
+  private extractFilenameFromUrl(url: string): string {
+    return url.substring(url.lastIndexOf('/') + 1);
+  }
+}
+
+@Component({
+  selector: 'app-dialog-edit-file',
+  templateUrl: './dialog-edit-file.html',
+  styleUrls: ['./dialog-edit-file.scss'],
+})
+export class DialogEditFileComponent {
+  filename = new FormControl('', [
+    Validators.required,
+    (control: AbstractControl): {[key: string]: any} | null => { // validate against whitespace-only strings
+      const filename = control.value;
+      const forbidden = filename.trim().length <= 0;
+      return forbidden ? {forbiddenFilename: {value: filename}} : null;
+    },
+  ]);
+
+  description = new FormControl('');
+
+  constructor(@Inject(MAT_DIALOG_DATA) private data: any) {
+    this.filename.setValue(data.filename);
+    this.description.setValue(data.description);
+  }
+
+  returnPayload() {
+    return {
+      filename: this.filename.value,
+      description: this.description.value || '',
+    };
   }
 }
