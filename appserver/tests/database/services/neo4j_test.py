@@ -35,101 +35,6 @@ def test_expand_node_can_limit_results(
     assert len(expand_query_result['edges']) == 1
 
 
-def test_get_snippets_from_edge_returns_nothing_for_relationship_with_no_references(
-    neo4j_service_dao,
-    pomc_to_gas_gangrene_pathogenesis_as_vis_edge,
-):
-    get_snippets_from_edge_result = neo4j_service_dao.get_snippets_from_edge(
-        pomc_to_gas_gangrene_pathogenesis_as_vis_edge,
-    )
-
-    assert get_snippets_from_edge_result is not None
-    assert get_snippets_from_edge_result.association == 'role in disease pathogenesis'
-    assert len(get_snippets_from_edge_result.snippets) == 0
-
-
-def test_get_snippets_from_edge_can_get_references_for_relationship(
-    neo4j_service_dao,
-    penicillins_to_gas_gangrene_alleviates_as_vis_edge,
-    gas_gangrene_with_associations_and_references,
-):
-    get_snippets_from_edge_result = neo4j_service_dao.get_snippets_from_edge(
-        penicillins_to_gas_gangrene_alleviates_as_vis_edge,
-    )
-
-    assert get_snippets_from_edge_result is not None
-    assert get_snippets_from_edge_result.association == 'alleviates, reduces'
-    assert len(get_snippets_from_edge_result.snippets) == 2
-
-
-def test_get_snippets_from_edge_can_get_snippets_in_order_of_publication(
-    neo4j_service_dao,
-    penicillins_to_gas_gangrene_alleviates_as_vis_edge,
-    gas_gangrene_with_associations_and_references,
-):
-    get_snippets_from_edge_result = neo4j_service_dao.get_snippets_from_edge(
-        penicillins_to_gas_gangrene_alleviates_as_vis_edge,
-    )
-
-    assert get_snippets_from_edge_result is not None
-    assert get_snippets_from_edge_result.association == 'alleviates, reduces'
-    assert len(get_snippets_from_edge_result.snippets) == 2
-
-    reference_node1 = get_snippets_from_edge_result.snippets[0].reference.to_dict()
-    reference_node2 = get_snippets_from_edge_result.snippets[1].reference.to_dict()
-
-    assert 'penicillin was found to reduce' in reference_node1['data']['sentence']
-    assert 'In a mouse model' in reference_node2['data']['sentence']
-
-
-def test_get_snippets_from_duplicate_edge_returns_nothing_for_relationship_with_no_references(
-    neo4j_service_dao,
-    pomc_to_gas_gangrene_pathogenesis_as_duplicate_vis_edge,
-    gas_gangrene_with_associations_and_references,
-):
-    get_snippets_from_duplicate_edge_result = neo4j_service_dao.get_snippets_from_duplicate_edge(
-        pomc_to_gas_gangrene_pathogenesis_as_duplicate_vis_edge,
-    )
-
-    assert get_snippets_from_duplicate_edge_result is not None
-    assert get_snippets_from_duplicate_edge_result.association == 'role in disease pathogenesis'
-    assert len(get_snippets_from_duplicate_edge_result.snippets) == 0
-
-
-def test_get_snippets_from_duplicate_edge_can_get_references_for_relationship(
-    neo4j_service_dao,
-    penicillins_to_gas_gangrene_alleviates_as_duplicate_vis_edge,
-    gas_gangrene_with_associations_and_references,
-):
-    get_snippets_from_duplicate_edge_result = neo4j_service_dao.get_snippets_from_duplicate_edge(
-        penicillins_to_gas_gangrene_alleviates_as_duplicate_vis_edge,
-    )
-
-    assert get_snippets_from_duplicate_edge_result is not None
-    assert get_snippets_from_duplicate_edge_result.association == 'alleviates, reduces'
-    assert len(get_snippets_from_duplicate_edge_result.snippets) == 2
-
-
-def test_get_snippets_from_duplicate_edge_can_get_snippets_in_order_of_publication(
-    neo4j_service_dao,
-    penicillins_to_gas_gangrene_alleviates_as_duplicate_vis_edge,
-    gas_gangrene_with_associations_and_references,
-):
-    get_snippets_from_edge_result = neo4j_service_dao.get_snippets_from_duplicate_edge(
-        penicillins_to_gas_gangrene_alleviates_as_duplicate_vis_edge,
-    )
-
-    assert get_snippets_from_edge_result is not None
-    assert get_snippets_from_edge_result.association == 'alleviates, reduces'
-    assert len(get_snippets_from_edge_result.snippets) == 2
-
-    reference_node1 = get_snippets_from_edge_result.snippets[0].reference.to_dict()
-    reference_node2 = get_snippets_from_edge_result.snippets[1].reference.to_dict()
-
-    assert 'penicillin was found to reduce' in reference_node1['data']['sentence']
-    assert 'In a mouse model' in reference_node2['data']['sentence']
-
-
 def test_get_reference_table_data(
     neo4j_service_dao,
     gas_gangrene_treatment_cluster_node_edge_pairs,
@@ -145,59 +50,166 @@ def test_get_reference_table_data(
 
     assert len(reference_table_rows) == 1
     assert reference_table_rows[0].node_display_name == 'Penicillins'
-    assert reference_table_rows[0].snippet_count == 1
+    assert reference_table_rows[0].snippet_count == 2
 
 
-def test_get_cluster_graph_data(
+def test_get_snippets_for_edge(
     neo4j_service_dao,
-    gas_gangrene_treatment_clustered_nodes,
+    gas_gangrene_treatement_edge_data,
     gas_gangrene_with_associations_and_references,
 ):
-    get_cluster_graph_data_result = neo4j_service_dao.get_cluster_graph_data(
-        gas_gangrene_treatment_clustered_nodes,
+    get_edge_data_result = neo4j_service_dao.get_snippets_for_edge(
+        edge=gas_gangrene_treatement_edge_data,
+        page=1,
+        limit=25,
     )
 
-    assert get_cluster_graph_data_result.results is not None
-    assert len(get_cluster_graph_data_result.results.keys()) == 1
-
-    node_id = list(get_cluster_graph_data_result.results.keys())[0]
-
-    assert len(get_cluster_graph_data_result.results[node_id].keys()) == 1
-
-    edge_id = list(get_cluster_graph_data_result.results[node_id].keys())[0]
-
-    assert get_cluster_graph_data_result.results[node_id][edge_id] == 1
-
-
-def test_get_cluster_data(
-    neo4j_service_dao,
-    gas_gangrene_treatment_clustered_nodes,
-    gas_gangrene_with_associations_and_references,
-):
-    get_cluster_data_result = neo4j_service_dao.get_cluster_data(
-        gas_gangrene_treatment_clustered_nodes,
-    )
-
-    graph_data = get_cluster_data_result.graph_data
-    snippet_data = get_cluster_data_result.snippet_data
-
-    # Check graph data
-    assert graph_data.results is not None
-    assert len(graph_data.results.keys()) == 1
-
-    node_id = list(graph_data.results.keys())[0]
-
-    assert len(graph_data.results[node_id].keys()) == 1
-
-    edge_id = list(graph_data.results[node_id].keys())[0]
-
-    assert graph_data.results[node_id][edge_id] == 1
+    result = get_edge_data_result.snippet_data
 
     # Check snippet data
-    assert snippet_data.results is not None
-    assert len(snippet_data.results) == 1
+    assert len(result.snippets) == 2
+    assert result.association == 'treatment/therapy (including investigatory)'
 
-    snippet = snippet_data.results[0]
+    sentences = [
+        'Toxin suppression and rapid bacterial killing may...',
+        '...suppresses toxins and rapidly kills bacteria...',
+    ]
 
-    assert snippet.association == 'treatment/therapy (including investigatory)'
-    assert snippet.snippets[0].reference.data['sentence'] == 'Toxin suppression and rapid bacterial killing may...'  # noqa
+    assert result.snippets[0].reference.data['sentence'] in sentences
+    assert result.snippets[1].reference.data['sentence'] in sentences
+
+
+def test_get_snippets_for_edge_low_limit(
+    neo4j_service_dao,
+    gas_gangrene_treatement_edge_data,
+    gas_gangrene_with_associations_and_references,
+):
+    get_edge_data_result = neo4j_service_dao.get_snippets_for_edge(
+        edge=gas_gangrene_treatement_edge_data,
+        page=1,
+        limit=1,
+    )
+
+    result = get_edge_data_result.snippet_data
+
+    # Check snippet data
+    assert len(result.snippets) == 1
+    assert result.association == 'treatment/therapy (including investigatory)'
+
+    sentences = [
+        'Toxin suppression and rapid bacterial killing may...',
+        '...suppresses toxins and rapidly kills bacteria...',
+    ]
+
+    assert result.snippets[0].reference.data['sentence'] in sentences
+
+
+def test_get_snippets_for_edge_orders_by_pub_year(
+    neo4j_service_dao,
+    gas_gangrene_alleviates_edge_data,
+    gas_gangrene_with_associations_and_references,
+):
+    get_edge_data_result = neo4j_service_dao.get_snippets_for_edge(
+        edge=gas_gangrene_alleviates_edge_data,
+        page=1,
+        limit=25,
+    )
+
+    result = get_edge_data_result.snippet_data
+
+    # Check snippet data
+    assert len(result.snippets) == 2
+    assert result.association == 'alleviates, reduces'
+
+    reference_node1 = result.snippets[0].reference.to_dict()
+    reference_node2 = result.snippets[1].reference.to_dict()
+
+    assert 'penicillin was found to reduce' in reference_node1['data']['sentence']
+    assert 'In a mouse model' in reference_node2['data']['sentence']
+
+
+def test_get_snippets_for_cluster(
+    neo4j_service_dao,
+    gas_gangrene_treatement_duplicate_edge_data,
+    gas_gangrene_with_associations_and_references,
+):
+    get_cluster_data_result = neo4j_service_dao.get_snippets_for_cluster(
+        edges=gas_gangrene_treatement_duplicate_edge_data,
+        page=1,
+        limit=25,
+    )
+
+    snippet_data = get_cluster_data_result.snippet_data
+
+    # Check snippet data
+    assert len(snippet_data) == 1
+
+    result = snippet_data[0]
+
+    assert len(result.snippets) == 2
+    assert result.association == 'treatment/therapy (including investigatory)'
+
+    sentences = [
+        'Toxin suppression and rapid bacterial killing may...',
+        '...suppresses toxins and rapidly kills bacteria...',
+    ]
+
+    assert result.snippets[0].reference.data['sentence'] in sentences
+    assert result.snippets[1].reference.data['sentence'] in sentences
+
+
+def test_get_snippets_for_cluster_low_limit(
+    neo4j_service_dao,
+    gas_gangrene_treatement_duplicate_edge_data,
+    gas_gangrene_with_associations_and_references,
+):
+    get_cluster_data_result = neo4j_service_dao.get_snippets_for_cluster(
+        edges=gas_gangrene_treatement_duplicate_edge_data,
+        page=1,
+        limit=1,
+    )
+
+    snippet_data = get_cluster_data_result.snippet_data
+
+    # Check snippet data
+    assert len(snippet_data) == 1
+
+    result = snippet_data[0]
+
+    assert len(result.snippets) == 1
+    assert result.association == 'treatment/therapy (including investigatory)'
+
+    sentences = [
+        'Toxin suppression and rapid bacterial killing may...',
+        '...suppresses toxins and rapidly kills bacteria...',
+    ]
+
+    assert result.snippets[0].reference.data['sentence'] in sentences
+
+
+def test_get_snippets_for_cluster_orders_by_pub_year(
+    neo4j_service_dao,
+    gas_gangrene_alleviates_duplicate_edge_data,
+    gas_gangrene_with_associations_and_references,
+):
+    get_cluster_data_result = neo4j_service_dao.get_snippets_for_cluster(
+        edges=gas_gangrene_alleviates_duplicate_edge_data,
+        page=1,
+        limit=25,
+    )
+
+    snippet_data = get_cluster_data_result.snippet_data
+
+    # Check snippet data
+    assert len(snippet_data) == 1
+
+    result = snippet_data[0]
+
+    assert len(result.snippets) == 2
+    assert result.association == 'alleviates, reduces'
+
+    reference_node1 = result.snippets[0].reference.to_dict()
+    reference_node2 = result.snippets[1].reference.to_dict()
+
+    assert 'penicillin was found to reduce' in reference_node1['data']['sentence']
+    assert 'In a mouse model' in reference_node2['data']['sentence']

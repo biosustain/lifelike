@@ -12,24 +12,27 @@ import { DataSet } from 'vis-network';
 
 import { MAX_CLUSTER_ROWS } from 'app/constants';
 import {
+    ClusterData,
     Direction,
+    DuplicateEdgeConnectionData,
     DuplicateNodeEdgePair,
     DuplicateVisNode,
     DuplicateVisEdge,
+    EdgeConnectionData,
+    GetClusterSnippetsResult,
+    GetReferenceTableDataResult,
     GetSnippetsResult,
-    GetClusterGraphDataResult,
     GroupRequest,
     Neo4jGraphConfig,
+    NodeDisplayInfo,
+    ReferenceTableRow,
+    SettingsFormValues,
+    SidenavClusterEntity,
     SidenavEdgeEntity,
+    SidenavSnippetData,
     VisEdge,
     VisNode,
-    GetReferenceTableDataResult,
-    ReferenceTableRow,
-    GetClusterSnippetDataResult,
-    SettingsFormValues,
-    ClusterData,
-    SidenavSnippetData,
-    SidenavClusterEntity,
+    GetEdgeSnippetsResult,
 } from 'app/interfaces';
 import { RootStoreModule } from 'app/***ARANGO_USERNAME***-store';
 import { SharedModule } from 'app/shared/shared.module';
@@ -42,6 +45,7 @@ import { ContextMenuComponent } from '../context-menu/context-menu.component';
 import { SidenavClusterViewComponent } from '../sidenav-cluster-view/sidenav-cluster-view.component';
 import { SidenavEdgeViewComponent } from '../sidenav-edge-view/sidenav-edge-view.component';
 import { SidenavNodeViewComponent } from '../sidenav-node-view/sidenav-node-view.component';
+import { SnippetDisplayComponent } from '../snippet-display/snippet-display.component';
 import { VisualizationQuickbarComponent } from '../../components/visualization-quickbar/visualization-quickbar.component';
 import { VisualizationCanvasComponent } from '../visualization-canvas/visualization-canvas.component';
 import { VisualizationSettingsComponent } from '../visualization-settings/visualization-settings.component';
@@ -62,7 +66,6 @@ describe('VisualizationCanvasComponent', () => {
     let mockConfig: Neo4jGraphConfig;
     let mockLegend: Map<string, string[]>;
     let mockValidSettingsFormValues: SettingsFormValues;
-    let mockInvalidSettingsFormValues: SettingsFormValues;
     let mockCallbackParams: any;
 
     function mockNodeGenerator(nodeId: number, nodeDisplayName: string, nodeData?: any): VisNode {
@@ -125,6 +128,7 @@ describe('VisualizationCanvasComponent', () => {
                     SidenavClusterViewComponent,
                     SidenavEdgeViewComponent,
                     SidenavNodeViewComponent,
+                    SnippetDisplayComponent,
                     VisualizationCanvasComponent,
                     VisualizationQuickbarComponent,
                     VisualizationSettingsComponent,
@@ -244,25 +248,6 @@ describe('VisualizationCanvasComponent', () => {
             },
         } as SettingsFormValues;
 
-        mockInvalidSettingsFormValues = {
-            maxClusterShownRows: {
-                value: -1,
-                valid: false,
-            },
-            Chemical: {
-                value: true,
-                valid: true,
-            },
-            Gene: {
-                value: true,
-                valid: true,
-            },
-            Diseases: {
-                value: true,
-                valid: true,
-            },
-        } as SettingsFormValues;
-
         mockCallbackParams = {
             event: {
                 preventDefault() { /*Do nothing*/ },
@@ -341,38 +326,63 @@ describe('VisualizationCanvasComponent', () => {
         expect(instance.settingsFormValues).toEqual(mockValidSettingsFormValues);
     });
 
-    it('should update sidenav entity data when getSnippetsResult changes', () => {
-        const mockGetSnippetsResult = {
-            snippets: [],
-            fromNodeId: 1,
-            toNodeId: 2,
-            association: 'HAS A',
-        } as GetSnippetsResult;
+    it('should update sidenav entity data when getEdgeSnippetsResult changes', () => {
+        const mockGetEdgeSnippetsResult = {
+            queryData: {
+                from: 1,
+                to: 2,
+                fromLabel: 'MockNode1',
+                toLabel: 'MockNode2',
+                label: 'Mock Association',
+            } as EdgeConnectionData,
+            snippetData: {
+                fromNodeId: 1,
+                toNodeId: 2,
+                association: 'Mock Association',
+                snippets: [],
+            } as GetSnippetsResult,
+            totalResults: 0,
+        } as GetEdgeSnippetsResult;
 
-        instance.getSnippetsResult = mockGetSnippetsResult;
+        instance.getEdgeSnippetsResult = mockGetEdgeSnippetsResult;
         fixture.detectChanges();
 
-        expect(instance.sidenavEntityType).toEqual(2); // 2 = EDGE
+        const toNode = instance.nodes.get(mockGetEdgeSnippetsResult.snippetData.toNodeId) as VisNode;
+        const fromNode = instance.nodes.get(mockGetEdgeSnippetsResult.snippetData.fromNodeId) as VisNode;
+
         expect(instance.sidenavEntity).toEqual({
-            data: {
-                to: instance.nodes.get(mockGetSnippetsResult.toNodeId) as VisNode,
-                from: instance.nodes.get(mockGetSnippetsResult.fromNodeId) as VisNode,
-                association: mockGetSnippetsResult.association,
-                snippets: mockGetSnippetsResult.snippets,
+            queryData: mockGetEdgeSnippetsResult.queryData,
+            totalResults: mockGetEdgeSnippetsResult.totalResults,
+            snippetData: {
+                to: {
+                    displayName: toNode.displayName,
+                    primaryLabel: toNode.primaryLabel,
+                } as NodeDisplayInfo,
+                from: {
+                    displayName: fromNode.displayName,
+                    primaryLabel: fromNode.primaryLabel,
+                } as NodeDisplayInfo,
+                association: mockGetEdgeSnippetsResult.snippetData.association,
+                snippets: mockGetEdgeSnippetsResult.snippetData.snippets,
             } as SidenavSnippetData
         } as SidenavEdgeEntity);
     });
 
-    it('should update sidenav entity data when getClusterDataResult changes', () => {
-        const mockGetClusterGraphDataResult = {
-            results: {
-                1: {
-                    'Mock Node': 0,
-                }
-            }
-        } as GetClusterGraphDataResult;
+    it('should update sidenav entity data when getClusterSnippetsResult changes', () => {
         const mockGetClusterSnippetDataResult = {
-            results: [
+            queryData: [
+                {
+                    originalFrom: 1,
+                    originalTo: 2,
+                    from: 101,
+                    to: 102,
+                    fromLabel: 'MockNode1',
+                    toLabel: 'MockNode2',
+                    label: 'Mock Association',
+                }
+            ] as DuplicateEdgeConnectionData[],
+            totalResults: 0,
+            snippetData: [
                 {
                     fromNodeId: 1,
                     toNodeId: 2,
@@ -380,24 +390,33 @@ describe('VisualizationCanvasComponent', () => {
                     association: '',
                 } as GetSnippetsResult,
             ]
-        } as GetClusterSnippetDataResult;
+        } as GetClusterSnippetsResult;
 
-        instance.getClusterDataResult = {
-            graphData: mockGetClusterGraphDataResult,
-            snippetData: mockGetClusterSnippetDataResult,
-        };
+        instance.getClusterSnippetsResult = mockGetClusterSnippetDataResult;
         fixture.detectChanges();
 
-        expect(instance.sidenavEntityType).toEqual(3); // 3 = CLUSTER
+        const data = mockGetClusterSnippetDataResult.snippetData.map(snippetResult => {
+            const toNode = instance.nodes.get(snippetResult.toNodeId) as VisNode;
+            const fromNode = instance.nodes.get(snippetResult.fromNodeId) as VisNode;
+
+            return {
+                to: {
+                    displayName: toNode.displayName,
+                    primaryLabel: toNode.primaryLabel,
+                } as NodeDisplayInfo,
+                from: {
+                    displayName: fromNode.displayName,
+                    primaryLabel: fromNode.primaryLabel,
+                } as NodeDisplayInfo,
+                association: snippetResult.association,
+                snippets: snippetResult.snippets,
+            } as SidenavSnippetData;
+        });
+
         expect(instance.sidenavEntity).toEqual({
-            data: mockGetClusterSnippetDataResult.results.map(snippetResult => {
-                return {
-                    to: instance.nodes.get(snippetResult.toNodeId) as VisNode,
-                    from: instance.nodes.get(snippetResult.fromNodeId) as VisNode,
-                    association: snippetResult.association,
-                    snippets: snippetResult.snippets,
-                } as SidenavSnippetData;
-            }),
+            queryData: mockGetClusterSnippetDataResult.queryData,
+            totalResults: mockGetClusterSnippetDataResult.totalResults,
+            snippetData: data,
         } as SidenavClusterEntity);
     });
 
@@ -757,29 +776,6 @@ describe('VisualizationCanvasComponent', () => {
         expect(selectNodesSpy).toHaveBeenCalledWith([2, 3]);
         expect(instance.selectedNodes.length).toEqual(2);
         expect(instance.selectedNodes).toEqual([2, 3]);
-    });
-
-    it('getAssociationsWithEdge should request association snippets for the given edge', () => {
-        const getSnippetsFromEdgeEmitSpy = spyOn(instance.getSnippetsFromEdge, 'emit');
-
-        instance.getAssociationsWithEdge(mockEdges.get(1));
-
-        expect(getSnippetsFromEdgeEmitSpy).toHaveBeenCalledWith(mockEdges.get(1));
-    });
-
-    it('getAssociationsWithDuplicateEdge should request association snippets for the given duplicate edge', () => {
-        const getAssociationSnippetsFromEdgeEmitSpy = spyOn(instance.getSnippetsFromDuplicateEdge, 'emit');
-        const mockDuplicateEdge = {
-            ...mockEdges.get(1),
-            id: 'duplicateEdge:1234',
-            duplicateOf: 1,
-            originalFrom: 1,
-            originalTo: 2,
-        } as DuplicateVisEdge;
-
-        instance.getAssociationsWithDuplicateEdge(mockDuplicateEdge);
-
-        expect(getAssociationSnippetsFromEdgeEmitSpy).toHaveBeenCalledWith(mockDuplicateEdge);
     });
 
     it('should tell all tooltips to hide if hideTooltips is called', () => {
