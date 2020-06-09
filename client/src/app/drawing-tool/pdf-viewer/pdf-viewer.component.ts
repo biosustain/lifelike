@@ -384,10 +384,10 @@ export class PdfViewerComponent implements OnDestroy {
     this.requestClose.emit(null);
   }
 
-  searchQueryChanged(query, findPrevious:boolean) {
+  searchQueryChanged(query) {
     this.searchChanged.next({
       keyword: query,
-      findPrevious: findPrevious
+      findPrevious: false
     });
   }
 
