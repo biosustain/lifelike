@@ -30,6 +30,21 @@
             </mat-select>
         </mat-form-field>
 
+        <!-- TODO - setter and getter for subtype options -->
+        <mat-form-field
+            *ngIf='isNode && subtypes.length'
+            class='w-100'>
+            <mat-label>SubType</mat-label>
+            <mat-select
+                formControlName='subtype'>
+                <mat-option
+                    *ngFor="let sT of subtypes"
+                    [value]='sT'>
+                    {{sT}}
+                </mat-option>
+            </mat-select>
+        </mat-form-field>
+
         <mat-form-field
             *ngIf='isNode'
             class="w-100 mt3">

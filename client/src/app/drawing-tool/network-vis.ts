@@ -91,15 +91,15 @@ export class NetworkVis {
    */
   draw(nodes = [], edges = []) {
     // Create the logic layer
-    this.logicNodes = nodes;
+    this.logicNodes = JSON.parse(JSON.stringify(nodes));
 
     // Create visual layer
     nodes = nodes.map(
       n => {
         // If it has a sub-type
-        if (n.subtype) {
+        if (n.data.subtype) {
           // Render the label fo have the subtype
-          n.label = `${n.label} - ${n.subtype}`;
+          n.label = `${n.label} - ${n.data.subtype}`;
         }
         return n;
       }
@@ -243,6 +243,7 @@ export class NetworkVis {
       }
     });
 
+    updatedNode = Object.assign({}, updatedNode);
     if (data.group === 'link') {
       updatedNode = {
         ...updatedNode,
@@ -251,7 +252,7 @@ export class NetworkVis {
     }
 
     if (updatedNode.data.subtype) {
-      updatedNode.label = `${updatedNode.label} - ${updatedNode.subtype}`;
+      updatedNode.label = `${updatedNode.label} - ${updatedNode.data.subtype}`;
     }
     this.visNodes.update(updatedNode);
   }
@@ -262,7 +263,7 @@ export class NetworkVis {
    * @param id - id of the node you want to info on
    */
   getNode(id): GraphSelectionData {
-    const node = this.visNodes.get(id);
+    const node = this.logicNodes.filter(n => n.id === id)[0];
     const edges = this.visEdges.get({
       filter: (item) => {
         return item.from === id;
@@ -330,9 +331,9 @@ export class NetworkVis {
     const nodes = graph.nodes.map(
       n => {
         // If it has a sub-type
-        if (n.subtype) {
+        if (n.data.subtype) {
           // Render the label fo have the subtype
-          n.label = `${n.label} - ${n.subtype}`;
+          n.label = `${n.label} - ${n.data.subtype}`;
         }
         return n;
       }
