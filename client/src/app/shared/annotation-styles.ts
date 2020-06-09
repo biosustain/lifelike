@@ -6,6 +6,7 @@ interface AnnotationStyle {
   color: string;
   // Optional fields
   iconCode?: string;
+  subtypes?: string[];
   style?: {
     // Override the border-color of the node on vis-network
     border?: string;
@@ -60,38 +61,16 @@ const annotationTypes: AnnotationStyle[] = [{
   {
     label: 'mutation',
     color: MUTATION,
-  },
-  {
-    label: 'SNP',
-    color: MUTATION
-  },
-  {
-    label: 'SUB',
-    color: MUTATION
-  },
-  {
-    label: 'DEL',
-    color: MUTATION
-  },
-  {
-    label: 'INS',
-    color: MUTATION
-  },
-  {
-    label: 'MOB',
-    color: MUTATION
-  },
-  {
-    label: 'AMP',
-    color: MUTATION
-  },
-  {
-    label: 'CON',
-    color: MUTATION
-  },
-  {
-    label: 'INV',
-    color: MUTATION
+    subtypes: [
+      'SNP',
+      'SUB',
+      'DEL',
+      'INS',
+      'MOB',
+      'AMP',
+      'CON',
+      'INV'
+    ]
   },
   {
     label: 'species',
