@@ -5,7 +5,7 @@ import { AdminPanelComponent } from 'app/admin/containers/admin-panel-page.compo
 import { UserFileImportComponent } from 'app/user-file-import/components/user-file-import.component';
 import { VisualizationComponent } from 'app/visualization/containers/visualization/visualization.component';
 import { SearchCollectionPageComponent } from 'app/search/containers/search-collection-page.component';
-import { FileBrowserComponent } from 'app/file-browser/file-browser.component';
+import { FileBrowserComponent } from 'app/file-browser/components/file-browser.component';
 import { LoginComponent } from 'app/auth/components/login.component';
 import { LifelikeHomePageComponent } from 'app/home/components/***ARANGO_DB_NAME***-home.component';
 

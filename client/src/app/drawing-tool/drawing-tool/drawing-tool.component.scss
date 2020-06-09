@@ -26,23 +26,26 @@
   height: 100vh;
   overflow-y: hidden;
 }
+
 @mixin overlay {
   position: absolute;
   z-index: 2;
   border-radius: 0.5rem 0.5rem 0.5rem 0.5rem;
   background: #fff;
   overflow-y: auto;
-  box-shadow: 2px 2px 8px 0 rgba( 0, 0, 0, .2 );
+  box-shadow: 2px 2px 8px 0 rgba(0, 0, 0, .2);
   margin: 1rem;
 }
+
 @mixin noselect {
   -webkit-touch-callout: none; /* iOS Safari */
   -webkit-user-select: none; /* Safari */
   -khtml-user-select: none; /* Konqueror HTML */
   -moz-user-select: none; /* Old versions of Firefox */
   -ms-user-select: none; /* Internet Explorer/Edge */
-  user-select: none; /* Non-prefixed version, currently
-                                  supported by Chrome, Opera and Firefox */
+  user-select: none;
+  /* Non-prefixed version, currently
+                                   supported by Chrome, Opera and Firefox */
 }
 
 #drawing-tool-view-container {
@@ -58,65 +61,14 @@
     @include overlay;
     bottom: 0;
     right: 0;
-    background-color: rgba(255,255,255, 0);
+    background-color: rgba(255, 255, 255, 0);
     box-shadow: unset;
     color: #3797DB;
     overflow: hidden;
   }
 
   #tool-panel {
-    @include overlay;
-    top: 0;
-    left: 0;
-    background: #fff;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-
-    .tool-panel-group {
-      border-left: 1px solid #efefef;
-      padding: (0.65rem / 2) 0.65rem;
-
-      &:first-child {
-        border: 0;
-      }
-    }
-
-    mat-icon {
-      font-size: 25px;
-      width: 25px;
-      height: 25px;
-
-      padding: 0.65rem 0.65rem;
-      cursor: pointer;
-      transition: color .2s ease-in;
-    }
-
-    mat-icon.separator-before {
-      border-left: 1px solid #efefef;
-    }
-
-    mat-icon:hover {
-      color: #3797DB;
-    }
-
-    mat-icon.active {
-      color: #4caf50;
-    }
-    mat-icon.active:hover {
-      color: #e74c3c;
-      transition: color .2s ease-in;
-    }
-    mat-icon.inactive {
-      color: #ddd;
-    }
-
-    mat-icon.saved {
-      color: #3797DB
-    }
-    mat-icon.not_saved {
-      color: #e74c3c;
-    }
+    display: none;
   }
 
   #info-panel {
@@ -132,6 +84,7 @@
   #palette-panel::-webkit-scrollbar {
     display: none;
   }
+
   #palette-panel {
     @include overlay;
     width: 16rem;
@@ -139,4 +92,39 @@
     bottom: 0;
     left: 0;
   }
+}
+
+@import 'src/scss/variables';
+
+.graph-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.graph-view {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  background: $gray-100;
+}
+
+.main-toolbar {
+  position: absolute;
+  top: $spacer;
+  left: $spacer;
+  z-index: 1;
+}
+
+.palette-panel {
+  position: absolute;
+  left: $spacer;
+  bottom: $spacer;
+  z-index: 1;
+  width: 16rem;
+  max-height: calc(100vh - 7rem);
 }

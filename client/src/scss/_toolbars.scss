@@ -1,0 +1,11 @@
+$floating-toolbar-padding: $spacer / 2;
+$floating-toolbar-border-color: $gray-400;
+$floating-toolbar-bg: $gray-300;
+$floating-toolbar-border-radius: $border-radius;
+
+.floating-toolbar {
+  background: $floating-toolbar-bg;
+  padding: $floating-toolbar-padding;
+  border: 1px solid $floating-toolbar-border-color;
+  border-radius: $floating-toolbar-border-radius;
+}

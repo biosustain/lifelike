@@ -17,7 +17,7 @@ import {MapListComponent} from '../project-list-view/map-list/map-list.component
 import {Observable, Subscription} from 'rxjs';
 import {LaunchApp, Location} from '../services/interfaces';
 import {MatDialog, MatDialogConfig} from '@angular/material/dialog';
-import {FileSelectionDialogComponent} from '../../file-browser/file-selection-dialog.component';
+import {FileSelectionDialogComponent} from '../../file-browser/components/file-selection-dialog.component';
 import {PdfFile} from '../../interfaces/pdf-files.interface';
 import {NodeSearchComponent} from '../../node-search/containers/node-search.component';
 

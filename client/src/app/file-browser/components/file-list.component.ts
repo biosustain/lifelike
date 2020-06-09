@@ -1,9 +1,9 @@
 import { Component, EventEmitter, Output } from '@angular/core';
-import { PdfFilesService } from '../shared/services/pdf-files.service';
-import { PdfFile } from '../interfaces/pdf-files.interface';
+import { PdfFilesService } from 'app/shared/services/pdf-files.service';
+import { PdfFile } from 'app/interfaces/pdf-files.interface';
 import { FormControl } from '@angular/forms';
 import { Subscription } from 'rxjs';
-import { BackgroundTask } from '../shared/rxjs/background-task';
+import { BackgroundTask } from 'app/shared/rxjs/background-task';
 
 @Component({
   selector: 'app-file-list',
@@ -22,7 +22,7 @@ export class FileListComponent {
     this.refreshTask = new BackgroundTask<void, PdfFile[]>(
       () => this.pdf.getFiles()
     );
-    this.refreshTask.observable.subscribe(([files, data]) => {
+    this.refreshTask.results$.subscribe(([files, data]) => {
       this.files = files;
       this.updateFilteredFiles(this.filesFilter.value);
     });

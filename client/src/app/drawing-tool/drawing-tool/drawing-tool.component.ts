@@ -93,7 +93,6 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
     this.graphCanvas = new CanvasGraphView(this.canvasChild.nativeElement as HTMLCanvasElement, {
       nodeRenderStyle: style,
       edgeRenderStyle: style,
-      backgroundFill: '#f2f2f2',
     });
 
     this.graphCanvas.behaviors.add('delete-keyboard-shortcut', new DeleteKeyboardShortcut(this.graphCanvas), -100);

@@ -23,12 +23,10 @@ import { ProgressDialogComponent } from './components/progress-dialog/progress-d
 import { TooltipComponent } from './components/tooltip/tooltip.component';
 import { SharedDirectivesModule } from './directives/shareddirectives.module';
 import { SharedNgrxEffects } from './store/effects';
-import {
-  TruncatePipe,
-  FriendlyDateStrPipe
-} from './pipes';
+import { FriendlyDateStrPipe, TruncatePipe } from './pipes';
 import { NodeTextStylePipe } from './node-text-style.pipe';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
+import { SortLegendComponent } from './components/sort/sort-legend.component';
 
 const components = [
   MessageDialogComponent,
@@ -37,6 +35,7 @@ const components = [
   LegendComponent,
   NodeRelationshipComponent,
   TooltipComponent,
+  SortLegendComponent,
 ];
 
 @NgModule({
@@ -60,10 +59,10 @@ const components = [
     NgbModule,
   ],
   declarations: [
-      ...components,
-      TruncatePipe,
-      FriendlyDateStrPipe,
-      NodeTextStylePipe
+    ...components,
+    TruncatePipe,
+    FriendlyDateStrPipe,
+    NodeTextStylePipe
   ],
   providers: [SharedNgrxEffects],
   // exported modules are visible to modules that import this one

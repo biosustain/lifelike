@@ -5,10 +5,8 @@ import { DrawingToolModule } from 'app/drawing-tool/drawing-tool.module';
 import { APP_BASE_HREF } from '@angular/common';
 import { RootStoreModule } from 'app/***ARANGO_USERNAME***-store';
 import { AngularMaterialModule } from 'app/shared/angular-material.module';
-import { AppRoutingModule } from 'app/app-routing.module';
-import { RouterModule } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
-import {NodeSearchModule} from '../../../node-search/node-search.module';
+import { NodeSearchModule } from '../../../node-search/node-search.module';
 
 describe('MapPreviewComponent', () => {
   let component: MapPreviewComponent;
@@ -24,10 +22,10 @@ describe('MapPreviewComponent', () => {
         RouterTestingModule
       ],
       providers: [
-        {provide: APP_BASE_HREF, useValue : '/' }
+        {provide: APP_BASE_HREF, useValue: '/'}
       ]
     })
-    .compileComponents();
+      .compileComponents();
   }));
 
   beforeEach(() => {
