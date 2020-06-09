@@ -20,7 +20,7 @@ declare var jQuery: any;
 })
 export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
 
-  @Input() searchChanged: Subject<{keyword:string, findPrevious: boolean}>;
+  @Input() searchChanged: Subject<{keyword: string, findPrevious: boolean}>;
   private searchChangedSub: Subscription;
   @Input() pdfSrc: string | PDFSource | ArrayBuffer;
   @Input() annotations: Annotation[];
