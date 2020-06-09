@@ -175,6 +175,6 @@ def test_combine_char_into_word(annotations_setup, index, chars):
     elif index == 5:
         combined = [
             ('Just', {0: 'J', 1: 'u', 2: 's', 3: 't'}),
-            ('saying', {5: 's', 6: 'a', 7: 'y', 8: 'i', 9: 'n', 10: 'g'}),
+            ('saying…', {5: 's', 6: 'a', 7: 'y', 8: 'i', 9: 'n', 10: 'g', 11: '…'}),
         ]
         assert combined == words

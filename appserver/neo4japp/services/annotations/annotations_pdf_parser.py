@@ -176,47 +176,46 @@ class AnnotationsPDFParser:
 
         for i, char in enumerate(char_list):
             try:
-                if ord(char) not in MISC_SYMBOLS_AND_CHARS:
+                if ord(char) in MISC_SYMBOLS_AND_CHARS:
                     # need to clean because some times hyphens
                     # are parsed as a char that's represented by a
                     # unicode and doesn't match the string hyphen
-                    # this means we have to ignore some using ord()
-                    # because they can be cleaned into something like
-                    # `(c)`` and when we strip the parenthesis this creates
-                    # an index error because each char gets one index
-                    # and `(c)` is one char
                     curr_char = clean_char(char)
-                    prev_char = clean_char(char_list[i-1])
+                else:
+                    curr_char = char
 
-                    if curr_char in whitespace and prev_char != '-':
-                        if char_idx_map:
-                            words_with_char_idx.append((word, char_idx_map))
-                            char_idx_map = {}
-                            word = ''
+                if ord(char_list[i-1]) in MISC_SYMBOLS_AND_CHARS:
+                    prev_char = clean_char(char_list[i-1])
+                else:
+                    prev_char = char_list[i-1]
+
+                if curr_char in whitespace and prev_char != '-':
+                    if char_idx_map:
+                        words_with_char_idx.append((word, char_idx_map))
+                        char_idx_map = {}
+                        word = ''
+                else:
+                    if i + 1 == max_length:
+                        # reached end so add whatever is left
+                        word += curr_char
+                        char_idx_map[i] = curr_char
+                        words_with_char_idx.append((word, char_idx_map))
+                        char_idx_map = {}
+                        word = ''
                     else:
-                        if i + 1 == max_length:
-                            # reached end so add whatever is left
+                        if ord(char_list[i+1]) in MISC_SYMBOLS_AND_CHARS:
+                            next_char = clean_char(char_list[i+1])
+                        else:
+                            next_char = char_list[i+1]
+
+                        if ((curr_char == '-' and next_char in whitespace) or
+                            (curr_char in whitespace and prev_char == '-')):  # noqa
+                            # word is possibly on new line
+                            # so ignore the space
+                            pass
+                        else:
                             word += curr_char
                             char_idx_map[i] = curr_char
-                            words_with_char_idx.append((word, char_idx_map))
-                            char_idx_map = {}
-                            word = ''
-                        else:
-                            next_char = clean_char(char_list[i+1])
-                            if ((curr_char == '-' and next_char in whitespace) or
-                                (curr_char in whitespace and prev_char == '-')):  # noqa
-                                # word is possibly on new line
-                                # so ignore the space
-                                pass
-                            else:
-                                word += curr_char
-                                char_idx_map[i] = curr_char
-                elif i + 1 == max_length:
-                    # reached end so add whatever is left
-                    # because current char is to be ignored
-                    words_with_char_idx.append((word, char_idx_map))
-                    char_idx_map = {}
-                    word = ''
             except TypeError:
                 # checking ord() failed
                 # if a char is composed of multiple characters
