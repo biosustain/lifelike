@@ -1,4 +1,11 @@
-from flask import request, jsonify, Blueprint, g, abort
+from flask import (
+    current_app,
+    request,
+    jsonify,
+    Blueprint,
+    g,
+    abort,
+)
 from neo4japp.blueprints.auth import auth
 from neo4japp.database import db
 from neo4japp.models.projects import Projects
@@ -55,6 +62,8 @@ def add_projects():
             description=data.get("description", ""),
             users=[user.id]
         )
+
+        current_app.logger.info(f'User created projects: <{g.current_user.email}:{project.project_name}>')
 
         db.session.add(project)
         db.session.commit()
