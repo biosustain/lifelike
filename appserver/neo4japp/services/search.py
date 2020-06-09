@@ -157,7 +157,7 @@ class SearchService(GraphBaseDao):
                        'YIELD node, score WITH node, score MATCH (node)-[]-(n) ' \
                        'WHERE %s AND NOT n:TopicalDescriptor ' \
                        'WITH node, score, n optional MATCH (n)-[:HAS_TAXONOMY]-(t:Taxonomy) ' \
-                           'RETURN DISTINCT n as node, score, t.id AS taxonomy_id,' \
+                       'RETURN DISTINCT n as node, score, t.id AS taxonomy_id,' \
                        ' t.name AS taxonomy_name, n.namespace as go_class ' \
                        'LIMIT $limit' % filter
 
