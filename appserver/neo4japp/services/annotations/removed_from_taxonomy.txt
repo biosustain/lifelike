@@ -1,3 +1,0 @@
-# these were removed in constants.py
-1768868	species	12908	collection	scientific name
-
