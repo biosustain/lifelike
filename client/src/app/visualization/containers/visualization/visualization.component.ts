@@ -301,6 +301,7 @@ export class VisualizationComponent implements OnInit, OnDestroy {
                 // If the expanded node has no connecting relationships, notify the user
                 if (edges.length === 0) {
                     this.openNoResultsFromExpandDialog();
+                    this.loadingClustersDialogRef.close();
                     return;
                 }
 
