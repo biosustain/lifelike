@@ -20,7 +20,7 @@ declare var jQuery: any;
 })
 export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
 
-  @Input() searchChanged: Subject<string>;
+  @Input() searchChanged: Subject<{keyword:string, findPrevious: boolean}>;
   private searchChangedSub: Subscription;
   @Input() pdfSrc: string | PDFSource | ArrayBuffer;
   @Input() annotations: Annotation[];
@@ -143,8 +143,8 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
     }
 
     this.searchChangedSub = this.searchChanged.pipe(
-      debounceTime(250)).subscribe((query) => {
-      this.searchQueryChanged(query);
+      debounceTime(250)).subscribe((sb) => {
+      this.searchQueryChanged(sb);
     });
   }
 
@@ -750,21 +750,23 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
     this.processAnnotations(pageNum, pdfPageView);
   }
 
-  searchQueryChanged(newQuery: string) {
-    if (newQuery !== this.pdfQuery) {
-      this.pdfQuery = newQuery;
+  searchQueryChanged(newQuery: {keyword:string, findPrevious:boolean }) {
+    if (newQuery.keyword !== this.pdfQuery) {
+      this.pdfQuery = newQuery.keyword;
       this.pdfComponent.pdfFindController.executeCommand('find', {
         query: this.pdfQuery,
         highlightAll: true,
         entireWord: true,
-        phraseSearch: true
+        phraseSearch: true,
+        findPrevious: newQuery.findPrevious
       });
     } else {
       this.pdfComponent.pdfFindController.executeCommand('findagain', {
         query: this.pdfQuery,
         highlightAll: true,
         entireWord: true,
-        phraseSearch: true
+        phraseSearch: true,
+        findPrevious: newQuery.findPrevious
       });
     }
   }
