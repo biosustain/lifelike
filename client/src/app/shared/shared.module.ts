@@ -24,10 +24,12 @@ import { TooltipComponent } from './components/tooltip/tooltip.component';
 import { SharedDirectivesModule } from './directives/shareddirectives.module';
 import { SharedNgrxEffects } from './store/effects';
 import {
-  TruncatePipe,
-  FriendlyDateStrPipe
-} from './pipes';
+    TruncatePipe,
+    FriendlyDateStrPipe
+  } from './pipes';
 import { NodeTextStylePipe } from './node-text-style.pipe';
+import { AngularResizedEventModule } from 'angular-resize-event';
+
 
 const components = [
   MessageDialogComponent,
@@ -56,6 +58,7 @@ const components = [
     DragDropModule,
     EffectsModule.forFeature([SharedNgrxEffects]),
     TextFieldModule,
+    AngularResizedEventModule
   ],
   declarations: [
       ...components,
@@ -78,6 +81,7 @@ const components = [
     AngularSplitModule,
     DragDropModule,
     TextFieldModule,
+    AngularResizedEventModule,
     // Components
     ...components,
     TruncatePipe,

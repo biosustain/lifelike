@@ -20,7 +20,7 @@ declare var jQuery: any;
 })
 export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
 
-  @Input() searchChanged: Subject<string>;
+  @Input() searchChanged: Subject<{keyword: string, findPrevious: boolean}>;
   private searchChangedSub: Subscription;
   @Input() pdfSrc: string | PDFSource | ArrayBuffer;
   @Input() annotations: Annotation[];
@@ -143,8 +143,8 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
     }
 
     this.searchChangedSub = this.searchChanged.pipe(
-      debounceTime(250)).subscribe((query) => {
-      this.searchQueryChanged(query);
+      debounceTime(250)).subscribe((sb) => {
+      this.searchQueryChanged(sb);
     });
   }
 
@@ -312,20 +312,10 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
 
   normalizeOpacityLevel(an: Annotation) {
     const t = an.meta.type.toLowerCase();
-    if (t.indexOf('chemic') > -1 || t.indexOf('disea') > -1) {
-      return this.opacity + 0.1;
-    }
     return this.opacity;
   }
 
   normalizeBackgroundColor(an: Annotation): string {
-    const t = an.meta.type.toLowerCase();
-    if (t.indexOf('chemic') > -1) {
-      return '#9cda94';
-    }
-    if (t.indexOf('disea') > -1) {
-      return '#f2ce97';
-    }
     return an.meta.color;
   }
 
@@ -760,21 +750,23 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
     this.processAnnotations(pageNum, pdfPageView);
   }
 
-  searchQueryChanged(newQuery: string) {
-    if (newQuery !== this.pdfQuery) {
-      this.pdfQuery = newQuery;
+  searchQueryChanged(newQuery: {keyword:string, findPrevious:boolean }) {
+    if (newQuery.keyword !== this.pdfQuery) {
+      this.pdfQuery = newQuery.keyword;
       this.pdfComponent.pdfFindController.executeCommand('find', {
         query: this.pdfQuery,
         highlightAll: true,
         entireWord: true,
-        phraseSearch: true
+        phraseSearch: true,
+        findPrevious: newQuery.findPrevious
       });
     } else {
       this.pdfComponent.pdfFindController.executeCommand('findagain', {
         query: this.pdfQuery,
         highlightAll: true,
         entireWord: true,
-        phraseSearch: true
+        phraseSearch: true,
+        findPrevious: newQuery.findPrevious
       });
     }
   }

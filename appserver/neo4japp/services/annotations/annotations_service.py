@@ -17,7 +17,12 @@ from .constants import (
     EntityIdStr,
     EntityType,
     OrganismCategory,
+    # exclusion lists
     COMMON_WORDS,
+    CHEMICAL_EXCLUSION,
+    COMPOUND_EXCLUSION,
+    SPECIES_EXCLUSION,
+    # end exclusion lists
     ENTITY_HYPERLINKS,
     ENTITY_TYPE_PRECEDENCE,
     GOOGLE_LINK,
@@ -75,6 +80,9 @@ class AnnotationsService:
             word: the token text
             synonym: the correct spelling (if word is misspelled) or normalized token
         """
+        gene_val = chem_val = comp_val = None
+        protein_val = species_val = diseases_val = phenotype_val = None
+
         if synonym:
             lookup_key = normalize_str(synonym).encode('utf-8')
         else:
@@ -87,19 +95,21 @@ class AnnotationsService:
             else:
                 self.matched_genes[word] = [token]
 
-        chem_val = self.lmdb_session.chemicals_txn.get(lookup_key)
-        if chem_val:
-            if word in self.matched_chemicals:
-                self.matched_chemicals[word].append(token)
-            else:
-                self.matched_chemicals[word] = [token]
+        if word.lower() not in CHEMICAL_EXCLUSION:
+            chem_val = self.lmdb_session.chemicals_txn.get(lookup_key)
+            if chem_val:
+                if word in self.matched_chemicals:
+                    self.matched_chemicals[word].append(token)
+                else:
+                    self.matched_chemicals[word] = [token]
 
-        comp_val = self.lmdb_session.compounds_txn.get(lookup_key)
-        if comp_val:
-            if word in self.matched_compounds:
-                self.matched_compounds[word].append(token)
-            else:
-                self.matched_compounds[word] = [token]
+        if word.lower() not in COMPOUND_EXCLUSION:
+            comp_val = self.lmdb_session.compounds_txn.get(lookup_key)
+            if comp_val:
+                if word in self.matched_compounds:
+                    self.matched_compounds[word].append(token)
+                else:
+                    self.matched_compounds[word] = [token]
 
         protein_val = self.lmdb_session.proteins_txn.get(lookup_key)
         if protein_val:
@@ -108,12 +118,13 @@ class AnnotationsService:
             else:
                 self.matched_proteins[word] = [token]
 
-        species_val = self.lmdb_session.species_txn.get(lookup_key)
-        if species_val:
-            if word in self.matched_species:
-                self.matched_species[word].append(token)
-            else:
-                self.matched_species[word] = [token]
+        if word.lower() not in SPECIES_EXCLUSION:
+            species_val = self.lmdb_session.species_txn.get(lookup_key)
+            if species_val:
+                if word in self.matched_species:
+                    self.matched_species[word].append(token)
+                else:
+                    self.matched_species[word] = [token]
 
         diseases_val = self.lmdb_session.diseases_txn.get(lookup_key)
         if diseases_val:

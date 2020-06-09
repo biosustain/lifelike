@@ -10,6 +10,9 @@ import { PdfFiles, PdfFile, PdfFileUpload, UploadPayload, UploadType } from 'app
 })
 export class PdfFilesService {
   readonly baseUrl = '/api/files';
+  // Length limits. Keep these in sync with the values in the backend code (/models folder)
+  readonly filenameMaxLength = 200;
+  readonly descriptionMaxLength = 2048;
 
   constructor(
     private auth: AuthenticationService,
@@ -46,10 +49,13 @@ export class PdfFilesService {
 
   uploadFile(data: UploadPayload): Observable<HttpEvent<PdfFileUpload>> {
     const formData: FormData = new FormData();
+    formData.append('filename', data.filename.substring(0, this.filenameMaxLength));
+    if (data.description && data.description.length > 0) {
+      formData.append('description', data.description.substring(0, this.descriptionMaxLength));
+    }
     if (data.type === UploadType.Files) {
       formData.append('file', data.files[0]);
     } else {
-      formData.append('filename', data.filename);
       formData.append('url', data.url);
     }
     return this.http.post<PdfFileUpload>(`${this.baseUrl}/upload`, formData, {
@@ -62,6 +68,14 @@ export class PdfFilesService {
   reannotateFiles(ids: string[]): Observable<object> {
     const options = { headers: this.getAuthHeader() };
     return this.http.post(`${this.baseUrl}/reannotate`, ids, options);
+  }
+
+  updateFile(id: string, filename: string, description: string = ''): Observable<string> {
+    const options = { headers: this.getAuthHeader() };
+    const formData: FormData = new FormData();
+    formData.append('filename', filename.substring(0, this.filenameMaxLength));
+    formData.append('description', description.substring(0, this.descriptionMaxLength));
+    return this.http.patch<string>(`${this.baseUrl}/${id}`, formData, options);
   }
 
   private getAuthHeader() {

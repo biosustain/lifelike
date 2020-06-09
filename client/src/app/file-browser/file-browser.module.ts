@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { SharedModule } from '../shared/shared.module';
 import {
   DialogConfirmDeletionComponent,
+  DialogEditFileComponent,
   DialogUploadComponent,
   FileBrowserComponent,
 } from './file-browser.component';
@@ -11,6 +12,7 @@ import { FileListComponent } from './file-list.component';
 @NgModule({
   declarations: [
     DialogConfirmDeletionComponent,
+    DialogEditFileComponent,
     DialogUploadComponent,
     FileBrowserComponent,
     FileListComponent,
@@ -21,6 +23,7 @@ import { FileListComponent } from './file-list.component';
   ],
   entryComponents: [
     DialogConfirmDeletionComponent,
+    DialogEditFileComponent,
     DialogUploadComponent,
     FileSelectionDialogComponent,
     FileListComponent,
