@@ -15,7 +15,7 @@
       </button>
       <mat-form-field>
           <mat-label>Search</mat-label>
-          <input #queryInp matInput [disabled]="!pdfViewerReady" (input)="searchQueryChanged($event.target.value, false)" (keyup.enter)="searchQueryChanged(queryInp.value, false)" placeholder="Search" value="">
+          <input #queryInp matInput [disabled]="!pdfViewerReady" (input)="searchQueryChanged($event.target.value)" (keyup.enter)="searchQueryChanged(queryInp.value)" placeholder="Search" value="">
       </mat-form-field>
       <button *ngIf="queryInp.value && queryInp.value.length > 0" mat-button (click)="findPrevious(queryInp.value)" [disabled]="!pdfViewerReady" matTooltip="Find Previous">
         <mat-icon>keyboard_arrow_up</mat-icon>
