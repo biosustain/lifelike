@@ -97,6 +97,7 @@ class SearchService(GraphBaseDao):
             score = result['score']
             taxonomy_id = result.get('taxonomy_id', '')
             taxonomy_name = result.get('taxonomy_name', '')
+            go_class = result.get('go_class', '')
             graph_node = GraphNode.from_py2neo(
                 node, display_fn=lambda x: x.get('name'))
             formatted_results.append(FTSTaxonomyRecord(
@@ -105,6 +106,8 @@ class SearchService(GraphBaseDao):
                 taxonomy_id=taxonomy_id if taxonomy_id is not None
                 else 'N/A',
                 taxonomy_name=taxonomy_name if taxonomy_name is not None
+                else 'N/A',
+                go_class=go_class if go_class is not None
                 else 'N/A'
             ))
         return formatted_results
@@ -154,8 +157,8 @@ class SearchService(GraphBaseDao):
                        'YIELD node, score WITH node, score MATCH (node)-[]-(n) ' \
                        'WHERE %s AND NOT n:TopicalDescriptor ' \
                        'WITH node, score, n optional MATCH (n)-[:HAS_TAXONOMY]-(t:Taxonomy) ' \
-                       'RETURN DISTINCT n as node, score, t.id AS taxonomy_id,' \
-                       ' t.name AS taxonomy_name ' \
+                           'RETURN DISTINCT n as node, score, t.id AS taxonomy_id,' \
+                       ' t.name AS taxonomy_name, n.namespace as go_class ' \
                        'LIMIT $limit' % filter
 
         results = self.graph.run(

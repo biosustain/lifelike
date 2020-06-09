@@ -31,6 +31,9 @@ export class NodeResultListComponent implements OnInit, OnChanges {
   }
 
   applyFilter(event: Event) {
+    // This will attach the filter only to the description column
+    this.dataSource.filterPredicate = (data: Nodes, filter: string) =>
+      data.description.indexOf(filter) !== -1;
     const filterValue = (event.target as HTMLInputElement).value;
     this.dataSource.filter = filterValue.trim().toLowerCase();
   }
