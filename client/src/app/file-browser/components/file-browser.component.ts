@@ -1,8 +1,7 @@
-import { Component, Inject, Input, OnDestroy, OnInit } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { Router } from '@angular/router';
 import { SelectionModel } from '@angular/cdk/collections';
-import { MAT_DIALOG_DATA, MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { BehaviorSubject, Subscription, throwError } from 'rxjs';
 import { AnnotationStatus, PdfFile, UploadPayload, UploadType } from 'app/interfaces/pdf-files.interface';
@@ -10,7 +9,7 @@ import { PdfFilesService } from 'app/shared/services/pdf-files.service';
 import { HttpEventType } from '@angular/common/http';
 import { Progress, ProgressMode } from 'app/interfaces/common-dialog.interface';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
-import { BackgroundTask } from '../shared/rxjs/background-task';
+import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 
@@ -39,7 +38,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.loadTaskSubscription = this.loadTask.observable.subscribe(([files]) => {
+    this.loadTaskSubscription = this.loadTask.results$.subscribe(([files]) => {
         // We assume that fetched files are correctly annotated
         files.forEach((file: PdfFile) => file.annotation_status = AnnotationStatus.Success);
         this.files = files;
@@ -222,6 +221,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
 })
 export class DialogConfirmDeletionComponent {
   @Input() files;
+
   constructor(public activeModal: NgbActiveModal) {
   }
 }

@@ -1,5 +1,5 @@
 import {
-  Component,
+  Component, ViewChild,
 } from '@angular/core';
 import {
   MatDialog
@@ -50,7 +50,11 @@ import { EditProjectDialogComponent } from '../project-list/edit-project-dialog/
   styleUrls: ['./project-list-view.component.scss']
 })
 export class ProjectListViewComponent {
+  @ViewChild('previewComponent', {static: false}) previewComponent;
+
   fullScreenmode = 'shrink';
+
+  infoPinned = true;
 
   userRoles$: Observable<string[]>;
 
@@ -421,6 +425,10 @@ export class ProjectListViewComponent {
   handleAPI(evt: { action: string, project: Project }) {
 
     switch (evt.action) {
+      case 'open':
+        this.pickProject(evt.project);
+        this.goToProject();
+        break;
       case 'pick':
         this.pickProject(evt.project);
         break;
@@ -441,5 +449,9 @@ export class ProjectListViewComponent {
 
   goToSearch() {
     this.displayIndex = 2;
+  }
+
+  zoomToFit() {
+    this.previewComponent.graphCanvas.zoomToFit(1000);
   }
 }

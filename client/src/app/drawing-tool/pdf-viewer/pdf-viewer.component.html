@@ -59,7 +59,7 @@
   <div class="overflow-auto">
     <div *ngIf="!pdfViewerReady && loadTask.running" fxLayout="row" fxLayoutAlign="center center" class="mt4">
       <mat-icon>hourglass_empty</mat-icon>
-      Downloading {{loadTask.valueLoading[0].filename ? loadTask.valueLoading[0].filename : 'file'}}...
+      Downloading {{loadTask.pendingValue[0].filename ? loadTask.pendingValue[0].filename : 'file'}}...
     </div>
     <div *ngIf="pdfViewerReady">
       <!-- PDF Viewer -->

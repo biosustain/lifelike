@@ -1,76 +1,55 @@
-@import "../../../styles.scss";
+@import 'src/scss/variables';
 
-.dark-silver {
-  color: #424242;
+.top-toolbar {
+  position: absolute;
+  top: $spacer;
+  left: $spacer;
+  z-index: 1;
+  opacity: 0;
+  transition: 0.2s ease opacity;
 }
 
-#map-channel {
-  #map-list-container {
-    position: relative;
-    background: #ECF0F1;
-
-    #add-project {
-      @include overlay();
-      bottom: 0;
-      right: 0;
-    }
-
-    #search {
-      @include overlay();
-      bottom: 0;
-    }
-
-    #upload-project {
-      @include overlay();
-      bottom: 0;
-      right: 65px;
-    }
-  }
-
-  #map-preview {
-    background: #fff;
-
-    #canvas-container {
-      width: 100%;
-      height: 100%;
-      position: relative;
-    }
-  }
-
-  #map-meta-panel {
-
-    #details {
-      padding: 1rem;
-      overflow-y: auto;
-
-      h2 {
-        margin-top: 1rem;
-        margin-bottom: 1rem;
-        color: #3177B8;
-      }
-      p.author {
-        color: $blue;
-      }
-    }
-
-    #actions {
-      padding: 1rem;
-
-      div {
-        button {
-          margin: 0.25rem 0;
-          width: 100%;
-        }
-      }
-    }
-  }
+.bottom-toolbar {
+  position: absolute;
+  bottom: $spacer;
+  left: $spacer;
+  z-index: 1;
+  opacity: 0;
+  transition: 0.2s ease opacity;
 }
 
+.detail-overlay {
+  position: absolute;
+  top: $spacer;
+  left: $spacer;
+  width: 500px;
+  max-width: calc(100% - #{$spacer * 2});
+  max-height: calc(100% - #{$spacer * 2});
+  overflow: auto;
+  padding: 1.5rem;
+  z-index: 1;
+  background: $gray-200;
+  border-radius: $border-radius;
+  border: 1px solid $border-color;
+  transition: 0.2s ease opacity;
+}
 
-.empty {
-  min-width: unset !important;
-  p {
-    font-size: 2.25rem;
-    color: #707070;
+.detail-overlay-description {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 10;
+  line-clamp: 10;
+  overflow: hidden;
+  transition: 0.2s ease opacity;
+}
+
+.map-preview-container:hover {
+  .top-toolbar, .bottom-toolbar {
+    opacity: 1;
+  }
+
+  .detail-overlay:not(.pinned) {
+    pointer-events: none;
+    opacity: 0;
   }
 }

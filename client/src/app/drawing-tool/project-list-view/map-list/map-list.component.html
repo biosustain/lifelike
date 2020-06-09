@@ -1,81 +1,172 @@
-<div [ngClass]='{"childless": !childMode}' id='map-list'>
-  <h1>Maps</h1>
-  <mat-tab-group [selectedIndex]="displayIndex" (selectedTabChange)="toggleView($event)">
-    <mat-tab label="Personal">
-      <div cdkDropList>
-        <div class='map-template map shadow' *ngFor='let project of projects' [id]='project.hash_id'
-          (contextmenu)="open($event, project)" (click)='clickHandler("pick", project)' cdkDrag
-          [cdkDragDisabled]='childMode'>
-          <h3>
-            {{
-              project.label | truncate:['40']
-            }}
-          </h3>
-          <p class='author'>
-            By {{project?.author}}
-          </p>
-          <p class='date'>
-            Modified {{project?.date_modified | friendlyDateStr}}
-          </p>
+<ng-container *ngIf="refreshTask.status$ | async as status">
+  <div class="module module-sidebar h-100">
+    <div class="module-header-container">
+      <div class="module-header">
+        <div class="module-title">
+          Projects
+        </div>
+
+        <div class="module-toolbar">
+          <button type="button" class="btn btn-primary" ngbTooltip="Create new project">
+            <i class="fa fa-fw fa-plus"></i>
+          </button>
+
+          <button type="button" class="btn btn-outline-secondary ml-1" ngbTooltip="Import project data">
+            <i class="fa fa-fw fa-upload"></i>
+          </button>
+
+          <button type="button" class="btn btn-outline-secondary ml-1" (click)="refresh()"
+                  ngbTooltip="Refresh the results">
+            <i class="fa fa-sync"></i>
+          </button>
         </div>
       </div>
-    </mat-tab>
-    <mat-tab label="Community">
-      <div cdkDropList>
-        <div [id]='project.hash_id' class='map-template map shadow' *ngFor='let project of publicProjects'
-          (contextmenu)="open($event, project)" (click)='clickHandler("pick", project)' cdkDrag
-          [cdkDragDisabled]='childMode'>
-          <h3>
-            {{
-              project.label | truncate:['40']
-            }}
-          </h3>
-          <p class='author'>
-            By {{project?.author}}
-          </p>
-          <p class='date'>
-            Modified {{project?.date_modified | friendlyDateStr}}
-          </p>
+
+      <div class="module-header-body">
+        <div class="input-group">
+        <span class="input-group-prepend">
+          <div class="input-group-text bg-white border-right-0">
+            <i class="fa fa-fw fa-search"></i>
+          </div>
+        </span>
+          <input class="form-control py-2 pl-0 input-border border-left-0"
+                 placeholder="Search within projects..."
+                 [(ngModel)]="term" (keyup)="refresh(true)">
+          <span class="input-group-append" *ngIf="term.length">
+          <button class="btn btn-outline-secondary" type="button" (click)="term = ''; refresh(true)">
+            <i class="fa fa-times"></i>
+          </button>
+        </span>
+        </div>
+
+        <div class="mt-2 d-flex">
+          <div class="custom-control custom-checkbox">
+            <input class="custom-control-input" type="checkbox" id="personal-filter" value="1"
+                   [(ngModel)]="showPersonal" (change)="refresh(true)">
+            <label class="custom-control-label" for="personal-filter">Your Projects</label>
+          </div>
+          <div class="custom-control custom-checkbox ml-3">
+            <input class="custom-control-input" type="checkbox" id="community-filter" value="1"
+                   [(ngModel)]="showCommunity" (change)="refresh(true)">
+            <label class="custom-control-label" for="community-filter">Community</label>
+          </div>
         </div>
       </div>
-    </mat-tab>
-    <mat-tab label="Search">
-      <form
-        class='map shadow'
-        [formGroup]='searchForm'>
-        <mat-form-field
-          class='w-100'
-          appearance='legacy'>
-          <mat-label>Search in maps</mat-label>
-          <input formControlName='term' matInput (keyup)='searchForMaps($event)'>
-          <mat-icon matSuffix>search</mat-icon>
-          <mat-hint>Write to search concepts across all maps</mat-hint>
-        </mat-form-field>
-      </form>
-      <div
-        class='map shadow'
-        *ngFor='let project of searchResults'
-        (contextmenu)="open($event, project)"
-        (click)='clickHandler("pick", project)'>
-        <h3>
-          {{
-          project.label | truncate:['40']
-          }}
-        </h3>
-        <p class='author'>
-          By {{project?.author}}
-        </p>
-        <p class='date'>
-          Modified {{project?.date_modified | friendlyDateStr}}
-        </p>
+    </div>
+
+    <div class="module-body">
+      <div *ngIf="status.retryInProgressShown" class="mt-2 mb-0 px-2">
+        <div class="alert alert-warning m-0">
+          <div>
+            This is taking longer than expected.
+          </div>
+        </div>
       </div>
-    </mat-tab>
-  </mat-tab-group>
-</div>
-<!-- Context Menu -->
-<ng-template #projectMenu let-project>
-  <section (contextmenu)="$event.preventDefault()" class="project-menu">
-    <div (click)='contextHandler("copy", project)'>Make copy of</div>
-    <div *ngIf='displayMode==="personal"' (click)='contextHandler("delete", project)'>Delete</div>
-  </section>
-</ng-template>
+
+      <div *ngIf="status.failedErrorShown" class="mt-2 mb-0 px-2">
+        <div class="alert alert-danger m-0">
+          <div>
+            The list of projects is currently not available.
+          </div>
+          <div class="mt-1">
+            <button type="button" class="btn btn-sm btn-outline-danger" (click)="refresh()">
+              Retry
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="progress rounded-0" *ngIf="status.progressShown">
+        <div class="progress-bar progress-bar-striped progress-bar-animated bg-secondary" style="width: 100%"></div>
+      </div>
+
+      <table class="table table-selectable my-0" style="table-layout: fixed">
+        <colgroup>
+          <col>
+          <col style="width: 90px">
+        </colgroup>
+        <thead>
+        <tr>
+          <th class="text-truncate">Name</th>
+          <th class="text-right text-truncate">Modified</th>
+        </tr>
+        </thead>
+
+        <tbody *ngIf="status.placeholdersShown && projects.length == 0">
+        <tr>
+          <td class="text-truncate">
+            <span class="placeholder-box">Loading loading</span>
+          </td>
+          <td class="text-truncate text-right">
+            <span class="placeholder-box">Loading</span>
+          </td>
+        </tr>
+        <tr>
+          <td class="text-truncate">
+            <span class="placeholder-box">Loading loading loading</span>
+          </td>
+          <td class="text-truncate text-right">
+            <span class="placeholder-box">Loading</span>
+          </td>
+        </tr>
+        <tr>
+          <td class="text-truncate">
+            <span class="placeholder-box">Loading loading</span>
+          </td>
+          <td class="text-truncate text-right">
+            <span class="placeholder-box">Loading</span>
+          </td>
+        </tr>
+        <tr>
+          <td class="text-truncate">
+            <span class="placeholder-box">Loading loading loading loading</span>
+          </td>
+          <td class="text-truncate text-right">
+            <span class="placeholder-box">Loading</span>
+          </td>
+        </tr>
+        </tbody>
+
+        <tbody *ngIf="status.resultsShown" cdkDropList cdkDropListSortingDisabled>
+        <tr *ngFor="let project of projects" [id]="project.hash_id"
+            (dblclick)='clickProject("open", project)'
+            (click)='clickProject("pick", project)' cdkDrag
+            (keydown)="$event.keyCode != 13 || clickProject('pick', project)"
+            [cdkDragDisabled]='childMode' [class.active]="selectedProject?.hash_id === project.hash_id"
+            tabindex="0">
+          <td>
+            <div class="d-flex text-truncate">
+              <div>
+                <i class="fa fa-fw fa-project-diagram"></i>
+              </div>
+              <div class="ml-2 text-truncate">
+                <div class="text-truncate">
+                  {{ project.label }}
+                </div>
+                <div class="text-truncate text-muted">
+                  By {{project?.author}}
+                </div>
+              </div>
+            </div>
+          </td>
+          <td class="text-truncate text-right">
+            {{project?.date_modified | date: 'shortDate'}}
+          </td>
+        </tr>
+        </tbody>
+      </table>
+
+      <div *ngIf="status.emptyResultsShown && projects.length == 0"
+           class="text-center my-4 px-4">
+        <div *ngIf="!showPersonal && !showCommunity else filtersOk">
+          <i class="fa fa-info-circle"></i>
+          Select at least 'Your Projects' or 'Community' to see results.
+        </div>
+        <ng-template #filtersOk>
+          No projects match your current
+          filters{{term != '' ? ', matching "' + refreshTask.latestSuccessfulValue.term + '"' : ''}}.
+        </ng-template>
+      </div>
+    </div>
+  </div>
+</ng-container>

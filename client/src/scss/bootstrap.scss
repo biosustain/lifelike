@@ -1,11 +1,38 @@
-$primary: #0c8caa;
-$modal-header-padding: 2rem 2.5rem 1rem;
-$modal-body-padding: 1rem 2.5rem;
-$modal-footer-padding: 1rem 2.5rem 2rem;
-
+@import './variables';
 @import '~bootstrap/scss/bootstrap';
+@import './mixins';
 @import './placeholders';
-@import './vertical-menu';
+@import './modules';
+@import './vertical-menu';;
+@import './toolbars';
+
+body {
+  font-family: Roboto, "Helvetica Neue", sans-serif; // TODO: REMOVE THIS
+  font-size: 11pt;
+}
+
+:focus, button:focus {
+  outline: none;
+}
+
+.input-group {
+  position: relative;
+
+  &:focus-within {
+    @include border-radius($input-border-radius);
+    box-shadow: 0 0 0 0.2rem rgba(12, 140, 170, 0.25);
+
+    *:focus {
+      outline: 0;
+      box-shadow: none;
+    }
+  }
+
+  .input-group-prepend, .input-group-append {
+    position: relative;
+    z-index: 5;
+  }
+}
 
 .table {
   thead th {
@@ -14,6 +41,26 @@ $modal-footer-padding: 1rem 2.5rem 2rem;
     border-top: 0;
     border-bottom: $table-border-width solid $table-border-color;
     color: $gray-600;
+  }
+}
+
+.table-selectable {
+  tbody {
+    tr {
+      cursor: pointer;
+
+      &.active {
+        background: $table-row-active-bg;
+      }
+
+      &:hover {
+        box-shadow: $table-row-focus-box-shadow;
+      }
+
+      &:focus, &.active:hover {
+        box-shadow: $table-row-focus-box-shadow;
+      }
+    }
   }
 }
 
@@ -54,33 +101,14 @@ $modal-footer-padding: 1rem 2.5rem 2rem;
   }
 }
 
-.module {
-}
+.input-border         { border: $border-width solid $input-border-color !important; }
+.input-border-top     { border-top: $border-width solid $input-border-color !important; }
+.input-border-right   { border-right: $border-width solid $input-border-color !important; }
+.input-border-bottom  { border-bottom: $border-width solid $input-border-color !important; }
+.input-border-left    { border-left: $border-width solid $input-border-color !important; }
 
-.module-header-container {
-  border-bottom: 1px solid $gray-200;
-}
-
-.module-header {
-  display: flex;
-  padding: 2rem 0;
-  align-items: center;
-}
-
-.module-title {
-  font-size: $font-size-base * 2;
-  font-weight: bold;
-}
-
-.module-toolbar {
-  margin-left: auto;
-}
-
-.module-header, .module-body {
-  margin: auto;
-  width: map-get($container-max-widths, 'lg');
-}
-
-.module-body {
-  margin-top: $spacer * 2;
-}
+.border-0        { border: 0 !important; }
+.border-top-0    { border-top: 0 !important; }
+.border-right-0  { border-right: 0 !important; }
+.border-bottom-0 { border-bottom: 0 !important; }
+.border-left-0   { border-left: 0 !important; }

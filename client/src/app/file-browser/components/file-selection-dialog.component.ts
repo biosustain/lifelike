@@ -1,6 +1,6 @@
 import { Component, Inject, ViewChild } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { PdfFile } from '../interfaces/pdf-files.interface';
+import { PdfFile } from 'app/interfaces/pdf-files.interface';
 
 @Component({
   selector: 'app-file-selection-dialog',

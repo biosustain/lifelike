@@ -1,12 +1,8 @@
 import { NgModule } from '@angular/core';
-import { SharedModule } from '../shared/shared.module';
-import {
-  DialogConfirmDeletionComponent,
-  DialogUploadComponent,
-  FileBrowserComponent,
-} from './file-browser.component';
-import { FileSelectionDialogComponent } from './file-selection-dialog.component';
-import { FileListComponent } from './file-list.component';
+import { SharedModule } from 'app/shared/shared.module';
+import { DialogConfirmDeletionComponent, DialogUploadComponent, FileBrowserComponent, } from './components/file-browser.component';
+import { FileSelectionDialogComponent } from './components/file-selection-dialog.component';
+import { FileListComponent } from './components/file-list.component';
 
 @NgModule({
   declarations: [
