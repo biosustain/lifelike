@@ -33,6 +33,7 @@ def verify_token(token):
         if decoded['type'] == 'access':
             user = pullUserFromAuthHead()
             g.current_user = user
+            current_app.logger.info(f'User login: <{g.current_user.email}>')
             return True
         else:
             raise NotAuthorizedException('no access found')
