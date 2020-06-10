@@ -207,7 +207,7 @@ export class PdfViewerComponent implements OnDestroy {
       idType = 'NCBI';
     }
 
-    const annotationToAdd = {
+    const annotationToAdd: Annotation = {
       ...annotation,
       meta: {
         ...annotation.meta,
@@ -226,7 +226,7 @@ export class PdfViewerComponent implements OnDestroy {
 
     this.addAnnotationSub = this.pdfAnnService.addCustomAnnotation(this.currentFileId, annotationToAdd).subscribe(
       response => {
-        this.addedAnnotation = annotationToAdd;
+        this.addedAnnotation = Object.assign({}, annotationToAdd, { uuid: response.uuid });
         this.snackBar.open('Annotation has been added', 'Close', {duration: 5000});
       },
       err => {

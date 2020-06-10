@@ -134,6 +134,7 @@ interface Annotation {
   keywords: string[];
   rects: Rect[];
   meta: Meta;
+  uuid?: string;
 }
 
 /**
