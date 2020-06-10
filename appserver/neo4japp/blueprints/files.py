@@ -218,6 +218,34 @@ def add_custom_annotation(id):
     return jsonify({'uuid': annotation_to_add['uuid']})
 
 
+@bp.route('/delete_custom_annotations/<id>', methods=['PATCH'])
+@auth.login_required
+def delete_custom_annotation(id):
+    file = Files.query.filter_by(file_id=id).one_or_none()
+    if not file:
+        raise RecordNotFoundException('File does not exist')
+    data = request.get_json()
+    user = g.current_user
+    user_roles = [role.name for role in user.roles]
+    uuids_to_delete = []
+    annotation_to_delete = next((ann for ann in file.custom_annotations if ann['uuid'] == data['uuid']), None)
+    outcome: Dict[str, str] = {}  # annotation uuid to deletion outcome
+    if not annotation_to_delete:
+        outcome[data['uuid']] = DeletionOutcome.NOT_FOUND.value
+        return jsonify(outcome)
+    text = annotation_to_delete['meta']['allText']
+    for annotation in file.custom_annotations:
+        if (data['deleteAll'] and annotation['meta']['allText'] == text) or annotation['uuid'] == data['uuid']:
+            if annotation['user_id'] != user.id and 'admin' not in user_roles:
+                outcome[annotation['uuid']] = DeletionOutcome.NOT_OWNER.value
+                continue
+            uuids_to_delete.append(annotation['uuid'])
+            outcome[annotation['uuid']] = DeletionOutcome.DELETED.value
+    file.custom_annotations = [ann for ann in file.custom_annotations if ann['uuid'] not in uuids_to_delete]
+    db.session.commit()
+    return jsonify(outcome)
+
+
 def annotate(filename, pdf_file_object) -> dict:
     lmdb_dao = get_lmdb_dao()
     pdf_parser = get_annotations_pdf_parser()
