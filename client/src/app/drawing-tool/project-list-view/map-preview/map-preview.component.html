@@ -15,7 +15,7 @@
       </p>
     </div>
     <!-- SubType -->
-    <div>
+    <div *ngIf='node?.data?.subtype'>
       <p [ngClass]='nodeStyle' class='b'>
         SubType
       </p>
