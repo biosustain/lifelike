@@ -3,17 +3,17 @@ from flask import Blueprint
 from appserver.neo4japp.blueprints import auth
 from appserver.neo4japp.models import AnnotationStyle, DomainULRsMap
 
-bp = Blueprint('files', __name__, url_prefix='/files')
+bp = Blueprint('annotations', __name__, url_prefix='/annotations')
 
 
-@bp.route('/upload', methods=['GET'])
+@bp.route('/style', methods=['GET'])
 @auth.login_required
 def get_style(annotation):
     style = AnnotationStyle.query.filter_by(label=annotation)
     return style.get_as_json()
 
 
-@bp.route('/upload', methods=['GET'])
+@bp.route('/uri', methods=['GET'])
 @auth.login_required
 def get_uri(identifier, domain):
     uri = DomainULRsMap.query.filter_by(domain=domain)
