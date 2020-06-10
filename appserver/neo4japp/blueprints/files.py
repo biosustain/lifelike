@@ -209,12 +209,13 @@ def get_annotations(id):
 def add_custom_annotation(id):
     annotation_to_add = request.get_json()
     annotation_to_add['user_id'] = g.current_user.id
+    annotation_to_add['uuid'] = str(uuid.uuid4())
     file = Files.query.filter_by(file_id=id).one_or_none()
     if not file:
         raise RecordNotFoundException('File does not exist')
     file.custom_annotations = [annotation_to_add, *file.custom_annotations]
     db.session.commit()
-    return {'status': 'success'}, 200
+    return jsonify({'uuid': annotation_to_add['uuid']})
 
 
 def annotate(filename, pdf_file_object) -> dict:
