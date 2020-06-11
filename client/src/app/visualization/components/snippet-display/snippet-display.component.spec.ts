@@ -141,15 +141,15 @@ describe('SnippetDisplayComponentComponent', () => {
         expect(pubData.textContent).toEqual('Mock Journal (9999)');
     });
 
-    it('should link to pubmed', () => {
+    it('should link to pubtator', () => {
         const pubmedLinks = document.getElementsByClassName('pubmed-link');
 
         expect(pubmedLinks.length).toEqual(1);
 
         const link = pubmedLinks[0];
 
-        expect(link.getAttribute('href')).toEqual('https://pubmed.ncbi.nlm.nih.gov/123456/');
-        expect(link.textContent).toEqual('123456launch'); // 'launch' is here because of the mat-icon
+        expect(link.getAttribute('href')).toEqual('https://www.ncbi.nlm.nih.gov/research/pubtator/?view=docsum&query=123456');
+        expect(link.textContent).toEqual('123456');
     });
 
     it('should show "Showing 0 - 0" of 0" and no page limit selector if there are no results', () => {
