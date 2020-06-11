@@ -1,8 +1,9 @@
-import { Component, Inject, OnDestroy, OnInit } from '@angular/core';
-import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { throttleTime } from 'rxjs/operators';
-import { asyncScheduler, Observable, Subscription } from 'rxjs';
-import { Progress } from 'app/interfaces/common-dialog.interface';
+import {Component, Inject, Input, OnDestroy, OnInit} from '@angular/core';
+import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
+import {throttleTime} from 'rxjs/operators';
+import {asyncScheduler, Observable, Subscription} from 'rxjs';
+import {Progress} from 'app/interfaces/common-dialog.interface';
+import {NgbActiveModal} from "@ng-bootstrap/ng-bootstrap";
 
 /**
  * A dialog to indicate the progress of a process.
@@ -10,21 +11,17 @@ import { Progress } from 'app/interfaces/common-dialog.interface';
 @Component({
   selector: 'app-progress-dialog',
   templateUrl: './progress-dialog.component.html',
-  styleUrls: ['./progress-dialog.component.scss'],
 })
 export class ProgressDialogComponent implements OnInit, OnDestroy {
-  title: string;
-  progressObservable: Observable<Progress>;
+  @Input() title: string;
+  @Input() progressObservable: Observable<Progress>;
   progressSubscription: Subscription;
   /**
    * Periodically updated with the progress of the upload.
    */
   lastProgress: Progress = new Progress();
 
-  constructor(private dialogRef: MatDialogRef<ProgressDialogComponent>,
-              @Inject(MAT_DIALOG_DATA) data) {
-    this.title = data.title;
-    this.progressObservable = data.progressObservable;
+  constructor(public activeModal: NgbActiveModal) {
   }
 
   ngOnInit() {

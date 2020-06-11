@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
 import { isEqual, sortBy } from 'lodash';
-import { Project } from 'app/drawing-tool/services/interfaces';
+import {NODE_TYPE_ID, Project, UniversalGraphNode} from 'app/drawing-tool/services/interfaces';
 import { Subscription } from 'rxjs';
 import { ProjectsService } from 'app/drawing-tool/services';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
@@ -36,6 +36,7 @@ export class MapListComponent implements OnInit, OnDestroy {
    */
   private previousSearchParams: SearchParameters;
 
+  @Input() templateView = false;
   private projects: Project[] = [];
   private readonly refreshSubscription: Subscription;
   private readonly refreshTask: BackgroundTask<SearchParameters, {
@@ -82,5 +83,19 @@ export class MapListComponent implements OnInit, OnDestroy {
       action,
       project
     });
+  }
+
+  createNodeDropData(project: Project) {
+    return {
+      type: NODE_TYPE_ID,
+      node: {
+        display_name: project.label,
+        label: 'map',
+        sub_labels: [],
+        data: {
+          source: '/dt/map/' + project.id,
+        }
+      } as Partial<UniversalGraphNode>,
+    };
   }
 }

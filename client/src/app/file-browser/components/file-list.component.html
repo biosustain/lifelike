@@ -1,14 +1,14 @@
-<div>
-  <mat-form-field class="w-100" *ngIf="refreshTask.loaded">
+<div *ngIf="(refreshTask.status$ | async) as status">
+  <mat-form-field class="w-100" *ngIf="status.loaded">
     <input name="search" matInput placeholder="Search" [formControl]="filesFilter">
   </mat-form-field>
-  <div *ngIf="!files.length && !refreshTask.running" class="mt2">
+  <div *ngIf="!files.length && !status.running" class="mt2">
     There are no files to show.
   </div>
-  <div *ngIf="files.length && !filteredFiles.length && !refreshTask.running" class="mt2">
+  <div *ngIf="files.length && !filteredFiles.length && !status.running" class="mt2">
     Your search filter does not match any files.
   </div>
-  <div *ngIf="refreshTask.running" fxLayout="row" fxLayoutAlign="center center" class="mt2 mb2">
+  <div *ngIf="status.running" fxLayout="row" fxLayoutAlign="center center" class="mt2 mb2">
     <mat-icon>hourglass_empty</mat-icon>
     Loading file list...
   </div>

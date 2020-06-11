@@ -1,25 +1,11 @@
-<as-split
-    cdkDropListGroup
-    unit="percent"
-    direction="horizontal"
-    gutterSize='5'
-    #split="asSplit">
-    <as-split-area
-      [size]="splitPanelLength"
-      #area1="asSplitArea">
-      <!-- Left Panel -->
+<as-split cdkDropListGroup unit="pixel" direction="horizontal" [gutterSize]="splitPanelLength ? 5 : 0" #splitComponent>
+    <as-split-area [size]="splitPanelLength">
       <ng-container #leftPanel></ng-container>
     </as-split-area>
-    <as-split-area
-      size="100"
-      #area2="asSplitArea">
-      <!-- Drawing Tool -->
-      <div id='dropme' class="h-100">
-        <app-drawing-tool
-        [currentApp]='currentApp'
-        [currentMap]='currentMap'
-        (openApp)='openApp($event)'
-        (saveStateListener)='resolveSaveState($event)'>
+    <as-split-area>
+      <div id="dropme" class="h-100">
+        <app-drawing-tool [currentApp]="currentApp" [currentMap]="currentMap" (openApp)="openApp($event)"
+          (saveStateListener)="resolveSaveState($event)">
       </app-drawing-tool>
       </div>
     </as-split-area>

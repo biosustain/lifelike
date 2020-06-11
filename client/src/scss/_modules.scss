@@ -37,7 +37,9 @@
 
   .module-header, .module-body {
     margin: auto;
-    width: map-get($container-max-widths, 'lg');
+    padding-left: 2rem;
+    padding-right: 2rem;
+    max-width: map-get($container-max-widths, 'lg');
   }
 
   .module-body {

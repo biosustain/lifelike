@@ -1,99 +1,3 @@
-@mixin scrollbars($size, $foreground-color, $background-color: mix($foreground-color, white, 50%)) {
-
-  // For Google Chrome
-  &::-webkit-scrollbar {
-    width: $size;
-    height: $size;
-  }
-
-  &::-webkit-scrollbar-thumb {
-    background: $foreground-color;
-  }
-
-  &::-webkit-scrollbar-track {
-    background: $background-color;
-  }
-
-  // For Internet Explorer
-  & {
-    scrollbar-face-color: $foreground-color;
-    scrollbar-track-color: $background-color;
-  }
-}
-
-@mixin full {
-  width: 100%;
-  height: 100vh;
-  overflow-y: hidden;
-}
-
-@mixin overlay {
-  position: absolute;
-  z-index: 2;
-  border-radius: 0.5rem 0.5rem 0.5rem 0.5rem;
-  background: #fff;
-  overflow-y: auto;
-  box-shadow: 2px 2px 8px 0 rgba(0, 0, 0, .2);
-  margin: 1rem;
-}
-
-@mixin noselect {
-  -webkit-touch-callout: none; /* iOS Safari */
-  -webkit-user-select: none; /* Safari */
-  -khtml-user-select: none; /* Konqueror HTML */
-  -moz-user-select: none; /* Old versions of Firefox */
-  -ms-user-select: none; /* Internet Explorer/Edge */
-  user-select: none;
-  /* Non-prefixed version, currently
-                                   supported by Chrome, Opera and Firefox */
-}
-
-#drawing-tool-view-container {
-  position: relative;
-
-  #canvas {
-    @include full;
-
-    background: #F2F2F2;
-  }
-
-  #title {
-    @include overlay;
-    bottom: 0;
-    right: 0;
-    background-color: rgba(255, 255, 255, 0);
-    box-shadow: unset;
-    color: #3797DB;
-    overflow: hidden;
-  }
-
-  #tool-panel {
-    display: none;
-  }
-
-  #info-panel {
-    width: 16rem;
-    top: 0;
-    right: 0;
-    max-height: calc(100vh - 5rem);
-    background-color: #fff;
-    @include overlay;
-    @include scrollbars(.25em, #3797DB);
-  }
-
-  #palette-panel::-webkit-scrollbar {
-    display: none;
-  }
-
-  #palette-panel {
-    @include overlay;
-    width: 16rem;
-    max-height: calc(100vh - 7rem);
-    bottom: 0;
-    left: 0;
-  }
-}
-
 @import 'src/scss/variables';
 
 .graph-container {
@@ -124,7 +28,12 @@
   position: absolute;
   left: $spacer;
   bottom: $spacer;
+  width: 16rem;;
+  padding: 1rem;
   z-index: 1;
-  width: 16rem;
+  overflow: auto;
   max-height: calc(100vh - 7rem);
+  background: $white;
+  border: 1px solid $floating-toolbar-border-color;
+  border-radius: $floating-toolbar-border-radius;
 }

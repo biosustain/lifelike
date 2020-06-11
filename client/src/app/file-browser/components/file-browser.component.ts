@@ -1,17 +1,16 @@
-import { Component, Input, OnDestroy, OnInit } from '@angular/core';
-import { FormControl } from '@angular/forms';
-import { Router } from '@angular/router';
-import { SelectionModel } from '@angular/cdk/collections';
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { BehaviorSubject, Subscription, throwError } from 'rxjs';
-import { AnnotationStatus, PdfFile, UploadPayload, UploadType } from 'app/interfaces/pdf-files.interface';
-import { PdfFilesService } from 'app/shared/services/pdf-files.service';
-import { HttpEventType } from '@angular/common/http';
-import { Progress, ProgressMode } from 'app/interfaces/common-dialog.interface';
-import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
-import { BackgroundTask } from 'app/shared/rxjs/background-task';
-import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
-
+import {Component, Input, OnDestroy, OnInit} from '@angular/core';
+import {FormControl} from '@angular/forms';
+import {Router} from '@angular/router';
+import {SelectionModel} from '@angular/cdk/collections';
+import {MatSnackBar} from '@angular/material/snack-bar';
+import {BehaviorSubject, Subscription, throwError} from 'rxjs';
+import {AnnotationStatus, PdfFile, UploadPayload, UploadType} from 'app/interfaces/pdf-files.interface';
+import {PdfFilesService} from 'app/shared/services/pdf-files.service';
+import {HttpEventType} from '@angular/common/http';
+import {Progress, ProgressMode} from 'app/interfaces/common-dialog.interface';
+import {ProgressDialog} from 'app/shared/services/progress-dialog.service';
+import {BackgroundTask} from 'app/shared/rxjs/background-task';
+import {NgbActiveModal, NgbModal} from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
   selector: 'app-file-browser',
@@ -20,7 +19,7 @@ import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 })
 export class FileBrowserComponent implements OnInit, OnDestroy {
   files: PdfFile[];
-  shownFiles: PdfFile[];
+  shownFiles: PdfFile[] = [];
   filterQuery = '';
   loadTask: BackgroundTask<void, PdfFile[]> = new BackgroundTask(() => this.pdf.getFiles());
   loadTaskSubscription: Subscription;
@@ -38,14 +37,13 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.loadTaskSubscription = this.loadTask.results$.subscribe(([files]) => {
+    this.loadTaskSubscription = this.loadTask.results$.subscribe(({
+                                                                    result: files
+                                                                  }) => {
         // We assume that fetched files are correctly annotated
         files.forEach((file: PdfFile) => file.annotation_status = AnnotationStatus.Success);
         this.files = files;
         this.updateFilter();
-      },
-      err => {
-        this.snackBar.open(`Cannot fetch list of files: ${err}`, 'Close', {duration: 10000});
       }
     );
 
@@ -59,6 +57,39 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
   updateDataSource() {
     this.selection.clear();
     this.loadTask.update();
+  }
+
+  isAllSelected(): boolean {
+    if (!this.selection.selected.length) {
+      return false;
+    }
+    for (const item of this.shownFiles) {
+      if (!this.selection.isSelected(item)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  toggleAllSelected(): void {
+    if (this.isAllSelected()) {
+      this.selection.clear();
+    } else {
+      this.selection.select(...this.shownFiles);
+    }
+  }
+
+  /**
+   * Get selected files that are also shown.
+   */
+  getSelectedShownFiles() {
+    const result = [];
+    for (const item of this.shownFiles) {
+      if (this.selection.isSelected(item)) {
+        result.push(item);
+      }
+    }
+    return result;
   }
 
   upload(data: UploadPayload) {
@@ -113,7 +144,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
   }
 
   deleteFiles() {
-    const ids: string[] = this.selection.selected.map((file: PdfFile) => file.file_id);
+    const ids: string[] = this.getSelectedShownFiles().map((file: PdfFile) => file.file_id);
     this.pdf.deleteFiles(ids).subscribe(
       (res) => {
         let msg = 'Deletion completed';
@@ -133,7 +164,8 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
 
   reannotate() {
     this.isReannotating = true;
-    const ids: string[] = this.selection.selected.map((file: PdfFile) => {
+    const selected = this.getSelectedShownFiles();
+    const ids: string[] = selected.map((file: PdfFile) => {
       file.annotation_status = AnnotationStatus.Loading;
       return file.file_id;
     });
@@ -143,7 +175,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
       mode: ProgressMode.Buffer,
     }));
     const progressDialogRef = this.progressDialog.display({
-      title: `Reannotating file${this.selection.selected.length === 1 ? '' : 's'}...`,
+      title: `Reannotating file${selected.length === 1 ? '' : 's'}...`,
       progressObservable,
     });
     this.pdf.reannotateFiles(ids).subscribe(
@@ -172,15 +204,6 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
     );
   }
 
-  // Adapted from https://v8.material.angular.io/components/table/overview#selection
-  masterToggle() {
-    if (this.selection.selected.length === this.files.length) {
-      this.selection.clear();
-    } else {
-      this.selection.select(...this.files);
-    }
-  }
-
   applyFilter(query: string) {
     this.filterQuery = query.trim();
     this.updateFilter();
@@ -198,6 +221,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
       if (shouldDelete) {
         this.deleteFiles();
       }
+    }, () => {
     });
   }
 
@@ -211,6 +235,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
       if (runUpload) {
         this.upload(uploadData);
       }
+    }, () => {
     });
   }
 }
@@ -236,20 +261,30 @@ export class DialogUploadComponent implements OnInit, OnDestroy {
   pickedFileName: string;
   @Input() payload: UploadPayload; // to avoid writing this.data.payload everywhere
 
-  selectedTab = new FormControl(0);
-  tabChange: Subscription;
-
   filename = new FormControl('');
   filenameChange: Subscription;
   url = new FormControl('');
   urlChange: Subscription;
 
-  activeTab: string;
+  activeTab = 'upload';
 
   constructor(public activeModal: NgbActiveModal) {
   }
 
   ngOnInit() {
+    // @ts-ignore
+    navigator.permissions.query({name: 'clipboard-read'}).then(result => {
+      if (result.state === 'granted' || result.state === 'prompt') {
+        // @ts-ignore
+        navigator.clipboard.readText().then(data => {
+          if (data.match(/^https?:\/\//i)) {
+            this.activeTab = 'url';
+            this.url.setValue(data);
+          }
+        });
+      }
+    });
+
     this.filenameChange = this.filename.valueChanges.subscribe((value: string) => {
       this.payload.filename = value;
       this.validatePayload();
@@ -258,15 +293,10 @@ export class DialogUploadComponent implements OnInit, OnDestroy {
       this.payload.url = value;
       this.validatePayload();
     });
-    this.tabChange = this.selectedTab.valueChanges.subscribe(value => {
-      this.payload.type = value === 0 ? UploadType.Files : UploadType.Url;
-      this.validatePayload();
-    });
   }
 
   ngOnDestroy() {
     this.urlChange.unsubscribe();
-    this.tabChange.unsubscribe();
   }
 
   /** Called upon picking a file from the Browse button */
@@ -282,10 +312,11 @@ export class DialogUploadComponent implements OnInit, OnDestroy {
 
   /** Validates if the Upload button should be enabled or disabled */
   validatePayload() {
+    this.payload.type = this.activeTab === 'upload' ? UploadType.Files : UploadType.Url;
     const filesIsOk = this.payload.files && this.payload.files.length > 0;
     const filenameIsOk = this.payload.filename && this.payload.filename.length > 0;
     const urlIsOk = this.payload.url && this.payload.url.length > 0;
-    if (this.payload.type === UploadType.Files) {
+    if (this.activeTab === 'upload') {
       this.forbidUpload = !filesIsOk;
     } else { // UploadType.Url
       this.forbidUpload = !(filenameIsOk && urlIsOk);

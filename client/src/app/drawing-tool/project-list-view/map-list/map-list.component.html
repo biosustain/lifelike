@@ -80,7 +80,42 @@
         <div class="progress-bar progress-bar-striped progress-bar-animated bg-secondary" style="width: 100%"></div>
       </div>
 
-      <table class="table table-selectable my-0" style="table-layout: fixed">
+      <div *ngIf="templateView" class="p-3">
+        <div *ngIf="status.placeholdersShown">
+          <div class="mb-2">
+            <div class="text-truncate">
+              <span class="placeholder-box">Loading loading</span>
+            </div>
+            <div class="text-truncate mt-2">
+              <span class="placeholder-box">Loading loading loading</span>
+            </div>
+          </div>
+          <div class="mb-2">
+            <div class="text-truncate">
+              <span class="placeholder-box">Loading loading loading</span>
+            </div>
+            <div class="text-truncate mt-2">
+              <span class="placeholder-box">Loading loading loading blah</span>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="status.resultsShown" cdkDropList cdkDropListSortingDisabled>
+          <div *ngFor="let project of projects" [id]="project.hash_id" [title]="project.label" cdkDrag class="mb-2"
+               [cdkDragData]="createNodeDropData(project)">
+            <div class="text-truncate graph-node">
+              {{ project.label }}
+            </div>
+            <div class="text-truncate text-muted d-flex">
+              <div class="text-truncate mr-auto">
+                By {{project?.author}}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <table class="table table-selectable my-0" style="table-layout: fixed" *ngIf="!templateView">
         <colgroup>
           <col>
           <col style="width: 90px">
