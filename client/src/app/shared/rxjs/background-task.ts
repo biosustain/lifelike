@@ -118,7 +118,7 @@ export class BackgroundTask<T, R> {
       running,
       delayedRunning: !this.initialRunCompleted || this.delayedRunning,
       placeholdersShown: !this.initialRunCompleted && this.delayedRunning,
-      progressShown: this.delayedRunning,
+      progressShown: this.initialRunCompleted && this.delayedRunning,
       resultsShown: this.initialRunCompleted,
       emptyResultsShown: this.initialRunCompleted && !this.delayedRunning,
       failedErrorShown: this.state === TaskState.RetryLimitExceeded,

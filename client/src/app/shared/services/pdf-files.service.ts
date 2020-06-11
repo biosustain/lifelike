@@ -21,10 +21,6 @@ export class PdfFilesService {
     const options = { headers: this.getAuthHeader() };
     return this.http.get<PdfFiles>(`${this.baseUrl}/list`, options).pipe(
       map((res: PdfFiles) => res.files),
-      catchError(err => {
-        console.error(err);
-        return of([]);
-      }),
     );
   }
 

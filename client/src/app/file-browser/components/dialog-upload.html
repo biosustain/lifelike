@@ -1,43 +1,44 @@
+<form (submit)="activeModal.close(true); $event.preventDefault()">
+  <div class="modal-header">
+    <h4 class="modal-title">Add File</h4>
+  </div>
 
-<div class="modal-header">
-  <h4 class="modal-title">Add File</h4>
-</div>
-
-<div class="modal-body">
-  <ul ngbNav #nav="ngbNav" [(activeId)]="activeTab" class="nav-tabs">
-    <li [ngbNavItem]="1">
-      <a ngbNavLink>From Device</a>
-      <ng-template ngbNavContent>
-        <div class="d-flex align-items-center">
-          <button type="button" class="btn btn-secondary" (click)="fileInput.click()">Browse...</button>
-          <input #fileInput hidden type="file" accept="application/pdf"
-                 (change)="onFilesPick($event.target.files); $event.target.value = null;">
-          <div class="ml-3 text-truncate" *ngIf="pickedFileName">
-            {{pickedFileName}}
+  <div class="modal-body">
+    <ul ngbNav #nav="ngbNav" [(activeId)]="activeTab" class="nav-tabs" (activeIdChange)="validatePayload()">
+      <li [ngbNavItem]="'upload'">
+        <a ngbNavLink>From Device</a>
+        <ng-template ngbNavContent>
+          <div class="d-flex align-items-center">
+            <button type="button" class="btn btn-secondary" (click)="fileInput.click()">Browse...</button>
+            <input #fileInput hidden type="file" accept="application/pdf"
+                   (change)="onFilesPick($event.target.files); $event.target.value = null;">
+            <div class="ml-3 text-truncate" *ngIf="pickedFileName">
+              {{pickedFileName}}
+            </div>
           </div>
-        </div>
-      </ng-template>
-    </li>
-    <li [ngbNavItem]="2">
-      <a ngbNavLink>From URL</a>
-      <ng-template ngbNavContent>
-        <div class="form-group">
-          <label for="url">URL</label>
-          <input id="url" class="form-control" [formControl]="url" placeholder="https://www.example.com/file.pdf">
-        </div>
+        </ng-template>
+      </li>
+      <li [ngbNavItem]="'url'">
+        <a ngbNavLink>From URL</a>
+        <ng-template ngbNavContent>
+          <div class="form-group">
+            <label for="url">URL:</label>
+            <input id="url" class="form-control" [formControl]="url" placeholder="https://www.example.com/file.pdf">
+          </div>
 
-        <div class="form-group">
-          <label for="filename">Filename</label>
-          <input id="filename" class="form-control" [formControl]="filename" placeholder="file.pdf">
-        </div>
-      </ng-template>
-    </li>
-  </ul>
+          <div class="form-group">
+            <label for="filename">Filename:</label>
+            <input id="filename" class="form-control" [formControl]="filename" placeholder="file.pdf">
+          </div>
+        </ng-template>
+      </li>
+    </ul>
 
-  <div [ngbNavOutlet]="nav" class="mt-4"></div>
-</div>
+    <div [ngbNavOutlet]="nav" class="mt-4"></div>
+  </div>
 
-<div class="modal-footer">
-  <button type="button" class="btn btn-light" (click)="activeModal.close()">Cancel</button>
-  <button type="button" class="btn btn-primary" (click)="activeModal.close(true)" [disabled]="forbidUpload">Upload</button>
-</div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-light" (click)="activeModal.close()">Cancel</button>
+    <button type="submit" class="btn btn-primary" [disabled]="forbidUpload">Upload</button>
+  </div>
+</form>
