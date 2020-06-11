@@ -41,10 +41,23 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
     }
   }
 
+  @Input()
+  set deletedAnnotationIds(uuids: string[]) {
+    if (uuids) {
+      const deletedAnnotations = this.annotations.filter((ann: Annotation) => uuids.includes(ann.uuid));
+      deletedAnnotations.forEach((ann: Annotation) => {
+        const ref = this.annotationHighlightElementMap.get(ann);
+        jQuery(ref).remove();
+      });
+      this.annotations = this.annotations.filter((ann: Annotation) => !uuids.includes(ann.uuid));
+    }
+  }
+
   @Output() loadCompleted = new EventEmitter();
   @Output() dropEvents = new EventEmitter();
   // tslint:disable
   @Output('custom-annotation-created') annotationCreated = new EventEmitter();
+  @Output('custom-annotation-deleted') annotationDeleted = new EventEmitter();
 
   /**
    * Stores a mapping of annotations to the HTML elements that are used to show it.
@@ -110,11 +123,17 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
         (window as any).pdfViewerRef.copySelectedText();
       });
     }
+    (window as any).deleteCustomAnnotation = (uuid) => {
+      (window as any).pdfViewerRef.zone.run(() => {
+        (window as any).pdfViewerRef.deleteCustomAnnotation(uuid);
+      });
+    }
     (window as any).pdfViewerRef = {
       zone: this.zone,
       componentFn: () => this.openAnnotationPanel(),
       openLinkPanel: () => this.openAddLinkPanel(),
       copySelectedText: () => this.copySelectedText(),
+      deleteCustomAnnotation: (uuid) => this.deleteCustomAnnotation(uuid),
       component: this
     };
   }
@@ -342,7 +361,12 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
       base.push(`Id Type: ${an.meta.idType}`);
     }
     if (an.meta.isCustom) {
-      base.push(`user generated annotation`);
+      base.push(`
+        <div style="display: inline-flex;">
+          <span>user generated annotation</span>
+          <span class="material-icons" style="color: grey; cursor: pointer" onclick="deleteCustomAnnotation('${an.uuid}')">delete</span>
+        </div>
+      `);
     }
     if (an.meta.links && an.meta.links.google) {
       base.push(`<a target="_blank" href="${an.meta.links.google}">Google</a>`);
@@ -359,7 +383,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
     return base.join('<br/>');
   }
 
-
+  
   processAnnotations(pageNum: number, pdfPageView: any) {
     this.pageRef[pageNum] = pdfPageView;
     const filteredAnnotations = this.annotations.filter((an) => an.pageNumber === pageNum);
@@ -794,6 +818,10 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
 
     this.snackBar.open('It has been copied to clipboard', 'Close', {duration: 5000});
   
+  }
+
+  deleteCustomAnnotation(uuid) {
+    this.annotationDeleted.emit(uuid);
   }
 
 }
