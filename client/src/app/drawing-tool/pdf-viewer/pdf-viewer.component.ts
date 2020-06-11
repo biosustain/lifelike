@@ -55,7 +55,7 @@ export class PdfViewerComponent implements OnDestroy {
   @Output() filterChangeSubject = new Subject<void>();
   filterPopupOpen = false;
 
-  searchChanged: Subject<string> = new Subject<string>();
+  searchChanged: Subject<{keyword: string, findPrevious: boolean }> = new Subject<{keyword: string, findPrevious: boolean }>();
   goToPosition: Subject<Location> = new Subject<Location>();
   loadTask: BackgroundTask<[PdfFile, Location], [ArrayBuffer, any]> =
     new BackgroundTask(([file, loc]) => {
@@ -385,7 +385,24 @@ export class PdfViewerComponent implements OnDestroy {
   }
 
   searchQueryChanged(query) {
-    this.searchChanged.next(query);
+    this.searchChanged.next({
+      keyword: query,
+      findPrevious: false
+    });
+  }
+
+  findNext(query) {
+    this.searchChanged.next({
+      keyword: query,
+      findPrevious: false
+    });
+  }
+
+  findPrevious(query) {
+    this.searchChanged.next({
+      keyword: query,
+      findPrevious: true
+    });
   }
 
 }

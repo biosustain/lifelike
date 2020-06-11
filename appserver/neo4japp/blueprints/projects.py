@@ -1,4 +1,11 @@
-from flask import request, jsonify, Blueprint, g, abort
+from flask import (
+    current_app,
+    request,
+    jsonify,
+    Blueprint,
+    g,
+    abort,
+)
 from neo4japp.blueprints.auth import auth
 from neo4japp.blueprints.permissions import requires_project_role, requires_project_permission
 from neo4japp.database import db, get_projects_service
@@ -48,6 +55,9 @@ def add_projects():
         description=data['description'],
         users=[user.id],  # TODO: deprecate once migration is complete
     )
+
+    current_app.logger.info(
+        f'User created projects: <{g.current_user.email}:{projects.project_name}>')
 
     proj_service = get_projects_service()
     proj_service.create_projects(user, projects)
@@ -221,3 +231,4 @@ def get_child_directories(current_dir_id: int, project_name: str = ''):
     current_dir = Directory.query.get(current_dir_id)
     child_dirs = proj_service.get_immediate_child_dirs(projects, current_dir)
     yield jsonify(dict(results=[d.to_dict() for d in child_dirs]))
+

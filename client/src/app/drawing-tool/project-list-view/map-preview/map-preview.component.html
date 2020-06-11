@@ -3,7 +3,7 @@
   <!-- Read Panel -->
   <div *ngIf='node' id='read-panel'>
     <div [ngClass]='nodeStyle'>
-      <h3 class='roboto'>{{node?.label}}</h3>
+      <h2 class='roboto'>{{node?.label}}</h2>
     </div>
     <!-- Type -->
     <div>
@@ -12,6 +12,15 @@
       </p>
       <p class='attr'>
         {{nodeStyle}}
+      </p>
+    </div>
+    <!-- SubType -->
+    <div *ngIf='node?.data?.subtype'>
+      <p [ngClass]='nodeStyle' class='b'>
+        SubType
+      </p>
+      <p class='attr'>
+        {{node?.data?.subtype}}
       </p>
     </div>
     <!-- Detail -->
@@ -43,17 +52,53 @@
       </div>
     </div>
   </div>
+  <!-- Meta Panel -->
+  <div id='meta-panel'>
+    <div class='cant-hide'>
+      <div class='fr'>
+        <mat-icon (click)='toggleHidden()' class='dib fr ma1 white'>minimize</mat-icon>
+        <mat-icon *ngIf='childMode' (click)='projectAPICall("edit")' class='dib fr ma1 white'>edit</mat-icon>
+      </div>
+      <h2>{{project?.label}}</h2>
+    </div>
+    <div class='can-hide' [ngClass]='{"hidden": minimized}'>
+      <p class='author'>
+        By {{project?.author}}
+      </p>
+      <p class='date'>
+        Modified {{project?.date_modified | friendlyDateStr}}
+      </p>
+      <p class='description lh-copy'>
+        {{project?.description}}
+      </p>
+      <div *ngIf='childMode' fxLayout='row wrap' class='action'>
+        
+        <button class='ma1' (click)='projectAPICall("edit")' mat-flat-button color="accent">Edit</button>
+
+        <button class='ma1' (click)='projectAPICall("share")' mat-flat-button color='primary'>Share</button>
+
+        <button class='ma1' (click)='projectAPICall("delete")' mat-flat-button color="warn">Delete</button>    
+        <button
+          class='ma1'
+          mat-flat-button
+          color="primary"
+          (click)='projectAPICall("settings")'>
+          Settings
+        </button>
+        <button
+          class='ma1'
+          *ngIf="(userRoles$ | async)?.includes('admin')"
+          mat-flat-button
+          color="accent"
+          (click)='projectAPICall("download")'>
+          Download
+        </button>
+      </div>
+    </div>
+  </div>
   <!-- Tool Panel -->
   <div [ngClass]="{'childless': !childMode}" id='tool-panel'>
     <mat-icon matTooltip="Fit Graph" matTooltipPosition="right" class='fit' (click)='fit()'>
       zoom_out_map
-    </mat-icon>
-    <mat-icon *ngIf='screenMode==="shrink"' matTooltip="Fullscreen" matTooltipPosition="right" class='Full Screen'
-      (click)='toggle()'>
-      fullscreen
-    </mat-icon>
-    <mat-icon *ngIf='screenMode==="grow"' matTooltip="Shrink" matTooltipPosition="right" class='Shrink'
-      (click)='toggle()'>
-      fullscreen_exit
     </mat-icon>
   </div>
