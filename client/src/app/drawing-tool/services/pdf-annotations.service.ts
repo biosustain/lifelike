@@ -75,6 +75,20 @@ export class PdfAnnotationsService {
   }
 
   /**
+   * Deletes custom annotation from the given file.
+   * @param fileId id of the file that contains the annotation
+   * @param uuid uuid of the annotation to be deleted
+   * @param deleteAll indicates if all the matching annotations should be deleted
+   */
+  deleteCustomAnnotation(fileId: string, uuid: string, deleteAll: boolean): Observable<any> {
+    return this.http.patch(
+      this.baseUrl + `/delete_custom_annotations/${fileId}`,
+      { uuid, deleteAll },
+      this.createHttpOptions(true)
+    );
+  }
+
+  /**
    * Search for annoation by id and return annotation object
    * @param annotationId id of the annotation to search for
    */
