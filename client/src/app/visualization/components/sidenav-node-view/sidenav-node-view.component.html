@@ -1,14 +1,15 @@
-<h1>Node Data View</h1>
-<div>Data:</div>
-<ul>
-  <li id="sidenav-node-display-name">Display Name: {{ nodeEntity.data.displayName }}</li>
-  <li id="sidenav-node-label">Label: {{ nodeEntity.data.primaryLabel }}</li>
-  <li>Sublabels:
-    <ul *ngIf="nodeEntity.data.subLabels.length > 1; else noSubLabels">
-      <li *ngFor="let label of nodeEntity.data.subLabels">
-        <div class="sidenav-node-sub-label">{{ label }}</div>
-      </li>
-    </ul>
-    <ng-template #noSubLabels>N/A</ng-template>
-  </li>
-</ul>
+<div fxLayout="row" fxLayoutAlign="start center">
+  <h1>{{ nodeEntity.data.displayName }}</h1>
+  <div
+    class="node-label"
+    [ngStyle]="{
+      'border': 'thin solid',
+      'border-radius': '10px',
+      'border-color': legend.get(nodeEntity.data.primaryLabel)[0],
+      'color': legend.get(nodeEntity.data.primaryLabel)[0],
+      'margin-left': '10px',
+      'padding': '5px'
+    }"
+  >{{ nodeEntity.data.primaryLabel }} </div>
+</div>
+<span>{{ nodeEntity.data.data.id }}</span>
