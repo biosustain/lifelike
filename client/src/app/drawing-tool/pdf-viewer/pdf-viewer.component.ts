@@ -16,6 +16,7 @@ import { PdfViewerLibComponent } from '../../pdf-viewer/pdf-viewer-lib.component
 import { ENTITY_TYPE_MAP, ENTITY_TYPES, EntityType } from 'app/shared/annotation-types';
 import { MatCheckboxChange } from '@angular/material';
 import { ActivatedRoute } from '@angular/router';
+import { ConfirmDialogComponent } from 'app/shared/components/confirm-dialog/confirm-dialog.component';
 
 class DummyFile implements PdfFile {
   constructor(
@@ -73,6 +74,8 @@ export class PdfViewerComponent implements OnDestroy {
   currentFileId: string;
   addedAnnotation: Annotation;
   addAnnotationSub: Subscription;
+  deletedAnnotationIds: string[];
+  deleteAnnotationSub: Subscription;
   pdfFileLoaded = false;
   sortedEntityTypeEntries = [];
   entityTypeVisibilityChanged = false;
@@ -239,6 +242,34 @@ export class PdfViewerComponent implements OnDestroy {
     this.updateSortedEntityTypeEntries();
   }
 
+  annotationDeleted(uuid) {
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      data: {
+        width: '500px',
+        message: 'Do you want to delete all matching annotations as well?'
+      }
+    });
+    dialogRef.afterClosed().subscribe((deleteAll: boolean) => {
+      this.deleteAnnotationSub = this.pdfAnnService.deleteCustomAnnotation(this.currentFileId, uuid, deleteAll).subscribe(
+        response => {
+          this.deletedAnnotationIds = [];
+          let msg = 'Deletion completed';
+          for (const [uuid, status] of Object.entries(response)) {
+            if (status === 'Deleted') {
+              this.deletedAnnotationIds.push(uuid);
+            } else {
+              msg = `${msg}, but one or more annotations could not be deleted because you are not the owner`;
+            }
+          }
+          this.snackBar.open(msg, 'Close', {duration: 10000});
+        },
+        err => {
+          this.snackBar.open(`Error: deletion failed`, 'Close', {duration: 10000});
+        }
+      );
+    });
+  }
+
   /**
    * Handle drop event from draggable annotations
    * of the pdf-viewer
@@ -335,6 +366,9 @@ export class PdfViewerComponent implements OnDestroy {
     }
     if (this.addAnnotationSub) {
       this.addAnnotationSub.unsubscribe();
+    }
+    if (this.deleteAnnotationSub) {
+      this.deleteAnnotationSub.unsubscribe();
     }
   }
 
