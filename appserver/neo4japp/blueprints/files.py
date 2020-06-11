@@ -99,9 +99,9 @@ def upload_pdf():
         db.session.add(file_content)
         db.session.commit()
 
-    description = request.form['description'] if 'description' in request.form else ''
-    doi = extract_doi(pdf_content)
-    upload_url = request.form['url'] if 'url' in request.form else None
+    description = request.form.get('description', '')
+    doi = extract_doi(pdf_content, file_id, filename)
+    upload_url = request.form.get('url', None)
 
     file = Files(
         file_id=file_id,
@@ -342,10 +342,11 @@ def delete_files():
     return jsonify(outcome)
 
 
-def extract_doi(pdf_content: bytes) -> Optional[str]:
+def extract_doi(pdf_content: bytes, file_id: str = None, filename: str = None) -> Optional[str]:
     chunk = pdf_content[:2**17]
     match = re.search(rb'(?:doi|DOI)(?::|=)\s*([\d\w\./%]+)', chunk)
     if match is None:
+        current_app.logger.warning('No DOI for file: %s, %s', file_id, filename)
         return None
     doi = match.group(1).decode('utf-8').replace('%2F', '/')
     return doi if doi.startswith('http') else f'https://doi.org/{doi}'
