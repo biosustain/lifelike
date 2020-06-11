@@ -2,10 +2,11 @@ import hashlib
 import io
 import json
 import os
+import re
 import uuid
 from datetime import datetime
 from enum import Enum
-from typing import Dict
+from typing import Dict, Optional
 import urllib.request
 from urllib.error import URLError
 
@@ -98,7 +99,9 @@ def upload_pdf():
         db.session.add(file_content)
         db.session.commit()
 
-    description = request.form['description'] if 'description' in request.form else ''
+    description = request.form.get('description', '')
+    doi = extract_doi(pdf_content, file_id, filename)
+    upload_url = request.form.get('url', None)
 
     file = Files(
         file_id=file_id,
@@ -107,7 +110,9 @@ def upload_pdf():
         content_id=file_content.id,
         user_id=user.id,
         annotations=annotations,
-        project=project
+        project=project,
+        doi=doi,
+        upload_url=upload_url,
     )
 
     db.session.add(file)
@@ -341,3 +346,13 @@ def delete_files():
     current_app.logger.info(f'User deleted file: <{g.current_user.email}:{file.filename}>')
 
     return jsonify(outcome)
+
+
+def extract_doi(pdf_content: bytes, file_id: str = None, filename: str = None) -> Optional[str]:
+    chunk = pdf_content[:2**17]
+    match = re.search(rb'(?:doi|DOI)(?::|=)\s*([\d\w\./%]+)', chunk)
+    if match is None:
+        current_app.logger.warning('No DOI for file: %s, %s', file_id, filename)
+        return None
+    doi = match.group(1).decode('utf-8').replace('%2F', '/')
+    return doi if doi.startswith('http') else f'https://doi.org/{doi}'
