@@ -12,4 +12,4 @@ from .neo4j import GraphNode, GraphRelationship
 from .files import Files, FileContent, LMDBsDates
 from .projects import Projects
 from .organism_match import OrganismGeneMatch
-from .entity_resources import DomainULRsMap, AnnotationStyle
+from .entity_resources import DomainULRsMap, AnnotationStyle, Color
