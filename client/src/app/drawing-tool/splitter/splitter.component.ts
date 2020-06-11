@@ -22,13 +22,13 @@ import {PdfFile} from '../../interfaces/pdf-files.interface';
 import {NodeSearchComponent} from '../../node-search/containers/node-search.component';
 
 
-
 @Component({
   selector: 'app-splitter',
   templateUrl: './splitter.component.html',
   styleUrls: ['./splitter.component.scss']
 })
 export class SplitterComponent implements OnInit, OnDestroy, AfterViewInit {
+  @ViewChild('splitComponent', {static: false}) splitComponent;
   @ViewChild(
     'leftPanel',
     {static: false, read: ViewContainerRef}
@@ -142,18 +142,20 @@ export class SplitterComponent implements OnInit, OnDestroy, AfterViewInit {
     if (this.currentApp !== appCmd.app) {
       let factory;
 
+      const splitterWidth = this.splitComponent.elRef.nativeElement.getBoundingClientRect().width;
+
       switch (appCmd.app) {
         case 'map-search':
           factory = this.r.resolveComponentFactory(MapListComponent);
-          this.splitPanelLength = 30;
+          this.splitPanelLength = 370;
           break;
         case 'node-search':
           factory = this.r.resolveComponentFactory(NodeSearchComponent);
-          this.splitPanelLength = 30;
+          this.splitPanelLength = 370;
           break;
         case 'pdf-viewer':
           factory = this.r.resolveComponentFactory(PdfViewerComponent);
-          this.splitPanelLength = 50;
+          this.splitPanelLength = splitterWidth * 0.4;
           break;
         default:
           break;
@@ -163,6 +165,8 @@ export class SplitterComponent implements OnInit, OnDestroy, AfterViewInit {
       this.currentApp = appCmd.app;
 
       this.dynamicComponentRef = this.leftPanel.createComponent(factory);
+
+      this.dynamicComponentRef.instance.templateView = true;
 
       this.dynamicComponentRef.changeDetectorRef.detectChanges();
     }

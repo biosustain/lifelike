@@ -106,4 +106,7 @@ export class NodeFormComponent {
     }
   }
 
+  mayShowDetailText() {
+    return this.node.label === 'note';
+  }
 }

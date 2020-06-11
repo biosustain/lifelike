@@ -1,18 +1,19 @@
-<h2 mat-dialog-title class="app-progress-dialog-title">
-  {{title}}
-</h2>
-
-<mat-dialog-content>
-  <div class="app-progress-dialog-progress-bar">
-    <!-- We don't want transition animations when switching progress bar modes -->
-    <mat-progress-bar [value]="lastProgress.value * 100" mode="determinate"
-                      *ngIf="lastProgress.mode === 'DETERMINATE'"></mat-progress-bar>
-    <mat-progress-bar mode="indeterminate" *ngIf="lastProgress.mode === 'INDETERMINATE'"></mat-progress-bar>
-    <mat-progress-bar mode="buffer" *ngIf="lastProgress.mode === 'BUFFER'"></mat-progress-bar>
-    <mat-progress-bar mode="query" *ngIf="lastProgress.mode === 'QUERY'"></mat-progress-bar>
+<div class="modal-header">
+  <h4 class="modal-title text-truncate">
+    {{title}}
+  </h4>
+</div>
+<div class="modal-body">
+  <div class="mb-2">
+    <ngb-progressbar *ngIf="lastProgress.mode === 'DETERMINATE'"
+                     type="primary" [value]="lastProgress.value * 100" [striped]="false" [animated]="false">
+    </ngb-progressbar>
+    <ngb-progressbar *ngIf="lastProgress.mode !== 'DETERMINATE'"
+                     type="primary" [value]="100" [striped]="true" [animated]="true">
+    </ngb-progressbar>
   </div>
 
-  <div class="app-progress-dialog-status">
+  <div>
     {{lastProgress.status}}
   </div>
-</mat-dialog-content>
+</div>

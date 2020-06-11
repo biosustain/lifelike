@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
+import {Component} from '@angular/core';
 
-import { annotationTypes } from 'app/shared/annotation-styles';
+import {AnnotationStyle, annotationTypes} from 'app/shared/annotation-styles';
+import {NODE_TYPE_ID, UniversalGraphNode} from '../../services/interfaces';
 
 @Component({
   selector: 'app-palette',
@@ -28,5 +29,16 @@ export class PaletteComponent {
 
   toggleExpansion() {
     this.expanded = !this.expanded;
+  }
+
+  createNodeDropData(annotationStyle: AnnotationStyle) {
+    return {
+      type: NODE_TYPE_ID,
+      node: {
+        display_name: annotationStyle.label,
+        label: annotationStyle.label,
+        sub_labels: [],
+      } as Partial<UniversalGraphNode>,
+    };
   }
 }

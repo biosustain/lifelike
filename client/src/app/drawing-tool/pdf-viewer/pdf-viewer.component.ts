@@ -1,21 +1,21 @@
-import { Component, EventEmitter, OnDestroy, Output, ViewChild } from '@angular/core';
-import { combineLatest, Subject, Subscription } from 'rxjs';
-import { PdfFilesService } from 'app/shared/services/pdf-files.service';
-import { Hyperlink, SearchLink } from 'app/shared/constants';
+import {Component, EventEmitter, OnDestroy, Output, ViewChild} from '@angular/core';
+import {combineLatest, Subject, Subscription} from 'rxjs';
+import {PdfFilesService} from 'app/shared/services/pdf-files.service';
+import {Hyperlink, SearchLink} from 'app/shared/constants';
 
-import { DataFlowService, PdfAnnotationsService, } from '../services';
+import {DataFlowService, PdfAnnotationsService,} from '../services';
 
-import { Annotation, Location, Meta, UniversalGraphNode } from '../services/interfaces';
+import {Annotation, Location, Meta, UniversalGraphNode} from '../services/interfaces';
 
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
-import { PdfFile } from '../../interfaces/pdf-files.interface';
-import { FileSelectionDialogComponent } from '../../file-browser/components/file-selection-dialog.component';
-import { BackgroundTask } from '../../shared/rxjs/background-task';
-import { PdfViewerLibComponent } from '../../pdf-viewer/pdf-viewer-lib.component';
-import { ENTITY_TYPE_MAP, ENTITY_TYPES, EntityType } from 'app/shared/annotation-types';
-import { MatCheckboxChange } from '@angular/material';
-import { ActivatedRoute } from '@angular/router';
+import {MatSnackBar} from '@angular/material/snack-bar';
+import {MatDialog, MatDialogConfig} from '@angular/material/dialog';
+import {PdfFile} from '../../interfaces/pdf-files.interface';
+import {FileSelectionDialogComponent} from '../../file-browser/components/file-selection-dialog.component';
+import {BackgroundTask} from '../../shared/rxjs/background-task';
+import {PdfViewerLibComponent} from '../../pdf-viewer/pdf-viewer-lib.component';
+import {ENTITY_TYPE_MAP, ENTITY_TYPES, EntityType} from 'app/shared/annotation-types';
+import {MatCheckboxChange} from '@angular/material';
+import {ActivatedRoute} from '@angular/router';
 
 class DummyFile implements PdfFile {
   constructor(
@@ -80,7 +80,7 @@ export class PdfViewerComponent implements OnDestroy {
   // search
   pdfQuery;
 
-  @ViewChild(PdfViewerLibComponent, { static: false }) pdfViewerLib;
+  @ViewChild(PdfViewerLibComponent, {static: false}) pdfViewerLib;
 
   constructor(
     private pdfAnnService: PdfAnnotationsService,
@@ -91,7 +91,10 @@ export class PdfViewerComponent implements OnDestroy {
     private route: ActivatedRoute
   ) {
     // Listener for file open
-    this.openPdfSub = this.loadTask.results$.subscribe(([[pdfFileContent, ann], [file, loc]]) => {
+    this.openPdfSub = this.loadTask.results$.subscribe(({
+                                                          result: [pdfFileContent, ann],
+                                                          value: [file, loc]
+                                                        }) => {
       this.pdfData = {data: new Uint8Array(pdfFileContent)};
       this.annotations = ann;
       this.updateAnnotationIndex();
@@ -272,7 +275,7 @@ export class PdfViewerComponent implements OnDestroy {
 
     this.dataFlow.pushNode2Canvas({
       hash: '', // To be replaced
-      display_name:  meta.type === 'Links' ? 'Link' : meta.allText,
+      display_name: meta.type === 'Links' ? 'Link' : meta.allText,
       label: meta.type.toLowerCase(),
       sub_labels: [],
       data: {

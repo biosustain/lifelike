@@ -143,3 +143,6 @@ export interface Project {
   /** ID of the user who made the project */
   user_id?: number;
 }
+
+export const MAP_TYPE_ID = 'LifelikeKnowledgeMap/1';
+export const NODE_TYPE_ID = 'LifelikeKnowledgeNode/1';

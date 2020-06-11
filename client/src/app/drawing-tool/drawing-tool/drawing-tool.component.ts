@@ -7,7 +7,7 @@ import { Options } from '@popperjs/core';
 import { Observable, Subscription } from 'rxjs';
 import { ClipboardService } from 'app/shared/services/clipboard.service';
 import { DataFlowService, makeid, ProjectsService } from '../services';
-import { LaunchApp, Project, UniversalGraphNode } from '../services/interfaces';
+import {LaunchApp, NODE_TYPE_ID, Project, UniversalGraphNode} from '../services/interfaces';
 import { DrawingToolContextMenuControlService } from '../services/drawing-tool-context-menu-control.service';
 import { CopyPasteMapsService } from '../services/copy-paste-maps.service';
 
@@ -191,77 +191,26 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
    * @param event object representing a drag-and-drop event
    */
   drop(event: CdkDragDrop<any>) {
-    if (event.item.element.nativeElement.classList.contains('map-template')) {
-      this.mapDropped(event);
-    } else {
-      this.paletteNodeDropped(event);
+    const item = event.item;
+    const data = item.data;
+    if (data != null && data.type === NODE_TYPE_ID) {
+      const node = data.node as UniversalGraphNode;
+      const hoverPosition = this.graphCanvas.hoverPosition;
+
+      if (hoverPosition != null) {
+        this.graphCanvas.execute(new NodeCreation(
+          `Create ${node.display_name} node`, {
+            hash: makeid(),
+            ...node,
+            data: {
+              ...node.data,
+              x: hoverPosition.x,
+              y: hoverPosition.y,
+            }
+          }
+        ));
+      }
     }
-  }
-
-  /**
-   * Handle node template being dropped onto the canvas.
-   * @param event object representing a drag-and-drop event
-   */
-  paletteNodeDropped(event: CdkDragDrop<any>) {
-    const hash = makeid();
-    const label = event.item.element.nativeElement.id;
-    const displayName = `Unnamed ${label}`;
-
-    // Get DOM coordinate of dropped node relative to container DOM
-    const nodeCoord: DOMRect = document.getElementById(label)
-      .getBoundingClientRect() as DOMRect;
-    const containerCoord: DOMRect = document.getElementById('drawing-tool-view-container')
-      .getBoundingClientRect() as DOMRect;
-    const x = this.graphCanvas.transform.invertX(nodeCoord.x - containerCoord.x + event.distance.x);
-    const y = this.graphCanvas.transform.invertY(nodeCoord.y + event.distance.y);
-
-    this.graphCanvas.execute(new NodeCreation(
-      `Create ${label} node`, {
-        display_name: displayName,
-        hash,
-        label,
-        sub_labels: [],
-        data: {
-          x,
-          y,
-        }
-      }
-    ));
-  }
-
-  /**
-   * Handle a map being dropped onto the canvas.
-   * @param event object representing a drag-and-drop event
-   */
-  mapDropped(event: CdkDragDrop<any>) {
-    const nativeElement = event.item.element.nativeElement;
-
-    const hash = makeid();
-    const mapId = nativeElement.id;
-    const mapName = nativeElement.children[0].textContent;
-    const source = '/dt/map/' + mapId;
-
-    // Get DOM coordinate of dropped node relative to container DOM
-    const nodeCoord: DOMRect = document.getElementById(mapId)
-      .getBoundingClientRect() as DOMRect;
-    const containerCoord: DOMRect = document.getElementById('drawing-tool-view-container')
-      .getBoundingClientRect() as DOMRect;
-    const x = this.graphCanvas.transform.invertX(nodeCoord.x - containerCoord.x + event.distance.x + 100);
-    const y = this.graphCanvas.transform.invertY(nodeCoord.y + event.distance.y + 80);
-
-    this.graphCanvas.execute(new NodeCreation(
-      `Add '${mapName}' map to graph`, {
-        display_name: mapName,
-        hash,
-        label: 'map',
-        sub_labels: [],
-        data: {
-          x,
-          y,
-          source,
-        }
-      }
-    ));
   }
 
   /**
