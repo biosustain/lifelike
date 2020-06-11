@@ -3,7 +3,14 @@ import os
 import json
 from datetime import datetime
 
-from flask import request, Blueprint, g, Response, jsonify
+from flask import (
+    current_app,
+    request,
+    Blueprint,
+    g,
+    Response,
+    jsonify,
+)
 from werkzeug.utils import secure_filename
 
 from sqlalchemy.orm.exc import NoResultFound
@@ -207,6 +214,8 @@ def add_project(projects_name: str = ''):
         dir_id=dir_id,
     )
 
+    current_app.logger.info(f'User created map: <{g.current_user.email}:{project.label}>')
+
     # Flush it to database to that user
     db.session.add(project)
     db.session.flush()
@@ -251,6 +260,8 @@ def update_project(project_id: str = '', hash_id: str = '', projects_name: str =
             id=project_id,
             user_id=user.id
         ).first_or_404()
+
+    current_app.logger.info(f'User updated map: <{g.current_user.email}:{project.label}>')
 
     # Update project's attributes
     project.description = data.get("description", "")
