@@ -72,12 +72,14 @@
         [handleDropArea]="false"
         [goToPosition]="goToPosition"
         [addedAnnotation]="addedAnnotation"
+        [deletedAnnotationIds]="deletedAnnotationIds"
         [entityTypeVisibilityMap]="entityTypeVisibilityMap"
         [filterChanges]="filterChangeSubject"
         [searchChanged]="searchChanged"
         (dropEvents)="drop($event)"
         (custom-annotation-created)="annotationCreated($event)"
         (loadCompleted)="loadCompleted($event)"
+        (custom-annotation-deleted)="annotationDeleted($event)"
       >
       </lib-pdf-viewer-lib>
     </div>
