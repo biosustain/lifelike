@@ -28,6 +28,7 @@ import {
   FriendlyDateStrPipe
 } from './pipes';
 import { NodeTextStylePipe } from './node-text-style.pipe';
+import { ConfirmDialogComponent } from './components/confirm-dialog/confirm-dialog.component';
 
 const components = [
   MessageDialogComponent,
@@ -36,6 +37,7 @@ const components = [
   LegendComponent,
   NodeRelationshipComponent,
   TooltipComponent,
+  ConfirmDialogComponent,
 ];
 
 @NgModule({
