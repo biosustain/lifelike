@@ -147,7 +147,7 @@ def test_can_update_map(client, fix_api_owner, fix_project, private_fix_map):
     login_resp = client.login_as_user(fix_api_owner.email, 'password')
     headers = generate_headers(login_resp['access_jwt'])
     res = client.patch(
-        f'/projects/{fix_project.project_name}/map/{private_fix_map.id}',
+        f'/projects/{fix_project.project_name}/map/{private_fix_map.hash_id}',
         headers=headers,
         data=json.dumps({'label': 'new-label'}),
         content_type='application/json'
@@ -159,7 +159,7 @@ def test_can_delete_map(client, fix_api_owner, fix_project, private_fix_map):
     login_resp = client.login_as_user(fix_api_owner.email, 'password')
     headers = generate_headers(login_resp['access_jwt'])
     res = client.delete(
-        f'/projects/{fix_project.project_name}/map/{private_fix_map.id}',
+        f'/projects/{fix_project.project_name}/map/{private_fix_map.hash_id}',
         headers=headers,
     )
     assert res.status_code == 200
@@ -169,7 +169,7 @@ def test_can_get_pdf_from_map(client, fix_api_owner, fix_project, private_fix_ma
     login_resp = client.login_as_user(fix_api_owner.email, 'password')
     headers = generate_headers(login_resp['access_jwt'])
     res = client.get(
-        f'/projects/{fix_project.project_name}/map/{private_fix_map.id}/pdf',
+        f'/projects/{fix_project.project_name}/map/{private_fix_map.hash_id}/pdf',
         headers=headers,
     )
     assert res.status_code == 200

@@ -202,7 +202,7 @@ def add_project(projects_name: str = ''):
             data.get("date_modified", ""),
             "%Y-%m-%dT%H:%M:%S.%fZ"
         ),
-        graph=data.get("graph", {"graph": [], "edges": []}),
+        graph=data.get("graph", dict(node=[], edges=[])),
         user_id=user.id,
         dir_id=dir_id,
     )
@@ -226,10 +226,10 @@ def add_project(projects_name: str = ''):
 
 @bp.route('/projects/<string:project_id>', methods=['PUT'])
 # TODO: use this once LL-415 done
-@newbp.route('/<string:projects_name>/map/<string:project_id>', methods=['PUT', 'PATCH'])
+@newbp.route('/<string:projects_name>/map/<string:hash_id>', methods=['PATCH'])
 @auth.login_required
 @requires_project_permission(AccessActionType.WRITE)
-def update_project(project_id: str, projects_name: str = ''):
+def update_project(project_id: str = '', hash_id: str = '', projects_name: str = ''):
     """ Update the project's content and its metadata. """
     user = g.current_user
     data = request.get_json()
@@ -243,10 +243,14 @@ def update_project(project_id: str, projects_name: str = ''):
     yield user, projects
 
     # Pull up project by id
-    project = Project.query.filter_by(
-        id=project_id,
-        user_id=user.id
-    ).first_or_404()
+    if hash_id:
+        project = Project.query.filter_by(hash_id=hash_id).first_or_404()
+    # TODO: LL-415 Remove 'project_id' after deprecating the API and use hash_id
+    else:
+        project = Project.query.filter_by(
+            id=project_id,
+            user_id=user.id
+        ).first_or_404()
 
     # Update project's attributes
     project.description = data.get("description", "")
@@ -264,10 +268,10 @@ def update_project(project_id: str, projects_name: str = ''):
 
 @bp.route('/projects/<string:project_id>', methods=['DELETE'])
 # TODO: use this once LL-415 done
-@newbp.route('/<string:projects_name>/map/<string:project_id>', methods=['DELETE'])
+@newbp.route('/<string:projects_name>/map/<string:hash_id>', methods=['DELETE'])
 @auth.login_required
 @requires_project_permission(AccessActionType.WRITE)
-def delete_project(project_id: str, projects_name: str = ''):
+def delete_project(project_id: str = '', hash_id: str = '', projects_name: str = ''):
     """ Delete object owned by user """
     user = g.current_user
 
@@ -279,11 +283,14 @@ def delete_project(project_id: str, projects_name: str = ''):
 
     yield user, projects
 
-    # Pull up project by id
-    project = Project.query.filter_by(
-        id=project_id,
-        user_id=user.id
-    ).first_or_404()
+    if hash_id:
+        project = Project.query.filter_by(hash_id=hash_id).first_or_404()
+    # TODO: LL-415 Remove 'project_id' after deprecating the API and use hash_id
+    else:
+        project = Project.query.filter_by(
+            id=project_id,
+            user_id=user.id
+        ).first_or_404()
 
     # Commit to db
     db.session.delete(project)
@@ -294,10 +301,10 @@ def delete_project(project_id: str, projects_name: str = ''):
 
 @bp.route('/projects/<string:project_id>/pdf', methods=['GET'])
 # TODO: use this once LL-415 done
-@newbp.route('/<string:projects_name>/map/<string:project_id>/pdf', methods=['GET'])
+@newbp.route('/<string:projects_name>/map/<string:hash_id>/pdf', methods=['GET'])
 @auth.login_required
 @requires_project_permission(AccessActionType.READ)
-def get_project_pdf(project_id: str, projects_name: str = ''):
+def get_project_pdf(project_id: str = '', projects_name: str = '', hash_id: str = ''):
     """ Gets a PDF file from the project drawing """
 
     unprocessed = []
@@ -315,13 +322,16 @@ def get_project_pdf(project_id: str, projects_name: str = ''):
 
     yield user, projects
 
-    # Pull up project by id
-    data_source = Project.query.filter_by(
-        id=project_id,
-        user_id=user.id
-    ).first_or_404()
+    if hash_id:
+        project = Project.query.filter_by(hash_id=hash_id).first_or_404()
+    # TODO: LL-415 Remove 'project_id' after deprecating the API and use hash_id
+    else:
+        project = Project.query.filter_by(
+            id=project_id,
+            user_id=user.id
+        ).first_or_404()
 
-    unprocessed.append(data_source.hash_id)
+    unprocessed.append(project.hash_id)
 
     while len(unprocessed):
         item = unprocessed.pop(0)
