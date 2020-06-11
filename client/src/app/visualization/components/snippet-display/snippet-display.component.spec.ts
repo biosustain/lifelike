@@ -5,8 +5,6 @@ import { configureTestSuite } from 'ng-bullet';
 
 import {
     AssociationSnippet,
-    EdgeConnectionData,
-    DuplicateEdgeConnectionData,
     NewClusterSnippetsPageRequest,
     NewEdgeSnippetsPageRequest,
     Publication,
