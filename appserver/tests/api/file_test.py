@@ -206,7 +206,7 @@ def test_can_reannotate_files(client, test_user, test_user_with_pdf, fix_project
     file_id = test_user_with_pdf.file_id
 
     resp = client.post(
-        f'/projects/{fix_project.project_name}/files/{file_id}/reannotate',
+        f'/projects/{fix_project.project_name}/files/reannotate',
         headers=headers,
         data=json.dumps({file_id: file_id}),
         content_type='application/json',
