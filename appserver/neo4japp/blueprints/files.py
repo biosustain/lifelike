@@ -114,8 +114,12 @@ def upload_pdf():
         doi=doi,
         upload_url=upload_url,
     )
+
     db.session.add(file)
     db.session.commit()
+
+    current_app.logger.info(
+        f'User uploaded file: <{g.current_user.email}:{file.filename}>')
 
     return jsonify({
         'file_id': file_id,
@@ -338,6 +342,8 @@ def delete_files():
         db.session.commit()
         current_app.logger.debug('File deleted: %s, %s', id, file.filename)
         outcome[id] = DeletionOutcome.DELETED.value
+
+    current_app.logger.info(f'User deleted file: <{g.current_user.email}:{file.filename}>')
 
     return jsonify(outcome)
 
