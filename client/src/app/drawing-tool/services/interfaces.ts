@@ -6,6 +6,7 @@ interface UniversalGraphNode {
     detail?: string;
     source?: string;
     search?: Hyperlink[];
+    subtype?: string;
   };
   display_name: string;
   hash: string;
@@ -41,6 +42,7 @@ interface VisNetworkGraphNode {
     detail?: string;
     source?: string;
     search?: Hyperlink[];
+    subtype?: string;
   };
   color?: any;
 }
@@ -73,6 +75,7 @@ interface GraphData {
     source?: string;
     detail?: string;
     search?: Hyperlink[];
+    subtype?: string;
   };
 }
 
@@ -92,6 +95,7 @@ interface GraphSelectionData {
       detail?: string;
       source?: string;
       search?: Hyperlink[];
+      subtype?: string;
     }
   };
   otherNodes?: VisNetworkGraphNode[];

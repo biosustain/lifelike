@@ -17,7 +17,12 @@ from .constants import (
     EntityIdStr,
     EntityType,
     OrganismCategory,
+    # exclusion lists
     COMMON_WORDS,
+    CHEMICAL_EXCLUSION,
+    COMPOUND_EXCLUSION,
+    SPECIES_EXCLUSION,
+    # end exclusion lists
     ENTITY_HYPERLINKS,
     ENTITY_TYPE_PRECEDENCE,
     GOOGLE_LINK,
@@ -62,14 +67,6 @@ class AnnotationsService:
         self.matched_diseases: Dict[str, List[PDFTokenPositions]] = {}
         self.matched_phenotypes: Dict[str, List[PDFTokenPositions]] = {}
 
-        self.validated_genes_tokens: Set[str] = set()
-        self.validated_chemicals_tokens: Set[str] = set()
-        self.validated_compounds_tokens: Set[str] = set()
-        self.validated_proteins_tokens: Set[str] = set()
-        self.validated_species_tokens: Set[str] = set()
-        self.validated_diseases_tokens: Set[str] = set()
-        self.validated_phenotypes_tokens: Set[str] = set()
-
     def lmdb_validation(
         self,
         word: str,
@@ -83,63 +80,61 @@ class AnnotationsService:
             word: the token text
             synonym: the correct spelling (if word is misspelled) or normalized token
         """
+        gene_val = chem_val = comp_val = None
+        protein_val = species_val = diseases_val = phenotype_val = None
+
         if synonym:
             lookup_key = normalize_str(synonym).encode('utf-8')
         else:
             lookup_key = normalize_str(word).encode('utf-8')
-        hashval = token.to_dict_hash()
 
         gene_val = self.lmdb_session.genes_txn.get(lookup_key)
-        if gene_val and hashval not in self.validated_genes_tokens:
-            self.validated_genes_tokens.add(hashval)
+        if gene_val:
             if word in self.matched_genes:
                 self.matched_genes[word].append(token)
             else:
                 self.matched_genes[word] = [token]
 
-        chem_val = self.lmdb_session.chemicals_txn.get(lookup_key)
-        if chem_val and hashval not in self.validated_chemicals_tokens:
-            self.validated_chemicals_tokens.add(hashval)
-            if word in self.matched_chemicals:
-                self.matched_chemicals[word].append(token)
-            else:
-                self.matched_chemicals[word] = [token]
+        if word.lower() not in CHEMICAL_EXCLUSION:
+            chem_val = self.lmdb_session.chemicals_txn.get(lookup_key)
+            if chem_val:
+                if word in self.matched_chemicals:
+                    self.matched_chemicals[word].append(token)
+                else:
+                    self.matched_chemicals[word] = [token]
 
-        comp_val = self.lmdb_session.compounds_txn.get(lookup_key)
-        if comp_val and hashval not in self.validated_compounds_tokens:
-            self.validated_compounds_tokens.add(hashval)
-            if word in self.matched_compounds:
-                self.matched_compounds[word].append(token)
-            else:
-                self.matched_compounds[word] = [token]
+        if word.lower() not in COMPOUND_EXCLUSION:
+            comp_val = self.lmdb_session.compounds_txn.get(lookup_key)
+            if comp_val:
+                if word in self.matched_compounds:
+                    self.matched_compounds[word].append(token)
+                else:
+                    self.matched_compounds[word] = [token]
 
         protein_val = self.lmdb_session.proteins_txn.get(lookup_key)
-        if protein_val and hashval not in self.validated_proteins_tokens:
-            self.validated_proteins_tokens.add(hashval)
+        if protein_val:
             if word in self.matched_proteins:
                 self.matched_proteins[word].append(token)
             else:
                 self.matched_proteins[word] = [token]
 
-        species_val = self.lmdb_session.species_txn.get(lookup_key)
-        if species_val and hashval not in self.validated_species_tokens:
-            self.validated_species_tokens.add(hashval)
-            if word in self.matched_species:
-                self.matched_species[word].append(token)
-            else:
-                self.matched_species[word] = [token]
+        if word.lower() not in SPECIES_EXCLUSION:
+            species_val = self.lmdb_session.species_txn.get(lookup_key)
+            if species_val:
+                if word in self.matched_species:
+                    self.matched_species[word].append(token)
+                else:
+                    self.matched_species[word] = [token]
 
         diseases_val = self.lmdb_session.diseases_txn.get(lookup_key)
-        if diseases_val and hashval not in self.validated_diseases_tokens:
-            self.validated_diseases_tokens.add(hashval)
+        if diseases_val:
             if word in self.matched_diseases:
                 self.matched_diseases[word].append(token)
             else:
                 self.matched_diseases[word] = [token]
 
         phenotype_val = self.lmdb_session.phenotypes_txn.get(lookup_key)
-        if phenotype_val and hashval not in self.validated_phenotypes_tokens:
-            self.validated_phenotypes_tokens.add(hashval)
+        if phenotype_val:
             if word in self.matched_phenotypes:
                 self.matched_phenotypes[word].append(token)
             else:

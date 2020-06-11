@@ -8,6 +8,7 @@ import { take, filter } from 'rxjs/operators';
 import { TemplatePortal } from '@angular/cdk/portal';
 import { ProjectsService } from 'app/drawing-tool/services';
 import { FormGroup, FormControl } from '@angular/forms';
+import { ResizedEvent } from 'angular-resize-event';
 
 /**
  * Sort project by most recent modified date
@@ -71,6 +72,9 @@ export class MapListComponent implements OnInit {
    * List of projects owned by user and found by the search
    */
   searchResults: Project[] = [];
+
+  layout = 'column wrap';
+  layoutAlign = 'center center';
 
   constructor(
     public overlay: Overlay,
@@ -238,5 +242,15 @@ export class MapListComponent implements OnInit {
         });
       });
     });
+  }
+
+  onResized(event: ResizedEvent) {
+    if (event.newWidth >= 600) {
+      this.layout = 'row wrap';
+      this.layoutAlign = 'flex-start flex-start';
+    } else {
+      this.layout = 'column wrap';
+      this.layoutAlign = 'center center';
+    }
   }
 }
