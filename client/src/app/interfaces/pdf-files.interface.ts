@@ -14,6 +14,7 @@ export interface PdfFile {
   // optional
   filename?: string;
   creation_date?: string;
+  description?: string;
   username?: string;
   annotation_status?: AnnotationStatus;
 }
@@ -31,9 +32,10 @@ export enum UploadType {
 
 export interface UploadPayload {
   type: UploadType;
+  filename: string;
+  description?: string;
   // if type === Files
   files?: File[];
   // if type === Url
-  filename?: string;
   url?: string;
 }

@@ -1,110 +1,67 @@
-<div id='map-channel' fxFlex fxLayout class='w-100 vh-100'>
-  <!-- Map List -->
-  <div *ngIf='fullScreenmode==="shrink"' id='map-list-container' class='h-100' fxFlex="30">
-    <app-map-list
-      childMode='true'
-      [projects]='projects'
-      [publicProjects]='publicProjects'
-      (projectAPICaller)='handleAPI($event)'
-      [displayIndex]='displayIndex'>
-    </app-map-list>
-    <button
-      mat-fab
-      color='primary'
-      id='add-project'
-      aria-label="Example icon-button with a heart icon"
-      (click)='createProject()'>
-      <mat-icon>add</mat-icon>
-    </button>
-    <button
-      *ngIf="(userRoles$ | async)?.includes('admin')"
-      mat-fab
-      color='primary'
-      id='upload-project'
-      (click)='uploadProject()'
-    >
-      <mat-icon>cloud_upload</mat-icon>
-    </button>
-    <button
-      mat-fab
-      color='primary'
-      id='search'
-      aria-label="Example icon-button with a heart icon"
-      (click)='goToSearch()'>
-      <mat-icon>search</mat-icon>
-    </button>
-  </div>
-  <div *ngIf='selectedProject else empty;' class='h-100' fxFill [fxFlex]="fullScreenmode === 'shrink' ? 70 : 100" fxLayout='column' fxLayoutAlign="start center">
-    <!-- Map Preview Panel -->
-    <div class='bg-green' fxFill [fxFlex]="fullScreenmode === 'shrink' ? 70 : 100" fxLayoutAlign="center center">
-      <div
-        fxFill
-        id='map-preview'>
-        <div
-          id='canvas-container'>
-          <app-map-preview
-            [project]='selectedProject'
-            (toggleFullscreen)='toggleFullscreen($event)'>
-          </app-map-preview>
+<as-split
+    unit="percent"
+    direction="horizontal"
+    gutterSize='5'
+    #split="asSplit">
+    <as-split-area
+      size="30"
+      #area1="asSplitArea">
+      <!-- Map List -->
+      <div id='map-list-container' class='vh-100 w-100'>
+        <app-map-list
+          childMode='true'
+          [projects]='projects'
+          [publicProjects]='publicProjects'
+          (projectAPICaller)='handleAPI($event)'
+          [displayIndex]='displayIndex'>
+        </app-map-list>
+        <button
+          mat-fab
+          color='primary'
+          id='add-project'
+          aria-label="Example icon-button with a heart icon"
+          (click)='createProject()'>
+          <mat-icon>add</mat-icon>
+        </button>
+        <button
+          *ngIf="(userRoles$ | async)?.includes('admin')"
+          mat-fab
+          color='primary'
+          id='upload-project'
+          (click)='uploadProject()'>
+          <mat-icon>cloud_upload</mat-icon>
+        </button>
+        <button
+          mat-fab
+          color='primary'
+          id='search'
+          aria-label="Example icon-button with a heart icon"
+          (click)='goToSearch()'>
+          <mat-icon>search</mat-icon>
+        </button>
+      </div>
+    </as-split-area>
+    <as-split-area
+      size="70"
+      #area2="asSplitArea">
+      <div *ngIf='selectedProject else empty;' class='vh-100 w-100'>
+        <!-- Map Preview Panel -->
+        <div class='w-100 h-100'>
+          <div
+            fxFill
+            id='map-preview'>
+            <div
+              id='canvas-container'>
+              <app-map-preview
+                [project]='selectedProject'
+                (parentAPI)='handleAPI($event)'>
+              </app-map-preview>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
-    <!-- Map Meta Panel -->
-    <div *ngIf='fullScreenmode==="shrink"' id='map-meta-panel' fxFill fxFlex="30" fxLayout='row'>
-      <!-- Meta Info -->
-      <div id='details' fxFill fxFlex="70">
-        <h2>{{selectedProject?.label}}</h2>
-        <p class='author'>
-          By {{selectedProject?.author}}
-        </p>
-        <p class='date'>
-          Modified {{selectedProject?.date_modified | friendlyDateStr}}
-        </p>
-        <p class='description'>
-          {{selectedProject?.description}}
-        </p>
-      </div>
-      <!-- Actions -->
-      <div id='actions' fxFill fxFlex="30" fxLayout='column' fxLayoutAlign="center center">
-        <div *ngIf='isItMine'>
-          <button
-            mat-raised-button
-            color="primary"
-            (click)='goToProject()'>
-            EDIT
-          </button>
-          <button
-            mat-raised-button
-            color="primary"
-            (click)='editProject()'>
-            SETTINGS
-          </button>
-          <button
-            mat-raised-button
-            color="warn"
-            (click)='deleteProject()'>
-            DELETE
-          </button>
-          <button
-            *ngIf="(userRoles$ | async)?.includes('admin')"
-            mat-raised-button
-            color="accent"
-            (click)='downloadProject()'>
-            DOWNLOAD
-          </button>
-        </div>
-        <div *ngIf='!isItMine'>
-          <button
-            mat-raised-button
-            color="primary"
-            (click)='copyProject()'>
-            MAKE COPY OF
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
+    </as-split-area>
+</as-split>
 
 <!-- Empty Scene -->
 <ng-template #empty>

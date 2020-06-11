@@ -18,6 +18,7 @@ class Files(RDBMSBase):  # type: ignore
     id = db.Column(db.Integer(), primary_key=True, autoincrement=True)
     file_id = db.Column(db.String(36), unique=True, nullable=False)
     filename = db.Column(db.String(200), nullable=False)
+    description = db.Column(db.String(2048), nullable=True)
     content_id = db.Column(db.Integer,
                            db.ForeignKey('files_content.id', ondelete='CASCADE'),
                            nullable=False)
@@ -26,3 +27,5 @@ class Files(RDBMSBase):  # type: ignore
     annotations = db.Column(postgresql.JSONB, nullable=False, server_default='[]')
     project = db.Column(db.Integer(), db.ForeignKey('projects.id'), nullable=False)
     custom_annotations = db.Column(postgresql.JSONB, nullable=False, server_default='[]')
+    doi = db.Column(db.String(1024), nullable=True)
+    upload_url = db.Column(db.String(2048), nullable=True)
