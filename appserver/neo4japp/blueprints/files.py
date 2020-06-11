@@ -266,20 +266,25 @@ def delete_custom_annotation(id):
     user = g.current_user
     user_roles = [role.name for role in user.roles]
     uuids_to_delete = []
-    annotation_to_delete = next((ann for ann in file.custom_annotations if ann['uuid'] == data['uuid']), None)
+    annotation_to_delete = next(
+        (ann for ann in file.custom_annotations if ann['uuid'] == data['uuid']), None
+    )
     outcome: Dict[str, str] = {}  # annotation uuid to deletion outcome
     if not annotation_to_delete:
         outcome[data['uuid']] = DeletionOutcome.NOT_FOUND.value
         return jsonify(outcome)
     text = annotation_to_delete['meta']['allText']
     for annotation in file.custom_annotations:
-        if (data['deleteAll'] and annotation['meta']['allText'] == text) or annotation['uuid'] == data['uuid']:
+        if (data['deleteAll'] and annotation['meta']['allText'] == text or
+                annotation['uuid'] == data['uuid']):
             if annotation['user_id'] != user.id and 'admin' not in user_roles:
                 outcome[annotation['uuid']] = DeletionOutcome.NOT_OWNER.value
                 continue
             uuids_to_delete.append(annotation['uuid'])
             outcome[annotation['uuid']] = DeletionOutcome.DELETED.value
-    file.custom_annotations = [ann for ann in file.custom_annotations if ann['uuid'] not in uuids_to_delete]
+    file.custom_annotations = [
+        ann for ann in file.custom_annotations if ann['uuid'] not in uuids_to_delete
+    ]
     db.session.commit()
     return jsonify(outcome)
 
