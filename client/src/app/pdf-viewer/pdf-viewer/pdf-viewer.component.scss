@@ -12,7 +12,7 @@
     right: 0;
     bottom: 0;
     overflow: hidden;
-    opacity: 0.8;
+    opacity: 0.5;
     line-height: 1.0;
 
     >span {
@@ -27,7 +27,7 @@
     .highlight {
       margin: -1px;
       padding: 1px;
-      background-color: rgba(245, 120, 129, 0.6);
+      background-color: rgb(181, 228, 12);
       border-radius: 4px;
 
       &.begin {
@@ -43,12 +43,14 @@
       }
 
       &.selected {
-        background-color: rgba(238, 15, 30, 0.6);
-        border: 2px solid black;
+        background-color: rgb(220, 12, 15);
       }
     }
 
-    ::-moz-selection,
+    ::-moz-selection {
+      background: rgb(0, 0, 255);
+    }
+    
     ::selection {
       background: rgb(0, 0, 255);
     }

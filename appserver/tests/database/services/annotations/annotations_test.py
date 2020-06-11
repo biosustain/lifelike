@@ -643,7 +643,7 @@ def test_escherichia_coli_pdf(
 
 def test_human_gene_pdf(
     human_gene_pdf_lmdb_setup,
-    human_gene_pdf_gene_and_organism_network,
+    # human_gene_pdf_gene_and_organism_network,
     mock_get_gene_to_organism_match_result_for_human_gene_pdf,
 ):
     annotation_service = get_test_annotations_service(
