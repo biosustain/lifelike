@@ -1,7 +1,7 @@
 from flask import Blueprint
 
-from appserver.neo4japp.blueprints import auth
-from appserver.neo4japp.models import AnnotationStyle, DomainULRsMap
+from neo4japp.blueprints.auth import auth
+from neo4japp.models import AnnotationStyle, DomainULRsMap
 
 bp = Blueprint('annotations', __name__, url_prefix='/annotations')
 
