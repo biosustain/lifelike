@@ -17,20 +17,26 @@ class AnnotationStyle(RDBMSBase):
     """
     id = db.Column(db.Integer, primary_key=True)
     label = db.Column(db.String(32), nullable=False)
-    color = db.Column(db.String(8), nullable=False)
+    color = db.Column(db.ForeignKey('color.id'), nullable=False)
     icon_code = db.Column(db.String(32), nullable=True)
-    style_border = db.Column(db.String(8), nullable=True)
-    style_background = db.Column(db.String(8), nullable=True)
-    style_color = db.Column(db.String(8), nullable=True)
+    style_border = db.Column(db.ForeignKey('color.id'), nullable=True)
+    style_background = db.Column(db.ForeignKey('color.id'), nullable=True)
+    style_color = db.Column(db.ForeignKey('color.id'), nullable=True)
 
     def get_as_json(self):
         return {
             'label': self.label,
-            'color': self.color,
+            'color': self.color.hexcode,
             'icon_code': self.icon_code,
             'style': {
-                'border': self.style_border,
-                'background': self.style_background,
-                'color': self.style_color
+                'border': self.style_border.hexcode,
+                'background': self.style_background.hexcode,
+                'color': self.style_color.hexcode
             }
         }
+
+
+class Color(RDBMSBase):
+    id = db.Column(db.Integer, primary_key=True)
+    label = db.Column(db.String(32), nullable=False)
+    hexcode = db.Column(db.String(8), nullable=False)
