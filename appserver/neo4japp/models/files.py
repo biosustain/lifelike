@@ -28,7 +28,8 @@ class Files(RDBMSBase):  # type: ignore
     project = db.Column(db.Integer(), db.ForeignKey('projects.id'), nullable=False)
     custom_annotations = db.Column(postgresql.JSONB, nullable=False, server_default='[]')
     dir_id = db.Column(db.Integer, db.ForeignKey('directory.id'), nullable=False)
-
+    doi = db.Column(db.String(1024), nullable=True)
+    upload_url = db.Column(db.String(2048), nullable=True)
 
 class Directory(RDBMSBase):
     id = db.Column(db.BigInteger, primary_key=True, autoincrement=True)
@@ -55,3 +56,4 @@ class Directory(RDBMSBase):
             )
         )
         return query
+

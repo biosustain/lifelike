@@ -2,7 +2,7 @@
 access controls on the project level.
 
 Revision ID: 3b70d9c2c76f
-Revises: dbf6e232ca92
+Revises: 868c69bf2137
 Create Date: 2020-06-08 15:07:41.373581
 
 """
@@ -27,7 +27,7 @@ from neo4japp.models import (
 
 # revision identifiers, used by Alembic.
 revision = '3b70d9c2c76f'
-down_revision = 'dbf6e232ca92'
+down_revision = '868c69bf2137'
 branch_labels = None
 depends_on = None
 
