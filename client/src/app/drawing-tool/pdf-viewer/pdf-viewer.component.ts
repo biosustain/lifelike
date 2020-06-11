@@ -254,9 +254,9 @@ export class PdfViewerComponent implements OnDestroy {
         response => {
           this.deletedAnnotationIds = [];
           let msg = 'Deletion completed';
-          for (const [uuid, status] of Object.entries(response)) {
+          for (const [id, status] of Object.entries(response)) {
             if (status === 'Deleted') {
-              this.deletedAnnotationIds.push(uuid);
+              this.deletedAnnotationIds.push(id);
             } else {
               msg = `${msg}, but one or more annotations could not be deleted because you are not the owner`;
             }
