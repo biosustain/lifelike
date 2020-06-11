@@ -349,10 +349,10 @@ class AnnotationOutcome(Enum):
 
 @bp.route('/reannotate', methods=['POST'])
 # TODO: LL-415 - use this API URL
-@newbp.route('/<string:project_name>/files/<string:id>/reannotate', methods=['POST'])
+@newbp.route('/<string:project_name>/files/reannotate', methods=['POST'])
 @auth.login_required
 @requires_project_permission(AccessActionType.WRITE)
-def reannotate(id: str, project_name: str = ''):
+def reannotate(project_name: str = ''):
 
     user = g.current_user
 
