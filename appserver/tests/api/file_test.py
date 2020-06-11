@@ -19,6 +19,7 @@ def test_user_can_delete_own_pdf(client, fix_project, test_user_with_pdf, test_u
         headers=headers,
         content_type='application/json',
     )
+
     assert delete_resp.status_code == 200
 
 

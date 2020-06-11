@@ -443,7 +443,7 @@ def delete_files(project_name: str = ''):
 
     current_app.logger.info(f'User deleted file: <{g.current_user.email}:{file.filename}>')
 
-    return jsonify(outcome)
+    yield jsonify(outcome)
 
 
 def extract_doi(pdf_content: bytes, file_id: str = None, filename: str = None) -> Optional[str]:
