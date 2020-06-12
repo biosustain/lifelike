@@ -11,6 +11,16 @@ import json
 from ast import literal_eval
 from os import path, remove, walk
 
+from neo4japp.services.annotations.constants import (
+    CHEMICAL_LMDB,
+    COMPOUND_LMDB,
+    DISEASE_LMDB,
+    GENE_LMDB,
+    PHENOTYPE_LMDB,
+    PROTEIN_LMDB,
+    PUBCHEM_LMDB,
+    SPECIES_LMDB,
+)
 from neo4japp.services.annotations.util import normalize_str
 
 
@@ -21,8 +31,8 @@ directory = path.realpath(path.dirname(__file__))
 def prepare_lmdb_genes_database(filename: str):
     with open(path.join(directory, filename), 'r') as f:
         map_size = 1099511627776
-        env = lmdb.open(path.join(directory, 'lmdb/genes'), map_size=map_size)
-        db = env.open_db(dupsort=True)
+        env = lmdb.open(path.join(directory, 'lmdb/genes'), map_size=map_size, max_dbs=2)
+        db = env.open_db(GENE_LMDB.encode('utf-8'), dupsort=True)
 
         with env.begin(db=db, write=True) as transaction:
             reader = csv.reader(f, delimiter='\t', quotechar='"')
@@ -34,31 +44,32 @@ def prepare_lmdb_genes_database(filename: str):
                 tax_id = line[2]
                 gene_name = line[0]
 
-                gene = {
-                    'gene_id': gene_id,
-                    'id_type': 'NCBI',
-                    'tax_id': tax_id,
-                    'name': gene_name,
-                    'synonym': gene_name,
-                }
+                if gene_name != 'null':
+                    gene = {
+                        'gene_id': gene_id,
+                        'id_type': 'NCBI',
+                        'tax_id': tax_id,
+                        'name': gene_name,
+                        'synonym': gene_name,
+                    }
 
-                try:
-                    transaction.put(
-                        normalize_str(gene_name).encode('utf-8'),
-                        json.dumps(gene).encode('utf-8'),
-                    )
-                except lmdb.BadValsizeError:
-                    # ignore any keys that are too large
-                    # LMDB has max key size 512 bytes
-                    # can change but larger keys mean performance issues
-                    continue
+                    try:
+                        transaction.put(
+                            normalize_str(gene_name).encode('utf-8'),
+                            json.dumps(gene).encode('utf-8'),
+                        )
+                    except lmdb.BadValsizeError:
+                        # ignore any keys that are too large
+                        # LMDB has max key size 512 bytes
+                        # can change but larger keys mean performance issues
+                        continue
 
 
 def prepare_lmdb_chemicals_database(filename: str):
     with open(path.join(directory, filename), 'r') as f:
         map_size = 1099511627776
-        env = lmdb.open(path.join(directory, 'lmdb/chemicals'), map_size=map_size)
-        db = env.open_db(dupsort=True)
+        env = lmdb.open(path.join(directory, 'lmdb/chemicals'), map_size=map_size, max_dbs=2)
+        db = env.open_db(CHEMICAL_LMDB.encode('utf-8'), dupsort=True)
 
         with env.begin(db=db, write=True) as transaction:
             reader = csv.reader(f, delimiter=',', quotechar='"')
@@ -86,19 +97,20 @@ def prepare_lmdb_chemicals_database(filename: str):
 
                         if synonyms:
                             for synonym_term in synonyms:
-                                normalized_key = normalize_str(synonym_term)
+                                if synonym_term != 'null':
+                                    normalized_key = normalize_str(synonym_term)
 
-                                synonym = {
-                                    'chemical_id': chemical_id,
-                                    'id_type': 'CHEBI',
-                                    'name': chemical_name,
-                                    'synonym': synonym_term,
-                                }
+                                    synonym = {
+                                        'chemical_id': chemical_id,
+                                        'id_type': 'CHEBI',
+                                        'name': chemical_name,
+                                        'synonym': synonym_term,
+                                    }
 
-                                transaction.put(
-                                    normalized_key.encode('utf-8'),
-                                    json.dumps(synonym).encode('utf-8'),
-                                )
+                                    transaction.put(
+                                        normalized_key.encode('utf-8'),
+                                        json.dumps(synonym).encode('utf-8'),
+                                    )
                     except lmdb.BadValsizeError:
                         # ignore any keys that are too large
                         # LMDB has max key size 512 bytes
@@ -109,8 +121,8 @@ def prepare_lmdb_chemicals_database(filename: str):
 def prepare_lmdb_compounds_database(filename: str):
     with open(path.join(directory, filename), 'r') as f:
         map_size = 1099511627776
-        env = lmdb.open(path.join(directory, 'lmdb/compounds'), map_size=map_size)
-        db = env.open_db(dupsort=True)
+        env = lmdb.open(path.join(directory, 'lmdb/compounds'), map_size=map_size, max_dbs=2)
+        db = env.open_db(COMPOUND_LMDB.encode('utf-8'), dupsort=True)
 
         with env.begin(db=db, write=True) as transaction:
             reader = csv.reader(f, delimiter=',', quotechar='"')
@@ -161,8 +173,8 @@ def prepare_lmdb_compounds_database(filename: str):
 def prepare_lmdb_proteins_database(filename: str):
     with open(path.join(directory, filename), 'r') as f:
         map_size = 1099511627776
-        env = lmdb.open(path.join(directory, 'lmdb/proteins'), map_size=map_size)
-        db = env.open_db(dupsort=True)
+        env = lmdb.open(path.join(directory, 'lmdb/proteins'), map_size=map_size, max_dbs=2)
+        db = env.open_db(PROTEIN_LMDB.encode('utf-8'), dupsort=True)
 
         with env.begin(db=db, write=True) as transaction:
             reader = csv.reader(f, delimiter='\t', quotechar='"')
@@ -198,8 +210,8 @@ def prepare_lmdb_proteins_database(filename: str):
 def prepare_lmdb_species_database(filename: str):
     with open(path.join(directory, filename), 'r') as f:
         map_size = 1099511627776
-        env = lmdb.open(path.join(directory, 'lmdb/species'), map_size=map_size)
-        db = env.open_db(dupsort=True)
+        env = lmdb.open(path.join(directory, 'lmdb/species'), map_size=map_size, max_dbs=2)
+        db = env.open_db(SPECIES_LMDB.encode('utf-8'), dupsort=True)
 
         with env.begin(db=db, write=True) as transaction:
             reader = csv.reader(f, delimiter='\t', quotechar='"')
@@ -235,8 +247,8 @@ def prepare_lmdb_species_database(filename: str):
 def prepare_lmdb_diseases_database(filename: str):
     with open(path.join(directory, filename), 'r') as f:
         map_size = 1099511627776
-        env = lmdb.open(path.join(directory, 'lmdb/diseases'), map_size=map_size)
-        db = env.open_db(dupsort=True)
+        env = lmdb.open(path.join(directory, 'lmdb/diseases'), map_size=map_size, max_dbs=2)
+        db = env.open_db(DISEASE_LMDB.encode('utf-8'), dupsort=True)
 
         with env.begin(db=db, write=True) as transaction:
             reader = csv.reader(f, delimiter=',', quotechar='"')
@@ -269,8 +281,8 @@ def prepare_lmdb_diseases_database(filename: str):
 def prepare_lmdb_phenotypes_database(filename: str):
     with open(path.join(directory, filename), 'r') as f:
         map_size = 1099511627776
-        env = lmdb.open(path.join(directory, 'lmdb/phenotypes'), map_size=map_size)
-        db = env.open_db(dupsort=True)
+        env = lmdb.open(path.join(directory, 'lmdb/phenotypes'), map_size=map_size, max_dbs=2)
+        db = env.open_db(PHENOTYPE_LMDB.encode('utf-8'), dupsort=True)
 
         with env.begin(db=db, write=True) as transaction:
             reader = csv.reader(f, delimiter=',', quotechar='"')
