@@ -48,13 +48,6 @@ DOWNLOAD_USER_AGENT = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML
 bp = Blueprint('files', __name__, url_prefix='/files')
 
 
-def sanitize_filename(name: str) -> str:
-    filename = secure_filename(name)
-    if not filename.lower().endswith('.pdf'):
-        filename += '.pdf'
-    return filename
-
-
 @bp.route('/upload', methods=['POST'])
 @newbp.route('/<string:project_name>/files', methods=['POST'])  # TODO: use this once LL-415 done
 @auth.login_required
@@ -62,7 +55,7 @@ def sanitize_filename(name: str) -> str:
 def upload_pdf(project_name: str = ''):
 
     user = g.current_user
-    filename = sanitize_filename(request.form['filename'])
+    filename = secure_filename(request.form['filename'])
     # TODO: Deprecate and make mandatory (no default) this once LL-415 is implemented
     dir_id = request.form.get('directoryId', 1)
 
@@ -94,7 +87,6 @@ def upload_pdf(project_name: str = ''):
 
     checksum_sha256 = hashlib.sha256(pdf_content).digest()
 
-    # TODO: Should the following code be part of `sanitize_filename()`?
     # TODO: Should `pdf.filename` be in sync with the final filename?
     # Make sure that the filename is not longer than the DB column permits
     max_filename_length = Files.filename.property.columns[0].type.length
@@ -218,7 +210,7 @@ def get_pdf(id: str, project_name: str = ''):
             raise RecordNotFoundException('Requested PDF file not found.')
         else:
             if filename and filename != file.filename:
-                filename = sanitize_filename(filename)
+                filename = secure_filename(filename)
                 db.session.query(Files).filter(Files.file_id == id).update({
                     'filename': filename,
                 })
