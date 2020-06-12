@@ -231,4 +231,3 @@ def get_child_directories(current_dir_id: int, project_name: str = ''):
     current_dir = Directory.query.get(current_dir_id)
     child_dirs = proj_service.get_immediate_child_dirs(projects, current_dir)
     yield jsonify(dict(results=[d.to_dict() for d in child_dirs]))
-
