@@ -74,8 +74,8 @@ export class PdfViewerComponent implements OnDestroy {
   currentFileId: string;
   addedAnnotation: Annotation;
   addAnnotationSub: Subscription;
-  deletedAnnotationIds: string[];
-  deleteAnnotationSub: Subscription;
+  removedAnnotationIds: string[];
+  removeAnnotationSub: Subscription;
   pdfFileLoaded = false;
   sortedEntityTypeEntries = [];
   entityTypeVisibilityChanged = false;
@@ -242,29 +242,29 @@ export class PdfViewerComponent implements OnDestroy {
     this.updateSortedEntityTypeEntries();
   }
 
-  annotationDeleted(uuid) {
+  annotationRemoved(uuid) {
     const dialogRef = this.dialog.open(ConfirmDialogComponent, {
       data: {
         width: '500px',
-        message: 'Do you want to delete all matching annotations as well?'
+        message: 'Do you want to remove all matching annotations from the file as well?'
       }
     });
-    dialogRef.afterClosed().subscribe((deleteAll: boolean) => {
-      this.deleteAnnotationSub = this.pdfAnnService.deleteCustomAnnotation(this.currentFileId, uuid, deleteAll).subscribe(
+    dialogRef.afterClosed().subscribe((removeAll: boolean) => {
+      this.removeAnnotationSub = this.pdfAnnService.removeCustomAnnotation(this.currentFileId, uuid, removeAll).subscribe(
         response => {
-          this.deletedAnnotationIds = [];
-          let msg = 'Deletion completed';
+          this.removedAnnotationIds = [];
+          let msg = 'Removal completed';
           for (const [id, status] of Object.entries(response)) {
-            if (status === 'Deleted') {
-              this.deletedAnnotationIds.push(id);
+            if (status === 'Removed') {
+              this.removedAnnotationIds.push(id);
             } else {
-              msg = `${msg}, but one or more annotations could not be deleted because you are not the owner`;
+              msg = `${msg}, but one or more annotations could not be removed because you are not the owner`;
             }
           }
           this.snackBar.open(msg, 'Close', {duration: 10000});
         },
         err => {
-          this.snackBar.open(`Error: deletion failed`, 'Close', {duration: 10000});
+          this.snackBar.open(`Error: removal failed`, 'Close', {duration: 10000});
         }
       );
     });
@@ -367,8 +367,8 @@ export class PdfViewerComponent implements OnDestroy {
     if (this.addAnnotationSub) {
       this.addAnnotationSub.unsubscribe();
     }
-    if (this.deleteAnnotationSub) {
-      this.deleteAnnotationSub.unsubscribe();
+    if (this.removeAnnotationSub) {
+      this.removeAnnotationSub.unsubscribe();
     }
   }
 

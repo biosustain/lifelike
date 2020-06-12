@@ -42,10 +42,10 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   @Input()
-  set deletedAnnotationIds(uuids: string[]) {
+  set removedAnnotationIds(uuids: string[]) {
     if (uuids) {
-      const deletedAnnotations = this.annotations.filter((ann: Annotation) => uuids.includes(ann.uuid));
-      deletedAnnotations.forEach((ann: Annotation) => {
+      const removedAnnotations = this.annotations.filter((ann: Annotation) => uuids.includes(ann.uuid));
+      removedAnnotations.forEach((ann: Annotation) => {
         const ref = this.annotationHighlightElementMap.get(ann);
         jQuery(ref).remove();
       });
@@ -57,7 +57,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
   @Output() dropEvents = new EventEmitter();
   // tslint:disable
   @Output('custom-annotation-created') annotationCreated = new EventEmitter();
-  @Output('custom-annotation-deleted') annotationDeleted = new EventEmitter();
+  @Output('custom-annotation-removed') annotationRemoved = new EventEmitter();
 
   /**
    * Stores a mapping of annotations to the HTML elements that are used to show it.
@@ -123,9 +123,9 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
         (window as any).pdfViewerRef.copySelectedText();
       });
     }
-    (window as any).deleteCustomAnnotation = (uuid) => {
+    (window as any).removeCustomAnnotation = (uuid) => {
       (window as any).pdfViewerRef.zone.run(() => {
-        (window as any).pdfViewerRef.deleteCustomAnnotation(uuid);
+        (window as any).pdfViewerRef.removeCustomAnnotation(uuid);
       });
     }
     (window as any).pdfViewerRef = {
@@ -133,7 +133,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
       componentFn: () => this.openAnnotationPanel(),
       openLinkPanel: () => this.openAddLinkPanel(),
       copySelectedText: () => this.copySelectedText(),
-      deleteCustomAnnotation: (uuid) => this.deleteCustomAnnotation(uuid),
+      removeCustomAnnotation: (uuid) => this.removeCustomAnnotation(uuid),
       component: this
     };
   }
@@ -354,7 +354,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
       base.push(`
         <div style="display: inline-flex;">
           <span>user generated annotation</span>
-          <span class="material-icons" style="color: grey; cursor: pointer" onclick="deleteCustomAnnotation('${an.uuid}')">delete</span>
+          <span class="material-icons" style="color: grey; cursor: pointer" onclick="removeCustomAnnotation('${an.uuid}')">delete</span>
         </div>
       `);
     }
@@ -812,8 +812,8 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
   
   }
 
-  deleteCustomAnnotation(uuid) {
-    this.annotationDeleted.emit(uuid);
+  removeCustomAnnotation(uuid) {
+    this.annotationRemoved.emit(uuid);
   }
 
 }
