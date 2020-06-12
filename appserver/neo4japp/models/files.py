@@ -31,6 +31,7 @@ class Files(RDBMSBase):  # type: ignore
     doi = db.Column(db.String(1024), nullable=True)
     upload_url = db.Column(db.String(2048), nullable=True)
 
+
 class Directory(RDBMSBase):
     id = db.Column(db.BigInteger, primary_key=True, autoincrement=True)
     name = db.Column(db.String(200), nullable=False)
@@ -56,4 +57,3 @@ class Directory(RDBMSBase):
             )
         )
         return query
-
