@@ -42,7 +42,7 @@ export class MapPreviewComponent implements OnInit {
     const g = this.projectService.universe2Vis(val.graph);
 
     const container = document.getElementById('canvas');
-    this.visGraph = new NetworkVis(container);
+    this.visGraph = new NetworkVis(container, false);
     this.focusedEntity = null;
 
     setTimeout(
@@ -55,6 +55,10 @@ export class MapPreviewComponent implements OnInit {
         this.visGraph.network.on(
           'click',
           (properties) => this.networkClickHandler(properties)
+        );
+        this.visGraph.network.on(
+          'doubleClick',
+          (properties) => this.projectAPICall('edit')
         );
       },
       100
