@@ -30,6 +30,8 @@ from neo4japp.exceptions import AnnotationError, RecordNotFoundException
 from neo4japp.models import AppUser
 from neo4japp.models.files import Files, FileContent
 from neo4japp.utils.network import read_url
+from neo4japp.schemas.files import AnnotationAdditionSchema, AnnotationRemovalSchema
+from flask_apispec import use_kwargs, marshal_with
 
 URL_FETCH_MAX_LENGTH = 1024 * 1024 * 30
 URL_FETCH_TIMEOUT = 10
@@ -244,16 +246,20 @@ def get_annotations(id):
 
 @bp.route('/add_custom_annotation/<id>', methods=['PATCH'])
 @auth.login_required
-def add_custom_annotation(id):
-    annotation_to_add = request.get_json()
-    annotation_to_add['user_id'] = g.current_user.id
-    annotation_to_add['uuid'] = str(uuid.uuid4())
+@use_kwargs(AnnotationAdditionSchema(exclude=('uuid', 'user_id')))
+@marshal_with(AnnotationAdditionSchema(only=('uuid',)), code=200)
+def add_custom_annotation(id, **payload):
+    annotation_to_add = {
+        **payload,
+        'user_id': g.current_user.id,
+        'uuid': str(uuid.uuid4())
+    }
     file = Files.query.filter_by(file_id=id).one_or_none()
     if not file:
         raise RecordNotFoundException('File does not exist')
     file.custom_annotations = [annotation_to_add, *file.custom_annotations]
     db.session.commit()
-    return jsonify({'uuid': annotation_to_add['uuid']})
+    return annotation_to_add, 200
 
 
 class AnnotationRemovalOutcome(Enum):
@@ -264,25 +270,25 @@ class AnnotationRemovalOutcome(Enum):
 
 @bp.route('/remove_custom_annotation/<id>', methods=['PATCH'])
 @auth.login_required
-def remove_custom_annotation(id):
+@use_kwargs(AnnotationRemovalSchema)
+def remove_custom_annotation(id, uuid, removeAll):
     file = Files.query.filter_by(file_id=id).one_or_none()
     if not file:
         raise RecordNotFoundException('File does not exist')
-    data = request.get_json()
     user = g.current_user
     user_roles = [role.name for role in user.roles]
     uuids_to_remove = []
     annotation_to_remove = next(
-        (ann for ann in file.custom_annotations if ann['uuid'] == data['uuid']), None
+        (ann for ann in file.custom_annotations if ann['uuid'] == uuid), None
     )
     outcome: Dict[str, str] = {}  # annotation uuid to deletion outcome
     if not annotation_to_remove:
-        outcome[data['uuid']] = AnnotationRemovalOutcome.NOT_FOUND.value
+        outcome[uuid] = AnnotationRemovalOutcome.NOT_FOUND.value
         return jsonify(outcome)
     text = annotation_to_remove['meta']['allText']
     for annotation in file.custom_annotations:
-        if (data['removeAll'] and annotation['meta']['allText'] == text or
-                annotation['uuid'] == data['uuid']):
+        if (removeAll and annotation['meta']['allText'] == text or
+                annotation['uuid'] == uuid):
             if annotation['user_id'] != user.id and 'admin' not in user_roles:
                 outcome[annotation['uuid']] = AnnotationRemovalOutcome.NOT_CREATOR.value
                 continue
