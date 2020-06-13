@@ -52,6 +52,28 @@ def test_admin_can_delete_pdf_without_permission(client, test_user_with_pdf, fix
     assert 'Not an owner' not in resp_json
 
 
+CUSTOM_ANNOTATION = {
+    'pageNumber': 1,
+    'keywords': ['gyrA'],
+    'rects': [[0.1, 0.2, 0.3, 0.4]],
+    'meta': {
+        'type': 'gene',
+        'color': 'green',
+        'id': '',
+        'idType': '',
+        'idHyperlink': '',
+        'isCustom': True,
+        'allText': 'gyrA',
+        'links': {
+            'ncbi': '',
+            'uniprot': '',
+            'wikipedia': '',
+            'google': ''
+        }
+    },
+}
+
+
 def test_user_can_add_custom_annotation(client, test_user, test_user_with_pdf):
     login_resp = client.login_as_user(test_user.email, 'password')
     headers = generate_headers(login_resp['access_jwt'])
@@ -60,9 +82,7 @@ def test_user_can_add_custom_annotation(client, test_user, test_user_with_pdf):
     resp = client.patch(
         f'/files/add_custom_annotation/{file_id}',
         headers=headers,
-        data=json.dumps({
-            'meta': {'allText': 'gyrA'},
-        }),
+        data=json.dumps(CUSTOM_ANNOTATION),
         content_type='application/json',
     )
 
@@ -78,9 +98,7 @@ def test_user_can_remove_custom_annotation(client, test_user, test_user_with_pdf
     add_resp = client.patch(
         f'/files/add_custom_annotation/{file_id}',
         headers=headers,
-        data=json.dumps({
-            'meta': {'allText': 'gyrA'},
-        }),
+        data=json.dumps(CUSTOM_ANNOTATION),
         content_type='application/json',
     )
 
@@ -108,9 +126,7 @@ def test_user_can_remove_matching_custom_annotations(client, test_user, test_use
     add_resp_1 = client.patch(
         f'/files/add_custom_annotation/{file_id}',
         headers=headers,
-        data=json.dumps({
-            'meta': {'allText': 'gyrA'},
-        }),
+        data=json.dumps(CUSTOM_ANNOTATION),
         content_type='application/json',
     )
 
@@ -119,9 +135,7 @@ def test_user_can_remove_matching_custom_annotations(client, test_user, test_use
     add_resp_2 = client.patch(
         f'/files/add_custom_annotation/{file_id}',
         headers=headers,
-        data=json.dumps({
-            'meta': {'allText': 'gyrA'},
-        }),
+        data=json.dumps(CUSTOM_ANNOTATION),
         content_type='application/json',
     )
 
