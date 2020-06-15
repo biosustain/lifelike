@@ -666,7 +666,7 @@ class Neo4JService(GraphBaseDao):
                 a as association,
                 ID(f) as from_id,
                 ID(t) as to_id
-            MATCH (association)<-[:PREDICTS]-(s:Snippet)
+            OPTIONAL MATCH (association)<-[:PREDICTS]-(s:Snippet)
             RETURN from_id, to_id, COUNT(s) as count
         """
         return query

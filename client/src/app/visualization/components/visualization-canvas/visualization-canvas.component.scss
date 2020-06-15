@@ -4,25 +4,11 @@
     border: 1px solid #C0C0C0;
 }
 
-#mat-sidenav-container {
-    max-width: 640px;
-    min-width: 250px;
+#viz-content-container {
+  position: relative;
+}
+
+#sidenav-container {
+    height: 80vh;
     padding: 10px 15px;
-}
-
-#sidenav-toggle-button {
-    margin: 10px 10px 0 0;
-    position: absolute;
-    bottom: 0;
-    left: -1;
-    right: 0;
-    top: 0;
-}
-
-.sidenav {
-    border-left: 10px solid #0c8caa;
-}
-
-.sidenav-content {
-    overflow: hidden;
 }
