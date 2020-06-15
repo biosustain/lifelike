@@ -11,7 +11,7 @@ import {Nodes} from '../containers/node-search.component';
 
 export class NodeResultListComponent implements OnInit, OnChanges {
   @Input() nodes: Nodes[] = [];
-  displayedColumns: string[] = ['id', 'name', 'type', 'domain', 'taxonomyId', 'taxonomyName'];
+  displayedColumns: string[] = ['id', 'name', 'type', 'domain', 'description'];
   dataSource = new MatTableDataSource<Nodes>(this.nodes);
   @ViewChild(MatPaginator, {static: false}) paginator: MatPaginator;
   childMode = false;
@@ -31,6 +31,9 @@ export class NodeResultListComponent implements OnInit, OnChanges {
   }
 
   applyFilter(event: Event) {
+    // This will attach the filter only to the description column
+    this.dataSource.filterPredicate = (data: Nodes, filter: string) =>
+      data.description.indexOf(filter) !== -1;
     const filterValue = (event.target as HTMLInputElement).value;
     this.dataSource.filter = filterValue.trim().toLowerCase();
   }
