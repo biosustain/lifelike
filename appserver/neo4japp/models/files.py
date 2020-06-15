@@ -27,3 +27,5 @@ class Files(RDBMSBase):  # type: ignore
     annotations = db.Column(postgresql.JSONB, nullable=False, server_default='[]')
     project = db.Column(db.Integer(), db.ForeignKey('projects.id'), nullable=False)
     custom_annotations = db.Column(postgresql.JSONB, nullable=False, server_default='[]')
+    doi = db.Column(db.String(1024), nullable=True)
+    upload_url = db.Column(db.String(2048), nullable=True)
