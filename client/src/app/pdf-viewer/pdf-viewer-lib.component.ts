@@ -464,7 +464,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
       const el = document.createElement('div');
       const meta: Meta = {
         allText: that.allText,
-        type: 'user-annotation',
+        type: 'entity',
         color: 'not-defined'
       };
       const location: Location = {
