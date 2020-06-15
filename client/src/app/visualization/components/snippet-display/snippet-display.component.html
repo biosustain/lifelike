@@ -44,11 +44,17 @@
             [entry2Colors]="legend.get(result.to.primaryLabel)"
           ></app-highlight-snippet>
           <div fxLayout="row" fxLayoutAlign="space-between center">
-            <strong>PubMed ID: </strong>
-            <a *ngIf="snippet.publication.data.pmid; else unknownPmid" class="pubmed-link" fxLayout="row" fxLayoutAlign="space-between center" [href]="'https://pubmed.ncbi.nlm.nih.gov/' + snippet.publication.data.pmid + '/'" target="_blank">
-              <div>{{ snippet.publication.data.pmid }}</div>
+            <h3>Pubtator PMID: </h3>
+            <div
+              *ngIf="snippet.publication.data.pmid; else unknownPmid"
+              fxLayout="row"
+              fxLayoutAlign="space-between center">
+              <a
+                class="pubmed-link"
+                [href]="'https://www.ncbi.nlm.nih.gov/research/pubtator/?view=docsum&query=' + snippet.publication.data.pmid"
+                target="_blank">{{ snippet.publication.data.pmid }}</a>
               <mat-icon>launch</mat-icon>
-            </a>
+            </div>
             <ng-template #unknownPmid>Unknown</ng-template>
           </div>
         </div>
