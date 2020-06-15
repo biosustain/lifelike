@@ -310,9 +310,6 @@ def prepare_lmdb_phenotypes_database(filename: str):
                     )
 
                     if synonyms:
-                        if line_id == 982:
-                            import IPython; IPython.embed()
-
                         for synonym_term in synonyms:
                             normalized_key = normalize_str(synonym_term)
 
