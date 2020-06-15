@@ -1,0 +1,38 @@
+from neo4japp.database import ma
+
+
+class StrictSchema(ma.Schema):
+    class Meta:
+        strict = True
+
+
+class LinksSchema(StrictSchema):
+    ncbi = ma.String(required=True)
+    uniprot = ma.String(required=True)
+    wikipedia = ma.String(required=True)
+    google = ma.String(required=True)
+
+
+class MetaSchema(StrictSchema):
+    type = ma.String(required=True)
+    color = ma.String(required=True)
+    id = ma.String(required=True)
+    idType = ma.String(required=True)
+    idHyperlink = ma.String(required=True)
+    isCustom = ma.Boolean(required=True)
+    allText = ma.String(required=True)
+    links = ma.Nested(LinksSchema, required=True)
+
+
+class AnnotationAdditionSchema(StrictSchema):
+    uuid = ma.String(required=True)
+    user_id = ma.String(required=True)
+    pageNumber = ma.Integer(required=True)
+    keywords = ma.List(ma.String(required=True))
+    rects = ma.List(ma.List(ma.Float(required=True)))
+    meta = ma.Nested(MetaSchema, required=True)
+
+
+class AnnotationRemovalSchema(StrictSchema):
+    uuid = ma.String(required=True)
+    removeAll = ma.Boolean(required=True)

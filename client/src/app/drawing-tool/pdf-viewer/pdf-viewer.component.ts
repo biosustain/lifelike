@@ -16,6 +16,7 @@ import { PdfViewerLibComponent } from '../../pdf-viewer/pdf-viewer-lib.component
 import { ENTITY_TYPE_MAP, ENTITY_TYPES, EntityType } from 'app/shared/annotation-types';
 import { MatCheckboxChange } from '@angular/material';
 import { ActivatedRoute } from '@angular/router';
+import { ConfirmDialogComponent } from 'app/shared/components/confirm-dialog/confirm-dialog.component';
 
 class DummyFile implements PdfFile {
   constructor(
@@ -73,6 +74,8 @@ export class PdfViewerComponent implements OnDestroy {
   currentFileId: string;
   addedAnnotation: Annotation;
   addAnnotationSub: Subscription;
+  removedAnnotationIds: string[];
+  removeAnnotationSub: Subscription;
   pdfFileLoaded = false;
   sortedEntityTypeEntries = [];
   entityTypeVisibilityChanged = false;
@@ -207,7 +210,7 @@ export class PdfViewerComponent implements OnDestroy {
       idType = 'NCBI';
     }
 
-    const annotationToAdd = {
+    const annotationToAdd: Annotation = {
       ...annotation,
       meta: {
         ...annotation.meta,
@@ -226,7 +229,7 @@ export class PdfViewerComponent implements OnDestroy {
 
     this.addAnnotationSub = this.pdfAnnService.addCustomAnnotation(this.currentFileId, annotationToAdd).subscribe(
       response => {
-        this.addedAnnotation = annotationToAdd;
+        this.addedAnnotation = Object.assign({}, annotationToAdd, { uuid: response.uuid });
         this.snackBar.open('Annotation has been added', 'Close', {duration: 5000});
       },
       err => {
@@ -237,6 +240,34 @@ export class PdfViewerComponent implements OnDestroy {
     this.addedAnnotations.push(annotation);
     this.updateAnnotationIndex();
     this.updateSortedEntityTypeEntries();
+  }
+
+  annotationRemoved(uuid) {
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      data: {
+        width: '500px',
+        message: 'Do you want to remove all matching annotations from the file as well?'
+      }
+    });
+    dialogRef.afterClosed().subscribe((removeAll: boolean) => {
+      this.removeAnnotationSub = this.pdfAnnService.removeCustomAnnotation(this.currentFileId, uuid, removeAll).subscribe(
+        response => {
+          this.removedAnnotationIds = [];
+          let msg = 'Removal completed';
+          for (const [id, status] of Object.entries(response)) {
+            if (status === 'Removed') {
+              this.removedAnnotationIds.push(id);
+            } else {
+              msg = `${msg}, but one or more annotations could not be removed because you are not the owner`;
+            }
+          }
+          this.snackBar.open(msg, 'Close', {duration: 10000});
+        },
+        err => {
+          this.snackBar.open(`Error: removal failed`, 'Close', {duration: 10000});
+        }
+      );
+    });
   }
 
   /**
@@ -335,6 +366,9 @@ export class PdfViewerComponent implements OnDestroy {
     }
     if (this.addAnnotationSub) {
       this.addAnnotationSub.unsubscribe();
+    }
+    if (this.removeAnnotationSub) {
+      this.removeAnnotationSub.unsubscribe();
     }
   }
 
