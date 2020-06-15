@@ -15,9 +15,12 @@ from neo4japp.exceptions import (
     JWTTokenException, RecordNotFoundException,
     DataNotAvailableException)
 
+from werkzeug.exceptions import UnprocessableEntity
+
 import sentry_sdk
 from sentry_sdk.integrations.flask import FlaskIntegration
 from sentry_sdk.integrations.logging import LoggingIntegration
+from sentry_sdk.integrations.logging import ignore_logger
 from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 
 
@@ -40,7 +43,7 @@ def create_app(name='neo4japp', config='config.Development'):
     if config == 'config.Staging' or config == 'config.Production':
         sentry_logging = LoggingIntegration(
             level=logging.INFO,
-            event_level=logging.WARNING
+            event_level=logging.INFO,
         )
         sentry_sdk.init(
             dsn=os.environ.get('SENTRY_KEY'),
@@ -48,8 +51,10 @@ def create_app(name='neo4japp', config='config.Development'):
                 sentry_logging,
                 FlaskIntegration(),
                 SqlalchemyIntegration(),
-            ]
+            ],
+            send_default_pii=True,
         )
+        ignore_logger('werkzeug')
 
     app = Flask(name)
     app.config.from_object(config)
@@ -78,6 +83,7 @@ def create_app(name='neo4japp', config='config.Development'):
     app.register_error_handler(RecordNotFoundException, partial(handle_error, 404))
     app.register_error_handler(JWTAuthTokenException, partial(handle_error, 401))
     app.register_error_handler(JWTTokenException, partial(handle_error, 401))
+    app.register_error_handler(UnprocessableEntity, partial(handle_webargs_error, 400))
     app.register_error_handler(BaseException, partial(handle_error, 400))
     app.register_error_handler(Exception, partial(handle_generic_error, 500))
     app.register_error_handler(DataNotAvailableException, partial(handle_error, 500))
@@ -108,4 +114,15 @@ def handle_generic_error(code: int, ex: Exception):
     if current_app.debug:
         reterr['detail'] = "".join(traceback.format_exception(
             etype=type(ex), value=ex, tb=ex.__traceback__))
+    return jsonify(reterr), code
+
+
+# Ensure that response includes all error messages produced from the parser
+def handle_webargs_error(code, error):
+    reterr = {'apiHttpError': error.data['messages']}
+    logger.error('Request caused UnprocessableEntity error', exc_info=error)
+    reterr['version'] = GITHUB_HASH
+    if current_app.debug:
+        reterr['detail'] = "".join(traceback.format_exception(
+            etype=type(error), value=error, tb=error.__traceback__))
     return jsonify(reterr), code

@@ -41,6 +41,7 @@ import { FileBrowserModule } from '../file-browser/file-browser.module';
 import {NodeSearchComponent} from '../node-search/containers/node-search.component';
 import { EditProjectDialogComponent } from './project-list/edit-project-dialog/edit-project-dialog.component';
 import { SearchLinksComponent } from './drawing-tool/info-panel/search-links/search-links.component';
+import { ConfirmDialogComponent } from 'app/shared/components/confirm-dialog/confirm-dialog.component';
 
 export const routes = [
   {
@@ -91,7 +92,8 @@ export const routes = [
     ProjectListViewComponent,
     PdfViewerComponent,
     ExportModalComponent,
-    NodeSearchComponent
+    NodeSearchComponent,
+    ConfirmDialogComponent
   ],
   imports: [
     SharedModule,
