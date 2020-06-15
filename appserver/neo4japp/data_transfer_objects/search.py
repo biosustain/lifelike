@@ -17,6 +17,7 @@ class FTSTaxonomyRecord(FTSQueryRecord):
     """ Taxonomy data around genes"""
     taxonomy_id: int = attr.ib()
     taxonomy_name: str = attr.ib()
+    go_class: str = attr.ib()
 
 
 @attr.s(frozen=True)
