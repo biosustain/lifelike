@@ -335,17 +335,12 @@ export class VisualizationCanvasComponent implements OnInit, AfterViewInit {
         this.networkGraph.setOptions({physics: animationOn});
     }
 
-    toggleSidenavOpened() {
-        this.sidenavOpened = !this.sidenavOpened;
+    openSidenav() {
+        this.sidenavOpened = true;
     }
 
-    /**
-     * Sets `sidenavOpened` to the input boolean. Primarily used to update when the
-     * user closes the sidenav by focusing the sidenav content.
-     * @param opened boolean representing the status of the sidenav
-     */
-    setSidenavStatus(opened: boolean) {
-        this.sidenavOpened = opened;
+    closeSidenav() {
+        this.sidenavOpened = false;
     }
 
     updateSelectedNodes() {
@@ -1046,7 +1041,7 @@ export class VisualizationCanvasComponent implements OnInit, AfterViewInit {
     }
 
     updateSidenavEntity() {
-        this.sidenavOpened = true;
+        this.openSidenav();
 
         if (this.selectedNodes.length === 1 && this.selectedEdges.length === 0) {
             if (this.networkGraph.isCluster(this.selectedNodes[0])) {
