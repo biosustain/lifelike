@@ -28,6 +28,25 @@ from neo4japp.services.annotations.util import normalize_str
 directory = path.realpath(path.dirname(__file__))
 
 
+"""JIRA LL-1015:
+Change the structure of LMDB to allow duplicate keys. The reason
+is because there can be synonyms that are also common names,
+e.g chebi and compounds, and we want to avoid losing the synonyms
+of these synonyms that are also common names.
+
+Previously we were collapsing into a collection `common_name`. But
+we don't want that, instead row in LMDB should represent a row in the datset.
+
+Additionally, this also fixes the collapsing of genes. A gene can
+appear multiple times in a dataset, with each time, it has a different
+gene id and references a different taxonomy id. By allowing duplicate
+keys, we do not lose these genes.
+
+In order for `dupsort` to work, need to provide a database name to
+`open_db()`.
+"""
+
+
 def prepare_lmdb_genes_database(filename: str):
     with open(path.join(directory, filename), 'r') as f:
         map_size = 1099511627776
