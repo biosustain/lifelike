@@ -1104,145 +1104,249 @@
     "table": "annotationstyle",
     "records": [
       {
-        label: 'gene',
-        color: GENE
+        "label": "gene",
+        "color": 1
       },
       {
-        label: 'disease',
-        color: DISEASE
+        "label": "disease",
+        "color": 2
       },
       {
-        label: 'chemical',
-        color: CHEMICAL
+        "label": "chemical",
+        "color": 3
       },
       {
-        label: 'compound',
-        color: COMPOUND
+        "label": "compound",
+        "color": 4
       },
       {
-        label: 'mutation',
-        color: MUTATION
+        "label": "mutation",
+        "color": 5
       },
       {
-        label: 'SNP',
-        color: MUTATION
+        "label": "SNP",
+        "color": 5
       },
       {
-        label: 'SUB',
-        color: MUTATION
+        "label": "SUB",
+        "color": 5
       },
       {
-        label: 'DEL',
-        color: MUTATION
+        "label": "DEL",
+        "color": 5
       },
       {
-        label: 'INS',
-        color: MUTATION
+        "label": "INS",
+        "color": 5
       },
       {
-        label: 'MOB',
-        color: MUTATION
+        "label": "MOB",
+        "color": 5
       },
       {
-        label: 'AMP',
-        color: MUTATION
+        "label": "AMP",
+        "color": 5
       },
       {
-        label: 'CON',
-        color: MUTATION
+        "label": "CON",
+        "color": 5
       },
       {
-        label: 'INV',
-        color: MUTATION
+        "label": "INV",
+        "color": 5
       },
       {
-        label: 'species',
-        color: SPECIES
+        "label": "species",
+        "color": 6
       },
       {
-        label: 'company',
-        color: COMPANY
+        "label": "company",
+        "color": 7
       },
       {
-        label: 'study',
-        color: STUDY
+        "label": "study",
+        "color": 8
       },
       {
-        label: 'protein',
-        color: PROTEIN
+        "label": "protein",
+        "color": 9
       },
       {
-        label: 'pathway',
-        color: PATHWAY
+        "label": "pathway",
+        "color": 10
       },
       {
-        label: 'phenotype',
-        color: PHENOTYPE
+        "label": "phenotype",
+        "color": 11
       },
       {
-        label: 'link',
-        color: LINK,
-        iconCode: '\uf15b'
+        "label": "link",
+        "color": 12,
+        "iconCode": "\uf15b"
       },
       {
-        label: 'entity',
-        color: ENTITY
+        "label": "entity",
+        "color": 13
       },
       {
-        label: 'map',
-        color: MAP,
-        iconCode: '\uf279'
+        "label": "map",
+        "color": 14,
+        "iconCode": "\uf279"
       },
       {
-        label: 'note',
-        color: NOTE,
-        iconCode: '\uf249'
+        "label": "note",
+        "color": 15,
+        "iconCode": "\uf249"
       },
-      // Non-Entity types
       {
-        label: 'correlation',
-        color: CORRELATION,
-        style: {
-          border: CORRELATION,
-          background: CORRELATION,
-          color: '#000'
+        "label": "correlation",
+        "color": 16,
+        "style": {
+          "border": 16,
+          "background": 16,
+          "color": "#000"
         }
       },
       {
-        label: 'cause',
-        color: CAUSE,
-        style: {
-          border: CAUSE,
-          background: CAUSE,
-          color: '#000'
+        "label": "cause",
+        "color": 17,
+        "style": {
+          "border": 17,
+          "background": 17,
+          "color": "#000"
         }
       },
       {
-        label: 'effect',
-        color: EFFECT,
-        style: {
-          border: EFFECT,
-          background: EFFECT,
-          color: '#000'
+        "label": "effect",
+        "color": 18,
+        "style": {
+          "border": 18,
+          "background": 18,
+          "color": "#000"
         }
       },
       {
-        label: 'observation',
-        color: OBSERVATION,
-        style: {
-          border: OBSERVATION,
-          background: OBSERVATION,
-          color: '#000'
+        "label": "observation",
+        "color": 19,
+        "style": {
+          "border": 19,
+          "background": 19,
+          "color": "#000"
         }
       },
       {
-        label: 'association',
-        color: ASSOCIATION,
-        style: {
-          border: ASSOCIATION,
-          background: ASSOCIATION,
-          color: '#000'
+        "label": "association",
+        "color": 20,
+        "style": {
+          "border": 20,
+          "background": 20,
+          "color": "#000"
         }
+      }
+    ]
+  },
+  {
+    "table": "color",
+    "records": [
+      {
+        "id": 1,
+        "label": "gene",
+        "color": "#673ab7"
+      },
+      {
+        "id": 2,
+        "label": "disease",
+        "color": "#ff9800"
+      },
+      {
+        "id": 3,
+        "label": "chemical",
+        "color": "#4caf50"
+      },
+      {
+        "id": 4,
+        "label": "compound",
+        "color": "#4caf50"
+      },
+      {
+        "id": 5,
+        "label": "mutation",
+        "color": "#5d4037"
+      },
+      {
+        "id": 6,
+        "label": "species",
+        "color": "#0277bd"
+      },
+      {
+        "id": 7,
+        "label": "company",
+        "color": "#d62728"
+      },
+      {
+        "id": 8,
+        "label": "study",
+        "color": "#17becf"
+      },
+      {
+        "id": 9,
+        "label": "protein",
+        "color": "#bcbd22"
+      },
+      {
+        "id": 10,
+        "label": "pathway",
+        "color": "#e377c2"
+      },
+      {
+        "id": 11,
+        "label": "phenotype",
+        "color": "#edc949"
+      },
+      {
+        "id": 12,
+        "label": "link",
+        "color": "#669999"
+      },
+      {
+        "id": 13,
+        "label": "entity",
+        "color": "#7f7f7f"
+      },
+      {
+        "id": 14,
+        "label": "map",
+        "color": "#0277bd"
+      },
+      {
+        "id": 15,
+        "label": "note",
+        "color": "#edc949"
+      },
+      {
+        "id": 16,
+        "label": "correlation",
+        "color": "#d7d9f8"
+      },
+      {
+        "id": 17,
+        "label": "cause",
+        "color": "#d7d9f8"
+      },
+      {
+        "id": 18,
+        "label": "effect",
+        "color": "#d7d9f8"
+      },
+      {
+        "id": 19,
+        "label": "observation",
+        "color": "#d7d9f8"
+      },
+      {
+        "id": 20,
+        "label": "association",
+        "color": "#d7d9f8"
       }
     ]
   }
