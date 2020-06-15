@@ -446,29 +446,34 @@ describe('VisualizationCanvasComponent', () => {
         expect(networkGraphSetOptionsSpy).toHaveBeenCalledWith({physics: true});
     });
 
-    it('should toggle the sidenav if quickbar component toggleSidenav emits', () => {
+    it('openSidenav should change sidenavOpened to true', () => {
         instance.sidenavOpened = false;
 
-        const toggleSidenavOpenedSpy = spyOn(instance, 'toggleSidenavOpened').and.callThrough();
-        const visualizationQuickbarComponentMock = fixture.debugElement.query(
-            By.directive(VisualizationQuickbarComponent)
-        ).componentInstance as VisualizationQuickbarComponent;
+        instance.openSidenav();
 
-        visualizationQuickbarComponentMock.toggleSidenav.emit(true);
-
-        expect(toggleSidenavOpenedSpy).toHaveBeenCalled();
-        expect(instance.sidenavOpened).toEqual(true);
-
-        visualizationQuickbarComponentMock.toggleSidenav.emit(true);
-
-        expect(toggleSidenavOpenedSpy).toHaveBeenCalled();
-        expect(instance.sidenavOpened).toEqual(false);
+        expect(instance.sidenavOpened).toBeTrue();
     });
 
-    it('toggleSidenavOpened should flip the value of sidenavOpened', () => {
-        // instance.sidenavOpened defaults to 'false'
-        instance.toggleSidenavOpened();
-        expect(instance.sidenavOpened).toBeTrue();
+    it('closeSidenav should change sidenavOpened to false', () => {
+        instance.sidenavOpened = true;
+
+        instance.closeSidenav();
+
+        expect(instance.sidenavOpened).toBeFalse();
+    });
+
+    it('should close the sidenav if the close sidenav button is clicked', () => {
+        instance.sidenavOpened = true;
+
+        fixture.detectChanges();
+
+        const toggleCloseSidenavSpy = spyOn(instance, 'closeSidenav').and.callThrough();
+        const closeSidenavBtn = document.getElementById('sidenav-panel-close-btn');
+
+        closeSidenavBtn.click();
+
+        expect(toggleCloseSidenavSpy).toHaveBeenCalled();
+        expect(instance.sidenavOpened).toEqual(false);
     });
 
     it('clearSelectedNodeEdgeLabelData should clear the selected edge labels set', () => {
