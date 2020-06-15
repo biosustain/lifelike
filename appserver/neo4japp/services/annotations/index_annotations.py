@@ -50,12 +50,14 @@ def main():
             deque(parallel_bulk(es, process_lmdb(env, db, entity_type)), maxlen=0)
             env.close()
 
+
 def process_lmdb(env, db, entity_type):
     with env.begin(db=db) as transaction:
         cursor = transaction.cursor()
-        for key, value in cursor.iternext():
+        for i, (key, value) in enumerate(cursor.iternext()):
             data = json.loads(value.decode('utf-8'))
             yield {
+                '_id': i+1,
                 '_index': entity_type,
                 '_source': {
                     'id': key.decode('utf-8'),

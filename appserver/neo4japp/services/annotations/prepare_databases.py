@@ -56,12 +56,14 @@ def prepare_lmdb_genes_database(filename: str):
         with env.begin(db=db, write=True) as transaction:
             reader = csv.reader(f, delimiter='\t', quotechar='"')
             # skip headers
-            # name	gene_id	tax_id
+            # gene_id	name	synonym	tax_id	tax_category
             headers = next(reader)
             for line in reader:
-                gene_id = line[1]
-                tax_id = line[2]
-                gene_name = line[0]
+                gene_id = line[0]
+                gene_name = line[1]
+                synonym = line[2]
+                tax_id = line[3]
+                gene_category = line[4]
 
                 if gene_name != 'null':
                     gene = {
@@ -69,12 +71,13 @@ def prepare_lmdb_genes_database(filename: str):
                         'id_type': 'NCBI',
                         'tax_id': tax_id,
                         'name': gene_name,
-                        'synonym': gene_name,
+                        'synonym': synonym,
+                        'gene_category': gene_category,
                     }
 
                     try:
                         transaction.put(
-                            normalize_str(gene_name).encode('utf-8'),
+                            normalize_str(synonym).encode('utf-8'),
                             json.dumps(gene).encode('utf-8'),
                         )
                     except lmdb.BadValsizeError:
