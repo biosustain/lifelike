@@ -58,7 +58,7 @@ export const routes = [
   },
   {
     path: 'map/:hash_id',
-    component: MapPreviewComponent
+    component: ProjectListViewComponent
   }
 ];
 
