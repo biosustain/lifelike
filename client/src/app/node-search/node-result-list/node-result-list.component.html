@@ -39,15 +39,9 @@
     </ng-container>
 
     <!-- TaxonomyID Column -->
-    <ng-container matColumnDef="taxonomyId">
-      <th mat-header-cell *matHeaderCellDef> Tax. ID</th>
-      <td mat-cell *matCellDef="let element"> {{element.taxonomyId}} </td>
-    </ng-container>
-
-    <!-- TaxonomyName Column -->
-    <ng-container matColumnDef="taxonomyName">
-      <th mat-header-cell *matHeaderCellDef> Tax. Name</th>
-      <td mat-cell *matCellDef="let element"> {{element.taxonomyName}} </td>
+    <ng-container matColumnDef="description">
+      <th mat-header-cell *matHeaderCellDef> Description</th>
+      <td mat-cell *matCellDef="let element"> {{element.description}} </td>
     </ng-container>
 
     <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>

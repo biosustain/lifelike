@@ -3,8 +3,41 @@
   direction="horizontal"
   [disabled]="true"
   [gutterSize]="15">
-  <as-split-area *ngIf="sidenavOpened" size="640" [order]="0">
-    <div id="mat-sidenav-container">
+  <as-split-area [order]="0">
+    <div id="viz-content-container">
+      <app-visualization-quickbar
+        (animationStatus)="toggleAnimation($event)"
+        (toggleSidenav)="toggleSidenavOpened()"
+      ></app-visualization-quickbar>
+
+      <app-legend [legend]="legend"></app-legend>
+
+      <app-visualization-settings
+        [legendLabels]="legendLabels"
+        (settingsFormChanges)="updateSettings($event)"
+      ></app-visualization-settings>
+
+      <div id="network-viz"></div>
+
+      <!-- This isn't visible unless the user has right-clicked to open the context menu -->
+      <app-context-menu
+        [tooltipSelector]="contextMenuTooltipSelector"
+        [tooltipOptions]="contextMenuTooltipOptions"
+        [selectedNodeIds]="selectedNodes"
+        [selectedEdgeIds]="selectedEdges"
+        [selectedNodeEdgeLabelData]="selectedNodeEdgeLabelData"
+        [selectedClusterNodeData]="selectedClusterNodeData"
+        (groupNeighborsWithRelationship)="groupNeighborsWithRelationship($event)"
+        (removeNodes)="removeNodes($event)"
+        (removeEdges)="removeEdges($event)"
+        (selectNeighbors)="selectNeighbors($event)"
+        (pullOutNodeFromCluster)="removeNodeFromCluster($event)"
+        (openDataSidebar)="updateSidenavEntity()"
+      ></app-context-menu>
+    </div>
+  </as-split-area>
+  <as-split-area *ngIf="sidenavOpened" size="640" [order]="1">
+    <div id="sidenav-container">
       <!-- Each switch case appears to be lazy loaded, so switching between two cases will destroy the old case, and create the new case. -->
       <div [ngSwitch]="sidenavEntityType">
         <div *ngSwitchCase="sidenavEntityTypeEnum.NODE">
@@ -37,36 +70,5 @@
         </div>
       </div>
     </div>
-  </as-split-area>
-  <as-split-area [order]="1">
-    <app-visualization-quickbar
-      (animationStatus)="toggleAnimation($event)"
-      (toggleSidenav)="toggleSidenavOpened()"
-    ></app-visualization-quickbar>
-
-    <app-legend [legend]="legend"></app-legend>
-
-    <app-visualization-settings
-      [legendLabels]="legendLabels"
-      (settingsFormChanges)="updateSettings($event)"
-    ></app-visualization-settings>
-
-    <div id="network-viz"></div>
-
-    <!-- This isn't visible unless the user has right-clicked to open the context menu -->
-    <app-context-menu
-      [tooltipSelector]="contextMenuTooltipSelector"
-      [tooltipOptions]="contextMenuTooltipOptions"
-      [selectedNodeIds]="selectedNodes"
-      [selectedEdgeIds]="selectedEdges"
-      [selectedNodeEdgeLabelData]="selectedNodeEdgeLabelData"
-      [selectedClusterNodeData]="selectedClusterNodeData"
-      (groupNeighborsWithRelationship)="groupNeighborsWithRelationship($event)"
-      (removeNodes)="removeNodes($event)"
-      (removeEdges)="removeEdges($event)"
-      (selectNeighbors)="selectNeighbors($event)"
-      (pullOutNodeFromCluster)="removeNodeFromCluster($event)"
-      (openDataSidebar)="updateSidenavEntity()"
-    ></app-context-menu>
   </as-split-area>
 </as-split>
