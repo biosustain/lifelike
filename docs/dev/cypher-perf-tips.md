@@ -7,7 +7,7 @@ This document contains a collection of tips/tricks related to Cypher query perfo
 - [Another Query Tuning Article](https://neo4j.com/blog/cypher-write-fast-furious/)
 
 ### General Tips
-- You can use the `PROFILE` keyword to inspect the performance of any query. In the Neo4j browser, what you'll mostly be concerned with is the number of db hits:
+- You can use the `PROFILE` keyword to inspect the performance of any query. In the Neo4j browser, what you'll mostly be concerned with is the number of [db hits](https://neo4j.com/docs/cypher-manual/current/execution-plans/#execution-plans-dbhits):
 <img width="1034" alt="Screen Shot 2020-04-02 at 3 19 25 PM" src="https://user-images.githubusercontent.com/12260867/78305337-7fe8e380-74f5-11ea-830f-ef83d5e87b4b.png">
 
 - Use node labels whenever possible
