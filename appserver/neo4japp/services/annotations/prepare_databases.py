@@ -20,6 +20,7 @@ from neo4japp.services.annotations.constants import (
     PROTEIN_LMDB,
     PUBCHEM_LMDB,
     SPECIES_LMDB,
+    DatabaseType,
 )
 from neo4japp.services.annotations.util import normalize_str
 
@@ -68,7 +69,7 @@ def prepare_lmdb_genes_database(filename: str):
                 if gene_name != 'null':
                     gene = {
                         'gene_id': gene_id,
-                        'id_type': 'NCBI',
+                        'id_type': DatabaseType.Ncbi.value,
                         'tax_id': tax_id,
                         'name': gene_name,
                         'synonym': synonym,
@@ -106,7 +107,7 @@ def prepare_lmdb_chemicals_database(filename: str):
                 if chemical_name != 'null':
                     chemical = {
                         'chemical_id': chemical_id,
-                        'id_type': 'CHEBI',
+                        'id_type': DatabaseType.Chebi.value,
                         'name': chemical_name,
                         'synonym': chemical_name,
                     }
@@ -124,7 +125,7 @@ def prepare_lmdb_chemicals_database(filename: str):
 
                                     synonym = {
                                         'chemical_id': chemical_id,
-                                        'id_type': 'CHEBI',
+                                        'id_type': DatabaseType.Chebi.value,
                                         'name': chemical_name,
                                         'synonym': synonym_term,
                                     }
@@ -159,7 +160,7 @@ def prepare_lmdb_compounds_database(filename: str):
                 if compound_name != 'null':
                     compound = {
                         'compound_id': compound_id,
-                        'id_type': 'BIOCYC',
+                        'id_type': DatabaseType.Biocyc.value,
                         'name': compound_name,
                         'synonym': compound_name,
                     }
@@ -176,7 +177,7 @@ def prepare_lmdb_compounds_database(filename: str):
 
                                 synonym = {
                                     'compound_id': compound_id,
-                                    'id_type': 'BIOCYC',
+                                    'id_type': DatabaseType.Biocyc.value,
                                     'name': compound_name,
                                     'synonym': synonym_term,
                                 }
@@ -212,7 +213,7 @@ def prepare_lmdb_proteins_database(filename: str):
                     # changed protein_id to protein_name for now (JIRA LL-671)
                     # will eventually change back to protein_id
                     'protein_id': protein_name,
-                    'id_type': 'UNIPROT',
+                    'id_type': DatabaseType.Uniprot.value,
                     'name': protein_name,
                     'synonym': protein_name,
                 }
@@ -249,7 +250,7 @@ def prepare_lmdb_species_database(filename: str):
 
                 species = {
                     'tax_id': species_id,
-                    'id_type': 'NCBI',
+                    'id_type': DatabaseType.Ncbi.value,
                     'category': species_category if species_category else 'Uncategorized',
                     'name': species_name,
                     'synonym': species_name,
@@ -284,7 +285,7 @@ def prepare_lmdb_diseases_database(filename: str):
 
                 disease = {
                     'disease_id': disease_id,
-                    'id_type': 'MESH',
+                    'id_type': DatabaseType.Mesh.value,
                     'name': disease_name,
                     'synonym': synonym,  # disease_name also in synonym column
                 }
@@ -320,7 +321,7 @@ def prepare_lmdb_phenotypes_database(filename: str):
 
                 phenotype = {
                     'phenotype_id': phenotype_id,
-                    'id_type': 'MESH',
+                    'id_type': DatabaseType.Mesh.value,
                     'name': phenotype_name,
                     'synonym': phenotype_name,
                 }
@@ -337,7 +338,7 @@ def prepare_lmdb_phenotypes_database(filename: str):
 
                             synonym = {
                                 'phenotype_id': phenotype_id,
-                                'id_type': 'MESH',
+                                'id_type': DatabaseType.Mesh.value,
                                 'name': phenotype_name,
                                 'synonym': synonym_term,
                             }
