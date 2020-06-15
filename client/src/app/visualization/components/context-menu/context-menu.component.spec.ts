@@ -114,6 +114,8 @@ describe('ContextMenuComponent', () => {
     it('should show \'Group by Relationship\' option if a single node with at least one connecting edge is selected', async () => {
         component.selectedNodeIds = mockSelectedNodeIds;
         component.selectedNodeEdgeLabelData = mockSelectedNodeEdgeLabelData;
+        component.singleSelection = true;
+        component.exactlyOneSelectedNode = true;
         component.showTooltip();
         fixture.detectChanges();
 
@@ -127,6 +129,8 @@ describe('ContextMenuComponent', () => {
         const showGroupByRelSubMenuSpy = spyOn(component, 'showGroupByRelSubMenu');
         component.selectedNodeIds = mockSelectedNodeIds;
         component.selectedNodeEdgeLabelData = mockSelectedNodeEdgeLabelData;
+        component.singleSelection = true;
+        component.exactlyOneSelectedNode = true;
         component.showTooltip();
         fixture.detectChanges();
 
@@ -168,6 +172,8 @@ describe('ContextMenuComponent', () => {
         const interruptGroupByRelSpy = spyOn(contextMenuControlService, 'interruptGroupByRel');
         component.selectedNodeIds = mockSelectedNodeIds;
         component.selectedNodeEdgeLabelData = mockSelectedNodeEdgeLabelData;
+        component.singleSelection = true;
+        component.exactlyOneSelectedNode = true;
         component.showTooltip();
         fixture.detectChanges();
 
@@ -208,8 +214,9 @@ describe('ContextMenuComponent', () => {
         });
     });
 
-    it('should show \'Group by Relationship\' option if a single node with at least one connecting edge is selected', async () => {
+    it('should show \'Pull out node from cluster\' option if a cluster is selected', async () => {
         component.selectedClusterNodeData = mockSelectedClusterNodeData;
+        component.clusterSelected = true;
         component.showTooltip();
         fixture.detectChanges();
 
@@ -222,6 +229,7 @@ describe('ContextMenuComponent', () => {
     it('should show submenu when \'Pull out node from cluster\' is hovered', async () => {
         const showGroupByRelSubMenuSpy = spyOn(component, 'showPullOutNodeSubMenu');
         component.selectedClusterNodeData = mockSelectedClusterNodeData;
+        component.clusterSelected = true;
         component.showTooltip();
         fixture.detectChanges();
 
@@ -261,6 +269,7 @@ describe('ContextMenuComponent', () => {
         const mouseLeaveNodeRowSpy = spyOn(component, 'mouseLeaveNodeRow').and.callThrough();
         const interruptPullOutNodeSpy = spyOn(contextMenuControlService, 'interruptPullOutNode');
         component.selectedClusterNodeData = mockSelectedClusterNodeData;
+        component.clusterSelected = true;
         component.showTooltip();
         fixture.detectChanges();
 
@@ -303,6 +312,8 @@ describe('ContextMenuComponent', () => {
     it('should request neighbor selection if \'Select Neighbors\' is clicked', async () => {
         const requestNeighborSelectionSpy = spyOn(component, 'requestNeighborSelection');
         component.selectedNodeIds = mockSelectedNodeIds;
+        component.singleSelection = true;
+        component.exactlyOneSelectedNode = true;
         component.showTooltip();
         fixture.detectChanges();
 
@@ -316,6 +327,8 @@ describe('ContextMenuComponent', () => {
     it('should request node removal if \'Remove Selected Node(s)\' is clicked', async () => {
         const requestNodeRemovalSpy = spyOn(component, 'requestNodeRemoval');
         component.selectedNodeIds = mockSelectedNodeIds;
+        component.singleSelection = true;
+        component.exactlyOneSelectedNode = true;
         component.showTooltip();
         fixture.detectChanges();
 
@@ -329,6 +342,8 @@ describe('ContextMenuComponent', () => {
     it('should request edge removal if \'Remove Selected Edge(s)\' is clicked', async () => {
         const requestEdgeRemovalSpy = spyOn(component, 'requestEdgeRemoval');
         component.selectedEdgeIds = mockSelectedEdgeIds;
+        component.singleSelection = true;
+        component.exactlyOneSelectedEdge = true;
         component.showTooltip();
         fixture.detectChanges();
 
