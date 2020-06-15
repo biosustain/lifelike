@@ -116,12 +116,17 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
   }
 
   get subtypes() {
-    const nT = this.nodeTemplates.filter(
+    const nodeTemplates = this.nodeTemplates.filter(
       t => t.label === this.entityForm.value.group
-    )[0];
+    );
 
-    if (nT.subtypes && nT.subtypes.length) {
-      return nT.subtypes;
+    if (nodeTemplates.length) {
+      const nT = nodeTemplates[0];
+      if (nT.subtypes && nT.subtypes.length) {
+        return nT.subtypes;
+      } else {
+        return [];
+      }
     } else {
       return [];
     }
