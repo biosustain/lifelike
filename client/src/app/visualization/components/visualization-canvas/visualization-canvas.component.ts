@@ -9,7 +9,7 @@ import {
 
 import { Options } from '@popperjs/core';
 
-import { Subject } from 'rxjs';
+import { Subject, Subscription } from 'rxjs';
 import { skip, first } from 'rxjs/operators';
 
 import { isNullOrUndefined } from 'util';
@@ -66,7 +66,8 @@ enum SidenavEntityType {
 })
 export class VisualizationCanvasComponent implements OnInit, AfterViewInit {
     @Output() expandNode = new EventEmitter<ExpandNodeRequest>();
-    @Output() finishedPreClustering = new EventEmitter<boolean>();
+    @Output() openLoadingClustersDialog = new EventEmitter<boolean>();
+    @Output() finishedClustering = new EventEmitter<boolean>();
     @Output() getSnippetsForEdge = new EventEmitter<NewEdgeSnippetsPageRequest>();
     @Output() getSnippetsForCluster = new EventEmitter<NewClusterSnippetsPageRequest>();
     @Output() getNodeData = new EventEmitter<boolean>();
@@ -74,65 +75,78 @@ export class VisualizationCanvasComponent implements OnInit, AfterViewInit {
     @Input() nodes: DataSet<any, any>;
     @Input() edges: DataSet<any, any>;
     @Input() set expandNodeResult(result: ExpandNodeResult) {
-        if (!isNullOrUndefined(result)) {
-            const edgeLabelsOfExpandedNode = this.getConnectedEdgeLabels(result.expandedNode);
-            let newClusterCount = 0;
-            edgeLabelsOfExpandedNode.forEach(directionList => newClusterCount += directionList.length);
+        try {
+            if (!isNullOrUndefined(result)) {
+                const edgeLabelsOfExpandedNode = this.getConnectedEdgeLabels(result.expandedNode);
+                let newClusterCount = 0;
+                edgeLabelsOfExpandedNode.forEach(directionList => newClusterCount += directionList.length);
 
-            if (edgeLabelsOfExpandedNode.size === 0) {
-                this.messageDialog.display(
-                    {
-                        title: 'Auto-Cluster Error!',
-                        message: 'Something strange occurred: attempted to pre-cluster a node with zero relationships!',
-                        type: MessageType.Error
-                    }
-                );
-                return;
-            }
-
-            // When the last relationship is finished clustering, emit
-            this.clusterCreatedSource.asObservable().pipe(
-                skip(this.openClusteringRequests + newClusterCount - 1),
-                first(),
-            ).subscribe(() => {
-                this.finishedPreClustering.emit(true);
-            });
-
-            edgeLabelsOfExpandedNode.forEach((directionList, relationship) => {
-                directionList.forEach(direction => {
-                    const neighborNodesWithRel = this.getNeighborsWithRelationship(relationship, result.expandedNode, direction);
-                    const duplicateNodeEdgePairs = this.createDuplicateNodesAndEdges(
-                        neighborNodesWithRel, relationship, result.expandedNode, direction
-                    );
-
-                    // This is very similar to the implementation of `updateGraphWithDuplicates`, except that here we only delete
-                    // the existing nodes/edges, and don't add the duplicates. We will add the duplicates later, in `createCluster`
-                    const nodesToRemove = [];
-                    const edgesToRemove = [];
-
-                    duplicateNodeEdgePairs.forEach(pair => {
-                        const duplicateNode = pair.node;
-                        const duplicateEdge = pair.edge;
-                        const edges = this.networkGraph.getConnectedEdges(duplicateNode.duplicateOf);
-
-                        if (edges.length === 1) {
-                            // If the original node is being clustered on its last unclustered edge,
-                            // remove it entirely from the canvas.
-                            nodesToRemove.push(duplicateNode.duplicateOf);
-                            edgesToRemove.push(duplicateEdge.duplicateOf);
-                        } else if (this.networkGraph.getConnectedNodes(duplicateNode.duplicateOf).length === 1) {
-                            // Otherwise, don't remove the original node, and only remove the original edge if the
-                            // candidate node is not connected to any other node.
-                            edgesToRemove.push(duplicateEdge.duplicateOf);
+                if (edgeLabelsOfExpandedNode.size === 0) {
+                    this.messageDialog.display(
+                        {
+                            title: 'Auto-Cluster Error!',
+                            message: 'Something strange occurred: attempted to cluster a node with zero relationships!',
+                            type: MessageType.Error
                         }
-                    });
+                    );
+                    return;
+                }
 
-                    this.edges.remove(edgesToRemove);
-                    this.nodes.remove(nodesToRemove);
-
-                    this.createCluster(result.expandedNode, relationship, duplicateNodeEdgePairs);
+                // When the last relationship is finished clustering, emit
+                this.clusteringSubscription = this.clusterCreatedSource.asObservable().pipe(
+                    skip(this.openClusteringRequests + newClusterCount - 1),
+                    first(),
+                ).subscribe(() => {
+                    this.finishedClustering.emit(true);
                 });
-            });
+
+                edgeLabelsOfExpandedNode.forEach((directionList, relationship) => {
+                    directionList.forEach(direction => {
+                        const neighborNodesWithRel = this.getNeighborsWithRelationship(relationship, result.expandedNode, direction);
+                        const duplicateNodeEdgePairs = this.createDuplicateNodesAndEdges(
+                            neighborNodesWithRel, relationship, result.expandedNode, direction
+                        );
+
+                        // This is very similar to the implementation of `updateGraphWithDuplicates`, except that here we only delete
+                        // the existing nodes/edges, and don't add the duplicates. We will add the duplicates later, in `createCluster`
+                        const nodesToRemove = [];
+                        const edgesToRemove = [];
+
+                        duplicateNodeEdgePairs.forEach(pair => {
+                            const duplicateNode = pair.node;
+                            const duplicateEdge = pair.edge;
+                            const edges = this.networkGraph.getConnectedEdges(duplicateNode.duplicateOf);
+
+                            if (edges.length === 1) {
+                                // If the original node is being clustered on its last unclustered edge,
+                                // remove it entirely from the canvas.
+                                nodesToRemove.push(duplicateNode.duplicateOf);
+                                edgesToRemove.push(duplicateEdge.duplicateOf);
+                            } else if (this.networkGraph.getConnectedNodes(duplicateNode.duplicateOf).length === 1) {
+                                // Otherwise, don't remove the original node, and only remove the original edge if the
+                                // candidate node is not connected to any other node.
+                                edgesToRemove.push(duplicateEdge.duplicateOf);
+                            }
+                        });
+
+                        this.edges.remove(edgesToRemove);
+                        this.nodes.remove(nodesToRemove);
+
+                        this.createCluster(result.expandedNode, relationship, duplicateNodeEdgePairs);
+                    });
+                });
+            }
+        } catch (error) {
+            this.messageDialog.display(
+                {
+                    title: 'Clustering Error',
+                    message: error,
+                    type: MessageType.Error
+                }
+            );
+            this.clusteringSubscription.unsubscribe();
+            this.openClusteringRequests = 0;
+            this.finishedClustering.emit(true);
         }
     }
     @Input() set getEdgeSnippetsResult(result: GetEdgeSnippetsResult) {
@@ -229,6 +243,7 @@ export class VisualizationCanvasComponent implements OnInit, AfterViewInit {
     selectedClusterNodeData: VisNode[];
 
     clusterCreatedSource: Subject<boolean>;
+    clusteringSubscription: Subscription;
 
     contextMenuTooltipSelector: string;
     contextMenuTooltipOptions: Partial<Options>;
@@ -972,7 +987,30 @@ export class VisualizationCanvasComponent implements OnInit, AfterViewInit {
             return;
         }
 
-        this.createCluster(node, relationship, duplicateNodeEdgePairs);
+        // Rquest that the parent open the "Loading clusters" dialog
+        this.openLoadingClustersDialog.emit(true);
+
+        // When finished clustering, emit
+        this.clusteringSubscription = this.clusterCreatedSource.asObservable().pipe(
+            first(),
+        ).subscribe(() => {
+            this.finishedClustering.emit(true);
+        });
+
+        try {
+            this.createCluster(node, relationship, duplicateNodeEdgePairs);
+        } catch (error) {
+            this.messageDialog.display(
+                {
+                    title: 'Clustering Error',
+                    message: error,
+                    type: MessageType.Error
+                }
+            );
+            this.clusteringSubscription.unsubscribe();
+            this.openClusteringRequests = 0;
+            this.finishedClustering.emit(true);
+        }
     }
 
     removeEdges(edges: IdType[]) {
