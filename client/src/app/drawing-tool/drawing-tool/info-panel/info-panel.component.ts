@@ -60,7 +60,8 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
     data: {
       source: '',
       search: [],
-      subtype: ''
+      subtype: '',
+      hyperlinks: []
     }
   };
 
@@ -73,10 +74,10 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
     id: new FormControl(),
     label: new FormControl(),
     group: new FormControl(),
-    edges: new FormArray([]),
     hyperlink: new FormControl(),
     detail: new FormControl(),
     subtype: new FormControl(),
+    hyperlinks: new FormArray([])
   }, {
     updateOn: 'blur'
   });
@@ -90,27 +91,6 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
   nodeBank: VisNetworkGraphNode[] = [];
   nodeBankDict: {[hash: string]: object} = {};
 
-  /** Whether or not show all edges */
-  edgeCollapsed = false;
-
-  get edgeListStyle() {
-    return {
-      collapsed: this.edgeCollapsed
-    };
-  }
-
-  /**
-   * Return true or false if any edges exist
-   */
-  get edges() {
-    return this.entityForm.value.edges.length === 0 ? false : true;
-  }
-  /**
-   *
-   */
-  get edgeFormArr() {
-    return this.entityForm.get('edges') as FormArray;
-  }
   get isNode() {
     return this.entityType === 'node';
   }
@@ -150,17 +130,6 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
 
           if (this.entityType === 'node') {
             // Get node data
-
-            // tslint:disable-next-line: no-shadowed-variable
-            const edges = val.edges.map((e: VisNetworkGraphEdge) => {
-              return {
-                id: e.id,
-                label: e.label,
-                from: val.id,
-                to: e.to
-              };
-            });
-
             data = {
               node: {
                 id: this.graphData.id,
@@ -171,9 +140,10 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
                   detail: val.detail,
                   source: this.graphData.data.source || '',
                   search: this.graphData.data.search || [],
+                  hyperlinks: val.hyperlinks || []
                 }
               },
-              edges
+              edges: this.graphData.edges || []
             };
 
             const nodeTemplate = this.nodeTemplates.filter(
@@ -204,19 +174,22 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
             id,
             label,
             group,
-            edges,
             hyperlink,
-            detail
+            detail,
+            hyperlinks
           } = val;
 
           this.graphData = {
             id,
             label,
             group,
-            edges,
+            edges: this.graphData.edges,
             hyperlink,
             detail,
-            data: this.graphData.data
+            data: Object.assign(
+              this.graphData.data,
+              { hyperlinks }
+            )
           };
         }
       );
@@ -243,13 +216,12 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
 
         // Set FormArray of FormControls to edges of node
         this.entityForm.setControl(
-          'edges',
+          'hyperlinks',
           new FormArray(
-            this.graphData.edges.map(e => {
+            this.graphData.data.hyperlinks.map(e => {
               return new FormGroup({
-                to: new FormControl(),
-                label: new FormControl(),
-                id: new FormControl()
+                url: new FormControl(''),
+                domain: new FormControl('')
               });
             })
           )
@@ -260,16 +232,10 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
           id: this.graphData.id,
           label: this.graphData.label,
           group: this.graphData.group,
-          edges: this.graphData.edges.map((e: VisNetworkGraphEdge) => {
-            return {
-              id: e.id,
-              label: e.label,
-              to: e.to
-            };
-          }),
           hyperlink: data.nodeData.data.hyperlink || '',
           detail: data.nodeData.data.detail || '',
-          subtype: data.nodeData.data.subtype || ''
+          subtype: data.nodeData.data.subtype || '',
+          hyperlinks: data.nodeData.data.hyperlinks || []
         };
         this.entityForm.setValue(formData, {emitEvent: false});
 
@@ -311,13 +277,6 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Hide or show the edges
-   */
-  toggleCollapsible() {
-    this.edgeCollapsed = !this.edgeCollapsed;
-  }
-
-  /**
    * Reset info-panel to a clean state
    */
   reset(minimize= true) {
@@ -330,8 +289,6 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
       hyperlink: '',
       detail: ''
     };
-
-    this.edgeCollapsed = false;
 
     this.pauseForm = true;
     this.entityForm.setControl(
@@ -370,7 +327,6 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
    * Add edge to through FormControl
    */
   addEdge() {
-    this.edgeCollapsed = false;
     this.pauseForm = true;
 
     // add form control to modify edge
