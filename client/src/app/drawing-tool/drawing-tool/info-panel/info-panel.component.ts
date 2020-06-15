@@ -59,7 +59,8 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
     detail: '',
     data: {
       source: '',
-      search: []
+      search: [],
+      subtype: ''
     }
   };
 
@@ -74,7 +75,8 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
     group: new FormControl(),
     edges: new FormArray([]),
     hyperlink: new FormControl(),
-    detail: new FormControl()
+    detail: new FormControl(),
+    subtype: new FormControl(),
   }, {
     updateOn: 'blur'
   });
@@ -113,6 +115,18 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
     return this.entityType === 'node';
   }
 
+  get subtypes() {
+    const nT = this.nodeTemplates.filter(
+      t => t.label === this.entityForm.value.group
+    )[0];
+
+    if (nT.subtypes && nT.subtypes.length) {
+      return nT.subtypes;
+    } else {
+      return [];
+    }
+  }
+
   graphDataSubscription: Subscription = null;
   formSubscription: Subscription = null;
 
@@ -129,7 +143,7 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
         filter(_ => !this.pauseForm)
       )
       .subscribe(
-        (val: GraphData) => {
+        (val: any) => {
           if (isNullOrUndefined(val)) { return; }
 
           let data;
@@ -156,11 +170,17 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
                   hyperlink: val.hyperlink,
                   detail: val.detail,
                   source: this.graphData.data.source || '',
-                  search: this.graphData.data.search || []
+                  search: this.graphData.data.search || [],
                 }
               },
               edges
             };
+
+            const nodeTemplate = this.nodeTemplates.filter(
+              nT => val.group === nT.label
+            )[0];
+            const subtypeExist = nodeTemplate.subtypes && nodeTemplate.subtypes.length;
+            data.node.data.subtype = subtypeExist ? val.subtype : '';
 
           } else {
             // Get edge data
@@ -248,7 +268,8 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
             };
           }),
           hyperlink: data.nodeData.data.hyperlink || '',
-          detail: data.nodeData.data.detail || ''
+          detail: data.nodeData.data.detail || '',
+          subtype: data.nodeData.data.subtype || ''
         };
         this.entityForm.setValue(formData, {emitEvent: false});
 

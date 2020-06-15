@@ -8,6 +8,7 @@ from neo4japp.database import (
     get_lmdb_dao,
 )
 from neo4japp.factory import create_app
+from neo4japp.services.annotations.constants import EntityType, OrganismCategory
 from neo4japp.util import compute_hash
 
 
@@ -17,14 +18,19 @@ directory = os.path.realpath(os.path.dirname(__file__))
 
 def write_to_file(
     annotations,
-    pubtator_file,
+    chemical_pubtator,
+    gene_pubtator,
+    disease_pubtator,
+    species_pubtator,
 ):
     annotation_json = json.load(annotations)
     identifier = int(compute_hash(annotation_json), 16) % 10**8
     title = annotation_json['documents'][0]['id']
     text = annotation_json['documents'][0]['passages'][0]['text']
-    print(f'{identifier}|t|{title}', file=pubtator_file)
-    print(f'{identifier}|a|{text}', file=pubtator_file)
+
+    for f in [chemical_pubtator, gene_pubtator, disease_pubtator, species_pubtator]:
+        print(f'{identifier}|t|{title}', file=f)
+        print(f'{identifier}|a|{text}', file=f)
 
     annotations = annotation_json['documents'][0]['passages'][0]['annotations']
 
@@ -34,11 +40,32 @@ def write_to_file(
         keyword = annotation['keyword']
         keyword_type = annotation['meta']['keywordType']
         id = annotation['meta']['id']
-        print(
-            f'{identifier}\t{lo_offset}\t{hi_offset}\t{keyword}\t{keyword_type}\t{id}',
-            file=pubtator_file,
-        )
-    print('', file=pubtator_file)
+
+        if keyword_type == EntityType.Chemical.value:
+            print(
+                f'{identifier}\t{lo_offset}\t{hi_offset}\t{keyword}\t{keyword_type}\t{id}',
+                file=chemical_pubtator,
+            )
+        elif keyword_type == EntityType.Gene.value:
+            print(
+                f'{identifier}\t{lo_offset}\t{hi_offset}\t{keyword}\t{keyword_type}\t{id}',
+                file=gene_pubtator,
+            )
+        elif keyword_type == EntityType.Disease.value:
+            print(
+                f'{identifier}\t{lo_offset}\t{hi_offset}\t{keyword}\t{keyword_type}\t{id}',
+                file=disease_pubtator,
+            )
+        elif keyword_type == EntityType.Species.value:
+            # only Bacteria for now
+            if annotation['meta']['category'] == OrganismCategory.Bacteria.value:
+                print(
+                    f'{identifier}\t{lo_offset}\t{hi_offset}\t{keyword}\t{keyword_type}\t{id}',
+                    file=species_pubtator,
+                )
+
+    for f in [chemical_pubtator, gene_pubtator, disease_pubtator, species_pubtator]:
+        print('', file=f)
 
 
 def create_annotations(
@@ -62,7 +89,11 @@ def create_annotations(
 
 def main():
     app = create_app('Functional Test Flask App', config='config.Testing')
-    pubtator_file = open(os.path.join(directory, 'pubtator.txt'), 'w+')
+    chemical_pubtator = open(os.path.join(directory, 'chemical_pubtator.txt'), 'w+')
+    gene_pubtator = open(os.path.join(directory, 'gene_pubtator.txt'), 'w+')
+    disease_pubtator = open(os.path.join(directory, 'disease_pubtator.txt'), 'w+')
+    species_pubtator = open(os.path.join(directory, 'species_pubtator.txt'), 'w+')
+
     with app.app_context():
         for parent, subfolders, filenames in os.walk(os.path.join(directory, 'pdfs/')):
             for fn in filenames:
@@ -72,13 +103,17 @@ def main():
 
                 if fn.lower().endswith('.pdf'):
                     with open(os.path.join(parent, fn), 'rb') as f:
-                        annotations = create_annotations(
-                            annotations_service=service,
-                            bioc_service=bioc_service,
-                            filename=fn,
-                            pdf_parser=parser,
-                            pdf=f,
-                        )
+                        try:
+                            annotations = create_annotations(
+                                annotations_service=service,
+                                bioc_service=bioc_service,
+                                filename=fn,
+                                pdf_parser=parser,
+                                pdf=f,
+                            )
+                        except Exception:
+                            print(f'Failed to annotate PDF {fn}')
+                            continue
 
                     annotation_file = os.path.join(directory, f'annotations/{fn}.json')
                     with open(annotation_file, 'w+') as a_f:
@@ -90,9 +125,14 @@ def main():
                     if fn.lower().endswith('.json'):
                         write_to_file(
                             annotations=f,
-                            pubtator_file=pubtator_file,
+                            chemical_pubtator=chemical_pubtator,
+                            gene_pubtator=gene_pubtator,
+                            disease_pubtator=disease_pubtator,
+                            species_pubtator=species_pubtator,
                         )
-    pubtator_file.close()
+
+    for f in [chemical_pubtator, gene_pubtator, disease_pubtator, species_pubtator]:
+        f.close()
 
 
 if __name__ == '__main__':
