@@ -4,7 +4,7 @@ import {
 import {
   MatDialog
 } from '@angular/material/dialog';
-import {Router} from '@angular/router';
+import {Router, ActivatedRoute} from '@angular/router';
 
 import {
   ProjectsService,
@@ -57,11 +57,6 @@ export class ProjectListViewComponent {
   uploadStarted = false;
 
   /**
-   * ID of the user
-   */
-  userId;
-
-  /**
    * List of projects owned by user
    */
   projects: Project[] = [];
@@ -86,27 +81,27 @@ export class ProjectListViewComponent {
     return this.selectedProject.graph.nodes.length ? false : true;
   }
 
-  get isItMine() {
-    if (!this.selectedProject) {
-      return false;
-    }
-    return this.userId === this.selectedProject.user_id;
-  }
-
   constructor(
     public dialog: MatDialog,
     private route: Router,
     private projectService: ProjectsService,
-    private authService: AuthenticationService,
-    private dataFlow: DataFlowService,
     private snackBar: MatSnackBar,
     private progressDialog: ProgressDialog,
     private store: Store<State>,
-    private clipboard: ClipboardService
+    private clipboard: ClipboardService,
+    private router: ActivatedRoute
   ) {
-    this.userId = this.authService.whoAmI();
     this.refresh();
     this.userRoles$ = store.pipe(select(AuthSelectors.selectRoles));
+
+    if (this.router.snapshot.params.hash_id) {
+      this.projectService.serveProject(
+        this.router.snapshot.params.hash_id
+      ).subscribe(
+        (resp: any) => this.pickProject(resp.project),
+        err => console.log(err)
+      );
+    }
   }
 
   /**
@@ -444,7 +439,7 @@ export class ProjectListViewComponent {
         this.pickProject(evt.project);
         break;
       case 'copy':
-        // TODO bring back
+        console.log(evt);
         // this.copyProject(evt.project);
         break;
       case 'download':

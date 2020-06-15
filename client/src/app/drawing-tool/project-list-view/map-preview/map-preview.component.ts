@@ -7,6 +7,7 @@ import { Observable } from 'rxjs';
 import { Store, select } from '@ngrx/store';
 import { State } from 'app/***ARANGO_USERNAME***-store';
 import { AuthSelectors } from 'app/auth/store';
+import { AuthenticationService } from 'app/auth/services/authentication.service';
 
 @Component({
   selector: 'app-map-preview',
@@ -19,6 +20,17 @@ export class MapPreviewComponent implements OnInit {
   @Output() parentAPI: EventEmitter <any> = new EventEmitter <any> ();
 
   minimized = false;
+
+  /**
+   * ID of the user
+   */
+  userId;
+  get isItMine() {
+    if (!this.project) {
+      return false;
+    }
+    return this.userId === this.project.user_id;
+  }
 
   /** vis ojbect to control network-graph vis */
   visGraph: NetworkVis = null;
@@ -81,7 +93,10 @@ export class MapPreviewComponent implements OnInit {
     private projectService: ProjectsService,
     private route: ActivatedRoute,
     private store: Store<State>,
+    private authService: AuthenticationService
   ) {
+    this.userId = this.authService.whoAmI();
+
     if (this.route.snapshot.params.hash_id) {
       this.projectService.serveProject(
         this.route.snapshot.params.hash_id
