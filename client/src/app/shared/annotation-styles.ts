@@ -45,18 +45,22 @@ const ASSOCIATION = '#d7d9f8';
 const annotationTypes: AnnotationStyle[] = [{
     label: 'gene',
     color: GENE,
+    subtypes: []
   },
   {
     label: 'disease',
     color: DISEASE,
+    subtypes: []
   },
   {
     label: 'chemical',
     color: CHEMICAL,
+    subtypes: []
   },
   {
     label: 'compound',
     color: COMPOUND,
+    subtypes: []
   },
   {
     label: 'mutation',
@@ -75,45 +79,55 @@ const annotationTypes: AnnotationStyle[] = [{
   {
     label: 'species',
     color: SPECIES,
+    subtypes: []
   },
   {
     label: 'company',
     color: COMPANY,
+    subtypes: []
   },
   {
     label: 'study',
     color: STUDY,
+    subtypes: []
   },
   {
     label: 'protein',
     color: PROTEIN,
+    subtypes: []
   },
   {
     label: 'pathway',
     color: PATHWAY,
+    subtypes: []
   },
   {
     label: 'phenotype',
     color: PHENOTYPE,
+    subtypes: []
   },
   {
     label: 'link',
     color: LINK,
-    iconCode: ''
+    iconCode: '',
+    subtypes: []
   },
   {
     label: 'entity',
     color: ENTITY,
+    subtypes: []
   },
   {
     label: 'map',
     color: MAP,
-    iconCode: '\uf279'
+    iconCode: '\uf279',
+    subtypes: []
   },
   {
     label: 'note',
     color: NOTE,
-    iconCode: '\uf249'
+    iconCode: '\uf249',
+    subtypes: []
   },
   // Non-Entity types
   {
@@ -124,6 +138,7 @@ const annotationTypes: AnnotationStyle[] = [{
       background: CORRELATION,
       color: '#000'
     },
+    subtypes: []
   },
   {
     label: 'cause',
@@ -133,6 +148,7 @@ const annotationTypes: AnnotationStyle[] = [{
       background: CAUSE,
       color: '#000'
     },
+    subtypes: []
   },
   {
     label: 'effect',
@@ -142,6 +158,7 @@ const annotationTypes: AnnotationStyle[] = [{
       background: EFFECT,
       color: '#000'
     },
+    subtypes: []
   },
   {
     label: 'observation',
@@ -151,6 +168,7 @@ const annotationTypes: AnnotationStyle[] = [{
       background: OBSERVATION,
       color: '#000'
     },
+    subtypes: []
   },
   {
     label: 'association',
@@ -160,6 +178,7 @@ const annotationTypes: AnnotationStyle[] = [{
       background: ASSOCIATION,
       color: '#000'
     },
+    subtypes: []
   },
 ];
 
