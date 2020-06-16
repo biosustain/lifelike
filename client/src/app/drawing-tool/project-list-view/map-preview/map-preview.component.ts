@@ -69,7 +69,11 @@ export class MapPreviewComponent implements OnInit {
         );
         this.visGraph.network.on(
           'doubleClick',
-          (properties) => this.projectAPICall('edit')
+          (properties) => {
+            if (this.isItMine) {
+              this.projectAPICall('edit');
+            }
+          }
         );
       },
       100
