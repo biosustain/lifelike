@@ -28,7 +28,7 @@ from neo4japp.database import (
 )
 from neo4japp.exceptions import AnnotationError, RecordNotFoundException
 from neo4japp.models import AppUser
-from neo4japp.models.files import Files, FileContent
+from neo4japp.models.files import Files, FileContent, LMDBsDates
 from neo4japp.utils.network import read_url
 from neo4japp.schemas.files import AnnotationAdditionSchema, AnnotationRemovalSchema
 from flask_apispec import use_kwargs, marshal_with
@@ -399,3 +399,10 @@ def extract_doi(pdf_content: bytes, file_id: str = None, filename: str = None) -
         return None
     doi = match.group(1).decode('utf-8').replace('%2F', '/')
     return doi if doi.startswith('http') else f'https://doi.org/{doi}'
+
+
+@bp.route('/lmdbs_dates', methods=['GET'])
+@auth.login_required
+def get_lmdbs_dates():
+    rows = LMDBsDates.query.all()
+    return {row.name: row.date for row in rows}
