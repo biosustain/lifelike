@@ -96,8 +96,7 @@ export class ProjectListViewComponent {
       this.projectService.serveProject(
         this.router.snapshot.params.hash_id
       ).subscribe(
-        (resp: any) => this.pickProject(resp.project),
-        err => console.log(err)
+        (resp: any) => this.pickProject(resp.project)
       );
     }
   }
