@@ -3,17 +3,44 @@
         <a class='node-url'
            [routerLink]="['/neo4j-visualizer']"
            [queryParams]="{ data: nodeURL }"
-        >
-        {{ node.node.label }}
-        </a>
+        >{{ node.node.displayName }}</a>
+        <span
+          [ngStyle]="{
+            'border': 'thin solid',
+            'border-radius': '10px',
+            'border-color': legend.get(node.node.label),
+            'color': legend.get(node.node.label),
+            'margin-left': '10px',
+            'padding': '0 5px'
+          }"
+        >{{ node.node.label }} </span>
     </mat-card-title>
     <mat-card-subtitle>
-      <span>ID: {{ node.node.data.id }}</span>
-      <div *ngIf="node.node.label === 'Gene'">
-        <span>Taxonomy ID: {{ node.taxonomyId }}</span>
-        <br>
-        <span>Taxonomy: {{ node.taxonomyName }}</span>
+      <div [ngSwitch]="node.node.label">
+        <div *ngSwitchCase="'Chemical'">
+          <div [ngSwitch]="node.node.data.id.split(':')[0]">
+            <span *ngSwitchCase="'CHEBI'">ID: <a target="_blank" href="http://identifiers.org/chebi/{{node.node.data.id}}">{{ node.node.data.id.split(':')[1] }}</a></span>
+            <span *ngSwitchCase="'MESH'">ID: <a target="_blank" href="https://meshb.nlm.nih.gov/record/ui?ui={{node.node.data.id.split(':')[1]}}">{{ node.node.data.id.split(':')[1] }}</a></span>
+            <mat-icon>launch</mat-icon>
+          </div>
+        </div>
+        <span *ngSwitchCase="'Disease'">ID:
+          <a target="_blank" href="https://meshb.nlm.nih.gov/record/ui?ui={{node.node.data.id.split(':')[1]}}">{{ node.node.data.id.split(':')[1] }}</a>
+          <mat-icon>launch</mat-icon>
+        </span>
+        <div *ngSwitchCase="'Gene'">
+          <span>
+            ID: <a target="_blank" href="https://www.ncbi.nlm.nih.gov/gene/{{node.node.data.id}}">{{ node.node.data.id }}</a>
+            <mat-icon>launch</mat-icon>
+          </span>
+          <br>
+          <span>
+            Taxonomy ID: <a target="_blank" href="https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id={{node.taxonomyId}}">{{ node.taxonomyId }}</a>
+            <mat-icon>launch</mat-icon>
+          </span>
+          <br>
+          <span>Taxonomy: {{ node.taxonomyName }}</span>
+        </div>
       </div>
     </mat-card-subtitle>
-    <mat-card-content>{{ node.node.displayName }}</mat-card-content>
 </mat-card>
