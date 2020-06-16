@@ -56,6 +56,27 @@ def get_map_by_hash(hash_id):
         raise RecordNotFoundException('not found :-( ')
 
 
+# TODO - Remove at some point when projects & permissions branch
+# is merged in
+@bp.route('/map/<string:hash_id>/meta', methods=['GET'])
+@auth.login_required
+def get_map_meta_by_hash(hash_id):
+    """
+        Serve map by hash_id lookup
+    """
+    user = g.current_user
+
+    # Pull up map by hash_id
+    try:
+        project = Project.query.filter_by(hash_id=hash_id).one()
+    except NoResultFound:
+        raise RecordNotFoundException('not found :-( ')
+
+    return {
+        "userOwnIt": project.user_id == user.id,
+        "isItPublic": project.public
+    }
+
 @bp.route('/map/download/<string:hash_id>', methods=['GET'])
 @auth.login_required
 @requires_role('admin')
