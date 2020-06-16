@@ -29,8 +29,6 @@ import {MatSnackBar} from '@angular/material';
 
 import * as $ from 'jquery';
 
-import {AuthenticationService} from 'app/auth/services/authentication.service';
-
 import { AuthSelectors } from 'app/auth/store';
 import { BehaviorSubject, Observable, throwError } from 'rxjs';
 import { select, Store } from '@ngrx/store';
@@ -92,7 +90,7 @@ export class ProjectListViewComponent {
     private router: ActivatedRoute
   ) {
     this.refresh();
-    this.userRoles$ = store.pipe(select(AuthSelectors.selectRoles));
+    this.userRoles$ = this.store.pipe(select(AuthSelectors.selectRoles));
 
     if (this.router.snapshot.params.hash_id) {
       this.projectService.serveProject(
@@ -320,7 +318,7 @@ export class ProjectListViewComponent {
         this.uploadStarted = false;
         this.snackBar.open(`File uploaded: ${data.filename}`, 'Close', {duration: 5000});
         const hashId = event.body.result.hashId;
-        this.route.navigateByUrl(`dt/splitter/${hashId}`);
+        this.route.navigateByUrl(`dt/map/edit/${hashId}`);
       }
     },
     err => {
@@ -410,7 +408,7 @@ export class ProjectListViewComponent {
    * Open project in drawing-tool view's canvas
    */
   goToProject() {
-    this.route.navigateByUrl(`dt/splitter/${this.selectedProject.hash_id}`);
+    this.route.navigateByUrl(`dt/map/edit/${this.selectedProject.hash_id}`);
   }
 
   handleAPI(evt: { action: string, project: Project }) {

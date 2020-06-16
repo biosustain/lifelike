@@ -48,11 +48,7 @@ export const routes = [
     component: ProjectListViewComponent
   },
   {
-    path: 'drawing-tool',
-    component: DrawingToolComponent
-  },
-  {
-    path: 'splitter/:hash_id',
+    path: 'map/edit/:hash_id',
     component: SplitterComponent,
     canDeactivate: [PendingChangesGuard]
   },
