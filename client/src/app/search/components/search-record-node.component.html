@@ -7,6 +7,13 @@
         {{ node.node.label }}
         </a>
     </mat-card-title>
-    <mat-card-subtitle>ID: {{ node.node.data.id }}</mat-card-subtitle>
+    <mat-card-subtitle>
+      <span>ID: {{ node.node.data.id }}</span>
+      <div *ngIf="node.node.label === 'Gene'">
+        <span>Taxonomy ID: {{ node.taxonomyId }}</span>
+        <br>
+        <span>Taxonomy: {{ node.taxonomyName }}</span>
+      </div>
+    </mat-card-subtitle>
     <mat-card-content>{{ node.node.displayName }}</mat-card-content>
 </mat-card>
