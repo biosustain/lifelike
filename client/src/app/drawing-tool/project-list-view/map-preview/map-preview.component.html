@@ -57,7 +57,6 @@
     <div class='cant-hide'>
       <div class='fr'>
         <mat-icon (click)='toggleHidden()' class='dib fr ma1 white'>minimize</mat-icon>
-        <mat-icon *ngIf='childMode' (click)='projectAPICall("edit")' class='dib fr ma1 white'>edit</mat-icon>
       </div>
       <h2 [ngClass]='{"smallText": minimized}' >{{project?.label}}</h2>
     </div>
@@ -72,25 +71,57 @@
         {{project?.description}}
       </p>
       <div *ngIf='childMode' fxLayout='row wrap' class='action'>
-        
-        <button class='ma1' (click)='projectAPICall("edit")' mat-flat-button color="accent">Edit</button>
 
-        <button class='ma1' (click)='projectAPICall("share")' mat-flat-button color='primary'>Share</button>
+        <button
+          *ngIf='isItMine'
+          class='ma1'
+          (click)='projectAPICall("edit")'
+          mat-flat-button
+          color="accent">
+          Edit
+        </button>
 
-        <button class='ma1' (click)='projectAPICall("delete")' mat-flat-button color="warn">Delete</button>    
+        <button
+          *ngIf='!isItMine'
+          class='ma1'
+          (click)='projectAPICall("copy")'
+          mat-flat-button
+          color="accent">
+          Make copy of
+        </button>
+
         <button
           class='ma1'
+          (click)='projectAPICall("share")'
           mat-flat-button
-          color="primary"
-          (click)='projectAPICall("settings")'>
+          color='primary'>
+          Share
+        </button>
+
+        <button
+          *ngIf='isItMine'
+          class='ma1'
+          (click)='projectAPICall("delete")'
+          mat-flat-button
+          color="warn">
+          Delete
+        </button>
+        
+        <button
+          *ngIf='isItMine'
+          class='ma1'
+          (click)='projectAPICall("settings")'
+          mat-flat-button
+          color="primary">
           Settings
         </button>
+        
         <button
-          class='ma1'
           *ngIf="(userRoles$ | async)?.includes('admin')"
+          class='ma1'
+          (click)='projectAPICall("download")'
           mat-flat-button
-          color="accent"
-          (click)='projectAPICall("download")'>
+          color="accent">
           Download
         </button>
       </div>
