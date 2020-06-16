@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 import { configureTestSuite } from 'ng-bullet';
 
@@ -7,12 +8,13 @@ import { RootStoreModule } from 'app/root-store';
 import { SharedModule } from 'app/shared/shared.module';
 
 import { SidenavNodeViewComponent } from './sidenav-node-view.component';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+
 describe('SidenavNodeViewComponent', () => {
     let component: SidenavNodeViewComponent;
     let fixture: ComponentFixture<SidenavNodeViewComponent>;
 
     let mockNodeEntity: SidenavNodeEntity;
+    let mockLegend: Map<string, string[]>;
 
     configureTestSuite(() => {
         TestBed.configureTestingModule({
@@ -42,10 +44,15 @@ describe('SidenavNodeViewComponent', () => {
             edges: [],
         };
 
+        mockLegend = new Map<string, string[]>([
+            ['MockNode', ['#CD5D67', '#410B13']],
+        ]);
+
         fixture = TestBed.createComponent(SidenavNodeViewComponent);
         component = fixture.componentInstance;
         // Make a deep copy of the mock object so we get a brand new one for each test
         component.nodeEntity = mockNodeEntity;
+        component.legend = mockLegend;
 
         fixture.detectChanges();
     });
@@ -56,31 +63,11 @@ describe('SidenavNodeViewComponent', () => {
 
     it('should show the input node display name', () => {
         const nodeDisplayNameElement = document.getElementById('sidenav-node-display-name');
-        expect(nodeDisplayNameElement.innerText).toEqual('Display Name: Mock Node');
+        expect(nodeDisplayNameElement.innerText).toEqual('Mock Node');
     });
 
     it('should show the input node label', () => {
         const nodeLabelElement = document.getElementById('sidenav-node-label');
-        expect(nodeLabelElement.innerText).toEqual('Label: MockNode');
-    });
-
-    it('should not show sub labels for node with only one label', () => {
-        const nodeSubLabelElements = document.getElementsByClassName('sidenav-node-sub-label');
-        expect(nodeSubLabelElements.length).toEqual(0);
-    });
-
-    it('should show sub labels for node with more than one label', () => {
-        component.nodeEntity.data.subLabels = ['MockNode', 'ExtraSubLabel'];
-        fixture.detectChanges();
-
-        const nodeSubLabelElements = document.getElementsByClassName('sidenav-node-sub-label');
-        expect(nodeSubLabelElements.length).toEqual(2);
-
-        const labels = [];
-        labels.push(nodeSubLabelElements[0].textContent);
-        labels.push(nodeSubLabelElements[1].textContent);
-
-        expect(labels).toContain('MockNode');
-        expect(labels).toContain('ExtraSubLabel');
+        expect(nodeLabelElement.innerText).toEqual('MockNode');
     });
 });
