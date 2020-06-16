@@ -7,7 +7,6 @@
     <div id="viz-content-container">
       <app-visualization-quickbar
         (animationStatus)="toggleAnimation($event)"
-        (toggleSidenav)="toggleSidenavOpened()"
       ></app-visualization-quickbar>
 
       <app-legend [legend]="legend"></app-legend>
@@ -38,10 +37,20 @@
   </as-split-area>
   <as-split-area *ngIf="sidenavOpened" size="640" [order]="1">
     <div id="sidenav-container">
+      <div id="sidenav-panel-btns-container">
+        <button
+          id="sidenav-panel-close-btn"
+          (click)="closeSidenav()">
+        <mat-icon>clear</mat-icon>
+      </button>
+      </div>
       <!-- Each switch case appears to be lazy loaded, so switching between two cases will destroy the old case, and create the new case. -->
       <div [ngSwitch]="sidenavEntityType">
         <div *ngSwitchCase="sidenavEntityTypeEnum.NODE">
-          <app-sidenav-node-view [nodeEntity]="sidenavEntity"></app-sidenav-node-view>
+          <app-sidenav-node-view
+            [legend]="legend"
+            [nodeEntity]="sidenavEntity"
+          ></app-sidenav-node-view>
         </div>
         <div *ngSwitchCase="sidenavEntityTypeEnum.EDGE">
           <app-sidenav-edge-view
@@ -63,7 +72,7 @@
         </div>
         <div *ngSwitchCase="sidenavEntityTypeEnum.EMPTY">
           <h1>Canvas Data View</h1>
-          <h4>(Select something on the canvas to see some data!)</h4>
+          <h4>(Right-click something on the canvas and select "Show Data in Sidenav" to see some data!)</h4>
         </div>
       </div>
     </div>

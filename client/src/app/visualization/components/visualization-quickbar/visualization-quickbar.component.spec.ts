@@ -49,16 +49,4 @@ describe('VisualizationQuickbarComponent', () => {
             expect(animationStatusSpy).toHaveBeenCalled();
         });
     });
-
-    it('should emit a request to toggle the sidenav when the toggle sidenav button is clicked', () => {
-        const toggleSidenavBtn = document.getElementById('toggle-sidenav-btn');
-        const toggleDataSidenavSpy = spyOn(instance, 'toggleDataSidenav').and.callThrough();
-        const toggleSidenavEmitSpy = spyOn(instance.toggleSidenav, 'emit');
-
-        toggleSidenavBtn.click();
-        fixture.detectChanges();
-
-        expect(toggleDataSidenavSpy).toHaveBeenCalled();
-        expect(toggleSidenavEmitSpy).toHaveBeenCalled();
-    });
 });
