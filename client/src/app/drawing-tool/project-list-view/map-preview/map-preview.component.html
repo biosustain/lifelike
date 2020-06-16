@@ -82,7 +82,7 @@
         </button>
 
         <button
-          *ngIf='isItMine'
+          *ngIf='!isItMine'
           class='ma1'
           (click)='projectAPICall("copy")'
           mat-flat-button
@@ -91,7 +91,6 @@
         </button>
 
         <button
-          *ngIf='!isItMine'
           class='ma1'
           (click)='projectAPICall("share")'
           mat-flat-button
