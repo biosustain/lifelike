@@ -38,6 +38,18 @@ def simple_full_text_search(req: SimpleSearchRequest):
     results = search_dao.simple_text_search(req.query, req.page, req.limit, req.filter)
     return SuccessResponse(result=results, status_code=200)
 
+
+# TODO: Added as part of LL-1067, this is a TEMP solution until we design a
+# search service consistent with both the visualizer and the drawing tool.
+# This will need tests if we decide to maintain it as a standalone service.
+@bp.route('/viz-search-temp', methods=['POST'])
+@jsonify_with_class(SimpleSearchRequest)
+def visualizer_search_temp(req: SimpleSearchRequest):
+    search_dao = get_search_service_dao()
+    results = search_dao.visualizer_search_temp(req.query, req.page, req.limit, req.filter)
+    return SuccessResponse(result=results, status_code=200)
+
+
 # // TODO: Re-enable once we have a proper predictive/autocomplete implemented
 # @bp.route('/search', methods=['POST'])
 # @jsonify_with_class(SearchRequest)
