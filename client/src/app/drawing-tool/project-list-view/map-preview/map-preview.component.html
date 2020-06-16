@@ -59,7 +59,7 @@
         <mat-icon (click)='toggleHidden()' class='dib fr ma1 white'>minimize</mat-icon>
         <mat-icon *ngIf='childMode' (click)='projectAPICall("edit")' class='dib fr ma1 white'>edit</mat-icon>
       </div>
-      <h2>{{project?.label}}</h2>
+      <h2 [ngClass]='{"smallText": minimized}' >{{project?.label}}</h2>
     </div>
     <div class='can-hide' [ngClass]='{"hidden": minimized}'>
       <p class='author'>
