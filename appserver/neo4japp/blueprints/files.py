@@ -383,10 +383,8 @@ def delete_files():
             continue
         db.session.delete(file)
         db.session.commit()
-        current_app.logger.debug('File deleted: %s, %s', id, file.filename)
+        current_app.logger.info(f'User deleted file: <{g.current_user.email}:{file.filename}>')
         outcome[id] = DeletionOutcome.DELETED.value
-
-    current_app.logger.info(f'User deleted file: <{g.current_user.email}:{file.filename}>')
 
     return jsonify(outcome)
 
