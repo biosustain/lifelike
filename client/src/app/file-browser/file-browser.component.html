@@ -54,7 +54,7 @@
 
     <ng-container matColumnDef="creationDate">
       <mat-header-cell *matHeaderCellDef> Created </mat-header-cell>
-      <mat-cell *matCellDef="let element"> {{element.creation_date}} </mat-cell>
+      <mat-cell *matCellDef="let element"> {{element.creation_date | date:'medium'}} </mat-cell>
     </ng-container>
 
     <ng-container matColumnDef="username">
