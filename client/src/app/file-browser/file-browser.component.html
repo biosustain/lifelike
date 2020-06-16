@@ -64,7 +64,16 @@
 
     <ng-container matColumnDef="annotation">
       <mat-header-cell *matHeaderCellDef> Annotation </mat-header-cell>
-      <mat-cell *matCellDef="let element"> {{element.annotation_status}} </mat-cell>
+      <mat-cell *matCellDef="let element"
+        fxLayoutGap="8px"
+        [matTooltipDisabled]="!element.annotations_date_tooltip || element.annotations_date_tooltip.length === 0"
+        [matTooltip]="element.annotations_date_tooltip"
+        matTooltipClass="tooltip-newlines"
+        matTooltipPosition="left"
+      >
+        <mat-icon *ngIf="element.annotations_date_tooltip?.length > 0">warning</mat-icon>
+        <span>{{element.annotations_date | date:'medium'}}</span>
+      </mat-cell>
     </ng-container>
 
     <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
