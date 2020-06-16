@@ -2,7 +2,6 @@ import { Component, OnInit, Input, Output, EventEmitter, HostBinding } from '@an
 import { GraphSelectionData, UniversalGraph, VisNetworkGraphEdge, Project } from 'app/drawing-tool/services/interfaces';
 import { NetworkVis } from 'app/drawing-tool/network-vis';
 import { ProjectsService } from 'app/drawing-tool/services';
-import { ActivatedRoute } from '@angular/router';
 import { Observable } from 'rxjs';
 import { Store, select } from '@ngrx/store';
 import { State } from 'app/root-store';
@@ -91,29 +90,12 @@ export class MapPreviewComponent implements OnInit {
 
   constructor(
     private projectService: ProjectsService,
-    private route: ActivatedRoute,
     private store: Store<State>,
     private authService: AuthenticationService
   ) {
     this.userId = this.authService.whoAmI();
 
-    if (this.route.snapshot.params.hash_id) {
-      this.projectService.serveProject(
-        this.route.snapshot.params.hash_id
-      ).subscribe(
-        resp => {
-          this.childMode = false;
-          this.childPosition = true;
-          // tslint:disable-next-line: no-string-literal
-          this.project = resp['project'];
-        },
-        err => {
-          console.log(err);
-        }
-      );
-    }
-
-    this.userRoles$ = store.pipe(select(AuthSelectors.selectRoles));
+    this.userRoles$ = this.store.pipe(select(AuthSelectors.selectRoles));
   }
 
   ngOnInit() {
