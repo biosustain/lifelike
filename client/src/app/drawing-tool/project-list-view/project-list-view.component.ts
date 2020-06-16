@@ -437,8 +437,7 @@ export class ProjectListViewComponent {
         this.pickProject(evt.project);
         break;
       case 'copy':
-        console.log(evt);
-        // this.copyProject(evt.project);
+        this.copyProject(evt.project);
         break;
       case 'download':
         this.downloadProject();
