@@ -48,17 +48,6 @@
         <mat-form-field
             *ngIf='isNode'
             class="w-100 mt3">
-            <mat-label>Hyperlink</mat-label>
-            <input
-                matInput
-                (keydown.enter)="blurInput($event)"
-                formControlName='hyperlink'>
-            <mat-icon (click)='goToLink()' matSuffix>link</mat-icon>
-        </mat-form-field>
-
-        <mat-form-field
-            *ngIf='isNode'
-            class="w-100 mt3">
             <mat-label>Detail</mat-label>
             <textarea
                 id='textArea'
@@ -69,6 +58,29 @@
                 formControlName='detail'>
             </textarea>
         </mat-form-field>
+
+        <!-- TODO - refactor to hyperlinks -->
+        <div id='hyperlinks-menu' fxLayout='row wrap' fxLayoutAlign='center center'>
+            <h4 class='blue dib'>Hyperlinks</h4>
+            <button mat-icon-button disabled aria-label="Example icon button with a open in new tab icon">
+                <mat-icon (click)='addHyperlink()'>add</mat-icon>
+            </button>
+        </div>
+        <div formArrayName='hyperlinks' *ngFor='let h of hyperlinksForm.controls; let i = index;' class='db flex'>
+            <div class='w-100' [formGroupName]='i'>
+                <mat-form-field
+                    appearance="outline"
+                    *ngIf='isNode'
+                    class="w-100">
+                    <mat-icon class='link' (click)='goToLink()' matPrefix>link</mat-icon>
+                    <input
+                        matInput
+                        (keydown.enter)="blurInput($event)"
+                        formControlName='url'>
+                    <mat-icon class='delete' matSuffix>delete</mat-icon>
+                </mat-form-field>
+            </div>
+        </div>
 
         <app-search-links
             [graphData]='graphData'>
