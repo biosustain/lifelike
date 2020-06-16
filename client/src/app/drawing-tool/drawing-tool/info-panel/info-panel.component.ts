@@ -107,6 +107,10 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
     }
   }
 
+  get hyperlinksForm() {
+    return this.entityForm.get('hyperlinks') as FormArray;
+  }
+
   graphDataSubscription: Subscription = null;
   formSubscription: Subscription = null;
 
@@ -324,22 +328,19 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Add edge to through FormControl
+   * Add hyperlink through FormControl
    */
-  addEdge() {
+  addHyperlink() {
     this.pauseForm = true;
 
     // add form control to modify edge
-    (this.entityForm.controls.edges as FormArray).push(
+    (this.entityForm.controls.hyperlinks as FormArray).push(
       new FormGroup({
-        to: new FormControl(
-          null
+        url: new FormControl(
+          ''
         ),
-        label: new FormControl(
-          null
-        ),
-        id: new FormControl(
-          uuidv4()
+        domain: new FormControl(
+          ''
         )
       })
     );
@@ -351,7 +352,7 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
    * @param form the form control to manipulate
    * @param i the index of the edge to remove
    */
-  deleteEdge(form, i) {
+  deleteHyperlink(form, i) {
     const edge = form.value;
 
     // remove form control
@@ -361,15 +362,6 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
     this.graphData.edges = this.graphData.edges.filter(
       e => e.id !== edge.id
     );
-
-    // push changes to app.component.ts
-    this.dataFlow.pushGraphUpdate({
-      event: 'delete',
-      type: 'edge',
-      data: {
-        id: edge.id
-      }
-    });
   }
 
   changeSize(paletteMode = null) {
