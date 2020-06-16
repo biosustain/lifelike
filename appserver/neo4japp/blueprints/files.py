@@ -4,7 +4,7 @@ import json
 import os
 import re
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Dict, Optional
 import urllib.request
@@ -78,6 +78,7 @@ def upload_pdf():
     file_id = str(uuid.uuid4())
 
     annotations = annotate(filename, pdf)
+    annotations_date = datetime.now(timezone.utc)
 
     try:
         # First look for an existing copy of this file
@@ -104,6 +105,7 @@ def upload_pdf():
         content_id=file_content.id,
         user_id=user.id,
         annotations=annotations,
+        annotations_date=annotations_date,
         project=project,
         doi=doi,
         upload_url=upload_url,
@@ -132,6 +134,7 @@ def list_files():
     project = '1'
 
     files = [{
+        'annotations_date': row.annotations_date,
         'id': row.id,  # TODO: is this of any use?
         'file_id': row.file_id,
         'filename': row.filename,
@@ -139,6 +142,7 @@ def list_files():
         'username': row.username,
         'creation_date': row.creation_date,
     } for row in db.session.query(
+        Files.annotations_date,
         Files.id,
         Files.file_id,
         Files.filename,
@@ -345,6 +349,7 @@ def reannotate():
         else:
             db.session.query(Files).filter(Files.file_id == id).update({
                 'annotations': annotations,
+                'annotations_date': datetime.now(timezone.utc),
             })
             db.session.commit()
             current_app.logger.debug('File successfully annotated: %s, %s', id, file.filename)
