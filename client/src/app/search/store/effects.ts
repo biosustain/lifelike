@@ -27,7 +27,7 @@ export class SearchEffects {
             if (query === '') {
                 return empty;
             }
-            return this.searchService.fullTextSearch(query, page, limit).pipe(
+            return this.searchService.visualizerSearchTemp(query, page, 10, 'n:db_Literature').pipe(
                 map((results: FTSResult) => SearchActions.searchSuccess({results})),
             );
         }),
@@ -43,7 +43,7 @@ export class SearchEffects {
         ofType(SearchActions.searchPaginate),
         concatMap(({searchQuery}) => {
             const { query, page, limit } = searchQuery;
-            return this.searchService.fullTextSearch(query, page, limit).pipe(
+            return this.searchService.visualizerSearchTemp(query, page, 10, 'n:db_Literature').pipe(
                 map((results: FTSResult) => SearchActions.searchPaginateSuccess({results}))
             );
         })
