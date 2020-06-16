@@ -77,6 +77,7 @@ def get_map_meta_by_hash(hash_id):
         "isItPublic": project.public
     }
 
+
 @bp.route('/map/download/<string:hash_id>', methods=['GET'])
 @auth.login_required
 @requires_role('admin')
