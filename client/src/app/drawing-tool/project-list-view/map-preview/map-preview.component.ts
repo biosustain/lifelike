@@ -2,11 +2,11 @@ import { Component, OnInit, Input, Output, EventEmitter, HostBinding } from '@an
 import { GraphSelectionData, UniversalGraph, VisNetworkGraphEdge, Project } from 'app/drawing-tool/services/interfaces';
 import { NetworkVis } from 'app/drawing-tool/network-vis';
 import { ProjectsService } from 'app/drawing-tool/services';
-import { ActivatedRoute } from '@angular/router';
 import { Observable } from 'rxjs';
 import { Store, select } from '@ngrx/store';
 import { State } from 'app/***ARANGO_USERNAME***-store';
 import { AuthSelectors } from 'app/auth/store';
+import { AuthenticationService } from 'app/auth/services/authentication.service';
 
 @Component({
   selector: 'app-map-preview',
@@ -19,6 +19,17 @@ export class MapPreviewComponent implements OnInit {
   @Output() parentAPI: EventEmitter <any> = new EventEmitter <any> ();
 
   minimized = false;
+
+  /**
+   * ID of the user
+   */
+  userId;
+  get isItMine() {
+    if (!this.project) {
+      return false;
+    }
+    return this.userId === this.project.user_id;
+  }
 
   /** vis ojbect to control network-graph vis */
   visGraph: NetworkVis = null;
@@ -42,7 +53,7 @@ export class MapPreviewComponent implements OnInit {
     const g = this.projectService.universe2Vis(val.graph);
 
     const container = document.getElementById('canvas');
-    this.visGraph = new NetworkVis(container);
+    this.visGraph = new NetworkVis(container, false);
     this.focusedEntity = null;
 
     setTimeout(
@@ -55,6 +66,14 @@ export class MapPreviewComponent implements OnInit {
         this.visGraph.network.on(
           'click',
           (properties) => this.networkClickHandler(properties)
+        );
+        this.visGraph.network.on(
+          'doubleClick',
+          (properties) => {
+            if (this.isItMine) {
+              this.projectAPICall('edit');
+            }
+          }
         );
       },
       100
@@ -75,26 +94,12 @@ export class MapPreviewComponent implements OnInit {
 
   constructor(
     private projectService: ProjectsService,
-    private route: ActivatedRoute,
     private store: Store<State>,
+    private authService: AuthenticationService
   ) {
-    if (this.route.snapshot.params.hash_id) {
-      this.projectService.serveProject(
-        this.route.snapshot.params.hash_id
-      ).subscribe(
-        resp => {
-          this.childMode = false;
-          this.childPosition = true;
-          // tslint:disable-next-line: no-string-literal
-          this.project = resp['project'];
-        },
-        err => {
-          console.log(err);
-        }
-      );
-    }
+    this.userId = this.authService.whoAmI();
 
-    this.userRoles$ = store.pipe(select(AuthSelectors.selectRoles));
+    this.userRoles$ = this.store.pipe(select(AuthSelectors.selectRoles));
   }
 
   ngOnInit() {

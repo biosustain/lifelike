@@ -17,7 +17,7 @@ env:
     FLASK_APP_CONFIG: ${{ secrets.PROD_FLASK_APP_CONFIG }}
     FLASK_ENV: ${{ secrets.PROD_FLASK_ENV }}
     PROJECT_ID: ${{ secrets.GCE_PROJECT }}
-    GITHUB_HASH: $GITHUB_SHA
+    GITHUB_HASH: ${{ github.sha }}
     GCE_INSTANCE: kg-prod
     GCE_INSTANCE_ZONE: us-central1-a
     GCE_SERVICE_ACCOUNT: ${{ secrets.GCE_SA_KEY }}
@@ -49,19 +49,38 @@ jobs:
             - run: |-
                 gcloud --quiet auth configure-docker
 
-            # Build the Docker images
-            - name: Build
-              run: |-
-                docker build --tag "gcr.io/$PROJECT_ID/kg-appserver-prod:latest" -f ./appserver/Dockerfile.prod ./appserver/
-                docker build --tag "gcr.io/$PROJECT_ID/kg-webserver-prod:latest" -f ./client/Dockerfile.prod ./client/
-                docker build --tag "gcr.io/$PROJECT_ID/kg-cache-service-prod:latest" ./cache-invalidator/
+            - name: Build Appserver Image
+              uses: docker/build-push-action@v1
+              with:
+                username: _json_key
+                password: ${{ secrets.GCE_SA_KEY }}
+                registry: gcr.io
+                repository: ${{ secrets.GCE_PROJECT }}/kg-appserver-prod
+                tags: ${{ github.sha }}, latest
+                path: ./appserver
+                dockerfile: ./appserver/Dockerfile.prod
 
-            # # Push Docker image to Google Container Registry
-            - name: Publish
-              run: |-
-                docker push "gcr.io/$PROJECT_ID/kg-appserver-prod:latest"
-                docker push "gcr.io/$PROJECT_ID/kg-webserver-prod:latest"
-                docker push "gcr.io/$PROJECT_ID/kg-cache-service-prod:latest"
+            - name: Build Client and Nginx Image
+              uses: docker/build-push-action@v1
+              with:
+                username: _json_key
+                password: ${{ secrets.GCE_SA_KEY }}
+                registry: gcr.io
+                repository: ${{ secrets.GCE_PROJECT }}/kg-webserver-prod
+                tags: ${{ github.sha }}, latest
+                path: ./client
+                dockerfile: ./client/Dockerfile.prod
+
+            - name: Build Redis
+              uses: docker/build-push-action@v1
+              with:
+                username: _json_key
+                password: ${{ secrets.GCE_SA_KEY }}
+                registry: gcr.io
+                repository: ${{ secrets.GCE_PROJECT }}/kg-cache-service-prod
+                tags: ${{ github.sha }}, latest
+                path: ./cache-invalidator
+                dockerfile: ./cache-invalidator/Dockerfile
 
             - name: Deploy Setup
               run: |-
@@ -79,14 +98,15 @@ jobs:
                 echo "PROJECT_ID=$PROJECT_ID" >> prod.env
                 echo "CLOUD_SQL_ALIAS=$CLOUD_SQL_ALIAS" >> prod.env
                 echo "GCE_BACKUP_BUCKET=$GCE_BACKUP_BUCKET" >> prod.env
-                echo "GITHUB_HASH=temporarily-disable >> prod.env"
+                echo "GITHUB_HASH=$GITHUB_HASH" >> prod.env
                 GITHUB_COMMIT_TIMESTAMP=$(git log -1 --format=%cI)
                 echo "GITHUB_COMMIT_TIMESTAMP=$GITHUB_COMMIT_TIMESTAMP" >> prod.env
                 echo "SENTRY_KEY=$SENTRY_KEY" >> prod.env
                 echo "REDIS_HOST=$REDIS_HOST" >> prod.env
                 echo "REDIS_PORT=$REDIS_PORT" >> prod.env
                 echo "$GCE_SERVICE_ACCOUNT" >> keyfile.json
-                gcloud compute scp prod.env ***ARANGO_USERNAME***@$GCE_INSTANCE:/srv --zone $GCE_INSTANCE_ZONE
+                gsutil cp prod.env gs://kg-secrets
+                gcloud compute scp prod.env ***ARANGO_USERNAME***@$GCE_INSTANCE:/srv/.env --zone $GCE_INSTANCE_ZONE
                 gcloud compute scp keyfile.json ***ARANGO_USERNAME***@$GCE_INSTANCE:/srv --zone $GCE_INSTANCE_ZONE
                 gcloud compute scp ./deployment/bin/startup.sh ***ARANGO_USERNAME***@$GCE_INSTANCE:/srv --zone $GCE_INSTANCE_ZONE
                 gcloud compute scp ./deployment/bin/migration-manager.sh ***ARANGO_USERNAME***@$GCE_INSTANCE:/srv --zone $GCE_INSTANCE_ZONE
