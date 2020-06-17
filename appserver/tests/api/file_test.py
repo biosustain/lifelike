@@ -184,36 +184,109 @@ def test_can_get_pdf_annotations(
     assert resp.status_code == 200
 
 
-def test_can_add_custom_annotations(client, test_user, test_user_with_pdf, fix_project):
+CUSTOM_ANNOTATION = {
+    'pageNumber': 1,
+    'keywords': ['gyrA'],
+    'rects': [[0.1, 0.2, 0.3, 0.4]],
+    'meta': {
+        'type': 'gene',
+        'color': 'green',
+        'id': '',
+        'idType': '',
+        'idHyperlink': '',
+        'isCustom': True,
+        'allText': 'gyrA',
+        'links': {
+            'ncbi': '',
+            'uniprot': '',
+            'wikipedia': '',
+            'google': ''
+        }
+    },
+}
+
+
+def test_user_can_add_custom_annotation(client, test_user, test_user_with_pdf, fix_project):
     login_resp = client.login_as_user(test_user.email, 'password')
     headers = generate_headers(login_resp['access_jwt'])
     file_id = test_user_with_pdf.file_id
 
     resp = client.patch(
-        f'/projects/{fix_project.project_name}/files/{file_id}/annotations',
+        f'/projects/{fix_project.project_name}/files/{file_id}/annotations/add',
         headers=headers,
-        data=json.dumps({
-            'user_id': test_user.id,
-        }),
+        data=json.dumps(CUSTOM_ANNOTATION),
         content_type='application/json',
     )
 
     assert resp.status_code == 200
+    assert 'uuid' in resp.get_json()
 
 
-def test_can_reannotate_files(client, test_user, test_user_with_pdf, fix_project):
+def test_user_can_remove_custom_annotation(client, test_user, test_user_with_pdf, fix_project):
     login_resp = client.login_as_user(test_user.email, 'password')
     headers = generate_headers(login_resp['access_jwt'])
     file_id = test_user_with_pdf.file_id
 
-    resp = client.post(
-        f'/projects/{fix_project.project_name}/files/reannotate',
+    add_resp = client.patch(
+        f'/projects/{fix_project.project_name}/files/{file_id}/annotations/add',
         headers=headers,
-        data=json.dumps({file_id: file_id}),
+        data=json.dumps(CUSTOM_ANNOTATION),
         content_type='application/json',
     )
 
-    assert resp.status_code == 200
+    uuid = add_resp.get_json()['uuid']
+
+    remove_resp = client.patch(
+        f'/projects/{fix_project.project_name}/files/{file_id}/annotations/remove',
+        headers=headers,
+        data=json.dumps({
+            'uuid': uuid,
+            'removeAll': False
+        }),
+        content_type='application/json',
+    )
+
+    assert remove_resp.status_code == 200
+    assert remove_resp.get_json()[uuid] == 'Removed'
+
+
+def test_user_can_remove_matching_custom_annotations(
+        client, test_user, test_user_with_pdf, fix_project):
+    login_resp = client.login_as_user(test_user.email, 'password')
+    headers = generate_headers(login_resp['access_jwt'])
+    file_id = test_user_with_pdf.file_id
+
+    add_resp_1 = client.patch(
+        f'/projects/{fix_project.project_name}/files/{file_id}/annotations/add',
+        headers=headers,
+        data=json.dumps(CUSTOM_ANNOTATION),
+        content_type='application/json',
+    )
+
+    uuid_1 = add_resp_1.get_json()['uuid']
+
+    add_resp_2 = client.patch(
+        f'/projects/{fix_project.project_name}/files/{file_id}/annotations/add',
+        headers=headers,
+        data=json.dumps(CUSTOM_ANNOTATION),
+        content_type='application/json',
+    )
+
+    uuid_2 = add_resp_2.get_json()['uuid']
+
+    remove_resp = client.patch(
+        f'/projects/{fix_project.project_name}/files/{file_id}/annotations/remove',
+        headers=headers,
+        data=json.dumps({
+            'uuid': uuid_2,
+            'removeAll': True
+        }),
+        content_type='application/json',
+    )
+
+    assert remove_resp.status_code == 200
+    assert remove_resp.get_json()[uuid_1] == 'Removed'
+    assert remove_resp.get_json()[uuid_2] == 'Removed'
 
 
 def test_can_delete_files(client, test_user, test_user_with_pdf, fix_project):

@@ -3,7 +3,6 @@ import {
   OnInit,
   AfterViewInit,
   OnDestroy,
-  HostListener,
   Output,
   EventEmitter,
   Input,
@@ -203,15 +202,6 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
    */
   formDataSubscription: Subscription = null;
   pdfDataSubscription: Subscription = null;
-
-  // Prevent the user from leaving the page
-  // if work is left un-saved
-  @HostListener('window:beforeunload')
-  canDeactivate(): Observable<boolean> | boolean {
-    return this.saveState ? true : confirm(
-      'WARNING: You have unsaved changes. Press Cancel to go back and save these changes, or OK to lose these changes.'
-    );
-  }
 
   get saveStyle() {
     return {

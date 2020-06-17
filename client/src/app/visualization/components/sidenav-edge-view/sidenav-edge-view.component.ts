@@ -1,4 +1,3 @@
-import { HttpErrorResponse } from '@angular/common/http';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 
 import { SidenavEdgeEntity, NewEdgeSnippetsPageRequest } from 'app/interfaces';
@@ -12,7 +11,7 @@ export class SidenavEdgeViewComponent {
     @Output() requestNewPageEmitter: EventEmitter<NewEdgeSnippetsPageRequest>;
     @Input() edgeEntity: SidenavEdgeEntity;
     @Input() isNewEntity: boolean;
-    @Input() error: HttpErrorResponse;
+    @Input() error: Error;
     @Input() legend: Map<string, string[]>;
 
     constructor() {
