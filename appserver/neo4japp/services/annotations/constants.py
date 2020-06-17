@@ -3,6 +3,16 @@ from enum import Enum
 from neo4japp.constants import ANNOTATION_STYLES_DICT
 
 
+# lmdb database names
+CHEMICAL_LMDB = 'chemicals_chebi'
+COMPOUND_LMDB = 'compounds'
+DISEASE_LMDB = 'diseases'
+GENE_LMDB = 'genes'
+PHENOTYPE_LMDB = 'phenotypes'
+PROTEIN_LMDB = 'proteins'
+PUBCHEM_LMDB = 'chemicals_pubchem'
+SPECIES_LMDB = 'species'
+
 PDF_NEW_LINE_THRESHOLD = .30
 PDF_CHARACTER_SPACING_THRESHOLD = .325
 COMMON_TWO_LETTER_WORDS = {
