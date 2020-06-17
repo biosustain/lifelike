@@ -1,44 +1,56 @@
-<!-- According to the Angular Material docs (https://material.angular.io/components/sidenav/api#MatSidenavContainer),
-we should be careful using 'autosize', as it may lead to performance problems.-->
-<mat-sidenav-container autosize="true" fxFlexFill>
-  <mat-sidenav-content class="sidenav-content" fxFlexFill>
-    <app-visualization-quickbar (animationStatus)="toggleAnimation($event)"></app-visualization-quickbar>
+<as-split
+  unit="pixel"
+  direction="horizontal"
+  [disabled]="true"
+  [gutterSize]="15">
+  <as-split-area [order]="0">
+    <div id="viz-content-container">
+      <app-visualization-quickbar
+        (animationStatus)="toggleAnimation($event)"
+      ></app-visualization-quickbar>
 
-    <app-legend [legend]="legend"></app-legend>
+      <app-legend [legend]="legend"></app-legend>
 
-    <app-visualization-settings
-      [legendLabels]="legendLabels"
-      (settingsFormChanges)="updateSettings($event)"
-    ></app-visualization-settings>
+      <app-visualization-settings
+        [legendLabels]="legendLabels"
+        (settingsFormChanges)="updateSettings($event)"
+      ></app-visualization-settings>
 
-    <div id="network-viz"></div>
+      <div id="network-viz"></div>
 
-    <!-- This isn't visible unless the user has right-clicked to open the context menu -->
-    <app-context-menu
-      [tooltipSelector]="contextMenuTooltipSelector"
-      [tooltipOptions]="contextMenuTooltipOptions"
-      [selectedNodeIds]="selectedNodes"
-      [selectedEdgeIds]="selectedEdges"
-      [selectedNodeEdgeLabelData]="selectedNodeEdgeLabelData"
-      [selectedClusterNodeData]="selectedClusterNodeData"
-      (groupNeighborsWithRelationship)="groupNeighborsWithRelationship($event)"
-      (removeNodes)="removeNodes($event)"
-      (removeEdges)="removeEdges($event)"
-      (selectNeighbors)="selectNeighbors($event)"
-      (pullOutNodeFromCluster)="removeNodeFromCluster($event)"
-    ></app-context-menu>
-    <button id="sidenav-toggle-button" mat-mini-fab (click)="toggleSidenavOpened()">
-      <mat-icon *ngIf="sidenavOpened">chevron_right</mat-icon>
-      <mat-icon *ngIf="!sidenavOpened">chevron_left</mat-icon>
-    </button>
-  </mat-sidenav-content>
-
-  <mat-sidenav class="sidenav" #sidenav position="end" mode="over" [(opened)]="sidenavOpened" (openedChange)="setSidenavStatus($event)">
-    <div id="mat-sidenav-container">
+      <!-- This isn't visible unless the user has right-clicked to open the context menu -->
+      <app-context-menu
+        [tooltipSelector]="contextMenuTooltipSelector"
+        [tooltipOptions]="contextMenuTooltipOptions"
+        [selectedNodeIds]="selectedNodes"
+        [selectedEdgeIds]="selectedEdges"
+        [selectedNodeEdgeLabelData]="selectedNodeEdgeLabelData"
+        [selectedClusterNodeData]="selectedClusterNodeData"
+        (groupNeighborsWithRelationship)="groupNeighborsWithRelationship($event)"
+        (removeNodes)="removeNodes($event)"
+        (removeEdges)="removeEdges($event)"
+        (selectNeighbors)="selectNeighbors($event)"
+        (pullOutNodeFromCluster)="removeNodeFromCluster($event)"
+        (openDataSidebar)="updateSidenavEntity()"
+      ></app-context-menu>
+    </div>
+  </as-split-area>
+  <as-split-area *ngIf="sidenavOpened" size="640" [order]="1">
+    <div id="sidenav-container">
+      <div id="sidenav-panel-btns-container">
+        <button
+          id="sidenav-panel-close-btn"
+          (click)="closeSidenav()">
+        <mat-icon>clear</mat-icon>
+      </button>
+      </div>
       <!-- Each switch case appears to be lazy loaded, so switching between two cases will destroy the old case, and create the new case. -->
       <div [ngSwitch]="sidenavEntityType">
         <div *ngSwitchCase="sidenavEntityTypeEnum.NODE">
-          <app-sidenav-node-view [nodeEntity]="sidenavEntity"></app-sidenav-node-view>
+          <app-sidenav-node-view
+            [legend]="legend"
+            [nodeEntity]="sidenavEntity"
+          ></app-sidenav-node-view>
         </div>
         <div *ngSwitchCase="sidenavEntityTypeEnum.EDGE">
           <app-sidenav-edge-view
@@ -60,9 +72,9 @@ we should be careful using 'autosize', as it may lead to performance problems.--
         </div>
         <div *ngSwitchCase="sidenavEntityTypeEnum.EMPTY">
           <h1>Canvas Data View</h1>
-          <h4>(Select something on the canvas to see some data!)</h4>
+          <h4>(Right-click something on the canvas and select "Show Data in Sidenav" to see some data!)</h4>
         </div>
       </div>
     </div>
-  </mat-sidenav>
-</mat-sidenav-container>
+  </as-split-area>
+</as-split>

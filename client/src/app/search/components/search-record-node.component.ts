@@ -14,6 +14,7 @@ export class SearchRecordNodeComponent {
     private prvNode: FTSQueryRecord;
     nodeURL: string;
 
+    @Input() legend: Map<string, string>;
     @Input()
     set node(n: FTSQueryRecord) {
         this.prvNode = n;
