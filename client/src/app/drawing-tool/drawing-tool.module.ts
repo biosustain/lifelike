@@ -28,6 +28,7 @@ import { EdgeFormComponent } from './drawing-tool/info-panel/edge-form.component
 import { NodeFormComponent } from './drawing-tool/info-panel/node-form.component';
 import { NodeSearchComponent } from '../node-search/containers/node-search.component';
 import { EditProjectDialogComponent } from './project-list/edit-project-dialog/edit-project-dialog.component';
+import { ConfirmDialogComponent } from 'app/shared/components/confirm-dialog/confirm-dialog.component';
 
 export const routes = [
   {
@@ -35,17 +36,13 @@ export const routes = [
     component: ProjectListViewComponent
   },
   {
-    path: 'drawing-tool',
-    component: DrawingToolComponent
-  },
-  {
-    path: 'splitter/:hash_id',
+    path: 'map/edit/:hash_id',
     component: SplitterComponent,
     canDeactivate: [PendingChangesGuard]
   },
   {
     path: 'map/:hash_id',
-    component: MapPreviewComponent
+    component: ProjectListViewComponent
   }
 ];
 
@@ -79,7 +76,8 @@ export const routes = [
     ProjectListViewComponent,
     PdfViewerComponent,
     ExportModalComponent,
-    NodeSearchComponent
+    NodeSearchComponent,
+    ConfirmDialogComponent
   ],
   imports: [
     SharedModule,

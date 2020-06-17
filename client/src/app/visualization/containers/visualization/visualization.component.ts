@@ -1,31 +1,36 @@
-import { Component, OnInit } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { MatDialog, MatDialogRef } from '@angular/material';
 import { ActivatedRoute } from '@angular/router';
 
-import { EMPTY as empty } from 'rxjs';
-import { filter, take, switchMap, map, first } from 'rxjs/operators';
+import { EMPTY as empty, Subject, merge, Subscription, of } from 'rxjs';
+import { filter, take, switchMap, map } from 'rxjs/operators';
 
 import { DataSet } from 'vis-network';
 
+import { isArray, isNullOrUndefined } from 'util';
+
 import {
-    ClusteredNode,
-    DuplicateVisEdge,
-    GetClusterDataResult,
-    GetSnippetsResult,
+    ExpandNodeResult,
+    ExpandNodeRequest,
+    GetEdgeSnippetsResult,
+    GetClusterSnippetsResult,
     GraphNode,
     GraphRelationship,
     Neo4jResults,
     Neo4jGraphConfig,
+    NewClusterSnippetsPageRequest,
+    NewEdgeSnippetsPageRequest,
     VisNode,
     VisEdge,
-    ExpandNodeResult,
-    ExpandNodeRequest,
 } from 'app/interfaces';
 import {
     NODE_EXPANSION_LIMIT,
-    NODE_EXPANSION_CLUSTERING_RECOMMENDATION,
 } from 'app/shared/constants';
-import { AutoClusterDialogComponent } from 'app/visualization/components/auto-cluster-dialog/auto-cluster-dialog.component';
+import { LegendService } from 'app/shared/services/legend.service';
+import {
+    LoadingClustersDialogComponent,
+} from 'app/visualization/components/loading-clusters-dialog/loading-clusters-dialog.component';
 import {
     NoResultsFromExpandDialogComponent
 } from 'app/visualization/components/no-results-from-expand-dialog/no-results-from-expand-dialog.component';
@@ -37,18 +42,26 @@ import { VisualizationService } from '../../services/visualization.service';
     templateUrl: './visualization.component.html',
     styleUrls: ['./visualization.component.scss'],
 })
-export class VisualizationComponent implements OnInit {
+export class VisualizationComponent implements OnInit, OnDestroy {
 
     // Shows/Hide the component
     hideDisplay = false;
 
     networkGraphData: Neo4jResults;
     networkGraphConfig: Neo4jGraphConfig;
-    expandNodeResult: ExpandNodeResult;
-    getSnippetsResult: GetSnippetsResult;
-    getClusterDataResult: GetClusterDataResult;
     nodes: DataSet<VisNode | GraphNode>;
     edges: DataSet<VisEdge | GraphRelationship>;
+
+    expandNodeResult: ExpandNodeResult;
+    getEdgeSnippetsResult: GetEdgeSnippetsResult;
+    getClusterSnippetsResult: GetClusterSnippetsResult;
+    getSnippetsError: HttpErrorResponse;
+
+    getEdgeSnippetsSubject: Subject<NewEdgeSnippetsPageRequest>;
+    getClusterSnippetsSubject: Subject<NewClusterSnippetsPageRequest>;
+    getSnippetsSubscription: Subscription;
+
+    nodeSelectedSubject: Subject<boolean>;
 
     // TODO: Will we need to have a legend for each database? i.e. the literature
     // data, biocyc, etc...
@@ -57,7 +70,7 @@ export class VisualizationComponent implements OnInit {
     dontShowDialogAgain = false;
     clusterExpandedNodes = false;
 
-    autoClusterDialogRef: MatDialogRef<AutoClusterDialogComponent>;
+    loadingClustersDialogRef: MatDialogRef<LoadingClustersDialogComponent>;
 
     // TODO: Will we need to add more of these?
     LITERATURE_LABELS = ['disease', 'chemical', 'gene'];
@@ -66,12 +79,57 @@ export class VisualizationComponent implements OnInit {
         public dialog: MatDialog,
         private route: ActivatedRoute,
         private visService: VisualizationService,
+        private legendService: LegendService,
     ) {
         this.legend = new Map<string, string[]>();
+
+        this.getClusterSnippetsSubject = new Subject<NewClusterSnippetsPageRequest>();
+        this.getEdgeSnippetsSubject = new Subject<NewEdgeSnippetsPageRequest>();
+        this.nodeSelectedSubject = new Subject<boolean>();
+
+        // We don't want to kill the subscription if an error is returned! This is the default behavior for
+        // subscriptions.
+        this.getSnippetsSubscription = merge(
+            // Merge the streams, so we can cancel one if the other emits; We always take the most recent
+            // emission betweent the streams.
+            this.getClusterSnippetsSubject,
+            this.getEdgeSnippetsSubject,
+            this.nodeSelectedSubject,
+        ).pipe(
+            switchMap((request: NewClusterSnippetsPageRequest | NewEdgeSnippetsPageRequest | boolean) => {
+                if (typeof request === 'boolean') {
+                    // We don't currently need to do anything if the request was for node data
+                    return of(request);
+                } else if (isArray(request.queryData)) {
+                    // If queryData is an array then we are getting snippets for a cluster
+                    return this.visService.getSnippetsForCluster(request as NewClusterSnippetsPageRequest);
+                } else {
+                    return this.visService.getSnippetsForEdge(request as NewEdgeSnippetsPageRequest);
+                }
+            }),
+        ).subscribe(
+            // resp might be any of GetClusterSnippetsResult | GetEdgeSnippetsResult | boolean | HttpErrorResponse
+            (resp: any) => {
+                if (typeof resp === 'boolean') {
+                    // We don't currently need to do anything if the request was for node data
+                    return;
+                } else if (!isNullOrUndefined(resp.error)) {
+                    // Response was an error
+                    this.getSnippetsError = resp;
+                    this.getClusterSnippetsResult = null;
+                    this.getEdgeSnippetsResult = null;
+                } else if (isArray(resp.snippetData)) {
+                    // If snippetData is an array then we are getting snippets for a cluster
+                    this.getClusterSnippetsResult = resp as GetClusterSnippetsResult;
+                } else {
+                    this.getEdgeSnippetsResult = resp as GetEdgeSnippetsResult;
+                }
+            },
+        );
     }
 
     ngOnInit() {
-        this.visService.getLegendForVisualizer().subscribe(legend => {
+        this.legendService.getAnnotationLegend().subscribe(legend => {
             Object.keys(legend).forEach(label => {
                 if (this.LITERATURE_LABELS.includes(label)) {
                     // Keys of the result dict are all lowercase, need to change the first character
@@ -101,7 +159,8 @@ export class VisualizationComponent implements OnInit {
             }
         });
 
-        this.getSnippetsResult = null;
+        this.getClusterSnippetsResult = null;
+        this.getEdgeSnippetsResult = null;
 
         this.networkGraphConfig = {
             interaction: {
@@ -136,43 +195,10 @@ export class VisualizationComponent implements OnInit {
         };
     }
 
-    openAutoClusterDialog(expandResult: ExpandNodeResult): void {
-        this.autoClusterDialogRef = this.dialog.open(AutoClusterDialogComponent, {
-            disableClose: true,
-            width: '600px', height: '330px',
-            data: {...expandResult},
-        });
-        const dialogInstance = this.autoClusterDialogRef.componentInstance;
-
-        // Once the user clicks an action on the dialog, either pre-cluster the results or expand normally
-        this.autoClusterDialogRef.componentInstance.clickedActionButton.pipe(
-            first(),
-        ).subscribe((clickedOkButton) => {
-            this.nodes.update(dialogInstance.data.nodes);
-            this.edges.update(dialogInstance.data.edges);
-
-            this.dontShowDialogAgain = dialogInstance.dontAskAgain;
-            this.clusterExpandedNodes = clickedOkButton;
-
-            // If the 'Yes' button was clicked, we update the dialog size and show a loading indicator while clustering is happening
-            if (clickedOkButton) {
-                this.autoClusterDialogRef.updateSize('200px', '100px');
-                this.expandNodeResult = dialogInstance.data;
-            } else {
-                // Otherwise we just close the dialog
-                this.autoClusterDialogRef.close();
-            }
-        });
-    }
-
-    openAutoClusterLoadingDialog() {
-        this.autoClusterDialogRef = this.dialog.open(AutoClusterDialogComponent, {
-            disableClose: true,
-            width: '200px', height: '100px',
-        });
-        const dialogInstance = this.autoClusterDialogRef.componentInstance;
-
-        dialogInstance.loadingClusters = true;
+    ngOnDestroy() {
+        this.getClusterSnippetsSubject.complete();
+        this.getEdgeSnippetsSubject.complete();
+        this.getSnippetsSubscription.unsubscribe();
     }
 
     openNoResultsFromExpandDialog() {
@@ -182,8 +208,16 @@ export class VisualizationComponent implements OnInit {
         });
     }
 
-    finishedPreClustering(event: boolean) {
-        this.autoClusterDialogRef.close();
+    openLoadingClustersDialog() {
+        this.loadingClustersDialogRef = this.dialog.open(LoadingClustersDialogComponent, {
+            disableClose: true,
+            width: '240px',
+            height: '180px',
+        });
+    }
+
+    finishedClustering(event: boolean) {
+        this.loadingClustersDialogRef.close();
     }
 
     /**
@@ -257,65 +291,51 @@ export class VisualizationComponent implements OnInit {
             return;
         }
 
-        this.visService.expandNode(nodeId, filterLabels, NODE_EXPANSION_LIMIT).subscribe((r: Neo4jResults) => {
-            const nodeRef = this.nodes.get(nodeId) as VisNode;
-            const visJSDataFormat = this.convertToVisJSFormat(r);
-            let { nodes } = visJSDataFormat;
-            const { edges } = visJSDataFormat;
+        this.openLoadingClustersDialog();
 
-            // If the expanded node has no connecting relationships, notify the user
-            if (edges.length === 0) {
-                this.openNoResultsFromExpandDialog();
-                return;
-            }
+        this.visService.expandNode(nodeId, filterLabels, NODE_EXPANSION_LIMIT).subscribe(
+            (r: Neo4jResults) => {
+                const nodeRef = this.nodes.get(nodeId) as VisNode;
+                const visJSDataFormat = this.convertToVisJSFormat(r);
+                let { nodes } = visJSDataFormat;
+                const { edges } = visJSDataFormat;
 
-            // Sets the node expand state to true
-            nodes = nodes.map((n) => {
-                if (n.id === nodeId) {
-                    return {...n, expanded: !nodeRef.expanded};
+                // If the expanded node has no connecting relationships, notify the user
+                if (edges.length === 0) {
+                    this.openNoResultsFromExpandDialog();
+                    this.loadingClustersDialogRef.close();
+                    return;
                 }
-                return n;
-            });
 
-            // If the user didn't manually disable the dialog, or if the expanded node has more relationships than the
-            // recommendation, re-open the dialog
-            if (!this.dontShowDialogAgain || edges.length > NODE_EXPANSION_CLUSTERING_RECOMMENDATION) {
-                this.openAutoClusterDialog({ nodes, edges, expandedNode: nodeId } as ExpandNodeResult);
-            } else {
+                // Sets the node expand state to true
+                nodes = nodes.map((n) => {
+                    if (n.id === nodeId) {
+                        return {...n, expanded: !nodeRef.expanded};
+                    }
+                    return n;
+                });
+
                 this.nodes.update(nodes);
                 this.edges.update(edges);
 
-                // Otherwise, do what the user originally chose
-                if (this.clusterExpandedNodes) {
-                    // Manully re-open the loading dialog if the user chose to auto-cluster
-                    this.openAutoClusterLoadingDialog();
-                    this.expandNodeResult = { nodes, edges, expandedNode: nodeId } as ExpandNodeResult;
-                }
+                this.expandNodeResult = { nodes, edges, expandedNode: nodeId } as ExpandNodeResult;
+            },
+            (error) => {
+                this.loadingClustersDialogRef.close();
             }
-        });
+        );
     }
 
-    getSnippetsFromEdge(edge: VisEdge) {
-        this.visService.getSnippetsFromEdge(edge).subscribe((result) => {
-            this.getSnippetsResult = result;
-        });
+    getSnippetsForEdge(request: NewEdgeSnippetsPageRequest) {
+        this.getEdgeSnippetsSubject.next(request);
     }
 
-    getSnippetsFromDuplicateEdge(edge: DuplicateVisEdge) {
-        this.visService.getSnippetsFromDuplicateEdge(edge).subscribe((result) => {
-            this.getSnippetsResult = result;
-        });
+   getSnippetsForCluster(request: NewClusterSnippetsPageRequest) {
+        this.getClusterSnippetsSubject.next(request);
     }
 
-    // TODO: There is a bug here: If the user opens a cluster after clicking it
-    // but before the cluster graph data response is received, then the sidenav
-    // will error because the returned duplicate node ids will not exist on the
-    // graph anymore. This can be fixed by creating some kind of interrupt event
-    // on this subscription. Could use rxjs 'race' + an output from the child here.
-    getClusterData(clusteredNodes: ClusteredNode[]) {
-        this.visService.getClusterData(clusteredNodes).subscribe((result) => {
-            this.getClusterDataResult = result;
-        });
+    nodeSelectedCallback() {
+        this.nodeSelectedSubject.next(true);
     }
 
     updateCanvasWithSingleNode(data: GraphNode) {

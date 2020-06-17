@@ -2,10 +2,11 @@ import hashlib
 import io
 import json
 import os
+import re
 import uuid
 from datetime import datetime
 from enum import Enum
-from typing import Dict
+from typing import Dict, Optional
 import urllib.request
 from urllib.error import URLError
 
@@ -29,6 +30,8 @@ from neo4japp.exceptions import AnnotationError, RecordNotFoundException
 from neo4japp.models import AppUser
 from neo4japp.models.files import Files, FileContent
 from neo4japp.utils.network import read_url
+from neo4japp.schemas.files import AnnotationAdditionSchema, AnnotationRemovalSchema
+from flask_apispec import use_kwargs, marshal_with
 
 URL_FETCH_MAX_LENGTH = 1024 * 1024 * 30
 URL_FETCH_TIMEOUT = 10
@@ -41,7 +44,7 @@ bp = Blueprint('files', __name__, url_prefix='/files')
 @bp.route('/upload', methods=['POST'])
 @auth.login_required
 def upload_pdf():
-    filename = None
+    filename = secure_filename(request.form['filename'])
     pdf = None
     if 'url' in request.form:
         url = request.form['url']
@@ -55,12 +58,8 @@ def upload_pdf():
             raise AnnotationError("Your file could not be downloaded, either because it is "
                                   "inaccessible or another problem occurred. Please double "
                                   "check the spelling of the URL.")
-        filename = secure_filename(request.form['filename'])
-        if not filename.lower().endswith('.pdf'):
-            filename += '.pdf'
         pdf = FileStorage(io.BytesIO(data), filename)
     else:
-        filename = secure_filename(request.files['file'].filename)
         pdf = request.files['file']
     pdf_content = pdf.read()  # TODO: don't work with whole file in memory
     pdf.stream.seek(0)
@@ -68,6 +67,7 @@ def upload_pdf():
     checksum_sha256 = hashlib.sha256(pdf_content).digest()
     user = g.current_user
 
+    # TODO: Should `pdf.filename` be in sync with the final filename?
     # Make sure that the filename is not longer than the DB column permits
     max_filename_length = Files.filename.property.columns[0].type.length
     if len(filename) > max_filename_length:
@@ -93,16 +93,27 @@ def upload_pdf():
         db.session.add(file_content)
         db.session.commit()
 
+    description = request.form.get('description', '')
+    doi = extract_doi(pdf_content, file_id, filename)
+    upload_url = request.form.get('url', None)
+
     file = Files(
         file_id=file_id,
         filename=filename,
+        description=description,
         content_id=file_content.id,
         user_id=user.id,
         annotations=annotations,
-        project=project
+        project=project,
+        doi=doi,
+        upload_url=upload_url,
     )
+
     db.session.add(file)
     db.session.commit()
+
+    current_app.logger.info(
+        f'User uploaded file: <{g.current_user.email}:{file.filename}>')
 
     return jsonify({
         'file_id': file_id,
@@ -124,12 +135,14 @@ def list_files():
         'id': row.id,  # TODO: is this of any use?
         'file_id': row.file_id,
         'filename': row.filename,
+        'description': row.description,
         'username': row.username,
         'creation_date': row.creation_date,
     } for row in db.session.query(
         Files.id,
         Files.file_id,
         Files.filename,
+        Files.description,
         Files.user_id,
         AppUser.username,
         Files.creation_date)
@@ -140,9 +153,28 @@ def list_files():
     return jsonify({'files': files})
 
 
-@bp.route('/<id>', methods=['GET'])
+@bp.route('/<id>', methods=['GET', 'PATCH'])
 @auth.login_required
 def get_pdf(id):
+    if request.method == 'PATCH':
+        filename = request.form['filename'].strip()
+        description = request.form['description'].strip()
+        try:
+            file = Files.query.filter_by(file_id=id).one()
+        except NoResultFound:
+            raise RecordNotFoundException('Requested PDF file not found.')
+        else:
+            if filename and filename != file.filename:
+                filename = secure_filename(filename)
+                db.session.query(Files).filter(Files.file_id == id).update({
+                    'filename': filename,
+                })
+            if description != file.description:
+                db.session.query(Files).filter(Files.file_id == id).update({
+                    'description': description,
+                })
+            db.session.commit()
+        return ''
     try:
         entry = db.session \
             .query(Files.id, FileContent.raw_file) \
@@ -206,15 +238,59 @@ def get_annotations(id):
 
 @bp.route('/add_custom_annotation/<id>', methods=['PATCH'])
 @auth.login_required
-def add_custom_annotation(id):
-    annotation_to_add = request.get_json()
-    annotation_to_add['user_id'] = g.current_user.id
+@use_kwargs(AnnotationAdditionSchema(exclude=('uuid', 'user_id')))
+@marshal_with(AnnotationAdditionSchema(only=('uuid',)), code=200)
+def add_custom_annotation(id, **payload):
+    annotation_to_add = {
+        **payload,
+        'user_id': g.current_user.id,
+        'uuid': str(uuid.uuid4())
+    }
     file = Files.query.filter_by(file_id=id).one_or_none()
     if not file:
         raise RecordNotFoundException('File does not exist')
     file.custom_annotations = [annotation_to_add, *file.custom_annotations]
     db.session.commit()
-    return {'status': 'success'}, 200
+    return annotation_to_add, 200
+
+
+class AnnotationRemovalOutcome(Enum):
+    REMOVED = 'Removed'
+    NOT_OWNER = 'Not an owner'
+    NOT_FOUND = 'Not found'
+
+
+@bp.route('/remove_custom_annotation/<id>', methods=['PATCH'])
+@auth.login_required
+@use_kwargs(AnnotationRemovalSchema)
+def remove_custom_annotation(id, uuid, removeAll):
+    file = Files.query.filter_by(file_id=id).one_or_none()
+    if not file:
+        raise RecordNotFoundException('File does not exist')
+    user = g.current_user
+    user_roles = [role.name for role in user.roles]
+    uuids_to_remove = []
+    annotation_to_remove = next(
+        (ann for ann in file.custom_annotations if ann['uuid'] == uuid), None
+    )
+    outcome: Dict[str, str] = {}  # annotation uuid to deletion outcome
+    if not annotation_to_remove:
+        outcome[uuid] = AnnotationRemovalOutcome.NOT_FOUND.value
+        return jsonify(outcome)
+    text = annotation_to_remove['meta']['allText']
+    for annotation in file.custom_annotations:
+        if (removeAll and annotation['meta']['allText'] == text or
+                annotation['uuid'] == uuid):
+            if annotation['user_id'] != user.id and 'admin' not in user_roles:
+                outcome[annotation['uuid']] = AnnotationRemovalOutcome.NOT_CREATOR.value
+                continue
+            uuids_to_remove.append(annotation['uuid'])
+            outcome[annotation['uuid']] = AnnotationRemovalOutcome.REMOVED.value
+    file.custom_annotations = [
+        ann for ann in file.custom_annotations if ann['uuid'] not in uuids_to_remove
+    ]
+    db.session.commit()
+    return jsonify(outcome)
 
 
 def annotate(filename, pdf_file_object) -> dict:
@@ -302,7 +378,17 @@ def delete_files():
             continue
         db.session.delete(file)
         db.session.commit()
-        current_app.logger.debug('File deleted: %s, %s', id, file.filename)
+        current_app.logger.info(f'User deleted file: <{g.current_user.email}:{file.filename}>')
         outcome[id] = DeletionOutcome.DELETED.value
 
     return jsonify(outcome)
+
+
+def extract_doi(pdf_content: bytes, file_id: str = None, filename: str = None) -> Optional[str]:
+    chunk = pdf_content[:2**17]
+    match = re.search(rb'(?:doi|DOI)(?::|=)\s*([\d\w\./%]+)', chunk)
+    if match is None:
+        current_app.logger.warning('No DOI for file: %s, %s', file_id, filename)
+        return None
+    doi = match.group(1).decode('utf-8').replace('%2F', '/')
+    return doi if doi.startswith('http') else f'https://doi.org/{doi}'

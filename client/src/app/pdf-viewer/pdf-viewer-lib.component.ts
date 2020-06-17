@@ -20,7 +20,7 @@ declare var jQuery: any;
 })
 export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
 
-  @Input() searchChanged: Subject<string>;
+  @Input() searchChanged: Subject<{keyword: string, findPrevious: boolean}>;
   private searchChangedSub: Subscription;
   @Input() pdfSrc: string | PDFSource | ArrayBuffer;
   @Input() annotations: Annotation[];
@@ -41,10 +41,23 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
     }
   }
 
+  @Input()
+  set removedAnnotationIds(uuids: string[]) {
+    if (uuids) {
+      const removedAnnotations = this.annotations.filter((ann: Annotation) => uuids.includes(ann.uuid));
+      removedAnnotations.forEach((ann: Annotation) => {
+        const ref = this.annotationHighlightElementMap.get(ann);
+        jQuery(ref).remove();
+      });
+      this.annotations = this.annotations.filter((ann: Annotation) => !uuids.includes(ann.uuid));
+    }
+  }
+
   @Output() loadCompleted = new EventEmitter();
   @Output() dropEvents = new EventEmitter();
   // tslint:disable
   @Output('custom-annotation-created') annotationCreated = new EventEmitter();
+  @Output('custom-annotation-removed') annotationRemoved = new EventEmitter();
 
   /**
    * Stores a mapping of annotations to the HTML elements that are used to show it.
@@ -110,11 +123,17 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
         (window as any).pdfViewerRef.copySelectedText();
       });
     }
+    (window as any).removeCustomAnnotation = (uuid) => {
+      (window as any).pdfViewerRef.zone.run(() => {
+        (window as any).pdfViewerRef.removeCustomAnnotation(uuid);
+      });
+    }
     (window as any).pdfViewerRef = {
       zone: this.zone,
       componentFn: () => this.openAnnotationPanel(),
       openLinkPanel: () => this.openAddLinkPanel(),
       copySelectedText: () => this.copySelectedText(),
+      removeCustomAnnotation: (uuid) => this.removeCustomAnnotation(uuid),
       component: this
     };
   }
@@ -143,8 +162,8 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
     }
 
     this.searchChangedSub = this.searchChanged.pipe(
-      debounceTime(250)).subscribe((query) => {
-      this.searchQueryChanged(query);
+      debounceTime(250)).subscribe((sb) => {
+      this.searchQueryChanged(sb);
     });
   }
 
@@ -312,20 +331,10 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
 
   normalizeOpacityLevel(an: Annotation) {
     const t = an.meta.type.toLowerCase();
-    if (t.indexOf('chemic') > -1 || t.indexOf('disea') > -1) {
-      return this.opacity + 0.1;
-    }
     return this.opacity;
   }
 
   normalizeBackgroundColor(an: Annotation): string {
-    const t = an.meta.type.toLowerCase();
-    if (t.indexOf('chemic') > -1) {
-      return '#9cda94';
-    }
-    if (t.indexOf('disea') > -1) {
-      return '#f2ce97';
-    }
     return an.meta.color;
   }
 
@@ -342,7 +351,12 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
       base.push(`Id Type: ${an.meta.idType}`);
     }
     if (an.meta.isCustom) {
-      base.push(`user generated annotation`);
+      base.push(`
+        <div style="display: inline-flex;">
+          <span>user generated annotation</span>
+          <span class="material-icons" style="color: grey; cursor: pointer" onclick="removeCustomAnnotation('${an.uuid}')">delete</span>
+        </div>
+      `);
     }
     if (an.meta.links && an.meta.links.google) {
       base.push(`<a target="_blank" href="${an.meta.links.google}">Google</a>`);
@@ -359,7 +373,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
     return base.join('<br/>');
   }
 
-
+  
   processAnnotations(pageNum: number, pdfPageView: any) {
     this.pageRef[pageNum] = pdfPageView;
     const filteredAnnotations = this.annotations.filter((an) => an.pageNumber === pageNum);
@@ -474,7 +488,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
       const el = document.createElement('div');
       const meta: Meta = {
         allText: that.allText,
-        type: 'user-annotation',
+        type: 'entity',
         color: 'not-defined'
       };
       const location: Location = {
@@ -760,21 +774,23 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
     this.processAnnotations(pageNum, pdfPageView);
   }
 
-  searchQueryChanged(newQuery: string) {
-    if (newQuery !== this.pdfQuery) {
-      this.pdfQuery = newQuery;
+  searchQueryChanged(newQuery: {keyword:string, findPrevious:boolean }) {
+    if (newQuery.keyword !== this.pdfQuery) {
+      this.pdfQuery = newQuery.keyword;
       this.pdfComponent.pdfFindController.executeCommand('find', {
         query: this.pdfQuery,
         highlightAll: true,
         entireWord: true,
-        phraseSearch: true
+        phraseSearch: true,
+        findPrevious: newQuery.findPrevious
       });
     } else {
       this.pdfComponent.pdfFindController.executeCommand('findagain', {
         query: this.pdfQuery,
         highlightAll: true,
         entireWord: true,
-        phraseSearch: true
+        phraseSearch: true,
+        findPrevious: newQuery.findPrevious
       });
     }
   }
@@ -794,6 +810,10 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
 
     this.snackBar.open('It has been copied to clipboard', 'Close', {duration: 5000});
   
+  }
+
+  removeCustomAnnotation(uuid) {
+    this.annotationRemoved.emit(uuid);
   }
 
 }

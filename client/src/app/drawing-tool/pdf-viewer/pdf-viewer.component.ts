@@ -17,6 +17,7 @@ import {ENTITY_TYPE_MAP, ENTITY_TYPES, EntityType} from 'app/shared/annotation-t
 import {MatCheckboxChange} from '@angular/material';
 import {ActivatedRoute} from '@angular/router';
 import { ModuleAwareComponent, ModuleProperties } from '../../shared/modules';
+import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/confirm-dialog.component';
 
 class DummyFile implements PdfFile {
   constructor(
@@ -56,7 +57,7 @@ export class PdfViewerComponent implements OnDestroy, ModuleAwareComponent {
   @Output() filterChangeSubject = new Subject<void>();
   filterPopupOpen = false;
 
-  searchChanged: Subject<string> = new Subject<string>();
+  searchChanged: Subject<{keyword: string, findPrevious: boolean }> = new Subject<{keyword: string, findPrevious: boolean }>();
   goToPosition: Subject<Location> = new Subject<Location>();
   loadTask: BackgroundTask<[PdfFile, Location], [ArrayBuffer, any]> =
     new BackgroundTask(([file, loc]) => {
@@ -74,6 +75,8 @@ export class PdfViewerComponent implements OnDestroy, ModuleAwareComponent {
   currentFileId: string;
   addedAnnotation: Annotation;
   addAnnotationSub: Subscription;
+  removedAnnotationIds: string[];
+  removeAnnotationSub: Subscription;
   pdfFileLoaded = false;
   sortedEntityTypeEntries = [];
   entityTypeVisibilityChanged = false;
@@ -216,7 +219,7 @@ export class PdfViewerComponent implements OnDestroy, ModuleAwareComponent {
       idType = 'NCBI';
     }
 
-    const annotationToAdd = {
+    const annotationToAdd: Annotation = {
       ...annotation,
       meta: {
         ...annotation.meta,
@@ -235,7 +238,7 @@ export class PdfViewerComponent implements OnDestroy, ModuleAwareComponent {
 
     this.addAnnotationSub = this.pdfAnnService.addCustomAnnotation(this.currentFileId, annotationToAdd).subscribe(
       response => {
-        this.addedAnnotation = annotationToAdd;
+        this.addedAnnotation = Object.assign({}, annotationToAdd, { uuid: response.uuid });
         this.snackBar.open('Annotation has been added', 'Close', {duration: 5000});
       },
       err => {
@@ -246,6 +249,34 @@ export class PdfViewerComponent implements OnDestroy, ModuleAwareComponent {
     this.addedAnnotations.push(annotation);
     this.updateAnnotationIndex();
     this.updateSortedEntityTypeEntries();
+  }
+
+  annotationRemoved(uuid) {
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      data: {
+        width: '500px',
+        message: 'Do you want to remove all matching annotations from the file as well?'
+      }
+    });
+    dialogRef.afterClosed().subscribe((removeAll: boolean) => {
+      this.removeAnnotationSub = this.pdfAnnService.removeCustomAnnotation(this.currentFileId, uuid, removeAll).subscribe(
+        response => {
+          this.removedAnnotationIds = [];
+          let msg = 'Removal completed';
+          for (const [id, status] of Object.entries(response)) {
+            if (status === 'Removed') {
+              this.removedAnnotationIds.push(id);
+            } else {
+              msg = `${msg}, but one or more annotations could not be removed because you are not the owner`;
+            }
+          }
+          this.snackBar.open(msg, 'Close', {duration: 10000});
+        },
+        err => {
+          this.snackBar.open(`Error: removal failed`, 'Close', {duration: 10000});
+        }
+      );
+    });
   }
 
   /**
@@ -345,6 +376,9 @@ export class PdfViewerComponent implements OnDestroy, ModuleAwareComponent {
     if (this.addAnnotationSub) {
       this.addAnnotationSub.unsubscribe();
     }
+    if (this.removeAnnotationSub) {
+      this.removeAnnotationSub.unsubscribe();
+    }
   }
 
   generateHyperlink(ann: Annotation): string {
@@ -394,7 +428,24 @@ export class PdfViewerComponent implements OnDestroy, ModuleAwareComponent {
   }
 
   searchQueryChanged(query) {
-    this.searchChanged.next(query);
+    this.searchChanged.next({
+      keyword: query,
+      findPrevious: false
+    });
+  }
+
+  findNext(query) {
+    this.searchChanged.next({
+      keyword: query,
+      findPrevious: false
+    });
+  }
+
+  findPrevious(query) {
+    this.searchChanged.next({
+      keyword: query,
+      findPrevious: true
+    });
   }
 
 }
