@@ -31,7 +31,8 @@ export class NetworkVis {
   options = {
     interaction: {
       hover: true,
-      multiselect: true
+      multiselect: true,
+      dragNodes: true
     },
     edges: {
       color: {
@@ -60,14 +61,17 @@ export class NetworkVis {
   /**
    *
    * @param HTMLElement container -
+   * @param dragNodes - whether or not to allow nodes dragging
    * The container DOM to inject graph in
    */
-  constructor(container: HTMLElement) {
+  constructor(container: HTMLElement, dragNodes: boolean = true) {
     this.container = container;
 
     // Pull in node template styling defs
     // And assign to vis network js styling
     this.options.groups = visJsGroupStyleFactory();
+
+    this.options.interaction.dragNodes = dragNodes;
   }
 
   /**
