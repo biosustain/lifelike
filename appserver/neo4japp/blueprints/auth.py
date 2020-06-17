@@ -33,7 +33,6 @@ def verify_token(token):
         if decoded['type'] == 'access':
             user = pullUserFromAuthHead()
             g.current_user = user
-            current_app.logger.info(f'User login: <{g.current_user.email}>')
             return True
         else:
             raise NotAuthorizedException('no access found')
@@ -133,7 +132,7 @@ def login():
         raise RecordNotFoundException('Credentials not found or invalid.')
 
     if user.check_password(data.get('password')):
-
+        current_app.logger.info(f'User login: <{user.email}>')
         # Issue access jwt
         access_jwt_encoded = generate_jwt_token(
             sub=user.email,
