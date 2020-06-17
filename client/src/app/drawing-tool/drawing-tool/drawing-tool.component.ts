@@ -4,7 +4,7 @@ import { CdkDragDrop } from '@angular/cdk/drag-drop';
 
 import { Options } from '@popperjs/core';
 
-import { Observable, Subscription } from 'rxjs';
+import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import { ClipboardService } from 'app/shared/services/clipboard.service';
 import { DataFlowService, makeid, ProjectsService } from '../services';
 import {LaunchApp, NODE_TYPE_ID, Project, UniversalGraphNode} from '../services/interfaces';
@@ -53,8 +53,9 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy, M
   contextMenuTooltipOptions: Partial<Options>;
 
   selectionSubscription: Subscription;
+  unsavedChangesSubscription: Subscription;
 
-  SAVE_STATE = true;
+  unsavedChanges$ = new BehaviorSubject<boolean>(false);
 
   constructor(
     private dataFlow: DataFlowService,
@@ -122,6 +123,10 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy, M
       }
     });
 
+    this.unsavedChangesSubscription = this.graphCanvas.historyChanges$.subscribe(() => {
+      this.unsavedChanges$.next(true);
+    });
+
     this.loadMap(this.currentMap);
   }
 
@@ -129,7 +134,12 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy, M
     this.formDataSubscription.unsubscribe();
     this.pdfDataSubscription.unsubscribe();
     this.selectionSubscription.unsubscribe();
+    this.unsavedChangesSubscription.unsubscribe();
     this.graphCanvas.destroy();
+  }
+
+  shouldConfirmUnload() {
+    return this.unsavedChanges$.getValue();
   }
 
   // ========================================
@@ -163,33 +173,22 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy, M
 
     // Push to backend to save
     this.projectService.updateProject(this.project).subscribe(() => {
-      this.saveState = true;
+      this.unsavedChanges$.next(false);
       this.snackBar.open('Map saved', null, {
         duration: 2000,
       });
     });
   }
 
-  get saveState() {
-    return this.SAVE_STATE;
-  }
-
-  set saveState(val) {
-    this.SAVE_STATE = val;
-    // communicate to parent component of save state change
-    this.saveStateListener.emit(this.SAVE_STATE);
-  }
-
   // ========================================
   // Event handlers
   // ========================================
 
-  @HostListener('window:beforeunload')
-  canDeactivate(): Observable<boolean> | boolean {
-    // Prevent the user from leaving the page if work is left un-saved
-    return this.saveState ? true : confirm(
-      'WARNING: You have unsaved changes. Press Cancel to go back and save these changes, or OK to lose these changes.'
-    );
+  @HostListener('window:beforeunload', ['$event'])
+  handleBeforeUnload(event) {
+    if (this.shouldConfirmUnload()) {
+      event.returnValue = 'Leave page? Changes you made may not be saved';
+    }
   }
 
   // Drop events
@@ -258,7 +257,7 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy, M
    * Asks for the format to download the map
    */
   download() {
-    if (!this.saveState) {
+    if (this.unsavedChanges$.getValue()) {
       this.snackBar.open('Please save the project before exporting', null, {
         duration: 2000,
       });
@@ -288,7 +287,7 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy, M
    * Saves and downloads the PDF version of the current map
    */
   downloadPDF() {
-    if (!this.saveState) {
+    if (this.unsavedChanges$.getValue()) {
       this.snackBar.open('Please save the project before exporting', null, {
         duration: 2000,
       });
@@ -334,7 +333,7 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy, M
    * Saves and downloads the SVG version of the current map
    */
   downloadSVG() {
-    if (!this.saveState) {
+    if (this.unsavedChanges$.getValue()) {
       this.snackBar.open('Please save the project before exporting', null, {
         duration: 2000,
       });
@@ -380,7 +379,7 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy, M
    * Saves and downloads the PNG version of the current map
    */
   downloadPNG() {
-    if (!this.saveState) {
+    if (this.unsavedChanges$.getValue()) {
       this.snackBar.open('Please save the project before exporting', null, {
         duration: 2000,
       });
@@ -425,13 +424,6 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy, M
   // ========================================
   // Template stuff
   // ========================================
-
-  get saveStyle() {
-    return {
-      saved: this.saveState,
-      not_saved: !this.saveState
-    };
-  }
 
   zoomToFit() {
     this.graphCanvas.zoomToFit();

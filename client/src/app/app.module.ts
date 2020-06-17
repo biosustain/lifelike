@@ -25,6 +25,7 @@ import { WorkspaceComponent } from './workspace.component';
 import { WorkspaceOutletComponent } from './workspace-outlet.component';
 import { WorkspaceManager } from './shared/workspace-manager';
 import { WorkspaceWelcomeComponent } from './workspace-welcome.component';
+import { UnloadConfirmationGuard } from './shared/guards/UnloadConfirmation.guard';
 
 @NgModule({
   declarations: [
@@ -57,6 +58,7 @@ import { WorkspaceWelcomeComponent } from './workspace-welcome.component';
     httpInterceptorProviders,
     Title,
     WorkspaceManager,
+    UnloadConfirmationGuard,
   ],
   exports: [],
   bootstrap: [AppComponent]

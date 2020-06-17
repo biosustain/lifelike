@@ -14,6 +14,7 @@ import { PlacedEdge, PlacedNode } from '../styles/styles';
 import { GraphAction, GraphActionReceiver } from '../actions/actions';
 import { BehaviorList } from './behaviors';
 import { CacheGuardedEntityList } from '../utils/cache-guarded-entity-list';
+import { Subject } from 'rxjs';
 
 /**
  * A rendered view of a graph.
@@ -125,6 +126,11 @@ export abstract class GraphView implements GraphActionReceiver {
    * goes +1.
    */
   protected nextHistoryIndex = 0;
+
+  /**
+   * Stream of events when history changes in any way.
+   */
+  historyChanges$ = new Subject<any>();
 
   constructor() {
     this.cola = cola
@@ -666,6 +672,7 @@ export abstract class GraphView implements GraphActionReceiver {
       const action = this.history[this.nextHistoryIndex];
       action.rollback(this);
       this.requestRender();
+      this.historyChanges$.next();
       return action;
     } else {
       return null;
@@ -683,6 +690,7 @@ export abstract class GraphView implements GraphActionReceiver {
       action.apply(this);
       this.nextHistoryIndex++;
       this.requestRender();
+      this.historyChanges$.next();
       return action;
     } else {
       return null;
@@ -705,6 +713,8 @@ export abstract class GraphView implements GraphActionReceiver {
 
     // Apply the change
     action.apply(this);
+
+    this.historyChanges$.next();
 
     this.requestRender();
   }

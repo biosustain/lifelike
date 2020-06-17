@@ -8,6 +8,7 @@
         <div class="btn-toolbar">
           <div class="btn-group">
             <button type="button" class="btn btn-secondary"
+                    [disabled]="!(unsavedChanges$ | async)"
                     ngbTooltip="Save" placement="bottom"
                     (click)="save()">
               <i class="fa fa-fw fa-save"></i>
