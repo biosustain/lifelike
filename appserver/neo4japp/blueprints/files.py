@@ -26,7 +26,7 @@ from neo4japp.database import (
     get_bioc_document_service,
     get_lmdb_dao,
 )
-from neo4japp.exceptions import AnnotationError, RecordNotFoundException
+from neo4japp.exceptions import AnnotationError, FileUploadError, RecordNotFoundException
 from neo4japp.models import AppUser
 from neo4japp.models.files import Files, FileContent
 from neo4japp.utils.network import read_url
@@ -55,7 +55,7 @@ def upload_pdf():
             data = read_url(req, max_length=URL_FETCH_MAX_LENGTH,
                             timeout=URL_FETCH_TIMEOUT).getvalue()
         except (ValueError, URLError):
-            raise AnnotationError("Your file could not be downloaded, either because it is "
+            raise FileUploadError("Your file could not be downloaded, either because it is "
                                   "inaccessible or another problem occurred. Please double "
                                   "check the spelling of the URL.")
         pdf = FileStorage(io.BytesIO(data), filename)
@@ -298,7 +298,6 @@ def annotate(filename, pdf_file_object) -> dict:
     pdf_parser = get_annotations_pdf_parser()
     annotator = get_annotations_service(lmdb_dao=lmdb_dao)
     bioc_service = get_bioc_document_service()
-    # TODO: Miguel: need to update file_uri with file path
     try:
         parsed_pdf_chars = pdf_parser.parse_pdf(pdf=pdf_file_object)
     except AnnotationError:

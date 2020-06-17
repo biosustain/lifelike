@@ -107,8 +107,10 @@ class Annotation(CamelDictMixin):
     # these two replaced the old lower_left/upper_right in TextPosition
     keywords: List[str] = attr.ib()
     rects: List[float] = attr.ib()
-    # the untouched str keyword
+    # the matched str keyword
     keyword: str = attr.ib()
+    # string from document
+    text_in_document: str = attr.ib()
     keyword_length: int = attr.ib()
     lo_location_offset: int = attr.ib()
     hi_location_offset: int = attr.ib()
@@ -120,6 +122,7 @@ class Annotation(CamelDictMixin):
             'keywords': self.keywords,
             'rects': self.rects,
             'keyword': self.keywords,
+            'text_in_document': self.text_in_document,
             'keyword_length': self.keyword_length,
             'lo_location_offset': self.lo_location_offset,
             'hi_location_offset': self.hi_location_offset,
