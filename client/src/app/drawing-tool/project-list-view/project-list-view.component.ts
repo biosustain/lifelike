@@ -330,7 +330,7 @@ export class ProjectListViewComponent {
         this.uploadStarted = false;
         this.snackBar.open(`File uploaded: ${data.filename}`, 'Close', {duration: 5000});
         const hashId = event.body.result.hashId;
-        this.route.navigateByUrl(`dt/splitter/${hashId}`);
+        this.route.navigateByUrl(`map/edit/${hashId}`);
       }
     },
     err => {
@@ -421,7 +421,7 @@ export class ProjectListViewComponent {
    */
   goToProject() {
     this.dataFlow.pushProject2Canvas(this.selectedProject);
-    this.workspaceManager.navigateByUrl(`dt/splitter/${this.selectedProject.hash_id}`);
+    this.workspaceManager.navigateByUrl(`map/edit/${this.selectedProject.hash_id}`);
   }
 
   handleAPI(evt: { action: string, project: Project }) {
