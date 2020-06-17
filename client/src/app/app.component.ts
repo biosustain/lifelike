@@ -19,9 +19,9 @@ import { Title } from '@angular/platform-browser';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent {
-  private readonly appUser$: Observable<AppUser>;
-  private readonly userRoles$: Observable<string[]>;
-  private readonly loggedIn$: Observable<boolean>;
+  readonly appUser$: Observable<AppUser>;
+  readonly userRoles$: Observable<string[]>;
+  readonly loggedIn$: Observable<boolean>;
 
   constructor(
     private readonly store: Store<State>,

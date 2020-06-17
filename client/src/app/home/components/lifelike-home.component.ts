@@ -9,7 +9,7 @@ import { BuildInfo } from 'app/interfaces';
   templateUrl: './lifelike-home.component.html',
 })
 export class LifelikeHomePageComponent {
-  private readonly buildInfo$: Observable<BuildInfo>;
+  readonly buildInfo$: Observable<BuildInfo>;
 
   constructor(private readonly metadataService: MetaDataService) {
     this.buildInfo$ = this.metadataService.getBuildInfo();

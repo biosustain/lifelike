@@ -1,4 +1,4 @@
-<div class="w-100 vh-100 relative" fxLayout="column">
+<div class="w-100 vh-100 relative" fxLayout="column" *ngIf="(loadTask.status$ | async) as status">
   <div class="sidebar-toolbar" fxLayout="row" fxLayoutAlign="space-between">
     <div fxLayoutGap="0.25rem">
       <button mat-button (click)="openFileDialog()" matTooltip="Open a new document">
@@ -63,7 +63,7 @@
     </div>
   </div>
   <div class="overflow-auto">
-    <div *ngIf="!pdfViewerReady && loadTask.running" fxLayout="row" fxLayoutAlign="center center" class="mt4">
+    <div *ngIf="!pdfViewerReady && status.running" fxLayout="row" fxLayoutAlign="center center" class="mt4">
       <mat-icon>hourglass_empty</mat-icon>
       Downloading {{loadTask.pendingValue[0].filename ? loadTask.pendingValue[0].filename : 'file'}}...
     </div>
