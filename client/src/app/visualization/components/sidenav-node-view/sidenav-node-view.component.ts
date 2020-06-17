@@ -1,4 +1,4 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, Input } from '@angular/core';
 
 import { SidenavNodeEntity } from 'app/interfaces';
 
@@ -7,11 +7,9 @@ import { SidenavNodeEntity } from 'app/interfaces';
     templateUrl: './sidenav-node-view.component.html',
     styleUrls: ['./sidenav-node-view.component.scss']
 })
-export class SidenavNodeViewComponent implements OnInit {
+export class SidenavNodeViewComponent {
+    @Input() legend: Map<string, string[]>;
     @Input() nodeEntity: SidenavNodeEntity;
 
     constructor() { }
-
-    ngOnInit() {
-    }
 }

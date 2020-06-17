@@ -32,12 +32,13 @@ import { VisualizationComponent } from './visualization.component';
 import { VisualizationService } from '../../services/visualization.service';
 import { VisualizationCanvasComponent } from '../../components/visualization-canvas/visualization-canvas.component';
 import { SNIPPET_PAGE_LIMIT } from 'app/shared/constants';
+import { LegendService } from 'app/shared/services/legend.service';
 
 describe('VisualizationComponent', () => {
     let fixture: ComponentFixture<VisualizationComponent>;
     let instance: VisualizationComponent;
 
-    let visualizationService: VisualizationService;
+    let legendService: LegendService;
 
     let mockGraphNode: GraphNode;
     let mockGraphRelationship: GraphRelationship;
@@ -117,9 +118,9 @@ describe('VisualizationComponent', () => {
 
         fixture = TestBed.createComponent(VisualizationComponent);
         instance = fixture.debugElement.componentInstance;
-        visualizationService = fixture.debugElement.injector.get(VisualizationService);
+        legendService = fixture.debugElement.injector.get(LegendService);
 
-        spyOn(visualizationService, 'getLegendForVisualizer').and.returnValue(of({
+        spyOn(legendService, 'getAnnotationLegend').and.returnValue(of({
             gene: {
                 color: '#673ab7',
                 label: 'gene',

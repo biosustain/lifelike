@@ -3,8 +3,8 @@ import { NgModule } from '@angular/core';
 import { SearchModule } from 'app/search/search.module';
 import { SharedModule } from 'app/shared/shared.module';
 
-import { AutoClusterDialogComponent } from './components/auto-cluster-dialog/auto-cluster-dialog.component';
 import { ContextMenuComponent } from './components/context-menu/context-menu.component';
+import { LoadingClustersDialogComponent } from './components/loading-clusters-dialog/loading-clusters-dialog.component';
 import { NoResultsFromExpandDialogComponent } from './components/no-results-from-expand-dialog/no-results-from-expand-dialog.component';
 import { SidenavClusterViewComponent } from './components/sidenav-cluster-view/sidenav-cluster-view.component';
 import { SidenavEdgeViewComponent } from './components/sidenav-edge-view/sidenav-edge-view.component';
@@ -17,8 +17,8 @@ import { VisualizationSettingsComponent } from './components/visualization-setti
 import { VisualizationComponent } from './containers/visualization/visualization.component';
 
 const components = [
-    AutoClusterDialogComponent,
     ContextMenuComponent,
+    LoadingClustersDialogComponent,
     NoResultsFromExpandDialogComponent,
     SidenavClusterViewComponent,
     SidenavEdgeViewComponent,
@@ -37,7 +37,7 @@ const components = [
     exports: components,
     // Need to add the cluster dialog because it is dynamically loaded by type in the VisualizationComponent
     entryComponents: [
-        AutoClusterDialogComponent,
+        LoadingClustersDialogComponent,
         NoResultsFromExpandDialogComponent,
     ],
 })

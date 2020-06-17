@@ -11,7 +11,6 @@ import {
     Neo4jResults,
     NewClusterSnippetsPageRequest,
     NewEdgeSnippetsPageRequest,
-    NodeLegend,
     ReferenceTableDataRequest,
 } from 'app/interfaces';
 import { NODE_EXPANSION_LIMIT } from 'app/shared/constants';
@@ -42,12 +41,6 @@ export class VisualizationService {
     getReferenceTableData(request: ReferenceTableDataRequest) {
         return this.http.post<{result: GetReferenceTableDataResult}>(
             `${this.visApi}/get-reference-table-data`, {nodeEdgePairs: request.nodeEdgePairs},
-        ).pipe(map(resp => resp.result));
-    }
-
-    getLegendForVisualizer() {
-        return this.http.get<{result: NodeLegend}>(
-            `${this.visApi}/get-legend-for-visualizer`,
         ).pipe(map(resp => resp.result));
     }
 
