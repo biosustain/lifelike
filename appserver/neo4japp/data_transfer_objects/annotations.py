@@ -135,3 +135,36 @@ class OrganismAnnotation(Annotation):
     @attr.s(frozen=True)
     class OrganismMeta(Annotation.Meta):
         category: str = attr.ib(default='')
+
+        def to_dict_hash(self):
+            return compute_hash({
+                'keyword_type': self.keyword_type,
+                'color': self.color,
+                'links': self.links.to_dict_hash(),
+                'id': self.id,
+                'id_type': self.id_type,
+                'id_hyperlink': self.id_hyperlink,
+                'is_custom': self.is_custom,
+                'all_text': self.all_text,
+                'category': self.category,
+            })
+
+
+@attr.s(frozen=True)
+class GeneAnnotation(Annotation):
+    @attr.s(frozen=True)
+    class GeneMeta(Annotation.Meta):
+        category: str = attr.ib(default='')
+
+        def to_dict_hash(self):
+            return compute_hash({
+                'keyword_type': self.keyword_type,
+                'color': self.color,
+                'links': self.links.to_dict_hash(),
+                'id': self.id,
+                'id_type': self.id_type,
+                'id_hyperlink': self.id_hyperlink,
+                'is_custom': self.is_custom,
+                'all_text': self.all_text,
+                'category': self.category,
+            })

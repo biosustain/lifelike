@@ -31,15 +31,17 @@ from .constants import (
     COMMON_TYPOS,
     UNIPROT_LINK,
     WIKIPEDIA_LINK,
+    LOWERCASE_FIRST_LETTER_UPPERCASE_LAST_LETTER_GENE_LENGTH,
 )
 from .lmdb_dao import LMDBDao
 from .util import normalize_str
 
 from neo4japp.data_transfer_objects import (
     Annotation,
+    GeneAnnotation,
+    OrganismAnnotation,
     PDFTokenPositions,
     PDFTokenPositionsList,
-    OrganismAnnotation,
 )
 from neo4japp.database import get_hybrid_neo4j_postgres_service
 
@@ -294,7 +296,7 @@ class AnnotationsService:
 
         keyword_starting_idx = char_indexes[0]
         keyword_ending_idx = char_indexes[-1]
-        link_search_term = entity['name']
+        link_search_term = entity['synonym']
         if entity['id_type'] != DatabaseType.Ncbi.value:
             hyperlink = ENTITY_HYPERLINKS[entity['id_type']]
         else:
@@ -336,6 +338,33 @@ class AnnotationsService:
                 lo_location_offset=keyword_starting_idx,
                 hi_location_offset=keyword_ending_idx,
                 meta=organism_meta,
+            )
+        elif token_type == EntityType.Gene.value:
+            gene_meta = GeneAnnotation.GeneMeta(
+                category=entity['category'],
+                keyword_type=token_type,
+                color=color,
+                id=entity_id,
+                id_type=entity['id_type'],
+                id_hyperlink=cast(str, hyperlink),
+                links=OrganismAnnotation.OrganismMeta.Links(
+                    ncbi=NCBI_LINK + link_search_term,
+                    uniprot=UNIPROT_LINK + link_search_term,
+                    wikipedia=WIKIPEDIA_LINK + link_search_term,
+                    google=GOOGLE_LINK + link_search_term,
+                ),
+                all_text=link_search_term,
+            )
+            annotation = GeneAnnotation(
+                page_number=token_positions.page_number,
+                rects=[pos.positions for pos in keyword_positions],  # type: ignore
+                keywords=[k.value for k in keyword_positions],
+                keyword=link_search_term,
+                text_in_document=token_positions.keyword,
+                keyword_length=len(token_positions.keyword),
+                lo_location_offset=keyword_starting_idx,
+                hi_location_offset=keyword_ending_idx,
+                meta=gene_meta,
             )
         else:
             meta = Annotation.Meta(
@@ -848,21 +877,42 @@ class AnnotationsService:
         False positives are multi length word that
         got matched to a shorter length word due to
         normalizing in lmdb.
+
+        Gene related false positives are bacterial
+        genes in the form of cysB, algA, deaD, etc.
         """
         fixed_annotations: List[Annotation] = []
 
         for annotation in annotations_list:
-            keyword_from_pdf = annotation.text_in_document.split(' ')
+            text_in_document = annotation.text_in_document.split(' ')
 
-            if len(keyword_from_pdf) > 1:
+            if len(text_in_document) > 1:
                 keyword_from_annotation = annotation.keyword.split(' ')
-                if len(keyword_from_annotation) >= len(keyword_from_pdf):
+                if len(keyword_from_annotation) >= len(text_in_document):
                     fixed_annotations.append(annotation)
                 else:
                     # consider case such as `ferredoxin 2` vs `ferredoxin-2` in lmdb
                     keyword_from_annotation = annotation.keyword.split('-')
-                    if len(keyword_from_annotation) >= len(keyword_from_pdf):
+                    if len(keyword_from_annotation) >= len(text_in_document):
                         fixed_annotations.append(annotation)
+            elif annotation.meta.keyword_type == EntityType.Gene.value:
+                text_in_document = text_in_document[0]
+                # if the matched keyword from LMDB is all caps
+                # check if the text from document is also all caps
+                # e.g `impact` matching to `IMPACT`
+                if annotation.keyword.isupper():
+                    if text_in_document == annotation.keyword:
+                        fixed_annotations.append(annotation)
+                # len(text_in_document) == LOWERCASE_FIRST_LETTER_UPPERCASE_LAST_LETTER_GENE_LENGTH
+                # does this only apply to genes with specific length?
+                elif annotation.meta.category == OrganismCategory.Bacteria:
+                    # bacteria genes are in the from of cysB, algA, deaD, etc
+                    # doe not check first letter to account for when the
+                    # gene is start of a sentence
+                    if text_in_document[-1].isupper():
+                        fixed_annotations.append(annotation)
+                else:
+                    fixed_annotations.append(annotation)
             else:
                 fixed_annotations.append(annotation)
 
@@ -910,12 +960,12 @@ class AnnotationsService:
             cropbox_in_pdf=tokens.cropbox_in_pdf,
         ))
 
-        fixed_unified_annotations = self.fix_conflicting_annotations(
-            unified_annotations=unified_annotations,
+        fixed_unified_annotations = self._get_fixed_false_positive_unified_annotations(
+            annotations_list=unified_annotations,
         )
 
-        fixed_unified_annotations = self._get_fixed_false_positive_unified_annotations(
-            annotations_list=fixed_unified_annotations,
+        fixed_unified_annotations = self.fix_conflicting_annotations(
+            unified_annotations=fixed_unified_annotations,
         )
 
         return fixed_unified_annotations
@@ -998,23 +1048,46 @@ class AnnotationsService:
                 # gene has lowercase: cysB
                 # also cases like gene SerpinA1 vs protein Serpin A1
 
-                # first check for exact match
-                if anno1.text_in_document == anno1.keyword:
-                    return anno1
-                if anno2.text_in_document == anno2.keyword:
-                    return anno2
+                def check_gene_protein(
+                    anno1: Annotation,
+                    anno2: Annotation,
+                    anno1_text_in_document: str,
+                    anno2_text_in_document: str,
+                ):
+                    """First check for exact match
+                    if no exact match then check substrings
+                    e.g `Serpin A1` matched to `serpin A1`
+                    e.g `SerpinA1` matched to `serpin A1`
 
-                # no exact match so check substrings
-                # e.g `Serpin A1` matched to `serpin A1`
-                # e.g `SerpinA1` matched to `serpin A1`
-                # we take the first case
-                # will not count hyphens separated
-                # because hard to infer if it was used
-                # as a space
-                if len(anno1.text_in_document.split(' ')) == len(anno1.keyword.split(' ')):
-                    return anno1
-                if len(anno2.text_in_document.split(' ')) == len(anno2.keyword.split(' ')):
-                    return anno2
+                    We take the first case will not count hyphens separated
+                    because hard to infer if it was used as a space
+                    need to consider precedence in case gene and protein
+                    have the exact spelling correct annotated word
+                    """
+                    if anno1_text_in_document == anno1.keyword:
+                        return anno1
+                    if anno2_text_in_document == anno2.keyword:
+                        return anno2
+
+                    if len(anno1_text_in_document.split(' ')) == len(anno1.keyword.split(' ')):
+                        return anno1
+                    if len(anno2_text_in_document.split(' ')) == len(anno2.keyword.split(' ')):
+                        return anno2
+
+                if key1 > key2:
+                    return check_gene_protein(
+                        anno1=anno1,
+                        anno2=anno2,
+                        anno1_text_in_document=anno1.text_in_document,
+                        anno2_text_in_document=anno2.text_in_document,
+                    )
+                else:
+                    return check_gene_protein(
+                        anno1=anno2,
+                        anno2=anno1,
+                        anno1_text_in_document=anno2.text_in_document,
+                        anno2_text_in_document=anno1.text_in_document,
+                    )
 
         if key1 > key2:
             return anno1
