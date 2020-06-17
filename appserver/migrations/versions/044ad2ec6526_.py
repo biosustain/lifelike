@@ -1,4 +1,4 @@
-"""empty message
+"""Add table lmdbs_dates, add column annotations_date to table files
 
 Revision ID: 044ad2ec6526
 Revises: 868c69bf2137
