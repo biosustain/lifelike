@@ -257,6 +257,10 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
           'edges',
           new FormArray([])
         );
+        this.entityForm.setControl(
+          'hyperlinks',
+          new FormArray([])
+        );
         this.pauseForm = false;
         const formData = {
           id: this.graphData.id,
@@ -264,7 +268,9 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
           group: null,
           edges: [],
           hyperlink: null,
-          detail: null
+          detail: null,
+          subtype: null,
+          hyperlinks: []
         };
         this.entityForm.setValue(formData, {emitEvent: false});
       }
@@ -353,14 +359,14 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
    * @param i the index of the edge to remove
    */
   deleteHyperlink(form, i) {
-    const edge = form.value;
+    const hyperlink = form.value;
 
     // remove form control
-    (this.entityForm.controls.edges as FormArray).removeAt(i);
+    (this.entityForm.controls.hyperlinks as FormArray).removeAt(i);
 
     // remove from information dislay
-    this.graphData.edges = this.graphData.edges.filter(
-      e => e.id !== edge.id
+    this.graphData.data.hyperlinks = this.graphData.data.hyperlinks.filter(
+      h => h.url !== hyperlink.url
     );
   }
 
@@ -391,8 +397,8 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
   /**
    * Allow user to navigate to a link in a new tab
    */
-  goToLink(url= null) {
-    const hyperlink: string = url || this.entityForm.value.hyperlink;
+  goToLink(h: FormControl) {
+    const hyperlink: string = h.value.url;
 
     if (!hyperlink) { return; }
 
