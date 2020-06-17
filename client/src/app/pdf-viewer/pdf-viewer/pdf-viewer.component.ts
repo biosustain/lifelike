@@ -51,7 +51,7 @@ export enum RenderTextMode {
 @Component({
   selector: 'app-pdf-viewer-lib',
   template: `
-    <div #pdfViewerContainer class="ng2-pdf-viewer-container">
+    <div #pdfViewerContainer class="ng2-pdf-viewer-container h-100">
       <div class="pdfViewer"></div>
     </div>
   `,

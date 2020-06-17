@@ -1,72 +1,95 @@
-<div class="w-100 vh-100 relative" fxLayout="column" *ngIf="(loadTask.status$ | async) as status">
-  <div class="sidebar-toolbar" fxLayout="row" fxLayoutAlign="space-between">
-    <div fxLayoutGap="0.25rem">
-      <button mat-button (click)="openFileDialog()" matTooltip="Open a new document">
-        <mat-icon>folder_open</mat-icon>
-        Open
+<div class="d-flex flex-column relative h-100" *ngIf="(loadTask.status$ | async) as status">
+  <div class="toolbar d-flex">
+    <div class="btn-group">
+      <button type="button" class="btn btn-secondary" appLink="/file-browser" ngbTooltip="Go back to the file browser"
+              placement="bottom">
+        <i class="fa fa-fw fa-arrow-left"></i>
       </button>
     </div>
-    <div fxLayout="row" fxLayoutGap="0.25rem">
-      <button mat-button (click)="zoomIn()" [disabled]="!pdfViewerReady" matTooltip="Zoom in">
-        <mat-icon>zoom_in</mat-icon>
-      </button>
-      <button mat-button (click)="zoomOut()" [disabled]="!pdfViewerReady" matTooltip="Zoom out">
-        <mat-icon>zoom_out</mat-icon>
-      </button>
-      <mat-form-field>
-          <mat-label>Search</mat-label>
-          <input #queryInp matInput [disabled]="!pdfViewerReady" (input)="searchQueryChanged($event.target.value)" (keyup.enter)="searchQueryChanged(queryInp.value)" placeholder="Search" value="">
-      </mat-form-field>
-      <button *ngIf="queryInp.value && queryInp.value.length > 0" mat-button (click)="findPrevious(queryInp.value)" [disabled]="!pdfViewerReady" matTooltip="Find Previous">
-        <mat-icon>keyboard_arrow_up</mat-icon>
-      </button>
-      <button *ngIf="queryInp.value && queryInp.value.length > 0" mat-button (click)="findNext(queryInp.value)" [disabled]="!pdfViewerReady" matTooltip="Find Next">
-        <mat-icon>keyboard_arrow_down</mat-icon>
-      </button>
-    </div>
-    <div fxLayout="row" fxLayoutGap="0.25rem">
-      <div class="relative">
-          <button mat-button
-                  (click)="toggleFilterPopup()"
-                  [disabled]="!pdfViewerReady"
-                  [matTooltip]="!filterPopupOpen ? 'Choose which annotations to hide' : null"
-                  matTooltipPosition="left">
-          Filters<span [style.visibility]="entityTypeVisibilityChanged ? 'visible' : 'hidden'">*</span>
-          <mat-icon *ngIf="!filterPopupOpen">expand_more</mat-icon>
-          <mat-icon *ngIf="filterPopupOpen">expand_less</mat-icon>
+
+    <div class="d-flex mx-auto">
+      <div class="btn-group">
+        <button type="button" class="btn btn-secondary"
+                [disabled]="!pdfViewerReady" (click)="zoomIn()" ngbTooltip="Zoom in"
+                placement="bottom">
+          <i class="fa fa-fw fa-search-plus"></i>
         </button>
-        <div class="shadow-4 filter-popup" *ngIf="filterPopupOpen">
-          <h4 class="mt0 mb1">Annotation Visibility</h4>
-          <div>
-            <div class="mt2 mb2" fxLayout="column">
-              <button *ngIf="!entityTypeVisibilityChanged" mat-stroked-button fxFlexFill
-                      (click)="setAllEntityTypesVisibility(false)">Hide All</button>
-              <button *ngIf="entityTypeVisibilityChanged" mat-stroked-button fxFlexFill
-                      (click)="setAllEntityTypesVisibility(true)">Show All</button>
+        <button type="button" class="btn btn-secondary"
+                [disabled]="!pdfViewerReady" (click)="zoomOut()" ngbTooltip="Zoom out"
+                placement="bottom">
+          <i class="fa fa-fw fa-search-minus"></i>
+        </button>
+      </div>
+      <div class="input-group mx-2">
+        <span class="input-group-prepend">
+          <div class="input-group-text bg-white border-right-0">
+            <i class="fa fa-fw fa-search"></i>
+          </div>
+        </span>
+        <input #queryInp [disabled]="!pdfViewerReady" (input)="searchQueryChanged($event.target.value)"
+               (keyup.enter)="searchQueryChanged(queryInp.value)" placeholder="Search" value=""
+               class="form-control py-2 pl-0 input-border border-left-0">
+      </div>
+      <div class="btn-group">
+        <button type="button" class="btn btn-secondary" *ngIf="queryInp.value && queryInp.value.length > 0"
+                [disabled]="!pdfViewerReady" (click)="findPrevious(queryInp.value)" ngbTooltip="Previous result"
+                placement="bottom">
+          <i class="fa fa-fw fa-angle-up"></i>
+        </button>
+        <button type="button" class="btn btn-secondary" *ngIf="queryInp.value && queryInp.value.length > 0"
+                [disabled]="!pdfViewerReady" (click)="findNext(queryInp.value)" ngbTooltip="Next result"
+                placement="bottom">
+          <i class="fa fa-fw fa-angle-down"></i>
+        </button>
+      </div>
+    </div>
+
+    <div>
+
+      <div class="btn-group" role="group">
+        <div ngbDropdown class="d-inline-block">
+          <button class="btn btn-secondary" id="filters-dropdown" ngbDropdownToggle>Filters</button>
+          <div ngbDropdownMenu aria-labelledby="filters-dropdown" [style.width]="'220px'" class="dropdown-body">
+            <div class="mb-2">
+              <button *ngIf="!entityTypeVisibilityChanged" class="btn btn-outline-secondary btn-block"
+                      (click)="setAllEntityTypesVisibility(false)">
+                Hide All
+              </button>
+              <button *ngIf="entityTypeVisibilityChanged" class="btn btn-outline-secondary btn-block"
+                      (click)="setAllEntityTypesVisibility(true)">
+                Show All
+              </button>
             </div>
+
             <div *ngFor="let entityTypeEntry of sortedEntityTypeEntries"
-                 [ngClass]="entityTypeEntry.annotations.length ? '' : 'o-20'">
-              <mat-checkbox [checked]="isEntityTypeVisible(entityTypeEntry.type)"
-                            (change)="changeEntityTypeVisibility(entityTypeEntry.type, $event)">
-                <span class="entity-type-legend" [ngStyle]="{background: entityTypeEntry.type.color}">
+                 [style.opacity]="entityTypeEntry.annotations.length ? '' : '0.2'">
+              <div class="custom-control custom-checkbox">
+                <input class="custom-control-input" type="checkbox" [id]="'filter-' + entityTypeEntry.type.id"
+                       value="1"
+                       [checked]="isEntityTypeVisible(entityTypeEntry.type)"
+                       (change)="changeEntityTypeVisibility(entityTypeEntry.type, $event)">
+                <label class="custom-control-label" [for]="'filter-' + entityTypeEntry.type.id">
+                  <span class="entity-type-legend" [ngStyle]="{background: entityTypeEntry.type.color}">
                 </span> {{entityTypeEntry.type.name}} <span *ngIf="!!entityTypeEntry.annotations.length">
                   ({{entityTypeEntry.annotations.length}})
                 </span>
-              </mat-checkbox>
+                </label>
+              </div>
             </div>
-            <div class="mt2" fxLayout="column">
-              <button mat-stroked-button fxFlexFill (click)="closeFilterPopup()">Done</button>
+            <div class="mt-2">
+              <button class="btn btn-secondary btn-block" (click)="closeFilterPopup()">Done</button>
             </div>
           </div>
         </div>
       </div>
     </div>
   </div>
-  <div class="overflow-auto">
-    <div *ngIf="!pdfViewerReady && status.running" fxLayout="row" fxLayoutAlign="center center" class="mt4">
-      <mat-icon>hourglass_empty</mat-icon>
+  <div *ngIf="!pdfViewerReady && status.running" class="p-4 d-flex align-items-center justify-content-center">
+    <div>
       Downloading {{loadTask.pendingValue[0].filename ? loadTask.pendingValue[0].filename : 'file'}}...
     </div>
+  </div>
+  <div class="flex-fill overflow-auto">
     <div *ngIf="pdfViewerReady">
       <!-- PDF Viewer -->
       <lib-pdf-viewer-lib
