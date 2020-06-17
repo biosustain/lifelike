@@ -179,7 +179,10 @@ class AnnotationsPDFParser:
 
         for i, char in enumerate(char_list):
             try:
-                if ord(char) in MISC_SYMBOLS_AND_CHARS:
+                # some characters can be a combination of two characters
+                # e.g `fi` this is a legit character related to the
+                # production of the document and OCR
+                if len(char) == 1 and ord(char) in MISC_SYMBOLS_AND_CHARS:
                     # need to clean because some times hyphens
                     # are parsed as a char that's represented by a
                     # unicode and doesn't match the string hyphen
@@ -187,7 +190,7 @@ class AnnotationsPDFParser:
                 else:
                     curr_char = char
 
-                if ord(char_list[i-1]) in MISC_SYMBOLS_AND_CHARS:
+                if len(char_list[i-1]) == 1 and ord(char_list[i-1]) in MISC_SYMBOLS_AND_CHARS:
                     prev_char = clean_char(char_list[i-1])
                 else:
                     prev_char = char_list[i-1]
@@ -206,7 +209,7 @@ class AnnotationsPDFParser:
                         char_idx_map = {}
                         word = ''
                     else:
-                        if ord(char_list[i+1]) in MISC_SYMBOLS_AND_CHARS:
+                        if len(char_list[i+1]) == 1 and ord(char_list[i+1]) in MISC_SYMBOLS_AND_CHARS:
                             next_char = clean_char(char_list[i+1])
                         else:
                             next_char = char_list[i+1]
@@ -221,9 +224,6 @@ class AnnotationsPDFParser:
                             char_idx_map[i] = curr_char
             except TypeError:
                 # checking ord() failed
-                # if a char is composed of multiple characters
-                # then it is a pdf parser problem
-                # need to find a better one
                 continue
         return words_with_char_idx
 

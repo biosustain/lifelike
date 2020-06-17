@@ -80,7 +80,7 @@ def prepare_lmdb_genes_database(filename: str):
                         'tax_id': tax_id,
                         'name': gene_name,
                         'synonym': synonym,
-                        'gene_category': gene_category,
+                        'category': gene_category,
                     }
 
                     try:
