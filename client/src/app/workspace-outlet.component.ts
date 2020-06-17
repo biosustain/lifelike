@@ -17,14 +17,14 @@ import { Container} from './shared/workspace-manager';
 export class WorkspaceOutletComponent implements AfterViewInit, OnDestroy {
   @Input() name;
   @Output() outletFocus = new EventEmitter<any>();
-  @ViewChild('child', {static: false, read: ViewContainerRef}) child: ViewContainerRef;
+  @ViewChild('child', {static: false, read: ViewContainerRef}) viewComponentRef: ViewContainerRef;
   private currentContainer: Container<any>;
 
   constructor(private changeDetectorRef: ChangeDetectorRef) {
   }
 
   ngOnDestroy(): void {
-    this.child.detach(0);
+    this.viewComponentRef.detach(0);
   }
 
   get container() {
@@ -41,11 +41,10 @@ export class WorkspaceOutletComponent implements AfterViewInit, OnDestroy {
   }
 
   private attachComponent(): void {
-    if (this.child) {
-      this.child.detach(0);
+    if (this.viewComponentRef) {
+      this.viewComponentRef.detach(0);
       if (this.currentContainer) {
-        this.currentContainer.viewContainerRef = this.child;
-        this.child.insert(this.currentContainer.componentRef.hostView);
+        this.currentContainer.attach(this.viewComponentRef);
         this.changeDetectorRef.detectChanges();
       }
     }
