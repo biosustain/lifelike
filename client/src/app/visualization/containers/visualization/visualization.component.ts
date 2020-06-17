@@ -27,6 +27,7 @@ import {
 import {
     NODE_EXPANSION_LIMIT,
 } from 'app/shared/constants';
+import { LegendService } from 'app/shared/services/legend.service';
 import {
     LoadingClustersDialogComponent,
 } from 'app/visualization/components/loading-clusters-dialog/loading-clusters-dialog.component';
@@ -78,6 +79,7 @@ export class VisualizationComponent implements OnInit, OnDestroy {
         public dialog: MatDialog,
         private route: ActivatedRoute,
         private visService: VisualizationService,
+        private legendService: LegendService,
     ) {
         this.legend = new Map<string, string[]>();
 
@@ -127,7 +129,7 @@ export class VisualizationComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit() {
-        this.visService.getLegendForVisualizer().subscribe(legend => {
+        this.legendService.getAnnotationLegend().subscribe(legend => {
             Object.keys(legend).forEach(label => {
                 if (this.LITERATURE_LABELS.includes(label)) {
                     // Keys of the result dict are all lowercase, need to change the first character
