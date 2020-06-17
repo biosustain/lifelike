@@ -27,6 +27,7 @@ import { FriendlyDateStrPipe, TruncatePipe } from './pipes';
 import { NodeTextStylePipe } from './node-text-style.pipe';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { SortLegendComponent } from './components/sort/sort-legend.component';
+import { ConfirmDialogComponent } from './components/confirm-dialog/confirm-dialog.component';
 
 const components = [
   MessageDialogComponent,
@@ -36,6 +37,7 @@ const components = [
   NodeRelationshipComponent,
   TooltipComponent,
   SortLegendComponent,
+  ConfirmDialogComponent,
 ];
 
 @NgModule({

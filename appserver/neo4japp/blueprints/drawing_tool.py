@@ -6,7 +6,14 @@ from datetime import datetime
 import graphviz as gv
 from PyPDF4 import PdfFileReader, PdfFileWriter
 from PyPDF4.generic import NameObject, ArrayObject
-from flask import request, Blueprint, g, Response, jsonify
+from flask import (
+    current_app,
+    request,
+    Blueprint,
+    g,
+    Response,
+    jsonify,
+)
 from sqlalchemy import or_
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy_searchable import search
@@ -16,8 +23,13 @@ from neo4japp.blueprints.auth import auth
 from neo4japp.blueprints.permissions import requires_role
 from neo4japp.constants import ANNOTATION_STYLES_DICT
 from neo4japp.database import db
+from neo4japp.data_transfer_objects import DrawingUploadRequest
 from neo4japp.exceptions import InvalidFileNameException, RecordNotFoundException
 from neo4japp.models import Project, ProjectSchema
+
+import graphviz as gv
+from PyPDF4 import PdfFileReader, PdfFileWriter
+from PyPDF4.generic import NameObject, ArrayObject
 
 bp = Blueprint('drawing_tool', __name__, url_prefix='/drawing-tool')
 
@@ -158,6 +170,8 @@ def add_project():
         user_id=user.id
     )
 
+    current_app.logger.info(f'User created map: <{g.current_user.email}:{project.label}>')
+
     # Flush it to database to that user
     db.session.add(project)
     db.session.flush()
@@ -189,6 +203,8 @@ def update_project(project_id):
         id=project_id,
         user_id=user.id
     ).first_or_404()
+
+    current_app.logger.info(f'User updated map: <{g.current_user.email}:{project.label}>')
 
     # Update project's attributes
     project.description = data.get("description", "")

@@ -1,4 +1,11 @@
-import { Component, Input, OnDestroy, Output, EventEmitter } from '@angular/core';
+import {
+    Component,
+    EventEmitter,
+    Input,
+    OnChanges,
+    OnDestroy,
+    Output,
+} from '@angular/core';
 
 import { createPopper, Instance } from '@popperjs/core';
 
@@ -20,7 +27,7 @@ import { ContextMenuControlService } from '../../services/context-menu-control.s
     templateUrl: './context-menu.component.html',
     styleUrls: ['./context-menu.component.scss'],
 })
-export class ContextMenuComponent extends TooltipComponent implements OnDestroy {
+export class ContextMenuComponent extends TooltipComponent implements OnDestroy, OnChanges {
     @Input() selectedNodeIds: IdType[];
     @Input() selectedEdgeIds: IdType[];
     @Input() selectedClusterNodeData: VisNode[];
@@ -32,6 +39,7 @@ export class ContextMenuComponent extends TooltipComponent implements OnDestroy 
     @Output() removeEdges: EventEmitter<IdType[]> = new EventEmitter();
     @Output() selectNeighbors: EventEmitter<IdType> = new EventEmitter();
     @Output() pullOutNodeFromCluster: EventEmitter<IdType> = new EventEmitter();
+    @Output() openDataSidebar: EventEmitter<boolean> = new EventEmitter();
 
     FADEOUT_STYLE = 'context-menu fade-out';
     DEFAULT_STYLE = 'context-menu';
@@ -46,6 +54,11 @@ export class ContextMenuComponent extends TooltipComponent implements OnDestroy 
 
     hideContextMenuSubscription: Subscription;
     updatePopperSubscription: Subscription;
+
+    exactlyOneSelectedEdge: boolean;
+    exactlyOneSelectedNode: boolean;
+    singleSelection: boolean;
+    clusterSelected: boolean;
 
     constructor(
         private contextMenuControlService: ContextMenuControlService,
@@ -66,6 +79,21 @@ export class ContextMenuComponent extends TooltipComponent implements OnDestroy 
         this.updatePopperSubscription = this.contextMenuControlService.updatePopper$.subscribe((details: TooltipDetails) => {
             this.updatePopper(details.posX, details.posY);
         });
+
+        this.exactlyOneSelectedNode = false;
+        this.exactlyOneSelectedEdge = false;
+        this.singleSelection = false;
+        this.clusterSelected = false;
+    }
+
+    ngOnChanges() {
+        this.exactlyOneSelectedNode = this.selectedNodeIds.length === 1;
+        this.exactlyOneSelectedEdge = this.selectedEdgeIds.length === 1;
+        this.singleSelection = (
+            (this.exactlyOneSelectedNode && this.selectedEdgeIds.length === 0) ||
+            (this.exactlyOneSelectedEdge && this.selectedNodeIds.length === 0)
+        );
+        this.clusterSelected = this.selectedClusterNodeData.length > 0;
     }
 
     ngOnDestroy() {
@@ -193,5 +221,10 @@ export class ContextMenuComponent extends TooltipComponent implements OnDestroy 
         }
         this.selectNeighbors.emit(this.selectedNodeIds[0]);
         this.beginContextMenuFade();
+    }
+
+    requestDataSidenav() {
+        this.openDataSidebar.emit(true);
+        this.hideTooltip();
     }
 }
