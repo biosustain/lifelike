@@ -6,7 +6,18 @@ from os import path, remove, walk
 
 from neo4japp.higher_order_services import HybridNeo4jPostgresService
 from neo4japp.services.annotations import prepare_databases
-from neo4japp.services.annotations.constants import DatabaseType, OrganismCategory
+from neo4japp.services.annotations.constants import (
+    DatabaseType,
+    OrganismCategory,
+    CHEMICAL_LMDB,
+    COMPOUND_LMDB,
+    DISEASE_LMDB,
+    GENE_LMDB,
+    PHENOTYPE_LMDB,
+    PROTEIN_LMDB,
+    PUBCHEM_LMDB,
+    SPECIES_LMDB,
+)
 from neo4japp.services.annotations.util import normalize_str
 
 
@@ -15,85 +26,120 @@ directory = path.realpath(path.dirname(__file__))
 
 
 # Start LMDB Data Helpers
-def lmdb_disease_factory(disease_id: str, id_type: str, name: str):
+def lmdb_disease_factory(
+    disease_id: str,
+    id_type: str,
+    name: str,
+    synonym: str,
+):
     return {
         'disease_id': disease_id,
         'id_type': id_type,
         'name': name,
-        'common_name': {disease_id: normalize_str(name)}
+        'synonym': synonym,
     }
 
 
-def lmdb_gene_factory(gene_id: str, id_type: str, name: str):
+def lmdb_gene_factory(
+    gene_id: str,
+    id_type: str,
+    name: str,
+    synonym: str,
+    category: str,
+):
     return {
         'gene_id': gene_id,
         'id_type': id_type,
         'name': name,
-        'common_name': {gene_id: normalize_str(name)},
+        'synonym': synonym,
+        'category': category,
     }
 
 
-def lmdb_protein_factory(protein_id: str, id_type: str, name: str, ):
+def lmdb_protein_factory(
+    protein_id: str,
+    id_type: str,
+    name: str,
+    synonym: str,
+):
     return {
         # changed protein_id to protein_name for now (JIRA LL-671)
         # will eventually change back to protein_id
         'protein_id': name,
         'id_type': id_type,
         'name': name,
-        'common_name': {
-            protein_id: normalize_str(name),
-        },
+        'synonym': synonym,
     }
 
 
-def lmdb_species_factory(tax_id: str, id_type: str, category: str, name: str):
+def lmdb_species_factory(
+    tax_id: str,
+    id_type: str,
+    category: str,
+    name: str,
+    synonym: str,
+):
     return {
         'tax_id': tax_id,
         'id_type': id_type,
         'category': category,
         'name': name,
-        'common_name': {tax_id: normalize_str(name)},
+        'synonym': synonym,
     }
 # End LMDB Data Helpers
 
 
-def create_entity_lmdb(path_to_folder: str, entity_objs=[]):
+def create_entity_lmdb(path_to_folder: str, db_name: str, entity_objs=[]):
     map_size = 1099511627776
-    db = lmdb.open(path.join(directory, path_to_folder), map_size=map_size)
-    with db.begin(write=True) as transaction:
+    env = lmdb.open(path.join(directory, path_to_folder), map_size=map_size, max_dbs=2)
+    db = env.open_db(db_name.encode('utf-8'), dupsort=True)
+    with env.begin(db=db, write=True) as transaction:
         for entity in entity_objs:
             transaction.put(
-                normalize_str(entity['name']).encode('utf-8'),
+                normalize_str(entity['synonym']).encode('utf-8'),
                 json.dumps(entity).encode('utf-8'))
 
 
 @pytest.fixture(scope='function')
 def default_lmdb_setup(app, request):
-
     # Create gene data
     hyp27_gene = lmdb_gene_factory(
         gene_id='2846957',
         id_type=DatabaseType.Ncbi.value,
         name='hyp27',
+        synonym='hyp27',
+        category=OrganismCategory.Eukaryota.value,
     )
 
     serpina1_gene = lmdb_gene_factory(
         gene_id='5265',
         id_type=DatabaseType.Ncbi.value,
         name='SERPINA1',
+        synonym='SERPINA1',
+        category=OrganismCategory.Eukaryota.value,
+    )
+
+    serpina1_gene2 = lmdb_gene_factory(
+        gene_id='322701',
+        id_type=DatabaseType.Ncbi.value,
+        name='serpina1',
+        synonym='serpina1',
+        category=OrganismCategory.Eukaryota.value,
     )
 
     # Create protein data
     hyp27_protein = lmdb_protein_factory(
         protein_id='Y1954_CLOPE',
         id_type=DatabaseType.Uniprot.value,
-        name='Hyp27'
+        name='Hyp27',
+        synonym='Hyp27',
     )
 
     serpina1_protein = lmdb_protein_factory(
         protein_id='A1AT_PONAB',
         id_type=DatabaseType.Uniprot.value,
         name='Serpin A1',
+        synonym='Serpin A1',
     )
 
     # Create species data
@@ -102,6 +148,7 @@ def default_lmdb_setup(app, request):
         category=OrganismCategory.Eukaryota.value,
         id_type=DatabaseType.Ncbi.value,
         name='human',
+        synonym='human',
     )
 
     moniliophthora_roreri = lmdb_species_factory(
@@ -109,19 +156,20 @@ def default_lmdb_setup(app, request):
         category=OrganismCategory.Eukaryota.value,
         id_type=DatabaseType.Ncbi.value,
         name='Moniliophthora roreri',
+        synonym='Moniliophthora roreri',
     )
 
     entities = [
-        ('chemicals', []),  # TODO: Create test chemical data
-        ('compounds', []),  # TODO: Create test compound data
-        ('diseases', []),  # TODO: Create test disease data
-        ('genes', [hyp27_gene, serpina1_gene]),
-        ('phenotypes', []),  # TODO: Create test phenotype data
-        ('proteins', [hyp27_protein, serpina1_protein]),
-        ('species', [human, moniliophthora_roreri]),
+        (CHEMICAL_LMDB, 'chemicals', []),  # TODO: Create test chemical data
+        (COMPOUND_LMDB, 'compounds', []),  # TODO: Create test compound data
+        (DISEASE_LMDB, 'diseases', []),  # TODO: Create test disease data
+        (GENE_LMDB, 'genes', [hyp27_gene, serpina1_gene, serpina1_gene2]),
+        (PHENOTYPE_LMDB, 'phenotypes', []),  # TODO: Create test phenotype data
+        (PROTEIN_LMDB, 'proteins', [hyp27_protein, serpina1_protein]),
+        (SPECIES_LMDB, 'species', [human, moniliophthora_roreri]),
     ]
-    for entity, data in entities:
-        create_entity_lmdb(f'lmdb/{entity}', data)
+    for db_name, entity, data in entities:
+        create_entity_lmdb(f'lmdb/{entity}', db_name, data)
 
     def teardown():
         for parent, subfolders, filenames in walk(path.join(directory, 'lmdb/')):
@@ -139,6 +187,8 @@ def human_gene_pdf_lmdb_setup(app, request):
         gene_id='59272',
         id_type=DatabaseType.Ncbi.value,
         name='ACE2',
+        synonym='ACE2',
+        category=OrganismCategory.Eukaryota.value,
     )
 
     # Create disease data
@@ -146,6 +196,7 @@ def human_gene_pdf_lmdb_setup(app, request):
         disease_id='MESH:C000657245',
         id_type=DatabaseType.Mesh.value,
         name='COVID-19',
+        synonym='COVID-19',
     )
 
     # Create species data
@@ -154,19 +205,20 @@ def human_gene_pdf_lmdb_setup(app, request):
         category=OrganismCategory.Viruses.value,
         id_type=DatabaseType.Ncbi.value,
         name='MERS-CoV',
+        synonym='MERS-CoV',
     )
 
     entities = [
-        ('chemicals', []),
-        ('compounds', []),
-        ('diseases', [covid_19]),
-        ('genes', [ace2]),
-        ('phenotypes', []),
-        ('proteins', []),
-        ('species', [mers_cov]),
+        (CHEMICAL_LMDB, 'chemicals', []),
+        (COMPOUND_LMDB, 'compounds', []),
+        (DISEASE_LMDB, 'diseases', [covid_19]),
+        (GENE_LMDB, 'genes', [ace2]),
+        (PHENOTYPE_LMDB, 'phenotypes', []),
+        (PROTEIN_LMDB, 'proteins', []),
+        (SPECIES_LMDB, 'species', [mers_cov]),
     ]
-    for entity, data in entities:
-        create_entity_lmdb(f'lmdb/{entity}', data)
+    for db_name, entity, data in entities:
+        create_entity_lmdb(f'lmdb/{entity}', db_name, data)
 
     def teardown():
         for parent, subfolders, filenames in walk(path.join(directory, 'lmdb/')):
@@ -184,30 +236,40 @@ def escherichia_coli_pdf_lmdb_setup(app, request):
         gene_id='948695',
         id_type=DatabaseType.Ncbi.value,
         name='purA',
+        synonym='purA',
+        category=OrganismCategory.Eukaryota.value,
     )
 
     purB = lmdb_gene_factory(
         gene_id='945695',
         id_type=DatabaseType.Ncbi.value,
         name='purB',
+        synonym='purB',
+        category=OrganismCategory.Eukaryota.value,
     )
 
     purC = lmdb_gene_factory(
         gene_id='946957',
         id_type=DatabaseType.Ncbi.value,
         name='purC',
+        synonym='purC',
+        category=OrganismCategory.Eukaryota.value,
     )
 
     purD = lmdb_gene_factory(
         gene_id='948504',
         id_type=DatabaseType.Ncbi.value,
         name='purF',
+        synonym='purF',
+        category=OrganismCategory.Eukaryota.value,
     )
 
     purF = lmdb_gene_factory(
         gene_id='946794',
         id_type=DatabaseType.Ncbi.value,
         name='purD',
+        synonym='purD',
+        category=OrganismCategory.Eukaryota.value,
     )
 
     # Create species data
@@ -216,19 +278,20 @@ def escherichia_coli_pdf_lmdb_setup(app, request):
         category=OrganismCategory.Bacteria.value,
         id_type=DatabaseType.Ncbi.value,
         name='Escherichia coli',
+        synonym='Escherichia coli',
     )
 
     entities = [
-        ('chemicals', []),
-        ('compounds', []),
-        ('diseases', []),
-        ('genes', [purA, purB, purC, purD, purF]),
-        ('phenotypes', []),
-        ('proteins', []),
-        ('species', [e_coli]),
+        (CHEMICAL_LMDB, 'chemicals', []),
+        (COMPOUND_LMDB, 'compounds', []),
+        (DISEASE_LMDB, 'diseases', []),
+        (GENE_LMDB, 'genes', [purA, purB, purC, purD, purF]),
+        (PHENOTYPE_LMDB, 'phenotypes', []),
+        (PROTEIN_LMDB, 'proteins', []),
+        (SPECIES_LMDB, 'species', [e_coli]),
     ]
-    for entity, data in entities:
-        create_entity_lmdb(f'lmdb/{entity}', data)
+    for db_names, entity, data in entities:
+        create_entity_lmdb(f'lmdb/{entity}', db_names, data)
 
     def teardown():
         for parent, subfolders, filenames in walk(path.join(directory, 'lmdb/')):
@@ -301,40 +364,3 @@ def mock_get_gene_to_organism_match_result_for_escherichia_coli_pdf(monkeypatch)
 @pytest.fixture(scope='function')
 def annotations_setup(app):
     pass
-
-    # below is not working, always says files are not there
-    # if not path.exists(
-    #     path.join(
-    #         directory,
-    #         '../../neo4japp/services/annotations/lmdb/genes/data.mdb')):
-    #     prepare_databases.prepare_lmdb_genes_database()
-
-    # if not path.exists(
-    #     path.join(
-    #         directory,
-    #         '../../neo4japp/services/annotations/lmdb/chemicals/data.mdb')):
-    #     prepare_databases.prepare_lmdb_chemicals_database()
-
-    # if not path.exists(
-    #     path.join(
-    #         directory,
-    #         '../../neo4japp/services/annotations/lmdb/compounds/data.mdb')):
-    #     prepare_databases.prepare_lmdb_compounds_database()
-
-    # if not path.exists(
-    #     path.join(
-    #         directory,
-    #         '../../neo4japp/services/annotations/lmdb/proteins/data.mdb')):
-    #     prepare_databases.prepare_lmdb_proteins_database()
-
-    # if not path.exists(
-    #     path.join(
-    #         directory,
-    #         '../../neo4japp/services/annotations/lmdb/species/data.mdb')):
-    #     prepare_databases.prepare_lmdb_species_database()
-
-    # if not path.exists(
-    #     path.join(
-    #         directory,
-    #         '../../neo4japp/services/annotations/lmdb/diseases/data.mdb')):
-    #     prepare_databases.prepare_lmdb_diseases_database()
