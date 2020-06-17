@@ -3,6 +3,7 @@ export interface UniversalEntityData {
   detail?: string;
   source?: string;
   search?: Hyperlink[];
+  subtype?: string;
 }
 
 export interface UniversalNodeStyle {
@@ -107,6 +108,7 @@ export interface Annotation {
   keywords: string[];
   rects: Rect[];
   meta: Meta;
+  uuid?: string;
 }
 
 /**

@@ -30,8 +30,7 @@ COMMON_FOUR_LETTER_WORDS = {
 COMMON_MISC_WORDS = {
     'patch', 'membrane', 'walker', 'group', 'cluster',
     'protein', 'transporter', 'toxin', 'molecule', 'vitamin',
-    'light', 'mixture', 'solution', 'other', 'unknown',
-    'collection',
+    'light', 'mixture', 'solution', 'other', 'unknown', 'damage',
 }
 
 COMMON_WORDS = set.union(*[
@@ -41,8 +40,13 @@ COMMON_WORDS = set.union(*[
     COMMON_MISC_WORDS,
 ])
 
+CHEMICAL_EXCLUSION = {'aa'}
+COMPOUND_EXCLUSION = {'aa'}  # should this be the same as chemical?
+SPECIES_EXCLUSION = {'collection', 'covid-19', 'covid19', 'artificial'}
+
 # utf-32 unicode
-MISC_SYMBOLS_AND_CHARS = {169, 8230, 174}
+# can search these up here: https://www.fileformat.info/info/unicode/index.htm
+MISC_SYMBOLS_AND_CHARS = {8211, 160, 8220, 8221, 8216, 8217}
 
 TYPO_SYNONYMS = {
     'e coli': ['E. coli', 'Escherichia coli', 'Enterococcus coli'],

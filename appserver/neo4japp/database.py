@@ -70,8 +70,8 @@ def get_user_file_import_service():
     if 'user_file_import_service' not in g:
         from neo4japp.services import UserFileImportService
         graph = _connect_to_neo4j()
-        g.user_file_import_service = UserFileImportService(graph)
-    return g.user_file_import_service
+        g.current_user_file_import_service = UserFileImportService(graph)
+    return g.current_user_file_import_service
 
 
 def get_search_service_dao():

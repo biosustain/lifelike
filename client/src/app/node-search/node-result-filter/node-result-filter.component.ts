@@ -10,7 +10,7 @@ import {MatListOption} from '@angular/material/list';
 
 export class NodeResultFilterComponent implements OnInit {
   typeOfDomains: string[] = ['CHEBI', 'MESH', 'NCBI', 'GO', 'UNIPROT'].sort();
-  typesOfEntities: string[] = ['GENE', 'CHEMICAL', 'DISEASES', 'TAXONOMY', 'PROTEIN'].sort();
+  typesOfEntities: string[] = ['GENE', 'CHEMICAL', 'DISEASE', 'TAXONOMY', 'PROTEIN'].sort();
   selectedDomains: string[] = [];
   selectedTypes: string[] = [];
   @Output() domainsFilter = new EventEmitter<string[]>();
