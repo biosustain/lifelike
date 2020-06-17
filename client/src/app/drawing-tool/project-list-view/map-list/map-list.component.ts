@@ -37,9 +37,9 @@ export class MapListComponent implements OnInit, OnDestroy {
   private previousSearchParams: SearchParameters;
 
   @Input() templateView = false;
-  private projects: Project[] = [];
+  projects: Project[] = [];
   private readonly refreshSubscription: Subscription;
-  private readonly refreshTask: BackgroundTask<SearchParameters, {
+  readonly refreshTask: BackgroundTask<SearchParameters, {
     projects: Project[],
   }> = new BackgroundTask(args => this.projectService.searchForMaps(args.term, args.filters), {
     initialDelay: 0,

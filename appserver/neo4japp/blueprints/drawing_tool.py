@@ -364,7 +364,7 @@ def find_maps():
     if filters.get('personal', True):
         conditions.append(Project.user_id == user.id)
     if filters.get('community', True):
-        conditions.append(Project.public == True)
+        conditions.append(Project.public)
 
     if len(conditions):
         projects = query.filter(or_(*conditions)).all()

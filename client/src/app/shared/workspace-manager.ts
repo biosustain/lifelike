@@ -139,7 +139,7 @@ export class Pane {
   }
 
   createTab(): Tab {
-    const tab = new Tab(this.injector, this.injector.get(ComponentFactoryResolver));
+    const tab = new Tab(this.injector, this.injector.get<ComponentFactoryResolver>(ComponentFactoryResolver as any));
     this.tabs.push(tab);
     this.activeTab = tab;
     return tab;
