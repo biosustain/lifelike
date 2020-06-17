@@ -286,7 +286,7 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
         // Record the data ..
         this.graphData = data.edgeData;
 
-        // Setup FormGroup for Edge ..
+        // Setup FormGroup for iterables ..
         this.pauseForm = true;
         this.entityForm.setControl(
           'edges',
@@ -299,7 +299,8 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
           group: null,
           edges: [],
           hyperlink: null,
-          detail: null
+          detail: null,
+          subtype: null
         };
         this.entityForm.setValue(formData, {emitEvent: false});
       }
