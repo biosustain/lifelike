@@ -40,7 +40,7 @@ const routes: Routes = [
     data: {title: 'Knowledge Reconstruction'},
     // TODO - Bring back once pdf-viewer source code integration is resolved
     // loadChildren: () => import(
-    //   './drawing-tool/drawing-tool.module'
+    //   './drawing-tool/drawing-toool.module'
     // ).then(m => m.DrawingToolModule)
   },
   {
