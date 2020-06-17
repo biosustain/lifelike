@@ -14,7 +14,6 @@ import { PendingChangesGuard } from './guards';
 import { DrawingToolContextMenuComponent } from './drawing-tool/drawing-tool-context-menu/drawing-tool-context-menu.component';
 import { PaletteComponent } from './drawing-tool/palette/palette.component';
 import { InfoPanelComponent } from './drawing-tool/info-panel/info-panel.component';
-import { SplitterComponent } from './splitter/splitter.component';
 import { ExportModalComponent } from './drawing-tool/export-modal/export-modal.component';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MapPreviewComponent } from './project-list-view/map-preview/map-preview.component';
@@ -37,7 +36,7 @@ export const routes = [
   },
   {
     path: 'map/edit/:hash_id',
-    component: SplitterComponent,
+    component: DrawingToolComponent,
     canDeactivate: [PendingChangesGuard]
   },
   {
@@ -58,7 +57,6 @@ export const routes = [
     PdfViewerComponent,
     PaletteComponent,
     InfoPanelComponent,
-    SplitterComponent,
     MapPreviewComponent,
     MapListComponent,
     ExportModalComponent,
