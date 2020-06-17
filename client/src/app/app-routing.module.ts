@@ -19,6 +19,7 @@ import { KgStatisticsComponent } from './kg-statistics/kg-statistics.component';
 import { TermsOfServiceComponent } from './users/components/terms-of-service-dialog/terms-of-service.component';
 import { WorkspaceComponent } from './workspace.component';
 import { WorkspaceWelcomeComponent } from './workspace-welcome.component';
+import { UnloadConfirmationGuard } from './shared/guards/UnloadConfirmation.guard';
 
 // TODO: Add an unprotected home page
 const routes: Routes = [
@@ -62,6 +63,7 @@ const routes: Routes = [
     path: 'space/:space_id',
     component: WorkspaceComponent,
     data: {title: 'Workspace'},
+    canDeactivate: [UnloadConfirmationGuard],
   },
   {
     path: 'welcome',

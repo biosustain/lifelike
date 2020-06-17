@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, HostListener } from '@angular/core';
 import { CdkDragDrop } from '@angular/cdk/drag-drop';
 import { Pane, Tab, WorkspaceManager } from './shared/workspace-manager';
 
@@ -22,15 +22,29 @@ export class WorkspaceComponent {
   }
 
   closeTab(pane: Pane) {
-    pane.deleteActiveTab();
-    if (pane.id === 'right' && pane.tabs.length === 0) {
-      this.workspaceManager.panes.delete(pane);
+    const tab = pane.activeTab;
+    if (tab) {
+      const performClose = () => {
+        pane.deleteTab(tab);
+        if (pane.id === 'right' && pane.tabs.length === 0) {
+          this.workspaceManager.panes.delete(pane);
+        }
+        this.workspaceManager.save();
+        this.workspaceManager.emitEvents();
+      };
+      if (this.workspaceManager.shouldConfirmTabUnload(tab)) {
+        if (confirm('Close tab? Changes you made may not be saved.')) {
+          performClose();
+        }
+      } else {
+        performClose();
+      }
     }
-    this.workspaceManager.emitEvents();
   }
 
   setActiveTab(pane: Pane, tab: Tab) {
     pane.activeTab = tab;
+    this.workspaceManager.save();
   }
 
   setFocus(pane: Pane) {
@@ -44,5 +58,22 @@ export class WorkspaceComponent {
   addPane() {
     const pane = this.workspaceManager.panes.getOrCreate('right');
     this.workspaceManager.openTabByUrl(pane, '/welcome');
+  }
+
+  shouldConfirmUnload(): boolean {
+    const result = this.workspaceManager.shouldConfirmUnload();
+    if (result) {
+      result.pane.activeTab = result.tab;
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  @HostListener('window:beforeunload', ['$event'])
+  handleBeforeUnload(event) {
+    if (this.shouldConfirmUnload()) {
+      event.returnValue = 'Leave page? Changes you made may not be saved';
+    }
   }
 }

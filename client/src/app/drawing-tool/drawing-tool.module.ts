@@ -9,8 +9,6 @@ import { DrawingToolComponent } from './drawing-tool/drawing-tool.component';
 
 import { CopyPasteMapsService } from './services/copy-paste-maps.service';
 
-import { PendingChangesGuard } from './guards';
-
 import { DrawingToolContextMenuComponent } from './drawing-tool/drawing-tool-context-menu/drawing-tool-context-menu.component';
 import { PaletteComponent } from './drawing-tool/palette/palette.component';
 import { InfoPanelComponent } from './drawing-tool/info-panel/info-panel.component';
@@ -28,6 +26,7 @@ import { NodeFormComponent } from './drawing-tool/info-panel/node-form.component
 import { NodeSearchComponent } from '../node-search/containers/node-search.component';
 import { EditProjectDialogComponent } from './project-list/edit-project-dialog/edit-project-dialog.component';
 import { ConfirmDialogComponent } from 'app/shared/components/confirm-dialog/confirm-dialog.component';
+import { UnloadConfirmationGuard } from '../shared/guards/UnloadConfirmation.guard';
 
 export const routes = [
   {
@@ -37,7 +36,7 @@ export const routes = [
   {
     path: 'map/edit/:hash_id',
     component: DrawingToolComponent,
-    canDeactivate: [PendingChangesGuard]
+    canDeactivate: [UnloadConfirmationGuard]
   },
   {
     path: 'map/:hash_id',
@@ -91,7 +90,6 @@ export const routes = [
     //   useClass: AuthenticationService,
     //   multi: true
     // },
-    PendingChangesGuard
   ],
   exports: [
     RouterModule,

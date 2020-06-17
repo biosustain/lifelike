@@ -1,7 +1,7 @@
 import {
   ComponentFactory,
   ComponentFactoryResolver,
-  ComponentRef, EventEmitter, Injectable, Injector,
+  ComponentRef, Injectable, Injector,
   StaticProvider,
   Type, ViewContainerRef,
 } from '@angular/core';
@@ -17,14 +17,14 @@ import { filter } from 'rxjs/operators';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
 import { ModuleAwareComponent } from './modules';
+import { WorkspaceSessionLoader, WorkspaceSessionService } from './services/workspace-session.service';
 
 /**
- * Contains a component reference and re-creates it if it is destroyed
- * but requested again.
+ * Manages the lifecycle of a dynamically instantiated component.
  */
 export class Container<T> {
   private createdComponentRef: ComponentRef<T> = null;
-  viewContainerRef: ViewContainerRef;
+  private viewContainerRef: ViewContainerRef;
 
   constructor(private readonly tab: Tab,
               private readonly injector: Injector,
@@ -32,6 +32,24 @@ export class Container<T> {
               readonly component: Type<T>) {
   }
 
+  /**
+   * Create the component if necessary and attach it to the given ref. If
+   * this component has already been attached to a ref, then an error
+   * will be raised.
+   * @param viewContainerRef the ref
+   */
+  attach(viewContainerRef: ViewContainerRef) {
+    if (this.viewContainerRef) {
+      throw new Error('already attached to a ViewContainerRef');
+    }
+    this.viewContainerRef = viewContainerRef;
+    viewContainerRef.insert(this.componentRef.hostView);
+  }
+
+  /**
+   * Detach the component from the associated ref, if there
+   * is one.
+   */
   detach() {
     if (this.viewContainerRef) {
       this.viewContainerRef.detach(0);
@@ -39,7 +57,17 @@ export class Container<T> {
     }
   }
 
-  get componentRef() {
+  /**
+   * Get a component ref if one has already been created.
+   */
+  get lazyComponentRef(): ComponentRef<T> | undefined {
+    return this.createdComponentRef;
+  }
+
+  /**
+   * Get a component ref, creating it if necessary.
+   */
+  get componentRef(): ComponentRef<T> {
     if (!this.createdComponentRef) {
       const factory: ComponentFactory<T> = this.componentFactoryResolver.resolveComponentFactory(this.component);
       this.createdComponentRef = factory.create(this.injector);
@@ -53,6 +81,7 @@ export class Container<T> {
       }
       this.createdComponentRef.onDestroy(() => {
         this.createdComponentRef = null;
+        this.viewContainerRef = null;
         for (const subscription of subscriptions) {
           subscription.unsubscribe();
         }
@@ -61,7 +90,11 @@ export class Container<T> {
     return this.createdComponentRef;
   }
 
+  /**
+   * Destroy the created component ref if it has been created.
+   */
   destroy() {
+    this.detach();
     if (this.createdComponentRef) {
       this.createdComponentRef.destroy();
       this.createdComponentRef = null;
@@ -74,6 +107,7 @@ export class Container<T> {
  * Represents a tab with a title and possibly a component inside.
  */
 export class Tab {
+  url: string;
   title = 'New Tab';
   fontAwesomeIcon: string = null;
   component: Type<any>;
@@ -81,9 +115,14 @@ export class Tab {
   container: Container<any>;
 
   constructor(private readonly injector: Injector,
-              private componentFactoryResolver: ComponentFactoryResolver) {
+              private readonly componentFactoryResolver: ComponentFactoryResolver) {
   }
 
+  /**
+   * Load the given component into this tab at some point in the future.
+   * @param component the component
+   * @param providers optional providers for the injector
+   */
   replaceComponent(component: Type<any>, providers: StaticProvider[] = []) {
     this.destroy();
 
@@ -98,31 +137,72 @@ export class Tab {
     );
   }
 
+  /**
+   * Attach the tab's component to the given ref if there is a component. If
+   * this component has already been attached to a ref, then an error
+   * will be raised.
+   * @param viewContainerRef the ref
+   */
+  attach(viewContainerRef: ViewContainerRef) {
+    if (this.container) {
+      this.container.attach(viewContainerRef);
+    }
+  }
+
+  /**
+   * Detach this tab from its view ref, if any.
+   */
   detach() {
     if (this.container) {
       this.container.detach();
     }
   }
 
+  /**
+   * Destroy the component if it has been existed and clear the
+   * component on this tab.
+   */
   destroy() {
     if (this.container) {
       this.container.destroy();
       this.container = null;
     }
   }
+
+  /**
+   * Get the underlying component, if it has been created.
+   */
+  getComponent(): any | undefined {
+    const componentRef = this.container ? this.container.lazyComponentRef : null;
+    return componentRef ? componentRef.instance : null;
+  }
 }
 
 /**
- * Represents a collection of abs.
+ * Represents a pane that has a collection of tabs. A pane might
+ * be part of a split view or a pane might be a sidebar window.
  */
 export class Pane {
-  tabs: Tab[] = [];
-  activeTabHistory: Set<Tab> = new Set();
+  /**
+   * The tabs that are a part of this pane.
+   */
+  readonly tabs: Tab[] = [];
+
+  /**
+   * A list of active tabs in the past, where last entry is the current
+   * active tab. Sets are kept in insertion order and we keep a list of
+   * active tabs so that when a tab is closed, we know what the previous
+   * tab was so we can switch to it.
+   */
+  readonly activeTabHistory: Set<Tab> = new Set();
 
   constructor(readonly id: string,
               private readonly injector: Injector) {
   }
 
+  /**
+   * Get the current active tab, if any.
+   */
   get activeTab(): Tab | undefined {
     let active: Tab = null;
     for (const tab of this.activeTabHistory.values()) {
@@ -131,6 +211,10 @@ export class Pane {
     return active;
   }
 
+  /**
+   * Set the given tab to be the active tab.
+   * @param tab the tab to make active
+   */
   set activeTab(tab: Tab) {
     if (tab != null) {
       this.activeTabHistory.delete(tab);
@@ -138,19 +222,11 @@ export class Pane {
     }
   }
 
-  createTab(): Tab {
-    const tab = new Tab(this.injector, this.injector.get<ComponentFactoryResolver>(ComponentFactoryResolver as any));
-    this.tabs.push(tab);
-    this.activeTab = tab;
-    return tab;
-  }
-
-  getActive(): Tab | undefined {
-    return this.activeTab;
-  }
-
-  getActiveOrCreate(): Tab {
-    const tab = this.getActive();
+  /**
+   * Get the active tab or created an empty tab if there is none.
+   */
+  getActiveTabOrCreate(): Tab {
+    const tab = this.activeTab;
     if (tab) {
       return tab;
     }
@@ -161,6 +237,23 @@ export class Pane {
     return this.createTab();
   }
 
+  /**
+   * Create a new tab and add it to this pane.
+   */
+  createTab(): Tab {
+    const tab = new Tab(
+      this.injector,
+      this.injector.get<ComponentFactoryResolver>(ComponentFactoryResolver as any),
+    );
+    this.tabs.push(tab);
+    this.activeTab = tab;
+    return tab;
+  }
+
+  /**
+   * Remove the given tab from this pane.
+   * @param tab the tab
+   */
   deleteTab(tab: Tab): boolean {
     for (let i = 0; i < this.tabs.length; i++) {
       if (this.tabs[i] === tab) {
@@ -172,15 +265,9 @@ export class Pane {
     return false;
   }
 
-  handleTabMoveFrom(tab: Tab) {
-    tab.detach();
-    this.activeTabHistory.delete(tab);
-  }
-
-  handleTabMoveTo(tab: Tab) {
-    this.activeTabHistory.add(tab);
-  }
-
+  /**
+   * Remove the currently active tab.
+   */
   deleteActiveTab(): boolean {
     const activeTab = this.activeTab;
     if (this.activeTab) {
@@ -189,6 +276,26 @@ export class Pane {
     return false;
   }
 
+  /**
+   * Called for the previous pane when a tab is moved from one pane to another.
+   * @param tab the tab that was moved
+   */
+  handleTabMoveFrom(tab: Tab) {
+    tab.detach();
+    this.activeTabHistory.delete(tab);
+  }
+
+  /**
+   * Called for the new pane when a tab is moved from one pane to another.
+   * @param tab the tab that was moved
+   */
+  handleTabMoveTo(tab: Tab) {
+    this.activeTabHistory.add(tab);
+  }
+
+  /**
+   * Destroy all tabs and unload their components.
+   */
   destroy() {
     for (const tab of this.tabs) {
       this.deleteTab(tab);
@@ -205,12 +312,20 @@ export class PaneManager {
   constructor(private readonly injector: Injector) {
   }
 
+  /**
+   * Create a new pane.
+   * @param id the pane ID that must be unique
+   */
   create(id: string): Pane {
     const pane = new Pane(id, this.injector);
     this.panes.push(pane);
     return pane;
   }
 
+  /**
+   * Get the pane by the given ID.
+   * @param id the ID
+   */
   get(id: string): Pane | undefined {
     for (const pane of this.panes) {
       if (pane.id === id) {
@@ -220,6 +335,10 @@ export class PaneManager {
     return null;
   }
 
+  /**
+   * Get the pane by the given ID or create the pane if it doesn't exist.
+   * @param id the ID
+   */
   getOrCreate(id: string): Pane {
     const pane = this.get(id);
     if (pane) {
@@ -228,11 +347,18 @@ export class PaneManager {
     return this.create(id);
   }
 
+  /**
+   * Get the first pane or created one if one doesn't exist.
+   */
   getFirstOrCreate() {
     const it = this.panes.values().next();
     return !it.done ? it.value : this.create('primary');
   }
 
+  /**
+   * Remove the given pane.
+   * @param pane the pane
+   */
   delete(pane: Pane): boolean {
     for (let i = 0; i < this.panes.length; i++) {
       if (this.panes[i] === pane) {
@@ -242,6 +368,29 @@ export class PaneManager {
       }
     }
     return false;
+  }
+
+  /**
+   * Delete all panes.
+   */
+  clear() {
+    for (const pane of this.panes) {
+      this.delete(pane);
+    }
+  }
+
+  /**
+   * Get all the tabs within all the panes.
+   */
+  * allTabs(): IterableIterator<{ pane: Pane, tab: Tab }> {
+    for (const pane of this.panes) {
+      for (const tab of pane.tabs) {
+        yield {
+          pane,
+          tab,
+        };
+      }
+    }
   }
 }
 
@@ -256,14 +405,12 @@ export class WorkspaceManager {
   panes$ = new BehaviorSubject<Pane[]>([]);
 
   constructor(private readonly router: Router,
-              private readonly injector: Injector) {
+              private readonly injector: Injector,
+              private readonly sessionService: WorkspaceSessionService) {
     this.panes = new PaneManager(injector);
     this.hookRouter();
-
-    const leftPane = this.panes.create('left');
     this.emitEvents();
-
-    this.openTabByUrl(leftPane, '/welcome');
+    this.load();
   }
 
   private hookRouter() {
@@ -285,7 +432,7 @@ export class WorkspaceManager {
             const routeSnapshot: ActivatedRouteSnapshot = this.getDeepestChild(event.state.***ARANGO_USERNAME***);
 
             const pane = this.focusedPane || this.panes.getFirstOrCreate();
-            const tab = pane.getActiveOrCreate();
+            const tab = pane.getActiveTabOrCreate();
 
             // We are using undocumented API to create an ActivatedRoute that carries the parameters
             // from the URL -- this part is a little hacky
@@ -296,6 +443,7 @@ export class WorkspaceManager {
               routeSnapshot.outlet, routeSnapshot.component, routeSnapshot);
             activatedRoute.snapshot = routeSnapshot;
 
+            tab.url = '/' + routeSnapshot.url.map(segment => segment.toString()).join('/');
             tab.title = routeSnapshot.data.title || 'Module';
             // TODO: Component may be a string
             tab.replaceComponent(routeSnapshot.component as Type<any>, [{
@@ -303,6 +451,8 @@ export class WorkspaceManager {
               provide: ActivatedRoute,
               useValue: activatedRoute,
             }]);
+
+            this.save();
 
             // Since we are intercepting routing, make sure we don't leave the workspace
             this.router.navigateByUrl(this.workspaceUrl, {replaceUrl: true});
@@ -312,6 +462,19 @@ export class WorkspaceManager {
           }
         }
       });
+  }
+
+  moveTab(from: Pane, fromIndex: number, to: Pane, toIndex: number) {
+    if (from === to) {
+      moveItemInArray(from.tabs, fromIndex, toIndex);
+    } else {
+      const tab = from.tabs[fromIndex];
+      transferArrayItem(from.tabs, to.tabs, fromIndex, toIndex);
+      from.handleTabMoveFrom(tab);
+      to.handleTabMoveTo(tab);
+    }
+    this.save();
+    this.emitEvents();
   }
 
   openTabByUrl(pane: Pane | string, url: string | UrlTree, extras?: NavigationExtras): Promise<boolean> {
@@ -332,6 +495,65 @@ export class WorkspaceManager {
     this.panes$.next(this.buildPanesSnapshot());
   }
 
+  load() {
+    const parent = this;
+    const tasks = [];
+
+    if (this.sessionService.load(new class implements WorkspaceSessionLoader {
+      createPane(id: string): void {
+        tasks.push(() => {
+          parent.panes.create(id);
+        });
+      }
+
+      loadTab(id: string, url: string): void {
+        tasks.push(() => {
+          parent.openTabByUrl(id, url);
+        });
+      }
+
+      setPaneActiveTabHistory(id: string, indices: number[]): void {
+        tasks.push(() => {
+          const pane = parent.panes.get(id);
+          const activeTabHistory = pane.activeTabHistory;
+          activeTabHistory.clear();
+          console.log(indices);
+          indices.forEach(index => {
+            activeTabHistory.add(pane.tabs[index]);
+          });
+        });
+      }
+    }())) {
+      this.panes.clear();
+      tasks.reduce((previousTask, task) => {
+        return previousTask.then(task);
+      }, Promise.resolve());
+    } else {
+      const leftPane = this.panes.create('left');
+      this.openTabByUrl(leftPane, '/welcome').then(() => {
+        this.load();
+      });
+    }
+  }
+
+  save() {
+    this.sessionService.save(this.panes.panes);
+  }
+
+  shouldConfirmUnload(): { pane: Pane, tab: Tab } | undefined {
+    for (const {pane, tab} of this.panes.allTabs()) {
+      if (this.shouldConfirmTabUnload(tab)) {
+        return {pane, tab};
+      }
+    }
+    return null;
+  }
+
+  shouldConfirmTabUnload(tab: Tab) {
+    const component = tab.getComponent();
+    return !!(component && component.shouldConfirmUnload && component.shouldConfirmUnload());
+  }
+
   private buildPanesSnapshot(): Pane[] {
     return this.panes.panes;
   }
@@ -342,17 +564,5 @@ export class WorkspaceManager {
     } else {
       return snapshot;
     }
-  }
-
-  moveTab(from: Pane, fromIndex: number, to: Pane, toIndex: number) {
-    if (from === to) {
-      moveItemInArray(from.tabs, fromIndex, toIndex);
-    } else {
-      const tab = from.tabs[fromIndex];
-      transferArrayItem(from.tabs, to.tabs, fromIndex, toIndex);
-      from.handleTabMoveFrom(tab);
-      to.handleTabMoveTo(tab);
-    }
-    this.emitEvents();
   }
 }
