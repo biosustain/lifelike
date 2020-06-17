@@ -1,0 +1,35 @@
+.nav-workspace-tabs {
+  display: flex;
+  border-bottom: 1px solid $gray-300;
+  height: 50px;
+  background: $gray-200;
+
+  .nav {
+    display: flex;
+    align-self: stretch;
+    align-items: stretch;
+    padding: 0.5rem 0.5rem 0;
+
+    .nav-item {
+      margin-bottom: -1px;
+    }
+
+    .nav-link {
+      width: 100%;
+      height: 100%;
+      border: 1px solid transparent;
+
+      &, &:link, &:visited {
+        color: $body-color;
+      }
+
+      &.active {
+        border: 1px solid $gray-300;
+        border-bottom: 1px solid #fff;
+        background: $white;
+        border-top-left-radius: $nav-tabs-border-radius;
+        border-top-right-radius: $nav-tabs-border-radius;
+      }
+    }
+  }
+}
