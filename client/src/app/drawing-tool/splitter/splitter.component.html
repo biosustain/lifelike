@@ -5,7 +5,7 @@
     <as-split-area>
       <div id="dropme" class="h-100">
         <app-drawing-tool [currentApp]="currentApp" [currentMap]="currentMap" (openApp)="openApp($event)"
-          (saveStateListener)="resolveSaveState($event)">
+          (saveStateListener)="resolveSaveState($event)" (modulePropertiesChange)="modulePropertiesChange.emit($event)">
       </app-drawing-tool>
       </div>
     </as-split-area>

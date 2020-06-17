@@ -21,22 +21,22 @@
   <div class="module-body">
     <div class="mb-4 d-flex">
       <div>
-      <button class="btn btn-primary" (click)="openUploadDialog()">
-        <i class="fa fa-fw fa-file-upload"></i>
-        Add File
-      </button>
-      <div class="d-inline-block"
-           [ngbTooltip]="getSelectedShownFiles().length === 0 ? 'Select one or more files to use these options' : ''">
-        <button class="btn btn-outline-secondary ml-2"
-                [disabled]="getSelectedShownFiles().length === 0 || isReannotating" (click)="reannotate()">
-          Reannotate <span *ngIf="getSelectedShownFiles().length">({{getSelectedShownFiles().length}})</span>
+        <button class="btn btn-primary" (click)="openUploadDialog()">
+          <i class="fa fa-fw fa-file-upload"></i>
+          Add File
         </button>
-        <button class="btn btn-outline-secondary ml-2"
-                [disabled]="getSelectedShownFiles().length === 0"
-                (click)="openDeleteDialog()">
-          Delete <span *ngIf="getSelectedShownFiles().length">({{getSelectedShownFiles().length}})</span>
-        </button>
-      </div>
+        <div class="d-inline-block"
+             [ngbTooltip]="getSelectedShownFiles().length === 0 ? 'Select one or more files to use these options' : ''">
+          <button class="btn btn-outline-secondary ml-2"
+                  [disabled]="getSelectedShownFiles().length === 0 || isReannotating" (click)="reannotate()">
+            Reannotate <span *ngIf="getSelectedShownFiles().length">({{getSelectedShownFiles().length}})</span>
+          </button>
+          <button class="btn btn-outline-secondary ml-2"
+                  [disabled]="getSelectedShownFiles().length === 0"
+                  (click)="openDeleteDialog()">
+            Delete <span *ngIf="getSelectedShownFiles().length">({{getSelectedShownFiles().length}})</span>
+          </button>
+        </div>
       </div>
       <div class="ml-auto">
         <button type="button" class="btn btn-outline-secondary ml-1" (click)="this.updateDataSource()"
@@ -129,7 +129,7 @@
                    (change)="selection.toggle(file)"
                    [checked]="selection.isSelected(file)">
             <label class="custom-control-label d-flex align-items-center" for="file-{{ file.file_id }}">
-              <a href="#" (click)="openFile(file.file_id); $event.preventDefault()" class="text-truncate">
+              <a href="#" [appLink]="'/pdf-viewer/' + file.file_id" class="text-truncate">
                 {{ file.filename }}
               </a>
             </label>

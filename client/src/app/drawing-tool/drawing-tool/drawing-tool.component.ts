@@ -24,6 +24,7 @@ import { HandleResizable } from 'app/graph-viewer/renderers/canvas/behaviors/han
 import { DeleteKeyboardShortcut } from '../../graph-viewer/renderers/canvas/behaviors/delete-keyboard-shortcut';
 import { ClipboardKeyboardShortcut } from '../../graph-viewer/renderers/canvas/behaviors/clipboard-keyboard-shortcut';
 import { HistoryKeyboardShortcuts } from '../../graph-viewer/renderers/canvas/behaviors/history-keyboard-shortcuts';
+import { ModuleAwareComponent, ModuleProperties } from '../../shared/modules';
 
 @Component({
   selector: 'app-drawing-tool',
@@ -31,11 +32,13 @@ import { HistoryKeyboardShortcuts } from '../../graph-viewer/renderers/canvas/be
   styleUrls: ['./drawing-tool.component.scss'],
   providers: [ClipboardService],
 })
-export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
+export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy, ModuleAwareComponent {
   @Output() openApp: EventEmitter<LaunchApp> = new EventEmitter<LaunchApp>();
   @Input() currentApp = '';
 
   @Output() saveStateListener: EventEmitter<boolean> = new EventEmitter<boolean>();
+
+  @Output() modulePropertiesChange = new EventEmitter<ModuleProperties>();
 
   @ViewChild(InfoPanelComponent, {static: false}) infoPanel: InfoPanelComponent;
   @ViewChild('canvas', {static: true}) canvasChild;
@@ -139,6 +142,10 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
     this.projectService.serveProject(hashId).subscribe(
       (resp: any) => {
         this.project = resp.project;
+        this.modulePropertiesChange.emit({
+          title: this.project.label,
+          fontAwesomeIcon: 'project-diagram',
+        });
         this.graphCanvas.setGraph(this.project.graph);
         this.graphCanvas.zoomToFit(0);
       }

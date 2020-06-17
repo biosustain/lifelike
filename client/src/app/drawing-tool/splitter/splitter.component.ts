@@ -2,13 +2,13 @@ import {
   AfterViewInit,
   Component,
   ComponentFactoryResolver,
-  ComponentRef,
+  ComponentRef, EventEmitter,
   HostListener,
   Injector,
   OnDestroy,
-  OnInit,
+  OnInit, Output,
   ViewChild,
-  ViewContainerRef
+  ViewContainerRef,
 } from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
 
@@ -20,6 +20,7 @@ import {MatDialog, MatDialogConfig} from '@angular/material/dialog';
 import {FileSelectionDialogComponent} from '../../file-browser/components/file-selection-dialog.component';
 import {PdfFile} from '../../interfaces/pdf-files.interface';
 import {NodeSearchComponent} from '../../node-search/containers/node-search.component';
+import { ModuleAwareComponent, ModuleProperties } from '../../shared/modules';
 
 
 @Component({
@@ -27,12 +28,14 @@ import {NodeSearchComponent} from '../../node-search/containers/node-search.comp
   templateUrl: './splitter.component.html',
   styleUrls: ['./splitter.component.scss']
 })
-export class SplitterComponent implements OnInit, OnDestroy, AfterViewInit {
+export class SplitterComponent implements OnInit, OnDestroy, AfterViewInit, ModuleAwareComponent {
   @ViewChild('splitComponent', {static: false}) splitComponent;
   @ViewChild(
     'leftPanel',
     {static: false, read: ViewContainerRef}
   ) leftPanel: ViewContainerRef;
+
+  @Output() modulePropertiesChange = new EventEmitter<ModuleProperties>();
 
   splitPanelLength = 0;
 

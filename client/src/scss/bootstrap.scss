@@ -6,6 +6,7 @@
 @import './vertical-menu';
 @import './toolbars';
 @import './graph';
+@import './tabs';
 
 body {
   font-family: Roboto, "Helvetica Neue", sans-serif; // TODO: REMOVE THIS
@@ -102,14 +103,42 @@ fieldset.fieldset-properties {
   }
 }
 
-.input-border         { border: $border-width solid $input-border-color !important; }
-.input-border-top     { border-top: $border-width solid $input-border-color !important; }
-.input-border-right   { border-right: $border-width solid $input-border-color !important; }
-.input-border-bottom  { border-bottom: $border-width solid $input-border-color !important; }
-.input-border-left    { border-left: $border-width solid $input-border-color !important; }
+.input-border {
+  border: $border-width solid $input-border-color !important;
+}
 
-.border-0        { border: 0 !important; }
-.border-top-0    { border-top: 0 !important; }
-.border-right-0  { border-right: 0 !important; }
-.border-bottom-0 { border-bottom: 0 !important; }
-.border-left-0   { border-left: 0 !important; }
+.input-border-top {
+  border-top: $border-width solid $input-border-color !important;
+}
+
+.input-border-right {
+  border-right: $border-width solid $input-border-color !important;
+}
+
+.input-border-bottom {
+  border-bottom: $border-width solid $input-border-color !important;
+}
+
+.input-border-left {
+  border-left: $border-width solid $input-border-color !important;
+}
+
+.border-0 {
+  border: 0 !important;
+}
+
+.border-top-0 {
+  border-top: 0 !important;
+}
+
+.border-right-0 {
+  border-right: 0 !important;
+}
+
+.border-bottom-0 {
+  border-bottom: 0 !important;
+}
+
+.border-left-0 {
+  border-left: 0 !important;
+}
