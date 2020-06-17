@@ -1,3 +1,9 @@
+.toolbar {
+  background: $toolbar-bg;
+  padding: $toolbar-padding;
+  border-bottom: 1px solid $toolbar-border-color;
+}
+
 .floating-toolbar {
   background: $floating-toolbar-bg;
   padding: $floating-toolbar-padding;
