@@ -25,6 +25,7 @@ import { DeleteKeyboardShortcut } from '../../graph-viewer/renderers/canvas/beha
 import { ClipboardKeyboardShortcut } from '../../graph-viewer/renderers/canvas/behaviors/clipboard-keyboard-shortcut';
 import { HistoryKeyboardShortcuts } from '../../graph-viewer/renderers/canvas/behaviors/history-keyboard-shortcuts';
 import { ModuleAwareComponent, ModuleProperties } from '../../shared/modules';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-drawing-tool',
@@ -33,9 +34,6 @@ import { ModuleAwareComponent, ModuleProperties } from '../../shared/modules';
   providers: [ClipboardService],
 })
 export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy, ModuleAwareComponent {
-  @Output() openApp: EventEmitter<LaunchApp> = new EventEmitter<LaunchApp>();
-  @Input() currentApp = '';
-
   @Output() saveStateListener: EventEmitter<boolean> = new EventEmitter<boolean>();
 
   @Output() modulePropertiesChange = new EventEmitter<ModuleProperties>();
@@ -66,8 +64,12 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy, M
     private copyPasteMapsService: CopyPasteMapsService,
     private clipboardService: ClipboardService,
     private dialog: MatDialog,
-    private ngZone: NgZone
+    private ngZone: NgZone,
+    private route: ActivatedRoute,
   ) {
+    if (this.route.snapshot.params.hash_id) {
+      this.currentMap = this.route.snapshot.params.hash_id;
+    }
   }
 
   // ========================================
@@ -449,26 +451,5 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy, M
 
   redo() {
     this.graphCanvas.redo();
-  }
-
-  /**
-   * Handle closing or opening apps
-   * @param app any app such as pdf-viewer, map-search, kg-visualizer
-   */
-  toggle(app, arg = null) {
-    if (this.currentApp === app) {
-      // Shutdown app
-      this.openApp.emit(null);
-    } else {
-      // Open app
-      this.openApp.emit({
-        app,
-        arg
-      });
-    }
-  }
-
-  toggleApp(appCmd: LaunchApp) {
-    this.openApp.emit(appCmd);
   }
 }
