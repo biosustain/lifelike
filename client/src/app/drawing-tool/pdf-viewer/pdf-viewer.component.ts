@@ -78,7 +78,7 @@ export class PdfViewerComponent implements OnDestroy, ModuleAwareComponent {
   removedAnnotationIds: string[];
   removeAnnotationSub: Subscription;
   pdfFileLoaded = false;
-  sortedEntityTypeEntries = [];
+  sortedEntityTypeEntries: EntityTypeEntry[] = [];
   entityTypeVisibilityChanged = false;
   modulePropertiesChange = new EventEmitter<ModuleProperties>();
 
@@ -165,13 +165,13 @@ export class PdfViewerComponent implements OnDestroy, ModuleAwareComponent {
 
   setAllEntityTypesVisibility(state: boolean) {
     for (const type of ENTITY_TYPES) {
-      this.entityTypeVisibilityMap.set(type.name, state);
+      this.entityTypeVisibilityMap.set(type.id, state);
     }
     this.invalidateEntityTypeVisibility();
   }
 
-  changeEntityTypeVisibility(entityType: EntityType, event: MatCheckboxChange) {
-    this.entityTypeVisibilityMap.set(entityType.id, event.checked);
+  changeEntityTypeVisibility(entityType: EntityType, event) {
+    this.entityTypeVisibilityMap.set(entityType.id, event.target.checked);
     this.invalidateEntityTypeVisibility();
   }
 
@@ -322,22 +322,6 @@ export class PdfViewerComponent implements OnDestroy, ModuleAwareComponent {
         search,
         hyperlink,
         detail: meta.type === 'Link' ? meta.allText : ''
-      }
-    });
-  }
-
-  openFileDialog() {
-    const dialogConfig = new MatDialogConfig();
-
-    dialogConfig.width = '600px';
-    dialogConfig.disableClose = true;
-    dialogConfig.autoFocus = true;
-    dialogConfig.data = {};
-
-    const dialogRef = this.dialog.open(FileSelectionDialogComponent, dialogConfig);
-    dialogRef.beforeClosed().subscribe((file: PdfFile) => {
-      if (file !== null) {
-        this.openPdf(file);
       }
     });
   }

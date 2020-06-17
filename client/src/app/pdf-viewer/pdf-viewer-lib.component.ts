@@ -373,7 +373,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
     return base.join('<br/>');
   }
 
-  
+
   processAnnotations(pageNum: number, pdfPageView: any) {
     this.pageRef[pageNum] = pdfPageView;
     const filteredAnnotations = this.annotations.filter((an) => an.pageNumber === pageNum);
@@ -454,7 +454,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
     const pageElement = pdfPageView.div;
     const pageRect = pdfPageView.canvas.getClientRects()[0];
     const originConverted = viewport.convertToPdfPoint(this.dragAndDropOriginCoord.clientX - pageRect.left, this.dragAndDropOriginCoord.clientY - pageRect.top);
-    const destinationConverted = viewport.convertToPdfPoint(this.dragAndDropDestinationCoord.clientX - pageRect.left , this.dragAndDropDestinationCoord.clientY - pageRect.top); 
+    const destinationConverted = viewport.convertToPdfPoint(this.dragAndDropDestinationCoord.clientX - pageRect.left , this.dragAndDropDestinationCoord.clientY - pageRect.top);
     const mouseMoveRectangular = viewport.convertToViewportRectangle([].concat(originConverted).concat(destinationConverted));
     const mouseRectTop = Math.min(mouseMoveRectangular[1], mouseMoveRectangular[3]);
     const mouseRectHeight = Math.abs(mouseMoveRectangular[1] - mouseMoveRectangular[3]);
@@ -765,8 +765,6 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
       setTimeout(() => {
         this.loadCompleted.emit(true);
         const tagName = (this.pdfComponent as any).element.nativeElement.tagName.toLowerCase();
-        jQuery(tagName).css('height','100vh');
-        jQuery(tagName).css('display','block');
       }, 1000);
     }
     const pageNum = (e as any).pageNumber;
@@ -809,7 +807,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
     this.deleteFrictionless();
 
     this.snackBar.open('It has been copied to clipboard', 'Close', {duration: 5000});
-  
+
   }
 
   removeCustomAnnotation(uuid) {

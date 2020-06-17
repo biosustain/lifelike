@@ -1,8 +1,23 @@
 @import '~bootstrap/scss/functions';
 
 $primary: #0c8caa;
+$white:    #fff;
+$gray-100: #f8f9fa;
+$gray-200: #e9ecef;
+$gray-300: #dee2e6;
+$gray-400: #ced4da;
+$gray-500: #adb5bd;
+$gray-600: #6c757d;
+$gray-700: #495057;
+$gray-800: #343a40;
+$gray-900: #212529;
+$black:    #000;
 
 @import '~bootstrap/scss/variables';
+
+$toolbar-padding: $spacer / 2;
+$toolbar-border-color: $gray-400;
+$toolbar-bg: $gray-200;
 
 $floating-toolbar-padding: $spacer / 2;
 $floating-toolbar-border-color: $gray-400;
@@ -10,4 +25,4 @@ $floating-toolbar-bg: $gray-300;
 $floating-toolbar-border-radius: $border-radius;
 
 $table-row-active-bg: rgba($component-active-bg, .1);
-$table-row-focus-box-shadow: inset 0 0 0 $input-btn-focus-width $input-btn-focus-color !default;
+$table-row-focus-box-shadow: inset 0 0 0 $input-btn-focus-width $input-btn-focus-color;

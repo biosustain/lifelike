@@ -517,7 +517,6 @@ export class WorkspaceManager {
           const pane = parent.panes.get(id);
           const activeTabHistory = pane.activeTabHistory;
           activeTabHistory.clear();
-          console.log(indices);
           indices.forEach(index => {
             activeTabHistory.add(pane.tabs[index]);
           });
