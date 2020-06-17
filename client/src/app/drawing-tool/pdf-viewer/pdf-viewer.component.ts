@@ -16,6 +16,7 @@ import {PdfViewerLibComponent} from '../../pdf-viewer/pdf-viewer-lib.component';
 import {ENTITY_TYPE_MAP, ENTITY_TYPES, EntityType} from 'app/shared/annotation-types';
 import {MatCheckboxChange} from '@angular/material';
 import {ActivatedRoute} from '@angular/router';
+import { ModuleAwareComponent, ModuleProperties } from '../../shared/modules';
 
 class DummyFile implements PdfFile {
   constructor(
@@ -39,7 +40,7 @@ class EntityTypeEntry {
   styleUrls: ['./pdf-viewer.component.scss']
 })
 
-export class PdfViewerComponent implements OnDestroy {
+export class PdfViewerComponent implements OnDestroy, ModuleAwareComponent {
   @Output() requestClose: EventEmitter<any> = new EventEmitter();
   @Output() fileOpen: EventEmitter<PdfFile> = new EventEmitter();
 
@@ -76,6 +77,7 @@ export class PdfViewerComponent implements OnDestroy {
   pdfFileLoaded = false;
   sortedEntityTypeEntries = [];
   entityTypeVisibilityChanged = false;
+  modulePropertiesChange = new EventEmitter<ModuleProperties>();
 
   // search
   pdfQuery;
@@ -99,6 +101,10 @@ export class PdfViewerComponent implements OnDestroy {
       this.annotations = ann;
       this.updateAnnotationIndex();
       this.updateSortedEntityTypeEntries();
+      this.modulePropertiesChange.next({
+        title: file.file_id,
+        fontAwesomeIcon: 'file-pdf',
+      });
 
       this.currentFileId = file.file_id;
       setTimeout(() => {

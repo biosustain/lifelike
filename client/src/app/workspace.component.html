@@ -1,0 +1,45 @@
+<ng-container *ngIf="(workspaceManager.panes$ | async) as panes">
+  <as-split unit="percent" direction="horizontal" [gutterSize]="5" cdkDropListGroup>
+    <as-split-area [size]="100 / panes.length" *ngFor="let pane of panes">
+      <div class="h-100 d-flex flex-column">
+        <div class="nav-workspace-tabs">
+          <div class="nav flex-fill" cdkDropList cdkDropListOrientation="horizontal"
+               (cdkDropListDropped)="tabDropped($event)"
+               [cdkDropListData]="pane">
+            <div class="nav-item" *ngFor="let tab of pane.tabs; index as i" cdkDrag>
+              <a class="nav-link tab-title text-truncate" [class.active]="pane.activeTab === tab"
+                 (click)="setActiveTab(pane, tab); $event.preventDefault()" href="#">
+                <i [class]="'fa fa-fw fa-' + (tab.fontAwesomeIcon || 'window-maximize')"></i>
+                {{tab.title}}
+              </a>
+            </div>
+          </div>
+          <div class="ml-auto mr-2 align-self-center">
+            <button class="btn btn-primary btn-sm mr-1" type="button" (click)="addPane()" *ngIf="canAddPane()"
+                    ngbTooltip="Split this space into two columns">
+              <i class="fa fa-fw fa-columns"></i>
+            </button>
+            <button class="btn btn-primary btn-sm" type="button" (click)="addTab(pane)"
+                    ngbTooltip="Create new tab">
+              <i class="fa fa-fw fa-plus"></i>
+            </button>
+            <button class="btn btn-outline-secondary btn-sm ml-1" type="button" (click)="closeTab(pane)"
+                    ngbTooltip="Close tab">
+              <i class="fa fa-fw fa-times"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="d-flex flex-fill overflow-hidden w-100 h-100 tab-content-container">
+          <div *ngFor="let tab of pane.tabs; index as i"
+               class="flex-fill overflow-hidden position-absolute tab-content-inner-container"
+               [class.hidden-tab-content]="pane.activeTab !== tab">
+            <app-workspace-outlet [name]="pane.id" [container]="tab.container"
+                                  (focus)="setFocus(pane)"></app-workspace-outlet>
+          </div>
+        </div>
+      </div>
+    </as-split-area>
+  </as-split>
+
+</ng-container>

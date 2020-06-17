@@ -21,10 +21,17 @@ import { DrawingToolModule } from './drawing-tool/drawing-tool.module';
 import { FileBrowserModule } from './file-browser/file-browser.module';
 import { NodeSearchModule } from './node-search/node-search.module';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
+import { WorkspaceComponent } from './workspace.component';
+import { WorkspaceOutletComponent } from './workspace-outlet.component';
+import { WorkspaceManager } from './shared/workspace-manager';
+import { WorkspaceWelcomeComponent } from './workspace-welcome.component';
 
 @NgModule({
   declarations: [
     AppComponent,
+    WorkspaceComponent,
+    WorkspaceOutletComponent,
+    WorkspaceWelcomeComponent,
     KgStatisticsComponent,
   ],
   imports: [
@@ -48,7 +55,8 @@ import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
   ],
   providers: [
     httpInterceptorProviders,
-    Title
+    Title,
+    WorkspaceManager,
   ],
   exports: [],
   bootstrap: [AppComponent]

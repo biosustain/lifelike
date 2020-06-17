@@ -42,6 +42,7 @@ import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { Progress, ProgressMode } from 'app/interfaces/common-dialog.interface';
 import { HttpEventType } from '@angular/common/http';
 import { EditProjectDialogComponent } from '../project-list/edit-project-dialog/edit-project-dialog.component';
+import { WorkspaceManager } from '../../shared/workspace-manager';
 
 
 @Component({
@@ -100,6 +101,7 @@ export class ProjectListViewComponent {
   constructor(
     public dialog: MatDialog,
     private route: Router,
+    private workspaceManager: WorkspaceManager,
     private projectService: ProjectsService,
     private authService: AuthenticationService,
     private dataFlow: DataFlowService,
@@ -419,7 +421,7 @@ export class ProjectListViewComponent {
    */
   goToProject() {
     this.dataFlow.pushProject2Canvas(this.selectedProject);
-    this.route.navigateByUrl(`dt/splitter/${this.selectedProject.hash_id}`);
+    this.workspaceManager.navigateByUrl(`dt/splitter/${this.selectedProject.hash_id}`);
   }
 
   handleAPI(evt: { action: string, project: Project }) {
