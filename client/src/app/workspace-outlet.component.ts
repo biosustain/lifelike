@@ -16,7 +16,7 @@ import { Container} from './shared/workspace-manager';
 })
 export class WorkspaceOutletComponent implements AfterViewInit, OnDestroy {
   @Input() name;
-  @Output() focus = new EventEmitter<any>();
+  @Output() outletFocus = new EventEmitter<any>();
   @ViewChild('child', {static: false, read: ViewContainerRef}) child: ViewContainerRef;
   private currentContainer: Container<any>;
 
@@ -53,12 +53,12 @@ export class WorkspaceOutletComponent implements AfterViewInit, OnDestroy {
 
   @HostListener('focusin')
   focusedInside() {
-    this.focus.emit();
+    this.outletFocus.emit();
   }
 
   @HostListener('click')
   clicked() {
-    this.focus.emit();
+    this.outletFocus.emit();
   }
 
 }

@@ -3,7 +3,7 @@ import {combineLatest, Subject, Subscription} from 'rxjs';
 import {PdfFilesService} from 'app/shared/services/pdf-files.service';
 import {Hyperlink, SearchLink} from 'app/shared/constants';
 
-import {DataFlowService, PdfAnnotationsService,} from '../services';
+import { DataFlowService, PdfAnnotationsService } from '../services';
 
 import {Annotation, Location, Meta, UniversalGraphNode} from '../services/interfaces';
 
