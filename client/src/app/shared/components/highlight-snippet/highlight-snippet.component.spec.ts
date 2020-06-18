@@ -52,7 +52,7 @@ describe('HighlightSnippetComponent', () => {
     });
 
     it('should wrap key terms with html spans', () => {
-        const keyTermSpans = document.getElementById('highlighted-snippets-container').getElementsByTagName('span');
+        const keyTermSpans = document.getElementById('highlighted-snippets-container').getElementsByTagName('div');
 
         expect(keyTermSpans.length).toEqual(2);
 
@@ -64,14 +64,14 @@ describe('HighlightSnippetComponent', () => {
     });
 
     it('should style key term spans with input colors', () => {
-        const keyTermSpans = document.getElementById('highlighted-snippets-container').getElementsByTagName('span');
+        const keyTermSpans = document.getElementById('highlighted-snippets-container').getElementsByTagName('div');
 
         expect(keyTermSpans.length).toEqual(2);
 
         const keyTerm1Span = keyTermSpans[0];
         const keyTerm2Span = keyTermSpans[1];
 
-        expect(keyTerm1Span.style.background).toEqual('rgb(205, 93, 103)');
-        expect(keyTerm2Span.style.background).toEqual('rgb(143, 166, 203)');
+        expect(keyTerm1Span.style.backgroundColor).toEqual('rgba(205, 93, 103, 0.3)');
+        expect(keyTerm2Span.style.backgroundColor).toEqual('rgba(143, 166, 203, 0.3)');
     });
 });

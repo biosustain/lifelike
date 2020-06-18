@@ -25,4 +25,10 @@ export class SearchService {
       `${this.searchApi}/simple-search`, {query, page, filter, limit},
     ).pipe(map(resp => resp.result));
   }
+
+  visualizerSearchTemp(query: string, page: number = 1, limit: number = 10, filter: string = 'labels(node)') {
+    return this.http.post<{ result: FTSResult }>(
+      `${this.searchApi}/viz-search-temp`, {query, page, filter, limit},
+    ).pipe(map(resp => resp.result));
+  }
 }
