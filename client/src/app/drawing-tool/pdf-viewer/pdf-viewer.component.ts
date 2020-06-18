@@ -59,9 +59,10 @@ export class PdfViewerComponent implements OnDestroy, ModuleAwareComponent {
 
   searchChanged: Subject<{keyword: string, findPrevious: boolean }> = new Subject<{keyword: string, findPrevious: boolean }>();
   goToPosition: Subject<Location> = new Subject<Location>();
-  loadTask: BackgroundTask<[PdfFile, Location], [ArrayBuffer, any]> =
+  loadTask: BackgroundTask<[PdfFile, Location], [PdfFile, ArrayBuffer, any]> =
     new BackgroundTask(([file, loc]) => {
       return combineLatest(
+        this.pdf.getFileInfo(file.file_id),
         this.pdf.getFile(file.file_id),
         this.pdfAnnService.getFileAnnotations(file.file_id)
       );
@@ -97,7 +98,7 @@ export class PdfViewerComponent implements OnDestroy, ModuleAwareComponent {
   ) {
     // Listener for file open
     this.openPdfSub = this.loadTask.results$.subscribe(({
-                                                          result: [pdfFileContent, ann],
+                                                          result: [pdfFile, pdfFileContent, ann],
                                                           value: [file, loc]
                                                         }) => {
       this.pdfData = {data: new Uint8Array(pdfFileContent)};
@@ -105,7 +106,7 @@ export class PdfViewerComponent implements OnDestroy, ModuleAwareComponent {
       this.updateAnnotationIndex();
       this.updateSortedEntityTypeEntries();
       this.modulePropertiesChange.next({
-        title: file.file_id,
+        title: pdfFile.filename,
         fontAwesomeIcon: 'file-pdf',
       });
 

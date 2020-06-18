@@ -32,14 +32,13 @@
 
 .info-panel {
   position: absolute;
-  top: $spacer;
-  right: $spacer;
-  max-height: calc(100% - #{$spacer * 2});
+  top: 0;
+  right: 0;
+  bottom: 0;
   width: 250px;
   padding: 0.2rem;
   z-index: 20;
   overflow: auto;
   background: $white;
-  border: 1px solid $floating-toolbar-border-color;
-  border-radius: $floating-toolbar-border-radius;
+  border-left: 1px solid $gray-200;
 }
