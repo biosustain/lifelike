@@ -21,25 +21,31 @@ export class WorkspaceComponent {
     this.workspaceManager.openTabByUrl(pane, '/welcome');
   }
 
-  closeTab(pane: Pane) {
-    const tab = pane.activeTab;
-    if (tab) {
-      const performClose = () => {
-        pane.deleteTab(tab);
-        if (pane.id === 'right' && pane.tabs.length === 0) {
-          this.workspaceManager.panes.delete(pane);
-        }
-        this.workspaceManager.save();
-        this.workspaceManager.emitEvents();
-      };
-      if (this.workspaceManager.shouldConfirmTabUnload(tab)) {
-        if (confirm('Close tab? Changes you made may not be saved.')) {
-          performClose();
-        }
-      } else {
+  closeTab(pane: Pane, tab: Tab) {
+    const performClose = () => {
+      pane.deleteTab(tab);
+      if (pane.id === 'right' && pane.tabs.length === 0) {
+        this.workspaceManager.panes.delete(pane);
+      }
+      this.workspaceManager.save();
+      this.workspaceManager.emitEvents();
+    };
+    if (this.workspaceManager.shouldConfirmTabUnload(tab)) {
+      if (confirm('Close tab? Changes you made may not be saved.')) {
         performClose();
       }
+    } else {
+      performClose();
     }
+  }
+
+  handleTabClick(e, pane: Pane, tab: Tab) {
+    if (e && (e.which === 2 || e.button === 4 )) {
+      this.closeTab(pane, tab);
+    } else {
+      this.setActiveTab(pane, tab);
+    }
+    e.preventDefault();
   }
 
   setActiveTab(pane: Pane, tab: Tab) {

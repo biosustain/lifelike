@@ -77,6 +77,7 @@ export class Container<T> {
         subscriptions.push(instance.modulePropertiesChange.subscribe(properties => {
           this.tab.title = properties.title;
           this.tab.fontAwesomeIcon = properties.fontAwesomeIcon;
+          this.tab.badge = properties.badge;
         }));
       }
       this.createdComponentRef.onDestroy(() => {
@@ -110,6 +111,7 @@ export class Tab {
   url: string;
   title = 'New Tab';
   fontAwesomeIcon: string = null;
+  badge: string = null;
   component: Type<any>;
   providers: StaticProvider[] = [];
   container: Container<any>;

@@ -1,7 +1,10 @@
 .toolbar {
+  position: relative;
   background: $toolbar-bg;
   padding: $toolbar-padding;
-  border-bottom: 1px solid $toolbar-border-color;
+  border-bottom: $toolbar-border-width solid $toolbar-border-color;
+  box-shadow: $toolbar-box-shadow;
+  z-index: 10;
 }
 
 .floating-toolbar {

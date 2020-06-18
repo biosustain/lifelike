@@ -1,26 +1,26 @@
 <div class="d-flex flex-column relative h-100" *ngIf="(loadTask.status$ | async) as status">
   <div class="toolbar d-flex">
     <div class="btn-group">
-      <button type="button" class="btn btn-secondary" appLink="/file-browser" ngbTooltip="Go back to the file browser"
+      <button type="button" class="btn btn-light" appLink="/file-browser" ngbTooltip="Go back to the file browser"
               placement="bottom">
-        <i class="fa fa-fw fa-arrow-left"></i>
+        <i class="fa fa-fw fa-folder"></i> Open
       </button>
     </div>
 
-    <div class="d-flex mx-auto">
-      <div class="btn-group">
-        <button type="button" class="btn btn-secondary"
+    <div class="d-flex ml-auto mr-2">
+      <div class="btn-group mr-2" *ngIf="queryInp.value && queryInp.value.length > 0">
+        <button type="button" class="btn btn-light"
                 [disabled]="!pdfViewerReady" (click)="zoomIn()" ngbTooltip="Zoom in"
                 placement="bottom">
           <i class="fa fa-fw fa-search-plus"></i>
         </button>
-        <button type="button" class="btn btn-secondary"
+        <button type="button" class="btn btn-light"
                 [disabled]="!pdfViewerReady" (click)="zoomOut()" ngbTooltip="Zoom out"
                 placement="bottom">
           <i class="fa fa-fw fa-search-minus"></i>
         </button>
       </div>
-      <div class="input-group mx-2">
+      <div class="input-group">
         <span class="input-group-prepend">
           <div class="input-group-text bg-white border-right-0">
             <i class="fa fa-fw fa-search"></i>
@@ -30,13 +30,13 @@
                (keyup.enter)="searchQueryChanged(queryInp.value)" placeholder="Search" value=""
                class="form-control py-2 pl-0 input-border border-left-0">
       </div>
-      <div class="btn-group">
-        <button type="button" class="btn btn-secondary" *ngIf="queryInp.value && queryInp.value.length > 0"
+      <div class="btn-group ml-2" *ngIf="queryInp.value && queryInp.value.length > 0">
+        <button type="button" class="btn btn-light"
                 [disabled]="!pdfViewerReady" (click)="findPrevious(queryInp.value)" ngbTooltip="Previous result"
                 placement="bottom">
           <i class="fa fa-fw fa-angle-up"></i>
         </button>
-        <button type="button" class="btn btn-secondary" *ngIf="queryInp.value && queryInp.value.length > 0"
+        <button type="button" class="btn btn-light"
                 [disabled]="!pdfViewerReady" (click)="findNext(queryInp.value)" ngbTooltip="Next result"
                 placement="bottom">
           <i class="fa fa-fw fa-angle-down"></i>
@@ -45,11 +45,11 @@
     </div>
 
     <div>
-
       <div class="btn-group" role="group">
         <div ngbDropdown class="d-inline-block">
-          <button class="btn btn-secondary" id="filters-dropdown" ngbDropdownToggle>Filters</button>
-          <div ngbDropdownMenu aria-labelledby="filters-dropdown" [style.width]="'220px'" class="dropdown-body">
+          <button class="btn btn-light" id="filters-dropdown" ngbDropdownToggle>Filters</button>
+          <div ngbDropdownMenu aria-labelledby="filters-dropdown" [style.width]="'220px'"
+               class="dropdown-body dropdown-menu dropdown-menu-right">
             <div class="mb-2">
               <button *ngIf="!entityTypeVisibilityChanged" class="btn btn-outline-secondary btn-block"
                       (click)="setAllEntityTypesVisibility(false)">

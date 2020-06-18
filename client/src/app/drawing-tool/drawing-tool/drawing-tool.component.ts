@@ -53,6 +53,7 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy, M
   contextMenuTooltipOptions: Partial<Options>;
 
   selectionSubscription: Subscription;
+  historyChangesSubscription: Subscription;
   unsavedChangesSubscription: Subscription;
 
   unsavedChanges$ = new BehaviorSubject<boolean>(false);
@@ -123,9 +124,13 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy, M
       }
     });
 
-    this.unsavedChangesSubscription = this.graphCanvas.historyChanges$.subscribe(() => {
+    this.historyChangesSubscription = this.graphCanvas.historyChanges$.subscribe(() => {
       this.unsavedChanges$.next(true);
     });
+
+    this.unsavedChangesSubscription = this.unsavedChanges$.subscribe(value => {
+      this.emitModuleProperties();
+    })
 
     this.loadMap(this.currentMap);
   }
@@ -134,12 +139,21 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy, M
     this.formDataSubscription.unsubscribe();
     this.pdfDataSubscription.unsubscribe();
     this.selectionSubscription.unsubscribe();
+    this.historyChangesSubscription.unsubscribe();
     this.unsavedChangesSubscription.unsubscribe();
     this.graphCanvas.destroy();
   }
 
   shouldConfirmUnload() {
     return this.unsavedChanges$.getValue();
+  }
+
+  emitModuleProperties() {
+    this.modulePropertiesChange.emit({
+      title: this.project ? this.project.label : 'Map',
+      fontAwesomeIcon: 'project-diagram',
+      badge: this.unsavedChanges$.value ? '*' : null,
+    });
   }
 
   // ========================================
@@ -154,10 +168,7 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy, M
     this.projectService.serveProject(hashId).subscribe(
       (resp: any) => {
         this.project = resp.project;
-        this.modulePropertiesChange.emit({
-          title: this.project.label,
-          fontAwesomeIcon: 'project-diagram',
-        });
+        this.emitModuleProperties();
         this.graphCanvas.setGraph(this.project.graph);
         this.graphCanvas.zoomToFit(0);
       }
