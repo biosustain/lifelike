@@ -1,18 +1,24 @@
-<app-search-graph></app-search-graph>
-<app-visualization-canvas
-  *ngIf="networkGraphData && !hideDisplay"
-  [nodes]="nodes"
-  [edges]="edges"
-  [expandNodeResult]="expandNodeResult"
-  [getEdgeSnippetsResult]="getEdgeSnippetsResult"
-  [getClusterSnippetsResult]="getClusterSnippetsResult"
-  [getSnippetsError]="getSnippetsError"
-  [legend]="legend"
-  [config]="networkGraphConfig"
-  (expandNode)="expandNode($event)"
-  (openLoadingClustersDialog)="openLoadingClustersDialog()"
-  (finishedClustering)="finishedClustering($event)"
-  (getNodeData)="nodeSelectedCallback()"
-  (getSnippetsForEdge)="getSnippetsForEdge($event)"
-  (getSnippetsForCluster)="getSnippetsForCluster($event)"
-></app-visualization-canvas>
+<div class="h-100">
+  <div id="viz-search-container">
+    <app-search-graph></app-search-graph>
+  </div>
+  <div id="viz-canvas-container">
+    <app-visualization-canvas
+      *ngIf="networkGraphData && !hideDisplay"
+      [nodes]="nodes"
+      [edges]="edges"
+      [expandNodeResult]="expandNodeResult"
+      [getEdgeSnippetsResult]="getEdgeSnippetsResult"
+      [getClusterSnippetsResult]="getClusterSnippetsResult"
+      [getSnippetsError]="getSnippetsError"
+      [legend]="legend"
+      [config]="networkGraphConfig"
+      (expandNode)="expandNode($event)"
+      (openLoadingClustersDialog)="openLoadingClustersDialog()"
+      (finishedClustering)="finishedClustering($event)"
+      (getNodeData)="nodeSelectedCallback()"
+      (getSnippetsForEdge)="getSnippetsForEdge($event)"
+      (getSnippetsForCluster)="getSnippetsForCluster($event)"
+    ></app-visualization-canvas>
+  </div>
+</div>
