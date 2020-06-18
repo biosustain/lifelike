@@ -2,12 +2,6 @@ export interface PdfFiles {
   files: PdfFile[];
 }
 
-export enum AnnotationStatus {
-  Success = '✓',
-  Failure = '✗',
-  Loading = '...',
-}
-
 export interface PdfFile {
   // minimum field needed for the interface
   file_id: string;
@@ -16,7 +10,8 @@ export interface PdfFile {
   creation_date?: string;
   description?: string;
   username?: string;
-  annotation_status?: AnnotationStatus;
+  annotations_date?: number;
+  annotations_date_tooltip?: string;
 }
 
 export interface PdfFileUpload {
