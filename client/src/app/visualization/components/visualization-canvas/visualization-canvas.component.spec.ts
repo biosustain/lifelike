@@ -230,6 +230,10 @@ describe('VisualizationCanvasComponent', () => {
         ]);
 
         mockValidSettingsFormValues = {
+            animation: {
+                value: true,
+                valid: true,
+            },
             maxClusterShownRows: {
                 value: MAX_CLUSTER_ROWS,
                 valid: true,
@@ -280,6 +284,10 @@ describe('VisualizationCanvasComponent', () => {
 
     it('updateSettings should update settings values if inputs are valid', () => {
         const newSettings = {
+            animation: {
+                value: false,
+                valid: true,
+            },
             maxClusterShownRows: {
                 value: 10,
                 valid: true,
@@ -304,6 +312,10 @@ describe('VisualizationCanvasComponent', () => {
 
     it('updateSettings should not update update settings values if inputs are invalid', () => {
         const newSettings = {
+            animation: {
+                value: false,
+                valid: false,
+            },
             maxClusterShownRows: {
                 value: 2,
                 valid: false,
@@ -324,6 +336,14 @@ describe('VisualizationCanvasComponent', () => {
 
         instance.updateSettings(newSettings);
         expect(instance.settingsFormValues).toEqual(mockValidSettingsFormValues);
+    });
+
+    it('should call network setOptions to set animation status when settings are updated', () => {
+        const networkGraphSetOptionsSpy = spyOn(instance.networkGraph, 'setOptions');
+
+        instance.updateSettings(mockValidSettingsFormValues);
+
+        expect(networkGraphSetOptionsSpy).toHaveBeenCalledWith({physics: true});
     });
 
     it('should update sidenav entity data when getEdgeSnippetsResult changes', () => {
@@ -418,32 +438,6 @@ describe('VisualizationCanvasComponent', () => {
             totalResults: mockGetClusterSnippetDataResult.totalResults,
             snippetData: data,
         } as SidenavClusterEntity);
-    });
-
-    it('should turn animation off if quickbar component animationStatus emits false', () => {
-        const toggleAnimationSpy = spyOn(instance, 'toggleAnimation').and.callThrough();
-        const networkGraphSetOptionsSpy = spyOn(instance.networkGraph, 'setOptions');
-        const visualizationQuickbarComponentMock = fixture.debugElement.query(
-            By.directive(VisualizationQuickbarComponent)
-        ).componentInstance as VisualizationQuickbarComponent;
-
-        visualizationQuickbarComponentMock.animationStatus.emit(false);
-
-        expect(toggleAnimationSpy).toHaveBeenCalledWith(false);
-        expect(networkGraphSetOptionsSpy).toHaveBeenCalledWith({physics: false});
-    });
-
-    it('should turn animation on if quickbar component animationStatus emits true', () => {
-        const toggleAnimationSpy = spyOn(instance, 'toggleAnimation').and.callThrough();
-        const networkGraphSetOptionsSpy = spyOn(instance.networkGraph, 'setOptions');
-        const visualizationQuickbarComponentMock = fixture.debugElement.query(
-            By.directive(VisualizationQuickbarComponent)
-        ).componentInstance as VisualizationQuickbarComponent;
-
-        visualizationQuickbarComponentMock.animationStatus.emit(true);
-
-        expect(toggleAnimationSpy).toHaveBeenCalledWith(true);
-        expect(networkGraphSetOptionsSpy).toHaveBeenCalledWith({physics: true});
     });
 
     it('openSidenav should change sidenavOpened to true', () => {

@@ -324,15 +324,10 @@ export class VisualizationCanvasComponent implements OnInit, AfterViewInit {
                     }
                 }
             });
-        }
-    }
 
-    /**
-     * Turns the physics (animation) on/off depending on the status
-     * @param animationOn - boolean to turn on/off the physics animation
-     */
-    toggleAnimation(animationOn: boolean) {
-        this.networkGraph.setOptions({physics: animationOn});
+            // Set the new animation state, if any
+            this.networkGraph.setOptions({physics: this.settingsFormValues.animation.value});
+        }
     }
 
     openSidenav() {

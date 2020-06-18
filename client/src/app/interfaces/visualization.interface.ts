@@ -89,6 +89,7 @@ export interface SettingsFormControl {
 }
 
 export interface SettingsFormValues {
+    animation: SettingsFormControl;
     maxClusterShownRows: SettingsFormControl;
     [key: string]: SettingsFormControl; // Could be any number of node entity checkboxes
 }
