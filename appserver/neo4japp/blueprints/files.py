@@ -217,8 +217,6 @@ def get_annotations(id):
     if not file:
         raise RecordNotFoundException('File does not exist')
 
-    annotations = file.annotations
-
     # TODO: Should remove this eventually...the annotator should return data readable by the
     # lib-pdf-viewer-lib, or the lib should conform to what is being returned by the annotator.
     # Something has to give.
@@ -236,8 +234,18 @@ def get_annotations(id):
             formatted_annotations_list.append(unformatted_annotation)
         return formatted_annotations_list
 
+    annotations = map_annotations_to_correct_format(file.annotations)
+
+    # Add additional information for annotations that were excluded
+    for annotation in annotations:
+        for excluded_annotation in file.excluded_annotations:
+            if excluded_annotation['id'] == annotation['meta']['id']:
+                annotation['meta']['isExcluded'] = True
+                annotation['meta']['exclusionReason'] = excluded_annotation['reason']
+                annotation['meta']['exclusionComment'] = excluded_annotation['comment']
+
     # for now, custom annotations are stored in the format that pdf-viewer supports
-    return jsonify(map_annotations_to_correct_format(annotations) + file.custom_annotations)
+    return jsonify(annotations + file.custom_annotations)
 
 
 @bp.route('/add_custom_annotation/<id>', methods=['PATCH'])
