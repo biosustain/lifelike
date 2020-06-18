@@ -209,7 +209,7 @@ class AnnotationsPDFParser:
                         char_idx_map = {}
                         word = ''
                     else:
-                        if len(char_list[i+1]) == 1 and ord(char_list[i+1]) in MISC_SYMBOLS_AND_CHARS:
+                        if len(char_list[i+1]) == 1 and ord(char_list[i+1]) in MISC_SYMBOLS_AND_CHARS:  # noqa
                             next_char = clean_char(char_list[i+1])
                         else:
                             next_char = char_list[i+1]

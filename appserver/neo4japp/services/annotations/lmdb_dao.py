@@ -93,7 +93,7 @@ class LMDBDao:
             proteins_db = self.proteins_env.open_db(PROTEIN_LMDB.encode('utf-8'), dupsort=True)
             species_db = self.species_env.open_db(SPECIES_LMDB.encode('utf-8'), dupsort=True)
             diseases_db = self.diseases_env.open_db(DISEASE_LMDB.encode('utf-8'), dupsort=True)
-            phenotypes_db = self.phenotypes_env.open_db(PHENOTYPE_LMDB.encode('utf-8'), dupsort=True)
+            phenotypes_db = self.phenotypes_env.open_db(PHENOTYPE_LMDB.encode('utf-8'), dupsort=True)  # noqa
 
             # https://lmdb.readthedocs.io/en/release/#transaction-management
             # TODO: JIRA LL-330 env should be closed at end of app context
