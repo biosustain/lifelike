@@ -19,7 +19,6 @@ from sqlalchemy_searchable import search
 from neo4japp.blueprints.auth import auth
 from neo4japp.blueprints.permissions import requires_role
 from neo4japp.database import db
-from neo4japp.data_transfer_objects import DrawingUploadRequest
 from neo4japp.exceptions import InvalidFileNameException, RecordNotFoundException
 from neo4japp.models import Project, ProjectSchema
 from neo4japp.constants import ANNOTATION_STYLES_DICT
@@ -266,7 +265,7 @@ def get_project_pdf(project_id):
         item = unprocessed.pop(0)
         project = Project.query.filter_by(hash_id=item).one_or_none()
         if not project:
-            raise RecordNotFoundException()
+            raise RecordNotFoundException(f'Project {item} not found')
         pdf_data = process(project)
         pdf_object = PdfFileReader(io.BytesIO(pdf_data))
         processed[item] = pdf_object
@@ -330,6 +329,17 @@ def process(data_source, format='pdf'):
             'fontname': 'sans-serif',
             'margin': "0.2,0.0"
         }
+
+        if node['label'] == 'map':
+            params['shapefile'] = '/home/n4j/assets/map.svg'
+            params['labelloc'] = 'b'
+            params['style']: 'invis'
+        if node['label'] == 'link':
+            params['labelloc'] = 'b'
+            params['shapefile'] = '/home/n4j/assets/link.svg'
+        if node['label'] == 'note':
+            params['labelloc'] = 'b'
+            params['shapefile'] = '/home/n4j/assets/note.svg'
         if 'hyperlink' in node['data'] and node['data']['hyperlink']:
             params['href'] = node['data']['hyperlink']
         if 'source' in node['data'] and node['data']['source']:
