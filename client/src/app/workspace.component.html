@@ -1,4 +1,4 @@
-<div *ngIf="(workspaceManager.panes$ | async) as panes" class="h-100 w-100 d-flex">
+<div *ngIf="(workspaceManager.panes$ | async) as panes" class="h-100 w-100 d-flex overflow-hidden">
   <div class="flex-fill">
     <as-split unit="percent" direction="horizontal" [gutterSize]="5" cdkDropListGroup>
       <as-split-area [size]="100 / panes.length" *ngFor="let pane of panes">
