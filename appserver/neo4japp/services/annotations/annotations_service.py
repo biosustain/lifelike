@@ -886,6 +886,8 @@ class AnnotationsService:
         for annotation in annotations_list:
             text_in_document = annotation.text_in_document.split(' ')
 
+            # TODO: Does the order of these checks matter?
+
             if len(text_in_document) > 1:
                 keyword_from_annotation = annotation.keyword.split(' ')
                 if len(keyword_from_annotation) >= len(text_in_document):
@@ -905,7 +907,9 @@ class AnnotationsService:
                         fixed_annotations.append(annotation)
                 # len(text_in_document) == LOWERCASE_FIRST_LETTER_UPPERCASE_LAST_LETTER_GENE_LENGTH
                 # does this only apply to genes with specific length?
-                elif annotation.meta.category == OrganismCategory.Bacteria:
+                #
+                # need to check instance of GeneMeta to avoid linting issue
+                elif isinstance(annotation.meta, GeneAnnotation.GeneMeta) and annotation.meta.category == OrganismCategory.Bacteria:
                     # bacteria genes are in the from of cysB, algA, deaD, etc
                     # doe not check first letter to account for when the
                     # gene is start of a sentence
