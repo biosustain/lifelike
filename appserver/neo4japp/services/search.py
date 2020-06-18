@@ -1,10 +1,16 @@
-import re
-from neo4japp.data_transfer_objects import FTSQueryRecord, FTSReferenceRecord, \
-    FTSResult, FTSTaxonomyRecord
-from neo4japp.services.common import GraphBaseDao
-from neo4japp.models import GraphNode
 from py2neo import cypher
+import re
 from typing import List
+
+from neo4japp.data_transfer_objects import (
+    FTSQueryRecord,
+    FTSReferenceRecord,
+    FTSResult,
+    FTSTaxonomyRecord
+)
+from neo4japp.models import GraphNode
+from neo4japp.services.common import GraphBaseDao
+from neo4japp.util import get_first_known_label
 
 
 class SearchService(GraphBaseDao):
@@ -155,7 +161,7 @@ class SearchService(GraphBaseDao):
             return FTSResult(query_term, [], 0, page, limit)
         cypher_query = 'CALL db.index.fulltext.queryNodes("synonymIdx", $search_term) ' \
                        'YIELD node, score WITH node, score MATCH (node)-[]-(n) ' \
-                       'WHERE %s AND NOT n:TopicalDescriptor ' \
+                       'WHERE %s' \
                        'WITH node, score, n optional MATCH (n)-[:HAS_TAXONOMY]-(t:Taxonomy) ' \
                        'RETURN DISTINCT n as node, score, t.id AS taxonomy_id,' \
                        ' t.name AS taxonomy_name, n.namespace as go_class ' \
@@ -175,3 +181,74 @@ class SearchService(GraphBaseDao):
         """ Performs a predictive search; not necessarily a prefix based autocomplete.
         # TODO: FIX the search algorithm to perform a proper prefix based autocomplete"""
         raise NotImplementedError
+
+    # TODO: Added as part of LL-1067, the following functions are a TEMP solution until we
+    # design a search service consistent with both the visualizer and the drawing tool
+    # This will need tests if we decide to maintain it as a standalone service.
+    def _visualizer_search_temp_result_formatter(self, results) -> List[FTSQueryRecord]:
+        formatted_results: List[FTSQueryRecord] = []
+        for result in results:
+            node = result['node']
+            score = result['score']
+            taxonomy_id = result.get('taxonomy_id', '')
+            taxonomy_name = result.get('taxonomy_name', '')
+            go_class = result.get('go_class', '')
+            graph_node = GraphNode.from_py2neo(
+                node,
+                display_fn=lambda x: x.get('name'),
+                primary_label_fn=get_first_known_label
+            )
+            formatted_results.append(FTSTaxonomyRecord(
+                node=graph_node,
+                score=score,
+                taxonomy_id=taxonomy_id if taxonomy_id is not None
+                else 'N/A',
+                taxonomy_name=taxonomy_name if taxonomy_name is not None
+                else 'N/A',
+                go_class=go_class if go_class is not None
+                else 'N/A'
+            ))
+        return formatted_results
+
+    def visualizer_search_temp(self, term: str, page: int = 1,
+                               limit: int = 100, filter: str = 'labels()') -> FTSResult:
+        query_term = self._fulltext_query_sanitizer(term)
+        if not query_term:
+            return FTSResult(query_term, [], 0, page, limit)
+        cypher_query = f"""
+            CALL db.index.fulltext.queryNodes("synonymIdx", $search_term)
+            YIELD node, score
+            MATCH (node)-[]-(n)
+            WHERE {filter}
+            WITH score, n
+            ORDER BY score DESC
+            OPTIONAL MATCH (n)-[:HAS_TAXONOMY]-(t:Taxonomy)
+            WITH MAX(score) as score, collect(DISTINCT [n, t.id, t.name, n.namespace]) AS nodes
+            UNWIND nodes as node
+            RETURN score, node[0] AS node, node[1] AS taxonomy_id, node[2] AS taxonomy_name,
+                node[3] AS go_class
+            SKIP $amount
+            LIMIT $limit
+        """
+
+        results = self.graph.run(
+            cypher_query,
+            parameters={'amount': (page - 1) * limit,
+                        'limit': limit,
+                        'search_term': query_term,
+                        }).data()
+
+        records = self._visualizer_search_temp_result_formatter(results)
+
+        total_query = f"""
+            CALL db.index.fulltext.queryNodes("synonymIdx", $search_term)
+            YIELD node
+            MATCH (node)-[]-(n)
+            WHERE {filter}
+            OPTIONAL MATCH (n)-[:HAS_TAXONOMY]-(t:Taxonomy)
+            RETURN COUNT(DISTINCT n) as total
+        """
+        total_results = self.graph.run(
+            total_query, parameters={'search_term': query_term}).evaluate()
+
+        return FTSResult(term, records, total_results, page, limit)

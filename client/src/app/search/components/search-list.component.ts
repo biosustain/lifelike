@@ -12,6 +12,7 @@ export class SearchListComponent {
     @Input() currentPage: number;
     @Input() currentLimit: number;
     @Input() currentQuery: string;
+    @Input() legend: Map<string, string>;
     @Output() showMore = new EventEmitter<{searchQuery: SearchQuery}>();
 
     constructor() {}
