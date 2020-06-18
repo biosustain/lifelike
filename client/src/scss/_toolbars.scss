@@ -2,7 +2,8 @@
   position: relative;
   background: $toolbar-bg;
   padding: $toolbar-padding;
-  border-bottom: $toolbar-border-width solid $toolbar-border-color;
+  border-bottom: $toolbar-border-width solid $gray-200;
+  border-bottom-left-radius: $border-radius;
   box-shadow: $toolbar-box-shadow;
   z-index: 10;
 }
