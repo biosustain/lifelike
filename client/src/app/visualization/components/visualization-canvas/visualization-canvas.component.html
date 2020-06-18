@@ -4,7 +4,7 @@
   [disabled]="true"
   [gutterSize]="15">
   <as-split-area [order]="0">
-    <div id="viz-content-container">
+    <div class="h-100 position-relative">
       <app-legend [legend]="legend"></app-legend>
 
       <app-visualization-settings
@@ -12,7 +12,7 @@
         (settingsFormChanges)="updateSettings($event)"
       ></app-visualization-settings>
 
-      <div id="network-viz"></div>
+      <div id="network-viz" class="h-100"></div>
 
       <!-- This isn't visible unless the user has right-clicked to open the context menu -->
       <app-context-menu
