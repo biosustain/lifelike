@@ -191,8 +191,16 @@ ANNOTATION_STYLES_DICT = {
         "color": '#7f7f7f'
     },
     "link": {
-        "label": "LINK",
-        "color": '#7f7f7f'
+        "label": "link",
+        "color": '#669999'
+    },
+    "map": {
+        "label": "map",
+        "color": '#0277BD'
+    },
+    "note": {
+        "label": "note",
+        "color": "#EDC949"
     },
     # Non - Entity Types
     "correlation": {
