@@ -17,7 +17,13 @@ import { filter } from 'rxjs/operators';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
 import { ModuleAwareComponent } from './modules';
-import { WorkspaceSessionLoader, WorkspaceSessionService } from './services/workspace-session.service';
+import { TabData, WorkspaceSessionLoader, WorkspaceSessionService } from './services/workspace-session.service';
+
+export interface TabDefaults {
+  title: string;
+  fontAwesomeIcon: string;
+}
+
 
 /**
  * Manages the lifecycle of a dynamically instantiated component.
@@ -446,7 +452,10 @@ export class WorkspaceManager {
             activatedRoute.snapshot = routeSnapshot;
 
             tab.url = '/' + routeSnapshot.url.map(segment => segment.toString()).join('/');
-            tab.title = routeSnapshot.data.title || 'Module';
+            if (tab.url == null) {
+              // Only change if we didn't have a tab loaded already in case of defaults
+              tab.title = routeSnapshot.data.title || 'Module';
+            }
             // TODO: Component may be a string
             tab.replaceComponent(routeSnapshot.component as Type<any>, [{
               // Provide our custom ActivatedRoute with the params
@@ -479,12 +488,19 @@ export class WorkspaceManager {
     this.emitEvents();
   }
 
-  openTabByUrl(pane: Pane | string, url: string | UrlTree, extras?: NavigationExtras): Promise<boolean> {
+  openTabByUrl(pane: Pane | string,
+               url: string | UrlTree,
+               extras?: NavigationExtras,
+               tabDefaults?: TabDefaults): Promise<boolean> {
     if (typeof pane === 'string') {
       pane = this.panes.getOrCreate(pane);
     }
     this.focusedPane = pane;
-    pane.createTab();
+    const tab = pane.createTab();
+    if (tabDefaults) {
+      tab.title = tabDefaults.title;
+      tab.fontAwesomeIcon = tabDefaults.fontAwesomeIcon;
+    }
     return this.navigateByUrl(url, extras);
   }
 
@@ -515,9 +531,12 @@ export class WorkspaceManager {
         });
       }
 
-      loadTab(id: string, url: string): void {
+      loadTab(id: string, data: TabData): void {
         tasks.push(() => {
-          parent.openTabByUrl(id, url);
+          parent.openTabByUrl(id, data.url, null, {
+            title: data.title,
+            fontAwesomeIcon: data.fontAwesomeIcon,
+          });
         });
       }
 
