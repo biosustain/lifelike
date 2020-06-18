@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, HostListener } from '@angular/core';
+import { AfterViewInit, Component, HostListener, OnChanges } from '@angular/core';
 import { CdkDragDrop } from '@angular/cdk/drag-drop';
 import { Pane, Tab, WorkspaceManager } from './shared/workspace-manager';
 
@@ -7,12 +7,16 @@ import { Pane, Tab, WorkspaceManager } from './shared/workspace-manager';
   templateUrl: './workspace.component.html',
   styleUrls: ['./workspace.component.scss'],
 })
-export class WorkspaceComponent implements AfterViewInit {
+export class WorkspaceComponent implements AfterViewInit, OnChanges {
   constructor(readonly workspaceManager: WorkspaceManager) {
   }
 
   ngAfterViewInit() {
     this.workspaceManager.initialLoad();
+  }
+
+  ngOnChanges() {
+    this.workspaceManager.save();
   }
 
   tabDropped(event: CdkDragDrop<Pane>) {

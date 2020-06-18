@@ -5,6 +5,8 @@ const LOCAL_STORAGE_KEY = 'lifelike_workspace_session';
 
 export interface TabData {
   url: string;
+  title: string;
+  fontAwesomeIcon: string;
 }
 
 interface PaneData {
@@ -19,7 +21,7 @@ interface SessionData {
 
 export interface WorkspaceSessionLoader {
   createPane(id: string): void;
-  loadTab(id: string, url: string): void;
+  loadTab(id: string, data: TabData): void;
   setPaneActiveTabHistory(id: string, activeTabHistory: number[]): void;
 }
 
@@ -30,11 +32,12 @@ export class WorkspaceSessionService {
   save(panes: Pane[]) {
     const data: SessionData = {
       panes: panes.map(pane => {
-        const activeTabHistoryArray = [...pane.activeTabHistory.values()];
         return {
           id: pane.id,
           tabs: pane.tabs.map(tab => ({
             url: tab.url,
+            title: tab.title,
+            fontAwesomeIcon: tab.fontAwesomeIcon,
           })),
           activeTabHistory: [...pane.activeTabHistory.values()].map((tab) => pane.tabs.indexOf(tab)),
         };
@@ -50,7 +53,7 @@ export class WorkspaceSessionService {
       for (const pane of data.panes) {
         loader.createPane(pane.id);
         for (const tab of pane.tabs) {
-          loader.loadTab(pane.id, tab.url);
+          loader.loadTab(pane.id, tab);
         }
         loader.setPaneActiveTabHistory(pane.id, pane.activeTabHistory);
       }

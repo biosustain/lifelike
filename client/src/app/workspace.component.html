@@ -41,7 +41,8 @@
                  class="flex-fill overflow-hidden position-absolute tab-content-inner-container"
                  [class.hidden-tab-content]="pane.activeTab !== tab">
               <app-workspace-outlet [name]="pane.id" [container]="tab.container"
-                                    (outletFocus)="setFocus(pane)"></app-workspace-outlet>
+                                    (outletFocus)="setFocus(pane)"
+                                    [active]="pane.activeTab === tab"></app-workspace-outlet>
             </div>
           </div>
         </div>
