@@ -30,7 +30,11 @@ from neo4japp.exceptions import AnnotationError, RecordNotFoundException
 from neo4japp.models import AppUser
 from neo4japp.models.files import Files, FileContent
 from neo4japp.utils.network import read_url
-from neo4japp.schemas.files import AnnotationAdditionSchema, AnnotationRemovalSchema
+from neo4japp.schemas.files import (
+    AnnotationAdditionSchema,
+    AnnotationRemovalSchema,
+    AnnotationExclusionSchema,
+)
 from flask_apispec import use_kwargs, marshal_with
 
 URL_FETCH_MAX_LENGTH = 1024 * 1024 * 30
@@ -394,3 +398,20 @@ def extract_doi(pdf_content: bytes, file_id: str = None, filename: str = None) -
         return None
     doi = match.group(1).decode('utf-8').replace('%2F', '/')
     return doi if doi.startswith('http') else f'https://doi.org/{doi}'
+
+
+@bp.route('/exclude_annotation/<file_id>', methods=['PATCH'])
+@auth.login_required
+@use_kwargs(AnnotationExclusionSchema)
+def exclude_annotation(file_id, **payload):
+    excluded_annotation = {
+        **payload,
+        'user_id': g.current_user.id,
+        'exclusion_date': str(datetime.now())
+    }
+    file = Files.query.filter_by(file_id=file_id).one_or_none()
+    if not file:
+        raise RecordNotFoundException('File does not exist')
+    file.excluded_annotations = [excluded_annotation, *file.excluded_annotations]
+    db.session.commit()
+    return {'status': 'success'}, 200
