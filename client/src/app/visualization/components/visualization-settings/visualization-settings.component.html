@@ -1,12 +1,17 @@
-<div *ngIf="legendLabels" id="settings-container">
-  <mat-expansion-panel>
-    <mat-expansion-panel-header>
-      <mat-panel-title>
-        Canvas Settings
-      </mat-panel-title>
-    </mat-expansion-panel-header>
-
+<div *ngIf="legendLabels" id="settings-container" class="floating-toolbar" [ngClass]="navbarCollapsed ? 'unexpanded' : 'expanded'">
+  <div
+    id="canvas-settings-button"
+    (click)="navbarCollapsed = !navbarCollapsed"
+    [attr.aria-expanded]="!navbarCollapsed"
+    aria-controls="navbarContent"
+    aria-expanded="false"
+    aria-label="Toggle navigation">
+    <mat-icon class="text-primary">settings</mat-icon>
+  </div>
+  <div id="settings-content" [ngClass]="navbarCollapsed ? 'unexpanded' : 'expanded'">
     <form [formGroup]="settingsForm" fxLayout="column" fxLayoutAlign="space-between start">
+      <mat-slide-toggle formControlName="animation">Animation</mat-slide-toggle>
+
       <div>Max rows shown in clusters:</div>
       <mat-form-field>
         <input
@@ -34,6 +39,5 @@
         [formControlName]="label"
       >{{ label }}</mat-checkbox>
     </form>
-
-  </mat-expansion-panel>
+  </div>
 </div>
