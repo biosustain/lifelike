@@ -15,9 +15,11 @@ $black:    #000;
 
 @import '~bootstrap/scss/variables';
 
-$toolbar-padding: $spacer / 2;
-$toolbar-border-color: $gray-400;
-$toolbar-bg: $gray-200;
+$toolbar-padding: 0.5rem;
+$toolbar-border-width: 1px;
+$toolbar-border-color: $gray-200;
+$toolbar-bg: $white;
+$toolbar-box-shadow: none;
 
 $floating-toolbar-padding: $spacer / 2;
 $floating-toolbar-border-color: $gray-400;

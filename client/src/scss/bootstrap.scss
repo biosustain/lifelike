@@ -18,6 +18,10 @@ body {
   box-shadow: $table-row-focus-box-shadow;
 }
 
+canvas:focus {
+  box-shadow: none;
+}
+
 a:focus {
   outline: 1px solid $primary;
   box-shadow: none;
@@ -55,6 +59,18 @@ fieldset.fieldset-properties {
   .input-group-prepend, .input-group-append {
     position: relative;
     z-index: 5;
+  }
+}
+
+.as-split-gutter {
+  background: $gray-200 !important;
+
+  &:hover {
+    background: $link-color !important;
+  }
+
+  &.as-dragged {
+    background: $link-hover-color !important;
   }
 }
 

@@ -1,7 +1,8 @@
 @import "src/scss/variables";
 
 .tab-title {
-  max-width: 300px;
+  display: block;
+  max-width: 250px;
 }
 
 .tab-content-container {
@@ -31,10 +32,10 @@
   cursor: pointer;
 
   &:hover {
-    background: $gray-500;
+    background: $link-color;
 
     .split-pane-arrow {
-      background: $gray-500;
+      background: $link-color;
     }
   }
 }
