@@ -405,6 +405,7 @@ export class WorkspaceManager {
   focusedPane: Pane | undefined;
   private interceptNextRoute = false;
   panes$ = new BehaviorSubject<Pane[]>([]);
+  private loaded = false;
 
   constructor(private readonly router: Router,
               private readonly injector: Injector,
@@ -412,7 +413,6 @@ export class WorkspaceManager {
     this.panes = new PaneManager(injector);
     this.hookRouter();
     this.emitEvents();
-    this.load();
   }
 
   private hookRouter() {
@@ -495,6 +495,13 @@ export class WorkspaceManager {
 
   emitEvents(): void {
     this.panes$.next(this.buildPanesSnapshot());
+  }
+
+  initialLoad() {
+    if (!this.loaded) {
+      this.loaded = true;
+      this.load();
+    }
   }
 
   load() {
