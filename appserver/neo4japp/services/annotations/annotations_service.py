@@ -895,8 +895,8 @@ class AnnotationsService:
                     keyword_from_annotation = annotation.keyword.split('-')
                     if len(keyword_from_annotation) >= len(text_in_document):
                         fixed_annotations.append(annotation)
-            elif annotation.meta.keyword_type == EntityType.Gene.value:
-                text_in_document = text_in_document[0]
+            elif isinstance(annotation, GeneAnnotation):
+                text_in_document = text_in_document[0]  # type: ignore
                 # if the matched keyword from LMDB is all caps
                 # check if the text from document is also all caps
                 # e.g `impact` matching to `IMPACT`
