@@ -1,4 +1,3 @@
-import { HttpErrorResponse } from '@angular/common/http';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 
 import { NewClusterSnippetsPageRequest, SidenavClusterEntity } from 'app/interfaces';
@@ -12,7 +11,7 @@ export class SidenavClusterViewComponent {
     @Output() requestNewPageEmitter: EventEmitter<NewClusterSnippetsPageRequest>;
     @Input() clusterEntity: SidenavClusterEntity;
     @Input() isNewEntity: boolean;
-    @Input() error: HttpErrorResponse;
+    @Input() error: Error;
     @Input() legend: Map<string, string[]>;
 
     constructor() {

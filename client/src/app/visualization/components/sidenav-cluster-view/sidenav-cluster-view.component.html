@@ -1,5 +1,9 @@
 <div *ngIf="error; else notError">
-  <span>Could not load snippet data for this cluster. Please try again later.</span>
+  <span>Could not load snippet data for this cluster. Possible reasons include:</span>
+  <ul>
+    <li>Could not find the cluster on the network</li>
+    <li>An error occurred on the server</li>
+  </ul>
 </div>
 <ng-template #notError>
   <div *ngIf="clusterEntity && legend; else loadingSpinner">
