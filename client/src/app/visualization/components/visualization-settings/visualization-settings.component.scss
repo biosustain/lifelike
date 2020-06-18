@@ -1,7 +1,45 @@
+@import '~bootstrap/scss/functions';
+@import '~bootstrap/scss/variables';
+
 #settings-container {
-  margin: 20px 20px 0 0;
-  padding: 5px;
+  margin: $spacer $spacer 0 0;
+  padding: 1rem;
   position: absolute;
   right: 0;
-  z-index: 100;
+  z-index: 1;
+}
+
+#canvas-settings-button {
+  float: right;
+  text-align: center;
+}
+
+#canvas-settings-button:hover{
+  cursor: pointer;
+}
+
+#settings-container.expanded {
+  width: auto;
+  height: auto;
+  background-color: $white;
+  transition: all .25s linear;
+}
+
+#settings-container.unexpanded {
+  width: 2rem;
+  height: 2rem;
+  background: none;
+  // keep border but make it transparent so the settings button doesn't move when it is clicked
+  border-color: rgba(0,0,0,0);
+}
+
+#settings-content.expanded {
+  visibility: visible;
+  opacity: 1;
+  transition: opacity .25s linear;
+}
+
+#settings-content.unexpanded {
+  visibility: hidden;
+  opacity: 0;
 }
