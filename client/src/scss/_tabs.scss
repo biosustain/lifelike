@@ -1,8 +1,8 @@
 .nav-workspace-tabs {
   display: flex;
   border-bottom: 1px solid $gray-300;
-  height: 50px;
-  background: $gray-200;
+  min-height: 50px;
+  background: $gray-200 linear-gradient($gray-200 90%, $gray-300 100%);
 
   .nav {
     display: flex;
@@ -18,9 +18,24 @@
       width: 100%;
       height: 100%;
       border: 1px solid transparent;
+      cursor: pointer;
 
-      &, &:link, &:visited {
-        color: $body-color;
+      &, a {
+        &, &:link, &:visited {
+          color: $body-color;
+        }
+
+        &:hover, &:active {
+          text-decoration: none;
+        }
+      }
+
+      &:hover {
+        border: 1px solid rgba($gray-300, 0.4);
+        border-bottom: 1px solid #fff;
+        background: rgba($white, 0.4);
+        border-top-left-radius: $nav-tabs-border-radius;
+        border-top-right-radius: $nav-tabs-border-radius;
       }
 
       &.active {
@@ -29,6 +44,7 @@
         background: $white;
         border-top-left-radius: $nav-tabs-border-radius;
         border-top-right-radius: $nav-tabs-border-radius;
+        box-shadow: 0 -1px 1px rgba($gray-900, 0.05);
       }
     }
   }
