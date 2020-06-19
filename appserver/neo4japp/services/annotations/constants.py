@@ -13,6 +13,7 @@ PROTEIN_LMDB = 'proteins'
 PUBCHEM_LMDB = 'chemicals_pubchem'
 SPECIES_LMDB = 'species'
 
+LOWERCASE_FIRST_LETTER_UPPERCASE_LAST_LETTER_GENE_LENGTH = 4
 PDF_NEW_LINE_THRESHOLD = .30
 PDF_CHARACTER_SPACING_THRESHOLD = .325
 COMMON_TWO_LETTER_WORDS = {
@@ -52,15 +53,15 @@ COMMON_WORDS = set.union(*[
 
 CHEMICAL_EXCLUSION = {'aa'}
 COMPOUND_EXCLUSION = {'aa'}  # should this be the same as chemical?
-SPECIES_EXCLUSION = {'collection', 'covid-19', 'covid19', 'artificial'}
+SPECIES_EXCLUSION = {'collection', 'covid-19', 'covid19', 'artificial', 'aa'}
 
 # utf-32 unicode
 # can search these up here: https://www.fileformat.info/info/unicode/index.htm
-MISC_SYMBOLS_AND_CHARS = {8211, 160, 8220, 8221, 8216, 8217}
+MISC_SYMBOLS_AND_CHARS = {8211, 160, 8220, 8221, 8216, 8217, 183, 61623}
 
-TYPO_SYNONYMS = {
-    'e coli': ['E. coli', 'Escherichia coli', 'Enterococcus coli'],
-    'E.coli': ['E. coli', 'Escherichia coli', 'Enterococcus coli'],
+COMMON_TYPOS = {
+    # 'e coli': ['E. coli', 'Escherichia coli', 'Enterococcus coli'],
+    # 'E.coli': ['E. coli', 'Escherichia coli', 'Enterococcus coli'],
     'Multiple Mitochondrial Dysfunctions Syndromes': ['Multiple Mitochondrial Dysfunctions Syndrome'],  # noqa
     'S-Phase kinase associated protein 2': ['S-Phase kinase-associated protein 2'],
 }

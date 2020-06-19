@@ -43,8 +43,15 @@ appear multiple times in a dataset, with each time, it has a different
 gene id and references a different taxonomy id. By allowing duplicate
 keys, we do not lose these genes.
 
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+IMPORTANT NOTE: As of lmdb 0.98
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 In order for `dupsort` to work, need to provide a database name to
-`open_db()`.
+`open_db()`, e.g open_db('db2', dupsort=True).
+
+If no database name is passed in, it will open the default database,
+and the transaction and cursor will point to the wrong address in
+memory and retrieve whatever is there.
 """
 
 
@@ -60,20 +67,14 @@ def prepare_lmdb_genes_database(filename: str):
             # gene_id	name	synonym	tax_id	tax_category
             headers = next(reader)
             for line in reader:
-                gene_id = line[0]
                 gene_name = line[1]
                 synonym = line[2]
-                tax_id = line[3]
-                gene_category = line[4]
 
                 if gene_name != 'null':
                     gene = {
-                        'gene_id': gene_id,
                         'id_type': DatabaseType.Ncbi.value,
-                        'tax_id': tax_id,
                         'name': gene_name,
                         'synonym': synonym,
-                        'gene_category': gene_category,
                     }
 
                     try:
@@ -292,7 +293,7 @@ def prepare_lmdb_diseases_database(filename: str):
 
                 try:
                     transaction.put(
-                        normalize_str(disease_name).encode('utf-8'),
+                        normalize_str(synonym).encode('utf-8'),
                         json.dumps(disease).encode('utf-8'))
                 except lmdb.BadValsizeError:
                     # ignore any keys that are too large
