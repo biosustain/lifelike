@@ -338,9 +338,13 @@ def process(data_source, format='pdf'):
             params['imagescale'] = "both"
             params['color'] = '#ffffff00'
 
-        if node['label'] in ['association', 'correlation' ,'cause', 'effect', 'observation']:
-            params['color'] = ANNOTATION_STYLES_DICT.get(node['label'], {'color': 'black'})['color']
-            params['fillcolor'] = ANNOTATION_STYLES_DICT.get(node['label'], {'color': 'black'})['color']
+        if node['label'] in ['association', 'correlation', 'cause', 'effect', 'observation']:
+            params['color'] = ANNOTATION_STYLES_DICT.get(
+                node['label'],
+                {'color': 'black'})['color']
+            params['fillcolor'] = ANNOTATION_STYLES_DICT.get(
+                node['label'],
+                {'color': 'black'})['color']
             params['fontcolor'] = 'black'
             params['style'] = 'rounded,filled'
 
