@@ -67,20 +67,14 @@ def prepare_lmdb_genes_database(filename: str):
             # gene_id	name	synonym	tax_id	tax_category
             headers = next(reader)
             for line in reader:
-                gene_id = line[0]
                 gene_name = line[1]
                 synonym = line[2]
-                tax_id = line[3]
-                gene_category = line[4]
 
                 if gene_name != 'null':
                     gene = {
-                        'gene_id': gene_id,
                         'id_type': DatabaseType.Ncbi.value,
-                        'tax_id': tax_id,
                         'name': gene_name,
                         'synonym': synonym,
-                        'category': gene_category,
                     }
 
                     try:
