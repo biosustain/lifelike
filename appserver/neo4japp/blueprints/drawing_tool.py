@@ -330,16 +330,20 @@ def process(data_source, format='pdf'):
             'margin': "0.2,0.0"
         }
 
-        if node['label'] == 'map':
-            params['shapefile'] = '/home/n4j/assets/map.svg'
+        if node['label'] in ['map', 'link', 'note']:
+            label = node['label']
+            params['image'] = f'/home/n4j/assets/{label}.png'
             params['labelloc'] = 'b'
-            params['style']: 'invis'
-        if node['label'] == 'link':
-            params['labelloc'] = 'b'
-            params['shapefile'] = '/home/n4j/assets/link.svg'
-        if node['label'] == 'note':
-            params['labelloc'] = 'b'
-            params['shapefile'] = '/home/n4j/assets/note.svg'
+            params['forcelabels'] = "true"
+            params['imagescale'] = "both"
+            params['color'] = '#ffffff00'
+
+        if node['label'] in ['association', 'correlation' ,'cause', 'effect', 'observation']:
+            params['color'] = ANNOTATION_STYLES_DICT.get(node['label'], {'color': 'black'})['color']
+            params['fillcolor'] = ANNOTATION_STYLES_DICT.get(node['label'], {'color': 'black'})['color']
+            params['fontcolor'] = 'black'
+            params['style'] = 'rounded,filled'
+
         if 'hyperlink' in node['data'] and node['data']['hyperlink']:
             params['href'] = node['data']['hyperlink']
         if 'source' in node['data'] and node['data']['source']:

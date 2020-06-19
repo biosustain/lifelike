@@ -7,17 +7,22 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   height="600"
+   width="600"
    aria-hidden="true"
    focusable="false"
    data-prefix="fas"
    data-icon="sticky-note"
    class="svg-inline--fa fa-sticky-note fa-w-14"
    role="img"
-   viewBox="0 0 448 512"
+   viewBox="0 0 600 600"
    version="1.1"
    id="svg4"
    sodipodi:docname="link.svg"
-   inkscape:version="1.0 (4035a4fb49, 2020-05-01)">
+   inkscape:version="1.0 (4035a4fb49, 2020-05-01)"
+   inkscape:export-filename="/home/jcemelanda/Projects/kg-prototypes/appserver/assets/link.png"
+   inkscape:export-xdpi="15.04"
+   inkscape:export-ydpi="15.04">
   <metadata
      id="metadata10">
     <rdf:RDF>
@@ -26,7 +31,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -47,15 +52,15 @@
      id="namedview6"
      showgrid="false"
      inkscape:zoom="1.1699219"
-     inkscape:cx="224"
+     inkscape:cx="190.66444"
      inkscape:cy="256"
      inkscape:window-x="0"
      inkscape:window-y="27"
      inkscape:window-maximized="1"
      inkscape:current-layer="svg4" />
   <path
-     style="fill:#669999;fill-opacity:1"
+     style="fill:#669999;fill-opacity:1;stroke-width:0.892857"
      fill="currentColor"
-     d="M312 320h136V56c0-13.3-10.7-24-24-24H24C10.7 32 0 42.7 0 56v400c0 13.3 10.7 24 24 24h264V344c0-13.2 10.8-24 24-24zm129 55l-98 98c-4.5 4.5-10.6 7-17 7h-6V352h128v6.1c0 6.3-2.5 12.4-7 16.9z"
+     d="M 378.57143,257.14286 H 500 V 21.428571 C 500,9.5535714 490.44643,0 478.57143,0 H 121.42857 C 109.55357,0 100,9.5535714 100,21.428571 V 378.57143 C 100,390.44643 109.55357,400 121.42857,400 H 357.14286 V 278.57143 c 0,-11.78572 9.64285,-21.42857 21.42857,-21.42857 z M 493.75,306.25 l -87.5,87.5 c -4.01786,4.01786 -9.46429,6.25 -15.17857,6.25 h -5.35714 V 285.71429 H 500 v 5.44642 c 0,5.625 -2.23214,11.07143 -6.25,15.08929 z"
      id="path2" />
 </svg>
