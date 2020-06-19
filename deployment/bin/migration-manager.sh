@@ -60,13 +60,13 @@ sudo gcloud sql export sql $CLOUD_SQL_ALIAS gs://$GCE_BACKUP_BUCKET/$BACKUP_ID -
 
 # Run the migration
 if [ "$TARGET" = demo ]; then
-    sudo docker-compose -f docker-compose.demo.yml exec -T appserver bin/migrate-db --upgrade
+    sudo docker-compose -f docker-compose.demo.yml exec -T appserver bin/migrate-db --upgrade --data-migrate
 fi
 
 if [ "$TARGET" = staging ]; then
-    sudo docker-compose -f docker-compose.staging.yml exec -T appserver bin/migrate-db --upgrade
+    sudo docker-compose -f docker-compose.staging.yml exec -T appserver bin/migrate-db --upgrade --data-migrate
 fi
 
 if [ "$TARGET" = production ]; then
-    sudo docker-compose -f docker-compose.prod.yml exec -T appserver bin/migrate-db --upgrade
+    sudo docker-compose -f docker-compose.prod.yml exec -T appserver bin/migrate-db --upgrade --data-migrate
 fi
