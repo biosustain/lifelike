@@ -1,6 +1,18 @@
-import { AfterViewInit, Component, HostListener, OnChanges } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  HostListener,
+  OnChanges,
+  QueryList,
+  ViewChild,
+  ViewChildren,
+} from '@angular/core';
 import { CdkDragDrop } from '@angular/cdk/drag-drop';
 import { Pane, Tab, WorkspaceManager } from './shared/workspace-manager';
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
+import { SplitComponent } from 'angular-split';
 
 @Component({
   selector: 'app-workspace',
@@ -8,7 +20,17 @@ import { Pane, Tab, WorkspaceManager } from './shared/workspace-manager';
   styleUrls: ['./workspace.component.scss'],
 })
 export class WorkspaceComponent implements AfterViewInit, OnChanges {
+  @ViewChild('container', {static: true, read: ElementRef}) container: ElementRef;
+  @ViewChild('splitComponent', {static: false}) splitComponent: SplitComponent;
+  panes$: Observable<PlacedPane[]>;
+  readonly tabWidthMax = 250;
+
   constructor(readonly workspaceManager: WorkspaceManager) {
+    this.panes$ = this.workspaceManager.panes$.pipe(map(panes => {
+      return panes.map((pane, paneIndex) => {
+        return new PlacedPane(pane, Math.min(this.tabWidthMax, 200));
+      });
+    }));
   }
 
   ngAfterViewInit() {
@@ -56,6 +78,9 @@ export class WorkspaceComponent implements AfterViewInit, OnChanges {
     e.preventDefault();
   }
 
+  splitterDragEnded() {
+  }
+
   setActiveTab(pane: Pane, tab: Tab) {
     pane.activeTab = tab;
     this.workspaceManager.save();
@@ -89,5 +114,10 @@ export class WorkspaceComponent implements AfterViewInit, OnChanges {
     if (this.shouldConfirmUnload()) {
       event.returnValue = 'Leave page? Changes you made may not be saved';
     }
+  }
+}
+
+class PlacedPane {
+  constructor(readonly pane: Pane, readonly width: number) {
   }
 }
