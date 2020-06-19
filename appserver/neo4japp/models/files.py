@@ -39,4 +39,4 @@ class LMDBsDates(RDBMSBase):
     __tablename__ = 'lmdbs_dates'
     name = db.Column(db.String(256), primary_key=True)
     date = db.Column(TIMESTAMP(timezone=True), nullable=False,
-                     default=datetime(1970, 1, 1, tzinfo=timezone.utc))
+                     server_default=str(datetime(1970, 1, 1, tzinfo=timezone.utc)))
