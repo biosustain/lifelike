@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { CanActivate, ActivatedRouteSnapshot, RouterStateSnapshot, Router } from '@angular/router';
+import { CanActivate, ActivatedRouteSnapshot, RouterStateSnapshot, Router, UrlTree } from '@angular/router';
 import { map, catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
 
@@ -45,8 +45,7 @@ export class EditGuard implements CanActivate {
               return true;
             } else if (isItPublic) {
               // If user doesn't own map, but it's public
-              this.router.navigateByUrl(`dt/map/${hashId}`);
-              return false;
+              return this.router.parseUrl(`dt/map/${hashId}`);
             } else {
               // If user doesn't own either map
               // nor is it public
@@ -55,8 +54,7 @@ export class EditGuard implements CanActivate {
                 action: 'Dismiss',
                 config: { duration: 10000 },
               }}));
-              this.router.navigateByUrl('dt/map');
-              return false;
+              return this.router.parseUrl('dt/map');
             }
           }
         ),
