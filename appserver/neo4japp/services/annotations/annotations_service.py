@@ -66,6 +66,10 @@ class AnnotationsService:
         self.matched_diseases: Dict[str, List[PDFTokenPositions]] = {}
         self.matched_phenotypes: Dict[str, List[PDFTokenPositions]] = {}
 
+        self.organism_frequency: Dict[str, int] = {}
+        self.organism_locations: Dict[str, List[Tuple[int, int]]] = {}
+        self.organism_categories: Dict[str, str] = {}
+
     def lmdb_validation(
         self,
         token: PDFTokenPositions,
@@ -278,6 +282,7 @@ class AnnotationsService:
         token_type: str,
         entity: dict,
         entity_id: str,
+        entity_category: Optional[str],
         color: str,
         correct_spellings: Dict[str, str],
     ) -> Annotation:
@@ -310,7 +315,7 @@ class AnnotationsService:
 
         if token_type == EntityType.Species.value:
             organism_meta = OrganismAnnotation.OrganismMeta(
-                category=entity['category'],
+                category=entity_category or '',
                 keyword_type=token_type,
                 color=color,
                 id=entity_id,
@@ -341,7 +346,7 @@ class AnnotationsService:
             )
         elif token_type == EntityType.Gene.value:
             gene_meta = GeneAnnotation.GeneMeta(
-                category=entity['category'],
+                category=entity_category or '',
                 keyword_type=token_type,
                 color=color,
                 id=entity_id,
@@ -473,79 +478,76 @@ class AnnotationsService:
                         token_type=token_type,
                         entity=entity,
                         entity_id=entity[id_str],
+                        entity_category=entity.get('category', None),
                         color=color,
                         correct_spellings=correct_spellings,
                     )
                     matches.append(annotation)
         return matches
 
-    def _get_gene_id_for_annotation(
+    def _get_closest_gene_organism_pair(
         self,
-        word: str,
-        token_positions: PDFTokenPositions,
-        match_result: Dict[str, Dict[str, str]],
-        matched_organism_locations: Dict[int, Dict[str, List[Tuple[int, int]]]],
-        organism_frequency: Dict[str, int],
-    ):
-        """Gets the correct gene ID for a given gene and its list of matching organisms.
+        gene_position: PDFTokenPositions,
+        organism_matches: Dict[str, str],
+    ) -> Tuple[str, str]:
+        """Gets the correct gene/organism pair for a given gene and its list of matching organisms.
 
         A gene name may match multiple organisms. To choose which organism to use, we first
-        check for the closest one in the document. Currently we are limited to checking only
-        the page the gene occurs on. If no matching organism is on the page, then we check
-        which organism in the matching list appears most frequently in the document.
+        check for the closest one in the document. If two organisms are equal in distance,
+        we choose the one that appears most frequently in the document. If the two organisms
+        are both equidistant and equally frequent, we always prefer homo sapiens if it is
+        either of the two genes. Otherwise, we choose the one we matched first.
         """
-        char_indexes = list(token_positions.char_positions.keys())
-        keyword_starting_idx = char_indexes[0]
-        keyword_ending_idx = char_indexes[-1]
 
-        # If a gene was matched to at least one organism in the document,
-        # we have to get the corresponding gene data. If a gene matches
-        # more than one organism, we first check for the closest organism
-        # on the current page.
-        organism_to_gene_pairs = match_result[word]
-        organisms_on_this_page = matched_organism_locations.get(token_positions.page_number, dict())  # noqa
-        organisms_found = set(organism_to_gene_pairs.keys()).intersection(set(organisms_on_this_page.keys()))  # noqa
-        if len(organisms_on_this_page) > 0 and len(organisms_found) > 0:
-            closest_organism = str()
-            smallest_distance = inf
+        char_indexes = list(gene_position.char_positions.keys())
+        gene_location_lo = char_indexes[0]
+        gene_location_hi = char_indexes[-1]
 
-            for organism_id in organisms_found:
-                for organism_occurrence in organisms_on_this_page[organism_id]:
-                    organism_starting_idx, organism_ending_idx = organism_occurrence
-                    if keyword_starting_idx > organism_ending_idx:
-                        distance_from_gene_to_this_organism = keyword_starting_idx - organism_ending_idx  # noqa
-                    else:
-                        distance_from_gene_to_this_organism = organism_starting_idx - keyword_ending_idx  # noqa
+        closest_dist = inf
+        curr_closest_organism = None
+        for organism in organism_matches:
+            if curr_closest_organism is None:
+                curr_closest_organism = organism
 
-                    # If the new distance is the same as the current closest distance, and either
-                    # the current closest organism is homo sapiens, or the closest organism ISN'T
-                    # homo sapiens AND the new organism IS, then prefer homo sapiens.
-                    if (distance_from_gene_to_this_organism == smallest_distance and
-                            (closest_organism == HOMO_SAPIENS_TAX_ID or
-                                (closest_organism != HOMO_SAPIENS_TAX_ID and organism_id == HOMO_SAPIENS_TAX_ID))):  # noqa
-                        closest_organism = HOMO_SAPIENS_TAX_ID
-                    elif distance_from_gene_to_this_organism < smallest_distance:
-                        closest_organism = organism_id
-                        smallest_distance = distance_from_gene_to_this_organism
-            return organism_to_gene_pairs[closest_organism]
-        # If there is no closest match on the page,
-        # then we use the one with the highest frequency within the document.
-        # We may fine-tune this later.
-        else:
-            most_frequent_organism = str()
-            greatest_frequency = 0
+            min_organism_dist = inf
 
-            for organism_id in organism_to_gene_pairs.keys():
-                if organism_frequency[organism_id] > greatest_frequency:
-                    greatest_frequency = organism_frequency[organism_id]
-                    most_frequent_organism = organism_id
+            # Get the closest instance of this organism
+            for organism_pos in self.organism_locations[organism]:
+                organism_location_lo = organism_pos[0]
+                organism_location_hi = organism_pos[1]
 
-            return organism_to_gene_pairs[most_frequent_organism]
+                if gene_location_lo > organism_location_hi:
+                    new_organism_dist = gene_location_lo - organism_location_hi
+                else:
+                    new_organism_dist = organism_location_lo - gene_location_hi
+
+                if new_organism_dist < min_organism_dist:
+                    min_organism_dist = new_organism_dist
+
+            # If this organism is closer than the current closest, update
+            if min_organism_dist < closest_dist:
+                curr_closest_organism = organism
+                closest_dist = min_organism_dist
+            # If this organism is equidistant to the current closest, check frequency instead
+            elif min_organism_dist == closest_dist:
+                # If the frequency of this organism is greater, update
+                if self.organism_frequency[organism] > self.organism_frequency[curr_closest_organism]:  # noqa
+                    curr_closest_organism = organism
+                elif self.organism_frequency[organism] == self.organism_frequency[curr_closest_organism]:  # noqa
+                    # If the organisms are equidistant and equal frequency,
+                    # check if the new organism is human, and if so update
+                    if organism == HOMO_SAPIENS_TAX_ID:
+                        curr_closest_organism = organism
+
+        if curr_closest_organism is None:
+            raise ValueError('Cannot get gene ID with empty organism match dict.')
+
+        # Return the gene id of the organism with the highest priority
+        return organism_matches[curr_closest_organism], curr_closest_organism
 
     def _annotate_genes(
         self,
-        matched_organism_locations: Dict[int, Dict[str, List[Tuple[int, int]]]],
-        organism_frequency: Dict[str, int],
+        entity_id_str: str,
         char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
         cropbox_in_pdf: Tuple[int, int],
     ) -> List[Annotation]:
@@ -569,28 +571,14 @@ class AnnotationsService:
         Returns list of matched annotations
         """
         tokens: Dict[str, List[PDFTokenPositions]] = self.matched_genes
-        token_type: str = EntityType.Gene.value
-        color: str = EntityColor.Gene.value
         transaction = self.lmdb_session.genes_txn
         correct_spellings: Dict[str, str] = self.correct_spellings
 
         matches: List[Annotation] = []
-        tokens_lowercased = set([normalize_str(s) for s in list(tokens.keys())])
 
-        # TODO: do we need to normalize when searching in neo4j?
-        # some genes have punctuation
-        # see JIRA LL-802
-        match_result = self.hybrid_neo4j_postgres_service.get_gene_to_organism_match_result(
-            genes=[normalize_str(s) for s in list(tokens.keys())],
-            matched_organism_ids=list(organism_frequency.keys()),
-        )
-
+        entity_tokenpos_pairs = []
+        gene_names: Set[str] = set()
         for word, token_positions_list in tokens.items():
-            normalized_word = normalize_str(word)
-            # If the "gene" is not matched to any organism in the paper, ignore it
-            if normalized_word not in match_result.keys():
-                continue
-
             for token_positions in token_positions_list:
                 if word in correct_spellings:
                     lookup_key = correct_spellings[word]
@@ -599,51 +587,41 @@ class AnnotationsService:
 
                 lookup_key = normalize_str(lookup_key)
                 entities = self.lmdb_session.get_lmdb_values(
-                    txn=transaction, key=lookup_key, token_type=token_type)
-                synonym_common_names_dict: Dict[str, Set[str]] = {}
+                    txn=transaction, key=lookup_key, token_type=EntityType.Gene.value)
 
                 for entity in entities:
-                    entity_synonym = entity['synonym']
                     entity_common_name = entity['name']
-                    if entity_synonym in synonym_common_names_dict:
-                        synonym_common_names_dict[entity_synonym].add(normalize_str(entity_common_name))  # noqa
-                    else:
-                        synonym_common_names_dict[entity_synonym] = {normalize_str(entity_common_name)}  # noqa
+                    gene_names.add(entity_common_name)
 
-                for entity in entities:
-                    entity_synonym = entity['synonym']
-                    common_names_referenced_by_synonym = synonym_common_names_dict[entity_synonym]
-                    if len(common_names_referenced_by_synonym) > 1:
-                        # synonym used by multiple different common names
-                        #
-                        # for synonyms that are used by more than one common names
-                        # if none of those common names appear in the document
-                        # or if more than one of those common names appear in the document
-                        # do not annotate because cannot infer
-                        common_names_in_document = [n for n in common_names_referenced_by_synonym if n in tokens_lowercased]  # noqa
+                    entity_tokenpos_pairs.append((entity, token_positions))
 
-                        if len(common_names_in_document) != 1:
-                            continue
+        gene_organism_matches = \
+            self.hybrid_neo4j_postgres_service.get_gene_to_organism_match_result(
+                genes=list(gene_names),
+                matched_organism_ids=list(self.organism_frequency.keys()),
+            )
 
-                    entity_id = self._get_gene_id_for_annotation(
-                        word=normalized_word,
-                        token_positions=token_positions,
-                        match_result=match_result,
-                        matched_organism_locations=matched_organism_locations,
-                        organism_frequency=organism_frequency,
-                    )
+        for entity, token_positions in entity_tokenpos_pairs:
+            if entity['name'] in gene_organism_matches:
+                gene_id, organism_id = self._get_closest_gene_organism_pair(
+                    gene_position=token_positions,
+                    organism_matches=gene_organism_matches[entity['name']]
+                )
 
-                    annotation = self._create_annotation_object(
-                        char_coord_objs_in_pdf=char_coord_objs_in_pdf,
-                        cropbox_in_pdf=cropbox_in_pdf,
-                        token_positions=token_positions,
-                        token_type=token_type,
-                        entity=entity,
-                        entity_id=entity_id,
-                        color=color,
-                        correct_spellings=correct_spellings,
-                    )
-                    matches.append(annotation)
+                category = self.organism_categories[organism_id]
+
+                annotation = self._create_annotation_object(
+                    char_coord_objs_in_pdf=char_coord_objs_in_pdf,
+                    cropbox_in_pdf=cropbox_in_pdf,
+                    token_positions=token_positions,
+                    token_type=EntityType.Gene.value,
+                    entity=entity,
+                    entity_id=gene_id,
+                    entity_category=category,
+                    color=EntityColor.Gene.value,
+                    correct_spellings=correct_spellings,
+                )
+                matches.append(annotation)
         return matches
 
     def _annotate_chemicals(
@@ -703,7 +681,7 @@ class AnnotationsService:
         char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
         cropbox_in_pdf: Tuple[int, int],
     ) -> List[Annotation]:
-        return self._get_annotation(
+        species_annotations = self._get_annotation(
             tokens=self.matched_species,
             token_type=EntityType.Species.value,
             color=EntityColor.Species.value,
@@ -713,6 +691,13 @@ class AnnotationsService:
             char_coord_objs_in_pdf=char_coord_objs_in_pdf,
             cropbox_in_pdf=cropbox_in_pdf,
         )
+
+        self.organism_frequency, self.organism_locations, self.organism_categories = \
+            self._get_entity_frequency_location_and_category(
+                annotations=species_annotations,
+            )
+
+        return species_annotations
 
     def _annotate_diseases(
         self,
@@ -762,6 +747,7 @@ class AnnotationsService:
             EntityType.Species.value: self._annotate_species,
             EntityType.Disease.value: self._annotate_diseases,
             EntityType.Phenotype.value: self._annotate_phenotypes,
+            EntityType.Gene.value: self._annotate_genes,
         }
 
         annotate_entities = funcs[annotation_type]
@@ -793,64 +779,46 @@ class AnnotationsService:
 
     def _update_entity_location_map(
         self,
-        matched_entity_locations: Dict[int, Dict[str, List[Tuple[int, int]]]],
+        matched_entity_locations: Dict[str, List[Tuple[int, int]]],
         annotation: Annotation,
-    ) -> Dict[int, Dict[str, List[Tuple[int, int]]]]:
-        def _check_if_human_id_should_be_added(
-            matched_entity_locations: Dict[int, Dict[str, List[Tuple[int, int]]]],
-            annotation: Annotation,
-        ):
-            if isinstance(annotation.meta, OrganismAnnotation.OrganismMeta) and annotation.meta.category == OrganismCategory.Viruses.value:  # noqa
-                if matched_entity_locations[annotation.page_number].get(HOMO_SAPIENS_TAX_ID, None) is not None:  # noqa
-                    matched_entity_locations[annotation.page_number][HOMO_SAPIENS_TAX_ID].append(  # noqa
-                        (annotation.lo_location_offset, annotation.hi_location_offset)
-                    )
-                else:
-                    matched_entity_locations[annotation.page_number][HOMO_SAPIENS_TAX_ID] = [
-                        (annotation.lo_location_offset, annotation.hi_location_offset)
-                    ]
-            return matched_entity_locations
+    ) -> Dict[str, List[Tuple[int, int]]]:
+        if matched_entity_locations.get(annotation.meta.id, None) is not None:
+            matched_entity_locations[annotation.meta.id].append(
+                (annotation.lo_location_offset, annotation.hi_location_offset)
+            )
+        else:
+            matched_entity_locations[annotation.meta.id] = [
+                (annotation.lo_location_offset, annotation.hi_location_offset)
+            ]
 
-        if matched_entity_locations.get(annotation.page_number, None) is not None:
-            if matched_entity_locations[annotation.page_number].get(annotation.meta.id, None) is not None:  # noqa
-                matched_entity_locations[annotation.page_number][annotation.meta.id].append(
+        # If the annotation represents a virus, then also mark this location as a human
+        # annotation
+        if isinstance(annotation.meta, OrganismAnnotation.OrganismMeta) and annotation.meta.category == OrganismCategory.Viruses.value:  # noqa
+            if matched_entity_locations.get(HOMO_SAPIENS_TAX_ID, None) is not None:  # noqa
+                matched_entity_locations[HOMO_SAPIENS_TAX_ID].append(  # noqa
                     (annotation.lo_location_offset, annotation.hi_location_offset)
                 )
             else:
-                matched_entity_locations[annotation.page_number][annotation.meta.id] = [
+                matched_entity_locations[HOMO_SAPIENS_TAX_ID] = [
                     (annotation.lo_location_offset, annotation.hi_location_offset)
                 ]
 
-            # If the annotation represents a virus, then also mark this location as a human
-            # annotation
-            matched_entity_locations = _check_if_human_id_should_be_added(
-                matched_entity_locations=matched_entity_locations,
-                annotation=annotation,
-            )
-        else:
-            matched_entity_locations[annotation.page_number] = {
-                annotation.meta.id: [(annotation.lo_location_offset, annotation.hi_location_offset)]
-            }
-
-            # If the annotation represents a virus, then also mark this location as a human
-            # annotation
-            matched_entity_locations = _check_if_human_id_should_be_added(
-                matched_entity_locations=matched_entity_locations,
-                annotation=annotation,
-            )
-
         return matched_entity_locations
 
-    def _get_entity_frequency_and_locations(
+    def _get_entity_frequency_location_and_category(
         self,
         annotations: List[Annotation],
-    ) -> Tuple[Dict[str, int], Dict[int, Dict[str, List[Tuple[int, int]]]]]:
+    ) -> Tuple[
+            Dict[str, int],
+            Dict[str, List[Tuple[int, int]]],
+            Dict[str, str]]:
         """Takes as input a list of annotation objects (intended to be of a single entity type).
 
         Returns the frequency of the annotation entities, and their locations within the document.
         """
-        matched_entity_locations: Dict[int, Dict[str, List[Tuple[int, int]]]] = {}
-        entity_frequency: Dict[str, int] = dict()
+        matched_entity_locations: Dict[str, List[Tuple[int, int]]] = {}
+        entity_frequency: Dict[str, int] = {}
+        entity_categories: Dict[str, str] = {}
 
         for annotation in annotations:
             entity_frequency = self._update_entity_frequency_map(
@@ -861,8 +829,9 @@ class AnnotationsService:
                 matched_entity_locations=matched_entity_locations,
                 annotation=annotation,
             )
+            entity_categories[annotation.meta.id] = annotation.meta.to_dict().get('category', '')
 
-        return entity_frequency, matched_entity_locations
+        return entity_frequency, matched_entity_locations, entity_categories
 
     def _get_fixed_false_positive_unified_annotations(
         self,
@@ -928,39 +897,24 @@ class AnnotationsService:
 
         unified_annotations: List[Annotation] = []
         entity_type_and_id_pairs = [
+            # Order is important here, Species should always be annotated before Genes
             (EntityType.Species.value, EntityIdStr.Species.value),
             (EntityType.Chemical.value, EntityIdStr.Chemical.value),
             (EntityType.Compound.value, EntityIdStr.Compound.value),
             (EntityType.Protein.value, EntityIdStr.Protein.value),
             (EntityType.Disease.value, EntityIdStr.Disease.value),
             (EntityType.Phenotype.value, EntityIdStr.Phenotype.value),
+            (EntityType.Gene.value, EntityIdStr.Gene.value),
         ]
 
         for entity_type, entity_id_str in entity_type_and_id_pairs:
-            unified_annotations.extend(self.annotate(
+            annotations = self.annotate(
                 annotation_type=entity_type,
                 entity_id_str=entity_id_str,
                 char_coord_objs_in_pdf=tokens.char_coord_objs_in_pdf,
                 cropbox_in_pdf=tokens.cropbox_in_pdf,
-            ))
-
-        # Create a list of species annotations
-        matched_species = [
-            anno for anno in unified_annotations
-            if anno.meta.keyword_type == EntityType.Species.value
-        ]
-
-        organism_frequency, matched_organism_locations = self._get_entity_frequency_and_locations(
-            annotations=matched_species,
-        )
-
-        # Match genes using organism frequency
-        unified_annotations.extend(self._annotate_genes(
-            matched_organism_locations=matched_organism_locations,
-            organism_frequency=organism_frequency,
-            char_coord_objs_in_pdf=tokens.char_coord_objs_in_pdf,
-            cropbox_in_pdf=tokens.cropbox_in_pdf,
-        ))
+            )
+            unified_annotations.extend(annotations)
 
         fixed_unified_annotations = self._get_fixed_false_positive_unified_annotations(
             annotations_list=unified_annotations,
