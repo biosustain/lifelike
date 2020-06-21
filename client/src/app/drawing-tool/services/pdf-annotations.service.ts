@@ -89,6 +89,21 @@ export class PdfAnnotationsService {
   }
 
   /**
+   * Excludes automatic annotation from the given file.
+   * @param fileId id of the file that contains the annotation
+   * @param id id of the annotation to be excluded
+   * @param reason reason for an exclusion
+   * @param comment additional comment
+   */
+  excludeAnnotation(fileId: string, id: string, reason: string, comment: string): Observable<any> {
+    return this.http.patch(
+      this.baseUrl + `/exclude_annotation/${fileId}`,
+      { id, reason, comment },
+      this.createHttpOptions(true)
+    );
+  }
+
+  /**
    * Search for annoation by id and return annotation object
    * @param annotationId id of the annotation to search for
    */
