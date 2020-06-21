@@ -86,11 +86,13 @@
         [filterChanges]="filterChangeSubject"
         [searchChanged]="searchChanged"
         [showExcludedAnnotations]="showExcludedAnnotations"
+        [unmarkedExcludedAnnotationId]="unmarkedExcludedAnnotationId"
         (dropEvents)="drop($event)"
         (custom-annotation-created)="annotationCreated($event)"
         (loadCompleted)="loadCompleted($event)"
         (custom-annotation-removed)="annotationRemoved($event)"
         (annotation-excluded)="annotationExcluded($event)"
+        (annotation-exclusion-unmarked)="excludedAnnotationUnmarked($event)"
       >
       </lib-pdf-viewer-lib>
     </div>

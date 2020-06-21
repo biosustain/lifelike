@@ -82,6 +82,8 @@ export class PdfViewerComponent implements OnDestroy {
   excludedAnnotation: AnnotationExclusionData;
   excludeAnnotationSub: Subscription;
   showExcludedAnnotations = false;
+  unmarkAnnotationExclusionSub: Subscription;
+  unmarkedExcludedAnnotationId: string;
 
   // search
   pdfQuery;
@@ -285,6 +287,19 @@ export class PdfViewerComponent implements OnDestroy {
     );
   }
 
+  excludedAnnotationUnmarked(id) {
+    this.unmarkAnnotationExclusionSub = this.pdfAnnService.unmarkAnnotationExclusion(this.currentFileId, id).subscribe(
+      response => {
+        this.unmarkedExcludedAnnotationId = id;
+        this.snackBar.open('Unmarked successfully', 'Close', {duration: 5000});
+      },
+      err => {
+        const { message, name } = err.error.apiHttpError;
+        this.snackBar.open(`${name}: ${message}`, 'Close', {duration: 10000});
+      }
+    );
+  }
+
   /**
    * Handle drop event from draggable annotations
    * of the pdf-viewer
@@ -387,6 +402,9 @@ export class PdfViewerComponent implements OnDestroy {
     }
     if (this.excludeAnnotationSub) {
       this.excludeAnnotationSub.unsubscribe();
+    }
+    if (this.unmarkAnnotationExclusionSub) {
+      this.unmarkAnnotationExclusionSub.unsubscribe();
     }
   }
 
