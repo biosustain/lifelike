@@ -54,6 +54,8 @@
                 </span>
               </mat-checkbox>
             </div>
+            <mat-slide-toggle [(ngModel)]="showExcludedAnnotations"
+                              class="mv2 mat-body-2">Show excluded annotations</mat-slide-toggle>
             <div class="mt2" fxLayout="column">
               <button mat-stroked-button fxFlexFill (click)="closeFilterPopup()">Done</button>
             </div>
@@ -79,13 +81,16 @@
         [goToPosition]="goToPosition"
         [addedAnnotation]="addedAnnotation"
         [removedAnnotationIds]="removedAnnotationIds"
+        [excludedAnnotation]="excludedAnnotation"
         [entityTypeVisibilityMap]="entityTypeVisibilityMap"
         [filterChanges]="filterChangeSubject"
         [searchChanged]="searchChanged"
+        [showExcludedAnnotations]="showExcludedAnnotations"
         (dropEvents)="drop($event)"
         (custom-annotation-created)="annotationCreated($event)"
         (loadCompleted)="loadCompleted($event)"
         (custom-annotation-removed)="annotationRemoved($event)"
+        (annotation-excluded)="annotationExcluded($event)"
       >
       </lib-pdf-viewer-lib>
     </div>

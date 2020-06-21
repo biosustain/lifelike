@@ -5,7 +5,7 @@ import { Hyperlink, SearchLink } from 'app/shared/constants';
 
 import { DataFlowService, PdfAnnotationsService, } from '../services';
 
-import { Annotation, GraphData, Location, Meta } from '../services/interfaces';
+import { Annotation, GraphData, Location, Meta, AnnotationExclusionData } from '../services/interfaces';
 
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
@@ -79,6 +79,9 @@ export class PdfViewerComponent implements OnDestroy {
   pdfFileLoaded = false;
   sortedEntityTypeEntries = [];
   entityTypeVisibilityChanged = false;
+  excludedAnnotation: AnnotationExclusionData;
+  excludeAnnotationSub: Subscription;
+  showExcludedAnnotations = false;
 
   // search
   pdfQuery;
@@ -270,6 +273,18 @@ export class PdfViewerComponent implements OnDestroy {
     });
   }
 
+  annotationExcluded({ id, reason, comment }) {
+    this.excludeAnnotationSub = this.pdfAnnService.excludeAnnotation(this.currentFileId, id, reason, comment).subscribe(
+      response => {
+        this.excludedAnnotation = { id, reason, comment };
+        this.snackBar.open('Annotation has been excluded', 'Close', {duration: 5000});
+      },
+      err => {
+        this.snackBar.open(`Error: failed to exclude annotation`, 'Close', {duration: 10000});
+      }
+    );
+  }
+
   /**
    * Handle drop event from draggable annotations
    * of the pdf-viewer
@@ -369,6 +384,9 @@ export class PdfViewerComponent implements OnDestroy {
     }
     if (this.removeAnnotationSub) {
       this.removeAnnotationSub.unsubscribe();
+    }
+    if (this.excludeAnnotationSub) {
+      this.excludeAnnotationSub.unsubscribe();
     }
   }
 
