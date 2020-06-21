@@ -33,17 +33,17 @@ done
 
 if [ "$TARGET" = staging ]; then
     cd /srv
-    export $(cat staging.env | xargs)
+    export $(cat .env | xargs)
 fi
 
 if [ "$TARGET" = production ]; then
     cd /srv
-    export $(cat prod.env | xargs)
+    export $(cat .env | xargs)
 fi
 
 if [ "$TARGET" = demo ]; then
     cd /srv
-    export $(cat demo.env | xargs)
+    export $(cat .env | xargs)
 fi
 
 # Sets permission for CloudSQL to Cloud Bucket Storage
@@ -59,10 +59,14 @@ BACKUP_ID=${CLOUD_SQL_ALIAS}_$(date +%Y%m%d_%H-%M-%S).sqldump.gz
 sudo gcloud sql export sql $CLOUD_SQL_ALIAS gs://$GCE_BACKUP_BUCKET/$BACKUP_ID --database=$POSTGRES_DB
 
 # Run the migration
+if [ "$TARGET" = demo ]; then
+    sudo docker-compose -f docker-compose.demo.yml exec -T appserver bin/migrate-db --upgrade --data-migrate
+fi
+
 if [ "$TARGET" = staging ]; then
-    sudo docker-compose -f docker-compose.ci.yml exec -T appserver bin/migrate-db --upgrade
+    sudo docker-compose -f docker-compose.staging.yml exec -T appserver bin/migrate-db --upgrade --data-migrate
 fi
 
 if [ "$TARGET" = production ]; then
-    sudo docker-compose -f docker-compose.prod.yml exec -T appserver bin/migrate-db --upgrade
+    sudo docker-compose -f docker-compose.prod.yml exec -T appserver bin/migrate-db --upgrade --data-migrate
 fi

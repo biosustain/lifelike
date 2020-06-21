@@ -81,4 +81,9 @@ export class PdfFilesService {
   private getAuthHeader() {
     return { Authorization: `Bearer ${this.auth.getAccessToken()}` };
   }
+
+  getLMDBsDates(): Observable<object> {
+    const options = { headers: this.getAuthHeader() };
+    return this.http.get<object>(`${this.baseUrl}/lmdbs_dates`, options);
+  }
 }
