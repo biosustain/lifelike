@@ -57,17 +57,14 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
   @Input()
   set excludedAnnotation(exclusionData: AnnotationExclusionData) {
     if (exclusionData) {
-      this.annotations.forEach((ann: Annotation) => {
-        if (ann.meta.id === exclusionData.id) {
-          const ref = this.annotationHighlightElementMap.get(ann);
-          jQuery(ref).remove();
-          ann.meta.isExcluded = true;
-          ann.meta.exclusionReason = exclusionData.reason;
-          ann.meta.exclusionComment = exclusionData.comment;
-          this.addAnnotation(ann, ann.pageNumber);
-        }
-      });
-      this.renderFilterSettings();
+      this.changeAnnotationExclusionMark(true, exclusionData.id, exclusionData.reason, exclusionData.comment);
+    }
+  }
+
+  @Input()
+  set unmarkedExcludedAnnotationId(id: string) {
+    if (id) {
+      this.changeAnnotationExclusionMark(false, id, '', '');
     }
   }
 
@@ -89,6 +86,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
   @Output('custom-annotation-created') annotationCreated = new EventEmitter();
   @Output('custom-annotation-removed') annotationRemoved = new EventEmitter();
   @Output('annotation-excluded') annotationExcluded = new EventEmitter();
+  @Output('annotation-exclusion-unmarked') annotationExclusionUnmarked = new EventEmitter();
 
   /**
    * Stores a mapping of annotations to the HTML elements that are used to show it.
@@ -164,6 +162,11 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
         (window as any).pdfViewerRef.openExclusionPanel(id);
       });
     }
+    (window as any).unmarkAnnotationExclusion = (id) => {
+      (window as any).pdfViewerRef.zone.run(() => {
+        (window as any).pdfViewerRef.unmarkAnnotationExclusion(id);
+      });
+    }
     (window as any).pdfViewerRef = {
       zone: this.zone,
       componentFn: () => this.openAnnotationPanel(),
@@ -171,6 +174,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
       copySelectedText: () => this.copySelectedText(),
       removeCustomAnnotation: (uuid) => this.removeCustomAnnotation(uuid),
       openExclusionPanel: (id) => this.openExclusionPanel(id),
+      unmarkAnnotationExclusion: (id) => this.unmarkAnnotationExclusion(id),
       component: this
     };
   }
@@ -430,6 +434,10 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
             <span style="line-height: 16px">Manually excluded</span>
             <span style="line-height: 16px"><i>reason: </i>${an.meta.exclusionReason}</span>
             ${an.meta.exclusionComment ? `<span style="line-height: 16px"><i>comment: </i>${an.meta.exclusionComment}</span>`: ''}
+            <div class="mt1" style="display: flex; align-items: center; cursor: pointer" onclick="unmarkAnnotationExclusion('${an.meta.id}')">
+              <span class="mr1 material-icons">undo</span>
+              <span>Unmark exclusion</span>
+            </div>
           </div>
         </div>`);
     }
@@ -695,6 +703,11 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
     });
   }
 
+  unmarkAnnotationExclusion(id) {
+    jQuery('.system-annotation').qtip('hide');
+    this.annotationExclusionUnmarked.emit(id);
+  }
+
   clearSelection() {
     const sel = window.getSelection();
     sel.removeAllRanges();
@@ -891,6 +904,20 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
   removeCustomAnnotation(uuid) {
     jQuery('.system-annotation').qtip('hide');
     this.annotationRemoved.emit(uuid);
+  }
+
+  changeAnnotationExclusionMark(isExcluded, id, reason, comment) {
+    this.annotations.forEach((ann: Annotation) => {
+      if (ann.meta.id === id) {
+        const ref = this.annotationHighlightElementMap.get(ann);
+        jQuery(ref).remove();
+        ann.meta.isExcluded = isExcluded;
+        ann.meta.exclusionReason = reason;
+        ann.meta.exclusionComment = comment;
+        this.addAnnotation(ann, ann.pageNumber);
+      }
+    });
+    this.renderFilterSettings();
   }
 
 }

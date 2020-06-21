@@ -26,7 +26,11 @@ from neo4japp.database import (
     get_bioc_document_service,
     get_lmdb_dao,
 )
-from neo4japp.exceptions import AnnotationError, RecordNotFoundException
+from neo4japp.exceptions import (
+    AnnotationError,
+    RecordNotFoundException,
+    NotAuthorizedException,
+)
 from neo4japp.models import AppUser
 from neo4japp.models.files import Files, FileContent
 from neo4japp.utils.network import read_url
@@ -421,5 +425,26 @@ def exclude_annotation(file_id, **payload):
     if not file:
         raise RecordNotFoundException('File does not exist')
     file.excluded_annotations = [excluded_annotation, *file.excluded_annotations]
+    db.session.commit()
+    return {'status': 'success'}, 200
+
+
+@bp.route('/unmark_annotation_exclusion/<file_id>', methods=['PATCH'])
+@auth.login_required
+@use_kwargs(AnnotationExclusionSchema(only=('id',)))
+def unmark_annotation_exclusion(file_id, id):
+    file = Files.query.filter_by(file_id=file_id).one_or_none()
+    if not file:
+        raise RecordNotFoundException('File does not exist')
+    excluded_annotation = next(
+        (ann for ann in file.excluded_annotations if ann['id'] == id)
+    )
+    user = g.current_user
+    user_roles = [role.name for role in user.roles]
+    if excluded_annotation['user_id'] != user.id and 'admin' not in user_roles:
+        raise NotAuthorizedException('Another user has excluded this annotation')
+    file.excluded_annotations = list(file.excluded_annotations)
+    file.excluded_annotations.remove(excluded_annotation)
+    db.session.merge(file)
     db.session.commit()
     return {'status': 'success'}, 200

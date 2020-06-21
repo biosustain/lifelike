@@ -104,6 +104,19 @@ export class PdfAnnotationsService {
   }
 
   /**
+   * Removes the exclusion mark from the automatic annotation in the given file.
+   * @param fileId id of the file that contains the annotation
+   * @param id id of the annotation
+   */
+  unmarkAnnotationExclusion(fileId: string, id: string): Observable<any> {
+    return this.http.patch(
+      this.baseUrl + `/unmark_annotation_exclusion/${fileId}`,
+      { id },
+      this.createHttpOptions(true)
+    );
+  }
+
+  /**
    * Search for annoation by id and return annotation object
    * @param annotationId id of the annotation to search for
    */
