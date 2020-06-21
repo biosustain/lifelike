@@ -32,6 +32,7 @@ from neo4japp.models.files import Files, FileContent, LMDBsDates
 from neo4japp.utils.network import read_url
 from neo4japp.schemas.files import AnnotationAdditionSchema, AnnotationRemovalSchema
 from flask_apispec import use_kwargs, marshal_with
+from pdfminer import high_level
 
 URL_FETCH_MAX_LENGTH = 1024 * 1024 * 30
 URL_FETCH_TIMEOUT = 10
@@ -390,12 +391,33 @@ def delete_files():
 
 
 def extract_doi(pdf_content: bytes, file_id: str = None, filename: str = None) -> Optional[str]:
+    # Attempt 1: search through the first N bytes (most probably containing only metadata)
     chunk = pdf_content[:2**17]
-    match = re.search(rb'(?:doi|DOI)(?::|=)\s*([\d\w\./%]+)', chunk)
+    doi = search_doi(chunk)
+    if doi is not None:
+        return doi
+
+    # Attempt 2: search through the first two pages of text (no metadata)
+    fp = io.BytesIO(pdf_content)
+    chunk = high_level.extract_text(fp, page_numbers=[0, 1], caching=False)
+    doi = search_doi(bytes(chunk, encoding='utf8'))
+    if doi is not None:
+        return doi
+
+    current_app.logger.warning('No DOI for file: %s, %s', file_id, filename)
+    return None
+
+
+def search_doi(content: bytes) -> Optional[str]:
+    doi_re = rb'(?:doi|DOI)(?::|=)\s*([\d\w\./%]+)'
+    match = re.search(doi_re, content)
     if match is None:
-        current_app.logger.warning('No DOI for file: %s, %s', file_id, filename)
         return None
     doi = match.group(1).decode('utf-8').replace('%2F', '/')
+    # Make sure that the match does not contain undesired characters at the end.
+    # E.g. when the match is at the end of a line, and there is a full stop.
+    while doi[-1] in './%':
+        doi = doi[:-1]
     return doi if doi.startswith('http') else f'https://doi.org/{doi}'
 
 
