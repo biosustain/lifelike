@@ -399,8 +399,8 @@ def extract_doi(pdf_content: bytes, file_id: str = None, filename: str = None) -
 
     # Attempt 2: search through the first two pages of text (no metadata)
     fp = io.BytesIO(pdf_content)
-    chunk = high_level.extract_text(fp, page_numbers=[0, 1], caching=False)
-    doi = search_doi(bytes(chunk, encoding='utf8'))
+    text = high_level.extract_text(fp, page_numbers=[0, 1], caching=False)
+    doi = search_doi(bytes(text, encoding='utf8'))
     if doi is not None:
         return doi
 
