@@ -1,9 +1,9 @@
 """Update files model to include annotations
 that user marked for an exclusion
 
-Revision ID: 9ccc6fd259f1
-Revises: 868c69bf2137
-Create Date: 2020-06-16 10:25:54.537351
+Revision ID: b6b9fb435404
+Revises: 044ad2ec6526
+Create Date: 2020-06-21 22:23:44.167376
 
 """
 from alembic import context
@@ -12,8 +12,8 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = '9ccc6fd259f1'
-down_revision = '868c69bf2137'
+revision = 'b6b9fb435404'
+down_revision = '044ad2ec6526'
 branch_labels = None
 depends_on = None
 
