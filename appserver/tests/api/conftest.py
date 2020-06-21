@@ -84,6 +84,7 @@ def test_user_with_pdf(session, test_user, fix_project, pdf_dir) -> Files:
         user_id=test_user.id,
         creation_date=datetime.now(),
         annotations={},
+        annotations_date=datetime.now(),
         project=fix_project.id,
         custom_annotations=[],
         excluded_annotations=[],

@@ -4,7 +4,7 @@ import json
 import os
 import re
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Dict, Optional
 import urllib.request
@@ -32,7 +32,7 @@ from neo4japp.exceptions import (
     NotAuthorizedException,
 )
 from neo4japp.models import AppUser
-from neo4japp.models.files import Files, FileContent
+from neo4japp.models.files import Files, FileContent, LMDBsDates
 from neo4japp.utils.network import read_url
 from neo4japp.schemas.files import (
     AnnotationAdditionSchema,
@@ -86,6 +86,7 @@ def upload_pdf():
     file_id = str(uuid.uuid4())
 
     annotations = annotate(filename, pdf)
+    annotations_date = datetime.now(timezone.utc)
 
     try:
         # First look for an existing copy of this file
@@ -112,6 +113,7 @@ def upload_pdf():
         content_id=file_content.id,
         user_id=user.id,
         annotations=annotations,
+        annotations_date=annotations_date,
         project=project,
         doi=doi,
         upload_url=upload_url,
@@ -140,6 +142,7 @@ def list_files():
     project = '1'
 
     files = [{
+        'annotations_date': row.annotations_date,
         'id': row.id,  # TODO: is this of any use?
         'file_id': row.file_id,
         'filename': row.filename,
@@ -147,6 +150,7 @@ def list_files():
         'username': row.username,
         'creation_date': row.creation_date,
     } for row in db.session.query(
+        Files.annotations_date,
         Files.id,
         Files.file_id,
         Files.filename,
@@ -361,6 +365,7 @@ def reannotate():
         else:
             db.session.query(Files).filter(Files.file_id == id).update({
                 'annotations': annotations,
+                'annotations_date': datetime.now(timezone.utc),
             })
             db.session.commit()
             current_app.logger.debug('File successfully annotated: %s, %s', id, file.filename)
@@ -394,10 +399,8 @@ def delete_files():
             continue
         db.session.delete(file)
         db.session.commit()
-        current_app.logger.debug('File deleted: %s, %s', id, file.filename)
+        current_app.logger.info(f'User deleted file: <{g.current_user.email}:{file.filename}>')
         outcome[id] = DeletionOutcome.DELETED.value
-
-    current_app.logger.info(f'User deleted file: <{g.current_user.email}:{file.filename}>')
 
     return jsonify(outcome)
 
@@ -448,3 +451,10 @@ def unmark_annotation_exclusion(file_id, id):
     db.session.merge(file)
     db.session.commit()
     return {'status': 'success'}, 200
+
+
+@bp.route('/lmdbs_dates', methods=['GET'])
+@auth.login_required
+def get_lmdbs_dates():
+    rows = LMDBsDates.query.all()
+    return {row.name: row.date for row in rows}
