@@ -1037,25 +1037,25 @@ class AnnotationsService:
                     if len(anno2_text_in_document.split(' ')) == len(anno2.keyword.split(' ')):
                         return anno2
 
-                    if anno1.keyword_length > anno2.keyword_length:
-                        return anno1
-                    else:
-                        return anno2
+                    return None
 
                 if key1 > key2:
-                    return check_gene_protein(
+                    gene_protein_precedence_result = check_gene_protein(
                         anno1=anno1,
                         anno2=anno2,
                         anno1_text_in_document=anno1.text_in_document,
                         anno2_text_in_document=anno2.text_in_document,
                     )
                 else:
-                    return check_gene_protein(
+                    gene_protein_precedence_result = check_gene_protein(
                         anno1=anno2,
                         anno2=anno1,
                         anno1_text_in_document=anno2.text_in_document,
                         anno2_text_in_document=anno1.text_in_document,
                     )
+
+                if gene_protein_precedence_result is not None:
+                    return gene_protein_precedence_result
 
         if key1 > key2:
             return anno1

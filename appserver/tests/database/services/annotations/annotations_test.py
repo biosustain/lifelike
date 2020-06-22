@@ -422,58 +422,6 @@ def test_fix_conflicting_annotations(annotations_setup, index, annotations):
         assert fixed[0] == annotations[1]
 
 
-@pytest.mark.skip
-@pytest.mark.parametrize(
-    'file, expected_keywords',
-    [
-        (
-            'example3.pdf',
-            [
-                'Ferredoxin',
-                'lipoic acid',
-                'Glutaredoxin',
-                'Ferric chloride',
-                'Human',
-                'mitochondrial disease',
-            ]
-        ),
-        (
-            'example4.pdf',
-            [
-                'Amdinocillin',                 # Chemical
-                'Escherichia coli',             # Organism
-                'cysB',                         # Gene
-                'ppGpp',                        # Compound
-                'transcriptional regulator',    # Protein
-                'strain'                        # Disease
-            ]
-        ),
-    ],
-)
-def test_generate_annotations(
-    annotations_setup,
-    example4_pdf_gene_and_organism_network,
-    file,
-    expected_keywords,
-):
-    annotation_service = get_annotations_service()
-    pdf_parser = get_annotations_pdf_parser()
-
-    pdf = path.join(directory, f'pdf_samples/{file}')
-
-    with open(pdf, 'rb') as f:
-        pdf_text = pdf_parser.parse_pdf(pdf=f)
-        annotations = annotation_service.create_annotations(
-            tokens=pdf_parser.extract_tokens(parsed_chars=pdf_text))
-
-    keywords = {o.keyword for o in annotations}
-
-    assert all([
-        (expected_keyword in keywords)
-        for expected_keyword in expected_keywords]
-    )
-
-
 def test_escherichia_coli_pdf(
     escherichia_coli_pdf_lmdb_setup,
     mock_get_gene_to_organism_match_result_for_escherichia_coli_pdf,
