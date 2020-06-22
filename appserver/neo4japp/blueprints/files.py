@@ -19,6 +19,7 @@ from werkzeug.utils import secure_filename
 
 from neo4japp.blueprints.auth import auth
 from neo4japp.blueprints.permissions import requires_role
+from neo4japp.constants import TIMEZONE
 from neo4japp.database import (
     db,
     get_annotations_service,
@@ -86,7 +87,7 @@ def upload_pdf():
     file_id = str(uuid.uuid4())
 
     annotations = annotate(filename, pdf)
-    annotations_date = datetime.now(timezone.utc)
+    annotations_date = datetime.now(TIMEZONE)
 
     try:
         # First look for an existing copy of this file
@@ -222,7 +223,7 @@ def get_annotations(id):
     project = '1'  # TODO: remove hard coded project
 
     file = Files.query.filter_by(file_id=id, project=project).one_or_none()
-    if not file:
+    if file is None:
         raise RecordNotFoundException('File does not exist')
 
     # TODO: Should remove this eventually...the annotator should return data readable by the
@@ -267,7 +268,7 @@ def add_custom_annotation(id, **payload):
         'uuid': str(uuid.uuid4())
     }
     file = Files.query.filter_by(file_id=id).one_or_none()
-    if not file:
+    if file is None:
         raise RecordNotFoundException('File does not exist')
     file.custom_annotations = [annotation_to_add, *file.custom_annotations]
     db.session.commit()
@@ -285,7 +286,7 @@ class AnnotationRemovalOutcome(Enum):
 @use_kwargs(AnnotationRemovalSchema)
 def remove_custom_annotation(id, uuid, removeAll):
     file = Files.query.filter_by(file_id=id).one_or_none()
-    if not file:
+    if file is None:
         raise RecordNotFoundException('File does not exist')
     user = g.current_user
     user_roles = [role.name for role in user.roles]
@@ -294,7 +295,7 @@ def remove_custom_annotation(id, uuid, removeAll):
         (ann for ann in file.custom_annotations if ann['uuid'] == uuid), None
     )
     outcome: Dict[str, str] = {}  # annotation uuid to deletion outcome
-    if not annotation_to_remove:
+    if annotation_to_remove is None:
         outcome[uuid] = AnnotationRemovalOutcome.NOT_FOUND.value
         return jsonify(outcome)
     text = annotation_to_remove['meta']['allText']
@@ -415,33 +416,35 @@ def extract_doi(pdf_content: bytes, file_id: str = None, filename: str = None) -
     return doi if doi.startswith('http') else f'https://doi.org/{doi}'
 
 
-@bp.route('/exclude_annotation/<file_id>', methods=['PATCH'])
+@bp.route('/add_annotation_exclusion/<file_id>', methods=['PATCH'])
 @auth.login_required
 @use_kwargs(AnnotationExclusionSchema)
-def exclude_annotation(file_id, **payload):
+def add_annotation_exclusion(file_id, **payload):
     excluded_annotation = {
         **payload,
         'user_id': g.current_user.id,
-        'exclusion_date': str(datetime.now())
+        'exclusion_date': str(datetime.now(TIMEZONE))
     }
     file = Files.query.filter_by(file_id=file_id).one_or_none()
-    if not file:
+    if file is None:
         raise RecordNotFoundException('File does not exist')
     file.excluded_annotations = [excluded_annotation, *file.excluded_annotations]
     db.session.commit()
-    return {'status': 'success'}, 200
+    return jsonify({'status': 'success'})
 
 
-@bp.route('/unmark_annotation_exclusion/<file_id>', methods=['PATCH'])
+@bp.route('/remove_annotation_exclusion/<file_id>', methods=['PATCH'])
 @auth.login_required
 @use_kwargs(AnnotationExclusionSchema(only=('id',)))
-def unmark_annotation_exclusion(file_id, id):
+def remove_annotation_exclusion(file_id, id):
     file = Files.query.filter_by(file_id=file_id).one_or_none()
-    if not file:
+    if file is None:
         raise RecordNotFoundException('File does not exist')
     excluded_annotation = next(
-        (ann for ann in file.excluded_annotations if ann['id'] == id)
+        (ann for ann in file.excluded_annotations if ann['id'] == id), None
     )
+    if excluded_annotation is None:
+        raise RecordNotFoundException('Annotation not found')
     user = g.current_user
     user_roles = [role.name for role in user.roles]
     if excluded_annotation['user_id'] != user.id and 'admin' not in user_roles:
@@ -450,7 +453,7 @@ def unmark_annotation_exclusion(file_id, id):
     file.excluded_annotations.remove(excluded_annotation)
     db.session.merge(file)
     db.session.commit()
-    return {'status': 'success'}, 200
+    return jsonify({'status': 'success'})
 
 
 @bp.route('/lmdbs_dates', methods=['GET'])

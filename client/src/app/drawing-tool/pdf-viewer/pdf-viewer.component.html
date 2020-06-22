@@ -81,18 +81,18 @@
         [goToPosition]="goToPosition"
         [addedAnnotation]="addedAnnotation"
         [removedAnnotationIds]="removedAnnotationIds"
-        [excludedAnnotation]="excludedAnnotation"
+        [addedAnnotationExclusion]="addedAnnotationExclusion"
         [entityTypeVisibilityMap]="entityTypeVisibilityMap"
         [filterChanges]="filterChangeSubject"
         [searchChanged]="searchChanged"
         [showExcludedAnnotations]="showExcludedAnnotations"
-        [unmarkedExcludedAnnotationId]="unmarkedExcludedAnnotationId"
+        [removedAnnotationExclusionId]="removedAnnotationExclusionId"
         (dropEvents)="drop($event)"
         (custom-annotation-created)="annotationCreated($event)"
         (loadCompleted)="loadCompleted($event)"
         (custom-annotation-removed)="annotationRemoved($event)"
-        (annotation-excluded)="annotationExcluded($event)"
-        (annotation-exclusion-unmarked)="excludedAnnotationUnmarked($event)"
+        (annotation-exclusion-added)="annotationExclusionAdded($event)"
+        (annotation-exclusion-removed)="annotationExclusionRemoved($event)"
       >
       </lib-pdf-viewer-lib>
     </div>

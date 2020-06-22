@@ -55,14 +55,14 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   @Input()
-  set excludedAnnotation(exclusionData: AnnotationExclusionData) {
+  set addedAnnotationExclusion(exclusionData: AnnotationExclusionData) {
     if (exclusionData) {
       this.changeAnnotationExclusionMark(true, exclusionData.id, exclusionData.reason, exclusionData.comment);
     }
   }
 
   @Input()
-  set unmarkedExcludedAnnotationId(id: string) {
+  set removedAnnotationExclusionId(id: string) {
     if (id) {
       this.changeAnnotationExclusionMark(false, id, '', '');
     }
@@ -85,8 +85,8 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
   // tslint:disable
   @Output('custom-annotation-created') annotationCreated = new EventEmitter();
   @Output('custom-annotation-removed') annotationRemoved = new EventEmitter();
-  @Output('annotation-excluded') annotationExcluded = new EventEmitter();
-  @Output('annotation-exclusion-unmarked') annotationExclusionUnmarked = new EventEmitter();
+  @Output('annotation-exclusion-added') annotationExclusionAdded = new EventEmitter();
+  @Output('annotation-exclusion-removed') annotationExclusionRemoved = new EventEmitter();
 
   /**
    * Stores a mapping of annotations to the HTML elements that are used to show it.
@@ -162,9 +162,9 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
         (window as any).pdfViewerRef.openExclusionPanel(id);
       });
     }
-    (window as any).unmarkAnnotationExclusion = (id) => {
+    (window as any).removeAnnotationExclusion = (id) => {
       (window as any).pdfViewerRef.zone.run(() => {
-        (window as any).pdfViewerRef.unmarkAnnotationExclusion(id);
+        (window as any).pdfViewerRef.removeAnnotationExclusion(id);
       });
     }
     (window as any).pdfViewerRef = {
@@ -174,7 +174,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
       copySelectedText: () => this.copySelectedText(),
       removeCustomAnnotation: (uuid) => this.removeCustomAnnotation(uuid),
       openExclusionPanel: (id) => this.openExclusionPanel(id),
-      unmarkAnnotationExclusion: (id) => this.unmarkAnnotationExclusion(id),
+      removeAnnotationExclusion: (id) => this.removeAnnotationExclusion(id),
       component: this
     };
   }
@@ -434,7 +434,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
             <span style="line-height: 16px">Manually excluded</span>
             <span style="line-height: 16px"><i>reason: </i>${an.meta.exclusionReason}</span>
             ${an.meta.exclusionComment ? `<span style="line-height: 16px"><i>comment: </i>${an.meta.exclusionComment}</span>`: ''}
-            <div class="mt1" style="display: flex; align-items: center; cursor: pointer" onclick="unmarkAnnotationExclusion('${an.meta.id}')">
+            <div class="mt1" style="display: flex; align-items: center; cursor: pointer" onclick="removeAnnotationExclusion('${an.meta.id}')">
               <span class="mr1 material-icons">undo</span>
               <span>Unmark exclusion</span>
             </div>
@@ -698,14 +698,14 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
 
     dialogRef.afterClosed().subscribe(exclusionData => {
       if (exclusionData) {
-        this.annotationExcluded.emit({ ...exclusionData, id });
+        this.annotationExclusionAdded.emit({ ...exclusionData, id });
       }
     });
   }
 
-  unmarkAnnotationExclusion(id) {
+  removeAnnotationExclusion(id) {
     jQuery('.system-annotation').qtip('hide');
-    this.annotationExclusionUnmarked.emit(id);
+    this.annotationExclusionRemoved.emit(id);
   }
 
   clearSelection() {
