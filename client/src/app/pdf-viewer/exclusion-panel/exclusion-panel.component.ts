@@ -17,7 +17,7 @@ export class ExclusionPanelComponent {
 
   constructor(private dialogRef: MatDialogRef<ExclusionPanelComponent>) { }
 
-  excludeAnnotation() {
+  addAnnotationExclusion() {
     this.dialogRef.close({
       reason: this.selectedReason,
       comment: this.comment
