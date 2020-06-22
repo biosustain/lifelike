@@ -60,14 +60,11 @@
             *ngIf='isNode'
             class="w-100 mt3">
             <mat-label>Detail</mat-label>
-            <textarea
+            <input
                 id='textArea'
                 matInput
-                cdkTextareaAutosize
-                #autosize="cdkTextareaAutosize"
                 (keydown.enter)="blurInput($event)"
                 formControlName='detail'>
-            </textarea>
         </mat-form-field>
 
         <app-search-links
