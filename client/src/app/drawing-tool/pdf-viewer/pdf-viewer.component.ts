@@ -79,11 +79,11 @@ export class PdfViewerComponent implements OnDestroy {
   pdfFileLoaded = false;
   sortedEntityTypeEntries = [];
   entityTypeVisibilityChanged = false;
-  excludedAnnotation: AnnotationExclusionData;
-  excludeAnnotationSub: Subscription;
+  addedAnnotationExclusion: AnnotationExclusionData;
+  addAnnotationExclusionSub: Subscription;
   showExcludedAnnotations = false;
-  unmarkAnnotationExclusionSub: Subscription;
-  unmarkedExcludedAnnotationId: string;
+  removeAnnotationExclusionSub: Subscription;
+  removedAnnotationExclusionId: string;
 
   // search
   pdfQuery;
@@ -275,10 +275,10 @@ export class PdfViewerComponent implements OnDestroy {
     });
   }
 
-  annotationExcluded({ id, reason, comment }) {
-    this.excludeAnnotationSub = this.pdfAnnService.excludeAnnotation(this.currentFileId, id, reason, comment).subscribe(
+  annotationExclusionAdded({ id, reason, comment }) {
+    this.addAnnotationExclusionSub = this.pdfAnnService.addAnnotationExclusion(this.currentFileId, id, reason, comment).subscribe(
       response => {
-        this.excludedAnnotation = { id, reason, comment };
+        this.addedAnnotationExclusion = { id, reason, comment };
         this.snackBar.open('Annotation has been excluded', 'Close', {duration: 5000});
       },
       err => {
@@ -287,10 +287,10 @@ export class PdfViewerComponent implements OnDestroy {
     );
   }
 
-  excludedAnnotationUnmarked(id) {
-    this.unmarkAnnotationExclusionSub = this.pdfAnnService.unmarkAnnotationExclusion(this.currentFileId, id).subscribe(
+  annotationExclusionRemoved(id) {
+    this.removeAnnotationExclusionSub = this.pdfAnnService.removeAnnotationExclusion(this.currentFileId, id).subscribe(
       response => {
-        this.unmarkedExcludedAnnotationId = id;
+        this.removedAnnotationExclusionId = id;
         this.snackBar.open('Unmarked successfully', 'Close', {duration: 5000});
       },
       err => {
@@ -400,11 +400,11 @@ export class PdfViewerComponent implements OnDestroy {
     if (this.removeAnnotationSub) {
       this.removeAnnotationSub.unsubscribe();
     }
-    if (this.excludeAnnotationSub) {
-      this.excludeAnnotationSub.unsubscribe();
+    if (this.addAnnotationExclusionSub) {
+      this.addAnnotationExclusionSub.unsubscribe();
     }
-    if (this.unmarkAnnotationExclusionSub) {
-      this.unmarkAnnotationExclusionSub.unsubscribe();
+    if (this.removeAnnotationExclusionSub) {
+      this.removeAnnotationExclusionSub.unsubscribe();
     }
   }
 

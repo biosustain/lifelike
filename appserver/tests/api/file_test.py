@@ -156,13 +156,13 @@ def test_user_can_remove_matching_custom_annotations(client, test_user, test_use
     assert remove_resp.get_json()[uuid_2] == 'Removed'
 
 
-def test_user_can_unmark_annotation_exclusion(client, test_user, test_user_with_pdf):
+def test_user_can_remove_annotation_exclusion(client, test_user, test_user_with_pdf):
     login_resp = client.login_as_user(test_user.email, 'password')
     headers = generate_headers(login_resp['access_jwt'])
     file_id = test_user_with_pdf.file_id
 
-    exclude_resp = client.patch(
-        f'/files/exclude_annotation/{file_id}',
+    add_exc_resp = client.patch(
+        f'/files/add_annotation_exclusion/{file_id}',
         headers=headers,
         data=json.dumps({
             'id': 'id',
@@ -172,11 +172,11 @@ def test_user_can_unmark_annotation_exclusion(client, test_user, test_user_with_
         content_type='application/json',
     )
 
-    unmark_exclusion_resp = client.patch(
-        f'/files/unmark_annotation_exclusion/{file_id}',
+    remove_exc_resp = client.patch(
+        f'/files/remove_annotation_exclusion/{file_id}',
         headers=headers,
         data=json.dumps({'id': 'id'}),
         content_type='application/json',
     )
 
-    assert unmark_exclusion_resp.status_code == 200
+    assert remove_exc_resp.status_code == 200
