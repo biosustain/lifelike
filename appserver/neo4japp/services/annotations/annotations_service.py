@@ -591,7 +591,7 @@ class AnnotationsService:
 
                 for entity in entities:
                     entity_common_name = entity['name']
-                    gene_names.add(entity_common_name)
+                    gene_names.add(str(entity_common_name).lower())
 
                     entity_tokenpos_pairs.append((entity, token_positions))
 
@@ -602,10 +602,11 @@ class AnnotationsService:
             )
 
         for entity, token_positions in entity_tokenpos_pairs:
-            if entity['name'] in gene_organism_matches:
+            entity_name_lowered = str(entity['name']).lower()
+            if entity_name_lowered in gene_organism_matches:
                 gene_id, organism_id = self._get_closest_gene_organism_pair(
                     gene_position=token_positions,
-                    organism_matches=gene_organism_matches[entity['name']]
+                    organism_matches=gene_organism_matches[entity_name_lowered]
                 )
 
                 category = self.organism_categories[organism_id]
@@ -832,8 +833,9 @@ class AnnotationsService:
             entity_categories[annotation.meta.id] = annotation.meta.to_dict().get('category', '')
 
             # Need to add an entry for humans if we annotated a virus
-            if annotation.meta.to_dict().get('category', '') == OrganismCategory.Viruses.value:
-                entity_categories[HOMO_SAPIENS_TAX_ID] = OrganismCategory.Eukaryota.value
+            if isinstance(annotation, OrganismAnnotation) and isinstance(annotation.meta, OrganismAnnotation.OrganismMeta):  # noqa
+                if annotation.meta.category == OrganismCategory.Viruses.value:  # noqa
+                    entity_categories[HOMO_SAPIENS_TAX_ID] = OrganismCategory.Eukaryota.value
 
         return entity_frequency, matched_entity_locations, entity_categories
 
@@ -1033,6 +1035,11 @@ class AnnotationsService:
                     if len(anno1_text_in_document.split(' ')) == len(anno1.keyword.split(' ')):
                         return anno1
                     if len(anno2_text_in_document.split(' ')) == len(anno2.keyword.split(' ')):
+                        return anno2
+
+                    if anno1.keyword_length > anno2.keyword_length:
+                        return anno1
+                    else:
                         return anno2
 
                 if key1 > key2:
