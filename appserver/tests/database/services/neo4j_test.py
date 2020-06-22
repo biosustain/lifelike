@@ -121,11 +121,13 @@ def test_get_snippets_for_edge_orders_by_pub_year(
     assert len(result.snippets) == 2
     assert result.association == 'alleviates, reduces'
 
+    print(result)
+
     reference_node1 = result.snippets[0].reference.to_dict()
     reference_node2 = result.snippets[1].reference.to_dict()
 
-    assert 'penicillin was found to reduce' in reference_node1['data']['sentence']
-    assert 'In a mouse model' in reference_node2['data']['sentence']
+    assert 'In a mouse model' in reference_node1['data']['sentence']
+    assert 'penicillin was found to reduce' in reference_node2['data']['sentence']
 
 
 def test_get_snippets_for_cluster(
@@ -211,5 +213,5 @@ def test_get_snippets_for_cluster_orders_by_pub_year(
     reference_node1 = result.snippets[0].reference.to_dict()
     reference_node2 = result.snippets[1].reference.to_dict()
 
-    assert 'penicillin was found to reduce' in reference_node1['data']['sentence']
-    assert 'In a mouse model' in reference_node2['data']['sentence']
+    assert 'In a mouse model' in reference_node1['data']['sentence']
+    assert 'penicillin was found to reduce' in reference_node2['data']['sentence']

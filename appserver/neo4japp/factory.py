@@ -1,28 +1,56 @@
 import logging
 import os
 import traceback
+import sentry_sdk
 from functools import partial
 
-from flask import current_app, Flask, jsonify
+from flask import (
+    current_app,
+    Flask,
+    jsonify,
+)
+
+from logging.config import dictConfig
 from flask_caching import Cache
 from flask_cors import CORS
-from werkzeug.utils import find_modules, import_string
+from werkzeug.utils import (
+    find_modules,
+    import_string,
+)
 
 from neo4japp.database import db, ma, migrate
 from neo4japp.encoders import CustomJSONEncoder
 from neo4japp.exceptions import (
-    BaseException, JWTAuthTokenException,
-    JWTTokenException, RecordNotFoundException,
-    DataNotAvailableException)
+    BaseException,
+    JWTAuthTokenException,
+    JWTTokenException,
+    RecordNotFoundException,
+    DataNotAvailableException
+)
 
 from werkzeug.exceptions import UnprocessableEntity
-
-import sentry_sdk
 from sentry_sdk.integrations.flask import FlaskIntegration
 from sentry_sdk.integrations.logging import LoggingIntegration
 from sentry_sdk.integrations.logging import ignore_logger
 from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 
+
+# Global configuration for logging
+dictConfig({
+    'version': 1,
+    'formatters': {'default': {
+        'format': '[%(asctime)s] %(levelname)s in %(module)s: %(message)s',
+    }},
+    'handlers': {'wsgi': {
+        'class': 'logging.StreamHandler',
+        'stream': 'ext://flask.logging.wsgi_errors_stream',
+        'formatter': 'default'
+    }},
+    '***ARANGO_USERNAME***': {
+        'level': 'INFO',
+        'handlers': ['wsgi']
+    }
+})
 
 logger = logging.getLogger(__name__)
 
