@@ -75,6 +75,48 @@ export class PdfAnnotationsService {
   }
 
   /**
+   * Deletes custom annotation from the given file.
+   * @param fileId id of the file that contains the annotation
+   * @param uuid uuid of the annotation to be deleted
+   * @param removeAll indicates if all the matching annotations should be removed
+   */
+  removeCustomAnnotation(fileId: string, uuid: string, removeAll: boolean): Observable<any> {
+    return this.http.patch(
+      this.baseUrl + `/remove_custom_annotation/${fileId}`,
+      { uuid, removeAll },
+      this.createHttpOptions(true)
+    );
+  }
+
+  /**
+   * Excludes automatic annotation from the given file.
+   * @param fileId id of the file that contains the annotation
+   * @param id id of the annotation to be excluded
+   * @param reason reason for an exclusion
+   * @param comment additional comment
+   */
+  addAnnotationExclusion(fileId: string, id: string, reason: string, comment: string): Observable<any> {
+    return this.http.patch(
+      this.baseUrl + `/add_annotation_exclusion/${fileId}`,
+      { id, reason, comment },
+      this.createHttpOptions(true)
+    );
+  }
+
+  /**
+   * Removes the exclusion mark from the automatic annotation in the given file.
+   * @param fileId id of the file that contains the annotation
+   * @param id id of the annotation
+   */
+  removeAnnotationExclusion(fileId: string, id: string): Observable<any> {
+    return this.http.patch(
+      this.baseUrl + `/remove_annotation_exclusion/${fileId}`,
+      { id },
+      this.createHttpOptions(true)
+    );
+  }
+
+  /**
    * Search for annoation by id and return annotation object
    * @param annotationId id of the annotation to search for
    */
