@@ -16,7 +16,7 @@ import {
 import { filter } from 'rxjs/operators';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
-import { ModuleAwareComponent } from './modules';
+import { ModuleAwareComponent, ModuleProperties } from './modules';
 import { TabData, WorkspaceSessionLoader, WorkspaceSessionService } from './services/workspace-session.service';
 
 export interface TabDefaults {
@@ -81,9 +81,7 @@ export class Container<T> {
       const subscriptions: Subscription[] = [];
       if (instance.modulePropertiesChange) {
         subscriptions.push(instance.modulePropertiesChange.subscribe(properties => {
-          this.tab.title = properties.title;
-          this.tab.fontAwesomeIcon = properties.fontAwesomeIcon;
-          this.tab.badge = properties.badge;
+          this.tab.queuePropertyChange(properties);
         }));
       }
       this.createdComponentRef.onDestroy(() => {
@@ -122,8 +120,33 @@ export class Tab {
   providers: StaticProvider[] = [];
   container: Container<any>;
 
+  pendingTitle: string;
+  pendingFontAwesomeIcon: string;
+  pendingBadge: string;
+
   constructor(private readonly injector: Injector,
               private readonly componentFactoryResolver: ComponentFactoryResolver) {
+  }
+
+  queuePropertyChange(properties: ModuleProperties) {
+    this.pendingTitle = properties.title;
+    this.pendingFontAwesomeIcon = properties.fontAwesomeIcon;
+    this.pendingBadge = properties.badge;
+  }
+
+  applyPendingChanges() {
+    if (this.pendingTitle != null) {
+      this.title = this.pendingTitle;
+      this.pendingTitle = null;
+    }
+    if (this.pendingFontAwesomeIcon != null) {
+      this.fontAwesomeIcon = this.pendingFontAwesomeIcon;
+      this.pendingFontAwesomeIcon = null;
+    }
+    if (this.pendingBadge != null) {
+      this.badge = this.pendingBadge;
+      this.pendingBadge = null;
+    }
   }
 
   /**
@@ -206,6 +229,12 @@ export class Pane {
 
   constructor(readonly id: string,
               private readonly injector: Injector) {
+  }
+
+  applyPendingChanges() {
+    for (const tab of this.tabs) {
+      tab.applyPendingChanges();
+    }
   }
 
   /**
@@ -400,6 +429,12 @@ export class PaneManager {
       }
     }
   }
+
+  applyPendingChanges() {
+    for (const pane of this.panes) {
+      pane.applyPendingChanges();
+    }
+  }
 }
 
 @Injectable({
@@ -579,6 +614,10 @@ export class WorkspaceManager {
   shouldConfirmTabUnload(tab: Tab) {
     const component = tab.getComponent();
     return !!(component && component.shouldConfirmUnload && component.shouldConfirmUnload());
+  }
+
+  applyPendingChanges() {
+    this.panes.applyPendingChanges();
   }
 
   private buildPanesSnapshot(): Pane[] {
