@@ -14,6 +14,7 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatChipsModule, MatDialogModule, MatInputModule, MatSelectModule } from '@angular/material';
 import { MatButtonModule } from '@angular/material/button';
+import { MatRadioModule } from '@angular/material/radio';
 
 @NgModule({
   declarations: [PdfViewerLibComponent, AnnotationPanelComponent, ExclusionPanelComponent],
@@ -30,7 +31,8 @@ import { MatButtonModule } from '@angular/material/button';
     MatSelectModule,
     MatInputModule,
     FlexLayoutModule,
-    MatButtonModule
+    MatButtonModule,
+    MatRadioModule
   ],
   entryComponents: [AnnotationPanelComponent, ExclusionPanelComponent],
   exports: [PdfViewerLibComponent]
