@@ -21,7 +21,8 @@ from neo4japp.factory import cache
 from neo4japp.util import (
     CamelDictMixin,
     compute_hash,
-    get_first_known_label,
+    get_first_known_label_from_node,
+    get_first_known_label_from_list,
     snake_to_camel_dict,
 )
 
@@ -101,8 +102,8 @@ class Neo4JService(GraphBaseDao):
             for node in nodes:
                 graph_node = GraphNode.from_py2neo(
                     node,
-                    display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label(node)]),  # type: ignore  # noqa
-                    primary_label_fn=get_first_known_label,
+                    display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label_from_node(node)]),  # type: ignore  # noqa
+                    primary_label_fn=get_first_known_label_from_node,
                 )
                 node_dict[graph_node.id] = graph_node
             for rel in rels:
@@ -117,7 +118,7 @@ class Neo4JService(GraphBaseDao):
             GraphNode.from_py2neo(
                 n,
                 display_fn=lambda x: x.get('common_name'),
-                primary_label_fn=get_first_known_label,
+                primary_label_fn=get_first_known_label_from_node,
             )
             for n in nodes
         ]
@@ -240,6 +241,7 @@ class Neo4JService(GraphBaseDao):
             reference_table_rows.append(ReferenceTableRow(
                 node_id=pair.node.id,
                 node_display_name=pair.node.display_name,
+                node_label=pair.node.label,
                 snippet_count=row['count'],
             ))
 
@@ -268,13 +270,13 @@ class Neo4JService(GraphBaseDao):
                     Snippet(
                         reference=GraphNode.from_py2neo(
                             reference['snippet'],
-                            display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label(reference['snippet'])]),  # type: ignore  # noqa
-                            primary_label_fn=get_first_known_label,
+                            display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label_from_node(reference['snippet'])]),  # type: ignore  # noqa
+                            primary_label_fn=get_first_known_label_from_node,
                         ),
                         publication=GraphNode.from_py2neo(
                             reference['publication'],
-                            display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label(reference['publication'])]),  # type: ignore  # noqa
-                            primary_label_fn=get_first_known_label,
+                            display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label_from_node(reference['publication'])]),  # type: ignore  # noqa
+                            primary_label_fn=get_first_known_label_from_node,
                         )
                     )
                 )
@@ -323,13 +325,13 @@ class Neo4JService(GraphBaseDao):
                 snippets=[Snippet(
                     reference=GraphNode.from_py2neo(
                         reference['snippet'],
-                        display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label(reference['snippet'])]),  # type: ignore  # noqa
-                        primary_label_fn=get_first_known_label,
+                        display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label_from_node(reference['snippet'])]),  # type: ignore  # noqa
+                        primary_label_fn=get_first_known_label_from_node,
                     ),
                     publication=GraphNode.from_py2neo(
                         reference['publication'],
-                        display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label(reference['publication'])]),  # type: ignore  # noqa
-                        primary_label_fn=get_first_known_label,
+                        display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label_from_node(reference['publication'])]),  # type: ignore  # noqa
+                        primary_label_fn=get_first_known_label_from_node,
                     )
                 ) for reference in row['references']]
             ) for row in data
@@ -398,8 +400,8 @@ class Neo4JService(GraphBaseDao):
             node = self.graph.evaluate(cypher_query)
             graph_node = GraphNode.from_py2neo(
                 node,
-                display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label(node)]),  # type: ignore  # noqa
-                primary_label_fn=get_first_known_label,
+                display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label_from_node(node)]),  # type: ignore  # noqa
+                primary_label_fn=get_first_known_label_from_node,
             )
             return dict(nodes=[graph_node.to_dict()], edges=[])
         else:
@@ -422,13 +424,13 @@ class Neo4JService(GraphBaseDao):
                 relationship = row['relationship']
                 graph_nodeA = GraphNode.from_py2neo(
                     nodeA,
-                    display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label(nodeA)]),  # type: ignore  # noqa
-                    primary_label_fn=get_first_known_label,
+                    display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label_from_node(nodeA)]),  # type: ignore  # noqa
+                    primary_label_fn=get_first_known_label_from_node,
                 )
                 graph_nodeB = GraphNode.from_py2neo(
                     nodeB,
-                    display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label(nodeB)]),  # type: ignore  # noqa
-                    primary_label_fn=get_first_known_label,
+                    display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label_from_node(nodeB)]),  # type: ignore  # noqa
+                    primary_label_fn=get_first_known_label_from_node,
                 )
                 rel = GraphRelationship.from_py2neo(relationship)
                 node_dict[graph_nodeA.id] = graph_nodeA
@@ -665,9 +667,11 @@ class Neo4JService(GraphBaseDao):
             WITH
                 a as association,
                 ID(f) as from_id,
-                ID(t) as to_id
+                ID(t) as to_id,
+                labels(f) as from_labels,
+                labels(t) as to_labels
             OPTIONAL MATCH (association)<-[:PREDICTS]-(s:Snippet)
-            RETURN from_id, to_id, COUNT(s) as count
+            RETURN from_id, to_id, from_labels, to_labels, COUNT(s) as count
         """
         return query
 
