@@ -7,7 +7,7 @@
       <div class="form-group row" *ngIf="form.get('email') as control">
         <label for="email" class="col-form-label col-sm-3">Email:</label>
         <div class="col-sm-9">
-          <input type="email" formControlName="email" id="email" [appFormInput]="control">
+          <input type="email" formControlName="email" id="email" [appFormInput]="control" appAutoFocus>
           <app-form-input-feedback [control]="control"></app-form-input-feedback>
         </div>
       </div>
