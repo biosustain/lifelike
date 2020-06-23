@@ -1,0 +1,59 @@
+<form [formGroup]="form" (ngSubmit)="submit()">
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Create User</h4>
+    <button type="button" class="close" aria-label="Close" (click)="close()">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+
+  <div class="modal-body">
+    <div class="form-group row" *ngIf="form.get('username') as control">
+      <label for="username" class="col-form-label col-sm-3">Username:</label>
+      <div class="col-sm-9">
+        <input type="text" formControlName="username" id="username" [appFormInput]="control" appAutoFocus>
+        <app-form-input-feedback [control]="control"></app-form-input-feedback>
+      </div>
+    </div>
+
+    <div class="form-group row" *ngIf="form.get('password') as control">
+      <label for="password" class="col-form-label col-sm-3">Password:</label>
+      <div class="col-sm-9">
+        <input type="password" formControlName="password" id="password" [appFormInput]="control">
+        <app-form-input-feedback [control]="control"></app-form-input-feedback>
+      </div>
+    </div>
+
+    <div class="form-group row" *ngIf="form.get('email') as control">
+      <label for="email" class="col-form-label col-sm-3">Email:</label>
+      <div class="col-sm-9">
+        <input type="email" formControlName="email" id="email" [appFormInput]="control">
+        <app-form-input-feedback [control]="control"></app-form-input-feedback>
+      </div>
+    </div>
+
+    <fieldset>
+      <legend>User Details</legend>
+
+      <div class="form-group row" *ngIf="form.get('firstName') as control">
+        <label for="first-name" class="col-form-label col-sm-3">First name:</label>
+        <div class="col-sm-9">
+          <input type="text" formControlName="firstName" id="first-name" [appFormInput]="control">
+          <app-form-input-feedback [control]="control"></app-form-input-feedback>
+        </div>
+      </div>
+
+      <div class="form-group row" *ngIf="form.get('lastName') as control">
+        <label for="last-name" class="col-form-label col-sm-3">Last name:</label>
+        <div class="col-sm-9">
+          <input type="text" formControlName="lastName" id="last-name" [appFormInput]="control">
+          <app-form-input-feedback [control]="control"></app-form-input-feedback>
+        </div>
+      </div>
+    </fieldset>
+  </div>
+  <div class="modal-footer">
+    <button type="submit" class="btn btn-primary">
+      Create
+    </button>
+  </div>
+</form>
