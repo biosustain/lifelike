@@ -21,55 +21,37 @@
   <div class="module-body">
     <div class="mb-4 d-flex">
       <div>
-        <button class="btn btn-primary" (click)="openUploadDialog()">
+        <button class="btn btn-primary" (click)="showUploadDialog()">
           <i class="fa fa-fw fa-file-upload"></i>
           Add File
         </button>
         <div class="d-inline-block"
-             [ngbTooltip]="getSelectedShownFiles().length === 0 ? 'Select one or more files to use these options' : ''">
+             [ngbTooltip]="getSelectedShownFiles().length === 0 ? 'Select one or more files first.' : ''">
+          <button class="btn btn-primary ml-2"
+                  [disabled]="getSelectedShownFiles().length !== 1" (click)="showEditDialog()">
+            <i class="fa fa-fw fa-pencil"></i> Edit
+          </button>
           <button class="btn btn-outline-secondary ml-2"
-                  [disabled]="getSelectedShownFiles().length === 0 || isReannotating" (click)="reannotate()">
-            Reannotate <span *ngIf="getSelectedShownFiles().length">({{getSelectedShownFiles().length}})</span>
+                  [disabled]="getSelectedShownFiles().length === 0" (click)="reannotate()">
+            Reannotate
           </button>
           <button class="btn btn-outline-secondary ml-2"
                   [disabled]="getSelectedShownFiles().length === 0"
-                  (click)="openDeleteDialog()">
-            Delete <span *ngIf="getSelectedShownFiles().length">({{getSelectedShownFiles().length}})</span>
+                  (click)="displayDeleteDialog()">
+            Delete
           </button>
         </div>
       </div>
       <div class="ml-auto">
-        <button type="button" class="btn btn-outline-secondary ml-1" (click)="this.updateDataSource()"
+        <button type="button" class="btn btn-outline-secondary ml-2" (click)="this.refresh()"
                 ngbTooltip="Refresh the results">
           <i class="fa fa-sync"></i>
         </button>
       </div>
     </div>
 
-    <div *ngIf="status.retryInProgressShown" class="mb-2">
-      <div class="alert alert-warning m-0">
-        <div>
-          This is taking longer than expected.
-        </div>
-      </div>
-    </div>
-
-    <div *ngIf="status.failedErrorShown" class="mb-2">
-      <div class="alert alert-danger m-0">
-        <div>
-          The list of files is currently not available.
-        </div>
-        <div class="mt-1">
-          <button type="button" class="btn btn-sm btn-outline-danger" (click)="this.updateDataSource()">
-            Retry
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <div class="progress mb-2" *ngIf="status.progressShown">
-      <div class="progress-bar progress-bar-striped progress-bar-animated bg-secondary" style="width: 100%"></div>
-    </div>
+    <app-background-task-progress
+      [status]="status" (refresh)="this.refresh()" class="mb-2"></app-background-task-progress>
 
     <table class="table" [class.table-selectable]="status.resultsShown" style="table-layout: fixed">
       <colgroup>

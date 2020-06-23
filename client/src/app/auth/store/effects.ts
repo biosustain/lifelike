@@ -56,16 +56,12 @@ export class AuthEffects {
         modalRef.result.then(() => {
           const timeStamp = TERMS_OF_SERVICE.updateTimestamp;
 
-          this.store$.dispatch(
-            AuthActions.agreeTermsOfService({
-              credential,
-              timeStamp,
-            }),
-          );
+          this.store$.dispatch(AuthActions.agreeTermsOfService({
+            credential,
+            timeStamp,
+          }));
         }, () => {
-          this.store$.dispatch(
-            AuthActions.disagreeTermsOfService(),
-          );
+          this.store$.dispatch(AuthActions.disagreeTermsOfService());
         });
         return AuthActions.termsOfSerivceAgreeing();
       } else {

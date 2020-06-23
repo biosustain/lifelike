@@ -1,28 +1,15 @@
-<form #ngSecurityForm="ngForm" [formGroup]="form" (ngSubmit)="changePassword()">
+<form [formGroup]="form" (ngSubmit)="changePassword()">
+  <app-form-row for="old-password" label="Old Password" [control]="form.get('oldPassword')">
+    <input type="password" formControlName="oldPassword" id="old-password" [appFormInput]="form.get('oldPassword')" appAutoFocus>
+  </app-form-row>
 
-  <div class="form-group row" *ngIf="form.get('oldPassword') as control">
-    <label for="old-password" class="col-form-label col-sm-3">Old Password:</label>
-    <div class="col-sm-9">
-      <input type="password" formControlName="oldPassword" id="old-password" [appFormInput]="control">
-      <app-form-input-feedback [control]="control"></app-form-input-feedback>
-    </div>
-  </div>
+  <app-form-row for="password" label="Password" [control]="form.get('password')">
+    <input type="password" formControlName="password" id="password" [appFormInput]="form.get('password')">
+  </app-form-row>
 
-  <div class="form-group row" *ngIf="form.get('password') as control">
-    <label for="password" class="col-form-label col-sm-3">Password:</label>
-    <div class="col-sm-9">
-      <input type="password" formControlName="password" id="password" [appFormInput]="control">
-      <app-form-input-feedback [control]="control"></app-form-input-feedback>
-    </div>
-  </div>
-
-  <div class="form-group row" *ngIf="form.get('passwordConfirm') as control">
-    <label for="confirm-password" class="col-form-label col-sm-3">Confirm Password:</label>
-    <div class="col-sm-9">
-      <input type="password" formControlName="passwordConfirm" id="confirm-password" [appFormInput]="control">
-      <app-form-input-feedback [control]="control" [errors]="errors"></app-form-input-feedback>
-    </div>
-  </div>
+  <app-form-row for="confirm-password" label="Confirm Password" [control]="form.get('passwordConfirm')" [errors]="errors">
+    <input type="password" formControlName="passwordConfirm" id="confirm-password" [appFormInput]="form.get('passwordConfirm')">
+  </app-form-row>
 
   <div class="mt-4">
     <button type="submit" class="btn btn-primary">

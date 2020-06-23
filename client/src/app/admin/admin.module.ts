@@ -6,18 +6,18 @@ import { AccountService } from 'app/users/services/account.service';
 import { AdminGuard } from './services/admin-guard.service';
 
 import { AdminPanelComponent } from './components/admin-panel.component';
-import { UserCreationDialogComponent } from './components/user-creation-dialog.component';
-import { UsersViewComponent } from './components/users-view.component';
+import { UserCreateDialogComponent } from './components/user-create-dialog.component';
+import { UserBrowserComponent } from './components/user-browser.component';
 
 const components = [
   AdminPanelComponent,
-  UserCreationDialogComponent,
-  UsersViewComponent,
+  UserCreateDialogComponent,
+  UserBrowserComponent,
 ];
 
 @NgModule({
   entryComponents: [
-    UserCreationDialogComponent,
+    UserCreateDialogComponent,
   ],
   imports: [
     SharedModule,
