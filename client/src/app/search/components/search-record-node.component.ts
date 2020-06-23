@@ -5,7 +5,7 @@ import { stringToHex } from 'app/shared/utils';
 @Component({
     selector: 'app-search-record-node',
     templateUrl: 'search-record-node.component.html',
-    styleUrls: ['./search-record.component.scss']
+    styleUrls: ['./search-record-node.component.scss']
 })
 export class SearchRecordNodeComponent {
 

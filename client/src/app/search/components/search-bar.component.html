@@ -1,13 +1,15 @@
-<mat-card id="search-bar-container" class="mat-elevation-z0">
-    <mat-card-content>
-        <form [formGroup]="searchForm" (ngSubmit)="onSubmit()">
-            <mat-form-field id="search-bar-full-width">
-                <button mat-button matPrefix mat-icon-button>
-                    <mat-icon>search</mat-icon>
-                </button>
-                <input formControlName="searchInput" matInput placeholder="Search (e.g. Gas Gangrene)" [value]="query" />
-            </mat-form-field>
-        </form>
-        <mat-card-footer><span *ngIf="error">{{ error }}</span></mat-card-footer>
-    </mat-card-content>
-</mat-card>
+<div class="h-100 p-3">
+  <form [formGroup]="searchForm" (ngSubmit)="onSubmit()">
+      <div class="module-toolbar pl-0">
+        <div class="input-group">
+          <span class="input-group-prepend">
+            <div class="input-group-text bg-transparent border-right-0">
+              <i class="fa fa-search"></i>
+            </div>
+          </span>
+          <input class="form-control py-2 pl-0 border-left-0 border" formControlName="searchInput" placeholder="Search (e.g. Gas Gangrene)" [value]="query" />
+        </div>
+      </div>
+  </form>
+  <span *ngIf="error">{{ error }}</span>
+</div>

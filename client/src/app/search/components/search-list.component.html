@@ -1,9 +1,9 @@
-<mat-card>
-  <mat-card-title>Showing results for "{{ currentQuery }}"</mat-card-title>
-  <mat-card-subtitle>About {{ totalRecords }} results.</mat-card-subtitle>
+<div class="h-100 p-3">
+  <h3>Showing results for "{{ currentQuery }}"</h3>
+  <h6 class="text-muted">Showing {{nodes.length}} of {{ totalRecords }} results</h6>
   <div class="search-record-container">
     <div
-      class="search-record"
+      class="my-2"
       *ngFor="let n of nodes; let i = index"
       [ngSwitch]="n.node.label"
     >
@@ -13,14 +13,11 @@
       </app-search-record-node>
     </div>
   </div>
-  <div id="search-show-more-btn" *ngIf="nodes.length < totalRecords">
+  <div class="d-flex justify-content-center mt-3" *ngIf="nodes.length < totalRecords">
     <button
-      color="primary"
-      mat-raised-button
+      class="btn btn-primary"
       appVisClickDebounce
       (debounceClick)="getMoreResults()"
-    >
-      More Results
-    </button>
+    >More Results</button>
   </div>
-</mat-card>
+</div>

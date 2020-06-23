@@ -9,7 +9,7 @@ import { stringToHex } from 'app/shared/utils';
 @Component({
     selector: 'app-search-record-relationships',
     templateUrl: './search-record-relationships.component.html',
-    styleUrls: ['./search-record.component.scss']
+    styleUrls: ['./search-record-relationships.component.scss']
 })
 export class SearchRecordRelationshipsComponent {
 
