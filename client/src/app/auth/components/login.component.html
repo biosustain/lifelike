@@ -4,21 +4,13 @@
   </div>
   <div class="card-body">
     <form [formGroup]="form" (ngSubmit)="submit()">
-      <div class="form-group row" *ngIf="form.get('email') as control">
-        <label for="email" class="col-form-label col-sm-3">Email:</label>
-        <div class="col-sm-9">
-          <input type="email" formControlName="email" id="email" [appFormInput]="control" appAutoFocus>
-          <app-form-input-feedback [control]="control"></app-form-input-feedback>
-        </div>
-      </div>
+      <app-form-row for="email" label="Email" [control]="form.get('email')">
+        <input type="email" formControlName="email" id="email" [appFormInput]="form.get('email')" appAutoFocus>
+      </app-form-row>
 
-      <div class="form-group row" *ngIf="form.get('password') as control">
-        <label for="password" class="col-form-label col-sm-3">Password:</label>
-        <div class="col-sm-9">
-          <input type="password" formControlName="password" id="password" [appFormInput]="control">
-          <app-form-input-feedback [control]="control"></app-form-input-feedback>
-        </div>
-      </div>
+      <app-form-row for="password" label="Password" [control]="form.get('label')">
+        <input type="password" formControlName="password" id="password" [appFormInput]="form.get('password')">
+      </app-form-row>
 
       <button type="submit" class="btn btn-primary">
         Login

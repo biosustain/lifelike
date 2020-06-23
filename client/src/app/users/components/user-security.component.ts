@@ -1,20 +1,14 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  EventEmitter,
   Input,
-  Output,
-  ViewChild,
 } from '@angular/core';
 import {
   FormGroup,
-  FormGroupDirective,
   FormControl,
-  NgForm,
   Validators,
 } from '@angular/forms';
-import { ErrorStateMatcher } from '@angular/material';
-import { AppUser, UpdateUserRequest } from 'app/interfaces';
+import { AppUser} from 'app/interfaces';
 import { MessageType } from '../../interfaces/message-dialog.interface';
 import { MessageDialog } from '../../shared/services/message-dialog.service';
 import * as UserActions from '../store/actions';
@@ -29,11 +23,11 @@ import { State } from '../../***ARANGO_USERNAME***-store';
 export class UserSecurityComponent {
   @Input() user: AppUser;
 
-  errors = {
+  readonly errors = {
     notMatch: 'Your two passwords don\'t match.',
   };
 
-  form = new FormGroup({
+  readonly form = new FormGroup({
     oldPassword: new FormControl('', [Validators.required]),
     password: new FormControl('', [Validators.required]),
     passwordConfirm: new FormControl('', [Validators.required]),

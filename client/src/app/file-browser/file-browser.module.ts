@@ -1,37 +1,26 @@
 import { NgModule } from '@angular/core';
 import { SharedModule } from 'app/shared/shared.module';
-import {
-  DialogConfirmDeletionComponent,
-  DialogEditFileComponent,
-  DialogUploadComponent,
-  FileBrowserComponent,
-} from './components/file-browser.component';
-import { FileSelectionDialogComponent } from './components/file-selection-dialog.component';
-import { FileListComponent } from './components/file-list.component';
+import { FileBrowserComponent } from './components/file-browser.component';
+import { FileEditDialogComponent } from './components/file-edit-dialog.component';
+import { FileDeleteDialogComponent } from './components/file-delete-dialog.component';
+import { FileUploadDialogComponent } from './components/file-upload-dialog.component';
 
 @NgModule({
   declarations: [
-    DialogConfirmDeletionComponent,
-    DialogEditFileComponent,
-    DialogUploadComponent,
+    FileEditDialogComponent,
+    FileDeleteDialogComponent,
+    FileUploadDialogComponent,
     FileBrowserComponent,
-    FileListComponent,
-    FileSelectionDialogComponent,
   ],
   imports: [
     SharedModule,
   ],
   entryComponents: [
-    DialogConfirmDeletionComponent,
-    DialogEditFileComponent,
-    DialogUploadComponent,
-    FileSelectionDialogComponent,
-    FileListComponent,
+    FileEditDialogComponent,
+    FileDeleteDialogComponent,
+    FileUploadDialogComponent,
   ],
-  exports: [
-    FileSelectionDialogComponent,
-    FileListComponent,
-  ],
+  exports: [],
 })
 export class FileBrowserModule {
 }

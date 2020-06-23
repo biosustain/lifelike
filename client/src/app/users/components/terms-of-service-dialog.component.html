@@ -1,20 +1,14 @@
-<form (ngSubmit)="agree()">
-  <div class="modal-header">
-    <h4 class="modal-title" id="modal-basic-title">Terms of Service</h4>
-    <button type="button" class="close" aria-label="Close" (click)="disagree()">
-      <span aria-hidden="true">&times;</span>
-    </button>
-  </div>
+<form (ngSubmit)="submit()">
+  <app-modal-header (cancel)="cancel()">
+    Terms of Service
+  </app-modal-header>
 
-  <div class="modal-body">
+  <app-modal-body>
     <app-terms-of-service-text></app-terms-of-service-text>
-  </div>
-  <div class="modal-footer">
-    <button type="button" class="btn btn-secondary ml-2" (click)="disagree()">
-      Disagree
-    </button>
-    <button type="submit" class="btn btn-primary">
-      Agree
-    </button>
-  </div>
+  </app-modal-body>
+
+  <app-modal-footer>
+    <button type="button" class="btn btn-secondary mr-2" (click)="cancel()">Disagree</button>
+    <button type="submit" class="btn btn-primary">Agree</button>
+  </app-modal-footer>
 </form>

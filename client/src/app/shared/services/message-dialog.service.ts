@@ -1,9 +1,7 @@
 import { Injectable } from '@angular/core';
-import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { MessageType } from 'app/interfaces/message-dialog.interface';
-import { MessageDialogComponent } from '../components/message-dialog/message-dialog.component';
+import { MessageDialogComponent } from '../components/dialog/message-dialog.component';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { UserCreationDialogComponent } from '../../admin/components/user-creation-dialog.component';
 
 export interface MessageArguments {
   title: string;

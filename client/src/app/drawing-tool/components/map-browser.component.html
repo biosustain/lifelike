@@ -1,0 +1,123 @@
+<div class="w-100 h-100">
+  <as-split cdkDropListGroup unit="pixel" direction="horizontal" gutterSize="5">
+    <as-split-area [size]="370" [minSize]="300" [maxSize]="500">
+      <div class="overflow-auto flex-shrink-0 h-100">
+        <app-map-list (mapCreate)="this.displayCreateDialog()"
+                      (mapUpload)="this.displayUploadDialog()"
+                      (mapSelect)="this.selectedMap = $event"
+                      [selectedMap]="selectedMap"
+                      #listComponent>
+        </app-map-list>
+      </div>
+    </as-split-area>
+
+    <as-split-area>
+      <div class="module module-document h-100" *ngIf="selectedMap else empty">
+        <div class="module-header-container">
+          <div class="module-header">
+            <div class="module-title d-flex align-items-center">
+              <div class="text-truncate">
+                {{selectedMap?.label}}
+                <small *ngIf="selectedMap?.public" class="ml-1 text-muted"
+                       ngbTooltip="This map is public and can be seen by others under 'Community',
+                      although only its owner can edit it">
+                  <i class="fa fa-fw fa-unlock"></i>
+                </small>
+                <small *ngIf="!selectedMap?.public" class="ml-1 text-muted"
+                       ngbTooltip="This map can only be seen and edited by its owners.">
+                  <i class="fa fa-fw fa-lock"></i>
+                </small>
+              </div>
+            </div>
+
+            <div class="module-toolbar">
+              <div *ngIf='mayEditSelectedMap'>
+                <button type="button" class="btn btn-primary" (click)='edit()'
+                        ngbTooltip="Edit the map">
+                  <i class="fa fa-fw fa-pencil"></i>
+                  Edit
+                </button>
+                <button type="button" class="btn btn-outline-secondary ml-1" (click)='displayEditDialog()'
+                        ngbTooltip="Edit the map">
+                  Edit Description
+                </button>
+                <button type="button" class="btn btn-outline-secondary ml-1" (click)='download()'
+                        ngbTooltip="Export map data"
+                        *ngIf="(userRoles$ | async)?.includes('admin')">
+                  <i class="fa fa-fw fa-download"></i>
+                </button>
+                <button type="button" class="btn btn-outline-secondary ml-1" (click)='displayDeleteDialog()'
+                        ngbTooltip="Delete this map">
+                  <i class="fa fa-fw fa-trash"></i>
+                </button>
+              </div>
+              <div *ngIf='!mayEditSelectedMap'>
+                <button type="button" class="btn btn-primary" (click)='displayCloneDialog()'
+                        ngbTooltip="Copy this map to your account">
+                  <i class="fa fa-fw fa-clone"></i>
+                  Duplicate
+                </button>
+                <button type="button" class="btn btn-outline-secondary ml-1" (click)='download()'
+                        ngbTooltip="Export map"
+                        *ngIf="(userRoles$ | async)?.includes('admin')">
+                  <i class="fa fa-fw fa-download"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="module-body flex-fill overflow-hidden d-flex">
+          <div class="position-relative flex-fill map-preview-container">
+            <app-map-preview #previewComponent [project]='selectedMap'></app-map-preview>
+
+            <div class="top-toolbar d-flex align-items-center" *ngIf="!infoPinned">
+              <div class="btn-group">
+                <button type="button" class="btn btn-secondary" (click)="infoPinned = !infoPinned"
+                        ngbTooltip="Show description." placement="right">
+                  <i class="fa fa-fw fa-angle-right"></i>
+                </button>
+              </div>
+            </div>
+
+            <div class="bottom-toolbar d-flex align-items-center">
+              <div class="btn-toolbar">
+                <div class="btn-group">
+                  <button type="button" class="btn btn-secondary"
+                          ngbTooltip="Zoom to make the map fit if it doesn't fit"
+                          (click)="zoomToFit()">
+                    <i class="fa fa-fw fa-expand"></i> Fit Map
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="detail-overlay" [class.pinned]="infoPinned">
+              <button type="button" class="close float-right" aria-label="Close"
+                      (click)="infoPinned = false" *ngIf="infoPinned">
+                <span aria-hidden="true">&times;</span>
+              </button>
+              <div class="detail-overlay-properties text-muted">
+                <div class="text-truncate">
+                  By {{selectedMap?.author}}
+                </div>
+                <div class="text-truncate">
+                  Modified {{selectedMap?.date_modified | friendlyDateStr}}
+                </div>
+              </div>
+              <div class="mt-2 detail-overlay-description">
+                {{selectedMap?.description}}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </as-split-area>
+  </as-split>
+</div>
+
+<ng-template #empty>
+  <div fxFill fxLayout='column' fxLayoutAlign="center center" class='empty h-100'>
+    <p>Create or select a map</p>
+  </div>
+</ng-template>
