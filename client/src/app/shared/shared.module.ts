@@ -28,6 +28,8 @@ import { NodeTextStylePipe } from './node-text-style.pipe';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { SortLegendComponent } from './components/sort/sort-legend.component';
 import { ConfirmDialogComponent } from './components/confirm-dialog/confirm-dialog.component';
+import { FormInputFeedbackComponent } from './components/form-input-feedback/form-input-feedback.component';
+import { BackgroundTaskProgressComponent } from './components/background-task-progress/background-task-progress.component';
 
 const components = [
   MessageDialogComponent,
@@ -38,6 +40,8 @@ const components = [
   TooltipComponent,
   SortLegendComponent,
   ConfirmDialogComponent,
+  FormInputFeedbackComponent,
+  BackgroundTaskProgressComponent,
 ];
 
 @NgModule({

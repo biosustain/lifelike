@@ -1,6 +1,6 @@
-import { Component, Inject } from '@angular/core';
-import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { Component, Input } from '@angular/core';
 import { MessageType } from 'app/interfaces/message-dialog.interface';
+import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 
 /**
  * A generic alert dialog.
@@ -11,16 +11,17 @@ import { MessageType } from 'app/interfaces/message-dialog.interface';
   styleUrls: ['./message-dialog.component.scss'],
 })
 export class MessageDialogComponent {
-  title: string;
-  message: string;
-  detail: string;
-  type: MessageType;
+  @Input() title: string;
+  @Input() message: string;
+  @Input() detail: string;
+  @Input() type: MessageType;
 
-  constructor(private dialogRef: MatDialogRef<MessageDialogComponent>,
-              @Inject(MAT_DIALOG_DATA) data) {
-    this.title = data.title;
-    this.message = data.message;
-    this.detail = data.detail;
-    this.type = data.type;
+  constructor(
+    private readonly modal: NgbActiveModal,
+  ) {
+  }
+
+  close() {
+    this.modal.dismiss();
   }
 }

@@ -1,0 +1,102 @@
+<ng-container *ngIf="(loadTask.status$ | async) as status">
+  <div class="mb-4 d-flex">
+    <div>
+      <button class="btn btn-primary" (click)="openCreateDialog()">
+        <i class="fa fa-fw fa-plus"></i>
+        Create User
+      </button>
+      <div class="d-inline-block" ngbTooltip="Not yet implemented.">
+        <button class="btn btn-outline-secondary ml-2" [disabled]="true" ngbTooltip="Not yet implemented.">
+          Edit
+        </button>
+        <button class="btn btn-outline-secondary ml-2" [disabled]="true" ngbTooltip="Not yet implemented.">
+          Delete
+        </button>
+      </div>
+    </div>
+    <div class="ml-auto">
+      <button type="button" class="btn btn-outline-secondary ml-1" (click)="this.updateDataSource()"
+              ngbTooltip="Refresh the results">
+        <i class="fa fa-sync"></i>
+      </button>
+    </div>
+  </div>
+
+  <app-background-task-progress
+    [status]="status" (refresh)="this.updateDataSource()" class="mb-2"></app-background-task-progress>
+
+  <table class="table" [class.table-selectable]="status.resultsShown" style="table-layout: fixed">
+    <colgroup>
+      <col style="width: 50%">
+    </colgroup>
+    <thead>
+    <tr>
+    <tr>
+      <th>
+        <div class="custom-control custom-checkbox">
+          <input type="checkbox" class="custom-control-input" id="select-all"
+                 [checked]="isAllSelected()" (change)="toggleAllSelected()">
+          <label class="custom-control-label" for="select-all">
+            Username
+          </label>
+        </div>
+      </th>
+      <th class="d-none d-md-table-cell">Type</th>
+      <th class="d-none d-lg-table-cell">Email</th>
+    </tr>
+    </thead>
+
+    <tbody *ngIf="status.placeholdersShown">
+    <tr>
+      <td>
+        <span class="placeholder-box">Loading loading</span>
+      </td>
+      <td>
+        <span class="placeholder-box">Loading loading</span>
+      </td>
+      <td>
+        <span class="placeholder-box">Loading loading</span>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <span class="placeholder-box">Loading loading loading</span>
+      </td>
+      <td>
+        <span class="placeholder-box">Loading loading</span>
+      </td>
+      <td>
+        <span class="placeholder-box">Loading loading loading</span>
+      </td>
+    </tr>
+    </tbody>
+
+    <tbody *ngIf="status.resultsShown">
+    <tr *ngFor="let user of shownUsers"
+        (click)="selection.toggle(user)"
+        [class.active]="selection.isSelected(user)"
+        (keydown)="$event.keyCode != 13 || selection.toggle(user)"
+        tabindex="0">
+      <td class="align-middle text-truncate mw-100">
+        <div class="custom-control custom-checkbox">
+          <input type="checkbox" class="custom-control-input" id="user-{{ user.id }}"
+                 (change)="selection.toggle(user)"
+                 [checked]="selection.isSelected(user)">
+          <label class="custom-control-label d-flex align-items-center" for="user-{{ user.id }}">
+            {{ user.username }}
+          </label>
+        </div>
+      </td>
+      <td class="align-middle d-none d-md-table-cell text-truncate">
+        <span *ngIf="!user.roles.includes('admin'); else adminText">User</span>
+        <ng-template #adminText>
+          Administrator
+        </ng-template>
+      </td>
+      <td class="align-middle d-none d-lg-table-cell text-truncate">
+        {{ user.email }}
+      </td>
+    </tr>
+    </tbody>
+  </table>
+</ng-container>

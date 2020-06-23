@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 
-import { AdminPanelComponent } from 'app/admin/containers/admin-panel-page.component';
+import { AdminPanelComponent } from 'app/admin/components/admin-panel.component';
 import { UserFileImportComponent } from 'app/user-file-import/components/user-file-import.component';
 import { VisualizationComponent } from 'app/visualization/containers/visualization/visualization.component';
 import { SearchCollectionPageComponent } from 'app/search/containers/search-collection-page.component';
@@ -16,7 +16,7 @@ import { LoginGuard } from 'app/auth/guards/login-guard.service';
 import { PdfViewerComponent } from 'app/drawing-tool/pdf-viewer/pdf-viewer.component';
 import { UserSettingsComponent } from 'app/users/components/user-settings.component';
 import { KgStatisticsComponent } from './kg-statistics/kg-statistics.component';
-import { TermsOfServiceComponent } from './users/components/terms-of-service-dialog/terms-of-service.component';
+import { TermsOfServiceComponent } from './users/components/terms-of-service.component';
 import { WorkspaceComponent } from './workspace.component';
 import { WorkspaceWelcomeComponent } from './workspace-welcome.component';
 import { UnloadConfirmationGuard } from './shared/guards/UnloadConfirmation.guard';

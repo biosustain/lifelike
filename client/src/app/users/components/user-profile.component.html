@@ -1,25 +1,37 @@
-<mat-card>
-  <mat-card-title>Profile</mat-card-title>
-  <form [formGroup]="profileForm">
-    <mat-card-content>
-        <div class="container" fxLayout="column" fxLayoutAlign="start" fxLayoutGap="8px">
-          <mat-form-field appearance="fill">
-            <mat-label>Username</mat-label>
-            <input matInput formControlName="username">
-          </mat-form-field>
-          <mat-form-field appearance="fill">
-            <mat-label>First Name</mat-label>
-            <input matInput formControlName="firstName">
-          </mat-form-field>
-          <mat-form-field appearance="fill">
-            <mat-label>Last Name</mat-label>
-            <input matInput formControlName="lastName">
-          </mat-form-field>
-          <mat-form-field appearance="fill">
-            <mat-label>Email</mat-label>
-            <input matInput formControlName="email">
-          </mat-form-field>
-        </div>
-    </mat-card-content>
-  </form>
-</mat-card>
+<div class="alert alert-info">
+  We're working on letting you change your profile.
+</div>
+
+<form [formGroup]="form">
+  <div class="form-group row" *ngIf="form.get('username') as control">
+    <label for="username" class="col-form-label col-sm-3">Username:</label>
+    <div class="col-sm-9">
+      <input type="text" formControlName="username" id="username" [appFormInput]="control" appAutoFocus>
+      <app-form-input-feedback [control]="control"></app-form-input-feedback>
+    </div>
+  </div>
+
+  <div class="form-group row" *ngIf="form.get('email') as control">
+    <label for="email" class="col-form-label col-sm-3">Email:</label>
+    <div class="col-sm-9">
+      <input type="email"u formControlName="email" id="email" [appFormInput]="control">
+      <app-form-input-feedback [control]="control"></app-form-input-feedback>
+    </div>
+  </div>
+
+  <div class="form-group row" *ngIf="form.get('firstName') as control">
+    <label for="first-name" class="col-form-label col-sm-3">First name:</label>
+    <div class="col-sm-9">
+      <input type="text" formControlName="firstName" id="first-name" [appFormInput]="control">
+      <app-form-input-feedback [control]="control"></app-form-input-feedback>
+    </div>
+  </div>
+
+  <div class="form-group row" *ngIf="form.get('lastName') as control">
+    <label for="last-name" class="col-form-label col-sm-3">Last name:</label>
+    <div class="col-sm-9">
+      <input type="text" formControlName="lastName" id="last-name" [appFormInput]="control">
+      <app-form-input-feedback [control]="control"></app-form-input-feedback>
+    </div>
+  </div>
+</form>
