@@ -210,12 +210,14 @@ describe('VisualizationCanvasComponent', () => {
             {
                 nodeId: '2',
                 nodeDisplayName: 'Mock Node 2',
+                nodeLabel: 'Mock Node',
                 snippetCount: 1,
                 edge: mockDuplicateEdgeGenerator(101, 1, 'to', 2),
             } as ReferenceTableRow,
             {
                 nodeId: '3',
                 nodeDisplayName: 'Mock Node 3',
+                nodeLabel: 'Mock Node',
                 snippetCount: 1,
                 edge: mockDuplicateEdgeGenerator(101, 1, 'to', 3),
             } as ReferenceTableRow,
