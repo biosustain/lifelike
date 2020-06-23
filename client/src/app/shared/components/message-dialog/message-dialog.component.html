@@ -1,10 +1,11 @@
-<h2 mat-dialog-title>
-  <mat-icon *ngIf="type == 'WARNING'">warning</mat-icon>
-  <mat-icon *ngIf="type == 'ERROR'">error</mat-icon>
-  {{title}}
-</h2>
+<div class="modal-header">
+  <h4 class="modal-title" id="modal-basic-title">{{ title }}</h4>
+  <button type="button" class="close" aria-label="Close" (click)="close()">
+    <span aria-hidden="true">&times;</span>
+  </button>
+</div>
 
-<mat-dialog-content>
+<div class="modal-body">
   <div>
     {{message}}
   </div>
@@ -13,8 +14,10 @@
     <div class="detail-title">Error Detail (Visible due to app being in debug mode)</div>
     <pre>{{detail}}</pre>
   </div>
-</mat-dialog-content>
+</div>
 
-<mat-dialog-actions class="mt2" align="end">
-  <button mat-button [mat-dialog-close]="true">Close</button>
-</mat-dialog-actions>
+<div class="modal-footer">
+  <button type="button" class="btn btn-primary" (click)="close()">
+    Close
+  </button>
+</div>
