@@ -127,6 +127,9 @@ interface Meta {
   isCustom?: boolean;
   allText?: string;
   links?: Links;
+  isExcluded?: boolean;
+  exclusionReason?: string;
+  exclusionComment?: string;
 }
 
 interface Rect {
@@ -177,6 +180,12 @@ interface Project {
   user_id?: number;
 }
 
+interface AnnotationExclusionData {
+  id: string;
+  reason: string;
+  comment: string;
+}
+
 export {
   Project,
   VisNetworkGraph,
@@ -193,5 +202,6 @@ export {
   GraphData,
   GraphSelectionData,
   LaunchApp,
-  Hyperlink
+  Hyperlink,
+  AnnotationExclusionData
 };
