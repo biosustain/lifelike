@@ -19,6 +19,24 @@ export function stringToHex(s: string) {
 }
 
 /**
+ * Transforms a hex code and opacity value into an rgba value.
+ * @param hex hex code to turn into rgba value
+ */
+export function hexToRGBA(hex: string, opacity: number) {
+    let c;
+    if (/^#([A-Fa-f0-9]{3}){1,2}$/.test(hex)) {
+        c = hex.substring(1).split('');
+        if (c.length === 3) {
+            c = [c[0], c[0], c[1], c[1], c[2], c[2]];
+        }
+        c = '0x' + c.join('');
+        /* tslint:disable:no-bitwise*/
+        return 'rgba(' + [(c >> 16) & 255, (c >> 8) & 255, c & 255].join(',') + `,${opacity})`;
+    }
+    throw new Error('Bad Hex');
+}
+
+/**
  * Generate a UUID. Source: https://stackoverflow.com/a/2117523
  */
 export function uuidv4(): string {

@@ -4,7 +4,7 @@ import {
 import {
   MatDialog
 } from '@angular/material/dialog';
-import {Router} from '@angular/router';
+import {Router, ActivatedRoute} from '@angular/router';
 
 import {
   ProjectsService,
@@ -28,8 +28,6 @@ import {
 import {MatSnackBar} from '@angular/material';
 
 import * as $ from 'jquery';
-
-import {AuthenticationService} from 'app/auth/services/authentication.service';
 
 import { AuthSelectors } from 'app/auth/store';
 import { BehaviorSubject, Observable, throwError } from 'rxjs';
@@ -57,11 +55,6 @@ export class ProjectListViewComponent {
   uploadStarted = false;
 
   /**
-   * ID of the user
-   */
-  userId;
-
-  /**
    * List of projects owned by user
    */
   projects: Project[] = [];
@@ -86,27 +79,26 @@ export class ProjectListViewComponent {
     return this.selectedProject.graph.nodes.length ? false : true;
   }
 
-  get isItMine() {
-    if (!this.selectedProject) {
-      return false;
-    }
-    return this.userId === this.selectedProject.user_id;
-  }
-
   constructor(
     public dialog: MatDialog,
     private route: Router,
     private projectService: ProjectsService,
-    private authService: AuthenticationService,
-    private dataFlow: DataFlowService,
     private snackBar: MatSnackBar,
     private progressDialog: ProgressDialog,
     private store: Store<State>,
-    private clipboard: ClipboardService
+    private clipboard: ClipboardService,
+    private router: ActivatedRoute
   ) {
-    this.userId = this.authService.whoAmI();
     this.refresh();
-    this.userRoles$ = store.pipe(select(AuthSelectors.selectRoles));
+    this.userRoles$ = this.store.pipe(select(AuthSelectors.selectRoles));
+
+    if (this.router.snapshot.params.hash_id) {
+      this.projectService.serveProject(
+        this.router.snapshot.params.hash_id
+      ).subscribe(
+        (resp: any) => this.pickProject(resp.project)
+      );
+    }
   }
 
   /**
@@ -325,7 +317,7 @@ export class ProjectListViewComponent {
         this.uploadStarted = false;
         this.snackBar.open(`File uploaded: ${data.filename}`, 'Close', {duration: 5000});
         const hashId = event.body.result.hashId;
-        this.route.navigateByUrl(`dt/splitter/${hashId}`);
+        this.route.navigateByUrl(`dt/map/edit/${hashId}`);
       }
     },
     err => {
@@ -415,7 +407,7 @@ export class ProjectListViewComponent {
    * Open project in drawing-tool view's canvas
    */
   goToProject() {
-    this.route.navigateByUrl(`dt/splitter/${this.selectedProject.hash_id}`);
+    this.route.navigateByUrl(`dt/map/edit/${this.selectedProject.hash_id}`);
   }
 
   handleAPI(evt: { action: string, project: Project }) {
@@ -444,8 +436,7 @@ export class ProjectListViewComponent {
         this.pickProject(evt.project);
         break;
       case 'copy':
-        // TODO bring back
-        // this.copyProject(evt.project);
+        this.copyProject(evt.project);
         break;
       case 'download':
         this.downloadProject();

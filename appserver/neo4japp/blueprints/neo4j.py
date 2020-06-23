@@ -118,7 +118,7 @@ def load_reaction_graph(req: ReactionRequest):
     return SuccessResponse(result=result, status_code=200)
 
 
-@bp.route('/get-legend-for-visualizer', methods=['GET'])
+@bp.route('/get-annotation-legend', methods=['GET'])
 @jsonify_with_class()
-def get_legend_for_visualizer():
+def get_annotation_legend():
     return SuccessResponse(result=ANNOTATION_STYLES_DICT, status_code=200)

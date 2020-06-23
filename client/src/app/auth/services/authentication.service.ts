@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { map } from 'rxjs/operators';
 import { AppUser } from 'app/interfaces';
+import { isNullOrUndefined } from 'util';
 
 @Injectable({
   providedIn: '***ARANGO_USERNAME***'
@@ -83,7 +84,9 @@ export class AuthenticationService {
   public whoAmI() {
     const auth = JSON.parse(localStorage.getItem('auth'));
 
-    if (!auth.user) { return; }
+    if (
+      isNullOrUndefined(auth)
+    ) { return; }
 
     return auth.user.id;
   }
