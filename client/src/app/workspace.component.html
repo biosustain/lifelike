@@ -1,17 +1,17 @@
 <div class="h-100 w-100 d-flex overflow-hidden" #container>
-  <ng-container *ngIf="(panes$ | async) as placedPanes">
+  <ng-container *ngIf="(panes$ | async) as panes">
     <div class="flex-fill">
       <as-split unit="percent" direction="horizontal" [gutterSize]="5" cdkDropListGroup #splitComponent
                 (dragEnd)="splitterDragEnded()">
-        <as-split-area *ngFor="let placedPane of placedPanes">
-          <div class="h-100 d-flex flex-column" *ngIf="placedPane.pane as pane">
-            <div class="nav-workspace-tabs" [class.compressed-tabs]="placedPane.width <= 150">
+        <as-split-area *ngFor="let pane of panes">
+          <div class="h-100 d-flex flex-column">
+            <div class="nav-workspace-tabs">
               <div class="nav flex-fill flex-grow-0" cdkDropList cdkDropListOrientation="horizontal"
                    (cdkDropListDropped)="tabDropped($event)"
                    [cdkDropListData]="pane">
                 <div class="nav-item d-flex text-truncate" [class.active]="pane.activeTab === tab"
                      *ngFor="let tab of pane.tabs; index as i"
-                     cdkDrag [style.width]="placedPane.width + 'px'">
+                     cdkDrag [style.width]="'250px'">
                   <div class="nav-link d-flex text-truncate" [class.active]="pane.activeTab === tab"
                        (click)="handleTabClick($event, pane, tab); $event.preventDefault()">
                     <div class="d-block d-flex align-items-center text-truncate">
@@ -26,8 +26,7 @@
                       <i class="fa fa-asterisk"></i>
                     </span>
                     </div>
-                    <a href="#" (click)="closeTab(pane, tab); $event.preventDefault()" class="ml-2 text-muted"
-                       *ngIf="pane.activeTab === tab || placedPane.width > 150">
+                    <a href="#" (click)="closeTab(pane, tab); $event.preventDefault()" class="ml-2 text-muted">
                       <i class="fa fa-fw fa-times"></i>
                     </a>
                   </div>

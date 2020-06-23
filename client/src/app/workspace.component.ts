@@ -1,4 +1,5 @@
 import {
+  AfterContentChecked,
   AfterViewInit,
   Component,
   ElementRef,
@@ -19,18 +20,13 @@ import { SplitComponent } from 'angular-split';
   templateUrl: './workspace.component.html',
   styleUrls: ['./workspace.component.scss'],
 })
-export class WorkspaceComponent implements AfterViewInit, OnChanges {
+export class WorkspaceComponent implements AfterViewInit, OnChanges, AfterContentChecked {
   @ViewChild('container', {static: true, read: ElementRef}) container: ElementRef;
   @ViewChild('splitComponent', {static: false}) splitComponent: SplitComponent;
-  panes$: Observable<PlacedPane[]>;
-  readonly tabWidthMax = 250;
+  panes$: Observable<Pane[]>;
 
   constructor(readonly workspaceManager: WorkspaceManager) {
-    this.panes$ = this.workspaceManager.panes$.pipe(map(panes => {
-      return panes.map((pane, paneIndex) => {
-        return new PlacedPane(pane, Math.min(this.tabWidthMax, 200));
-      });
-    }));
+    this.panes$ = this.workspaceManager.panes$;
   }
 
   ngAfterViewInit() {
@@ -39,6 +35,10 @@ export class WorkspaceComponent implements AfterViewInit, OnChanges {
 
   ngOnChanges() {
     this.workspaceManager.save();
+  }
+
+  ngAfterContentChecked() {
+    this.workspaceManager.applyPendingChanges();
   }
 
   tabDropped(event: CdkDragDrop<Pane>) {
