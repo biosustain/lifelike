@@ -13,7 +13,7 @@ import { routes as dtRoutes } from './drawing-tool/drawing-tool.module';
 import { AdminGuard } from 'app/admin/services/admin-guard.service';
 import { AuthGuard } from 'app/auth/guards/auth-guard.service';
 import { LoginGuard } from 'app/auth/guards/login-guard.service';
-import { PdfViewerComponent } from 'app/drawing-tool/pdf-viewer/pdf-viewer.component';
+import { PdfViewerComponent } from 'app/drawing-tool/components/pdf-viewer.component';
 import { UserSettingsComponent } from 'app/users/components/user-settings.component';
 import { KgStatisticsComponent } from './kg-statistics/kg-statistics.component';
 import { TermsOfServiceComponent } from './users/components/terms-of-service.component';

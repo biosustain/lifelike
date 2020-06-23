@@ -13,7 +13,7 @@ import { MessageDialog } from '../../shared/services/message-dialog.service';
   templateUrl: './login.component.html',
 })
 export class LoginComponent {
-  form = new FormGroup({
+  readonly form = new FormGroup({
     email: new FormControl('', [Validators.required, Validators.email]),
     password: new FormControl('', [Validators.required]),
   });
@@ -28,11 +28,11 @@ export class LoginComponent {
     if (!this.form.invalid) {
       const {email, password} = this.form.value;
 
-      this.store.dispatch(
-        AuthActions.checkTermsOfService(
-          {credential: {email, password}},
-        ),
-      );
+      this.store.dispatch(AuthActions.checkTermsOfService(
+        {credential: {email, password}},
+      ));
+
+      this.form.get('password').reset('');
     } else {
       this.messageDialog.display({
         title: 'Invalid Input',
