@@ -23,7 +23,6 @@ from neo4japp.blueprints.auth import auth
 from neo4japp.blueprints.permissions import requires_role
 from neo4japp.constants import ANNOTATION_STYLES_DICT
 from neo4japp.database import db
-from neo4japp.data_transfer_objects import DrawingUploadRequest
 from neo4japp.exceptions import InvalidFileNameException, RecordNotFoundException
 from neo4japp.models import Project, ProjectSchema
 
@@ -267,7 +266,7 @@ def get_project_pdf(project_id):
         item = unprocessed.pop(0)
         project = Project.query.filter_by(hash_id=item).one_or_none()
         if not project:
-            raise RecordNotFoundException()
+            raise RecordNotFoundException(f'Project {item} not found')
         pdf_data = process(project)
         pdf_object = PdfFileReader(io.BytesIO(pdf_data))
         processed[item] = pdf_object
@@ -331,6 +330,25 @@ def process(data_source, format='pdf'):
             'fontname': 'sans-serif',
             'margin': "0.2,0.0"
         }
+
+        if node['label'] in ['map', 'link', 'note']:
+            label = node['label']
+            params['image'] = f'/home/n4j/assets/{label}.png'
+            params['labelloc'] = 'b'
+            params['forcelabels'] = "true"
+            params['imagescale'] = "both"
+            params['color'] = '#ffffff00'
+
+        if node['label'] in ['association', 'correlation', 'cause', 'effect', 'observation']:
+            params['color'] = ANNOTATION_STYLES_DICT.get(
+                node['label'],
+                {'color': 'black'})['color']
+            params['fillcolor'] = ANNOTATION_STYLES_DICT.get(
+                node['label'],
+                {'color': 'black'})['color']
+            params['fontcolor'] = 'black'
+            params['style'] = 'rounded,filled'
+
         if 'hyperlink' in node['data'] and node['data']['hyperlink']:
             params['href'] = node['data']['hyperlink']
         if 'source' in node['data'] and node['data']['source']:

@@ -77,6 +77,15 @@
                 </label>
               </div>
             </div>
+
+            <div class="mt-2">
+              <div class="custom-control custom-checkbox">
+                <input type="checkbox" [(ngModel)]="showExcludedAnnotations"
+                       class="custom-control-input" id="showExcludedAnnotations">
+                <label class="custom-control-label" for="showExcludedAnnotations">Show excluded annotations</label>
+              </div>
+            </div>
+
             <div class="mt-2">
               <button class="btn btn-secondary btn-block" (click)="closeFilterPopup()">Done</button>
             </div>
