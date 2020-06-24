@@ -90,7 +90,7 @@ export class MapListComponent implements OnInit, OnDestroy {
       label: 'map',
       sub_labels: [],
       data: {
-        source: '/dt/map/' + map.id,
+        source: '/dt/map/' + map.hash_id,
       },
     } as Partial<UniversalGraphNode>));
     // TODO: Add text/uri-list for a link

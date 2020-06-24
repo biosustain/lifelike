@@ -29,13 +29,25 @@ import { UnloadConfirmationGuard } from '../shared/guards/UnloadConfirmation.gua
 export const routes = [{
   path: 'map',
   component: MapBrowserComponent,
+  data: {
+    title: 'Map Browser',
+    fontAwesomeIcon: 'project-diagram',
+  },
 }, {
   path: 'map/edit/:hash_id',
   component: MapEditorComponent,
   canDeactivate: [UnloadConfirmationGuard],
+  data: {
+    title: 'Map Editor',
+    fontAwesomeIcon: 'project-diagram',
+  },
 }, {
   path: 'map/:hash_id',
-  component: MapBrowserComponent,
+  component: MapPreviewComponent,
+  data: {
+    title: 'Map',
+    fontAwesomeIcon: 'project-diagram',
+  },
 }];
 
 @NgModule({

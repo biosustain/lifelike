@@ -1,15 +1,28 @@
-import { AfterViewInit, Component, Input, NgZone, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  EventEmitter,
+  Input,
+  NgZone,
+  OnDestroy,
+  OnInit,
+  Output,
+  ViewChild,
+} from '@angular/core';
 import { Project } from 'app/drawing-tool/services/interfaces';
 import { ProjectsService } from 'app/drawing-tool/services';
 import { ActivatedRoute } from '@angular/router';
 import { KnowledgeMapStyle } from 'app/graph-viewer/styles/knowledge-map-style';
 import { CanvasGraphView } from 'app/graph-viewer/renderers/canvas/canvas-graph-view';
+import { ModuleProperties } from '../../shared/modules';
 
 @Component({
   selector: 'app-map-preview',
   templateUrl: './map-preview.component.html',
 })
 export class MapPreviewComponent implements OnInit, AfterViewInit, OnDestroy {
+  @Output() modulePropertiesChange = new EventEmitter<ModuleProperties>();
+
   @ViewChild('canvas', {static: true}) canvasChild;
   graphCanvas: CanvasGraphView;
 
@@ -38,10 +51,8 @@ export class MapPreviewComponent implements OnInit, AfterViewInit, OnDestroy {
           this.childMode = false;
           // tslint:disable-next-line: no-string-literal
           this.project = resp['project'];
+          this.emitModuleProperties();
         },
-        err => {
-          console.log(err);
-        }
       );
     }
   }
@@ -71,6 +82,14 @@ export class MapPreviewComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngOnDestroy() {
     this.graphCanvas.destroy();
+  }
+
+  emitModuleProperties() {
+    this.modulePropertiesChange.emit({
+      title: this.project ? this.project.label : 'Map',
+      fontAwesomeIcon: 'project-diagram',
+      badge: null,
+    });
   }
 
   get project() {

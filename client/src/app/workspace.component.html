@@ -26,13 +26,13 @@
                       <i class="fa fa-asterisk"></i>
                     </span>
                     </div>
-                    <a href="#" (click)="closeTab(pane, tab); $event.preventDefault()" class="ml-2 text-muted">
+                    <a href="#" (click)="closeTab(pane, tab); $event.preventDefault()" class="ml-auto text-muted">
                       <i class="fa fa-fw fa-times"></i>
                     </a>
                   </div>
                 </div>
               </div>
-              <div class="ml-auto mr-2 align-self-center">
+              <div class="mr-2 align-self-center">
                 <button class="btn btn-primary btn-sm" type="button" (click)="addTab(pane)"
                         ngbTooltip="Create new tab">
                   <i class="fa fa-fw fa-plus"></i>
@@ -54,7 +54,7 @@
       </as-split>
     </div>
     <div *ngIf="canAddPane()" class="split-pane-placeholder" (click)="addPane()"
-         ngbTooltip="Split this space into two columns" placement="left-top">
+         ngbTooltip="Add a side-by-side view" placement="left-top">
       <div class="split-pane-arrow">
         <i class="fa fa-fw fa-arrow-left"></i>
       </div>

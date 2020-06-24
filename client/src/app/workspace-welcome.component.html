@@ -2,28 +2,48 @@
   <div class="module-header-container">
     <div class="module-header">
       <div class="module-title">
-        Welcome
+        Choose Module
       </div>
     </div>
   </div>
 
   <div class="module-body">
-    <div>
-      This is a temporary welcome page.
-    </div>
     <div class="mt-4">
-      <button type="button" class="btn btn-secondary" appLink="/file-browser">
-        File Browser
-      </button>
-      <button type="button" class="btn btn-secondary ml-1" appLink="/dt/map">
-        Knowledge Reconstruction
-      </button>
-      <button type="button" class="btn btn-secondary ml-1" appLink="/neo4j-visualizer">
-        KG Visualizer
-      </button>
-      <button type="button" class="btn btn-secondary ml-1" appLink="/admin">
-        Admin
-      </button>
+      <div class="card-deck">
+        <div class="card" appLink="/file-browser">
+          <div class="card-body">
+            <h5 class="card-title">File Browser</h5>
+            <p class="card-text">
+              Use the file browser to open PDFs side-by-side and drag annotations onto your map.
+            </p>
+            <a href="#" class="btn btn-primary" appLink="/file-browser">
+              Browse Files
+            </a>
+          </div>
+        </div>
+        <div class="card" appLink="/neo4j-visualizer">
+          <div class="card-body">
+            <h5 class="card-title">KG Visualizer</h5>
+            <p class="card-text">
+              Browse information from databases to enrich your map.
+            </p>
+            <a href="#" class="btn btn-primary" appLink="/neo4j-visualizer">
+              Open Visualizer
+            </a>
+          </div>
+        </div>
+        <div class="card" appLink="/dt/map">
+          <div class="card-body">
+            <h5 class="card-title">Map Browser</h5>
+            <p class="card-text">
+              Open a new map.
+            </p>
+            <a href="#" class="btn btn-primary" appLink="/dt/map">
+              Browse Maps
+            </a>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>

@@ -23,52 +23,92 @@ import { UnloadConfirmationGuard } from './shared/guards/UnloadConfirmation.guar
 
 // TODO: Add an unprotected home page
 const routes: Routes = [
-  {path: '', component: LifelikeHomePageComponent, data: {title: 'Dashboard'}},
-  {path: 'admin', component: AdminPanelComponent, canActivate: [AdminGuard], data: {title: 'Dashboard'}},
+  {
+    path: '',
+    component: LifelikeHomePageComponent,
+    data: {
+      title: 'Dashboard',
+    },
+  },
+  {
+    path: 'admin',
+    component: AdminPanelComponent,
+    canActivate: [AdminGuard],
+    data: {
+      title: 'Administration',
+    },
+  },
   {path: 'neo4j-upload', component: UserFileImportComponent, canActivate: [AuthGuard]},
-  {path: 'neo4j-visualizer', component: VisualizationComponent, canActivate: [AuthGuard]},
+  {
+    path: 'neo4j-visualizer',
+    component: VisualizationComponent,
+    canActivate: [AuthGuard],
+    data: {
+      title: 'KG Visualizer',
+      fontAwesomeIcon: 'search',
+    },
+  },
   {path: 'login', component: LoginComponent, canActivate: [LoginGuard]},
   {path: 'users/:user', component: UserSettingsComponent, canActivate: [AuthGuard]},
   {path: 'terms-of-service', component: TermsOfServiceComponent},
   {path: 'search', component: SearchCollectionPageComponent},
   // Used as a work-around for navigation to work when navigating with
   // changing queries
-  {path: 'search/:redirect', component: SearchCollectionPageComponent, data: {title: 'Knowledge Graph Explorer'}},
+  {
+    path: 'search/:redirect',
+    component: SearchCollectionPageComponent,
+    data: {
+      title: 'Knowledge Graph Explorer',
+    },
+  },
   {
     path: 'dt',
     canActivate: [AuthGuard],
     children: dtRoutes,
-    data: {title: 'Knowledge Reconstruction'},
-    // TODO - Bring back once pdf-viewer source code integration is resolved
-    // loadChildren: () => import(
-    //   './drawing-tool/drawing-toool.module'
-    // ).then(m => m.DrawingToolModule)
+    data: {
+      title: 'Knowledge Reconstruction',
+      fontAwesomeIcon: 'project-diagram',
+    },
   },
   {
     path: 'pdf-viewer/:file_id',
     component: PdfViewerComponent,
-    data: {title: 'PDF Viewer'},
+    data: {
+      title: 'PDF Viewer',
+      fontAwesomeIcon: 'file-pdf',
+    },
   },
   {
     path: 'file-browser',
     component: FileBrowserComponent,
     canActivate: [AuthGuard],
-    data: {title: 'File Browser'},
+    data: {
+      title: 'File Browser',
+      fontAwesomeIcon: 'folder',
+    },
   },
   {
     path: 'kg-statistics',
     component: KgStatisticsComponent,
+    data: {
+      fontAwesomeIcon: 'tachometer-alt',
+    },
   },
   {
-    path: 'space/:space_id',
+    path: 'workspace/:space_id',
     component: WorkspaceComponent,
-    data: {title: 'Workspace'},
+    data: {
+      title: 'Knowledge Reconstruction Workspace',
+    },
     canDeactivate: [UnloadConfirmationGuard],
   },
   {
     path: 'welcome',
     component: WorkspaceWelcomeComponent,
-    data: {title: 'Welcome'},
+    data: {
+      title: 'Choose Module',
+      fontAwesomeIcon: 'question',
+    },
   },
 ];
 
