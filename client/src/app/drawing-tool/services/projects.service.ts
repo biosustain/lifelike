@@ -316,4 +316,26 @@ export class ProjectsService {
 
     return visGraph;
   }
+
+  public downloadProjectBackup(projectId: string): Observable<any> {
+    return this.http.get(
+      this.baseUrl + `/projects/${projectId}/backup`,
+      this.createHttpOptions(true)
+    );
+  }
+
+  public uploadProjectBackup(project: Project): Observable<any> {
+    return this.http.post(
+      this.baseUrl + `/projects/${project.id}/backup`,
+      project,
+      this.createHttpOptions(true)
+    );
+  }
+
+  public deleteProjectBackup(projectId: string): Observable<any> {
+    return this.http.delete(
+      this.baseUrl + `/projects/${projectId}/backup`,
+      this.createHttpOptions(true)
+    );
+  }
 }

@@ -20,7 +20,7 @@ from neo4japp.blueprints.auth import auth
 from neo4japp.blueprints.permissions import requires_role
 from neo4japp.database import db
 from neo4japp.exceptions import InvalidFileNameException, RecordNotFoundException
-from neo4japp.models import Project, ProjectSchema
+from neo4japp.models import Project, ProjectBackup, ProjectSchema
 from neo4japp.constants import ANNOTATION_STYLES_DICT
 
 import graphviz as gv
@@ -416,3 +416,80 @@ def get_project_image(project_id, format):
     ).first_or_404()
 
     return process(data_source, format)
+
+
+@bp.route('/projects/<string:project_id>/backup', methods=['GET', 'POST', 'DELETE'])
+@auth.login_required
+def backup_project(project_id):
+    if request.method == 'GET':
+        try:
+            backup = ProjectBackup.query.filter_by(
+                project_id=project_id,
+                user_id=g.current_user.id,
+            ).one()
+        except Exception:
+            raise RecordNotFoundException('No backup found.')
+        return {
+            'id': backup.project_id,
+            'label': backup.label,
+            'description': backup.description,
+            'date_modified': backup.date_modified,
+            'graph': backup.graph,
+            'author': backup.author,
+            'public': backup.public,
+            'user_id': backup.user_id,
+            'hash_id': backup.hash_id,
+        }
+
+    if request.method == 'POST':
+        project = Project.query.filter_by(
+            id=project_id,
+            user_id=g.current_user.id,
+        ).one_or_none()
+
+        # Make sure that the person who's trying to save a backup has access
+        # to the project
+        if project is None:
+            raise NotAuthorizedException('Wrong project id or you do not own the project.')
+
+        old_backup = ProjectBackup.query.filter_by(
+            project_id=project_id,
+            user_id=g.current_user.id,
+        ).one_or_none()
+
+        if old_backup is not None:
+            db.session.delete(old_backup)
+
+        data = request.get_json()
+
+        backup = ProjectBackup()
+        backup.project_id = data["id"]
+        backup.label = data["label"]
+        backup.description = data["description"]
+        backup.date_modified = data["date_modified"]
+        backup.graph = data["graph"]
+        backup.author = data["author"]
+        backup.public = data["public"]
+        backup.user_id = data["user_id"]
+        backup.hash_id = data["hash_id"]
+
+        db.session.add(backup)
+        db.session.commit()
+
+        current_app.logger.info(
+            f'User added a backup: <{g.current_user.email}:{backup.project_id}>')
+        return ''
+
+    if request.method == 'DELETE':
+        backup = ProjectBackup.query.filter_by(
+            project_id=project_id,
+            user_id=g.current_user.id,
+        ).one_or_none()
+        if backup is not None:
+            db.session.delete(backup)
+            db.session.commit()
+            current_app.logger.info(
+                f'User deleted a backup: <{g.current_user.email}:{backup.project_id}>')
+        return ''
+
+    return '', 405
