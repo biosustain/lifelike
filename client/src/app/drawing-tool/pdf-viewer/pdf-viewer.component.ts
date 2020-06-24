@@ -5,7 +5,7 @@ import { Hyperlink, SearchLink } from 'app/shared/constants';
 
 import { DataFlowService, PdfAnnotationsService, } from '../services';
 
-import { Annotation, GraphData, Location, Meta } from '../services/interfaces';
+import { Annotation, GraphData, Location, Meta, AnnotationExclusionData } from '../services/interfaces';
 
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
@@ -79,6 +79,11 @@ export class PdfViewerComponent implements OnDestroy {
   pdfFileLoaded = false;
   sortedEntityTypeEntries = [];
   entityTypeVisibilityChanged = false;
+  addedAnnotationExclusion: AnnotationExclusionData;
+  addAnnotationExclusionSub: Subscription;
+  showExcludedAnnotations = false;
+  removeAnnotationExclusionSub: Subscription;
+  removedAnnotationExclusionId: string;
 
   // search
   pdfQuery;
@@ -270,6 +275,31 @@ export class PdfViewerComponent implements OnDestroy {
     });
   }
 
+  annotationExclusionAdded({ id, reason, comment }) {
+    this.addAnnotationExclusionSub = this.pdfAnnService.addAnnotationExclusion(this.currentFileId, id, reason, comment).subscribe(
+      response => {
+        this.addedAnnotationExclusion = { id, reason, comment };
+        this.snackBar.open('Annotation has been excluded', 'Close', {duration: 5000});
+      },
+      err => {
+        this.snackBar.open(`Error: failed to exclude annotation`, 'Close', {duration: 10000});
+      }
+    );
+  }
+
+  annotationExclusionRemoved(id) {
+    this.removeAnnotationExclusionSub = this.pdfAnnService.removeAnnotationExclusion(this.currentFileId, id).subscribe(
+      response => {
+        this.removedAnnotationExclusionId = id;
+        this.snackBar.open('Unmarked successfully', 'Close', {duration: 5000});
+      },
+      err => {
+        const { message, name } = err.error.apiHttpError;
+        this.snackBar.open(`${name}: ${message}`, 'Close', {duration: 10000});
+      }
+    );
+  }
+
   /**
    * Handle drop event from draggable annotations
    * of the pdf-viewer
@@ -369,6 +399,12 @@ export class PdfViewerComponent implements OnDestroy {
     }
     if (this.removeAnnotationSub) {
       this.removeAnnotationSub.unsubscribe();
+    }
+    if (this.addAnnotationExclusionSub) {
+      this.addAnnotationExclusionSub.unsubscribe();
+    }
+    if (this.removeAnnotationExclusionSub) {
+      this.removeAnnotationExclusionSub.unsubscribe();
     }
   }
 

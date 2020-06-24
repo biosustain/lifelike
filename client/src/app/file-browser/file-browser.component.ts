@@ -6,7 +6,7 @@ import { MatTableDataSource } from '@angular/material/table';
 import { MAT_DIALOG_DATA, MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { BehaviorSubject, Subscription, throwError } from 'rxjs';
-import { AnnotationStatus, PdfFile, UploadPayload, UploadType } from 'app/interfaces/pdf-files.interface';
+import { PdfFile, UploadPayload, UploadType } from 'app/interfaces/pdf-files.interface';
 import { PdfFilesService } from 'app/shared/services/pdf-files.service';
 import { HttpEventType } from '@angular/common/http';
 import { Progress, ProgressMode } from 'app/interfaces/common-dialog.interface';
@@ -24,6 +24,7 @@ export class FileBrowserComponent implements OnInit {
   selection = new SelectionModel<PdfFile>(true, []);
   isReannotating = false;
   uploadStarted = false;
+  lmdbsDates = {};
 
   constructor(
     private pdf: PdfFilesService,
@@ -34,15 +35,17 @@ export class FileBrowserComponent implements OnInit {
   ) {}
 
   ngOnInit() {
+    this.pdf.getLMDBsDates().subscribe(lmdbsDates => {
+      this.lmdbsDates = lmdbsDates;
+      this.updateAnnotationsStatus(this.dataSource.data);
+    });
     this.updateDataSource();
   }
 
   updateDataSource() {
     this.pdf.getFiles().subscribe(
       (files: PdfFile[]) => {
-        // We assume that fetched files are correctly annotated
-        files.forEach((file: PdfFile) => file.annotation_status = AnnotationStatus.Success);
-        this.dataSource.data = files;
+        this.updateAnnotationsStatus(files);
       },
       err => {
         this.snackBar.open(`Cannot fetch list of files: ${err}`, 'Close', {duration: 10000});
@@ -123,10 +126,7 @@ export class FileBrowserComponent implements OnInit {
 
   reannotate() {
     this.isReannotating = true;
-    const ids: string[] = this.selection.selected.map((file: PdfFile) => {
-      file.annotation_status = AnnotationStatus.Loading;
-      return file.file_id;
-    });
+    const ids: string[] = this.selection.selected.map((file: PdfFile) => file.file_id);
     // Let's show some progress!
     const progressObservable = new BehaviorSubject<Progress>(new Progress({
       status: 'Re-creating annotations in file...',
@@ -138,23 +138,13 @@ export class FileBrowserComponent implements OnInit {
     });
     this.pdf.reannotateFiles(ids).subscribe(
       (res) => {
-        for (const id of ids) {
-          // pick file by id
-          const file: PdfFile = this.dataSource.data.find((f: PdfFile) => f.file_id === id);
-          // set its annotation status
-          file.annotation_status = res[id] === 'Annotated' ? AnnotationStatus.Success : AnnotationStatus.Failure;
-        }
+        this.updateDataSource();
         this.isReannotating = false;
         this.snackBar.open(`Reannotation completed`, 'Close', {duration: 5000});
         progressDialogRef.close();
       },
       err => {
-        for (const id of ids) {
-          // pick file by id
-          const file: PdfFile = this.dataSource.data.find((f: PdfFile) => f.file_id === id);
-          // mark it as failed
-          file.annotation_status = AnnotationStatus.Failure;
-        }
+        this.updateDataSource();
         this.isReannotating = false;
         this.snackBar.open(`Reannotation failed`, 'Close', {duration: 10000});
         progressDialogRef.close();
@@ -225,6 +215,26 @@ export class FileBrowserComponent implements OnInit {
         });
       }
     });
+  }
+
+  private updateAnnotationsStatus(files: PdfFile[]) {
+    files.forEach((file: PdfFile) => {
+      file.annotations_date_tooltip = this.generateTooltipContent(file);
+    });
+    this.dataSource.data = [...files];
+  }
+
+  private generateTooltipContent(file: PdfFile): string {
+    const outdated = Array.
+      from(Object.entries(this.lmdbsDates)).
+      filter(([, date]: [string, string]) => Date.parse(date) >= Date.parse(file.annotations_date));
+    if (outdated.length === 0) {
+      return '';
+    }
+    return outdated.reduce(
+      (tooltip: string, [name, date]: [string, string]) => `${tooltip}\n- ${name}, ${new Date(date).toDateString()}`,
+      'Outdated:'
+    );
   }
 }
 

@@ -4,7 +4,7 @@ import json
 import os
 import re
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Dict, Optional
 import urllib.request
@@ -19,6 +19,8 @@ from werkzeug.utils import secure_filename
 
 from neo4japp.blueprints.auth import auth
 from neo4japp.blueprints.permissions import requires_project_permission
+from neo4japp.blueprints.permissions import requires_role
+from neo4japp.constants import TIMEZONE
 from neo4japp.database import (
     db,
     get_annotations_service,
@@ -33,11 +35,17 @@ from neo4japp.models import (
     FileContent,
     Directory,
     Projects,
+    LMDBsDates
 )
 from neo4japp.exceptions import AnnotationError, RecordNotFoundException
 from neo4japp.utils.network import read_url
-from neo4japp.schemas.files import AnnotationAdditionSchema, AnnotationRemovalSchema
+from neo4japp.schemas.files import (
+    AnnotationAdditionSchema,
+    AnnotationRemovalSchema,
+    AnnotationExclusionSchema,
+)
 from flask_apispec import use_kwargs, marshal_with
+from pdfminer import high_level
 
 # TODO: LL-415 Migrate the code to the projects folder once GUI is complete and API refactored
 from neo4japp.blueprints.projects import bp as newbp
@@ -100,6 +108,7 @@ def upload_pdf(project_name: str = ''):
     file_id = str(uuid.uuid4())
 
     annotations = annotate(filename, pdf)
+    annotations_date = datetime.now(TIMEZONE)
 
     try:
         # First look for an existing copy of this file
@@ -128,6 +137,7 @@ def upload_pdf(project_name: str = ''):
         annotations=annotations,
         project=projects.id,
         dir_id=dir_id,
+        annotations_date=annotations_date,
         doi=doi,
         upload_url=upload_url,
     )
@@ -166,6 +176,7 @@ def list_files(project_name: str = ''):
     yield user, projects
 
     files = [{
+        'annotations_date': row.annotations_date,
         'id': row.id,  # TODO: is this of any use?
         'file_id': row.file_id,
         'filename': row.filename,
@@ -173,6 +184,7 @@ def list_files(project_name: str = ''):
         'username': row.username,
         'creation_date': row.creation_date,
     } for row in db.session.query(
+        Files.annotations_date,
         Files.id,
         Files.file_id,
         Files.filename,
@@ -284,6 +296,16 @@ def get_annotations(id: str, project_name: str = ''):
     user = g.current_user
 
     yield user, projects
+    file = Files.query.filter_by(file_id=id, project=projects).one_or_none()
+    if file is None:
+        raise RecordNotFoundException('File does not exist')
+
+    # TODO: Should remove this eventually...the annotator should return data readable by the
+    # lib-pdf-viewer-lib, or the lib should conform to what is being returned by the annotator.
+    # Something has to give.
+    def map_annotations_to_correct_format(unformatted_annotations: dict):
+        unformatted_annotations_list = unformatted_annotations['documents'][0]['passages'][0]['annotations']  # noqa
+        formatted_annotations_list = []
 
     file = Files.query.filter_by(file_id=id, project=projects.id).one_or_none()
     if not file:
@@ -291,8 +313,18 @@ def get_annotations(id: str, project_name: str = ''):
 
     annotations = file.annotations
 
+    annotations = map_annotations_to_correct_format(file.annotations)
+
+    # Add additional information for annotations that were excluded
+    for annotation in annotations:
+        for excluded_annotation in file.excluded_annotations:
+            if excluded_annotation['id'] == annotation['meta']['id']:
+                annotation['meta']['isExcluded'] = True
+                annotation['meta']['exclusionReason'] = excluded_annotation['reason']
+                annotation['meta']['exclusionComment'] = excluded_annotation['comment']
+
     # for now, custom annotations are stored in the format that pdf-viewer supports
-    yield jsonify(map_annotations_to_correct_format(annotations) + file.custom_annotations)
+    yield jsonify(annotations + file.custom_annotations)
 
 
 @bp.route('/add_custom_annotation/<id>', methods=['PATCH'])
@@ -320,7 +352,7 @@ def add_custom_annotation(id, project_name='', **payload):
         'uuid': str(uuid.uuid4())
     }
     file = Files.query.filter_by(file_id=id).one_or_none()
-    if not file:
+    if file is None:
         raise RecordNotFoundException('File does not exist')
     file.custom_annotations = [annotation_to_add, *file.custom_annotations]
     db.session.commit()
@@ -353,8 +385,7 @@ def remove_custom_annotation(id, uuid, removeAll, project_name=''):
     yield user, projects
 
     file = Files.query.filter_by(file_id=id).one_or_none()
-
-    if not file:
+    if file is None:
         raise RecordNotFoundException('File does not exist')
     user = g.current_user
     user_roles = [role.name for role in user.roles]
@@ -363,7 +394,7 @@ def remove_custom_annotation(id, uuid, removeAll, project_name=''):
         (ann for ann in file.custom_annotations if ann['uuid'] == uuid), None
     )
     outcome: Dict[str, str] = {}  # annotation uuid to deletion outcome
-    if not annotation_to_remove:
+    if annotation_to_remove is None:
         outcome[uuid] = AnnotationRemovalOutcome.NOT_FOUND.value
         return jsonify(outcome)
     text = annotation_to_remove['meta']['allText']
@@ -449,6 +480,7 @@ def reannotate(project_name: str = ''):
         else:
             db.session.query(Files).filter(Files.file_id == id).update({
                 'annotations': annotations,
+                'annotations_date': datetime.now(timezone.utc),
             })
             db.session.commit()
             current_app.logger.debug('File successfully annotated: %s, %s', id, file.filename)
@@ -500,10 +532,78 @@ def delete_files(project_name: str = ''):
 
 
 def extract_doi(pdf_content: bytes, file_id: str = None, filename: str = None) -> Optional[str]:
+    # Attempt 1: search through the first N bytes (most probably containing only metadata)
     chunk = pdf_content[:2**17]
-    match = re.search(rb'(?:doi|DOI)(?::|=)\s*([\d\w\./%]+)', chunk)
+    doi = search_doi(chunk)
+    if doi is not None:
+        return doi
+
+    # Attempt 2: search through the first two pages of text (no metadata)
+    fp = io.BytesIO(pdf_content)
+    text = high_level.extract_text(fp, page_numbers=[0, 1], caching=False)
+    doi = search_doi(bytes(text, encoding='utf8'))
+    if doi is not None:
+        return doi
+
+    current_app.logger.warning('No DOI for file: %s, %s', file_id, filename)
+    return None
+
+
+def search_doi(content: bytes) -> Optional[str]:
+    doi_re = rb'(?:doi|DOI)(?::|=)\s*([\d\w\./%]+)'
+    match = re.search(doi_re, content)
     if match is None:
-        current_app.logger.warning('No DOI for file: %s, %s', file_id, filename)
         return None
     doi = match.group(1).decode('utf-8').replace('%2F', '/')
+    # Make sure that the match does not contain undesired characters at the end.
+    # E.g. when the match is at the end of a line, and there is a full stop.
+    while doi[-1] in './%':
+        doi = doi[:-1]
     return doi if doi.startswith('http') else f'https://doi.org/{doi}'
+
+
+@bp.route('/add_annotation_exclusion/<file_id>', methods=['PATCH'])
+@auth.login_required
+@use_kwargs(AnnotationExclusionSchema)
+def add_annotation_exclusion(file_id, **payload):
+    excluded_annotation = {
+        **payload,
+        'user_id': g.current_user.id,
+        'exclusion_date': str(datetime.now(TIMEZONE))
+    }
+    file = Files.query.filter_by(file_id=file_id).one_or_none()
+    if file is None:
+        raise RecordNotFoundException('File does not exist')
+    file.excluded_annotations = [excluded_annotation, *file.excluded_annotations]
+    db.session.commit()
+    return jsonify({'status': 'success'})
+
+
+@bp.route('/remove_annotation_exclusion/<file_id>', methods=['PATCH'])
+@auth.login_required
+@use_kwargs(AnnotationExclusionSchema(only=('id',)))
+def remove_annotation_exclusion(file_id, id):
+    file = Files.query.filter_by(file_id=file_id).one_or_none()
+    if file is None:
+        raise RecordNotFoundException('File does not exist')
+    excluded_annotation = next(
+        (ann for ann in file.excluded_annotations if ann['id'] == id), None
+    )
+    if excluded_annotation is None:
+        raise RecordNotFoundException('Annotation not found')
+    user = g.current_user
+    user_roles = [role.name for role in user.roles]
+    if excluded_annotation['user_id'] != user.id and 'admin' not in user_roles:
+        raise NotAuthorizedException('Another user has excluded this annotation')
+    file.excluded_annotations = list(file.excluded_annotations)
+    file.excluded_annotations.remove(excluded_annotation)
+    db.session.merge(file)
+    db.session.commit()
+    return jsonify({'status': 'success'})
+
+
+@bp.route('/lmdbs_dates', methods=['GET'])
+@auth.login_required
+def get_lmdbs_dates():
+    rows = LMDBsDates.query.all()
+    return {row.name: row.date for row in rows}
