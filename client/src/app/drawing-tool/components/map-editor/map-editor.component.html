@@ -2,7 +2,7 @@
   <div class="main-toolbar d-flex align-items-center toolbar d-flex">
     <div class="btn-group">
       <button type="button" class="btn btn-light"
-              [disabled]="!(unsavedChanges$ | async)"
+              [disabled]="(unsavedChanges$ | async) == null"
               ngbTooltip="Save" placement="bottom"
               (click)="save()">
         <i class="fa fa-fw fa-save"></i>
