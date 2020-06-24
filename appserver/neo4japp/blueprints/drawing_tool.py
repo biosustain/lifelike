@@ -19,7 +19,6 @@ from sqlalchemy_searchable import search
 from neo4japp.blueprints.auth import auth
 from neo4japp.blueprints.permissions import requires_project_permission
 from neo4japp.database import db
-from neo4japp.data_transfer_objects import DrawingUploadRequest
 from neo4japp.exceptions import InvalidFileNameException, RecordNotFoundException
 from neo4japp.models import (
     AccessActionType,
@@ -67,6 +66,28 @@ def get_map_by_hash(hash_id: str, projects_name: str = ''):
     project_schema = ProjectSchema()
 
     yield jsonify({'project': project_schema.dump(project)})
+
+
+# TODO - Remove at some point when projects & permissions branch
+# is merged in
+@bp.route('/map/<string:hash_id>/meta', methods=['GET'])
+@auth.login_required
+def get_map_meta_by_hash(hash_id):
+    """
+        Serve map by hash_id lookup
+    """
+    user = g.current_user
+
+    # Pull up map by hash_id
+    try:
+        project = Project.query.filter_by(hash_id=hash_id).one()
+    except NoResultFound:
+        raise RecordNotFoundException('not found :-( ')
+
+    return {
+        "userOwnIt": project.user_id == user.id,
+        "isItPublic": project.public
+    }
 
 
 @bp.route('/map/download/<string:hash_id>', methods=['GET'])
@@ -348,7 +369,7 @@ def get_project_pdf(project_id: str = '', projects_name: str = '', hash_id: str 
         item = unprocessed.pop(0)
         project = Project.query.filter_by(hash_id=item).one_or_none()
         if not project:
-            raise RecordNotFoundException('No record found')
+            raise RecordNotFoundException(f'Project {item} not found')
         pdf_data = process(project)
         pdf_object = PdfFileReader(io.BytesIO(pdf_data))
         processed[item] = pdf_object
@@ -412,6 +433,25 @@ def process(data_source, format='pdf'):
             'fontname': 'sans-serif',
             'margin': "0.2,0.0"
         }
+
+        if node['label'] in ['map', 'link', 'note']:
+            label = node['label']
+            params['image'] = f'/home/n4j/assets/{label}.png'
+            params['labelloc'] = 'b'
+            params['forcelabels'] = "true"
+            params['imagescale'] = "both"
+            params['color'] = '#ffffff00'
+
+        if node['label'] in ['association', 'correlation', 'cause', 'effect', 'observation']:
+            params['color'] = ANNOTATION_STYLES_DICT.get(
+                node['label'],
+                {'color': 'black'})['color']
+            params['fillcolor'] = ANNOTATION_STYLES_DICT.get(
+                node['label'],
+                {'color': 'black'})['color']
+            params['fontcolor'] = 'black'
+            params['style'] = 'rounded,filled'
+
         if 'hyperlink' in node['data'] and node['data']['hyperlink']:
             params['href'] = node['data']['hyperlink']
         if 'source' in node['data'] and node['data']['source']:

@@ -19,6 +19,9 @@ export interface Meta {
   isCustom?: boolean;
   allText?: string;
   links?: Links;
+  isExcluded?: boolean;
+  exclusionReason?: string;
+  exclusionComment?: string;
 }
 
 export type Rect = number[];
@@ -29,4 +32,10 @@ export interface Annotation {
   rects: Rect[];
   meta: Meta;
   uuid?: string;
+}
+
+export interface AnnotationExclusionData {
+  id: string;
+  reason: string;
+  comment: string;
 }

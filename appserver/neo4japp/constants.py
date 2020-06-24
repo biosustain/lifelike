@@ -1,3 +1,5 @@
+from datetime import datetime, timezone
+
 # Start BioCyc, Regulon, Ecocyc Dataset
 TYPE_GENE = 'Gene'
 TYPE_PATHWAY = 'Pathway'
@@ -191,8 +193,16 @@ ANNOTATION_STYLES_DICT = {
         "color": '#7f7f7f'
     },
     "link": {
-        "label": "LINK",
-        "color": '#7f7f7f'
+        "label": "link",
+        "color": '#669999'
+    },
+    "map": {
+        "label": "map",
+        "color": '#0277BD'
+    },
+    "note": {
+        "label": "note",
+        "color": "#EDC949"
     },
     # Non - Entity Types
     "correlation": {
@@ -224,3 +234,5 @@ ANNOTATION_STYLES_DICT = {
         "label": "phentotype",
     },
 }
+
+TIMEZONE = timezone.utc

@@ -9,6 +9,7 @@ from .drawing_tool import ProjectSchema
 from .files import Directory
 from .files import Files
 from .files import FileContent
+from .files import LMDBsDates
 from .projects import Projects
 from .projects import projects_collaborator_role
 from .neo4j import GraphNode
