@@ -5,39 +5,47 @@
     [attr.aria-expanded]="!navbarCollapsed"
     aria-controls="navbarContent"
     aria-expanded="false"
-    aria-label="Toggle navigation">
+    aria-label="Toggle settings">
     <mat-icon class="text-primary">settings</mat-icon>
   </div>
   <div id="settings-content" [ngClass]="navbarCollapsed ? 'unexpanded' : 'expanded'">
-    <form [formGroup]="settingsForm" fxLayout="column" fxLayoutAlign="space-between start">
-      <mat-slide-toggle formControlName="animation">Animation</mat-slide-toggle>
+    <form [formGroup]="settingsForm" class="d-flex flex-column justify-content-between">
 
-      <div>Max rows shown in clusters:</div>
-      <mat-form-field>
-        <input
-          id="max-cluster-rows-input"
-          type="number"
-          step="1"
-          matInput
-          formControlName="maxClusterShownRows"
-          name="firstName"
-        />
-        <mat-error *ngIf="settingsForm.get('maxClusterShownRows').hasError('required')">
-          Max rows cannot be empty!
-        </mat-error>
-        <mat-error *ngIf="settingsForm.get('maxClusterShownRows').hasError('min')">
-          Max rows cannot be less than 1!
-        </mat-error>
-        <mat-error *ngIf="settingsForm.get('maxClusterShownRows').hasError('pattern')">
-          Max rows must be a whole number!
-        </mat-error>
-      </mat-form-field>
+      <!-- Animation toggle -->
+      <div class="custom-control custom-switch">
+        <input type="checkbox" formControlName="animation" class="custom-control-input" id="animation-toggle">
+        <label class="custom-control-label" for="animation-toggle">Animation</label>
+      </div>
 
-      <div>Include in Expand Node Result:</div>
-      <mat-checkbox
-        *ngFor="let label of legendLabels"
-        [formControlName]="label"
-      >{{ label }}</mat-checkbox>
+      <!-- Max cluster rows input -->
+      <label class="mt-2" for="max-cluster-rows-input">Max rows shown in clusters:</label>
+      <input
+        id="max-cluster-rows-input"
+        [ngClass]="'form-control w-50' + (settingsForm.get('maxClusterShownRows').invalid ? ' invalid-input' : '')"
+        type="number"
+        step="1"
+        formControlName="maxClusterShownRows"
+        name="firstName"
+      />
+      <div class="invalid-msg" *ngIf="settingsForm.get('maxClusterShownRows').hasError('required')">
+        Max rows cannot be empty!
+      </div>
+      <div class="invalid-msg" *ngIf="settingsForm.get('maxClusterShownRows').hasError('min')">
+        Max rows cannot be less than 1!
+      </div>
+      <div class="invalid-msg" *ngIf="settingsForm.get('maxClusterShownRows').hasError('pattern')">
+        Max rows must be a whole number!
+      </div>
+
+      <!-- Labels to include in expand result checkboxes -->
+      <label class="mt-2">Include in Expanded Nodes:</label>
+      <div
+        class="custom-control custom-checkbox"
+        *ngFor="let label of legendLabels; index as i"
+      >
+        <input type="checkbox" [formControlName]="label" class="custom-control-input" [id]="'legend-label-' + i">
+        <label class="custom-control-label" [for]="'legend-label-' + i">{{ label }}</label>
+      </div>
     </form>
   </div>
 </div>
