@@ -18,6 +18,9 @@ import {
 import {
   DrawingToolComponent
 } from './drawing-tool/drawing-tool.component';
+import {
+  RestoreProjectDialogComponent
+} from './drawing-tool/restore-project-dialog/restore-project-dialog.component';
 
 import { CopyPasteMapsService } from './services/copy-paste-maps.service';
 
@@ -79,7 +82,8 @@ export const routes = [
     MapListComponent,
     ExportModalComponent,
     EditProjectDialogComponent,
-    SearchLinksComponent
+    SearchLinksComponent,
+    RestoreProjectDialogComponent,
   ],
   entryComponents: [
     CreateProjectDialogComponent,
@@ -92,7 +96,8 @@ export const routes = [
     PdfViewerComponent,
     ExportModalComponent,
     NodeSearchComponent,
-    ConfirmDialogComponent
+    ConfirmDialogComponent,
+    RestoreProjectDialogComponent,
   ],
   imports: [
     SharedModule,

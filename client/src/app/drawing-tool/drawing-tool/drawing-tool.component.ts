@@ -78,6 +78,10 @@ import {
   InfoPanelComponent
 } from './info-panel/info-panel.component';
 
+import {
+  RestoreProjectDialogComponent
+} from './restore-project-dialog/restore-project-dialog.component';
+
 import {annotationTypes} from 'app/shared/annotation-styles';
 import {ExportModalComponent} from './export-modal/export-modal.component';
 import {MatDialog, MatDialogConfig} from '@angular/material/dialog';
@@ -168,6 +172,7 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
 
   /** Obj representation of knowledge model with metadata */
   project: Project = null;
+  projectBackup: Project = null;
   /** vis.js network graph DOM instantiation */
   visjsNetworkGraph: NetworkVis = null;
 
@@ -209,6 +214,8 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
       not_saved: !this.saveState
     };
   }
+
+  autoSaveIntervalId: number;
 
   constructor(
     private dataFlow: DataFlowService,
@@ -281,6 +288,16 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
         this.recordCommand(cmd);
       }
     });
+
+    this.autoSaveIntervalId = window.setInterval(() => {
+      if (this.saveState || !this.project) {
+        console.log('no need to autosave');
+        return;
+      }
+      const project = Object.assign({}, this.project);
+      this.prepareProjectForPersistence(project);
+      this.projectService.uploadProjectBackup(project).subscribe(res => console.log('auto saved!'));
+    }, 60000);
   }
 
   ngAfterViewInit() {
@@ -306,6 +323,49 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
     // Complete the vis canvas element event listeners
     this.endMouseMoveEventSource.complete();
     this.endPasteEventSource.complete();
+
+    window.clearInterval(this.autoSaveIntervalId);
+  }
+
+  private prepareMap() {
+    // Convert graph from universal to vis.js format
+    const g = this.projectService.universe2Vis(this.project.graph);
+
+    // Draw graph around data
+    this.visjsNetworkGraph.draw(
+      g.nodes,
+      g.edges
+    );
+
+    // Event handlers
+    this.visjsNetworkGraph.network.on(
+      'click',
+      (properties) => this.networkClickHandler(properties)
+    );
+    this.visjsNetworkGraph.network.on(
+      'doubleClick',
+      (properties) => this.networkDoubleClickHandler(properties)
+    );
+    this.visjsNetworkGraph.network.on(
+      'oncontext',
+      (properties) => this.networkOnContextCallback(properties)
+    );
+    this.visjsNetworkGraph.network.on(
+      'dragStart',
+      (properties) => this.networkDragStartCallback(properties)
+    );
+    // Listen for nodes moving on canvas
+    this.visjsNetworkGraph.network.on(
+      'dragEnd',
+      (properties) => {
+        // Dragging a node doesn't fire node selection, but it is selected after dragging finishes, so update
+        this.updateSelectedNodes();
+      }
+    );
+    // Listen for mouse movement on canvas to feed to handler
+    $('#canvas > div > canvas').on('mousemove',
+      (e) => this.edgeFormationRenderer(e)
+    );
   }
 
   /**
@@ -317,46 +377,14 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
       .subscribe(
         (resp: any) => {
           this.project = resp.project;
-
-          // Convert graph from universal to vis.js format
-          const g = this.projectService.universe2Vis(this.project.graph);
-
-          // Draw graph around data
-          this.visjsNetworkGraph.draw(
-            g.nodes,
-            g.edges
-          );
-
-          /**
-           * Event handlers
-           */
-          this.visjsNetworkGraph.network.on(
-            'click',
-            (properties) => this.networkClickHandler(properties)
-          );
-          this.visjsNetworkGraph.network.on(
-            'doubleClick',
-            (properties) => this.networkDoubleClickHandler(properties)
-          );
-          this.visjsNetworkGraph.network.on(
-            'oncontext',
-            (properties) => this.networkOnContextCallback(properties)
-          );
-          this.visjsNetworkGraph.network.on(
-            'dragStart',
-            (properties) => this.networkDragStartCallback(properties)
-          );
-          // Listen for nodes moving on canvas
-          this.visjsNetworkGraph.network.on(
-            'dragEnd',
-            (properties) => {
-              // Dragging a node doesn't fire node selection, but it is selected after dragging finishes, so update
-              this.updateSelectedNodes();
-            }
-          );
-          // Listen for mouse movement on canvas to feed to handler
-          $('#canvas > div > canvas').on('mousemove',
-            (e) => this.edgeFormationRenderer(e)
+          this.prepareMap();
+          this.projectService.downloadProjectBackup(this.project.id.toString()).subscribe(
+            (backup) => {
+              console.log('backup found!', backup);
+              this.projectBackup = backup;
+              this.openRestoreMapDialog();
+            },
+            () => console.log('no backup.')
           );
         },
         err => console.log(err)
@@ -775,20 +803,23 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
    * Save the current representation of knowledge model
    */
   save() {
-    // Export the graph from vis_js instance object
-    const graph = this.visjsNetworkGraph.export();
-
-    // Convert it to universal representation ..
-    this.project.graph = this.projectService.vis2Universe(graph);
-    this.project.date_modified = new Date().toISOString();
-
+    this.prepareProjectForPersistence(this.project);
     // Push to backend to save
     this.projectService.updateProject(this.project).subscribe(() => {
+      this.projectService.deleteProjectBackup(this.project.id.toString()).subscribe(res => console.log('backup deleted', res));
       this.saveState = true;
       this.snackBar.open('Map is saved', null, {
         duration: 2000,
       });
     });
+  }
+
+  private prepareProjectForPersistence(project: Project) {
+    // Export the graph from vis_js instance object
+    const graph = this.visjsNetworkGraph.export();
+    // Convert it to universal representation
+    project.graph = this.projectService.vis2Universe(graph);
+    project.date_modified = (new Date()).toISOString();
   }
 
   /**
@@ -1204,5 +1235,20 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
       }
     };
     this.recordCommand(cmd);
+  }
+
+  private openRestoreMapDialog() {
+    const dialogRef = this.dialog.open(RestoreProjectDialogComponent, {
+      width: '480px',
+    });
+
+    dialogRef.afterClosed().subscribe(res => {
+      if (res) {
+        console.log('Loading the backup...');
+        this.project = this.projectBackup;
+        this.prepareMap();
+        this.saveState = false;
+      }
+    });
   }
 }
