@@ -334,7 +334,7 @@ def mock_get_gene_to_organism_serpina1_match_result(monkeypatch):
 @pytest.fixture(scope='function')
 def mock_get_gene_to_organism_match_result_for_human_gene_pdf(monkeypatch):
     def get_match_result(*args, **kwargs):
-        return {'ace2': {'9606': '59272'}}
+        return {'ACE2': {'9606': '59272'}}
 
     monkeypatch.setattr(
         HybridNeo4jPostgresService,
@@ -347,11 +347,11 @@ def mock_get_gene_to_organism_match_result_for_human_gene_pdf(monkeypatch):
 def mock_get_gene_to_organism_match_result_for_escherichia_coli_pdf(monkeypatch):
     def get_match_result(*args, **kwargs):
         return {
-            'pura': {'562': '948695'},
-            'purb': {'562': '945695'},
-            'purc': {'562': '946957'},
-            'purd': {'562': '948504'},
-            'purf': {'562': '946794'},
+            'purA': {'562': '948695'},
+            'purB': {'562': '945695'},
+            'purC': {'562': '946957'},
+            'purD': {'562': '948504'},
+            'purF': {'562': '946794'},
         }
 
     monkeypatch.setattr(
