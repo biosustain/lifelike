@@ -119,6 +119,17 @@ export class ProjectsService {
     );
   }
 
+  /**
+   * Return limited meta info about map
+   * @param hashId - id of map resource
+   */
+  public canIEdit(hashId): Observable<any> {
+    return this.http.get(
+      this.baseUrl + `/map/${hashId}/meta`,
+      this.createHttpOptions(true)
+    );
+  }
+
 
   /**
    * Return a list of projects owned by user
