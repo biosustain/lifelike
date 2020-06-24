@@ -187,7 +187,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
         this.isReannotating = false;
         this.snackBar.open(`Reannotation failed`, 'Close', {duration: 10000});
         progressDialogRef.close();
-      }
+      },
     );
   }
 
@@ -259,15 +259,15 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
   }
 
   private generateTooltipContent(file: PdfFile): string {
-    const outdated = Array.
-    from(Object.entries(this.lmdbsDates)).
-    filter(([, date]: [string, string]) => Date.parse(date) >= Date.parse(file.annotations_date));
+    const outdated = Array
+      .from(Object.entries(this.lmdbsDates))
+      .filter(([, date]: [string, string]) => Date.parse(date) >= Date.parse(file.annotations_date));
     if (outdated.length === 0) {
       return '';
     }
     return outdated.reduce(
       (tooltip: string, [name, date]: [string, string]) => `${tooltip}\n- ${name}, ${new Date(date).toDateString()}`,
-      'Outdated:'
+      'Outdated:',
     );
   }
 }

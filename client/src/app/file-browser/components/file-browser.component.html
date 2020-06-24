@@ -69,8 +69,9 @@
             </label>
           </div>
         </th>
+        <th class="d-none d-lg-table-cell">Submitter</th>
         <th class="d-none d-lg-table-cell">Modified</th>
-        <th class="d-none d-md-table-cell">Submitter</th>
+        <th class="d-none d-md-table-cell">Annotations</th>
       </tr>
       </thead>
 
@@ -79,22 +80,28 @@
         <td>
           <span class="placeholder-box">Loading loading</span>
         </td>
-        <td>
+        <td class="align-middle d-none d-lg-table-cell">
           <span class="placeholder-box">Loading loading</span>
         </td>
-        <td>
+        <td class="align-middle d-none d-lg-table-cell">
           <span class="placeholder-box">Loading loading</span>
+        </td>
+        <td class="align-middle d-none d-md-table-cell">
+          <span class="placeholder-box">Loading</span>
         </td>
       </tr>
       <tr>
         <td>
           <span class="placeholder-box">Loading loading loading</span>
         </td>
-        <td>
+        <td class="align-middle d-none d-lg-table-cell">
           <span class="placeholder-box">Loading loading</span>
         </td>
-        <td>
+        <td class="align-middle d-none d-lg-table-cell">
           <span class="placeholder-box">Loading loading loading</span>
+        </td>
+        <td class="align-middle d-none d-md-table-cell">
+          <span class="placeholder-box">Loading</span>
         </td>
       </tr>
       </tbody>
@@ -117,11 +124,17 @@
             </label>
           </div>
         </td>
-        <td class="align-middle d-none d-lg-table-cell">
-          {{ file.creation_date | date:'short' }}
-        </td>
-        <td class="align-middle d-none d-md-table-cell">
+        <td class="align-middle d-none d-lg-table-cell text-nowrap text-truncate">
           {{ file.username }}
+        </td>
+        <td class="align-middle d-none d-lg-table-cell text-nowrap text-truncate">
+          {{ file.creation_date | date:'shortDate' }}
+        </td>
+        <td class="align-middle d-none d-md-table-cell text-nowrap text-truncate"
+            [ngbTooltip]="!file.annotations_date_tooltip || file.annotations_date_tooltip.length === 0 ? '' : file.annotations_date_tooltip">
+          <span class="fa fa-fw fa-exclamation-triangle text-danger"
+                *ngIf="file.annotations_date_tooltip?.length > 0"></span>
+          {{ file.annotations_date | date:'shortDate' }}
         </td>
       </tr>
       </tbody>
