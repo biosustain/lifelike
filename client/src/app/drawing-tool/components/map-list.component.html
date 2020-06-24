@@ -81,42 +81,7 @@
         <div class="progress-bar progress-bar-striped progress-bar-animated bg-secondary" style="width: 100%"></div>
       </div>
 
-      <div *ngIf="templateView" class="p-3">
-        <div *ngIf="status.placeholdersShown">
-          <div class="mb-2">
-            <div class="text-truncate">
-              <span class="placeholder-box">Loading loading</span>
-            </div>
-            <div class="text-truncate mt-2">
-              <span class="placeholder-box">Loading loading loading</span>
-            </div>
-          </div>
-          <div class="mb-2">
-            <div class="text-truncate">
-              <span class="placeholder-box">Loading loading loading</span>
-            </div>
-            <div class="text-truncate mt-2">
-              <span class="placeholder-box">Loading loading loading blah</span>
-            </div>
-          </div>
-        </div>
-
-        <div *ngIf="status.resultsShown" cdkDropList cdkDropListSortingDisabled>
-          <div *ngFor="let project of projects" [id]="project.hash_id" [title]="project.label" cdkDrag class="mb-2"
-               [cdkDragData]="createNodeDropData(project)">
-            <div class="text-truncate graph-node">
-              {{ project.label }}
-            </div>
-            <div class="text-truncate text-muted d-flex">
-              <div class="text-truncate mr-auto">
-                By {{project?.author}}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <table class="table table-selectable my-0" style="table-layout: fixed" *ngIf="!templateView">
+      <table class="table table-selectable my-0" style="table-layout: fixed">
         <colgroup>
           <col>
           <col style="width: 90px">
@@ -165,9 +130,10 @@
 
         <tbody *ngIf="status.resultsShown" cdkDropList cdkDropListSortingDisabled>
         <tr *ngFor="let project of projects" [id]="project.hash_id"
-            (click)='select(project)' cdkDrag
+            (click)='select(project)' draggable="true"
             (keydown)="$event.keyCode != 13 || select(project)"
-            [cdkDragDisabled]='childMode' [class.active]="selectedMap?.hash_id === project.hash_id"
+            (dragstart)="mapDragStarted($event, project)"
+            [class.active]="selectedMap?.hash_id === project.hash_id"
             tabindex="0">
           <td>
             <div class="d-flex text-truncate">

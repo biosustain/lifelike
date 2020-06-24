@@ -39,9 +39,8 @@
   </div>
 
   <div class="flex-fill">
-    <div class="graph-container" id="drawing-tool-view-container" cdkDropListGroup>
-      <canvas #canvas class="graph-view" cdkDropList
-              (cdkDropListDropped)="drop($event)"></canvas>
+    <div class="graph-container" id="drawing-tool-view-container">
+      <canvas #canvas class="graph-view" (dragover)="dragOver($event)" (drop)="drop($event)"></canvas>
 
       <app-palette class="palette-panel">
       </app-palette>

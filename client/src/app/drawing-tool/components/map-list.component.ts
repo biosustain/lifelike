@@ -11,8 +11,6 @@ import { BackgroundTask } from 'app/shared/rxjs/background-task';
   styleUrls: ['./map-list.component.scss'],
 })
 export class MapListComponent implements OnInit, OnDestroy {
-  @Input() childMode = false;
-  @Input() templateView = false;
   @Input() selectedMap: Project = null;
   @Output() mapCreate = new EventEmitter<any>();
   @Output() mapSelect = new EventEmitter<Project>();
@@ -79,18 +77,24 @@ export class MapListComponent implements OnInit, OnDestroy {
     this.mapSelect.emit(map);
   }
 
-  createNodeDropData(map: Project) {
-    return {
-      type: NODE_TYPE_ID,
-      node: {
-        display_name: map.label,
-        label: 'map',
-        sub_labels: [],
-        data: {
-          source: '/dt/map/' + map.id,
-        },
-      } as Partial<UniversalGraphNode>,
-    };
+  /**
+   * Handle the initial dragging of a map.
+   * @param event the event
+   * @param map the map
+   */
+  mapDragStarted(event: DragEvent, map: Project) {
+    const dataTransfer: DataTransfer = event.dataTransfer;
+    dataTransfer.setData('text/plain', map.label);
+    dataTransfer.setData('application/***ARANGO_DB_NAME***-node', JSON.stringify({
+      display_name: map.label,
+      label: 'map',
+      sub_labels: [],
+      data: {
+        source: '/dt/map/' + map.id,
+      },
+    } as Partial<UniversalGraphNode>));
+    // TODO: Add text/uri-list for a link
+    // TODO: Maybe also add an image?
   }
 }
 

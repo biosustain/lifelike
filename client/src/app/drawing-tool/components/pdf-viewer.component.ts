@@ -5,7 +5,7 @@ import { Hyperlink, SearchLink } from 'app/shared/constants';
 
 import { DataFlowService, PdfAnnotationsService } from '../services';
 
-import { Annotation, Location, Meta, AnnotationExclusionData } from '../services/interfaces';
+import { Annotation, Location, Meta, AnnotationExclusionData, UniversalGraphNode } from '../services/interfaces';
 
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { PdfFile } from '../../interfaces/pdf-files.interface';
@@ -310,14 +310,8 @@ export class PdfViewerComponent implements OnDestroy, ModuleAwareComponent {
    * of the pdf-viewer
    * @param event represents a drop event
    */
-  drop(event) {
-    const mouseEvent = event.event.originalEvent.originalEvent as MouseEvent;
-    const nodeDom = event.ui.draggable[0] as HTMLElement;
-
-    const containerCoord: DOMRect =
-      document
-        .getElementById('drawing-tool-view-canvas')
-        .getBoundingClientRect() as DOMRect;
+  addAnnotationDragData(event: DragEvent) {
+    const nodeDom = event.target as HTMLElement;
 
     // everything that graphbuilder might need is under meta
     const meta: Meta = JSON.parse(nodeDom.getAttribute('meta')) as Meta;
@@ -336,20 +330,21 @@ export class PdfViewerComponent implements OnDestroy, ModuleAwareComponent {
       };
     });
 
-    this.dataFlow.pushNode2Canvas({
-      hash: '', // To be replaced
-      display_name: meta.type === 'Links' ? 'Link' : meta.allText,
+    const text = meta.type === 'Links' ? 'Link' : meta.allText;
+
+    const dataTransfer: DataTransfer = event.dataTransfer;
+    dataTransfer.setData('text/plain', text);
+    dataTransfer.setData('application/***ARANGO_DB_NAME***-node', JSON.stringify({
+      display_name: text,
       label: meta.type.toLowerCase(),
       sub_labels: [],
       data: {
-        x: mouseEvent.clientX - containerCoord.x,
-        y: mouseEvent.clientY,
         source,
         search,
         hyperlink,
         detail: meta.type === 'Link' ? meta.allText : '',
       },
-    });
+    } as Partial<UniversalGraphNode>));
   }
 
   zoomIn() {
