@@ -9,14 +9,18 @@ import { SplitterComponent } from './splitter.component';
 
 import { DrawingToolModule } from '../drawing-tool.module';
 import {NodeSearchModule} from '../../node-search/node-search.module';
+import { RootStoreModule } from 'app/***ARANGO_USERNAME***-store';
+import { RouterTestingModule } from '@angular/router/testing';
 
-xdescribe('SplitterComponent', () => {
+describe('SplitterComponent', () => {
   let component: SplitterComponent;
   let fixture: ComponentFixture<SplitterComponent>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       imports: [
+        RootStoreModule,
+        RouterTestingModule,
         DrawingToolModule,
         NodeSearchModule
       ],

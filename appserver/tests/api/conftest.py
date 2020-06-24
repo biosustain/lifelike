@@ -88,9 +88,11 @@ def test_user_with_pdf(
         user_id=test_user.id,
         creation_date=datetime.now(),
         annotations={},
+        annotations_date=datetime.now(),
         project=fix_project.id,
-        custom_annotations={},
         dir_id=fix_directory.id,
+        custom_annotations=[],
+        excluded_annotations=[],
     )
     session.add(fake_file)
     session.flush()
