@@ -227,8 +227,8 @@ export class FileBrowserComponent implements OnInit {
   private generateTooltipContent(file: PdfFile): string {
     const outdated = Array.
       from(Object.entries(this.lmdbsDates)).
-      filter(([, date]: [string, number]) => date >= file.annotations_date).
-      map(([name, ]: [string, number]) => name);
+      filter(([, date]: [string, string]) => Date.parse(date) >= Date.parse(file.annotations_date)).
+      map(([name, ]: [string, string]) => name);
     if (outdated.length === 0) {
       return '';
     }
