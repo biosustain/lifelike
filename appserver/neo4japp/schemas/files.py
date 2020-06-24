@@ -36,3 +36,9 @@ class AnnotationAdditionSchema(StrictSchema):
 class AnnotationRemovalSchema(StrictSchema):
     uuid = ma.String(required=True)
     removeAll = ma.Boolean(required=True)
+
+
+class AnnotationExclusionSchema(StrictSchema):
+    id = ma.String(required=True)
+    reason = ma.String(required=True)
+    comment = ma.String(required=True)
