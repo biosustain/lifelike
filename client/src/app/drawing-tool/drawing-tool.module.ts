@@ -27,18 +27,16 @@ import { ConfirmDialogComponent } from 'app/shared/components/dialog/confirm-dia
 import { UnloadConfirmationGuard } from '../shared/guards/UnloadConfirmation.guard';
 
 export const routes = [{
-  path: 'project-list',
+  path: 'map',
   component: MapBrowserComponent,
-},
-  {
-    path: 'map/edit/:hash_id',
-    component: MapEditorComponent,
-    canDeactivate: [UnloadConfirmationGuard],
-  },
-  {
-    path: 'map/:hash_id',
-    component: MapBrowserComponent,
-  }];
+}, {
+  path: 'map/edit/:hash_id',
+  component: MapEditorComponent,
+  canDeactivate: [UnloadConfirmationGuard],
+}, {
+  path: 'map/:hash_id',
+  component: MapBrowserComponent,
+}];
 
 @NgModule({
   declarations: [
