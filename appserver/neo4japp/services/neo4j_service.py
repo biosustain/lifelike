@@ -687,9 +687,9 @@ class Neo4JService(GraphBaseDao):
         query = """
             MATCH (g:Gene)-[:HAS_TAXONOMY]->(o:Taxonomy)
             WHERE
-                toLower(g.name) IN $genes AND
+                g.name IN $genes AND
                 o.id IN $organisms
-            WITH toLower(g.name) AS gene, g.id AS gene_id, o.id AS organism_id
+            WITH g.name AS gene, g.id AS gene_id, o.id AS organism_id
             RETURN gene, collect(gene_id) AS genes_in_organism_with_name, organism_id
         """
         return query
