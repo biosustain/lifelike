@@ -7,6 +7,7 @@ import { Subscription } from 'rxjs';
 import { GraphEntityUpdate } from '../../../graph-viewer/actions/graph';
 import { EdgeDeletion, NodeDeletion } from '../../../graph-viewer/actions/nodes';
 import { openLink } from '../../../shared/utils/browser';
+import { WorkspaceManager } from '../../../shared/workspace-manager';
 
 @Component({
   selector: 'app-info-panel',
@@ -20,7 +21,8 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
 
   private graphDataSubscription: Subscription = null;
 
-  constructor(private dataFlow: DataFlowService) {
+  constructor(private dataFlow: DataFlowService,
+              private workspaceManager: WorkspaceManager) {
   }
 
   ngOnInit() {
@@ -60,8 +62,10 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
    * Bring user to original source of node information
    */
   openSource(source: string): void {
-    if (source.includes('/dt/pdf')) {
-      const prefixLink = '/dt/pdf/';
+    let m;
+
+    m = source.match(/^\/dt\/pdf/);
+    if (m != null) {
       const [
         fileId,
         page,
@@ -69,25 +73,19 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
         coordB,
         coordC,
         coordD
-      ] = source.replace(prefixLink, '').split('/');
-      // Emit app command with annotation payload
-      this.openApp.emit({
-          app: 'pdf-viewer',
-          arg: {
-            // tslint:disable-next-line: radix
-            pageNumber: parseInt(page),
-            fileId,
-            coords: [
-              parseFloat(coordA),
-              parseFloat(coordB),
-              parseFloat(coordC),
-              parseFloat(coordD)
-            ]
-          }
-        }
-      );
-    } else if (source.includes('/dt/map')) {
-      openLink(window.location.origin + source, '_blank');
+      ] = source.replace(/^\/dt\/pdf\//, '').split('/');
+      const url = `/pdf-viewer/${fileId}#page=${page}&coords=${coordA},${coordB},${coordC},${coordD}`;
+      this.workspaceManager.navigateByUrl(url, {
+        newTab: true,
+      });
+      return;
+    }
+
+    m = source.match(/^\/dt\/map\/([0-9a-f]+)$/);
+    if (m != null) {
+      this.workspaceManager.navigateByUrl(`/dt/map/${m[1]}`, {
+        newTab: true,
+      });
     }
   }
 }

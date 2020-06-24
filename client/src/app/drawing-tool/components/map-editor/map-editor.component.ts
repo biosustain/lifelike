@@ -157,7 +157,7 @@ export class MapEditorComponent implements OnInit, AfterViewInit, OnDestroy, Mod
     this.modulePropertiesChange.emit({
       title: this.project ? this.project.label : 'Map',
       fontAwesomeIcon: 'project-diagram',
-      badge: this.unsavedChanges$.value ? '*' : null,
+      badge: this.unsavedChanges$.getValue() ? '*' : null,
     });
   }
 
@@ -190,7 +190,8 @@ export class MapEditorComponent implements OnInit, AfterViewInit, OnDestroy, Mod
     // Push to backend to save
     this.projectService.updateProject(this.project).subscribe(() => {
       this.unsavedChanges$.next(false);
-      this.snackBar.open('Map saved', null, {
+      this.emitModuleProperties();
+      this.snackBar.open('Map saved.', null, {
         duration: 2000,
       });
     });

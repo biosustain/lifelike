@@ -123,7 +123,20 @@ export class PdfViewerComponent implements OnDestroy, ModuleAwareComponent {
     // from
     if (this.route.snapshot.params.file_id) {
       const linkedFileId = this.route.snapshot.params.file_id;
-      this.openPdf(new DummyFile(linkedFileId));
+      const fragment = this.route.snapshot.fragment || '';
+      // TODO: Do proper query string parsing
+      const pageMatch = fragment.match(/page=([0-9]+)/);
+      const coordMatch = fragment.match(/coords=([0-9.]+),([0-9.]+),([0-9.]+),([0-9.]+)/);
+      const location: Location = pageMatch != null && coordMatch != null ? {
+        pageNumber: parseInt(pageMatch[1], 10),
+        rect: [
+          parseFloat(coordMatch[1]),
+          parseFloat(coordMatch[2]),
+          parseFloat(coordMatch[3]),
+          parseFloat(coordMatch[4])
+        ]
+      } : null;
+      this.openPdf(new DummyFile(linkedFileId), location);
     }
   }
 
