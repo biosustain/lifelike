@@ -6,7 +6,7 @@ import re
 import uuid
 from datetime import datetime, timezone
 from enum import Enum
-from typing import Dict, Optional
+from typing import Dict, List, Optional
 import urllib.request
 from urllib.error import URLError
 
@@ -305,7 +305,7 @@ def get_annotations(id: str, project_name: str = ''):
     # Something has to give.
     def map_annotations_to_correct_format(unformatted_annotations: dict):
         unformatted_annotations_list = unformatted_annotations['documents'][0]['passages'][0]['annotations']  # noqa
-        formatted_annotations_list = []
+        formatted_annotations_list: List[Dict] = []
 
     file = Files.query.filter_by(file_id=id, project=projects.id).one_or_none()
     if not file:
