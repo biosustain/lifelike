@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   inkscape:export-ydpi="15.33"
+   inkscape:export-xdpi="15.33"
+   inkscape:export-filename="/home/jcemelanda/Projects/kg-prototypes/appserver/assets/map.png"
+   height="600"
+   width="600"
+   inkscape:version="1.0 (4035a4fb49, 2020-05-01)"
+   sodipodi:docname="map.svg"
+   id="svg4"
+   version="1.1"
+   viewBox="0 0 600 600"
+   role="img"
+   class="svg-inline--fa fa-map fa-w-18"
+   data-icon="map"
+   data-prefix="fas"
+   focusable="false"
+   aria-hidden="true">
+  <metadata
+     id="metadata10">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs8" />
+  <sodipodi:namedview
+     inkscape:current-layer="svg4"
+     inkscape:window-maximized="1"
+     inkscape:window-y="27"
+     inkscape:window-x="0"
+     inkscape:cy="256"
+     inkscape:cx="149.9566"
+     inkscape:zoom="1.1699219"
+     showgrid="false"
+     id="namedview6"
+     inkscape:window-height="1002"
+     inkscape:window-width="1920"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0"
+     guidetolerance="10"
+     gridtolerance="10"
+     objecttolerance="10"
+     borderopacity="1"
+     bordercolor="#666666"
+     pagecolor="#ffffff"
+     inkscape:document-rotation="0" />
+  <path
+     id="path2"
+     d="M 85.229101,76.482143 V 385.69643 c 0,10.10714 8.52372,17.01786 16.361359,13.26786 L 204.54627,342.85714 V 0 L 100.23323,49.955357 A 23.867908,28.576786 0 0 0 85.229101,76.482143 Z M 228.40971,342.85714 371.59031,400 V 57.142857 L 228.40971,0 Z M 498.40954,1.0357143 395.45373,57.142857 V 400 L 499.76677,350.04464 A 23.86045,28.567857 0 0 0 514.7709,323.51786 V 14.303571 c 0,-10.1071424 -8.52372,-17.0178567 -16.36136,-13.2678567 z"
+     fill="currentColor"
+     style="fill:#0277bd;fill-opacity:1;stroke-width:0.815986" />
+</svg>
