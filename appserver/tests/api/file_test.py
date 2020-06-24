@@ -64,7 +64,12 @@ def test_can_upload_pdf(monkeypatch, client, test_user, fix_project, fix_directo
         since we don't care about the annotation process """
         return dict()
 
+    def mock_extract_doi(pdf_content, file_id, filename):
+        """ Mocks out the extract doi function in the module """
+        return None
+
     monkeypatch.setattr(files, 'annotate', mockannotate)
+    monkeypatch.setattr(files, 'extract_doi', mock_extract_doi)
     mock_pdf = BytesIO(json.dumps(dict()).encode('utf-8'))
 
     resp = client.post(
@@ -121,7 +126,12 @@ def test_can_view_all_files_in_project(monkeypatch, client, test_user, fix_proje
         since we don't care about the annotation process """
         return dict()
 
+    def mock_extract_doi(pdf_content, file_id, filename):
+        """ Mocks out the extract doi function in the module """
+        return None
+
     monkeypatch.setattr(files, 'annotate', mockannotate)
+    monkeypatch.setattr(files, 'extract_doi', mock_extract_doi)
     mock_pdf = BytesIO(json.dumps(dict()).encode('utf-8'))
 
     resp = client.post(
@@ -290,6 +300,9 @@ def test_user_can_remove_matching_custom_annotations(
 
 
 def test_can_delete_files(client, test_user, test_user_with_pdf, fix_project):
+    login_resp = client.login_as_user(test_user.email, 'password')
+    headers = generate_headers(login_resp['access_jwt'])
+    file_id = test_user_with_pdf.file_id
     resp = client.delete(
         f'/projects/{fix_project.project_name}/files',
         headers=headers,
