@@ -31,14 +31,13 @@ export class PaletteComponent {
     this.expanded = !this.expanded;
   }
 
-  createNodeDropData(annotationStyle: AnnotationStyle) {
-    return {
-      type: NODE_TYPE_ID,
-      node: {
-        display_name: annotationStyle.label,
-        label: annotationStyle.label,
-        sub_labels: [],
-      } as Partial<UniversalGraphNode>,
-    };
+  dragStarted(event: DragEvent, annotationStyle: AnnotationStyle) {
+    const dataTransfer: DataTransfer = event.dataTransfer;
+    dataTransfer.setData('text/plain', annotationStyle.label);
+    dataTransfer.setData('application/lifelike-node', JSON.stringify({
+      display_name: annotationStyle.label,
+      label: annotationStyle.label,
+      sub_labels: [],
+    } as Partial<UniversalGraphNode>));
   }
 }

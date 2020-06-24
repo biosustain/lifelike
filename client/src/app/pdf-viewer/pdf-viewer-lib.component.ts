@@ -82,6 +82,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
 
   @Output() loadCompleted = new EventEmitter();
   @Output() dropEvents = new EventEmitter();
+  @Output() annotationDragStart = new EventEmitter<any>();
   // tslint:disable
   @Output('custom-annotation-created') annotationCreated = new EventEmitter();
   @Output('custom-annotation-removed') annotationRemoved = new EventEmitter();
@@ -303,6 +304,10 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
         pageNumber: annotation.pageNumber,
         rect
       };
+      overlayDiv.setAttribute('draggable', 'true');
+      overlayDiv.addEventListener('dragstart', event => {
+        this.annotationDragStart.emit(event);
+      });
       overlayDiv.setAttribute('class', 'system-annotation');
       overlayDiv.setAttribute('location', JSON.stringify(location));
       overlayDiv.setAttribute('meta', JSON.stringify(annotation.meta));
@@ -315,21 +320,6 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
       (annotation as any).ref = overlayDiv;
       elementRefs.push(overlayDiv);
       jQuery(overlayDiv).css('cursor', 'move');
-      jQuery(overlayDiv).draggable({
-        revert: true,
-        revertDuration: 0,
-        stack: '.draggable',
-        appendTo: this.dropAreaIdentifier,
-        zIndex: 99999,
-        helper: 'clone',
-        start(e, ui) {
-          jQuery(ui.helper).css('opacity', 1);
-          jQuery(ui.helper).css('width', '');
-          jQuery(ui.helper).css('height', '');
-          jQuery(ui.helper).text(annotation.meta.allText);
-        }
-      });
-      jQuery(overlayDiv).draggable('enable');
       (jQuery(overlayDiv) as any).qtip(
         {
           content: this.prepareTooltipContent(annotation),
@@ -564,7 +554,11 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
       const location: Location = {
         pageNumber: that.currentPage,
         rect
-      };
+      }
+      el.setAttribute('draggable', 'true');
+      el.addEventListener('dragstart', event => {
+        this.annotationDragStart.emit(event);
+      });
       el.setAttribute('location', JSON.stringify(location));
       el.setAttribute('meta', JSON.stringify(meta));
       el.setAttribute('class', 'frictionless-annotation');
