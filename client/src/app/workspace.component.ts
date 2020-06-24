@@ -57,6 +57,9 @@ export class WorkspaceComponent implements AfterViewInit, OnChanges, AfterConten
       if (pane.id === 'right' && pane.tabs.length === 0) {
         this.workspaceManager.panes.delete(pane);
       }
+      if (pane.id === 'left' && pane.tabs.length === 0) {
+        this.workspaceManager.openTabByUrl(pane, '/dt/map');
+      }
       this.workspaceManager.save();
       this.workspaceManager.emitEvents();
     };

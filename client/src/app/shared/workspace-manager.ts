@@ -113,6 +113,7 @@ export class Container<T> {
  */
 export class Tab {
   url: string;
+  defaultsSet = false;
   title = 'New Tab';
   fontAwesomeIcon: string = null;
   badge: string = null;
@@ -120,6 +121,7 @@ export class Tab {
   providers: StaticProvider[] = [];
   container: Container<any>;
 
+  pendingChanges = false;
   pendingTitle: string;
   pendingFontAwesomeIcon: string;
   pendingBadge: string;
@@ -129,23 +131,18 @@ export class Tab {
   }
 
   queuePropertyChange(properties: ModuleProperties) {
+    this.pendingChanges = true;
     this.pendingTitle = properties.title;
     this.pendingFontAwesomeIcon = properties.fontAwesomeIcon;
     this.pendingBadge = properties.badge;
   }
 
   applyPendingChanges() {
-    if (this.pendingTitle != null) {
+    if (this.pendingChanges) {
       this.title = this.pendingTitle;
-      this.pendingTitle = null;
-    }
-    if (this.pendingFontAwesomeIcon != null) {
       this.fontAwesomeIcon = this.pendingFontAwesomeIcon;
-      this.pendingFontAwesomeIcon = null;
-    }
-    if (this.pendingBadge != null) {
       this.badge = this.pendingBadge;
-      this.pendingBadge = null;
+      this.pendingChanges = false;
     }
   }
 
@@ -442,7 +439,7 @@ export class PaneManager {
 })
 export class WorkspaceManager {
   panes: PaneManager;
-  private workspaceUrl = '/space/mine';
+  private workspaceUrl = '/workspace/local';
   focusedPane: Pane | undefined;
   private interceptNextRoute = false;
   panes$ = new BehaviorSubject<Pane[]>([]);
@@ -486,11 +483,15 @@ export class WorkspaceManager {
               routeSnapshot.outlet, routeSnapshot.component, routeSnapshot);
             activatedRoute.snapshot = routeSnapshot;
 
-            tab.url = '/' + routeSnapshot.url.map(segment => segment.toString()).join('/');
-            if (tab.url == null) {
+            if (!tab.defaultsSet) {
               // Only change if we didn't have a tab loaded already in case of defaults
               tab.title = routeSnapshot.data.title || 'Module';
+              tab.fontAwesomeIcon = routeSnapshot.data.fontAwesomeIcon || null;
+            } else {
+              tab.defaultsSet = false;
             }
+            tab.url = '/' + routeSnapshot.url.map(segment => segment.toString()).join('/') +
+              (routeSnapshot.fragment ? `#${routeSnapshot.fragment}` : '');
             // TODO: Component may be a string
             tab.replaceComponent(routeSnapshot.component as Type<any>, [{
               // Provide our custom ActivatedRoute with the params
@@ -535,12 +536,19 @@ export class WorkspaceManager {
     if (tabDefaults) {
       tab.title = tabDefaults.title;
       tab.fontAwesomeIcon = tabDefaults.fontAwesomeIcon;
+      tab.defaultsSet = true;
     }
     return this.navigateByUrl(url, extras);
   }
 
-  navigateByUrl(url: string | UrlTree, extras?: NavigationExtras): Promise<boolean> {
+  navigateByUrl(url: string | UrlTree, extras?: NavigationExtras & WorkspaceNavigationExtras): Promise<boolean> {
     this.interceptNextRoute = true;
+    extras = extras || {};
+    if (extras.newTab) {
+      const pane = this.focusedPane || this.panes.getFirstOrCreate();
+      this.focusedPane = pane;
+      pane.createTab();
+    }
     return this.router.navigateByUrl(url, extras);
   }
 
@@ -592,7 +600,7 @@ export class WorkspaceManager {
       }, Promise.resolve());
     } else {
       const leftPane = this.panes.create('left');
-      this.openTabByUrl(leftPane, '/welcome').then(() => {
+      this.openTabByUrl(leftPane, '/dt/map').then(() => {
         this.load();
       });
     }
@@ -631,4 +639,8 @@ export class WorkspaceManager {
       return snapshot;
     }
   }
+}
+
+export interface WorkspaceNavigationExtras {
+  newTab?: boolean;
 }
