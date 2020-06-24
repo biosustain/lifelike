@@ -59,7 +59,6 @@ export class MapEditorComponent implements OnInit, AfterViewInit, OnDestroy, Mod
   graphCanvas: CanvasGraphView;
 
   formDataSubscription: Subscription = null;
-  pdfDataSubscription: Subscription = null;
 
   contextMenuTooltipSelector: string;
   contextMenuTooltipOptions: Partial<Options>;
@@ -95,11 +94,6 @@ export class MapEditorComponent implements OnInit, AfterViewInit, OnDestroy, Mod
     this.contextMenuTooltipOptions = {
       placement: 'right-start',
     };
-
-    // Listen for node addition from pdf-viewer
-    this.pdfDataSubscription = this.dataFlow.$pdfDataSource.subscribe(
-      (node) => this.fileDropped(node),
-    );
 
     // Listen for graph update from info-panel-ui
     this.formDataSubscription = this.dataFlow.formDataSource.subscribe(action => {
@@ -149,7 +143,6 @@ export class MapEditorComponent implements OnInit, AfterViewInit, OnDestroy, Mod
 
   ngOnDestroy() {
     this.formDataSubscription.unsubscribe();
-    this.pdfDataSubscription.unsubscribe();
     this.selectionSubscription.unsubscribe();
     this.historyChangesSubscription.unsubscribe();
     this.unsavedChangesSubscription.unsubscribe();
@@ -214,62 +207,32 @@ export class MapEditorComponent implements OnInit, AfterViewInit, OnDestroy, Mod
     }
   }
 
-  // Drop events
+  // Drag and drop events
   // ---------------------------------
 
-  /**
-   * Handle something being dropped onto the canvas.
-   * @param event object representing a drag-and-drop event
-   */
-  drop(event: CdkDragDrop<any>) {
-    const item = event.item;
-    const data = item.data;
-    if (data != null && data.type === NODE_TYPE_ID) {
-      const node = data.node as UniversalGraphNode;
-      const hoverPosition = this.graphCanvas.hoverPosition;
-
-      if (hoverPosition != null) {
-        this.graphCanvas.execute(new NodeCreation(
-          `Create ${node.display_name} node`, {
-            hash: makeid(),
-            ...node,
-            data: {
-              ...node.data,
-              x: hoverPosition.x,
-              y: hoverPosition.y,
-            },
-          },
-        ));
-      }
+  dragOver(event: DragEvent) {
+    if (event.dataTransfer.types.includes('application/lifelike-node')) {
+      event.preventDefault();
     }
   }
 
-  /**
-   * Handle a file being dropped onto the canvas.
-   * @param node the node being dropped
-   */
-  fileDropped(node: UniversalGraphNode) {
-    if (!node) {
-      return;
-    }
-
-    const hash = makeid();
-    const fileName = node.label;
-    const x = this.graphCanvas.transform.invertX(node.data.x);
-    const y = this.graphCanvas.transform.invertY(node.data.y);
-
-    this.graphCanvas.execute(new NodeCreation(
-      `Add '${fileName}' map to graph`, {
-        ...node,
-        hash,
-        sub_labels: [],
-        data: {
-          ...node.data,
-          x,
-          y,
+  drop(event: DragEvent) {
+    const data = event.dataTransfer.getData('application/lifelike-node');
+    const node = JSON.parse(data) as UniversalGraphNode;
+    const hoverPosition = this.graphCanvas.hoverPosition;
+    if (hoverPosition != null) {
+      this.graphCanvas.execute(new NodeCreation(
+        `Create ${node.display_name} node`, {
+          hash: makeid(),
+          ...node,
+          data: {
+            ...node.data,
+            x: hoverPosition.x,
+            y: hoverPosition.y,
+          },
         },
-      },
-    ));
+      ));
+    }
   }
 
   // ========================================

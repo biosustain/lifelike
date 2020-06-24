@@ -115,7 +115,7 @@
         [entityTypeVisibilityMap]="entityTypeVisibilityMap"
         [filterChanges]="filterChangeSubject"
         [searchChanged]="searchChanged"
-        (dropEvents)="drop($event)"
+        (annotationDragStart)="addAnnotationDragData($event)"
         (custom-annotation-created)="annotationCreated($event)"
         (loadCompleted)="loadCompleted($event)"
         (custom-annotation-removed)="annotationRemoved($event)"

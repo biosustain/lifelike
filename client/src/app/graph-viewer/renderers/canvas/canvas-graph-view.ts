@@ -161,6 +161,9 @@ export class CanvasGraphView extends GraphView {
       .on('mousemove', () => {
         canvasMouseMoveSubject.next();
       })
+      .on('dragover', () => {
+        canvasMouseMoveSubject.next();
+      })
       .on('mouseleave', this.canvasMouseLeave.bind(this))
       .on('mouseup', this.canvasMouseUp.bind(this))
       .call(d3.drag()

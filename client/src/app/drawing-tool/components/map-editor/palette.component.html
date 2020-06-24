@@ -1,11 +1,11 @@
-<div cdkDropList cdkDropListSortingDisabled cdkDropListAutoScrollDisabled class="palette-container">
-  <div class="palette-item-container" *ngFor='let n_t of nodeTemplatesShown' cdkDrag
-       [cdkDragData]="createNodeDropData(n_t)" [id]='n_t.label'>
+<div class="palette-container">
+  <div class="palette-item-container" *ngFor='let template of nodeTemplatesShown' [id]='template.label'
+       draggable="true" (dragstart)="dragStarted($event, template)">
     <div class="palette-item">
-      <div class="palette-item-icon" [style.background]="n_t.color">
+      <div class="palette-item-icon" [style.background]="template.color">
       </div>
       <div class="palette-item-label">
-        {{n_t.label | titlecase}}
+        {{template.label | titlecase}}
       </div>
     </div>
   </div>
