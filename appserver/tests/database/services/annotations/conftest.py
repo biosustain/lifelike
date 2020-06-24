@@ -302,6 +302,63 @@ def escherichia_coli_pdf_lmdb_setup(app, request):
     request.addfinalizer(teardown)
 
 
+@pytest.fixture(scope='function')
+def fish_gene_lmdb_setup(app, request):
+    # Create gene data
+    IL7 = lmdb_gene_factory(
+        gene_id='102353780',
+        id_type=DatabaseType.Ncbi.value,
+        name='IL7',
+        synonym='IL7',
+        category=OrganismCategory.Eukaryota.value,
+    )
+
+    il7 = lmdb_gene_factory(
+        gene_id='100191071',
+        id_type=DatabaseType.Ncbi.value,
+        name='il-7',
+        synonym='il-7',
+        category=OrganismCategory.Eukaryota.value,
+    )
+
+    # Create species data
+    tetraodon = lmdb_species_factory(
+        tax_id='31033',
+        category=OrganismCategory.Eukaryota.value,
+        id_type=DatabaseType.Ncbi.value,
+        name='Tetraodon rubripes',
+        synonym='Tetraodon rubripes',
+    )
+
+    coelacanth = lmdb_species_factory(
+        tax_id='7897',
+        category=OrganismCategory.Eukaryota.value,
+        id_type=DatabaseType.Ncbi.value,
+        name='coelacanth',
+        synonym='coelacanth',
+    )
+
+    entities = [
+        (CHEMICAL_LMDB, 'chemicals', []),
+        (COMPOUND_LMDB, 'compounds', []),
+        (DISEASE_LMDB, 'diseases', []),
+        (GENE_LMDB, 'genes', [IL7, il7]),
+        (PHENOTYPE_LMDB, 'phenotypes', []),
+        (PROTEIN_LMDB, 'proteins', []),
+        (SPECIES_LMDB, 'species', [coelacanth, tetraodon]),
+    ]
+    for db_name, entity, data in entities:
+        create_entity_lmdb(f'lmdb/{entity}', db_name, data)
+
+    def teardown():
+        for parent, subfolders, filenames in walk(path.join(directory, 'lmdb/')):
+            for fn in filenames:
+                if fn.lower().endswith('.mdb'):
+                    remove(path.join(parent, fn))
+
+    request.addfinalizer(teardown)
+
+
 ################################################################################
 # Start monkeypatch mocks here
 # doc on how to monkeypatch: https://docs.pytest.org/en/latest/monkeypatch.html
@@ -310,7 +367,7 @@ def escherichia_coli_pdf_lmdb_setup(app, request):
 def mock_get_gene_to_organism_match_result(monkeypatch):
     def get_match_result(*args, **kwargs):
         # match to 'Moniliophthora roreri' in create_species_lmdb()
-        return {'hyp27': {'221103': '10446085'}}
+        return {'hyp27': {'221103': '2846957'}}
 
     monkeypatch.setattr(
         HybridNeo4jPostgresService,
@@ -323,6 +380,17 @@ def mock_get_gene_to_organism_match_result(monkeypatch):
 def mock_get_gene_to_organism_serpina1_match_result(monkeypatch):
     def get_match_result(*args, **kwargs):
         return {'serpina1': {'9606': '5265'}}
+
+    monkeypatch.setattr(
+        HybridNeo4jPostgresService,
+        'get_gene_to_organism_match_result',
+        get_match_result,
+    )
+
+@pytest.fixture(scope='function')
+def mock_get_gene_to_organism_match_result_for_fish_gene(monkeypatch):
+    def get_match_result(*args, **kwargs):
+        return {'IL7': {'7897': '102353780'}, 'il-7': {'31033': '99999'}}
 
     monkeypatch.setattr(
         HybridNeo4jPostgresService,
