@@ -167,7 +167,7 @@ def list_files():
     return jsonify({'files': files})
 
 
-@bp.route('/<id>', methods=['GET'])
+@bp.route('/<id>/info', methods=['GET'])
 @auth.login_required
 def get_file_info(id: str, project_name: str = ''):
     """TODO: See JIRA LL-322
@@ -202,6 +202,10 @@ def get_file_info(id: str, project_name: str = ''):
 @bp.route('/<id>', methods=['GET', 'PATCH'])
 @auth.login_required
 def get_pdf(id):
+    # TODO: remove hard coded project
+    # Part of phase 1, as explained at https://github.com/SBRG/kg-prototypes/pull/85#issue-404823272
+    project = '1'
+
     if request.method == 'PATCH':
         filename = request.form['filename'].strip()
         description = request.form['description'].strip()
@@ -225,7 +229,7 @@ def get_pdf(id):
         entry = db.session \
             .query(Files.id, FileContent.raw_file) \
             .join(FileContent, FileContent.id == Files.content_id) \
-            .filter(Files.file_id == id, Files.project == projects.id) \
+            .filter(Files.file_id == id, Files.project == project) \
             .one()
     except NoResultFound:
         raise RecordNotFoundException('Requested PDF file not found.')
