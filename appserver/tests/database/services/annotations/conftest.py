@@ -387,6 +387,7 @@ def mock_get_gene_to_organism_serpina1_match_result(monkeypatch):
         get_match_result,
     )
 
+
 @pytest.fixture(scope='function')
 def mock_get_gene_to_organism_match_result_for_fish_gene(monkeypatch):
     def get_match_result(*args, **kwargs):
