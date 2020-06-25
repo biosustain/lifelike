@@ -3,22 +3,24 @@ import io
 import json
 import os
 import re
+import urllib.request
 import uuid
 from datetime import datetime, timezone
 from enum import Enum
-from typing import Dict, Optional
-import urllib.request
+from typing import Dict, List, Optional
 from urllib.error import URLError
 
 from flask import Blueprint, current_app, request, jsonify, g, make_response
-
+from flask_apispec import use_kwargs, marshal_with
+from pdfminer import high_level
 from sqlalchemy.orm.exc import NoResultFound
-
 from werkzeug.datastructures import FileStorage
 from werkzeug.utils import secure_filename
 
 from neo4japp.blueprints.auth import auth
-from neo4japp.blueprints.permissions import requires_role
+from neo4japp.blueprints.permissions import requires_project_permission
+# TODO: LL-415 Migrate the code to the projects folder once GUI is complete and API refactored
+from neo4japp.blueprints.projects import bp as newbp
 from neo4japp.constants import TIMEZONE
 from neo4japp.database import (
     db,
@@ -27,21 +29,22 @@ from neo4japp.database import (
     get_bioc_document_service,
     get_lmdb_dao,
 )
-from neo4japp.exceptions import (
-    AnnotationError,
-    RecordNotFoundException,
-    NotAuthorizedException,
+from neo4japp.exceptions import AnnotationError, RecordNotFoundException, NotAuthorizedException
+from neo4japp.models import (
+    AccessActionType,
+    AppUser,
+    Files,
+    FileContent,
+    Directory,
+    Projects,
+    LMDBsDates
 )
-from neo4japp.models import AppUser
-from neo4japp.models.files import Files, FileContent, LMDBsDates
-from neo4japp.utils.network import read_url
 from neo4japp.schemas.files import (
     AnnotationAdditionSchema,
     AnnotationRemovalSchema,
     AnnotationExclusionSchema,
 )
-from flask_apispec import use_kwargs, marshal_with
-from pdfminer import high_level
+from neo4japp.utils.network import read_url
 
 URL_FETCH_MAX_LENGTH = 1024 * 1024 * 30
 URL_FETCH_TIMEOUT = 10
@@ -52,10 +55,24 @@ bp = Blueprint('files', __name__, url_prefix='/files')
 
 
 @bp.route('/upload', methods=['POST'])
+@newbp.route('/<string:project_name>/files', methods=['POST'])  # TODO: use this once LL-415 done
 @auth.login_required
-def upload_pdf():
+@requires_project_permission(AccessActionType.WRITE)
+def upload_pdf(project_name: str = ''):
+
+    user = g.current_user
     filename = secure_filename(request.form['filename'])
-    pdf = None
+    # TODO: Deprecate and make mandatory (no default) this once LL-415 is implemented
+    dir_id = request.form.get('directoryId', 1)
+
+    try:
+        directory = Directory.query.get(dir_id)
+        projects = Projects.query.get(directory.projects_id)
+    except NoResultFound as err:
+        raise RecordNotFoundException(f'No record found: {err}')
+
+    yield user, projects
+
     if 'url' in request.form:
         url = request.form['url']
         try:
@@ -73,9 +90,8 @@ def upload_pdf():
         pdf = request.files['file']
     pdf_content = pdf.read()  # TODO: don't work with whole file in memory
     pdf.stream.seek(0)
-    project = '1'  # TODO: remove hard coded project
+
     checksum_sha256 = hashlib.sha256(pdf_content).digest()
-    user = g.current_user
 
     # TODO: Should `pdf.filename` be in sync with the final filename?
     # Make sure that the filename is not longer than the DB column permits
@@ -115,8 +131,9 @@ def upload_pdf():
         content_id=file_content.id,
         user_id=user.id,
         annotations=annotations,
+        project=projects.id,
+        dir_id=dir_id,
         annotations_date=annotations_date,
-        project=project,
         doi=doi,
         upload_url=upload_url,
     )
@@ -127,7 +144,7 @@ def upload_pdf():
     current_app.logger.info(
         f'User uploaded file: <{g.current_user.email}:{file.filename}>')
 
-    return jsonify({
+    yield jsonify({
         'file_id': file_id,
         'filename': filename,
         'status': 'Successfully uploaded'
@@ -135,13 +152,24 @@ def upload_pdf():
 
 
 @bp.route('/list', methods=['GET'])
+@newbp.route('/<string:project_name>/files', methods=['GET'])  # TODO: use this once LL-415 done
 @auth.login_required
-def list_files():
-    """TODO: See JIRA LL-322
-    """
+@requires_project_permission(AccessActionType.READ)
+def list_files(project_name: str = ''):
+    """TODO: See JIRA LL-322"""
     # TODO: remove hard coded project
-    # Part of phase 1, as explained at https://github.com/SBRG/kg-prototypes/pull/85#issue-404823272
-    project = '1'
+
+    # LL-415 - remove default once GUI deprecates old API
+    projects = Projects.query.filter(Projects.project_name == 'beta-project').one()
+    projects_id = projects.id
+
+    if project_name:
+        projects = Projects.query.filter(Projects.project_name == project_name).one()
+        projects_id = projects.id
+
+    user = g.current_user
+
+    yield user, projects
 
     files = [{
         'annotations_date': row.annotations_date,
@@ -161,20 +189,27 @@ def list_files():
         AppUser.username,
         Files.creation_date)
         .join(AppUser, Files.user_id == AppUser.id)
-        .filter(Files.project == project)
+        .filter(Files.project == projects_id)
         .order_by(Files.creation_date.desc())
         .all()]
-    return jsonify({'files': files})
+    yield jsonify({'files': files})
 
 
-@bp.route('/<id>', methods=['GET'])
+@bp.route('/<id>/info', methods=['GET'])
+@newbp.route('/<string:project_name>/files/<string:id>/info', methods=['GET', 'PATCH'])
 @auth.login_required
+@requires_project_permission(AccessActionType.READ)
 def get_file_info(id: str, project_name: str = ''):
-    """TODO: See JIRA LL-322
-    """
-    # TODO: remove hard coded project
-    # Part of phase 1, as explained at https://github.com/SBRG/kg-prototypes/pull/85#issue-404823272
-    project = '1'
+
+    user = g.current_user
+
+    # LL-415 - remove default once GUI deprecates old API
+    projects = Projects.query.filter(Projects.project_name == 'beta-project').one()
+
+    if project_name:
+        projects = Projects.query.filter(Projects.project_name == project_name).one()
+
+    yield user, projects
 
     row = db.session \
         .query(
@@ -187,9 +222,9 @@ def get_file_info(id: str, project_name: str = ''):
         Files.creation_date
     ) \
         .join(AppUser, Files.user_id == AppUser.id) \
-        .filter(Files.file_id == id, Files.project == project) \
+        .filter(Files.file_id == id, Files.project == projects.id) \
         .one()
-    return jsonify({
+    yield jsonify({
         'id': row.id,  # TODO: is this of any use?
         'file_id': row.file_id,
         'filename': row.filename,
@@ -200,8 +235,21 @@ def get_file_info(id: str, project_name: str = ''):
 
 
 @bp.route('/<id>', methods=['GET', 'PATCH'])
+@newbp.route('/<string:project_name>/files/<string:id>', methods=['GET', 'PATCH'])  # TODO: LL-415
 @auth.login_required
-def get_pdf(id):
+@requires_project_permission(AccessActionType.READ)
+def get_pdf(id: str, project_name: str = ''):
+
+    user = g.current_user
+
+    # LL-415 - remove default once GUI deprecates old API
+    projects = Projects.query.filter(Projects.project_name == 'beta-project').one()
+
+    if project_name:
+        projects = Projects.query.filter(Projects.project_name == project_name).one()
+
+    yield user, projects
+
     if request.method == 'PATCH':
         filename = request.form['filename'].strip()
         description = request.form['description'].strip()
@@ -231,7 +279,8 @@ def get_pdf(id):
         raise RecordNotFoundException('Requested PDF file not found.')
     res = make_response(entry.raw_file)
     res.headers['Content-Type'] = 'application/pdf'
-    return res
+
+    yield res
 
 
 @bp.route('/bioc', methods=['GET'])
@@ -248,15 +297,43 @@ def transform_to_bioc():
         return jsonify(template)
 
 
-@bp.route('/get_annotations/<id>', methods=['GET'])
-@auth.login_required
-def get_annotations(id):
-    # data = request.get_json()
-    # project = data['project']
-    project = '1'  # TODO: remove hard coded project
+# TODO: Should remove this eventually...the annotator should return data readable by the
+# lib-pdf-viewer-lib, or the lib should conform to what is being returned by the annotator.
+# Something has to give.
+def map_annotations_to_correct_format(unformatted_annotations: dict):
+    unformatted_annotations_list = unformatted_annotations['documents'][0]['passages'][0]['annotations']  # noqa
+    formatted_annotations_list = []
 
-    file = Files.query.filter_by(file_id=id, project=project).one_or_none()
-    if file is None:
+    for unformatted_annotation in unformatted_annotations_list:
+        # Remove the 'keywordType' attribute and replace it with 'type', as the
+        # lib-pdf-viewer-lib does not recognize 'keywordType'
+        keyword_type = unformatted_annotation['meta']['keywordType']
+        del unformatted_annotation['meta']['keywordType']
+        unformatted_annotation['meta']['type'] = keyword_type
+
+        formatted_annotations_list.append(unformatted_annotation)
+    return formatted_annotations_list
+
+
+@bp.route('/get_annotations/<id>', methods=['GET'])
+# TODO: LL-415 - use this API URL
+@newbp.route('/<string:project_name>/files/<string:id>/annotations', methods=['GET'])
+@auth.login_required
+@requires_project_permission(AccessActionType.READ)
+def get_annotations(id: str, project_name: str = ''):
+
+    # LL-415 - remove default once GUI deprecates old API
+    projects = Projects.query.filter(Projects.project_name == 'beta-project').one()
+
+    if project_name:
+        projects = Projects.query.filter(Projects.project_name == project_name).one()
+
+    user = g.current_user
+
+    yield user, projects
+
+    file = Files.query.filter_by(file_id=id, project=projects.id).one_or_none()
+    if not file:
         raise RecordNotFoundException('File does not exist')
 
     # TODO: Should remove this eventually...the annotator should return data readable by the
@@ -287,14 +364,28 @@ def get_annotations(id):
                 annotation['meta']['exclusionComment'] = excluded_annotation['comment']
 
     # for now, custom annotations are stored in the format that pdf-viewer supports
-    return jsonify(annotations + file.custom_annotations)
+    yield jsonify(annotations + file.custom_annotations)
 
 
 @bp.route('/add_custom_annotation/<id>', methods=['PATCH'])
-@auth.login_required
+# TODO: LL-415 - use this API URL
+@newbp.route('/<string:project_name>/files/<string:id>/annotations/add', methods=['PATCH'])
 @use_kwargs(AnnotationAdditionSchema(exclude=('uuid', 'user_id')))
 @marshal_with(AnnotationAdditionSchema(only=('uuid',)), code=200)
-def add_custom_annotation(id, **payload):
+@auth.login_required
+@requires_project_permission(AccessActionType.WRITE)
+def add_custom_annotation(id, project_name='', **payload):
+
+    # LL-415 - remove default once GUI deprecates old API
+    projects = Projects.query.filter(Projects.project_name == 'beta-project').one()
+
+    if project_name:
+        projects = Projects.query.filter(Projects.project_name == project_name).one()
+
+    user = g.current_user
+
+    yield user, projects
+
     annotation_to_add = {
         **payload,
         'user_id': g.current_user.id,
@@ -305,7 +396,8 @@ def add_custom_annotation(id, **payload):
         raise RecordNotFoundException('File does not exist')
     file.custom_annotations = [annotation_to_add, *file.custom_annotations]
     db.session.commit()
-    return annotation_to_add, 200
+
+    yield annotation_to_add, 200
 
 
 class AnnotationRemovalOutcome(Enum):
@@ -315,9 +407,23 @@ class AnnotationRemovalOutcome(Enum):
 
 
 @bp.route('/remove_custom_annotation/<id>', methods=['PATCH'])
+# TODO: LL-415 - use this API URL
+@newbp.route('/<string:project_name>/files/<string:id>/annotations/remove', methods=['PATCH'])
 @auth.login_required
 @use_kwargs(AnnotationRemovalSchema)
-def remove_custom_annotation(id, uuid, removeAll):
+@requires_project_permission(AccessActionType.WRITE)
+def remove_custom_annotation(id, uuid, removeAll, project_name=''):
+
+    # LL-415 - remove default once GUI deprecates old API
+    projects = Projects.query.filter(Projects.project_name == 'beta-project').one()
+
+    if project_name:
+        projects = Projects.query.filter(Projects.project_name == project_name).one()
+
+    user = g.current_user
+
+    yield user, projects
+
     file = Files.query.filter_by(file_id=id).one_or_none()
     if file is None:
         raise RecordNotFoundException('File does not exist')
@@ -344,7 +450,8 @@ def remove_custom_annotation(id, uuid, removeAll):
         ann for ann in file.custom_annotations if ann['uuid'] not in uuids_to_remove
     ]
     db.session.commit()
-    return jsonify(outcome)
+
+    yield jsonify(outcome)
 
 
 def annotate(filename, pdf_file_object) -> dict:
@@ -376,8 +483,22 @@ class AnnotationOutcome(Enum):
 
 
 @bp.route('/reannotate', methods=['POST'])
+# TODO: LL-415 - use this API URL
+@newbp.route('/<string:project_name>/files/reannotate', methods=['POST'])
 @auth.login_required
-def reannotate():
+@requires_project_permission(AccessActionType.WRITE)
+def reannotate(project_name: str = ''):
+
+    user = g.current_user
+
+    # LL-415 - remove default once GUI deprecates old API
+    projects = Projects.query.filter(Projects.project_name == 'beta-project').one()
+
+    if project_name:
+        projects = Projects.query.filter(Projects.project_name == project_name).one()
+
+    yield user, projects
+
     ids = request.get_json()
     outcome: Dict[str, str] = {}  # file id to annotation outcome
     for id in ids:
@@ -387,7 +508,7 @@ def reannotate():
             .filter(Files.file_id == id) \
             .one_or_none()
         if file is None:
-            current_app.logger.error('Could not find file: %s, %s', id, file.filename)
+            current_app.logger.error('Could not find file')
             outcome[id] = AnnotationOutcome.NOT_FOUND.value
             continue
         fp = io.BytesIO(file.raw_file)
@@ -405,7 +526,7 @@ def reannotate():
             current_app.logger.debug('File successfully annotated: %s, %s', id, file.filename)
             outcome[id] = AnnotationOutcome.ANNOTATED.value
         fp.close()
-    return jsonify(outcome)
+    yield jsonify(outcome)
 
 
 class DeletionOutcome(Enum):
@@ -415,16 +536,27 @@ class DeletionOutcome(Enum):
 
 
 @bp.route('/bulk_delete', methods=['DELETE'])
+# TODO: LL-415 - use this API URL
+@newbp.route('/<string:project_name>/files', methods=['DELETE'])
 @auth.login_required
-def delete_files():
+@requires_project_permission(AccessActionType.WRITE)
+def delete_files(project_name: str = ''):
     curr_user = g.current_user
+    # LL-415 - remove default once GUI deprecates old API
+    projects = Projects.query.filter(Projects.project_name == 'beta-project').one()
+
+    if project_name:
+        projects = Projects.query.filter(Projects.project_name == project_name).one()
+
+    yield curr_user, projects
+
     user_roles = [r.name for r in curr_user.roles]
     ids = request.get_json()
     outcome: Dict[str, str] = {}  # file id to deletion outcome
     for id in ids:
         file = Files.query.filter_by(file_id=id).one_or_none()
         if file is None:
-            current_app.logger.error('Could not find file: %s, %s', id, file.filename)
+            current_app.logger.error('Could not find file')
             outcome[id] = DeletionOutcome.NOT_FOUND.value
             continue
         if 'admin' not in user_roles and curr_user.id != int(file.user_id):
@@ -436,7 +568,7 @@ def delete_files():
         current_app.logger.info(f'User deleted file: <{g.current_user.email}:{file.filename}>')
         outcome[id] = DeletionOutcome.DELETED.value
 
-    return jsonify(outcome)
+    yield jsonify(outcome)
 
 
 def extract_doi(pdf_content: bytes, file_id: str = None, filename: str = None) -> Optional[str]:
