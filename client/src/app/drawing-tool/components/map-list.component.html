@@ -7,17 +7,18 @@
         </div>
 
         <div class="module-toolbar">
-          <button type="button" class="btn btn-primary" ngbTooltip="Create new project" (click)="this.mapCreate.emit()">
+          <button type="button" class="btn btn-primary" ngbTooltip="Create new project"
+                  placement="bottom" (click)="this.mapCreate.emit()">
             <i class="fa fa-fw fa-plus"></i>
           </button>
 
           <button type="button" class="btn btn-outline-secondary ml-1" ngbTooltip="Import project data"
-                  (click)="this.mapUpload.emit()">
+                  placement="bottom" (click)="this.mapUpload.emit()">
             <i class="fa fa-fw fa-upload"></i>
           </button>
 
           <button type="button" class="btn btn-outline-secondary ml-1" (click)="refresh()"
-                  ngbTooltip="Refresh the results">
+                  ngbTooltip="Refresh the results" placement="bottom">
             <i class="fa fa-sync"></i>
           </button>
         </div>
