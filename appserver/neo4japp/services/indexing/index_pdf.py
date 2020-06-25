@@ -19,10 +19,7 @@ elastic_client = Elasticsearch(hosts=[ELASTICSEARCH_HOST])
 
 def ingest_pipeline_exists(pipeline_name):
     response = requests.get(f'{ELASTICSEARCH_HOST}/_ingest/pipeline/{pipeline_name}')
-    if (response.status_code == 404):
-        return False
-    else:
-        return True
+    return response.status_code == 404
 
 
 def create_ingest_pipeline():
