@@ -1,4 +1,4 @@
-<div *ngIf="status.retryInProgressShown" [class]="class">
+<div *ngIf="status.retryInProgressShown" [class]="childClass">
   <div class="alert alert-warning m-0">
     <div>
       This is taking longer than expected.
@@ -6,7 +6,7 @@
   </div>
 </div>
 
-<div *ngIf="status.failedErrorShown" [class]="class">
+<div *ngIf="status.failedErrorShown" [class]="childClass">
   <div class="alert alert-danger m-0">
     <div>
       The latest data could not be fetched.
@@ -19,6 +19,6 @@
   </div>
 </div>
 
-<div class="progress {{class}}" *ngIf="status.progressShown">
+<div class="progress {{childClass}}" *ngIf="status.progressShown">
   <div class="progress-bar progress-bar-striped progress-bar-animated bg-secondary" style="width: 100%"></div>
 </div>
