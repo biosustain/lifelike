@@ -21,14 +21,14 @@
   <div class="module-body">
     <div class="mb-4 d-flex">
       <div>
-        <button class="btn btn-primary" (click)="showUploadDialog()">
+        <button class="btn btn-primary" (click)="displayUploadDialog()">
           <i class="fa fa-fw fa-file-upload"></i>
           Add File
         </button>
         <div class="d-inline-block"
              [ngbTooltip]="getSelectedShownFiles().length === 0 ? 'Select one or more files first.' : ''">
           <button class="btn btn-primary ml-2"
-                  [disabled]="getSelectedShownFiles().length !== 1" (click)="showEditDialog()">
+                  [disabled]="getSelectedShownFiles().length !== 1" (click)="displayEditDialog()">
             <i class="fa fa-fw fa-pencil"></i> Edit
           </button>
           <button class="btn btn-outline-secondary ml-2"
