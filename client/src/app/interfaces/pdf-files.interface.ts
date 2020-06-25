@@ -10,7 +10,7 @@ export interface PdfFile {
   creation_date?: string;
   description?: string;
   username?: string;
-  annotations_date?: number;
+  annotations_date?: string;
   annotations_date_tooltip?: string;
 }
 
