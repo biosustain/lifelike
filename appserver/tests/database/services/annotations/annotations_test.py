@@ -733,7 +733,7 @@ def test_save_bioc_annotations_to_db(default_lmdb_setup, session):
         content_id=file_content.id,
         user_id=1,
         annotations=annotations_json,
-        annotations_date=datetime.now(timezone.utc),
+        annotations_date='1970-01-01 00:00:00',
         project=1,
         doi='doi',
         upload_url='upload_url',
