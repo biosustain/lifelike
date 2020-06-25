@@ -7,7 +7,6 @@ from neo4japp.database import db
 from neo4japp.factory import create_app
 from neo4japp.models import Files, FileContent
 
-
 FRAGMENT_SIZE = 2147483647
 PDF_MAPPING = 'mappings/pdf_snippets.json'
 ATTACHMENT_PIPELINE = 'pipelines/attachment_pipeline.json'
@@ -69,9 +68,9 @@ def populate_index():
                 'doi': doi
             }
         }
-
         documents.append(document)
     parallel_bulk(elastic_client, documents)
+
 
 def main():
     app = create_app('Test', config='config.Testing')
