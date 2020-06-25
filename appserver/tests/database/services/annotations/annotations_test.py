@@ -686,6 +686,65 @@ def test_tokens_gene_vs_protein_serpina1_cases(
         assert annotations[1].meta.keyword_type == EntityType.Species.value
 
 
+@pytest.mark.parametrize(
+    'index, tokens',
+    [
+        (1, [
+                PDFTokenPositions(
+                    page_number=1,
+                    keyword='SerpinA1',
+                    char_positions={0: 'S', 1: 'e', 2: 'r', 3: 'p', 4: 'i', 5: 'n', 6: 'A', 7: '1'},
+                ),
+                PDFTokenPositions(
+                    page_number=1,
+                    keyword='human',
+                    char_positions={9: 'h', 10: 'u', 11: 'm', 12: 'a', 13: 'n'},
+                ),
+        ]),
+    ],
+)
+def test_tokens_gene_vs_protein_serpina1_case_all_caps_from_knowledge_graph(
+    default_lmdb_setup,
+    mock_get_gene_to_organism_serpina1_match_result_all_caps,
+    index,
+    tokens,
+):
+    annotation_service = get_test_annotations_service(
+        genes_lmdb_path=path.join(directory, 'lmdb/genes'),
+        chemicals_lmdb_path=path.join(directory, 'lmdb/chemicals'),
+        compounds_lmdb_path=path.join(directory, 'lmdb/compounds'),
+        proteins_lmdb_path=path.join(directory, 'lmdb/proteins'),
+        species_lmdb_path=path.join(directory, 'lmdb/species'),
+        diseases_lmdb_path=path.join(directory, 'lmdb/diseases'),
+        phenotypes_lmdb_path=path.join(directory, 'lmdb/phenotypes'),
+    )
+
+    char_coord_objs_in_pdf = []
+    for t in tokens:
+        for c in t.keyword:
+            char_coord_objs_in_pdf.append(get_dummy_LTChar(text=c))
+        char_coord_objs_in_pdf.append(get_dummy_LTChar(text=' '))
+
+    annotations = annotation_service.create_annotations(
+        tokens=PDFTokenPositionsList(
+            token_positions=tokens,
+            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
+            cropbox_in_pdf=(5, 5),
+        ),
+    )
+
+    assert len(annotations) == 2
+    # because KG returned a gene name of all caps
+    # it does not match the text in document so was not
+    # annotated as a gene
+    # because we assume gene names from KG are case sensitive
+    assert annotations[0].keyword == 'Serpin A1'
+    assert annotations[0].meta.keyword_type == EntityType.Protein.value
+
+    assert annotations[1].keyword == 'human'
+    assert annotations[1].meta.keyword_type == EntityType.Species.value
+
+
 def test_save_bioc_annotations_to_db(default_lmdb_setup, session):
     annotator = get_test_annotations_service(
         genes_lmdb_path=path.join(directory, 'lmdb/genes'),

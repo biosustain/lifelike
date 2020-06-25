@@ -389,6 +389,18 @@ def mock_get_gene_to_organism_serpina1_match_result(monkeypatch):
 
 
 @pytest.fixture(scope='function')
+def mock_get_gene_to_organism_serpina1_match_result_all_caps(monkeypatch):
+    def get_match_result(*args, **kwargs):
+        return {'SERPINA1': {'9606': '5265'}}
+
+    monkeypatch.setattr(
+        HybridNeo4jPostgresService,
+        'get_gene_to_organism_match_result',
+        get_match_result,
+    )
+
+
+@pytest.fixture(scope='function')
 def mock_get_gene_to_organism_match_result_for_fish_gene(monkeypatch):
     def get_match_result(*args, **kwargs):
         return {'IL7': {'7897': '102353780'}, 'il-7': {'31033': '99999'}}
