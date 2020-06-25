@@ -1,6 +1,7 @@
 import json
 from typing import Dict, List, Union
 from elasticsearch import Elasticsearch
+
 from neo4japp.utils.queries import parse_query_terms
 
 
@@ -79,7 +80,7 @@ class PDFSearch:
     def __init__(self):
         self.es = Elasticsearch(hosts=[ELASTICSEARCH_HOST])
 
-    EmptyResult:Dict[str, Dict[str, Union[int, List[int], None]]] = \
+    EmptyResult: Dict[str, Dict[str, Union[int, List[int], None]]] = \
         {'hits': {'hits': [], 'max_score': None, 'total': 0}}
 
     @classmethod
