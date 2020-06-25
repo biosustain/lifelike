@@ -1,8 +1,8 @@
 import attr
-from flask import Blueprint, request, jsonify
+from flask import Blueprint
 from neo4japp.blueprints.auth import auth
 from neo4japp.database import get_search_service_dao, get_neo4j_service_dao
-from neo4japp.services.pdf_search import PDFSearch
+from neo4japp.services.pdf_search import PDFSearch, PDFSearchResult
 from neo4japp.util import CamelDictMixin, jsonify_with_class, SuccessResponse
 
 bp = Blueprint('search', __name__, url_prefix='/search')
@@ -21,6 +21,13 @@ class SimpleSearchRequest(CamelDictMixin):
     page: int = attr.ib()
     limit: int = attr.ib()
     filter: str = attr.ib()
+
+
+@attr.s(frozen=True)
+class PDFSearchRequest(CamelDictMixin):
+    query: str = attr.ib()
+    offset: int = attr.ib()
+    limit: int = attr.ib()
 
 
 @bp.route('/search', methods=['POST'])
@@ -58,17 +65,16 @@ def visualizer_search_temp(req: SimpleSearchRequest):
 #     results = search_dao.predictive_search(req.query)
 #     return SuccessResponse(result=results, status_code=200)
 
-@bp.route('/pdf-search', methods=['GET', 'POST'])
+@bp.route('/pdf-search', methods=['POST'])
 @auth.login_required
-def search():
-    body = request.get_json()
-    term = body['term']
-    if term:
+@jsonify_with_class(PDFSearchRequest)
+def search(req: PDFSearchRequest):
+    if req.query:
         res = PDFSearch().search(
-            user_query=term,
-            offset=body['offset'],
-            limit=body['limit'],
+            user_query=req.query,
+            offset=req.offset,
+            limit=req.limit,
         )['hits']
     else:
         res = {'hits': [], 'max_score': None, 'total': 0}
-    return jsonify(res)
+    return SuccessResponse(result=res, status_code=200)
