@@ -317,7 +317,7 @@ export class ProjectsService {
     return visGraph;
   }
 
-  public downloadProjectBackup(projectId: string): Observable<any> {
+  public downloadProjectBackup(projectId: number): Observable<any> {
     return this.http.get(
       `${this.baseUrl}/projects/${projectId}/backup`,
       this.createHttpOptions(true)
@@ -332,7 +332,7 @@ export class ProjectsService {
     );
   }
 
-  public deleteProjectBackup(projectId: string): Observable<any> {
+  public deleteProjectBackup(projectId: number): Observable<any> {
     return this.http.delete(
       `${this.baseUrl}/projects/${projectId}/backup`,
       this.createHttpOptions(true)

@@ -378,7 +378,7 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
         (resp: any) => {
           this.project = resp.project;
           this.prepareMap();
-          this.projectService.downloadProjectBackup(this.project.id.toString()).subscribe(
+          this.projectService.downloadProjectBackup(Number(this.project.id)).subscribe(
             (backup) => {
               console.log('backup found!', backup);
               this.projectBackup = backup;
@@ -806,7 +806,7 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
     this.prepareProjectForPersistence(this.project);
     // Push to backend to save
     this.projectService.updateProject(this.project).subscribe(() => {
-      this.projectService.deleteProjectBackup(this.project.id.toString()).subscribe(res => console.log('backup deleted', res));
+      this.projectService.deleteProjectBackup(Number(this.project.id)).subscribe(res => console.log('backup deleted', res));
       this.saveState = true;
       this.snackBar.open('Map is saved', null, {
         duration: 2000,
