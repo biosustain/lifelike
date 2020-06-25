@@ -177,15 +177,14 @@ def get_file_info(id: str, project_name: str = ''):
     project = '1'
 
     row = db.session \
-        .query(
-        Files.id,
-        Files.file_id,
-        Files.filename,
-        Files.description,
-        Files.user_id,
-        AppUser.username,
-        Files.creation_date
-    ) \
+        .query(Files.id,
+               Files.file_id,
+               Files.filename,
+               Files.description,
+               Files.user_id,
+               AppUser.username,
+               Files.creation_date
+               ) \
         .join(AppUser, Files.user_id == AppUser.id) \
         .filter(Files.file_id == id, Files.project == project) \
         .one()
@@ -445,7 +444,7 @@ def delete_files():
 
 def extract_doi(pdf_content: bytes, file_id: str = None, filename: str = None) -> Optional[str]:
     # Attempt 1: search through the first N bytes (most probably containing only metadata)
-    chunk = pdf_content[:2**17]
+    chunk = pdf_content[:2 ** 17]
     doi = search_doi(chunk)
     if doi is not None:
         return doi
