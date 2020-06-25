@@ -27,7 +27,6 @@ class PDFSearchResult:
     def parse_highlight(self, field, data):
         start_tag = '<highlight>'
         end_tag = '</highlight>'
-
         if field not in self.highlight:
             return data or ''
 
@@ -46,18 +45,16 @@ class PDFSearchResult:
             data = bkp_data
 
         first_highlight = data.find('<strong')
-        if first_highlight > self.preview_text_size:
-            if first_highlight < len(data) - self.preview_text_size:
-                data = '...' + data[first_highlight - 20:]
-            else:
-                data = '...' + data[-self.preview_text_size:]
+        if first_highlight < len(data) - self.preview_text_size:
+            data = '...' + data[first_highlight - 20:self.preview_text_size]
+        else:
+            data = '...' + data[-self.preview_text_size:]
         return data
 
     def to_json(self):
         return {
             'filename': self.filename,
             'file_id': self.file_id,
-            'snippets': self.highlight['data.content'],
             'doi': self.doi,
             'preview_text': self.preview_text,
             'uploaded_date': self.uploaded_date
