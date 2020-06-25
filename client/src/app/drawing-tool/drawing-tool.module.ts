@@ -42,15 +42,18 @@ import {NodeSearchComponent} from '../node-search/containers/node-search.compone
 import { EditProjectDialogComponent } from './project-list/edit-project-dialog/edit-project-dialog.component';
 import { SearchLinksComponent } from './drawing-tool/info-panel/search-links/search-links.component';
 import { ConfirmDialogComponent } from 'app/shared/components/confirm-dialog/confirm-dialog.component';
+import { EditGuard } from './services/edit.guard';
 
 export const routes = [
   {
-    path: 'project-list',
+    path: 'map',
     component: ProjectListViewComponent
   },
   {
     path: 'map/edit/:hash_id',
     component: SplitterComponent,
+    // TODO - remove or refactor when Projects & Permissions branched merged in
+    canActivate: [EditGuard],
     canDeactivate: [PendingChangesGuard]
   },
   {
