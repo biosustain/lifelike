@@ -6,7 +6,7 @@ import { TaskStatus } from '../rxjs/background-task';
   templateUrl: './background-task-progress.component.html',
 })
 export class BackgroundTaskProgressComponent {
-  @Input() class = '';
+  @Input() childClass = '';
   @Input() status: TaskStatus;
   @Output() refresh = new EventEmitter<void>();
 }
