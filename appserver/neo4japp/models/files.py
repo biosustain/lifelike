@@ -33,6 +33,7 @@ class Files(RDBMSBase):  # type: ignore
     custom_annotations = db.Column(postgresql.JSONB, nullable=False, server_default='[]')
     doi = db.Column(db.String(1024), nullable=True)
     upload_url = db.Column(db.String(2048), nullable=True)
+    excluded_annotations = db.Column(postgresql.JSONB, nullable=False, server_default='[]')
 
 
 class LMDBsDates(RDBMSBase):

@@ -1,0 +1,19 @@
+<h2 class="mat-title">Exclude the annotation</h2>
+
+  <mat-dialog-content>
+    <div fxLayout="column" fxLayoutGap="16px">
+      <span>Please specify the reason:</span>
+      <mat-radio-group [(ngModel)]="selectedReason" name="reason" fxLayout="column" fxLayoutGap="12px">
+        <mat-radio-button *ngFor="let reason of reasons" [value]="reason" name="reason">{{reason}}</mat-radio-button>
+      </mat-radio-group>
+      <mat-form-field>
+        <input matInput [(ngModel)]="comment" placeholder="Add a comment">
+      </mat-form-field>
+    </div>
+  </mat-dialog-content>
+
+  <mat-dialog-actions>
+    <span fxFlex></span>
+    <button mat-button mat-dialog-close color="primary">Cancel</button>
+    <button mat-button (click)="addAnnotationExclusion()" color="primary">Exclude</button>
+  </mat-dialog-actions>
