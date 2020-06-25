@@ -3,16 +3,16 @@
     <div class="module-header-container">
       <div class="module-header">
         <div class="module-title">
-          Projects
+          Maps
         </div>
 
         <div class="module-toolbar">
-          <button type="button" class="btn btn-primary" ngbTooltip="Create new project"
+          <button type="button" class="btn btn-primary" ngbTooltip="Create new map"
                   placement="bottom" (click)="this.mapCreate.emit()">
             <i class="fa fa-fw fa-plus"></i>
           </button>
 
-          <button type="button" class="btn btn-outline-secondary ml-1" ngbTooltip="Import project data"
+          <button type="button" class="btn btn-outline-secondary ml-1" ngbTooltip="Import map data"
                   placement="bottom" (click)="this.mapUpload.emit()">
             <i class="fa fa-fw fa-upload"></i>
           </button>
@@ -32,7 +32,7 @@
           </div>
         </span>
           <input class="form-control py-2 pl-0 input-border border-left-0"
-                 placeholder="Search within projects..."
+                 placeholder="Search within maps..."
                  [(ngModel)]="term" (keyup)="refresh(true)">
           <span class="input-group-append" *ngIf="term.length">
           <button class="btn btn-outline-secondary" type="button" (click)="term = ''; refresh(true)">
@@ -45,7 +45,7 @@
           <div class="custom-control custom-checkbox">
             <input class="custom-control-input" type="checkbox" id="personal-filter" value="1"
                    [(ngModel)]="showPersonal" (change)="refresh(true)">
-            <label class="custom-control-label" for="personal-filter">Your Projects</label>
+            <label class="custom-control-label" for="personal-filter">Your Maps</label>
           </div>
           <div class="custom-control custom-checkbox ml-3">
             <input class="custom-control-input" type="checkbox" id="community-filter" value="1"
@@ -57,30 +57,8 @@
     </div>
 
     <div class="module-body">
-      <div *ngIf="status.retryInProgressShown" class="mt-2 mb-0 px-2">
-        <div class="alert alert-warning m-0">
-          <div>
-            This is taking longer than expected.
-          </div>
-        </div>
-      </div>
-
-      <div *ngIf="status.failedErrorShown" class="mt-2 mb-0 px-2">
-        <div class="alert alert-danger m-0">
-          <div>
-            The list of projects is currently not available.
-          </div>
-          <div class="mt-1">
-            <button type="button" class="btn btn-sm btn-outline-danger" (click)="refresh()">
-              Retry
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <div class="progress rounded-0" *ngIf="status.progressShown">
-        <div class="progress-bar progress-bar-striped progress-bar-animated bg-secondary" style="width: 100%"></div>
-      </div>
+      <app-background-task-progress
+        [status]="status" (refresh)="this.refresh()" childClass="mt-2 mb-0 px-2"></app-background-task-progress>
 
       <table class="table table-selectable my-0" style="table-layout: fixed">
         <colgroup>

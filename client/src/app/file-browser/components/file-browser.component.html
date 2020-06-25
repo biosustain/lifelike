@@ -51,7 +51,7 @@
     </div>
 
     <app-background-task-progress
-      [status]="status" (refresh)="this.refresh()" class="mb-2"></app-background-task-progress>
+      [status]="status" (refresh)="this.refresh()" childClass="mb-2"></app-background-task-progress>
 
     <table class="table" [class.table-selectable]="status.resultsShown" style="table-layout: fixed">
       <colgroup>
