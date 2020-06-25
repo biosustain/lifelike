@@ -422,12 +422,11 @@ def get_project_image(project_id, format):
 @auth.login_required
 def backup_project(project_id):
     if request.method == 'GET':
-        try:
-            backup = ProjectBackup.query.filter_by(
-                project_id=project_id,
-                user_id=g.current_user.id,
-            ).one()
-        except Exception:
+        backup = ProjectBackup.query.filter_by(
+            project_id=project_id,
+            user_id=g.current_user.id,
+        ).one_or_none()
+        if backup is None:
             raise RecordNotFoundException('No backup found.')
         return {
             'id': backup.project_id,
