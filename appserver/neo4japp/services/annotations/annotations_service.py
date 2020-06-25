@@ -882,7 +882,7 @@ class AnnotationsService:
                 # len(text_in_document) == LOWERCASE_FIRST_LETTER_UPPERCASE_LAST_LETTER_GENE_LENGTH
                 # does this only apply to genes with specific length?
                 elif isinstance(annotation.meta, GeneAnnotation.GeneMeta) and \
-                        annotation.meta.category == OrganismCategory.Bacteria:
+                        annotation.meta.category == OrganismCategory.Bacteria.value:
                     # bacteria genes are in the from of cysB, algA, deaD, etc
                     # doe not check first letter to account for when the
                     # gene is start of a sentence

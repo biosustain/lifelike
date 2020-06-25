@@ -3,7 +3,6 @@ import json
 import pytest
 
 from os import path
-from datetime import datetime, timezone
 
 from pdfminer.layout import LTChar
 
@@ -15,13 +14,14 @@ from neo4japp.database import (
 )
 from neo4japp.data_transfer_objects import (
     Annotation,
+    GeneAnnotation,
     PDFParsedCharacters,
     PDFTokenPositions,
     PDFTokenPositionsList,
 )
 from neo4japp.models import Files, FileContent
 from neo4japp.services.annotations import AnnotationsService, LMDBDao
-from neo4japp.services.annotations.constants import EntityType
+from neo4japp.services.annotations.constants import EntityType, OrganismCategory
 
 
 # reference to this directory
@@ -531,7 +531,7 @@ def test_human_gene_pdf(
         ]
     ],
 )
-def test_annotations_gene_vs_protein(
+def test_tokens_gene_vs_protein(
     default_lmdb_setup,
     mock_get_gene_to_organism_match_result,
     tokens,
@@ -574,7 +574,6 @@ def test_annotations_gene_vs_protein(
     assert annotations[3].meta.keyword_type == EntityType.Species.value
 
 
-@pytest.mark.skip
 @pytest.mark.parametrize(
     'index, tokens',
     [
@@ -634,7 +633,7 @@ def test_annotations_gene_vs_protein(
         ]),
     ],
 )
-def test_annotations_gene_vs_protein_serpina1_cases(
+def test_tokens_gene_vs_protein_serpina1_cases(
     default_lmdb_setup,
     mock_get_gene_to_organism_serpina1_match_result,
     index,
@@ -680,11 +679,70 @@ def test_annotations_gene_vs_protein_serpina1_cases(
         assert annotations[1].meta.keyword_type == EntityType.Species.value
     elif index == 3:
         assert len(annotations) == 2
-        assert annotations[0].keyword == 'SERPINA1'
-        assert annotations[0].meta.keyword_type == EntityType.Gene.value
+        assert annotations[0].keyword == 'Serpin A1'
+        assert annotations[0].meta.keyword_type == EntityType.Protein.value
 
         assert annotations[1].keyword == 'human'
         assert annotations[1].meta.keyword_type == EntityType.Species.value
+
+
+@pytest.mark.parametrize(
+    'index, tokens',
+    [
+        (1, [
+                PDFTokenPositions(
+                    page_number=1,
+                    keyword='SerpinA1',
+                    char_positions={0: 'S', 1: 'e', 2: 'r', 3: 'p', 4: 'i', 5: 'n', 6: 'A', 7: '1'},
+                ),
+                PDFTokenPositions(
+                    page_number=1,
+                    keyword='human',
+                    char_positions={9: 'h', 10: 'u', 11: 'm', 12: 'a', 13: 'n'},
+                ),
+        ]),
+    ],
+)
+def test_tokens_gene_vs_protein_serpina1_case_all_caps_from_knowledge_graph(
+    default_lmdb_setup,
+    mock_get_gene_to_organism_serpina1_match_result_all_caps,
+    index,
+    tokens,
+):
+    annotation_service = get_test_annotations_service(
+        genes_lmdb_path=path.join(directory, 'lmdb/genes'),
+        chemicals_lmdb_path=path.join(directory, 'lmdb/chemicals'),
+        compounds_lmdb_path=path.join(directory, 'lmdb/compounds'),
+        proteins_lmdb_path=path.join(directory, 'lmdb/proteins'),
+        species_lmdb_path=path.join(directory, 'lmdb/species'),
+        diseases_lmdb_path=path.join(directory, 'lmdb/diseases'),
+        phenotypes_lmdb_path=path.join(directory, 'lmdb/phenotypes'),
+    )
+
+    char_coord_objs_in_pdf = []
+    for t in tokens:
+        for c in t.keyword:
+            char_coord_objs_in_pdf.append(get_dummy_LTChar(text=c))
+        char_coord_objs_in_pdf.append(get_dummy_LTChar(text=' '))
+
+    annotations = annotation_service.create_annotations(
+        tokens=PDFTokenPositionsList(
+            token_positions=tokens,
+            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
+            cropbox_in_pdf=(5, 5),
+        ),
+    )
+
+    assert len(annotations) == 2
+    # because KG returned a gene name of all caps
+    # it does not match the text in document so was not
+    # annotated as a gene
+    # because we assume gene names from KG are case sensitive
+    assert annotations[0].keyword == 'Serpin A1'
+    assert annotations[0].meta.keyword_type == EntityType.Protein.value
+
+    assert annotations[1].keyword == 'human'
+    assert annotations[1].meta.keyword_type == EntityType.Species.value
 
 
 def test_save_bioc_annotations_to_db(default_lmdb_setup, session):
@@ -746,3 +804,244 @@ def test_save_bioc_annotations_to_db(default_lmdb_setup, session):
     assert pdf_file_model.filename == 'filename'
     assert pdf_file_model.file_id == '123'
     assert pdf_file_model.annotations == annotations_json
+
+
+@pytest.mark.parametrize(
+    'index, annotations',
+    [
+        (1, [
+            GeneAnnotation(
+                page_number=1,
+                keyword='casE',
+                lo_location_offset=5,
+                hi_location_offset=8,
+                keyword_length=4,
+                text_in_document='case',
+                keywords=[''],
+                rects=[[1, 2]],
+                meta=GeneAnnotation.GeneMeta(
+                    keyword_type=EntityType.Gene.value,
+                    color='',
+                    id='',
+                    id_type='',
+                    id_hyperlink='',
+                    links=Annotation.Meta.Links(),
+                    category=OrganismCategory.Bacteria.value,
+                ),
+            ),
+        ]),
+        (2, [
+            GeneAnnotation(
+                page_number=1,
+                keyword='ADD',
+                lo_location_offset=5,
+                hi_location_offset=7,
+                keyword_length=3,
+                text_in_document='add',
+                keywords=[''],
+                rects=[[1, 2]],
+                meta=GeneAnnotation.GeneMeta(
+                    keyword_type=EntityType.Gene.value,
+                    color='',
+                    id='',
+                    id_type='',
+                    id_hyperlink='',
+                    links=Annotation.Meta.Links(),
+                    category=OrganismCategory.Eukaryota.value,
+                ),
+            ),
+        ]),
+    ],
+)
+def test_fix_false_positive_gene_annotations(annotations_setup, index, annotations):
+    annotation_service = get_test_annotations_service()
+    fixed = annotation_service._get_fixed_false_positive_unified_annotations(
+        annotations_list=annotations,
+    )
+
+    if index == 1:
+        # gene annotation should be removed
+        # if it's a bacteria gene but the last
+        # letter is not capitalized
+        assert len(fixed) == 0
+    elif index == 2:
+        # if correct gene synonym is all caps
+        # but text in document is not
+        # then remove the annotation
+        assert len(fixed) == 0
+
+
+@pytest.mark.parametrize(
+    'index, annotations',
+    [
+        (1, [
+            GeneAnnotation(
+                page_number=1,
+                keyword='IL7',
+                lo_location_offset=5,
+                hi_location_offset=8,
+                keyword_length=4,
+                text_in_document='IL-7',
+                keywords=[''],
+                rects=[[1, 2]],
+                meta=GeneAnnotation.GeneMeta(
+                    keyword_type=EntityType.Gene.value,
+                    color='',
+                    id='102353780',
+                    id_type='',
+                    id_hyperlink='',
+                    links=Annotation.Meta.Links(),
+                    category=OrganismCategory.Eukaryota.value,
+                ),
+            ),
+            Annotation(
+                page_number=1,
+                keyword='IL-7',
+                lo_location_offset=5,
+                hi_location_offset=8,
+                keyword_length=4,
+                text_in_document='IL-7',
+                keywords=[''],
+                rects=[[1, 2]],
+                meta=Annotation.Meta(
+                    keyword_type=EntityType.Protein.value,
+                    color='',
+                    id='12379999999',
+                    id_type='',
+                    id_hyperlink='',
+                    links=Annotation.Meta.Links(),
+                ),
+            ),
+        ]),
+        (2, [
+            GeneAnnotation(
+                page_number=1,
+                keyword='IL7',
+                lo_location_offset=5,
+                hi_location_offset=8,
+                keyword_length=4,
+                text_in_document='il-7',
+                keywords=[''],
+                rects=[[1, 2]],
+                meta=GeneAnnotation.GeneMeta(
+                    keyword_type=EntityType.Gene.value,
+                    color='',
+                    id='10235378012123',
+                    id_type='',
+                    id_hyperlink='',
+                    links=Annotation.Meta.Links(),
+                    category=OrganismCategory.Eukaryota.value,
+                ),
+            ),
+            Annotation(
+                page_number=1,
+                keyword='IL-7',
+                lo_location_offset=5,
+                hi_location_offset=8,
+                keyword_length=4,
+                text_in_document='il-7',
+                keywords=[''],
+                rects=[[1, 2]],
+                meta=Annotation.Meta(
+                    keyword_type=EntityType.Protein.value,
+                    color='',
+                    id='12379999999',
+                    id_type='',
+                    id_hyperlink='',
+                    links=Annotation.Meta.Links(),
+                ),
+            ),
+        ]),
+    ],
+)
+def test_gene_vs_protein_annotations(
+    annotations_setup,
+    index,
+    annotations,
+    fish_gene_lmdb_setup,
+):
+    annotation_service = get_test_annotations_service(
+        genes_lmdb_path=path.join(directory, 'lmdb/genes'),
+        chemicals_lmdb_path=path.join(directory, 'lmdb/chemicals'),
+        compounds_lmdb_path=path.join(directory, 'lmdb/compounds'),
+        proteins_lmdb_path=path.join(directory, 'lmdb/proteins'),
+        species_lmdb_path=path.join(directory, 'lmdb/species'),
+        diseases_lmdb_path=path.join(directory, 'lmdb/diseases'),
+        phenotypes_lmdb_path=path.join(directory, 'lmdb/phenotypes'),
+    )
+    fixed = annotation_service.fix_conflicting_annotations(
+        unified_annotations=annotations,
+    )
+
+    if index == 1:
+        assert len(fixed) == 1
+        assert fixed[0] == annotations[1]
+    elif index == 2:
+        assert len(fixed) == 1
+        assert fixed[0] == annotations[0]
+
+
+@pytest.mark.parametrize(
+    'index, tokens',
+    [
+        (1, [
+                PDFTokenPositions(
+                    page_number=1,
+                    keyword='il-7',
+                    char_positions={0: 'i', 1: 'l', 2: '-', 3: '7'},
+                ),
+                PDFTokenPositions(
+                    page_number=1,
+                    keyword='coelacanth',
+                    char_positions={
+                        4: 'c', 5: 'o', 6: 'e', 7: 'l',
+                        8: 'a', 9: 'c', 10: 'a', 11: 'n', 12: 't', 13: 'h',
+                    },
+                ),
+                PDFTokenPositions(
+                    page_number=1,
+                    keyword='Tetraodon rubripes',
+                    char_positions={
+                        14: 'T', 15: 'e', 16: 't', 17: 'r',
+                        18: 'a', 19: 'o', 20: 'd', 21: 'o', 22: 'n', 24: 'r',
+                        25: 'u', 26: 'b', 27: 'r', 28: 'i', 29: 'p', 30: 'e',
+                        31: 's',
+                    },
+                ),
+        ]),
+    ],
+)
+def test_gene_annotation_uses_id_from_knowledge_graph(
+    fish_gene_lmdb_setup,
+    mock_get_gene_to_organism_match_result_for_fish_gene,
+    index,
+    tokens,
+):
+    annotation_service = get_test_annotations_service(
+        genes_lmdb_path=path.join(directory, 'lmdb/genes'),
+        chemicals_lmdb_path=path.join(directory, 'lmdb/chemicals'),
+        compounds_lmdb_path=path.join(directory, 'lmdb/compounds'),
+        proteins_lmdb_path=path.join(directory, 'lmdb/proteins'),
+        species_lmdb_path=path.join(directory, 'lmdb/species'),
+        diseases_lmdb_path=path.join(directory, 'lmdb/diseases'),
+        phenotypes_lmdb_path=path.join(directory, 'lmdb/phenotypes'),
+    )
+
+    char_coord_objs_in_pdf = []
+    for t in tokens:
+        for c in t.keyword:
+            char_coord_objs_in_pdf.append(get_dummy_LTChar(text=c))
+        char_coord_objs_in_pdf.append(get_dummy_LTChar(text=' '))
+
+    annotations = annotation_service.create_annotations(
+        tokens=PDFTokenPositionsList(
+            token_positions=tokens,
+            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
+            cropbox_in_pdf=(5, 5),
+        ),
+    )
+
+    if index == 1:
+        # id should change to match KG
+        # value from mock_get_gene_to_organism_match_result_for_fish_gene
+        assert annotations[0].meta.id == '99999'
