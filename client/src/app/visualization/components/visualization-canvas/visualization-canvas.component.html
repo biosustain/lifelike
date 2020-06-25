@@ -35,9 +35,11 @@
     <div id="sidenav-container">
       <div id="sidenav-panel-btns-container">
         <button
+          type="button"
           id="sidenav-panel-close-btn"
+          class="btn btn-danger"
           (click)="closeSidenav()">
-        <mat-icon>clear</mat-icon>
+        <i class="fa fa-close"></i>
       </button>
       </div>
       <!-- Each switch case appears to be lazy loaded, so switching between two cases will destroy the old case, and create the new case. -->
