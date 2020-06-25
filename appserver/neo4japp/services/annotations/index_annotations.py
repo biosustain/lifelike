@@ -1,8 +1,10 @@
 import os
 import json
 import lmdb
+import sys
 
 from collections import deque
+from getopt import getopt, GetoptError
 
 from elasticsearch import Elasticsearch
 from elasticsearch.helpers import parallel_bulk
@@ -14,41 +16,8 @@ from neo4japp.services.annotations.constants import (
     GENE_LMDB,
     PHENOTYPE_LMDB,
     PROTEIN_LMDB,
-    PUBCHEM_LMDB,
     SPECIES_LMDB,
 )
-
-
-def main():
-    directory = os.path.realpath(os.path.dirname(__file__))
-
-    es = Elasticsearch(hosts=['http://elasticsearch'], timeout=5000)
-
-    for parentdir, subdirs, files in os.walk(os.path.join(directory, 'lmdb')):
-        if 'data.mdb' in files:
-            print(f'Processing {parentdir}')
-            entity_type = parentdir.split('/')[-1]
-            env = lmdb.open(parentdir, readonly=True, max_dbs=2)
-
-            if entity_type == 'chemicals':
-                db = env.open_db(CHEMICAL_LMDB.encode('utf-8'), dupsort=True)
-            elif entity_type == 'compounds':
-                db = env.open_db(COMPOUND_LMDB.encode('utf-8'), dupsort=True)
-            elif entity_type == 'diseases':
-                db = env.open_db(DISEASE_LMDB.encode('utf-8'), dupsort=True)
-            elif entity_type == 'genes':
-                db = env.open_db(GENE_LMDB.encode('utf-8'), dupsort=True)
-            elif entity_type == 'phenotypes':
-                db = env.open_db(PHENOTYPE_LMDB.encode('utf-8'), dupsort=True)
-            elif entity_type == 'proteins':
-                db = env.open_db(PROTEIN_LMDB.encode('utf-8'), dupsort=True)
-            elif entity_type == 'pubchem':
-                db = env.open_db(PUBCHEM_LMDB.encode('utf-8'), dupsort=True)
-            elif entity_type == 'species':
-                db = env.open_db(SPECIES_LMDB.encode('utf-8'), dupsort=True)
-
-            deque(parallel_bulk(es, process_lmdb(env, db, entity_type)), maxlen=0)
-            env.close()
 
 
 def process_lmdb(env, db, entity_type):
@@ -66,4 +35,96 @@ def process_lmdb(env, db, entity_type):
             }
 
 
-main()
+def print_help():
+    help_str = """
+    index_annotations.py
+
+    -a                          index all annotations
+    -n <lmdb_name>              index specific annotation
+
+    Current LMDB names include:
+        chemicals
+        compounds
+        diseases
+        genes
+        phenotypes
+        proteins
+        species
+    """
+    print(help_str)
+
+
+def _open_env(parentdir, db_name):
+    env = lmdb.open(parentdir, readonly=True, max_dbs=2)
+    db = env.open_db(db_name.encode('utf-8'), dupsort=True)
+
+    return env, db
+
+
+def open_env(entity_type, parentdir):
+    if entity_type == 'chemicals':
+        env, db = _open_env(parentdir, CHEMICAL_LMDB)
+    elif entity_type == 'compounds':
+        env, db = _open_env(parentdir, COMPOUND_LMDB)
+    elif entity_type == 'diseases':
+        env, db = _open_env(parentdir, DISEASE_LMDB)
+    elif entity_type == 'genes':
+        env, db = _open_env(parentdir, GENE_LMDB)
+    elif entity_type == 'phenotypes':
+        env, db = _open_env(parentdir, PHENOTYPE_LMDB)
+    elif entity_type == 'proteins':
+        env, db = _open_env(parentdir, PROTEIN_LMDB)
+    elif entity_type == 'species':
+        env, db = _open_env(parentdir, SPECIES_LMDB)
+    else:
+        print_help()
+        sys.exit(2)
+    return env, db
+
+
+def main(argv):
+    directory = os.path.realpath(os.path.dirname(__file__))
+
+    es = Elasticsearch(hosts=['http://elasticsearch'], timeout=5000)
+
+    try:
+        opts, args = getopt(argv, 'an:')
+    except GetoptError:
+        print_help()
+        sys.exit(2)
+
+    if opts:
+        opt, entity_type = opts[0]
+
+        if opt == '-n':
+            parentdir = os.path.join(directory, f'lmdb/{entity_type}')
+
+            env, db = open_env(entity_type, parentdir)
+
+            print(f'Processing {parentdir}')
+            # first delete the index
+            es.indices.delete(index=entity_type, ignore=[404])
+            deque(parallel_bulk(es, process_lmdb(env, db, entity_type)), maxlen=0)
+            env.close()
+        elif opt == '-a':
+            for parentdir, subdirs, files in os.walk(os.path.join(directory, 'lmdb')):
+                if 'data.mdb' in files:
+                    print(f'Processing {parentdir}')
+                    entity_type = parentdir.split('/')[-1]
+
+                    env, db = open_env(entity_type, parentdir)
+
+                    # first delete the index
+                    es.indices.delete(index=entity_type, ignore=[404])
+                    deque(parallel_bulk(es, process_lmdb(env, db, entity_type)), maxlen=0)
+                    env.close()
+        else:
+            print_help()
+            sys.exit(2)
+    else:
+        print_help()
+        sys.exit(2)
+
+
+if __name__ == '__main__':
+    main(sys.argv[1:])
