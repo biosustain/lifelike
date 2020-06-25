@@ -1,9 +1,6 @@
 import json
-import attr
-from typing import Optional, List
-
+from typing import Dict, List, Union
 from elasticsearch import Elasticsearch
-
 from neo4japp.utils.queries import parse_query_terms
 
 
@@ -85,11 +82,12 @@ class PDFSearch:
     def __init__(self):
         self.es = Elasticsearch(hosts=[ELASTICSEARCH_HOST])
 
-    EmptyResult = {'hits': {'hits': [], 'max_score': None, 'total': 0}}
+    EmptyResult:Dict[str, Dict[str, Union[int, List[int], None]]] = \
+        {'hits': {'hits': [], 'max_score': None, 'total': 0}}
 
     @classmethod
-    def build_query_clause(cls, user_query: str, fields: List[str] = None, boost_fields=None,
-                           mode: str = 'AND') -> Optional[dict]:
+    def build_query_clause(cls, user_query: str, fields: List[str], boost_fields=None,
+                           mode: str = 'AND'):
         if boost_fields is None:
             boost_fields = []
         terms, wildcards, phrases = parse_query_terms(user_query)
@@ -119,7 +117,7 @@ class PDFSearch:
         return {"bool": {'must': predicates}}
 
     @classmethod
-    def build_es_query(cls, user_query: str) -> Optional[dict]:
+    def build_es_query(cls, user_query: str):
         """Returns a dictionary representing the elastic search query object"""
         match_fields = ['filename', 'data.content']
         boost_fields = ['filename^3', 'description^3']
