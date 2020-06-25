@@ -22,10 +22,12 @@ from neo4japp.database import db
 from neo4japp.exceptions import InvalidFileNameException, RecordNotFoundException
 from neo4japp.models import Project, ProjectBackup, ProjectSchema
 from neo4japp.constants import ANNOTATION_STYLES_DICT
+from neo4japp.schemas.drawing_tool import ProjectBackupSchema
 
 import graphviz as gv
 from PyPDF4 import PdfFileReader, PdfFileWriter
 from PyPDF4.generic import NameObject, ArrayObject
+from flask_apispec import use_kwargs
 
 
 bp = Blueprint('drawing_tool', __name__, url_prefix='/drawing-tool')
@@ -442,7 +444,8 @@ def project_backup_get(project_id):
 
 @bp.route('/projects/<string:project_id>/backup', methods=['POST'])
 @auth.login_required
-def project_backup_post(project_id):
+@use_kwargs(ProjectBackupSchema)
+def project_backup_post(project_id, **data):
     project = Project.query.filter_by(
         id=project_id,
         user_id=g.current_user.id,
@@ -460,8 +463,6 @@ def project_backup_post(project_id):
 
     if old_backup is not None:
         db.session.delete(old_backup)
-
-    data = request.get_json()
 
     backup = ProjectBackup()
     backup.project_id = data["id"]
