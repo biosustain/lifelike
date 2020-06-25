@@ -1,8 +1,8 @@
 import attr
-
-from flask import Blueprint
-
+from flask import Blueprint, request, jsonify
+from neo4japp.blueprints.auth import auth
 from neo4japp.database import get_search_service_dao, get_neo4j_service_dao
+from neo4japp.services.pdf_search import PDFSearch
 from neo4japp.util import CamelDictMixin, jsonify_with_class, SuccessResponse
 
 bp = Blueprint('search', __name__, url_prefix='/search')
@@ -57,3 +57,18 @@ def visualizer_search_temp(req: SimpleSearchRequest):
 #     search_dao = get_search_service_dao()
 #     results = search_dao.predictive_search(req.query)
 #     return SuccessResponse(result=results, status_code=200)
+
+@bp.route('/pdf-search', methods=['GET', 'POST'])
+@auth.login_required
+def search():
+    body = request.get_json()
+    term = body['term']
+    if term:
+        res = PDFSearch().search(
+            user_query=term,
+            offset=body['offset'],
+            limit=body['limit'],
+        )['hits']
+    else:
+        res = {'hits': [], 'max_score': None, 'total': 0}
+    return jsonify(res)
