@@ -200,7 +200,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
     this.shownFiles = this.filterQuery.length ? this.files.filter(file => file.filename.includes(this.filterQuery)) : this.files;
   }
 
-  showUploadDialog() {
+  displayUploadDialog() {
     const uploadData: UploadPayload = {
       type: UploadType.Files,
       filename: '',
@@ -216,7 +216,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
     });
   }
 
-  showEditDialog(file: PdfFile = null) {
+  displayEditDialog(file: PdfFile = null) {
     if (file == null) {
       const selected = this.getSelectedShownFiles();
       if (selected.length === 1) {
