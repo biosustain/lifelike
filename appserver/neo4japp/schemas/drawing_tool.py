@@ -16,4 +16,4 @@ class ProjectBackupSchema(StrictSchema):
     author = ma.String(required=True, validate=validate.Length(max=240))
     public = ma.Boolean(missing=False)
     user_id = ma.Integer(required=True)
-    hash_id = ma.String(validate=validate.Length(max=50))
+    hash_id = ma.String(required=True, validate=validate.Length(max=50))

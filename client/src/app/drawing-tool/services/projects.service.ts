@@ -317,24 +317,24 @@ export class ProjectsService {
     return visGraph;
   }
 
-  public downloadProjectBackup(projectId: number): Observable<any> {
+  public downloadProjectBackup(hashId: string): Observable<any> {
     return this.http.get(
-      `${this.baseUrl}/projects/${projectId}/backup`,
+      `${this.baseUrl}/map/${hashId}/backup`,
       this.createHttpOptions(true)
     );
   }
 
   public uploadProjectBackup(project: Project): Observable<any> {
     return this.http.post(
-      `${this.baseUrl}/projects/${project.id}/backup`,
+      `${this.baseUrl}/map/${project.hash_id}/backup`,
       project,
       this.createHttpOptions(true)
     );
   }
 
-  public deleteProjectBackup(projectId: number): Observable<any> {
+  public deleteProjectBackup(hashId: string): Observable<any> {
     return this.http.delete(
-      `${this.baseUrl}/projects/${projectId}/backup`,
+      `${this.baseUrl}/map/${hashId}/backup`,
       this.createHttpOptions(true)
     );
   }
