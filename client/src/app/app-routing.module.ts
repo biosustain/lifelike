@@ -7,17 +7,16 @@ import { VisualizationComponent } from 'app/visualization/containers/visualizati
 import { SearchCollectionPageComponent } from 'app/search/containers/search-collection-page.component';
 import { FileBrowserComponent } from 'app/file-browser/components/file-browser.component';
 import { LoginComponent } from 'app/auth/components/login.component';
-import { LifelikeHomePageComponent } from 'app/home/components/lifelike-home.component';
+import { DashboardComponent } from 'app/dashboard.component';
 
 import { AdminGuard } from 'app/admin/services/admin-guard.service';
 import { AuthGuard } from 'app/auth/guards/auth-guard.service';
 import { LoginGuard } from 'app/auth/guards/login-guard.service';
 import { FileViewComponent } from 'app/file-browser/components/file-view.component';
 import { UserSettingsComponent } from 'app/users/components/user-settings.component';
-import { KgStatisticsComponent } from './kg-statistics/kg-statistics.component';
+import { KgStatisticsComponent } from './kg-statistics.component';
 import { TermsOfServiceComponent } from './users/components/terms-of-service.component';
 import { WorkspaceComponent } from './workspace.component';
-import { WorkspaceWelcomeComponent } from './workspace-welcome.component';
 import { UnloadConfirmationGuard } from './shared/guards/UnloadConfirmation.guard';
 import { MapBrowserComponent } from './drawing-tool/components/map-browser.component';
 import { MapEditorComponent } from './drawing-tool/components/map-editor/map-editor.component';
@@ -27,7 +26,7 @@ import { MapViewComponent } from './drawing-tool/components/map-view.component';
 const routes: Routes = [
   {
     path: '',
-    component: LifelikeHomePageComponent,
+    component: DashboardComponent,
     data: {
       title: 'Dashboard',
       fontAwesomeIcon: 'home',
@@ -106,14 +105,6 @@ const routes: Routes = [
       title: 'Knowledge Reconstruction Workspace',
     },
     canDeactivate: [UnloadConfirmationGuard],
-  },
-  {
-    path: 'welcome',
-    component: WorkspaceWelcomeComponent,
-    data: {
-      title: 'Choose Module',
-      fontAwesomeIcon: 'question',
-    },
   },
   {
     path: 'files',

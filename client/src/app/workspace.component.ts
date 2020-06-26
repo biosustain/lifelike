@@ -47,8 +47,8 @@ export class WorkspaceComponent implements AfterViewInit, OnChanges, AfterConten
     this.workspaceManager.moveTab(from, event.previousIndex, to, event.currentIndex);
   }
 
-  addTab(pane: Pane) {
-    this.workspaceManager.openTabByUrl(pane, '/welcome');
+  addTab(pane: Pane, url: string) {
+    this.workspaceManager.openTabByUrl(pane, url);
   }
 
   closeTab(pane: Pane, tab: Tab) {
@@ -99,7 +99,7 @@ export class WorkspaceComponent implements AfterViewInit, OnChanges, AfterConten
 
   addPane() {
     const pane = this.workspaceManager.panes.getOrCreate('right');
-    this.workspaceManager.openTabByUrl(pane, '/welcome');
+    this.workspaceManager.openTabByUrl(pane, '/files');
   }
 
   shouldConfirmUnload(): boolean {
