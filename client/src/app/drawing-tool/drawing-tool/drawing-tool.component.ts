@@ -291,12 +291,11 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
 
     this.autoSaveIntervalId = window.setInterval(() => {
       if (this.saveState || !this.project) {
-        console.log('no need to autosave');
         return;
       }
       const project = Object.assign({}, this.project);
       this.prepareProjectForPersistence(project);
-      this.projectService.uploadProjectBackup(project).subscribe(res => console.log('auto saved!'));
+      this.projectService.uploadProjectBackup(project).subscribe();
     }, 60000);
   }
 
@@ -380,11 +379,10 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
           this.prepareMap();
           this.projectService.downloadProjectBackup(this.project.hash_id).subscribe(
             (backup) => {
-              console.log('backup found!', backup);
               this.projectBackup = backup;
               this.openRestoreMapDialog();
             },
-            () => console.log('no backup.')
+            () => {}, // do not spam the console in case of 404
           );
         },
         err => console.log(err)
@@ -806,7 +804,7 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
     this.prepareProjectForPersistence(this.project);
     // Push to backend to save
     this.projectService.updateProject(this.project).subscribe(() => {
-      this.projectService.deleteProjectBackup(this.project.hash_id).subscribe(res => console.log('backup deleted', res));
+      this.projectService.deleteProjectBackup(this.project.hash_id).subscribe();
       this.saveState = true;
       this.snackBar.open('Map is saved', null, {
         duration: 2000,
@@ -1242,9 +1240,8 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
       width: '480px',
     });
 
-    dialogRef.afterClosed().subscribe(res => {
-      if (res) {
-        console.log('Loading the backup...');
+    dialogRef.afterClosed().subscribe((restore: boolean) => {
+      if (restore) {
         this.project = this.projectBackup;
         this.prepareMap();
         this.saveState = false;

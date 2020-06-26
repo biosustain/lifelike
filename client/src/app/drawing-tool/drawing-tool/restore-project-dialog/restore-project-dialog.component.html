@@ -5,6 +5,6 @@
   <p>Do you want to restore it?</p>
 </div>
 <div mat-dialog-actions align="end">
-  <button mat-raised-button mat-dialog-close>Cancel</button>
+  <button mat-raised-button [mat-dialog-close]="false">Cancel</button>
   <button mat-raised-button color="primary" cdkFocusInitial [mat-dialog-close]="true">Restore</button>
 </div>
