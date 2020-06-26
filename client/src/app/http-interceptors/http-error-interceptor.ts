@@ -36,27 +36,7 @@ export class HttpErrorInterceptor implements HttpInterceptor {
             }
           }));
           return throwError('No internet connection');
-        } else if (statusCode > 400 && statusCode < 500) {
-          return throwError(res);
-        } else if (statusCode === 400 || statusCode >= 500) {
-          let message = 'The server encountered a problem. No further details are currently available.';
-          let detail = null;
-          if (res.error) {
-            if (res.error.message) {
-              message = res.error.message;
-            }
-            if (res.error.detail) {
-              detail = res.error.detail;
-            }
-          }
-          this.store.dispatch(MessageDialogActions.displayMessageDialog({
-            payload: {
-              title: 'Problem Encountered',
-              message,
-              detail,
-              type: MessageType.Error,
-            }
-          }));
+        } else if (statusCode >= 400) {
           return throwError(res);
         }
         return throwError(res);

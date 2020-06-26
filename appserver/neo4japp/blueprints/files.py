@@ -176,18 +176,22 @@ def get_file_info(id: str, project_name: str = ''):
     # Part of phase 1, as explained at https://github.com/SBRG/kg-prototypes/pull/85#issue-404823272
     project = '1'
 
-    row = db.session \
-        .query(Files.id,
-               Files.file_id,
-               Files.filename,
-               Files.description,
-               Files.user_id,
-               AppUser.username,
-               Files.creation_date
-               ) \
-        .join(AppUser, Files.user_id == AppUser.id) \
-        .filter(Files.file_id == id, Files.project == project) \
-        .one()
+    try:
+        row = db.session \
+            .query(Files.id,
+                   Files.file_id,
+                   Files.filename,
+                   Files.description,
+                   Files.user_id,
+                   AppUser.username,
+                   Files.creation_date
+                   ) \
+            .join(AppUser, Files.user_id == AppUser.id) \
+            .filter(Files.file_id == id, Files.project == project) \
+            .one()
+    except NoResultFound:
+        raise RecordNotFoundException('Requested PDF file not found.')
+
     return jsonify({
         'id': row.id,  # TODO: is this of any use?
         'file_id': row.file_id,

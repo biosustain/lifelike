@@ -439,7 +439,7 @@ export class PaneManager {
 })
 export class WorkspaceManager {
   panes: PaneManager;
-  private workspaceUrl = '/workspace/local';
+  private workspaceUrl = '/workspaces/local';
   focusedPane: Pane | undefined;
   private interceptNextRoute = false;
   panes$ = new BehaviorSubject<Pane[]>([]);

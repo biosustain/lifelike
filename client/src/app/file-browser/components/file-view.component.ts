@@ -1,11 +1,11 @@
 import { Component, EventEmitter, OnDestroy, Output, ViewChild } from '@angular/core';
-import { combineLatest, Subject, Subscription } from 'rxjs';
+import { combineLatest, Subject, Subscription, throwError } from 'rxjs';
 import { PdfFilesService } from 'app/shared/services/pdf-files.service';
 import { Hyperlink, SearchLink } from 'app/shared/constants';
 
-import { DataFlowService, PdfAnnotationsService } from '../services';
+import { DataFlowService, PdfAnnotationsService } from '../../drawing-tool/services';
 
-import { Annotation, Location, Meta, AnnotationExclusionData, UniversalGraphNode } from '../services/interfaces';
+import { Annotation, Location, Meta, AnnotationExclusionData, UniversalGraphNode } from '../../drawing-tool/services/interfaces';
 
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { PdfFile } from '../../interfaces/pdf-files.interface';
@@ -16,6 +16,10 @@ import { ActivatedRoute } from '@angular/router';
 import { ModuleAwareComponent, ModuleProperties } from '../../shared/modules';
 import { ConfirmDialogComponent } from '../../shared/components/dialog/confirm-dialog.component';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { catchError } from 'rxjs/operators';
+import { ErrorHandler } from '../../shared/services/error-handler.service';
+import { HttpErrorResponse } from '@angular/common/http';
+import { UserError } from 'app/shared/exceptions';
 
 class DummyFile implements PdfFile {
   constructor(
@@ -35,11 +39,11 @@ class EntityTypeEntry {
 
 @Component({
   selector: 'app-pdf-viewer',
-  templateUrl: './pdf-viewer.component.html',
-  styleUrls: ['./pdf-viewer.component.scss'],
+  templateUrl: './file-view.component.html',
+  styleUrls: ['./file-view.component.scss'],
 })
 
-export class PdfViewerComponent implements OnDestroy, ModuleAwareComponent {
+export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
   @Output() requestClose: EventEmitter<any> = new EventEmitter();
   @Output() fileOpen: EventEmitter<PdfFile> = new EventEmitter();
 
@@ -57,17 +61,10 @@ export class PdfViewerComponent implements OnDestroy, ModuleAwareComponent {
 
   searchChanged: Subject<{ keyword: string, findPrevious: boolean }> = new Subject<{ keyword: string, findPrevious: boolean }>();
   goToPosition: Subject<Location> = new Subject<Location>();
-  loadTask: BackgroundTask<[PdfFile, Location], [PdfFile, ArrayBuffer, any]> =
-    new BackgroundTask(([file, loc]) => {
-      return combineLatest(
-        this.pdf.getFileInfo(file.file_id),
-        this.pdf.getFile(file.file_id),
-        this.pdfAnnService.getFileAnnotations(file.file_id),
-      );
-    });
+  loadTask: BackgroundTask<[PdfFile, Location], [PdfFile, ArrayBuffer, any]>;
   pendingScroll: Location;
   openPdfSub: Subscription;
-  pdfViewerReady = false;
+  ready = false;
   // Type information coming from interface PDFSource at:
   // https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/pdfjs-dist/index.d.ts
   pdfData: { url?: string, data?: Uint8Array };
@@ -98,7 +95,16 @@ export class PdfViewerComponent implements OnDestroy, ModuleAwareComponent {
     private dataFlow: DataFlowService,
     private readonly modalService: NgbModal,
     private route: ActivatedRoute,
+    private readonly errorHandler: ErrorHandler,
   ) {
+    this.loadTask = new BackgroundTask(([file, loc]) => {
+      return combineLatest(
+        this.pdf.getFileInfo(file.file_id),
+        this.pdf.getFile(file.file_id),
+        this.pdfAnnService.getFileAnnotations(file.file_id),
+      ).pipe(errorHandler.create());
+    });
+
     // Listener for file open
     this.openPdfSub = this.loadTask.results$.subscribe(({
                                                           result: [pdfFile, pdfFileContent, ann],
@@ -115,7 +121,7 @@ export class PdfViewerComponent implements OnDestroy, ModuleAwareComponent {
 
       this.currentFileId = file.file_id;
       setTimeout(() => {
-        this.pdfViewerReady = true;
+        this.ready = true;
       }, 10);
     });
 
@@ -207,7 +213,7 @@ export class PdfViewerComponent implements OnDestroy, ModuleAwareComponent {
   }
 
   toggleFilterPopup() {
-    if (!this.pdfViewerReady) {
+    if (!this.ready) {
       return;
     }
     this.filterPopupOpen = !this.filterPopupOpen;
@@ -382,7 +388,7 @@ export class PdfViewerComponent implements OnDestroy, ModuleAwareComponent {
     }
     this.pendingScroll = loc;
     this.pdfFileLoaded = false;
-    this.pdfViewerReady = false;
+    this.ready = false;
 
     this.loadTask.update([file, loc]);
   }
