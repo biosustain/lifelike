@@ -13,6 +13,7 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { FileDeleteDialogComponent } from './file-delete-dialog.component';
 import { FileUploadDialogComponent } from './file-upload-dialog.component';
 import { FileEditDialogComponent } from './file-edit-dialog.component';
+import { ErrorHandler } from '../../shared/services/error-handler.service';
 
 @Component({
   selector: 'app-file-browser',
@@ -35,6 +36,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
     private snackBar: MatSnackBar,
     private readonly modalService: NgbModal,
     private progressDialog: ProgressDialog,
+    private readonly errorHandler: ErrorHandler,
   ) {
   }
 
@@ -114,7 +116,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
       progressObservable,
     });
 
-    this.pdf.uploadFile(data).subscribe(event => {
+    this.pdf.uploadFile(data).pipe(this.errorHandler.create()).subscribe(event => {
         if (event.type === HttpEventType.UploadProgress) {
           if (event.loaded >= event.total) {
             progressObservable.next(new Progress({
@@ -146,7 +148,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
 
   deleteFiles(files) {
     const ids: string[] = files.map((file: PdfFile) => file.file_id);
-    this.pdf.deleteFiles(ids).subscribe(
+    this.pdf.deleteFiles(ids).pipe(this.errorHandler.create()).subscribe(
       (res) => {
         let msg = 'Deletion completed';
         if (Object.values(res).includes('Not an owner')) { // check if any file was not owned by the current user
@@ -175,7 +177,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
       title: `Reannotating file${this.selection.selected.length === 1 ? '' : 's'}...`,
       progressObservable,
     });
-    this.pdf.reannotateFiles(ids).subscribe(
+    this.pdf.reannotateFiles(ids).pipe(this.errorHandler.create()).subscribe(
       (res) => {
         this.refresh();
         this.isReannotating = false;

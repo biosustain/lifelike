@@ -74,7 +74,7 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
         coordC,
         coordD
       ] = source.replace(/^\/dt\/pdf\//, '').split('/');
-      const url = `/pdf-viewer/${fileId}#page=${page}&coords=${coordA},${coordB},${coordC},${coordD}`;
+      const url = `/files/${fileId}#page=${page}&coords=${coordA},${coordB},${coordC},${coordD}`;
       this.workspaceManager.navigateByUrl(url, {
         newTab: true,
       });

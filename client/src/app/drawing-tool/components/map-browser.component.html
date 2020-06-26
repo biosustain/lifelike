@@ -71,46 +71,7 @@
 
         <div class="module-body flex-fill overflow-hidden d-flex">
           <div class="position-relative flex-fill map-preview-container">
-            <app-map-preview #previewComponent [project]='selectedMap'></app-map-preview>
-
-            <div class="top-toolbar d-flex align-items-center" *ngIf="!infoPinned">
-              <div class="btn-group">
-                <button type="button" class="btn btn-secondary" (click)="infoPinned = !infoPinned"
-                        ngbTooltip="Show description." placement="right">
-                  <i class="fa fa-fw fa-angle-right"></i>
-                </button>
-              </div>
-            </div>
-
-            <div class="bottom-toolbar d-flex align-items-center">
-              <div class="btn-toolbar">
-                <div class="btn-group">
-                  <button type="button" class="btn btn-secondary"
-                          ngbTooltip="Zoom to make the map fit if it doesn't fit"
-                          (click)="zoomToFit()">
-                    <i class="fa fa-fw fa-expand"></i> Fit Map
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <div class="detail-overlay" [class.pinned]="infoPinned">
-              <button type="button" class="close float-right" aria-label="Close"
-                      (click)="infoPinned = false" *ngIf="infoPinned">
-                <span aria-hidden="true">&times;</span>
-              </button>
-              <div class="detail-overlay-properties text-muted">
-                <div class="text-truncate">
-                  By {{selectedMap?.author}}
-                </div>
-                <div class="text-truncate">
-                  Modified {{selectedMap?.date_modified | friendlyDateStr}}
-                </div>
-              </div>
-              <div class="mt-2 detail-overlay-description">
-                {{selectedMap?.description}}
-              </div>
-            </div>
+            <app-map-view #previewComponent [map]='selectedMap' [titleVisible]="false"></app-map-view>
           </div>
         </div>
       </div>

@@ -32,23 +32,18 @@ import { MapEditDialogComponent } from './map-edit-dialog.component';
 import { WorkspaceManager } from '../../shared/workspace-manager';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { MapListComponent } from './map-list.component';
-import { MapPreviewComponent } from './map-preview.component';
+import { MapViewComponent } from './map-view.component';
+import { ErrorHandler } from '../../shared/services/error-handler.service';
 
 @Component({
   selector: 'app-project-list-view',
   templateUrl: './map-browser.component.html',
-  styleUrls: ['./map-browser.component.scss'],
 })
 export class MapBrowserComponent {
   @ViewChild('listComponent', {static: false}) listComponent: MapListComponent;
-  @ViewChild('previewComponent', {static: false}) previewComponent: MapPreviewComponent;
+  @ViewChild('previewComponent', {static: false}) previewComponent: MapViewComponent;
 
   userRoles$: Observable<string[]>;
-
-  /**
-   * If true, then the map description box won't disappear.
-   */
-  infoPinned = true;
 
   /**
    * Map in focus.
@@ -65,6 +60,7 @@ export class MapBrowserComponent {
     private snackBar: MatSnackBar,
     private progressDialog: ProgressDialog,
     private store: Store<State>,
+    readonly errorHandler: ErrorHandler,
   ) {
     this.userRoles$ = store.pipe(select(AuthSelectors.selectRoles));
   }
@@ -85,11 +81,13 @@ export class MapBrowserComponent {
       this.projectService.addProject({
         ...newMap,
         date_modified: new Date().toISOString(),
-      }).subscribe(() => {
-        // TODO: Update API endpoint to return something useful
-        this.selectedMap = null;
-        this.refresh();
-      });
+      })
+        .pipe(this.errorHandler.create())
+        .subscribe(() => {
+          // TODO: Update API endpoint to return something useful
+          this.selectedMap = null;
+          this.refresh();
+        });
     }, () => {
     });
   }
@@ -109,11 +107,13 @@ export class MapBrowserComponent {
       this.projectService.addProject({
         ...newMap,
         date_modified: new Date().toISOString(),
-      }).subscribe((data) => {
-        // TODO: Update API endpoint to return something useful
-        this.selectedMap = null;
-        this.refresh();
-      });
+      })
+        .pipe(this.errorHandler.create())
+        .subscribe((data) => {
+          // TODO: Update API endpoint to return something useful
+          this.selectedMap = null;
+          this.refresh();
+        });
     }, () => {
     });
   }
@@ -132,32 +132,34 @@ export class MapBrowserComponent {
         progressObservable,
       });
 
-      this.projectService.uploadProject(data).subscribe(event => {
-          if (event.type === HttpEventType.UploadProgress) {
-            if (event.loaded >= event.total) {
-              progressObservable.next(new Progress({
-                mode: ProgressMode.Buffer,
-                status: 'Processing...',
-                value: event.loaded / event.total,
-              }));
-            } else {
-              progressObservable.next(new Progress({
-                mode: ProgressMode.Determinate,
-                status: 'Uploaded file...',
-                value: event.loaded / event.total,
-              }));
+      this.projectService.uploadProject(data)
+        .pipe(this.errorHandler.create())
+        .subscribe(event => {
+            if (event.type === HttpEventType.UploadProgress) {
+              if (event.loaded >= event.total) {
+                progressObservable.next(new Progress({
+                  mode: ProgressMode.Buffer,
+                  status: 'Processing...',
+                  value: event.loaded / event.total,
+                }));
+              } else {
+                progressObservable.next(new Progress({
+                  mode: ProgressMode.Determinate,
+                  status: 'Uploaded file...',
+                  value: event.loaded / event.total,
+                }));
+              }
+            } else if (event.type === HttpEventType.Response) {
+              progressDialogRef.close();
+              this.snackBar.open(`File uploaded: ${data.filename}`, 'Close', {duration: 5000});
+              const hashId = event.body.result.hashId;
+              this.route.navigateByUrl(`/maps/${hashId}/edit`);
             }
-          } else if (event.type === HttpEventType.Response) {
+          },
+          err => {
             progressDialogRef.close();
-            this.snackBar.open(`File uploaded: ${data.filename}`, 'Close', {duration: 5000});
-            const hashId = event.body.result.hashId;
-            this.route.navigateByUrl(`map/edit/${hashId}`);
-          }
-        },
-        err => {
-          progressDialogRef.close();
-          return throwError(err);
-        });
+            return throwError(err);
+          });
     });
   }
 
@@ -174,6 +176,7 @@ export class MapBrowserComponent {
     dialogRef.componentInstance.map = cloneDeep(map);
     dialogRef.result.then(newMap => {
       this.projectService.updateProject(newMap)
+        .pipe(this.errorHandler.create())
         .subscribe(() => {
           this.selectedMap = newMap;
           this.refresh();
@@ -214,36 +217,38 @@ export class MapBrowserComponent {
       map = this.selectedMap;
     }
 
-    this.projectService.downloadProject(map.hash_id).pipe(first()).subscribe((payload) => {
-      const jsonData = JSON.stringify(payload);
-      const blob = new Blob([jsonData], {type: 'text/json'});
+    this.projectService.downloadProject(map.hash_id)
+      .pipe(this.errorHandler.create(), first())
+      .subscribe((payload) => {
+        const jsonData = JSON.stringify(payload);
+        const blob = new Blob([jsonData], {type: 'text/json'});
 
-      // IE doesn't allow using a blob object directly as link href
-      // instead it is necessary to use msSaveOrOpenBlob
-      if (window.navigator && window.navigator.msSaveOrOpenBlob) {
-        window.navigator.msSaveOrOpenBlob(blob);
-        return;
-      }
+        // IE doesn't allow using a blob object directly as link href
+        // instead it is necessary to use msSaveOrOpenBlob
+        if (window.navigator && window.navigator.msSaveOrOpenBlob) {
+          window.navigator.msSaveOrOpenBlob(blob);
+          return;
+        }
 
-      // For other browsers:
-      // Create a link pointing to the ObjectURL containing the blob.
-      const data = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = data;
-      link.download = this.selectedMap.label + '.json';
-      // this is necessary as link.click() does not work on the latest firefox
-      link.dispatchEvent(new MouseEvent('click', {
-        bubbles: true,
-        cancelable: true,
-        view: window,
-      }));
+        // For other browsers:
+        // Create a link pointing to the ObjectURL containing the blob.
+        const data = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = data;
+        link.download = this.selectedMap.label + '.json';
+        // this is necessary as link.click() does not work on the latest firefox
+        link.dispatchEvent(new MouseEvent('click', {
+          bubbles: true,
+          cancelable: true,
+          view: window,
+        }));
 
-      setTimeout(() => {
-        // For Firefox it is necessary to delay revoking the ObjectURL
-        window.URL.revokeObjectURL(data);
-        link.remove();
-      }, 100);
-    });
+        setTimeout(() => {
+          // For Firefox it is necessary to delay revoking the ObjectURL
+          window.URL.revokeObjectURL(data);
+          link.remove();
+        }, 100);
+      });
   }
 
   /**
@@ -255,7 +260,7 @@ export class MapBrowserComponent {
       map = this.selectedMap;
     }
 
-    this.workspaceManager.navigateByUrl(`map/edit/${map.hash_id}`);
+    this.workspaceManager.navigateByUrl(`/maps/${map.hash_id}/edit`);
   }
 
   /**
