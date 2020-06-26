@@ -10,7 +10,7 @@ import { of } from 'rxjs';
 
 import { DataSet } from 'vis-network';
 
-import { MAX_CLUSTER_ROWS } from 'app/constants';
+import { MAX_CLUSTER_ROWS } from 'app/shared/constants';
 import {
     ClusterData,
     Direction,

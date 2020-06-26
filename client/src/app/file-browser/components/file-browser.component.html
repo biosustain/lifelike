@@ -118,7 +118,7 @@
                    (change)="selection.toggle(file)"
                    [checked]="selection.isSelected(file)">
             <label class="custom-control-label d-flex align-items-center" for="file-{{ file.file_id }}">
-              <a href="#" [appLink]="'/files/' + file.file_id" class="text-truncate">
+              <a [href]="'/files/' + file.file_id" [appLink]="'/files/' + file.file_id" class="text-truncate">
                 {{ file.filename }}
               </a>
             </label>

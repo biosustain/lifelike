@@ -1,6 +1,12 @@
 import * as d3 from 'd3';
 import { GraphView } from '../graph-view';
-import { GraphEntity, GraphEntityType, UniversalGraph, UniversalGraphEdge, UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
+import {
+  GraphEntity,
+  GraphEntityType,
+  UniversalGraph,
+  UniversalGraphEdge,
+  UniversalGraphNode,
+} from 'app/drawing-tool/services/interfaces';
 import { EdgeRenderStyle, NodeRenderStyle, PlacedEdge, PlacedNode } from 'app/graph-viewer/styles/styles';
 import { debounceTime, throttleTime } from 'rxjs/operators';
 import { asyncScheduler, fromEvent, Subject, Subscription } from 'rxjs';
@@ -181,12 +187,12 @@ export class CanvasGraphView extends GraphView {
           leading: true,
           trailing: false,
         }))
-        .subscribe(this.canvasMouseMoved.bind(this))
+        .subscribe(this.canvasMouseMoved.bind(this)),
     );
 
     this.trackedSubscriptions.push(
       fromEvent(this.canvas, 'keyup')
-        .subscribe(this.canvasKeyDown.bind(this))
+        .subscribe(this.canvasKeyDown.bind(this)),
     );
   }
 
@@ -284,12 +290,22 @@ export class CanvasGraphView extends GraphView {
 
   setSize(width: number, height: number) {
     if (this.canvas.width !== width || this.canvas.height !== height) {
+      const centerX = this.transform.invertX(this.canvas.width / 2);
+      const centerY = this.transform.invertY(this.canvas.height / 2);
       this.canvas.width = width;
       this.canvas.height = height;
       super.setSize(width, height);
       this.invalidateAll();
       if (window.performance.now() - this.previousZoomToFitTime < 500) {
         this.applyZoomToFit(0, this.previousZoomToFitPadding);
+      } else {
+        const newCenterX = this.transform.invertX(this.canvas.width / 2);
+        const newCenterY = this.transform.invertY(this.canvas.height / 2);
+        d3.select(this.canvas).call(
+          this.zoom.translateBy,
+          newCenterX - centerX,
+          newCenterY - centerY,
+        );
       }
     }
   }
@@ -368,14 +384,14 @@ export class CanvasGraphView extends GraphView {
     if (node) {
       return {
         type: GraphEntityType.Node,
-        entity: node
+        entity: node,
       };
     }
     const edge = this.getEdgeAtPosition(this.edges, x, y);
     if (edge) {
       return {
         type: GraphEntityType.Edge,
-        entity: edge
+        entity: edge,
       };
     }
     return undefined;
@@ -411,7 +427,7 @@ export class CanvasGraphView extends GraphView {
       d3.zoomIdentity
         .translate(canvasWidth / 2, canvasHeight / 2)
         .scale(Math.min(1, Math.min(canvasWidth / width, canvasHeight / height)))
-        .translate(-minX - width / 2, -minY - height / 2)
+        .translate(-minX - width / 2, -minY - height / 2),
     );
 
     this.invalidateAll();

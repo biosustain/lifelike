@@ -20,7 +20,7 @@ import { SnackbarActions } from 'app/shared/store';
 import {
     JWT_REFRESH_TOKEN_EXPIRED,
     JWT_REFRESH_TOKEN_INVALID,
-} from 'app/constants';
+} from 'app/shared/constants';
 
 
 /**
