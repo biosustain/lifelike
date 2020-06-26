@@ -10,6 +10,7 @@ import { UserCreateDialogComponent } from './user-create-dialog.component';
 import { Progress } from '../../interfaces/common-dialog.interface';
 import { ProgressDialog } from '../../shared/services/progress-dialog.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { ErrorHandler } from '../../shared/services/error-handler.service';
 
 @Component({
   selector: 'app-users-view',
@@ -26,7 +27,8 @@ export class UserBrowserComponent implements OnInit, OnDestroy {
   constructor(private readonly accountService: AccountService,
               private readonly modalService: NgbModal,
               private readonly progressDialog: ProgressDialog,
-              private readonly snackBar: MatSnackBar) {
+              private readonly snackBar: MatSnackBar,
+              private readonly errorHandler: ErrorHandler) {
   }
 
   ngOnInit() {
@@ -81,18 +83,20 @@ export class UserBrowserComponent implements OnInit, OnDestroy {
         })),
       });
 
-      this.accountService.createUser(newUser).subscribe((user: AppUser) => {
-        progressDialogRef.close();
-        this.accountService.getUserList();
-        this.refresh();
-        this.snackBar.open(
-          `User ${user.username} created!`,
-          'close',
-          {duration: 5000},
-        );
-      }, () => {
-        progressDialogRef.close();
-      });
+      this.accountService.createUser(newUser)
+        .pipe(this.errorHandler.create())
+        .subscribe((user: AppUser) => {
+          progressDialogRef.close();
+          this.accountService.getUserList();
+          this.refresh();
+          this.snackBar.open(
+            `User ${user.username} created!`,
+            'close',
+            {duration: 5000},
+          );
+        }, () => {
+          progressDialogRef.close();
+        });
     }, () => {
     });
   }
