@@ -1245,6 +1245,8 @@ export class DrawingToolComponent implements OnInit, AfterViewInit, OnDestroy {
         this.project = this.projectBackup;
         this.prepareMap();
         this.saveState = false;
+      } else {
+        this.projectService.deleteProjectBackup(this.projectBackup.hash_id).subscribe();
       }
     });
   }
