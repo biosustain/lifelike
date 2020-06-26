@@ -14,7 +14,7 @@ import { UserModule } from 'app/users/users.module';
 import { KgStatisticsComponent } from './kg-statistics/kg-statistics.component';
 import { ChartsModule } from 'ng2-charts';
 
-import { httpInterceptorProviders } from 'app/http-interceptors/index';
+import { httpInterceptorProviders } from './shared/http-interceptors';
 import { BrowserModule, Title } from '@angular/platform-browser';
 import { VisualizationModule } from './visualization/visualization.module';
 import { DrawingToolModule } from './drawing-tool/drawing-tool.module';

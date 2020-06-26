@@ -31,9 +31,9 @@ export class HttpErrorInterceptor implements HttpInterceptor {
               action: 'Dismiss',
               config: {
                 verticalPosition: 'top',
-                duration: 10000
+                duration: 10000,
               },
-            }
+            },
           }));
           return throwError('No internet connection');
         } else if (statusCode >= 400) {
