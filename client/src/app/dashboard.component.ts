@@ -5,10 +5,10 @@ import { MetaDataService } from 'app/shared/services/metadata.service';
 import { BuildInfo } from 'app/interfaces';
 
 @Component({
-  selector: 'app-***ARANGO_DB_NAME***-homepage',
-  templateUrl: './***ARANGO_DB_NAME***-home.component.html',
+  selector: 'app-dashboard',
+  templateUrl: './dashboard.component.html',
 })
-export class LifelikeHomePageComponent {
+export class DashboardComponent {
   readonly buildInfo$: Observable<BuildInfo>;
 
   constructor(private readonly metadataService: MetaDataService) {

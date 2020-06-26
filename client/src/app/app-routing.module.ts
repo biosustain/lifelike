@@ -7,14 +7,14 @@ import { VisualizationComponent } from 'app/visualization/containers/visualizati
 import { SearchCollectionPageComponent } from 'app/search/containers/search-collection-page.component';
 import { FileBrowserComponent } from 'app/file-browser/components/file-browser.component';
 import { LoginComponent } from 'app/auth/components/login.component';
-import { LifelikeHomePageComponent } from 'app/home/components/***ARANGO_DB_NAME***-home.component';
+import { DashboardComponent } from 'app/dashboard.component';
 
 import { AdminGuard } from 'app/admin/services/admin-guard.service';
 import { AuthGuard } from 'app/auth/guards/auth-guard.service';
 import { LoginGuard } from 'app/auth/guards/login-guard.service';
 import { FileViewComponent } from 'app/file-browser/components/file-view.component';
 import { UserSettingsComponent } from 'app/users/components/user-settings.component';
-import { KgStatisticsComponent } from './kg-statistics/kg-statistics.component';
+import { KgStatisticsComponent } from './kg-statistics.component';
 import { TermsOfServiceComponent } from './users/components/terms-of-service.component';
 import { WorkspaceComponent } from './workspace.component';
 import { UnloadConfirmationGuard } from './shared/guards/UnloadConfirmation.guard';
@@ -26,7 +26,7 @@ import { MapViewComponent } from './drawing-tool/components/map-view.component';
 const routes: Routes = [
   {
     path: '',
-    component: LifelikeHomePageComponent,
+    component: DashboardComponent,
     data: {
       title: 'Dashboard',
       fontAwesomeIcon: 'home',
