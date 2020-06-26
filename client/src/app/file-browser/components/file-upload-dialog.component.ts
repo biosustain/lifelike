@@ -24,19 +24,6 @@ export class FileUploadDialogComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    // @ts-ignore
-    navigator.permissions.query({name: 'clipboard-read'}).then(result => {
-      if (result.state === 'granted' || result.state === 'prompt') {
-        // @ts-ignore
-        navigator.clipboard.readText().then(data => {
-          if (data.match(/^https?:\/\//i)) {
-            this.activeTab = 'url';
-            this.url.setValue(data);
-          }
-        });
-      }
-    });
-
     this.filenameChange = this.filename.valueChanges.subscribe((value: string) => {
       this.payload.filename = value;
       this.validatePayload();
