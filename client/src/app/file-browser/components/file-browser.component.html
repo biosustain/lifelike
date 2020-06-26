@@ -77,30 +77,30 @@
 
       <tbody *ngIf="status.placeholdersShown">
       <tr>
-        <td>
+        <td class="align-middle text-nowrap text-truncate">
           <span class="placeholder-box">Loading loading</span>
         </td>
-        <td class="align-middle d-none d-lg-table-cell">
+        <td class="align-middle d-none d-lg-table-cell text-nowrap text-truncate">
           <span class="placeholder-box">Loading loading</span>
         </td>
-        <td class="align-middle d-none d-lg-table-cell">
+        <td class="align-middle d-none d-lg-table-cell text-nowrap text-truncate">
           <span class="placeholder-box">Loading loading</span>
         </td>
-        <td class="align-middle d-none d-md-table-cell">
+        <td class="align-middle d-none d-md-table-cell text-nowrap text-truncate">
           <span class="placeholder-box">Loading</span>
         </td>
       </tr>
       <tr>
-        <td>
+        <td class="align-middle text-nowrap text-truncate">
           <span class="placeholder-box">Loading loading loading</span>
         </td>
-        <td class="align-middle d-none d-lg-table-cell">
+        <td class="align-middle d-none d-lg-table-cell text-nowrap text-truncate">
           <span class="placeholder-box">Loading loading</span>
         </td>
-        <td class="align-middle d-none d-lg-table-cell">
+        <td class="align-middle d-none d-lg-table-cell text-nowrap text-truncate">
           <span class="placeholder-box">Loading loading loading</span>
         </td>
-        <td class="align-middle d-none d-md-table-cell">
+        <td class="align-middle d-none d-md-table-cell text-nowrap text-truncate">
           <span class="placeholder-box">Loading</span>
         </td>
       </tr>
@@ -112,13 +112,13 @@
           [class.active]="selection.isSelected(file)"
           (keydown)="$event.keyCode != 13 || selection.toggle(file)"
           tabindex="0">
-        <td class="align-middle text-truncate mw-100">
+        <td class="align-middle text-nowrap text-truncate">
           <div class="custom-control custom-checkbox">
             <input type="checkbox" class="custom-control-input" id="file-{{ file.file_id }}"
                    (change)="selection.toggle(file)"
                    [checked]="selection.isSelected(file)">
             <label class="custom-control-label d-flex align-items-center" for="file-{{ file.file_id }}">
-              <a href="#" [appLink]="'/pdf-viewer/' + file.file_id" class="text-truncate">
+              <a href="#" [appLink]="'/files/' + file.file_id" class="text-truncate">
                 {{ file.filename }}
               </a>
             </label>

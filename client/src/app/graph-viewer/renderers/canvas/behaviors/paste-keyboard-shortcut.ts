@@ -10,22 +10,17 @@ import { smartTruncate } from '../../../utils/strings';
 /**
  * We use this string to know that it's our own JSON.
  */
-const TYPE_STRING = 'LifelikeKnowledgeMap/1';
+export const TYPE_STRING = 'LifelikeKnowledgeMap/1';
 
-interface GraphClipboardData {
+export interface GraphClipboardData {
   type: 'LifelikeKnowledgeMap/1';
   selection: GraphEntity[];
 }
 
 /**
- * Implements the copy and paste keys.
+ * Implements the paste key.
  */
-export class ClipboardKeyboardShortcut extends AbstractCanvasBehavior {
-  /**
-   * A virtual clipboard in case we don't have access to the user clipboard.
-   */
-  virtualClipboardContent: string | undefined;
-
+export class PasteKeyboardShortcut extends AbstractCanvasBehavior {
   /**
    * Bound paste event handler that we need to remove later.
    */
@@ -91,40 +86,13 @@ export class ClipboardKeyboardShortcut extends AbstractCanvasBehavior {
   }
 
   paste(event) {
-    const content = this.virtualClipboardContent || event.clipboardData.getData('text/plain');
+    const content = event.clipboardData.getData('text/plain');
     if (content) {
       const position = this.graphView.currentHoverPosition;
       if (position) {
-        this.graphView.execute(ClipboardKeyboardShortcut.createActionFromPasteContent(content, position));
+        this.graphView.execute(PasteKeyboardShortcut.createActionFromPasteContent(content, position));
         event.preventDefault();
       }
-    }
-  }
-
-  keyDown(event: KeyboardEvent): BehaviorResult {
-    // TODO: Copy event handler might fire more reliably than this
-    if (isCtrlOrMetaPressed(event) && event.code === 'KeyC') {
-      const selection: GraphEntity[] = this.graphView.selection.get();
-
-      const clipboardData = JSON.stringify({
-        type: TYPE_STRING,
-        selection,
-      } as GraphClipboardData);
-
-      if (navigator.clipboard) {
-        // We cannot store text/json on the clipboard unfortunately, so
-        // the following result can't be pasted in any other app
-        navigator.clipboard.writeText(clipboardData).then(() => {
-          this.virtualClipboardContent = null;
-        }, () => {
-          this.virtualClipboardContent = clipboardData;
-        });
-      } else {
-        this.virtualClipboardContent = clipboardData;
-      }
-
-    } else {
-      return BehaviorResult.Continue;
     }
   }
 }

@@ -12,43 +12,16 @@ import { CopyPasteMapsService } from './services/copy-paste-maps.service';
 import { PaletteComponent } from './components/map-editor/palette.component';
 import { InfoPanelComponent } from './components/map-editor/info-panel.component';
 import { MapExportDialogComponent } from './components/map-export-dialog.component';
-import { MapPreviewComponent } from './components/map-preview.component';
+import { MapViewComponent } from './components/map-view.component';
 import { MapListComponent } from './components/map-list.component';
 import { SharedModule } from 'app/shared/shared.module';
 import { RouterModule } from '@angular/router';
-import { PdfViewerComponent } from './components/pdf-viewer.component';
-import { PdfViewerLibModule } from 'app/pdf-viewer/pdf-viewer-lib.module';
 import { FileBrowserModule } from '../file-browser/file-browser.module';
 import { EdgeFormComponent } from './components/map-editor/edge-form.component';
 import { NodeFormComponent } from './components/map-editor/node-form.component';
 import { NodeSearchComponent } from '../node-search/containers/node-search.component';
 import { MapEditDialogComponent } from './components/map-edit-dialog.component';
 import { ConfirmDialogComponent } from 'app/shared/components/dialog/confirm-dialog.component';
-import { UnloadConfirmationGuard } from '../shared/guards/UnloadConfirmation.guard';
-
-export const routes = [{
-  path: 'map',
-  component: MapBrowserComponent,
-  data: {
-    title: 'Map Browser',
-    fontAwesomeIcon: 'project-diagram',
-  },
-}, {
-  path: 'map/edit/:hash_id',
-  component: MapEditorComponent,
-  canDeactivate: [UnloadConfirmationGuard],
-  data: {
-    title: 'Map Editor',
-    fontAwesomeIcon: 'project-diagram',
-  },
-}, {
-  path: 'map/:hash_id',
-  component: MapPreviewComponent,
-  data: {
-    title: 'Map',
-    fontAwesomeIcon: 'project-diagram',
-  },
-}];
 
 @NgModule({
   declarations: [
@@ -58,10 +31,9 @@ export const routes = [{
     MapCloneDialogComponent,
     MapUploadDialogComponent,
     MapEditorComponent,
-    PdfViewerComponent,
     PaletteComponent,
     InfoPanelComponent,
-    MapPreviewComponent,
+    MapViewComponent,
     MapListComponent,
     MapExportDialogComponent,
     NodeFormComponent,
@@ -76,28 +48,19 @@ export const routes = [{
     MapEditDialogComponent,
     MapListComponent,
     MapBrowserComponent,
-    PdfViewerComponent,
     MapExportDialogComponent,
     NodeSearchComponent,
     ConfirmDialogComponent,
   ],
   imports: [
     SharedModule,
-    PdfViewerLibModule,
-    RouterModule.forChild(routes),
     FileBrowserModule,
   ],
   providers: [
     CopyPasteMapsService,
-    // {
-    //   provide: HTTP_INTERCEPTORS,
-    //   useClass: AuthenticationService,
-    //   multi: true
-    // },
   ],
   exports: [
     RouterModule,
-    PdfViewerLibModule,
   ],
 })
 export class DrawingToolModule {
