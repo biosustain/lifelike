@@ -1,4 +1,4 @@
-import { Observable, Subject } from 'rxjs';
+import { BehaviorSubject, Observable, Subject } from 'rxjs';
 import { merge, isObject } from 'lodash';
 import Timer = NodeJS.Timer;
 
@@ -57,7 +57,18 @@ export class BackgroundTask<T, R> {
   readonly delayedRunningInitialDelay = 0;
   readonly delayedRunningMinimumLength = 500;
 
-  public status$ = new Subject<TaskStatus>();
+  public status$ = new BehaviorSubject<TaskStatus>({
+    state: TaskState.Idle,
+    running: false,
+    delayedRunning: false,
+    loaded: false,
+    placeholdersShown: false,
+    progressShown: false,
+    emptyResultsShown: false,
+    retryInProgressShown: false,
+    failedErrorShown: false,
+    resultsShown: false,
+  });
   public results$ = new Subject<TaskResult<T, R>>();
 
   private started = false;

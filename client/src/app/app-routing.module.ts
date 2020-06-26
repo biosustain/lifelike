@@ -9,17 +9,19 @@ import { FileBrowserComponent } from 'app/file-browser/components/file-browser.c
 import { LoginComponent } from 'app/auth/components/login.component';
 import { LifelikeHomePageComponent } from 'app/home/components/***ARANGO_DB_NAME***-home.component';
 
-import { routes as dtRoutes } from './drawing-tool/drawing-tool.module';
 import { AdminGuard } from 'app/admin/services/admin-guard.service';
 import { AuthGuard } from 'app/auth/guards/auth-guard.service';
 import { LoginGuard } from 'app/auth/guards/login-guard.service';
-import { PdfViewerComponent } from 'app/drawing-tool/components/pdf-viewer.component';
+import { FileViewComponent } from 'app/file-browser/components/file-view.component';
 import { UserSettingsComponent } from 'app/users/components/user-settings.component';
 import { KgStatisticsComponent } from './kg-statistics/kg-statistics.component';
 import { TermsOfServiceComponent } from './users/components/terms-of-service.component';
 import { WorkspaceComponent } from './workspace.component';
 import { WorkspaceWelcomeComponent } from './workspace-welcome.component';
 import { UnloadConfirmationGuard } from './shared/guards/UnloadConfirmation.guard';
+import { MapBrowserComponent } from './drawing-tool/components/map-browser.component';
+import { MapEditorComponent } from './drawing-tool/components/map-editor/map-editor.component';
+import { MapViewComponent } from './drawing-tool/components/map-view.component';
 
 // TODO: Add an unprotected home page
 const routes: Routes = [
@@ -28,6 +30,23 @@ const routes: Routes = [
     component: LifelikeHomePageComponent,
     data: {
       title: 'Dashboard',
+      fontAwesomeIcon: 'home',
+    },
+  },
+  {
+    path: 'login',
+    component: LoginComponent,
+    canActivate: [LoginGuard],
+    data: {
+      title: 'Login',
+      fontAwesomeIcon: 'sign-in-alt',
+    },
+  },
+  {
+    path: 'terms-of-service',
+    component: TermsOfServiceComponent,
+    data: {
+      title: 'Terms of Service',
     },
   },
   {
@@ -36,11 +55,20 @@ const routes: Routes = [
     canActivate: [AdminGuard],
     data: {
       title: 'Administration',
+      fontAwesomeIcon: 'cog',
     },
   },
-  {path: 'neo4j-upload', component: UserFileImportComponent, canActivate: [AuthGuard]},
   {
-    path: 'neo4j-visualizer',
+    path: 'users/:user',
+    component: UserSettingsComponent,
+    canActivate: [AuthGuard],
+    data: {
+      title: 'Profile',
+      fontAwesomeIcon: 'user-circle',
+    },
+  },
+  {
+    path: 'kg-visualizer',
     component: VisualizationComponent,
     canActivate: [AuthGuard],
     data: {
@@ -48,12 +76,22 @@ const routes: Routes = [
       fontAwesomeIcon: 'search',
     },
   },
-  {path: 'login', component: LoginComponent, canActivate: [LoginGuard]},
-  {path: 'users/:user', component: UserSettingsComponent, canActivate: [AuthGuard]},
-  {path: 'terms-of-service', component: TermsOfServiceComponent},
-  {path: 'search', component: SearchCollectionPageComponent},
-  // Used as a work-around for navigation to work when navigating with
-  // changing queries
+  {
+    path: 'kg-visualizer/upload',
+    component: UserFileImportComponent,
+    canActivate: [AuthGuard],
+    data: {
+      title: 'KG Visualizer Upload',
+      fontAwesomeIcon: 'search',
+    },
+  },
+  {
+    path: 'search',
+    component: SearchCollectionPageComponent,
+    data: {
+      title: 'Search',
+    },
+  },
   {
     path: 'search/:redirect',
     component: SearchCollectionPageComponent,
@@ -62,40 +100,7 @@ const routes: Routes = [
     },
   },
   {
-    path: 'dt',
-    canActivate: [AuthGuard],
-    children: dtRoutes,
-    data: {
-      title: 'Knowledge Reconstruction',
-      fontAwesomeIcon: 'project-diagram',
-    },
-  },
-  {
-    path: 'pdf-viewer/:file_id',
-    component: PdfViewerComponent,
-    data: {
-      title: 'PDF Viewer',
-      fontAwesomeIcon: 'file-pdf',
-    },
-  },
-  {
-    path: 'file-browser',
-    component: FileBrowserComponent,
-    canActivate: [AuthGuard],
-    data: {
-      title: 'File Browser',
-      fontAwesomeIcon: 'folder',
-    },
-  },
-  {
-    path: 'kg-statistics',
-    component: KgStatisticsComponent,
-    data: {
-      fontAwesomeIcon: 'tachometer-alt',
-    },
-  },
-  {
-    path: 'workspace/:space_id',
+    path: 'workspaces/:space_id',
     component: WorkspaceComponent,
     data: {
       title: 'Knowledge Reconstruction Workspace',
@@ -110,6 +115,63 @@ const routes: Routes = [
       fontAwesomeIcon: 'question',
     },
   },
+  {
+    path: 'files',
+    component: FileBrowserComponent,
+    canActivate: [AuthGuard],
+    data: {
+      title: 'File Browser',
+      fontAwesomeIcon: 'folder',
+    },
+  },
+  {
+    path: 'files/:file_id',
+    component: FileViewComponent,
+    data: {
+      title: 'PDF Viewer',
+      fontAwesomeIcon: 'file-pdf',
+    },
+  },
+  {
+    path: 'maps',
+    component: MapBrowserComponent,
+    data: {
+      title: 'Map Browser',
+      fontAwesomeIcon: 'project-diagram',
+    },
+  },
+  {
+    path: 'maps/:hash_id/edit',
+    component: MapEditorComponent,
+    canDeactivate: [UnloadConfirmationGuard],
+    data: {
+      title: 'Map Editor',
+      fontAwesomeIcon: 'project-diagram',
+    },
+  },
+  {
+    path: 'maps/:hash_id',
+    component: MapViewComponent,
+    data: {
+      title: 'Map',
+      fontAwesomeIcon: 'project-diagram',
+    },
+  },
+  {
+    path: 'kg-statistics',
+    component: KgStatisticsComponent,
+    data: {
+      fontAwesomeIcon: 'tachometer-alt',
+    },
+  },
+  // Old links
+  {path: 'file-browser', redirectTo: '/files', pathMatch: 'full'},
+  {path: 'pdf-viewer/:file_id', redirectTo: '/files/:file_id', pathMatch: 'full'},
+  {path: 'dt/map', redirectTo: '/maps', pathMatch: 'full'},
+  {path: 'dt/map/:hash_id', redirectTo: '/maps/:hash_id', pathMatch: 'full'},
+  {path: 'dt/map/edit/:hash_id', redirectTo: '/maps/:hash_id/edit', pathMatch: 'full'},
+  {path: 'neo4j-upload', redirectTo: '/kg-visualizer/upload', pathMatch: 'full'},
+  {path: 'neo4j-visualizer', redirectTo: '/kg-visualizer', pathMatch: 'full'},
 ];
 
 @NgModule({
