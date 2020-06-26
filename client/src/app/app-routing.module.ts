@@ -17,7 +17,6 @@ import { UserSettingsComponent } from 'app/users/components/user-settings.compon
 import { KgStatisticsComponent } from './kg-statistics/kg-statistics.component';
 import { TermsOfServiceComponent } from './users/components/terms-of-service.component';
 import { WorkspaceComponent } from './workspace.component';
-import { WorkspaceWelcomeComponent } from './workspace-welcome.component';
 import { UnloadConfirmationGuard } from './shared/guards/UnloadConfirmation.guard';
 import { MapBrowserComponent } from './drawing-tool/components/map-browser.component';
 import { MapEditorComponent } from './drawing-tool/components/map-editor/map-editor.component';
@@ -106,14 +105,6 @@ const routes: Routes = [
       title: 'Knowledge Reconstruction Workspace',
     },
     canDeactivate: [UnloadConfirmationGuard],
-  },
-  {
-    path: 'welcome',
-    component: WorkspaceWelcomeComponent,
-    data: {
-      title: 'Choose Module',
-      fontAwesomeIcon: 'question',
-    },
   },
   {
     path: 'files',

@@ -33,10 +33,22 @@
                 </div>
               </div>
               <div class="mr-2 align-self-center">
-                <button class="btn btn-primary btn-sm" type="button" (click)="addTab(pane)"
-                        ngbTooltip="Create new tab">
-                  <i class="fa fa-fw fa-plus"></i>
-                </button>
+                <div ngbDropdown placement="bottom-right" container="body">
+                  <button type="button" class="btn btn-primary btn-sm" ngbDropdownToggle ngbTooltip="New Tab" container="body">
+                    <i class="fa fa-fw fa-plus"></i>
+                  </button>
+                  <div ngbDropdownMenu class="dropdown-menu">
+                    <a class="dropdown-item" (click)="addTab(pane, '/maps')">
+                      Maps
+                    </a>
+                    <a class="dropdown-item" (click)="addTab(pane, '/files')">
+                      Files
+                    </a>
+                    <a class="dropdown-item" (click)="addTab(pane, '/kg-visualizer')">
+                      KG Visualizer
+                    </a>
+                  </div>
+                </div>
               </div>
             </div>
 
