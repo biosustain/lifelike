@@ -30,10 +30,12 @@ import { SortLegendComponent } from './components/sort-legend.component';
 import { ConfirmDialogComponent } from './components/dialog/confirm-dialog.component';
 import { FormInputFeedbackComponent } from './components/form/form-input-feedback.component';
 import { BackgroundTaskProgressComponent } from './components/background-task-progress.component';
-import { FormRowComponent } from './form-row/form-row.component';
+import { FormRowComponent } from './components/form/form-row.component';
 import { ModalHeaderComponent } from './components/modal/modal-header.component';
 import { ModalBodyComponent } from './components/modal/modal-body.component';
 import { ModalFooterComponent } from './components/modal/modal-footer.component';
+import { LoadingIndicatorComponent } from './components/loading-indicator.component';
+import { ContentProgressComponent } from './components/content-progress.component';
 
 const components = [
   MessageDialogComponent,
@@ -50,6 +52,8 @@ const components = [
   ModalHeaderComponent,
   ModalBodyComponent,
   ModalFooterComponent,
+  ContentProgressComponent,
+  LoadingIndicatorComponent,
 ];
 
 @NgModule({

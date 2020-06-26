@@ -211,19 +211,22 @@ def get_file_info(id: str, project_name: str = ''):
 
     yield user, projects
 
-    row = db.session \
-        .query(
-        Files.id,
-        Files.file_id,
-        Files.filename,
-        Files.description,
-        Files.user_id,
-        AppUser.username,
-        Files.creation_date
-    ) \
-        .join(AppUser, Files.user_id == AppUser.id) \
-        .filter(Files.file_id == id, Files.project == projects.id) \
-        .one()
+    try:
+        row = db.session \
+            .query(Files.id,
+                   Files.file_id,
+                   Files.filename,
+                   Files.description,
+                   Files.user_id,
+                   AppUser.username,
+                   Files.creation_date
+                   ) \
+            .join(AppUser, Files.user_id == AppUser.id) \
+            .filter(Files.file_id == id, Files.project == projects.id) \
+            .one()
+    except NoResultFound:
+        raise RecordNotFoundException('Requested PDF file not found.')
+
     yield jsonify({
         'id': row.id,  # TODO: is this of any use?
         'file_id': row.file_id,
@@ -573,7 +576,7 @@ def delete_files(project_name: str = ''):
 
 def extract_doi(pdf_content: bytes, file_id: str = None, filename: str = None) -> Optional[str]:
     # Attempt 1: search through the first N bytes (most probably containing only metadata)
-    chunk = pdf_content[:2**17]
+    chunk = pdf_content[:2 ** 17]
     doi = search_doi(chunk)
     if doi is not None:
         return doi

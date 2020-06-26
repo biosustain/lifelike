@@ -1,0 +1,57 @@
+<div class="position-relative h-100 map-preview-container">
+  <ng-container *ngIf="(loadTask.status$ | async) as status">
+    <app-content-progress
+      [status]="status"
+      loadingText="Fetching map..."
+      errorText="The requested map could not be loaded.">
+    </app-content-progress>
+  </ng-container>
+
+  <div class="position-absolute w-100 h-100">
+    <div class="h-100">
+      <canvas #canvas class="graph-view"></canvas>
+    </div>
+
+    <div class="top-toolbar d-flex align-items-center" *ngIf="!infoPinned">
+      <div class="btn-group">
+        <button type="button" class="btn btn-secondary" (click)="infoPinned = !infoPinned"
+                ngbTooltip="Show description." placement="right">
+          <i class="fa fa-fw fa-angle-right"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="bottom-toolbar d-flex align-items-center">
+      <div class="btn-toolbar">
+        <div class="btn-group">
+          <button type="button" class="btn btn-secondary"
+                  ngbTooltip="Zoom to make the map fit if it doesn't fit"
+                  (click)="zoomToFit()">
+            <i class="fa fa-fw fa-expand"></i> Fit Map
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="detail-overlay" [class.pinned]="infoPinned" *ngIf="map != null">
+      <button type="button" class="close float-right" aria-label="Close"
+              (click)="infoPinned = false" *ngIf="infoPinned">
+        <span aria-hidden="true">&times;</span>
+      </button>
+      <div class="detail-overlay-description mb-2 text-truncate" *ngIf="titleVisible">
+        <h1>{{map.label}}</h1>
+      </div>
+      <div class="detail-overlay-properties text-muted">
+        <div class="text-truncate">
+          By {{map.author}}
+        </div>
+        <div class="text-truncate">
+          Modified {{map.date_modified | friendlyDateStr}}
+        </div>
+      </div>
+      <div class="detail-overlay-description mt-2">
+        {{map.description}}
+      </div>
+    </div>
+  </div>
+</div>
