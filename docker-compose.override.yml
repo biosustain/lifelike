@@ -1,0 +1,103 @@
+version: '3.8'
+
+services:
+    pgdatabase:
+        container_name: pg-database
+        command: postgres -c max_wal_size=2GB -c log_statement='all'
+        environment:
+            - POSTGRES_PASSWORD=postgres
+        ports:
+            - "5431:5432"
+
+    database:
+        container_name: n4j-database
+        environment:
+            - NEO4J_AUTH=neo4j/password
+        volumes:
+            - ./neo4j/data:/data
+            - ./neo4j/logs:/logs
+            - ./neo4j/import:/import
+            - ./neo4j/plugins:/plugins
+            - ./neo4j/backups:/backups
+        ports:
+            - "7474:7474"
+            - "7687:7687"
+
+    appserver:
+        container_name: n4j-appserver
+        command: [
+            '/usr/bin/env',
+            'bash',
+            'bin/wait-for-postgres',
+            'bin/wait-for-neo4j',
+            'bin/start-dev'
+        ]
+        ports:
+            - "5000:5000"
+        environment:
+            # Flask
+            - FLASK_APP=app
+            - FLASK_APP_CONFIG=Development
+            - FLASK_DEBUG=1
+            - FLASK_ENV=development
+            # Postgres
+            - POSTGRES_HOST=pgdatabase
+            - POSTGRES_PORT=5432
+            - POSTGRES_USER=postgres
+            - POSTGRES_PASSWORD=postgres
+            - POSTGRES_DB=postgres
+            # Neo4j
+            - NEO4J_HOST=n4j-database
+            - NEO4J_AUTH=neo4j/password
+            # Redis
+            - REDIS_HOST=redis
+            - REDIS_PORT=6379
+        stdin_open: true
+        volumes:
+            - ./appserver:/home/n4j
+        tty: true
+
+    client:
+        command: yarn dev-start
+        volumes:
+            - ./client:/home/node/client
+            # https://jdlm.info/articles/2019/09/06/lessons-building-node-app-docker.html
+            # Helps not overwrite the node_modules with host
+            - /home/node/client/node_modules
+        ports:
+            - "4200:4200"
+
+    cache-invalidator:
+        container_name: cache-invalidator
+        volumes:
+            - ./cache-invalidator:/app
+        environment:
+            - NEO4J_HOST=n4j-database
+            - NEO4J_AUTH=neo4j/password
+            - REDIS_HOST=redis
+            - REDIS_PORT=6379
+
+    elasticsearch:
+        container_name: n4j-elasticsearch
+        environment:
+            - discovery.type=single-node
+            - http.max_content_length=200mb  #allow 200mb of content to be sent for indexing
+            - bootstrap.memory_lock=true
+            - xpack.graph.enabled=false
+            - xpack.watcher.enabled=false
+            - xpack.license.self_generated.type=basic
+        ulimits:
+            memlock:
+                soft: -1
+                hard: -1
+        ports:
+            - "9200:9200"
+            - "9300:9300"
+
+    kibana:
+        container_name: n4j-kibana
+        ports:
+            - "5601:5601"
+        environment:
+            SERVER_NAME: localhost
+            ELASTICSEARCH_URL: http://elasticsearch:9200
