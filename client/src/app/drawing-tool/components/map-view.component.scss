@@ -1,4 +1,20 @@
-@import '../../../scss/variables';
+@import 'src/scss/variables';
+
+.graph-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.graph-view {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+}
 
 .top-toolbar {
   position: absolute;
@@ -32,6 +48,12 @@
   border-radius: $border-radius;
   border: 1px solid $border-color;
   transition: 0.2s ease opacity;
+
+  h1 {
+    margin: 0;
+    font-size: $font-size-lg;
+    font-weight: bold;
+  }
 }
 
 .detail-overlay-description {
