@@ -5,10 +5,10 @@ import { MetaDataService } from 'app/shared/services/metadata.service';
 import { BuildInfo } from 'app/interfaces';
 
 @Component({
-  selector: 'app-lifelike-homepage',
-  templateUrl: './lifelike-home.component.html',
+  selector: 'app-dashboard',
+  templateUrl: './dashboard.component.html',
 })
-export class LifelikeHomePageComponent {
+export class DashboardComponent {
   readonly buildInfo$: Observable<BuildInfo>;
 
   constructor(private readonly metadataService: MetaDataService) {
