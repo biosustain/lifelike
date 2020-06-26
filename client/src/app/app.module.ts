@@ -24,7 +24,6 @@ import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { WorkspaceComponent } from './workspace.component';
 import { WorkspaceOutletComponent } from './workspace-outlet.component';
 import { WorkspaceManager } from './shared/workspace-manager';
-import { WorkspaceWelcomeComponent } from './workspace-welcome.component';
 import { UnloadConfirmationGuard } from './shared/guards/UnloadConfirmation.guard';
 
 @NgModule({
@@ -32,7 +31,6 @@ import { UnloadConfirmationGuard } from './shared/guards/UnloadConfirmation.guar
     AppComponent,
     WorkspaceComponent,
     WorkspaceOutletComponent,
-    WorkspaceWelcomeComponent,
     KgStatisticsComponent,
   ],
   imports: [
