@@ -420,15 +420,17 @@ def get_project_image(project_id, format):
     return process(data_source, format)
 
 
-@bp.route('/projects/<string:project_id>/backup', methods=['GET'])
+@bp.route('/map/<string:hash_id>/backup', methods=['GET'])
 @auth.login_required
-def project_backup_get(project_id):
+def project_backup_get(hash_id):
     backup = ProjectBackup.query.filter_by(
-        project_id=project_id,
+        hash_id=hash_id,
         user_id=g.current_user.id,
     ).one_or_none()
     if backup is None:
         raise RecordNotFoundException('No backup found.')
+    current_app.logger.info(
+        f'User getting a backup: <{g.current_user.email}:{backup.hash_id}>')
     return {
         'id': backup.project_id,
         'label': backup.label,
@@ -442,12 +444,16 @@ def project_backup_get(project_id):
     }
 
 
-@bp.route('/projects/<string:project_id>/backup', methods=['POST'])
+@bp.route('/map/<string:hash_id_>/backup', methods=['POST'])
 @auth.login_required
 @use_kwargs(ProjectBackupSchema)
-def project_backup_post(project_id, **data):
+def project_backup_post(hash_id_, **data):
+    # `hash_id_` instead of `hash_id`, otherwise flask_apispec will:
+    # hash_id = data.pop('hash_id')
+    # hence replacing the URL parameter's value, which incidentally has the same
+    # name as one of `data`'s keys
     project = Project.query.filter_by(
-        id=project_id,
+        hash_id=hash_id_,
         user_id=g.current_user.id,
     ).one_or_none()
 
@@ -457,7 +463,7 @@ def project_backup_post(project_id, **data):
         raise NotAuthorizedException('Wrong project id or you do not own the project.')
 
     old_backup = ProjectBackup.query.filter_by(
-        project_id=project_id,
+        hash_id=hash_id_,
         user_id=g.current_user.id,
     ).one_or_none()
 
@@ -479,20 +485,20 @@ def project_backup_post(project_id, **data):
     db.session.commit()
 
     current_app.logger.info(
-        f'User added a backup: <{g.current_user.email}:{backup.project_id}>')
+        f'User added a backup: <{g.current_user.email}:{backup.hash_id}>')
     return ''
 
 
-@bp.route('/projects/<string:project_id>/backup', methods=['DELETE'])
+@bp.route('/map/<string:hash_id>/backup', methods=['DELETE'])
 @auth.login_required
-def project_backup_delete(project_id):
+def project_backup_delete(hash_id):
     backup = ProjectBackup.query.filter_by(
-        project_id=project_id,
+        hash_id=hash_id,
         user_id=g.current_user.id,
     ).one_or_none()
     if backup is not None:
         db.session.delete(backup)
         db.session.commit()
         current_app.logger.info(
-            f'User deleted a backup: <{g.current_user.email}:{backup.project_id}>')
+            f'User deleted a backup: <{g.current_user.email}:{backup.hash_id}>')
     return ''
