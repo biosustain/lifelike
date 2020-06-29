@@ -1,0 +1,33 @@
+services:
+    appserver:
+        expose:
+            - "5000"
+        env_file:
+            - ./.env
+        volumes:
+            - /mnt/disks/demo/lmdb_database/chemicals:/home/n4j/neo4japp/services/annotations/lmdb/chemicals
+            - /mnt/disks/demo/lmdb_database/compounds:/home/n4j/neo4japp/services/annotations/lmdb/compounds
+            - /mnt/disks/demo/lmdb_database/diseases:/home/n4j/neo4japp/services/annotations/lmdb/diseases
+            - /mnt/disks/demo/lmdb_database/genes:/home/n4j/neo4japp/services/annotations/lmdb/genes
+            - /mnt/disks/demo/lmdb_database/proteins:/home/n4j/neo4japp/services/annotations/lmdb/proteins
+            - /mnt/disks/demo/lmdb_database/species:/home/n4j/neo4japp/services/annotations/lmdb/species
+            - /mnt/disks/demo/lmdb_database/phenotypes:/home/n4j/neo4japp/services/annotations/lmdb/phenotypes
+        networks:
+            - frontend
+            - backend
+
+    webserver:
+        ports:
+            - 80:80
+        networks:
+            - frontend
+
+    cache-invalidator:
+        env_file:
+            - ./.env
+        networks:
+            - backend
+
+networks:
+    frontend:
+    backend:
