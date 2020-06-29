@@ -15,6 +15,13 @@
               "password_hash": "hai_password",
               "first_name": "Jim",
               "last_name": "Meloncholy"
+          },
+          {
+              "username": "user3",
+              "email": "user3@yahoo.com",
+              "password_hash": "hai_password",
+              "first_name": "Ditch",
+              "last_name": "Lasanga"
           }
         ]
     },
