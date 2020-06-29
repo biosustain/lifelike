@@ -636,7 +636,7 @@ class Neo4JService(GraphBaseDao):
                 from_id,
                 to_id,
                 description
-            ORDER BY snippet_count DESC, reference.publication.pub_year DESC
+            ORDER BY snippet_count DESC, coalesce(reference.publication.pub_year, -1) DESC
             SKIP $skip LIMIT $limit
             RETURN collect(reference) as references, from_id, to_id, description
         """

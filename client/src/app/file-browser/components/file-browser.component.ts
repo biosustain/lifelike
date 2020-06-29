@@ -1,24 +1,26 @@
-import { Component, Inject, Input, OnDestroy, OnInit } from '@angular/core';
-import { AbstractControl, FormControl, Validators } from '@angular/forms';
-import {Router} from '@angular/router';
-import {SelectionModel} from '@angular/cdk/collections';
-import {MatSnackBar} from '@angular/material/snack-bar';
-import {BehaviorSubject, Subscription, throwError} from 'rxjs';
-import {AnnotationStatus, PdfFile, UploadPayload, UploadType} from 'app/interfaces/pdf-files.interface';
-import {PdfFilesService} from 'app/shared/services/pdf-files.service';
-import {HttpEventType} from '@angular/common/http';
-import {Progress, ProgressMode} from 'app/interfaces/common-dialog.interface';
-import {ProgressDialog} from 'app/shared/services/progress-dialog.service';
-import {BackgroundTask} from 'app/shared/rxjs/background-task';
-import {NgbActiveModal, NgbModal} from '@ng-bootstrap/ng-bootstrap';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
+import { SelectionModel } from '@angular/cdk/collections';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { BehaviorSubject, Subscription, throwError } from 'rxjs';
+import { PdfFile, UploadPayload, UploadType } from 'app/interfaces/pdf-files.interface';
+import { PdfFilesService } from 'app/shared/services/pdf-files.service';
+import { HttpEventType } from '@angular/common/http';
+import { Progress, ProgressMode } from 'app/interfaces/common-dialog.interface';
+import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
+import { BackgroundTask } from 'app/shared/rxjs/background-task';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { FileDeleteDialogComponent } from './file-delete-dialog.component';
+import { FileUploadDialogComponent } from './file-upload-dialog.component';
+import { FileEditDialogComponent } from './file-edit-dialog.component';
+import { ErrorHandler } from '../../shared/services/error-handler.service';
 
 @Component({
   selector: 'app-file-browser',
   templateUrl: './file-browser.component.html',
-  styleUrls: ['./file-browser.component.scss'],
 })
 export class FileBrowserComponent implements OnInit, OnDestroy {
-  files: PdfFile[];
+  files: PdfFile[] = [];
   shownFiles: PdfFile[] = [];
   filterQuery = '';
   loadTask: BackgroundTask<void, PdfFile[]> = new BackgroundTask(() => this.pdf.getFiles());
@@ -26,35 +28,40 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
   selection = new SelectionModel<PdfFile>(true, []);
   isReannotating = false;
   uploadStarted = false;
+  lmdbsDates = {};
 
   constructor(
     private pdf: PdfFilesService,
     private router: Router,
     private snackBar: MatSnackBar,
-    private ngbModal: NgbModal,
+    private readonly modalService: NgbModal,
     private progressDialog: ProgressDialog,
+    private readonly errorHandler: ErrorHandler,
   ) {
   }
 
   ngOnInit() {
+    this.pdf.getLMDBsDates().subscribe(lmdbsDates => {
+      this.lmdbsDates = lmdbsDates;
+      this.updateAnnotationsStatus(this.files);
+    });
     this.loadTaskSubscription = this.loadTask.results$.subscribe(({
-                                                                    result: files
+                                                                    result: files,
                                                                   }) => {
         // We assume that fetched files are correctly annotated
-        files.forEach((file: PdfFile) => file.annotation_status = AnnotationStatus.Success);
-        this.files = files;
+        this.updateAnnotationsStatus(files);
         this.updateFilter();
-      }
+      },
     );
 
-    this.updateDataSource();
+    this.refresh();
   }
 
   ngOnDestroy(): void {
     this.loadTaskSubscription.unsubscribe();
   }
 
-  updateDataSource() {
+  refresh() {
     this.selection.clear();
     this.loadTask.update();
   }
@@ -109,98 +116,80 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
       progressObservable,
     });
 
-    this.pdf.uploadFile(data).subscribe(event => {
+    this.pdf.uploadFile(data).pipe(this.errorHandler.create()).subscribe(event => {
         if (event.type === HttpEventType.UploadProgress) {
           if (event.loaded >= event.total) {
             progressObservable.next(new Progress({
               mode: ProgressMode.Buffer,
               status: 'Creating annotations in file...',
-              value: event.loaded / event.total
+              value: event.loaded / event.total,
             }));
           } else {
             progressObservable.next(new Progress({
               mode: ProgressMode.Determinate,
               status: 'Uploading file...',
-              value: event.loaded / event.total
+              value: event.loaded / event.total,
             }));
           }
         } else if (event.type === HttpEventType.Response) {
           progressDialogRef.close();
           this.uploadStarted = false;
           this.snackBar.open(`File uploaded: ${event.body.filename}`, 'Close', {duration: 5000});
-          this.updateDataSource(); // updates the list on successful upload
+          this.refresh(); // updates the list on successful upload
         }
       },
       err => {
         progressDialogRef.close();
         this.uploadStarted = false;
         return throwError(err);
-      }
+      },
     );
   }
 
-  openFile(fileId: string) {
-    this.router.navigateByUrl(`pdf-viewer/${fileId}`);
-  }
-
-  deleteFiles() {
-    const ids: string[] = this.getSelectedShownFiles().map((file: PdfFile) => file.file_id);
-    this.pdf.deleteFiles(ids).subscribe(
+  deleteFiles(files) {
+    const ids: string[] = files.map((file: PdfFile) => file.file_id);
+    this.pdf.deleteFiles(ids).pipe(this.errorHandler.create()).subscribe(
       (res) => {
         let msg = 'Deletion completed';
         if (Object.values(res).includes('Not an owner')) { // check if any file was not owned by the current user
           msg = `${msg}, but one or more files could not be deleted because you are not the owner`;
         }
         this.snackBar.open(msg, 'Close', {duration: 10000});
-        this.updateDataSource(); // updates the list on successful deletion
+        this.refresh(); // updates the list on successful deletion
         console.log('deletion result', res);
       },
       err => {
         this.snackBar.open(`Deletion failed`, 'Close', {duration: 10000});
         console.error('deletion error', err);
-      }
+      },
     );
   }
 
   reannotate() {
     this.isReannotating = true;
-    const selected = this.getSelectedShownFiles();
-    const ids: string[] = selected.map((file: PdfFile) => {
-      file.annotation_status = AnnotationStatus.Loading;
-      return file.file_id;
-    });
+    const ids: string[] = this.selection.selected.map((file: PdfFile) => file.file_id);
     // Let's show some progress!
     const progressObservable = new BehaviorSubject<Progress>(new Progress({
       status: 'Re-creating annotations in file...',
       mode: ProgressMode.Buffer,
     }));
     const progressDialogRef = this.progressDialog.display({
-      title: `Reannotating file${selected.length === 1 ? '' : 's'}...`,
+      title: `Reannotating file${this.selection.selected.length === 1 ? '' : 's'}...`,
       progressObservable,
     });
-    this.pdf.reannotateFiles(ids).subscribe(
+    this.pdf.reannotateFiles(ids).pipe(this.errorHandler.create()).subscribe(
       (res) => {
-        for (const id of ids) {
-          // pick file by id
-          const file: PdfFile = this.files.find((f: PdfFile) => f.file_id === id);
-          // set its annotation status
-          file.annotation_status = res[id] === 'Annotated' ? AnnotationStatus.Success : AnnotationStatus.Failure;
-        }
+        this.refresh();
         this.isReannotating = false;
         this.snackBar.open(`Reannotation completed`, 'Close', {duration: 5000});
         progressDialogRef.close();
       },
       err => {
-        for (const id of ids) {
-          // pick file by id
-          const file: PdfFile = this.files.find((f: PdfFile) => f.file_id === id);
-          // mark it as failed
-          file.annotation_status = AnnotationStatus.Failure;
-        }
+        this.refresh();
         this.isReannotating = false;
         this.snackBar.open(`Reannotation failed`, 'Close', {duration: 10000});
         progressDialogRef.close();
-      }
+      },
     );
   }
 
@@ -213,27 +202,14 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
     this.shownFiles = this.filterQuery.length ? this.files.filter(file => file.filename.includes(this.filterQuery)) : this.files;
   }
 
-  openDeleteDialog() {
-    const dialogRef = this.ngbModal.open(DialogConfirmDeletionComponent);
-    dialogRef.componentInstance.files = this.selection.selected;
-
-    dialogRef.result.then(shouldDelete => {
-      if (shouldDelete) {
-        this.deleteFiles();
-      }
-    }, () => {
-    });
-  }
-
-  openUploadDialog() {
+  displayUploadDialog() {
     const uploadData: UploadPayload = {
       type: UploadType.Files,
       filename: '',
     };
 
-    const dialogRef = this.ngbModal.open(DialogUploadComponent);
+    const dialogRef = this.modalService.open(FileUploadDialogComponent);
     dialogRef.componentInstance.payload = uploadData;
-
     dialogRef.result.then((runUpload: boolean) => {
       if (runUpload) {
         this.upload(uploadData);
@@ -242,145 +218,59 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
     });
   }
 
-  openEditDialog(selected: PdfFile) {
-    const dialogRef = this.ngbModal.open(DialogEditFileComponent);
-    dialogRef.componentInstance.filename.setValue(selected.filename);
-    dialogRef.componentInstance.description.setValue(selected.description);
-
+  displayEditDialog(file: PdfFile = null) {
+    if (file == null) {
+      const selected = this.getSelectedShownFiles();
+      if (selected.length === 1) {
+        file = selected[0];
+      } else {
+        return null;
+      }
+    }
+    const dialogRef = this.modalService.open(FileEditDialogComponent);
+    dialogRef.componentInstance.file = file;
     dialogRef.result.then(data => {
       if (data) {
         this.pdf.updateFile(
-          selected.file_id,
+          file.file_id,
           data.filename,
-          data.description
+          data.description,
         ).subscribe(() => {
-          this.updateDataSource();
+          this.refresh();
         });
       }
-    });
-  }
-}
-
-@Component({
-  selector: 'app-dialog-confirm-deletion',
-  templateUrl: './dialog-confirm-deletion.html',
-})
-export class DialogConfirmDeletionComponent {
-  @Input() files;
-
-  constructor(public activeModal: NgbActiveModal) {
-  }
-}
-
-@Component({
-  selector: 'app-dialog-upload',
-  templateUrl: './dialog-upload.html',
-  styleUrls: ['./dialog-upload.scss'],
-})
-export class DialogUploadComponent implements OnInit, OnDestroy {
-  forbidUpload = true;
-  pickedFileName: string;
-  @Input() payload: UploadPayload; // to avoid writing this.data.payload everywhere
-
-  filename = new FormControl('');
-  filenameChange: Subscription;
-  url = new FormControl('');
-  urlChange: Subscription;
-
-  activeTab = 'upload';
-
-  constructor(public activeModal: NgbActiveModal) {
-  }
-
-  ngOnInit() {
-    // @ts-ignore
-    navigator.permissions.query({name: 'clipboard-read'}).then(result => {
-      if (result.state === 'granted' || result.state === 'prompt') {
-        // @ts-ignore
-        navigator.clipboard.readText().then(data => {
-          if (data.match(/^https?:\/\//i)) {
-            this.activeTab = 'url';
-            this.url.setValue(data);
-          }
-        });
-      }
-    });
-
-    this.filenameChange = this.filename.valueChanges.subscribe((value: string) => {
-      this.payload.filename = value;
-      this.validatePayload();
-    });
-    this.urlChange = this.url.valueChanges.subscribe((value: string) => {
-      this.payload.url = value;
-      this.filename.setValue(this.extractFilenameFromUrl(value));
-      this.validatePayload();
+    }, () => {
     });
   }
 
-  ngOnDestroy() {
-    this.filenameChange.unsubscribe();
-    this.urlChange.unsubscribe();
+  displayDeleteDialog() {
+    const files = [...this.getSelectedShownFiles()];
+    const dialogRef = this.modalService.open(FileDeleteDialogComponent);
+    dialogRef.componentInstance.files = files;
+    dialogRef.result.then(() => {
+      this.deleteFiles(files);
+    }, () => {
+    });
   }
 
-  /** Called upon picking a file from the Browse button */
-  onFilesPick(fileList: FileList) {
-    this.payload.files = this.transformFileList(fileList);
-    this.pickedFileName = fileList.length ? fileList[0].name : '';
-    this.filename.setValue(this.pickedFileName);
-    this.validatePayload();
+  private updateAnnotationsStatus(files: PdfFile[]) {
+    files.forEach((file: PdfFile) => {
+      file.annotations_date_tooltip = this.generateTooltipContent(file);
+    });
+    this.files = [...files];
   }
 
-  /** Validates if the Upload button should be enabled or disabled */
-  validatePayload() {
-    this.payload.type = this.activeTab === 'upload' ? UploadType.Files : UploadType.Url;
-    const filesIsOk = this.payload.files && this.payload.files.length > 0;
-    const filenameIsOk = this.payload.filename && this.payload.filename.length > 0;
-    const urlIsOk = this.payload.url && this.payload.url.length > 0;
-    if (this.activeTab === 'upload') {
-      this.forbidUpload = !filesIsOk;
-    } else { // UploadType.Url
-      this.forbidUpload = !(filenameIsOk && urlIsOk);
+  private generateTooltipContent(file: PdfFile): string {
+    const outdated = Array
+      .from(Object.entries(this.lmdbsDates))
+      .filter(([, date]: [string, string]) => Date.parse(date) >= Date.parse(file.annotations_date));
+    if (outdated.length === 0) {
+      return '';
     }
-  }
-
-  /** Transforms a FileList to a File[]
-   * Not sure why, but I can't pass a FileList back to the parent component
-   */
-  private transformFileList(fileList: FileList): File[] {
-    const files: File[] = [];
-    for (let i = 0; i < fileList.length; ++i) {
-      files.push(fileList.item(i));
-    }
-    return files;
-  }
-
-  /** Attempts to extract a filename from a URL */
-  private extractFilenameFromUrl(url: string): string {
-    return url.substring(url.lastIndexOf('/') + 1);
+    return outdated.reduce(
+      (tooltip: string, [name, date]: [string, string]) => `${tooltip}\n- ${name}, ${new Date(date).toDateString()}`,
+      'Outdated:',
+    );
   }
 }
 
-@Component({
-  selector: 'app-dialog-edit-file',
-  templateUrl: './dialog-edit-file.html',
-  styleUrls: ['./dialog-edit-file.scss'],
-})
-export class DialogEditFileComponent {
-  filename = new FormControl('', [
-    Validators.required,
-    (control: AbstractControl): {[key: string]: any} | null => { // validate against whitespace-only strings
-      const filename = control.value;
-      const forbidden = filename.trim().length <= 0;
-      return forbidden ? {forbiddenFilename: {value: filename}} : null;
-    },
-  ]);
-
-  description = new FormControl('');
-
-  returnPayload() {
-    return {
-      filename: this.filename.value,
-      description: this.description.value || '',
-    };
-  }
-}

@@ -1,0 +1,17 @@
+<div class="invalid-feedback d-block" *ngIf="control?.touched && control?.invalid">
+  <div *ngIf="control.hasError('required')">
+    This field is required.
+  </div>
+  <div *ngIf="control.hasError('minlength')">
+    Enter at least {{ control.getError('minlength').requiredLength }}
+    character{{ control.getError('minlength').requiredLength == 1 ? '' : 's' }}.
+  </div>
+  <div *ngIf="control.hasError('email')">
+    The provided email is not valid.
+  </div>
+  <ng-container *ngFor="let error of errors | keyvalue">
+    <div *ngIf="control.hasError(error.key)">
+      {{ error.value }}
+    </div>
+  </ng-container>
+</div>

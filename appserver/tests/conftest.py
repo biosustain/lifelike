@@ -310,7 +310,6 @@ def gas_gangrene_with_associations_and_references(
     penicillins_to_gas_gangrene_publication_node2 = Node(
         'Publication',
         id=2,
-        pub_year=2015
     )
 
     # Entity -> Association Relationships
