@@ -9,6 +9,6 @@ from .auth import (
 )
 from .drawing_tool import Project, ProjectBackup, ProjectSchema
 from .neo4j import GraphNode, GraphRelationship
-from .files import Files, FileContent
+from .files import Files, FileContent, LMDBsDates
 from .projects import Projects
 from .organism_match import OrganismGeneMatch
