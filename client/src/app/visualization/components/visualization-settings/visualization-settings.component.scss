@@ -1,5 +1,6 @@
 @import '~bootstrap/scss/functions';
 @import '~bootstrap/scss/variables';
+@import 'src/scss/variables';
 
 #settings-container {
   margin: $spacer $spacer 0 0;
@@ -11,12 +12,15 @@
 }
 
 #canvas-settings-button {
+  transition: color .25s linear;
   float: right;
   text-align: center;
+  color: $primary;
 }
 
 #canvas-settings-button:hover{
   cursor: pointer;
+  color: #6c757d
 }
 
 #settings-container.expanded {
