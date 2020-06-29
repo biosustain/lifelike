@@ -228,7 +228,7 @@ describe('VisualizationCanvasComponent', () => {
         } as GetReferenceTableDataResult;
 
         mockLegend = new Map<string, string[]>([
-            ['Chemical', ['#CD5D67', '#410B13']]
+            ['Mock Node', ['#CD5D67', '#410B13']]
         ]);
 
         mockValidSettingsFormValues = {
@@ -240,15 +240,7 @@ describe('VisualizationCanvasComponent', () => {
                 value: MAX_CLUSTER_ROWS,
                 valid: true,
             },
-            Chemical: {
-                value: true,
-                valid: true,
-            },
-            Gene: {
-                value: true,
-                valid: true,
-            },
-            Diseases: {
+            'Mock Node': {
                 value: true,
                 valid: true,
             },
@@ -294,15 +286,7 @@ describe('VisualizationCanvasComponent', () => {
                 value: 10,
                 valid: true,
             },
-            Chemical: {
-                value: true,
-                valid: true,
-            },
-            Gene: {
-                value: true,
-                valid: true,
-            },
-            Diseases: {
+            'Mock Node': {
                 value: true,
                 valid: true,
             },
@@ -322,15 +306,7 @@ describe('VisualizationCanvasComponent', () => {
                 value: 2,
                 valid: false,
             },
-            Chemical: {
-                value: true,
-                valid: false,
-            },
-            Gene: {
-                value: true,
-                valid: false,
-            },
-            Diseases: {
+            'Mock Node': {
                 value: true,
                 valid: false,
             },
