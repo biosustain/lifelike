@@ -11,7 +11,7 @@ import {
 } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
-import { BehaviorSubject, Subscription} from 'rxjs';
+import { BehaviorSubject, combineLatest, Observable, Subscription } from 'rxjs';
 import { DataFlowService, ProjectsService } from '../services';
 import { Project } from '../services/interfaces';
 
@@ -24,9 +24,10 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { MessageDialog } from '../../shared/services/message-dialog.service';
 import { MessageType } from '../../interfaces/message-dialog.interface';
 import { BackgroundTask } from '../../shared/rxjs/background-task';
-import { map } from 'rxjs/operators';
+import { map, startWith } from 'rxjs/operators';
 import { ErrorHandler } from '../../shared/services/error-handler.service';
 import { CopyKeyboardShortcut } from '../../graph-viewer/renderers/canvas/behaviors/copy-keyboard-shortcut';
+import { ObservableInput } from 'rxjs/src/internal/types';
 
 @Component({
   selector: 'app-map-view',
@@ -35,7 +36,7 @@ import { CopyKeyboardShortcut } from '../../graph-viewer/renderers/canvas/behavi
     './map-view.component.scss',
   ],
 })
-export class MapViewComponent implements OnInit, OnDestroy, AfterViewInit, ModuleAwareComponent {
+export class MapViewComponent<ExtraResult = void> implements OnInit, OnDestroy, AfterViewInit, ModuleAwareComponent {
   @Input() titleVisible = true;
 
   @Output() saveStateListener: EventEmitter<boolean> = new EventEmitter<boolean>();
@@ -48,7 +49,7 @@ export class MapViewComponent implements OnInit, OnDestroy, AfterViewInit, Modul
   pendingInitialize = false;
   infoPinned = true;
 
-  loadTask: BackgroundTask<string, Project>;
+  loadTask: BackgroundTask<string, [Project, ExtraResult]>;
   loadSubscription: Subscription;
 
   graphCanvas: CanvasGraphView;
@@ -71,21 +72,33 @@ export class MapViewComponent implements OnInit, OnDestroy, AfterViewInit, Modul
     readonly errorHandler: ErrorHandler,
   ) {
     this.loadTask = new BackgroundTask((hashId) => {
-      return this.projectService.serveProject(hashId).pipe(
-        errorHandler.create(),
-        // tslint:disable-next-line: no-string-literal
-        map(resp => resp['project'] as Project),
-        // TODO: This line is from the existing code and should be properly typed
+      return combineLatest([
+        this.projectService.serveProject(hashId).pipe(
+          // tslint:disable-next-line: no-string-literal
+          map(resp => resp['project'] as Project),
+          // TODO: This line is from the existing code and should be properly typed
+        ),
+        this.getExtraSource(),
+      ]).pipe(
+        this.errorHandler.create(),
       );
     });
 
-    this.loadSubscription = this.loadTask.results$.subscribe(({result, value}) => {
+    this.loadSubscription = this.loadTask.results$.subscribe(({result: [result, extra], value}) => {
       this.map = result;
+      this.handleExtra(extra);
     });
 
     if (this.route.snapshot.params.hash_id) {
       this.mapHashId = this.route.snapshot.params.hash_id;
     }
+  }
+
+  getExtraSource(): Observable<ExtraResult> {
+    return new BehaviorSubject(null);
+  }
+
+  handleExtra(data: ExtraResult) {
   }
 
   // ========================================
