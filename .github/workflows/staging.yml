@@ -51,37 +51,37 @@ jobs:
                 gcloud --quiet auth configure-docker
 
             - name: Build Appserver Image
-              uses: docker/build-push-action@v1
+              uses: whoan/docker-build-with-cache-action@v5
               with:
                 username: _json_key
                 password: ${{ secrets.GCE_SA_KEY }}
                 registry: gcr.io
-                repository: ${{ secrets.GCE_PROJECT }}/kg-appserver-staging
-                tags: ${{ github.sha }}, latest
-                path: ./appserver
-                dockerfile: ./appserver/Dockerfile.prod
+                image_name: ${{ secrets.GCE_PROJECT }}/kg-appserver-staging
+                image_tag: ${{ github.sha }}, latest
+                context: ./appserver
+                dockerfile: ./Dockerfile.prod
 
             - name: Build Client and Nginx Image
-              uses: docker/build-push-action@v1
+              uses: whoan/docker-build-with-cache-action@v5
               with:
                 username: _json_key
                 password: ${{ secrets.GCE_SA_KEY }}
                 registry: gcr.io
-                repository: ${{ secrets.GCE_PROJECT }}/kg-webserver-staging
-                tags: ${{ github.sha }}, latest
-                path: ./client
-                dockerfile: ./client/Dockerfile.staging
+                image_name: ${{ secrets.GCE_PROJECT }}/kg-webserver-staging
+                image_tag: ${{ github.sha }}, latest
+                context: ./client
+                dockerfile: ./Dockerfile.staging
 
             - name: Build Redis
-              uses: docker/build-push-action@v1
+              uses: whoan/docker-build-with-cache-action@v5
               with:
                 username: _json_key
                 password: ${{ secrets.GCE_SA_KEY }}
                 registry: gcr.io
-                repository: ${{ secrets.GCE_PROJECT }}/kg-cache-service-staging
-                tags: ${{ github.sha }}, latest
-                path: ./cache-invalidator
-                dockerfile: ./cache-invalidator/Dockerfile
+                image_name: ${{ secrets.GCE_PROJECT }}/kg-cache-service-staging
+                image_tag: ${{ github.sha }}, latest
+                context: ./cache-invalidator
+                dockerfile: ./Dockerfile
 
             - name: Deploy Setup
               run: |-
