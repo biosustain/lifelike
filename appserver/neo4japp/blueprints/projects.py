@@ -9,6 +9,7 @@ from flask import (
 from neo4japp.blueprints.auth import auth
 from neo4japp.blueprints.permissions import requires_project_role, requires_project_permission
 from neo4japp.database import db, get_projects_service
+from neo4japp.data_transfer_objects import DirectoryContent
 from neo4japp.exceptions import RecordNotFoundException, NotAuthorizedException
 from neo4japp.models import (
     AccessActionType,
@@ -31,7 +32,18 @@ def get_project(name):
     if projects is None:
         raise RecordNotFoundException(f'Project {name} not found')
 
-    return jsonify(dict(results=projects.to_dict())), 200
+    # Pull up directory id for project
+    dir = Directory.query.filter(
+        Directory.projects_id == projects.id,
+        Directory.directory_parent_id == None
+    ).first()
+
+    # Combine both dictionaries
+    results = {
+        **projects.to_dict(),
+        "directory": dir.to_dict()
+    }
+    return jsonify(dict(results=results)), 200
 
 
 @bp.route('/', methods=['GET'])
@@ -85,8 +97,6 @@ def get_project_collaborators(project_name: str = ''):
         AppUser.id,
         AppUser.username,
         AppRole.name,
-    ).filter(
-        AppUser.id == user.id
     ).join(
         projects_collaborator_role,
         projects_collaborator_role.c.appuser_id == AppUser.id
@@ -186,7 +196,12 @@ def get_top_level_directories(project_name: str = ''):
     yield user, projects
     ***ARANGO_USERNAME***_dir = proj_service.get_***ARANGO_USERNAME***_dir(projects)
     child_dirs = proj_service.get_immediate_child_dirs(projects, ***ARANGO_USERNAME***_dir)
-    yield jsonify(dict(results=[d.to_dict() for d in child_dirs]))
+    contents = DirectoryContent(
+        child_directories=[c.to_dict() for c in child_dirs],
+        files=[f.to_dict() for f in ***ARANGO_USERNAME***_dir.files],
+        maps=[m.to_dict() for m in ***ARANGO_USERNAME***_dir.project],
+    )
+    yield jsonify(dict(result=contents.to_dict()))
 
 
 @bp.route('/<string:project_name>/directories', methods=['POST'])
@@ -203,7 +218,9 @@ def add_directory(project_name: str = ''):
 
     data = request.get_json()
     dir_name = data['dirname']
+
     parent_dir = data.get('parentDir', None)
+    parent_dir = Directory.query.get(parent_dir)
 
     user = g.current_user
 
@@ -230,4 +247,9 @@ def get_child_directories(current_dir_id: int, project_name: str = ''):
     yield user, projects
     current_dir = Directory.query.get(current_dir_id)
     child_dirs = proj_service.get_immediate_child_dirs(projects, current_dir)
-    yield jsonify(dict(results=[d.to_dict() for d in child_dirs]))
+    contents = DirectoryContent(
+        child_directories=[c.to_dict() for c in child_dirs],
+        files=[f.to_dict() for f in current_dir.files],
+        maps=[m.to_dict() for m in current_dir.project],
+    )
+    yield jsonify(dict(result=contents.to_dict()))
