@@ -5,20 +5,29 @@ import { SharedModule } from 'app/shared/shared.module';
 import { AccountService } from 'app/users/services/account.service';
 import { AdminGuard } from './services/admin-guard.service';
 
-import { AdminPanelComponent } from './containers/admin-panel-page.component';
-import { CreateUserComponent } from './containers/create-user.component';
-import { ViewUsersComponent } from './containers/view-users.component';
+import { AdminPanelComponent } from './components/admin-panel.component';
+import { UserCreateDialogComponent } from './components/user-create-dialog.component';
+import { UserBrowserComponent } from './components/user-browser.component';
 
 const components = [
-    AdminPanelComponent,
-    CreateUserComponent,
-    ViewUsersComponent,
+  AdminPanelComponent,
+  UserCreateDialogComponent,
+  UserBrowserComponent,
 ];
 
 @NgModule({
-    imports: [SharedModule],
-    declarations: components,
-    providers: [AdminGuard, AccountService],
-    exports: components,
+  entryComponents: [
+    UserCreateDialogComponent,
+  ],
+  imports: [
+    SharedModule,
+  ],
+  declarations: components,
+  providers: [
+    AdminGuard,
+    AccountService,
+  ],
+  exports: components,
 })
-export class AdminModule {}
+export class AdminModule {
+}

@@ -1,0 +1,44 @@
+@import 'src/scss/variables';
+
+.graph-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.graph-view {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+}
+
+.palette-panel {
+  position: absolute;
+  left: $spacer;
+  bottom: $spacer;
+  width: 16rem;;
+  padding: 1rem;
+  z-index: 1;
+  overflow: auto;
+  max-height: calc(100vh - 7rem);
+  background: $white;
+  border: 1px solid $floating-toolbar-border-color;
+  border-radius: $floating-toolbar-border-radius;
+}
+
+.info-panel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 250px;
+  padding: 0.2rem;
+  z-index: 20;
+  overflow: auto;
+  background: $white;
+  border-left: 1px solid $gray-200;
+}

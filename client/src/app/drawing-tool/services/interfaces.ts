@@ -97,6 +97,9 @@ export interface Meta {
   isCustom?: boolean;
   allText?: string;
   links?: Links;
+  isExcluded?: boolean;
+  exclusionReason?: string;
+  exclusionComment?: string;
 }
 
 export interface Rect {
@@ -144,6 +147,12 @@ export interface Project {
   hash_id?: string;
   /** ID of the user who made the project */
   user_id?: number;
+}
+
+export interface AnnotationExclusionData {
+  id: string;
+  reason: string;
+  comment: string;
 }
 
 export const MAP_TYPE_ID = 'LifelikeKnowledgeMap/1';

@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { PdfViewerLibComponent } from './pdf-viewer-lib.component';
 import { AnnotationPanelComponent } from './annotation-panel/annotation-panel.component';
+import { ExclusionPanelComponent } from './exclusion-panel/exclusion-panel.component';
 
 import { PdfViewerModule } from './pdf-viewer/pdf-viewer.module';
 
@@ -13,9 +14,10 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatChipsModule, MatDialogModule, MatInputModule, MatSelectModule } from '@angular/material';
 import { MatButtonModule } from '@angular/material/button';
+import { MatRadioModule } from '@angular/material/radio';
 
 @NgModule({
-  declarations: [PdfViewerLibComponent, AnnotationPanelComponent],
+  declarations: [PdfViewerLibComponent, AnnotationPanelComponent, ExclusionPanelComponent],
   imports: [
     PdfViewerModule,
     CommonModule,
@@ -29,9 +31,10 @@ import { MatButtonModule } from '@angular/material/button';
     MatSelectModule,
     MatInputModule,
     FlexLayoutModule,
-    MatButtonModule
+    MatButtonModule,
+    MatRadioModule
   ],
-  entryComponents: [AnnotationPanelComponent],
+  entryComponents: [AnnotationPanelComponent, ExclusionPanelComponent],
   exports: [PdfViewerLibComponent]
 })
 export class PdfViewerLibModule {

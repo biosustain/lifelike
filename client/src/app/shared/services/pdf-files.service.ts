@@ -27,6 +27,13 @@ export class PdfFilesService {
     );
   }
 
+  getFileInfo(id: string): Observable<PdfFile> {
+    const options = {
+      headers: this.getAuthHeader(),
+    };
+    return this.http.get<PdfFile>(`${this.baseUrl}/${id}/info`, options);
+  }
+
   getFile(id: string): Observable<ArrayBuffer> {
     const options = {
       headers: this.getAuthHeader(),
@@ -76,5 +83,10 @@ export class PdfFilesService {
 
   private getAuthHeader() {
     return { Authorization: `Bearer ${this.auth.getAccessToken()}` };
+  }
+
+  getLMDBsDates(): Observable<object> {
+    const options = { headers: this.getAuthHeader() };
+    return this.http.get<object>(`${this.baseUrl}/lmdbs_dates`, options);
   }
 }
