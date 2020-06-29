@@ -1,5 +1,6 @@
 from neo4japp.database import db
 from neo4japp.models.common import RDBMSBase
+from sqlalchemy.orm import relationship
 
 
 class DomainULRsMap(RDBMSBase):
@@ -17,11 +18,15 @@ class AnnotationStyle(RDBMSBase):
     """
     id = db.Column(db.Integer, primary_key=True)
     label = db.Column(db.String(32), nullable=False)
-    color = db.Column(db.ForeignKey('color.id'), nullable=False)
+    color_id = db.Column(db.Integer, db.ForeignKey('color.id'), nullable=False)
+    color = relationship('Color', back_populates='annotations', primaryjoin="User.id == Post.user_id")
     icon_code = db.Column(db.String(32), nullable=True)
-    style_border = db.Column(db.ForeignKey('color.id'), nullable=True)
-    style_background = db.Column(db.ForeignKey('color.id'), nullable=True)
-    style_color = db.Column(db.ForeignKey('color.id'), nullable=True)
+    style_border_id = db.Column(db.Integer, db.ForeignKey('color.id'), nullable=True)
+    style_border = relationship('Color', back_populates='annotations_border')
+    style_background_id = db.Column(db.Integer, db.ForeignKey('color.id'), nullable=True)
+    style_background = relationship('Color', back_populates='annotations_background')
+    style_color_id = db.Column(db.Integer, db.ForeignKey('color.id'), nullable=True)
+    style_color = relationship('Color', back_populates='annotations_color')
 
     def get_as_json(self):
         return {
