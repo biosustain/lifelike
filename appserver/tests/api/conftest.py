@@ -12,7 +12,12 @@ from neo4japp.models import (
     Projects,
     FileContent,
     Files,
+    DomainULRsMap,
+    AnnotationStyle,
+    Color
 )
+
+from neo4japp.models import Color, AnnotationStyle
 
 
 @pytest.fixture(scope='function')
@@ -155,3 +160,23 @@ def user_client(client, test_user):
     """ Returns an authenticated client as well as the JWT information """
     auth = client.login_as_user('test@***ARANGO_DB_NAME***.bio', 'password')
     return client, auth
+
+
+@pytest.fixture(scope='function')
+def styles_fixture(client, session):
+    color = Color(
+        label='gene',
+        hexcode='#232323'
+    )
+    session.add(color)
+    session.flush()
+
+    style = AnnotationStyle(
+        label='gene',
+        color=color
+    )
+
+    session.add(style)
+    session.flush()
+
+    return style
