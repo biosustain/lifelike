@@ -71,7 +71,7 @@ export class ProjectsService {
    */
   public downloadProject(hashId) {
     return this.http.get(
-      this.baseUrl + `/map/download/${hashId}`,
+      `${this.baseUrl}/map/download/${hashId}`,
       this.createHttpOptions(true)
     );
   }
@@ -102,7 +102,7 @@ export class ProjectsService {
    */
   public serveProject(hashId) {
     return this.http.get(
-      this.baseUrl + `/map/${hashId}`,
+      `${this.baseUrl}/map/${hashId}`,
       this.createHttpOptions(true)
     );
   }
@@ -114,7 +114,7 @@ export class ProjectsService {
    */
   public pullCommunityProjects() {
     return this.http.get(
-      this.baseUrl + '/community',
+      `${this.baseUrl}/community`,
       this.createHttpOptions(true)
     );
   }
@@ -125,7 +125,7 @@ export class ProjectsService {
    */
   public canIEdit(hashId): Observable<any> {
     return this.http.get(
-      this.baseUrl + `/map/${hashId}/meta`,
+      `${this.baseUrl}/map/${hashId}/meta`,
       this.createHttpOptions(true)
     );
   }
@@ -136,7 +136,7 @@ export class ProjectsService {
    */
   public pullProjects(): Observable<any> {
     return this.http.get(
-      this.baseUrl + '/projects',
+      `${this.baseUrl}/projects`,
       this.createHttpOptions(true),
     );
   }
@@ -150,7 +150,7 @@ export class ProjectsService {
     community?: boolean,
   } = {}): Observable<any> {
     return this.http.post(
-      this.baseUrl + '/search',
+      `${this.baseUrl}/search`,
       {term, filters},
       this.createHttpOptions(true)
     );
@@ -162,7 +162,7 @@ export class ProjectsService {
    */
   public getPDF(project: Project): Observable<any> {
     return this.http.get(
-      this.baseUrl + `/projects/${project.id}/pdf`,
+      `${this.baseUrl}/projects/${project.id}/pdf`,
       this.createHttpOptions(true, true)
     );
   }
@@ -173,7 +173,7 @@ export class ProjectsService {
    */
   public getSVG(project: Project): Observable<any> {
     return this.http.get(
-      this.baseUrl + `/projects/${project.id}/svg`,
+      `${this.baseUrl}/projects/${project.id}/svg`,
       this.createHttpOptions(true, true)
     );
   }
@@ -184,7 +184,7 @@ export class ProjectsService {
    */
   public getPNG(project: Project): Observable<any> {
     return this.http.get(
-      this.baseUrl + `/projects/${project.id}/png`,
+      `${this.baseUrl}/projects/${project.id}/png`,
       this.createHttpOptions(true, true)
     );
   }
@@ -195,7 +195,7 @@ export class ProjectsService {
    */
   public addProject(project: Project): Observable<any> {
     return this.http.post(
-      this.baseUrl + '/projects',
+      `${this.baseUrl}/projects`,
       project,
       this.createHttpOptions(true)
     );
@@ -207,7 +207,7 @@ export class ProjectsService {
    */
   public updateProject(project: Project): Observable<any> {
     return this.http.put(
-      this.baseUrl + `/projects/${project.id}`,
+      `${this.baseUrl}/projects/${project.id}`,
       project,
       this.createHttpOptions(true)
     );
@@ -219,7 +219,29 @@ export class ProjectsService {
    */
   public deleteProject(project: Project): Observable<any> {
     return this.http.delete(
-      this.baseUrl + `/projects/${project.id}`,
+      `${this.baseUrl}/projects/${project.id}`,
+      this.createHttpOptions(true)
+    );
+  }
+
+  public downloadProjectBackup(hashId: string): Observable<any> {
+    return this.http.get(
+      `${this.baseUrl}/map/${hashId}/backup`,
+      this.createHttpOptions(true)
+    );
+  }
+
+  public uploadProjectBackup(project: Project): Observable<any> {
+    return this.http.post(
+      `${this.baseUrl}/map/${project.hash_id}/backup`,
+      project,
+      this.createHttpOptions(true)
+    );
+  }
+
+  public deleteProjectBackup(hashId: string): Observable<any> {
+    return this.http.delete(
+      `${this.baseUrl}/map/${hashId}/backup`,
       this.createHttpOptions(true)
     );
   }
