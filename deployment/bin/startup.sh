@@ -58,7 +58,6 @@ then
     sudo docker pull gcr.io/$PROJECT_ID/kg-appserver-staging:$DOCKER_TAG
     sudo docker pull gcr.io/$PROJECT_ID/kg-webserver-staging:$DOCKER_TAG
     sudo docker pull gcr.io/$PROJECT_ID/kg-cache-service-staging:$DOCKER_TAG
-    sudo gsutil cp gs://kg-secrets/docker-compose.staging.yml docker-compose.staging.yml
     sudo docker-compose -f docker-compose.staging.yml up -d
 fi
 
@@ -71,7 +70,6 @@ then
     sudo docker pull gcr.io/$PROJECT_ID/kg-appserver-demo:$DOCKER_TAG
     sudo docker pull gcr.io/$PROJECT_ID/kg-webserver-demo:$DOCKER_TAG
     sudo docker pull gcr.io/$PROJECT_ID/kg-cache-service-demo:$DOCKER_TAG
-    sudo gsutil cp gs://kg-secrets/docker-compose.demo.yml docker-compose.demo.yml
     sudo docker-compose -f docker-compose.demo.yml up -d
 fi
 
@@ -84,6 +82,5 @@ then
     sudo docker pull gcr.io/$PROJECT_ID/kg-appserver-prod:$DOCKER_TAG
     sudo docker pull gcr.io/$PROJECT_ID/kg-webserver-prod:$DOCKER_TAG
     sudo docker pull gcr.io/$PROJECT_ID/kg-cache-service-prod:$DOCKER_TAG
-    sudo gsutil cp gs://kg-secrets/docker-compose.prod.yml docker-compose.prod.yml
     sudo docker-compose -f docker-compose.prod.yml up -d
 fi

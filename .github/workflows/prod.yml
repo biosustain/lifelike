@@ -108,6 +108,7 @@ jobs:
                 gsutil cp prod.env gs://kg-secrets
                 gcloud compute scp prod.env root@$GCE_INSTANCE:/srv/.env --zone $GCE_INSTANCE_ZONE
                 gcloud compute scp keyfile.json root@$GCE_INSTANCE:/srv --zone $GCE_INSTANCE_ZONE
+                gcloud compute scp docker-compose.prod.yml $GCE_INSTANCE:/srv --zone $GCE_INSTANCE_ZONE
                 gcloud compute scp ./deployment/bin/startup.sh root@$GCE_INSTANCE:/srv --zone $GCE_INSTANCE_ZONE
                 gcloud compute scp ./deployment/bin/migration-manager.sh root@$GCE_INSTANCE:/srv --zone $GCE_INSTANCE_ZONE
                 gcloud compute ssh root@$GCE_INSTANCE --zone $GCE_INSTANCE_ZONE --command='chmod a+x /srv/startup.sh';
