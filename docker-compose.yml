@@ -3,35 +3,20 @@ version: '3.8'
 services:
     pgdatabase:
         image: postgres:11
-        networks:
-            - backend
 
     database:
         build: ./neo4j
-        networks:
-            - backend
 
     appserver:
         image: ${REGISTRY:-gcr.io/able-goods-221820}/kg-appserver-prod:${GITHUB_HASH:-latest}
         build: ./appserver
-        networks:
-            - frontend
-            - backend
         depends_on:
             - database
             - pgdatabase
             - redis
 
-    client:
-        container_name: n4j-client
-        build: ./client
-        networks:
-            - frontend
-
     redis:
         image: redis:6.0.3-alpine
-        networks:
-            - backend
 
     cache-invalidator:
         image: ${REGISTRY:-gcr.io/able-goods-221820}/kg-cache-service-prod:${GITHUB_HASH:-latest}
@@ -45,16 +30,8 @@ services:
         build:
             dockerfile: Dockerfile
             context: elasticsearch
-        networks:
-            - backend
 
     kibana:
         image: docker.elastic.co/kibana/kibana:7.2.0
         depends_on:
             - elasticsearch
-        networks:
-            - backend
-
-networks:
-    frontend:
-    backend:
