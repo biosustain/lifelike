@@ -212,7 +212,7 @@ export class VisualizationComponent implements OnInit, OnDestroy {
         this.loadingClustersDialogRef = this.dialog.open(LoadingClustersDialogComponent, {
             disableClose: true,
             width: '240px',
-            height: '180px',
+            height: '120px',
         });
     }
 
