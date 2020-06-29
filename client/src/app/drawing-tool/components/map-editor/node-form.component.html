@@ -3,7 +3,7 @@
     Node Label:
   </label>
   <input [(ngModel)]="node.display_name" class="form-control" (change)="doSave()" id="label"
-  maxlength="2000">
+         maxlength="2000">
 </div>
 
 <div class="form-group">
@@ -57,12 +57,13 @@
   </div>
 
   <div class="form-group d-flex align-items-center">
-    <label for="fill-color" class="my-0 mr-2" ngbTooltip="Text color">
+    <label class="my-0 mr-2" ngbTooltip="Text color">
       <i class="fa fa-fw fa-fill"></i>
     </label>
-    <input type="color"
-           [(ngModel)]="node.style.fillColor" class="form-control mr-1" (change)="doSave()" id="fill-color"
-           [style.width]="'5rem'">
+    <app-color-chooser-component
+      id="fill-color" [palette]="paletteChoices"
+      [(color)]="node.style.fillColor" emptyLabel="Default"
+      (colorChange)="doSave()"></app-color-chooser-component>
   </div>
 
 </fieldset>
@@ -74,9 +75,10 @@
     <label for="stroke-color" class="my-0 mr-2" ngbTooltip="Border color">
       <i class="fa fa-fw fa-fill"></i>
     </label>
-    <input type="color"
-           [(ngModel)]="node.style.strokeColor" class="form-control mr-1" (change)="doSave()" id="stroke-color"
-           [style.width]="'5rem'">
+    <app-color-chooser-component
+      id="stroke-color" [palette]="paletteChoices"
+      [(color)]="node.style.strokeColor" emptyLabel="Default"
+      (colorChange)="doSave()"></app-color-chooser-component>
   </div>
 
   <div class="form-group d-flex align-items-center">
@@ -100,12 +102,14 @@
   </div>
 </fieldset>
 
-<div *ngIf="node.data.source" class="mb2">
-  <button *ngIf="node.data.source" mat-stroked-button color="primary" (click)="goToSource()" class="w-100">
-    Go to Source
+<div class="mt-4">
+  <div *ngIf="node.data.source" class="mb-2">
+    <button *ngIf="node.data.source" type="button" class="btn btn-outline-secondary btn-block" (click)="goToSource()">
+      Go to Source
+    </button>
+  </div>
+
+  <button (click)="doDelete()" type="button" class="btn btn-danger btn-block">
+    Delete
   </button>
 </div>
-
-<button (click)="doDelete()" mat-stroked-button color="warn" class="w-100">
-  Delete
-</button>
