@@ -303,6 +303,63 @@ def escherichia_coli_pdf_lmdb_setup(app, request):
 
 
 @pytest.fixture(scope='function')
+def human_rat_gene_lmdb_setup(app, request):
+    # Create gene data
+    edem3 = lmdb_gene_factory(
+        gene_id='289085',
+        id_type=DatabaseType.Ncbi.value,
+        name='Edem3',
+        synonym='Edem3',
+        category=OrganismCategory.Eukaryota.value,
+    )
+
+    edem3_caps = lmdb_gene_factory(
+        gene_id='80267',
+        id_type=DatabaseType.Ncbi.value,
+        name='EDEM3',
+        synonym='EDEM3',
+        category=OrganismCategory.Eukaryota.value,
+    )
+
+    # Create species data
+    human = lmdb_species_factory(
+        tax_id='9606',
+        category=OrganismCategory.Eukaryota.value,
+        id_type=DatabaseType.Ncbi.value,
+        name='human',
+        synonym='human',
+    )
+
+    rat = lmdb_species_factory(
+        tax_id='10116',
+        category=OrganismCategory.Eukaryota.value,
+        id_type=DatabaseType.Ncbi.value,
+        name='rat',
+        synonym='rat',
+    )
+
+    entities = [
+        (CHEMICAL_LMDB, 'chemicals', []),
+        (COMPOUND_LMDB, 'compounds', []),
+        (DISEASE_LMDB, 'diseases', []),
+        (GENE_LMDB, 'genes', [edem3, edem3_caps]),
+        (PHENOTYPE_LMDB, 'phenotypes', []),
+        (PROTEIN_LMDB, 'proteins', []),
+        (SPECIES_LMDB, 'species', [human, rat]),
+    ]
+    for db_name, entity, data in entities:
+        create_entity_lmdb(f'lmdb/{entity}', db_name, data)
+
+    def teardown():
+        for parent, subfolders, filenames in walk(path.join(directory, 'lmdb/')):
+            for fn in filenames:
+                if fn.lower().endswith('.mdb'):
+                    remove(path.join(parent, fn))
+
+    request.addfinalizer(teardown)
+
+
+@pytest.fixture(scope='function')
 def fish_gene_lmdb_setup(app, request):
     # Create gene data
     IL7 = lmdb_gene_factory(
@@ -416,6 +473,18 @@ def mock_get_gene_to_organism_match_result_for_fish_gene(monkeypatch):
 def mock_get_gene_to_organism_match_result_for_human_gene_pdf(monkeypatch):
     def get_match_result(*args, **kwargs):
         return {'ACE2': {'9606': '59272'}}
+
+    monkeypatch.setattr(
+        HybridNeo4jPostgresService,
+        'get_gene_to_organism_match_result',
+        get_match_result,
+    )
+
+
+@pytest.fixture(scope='function')
+def mock_get_gene_to_organism_match_result_for_human_rat_gene(monkeypatch):
+    def get_match_result(*args, **kwargs):
+        return {'EDEM3': {'9606': '80267'}, 'Edem3': {'10116': '289085'}}
 
     monkeypatch.setattr(
         HybridNeo4jPostgresService,

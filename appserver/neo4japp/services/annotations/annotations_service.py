@@ -601,11 +601,26 @@ class AnnotationsService:
                 matched_organism_ids=list(self.organism_frequency.keys()),
             )
 
+        fixed_gene_organism_matches: Dict[str, Dict[str, str]] = {}
+
+        # some genes have identical spelling except for captialization
+        # this can cause some important genes that we want
+        # to identify to be lost when we fix conflicting intervals
+        # so lowercase since it shouldn't matter at this point
+        # after we already have the results from the KG
+        for k, v in gene_organism_matches.items():
+            key = k.lower()
+            if key in fixed_gene_organism_matches:
+                existing_dict = fixed_gene_organism_matches[key]
+                fixed_gene_organism_matches[key] = {**existing_dict, **v}
+            else:
+                fixed_gene_organism_matches[key] = v
+
         for entity, token_positions in entity_tokenpos_pairs:
             if entity['name'] in gene_organism_matches:
                 gene_id, organism_id = self._get_closest_gene_organism_pair(
                     gene_position=token_positions,
-                    organism_matches=gene_organism_matches[entity['name']]
+                    organism_matches=fixed_gene_organism_matches[entity['name'].lower()]
                 )
 
                 category = self.organism_categories[organism_id]
@@ -876,12 +891,15 @@ class AnnotationsService:
                 # if the matched keyword from LMDB is all caps
                 # check if the text from document is also all caps
                 # e.g `impact` matching to `IMPACT`
-                if annotation.keyword.isupper():
-                    if text_in_document == annotation.keyword:
-                        fixed_annotations.append(annotation)
+                # TODO: do we want to keep this rule?
+                # it will remove certain genes that we
+                # may want - ORBF, ORBF10, etc
+                # if annotation.keyword.isupper():
+                #     if text_in_document == annotation.keyword:
+                #         fixed_annotations.append(annotation)
                 # len(text_in_document) == LOWERCASE_FIRST_LETTER_UPPERCASE_LAST_LETTER_GENE_LENGTH
                 # does this only apply to genes with specific length?
-                elif isinstance(annotation.meta, GeneAnnotation.GeneMeta) and \
+                if isinstance(annotation.meta, GeneAnnotation.GeneMeta) and \
                         annotation.meta.category == OrganismCategory.Bacteria.value:
                     # bacteria genes are in the from of cysB, algA, deaD, etc
                     # doe not check first letter to account for when the
