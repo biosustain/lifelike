@@ -56,9 +56,9 @@ jobs:
                 password: ${{ secrets.GCE_SA_KEY }}
                 registry: gcr.io
                 image_name: ${{ secrets.GCE_PROJECT }}/kg-appserver-demo
-                tags: ${{ github.sha }}, latest
-                path: ./appserver
-                dockerfile: ./appserver/Dockerfile.prod
+                image_tag: ${{ github.sha }}, latest
+                context: ./appserver
+                dockerfile: ./Dockerfile.prod
 
             - name: Build Client and Nginx Image
               uses: whoan/docker-build-with-cache-action@v5
@@ -67,9 +67,9 @@ jobs:
                 password: ${{ secrets.GCE_SA_KEY }}
                 registry: gcr.io
                 image_name: ${{ secrets.GCE_PROJECT }}/kg-webserver-demo
-                tags: ${{ github.sha }}, latest
-                path: ./client
-                dockerfile: ./client/Dockerfile.demo
+                image_tag: ${{ github.sha }}, latest
+                context: ./client
+                dockerfile: ./Dockerfile.demo
 
             - name: Build Redis
               uses: whoan/docker-build-with-cache-action@v5
@@ -78,9 +78,9 @@ jobs:
                 password: ${{ secrets.GCE_SA_KEY }}
                 registry: gcr.io
                 image_name: ${{ secrets.GCE_PROJECT }}/kg-cache-service-demo
-                tags: ${{ github.sha }}, latest
-                path: ./cache-invalidator
-                dockerfile: ./cache-invalidator/Dockerfile
+                image_tag: ${{ github.sha }}, latest
+                context: ./cache-invalidator
+                dockerfile: ./Dockerfile
 
             - name: Deploy Setup
               run: |-
