@@ -1,0 +1,96 @@
+<form [formGroup]='collabForm'>
+  <div>
+    <div class="modal-header">
+      <h4 class="modal-title text-truncate blue b">
+        {{project.projectName}}
+      </h4>
+    </div>
+
+    <div class="modal-body">
+      <div *ngIf='project?.description'>
+        <h5 class='blue b'>Description</h5>
+        <p>
+          {{project.description}}
+        </p>
+      </div>
+
+      <div class='collab-title'>
+        <h5 class='blue b'>Collaborators</h5>
+        <i (click)='addCollabForm()' class="dim fas fa-lg fa-plus"></i>
+      </div>
+
+      <div
+        formArrayName='pendingCollabs'
+        *ngFor='let c of pendingCollabs.controls; let i = index;'>
+        <div [formGroupName]='i' class='collab-form'>
+          <div class="form-group username-input">
+            <input 
+              formControlName='username'
+              placeholder='Add user by username'
+              class="form-control"
+              maxlength="2000">
+          </div>
+          <div class="form-group role-input">
+            <select
+              formControlName='role'
+              class="custom-select" id="type">
+              <option
+                *ngFor="let r of userRoles"
+                [value]="r.value">
+                {{r.label}}
+              </option>
+            </select>
+          </div>
+          <button
+            type="submit"
+            class="btn btn-outline-danger remove"
+            (click)="removeCollabForm(i)">
+            <i class='fas fa-minus'></i>
+          </button>
+          <button
+            type="submit"
+            class="btn btn-primary add"
+            (click)="addCollaborator(i)">
+            <i class='fas fa-plus'></i>
+          </button>
+        </div>
+      </div>
+
+      <div 
+        formArrayName='currentCollabs'
+        *ngFor='let c of currentCollabs.controls; let i = index;'>
+        <div [formGroupName]='i' class='collab-row'>
+
+          <div class='bg-blue white avatar'>
+            <p>{{ collabs[i]?.username | projectTitleAcronym : 1}}</p>
+          </div>
+
+          <p class='username'>{{ collabs[i]?.username }}</p>
+
+          <div class="form-group">
+            <select
+              formControlName='role'
+              class="custom-select" id="type">
+              <option *ngFor="let role of userRoles" [value]="role.value">
+                {{role?.label}}
+              </option>
+            </select>
+          </div>      
+
+        </div>
+      </div>
+
+
+
+    </div>
+
+    <div class="modal-footer">
+      <button
+        type="submit"
+        class="btn btn-primary"
+        (click)="doNothing()">
+        Done
+      </button>
+    </div>
+  </div>
+<form>

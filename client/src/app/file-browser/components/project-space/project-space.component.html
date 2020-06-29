@@ -1,0 +1,55 @@
+<div class="module module-centered">
+  <div class="module-header-container">
+    <div class="module-header">
+      <div class="module-title silver">
+        Projects
+      </div>
+    </div>
+  </div>
+
+  <div class="module-body">
+    <div class="mt-4 d-flex flex-wrap">
+      <!-- List Of Projects -->
+      <div *ngFor='let p of projects' class='tile-container'>
+        <div
+          (click)='goToProject(p)'
+          class='tile'>
+          <div
+            class='w-100 h-100 d-flex flex-column justify-content-center align-items-center'>
+            <p class='b blue f2 ma0'>
+              {{
+                p.projectName | projectTitleAcronym
+              }}
+            </p>
+          </div>
+          <div
+            style='position: absolute; top: 0; right: 0; z-index: 2;'>
+            <i
+              (click)='$event.stopPropagation(); editProject(p);'
+              class="ma3 fa fa-ellipsis-h silver hover-blue"
+              style='font-size: 1.2rem;'>
+            </i>
+          </div>
+        </div>
+        <p class='title'>
+          {{p.projectName | titlecase}}
+        </p>
+      </div>
+      <!-- Add Project -->
+      <div (click)='createProject()' id='add-project' class='tile-container'>
+        <div
+          class=tile>
+          <div class='w-100 h-100 d-flex flex-column justify-content-center align-items-center'>
+            <p class='b silver f2 ma0'>
+              +
+            </p>
+          </div>
+        </div>
+        <p
+          class='title'>
+          Add Project
+        </p>
+      </div>      
+    </div>
+  </div>
+</div>

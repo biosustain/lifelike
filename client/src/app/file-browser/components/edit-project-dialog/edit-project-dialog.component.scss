@@ -1,0 +1,69 @@
+.collab-title {
+
+  h5 {
+    width: fit-content;
+    display: inline-block;
+  }
+  i {
+    margin-top: 0.25rem;
+    float: right;
+    color: #3498DB;
+    cursor: pointer;
+  }
+}
+
+.collab-form {
+  margin-top: 1rem;
+  display: flex;
+  align-items: center;
+
+  .username-input {
+    margin-right: 1rem;
+  }
+
+  .role-input {
+    margin-right: 1rem;
+  }
+
+  .btn {
+    margin-bottom: auto;
+  }
+
+  .remove {
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+.collab-row {
+  display: flex;
+  margin-top: 1rem;
+
+  .avatar {
+    margin-right: 1rem;
+
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+  
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  
+    p {
+      margin: 0;
+    }
+  }
+
+  .username {
+    font-size: 1.2rem;
+    margin-bottom: 0;
+    margin-top: auto;
+    margin-right: auto;
+  }
+
+  .form-group {
+    margin-top: auto;
+    margin-bottom: 0;
+  }
+}
