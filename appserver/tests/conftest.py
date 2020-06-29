@@ -804,7 +804,8 @@ def gas_gangrene_treatment_cluster_node_edge_pairs(
         ReferenceTablePair(
             node=ReferenceTablePair.NodeData(
                 id=penicillins_duplicate_vis_node.id,
-                display_name=penicillins_duplicate_vis_node.display_name
+                display_name=penicillins_duplicate_vis_node.display_name,
+                label=penicillins_duplicate_vis_node.primary_label
             ),
             edge=ReferenceTablePair.EdgeData(
                 original_from=penicillins_to_gas_gangrene_treatment_as_duplicate_vis_edge.original_from,  # noqa
