@@ -1,0 +1,34 @@
+<form 
+  [formGroup]='form'
+  (submit)="submit(); $event.preventDefault()">
+  <div class="modal-header">
+    <h4 class="modal-title text-truncate blue b">
+      Create Project
+    </h4>
+  </div>
+
+  <div class="modal-body">
+    <div class="form-group">
+      <label for="nameInput">Name</label>
+      <input
+        formControlName='projectName'
+        type="text"
+        class="form-control"
+        [ngClass]='{"is-invalid": isInvalid}'
+        id="nameInput"
+        placeholder="">
+      <div class="invalid-feedback">
+        A name must be inputted before creating a project.
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="descriptionInput">Description</label>
+      <textarea formControlName='description' class="form-control" id="descriptionInput" rows="3" placeholder=""></textarea>
+    </div>
+  </div>
+
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-danger" (click)="doNothing()">Cancel</button>
+    <button type="submit" class="btn btn-primary">Submit</button>
+  </div>
+</form>
