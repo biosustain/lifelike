@@ -5,12 +5,13 @@ print_usage() {
     ================================= USAGE ====================================
     Used for updating LMDB files on server and updating the lmdbs_date db table.
 
-    -a          update all lmdb files
+    -a          update all lmdb files (pass None as argument)
     -n          <name: name of folder lmdb file is in>
     -c          <container id: id of the docker container>
 
     e.g. ->
-        ./fetch-new.sh -n chemicals
+        ./fetch-new.sh -n chemicals -c 1234
+        ./fetch-new.sh -a None -c 1234
 
     Current list of folders:
         chemicals
