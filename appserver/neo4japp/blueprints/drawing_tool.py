@@ -20,12 +20,14 @@ from neo4japp.blueprints.auth import auth
 from neo4japp.blueprints.permissions import requires_role
 from neo4japp.database import db
 from neo4japp.exceptions import InvalidFileNameException, RecordNotFoundException
-from neo4japp.models import Project, ProjectSchema
+from neo4japp.models import Project, ProjectBackup, ProjectSchema
 from neo4japp.constants import ANNOTATION_STYLES_DICT
+from neo4japp.schemas.drawing_tool import ProjectBackupSchema
 
 import graphviz as gv
 from PyPDF4 import PdfFileReader, PdfFileWriter
 from PyPDF4.generic import NameObject, ArrayObject
+from flask_apispec import use_kwargs
 
 
 bp = Blueprint('drawing_tool', __name__, url_prefix='/drawing-tool')
@@ -416,3 +418,87 @@ def get_project_image(project_id, format):
     ).first_or_404()
 
     return process(data_source, format)
+
+
+@bp.route('/map/<string:hash_id>/backup', methods=['GET'])
+@auth.login_required
+def project_backup_get(hash_id):
+    backup = ProjectBackup.query.filter_by(
+        hash_id=hash_id,
+        user_id=g.current_user.id,
+    ).one_or_none()
+    if backup is None:
+        raise RecordNotFoundException('No backup found.')
+    current_app.logger.info(
+        f'User getting a backup: <{g.current_user.email}:{backup.hash_id}>')
+    return {
+        'id': backup.project_id,
+        'label': backup.label,
+        'description': backup.description,
+        'date_modified': backup.date_modified,
+        'graph': backup.graph,
+        'author': backup.author,
+        'public': backup.public,
+        'user_id': backup.user_id,
+        'hash_id': backup.hash_id,
+    }
+
+
+@bp.route('/map/<string:hash_id_>/backup', methods=['POST'])
+@auth.login_required
+@use_kwargs(ProjectBackupSchema)
+def project_backup_post(hash_id_, **data):
+    # `hash_id_` instead of `hash_id`, otherwise flask_apispec will:
+    # hash_id = data.pop('hash_id')
+    # hence replacing the URL parameter's value, which incidentally has the same
+    # name as one of `data`'s keys
+    project = Project.query.filter_by(
+        hash_id=hash_id_,
+        user_id=g.current_user.id,
+    ).one_or_none()
+
+    # Make sure that the person who's trying to save a backup has access
+    # to the project
+    if project is None:
+        raise NotAuthorizedException('Wrong project id or you do not own the project.')
+
+    old_backup = ProjectBackup.query.filter_by(
+        hash_id=hash_id_,
+        user_id=g.current_user.id,
+    ).one_or_none()
+
+    if old_backup is not None:
+        db.session.delete(old_backup)
+
+    backup = ProjectBackup()
+    backup.project_id = data["id"]
+    backup.label = data["label"]
+    backup.description = data["description"]
+    backup.date_modified = data["date_modified"]
+    backup.graph = data["graph"]
+    backup.author = data["author"]
+    backup.public = data["public"]
+    backup.user_id = data["user_id"]
+    backup.hash_id = data["hash_id"]
+
+    db.session.add(backup)
+    db.session.commit()
+
+    current_app.logger.info(
+        f'User added a backup: <{g.current_user.email}:{backup.hash_id}>')
+    return ''
+
+
+@bp.route('/map/<string:hash_id>/backup', methods=['DELETE'])
+@auth.login_required
+def project_backup_delete(hash_id):
+    backup = ProjectBackup.query.filter_by(
+        hash_id=hash_id,
+        user_id=g.current_user.id,
+    ).one_or_none()
+    if backup is not None:
+        db.session.delete(backup)
+        db.session.commit()
+        current_app.logger.info(
+            f'User deleted a backup: <{g.current_user.email}:{backup.hash_id}>')
+    return ''

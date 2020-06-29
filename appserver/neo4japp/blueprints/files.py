@@ -15,7 +15,6 @@ from flask import Blueprint, current_app, request, jsonify, g, make_response
 from sqlalchemy.orm.exc import NoResultFound
 
 from werkzeug.datastructures import FileStorage
-from werkzeug.utils import secure_filename
 
 from neo4japp.blueprints.auth import auth
 from neo4japp.blueprints.permissions import requires_role
@@ -55,7 +54,7 @@ bp = Blueprint('files', __name__, url_prefix='/files')
 @bp.route('/upload', methods=['POST'])
 @auth.login_required
 def upload_pdf():
-    filename = secure_filename(request.form['filename'])
+    filename = request.form['filename'].strip()
     pdf = None
     if 'url' in request.form:
         url = request.form['url']
@@ -180,7 +179,6 @@ def get_pdf(id):
             raise RecordNotFoundException('Requested PDF file not found.')
         else:
             if filename and filename != file.filename:
-                filename = secure_filename(filename)
                 db.session.query(Files).filter(Files.file_id == id).update({
                     'filename': filename,
                 })
