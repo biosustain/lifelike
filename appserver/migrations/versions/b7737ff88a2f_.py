@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: fad7f19902f2
-Revises: dbf6e232ca92
-Create Date: 2020-06-11 13:52:16.063099
+Revision ID: b7737ff88a2f
+Revises: b6b9fb435404
+Create Date: 2020-06-26 11:00:29.044208
 
 """
 from alembic import context
@@ -11,8 +11,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'fad7f19902f2'
-down_revision = 'dbf6e232ca92'
+revision = 'b7737ff88a2f'
+down_revision = 'b6b9fb435404'
 branch_labels = None
 depends_on = None
 
@@ -34,15 +34,15 @@ def upgrade():
     op.create_table('annotation_style',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('label', sa.String(length=32), nullable=False),
-    sa.Column('color', sa.Integer(), nullable=False),
+    sa.Column('color_id', sa.Integer(), nullable=False),
     sa.Column('icon_code', sa.String(length=32), nullable=True),
-    sa.Column('style_border', sa.Integer(), nullable=True),
-    sa.Column('style_background', sa.Integer(), nullable=True),
-    sa.Column('style_color', sa.Integer(), nullable=True),
-    sa.ForeignKeyConstraint(['color'], ['color.id'], name=op.f('fk_annotation_style_color_color')),
-    sa.ForeignKeyConstraint(['style_background'], ['color.id'], name=op.f('fk_annotation_style_style_background_color')),
-    sa.ForeignKeyConstraint(['style_border'], ['color.id'], name=op.f('fk_annotation_style_style_border_color')),
-    sa.ForeignKeyConstraint(['style_color'], ['color.id'], name=op.f('fk_annotation_style_style_color_color')),
+    sa.Column('style_border_id', sa.Integer(), nullable=True),
+    sa.Column('style_background_id', sa.Integer(), nullable=True),
+    sa.Column('style_color_id', sa.Integer(), nullable=True),
+    sa.ForeignKeyConstraint(['color_id'], ['color.id'], name=op.f('fk_annotation_style_color_id_color')),
+    sa.ForeignKeyConstraint(['style_background_id'], ['color.id'], name=op.f('fk_annotation_style_style_background_id_color')),
+    sa.ForeignKeyConstraint(['style_border_id'], ['color.id'], name=op.f('fk_annotation_style_style_border_id_color')),
+    sa.ForeignKeyConstraint(['style_color_id'], ['color.id'], name=op.f('fk_annotation_style_style_color_id_color')),
     sa.PrimaryKeyConstraint('id', name=op.f('pk_annotation_style'))
     )
     # ### end Alembic commands ###

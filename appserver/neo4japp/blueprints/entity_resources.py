@@ -16,7 +16,7 @@ def get_style(annotation):
 @bp.route('/style', methods=['GET'])
 @auth.login_required
 def get_all_styles():
-    return [x.get_as_json for x in AnnotationStyle.query.all()]
+    return {'styles': [x.get_as_json() for x in AnnotationStyle.query.all()]}
 
 
 @bp.route('/uri', methods=['POST'])
