@@ -19,6 +19,7 @@ services:
             - backend
 
     webservers:
+        image: ${REGISTRY:-gcr.io/able-goods-221820}/kg-webserver-prod:${GITHUB_HASH:-latest}
         ports:
             - 80:80
             - 443:443

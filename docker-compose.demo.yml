@@ -1,5 +1,8 @@
+version: '3.8'
+
 services:
     appserver:
+        image: ${REGISTRY:-gcr.io/able-goods-221820}/kg-appserver-demo:${GITHUB_HASH:-latest}
         expose:
             - "5000"
         env_file:
@@ -17,12 +20,14 @@ services:
             - backend
 
     webserver:
+        image: ${REGISTRY:-gcr.io/able-goods-221820}/kg-webserver-demo:${GITHUB_HASH:-latest}
         ports:
             - 80:80
         networks:
             - frontend
 
     cache-invalidator:
+        image: ${REGISTRY:-gcr.io/able-goods-221820}/kg-cache-service-demo:${GITHUB_HASH:-latest}
         env_file:
             - ./.env
         networks:
