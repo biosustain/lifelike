@@ -1,8 +1,8 @@
 name: Demo (aka Sandbox) Deployment
 
 on:
-  pull_request:
-    types: [labeled]
+  push:
+    tags: [demo]
 
 env:
     POSTGRES_HOST: ${{ secrets.DEMO_POSTGRES_HOST }}
@@ -32,8 +32,6 @@ jobs:
 
         name: Setup, Build, Publish, and Deploy
         runs-on: ubuntu-latest
-
-        if: contains(github.event.pull_request.labels.*.name, 'demo')
 
         steps:
             - name: Checkout
