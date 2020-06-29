@@ -1045,3 +1045,63 @@ def test_gene_annotation_uses_id_from_knowledge_graph(
         # id should change to match KG
         # value from mock_get_gene_to_organism_match_result_for_fish_gene
         assert annotations[0].meta.id == '99999'
+
+
+@pytest.mark.parametrize(
+    'index, tokens',
+    [
+        (1, [
+                PDFTokenPositions(
+                    page_number=1,
+                    keyword='rat',
+                    char_positions={0: 'r', 1: 'a', 2: 't'},
+                ),
+                PDFTokenPositions(
+                    page_number=1,
+                    keyword='EDEM3',
+                    char_positions={4: 'E', 5: 'D', 6: 'E', 7: 'M', 8: '3'},
+                ),
+                PDFTokenPositions(
+                    page_number=1,
+                    keyword='Human',
+                    char_positions={10: 'H', 11: 'u', 12: 'm', 13: 'a', 14: 'n'},
+                ),
+        ]),
+    ],
+)
+def test_gene_annotation_human_vs_rat(
+    human_rat_gene_lmdb_setup,
+    mock_get_gene_to_organism_match_result_for_human_rat_gene,
+    index,
+    tokens,
+):
+    annotation_service = get_test_annotations_service(
+        genes_lmdb_path=path.join(directory, 'lmdb/genes'),
+        chemicals_lmdb_path=path.join(directory, 'lmdb/chemicals'),
+        compounds_lmdb_path=path.join(directory, 'lmdb/compounds'),
+        proteins_lmdb_path=path.join(directory, 'lmdb/proteins'),
+        species_lmdb_path=path.join(directory, 'lmdb/species'),
+        diseases_lmdb_path=path.join(directory, 'lmdb/diseases'),
+        phenotypes_lmdb_path=path.join(directory, 'lmdb/phenotypes'),
+    )
+
+    char_coord_objs_in_pdf = []
+    for t in tokens:
+        for c in t.keyword:
+            char_coord_objs_in_pdf.append(get_dummy_LTChar(text=c))
+        char_coord_objs_in_pdf.append(get_dummy_LTChar(text=' '))
+
+    annotations = annotation_service.create_annotations(
+        tokens=PDFTokenPositionsList(
+            token_positions=tokens,
+            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
+            cropbox_in_pdf=(5, 5),
+        ),
+    )
+
+    if index == 3:
+        for a in annotations:
+            if a.text_in_document == 'EDEM3':
+                # id should change to match KG
+                # value from mock_get_gene_to_organism_match_result_for_human_rat_gene
+                assert annotations[1].meta.id == '80267'
