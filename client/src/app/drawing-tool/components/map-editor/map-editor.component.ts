@@ -1,6 +1,6 @@
 import {
   Component,
-  HostListener, OnInit,
+  HostListener, OnDestroy, OnInit,
 } from '@angular/core';
 
 import { cloneDeep } from 'lodash';
@@ -17,8 +17,8 @@ import { DeleteKeyboardShortcut } from '../../../graph-viewer/renderers/canvas/b
 import { PasteKeyboardShortcut } from '../../../graph-viewer/renderers/canvas/behaviors/paste-keyboard-shortcut';
 import { HistoryKeyboardShortcuts } from '../../../graph-viewer/renderers/canvas/behaviors/history-keyboard-shortcuts';
 import { MapViewComponent } from '../map-view.component';
-import { asyncScheduler, from, Observable, throwError } from 'rxjs';
-import { catchError, switchMap, throttleTime } from 'rxjs/operators';
+import { from, Observable, Subscription, throwError } from 'rxjs';
+import { auditTime, catchError, switchMap} from 'rxjs/operators';
 import { HttpErrorResponse } from '@angular/common/http';
 import { MapRestoreDialogComponent } from '../map-restore-dialog.component';
 
@@ -27,18 +27,23 @@ import { MapRestoreDialogComponent } from '../map-restore-dialog.component';
   templateUrl: './map-editor.component.html',
   styleUrls: ['./map-editor.component.scss'],
 })
-export class MapEditorComponent extends MapViewComponent<Project> implements OnInit {
+export class MapEditorComponent extends MapViewComponent<Project> implements OnInit, OnDestroy {
   autoSaveDelay = 5000;
+  autoSaveSubscription: Subscription;
 
   ngOnInit() {
     super.ngOnInit();
 
-    this.unsavedChangesSubscription = this.unsavedChanges$.pipe(throttleTime(this.autoSaveDelay, asyncScheduler, {
-      leading: false,
-      trailing: true,
-    })).subscribe(() => {
-      this.saveBackup();
+    this.autoSaveSubscription = this.unsavedChanges$.pipe(auditTime(this.autoSaveDelay)).subscribe(changed => {
+      if (changed) {
+        this.saveBackup();
+      }
     });
+  }
+
+  ngOnDestroy() {
+    super.ngOnDestroy();
+    this.autoSaveSubscription.unsubscribe();
   }
 
   getExtraSource(): Observable<Project> {
@@ -83,11 +88,13 @@ export class MapEditorComponent extends MapViewComponent<Project> implements OnI
   }
 
   saveBackup() {
-    const backup = cloneDeep(this.map);
-    backup.date_modified = (new Date()).toISOString();
-    const observable = this.projectService.uploadProjectBackup(backup);
-    observable.subscribe();
-    return observable;
+    if (this.map) {
+      this.map.graph = this.graphCanvas.getGraph();
+      this.map.date_modified = new Date().toISOString();
+      const observable = this.projectService.uploadProjectBackup(cloneDeep(this.map));
+      observable.subscribe();
+      return observable;
+    }
   }
 
   @HostListener('window:beforeunload', ['$event'])
