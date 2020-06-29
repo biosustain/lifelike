@@ -9,6 +9,7 @@ import { Observable } from 'rxjs';
 
 import { AppUser } from 'app/interfaces';
 import { Title } from '@angular/platform-browser';
+import { NgbModalConfig } from '@ng-bootstrap/ng-bootstrap';
 
 /**
  * Root of the application that creates the left menu and the content section.
@@ -28,7 +29,10 @@ export class AppComponent {
     private readonly router: Router,
     private readonly activatedRoute: ActivatedRoute,
     private readonly titleService: Title,
+    private readonly ngbModalConfig: NgbModalConfig,
   ) {
+    this.ngbModalConfig.backdrop = 'static';
+
     this.loggedIn$ = store.pipe(select(AuthSelectors.selectAuthLoginState));
     this.appUser$ = store.pipe(select(AuthSelectors.selectAuthUser));
     this.userRoles$ = store.pipe(select(AuthSelectors.selectRoles));

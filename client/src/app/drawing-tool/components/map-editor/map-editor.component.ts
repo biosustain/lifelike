@@ -56,12 +56,14 @@ export class MapEditorComponent extends MapViewComponent<Project> implements OnI
   }
 
   handleExtra(backup: Project) {
-    this.modalService.open(MapRestoreDialogComponent).result.then(() => {
-      this.map = backup;
-      this.unsavedChanges$.next(true);
-    }, () => {
-      this.projectService.deleteProjectBackup(backup.hash_id).subscribe();
-    });
+    if (backup != null) {
+      this.modalService.open(MapRestoreDialogComponent).result.then(() => {
+        this.map = backup;
+        this.unsavedChanges$.next(true);
+      }, () => {
+        this.projectService.deleteProjectBackup(this.map.hash_id).subscribe();
+      });
+    }
   }
 
   registerGraphBehaviors() {
@@ -73,6 +75,11 @@ export class MapEditorComponent extends MapViewComponent<Project> implements OnI
     this.graphCanvas.behaviors.add('selection', new SelectableEntity(this.graphCanvas), 0);
     this.graphCanvas.behaviors.add('resize-handles', new HandleResizable(this.graphCanvas), 0);
     this.graphCanvas.behaviors.add('edge-creation', new InteractiveEdgeCreation(this.graphCanvas), 100);
+  }
+
+  save() {
+    super.save();
+    this.projectService.deleteProjectBackup(this.map.hash_id).subscribe();
   }
 
   saveBackup() {
