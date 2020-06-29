@@ -12,7 +12,7 @@ import {
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { BehaviorSubject, combineLatest, Observable, Subscription } from 'rxjs';
-import { DataFlowService, ProjectsService } from '../services';
+import { ProjectsService } from '../services';
 import { Project } from '../services/interfaces';
 
 import { MapExportDialogComponent } from './map-export-dialog.component';
@@ -36,7 +36,7 @@ import { ObservableInput } from 'rxjs/src/internal/types';
     './map-view.component.scss',
   ],
 })
-export class MapViewComponent<ExtraResult = void> implements OnInit, OnDestroy, AfterViewInit, ModuleAwareComponent {
+export class MapViewComponent<ExtraResult = void> implements OnDestroy, AfterViewInit, ModuleAwareComponent {
   @Input() titleVisible = true;
 
   @Output() saveStateListener: EventEmitter<boolean> = new EventEmitter<boolean>();
@@ -54,15 +54,12 @@ export class MapViewComponent<ExtraResult = void> implements OnInit, OnDestroy, 
 
   graphCanvas: CanvasGraphView;
 
-  formDataSubscription: Subscription;
-  selectionSubscription: Subscription;
   historyChangesSubscription: Subscription;
   unsavedChangesSubscription: Subscription;
 
   unsavedChanges$ = new BehaviorSubject<boolean>(false);
 
   constructor(
-    readonly dataFlow: DataFlowService,
     readonly projectService: ProjectsService,
     readonly snackBar: MatSnackBar,
     readonly modalService: NgbModal,
@@ -105,13 +102,6 @@ export class MapViewComponent<ExtraResult = void> implements OnInit, OnDestroy, 
   // Angular events
   // ========================================
 
-  ngOnInit() {
-    // Listen for graph update from info-panel-ui
-    this.formDataSubscription = this.dataFlow.formDataSource.subscribe(action => {
-      this.graphCanvas.execute(action);
-    });
-  }
-
   ngAfterViewInit() {
     const style = new KnowledgeMapStyle();
     this.graphCanvas = new CanvasGraphView(this.canvasChild.nativeElement as HTMLCanvasElement, {
@@ -124,15 +114,6 @@ export class MapViewComponent<ExtraResult = void> implements OnInit, OnDestroy, 
     this.graphCanvas.startParentFillResizeListener();
     this.ngZone.runOutsideAngular(() => {
       this.graphCanvas.startAnimationLoop();
-    });
-
-    // Pass selections onto the data flow system
-    this.selectionSubscription = this.graphCanvas.selection.changeObservable.subscribe(([selected, previousSelected]) => {
-      if (selected.length === 1) {
-        this.dataFlow.pushSelection(selected[0]);
-      } else {
-        this.dataFlow.pushSelection(null);
-      }
     });
 
     this.historyChangesSubscription = this.graphCanvas.historyChanges$.subscribe(() => {
@@ -189,8 +170,6 @@ export class MapViewComponent<ExtraResult = void> implements OnInit, OnDestroy, 
   }
 
   ngOnDestroy() {
-    this.formDataSubscription.unsubscribe();
-    this.selectionSubscription.unsubscribe();
     this.historyChangesSubscription.unsubscribe();
     this.unsavedChangesSubscription.unsubscribe();
     this.graphCanvas.destroy();
