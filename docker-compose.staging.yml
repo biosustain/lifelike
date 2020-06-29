@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+    appserver:
+        expose:
+            - "5000"
+        env_file:
+            - ./.env
+        volumes:
+            - /mnt/disks/kg-staging-persistent/lmdb/chemicals:/home/n4j/neo4japp/services/annotations/lmdb/chemicals
+            - /mnt/disks/kg-staging-persistent/lmdb/compounds:/home/n4j/neo4japp/services/annotations/lmdb/compounds
+            - /mnt/disks/kg-staging-persistent/lmdb/diseases:/home/n4j/neo4japp/services/annotations/lmdb/diseases
+            - /mnt/disks/kg-staging-persistent/lmdb/genes:/home/n4j/neo4japp/services/annotations/lmdb/genes
+            - /mnt/disks/kg-staging-persistent/lmdb/proteins:/home/n4j/neo4japp/services/annotations/lmdb/proteins
+            - /mnt/disks/kg-staging-persistent/lmdb/species:/home/n4j/neo4japp/services/annotations/lmdb/species
+            - /mnt/disks/kg-staging-persistent/lmdb/phenotypes:/home/n4j/neo4japp/services/annotations/lmdb/phenotypes
+        networks:
+            - frontend
+            - backend
+
+    webservers:
+        ports:
+            - 80:80
+            - 443:443
+        volumes:
+            - /docker/letsencrypt-docker-nginx/src/production/dh-param/dhparam-2048.pem:/etc/ssl/certs/dhparam-2048.pem
+            - /docker-volumes/etc/letsencrypt/live/test.***ARANGO_DB_NAME***.bio/fullchain.pem:/etc/letsencrypt/live/test.***ARANGO_DB_NAME***.bio/fullchain.pem
+            - /docker-volumes/etc/letsencrypt/live/test.***ARANGO_DB_NAME***.bio/privkey.pem:/etc/letsencrypt/live/test.***ARANGO_DB_NAME***.bio/privkey.pem
+        networks:
+            - frontend
+
+    cache-invalidator:
+        env_file:
+            - ./.env
+        networks:
+            - backend
+
+networks:
+    frontend:
+    backend:
