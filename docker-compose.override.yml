@@ -28,7 +28,7 @@ services:
             - backend
 
     appserver:
-        container_name: n4j-appserver
+        container_name: appserver
         command: [
             '/usr/bin/env',
             'bash',
@@ -65,7 +65,7 @@ services:
             - backend
 
     client:
-        container_name: n4j-client
+        container_name: client
         build: ./client
         command: yarn dev-start
         volumes:
@@ -93,7 +93,7 @@ services:
             - REDIS_PORT=6379
 
     elasticsearch:
-        container_name: n4j-elasticsearch
+        container_name: elasticsearch
         environment:
             - discovery.type=single-node
             - http.max_content_length=200mb  #allow 200mb of content to be sent for indexing
@@ -112,7 +112,7 @@ services:
             - backend
 
     kibana:
-        container_name: n4j-kibana
+        container_name: kibana
         ports:
             - "5601:5601"
         environment:
