@@ -8,6 +8,8 @@ services:
             - POSTGRES_PASSWORD=postgres
         ports:
             - "5431:5432"
+        networks:
+            - backend
 
     database:
         container_name: n4j-database
@@ -22,6 +24,8 @@ services:
         ports:
             - "7474:7474"
             - "7687:7687"
+        networks:
+            - backend
 
     appserver:
         container_name: n4j-appserver
@@ -56,8 +60,13 @@ services:
         volumes:
             - ./appserver:/home/n4j
         tty: true
+        networks:
+            - frontend
+            - backend
 
     client:
+        container_name: n4j-client
+        build: ./client
         command: yarn dev-start
         volumes:
             - ./client:/home/node/client
@@ -66,6 +75,12 @@ services:
             - /home/node/client/node_modules
         ports:
             - "4200:4200"
+        networks:
+            - frontend
+
+    redis:
+        networks:
+            - backend
 
     cache-invalidator:
         container_name: cache-invalidator
@@ -93,6 +108,8 @@ services:
         ports:
             - "9200:9200"
             - "9300:9300"
+        networks:
+            - backend
 
     kibana:
         container_name: n4j-kibana
@@ -101,3 +118,9 @@ services:
         environment:
             SERVER_NAME: localhost
             ELASTICSEARCH_URL: http://elasticsearch:9200
+        networks:
+            - backend
+
+networks:
+    frontend:
+    backend:
