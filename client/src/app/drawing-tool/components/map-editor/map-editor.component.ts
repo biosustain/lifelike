@@ -32,8 +32,6 @@ export class MapEditorComponent extends MapViewComponent<Project> implements OnI
   autoSaveSubscription: Subscription;
 
   ngOnInit() {
-    super.ngOnInit();
-
     this.autoSaveSubscription = this.unsavedChanges$.pipe(auditTime(this.autoSaveDelay)).subscribe(changed => {
       if (changed) {
         this.saveBackup();
