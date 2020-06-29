@@ -22,7 +22,6 @@ from neo4japp.util import (
     CamelDictMixin,
     compute_hash,
     get_first_known_label_from_node,
-    get_first_known_label_from_list,
     snake_to_camel_dict,
 )
 
