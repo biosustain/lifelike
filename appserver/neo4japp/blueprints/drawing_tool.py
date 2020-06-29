@@ -3,9 +3,6 @@ import json
 import os
 from datetime import datetime
 
-import graphviz as gv
-from PyPDF4 import PdfFileReader, PdfFileWriter
-from PyPDF4.generic import NameObject, ArrayObject
 from flask import (
     current_app,
     request,
@@ -21,9 +18,6 @@ from werkzeug.utils import secure_filename
 
 from neo4japp.blueprints.auth import auth
 from neo4japp.blueprints.permissions import requires_project_permission
-# TODO: LL-415 Migrate the code to the projects folder once GUI is complete and API refactored
-from neo4japp.blueprints.projects import bp as newbp
-from neo4japp.constants import ANNOTATION_STYLES_DICT
 from neo4japp.database import db
 from neo4japp.exceptions import InvalidFileNameException, RecordNotFoundException
 from neo4japp.models import (
@@ -33,6 +27,14 @@ from neo4japp.models import (
     Projects,
     Directory,
 )
+from neo4japp.constants import ANNOTATION_STYLES_DICT
+
+# TODO: LL-415 Migrate the code to the projects folder once GUI is complete and API refactored
+from neo4japp.blueprints.projects import bp as newbp
+
+import graphviz as gv
+from PyPDF4 import PdfFileReader, PdfFileWriter
+from PyPDF4.generic import NameObject, ArrayObject
 
 bp = Blueprint('drawing_tool', __name__, url_prefix='/drawing-tool')
 
@@ -63,28 +65,6 @@ def get_map_by_hash(hash_id: str, projects_name: str = ''):
     project_schema = ProjectSchema()
 
     yield jsonify({'project': project_schema.dump(project)})
-
-
-# TODO - Remove at some point when projects & permissions branch
-# is merged in
-@bp.route('/map/<string:hash_id>/meta', methods=['GET'])
-@auth.login_required
-def get_map_meta_by_hash(hash_id):
-    """
-        Serve map by hash_id lookup
-    """
-    user = g.current_user
-
-    # Pull up map by hash_id
-    try:
-        project = Project.query.filter_by(hash_id=hash_id).one()
-    except NoResultFound:
-        raise RecordNotFoundException('not found :-( ')
-
-    return {
-        "userOwnIt": project.user_id == user.id,
-        "isItPublic": project.public
-    }
 
 
 @bp.route('/map/download/<string:hash_id>', methods=['GET'])
@@ -123,6 +103,7 @@ def download_map(hash_id: str, projects_name: str = ''):
 @auth.login_required
 @requires_project_permission(AccessActionType.WRITE)
 def upload_map(projects_name: str = ''):
+
     draw_proj_name = request.form['projectName']
     proj_description = request.form['description']
     dir_id = request.form['dirId']
@@ -207,7 +188,7 @@ def add_project(projects_name: str = ''):
         projects = Projects.query.filter(Projects.project_name == projects_name).one()
 
     # TODO: Deprecate and make mandatory (no default) this once LL-415 is implemented
-    dir_id = request.form.get('directoryId', 1)
+    dir_id = data.get('directoryId', 1)
 
     try:
         directory = Directory.query.get(dir_id)
@@ -217,15 +198,21 @@ def add_project(projects_name: str = ''):
 
     yield user, projects
 
+    
+    date_modified = datetime.strptime(
+        data.get("date_modified", ""),
+        "%Y-%m-%dT%H:%M:%S.%fZ"
+    ) if data.get(
+        "date_modified"
+    ) is not None else datetime.now()
+
+
     # Create new project
     project = Project(
         author=f"{user.first_name} {user.last_name}",
         label=data.get("label", ""),
         description=data.get("description", ""),
-        date_modified=datetime.strptime(
-            data.get("date_modified", ""),
-            "%Y-%m-%dT%H:%M:%S.%fZ"
-        ),
+        date_modified=date_modified,
         graph=data.get("graph", dict(node=[], edges=[])),
         user_id=user.id,
         dir_id=dir_id,
@@ -365,7 +352,7 @@ def get_project_pdf(project_id: str = '', projects_name: str = '', hash_id: str 
         item = unprocessed.pop(0)
         project = Project.query.filter_by(hash_id=item).one_or_none()
         if not project:
-            raise RecordNotFoundException(f'Project {item} not found')
+            raise RecordNotFoundException('No record found')
         pdf_data = process(project)
         pdf_object = PdfFileReader(io.BytesIO(pdf_data))
         processed[item] = pdf_object
@@ -429,25 +416,6 @@ def process(data_source, format='pdf'):
             'fontname': 'sans-serif',
             'margin': "0.2,0.0"
         }
-
-        if node['label'] in ['map', 'link', 'note']:
-            label = node['label']
-            params['image'] = f'/home/n4j/assets/{label}.png'
-            params['labelloc'] = 'b'
-            params['forcelabels'] = "true"
-            params['imagescale'] = "both"
-            params['color'] = '#ffffff00'
-
-        if node['label'] in ['association', 'correlation', 'cause', 'effect', 'observation']:
-            params['color'] = ANNOTATION_STYLES_DICT.get(
-                node['label'],
-                {'color': 'black'})['color']
-            params['fillcolor'] = ANNOTATION_STYLES_DICT.get(
-                node['label'],
-                {'color': 'black'})['color']
-            params['fontcolor'] = 'black'
-            params['style'] = 'rounded,filled'
-
         if 'hyperlink' in node['data'] and node['data']['hyperlink']:
             params['href'] = node['data']['hyperlink']
         if 'source' in node['data'] and node['data']['source']:
