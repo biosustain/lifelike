@@ -50,34 +50,34 @@ jobs:
                 gcloud --quiet auth configure-docker
 
             - name: Build Appserver Image
-              uses: docker/build-push-action@v1
+              uses: whoan/docker-build-with-cache-action@v5
               with:
                 username: _json_key
                 password: ${{ secrets.GCE_SA_KEY }}
                 registry: gcr.io
-                repository: ${{ secrets.GCE_PROJECT }}/kg-appserver-demo
+                image_name: ${{ secrets.GCE_PROJECT }}/kg-appserver-demo
                 tags: ${{ github.sha }}, latest
                 path: ./appserver
                 dockerfile: ./appserver/Dockerfile.prod
 
             - name: Build Client and Nginx Image
-              uses: docker/build-push-action@v1
+              uses: whoan/docker-build-with-cache-action@v5
               with:
                 username: _json_key
                 password: ${{ secrets.GCE_SA_KEY }}
                 registry: gcr.io
-                repository: ${{ secrets.GCE_PROJECT }}/kg-webserver-demo
+                image_name: ${{ secrets.GCE_PROJECT }}/kg-webserver-demo
                 tags: ${{ github.sha }}, latest
                 path: ./client
                 dockerfile: ./client/Dockerfile.demo
 
             - name: Build Redis
-              uses: docker/build-push-action@v1
+              uses: whoan/docker-build-with-cache-action@v5
               with:
                 username: _json_key
                 password: ${{ secrets.GCE_SA_KEY }}
                 registry: gcr.io
-                repository: ${{ secrets.GCE_PROJECT }}/kg-cache-service-demo
+                image_name: ${{ secrets.GCE_PROJECT }}/kg-cache-service-demo
                 tags: ${{ github.sha }}, latest
                 path: ./cache-invalidator
                 dockerfile: ./cache-invalidator/Dockerfile
