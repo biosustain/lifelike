@@ -18,7 +18,9 @@
   </div>
   <ng-template #loadingSpinner>
     <div id="loading-spinner-container" fxLayout="row" fxLayoutAlign="center center">
-      <mat-spinner></mat-spinner>
+      <div class="spinner-border text-primary" role="status">
+        <span class="sr-only">Loading...</span>
+      </div>
     </div>
   </ng-template>
 </ng-template>
