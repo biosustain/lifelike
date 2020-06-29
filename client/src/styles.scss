@@ -41,5 +41,9 @@ router-outlet + * {
   flex-direction: column;
 }
 
+.tooltip-newlines {
+  white-space: pre-line;
+}
+
 /* Importing Bootstrap SCSS file. */
 @import '~bootstrap/scss/bootstrap';

@@ -7,7 +7,7 @@ import {
   ViewChild,
   ViewContainerRef,
 } from '@angular/core';
-import { Container} from './shared/workspace-manager';
+import { Container } from './shared/workspace-manager';
 
 @Component({
   selector: 'app-workspace-outlet',
@@ -15,16 +15,18 @@ import { Container} from './shared/workspace-manager';
     <ng-container #child></ng-container>`,
 })
 export class WorkspaceOutletComponent implements AfterViewInit, OnDestroy {
-  @Input() name;
+  @Input() name: string;
   @Output() outletFocus = new EventEmitter<any>();
-  @ViewChild('child', {static: false, read: ViewContainerRef}) child: ViewContainerRef;
+  @ViewChild('child', {static: false, read: ViewContainerRef}) viewComponentRef: ViewContainerRef;
+  private currentActive = false;
+  private previouslyActive = false;
   private currentContainer: Container<any>;
 
   constructor(private changeDetectorRef: ChangeDetectorRef) {
   }
 
   ngOnDestroy(): void {
-    this.child.detach(0);
+    this.viewComponentRef.detach(0);
   }
 
   get container() {
@@ -33,19 +35,34 @@ export class WorkspaceOutletComponent implements AfterViewInit, OnDestroy {
 
   @Input() set container(container) {
     this.currentContainer = container;
-    this.attachComponent();
+    if (this.active) {
+      this.attachComponent();
+    }
+  }
+
+  get active(): boolean {
+    return this.currentActive;
+  }
+
+  @Input() set active(active: boolean) {
+    this.currentActive = active;
+    if (active && !this.previouslyActive) {
+      this.previouslyActive = true;
+      this.attachComponent();
+    }
   }
 
   ngAfterViewInit(): void {
-    this.attachComponent();
+    if (this.active) {
+      this.attachComponent();
+    }
   }
 
   private attachComponent(): void {
-    if (this.child) {
-      this.child.detach(0);
+    if (this.viewComponentRef) {
+      this.viewComponentRef.detach(0);
       if (this.currentContainer) {
-        this.currentContainer.viewContainerRef = this.child;
-        this.child.insert(this.currentContainer.componentRef.hostView);
+        this.currentContainer.attach(this.viewComponentRef);
         this.changeDetectorRef.detectChanges();
       }
     }

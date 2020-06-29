@@ -15,19 +15,27 @@ import { EffectsModule } from '@ngrx/effects';
 import { AngularSplitModule } from 'angular-split';
 
 import { AngularMaterialModule } from './angular-material.module';
-import { HighlightSnippetComponent } from './components/highlight-snippet/highlight-snippet.component';
-import { LegendComponent } from './components/legend/legend.component';
-import { MessageDialogComponent } from './components/message-dialog/message-dialog.component';
-import { NodeRelationshipComponent } from './components/node-relationship-display/node-relationship-display.component';
-import { ProgressDialogComponent } from './components/progress-dialog/progress-dialog.component';
-import { TooltipComponent } from './components/tooltip/tooltip.component';
+import { HighlightSnippetComponent } from './components/highlight-snippet.component';
+import { LegendComponent } from './components/legend.component';
+import { MessageDialogComponent } from './components/dialog/message-dialog.component';
+import { NodeRelationshipComponent } from './components/node-relationship-display.component';
+import { ProgressDialogComponent } from './components/dialog/progress-dialog.component';
+import { TooltipComponent } from './components/tooltip.component';
 import { SharedDirectivesModule } from './directives/shareddirectives.module';
 import { SharedNgrxEffects } from './store/effects';
 import { FriendlyDateStrPipe, TruncatePipe } from './pipes';
 import { NodeTextStylePipe } from './node-text-style.pipe';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
-import { SortLegendComponent } from './components/sort/sort-legend.component';
-import { ConfirmDialogComponent } from './components/confirm-dialog/confirm-dialog.component';
+import { SortLegendComponent } from './components/sort-legend.component';
+import { ConfirmDialogComponent } from './components/dialog/confirm-dialog.component';
+import { FormInputFeedbackComponent } from './components/form/form-input-feedback.component';
+import { BackgroundTaskProgressComponent } from './components/background-task-progress.component';
+import { FormRowComponent } from './components/form/form-row.component';
+import { ModalHeaderComponent } from './components/modal/modal-header.component';
+import { ModalBodyComponent } from './components/modal/modal-body.component';
+import { ModalFooterComponent } from './components/modal/modal-footer.component';
+import { LoadingIndicatorComponent } from './components/loading-indicator.component';
+import { ContentProgressComponent } from './components/content-progress.component';
 
 const components = [
   MessageDialogComponent,
@@ -38,6 +46,14 @@ const components = [
   TooltipComponent,
   SortLegendComponent,
   ConfirmDialogComponent,
+  FormInputFeedbackComponent,
+  BackgroundTaskProgressComponent,
+  FormRowComponent,
+  ModalHeaderComponent,
+  ModalBodyComponent,
+  ModalFooterComponent,
+  ContentProgressComponent,
+  LoadingIndicatorComponent,
 ];
 
 @NgModule({
@@ -64,7 +80,7 @@ const components = [
     ...components,
     TruncatePipe,
     FriendlyDateStrPipe,
-    NodeTextStylePipe
+    NodeTextStylePipe,
   ],
   providers: [SharedNgrxEffects],
   // exported modules are visible to modules that import this one

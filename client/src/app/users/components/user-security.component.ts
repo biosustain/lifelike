@@ -1,78 +1,72 @@
 import {
-    ChangeDetectionStrategy,
-    Component,
-    EventEmitter,
-    Input,
-    Output,
-    ViewChild,
+  ChangeDetectionStrategy,
+  Component,
+  Input,
 } from '@angular/core';
 import {
-    FormGroup,
-    FormGroupDirective,
-    FormControl,
-    NgForm,
-    Validators,
+  FormGroup,
+  FormControl,
+  Validators,
 } from '@angular/forms';
-import { ErrorStateMatcher } from '@angular/material';
-import { AppUser, UpdateUserRequest } from 'app/interfaces';
+import { AppUser} from 'app/interfaces';
+import { MessageType } from '../../interfaces/message-dialog.interface';
+import { MessageDialog } from '../../shared/services/message-dialog.service';
+import * as UserActions from '../store/actions';
+import { Store } from '@ngrx/store';
+import { State } from '../../root-store';
 
 @Component({
-    selector: 'app-user-security',
-    templateUrl: './user-security.component.html',
-    changeDetection: ChangeDetectionStrategy.OnPush,
+  selector: 'app-user-security',
+  templateUrl: './user-security.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class UserSecurityComponent {
+  @Input() user: AppUser;
 
-    @ViewChild('ngSecurityForm', {static: false}) ngSecurityForm: FormGroupDirective;
+  readonly errors = {
+    notMatch: 'Your two passwords don\'t match.',
+  };
 
-    @Output() changePassReq: EventEmitter<UpdateUserRequest> = new EventEmitter();
+  readonly form = new FormGroup({
+    oldPassword: new FormControl('', [Validators.required]),
+    password: new FormControl('', [Validators.required]),
+    passwordConfirm: new FormControl('', [Validators.required]),
+  }, {validators: this.passConfirmValidator});
 
-    @Input() user: AppUser;
+  constructor(
+    private readonly store: Store<State>,
+    private readonly messageDialog: MessageDialog,
+  ) {
+  }
 
-    securityForm = new FormGroup({
-        oldPassword: new FormControl('', [Validators.required]),
-        password: new FormControl('', [Validators.required]),
-        passwordConfirm: new FormControl(''),
-    }, { validators: this.passConfirmValidator });
-
-    passwordMatcher = new PasswordErrorStateMatcher();
-
-    constructor() {}
-
-    passConfirmValidator(form: FormGroup) {
-        const password = form.get('password').value as string;
-        const confirmPass = form.get('passwordConfirm').value as string;
-        if (password !== confirmPass) {
-            form.get('passwordConfirm').setErrors({ notMatch: true });
-        }
-        return null;
+  passConfirmValidator(form: FormGroup) {
+    const password = form.get('password').value as string;
+    const confirmPass = form.get('passwordConfirm').value as string;
+    if (password !== confirmPass) {
+      form.get('passwordConfirm').setErrors({notMatch: true});
     }
+    return null;
+  }
 
-    changePassword() {
-        if (!this.securityForm.invalid) {
-            const password = this.securityForm.get('oldPassword').value;
-            const newPassword = this.securityForm.get('password').value;
-            this.changePassReq.emit({
-                ...this.user,
-                newPassword,
-                password,
-            });
-            this.securityForm.reset();
-            // Used to reset the validation states
-            this.ngSecurityForm.resetForm();
-        }
+  changePassword() {
+    if (!this.form.invalid) {
+      // TODO: Add progress dialog
+      const password = this.form.get('oldPassword').value;
+      const newPassword = this.form.get('password').value;
+      this.store.dispatch(UserActions.updateUser({
+        userUpdates: {
+          ...this.user,
+          newPassword,
+          password,
+        },
+      }));
+      this.form.reset();
+    } else {
+      this.messageDialog.display({
+        title: 'Invalid Input',
+        message: 'There are some errors with your input.',
+        type: MessageType.Error,
+      });
     }
+  }
 }
-
-/**
- * Custom error handling control used for determining when to
- * display a warning that the new passwords do not match.
- */
-export class PasswordErrorStateMatcher implements ErrorStateMatcher {
-    isErrorState(control: FormControl | null, form: FormGroupDirective | NgForm | null): boolean {
-        const originalPassCtrl = control.parent.get('password');
-        const invalidCtrl = (originalPassCtrl.touched && originalPassCtrl.dirty && !control.valid);
-        return invalidCtrl;
-    }
-}
-

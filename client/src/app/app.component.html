@@ -6,14 +6,11 @@
       <a routerLink="/" placement="right" ngbTooltip="Dashboard">
         <i class="fa fa-home"></i>
       </a>
-      <a routerLink="/space/mine" placement="right" ngbTooltip="Workspace">
-        <i class="fa fa-columns"></i>
-      </a>
-      <a routerLink="/file-browser" placement="right" ngbTooltip="File Browser">
+      <a routerLink="/files" placement="right" ngbTooltip="File Browser">
         <i class="fa fa-folder"></i>
       </a>
-      <a routerLink="/dt/project-list" placement="right" ngbTooltip="Knowledge Construction">
-        <i class="fas fa-project-diagram"></i>
+      <a routerLink="/workspaces/local" placement="right" ngbTooltip="Knowledge Reconstruction Workspace">
+        <i class="fa fa-project-diagram"></i>
       </a>
       <a routerLink="/neo4j-visualizer" placement="right" ngbTooltip="KG Visualizer">
         <i class="fa fa-search"></i>
@@ -31,16 +28,23 @@
       </a>
 
       <ng-container *ngIf="(loggedIn$ | async); else loggedOut">
-        <a *ngIf="(userRoles$ | async)?.includes('admin')" [routerLink]="['/admin']"
-           placement="right" ngbTooltip="Administration">
-          <i class="fa fa-wrench"></i>
-        </a>
-        <a [routerLink]="['/users', (appUser$ | async)?.username]" placement="right" ngbTooltip="Account">
-          <i class="fa fa-user"></i>
-        </a>
-        <a (click)="logout()" placement="right" ngbTooltip="Logout">
-          <i class="fas fa-sign-out-alt"></i>
-        </a>
+        <div ngbDropdown placement="top-left" container="body">
+          <a id="account-dropdown" ngbDropdownToggle ngbTooltip="Options" container="body">
+            <i class="fa fa-user"></i>
+          </a>
+          <div ngbDropdownMenu aria-labelledby="account-dropdown" class="dropdown-menu">
+            <a class="dropdown-item" *ngIf="(userRoles$ | async)?.includes('admin')" [routerLink]="['/admin']"
+               placement="right">
+              Administration
+            </a>
+            <a class="dropdown-item" [routerLink]="['/users', (appUser$ | async)?.username]" placement="right">
+              Account
+            </a>
+            <a class="dropdown-item" (click)="logout()" placement="right">
+              Logout
+            </a>
+          </div>
+        </div>
       </ng-container>
       <ng-template #loggedOut>
         <a (click)="login()" placement="right" ngbTooltip="Login">

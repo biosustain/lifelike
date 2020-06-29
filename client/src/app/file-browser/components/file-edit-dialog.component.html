@@ -1,0 +1,21 @@
+<form [formGroup]="form" (ngSubmit)="submit()">
+  <app-modal-header (cancel)="cancel()">
+    Edit File
+  </app-modal-header>
+
+  <app-modal-body>
+    <app-form-row for="filename" label="Filename" [control]="form.get('filename')">
+      <input type="text" formControlName="filename" id="filename" [appFormInput]="form.get('filename')" appAutoFocus>
+    </app-form-row>
+
+    <app-form-row for="description" label="Description" [control]="form.get('description')">
+      <textarea formControlName="description" id="description" [appFormInput]="form.get('description')"
+                rows="5" maxlength="2048"></textarea>
+    </app-form-row>
+  </app-modal-body>
+
+  <app-modal-footer>
+    <button type="button" class="btn btn-secondary mr-2" (click)="cancel()">Cancel</button>
+    <button type="submit" class="btn btn-primary">Save</button>
+  </app-modal-footer>
+</form>

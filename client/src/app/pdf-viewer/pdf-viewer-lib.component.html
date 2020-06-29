@@ -1,5 +1,5 @@
 <div class="pdf-viewer-container" [class.debugmode]="debugMode">
-  <div *ngIf="!isLoadCompleted" class="pdf-loading-box shadow-4">
+  <div *ngIf="!isLoadCompleted" class="pdf-loading-box floating-toolbar">
     Loading<span *ngIf="allPages"> page {{currentRenderedPage}} of {{allPages}}</span>...
   </div>
   <div class="pdf-viewer-document">
