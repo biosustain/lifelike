@@ -58,7 +58,7 @@ then
     sudo docker pull gcr.io/$PROJECT_ID/kg-appserver-staging:$DOCKER_TAG
     sudo docker pull gcr.io/$PROJECT_ID/kg-webserver-staging:$DOCKER_TAG
     sudo docker pull gcr.io/$PROJECT_ID/kg-cache-service-staging:$DOCKER_TAG
-    sudo docker-compose -f docker-compose.staging.yml up -d
+    sudo docker-compose -f docker-compose.yml -f docker-compose.staging.yml up -d
 fi
 
 if [ "$TARGET" = demo ]
@@ -70,7 +70,7 @@ then
     sudo docker pull gcr.io/$PROJECT_ID/kg-appserver-demo:$DOCKER_TAG
     sudo docker pull gcr.io/$PROJECT_ID/kg-webserver-demo:$DOCKER_TAG
     sudo docker pull gcr.io/$PROJECT_ID/kg-cache-service-demo:$DOCKER_TAG
-    sudo docker-compose -f docker-compose.demo.yml up -d
+    sudo docker-compose -f docker-compose.yml -f docker-compose.demo.yml up -d
 fi
 
 if [ "$TARGET" = production ]
@@ -82,5 +82,5 @@ then
     sudo docker pull gcr.io/$PROJECT_ID/kg-appserver-prod:$DOCKER_TAG
     sudo docker pull gcr.io/$PROJECT_ID/kg-webserver-prod:$DOCKER_TAG
     sudo docker pull gcr.io/$PROJECT_ID/kg-cache-service-prod:$DOCKER_TAG
-    sudo docker-compose -f docker-compose.prod.yml up -d
+    sudo docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
 fi
