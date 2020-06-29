@@ -5,7 +5,7 @@
                 (dragEnd)="splitterDragEnded()">
         <as-split-area *ngFor="let pane of panes">
           <div class="h-100 d-flex flex-column">
-            <div class="nav-workspace-tabs">
+            <div class="nav-workspace-tabs flex-shrink-0 align-items-start">
               <div class="nav flex-fill flex-grow-0" cdkDropList cdkDropListOrientation="horizontal"
                    (cdkDropListDropped)="tabDropped($event)"
                    [cdkDropListData]="pane">
@@ -32,7 +32,7 @@
                   </div>
                 </div>
               </div>
-              <div class="mr-2 align-self-center">
+              <div class="mr-2 mt-2">
                 <div ngbDropdown placement="bottom-right" container="body">
                   <button type="button" class="btn btn-primary btn-sm" ngbDropdownToggle ngbTooltip="New Tab" container="body">
                     <i class="fa fa-fw fa-plus"></i>
