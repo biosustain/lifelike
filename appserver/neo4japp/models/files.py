@@ -1,5 +1,8 @@
+from datetime import datetime, timezone
+
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.orm.query import Query
+from sqlalchemy.types import TIMESTAMP
 
 from neo4japp.database import db
 from neo4japp.models.common import RDBMSBase
@@ -26,11 +29,23 @@ class Files(RDBMSBase):  # type: ignore
     user_id = db.Column(db.Integer, db.ForeignKey('appuser.id', ondelete='CASCADE'), nullable=False)
     creation_date = db.Column(db.DateTime, default=db.func.now())
     annotations = db.Column(postgresql.JSONB, nullable=False, server_default='[]')
+    annotations_date = db.Column(TIMESTAMP(timezone=True), nullable=False)
     project = db.Column(db.Integer(), db.ForeignKey('projects.id'), nullable=False)
     custom_annotations = db.Column(postgresql.JSONB, nullable=False, server_default='[]')
     dir_id = db.Column(db.Integer, db.ForeignKey('directory.id'), nullable=False)
     doi = db.Column(db.String(1024), nullable=True)
     upload_url = db.Column(db.String(2048), nullable=True)
+    excluded_annotations = db.Column(postgresql.JSONB, nullable=False, server_default='[]')
+
+
+class LMDBsDates(RDBMSBase):
+    __tablename__ = 'lmdbs_dates'
+    name = db.Column(db.String(256), primary_key=True)
+    date = db.Column(
+        TIMESTAMP(timezone=True),
+        nullable=False,
+        default=str(datetime(1970, 1, 1, tzinfo=timezone.utc))
+    )
 
 
 class Directory(RDBMSBase):

@@ -3,6 +3,9 @@ import json
 import os
 from datetime import datetime
 
+import graphviz as gv		
+from PyPDF4 import PdfFileReader, PdfFileWriter		
+from PyPDF4.generic import NameObject, ArrayObject
 from flask import (
     current_app,
     request,
@@ -416,6 +419,25 @@ def process(data_source, format='pdf'):
             'fontname': 'sans-serif',
             'margin': "0.2,0.0"
         }
+
+        if node['label'] in ['map', 'link', 'note']:
+            label = node['label']
+            params['image'] = f'/home/n4j/assets/{label}.png'
+            params['labelloc'] = 'b'
+            params['forcelabels'] = "true"
+            params['imagescale'] = "both"
+            params['color'] = '#ffffff00'
+
+        if node['label'] in ['association', 'correlation', 'cause', 'effect', 'observation']:
+            params['color'] = ANNOTATION_STYLES_DICT.get(
+                node['label'],
+                {'color': 'black'})['color']
+            params['fillcolor'] = ANNOTATION_STYLES_DICT.get(
+                node['label'],
+                {'color': 'black'})['color']
+            params['fontcolor'] = 'black'
+            params['style'] = 'rounded,filled'
+
         if 'hyperlink' in node['data'] and node['data']['hyperlink']:
             params['href'] = node['data']['hyperlink']
         if 'source' in node['data'] and node['data']['source']:
