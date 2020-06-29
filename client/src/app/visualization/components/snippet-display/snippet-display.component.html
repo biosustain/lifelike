@@ -1,5 +1,5 @@
 <div *ngIf="dataLoaded && snippets && legend; else loadingSpinner">
-  <div class="mb-1 d-flex justify-content-between align-items-center">
+  <div id="num-snippets-container" class="mb-1 d-flex justify-content-between align-items-center">
     <span *ngIf="totalResults === 0; else nonZeroResults">Showing 0 - 0 of 0 snippets</span>
     <ng-template #nonZeroResults>
       <span *ngIf="pageLimit * (page) > totalResults; else multiPageResults">Showing {{ pageLimit * (page - 1) + 1 }} - {{ totalResults }} of {{ totalResults }}</span>
@@ -34,7 +34,7 @@
           <ng-template ngbPanelHeader>
             <div class="d-flex align-items-center justify-content-between">
               <button ngbPanelToggle class="btn btn-link snippet-panel-header">{{ (snippet.publication.data.title || 'Unknown') | truncate:['240'] }}</button>
-              <i>{{ (snippet.publication.data.journal || 'Unknown') | truncate:['100'] }} ({{ snippet.publication.data.pubYear || 'Unknown' }})</i>
+              <i class="snippet-panel-pub-data">{{ (snippet.publication.data.journal || 'Unknown') | truncate:['100'] }} ({{ snippet.publication.data.pubYear || 'Unknown' }})</i>
             </div>
           </ng-template>
           <ng-template ngbPanelContent>
@@ -52,7 +52,7 @@
                   class="mt-1 d-flex justify-content-between align-items-center">
                   <strong>Pubtator PMID: </strong>
                   <a
-                    class="ml-1"
+                    class="ml-1 pubtator-link"
                     [href]="'https://www.ncbi.nlm.nih.gov/research/pubtator/?view=docsum&query=' + snippet.publication.data.pmid"
                     target="_blank">{{ snippet.publication.data.pmid }}</a>
                   <mat-icon>launch</mat-icon>
