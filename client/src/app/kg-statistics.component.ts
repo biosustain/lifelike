@@ -4,6 +4,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { HttpClient } from '@angular/common/http';
 import { ChartOptions, ChartDataSets } from 'chart.js';
 import * as pluginDataLabels from 'chartjs-plugin-datalabels';
+import { BackgroundTask } from './shared/rxjs/background-task';
 
 interface StatisticsDataResponse {
   [domain: string]: {
@@ -48,23 +49,24 @@ const DOMAIN_COLORS = [
   templateUrl: './kg-statistics.component.html',
   styleUrls: ['./kg-statistics.component.scss']
 })
-export class KgStatisticsComponent implements OnInit, OnDestroy {
-  chartDataAllDomains: ChartDataSets[];
+export class KgStatisticsComponent {
+  loadTask: BackgroundTask<void, StatisticsDataResponse>;
+  chartDataAllDomains: ChartDataSets[] = [];
   chartDataEntitiesByDomain: {
     [domain: string]: ChartDataSets[];
-  };
-  chartLabelsDomains: string[];
+  } = {};
+  chartLabelsDomains: string[] = [];
   chartLabelsEntitiesByDomain: {
     [domain: string]: string[];
-  };
+  } = {};
   chartColorsEntitiesByDomain: {
     [domain: string]: {
       backgroundColor: string[]
     }[];
-  };
+  } = {};
   chartColorsDomains: {
     backgroundColor: string[];
-  }[];
+  }[] = [];
   chartOptions: ChartOptions = {
     responsive: true,
     maintainAspectRatio: false,
@@ -106,26 +108,23 @@ export class KgStatisticsComponent implements OnInit, OnDestroy {
     }
   };
   chartPlugins = [pluginDataLabels];
-  subscription: Subscription;
-  isLoading = true;
-  hasFetchError = false;
-  totalCount: any;
+  totalCount: any = 0;
 
-  constructor(private http: HttpClient, private snackBar: MatSnackBar) { }
+  constructor(private http: HttpClient, private snackBar: MatSnackBar) {
+    this.loadTask = new BackgroundTask<void, StatisticsDataResponse>(() => {
+      return this.http.get<StatisticsDataResponse>('/api/kg-statistics');
+    });
 
-  ngOnInit() {
-    this.subscription = this.http.get('/api/kg-statistics').subscribe(
-      (statisticsData: StatisticsDataResponse) => {
-        this._getChartDataEntitiesByDomain(statisticsData);
-        this._getChartDataAllDomains(statisticsData);
-        this.isLoading = false;
-      },
-      err => {
-        this.snackBar.open(`Error: could not fetch data.`, 'close', { duration: 10000 });
-        this.isLoading = false;
-        this.hasFetchError = true;
-      }
-    );
+    this.loadTask.results$.subscribe(({result, value}) => {
+      this._getChartDataEntitiesByDomain(result);
+      this._getChartDataAllDomains(result);
+    });
+
+    this.refresh();
+  }
+
+  refresh() {
+    this.loadTask.update();
   }
 
   private _getChartDataEntitiesByDomain(statisticsData) {
@@ -172,10 +171,6 @@ export class KgStatisticsComponent implements OnInit, OnDestroy {
 
   addThousandSeparator(value) {
     return value.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-  }
-
-  ngOnDestroy() {
-    this.subscription.unsubscribe();
   }
 
 }
