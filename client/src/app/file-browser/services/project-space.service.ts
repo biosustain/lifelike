@@ -24,6 +24,7 @@ export interface Directory {
   name?: string;
   projectsId: number;
   type?: string;
+  routeLink?: string;
 }
 
 export enum Role {
@@ -40,16 +41,17 @@ export interface Collaborator {
 
 export interface Map {
   author?: string;
-  date_modified?: string;
+  dateModified?: string;
   description?: string;
-  dir_id?: number;
+  dirId?: number;
   graph?: { nodes: any[], edges: any[]},
-  hash_id?: string;
+  hashId?: string;
   id?: number;
   label?: string;
   pubic?: boolean;
-  user_id?: number
+  userId?: number
   type?: string;
+  routeLink?: string;
 }
 
 @Injectable({
