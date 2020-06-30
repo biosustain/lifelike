@@ -18,7 +18,7 @@ import { Directory, Map, ProjectSpaceService, Project } from '../services/projec
 import { ProjectPageService } from '../services/project-page.service';
 import { isNullOrUndefined } from 'util';
 import { map, tap } from 'rxjs/operators';
-import { query } from '@angular/animations';
+import { AddContentDialogComponent } from './add-content-dialog/add-content-dialog.component';
 
 @Component({
   selector: 'app-file-browser',
@@ -60,20 +60,23 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
     private readonly errorHandler: ErrorHandler,
     private route: ActivatedRoute,
     private projSpace: ProjectSpaceService,
-    private projPage: ProjectPageService
+    private projPage: ProjectPageService,
+    private ngbModal: NgbModal
   ) {
     if (this.route.snapshot.params.project_name) {
       this.projectName = this.route.snapshot.params.project_name;
   
-      this.fileSpaceSubscription = this.route.queryParams.subscribe(resp => {
-
-        this.route.queryParams
+      this.fileSpaceSubscription = this.route.queryParams
         .subscribe(resp => {
           if (isNullOrUndefined(resp)) { return; }
+
+          console.log(resp);
 
           const {
             dir, id
           } = resp;
+
+          console.log(dir, id);
 
           // If an array .. override directory chain with
           // those from url parameters
@@ -85,9 +88,9 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
             this.dirPathId = id;
           } else {
             if (!isNullOrUndefined(dir) && !isNullOrUndefined(id)) {
-              this.dirPathChain = this.dirPathChain.concat([dir]);
+              this.dirPathChain = [dir];
               // tslint:disable-next-line: radix
-              this.dirPathId = this.dirPathId.concat([parseInt(id)]);
+              this.dirPathId = [parseInt(id)];
             } else {
               // Reset back to root directory
               this.dirPathChain = [];
@@ -110,17 +113,17 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
               this.projSpace.getProject(this.projectName),
               this.projPage.projectRootDir(this.projectName)
             ])
-              .pipe(
-                tap(comboResp => {
-                  const p: Project = comboResp[0];
-                  this.currentDirectoryId = p.directory.projectsId;
-                }),
-                map(comboResp => comboResp[1])
-              )
-              .subscribe(dirContent => this.processDirectoryContent(dirContent));
+            .pipe(
+              tap(comboResp => {
+                const p: Project = comboResp[0];
+                this.currentDirectoryId = p.directory.projectsId;
+              }),
+              map(comboResp => comboResp[1])
+            )
+            .subscribe(dirContent => this.processDirectoryContent(dirContent));
           }
-        });
-      });
+        }
+      );
     }
   }
 
@@ -146,6 +149,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.loadTaskSubscription.unsubscribe();
+    this.fileSpaceSubscription.unsubscribe();
   }
 
   refresh() {
@@ -419,8 +423,12 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
    */
   private encodeQueryData(data) {
     const ret = [];
-    for (let d in data)
-      ret.push(encodeURIComponent(d) + '=' + encodeURIComponent(data[d]));
+
+    for (let d in data) {
+      (data[d] as any[]).forEach(param => {
+        ret.push(encodeURIComponent(d) + '=' + encodeURIComponent(param))
+      })
+    }
     return ret.join('&');
  }
 
@@ -452,6 +460,62 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
    */
   goBack() {
     this.router.navigateByUrl('projects');
+  }
+
+  /**
+   * Add sub-directory in current directory
+   */
+  addDir() {
+    const dialogRef = this.ngbModal.open(AddContentDialogComponent);
+    dialogRef.componentInstance.mode = 'dir';
+
+    dialogRef.result.then(
+      resp => {
+        this.projPage.addDir(
+          this.projectName,
+          this.currentDirectoryId,
+          resp.dirname
+        ).subscribe(
+          (d: Directory) => {
+            this.fileCollection.push({
+              ...d,
+              type: 'dir',
+              routeLink: this.generateRouteLink(d, 'dir')
+            }); 
+        });
+      },
+      () => {
+      }
+    );
+  }
+
+  /**
+   * Add map in current directory
+   */
+  addMap() {
+    const dialogRef = this.ngbModal.open(AddContentDialogComponent);
+    dialogRef.componentInstance.mode = 'map';
+
+    dialogRef.result.then(
+      resp => {
+        this.projPage.addMap(
+          this.projectName,
+          this.currentDirectoryId,
+          resp.label,
+          resp.description
+        ).subscribe(
+          (resp: { project: Project, status}) => {
+            const { project } = resp;
+            this.fileCollection.push({
+              ...project,
+              type: 'map',
+              routeLink: this.generateRouteLink(project, 'dir')
+            });          
+        });
+      },
+      () => {
+      }
+    );
   }
 }
 
