@@ -738,8 +738,8 @@ def test_tokens_gene_vs_protein_serpina1_case_all_caps_from_knowledge_graph(
     # it does not match the text in document so was not
     # annotated as a gene
     # because we assume gene names from KG are case sensitive
-    assert annotations[0].keyword == 'Serpin A1'
-    assert annotations[0].meta.keyword_type == EntityType.Protein.value
+    assert annotations[0].keyword == 'SERPINA1'
+    assert annotations[0].meta.keyword_type == EntityType.Gene.value
 
     assert annotations[1].keyword == 'human'
     assert annotations[1].meta.keyword_type == EntityType.Species.value
