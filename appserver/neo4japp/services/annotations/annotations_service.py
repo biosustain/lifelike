@@ -601,11 +601,26 @@ class AnnotationsService:
                 matched_organism_ids=list(self.organism_frequency.keys()),
             )
 
+        fixed_gene_organism_matches: Dict[str, Dict[str, str]] = {}
+
+        # some genes have identical spelling except for captialization
+        # this can cause some important genes that we want
+        # to identify to be lost when we fix conflicting intervals
+        # so lowercase since it shouldn't matter at this point
+        # after we already have the results from the KG
+        for k, v in gene_organism_matches.items():
+            key = k.lower()
+            if key in fixed_gene_organism_matches:
+                existing_dict = fixed_gene_organism_matches[key]
+                fixed_gene_organism_matches[key] = {**existing_dict, **v}
+            else:
+                fixed_gene_organism_matches[key] = v
+
         for entity, token_positions in entity_tokenpos_pairs:
             if entity['name'] in gene_organism_matches:
                 gene_id, organism_id = self._get_closest_gene_organism_pair(
                     gene_position=token_positions,
-                    organism_matches=gene_organism_matches[entity['name']]
+                    organism_matches=fixed_gene_organism_matches[entity['name'].lower()]
                 )
 
                 category = self.organism_categories[organism_id]
@@ -884,8 +899,11 @@ class AnnotationsService:
                 elif isinstance(annotation.meta, GeneAnnotation.GeneMeta) and \
                         annotation.meta.category == OrganismCategory.Bacteria.value:
                     # bacteria genes are in the from of cysB, algA, deaD, etc
-                    # doe not check first letter to account for when the
+                    # does not check first letter to account for when the
                     # gene is start of a sentence
+                    #
+                    # there are also bacterial genes that do not end
+                    # with an uppercase, e.g apt - these will not be annotated
                     if text_in_document[-1].isupper():
                         fixed_annotations.append(annotation)
                 else:
