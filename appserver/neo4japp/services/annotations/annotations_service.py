@@ -899,8 +899,11 @@ class AnnotationsService:
                 elif isinstance(annotation.meta, GeneAnnotation.GeneMeta) and \
                         annotation.meta.category == OrganismCategory.Bacteria.value:
                     # bacteria genes are in the from of cysB, algA, deaD, etc
-                    # doe not check first letter to account for when the
+                    # does not check first letter to account for when the
                     # gene is start of a sentence
+                    #
+                    # there are also bacterial genes that do not end
+                    # with an uppercase, e.g apt - these will not be annotated
                     if text_in_document[-1].isupper():
                         fixed_annotations.append(annotation)
                 else:
