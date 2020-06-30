@@ -6,6 +6,7 @@ import { LINE_HEAD_TYPES } from '../../services/line-head-types';
 import { LINE_TYPES } from '../../services/line-types';
 import { RecursivePartial } from '../../../graph-viewer/utils/types';
 import { openLink } from '../../../shared/utils/browser';
+import { PALETTE_COLORS } from '../../services/palette';
 
 @Component({
   selector: 'app-edge-form',
@@ -17,14 +18,17 @@ export class EdgeFormComponent {
     [null, {
       name: '(Default)',
     }],
-    ...LINE_TYPES.entries()
+    ...LINE_TYPES.entries(),
   ];
+
   lineHeadTypeChoices = [
     [null, {
       name: '(Default)',
     }],
     ...LINE_HEAD_TYPES.entries(),
   ];
+
+  paletteChoices = [...PALETTE_COLORS];
 
   originalEdge: UniversalGraphEdge;
   updatedEdge: UniversalGraphEdge;
@@ -82,7 +86,7 @@ export class EdgeFormComponent {
           sourceHeadType: this.updatedEdge.style.sourceHeadType,
           targetHeadType: this.updatedEdge.style.targetHeadType,
         },
-      }
+      },
     });
     this.originalEdge = cloneDeep(this.updatedEdge);
   }

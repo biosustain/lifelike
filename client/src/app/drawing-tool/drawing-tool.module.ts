@@ -22,6 +22,7 @@ import { NodeFormComponent } from './components/map-editor/node-form.component';
 import { NodeSearchComponent } from '../node-search/containers/node-search.component';
 import { MapEditDialogComponent } from './components/map-edit-dialog.component';
 import { ConfirmDialogComponent } from 'app/shared/components/dialog/confirm-dialog.component';
+import { MapRestoreDialogComponent } from './components/map-restore-dialog.component';
 
 @NgModule({
   declarations: [
@@ -39,6 +40,7 @@ import { ConfirmDialogComponent } from 'app/shared/components/dialog/confirm-dia
     NodeFormComponent,
     EdgeFormComponent,
     MapEditDialogComponent,
+    MapRestoreDialogComponent,
   ],
   entryComponents: [
     MapCreateDialogComponent,
@@ -51,6 +53,7 @@ import { ConfirmDialogComponent } from 'app/shared/components/dialog/confirm-dia
     MapExportDialogComponent,
     NodeSearchComponent,
     ConfirmDialogComponent,
+    MapRestoreDialogComponent,
   ],
   imports: [
     SharedModule,
