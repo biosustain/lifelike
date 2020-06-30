@@ -1,9 +1,22 @@
 <div class="module module-centered" *ngIf="(loadTask.status$ | async) as status">
   <div class="module-header-container">
     <div class="module-header">
-      <div class="module-title">
-        File Browser
+      <div class="module-title silver">
+        <span (click)='goBack()' id='goBack' class='grey dim'>Projects</span>
+        <span>
+          /
+        </span>
+        <span (click)='goUp(-1)' id='root-dir' class='blue dim'>{{ projectName }}</span>
+        <span *ngFor='let d of dirPathChain; let i = index;'>
+          <span>
+            /
+          </span>
+          <span class='breadcrumb-token dim' (click)='goUp(i)'>
+            {{d}}
+          </span>
+        </span>
       </div>
+
       <div class="module-toolbar">
         <div class="input-group">
         <span class="input-group-prepend">
@@ -19,6 +32,7 @@
   </div>
 
   <div class="module-body">
+    <!-- Action Buttons -->
     <div class="mb-4 d-flex">
       <div>
         <button class="btn btn-primary" (click)="displayUploadDialog()">
@@ -53,6 +67,7 @@
     <app-background-task-progress
       [status]="status" (refresh)="this.refresh()" childClass="mb-2"></app-background-task-progress>
 
+    <!-- Table File View -->
     <table class="table" [class.table-selectable]="status.resultsShown" style="table-layout: fixed">
       <colgroup>
         <col style="width: 60%">
@@ -70,6 +85,7 @@
           </div>
         </th>
         <th class="d-none d-lg-table-cell">Submitter</th>
+        <th class="d-none d-md-table-cell">Kind</th>
         <th class="d-none d-lg-table-cell">Modified</th>
         <th class="d-none d-md-table-cell">Annotations</th>
       </tr>
@@ -89,6 +105,9 @@
         <td class="align-middle d-none d-md-table-cell text-nowrap text-truncate">
           <span class="placeholder-box">Loading</span>
         </td>
+        <td class="align-middle d-none d-md-table-cell text-nowrap text-truncate">
+          <span class="placeholder-box">Loading</span>
+        </td>
       </tr>
       <tr>
         <td class="align-middle text-nowrap text-truncate">
@@ -103,29 +122,56 @@
         <td class="align-middle d-none d-md-table-cell text-nowrap text-truncate">
           <span class="placeholder-box">Loading</span>
         </td>
+        <td class="align-middle d-none d-md-table-cell text-nowrap text-truncate">
+          <span class="placeholder-box">Loading</span>
+        </td>
       </tr>
       </tbody>
 
       <tbody *ngIf="status.resultsShown">
-      <tr *ngFor="let file of shownFiles"
-          (click)="selection.toggle(file)"
-          [class.active]="selection.isSelected(file)"
-          (keydown)="$event.keyCode != 13 || selection.toggle(file)"
+      <tr *ngFor="let file of fileCollection"
           tabindex="0">
         <td class="align-middle text-nowrap text-truncate">
           <div class="custom-control custom-checkbox">
             <input type="checkbox" class="custom-control-input" id="file-{{ file.file_id }}"
                    (change)="selection.toggle(file)"
                    [checked]="selection.isSelected(file)">
-            <label class="custom-control-label d-flex align-items-center" for="file-{{ file.file_id }}">
-              <a [href]="'/files/' + file.file_id" [appLink]="'/files/' + file.file_id" class="text-truncate">
+            <!-- Rendering filename based on type -->
+            <label [ngSwitch]="file.type" class="custom-control-label d-flex align-items-center" for="file-{{ file.file_id }}">
+              <a *ngSwitchCase="'map'" [href]="file.routeLink" [appLink]="file.routeLink" class="text-truncate">
+                {{ file.label }}
+              </a>
+              <a *ngSwitchCase="'pdf'" [href]="'/files/' + file.file_id" [appLink]="'/files/' + file.file_id" class="text-truncate">
                 {{ file.filename }}
+              </a>
+              <a *ngSwitchCase="'dir'" [href]="file.routeLink" [appLink]="file.routeLink" class="text-truncate">
+                {{ file.name }}
               </a>
             </label>
           </div>
         </td>
-        <td class="align-middle d-none d-lg-table-cell text-nowrap text-truncate">
-          {{ file.username }}
+        <!-- Rendering author based on type -->
+        <td [ngSwitch]="file.type" class="align-middle d-none d-lg-table-cell text-nowrap text-truncate">
+          <span *ngSwitchCase="'pdf'">
+            {{ file.username }}
+          </span>
+          <span *ngSwitchCase="'map'">
+            {{ file.author }}
+          </span>
+          <span *ngSwitchDefault></span>
+        </td>
+        <!-- Rendering based on type -->
+        <td [ngSwitch]='file.type' class="align-middle d-none d-md-table-cell text-nowrap text-truncate">
+          <span *ngSwitchCase="'pdf'">
+            File
+          </span>
+          <span *ngSwitchCase="'map'">
+            Map
+          </span>
+          <span *ngSwitchCase="'dir'">
+            Directory
+          </span>
+          <span *ngSwitchDefault></span>
         </td>
         <td class="align-middle d-none d-lg-table-cell text-nowrap text-truncate">
           {{ file.creation_date | date:'shortDate' }}
