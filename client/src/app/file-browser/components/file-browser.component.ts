@@ -2,7 +2,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { SelectionModel } from '@angular/cdk/collections';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { BehaviorSubject, Subscription, throwError, forkJoin } from 'rxjs';
+import { BehaviorSubject, Subscription, throwError, } from 'rxjs';
 import { PdfFile, UploadPayload, UploadType } from 'app/interfaces/pdf-files.interface';
 import { PdfFilesService } from 'app/shared/services/pdf-files.service';
 import { HttpEventType } from '@angular/common/http';
@@ -17,8 +17,17 @@ import { ErrorHandler } from '../../shared/services/error-handler.service';
 import { Directory, Map, ProjectSpaceService, Project } from '../services/project-space.service';
 import { ProjectPageService } from '../services/project-page.service';
 import { isNullOrUndefined } from 'util';
-import { map, tap } from 'rxjs/operators';
 import { AddContentDialogComponent } from './add-content-dialog/add-content-dialog.component';
+
+interface DirectoryArgument {
+  projectName?: string;
+  directoryId?: string;
+}
+export interface DirectoryContent {
+  files: PdfFile[];
+  maps: Map[];
+  childDirectories: Directory[];
+}
 
 @Component({
   selector: 'app-file-browser',
@@ -28,7 +37,9 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
   files: PdfFile[] = [];
   shownFiles: PdfFile[] = [];
   filterQuery = '';
-  loadTask: BackgroundTask<void, PdfFile[]> = new BackgroundTask(() => this.pdf.getFiles());
+  loadTask: BackgroundTask<DirectoryArgument, DirectoryContent> = new BackgroundTask(
+    (dirArg: DirectoryArgument) => this.projPage.getProjectDir(dirArg.projectName, dirArg.directoryId)
+  );
   loadTaskSubscription: Subscription;
   selection = new SelectionModel<PdfFile>(true, []);
   isReannotating = false;
@@ -47,7 +58,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
   dirPathId: number[] = [];
 
   // The list of files in a directory
-  fileCollection: (Directory|Map)[] = [];
+  fileCollection: (Directory|Map|PdfFile)[] = [];
 
   fileSpaceSubscription: Subscription;
 
@@ -65,18 +76,14 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
   ) {
     if (this.route.snapshot.params.project_name) {
       this.projectName = this.route.snapshot.params.project_name;
-  
+
       this.fileSpaceSubscription = this.route.queryParams
         .subscribe(resp => {
           if (isNullOrUndefined(resp)) { return; }
 
-          console.log(resp);
-
           const {
             dir, id
           } = resp;
-
-          console.log(dir, id);
 
           // If an array .. override directory chain with
           // those from url parameters
@@ -104,23 +111,22 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
             this.currentDirectoryId = this.dirPathId.slice(-1)[0];
             this.currentDirectoryName = this.dirPathChain.slice(-1)[0];
 
-            this.projPage.getProjectDir(this.projectName, this.currentDirectoryId)
-              .pipe(map(content => content.result))
-              .subscribe(dirContent => this.processDirectoryContent(dirContent));
+            this.loadTask.update({
+                projectName: this.projectName,
+                directoryId: this.currentDirectoryId
+              });
           } else {
             // Else pull Content from root
-            forkJoin([
-              this.projSpace.getProject(this.projectName),
-              this.projPage.projectRootDir(this.projectName)
-            ])
-            .pipe(
-              tap(comboResp => {
-                const p: Project = comboResp[0];
-                this.currentDirectoryId = p.directory.projectsId;
-              }),
-              map(comboResp => comboResp[1])
-            )
-            .subscribe(dirContent => this.processDirectoryContent(dirContent));
+            this.projSpace.getProject(this.projectName)
+              .subscribe(
+                (p: Project) => {
+                  this.currentDirectoryId = p.directory.projectsId;
+                }
+              );
+            this.loadTask.update({
+                projectName: this.projectName,
+                directoryId: null
+              });
           }
         }
       );
@@ -135,12 +141,13 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
     this.loadTaskSubscription = this.loadTask.results$.subscribe(
       (
         {
-          result: files,
+          result: dirContent,
         }
       ) => {
+        this.processDirectoryContent(dirContent);
         // We assume that fetched files are correctly annotated
-        this.updateAnnotationsStatus(files);
-        this.updateFilter();
+        // this.updateAnnotationsStatus(files);
+        // this.updateFilter();
       },
     );
 
@@ -154,7 +161,6 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
 
   refresh() {
     this.selection.clear();
-    this.loadTask.update();
   }
 
   isAllSelected(): boolean {
@@ -207,7 +213,11 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
       progressObservable,
     });
 
-    this.pdf.uploadFile(data).pipe(this.errorHandler.create()).subscribe(event => {
+    this.projPage.addPdf(
+      this.projectName,
+      this.currentDirectoryId,
+      data
+    ).pipe(this.errorHandler.create()).subscribe(event => {
         if (event.type === HttpEventType.UploadProgress) {
           if (event.loaded >= event.total) {
             progressObservable.next(new Progress({
@@ -369,12 +379,13 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
    * component variables
    * @param dirContent - the content for this project and directory
    */
-  private processDirectoryContent(dirContent) {
-    const content: {maps, childDirectories} = dirContent;
+  private processDirectoryContent(dirContent: DirectoryContent) {
+    const content: {maps, childDirectories, files} = dirContent;
 
     let {
       maps,
-      childDirectories
+      childDirectories,
+      files
     } = content;
 
     maps = maps.map(
@@ -383,8 +394,11 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
     childDirectories = childDirectories.map(
       (d: Directory) => ({...d, type: 'dir', routeLink: this.generateRouteLink(d, 'dir')})
     );
+    files = files.map(
+      (f: PdfFile) => ({...f, type: 'pdf', routeLink: this.generateRouteLink(f, 'pdf')})
+    );
 
-    this.fileCollection = [].concat(maps, childDirectories);
+    this.fileCollection = [].concat(maps, childDirectories, files);
   }
 
   // TODO - should I worry about default routing/testing for edit/read view
@@ -404,17 +418,22 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
         const dirs = [...this.dirPathChain, name];
         const ids = [...this.dirPathId, id];
         const querystring = this.encodeQueryData({ dir: dirs, id: ids });
-        
+
         return `/projects/${this.projectName}?${querystring}`;
       case 'map':
         // TODO - refactor to server responses returning in camel case
         // .. pretty ugly right having to deal between camelCase and snakeCase
         const m: Map = file as Map;
-        const hashId = m.hashId || m['hash_id']
+        // tslint:disable-next-line: no-string-literal
+        const hashId = m.hashId || m['hash_id'];
         return `maps/${hashId}/edit`;
       case 'pdf':
-        // TODO - implement
-        return '';
+        // TODO - refactor to server responses returning in camel case
+        // .. pretty ugly right having to deal between camelCase and snakeCase
+        const f: PdfFile = file as PdfFile;
+        // tslint:disable-next-line: no-string-literal
+        const fileId = f.file_id || f['fileId'];
+        return `files/${fileId}`;
       default:
         return '';
     }
@@ -427,10 +446,12 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
   private encodeQueryData(data) {
     const ret = [];
 
-    for (let d in data) {
-      (data[d] as any[]).forEach(param => {
-        ret.push(encodeURIComponent(d) + '=' + encodeURIComponent(param))
-      })
+    for (const d in data) {
+      if (d in data) {
+        (data[d] as any[]).forEach(param => {
+          ret.push(encodeURIComponent(d) + '=' + encodeURIComponent(param))
+        });
+      }
     }
     return ret.join('&');
  }
@@ -440,8 +461,10 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
    * @param index - idx of the parent directory in the directory chain
    */
   goUp(index) {
-    const dirs = this.dirPathChain.slice(0, index+1);
-    const ids = this.dirPathId.slice(0, index+1);
+    const dirs = this.dirPathChain.slice(0, index + 1);
+    const ids = this.dirPathId.slice(0, index + 1);
+
+    this.fileCollection = [];
 
     if (dirs.length && ids.length) {
       // Go to sub directory
@@ -507,14 +530,13 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
           resp.label,
           resp.description
         ).subscribe(
-          (resp: { project: Project, status}) => {
-            console.log(resp);
-            const { project } = resp;
+          (newMap: { project: Project, status}) => {
+            const { project } = newMap;
             this.fileCollection.push({
               ...project,
               type: 'map',
               routeLink: this.generateRouteLink(project, 'map')
-            });          
+            });
         });
       },
       () => {
