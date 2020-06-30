@@ -3,6 +3,8 @@ import { HttpClient, HttpHeaders, HttpEvent } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { UploadPayload, PdfFileUpload, UploadType } from 'app/interfaces/pdf-files.interface';
+import { isNullOrUndefined } from 'util';
+import { DirectoryContent } from '../components/file-browser.component';
 
 @Injectable({
   providedIn: '***ARANGO_USERNAME***'
@@ -42,28 +44,36 @@ export class ProjectPageService {
    * Return content of top level directory of project
    * @param projectName - name of project
    */
-	projectRootDir(projectName): Observable<any> {
-    return this.http.get<any>(
+  projectRootDir(
+    projectName
+  ): Observable<any> {
+    return this.http.get<DirectoryContent>(
       `${this.projectsAPI}/${projectName}/directories`,
-    	this.createHttpOptions(true)
+      this.createHttpOptions(true)
     ).pipe(
       map(resp => resp.result)
     );
   }
-  
+
   /**
    * Return content of a directory inside of a project
-   * @param projectName - 
-   * @param directoryId - 
+   * @param projectName -
+   * @param directoryId -
    */
   getProjectDir(
-  	projectName,
-  	directoryId
-  ): Observable<any> {
-    return this.http.get<any>(
-      `${this.projectsAPI}/${projectName}/directories/${directoryId}`,
-    	this.createHttpOptions(true)    
-    );
+    projectName,
+    directoryId = null
+  ): Observable<DirectoryContent> {
+    if (isNullOrUndefined(directoryId)) {
+      return this.projectRootDir(projectName);
+    } else {
+      return this.http.get<any>(
+        `${this.projectsAPI}/${projectName}/directories/${directoryId}`,
+        this.createHttpOptions(true)
+      ).pipe(
+        map(resp => resp.result)
+      );
+    }
   }
 
   /** API for project space items */
@@ -99,7 +109,7 @@ export class ProjectPageService {
     return this.http.post<any>(
       `${this.projectsAPI}/${projectName}/directories`,
       { dirname, parentDir },
-    	this.createHttpOptions(true)    
+      this.createHttpOptions(true)
     ).pipe(
       map(resp => resp.results)
     );
@@ -119,12 +129,21 @@ export class ProjectPageService {
     const formData: FormData = new FormData();
 
     formData.append('filename', data.filename.substring(0, this.filenameMaxLength));
-    formData.append('file', data.files[0]);
+
+    if (data.description && data.description.length > 0) {
+      formData.append('description', data.description.substring(0, this.descriptionMaxLength));
+    }
+    if (data.type === UploadType.Files) {
+      formData.append('file', data.files[0]);
+    } else {
+      formData.append('url', data.url);
+    }
+
     formData.append('directoryId', parentDir);
 
     const url = `${this.projectsAPI}/${projectName}/files`;
     const options = this.createHttpOptions(true);
-    
+
     return this.http.post<PdfFileUpload>(
       url,
       formData,
@@ -134,15 +153,5 @@ export class ProjectPageService {
         reportProgress: true,
       }
     );
-    
-    // TODO - handle file upload url
-    // if (data.description && data.description.length > 0) {
-    //   formData.append('description', data.description.substring(0, this.descriptionMaxLength));
-    // }
-    // if (data.type === UploadType.Files) {
-    //   formData.append('file', data.files[0]);
-    // } else {
-    //   formData.append('url', data.url);
-    // }
   }
 }

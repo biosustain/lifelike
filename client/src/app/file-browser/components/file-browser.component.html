@@ -35,7 +35,8 @@
     <!-- Action Buttons -->
     <div class="mb-4 d-flex">
       <div>
-        <button class="btn btn-primary" (click)="displayUploadDialog()">
+        <button class="btn btn-primary"
+          (click)="displayUploadDialog()">
           <i class="fa fa-fw fa-file-upload"></i>
           Add File
         </button>
@@ -149,7 +150,7 @@
               <a *ngSwitchCase="'map'" [href]="file.routeLink" [appLink]="file.routeLink" class="text-truncate">
                 {{ file.label }}
               </a>
-              <a *ngSwitchCase="'pdf'" [href]="'/files/' + file.file_id" [appLink]="'/files/' + file.file_id" class="text-truncate">
+              <a *ngSwitchCase="'pdf'" [href]="file.routeLink" [appLink]="routeLink" class="text-truncate">
                 {{ file.filename }}
               </a>
               <a *ngSwitchCase="'dir'" [href]="file.routeLink" [appLink]="file.routeLink" class="text-truncate">
@@ -194,7 +195,7 @@
       </tbody>
     </table>
 
-    <div *ngIf="status.emptyResultsShown && shownFiles.length === 0" class="text-center my-4">
+    <div *ngIf="status.emptyResultsShown && fileCollection.length === 0" class="text-center my-4">
       There are no files to show.
     </div>
   </div>

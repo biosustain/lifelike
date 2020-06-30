@@ -89,7 +89,7 @@ export class ProjectSpaceService {
    * or specific project if projectName specified
    * @param projectName - name of project to load resource by 
    */
-  getProject(projectName=''): Observable<any> {
+  getProject(projectName= ''): Observable<any> {
     projectName = encodeURIComponent(projectName.trim());
     return this.http.get<any>(
       `${this.projectsAPI}/${projectName}`,
@@ -112,7 +112,7 @@ export class ProjectSpaceService {
       this.createHttpOptions(true),
     ).pipe(
       map(resp => resp.results)
-    );  
+    );
   }
 
   /** TODO - Add DELETE project endpoint */
