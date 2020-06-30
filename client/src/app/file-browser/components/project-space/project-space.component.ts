@@ -33,8 +33,6 @@ export class ProjectSpaceComponent implements OnInit {
 
   projects: Project[] = [];
 
-  @HostBinding('class.bg-grey') childPosition = true;
-
   constructor(
     private projSpace: ProjectSpaceService,
     private ngbModal: NgbModal,
@@ -79,7 +77,7 @@ export class ProjectSpaceComponent implements OnInit {
 
   goToProject(p: Project) {
     this.route.navigateByUrl(
-      `ps/${p.projectName}`
+      `projects/${p.projectName}`
     );
   }
 }
