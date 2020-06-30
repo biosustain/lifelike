@@ -891,15 +891,12 @@ class AnnotationsService:
                 # if the matched keyword from LMDB is all caps
                 # check if the text from document is also all caps
                 # e.g `impact` matching to `IMPACT`
-                # TODO: do we want to keep this rule?
-                # it will remove certain genes that we
-                # may want - ORBF, ORBF10, etc
-                # if annotation.keyword.isupper():
-                #     if text_in_document == annotation.keyword:
-                #         fixed_annotations.append(annotation)
+                if annotation.keyword.isupper():
+                    if text_in_document == annotation.keyword:
+                        fixed_annotations.append(annotation)
                 # len(text_in_document) == LOWERCASE_FIRST_LETTER_UPPERCASE_LAST_LETTER_GENE_LENGTH
                 # does this only apply to genes with specific length?
-                if isinstance(annotation.meta, GeneAnnotation.GeneMeta) and \
+                elif isinstance(annotation.meta, GeneAnnotation.GeneMeta) and \
                         annotation.meta.category == OrganismCategory.Bacteria.value:
                     # bacteria genes are in the from of cysB, algA, deaD, etc
                     # doe not check first letter to account for when the

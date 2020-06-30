@@ -738,8 +738,8 @@ def test_tokens_gene_vs_protein_serpina1_case_all_caps_from_knowledge_graph(
     # it does not match the text in document so was not
     # annotated as a gene
     # because we assume gene names from KG are case sensitive
-    assert annotations[0].keyword == 'SERPINA1'
-    assert annotations[0].meta.keyword_type == EntityType.Gene.value
+    assert annotations[0].keyword == 'Serpin A1'
+    assert annotations[0].meta.keyword_type == EntityType.Protein.value
 
     assert annotations[1].keyword == 'human'
     assert annotations[1].meta.keyword_type == EntityType.Species.value
@@ -830,27 +830,27 @@ def test_save_bioc_annotations_to_db(default_lmdb_setup, session):
                 ),
             ),
         ]),
-        # (2, [
-        #     GeneAnnotation(
-        #         page_number=1,
-        #         keyword='ADD',
-        #         lo_location_offset=5,
-        #         hi_location_offset=7,
-        #         keyword_length=3,
-        #         text_in_document='add',
-        #         keywords=[''],
-        #         rects=[[1, 2]],
-        #         meta=GeneAnnotation.GeneMeta(
-        #             keyword_type=EntityType.Gene.value,
-        #             color='',
-        #             id='',
-        #             id_type='',
-        #             id_hyperlink='',
-        #             links=Annotation.Meta.Links(),
-        #             category=OrganismCategory.Eukaryota.value,
-        #         ),
-        #     ),
-        # ]),
+        (2, [
+            GeneAnnotation(
+                page_number=1,
+                keyword='ADD',
+                lo_location_offset=5,
+                hi_location_offset=7,
+                keyword_length=3,
+                text_in_document='add',
+                keywords=[''],
+                rects=[[1, 2]],
+                meta=GeneAnnotation.GeneMeta(
+                    keyword_type=EntityType.Gene.value,
+                    color='',
+                    id='',
+                    id_type='',
+                    id_hyperlink='',
+                    links=Annotation.Meta.Links(),
+                    category=OrganismCategory.Eukaryota.value,
+                ),
+            ),
+        ]),
     ],
 )
 def test_fix_false_positive_gene_annotations(annotations_setup, index, annotations):
@@ -864,11 +864,11 @@ def test_fix_false_positive_gene_annotations(annotations_setup, index, annotatio
         # if it's a bacteria gene but the last
         # letter is not capitalized
         assert len(fixed) == 0
-    # elif index == 2:
-    #     # if correct gene synonym is all caps
-    #     # but text in document is not
-    #     # then remove the annotation
-    #     assert len(fixed) == 0
+    elif index == 2:
+        # if correct gene synonym is all caps
+        # but text in document is not
+        # then remove the annotation
+        assert len(fixed) == 0
 
 
 @pytest.mark.parametrize(
@@ -1099,7 +1099,7 @@ def test_gene_annotation_human_vs_rat(
         ),
     )
 
-    if index == 3:
+    if index == 1:
         for a in annotations:
             if a.text_in_document == 'EDEM3':
                 # id should change to match KG
