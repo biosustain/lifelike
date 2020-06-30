@@ -10,6 +10,7 @@ import { ProjectSpaceComponent } from './components/project-space/project-space.
 import { ProjectTitleAcronymPipe } from './services/project-title-acronym.pipe';
 import { EditProjectDialogComponent } from './components/edit-project-dialog/edit-project-dialog.component';
 import { CreateProjectDialogComponent } from './components/create-project-dialog/create-project-dialog.component';
+import { AddContentDialogComponent } from './components/add-content-dialog/add-content-dialog.component';
 
 @NgModule({
   declarations: [
@@ -21,7 +22,8 @@ import { CreateProjectDialogComponent } from './components/create-project-dialog
     ProjectSpaceComponent,
     ProjectTitleAcronymPipe,
     EditProjectDialogComponent,
-    CreateProjectDialogComponent
+    CreateProjectDialogComponent,
+    AddContentDialogComponent
   ],
   imports: [
     SharedModule,
@@ -33,7 +35,8 @@ import { CreateProjectDialogComponent } from './components/create-project-dialog
     FileUploadDialogComponent,
     FileViewComponent,
     CreateProjectDialogComponent,
-    EditProjectDialogComponent
+    EditProjectDialogComponent,
+    AddContentDialogComponent
   ],
   exports: [],
 })

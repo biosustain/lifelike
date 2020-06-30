@@ -1,17 +1,17 @@
 <div class="module module-centered" *ngIf="(loadTask.status$ | async) as status">
   <div class="module-header-container">
     <div class="module-header">
-      <div class="module-title silver">
-        <span (click)='goBack()' id='goBack' class='grey dim'>Projects</span>
+      <div class="module-title silver" style="white-space: break-spaces;">
+        <span (click)='goBack()' id='goBack' class='grey dim pointer'>Projects</span>
         <span>
           /
         </span>
-        <span (click)='goUp(-1)' id='***ARANGO_USERNAME***-dir' class='blue dim'>{{ projectName }}</span>
+        <span (click)='goUp(-1)' id='***ARANGO_USERNAME***-dir' class='blue dim pointer'>{{ projectName }}</span>
         <span *ngFor='let d of dirPathChain; let i = index;'>
           <span>
             /
           </span>
-          <span class='breadcrumb-token dim' (click)='goUp(i)'>
+          <span class='breadcrumb-token dim pointer' (click)='goUp(i)'>
             {{d}}
           </span>
         </span>
@@ -39,10 +39,18 @@
           <i class="fa fa-fw fa-file-upload"></i>
           Add File
         </button>
+        <button class="btn btn-primary ml-2"
+          (click)="addDir()">
+          <i class="fa fa-fw fa-folder-plus"></i> Add Directory
+        </button>
+        <button class="btn btn-primary ml-2"
+          (click)="addMap()">
+          <i class="fa fa-fw fa-project-diagram"></i> Add Map
+        </button>
         <div class="d-inline-block"
-             [ngbTooltip]="getSelectedShownFiles().length === 0 ? 'Select one or more files first.' : ''">
+            [ngbTooltip]="getSelectedShownFiles().length === 0 ? 'Select one or more files first.' : ''">
           <button class="btn btn-primary ml-2"
-                  [disabled]="getSelectedShownFiles().length !== 1" (click)="displayEditDialog()">
+            [disabled]="getSelectedShownFiles().length !== 1" (click)="displayEditDialog()">
             <i class="fa fa-fw fa-pencil"></i> Edit
           </button>
           <button class="btn btn-outline-secondary ml-2"
