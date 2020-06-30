@@ -6,6 +6,7 @@ import { LINE_TYPES } from '../../services/line-types';
 import { annotationTypes } from '../../../shared/annotation-styles';
 import { RecursivePartial } from '../../../graph-viewer/utils/types';
 import { openLink } from '../../../shared/utils/browser';
+import { PALETTE_COLORS } from '../../services/palette';
 
 @Component({
   selector: 'app-node-form',
@@ -21,6 +22,8 @@ export class NodeFormComponent {
     }],
     ...LINE_TYPES.entries()
   ];
+
+  paletteChoices = [...PALETTE_COLORS];
 
   originalNode: UniversalGraphNode;
   updatedNode: UniversalGraphNode;
