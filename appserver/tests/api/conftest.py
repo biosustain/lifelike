@@ -13,11 +13,10 @@ from neo4japp.models import (
     FileContent,
     Files,
     DomainULRsMap,
-    AnnotationStyle,
-    Color
+    AnnotationStyle
 )
 
-from neo4japp.models import Color, AnnotationStyle
+from neo4japp.models import AnnotationStyle
 
 
 @pytest.fixture(scope='function')
@@ -164,19 +163,20 @@ def user_client(client, test_user):
 
 @pytest.fixture(scope='function')
 def styles_fixture(client, session):
-    color = Color(
-        label='gene',
-        hexcode='#232323'
-    )
-    session.add(color)
-    session.flush()
 
     style = AnnotationStyle(
         label='gene',
-        color=color
+        color='#232323'
     )
-
+    style2 = AnnotationStyle(
+        label="association",
+        color="#d7d9f8",
+        style_border="#d7d9f8",
+        style_background="#d7d9f8",
+        style_color="#000"
+    )
     session.add(style)
+    session.add(style2)
     session.flush()
 
     return style
