@@ -1,7 +1,7 @@
 <div class="module module-centered">
   <div class="module-header-container">
     <div class="module-header">
-      <div class="module-title silver">
+      <div class="module-title">
         Projects
       </div>
     </div>
@@ -9,6 +9,21 @@
 
   <div class="module-body">
     <div class="mt-4 d-flex flex-wrap">
+      <!-- Add Project -->
+      <div (click)='createProject()' id='add-project' class='tile-container'>
+        <div
+          class=tile>
+          <div class='w-100 h-100 d-flex flex-column justify-content-center align-items-center'>
+            <p class='b silver f2 ma0'>
+              +
+            </p>
+          </div>
+        </div>
+        <p
+          class='title'>
+          Add Project
+        </p>
+      </div>  
       <!-- List Of Projects -->
       <div *ngFor='let p of projects' class='tile-container'>
         <div
@@ -34,22 +49,7 @@
         <p class='title'>
           {{p.projectName | titlecase}}
         </p>
-      </div>
-      <!-- Add Project -->
-      <div (click)='createProject()' id='add-project' class='tile-container'>
-        <div
-          class=tile>
-          <div class='w-100 h-100 d-flex flex-column justify-content-center align-items-center'>
-            <p class='b silver f2 ma0'>
-              +
-            </p>
-          </div>
-        </div>
-        <p
-          class='title'>
-          Add Project
-        </p>
-      </div>      
+      </div>    
     </div>
   </div>
 </div>
