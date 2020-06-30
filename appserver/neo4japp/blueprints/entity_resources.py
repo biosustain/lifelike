@@ -9,7 +9,7 @@ bp = Blueprint('annotations', __name__, url_prefix='/annotations')
 @bp.route('/style/<string:annotation>', methods=['GET'])
 @auth.login_required
 def get_style(annotation):
-    style = AnnotationStyle.query.filter_by(label=annotation)
+    style = AnnotationStyle.query.filter_by(label=annotation)[0]
     return style.get_as_json()
 
 
