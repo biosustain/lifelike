@@ -54,13 +54,9 @@
                       fxLayoutAlign="center center">
           <div class="card mt-4">
             <div class="card-header">
-              Total Number of Nodes
+              {{data.key}}
             </div>
             <div class="card-body">
-              <div>
-                {{data.key}}
-              </div>
-
               <div class="chart-container">
                 <canvas baseChart
                         [datasets]="data.value"
