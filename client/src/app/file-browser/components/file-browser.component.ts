@@ -1,8 +1,8 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { SelectionModel } from '@angular/cdk/collections';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { BehaviorSubject, Subscription, throwError } from 'rxjs';
+import { BehaviorSubject, Subscription, throwError, forkJoin } from 'rxjs';
 import { PdfFile, UploadPayload, UploadType } from 'app/interfaces/pdf-files.interface';
 import { PdfFilesService } from 'app/shared/services/pdf-files.service';
 import { HttpEventType } from '@angular/common/http';
@@ -14,6 +14,11 @@ import { FileDeleteDialogComponent } from './file-delete-dialog.component';
 import { FileUploadDialogComponent } from './file-upload-dialog.component';
 import { FileEditDialogComponent } from './file-edit-dialog.component';
 import { ErrorHandler } from '../../shared/services/error-handler.service';
+import { Directory, Map, ProjectSpaceService, Project } from '../services/project-space.service';
+import { ProjectPageService } from '../services/project-page.service';
+import { isNullOrUndefined } from 'util';
+import { map, tap } from 'rxjs/operators';
+import { query } from '@angular/animations';
 
 @Component({
   selector: 'app-file-browser',
@@ -30,6 +35,22 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
   uploadStarted = false;
   lmdbsDates = {};
 
+  // The project to pull content out of
+  projectName = '';
+
+  // The current directory we're residing in
+  currentDirectoryId;
+  currentDirectoryName = '';
+
+  // The directory path from parent
+  dirPathChain: string[] = [];
+  dirPathId: number[] = [];
+
+  // The list of files in a directory
+  fileCollection: (Directory|Map)[] = [];
+
+  fileSpaceSubscription: Subscription;
+
   constructor(
     private pdf: PdfFilesService,
     private router: Router,
@@ -37,7 +58,70 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
     private readonly modalService: NgbModal,
     private progressDialog: ProgressDialog,
     private readonly errorHandler: ErrorHandler,
+    private route: ActivatedRoute,
+    private projSpace: ProjectSpaceService,
+    private projPage: ProjectPageService
   ) {
+    if (this.route.snapshot.params.project_name) {
+      this.projectName = this.route.snapshot.params.project_name;
+  
+      this.fileSpaceSubscription = this.route.queryParams.subscribe(resp => {
+
+        this.route.queryParams
+        .subscribe(resp => {
+          if (isNullOrUndefined(resp)) { return; }
+
+          const {
+            dir, id
+          } = resp;
+
+          // If an array .. override directory chain with
+          // those from url parameters
+          if (
+            Array.isArray(dir) &&
+            Array.isArray(id)
+          ) {
+            this.dirPathChain = dir;
+            this.dirPathId = id;
+          } else {
+            if (!isNullOrUndefined(dir) && !isNullOrUndefined(id)) {
+              this.dirPathChain = this.dirPathChain.concat([dir]);
+              // tslint:disable-next-line: radix
+              this.dirPathId = this.dirPathId.concat([parseInt(id)]);
+            } else {
+              // Reset back to root directory
+              this.dirPathChain = [];
+              this.dirPathId = [];
+            }
+          }
+
+          // If not empty, pull content from current dir id
+          if (this.dirPathChain.length && this.dirPathId.length) {
+            // Pull Content form subdir
+            this.currentDirectoryId = this.dirPathId.slice(-1)[0];
+            this.currentDirectoryName = this.dirPathChain.slice(-1)[0];
+
+            this.projPage.getProjectDir(this.projectName, this.currentDirectoryId)
+              .pipe(map(content => content.result))
+              .subscribe(dirContent => this.processDirectoryContent(dirContent));
+          } else {
+            // Else pull Content from root
+            forkJoin([
+              this.projSpace.getProject(this.projectName),
+              this.projPage.projectRootDir(this.projectName)
+            ])
+              .pipe(
+                tap(comboResp => {
+                  const p: Project = comboResp[0];
+                  this.currentDirectoryId = p.directory.projectsId;
+                }),
+                map(comboResp => comboResp[1])
+              )
+              .subscribe(dirContent => this.processDirectoryContent(dirContent));
+          }
+        });
+      });
+    }
   }
 
   ngOnInit() {
@@ -45,9 +129,12 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
       this.lmdbsDates = lmdbsDates;
       this.updateAnnotationsStatus(this.files);
     });
-    this.loadTaskSubscription = this.loadTask.results$.subscribe(({
-                                                                    result: files,
-                                                                  }) => {
+    this.loadTaskSubscription = this.loadTask.results$.subscribe(
+      (
+        {
+          result: files,
+        }
+      ) => {
         // We assume that fetched files are correctly annotated
         this.updateAnnotationsStatus(files);
         this.updateFilter();
@@ -271,6 +358,100 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
       (tooltip: string, [name, date]: [string, string]) => `${tooltip}\n- ${name}, ${new Date(date).toDateString()}`,
       'Outdated:',
     );
+  }
+
+  /**
+   * Handle processing directory file content into
+   * component variables
+   * @param dirContent - the content for this project and directory
+   */
+  private processDirectoryContent(dirContent) {
+    const content: {maps, childDirectories} = dirContent;
+
+    let {
+      maps,
+      childDirectories
+    } = content;
+
+    maps = maps.map(
+      (m: Map) => ({...m, type: 'map', routeLink: this.generateRouteLink(m, 'map')})
+    );
+    childDirectories = childDirectories.map(
+      (d: Directory) => ({...d, type: 'dir', routeLink: this.generateRouteLink(d, 'dir')})
+    );
+
+    this.fileCollection = [].concat(maps, childDirectories);
+  }
+
+  // TODO - should I worry about default routing/testing for edit/read view
+  /**
+   * Construct a link to access that resource
+   * @param file - either map, directory, or pdf
+   * @param type - the type of it
+   */
+  private generateRouteLink(file: (Directory|Map), type) {
+    switch (type) {
+      case 'dir':
+        const {
+          name,
+          id
+        } = (file as Directory);
+
+        const dirs = [...this.dirPathChain, name];
+        const ids = [...this.dirPathId, id];
+        const querystring = this.encodeQueryData({ dir: dirs, id: ids });
+        
+        return `/projects/${this.projectName}?${querystring}`;
+      case 'map':
+        const { hashId } = file as Map;
+        return `maps/${hashId}/edit`;
+      case 'pdf':
+        // TODO - implement
+        return '';
+      default:
+        return '';
+    }
+  }
+
+  /**
+   * Construct a query param url from a javascript object
+   * @param data - object
+   */
+  private encodeQueryData(data) {
+    const ret = [];
+    for (let d in data)
+      ret.push(encodeURIComponent(d) + '=' + encodeURIComponent(data[d]));
+    return ret.join('&');
+ }
+
+  /**
+   * Navigate to a parent directory
+   * @param index - idx of the parent directory in the directory chain
+   */
+  goUp(index) {
+    const dirs = this.dirPathChain.slice(0, index+1);
+    const ids = this.dirPathId.slice(0, index+1);
+
+    if (dirs.length && ids.length) {
+      // Go to sub directory
+      this.router.navigate(
+        [`/projects/${this.projectName}/`],
+        { queryParams: { dir: dirs, id: ids } }
+      );
+    } else {
+      // Go to project root
+      this.router.navigateByUrl(
+        `/projects/${this.projectName}`
+      );
+    }
+
+  }
+
+  /**
+   * Go back to the project space
+   */
+  goBack() {
+    this.router.navigateByUrl('projects');
   }
 }
 
