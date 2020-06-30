@@ -18,30 +18,20 @@ class AnnotationStyle(RDBMSBase):
     """
     id = db.Column(db.Integer, primary_key=True)
     label = db.Column(db.String(32), nullable=False)
-    color_id = db.Column(db.Integer, db.ForeignKey('color.id'), nullable=False)
-    color = relationship('Color', back_populates='annotations', primaryjoin="User.id == Post.user_id")
+    color = db.Column(db.String(9), nullable=False)
     icon_code = db.Column(db.String(32), nullable=True)
-    style_border_id = db.Column(db.Integer, db.ForeignKey('color.id'), nullable=True)
-    style_border = relationship('Color', back_populates='annotations_border')
-    style_background_id = db.Column(db.Integer, db.ForeignKey('color.id'), nullable=True)
-    style_background = relationship('Color', back_populates='annotations_background')
-    style_color_id = db.Column(db.Integer, db.ForeignKey('color.id'), nullable=True)
-    style_color = relationship('Color', back_populates='annotations_color')
+    style_border = db.Column(db.String(9), nullable=True)
+    style_background = db.Column(db.String(9), nullable=True)
+    style_color = db.Column(db.String(9), nullable=True)
 
     def get_as_json(self):
         return {
             'label': self.label,
-            'color': self.color.hexcode,
+            'color': self.color,
             'icon_code': self.icon_code,
             'style': {
-                'border': self.style_border.hexcode,
-                'background': self.style_background.hexcode,
-                'color': self.style_color.hexcode
+                'border': self.style_border,
+                'background': self.style_background,
+                'color': self.style_color
             }
         }
-
-
-class Color(RDBMSBase):
-    id = db.Column(db.Integer, primary_key=True)
-    label = db.Column(db.String(32), nullable=False)
-    hexcode = db.Column(db.String(8), nullable=False)
