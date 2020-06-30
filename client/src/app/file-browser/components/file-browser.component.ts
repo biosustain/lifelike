@@ -407,7 +407,10 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
         
         return `/projects/${this.projectName}?${querystring}`;
       case 'map':
-        const { hashId } = file as Map;
+        // TODO - refactor to server responses returning in camel case
+        // .. pretty ugly right having to deal between camelCase and snakeCase
+        const m: Map = file as Map;
+        const hashId = m.hashId || m['hash_id']
         return `maps/${hashId}/edit`;
       case 'pdf':
         // TODO - implement
@@ -505,11 +508,12 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
           resp.description
         ).subscribe(
           (resp: { project: Project, status}) => {
+            console.log(resp);
             const { project } = resp;
             this.fileCollection.push({
               ...project,
               type: 'map',
-              routeLink: this.generateRouteLink(project, 'dir')
+              routeLink: this.generateRouteLink(project, 'map')
             });          
         });
       },

@@ -76,8 +76,9 @@ export class ProjectSpaceComponent implements OnInit {
   }
 
   goToProject(p: Project) {
+    const projectName = encodeURIComponent(p.projectName);
     this.route.navigateByUrl(
-      `projects/${p.projectName}`
+      `projects/${projectName}`
     );
   }
 }
