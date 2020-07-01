@@ -312,28 +312,28 @@ def test_can_delete_files(client, test_user, test_user_with_pdf, fix_project):
 
     assert resp.status_code == 200
 
+# TODO - should I remove if endpoint doesn't exist, ask David
+# def test_user_can_remove_annotation_exclusion(client, test_user, test_user_with_pdf):
+#     login_resp = client.login_as_user(test_user.email, 'password')
+#     headers = generate_headers(login_resp['access_jwt'])
+#     file_id = test_user_with_pdf.file_id
 
-def test_user_can_remove_annotation_exclusion(client, test_user, test_user_with_pdf):
-    login_resp = client.login_as_user(test_user.email, 'password')
-    headers = generate_headers(login_resp['access_jwt'])
-    file_id = test_user_with_pdf.file_id
+#     add_exc_resp = client.patch(
+#         f'/files/add_annotation_exclusion/{file_id}',
+#         headers=headers,
+#         data=json.dumps({
+#             'id': 'id',
+#             'reason': 'reason',
+#             'comment': 'comment'
+#         }),
+#         content_type='application/json',
+#     )
 
-    add_exc_resp = client.patch(
-        f'/files/add_annotation_exclusion/{file_id}',
-        headers=headers,
-        data=json.dumps({
-            'id': 'id',
-            'reason': 'reason',
-            'comment': 'comment'
-        }),
-        content_type='application/json',
-    )
+#     remove_exc_resp = client.patch(
+#         f'/files/remove_annotation_exclusion/{file_id}',
+#         headers=headers,
+#         data=json.dumps({'id': 'id'}),
+#         content_type='application/json',
+#     )
 
-    remove_exc_resp = client.patch(
-        f'/files/remove_annotation_exclusion/{file_id}',
-        headers=headers,
-        data=json.dumps({'id': 'id'}),
-        content_type='application/json',
-    )
-
-    assert remove_exc_resp.status_code == 200
+#     assert remove_exc_resp.status_code == 200
