@@ -4,14 +4,14 @@ from neo4japp.constants import ANNOTATION_STYLES_DICT
 
 
 # lmdb database names
-CHEMICAL_LMDB = 'chemicals_chebi'
-COMPOUND_LMDB = 'compounds'
-DISEASE_LMDB = 'diseases'
-GENE_LMDB = 'genes'
-PHENOTYPE_LMDB = 'phenotypes'
-PROTEIN_LMDB = 'proteins'
-PUBCHEM_LMDB = 'chemicals_pubchem'
-SPECIES_LMDB = 'species'
+CHEMICALS_CHEBI_LMDB = 'chemicals_chebi'
+COMPOUNDS_BIOCYC_LMDB = 'compounds_biocyc'
+DISEASES_MESH_LMDB = 'diseases_mesh'
+GENES_NCBI_LMDB = 'genes_ncbi'
+PHENOTYPES_MESH_LMDB = 'phenotypes_mesh'
+PROTEINS_UNIPROT_LMDB = 'proteins_uniprot'
+CHEMICALS_PUBCHEM_LMDB = 'chemicals_pubchem'
+SPECIES_NCBI_LMDB = 'species_ncbi'
 
 LOWERCASE_FIRST_LETTER_UPPERCASE_LAST_LETTER_GENE_LENGTH = 4
 PDF_NEW_LINE_THRESHOLD = .30
