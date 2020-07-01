@@ -130,6 +130,14 @@ const routes: Routes = [
     },
   },
   {
+    path: 'files/:file_id/:project_name',
+    component: FileViewComponent,
+    data: {
+      title: 'PDF Viewer',
+      fontAwesomeIcon: 'file-pdf',
+    },
+  },
+  {
     path: 'maps',
     component: MapBrowserComponent,
     data: {

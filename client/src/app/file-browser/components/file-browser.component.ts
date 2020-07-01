@@ -433,7 +433,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
         const f: PdfFile = file as PdfFile;
         // tslint:disable-next-line: no-string-literal
         const fileId = f.file_id || f['fileId'];
-        return `files/${fileId}`;
+        return `files/${fileId}/${this.projectName}`;
       default:
         return '';
     }
@@ -507,7 +507,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
               ...d,
               type: 'dir',
               routeLink: this.generateRouteLink(d, 'dir')
-            }); 
+            });
         });
       },
       () => {
@@ -542,6 +542,10 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
       () => {
       }
     );
+  }
+
+  delete() {
+    console.log('implement me');
   }
 }
 
