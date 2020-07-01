@@ -1,17 +1,25 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ProjectSpaceComponent } from './project-space.component';
+import { configureTestSuite } from 'ng-bullet';
+import { SharedModule } from 'app/shared/shared.module';
+import { FileBrowserModule } from 'app/file-browser/file-browser.module';
+import { RootStoreModule } from 'app/***ARANGO_USERNAME***-store';
 
 describe('ProjectSpaceComponent', () => {
   let component: ProjectSpaceComponent;
   let fixture: ComponentFixture<ProjectSpaceComponent>;
 
-  beforeEach(async(() => {
+  configureTestSuite(() => {
     TestBed.configureTestingModule({
-      declarations: [ ProjectSpaceComponent ]
+      imports: [
+        SharedModule,
+        FileBrowserModule,
+        RootStoreModule
+      ]
     })
     .compileComponents();
-  }));
+  });
 
   beforeEach(() => {
     fixture = TestBed.createComponent(ProjectSpaceComponent);

@@ -76,6 +76,8 @@ class ProjectsService(RDBMSBaseDao):
             )
         )
 
+        self.session.commit()
+
     def _remove_role(self, user: AppUser, role: AppRole, projects: Projects):
         """ Remove a role """
         self.session.execute(

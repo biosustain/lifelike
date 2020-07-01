@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { Input } from '@angular/core';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
@@ -10,8 +10,8 @@ import { UploadPayload, UploadType } from 'app/interfaces/pdf-files.interface';
   templateUrl: './add-content-dialog.component.html',
   styleUrls: ['./add-content-dialog.component.scss']
 })
-export class AddContentDialogComponent implements OnInit {
-  @Input() mode: string = 'dir'
+export class AddContentDialogComponent implements OnInit, OnDestroy {
+  @Input() mode = 'dir';
 
   @Input() payload: UploadPayload;
 
@@ -32,7 +32,7 @@ export class AddContentDialogComponent implements OnInit {
 
   pickedFileName: string;
 
-  // Used to disable the the submit in the original component .. 
+  // Used to disable the the submit in the original component ..
   // [disabled]="forbidUpload"
   forbidUpload = true;
 
@@ -43,7 +43,7 @@ export class AddContentDialogComponent implements OnInit {
   ngOnInit() {
     this.subscription = this.form.valueChanges.subscribe(
       resp => this.isInvalid = false
-    )
+    );
   }
 
   ngOnDestroy() {
@@ -51,7 +51,7 @@ export class AddContentDialogComponent implements OnInit {
   }
 
   doNothing() {
-    this.activeModal.dismiss()
+    this.activeModal.dismiss();
   }
 
   submit() {
@@ -59,8 +59,8 @@ export class AddContentDialogComponent implements OnInit {
       case 'dir':
         // Check if valid
         const dirnameCtrl = this.form.get('dirname');
-        if (!dirnameCtrl.valid) { 
-          this.isInvalid = true; 
+        if (!dirnameCtrl.valid) {
+          this.isInvalid = true;
         } else {
           const {
             dirname
@@ -68,13 +68,13 @@ export class AddContentDialogComponent implements OnInit {
           this.activeModal.close({
             dirname
           });
-        }        
+        }
         break;
       case 'map':
         // Check if valid
         const labelCtrl = this.form.get('label');
-        if (!labelCtrl.valid) { 
-          this.isInvalid = true; 
+        if (!labelCtrl.valid) {
+          this.isInvalid = true;
         } else {
           const {
             label,
@@ -91,7 +91,7 @@ export class AddContentDialogComponent implements OnInit {
           this.payload.filename = this.form.get('filename').value;
           this.activeModal.close(true);
         }
-      break;
+        break;
       default:
         break;
     }
@@ -113,7 +113,7 @@ export class AddContentDialogComponent implements OnInit {
     this.forbidUpload = !(filesIsOk);
   }
 
-  /** 
+  /**
    * Transforms a FileList to a File[]
    * Not sure why, but I can't pass a FileList back to the parent component
    */

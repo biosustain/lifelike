@@ -15,7 +15,7 @@ export interface Project {
   // the project
   users: number[];
   // Root directory associated with proejct
-  directory?: Directory
+  directory?: Directory;
 }
 
 export interface Directory {
@@ -44,7 +44,7 @@ export interface Map {
   dateModified?: string;
   description?: string;
   dirId?: number;
-  graph?: { nodes: any[], edges: any[]},
+  graph?: { nodes: any[], edges: any[]};
   hashId?: string;
   id?: number;
   label?: string;
@@ -87,7 +87,7 @@ export class ProjectSpaceService {
   /**
    * GET Request for projects resources
    * or specific project if projectName specified
-   * @param projectName - name of project to load resource by 
+   * @param projectName - name of project to load resource by
    */
   getProject(projectName= ''): Observable<any> {
     projectName = encodeURIComponent(projectName.trim());
@@ -148,7 +148,7 @@ export class ProjectSpaceService {
         `${this.projectsAPI}/${projectName}/collaborators/${username}`,
         { role },
         this.createHttpOptions(true)
-    );    
+    );
   }
 
   /**

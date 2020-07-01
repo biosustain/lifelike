@@ -1,17 +1,25 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
+import { configureTestSuite } from 'ng-bullet';
+
 import { AddContentDialogComponent } from './add-content-dialog.component';
+import { SharedModule } from 'app/shared/shared.module';
+import { RootStoreModule } from 'app/***ARANGO_USERNAME***-store';
 
 describe('AddContentDialogComponent', () => {
   let component: AddContentDialogComponent;
   let fixture: ComponentFixture<AddContentDialogComponent>;
 
-  beforeEach(async(() => {
+  configureTestSuite(() => {
     TestBed.configureTestingModule({
+      imports: [
+        SharedModule,
+        RootStoreModule
+      ],
       declarations: [ AddContentDialogComponent ]
     })
     .compileComponents();
-  }));
+  });
 
   beforeEach(() => {
     fixture = TestBed.createComponent(AddContentDialogComponent);
