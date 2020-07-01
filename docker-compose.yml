@@ -1,37 +1,15 @@
 version: '3.8'
 
 services:
-    pgdatabase:
-        image: postgres:11
-
-    database:
-        build: ./neo4j
 
     appserver:
         image: ${REGISTRY:-gcr.io/able-goods-221820}/kg-appserver-prod:${GITHUB_HASH:-latest}
-        build: ./appserver
-        depends_on:
-            - database
-            - pgdatabase
-            - redis
+
+    cache-invalidator:
+        image: ${REGISTRY:-gcr.io/able-goods-221820}/kg-cache-service-prod:${GITHUB_HASH:-latest}
 
     redis:
         image: redis:6.0.3-alpine
 
-    cache-invalidator:
-        image: ${REGISTRY:-gcr.io/able-goods-221820}/kg-cache-service-prod:${GITHUB_HASH:-latest}
-        build: ./cache-invalidator
-        depends_on:
-            - database
-            - redis
-
-    elasticsearch:
-        container_name: n4j-elasticsearch
-        build:
-            dockerfile: Dockerfile
-            context: elasticsearch
-
-    kibana:
-        image: docker.elastic.co/kibana/kibana:7.2.0
-        depends_on:
-            - elasticsearch
+    webserver:
+        image: ${REGISTRY:-gcr.io/able-goods-221820}/kg-webserver-prod:${GITHUB_HASH:-latest}
