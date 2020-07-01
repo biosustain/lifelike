@@ -68,35 +68,37 @@ const routes: Routes = [
   },
   {
     path: 'kg-visualizer',
-    component: VisualizationComponent,
     canActivate: [AuthGuard],
-    data: {
-      title: 'KG Visualizer',
-      fontAwesomeIcon: 'search',
-    },
-  },
-  {
-    path: 'kg-visualizer/upload',
-    component: UserFileImportComponent,
-    canActivate: [AuthGuard],
-    data: {
-      title: 'KG Visualizer Upload',
-      fontAwesomeIcon: 'search',
-    },
-  },
-  {
-    path: 'search',
-    component: SearchCollectionPageComponent,
-    data: {
-      title: 'Search',
-    },
-  },
-  {
-    path: 'search/:redirect',
-    component: SearchCollectionPageComponent,
-    data: {
-      title: 'Knowledge Graph Explorer',
-    },
+    children: [
+        {
+            path: '',
+            redirectTo: 'search',
+            pathMatch: 'full',
+        },
+        {
+            path: 'search',
+            component: SearchCollectionPageComponent,
+            data: {
+                title: 'Search',
+            },
+        },
+        {
+            path: 'graph',
+            component: VisualizationComponent,
+            data: {
+              title: 'KG Visualizer',
+            },
+        },
+        {
+            path: 'upload',
+            component: UserFileImportComponent,
+            canActivate: [AuthGuard],
+            data: {
+              title: 'KG Visualizer Upload',
+              fontAwesomeIcon: 'search',
+            },
+        },
+    ]
   },
   {
     path: 'workspaces/:space_id',
