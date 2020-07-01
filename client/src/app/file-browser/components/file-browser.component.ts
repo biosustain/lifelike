@@ -19,12 +19,16 @@ import { ProjectPageService } from '../services/project-page.service';
 import { isNullOrUndefined } from 'util';
 import { AddContentDialogComponent } from './add-content-dialog/add-content-dialog.component';
 
+interface File extends PdfFile {
+  type: string;
+}
+
 interface DirectoryArgument {
   projectName?: string;
   directoryId?: string;
 }
 export interface DirectoryContent {
-  files: PdfFile[];
+  files: File[];
   maps: Map[];
   childDirectories: Directory[];
 }
@@ -34,14 +38,14 @@ export interface DirectoryContent {
   templateUrl: './file-browser.component.html',
 })
 export class FileBrowserComponent implements OnInit, OnDestroy {
-  files: PdfFile[] = [];
-  shownFiles: PdfFile[] = [];
+  files: File[] = [];
+  shownFiles: File[] = [];
   filterQuery = '';
   loadTask: BackgroundTask<DirectoryArgument, DirectoryContent> = new BackgroundTask(
     (dirArg: DirectoryArgument) => this.projPage.getProjectDir(dirArg.projectName, dirArg.directoryId)
   );
   loadTaskSubscription: Subscription;
-  selection = new SelectionModel<PdfFile>(true, []);
+  selection = new SelectionModel<File>(true, []);
   isReannotating = false;
   uploadStarted = false;
   lmdbsDates = {};
@@ -58,7 +62,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
   dirPathId: number[] = [];
 
   // The list of files in a directory
-  fileCollection: (Directory|Map|PdfFile)[] = [];
+  fileCollection: (Directory|Map|File)[] = [];
 
   fileSpaceSubscription: Subscription;
 
@@ -161,6 +165,10 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
 
   refresh() {
     this.selection.clear();
+    this.loadTask.update({
+      projectName: this.projectName,
+      directoryId: this.currentDirectoryId
+    });
   }
 
   isAllSelected(): boolean {
@@ -248,7 +256,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
   }
 
   deleteFiles(files) {
-    const ids: string[] = files.map((file: PdfFile) => file.file_id);
+    const ids: string[] = files.map((file: File) => file.file_id);
     this.pdf.deleteFiles(ids).pipe(this.errorHandler.create()).subscribe(
       (res) => {
         let msg = 'Deletion completed';
@@ -268,7 +276,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
 
   reannotate() {
     this.isReannotating = true;
-    const ids: string[] = this.selection.selected.map((file: PdfFile) => file.file_id);
+    const ids: string[] = this.selection.selected.map((file: File) => file.file_id);
     // Let's show some progress!
     const progressObservable = new BehaviorSubject<Progress>(new Progress({
       status: 'Re-creating annotations in file...',
@@ -319,7 +327,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
     });
   }
 
-  displayEditDialog(file: PdfFile = null) {
+  displayEditDialog(file: File = null) {
     if (file == null) {
       const selected = this.getSelectedShownFiles();
       if (selected.length === 1) {
@@ -354,14 +362,14 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
     });
   }
 
-  private updateAnnotationsStatus(files: PdfFile[]) {
-    files.forEach((file: PdfFile) => {
+  private updateAnnotationsStatus(files: File[]) {
+    files.forEach((file: File) => {
       file.annotations_date_tooltip = this.generateTooltipContent(file);
     });
     this.files = [...files];
   }
 
-  private generateTooltipContent(file: PdfFile): string {
+  private generateTooltipContent(file: File): string {
     const outdated = Array
       .from(Object.entries(this.lmdbsDates))
       .filter(([, date]: [string, string]) => Date.parse(date) >= Date.parse(file.annotations_date));
@@ -395,7 +403,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
       (d: Directory) => ({...d, type: 'dir', routeLink: this.generateRouteLink(d, 'dir')})
     );
     files = files.map(
-      (f: PdfFile) => ({...f, type: 'pdf', routeLink: this.generateRouteLink(f, 'pdf')})
+      (f: File) => ({...f, type: 'pdf', routeLink: this.generateRouteLink(f, 'pdf')})
     );
 
     this.fileCollection = [].concat(maps, childDirectories, files);
@@ -430,7 +438,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
       case 'pdf':
         // TODO - refactor to server responses returning in camel case
         // .. pretty ugly right having to deal between camelCase and snakeCase
-        const f: PdfFile = file as PdfFile;
+        const f: File = file as File;
         // tslint:disable-next-line: no-string-literal
         const fileId = f.file_id || f['fileId'];
         return `files/${fileId}/${this.projectName}`;
@@ -544,8 +552,60 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
     );
   }
 
-  delete() {
-    console.log('implement me');
+  delete(file: (Map|File|Directory)) {
+    switch (
+      file.type
+    ) {
+      case 'map':
+        // TODO - have responses return camelCase
+        // tslint:disable-next-line: no-string-literal
+        const hashId = (file as Map).hashId || file['hash_id'];
+        this.projPage.deleteMap(
+          this.projectName,
+          hashId
+        ).subscribe(resp => {
+          this.fileCollection = this.fileCollection.filter(
+            (f) => {
+              if (f.type !== 'map') {
+                return true;
+              } else {
+                // TODO - have responses return camelCase
+                // tslint:disable-next-line: no-string-literal
+                const fHashId = (f as Map).hashId || f['hash_id'];
+                return hashId !== fHashId;
+              }
+            }
+          );
+        });
+        break;
+      case 'pdf':
+        // TODO - have responses return camelCase
+        // tslint:disable-next-line: no-string-literal
+        const fileId = (file as File).file_id || file['fileId'];
+
+        this.projPage.deletePDF(
+          this.projectName,
+          fileId
+        ).subscribe(resp => {
+          this.fileCollection = this.fileCollection.filter(
+            (f) => {
+              if (f.type !== 'pdf') {
+                return true;
+              } else {
+                // TODO - have responses return camelCase
+                // tslint:disable-next-line: no-string-literal
+                const fHashId = (f as File).file_id || f['fileId'];
+                return fileId !== fHashId;
+              }
+            }
+          );
+        });
+        break;
+      case 'dir':
+        break;
+      default:
+        break;
+    }
   }
 }
 

@@ -49,7 +49,7 @@ export interface Map {
   id?: number;
   label?: string;
   pubic?: boolean;
-  userId?: number
+  userId?: number;
   type?: string;
   routeLink?: string;
 }
