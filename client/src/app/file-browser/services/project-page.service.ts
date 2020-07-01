@@ -5,6 +5,7 @@ import { map } from 'rxjs/operators';
 import { UploadPayload, PdfFileUpload, UploadType } from 'app/interfaces/pdf-files.interface';
 import { isNullOrUndefined } from 'util';
 import { DirectoryContent } from '../components/file-browser.component';
+import { option } from 'vis-util';
 
 @Injectable({
   providedIn: '***ARANGO_USERNAME***'
@@ -23,14 +24,23 @@ export class ProjectPageService {
    * header if boolean set to true
    * @param withJwt - boolean representing whether to return the options with a jwt
    */
-  createHttpOptions(withJwt = false) {
+  createHttpOptions(withJwt = false, multiForm = false) {
     if (withJwt) {
-      return {
-        headers: new HttpHeaders({
-          'Content-Type': 'application/json',
-          Authorization: 'Bearer ' + localStorage.getItem('access_jwt'),
-        }),
-      };
+      if (multiForm) {
+        return {
+          headers: new HttpHeaders({
+            'Content-Type': 'multipart/form-data',
+            Authorization: 'Bearer ' + localStorage.getItem('access_jwt'),
+          }),
+        };
+      } else {
+        return {
+          headers: new HttpHeaders({
+            'Content-Type': 'application/json',
+            Authorization: 'Bearer ' + localStorage.getItem('access_jwt'),
+          }),
+        };
+      }
     } else {
       return {
           headers: new HttpHeaders({
@@ -51,7 +61,7 @@ export class ProjectPageService {
       `${this.projectsAPI}/${projectName}/directories`,
       this.createHttpOptions(true)
     ).pipe(
-      map(resp => resp.result)
+      map((resp: any) => resp.result)
     );
   }
 
@@ -142,7 +152,7 @@ export class ProjectPageService {
     formData.append('directoryId', parentDir);
 
     const url = `${this.projectsAPI}/${projectName}/files`;
-    const options = this.createHttpOptions(true);
+    const options = this.createHttpOptions(true, true);
 
     return this.http.post<PdfFileUpload>(
       url,
@@ -154,4 +164,36 @@ export class ProjectPageService {
       }
     );
   }
+
+  /**
+   * Delete map from project
+   * @param projectName - project containing asset to delete
+   * @param hashId - represent asset we want to delete
+   */
+  deleteMap(
+    projectName,
+    hashId
+  ): Observable<any> {
+    return this.http.delete(
+      `${this.projectsAPI}/${projectName}/map/${hashId}`,
+      this.createHttpOptions(true)
+    );
+  }
+  deletePDF(
+    projectName,
+    fileId
+  ): Observable<any> {
+    const options = this.createHttpOptions(true);
+
+    return this.http.request(
+      'delete',
+      `${this.projectsAPI}/${projectName}/files`,
+      {
+        body: [fileId],
+        ...option
+      });
+  }
+
+  // TODO - no delete dir endpoint exist rignt now
+  deleteDirectory(): Observable<any> { return null; }
 }
