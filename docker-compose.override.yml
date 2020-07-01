@@ -3,6 +3,7 @@ version: '3.8'
 services:
     pgdatabase:
         container_name: pg-database
+        image: postgres:11
         command: postgres -c max_wal_size=2GB -c log_statement='all'
         environment:
             - POSTGRES_PASSWORD=postgres
@@ -13,6 +14,7 @@ services:
 
     database:
         container_name: n4j-database
+        build: ./neo4j
         environment:
             - NEO4J_AUTH=neo4j/password
         volumes:
@@ -29,6 +31,7 @@ services:
 
     appserver:
         container_name: appserver
+        build: ./appserver
         command: [
             '/usr/bin/env',
             'bash',
@@ -63,10 +66,29 @@ services:
         networks:
             - frontend
             - backend
+        depends_on:
+            - database
+            - pgdatabase
+            - redis
+
+    webserver:
+        container_name: webservers
+        build:
+            context: ./client
+            dockerfile: Dockerfile
+        ports:
+            - "80:80"
+        networks:
+            - frontend
+        depends_on:
+            - appserver
 
     client:
         container_name: client
-        build: ./client
+        build:
+            context: ./client
+            dockerfile: Dockerfile
+            target: build
         command: yarn dev-start
         volumes:
             - ./client:/home/node/client
@@ -83,7 +105,6 @@ services:
             - backend
 
     cache-invalidator:
-        container_name: cache-invalidator
         volumes:
             - ./cache-invalidator:/app
         environment:
@@ -91,9 +112,15 @@ services:
             - NEO4J_AUTH=neo4j/password
             - REDIS_HOST=redis
             - REDIS_PORT=6379
+        depends_on:
+            - database
+            - redis
 
     elasticsearch:
         container_name: elasticsearch
+        build:
+            dockerfile: Dockerfile
+            context: elasticsearch
         environment:
             - discovery.type=single-node
             - http.max_content_length=200mb  #allow 200mb of content to be sent for indexing
@@ -113,6 +140,7 @@ services:
 
     kibana:
         container_name: kibana
+        image: docker.elastic.co/kibana/kibana:7.2.0
         ports:
             - "5601:5601"
         environment:
@@ -120,6 +148,8 @@ services:
             ELASTICSEARCH_URL: http://elasticsearch:9200
         networks:
             - backend
+        depends_on:
+            - elasticsearch
 
 networks:
     frontend:
