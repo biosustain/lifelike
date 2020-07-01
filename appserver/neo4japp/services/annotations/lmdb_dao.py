@@ -5,14 +5,14 @@ from os import path
 
 from neo4japp.exceptions import AnnotationError
 from neo4japp.services.annotations.constants import (
-    CHEMICAL_LMDB,
-    COMPOUND_LMDB,
-    DISEASE_LMDB,
-    GENE_LMDB,
-    PHENOTYPE_LMDB,
-    PROTEIN_LMDB,
-    PUBCHEM_LMDB,
-    SPECIES_LMDB,
+    CHEMICALS_CHEBI_LMDB,
+    COMPOUNDS_BIOCYC_LMDB,
+    DISEASES_MESH_LMDB,
+    GENES_NCBI_LMDB,
+    PHENOTYPES_MESH_LMDB,
+    PROTEINS_UNIPROT_LMDB,
+    CHEMICALS_PUBCHEM_LMDB,
+    SPECIES_NCBI_LMDB,
 )
 
 
@@ -87,13 +87,13 @@ class LMDBDao:
             and the transaction and cursor will point to the wrong address in
             memory and retrieve whatever is there.
             """
-            genes_db = self.genes_env.open_db(GENE_LMDB.encode('utf-8'), dupsort=True)
-            chemicals_db = self.chemicals_env.open_db(CHEMICAL_LMDB.encode('utf-8'), dupsort=True)
-            compounds_db = self.compounds_env.open_db(COMPOUND_LMDB.encode('utf-8'), dupsort=True)
-            proteins_db = self.proteins_env.open_db(PROTEIN_LMDB.encode('utf-8'), dupsort=True)
-            species_db = self.species_env.open_db(SPECIES_LMDB.encode('utf-8'), dupsort=True)
-            diseases_db = self.diseases_env.open_db(DISEASE_LMDB.encode('utf-8'), dupsort=True)
-            phenotypes_db = self.phenotypes_env.open_db(PHENOTYPE_LMDB.encode('utf-8'), dupsort=True)  # noqa
+            genes_db = self.genes_env.open_db(GENES_NCBI_LMDB.encode('utf-8'), dupsort=True)
+            chemicals_db = self.chemicals_env.open_db(CHEMICALS_CHEBI_LMDB.encode('utf-8'), dupsort=True)
+            compounds_db = self.compounds_env.open_db(COMPOUNDS_BIOCYC_LMDB.encode('utf-8'), dupsort=True)
+            proteins_db = self.proteins_env.open_db(PROTEINS_UNIPROT_LMDB.encode('utf-8'), dupsort=True)
+            species_db = self.species_env.open_db(SPECIES_NCBI_LMDB.encode('utf-8'), dupsort=True)
+            diseases_db = self.diseases_env.open_db(DISEASES_MESH_LMDB.encode('utf-8'), dupsort=True)
+            phenotypes_db = self.phenotypes_env.open_db(PHENOTYPES_MESH_LMDB.encode('utf-8'), dupsort=True)  # noqa
 
             # https://lmdb.readthedocs.io/en/release/#transaction-management
             # TODO: JIRA LL-330 env should be closed at end of app context

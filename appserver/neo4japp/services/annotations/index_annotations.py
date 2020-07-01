@@ -10,13 +10,13 @@ from elasticsearch import Elasticsearch
 from elasticsearch.helpers import parallel_bulk
 
 from neo4japp.services.annotations.constants import (
-    CHEMICAL_LMDB,
-    COMPOUND_LMDB,
-    DISEASE_LMDB,
-    GENE_LMDB,
-    PHENOTYPE_LMDB,
-    PROTEIN_LMDB,
-    SPECIES_LMDB,
+    CHEMICALS_CHEBI_LMDB,
+    COMPOUNDS_BIOCYC_LMDB,
+    DISEASES_MESH_LMDB,
+    GENES_NCBI_LMDB,
+    PHENOTYPES_MESH_LMDB,
+    PROTEINS_UNIPROT_LMDB,
+    SPECIES_NCBI_LMDB,
 )
 
 
@@ -63,19 +63,19 @@ def _open_env(parentdir, db_name):
 
 def open_env(entity_type, parentdir):
     if entity_type == 'chemicals':
-        env, db = _open_env(parentdir, CHEMICAL_LMDB)
+        env, db = _open_env(parentdir, CHEMICALS_CHEBI_LMDB)
     elif entity_type == 'compounds':
-        env, db = _open_env(parentdir, COMPOUND_LMDB)
+        env, db = _open_env(parentdir, COMPOUNDS_BIOCYC_LMDB)
     elif entity_type == 'diseases':
-        env, db = _open_env(parentdir, DISEASE_LMDB)
+        env, db = _open_env(parentdir, DISEASES_MESH_LMDB)
     elif entity_type == 'genes':
-        env, db = _open_env(parentdir, GENE_LMDB)
+        env, db = _open_env(parentdir, GENES_NCBI_LMDB)
     elif entity_type == 'phenotypes':
-        env, db = _open_env(parentdir, PHENOTYPE_LMDB)
+        env, db = _open_env(parentdir, PHENOTYPES_MESH_LMDB)
     elif entity_type == 'proteins':
-        env, db = _open_env(parentdir, PROTEIN_LMDB)
+        env, db = _open_env(parentdir, PROTEINS_UNIPROT_LMDB)
     elif entity_type == 'species':
-        env, db = _open_env(parentdir, SPECIES_LMDB)
+        env, db = _open_env(parentdir, SPECIES_NCBI_LMDB)
     else:
         print_help()
         sys.exit(2)

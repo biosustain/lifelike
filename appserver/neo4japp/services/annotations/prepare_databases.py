@@ -12,14 +12,14 @@ from ast import literal_eval
 from os import path, remove, walk
 
 from neo4japp.services.annotations.constants import (
-    CHEMICAL_LMDB,
-    COMPOUND_LMDB,
-    DISEASE_LMDB,
-    GENE_LMDB,
-    PHENOTYPE_LMDB,
-    PROTEIN_LMDB,
-    PUBCHEM_LMDB,
-    SPECIES_LMDB,
+    CHEMICALS_CHEBI_LMDB,
+    COMPOUNDS_BIOCYC_LMDB,
+    DISEASES_MESH_LMDB,
+    GENES_NCBI_LMDB,
+    PHENOTYPES_MESH_LMDB,
+    PROTEINS_UNIPROT_LMDB,
+    CHEMICALS_PUBCHEM_LMDB,
+    SPECIES_NCBI_LMDB,
     DatabaseType,
 )
 from neo4japp.services.annotations.util import normalize_str
@@ -59,7 +59,7 @@ def prepare_lmdb_genes_database(filename: str):
     with open(path.join(directory, filename), 'r') as f:
         map_size = 1099511627776
         env = lmdb.open(path.join(directory, 'lmdb/genes'), map_size=map_size, max_dbs=2)
-        db = env.open_db(GENE_LMDB.encode('utf-8'), dupsort=True)
+        db = env.open_db(GENES_NCBI_LMDB.encode('utf-8'), dupsort=True)
 
         with env.begin(db=db, write=True) as transaction:
             reader = csv.reader(f, delimiter='\t', quotechar='"')
@@ -93,7 +93,7 @@ def prepare_lmdb_chemicals_database(filename: str):
     with open(path.join(directory, filename), 'r') as f:
         map_size = 1099511627776
         env = lmdb.open(path.join(directory, 'lmdb/chemicals'), map_size=map_size, max_dbs=2)
-        db = env.open_db(CHEMICAL_LMDB.encode('utf-8'), dupsort=True)
+        db = env.open_db(CHEMICALS_CHEBI_LMDB.encode('utf-8'), dupsort=True)
 
         with env.begin(db=db, write=True) as transaction:
             reader = csv.reader(f, delimiter=',', quotechar='"')
@@ -146,7 +146,7 @@ def prepare_lmdb_compounds_database(filename: str):
     with open(path.join(directory, filename), 'r') as f:
         map_size = 1099511627776
         env = lmdb.open(path.join(directory, 'lmdb/compounds'), map_size=map_size, max_dbs=2)
-        db = env.open_db(COMPOUND_LMDB.encode('utf-8'), dupsort=True)
+        db = env.open_db(COMPOUNDS_BIOCYC_LMDB.encode('utf-8'), dupsort=True)
 
         with env.begin(db=db, write=True) as transaction:
             reader = csv.reader(f, delimiter=',', quotechar='"')
@@ -198,7 +198,7 @@ def prepare_lmdb_proteins_database(filename: str):
     with open(path.join(directory, filename), 'r') as f:
         map_size = 1099511627776
         env = lmdb.open(path.join(directory, 'lmdb/proteins'), map_size=map_size, max_dbs=2)
-        db = env.open_db(PROTEIN_LMDB.encode('utf-8'), dupsort=True)
+        db = env.open_db(PROTEINS_UNIPROT_LMDB.encode('utf-8'), dupsort=True)
 
         with env.begin(db=db, write=True) as transaction:
             reader = csv.reader(f, delimiter='\t', quotechar='"')
@@ -235,7 +235,7 @@ def prepare_lmdb_species_database(filename: str):
     with open(path.join(directory, filename), 'r') as f:
         map_size = 1099511627776
         env = lmdb.open(path.join(directory, 'lmdb/species'), map_size=map_size, max_dbs=2)
-        db = env.open_db(SPECIES_LMDB.encode('utf-8'), dupsort=True)
+        db = env.open_db(SPECIES_NCBI_LMDB.encode('utf-8'), dupsort=True)
 
         with env.begin(db=db, write=True) as transaction:
             reader = csv.reader(f, delimiter='\t', quotechar='"')
@@ -272,7 +272,7 @@ def prepare_lmdb_diseases_database(filename: str):
     with open(path.join(directory, filename), 'r') as f:
         map_size = 1099511627776
         env = lmdb.open(path.join(directory, 'lmdb/diseases'), map_size=map_size, max_dbs=2)
-        db = env.open_db(DISEASE_LMDB.encode('utf-8'), dupsort=True)
+        db = env.open_db(DISEASES_MESH_LMDB.encode('utf-8'), dupsort=True)
 
         with env.begin(db=db, write=True) as transaction:
             reader = csv.reader(f, delimiter=',', quotechar='"')
@@ -306,7 +306,7 @@ def prepare_lmdb_phenotypes_database(filename: str):
     with open(path.join(directory, filename), 'r') as f:
         map_size = 1099511627776
         env = lmdb.open(path.join(directory, 'lmdb/phenotypes'), map_size=map_size, max_dbs=2)
-        db = env.open_db(PHENOTYPE_LMDB.encode('utf-8'), dupsort=True)
+        db = env.open_db(PHENOTYPES_MESH_LMDB.encode('utf-8'), dupsort=True)
 
         with env.begin(db=db, write=True) as transaction:
             reader = csv.reader(f, delimiter=',', quotechar='"')
