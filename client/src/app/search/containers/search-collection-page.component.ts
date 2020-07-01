@@ -14,7 +14,7 @@ import { LegendService } from 'app/shared/services/legend.service';
     template: `
                 <app-search-graph></app-search-graph>
                 <app-search-list
-                    *ngIf="legend"
+                    *ngIf="legend && (records$ | async)"
                     [totalRecords]="totalRecords$ | async"
                     [recordsInput]="records$ | async"
                     [currentPage]="currentPage$ | async"
