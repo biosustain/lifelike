@@ -176,10 +176,9 @@ export class EditProjectDialogComponent implements OnInit, OnDestroy {
     // redundant change
     const curCollab = this.collabs.filter(c => c.id === id)[0];
     if (curCollab.role === role) {
+      console.log('here');
       return;
     } else if (role === 'delete') {
-      // TODO - get this working from the back-end
-
       // Remove the user from the list
       this.projSpace.removeCollaborator(
         this.project.projectName,
@@ -193,7 +192,13 @@ export class EditProjectDialogComponent implements OnInit, OnDestroy {
         this.collabs = this.collabs.filter(c => c.id !== id);
       });
     } else {
-      // TODO - Update the user privilege
+      this.projSpace.editCollaborator(
+        this.project.projectName,
+        username,
+        role
+      ).subscribe(resp => {
+        console.log(resp);
+      });
     }
 
 

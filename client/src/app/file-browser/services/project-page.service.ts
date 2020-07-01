@@ -24,23 +24,13 @@ export class ProjectPageService {
    * header if boolean set to true
    * @param withJwt - boolean representing whether to return the options with a jwt
    */
-  createHttpOptions(withJwt = false, multiForm = false) {
+  createHttpOptions(withJwt = false) {
     if (withJwt) {
-      if (multiForm) {
-        return {
-          headers: new HttpHeaders({
-            'Content-Type': 'multipart/form-data',
-            Authorization: 'Bearer ' + localStorage.getItem('access_jwt'),
-          }),
-        };
-      } else {
-        return {
-          headers: new HttpHeaders({
-            'Content-Type': 'application/json',
-            Authorization: 'Bearer ' + localStorage.getItem('access_jwt'),
-          }),
-        };
-      }
+      return {
+        headers: new HttpHeaders({
+          Authorization: 'Bearer ' + localStorage.getItem('access_jwt'),
+        }),
+      };
     } else {
       return {
           headers: new HttpHeaders({
@@ -152,7 +142,7 @@ export class ProjectPageService {
     formData.append('directoryId', parentDir);
 
     const url = `${this.projectsAPI}/${projectName}/files`;
-    const options = this.createHttpOptions(true, true);
+    const options = this.createHttpOptions(true);
 
     return this.http.post<PdfFileUpload>(
       url,
