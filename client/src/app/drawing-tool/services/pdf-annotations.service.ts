@@ -54,9 +54,12 @@ export class PdfAnnotationsService {
    * Retrieves the annotations of the given file.
    * @param fileId id of the file
    */
-  getFileAnnotations(fileId: string): Observable<any> {
+  getFileAnnotations(fileId: string, projectName: string = ''): Observable<any> {
+      const url = projectName.length ?
+        `/api/projects/${projectName}/files/${fileId}/annotations` :
+        this.baseUrl + `/get_annotations/${fileId}`;
       return this.http.get(
-        this.baseUrl + `/get_annotations/${fileId}`,
+        url,
         this.createHttpOptions(true),
       );
   }
