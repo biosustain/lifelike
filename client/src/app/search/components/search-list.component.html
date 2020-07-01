@@ -1,10 +1,10 @@
 <div class="h-100 p-3">
   <h3>Showing results for "{{ currentQuery }}"</h3>
-  <h6 class="text-muted">Showing {{nodes.length}} of {{ totalRecords }} results</h6>
+  <h6 class="text-muted">Showing {{records.length}} of {{ totalRecords }} results</h6>
   <div class="search-record-container">
     <div
       class="my-2"
-      *ngFor="let n of nodes; let i = index"
+      *ngFor="let n of records; let i = index"
       [ngSwitch]="n.node.label"
     >
       <app-search-record-relationships [node]="n" *ngSwitchCase="'Snippet'">
@@ -13,7 +13,7 @@
       </app-search-record-node>
     </div>
   </div>
-  <div class="d-flex justify-content-center mt-3" *ngIf="nodes.length < totalRecords">
+  <div class="d-flex justify-content-center mt-3" *ngIf="records.length < totalRecords">
     <button
       class="btn btn-primary"
       appVisClickDebounce
