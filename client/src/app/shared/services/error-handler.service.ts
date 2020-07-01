@@ -27,6 +27,9 @@ export class ErrorHandler {
           title = 'Not Found';
           message = 'The document that you are looking for does not exist. You may have followed a broken link ' +
             'or the document may have been removed.';
+        } else if (res.status === 413) {
+          title = 'Too Large';
+          message = 'The server could not process your upload because it was too large.';
         } else if (res.error && res.error.message) {
           message = res.error.message;
         }
