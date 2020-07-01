@@ -31,6 +31,8 @@ services:
             - frontend
 
     cache-invalidator:
+        container_name: cache-invalidator
+        build: ./cache-invalidator
         env_file:
             - ./.env
         networks:
