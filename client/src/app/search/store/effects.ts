@@ -36,7 +36,7 @@ export class SearchEffects {
     searchSuccess = createEffect(() => this.actions$.pipe(
         ofType(SearchActions.searchSuccess),
         tap(({results}) => this.router.navigate(
-            ['search', ''], {queryParams: { q: results.query}})),
+                ['kg-visualizer', 'search'], {queryParams: { q: results.query}})),
     ), {dispatch: false});
 
     searchPaginate = createEffect(() => this.actions$.pipe(
