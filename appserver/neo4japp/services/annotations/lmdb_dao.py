@@ -88,11 +88,11 @@ class LMDBDao:
             memory and retrieve whatever is there.
             """
             genes_db = self.genes_env.open_db(GENES_NCBI_LMDB.encode('utf-8'), dupsort=True)
-            chemicals_db = self.chemicals_env.open_db(CHEMICALS_CHEBI_LMDB.encode('utf-8'), dupsort=True)
-            compounds_db = self.compounds_env.open_db(COMPOUNDS_BIOCYC_LMDB.encode('utf-8'), dupsort=True)
-            proteins_db = self.proteins_env.open_db(PROTEINS_UNIPROT_LMDB.encode('utf-8'), dupsort=True)
+            chemicals_db = self.chemicals_env.open_db(CHEMICALS_CHEBI_LMDB.encode('utf-8'), dupsort=True)  # noqa
+            compounds_db = self.compounds_env.open_db(COMPOUNDS_BIOCYC_LMDB.encode('utf-8'), dupsort=True)  # noqa
+            proteins_db = self.proteins_env.open_db(PROTEINS_UNIPROT_LMDB.encode('utf-8'), dupsort=True)  # noqa
             species_db = self.species_env.open_db(SPECIES_NCBI_LMDB.encode('utf-8'), dupsort=True)
-            diseases_db = self.diseases_env.open_db(DISEASES_MESH_LMDB.encode('utf-8'), dupsort=True)
+            diseases_db = self.diseases_env.open_db(DISEASES_MESH_LMDB.encode('utf-8'), dupsort=True)  # noqa
             phenotypes_db = self.phenotypes_env.open_db(PHENOTYPES_MESH_LMDB.encode('utf-8'), dupsort=True)  # noqa
 
             # https://lmdb.readthedocs.io/en/release/#transaction-management
