@@ -130,6 +130,7 @@ interface Meta {
   isExcluded?: boolean;
   exclusionReason?: string;
   exclusionComment?: string;
+  primaryLink?: string;
 }
 
 interface Rect {
