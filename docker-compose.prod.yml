@@ -18,8 +18,7 @@ services:
             - frontend
             - backend
 
-    webservers:
-        image: ${REGISTRY:-gcr.io/able-goods-221820}/kg-webserver-prod:${GITHUB_HASH:-latest}
+    webserver:
         ports:
             - 80:80
             - 443:443
@@ -31,8 +30,6 @@ services:
             - frontend
 
     cache-invalidator:
-        container_name: cache-invalidator
-        build: ./cache-invalidator
         env_file:
             - ./.env
         networks:
