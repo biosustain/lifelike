@@ -4,7 +4,7 @@ import {
     HttpHeaders,
 } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { map, tap } from 'rxjs/operators';
 
 export interface Project {
   creationDate: string;
@@ -136,7 +136,7 @@ export class ProjectSpaceService {
    * Add a collaborator to a project
    * @param projectName - project for which you're granting user role to
    * @param username - user to grant role to
-   * @param role - role to grant to user for project
+   * @param role - role to grant to user
    */
   addCollaborator(
     projectName,
@@ -159,10 +159,28 @@ export class ProjectSpaceService {
   removeCollaborator(
     projectName,
     username
-  ) {
+  ): Observable<any> {
     projectName = encodeURIComponent(projectName.trim());
     return this.http.delete<any>(
       `${this.projectsAPI}/${projectName}/collaborators/${username}`,
+      this.createHttpOptions(true)
+    );
+  }
+
+  /**
+   * Edit collaborator from a project
+   * @param projectName - project for which your updating user from
+   * @param username - the user to modify collab rights from
+   * @param role - role to change to user
+   */
+  editCollaborator(
+    projectName,
+    username,
+    role
+  ): Observable<any> {
+    return this.http.put(
+      `${this.projectsAPI}/${projectName}/collaborators/${username}`,
+      { role },
       this.createHttpOptions(true)
     );
   }

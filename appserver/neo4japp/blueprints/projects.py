@@ -38,10 +38,12 @@ def get_project(name):
         Directory.directory_parent_id is None
     ).first()
 
+    dir = dir.to_dict() if dir is not None else {}
+
     # Combine both dictionaries
     results = {
         **projects.to_dict(),
-        "directory": dir.to_dict()
+        "directory": dir
     }
     return jsonify(dict(results=results)), 200
 
@@ -143,6 +145,43 @@ def add_collaborator(username: str, project_name: str = ''):
     user = g.current_user
 
     yield user, projects
+
+    new_role = AppRole.query.filter(AppRole.name == project_role).one()
+    proj_service.add_collaborator(new_collaborator, new_role, projects)
+
+    yield jsonify(dict(result='success')), 200
+
+
+@bp.route('/<string:project_name>/collaborators/<string:username>', methods=['PUT'])
+@auth.login_required
+@requires_project_role('project-admin')
+def edit_collaborator(username: str, project_name: str = ''):
+
+    proj_service = get_projects_service()
+
+    data = request.get_json()
+
+    project_role = data['role']
+
+    projects = Projects.query.filter(
+        Projects.project_name == project_name
+    ).one_or_none()
+
+    if projects is None:
+        raise RecordNotFoundException(f'No such projects: {project_name}')
+
+    new_collaborator = AppUser.query.filter(
+        AppUser.username == username
+    ).one_or_none()
+
+    if new_collaborator is None:
+        raise RecordNotFoundException(f'No such username {username}')
+
+    user = g.current_user
+
+    yield user, projects
+
+    proj_service.remove_collaborator(new_collaborator, projects)
 
     new_role = AppRole.query.filter(AppRole.name == project_role).one()
     proj_service.add_collaborator(new_collaborator, new_role, projects)
