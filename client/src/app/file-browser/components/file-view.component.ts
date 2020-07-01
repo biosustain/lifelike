@@ -1,5 +1,5 @@
 import { Component, EventEmitter, OnDestroy, Output, ViewChild } from '@angular/core';
-import { combineLatest, Subject, Subscription, throwError } from 'rxjs';
+import { combineLatest, Subject, Subscription, throwError, Observable } from 'rxjs';
 import { PdfFilesService } from 'app/shared/services/pdf-files.service';
 import { Hyperlink, SearchLink } from 'app/shared/constants';
 
@@ -67,7 +67,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
 
   searchChanged: Subject<{ keyword: string, findPrevious: boolean }> = new Subject<{ keyword: string, findPrevious: boolean }>();
   goToPosition: Subject<Location> = new Subject<Location>();
-  loadTask: BackgroundTask<[PdfFile, Location], [PdfFile, ArrayBuffer, any]>;
+  loadTask: BackgroundTask<[PdfFile, Location], [ArrayBuffer, any]>;
   pendingScroll: Location;
   openPdfSub: Subscription;
   ready = false;
@@ -104,26 +104,27 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
     private readonly errorHandler: ErrorHandler,
   ) {
     this.loadTask = new BackgroundTask(([file, loc]) => {
+      const projectName = this.route.snapshot.params.project_name || '';
+
       return combineLatest(
-        this.pdf.getFileInfo(file.file_id),
-        this.pdf.getFile(file.file_id),
-        this.pdfAnnService.getFileAnnotations(file.file_id),
+        this.pdf.getFile(file.file_id, projectName),
+        this.pdfAnnService.getFileAnnotations(file.file_id, projectName),
       ).pipe(errorHandler.create());
     });
 
     // Listener for file open
     this.openPdfSub = this.loadTask.results$.subscribe(({
-                                                          result: [pdfFile, pdfFileContent, ann],
+                                                          result: [pdfFileContent, ann],
                                                           value: [file, loc],
                                                         }) => {
       this.pdfData = {data: new Uint8Array(pdfFileContent)};
       this.annotations = ann;
       this.updateAnnotationIndex();
       this.updateSortedEntityTypeEntries();
-      this.modulePropertiesChange.next({
-        title: pdfFile.filename,
-        fontAwesomeIcon: 'file-pdf',
-      });
+      // this.modulePropertiesChange.next({
+      //   title: pdfFile.filename,
+      //   fontAwesomeIcon: 'file-pdf',
+      // });
 
       this.currentFileId = file.file_id;
       setTimeout(() => {

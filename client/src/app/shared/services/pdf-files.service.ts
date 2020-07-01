@@ -27,18 +27,21 @@ export class PdfFilesService {
     );
   }
 
-  getFileInfo(id: string): Observable<PdfFile> {
+  getFileInfo(id: string, projectName: string = ''): Observable<PdfFile> {
     const options = {
       headers: this.getAuthHeader(),
     };
     return this.http.get<PdfFile>(`${this.baseUrl}/${id}/info`, options);
   }
 
-  getFile(id: string): Observable<ArrayBuffer> {
+  getFile(id: string, projectName: string = ''): Observable<ArrayBuffer> {
     const options = {
       headers: this.getAuthHeader(),
       responseType: 'arraybuffer' as const,
     };
+    if (projectName) {
+      return this.http.get(`/api/projects/${projectName}/files/${id}`, options);
+    }
     return this.http.get(`${this.baseUrl}/${id}`, options);
   }
 

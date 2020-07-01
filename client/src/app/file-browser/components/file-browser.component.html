@@ -48,6 +48,7 @@
           (click)="addMap()">
           <i class="fa fa-fw fa-project-diagram"></i> Add Map
         </button>
+        <!--
         <div class="d-inline-block"
             [ngbTooltip]="getSelectedShownFiles().length === 0 ? 'Select one or more files first.' : ''">
           <button class="btn btn-primary ml-2"
@@ -64,6 +65,7 @@
             Delete
           </button>
         </div>
+        -->
       </div>
       <div class="ml-auto">
         <button type="button" class="btn btn-outline-secondary ml-2" (click)="this.refresh()"
@@ -85,6 +87,7 @@
       <tr>
       <tr>
         <th>
+          <!--
           <div class="custom-control custom-checkbox">
             <input type="checkbox" class="custom-control-input" id="select-all"
                    [checked]="isAllSelected()" (change)="toggleAllSelected()">
@@ -92,11 +95,17 @@
               Name
             </label>
           </div>
+          -->
+          Name
         </th>
         <th class="d-none d-lg-table-cell">Submitter</th>
         <th class="d-none d-md-table-cell">Kind</th>
+        <th class="d-none d-md-table-cell">
+        </th>
+        <!--
         <th class="d-none d-lg-table-cell">Modified</th>
         <th class="d-none d-md-table-cell">Annotations</th>
+        -->
       </tr>
       </thead>
 
@@ -111,12 +120,17 @@
         <td class="align-middle d-none d-lg-table-cell text-nowrap text-truncate">
           <span class="placeholder-box">Loading loading</span>
         </td>
+        <td class="align-middle text-nowrap text-truncate">
+          <span class="placeholder-box">Loading loading</span>
+        </td>
+        <!--
         <td class="align-middle d-none d-md-table-cell text-nowrap text-truncate">
           <span class="placeholder-box">Loading</span>
         </td>
         <td class="align-middle d-none d-md-table-cell text-nowrap text-truncate">
           <span class="placeholder-box">Loading</span>
         </td>
+        -->
       </tr>
       <tr>
         <td class="align-middle text-nowrap text-truncate">
@@ -128,36 +142,44 @@
         <td class="align-middle d-none d-lg-table-cell text-nowrap text-truncate">
           <span class="placeholder-box">Loading loading loading</span>
         </td>
+        <td class="align-middle text-nowrap text-truncate">
+          <span class="placeholder-box">Loading loading</span>
+        </td>
+        <!--
         <td class="align-middle d-none d-md-table-cell text-nowrap text-truncate">
           <span class="placeholder-box">Loading</span>
         </td>
         <td class="align-middle d-none d-md-table-cell text-nowrap text-truncate">
           <span class="placeholder-box">Loading</span>
         </td>
+        -->
       </tr>
       </tbody>
 
       <tbody *ngIf="status.resultsShown">
       <tr *ngFor="let file of fileCollection"
           tabindex="0">
-        <td class="align-middle text-nowrap text-truncate">
+        <td [ngSwitch]="file.type"  class="align-middle text-nowrap text-truncate">
+          <!--
           <div class="custom-control custom-checkbox">
             <input type="checkbox" class="custom-control-input" id="file-{{ file.file_id }}"
                    (change)="selection.toggle(file)"
                    [checked]="selection.isSelected(file)">
-            <!-- Rendering filename based on type -->
             <label [ngSwitch]="file.type" class="custom-control-label d-flex align-items-center" for="file-{{ file.file_id }}">
-              <a *ngSwitchCase="'map'" [href]="file.routeLink" [appLink]="file.routeLink" class="text-truncate">
-                {{ file.label }}
-              </a>
-              <a *ngSwitchCase="'pdf'" [href]="file.routeLink" [appLink]="routeLink" class="text-truncate">
-                {{ file.filename }}
-              </a>
-              <a *ngSwitchCase="'dir'" [href]="file.routeLink" [appLink]="file.routeLink" class="text-truncate">
-                {{ file.name }}
-              </a>
+              {{file.filename}}
             </label>
           </div>
+          -->
+          <!-- Rendering filename based on type -->
+          <a *ngSwitchCase="'map'" [href]="file.routeLink" [appLink]="file.routeLink" class="text-truncate">
+            {{ file.label }}
+          </a>
+          <a *ngSwitchCase="'pdf'" [href]="file.routeLink" [appLink]="file.routeLink" class="text-truncate">
+            {{ file.filename }}
+          </a>
+          <a *ngSwitchCase="'dir'" [href]="file.routeLink" [appLink]="file.routeLink" class="text-truncate">
+            {{ file.name }}
+          </a>
         </td>
         <!-- Rendering author based on type -->
         <td [ngSwitch]="file.type" class="align-middle d-none d-lg-table-cell text-nowrap text-truncate">
@@ -182,6 +204,10 @@
           </span>
           <span *ngSwitchDefault></span>
         </td>
+        <td class="d-none d-md-table-cell pointer dim" (click)='delete()'>
+          <span class="fa fa-fw fa-trash-o text-danger"></span>
+        </td>
+        <!--
         <td class="align-middle d-none d-lg-table-cell text-nowrap text-truncate">
           {{ file.creation_date | date:'shortDate' }}
         </td>
@@ -191,6 +217,7 @@
                 *ngIf="file.annotations_date_tooltip?.length > 0"></span>
           {{ file.annotations_date | date:'shortDate' }}
         </td>
+        -->
       </tr>
       </tbody>
     </table>
