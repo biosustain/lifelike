@@ -5,6 +5,7 @@ import { configureTestSuite } from 'ng-bullet';
 import { SharedModule } from 'app/shared/shared.module';
 import { FileBrowserModule } from 'app/file-browser/file-browser.module';
 import { RootStoreModule } from 'app/root-store';
+import { RouterTestingModule } from '@angular/router/testing';
 
 describe('ProjectSpaceComponent', () => {
   let component: ProjectSpaceComponent;
@@ -15,7 +16,8 @@ describe('ProjectSpaceComponent', () => {
       imports: [
         SharedModule,
         FileBrowserModule,
-        RootStoreModule
+        RootStoreModule,
+        RouterTestingModule
       ]
     })
     .compileComponents();
