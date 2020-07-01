@@ -35,7 +35,7 @@ def get_project(name):
     # Pull up directory id for project
     dir = Directory.query.filter(
         Directory.projects_id == projects.id,
-        Directory.directory_parent_id == None
+        Directory.directory_parent_id is None
     ).first()
 
     # Combine both dictionaries

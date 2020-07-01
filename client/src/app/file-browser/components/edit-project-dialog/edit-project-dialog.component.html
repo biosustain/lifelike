@@ -2,7 +2,7 @@
   <div>
     <div class="modal-header">
       <h4 class="modal-title text-truncate blue b">
-        {{project.projectName}}
+        {{project?.projectName}}
       </h4>
     </div>
 
@@ -10,7 +10,7 @@
       <div *ngIf='project?.description'>
         <h5 class='blue b'>Description</h5>
         <p>
-          {{project.description}}
+          {{project?.description}}
         </p>
       </div>
 

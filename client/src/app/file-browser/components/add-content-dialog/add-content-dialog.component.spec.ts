@@ -5,6 +5,7 @@ import { configureTestSuite } from 'ng-bullet';
 import { AddContentDialogComponent } from './add-content-dialog.component';
 import { SharedModule } from 'app/shared/shared.module';
 import { RootStoreModule } from 'app/***ARANGO_USERNAME***-store';
+import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 
 describe('AddContentDialogComponent', () => {
   let component: AddContentDialogComponent;
@@ -16,7 +17,10 @@ describe('AddContentDialogComponent', () => {
         SharedModule,
         RootStoreModule
       ],
-      declarations: [ AddContentDialogComponent ]
+      declarations: [ AddContentDialogComponent ],
+      providers: [
+        NgbActiveModal
+      ]
     })
     .compileComponents();
   });

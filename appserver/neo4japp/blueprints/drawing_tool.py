@@ -201,14 +201,12 @@ def add_project(projects_name: str = ''):
 
     yield user, projects
 
-    
     date_modified = datetime.strptime(
         data.get("date_modified", ""),
         "%Y-%m-%dT%H:%M:%S.%fZ"
     ) if data.get(
         "date_modified"
     ) is not None else datetime.now()
-
 
     # Create new project
     project = Project(

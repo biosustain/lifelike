@@ -4,6 +4,7 @@ import { CreateProjectDialogComponent } from './create-project-dialog.component'
 import { configureTestSuite } from 'ng-bullet';
 import { SharedModule } from 'app/shared/shared.module';
 import { RootStoreModule } from 'app/***ARANGO_USERNAME***-store';
+import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 
 describe('CreateProjectDialogComponent', () => {
   let component: CreateProjectDialogComponent;
@@ -15,6 +16,9 @@ describe('CreateProjectDialogComponent', () => {
       imports: [
         SharedModule,
         RootStoreModule
+      ],
+      providers: [
+        NgbActiveModal
       ]
     })
     .compileComponents();
