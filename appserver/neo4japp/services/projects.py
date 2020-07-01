@@ -123,8 +123,13 @@ class ProjectsService(RDBMSBaseDao):
 
     def get_absolute_dir_path(
             self, projects: Projects, current_dir: Directory) -> Sequence[Directory]:
-        """Gets the absolute path from the current directory"""
-        pass
+        """Gets the absolute path from the current directory
+        e.g. /home/child1/child1a
+
+        If we start at child1, we get child1a, child1, home
+        """
+        query = Directory.query_absolute_dir_path(current_dir.id)
+        return self.session.query(query).all()
 
     def get_immediate_child_dirs(
             self, projects: Projects, current_dir: Directory) -> Sequence[Directory]:
