@@ -35,15 +35,15 @@ def get_project(name):
     # Pull up directory id for project
     dir = Directory.query.filter(
         Directory.projects_id == projects.id,
-        Directory.directory_parent_id is None
+        # TODO - weird issue here is changing == to is 
+        # breaks it
+        Directory.directory_parent_id == None
     ).first()
-
-    dir = dir.to_dict() if dir is not None else {}
 
     # Combine both dictionaries
     results = {
         **projects.to_dict(),
-        "directory": dir
+        "directory": dir.to_dict()
     }
     return jsonify(dict(results=results)), 200
 

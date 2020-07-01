@@ -194,18 +194,19 @@
         <!-- Rendering based on type -->
         <td [ngSwitch]='file.type' class="align-middle d-none d-md-table-cell text-nowrap text-truncate">
           <span *ngSwitchCase="'pdf'">
-            File
+            <span class="fa fa-fw fa-file"></span> File
           </span>
           <span *ngSwitchCase="'map'">
-            Map
+            <span class="fa fa-fw fa-project-diagram"></span> Map
           </span>
           <span *ngSwitchCase="'dir'">
-            Directory
+            <span class="fa fa-fw fa-folder"></span> Directory
           </span>
           <span *ngSwitchDefault></span>
         </td>
-        <td class="d-none d-md-table-cell pointer dim" (click)='delete(file)'>
-          <span class="fa fa-fw fa-trash-o text-danger"></span>
+        <td [ngSwitch]='file.type' class="d-none d-md-table-cell pointer dim">
+          <span *ngSwitchCase="'dir'"></span>
+          <span *ngSwitchDefault (click)='delete(file)' class="fa fa-fw fa-trash-o text-danger"></span>
         </td>
         <!--
         <td class="align-middle d-none d-lg-table-cell text-nowrap text-truncate">
