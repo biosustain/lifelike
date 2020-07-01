@@ -457,7 +457,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
     for (const d in data) {
       if (d in data) {
         (data[d] as any[]).forEach(param => {
-          ret.push(encodeURIComponent(d) + '=' + encodeURIComponent(param))
+          ret.push(encodeURIComponent(d) + '=' + encodeURIComponent(param));
         });
       }
     }

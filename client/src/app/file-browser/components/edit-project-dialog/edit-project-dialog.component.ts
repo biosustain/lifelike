@@ -28,7 +28,7 @@ export class EditProjectDialogComponent implements OnInit, OnDestroy {
             role: new FormControl(c.role),
             id: new FormControl(c.id)
           })
-        )
+        );
 
         this.collabForm.setControl(
           'currentCollabs',
@@ -42,7 +42,7 @@ export class EditProjectDialogComponent implements OnInit, OnDestroy {
             );
             return subscription;
           }
-        )
+        );
       }
     );
   }
@@ -56,10 +56,10 @@ export class EditProjectDialogComponent implements OnInit, OnDestroy {
     {
       value: 'project-admin',
       label: 'Admin'
-    },{
+    }, {
       value: 'project-read',
       label: 'Read'
-    },{
+    }, {
       value: 'project-write',
       label: 'Write'
     },
@@ -85,7 +85,7 @@ export class EditProjectDialogComponent implements OnInit, OnDestroy {
   collabs: Collaborator[] = [];
 
 
-  collabFormSubscription: Subscription[] =[];
+  collabFormSubscription: Subscription[] = [];
 
   constructor(
     private projSpace: ProjectSpaceService,
@@ -101,7 +101,7 @@ export class EditProjectDialogComponent implements OnInit, OnDestroy {
   }
 
   doNothing() {
-    this.activeModal.dismiss()
+    this.activeModal.dismiss();
   }
 
   /**
@@ -114,7 +114,7 @@ export class EditProjectDialogComponent implements OnInit, OnDestroy {
       role: new FormControl('project-read')
     }));
   }
-  
+
   /**
    * Remove form entry from pending-collab-form
    * from the given index
@@ -152,7 +152,7 @@ export class EditProjectDialogComponent implements OnInit, OnDestroy {
         role: new FormControl(role)
       });
       this.currentCollabs.push(fg);
-      
+
       const subscription = fg.valueChanges.subscribe(val => this.updateCollaborator(val));
       this.collabFormSubscription.push(subscription);
 
@@ -162,8 +162,8 @@ export class EditProjectDialogComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * 
-   * @param value 
+   *
+   * @param value - represent user to add
    */
   updateCollaborator(value) {
     const {
@@ -175,7 +175,7 @@ export class EditProjectDialogComponent implements OnInit, OnDestroy {
     // Check if the user privilege is the same to prevent
     // redundant change
     const curCollab = this.collabs.filter(c => c.id === id)[0];
-    if (curCollab.role === role) { 
+    if (curCollab.role === role) {
       return;
     } else if (role === 'delete') {
       // TODO - get this working from the back-end
