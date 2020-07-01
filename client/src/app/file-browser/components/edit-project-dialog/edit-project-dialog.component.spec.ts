@@ -5,6 +5,7 @@ import { configureTestSuite } from 'ng-bullet';
 import { SharedModule } from 'app/shared/shared.module';
 import { FileBrowserModule } from 'app/file-browser/file-browser.module';
 import { RootStoreModule } from 'app/root-store';
+import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 
 describe('EditProjectDialogComponent', () => {
   let component: EditProjectDialogComponent;
@@ -16,6 +17,9 @@ describe('EditProjectDialogComponent', () => {
         SharedModule,
         FileBrowserModule,
         RootStoreModule
+      ],
+      providers: [
+        NgbActiveModal
       ]
     })
     .compileComponents();
