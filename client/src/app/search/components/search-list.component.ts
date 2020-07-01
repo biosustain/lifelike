@@ -1,5 +1,8 @@
 import { Component, Input, EventEmitter, Output } from '@angular/core';
+
 import { FTSQueryRecord, SearchQuery } from 'app/interfaces';
+
+import { isNullOrUndefined } from 'util';
 
 @Component({
     selector: 'app-search-list',
@@ -7,7 +10,11 @@ import { FTSQueryRecord, SearchQuery } from 'app/interfaces';
     styleUrls: ['./search-list.component.scss'],
 })
 export class SearchListComponent {
-    @Input() nodes: FTSQueryRecord[] = [];
+    @Input() set recordsInput(records: FTSQueryRecord[]) {
+        if (!isNullOrUndefined(records)) {
+            this.records = records;
+        }
+    }
     @Input() totalRecords = 0;
     @Input() currentPage: number;
     @Input() currentLimit: number;
@@ -15,7 +22,11 @@ export class SearchListComponent {
     @Input() legend: Map<string, string>;
     @Output() showMore = new EventEmitter<{searchQuery: SearchQuery}>();
 
-    constructor() {}
+    records: FTSQueryRecord[];
+
+    constructor() {
+        this.records = [];
+    }
 
     getMoreResults() {
         const searchQuery = {
