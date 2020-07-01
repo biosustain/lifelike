@@ -9,14 +9,14 @@ from neo4japp.services.annotations import prepare_databases
 from neo4japp.services.annotations.constants import (
     DatabaseType,
     OrganismCategory,
-    CHEMICAL_LMDB,
-    COMPOUND_LMDB,
-    DISEASE_LMDB,
-    GENE_LMDB,
-    PHENOTYPE_LMDB,
-    PROTEIN_LMDB,
-    PUBCHEM_LMDB,
-    SPECIES_LMDB,
+    CHEMICALS_CHEBI_LMDB,
+    COMPOUNDS_BIOCYC_LMDB,
+    DISEASES_MESH_LMDB,
+    GENES_NCBI_LMDB,
+    PHENOTYPES_MESH_LMDB,
+    PROTEINS_UNIPROT_LMDB,
+    CHEMICALS_PUBCHEM_LMDB,
+    SPECIES_NCBI_LMDB,
 )
 from neo4japp.services.annotations.util import normalize_str
 
@@ -160,13 +160,13 @@ def default_lmdb_setup(app, request):
     )
 
     entities = [
-        (CHEMICAL_LMDB, 'chemicals', []),  # TODO: Create test chemical data
-        (COMPOUND_LMDB, 'compounds', []),  # TODO: Create test compound data
-        (DISEASE_LMDB, 'diseases', []),  # TODO: Create test disease data
-        (GENE_LMDB, 'genes', [hyp27_gene, serpina1_gene, serpina1_gene2]),
-        (PHENOTYPE_LMDB, 'phenotypes', []),  # TODO: Create test phenotype data
-        (PROTEIN_LMDB, 'proteins', [hyp27_protein, serpina1_protein]),
-        (SPECIES_LMDB, 'species', [human, moniliophthora_roreri]),
+        (CHEMICALS_CHEBI_LMDB, 'chemicals', []),  # TODO: Create test chemical data
+        (COMPOUNDS_BIOCYC_LMDB, 'compounds', []),  # TODO: Create test compound data
+        (DISEASES_MESH_LMDB, 'diseases', []),  # TODO: Create test disease data
+        (GENES_NCBI_LMDB, 'genes', [hyp27_gene, serpina1_gene, serpina1_gene2]),
+        (PHENOTYPES_MESH_LMDB, 'phenotypes', []),  # TODO: Create test phenotype data
+        (PROTEINS_UNIPROT_LMDB, 'proteins', [hyp27_protein, serpina1_protein]),
+        (SPECIES_NCBI_LMDB, 'species', [human, moniliophthora_roreri]),
     ]
     for db_name, entity, data in entities:
         create_entity_lmdb(f'lmdb/{entity}', db_name, data)
@@ -209,13 +209,13 @@ def human_gene_pdf_lmdb_setup(app, request):
     )
 
     entities = [
-        (CHEMICAL_LMDB, 'chemicals', []),
-        (COMPOUND_LMDB, 'compounds', []),
-        (DISEASE_LMDB, 'diseases', [covid_19]),
-        (GENE_LMDB, 'genes', [ace2]),
-        (PHENOTYPE_LMDB, 'phenotypes', []),
-        (PROTEIN_LMDB, 'proteins', []),
-        (SPECIES_LMDB, 'species', [mers_cov]),
+        (CHEMICALS_CHEBI_LMDB, 'chemicals', []),
+        (COMPOUNDS_BIOCYC_LMDB, 'compounds', []),
+        (DISEASES_MESH_LMDB, 'diseases', [covid_19]),
+        (GENES_NCBI_LMDB, 'genes', [ace2]),
+        (PHENOTYPES_MESH_LMDB, 'phenotypes', []),
+        (PROTEINS_UNIPROT_LMDB, 'proteins', []),
+        (SPECIES_NCBI_LMDB, 'species', [mers_cov]),
     ]
     for db_name, entity, data in entities:
         create_entity_lmdb(f'lmdb/{entity}', db_name, data)
@@ -282,13 +282,13 @@ def escherichia_coli_pdf_lmdb_setup(app, request):
     )
 
     entities = [
-        (CHEMICAL_LMDB, 'chemicals', []),
-        (COMPOUND_LMDB, 'compounds', []),
-        (DISEASE_LMDB, 'diseases', []),
-        (GENE_LMDB, 'genes', [purA, purB, purC, purD, purF]),
-        (PHENOTYPE_LMDB, 'phenotypes', []),
-        (PROTEIN_LMDB, 'proteins', []),
-        (SPECIES_LMDB, 'species', [e_coli]),
+        (CHEMICALS_CHEBI_LMDB, 'chemicals', []),
+        (COMPOUNDS_BIOCYC_LMDB, 'compounds', []),
+        (DISEASES_MESH_LMDB, 'diseases', []),
+        (GENES_NCBI_LMDB, 'genes', [purA, purB, purC, purD, purF]),
+        (PHENOTYPES_MESH_LMDB, 'phenotypes', []),
+        (PROTEINS_UNIPROT_LMDB, 'proteins', []),
+        (SPECIES_NCBI_LMDB, 'species', [e_coli]),
     ]
     for db_names, entity, data in entities:
         create_entity_lmdb(f'lmdb/{entity}', db_names, data)
@@ -339,13 +339,13 @@ def human_rat_gene_lmdb_setup(app, request):
     )
 
     entities = [
-        (CHEMICAL_LMDB, 'chemicals', []),
-        (COMPOUND_LMDB, 'compounds', []),
-        (DISEASE_LMDB, 'diseases', []),
-        (GENE_LMDB, 'genes', [edem3, edem3_caps]),
-        (PHENOTYPE_LMDB, 'phenotypes', []),
-        (PROTEIN_LMDB, 'proteins', []),
-        (SPECIES_LMDB, 'species', [human, rat]),
+        (CHEMICALS_CHEBI_LMDB, 'chemicals', []),
+        (COMPOUNDS_BIOCYC_LMDB, 'compounds', []),
+        (DISEASES_MESH_LMDB, 'diseases', []),
+        (GENES_NCBI_LMDB, 'genes', [edem3, edem3_caps]),
+        (PHENOTYPES_MESH_LMDB, 'phenotypes', []),
+        (PROTEINS_UNIPROT_LMDB, 'proteins', []),
+        (SPECIES_NCBI_LMDB, 'species', [human, rat]),
     ]
     for db_name, entity, data in entities:
         create_entity_lmdb(f'lmdb/{entity}', db_name, data)
@@ -396,13 +396,13 @@ def fish_gene_lmdb_setup(app, request):
     )
 
     entities = [
-        (CHEMICAL_LMDB, 'chemicals', []),
-        (COMPOUND_LMDB, 'compounds', []),
-        (DISEASE_LMDB, 'diseases', []),
-        (GENE_LMDB, 'genes', [IL7, il7]),
-        (PHENOTYPE_LMDB, 'phenotypes', []),
-        (PROTEIN_LMDB, 'proteins', []),
-        (SPECIES_LMDB, 'species', [coelacanth, tetraodon]),
+        (CHEMICALS_CHEBI_LMDB, 'chemicals', []),
+        (COMPOUNDS_BIOCYC_LMDB, 'compounds', []),
+        (DISEASES_MESH_LMDB, 'diseases', []),
+        (GENES_NCBI_LMDB, 'genes', [IL7, il7]),
+        (PHENOTYPES_MESH_LMDB, 'phenotypes', []),
+        (PROTEINS_UNIPROT_LMDB, 'proteins', []),
+        (SPECIES_NCBI_LMDB, 'species', [coelacanth, tetraodon]),
     ]
     for db_name, entity, data in entities:
         create_entity_lmdb(f'lmdb/{entity}', db_name, data)

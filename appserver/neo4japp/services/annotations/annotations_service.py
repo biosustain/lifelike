@@ -948,6 +948,7 @@ class AnnotationsService:
             unified_annotations=fixed_unified_annotations,
         )
 
+        self.lmdb_session.close_envs()
         return fixed_unified_annotations
 
     def fix_conflicting_annotations(
