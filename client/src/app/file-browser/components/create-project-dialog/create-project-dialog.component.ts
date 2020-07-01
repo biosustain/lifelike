@@ -12,7 +12,7 @@ import { Subscription } from 'rxjs';
   templateUrl: './create-project-dialog.component.html',
   styleUrls: ['./create-project-dialog.component.scss']
 })
-export class CreateProjectDialogComponent implements OnInit, OnDestroy{
+export class CreateProjectDialogComponent implements OnInit, OnDestroy {
   form: FormGroup = new FormGroup({
     projectName: new FormControl('', Validators.required),
     description: new FormControl('')
@@ -37,7 +37,7 @@ export class CreateProjectDialogComponent implements OnInit, OnDestroy{
   }
 
   doNothing() {
-    this.activeModal.dismiss()
+    this.activeModal.dismiss();
   }
 
   submit() {
