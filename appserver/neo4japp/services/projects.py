@@ -121,6 +121,11 @@ class ProjectsService(RDBMSBaseDao):
         query = Directory.query_child_directories(current_dir.id)
         return self.session.query(query).all()
 
+    def get_absolute_dir_path(
+            self, projects: Projects, current_dir: Directory) -> Sequence[Directory]:
+        """Gets the absolute path from the current directory"""
+        pass
+
     def get_immediate_child_dirs(
             self, projects: Projects, current_dir: Directory) -> Sequence[Directory]:
         """ Gets the next child directory
