@@ -10,20 +10,71 @@ def project(session):
     return p
 
 
-def test_can_get_child_directories(session, project):
-    parent_dir = Directory(name='parent', directory_parent_id=None, projects_id=project.id)
+@pytest.fixture(scope='function')
+def mock_directory_path(session, project):
+    """ Directory structure
+
+    parent/child-1/child-1a
+    parent/child-2
+
+    """
+    parent_dir = Directory(
+        name='parent',
+        directory_parent_id=None,
+        projects_id=project.id
+    )
     session.add(parent_dir)
     session.flush()
 
-    child_dir = Directory(name='child-1', directory_parent_id=parent_dir.id, projects_id=project.id)
+    child_dir = Directory(
+        name='child-1',
+        directory_parent_id=parent_dir.id,
+        projects_id=project.id
+    )
     session.add(child_dir)
     session.flush()
 
-    child_dir2 = Directory(name='child-2', directory_parent_id=child_dir.id, projects_id=project.id)
+    child_dir1a = Directory(
+        name='child-1a',
+        directory_parent_id=child_dir.id,
+        projects_id=project.id
+    )
+    session.add(child_dir1a)
+    session.flush()
+
+    child_dir2 = Directory(
+        name='child-2',
+        directory_parent_id=parent_dir.id,
+        projects_id=project.id
+    )
     session.add(child_dir2)
     session.flush()
 
-    query = Directory.query_child_directories(parent_dir.id)
+    return parent_dir, child_dir, child_dir1a, child_dir2
+
+
+@pytest.mark.parametrize('current_dir, expected_children', [
+    ('parent', ['parent', 'child-1', 'child-2', 'child-1a']),
+    ('child-1', ['child-1', 'child-1a']),
+    ('child-2', ['child-2']),
+])
+def test_can_get_child_directories(session, mock_directory_path, current_dir, expected_children):
+    curr_dir = Directory.query.filter(Directory.name == current_dir).one()
+    query = Directory.query_child_directories(curr_dir.id)
     directories = [d.name for d in session.query(query).all()]
 
-    assert ['parent', 'child-1', 'child-2'] == directories
+    assert set(directories) == set(expected_children)
+
+
+@pytest.mark.parametrize('current_dir, expected_path', [
+    ('parent', ['parent']),
+    ('child-1', ['child-1', 'parent']),
+    ('child-2', ['child-2', 'parent']),
+    ('child-1a', ['child-1a', 'child-1', 'parent'])
+])
+def test_can_get_parent_directories(session, mock_directory_path, current_dir, expected_path):
+    curr_dir = Directory.query.filter(Directory.name == current_dir).one()
+    query = Directory.query_absolute_dir_path(curr_dir.id)
+    directories = [d.name for d in session.query(query).all()]
+
+    assert directories == expected_path

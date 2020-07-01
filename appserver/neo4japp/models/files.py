@@ -74,3 +74,14 @@ class Directory(RDBMSBase):
             )
         )
         return query
+
+    @classmethod
+    def query_absolute_dir_path(cls, dir_id: int) -> Query:
+        base_query = db.session.query(cls).filter(cls.id == dir_id).cte(recursive=True)
+        query = base_query.union_all(
+            db.session.query(cls).join(
+                base_query,
+                base_query.c.directory_parent_id == Directory.id
+            )
+        )
+        return query
