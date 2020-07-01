@@ -16,7 +16,7 @@ import { LegendService } from 'app/shared/services/legend.service';
                 <app-search-list
                     *ngIf="legend"
                     [totalRecords]="totalRecords$ | async"
-                    [nodes]="nodes$ | async"
+                    [recordsInput]="records$ | async"
                     [currentPage]="currentPage$ | async"
                     [currentLimit]="currentLimit$ | async"
                     [currentQuery]="currentQuery$ | async"
@@ -25,7 +25,7 @@ import { LegendService } from 'app/shared/services/legend.service';
                 ></app-search-list>`,
 })
 export class SearchCollectionPageComponent implements OnInit, OnDestroy {
-    nodes$: Observable<FTSQueryRecord[]>;
+    records$: Observable<FTSQueryRecord[]>;
     totalRecords$: Observable<number>;
     currentPage$: Observable<number>;
     currentLimit$: Observable<number>;
@@ -41,7 +41,7 @@ export class SearchCollectionPageComponent implements OnInit, OnDestroy {
         this.currentLimit$ = store.pipe(select(SearchSelectors.selectSearchLimit));
         this.currentPage$ = store.pipe(select(SearchSelectors.selectSearchPage));
         this.currentQuery$ = store.pipe(select(SearchSelectors.selectSearchQuery));
-        this.nodes$ = store.pipe(select(SearchSelectors.selectSearchRecords));
+        this.records$ = store.pipe(select(SearchSelectors.selectSearchRecords));
         this.totalRecords$ = store.pipe(select(SearchSelectors.selectSearchTotal));
 
         this.legend = new Map<string, string>();
