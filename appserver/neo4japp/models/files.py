@@ -39,8 +39,4 @@ class Files(RDBMSBase):  # type: ignore
 class LMDBsDates(RDBMSBase):
     __tablename__ = 'lmdbs_dates'
     name = db.Column(db.String(256), primary_key=True)
-    date = db.Column(
-        TIMESTAMP(timezone=True),
-        nullable=False,
-        default=str(datetime(1970, 1, 1, tzinfo=timezone.utc))
-    )
+    date = db.Column(TIMESTAMP(timezone=True), nullable=False)
