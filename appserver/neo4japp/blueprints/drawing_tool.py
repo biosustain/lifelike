@@ -23,7 +23,9 @@ from werkzeug.utils import secure_filename
 from neo4japp.blueprints.auth import auth
 from neo4japp.blueprints.permissions import requires_project_permission
 from neo4japp.database import db
-from neo4japp.exceptions import InvalidFileNameException, RecordNotFoundException, NotAuthorizedException
+from neo4japp.exceptions import (
+    InvalidFileNameException, RecordNotFoundException, NotAuthorizedException
+)
 from neo4japp.models import (
     AccessActionType,
     Project,
