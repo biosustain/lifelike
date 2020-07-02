@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+    appserver:
+        image: ${REGISTRY:-gcr.io/able-goods-221820}/kg-appserver-staging:${GITHUB_HASH:-latest}
+        expose:
+            - "5000"
+        env_file:
+            - ./.env
+        volumes:
+            - /mnt/disks/kg-staging-persistent/lmdb/chemicals:/home/n4j/neo4japp/services/annotations/lmdb/chemicals
+            - /mnt/disks/kg-staging-persistent/lmdb/compounds:/home/n4j/neo4japp/services/annotations/lmdb/compounds
+            - /mnt/disks/kg-staging-persistent/lmdb/diseases:/home/n4j/neo4japp/services/annotations/lmdb/diseases
+            - /mnt/disks/kg-staging-persistent/lmdb/genes:/home/n4j/neo4japp/services/annotations/lmdb/genes
+            - /mnt/disks/kg-staging-persistent/lmdb/proteins:/home/n4j/neo4japp/services/annotations/lmdb/proteins
+            - /mnt/disks/kg-staging-persistent/lmdb/species:/home/n4j/neo4japp/services/annotations/lmdb/species
+            - /mnt/disks/kg-staging-persistent/lmdb/phenotypes:/home/n4j/neo4japp/services/annotations/lmdb/phenotypes
+        networks:
+            - frontend
+            - backend
+
+    webservers:
+        image: ${REGISTRY:-gcr.io/able-goods-221820}/kg-webserver-staging:${GITHUB_HASH:-latest}
+        ports:
+            - 80:80
+            - 443:443
+        volumes:
+            - /docker/letsencrypt-docker-nginx/src/production/dh-param/dhparam-2048.pem:/etc/ssl/certs/dhparam-2048.pem
+            - /docker-volumes/etc/letsencrypt/live/test.lifelike.bio/fullchain.pem:/etc/letsencrypt/live/test.lifelike.bio/fullchain.pem
+            - /docker-volumes/etc/letsencrypt/live/test.lifelike.bio/privkey.pem:/etc/letsencrypt/live/test.lifelike.bio/privkey.pem
+        networks:
+            - frontend
+
+    cache-invalidator:
+        image: ${REGISTRY:-gcr.io/able-goods-221820}/kg-cache-service-staging:${GITHUB_HASH:-latest}
+        env_file:
+            - ./.env
+        networks:
+            - backend
+
+networks:
+    frontend:
+    backend:
