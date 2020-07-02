@@ -1,5 +1,8 @@
+import attr
+import hashlib
 import json
 import os
+import time
 
 from neo4japp.database import (
     get_annotations_service,
@@ -14,6 +17,14 @@ from neo4japp.util import compute_hash
 
 # reference to this directory
 directory = os.path.realpath(os.path.dirname(__file__))
+compute_hash = hashlib.sha256()
+
+
+@attr.s(frozen=True)
+class NLPAnnotations():
+    filename: str = attr.ib()
+    text: str = attr.ib()
+    annotations: List[Annotation] = attr.ib()
 
 
 def write_to_file(
@@ -23,23 +34,35 @@ def write_to_file(
     disease_pubtator,
     species_pubtator,
 ):
-    annotation_json = json.load(annotations)
-    identifier = int(compute_hash(annotation_json), 16) % 10**8
-    title = annotation_json['documents'][0]['id']
-    text = annotation_json['documents'][0]['passages'][0]['text']
+    compute_hash.update(str(time.time()).encode('utf-8'))
+    identifier = int(compute_hash.hexdigest(), 16) % 10**8
+    title = annotations.filename
+
+    title_length = len(title)
+    if title_length < 48:
+        i = title_length
+        while i < 48:
+            title += '.'
+            i += 1
+        # title_length = len(title)
+        # print(f'title was less than 48, now it is {title_length}')
+    elif title_length > 48:
+        title = title[:48]
+        # title_length = len(title)
+        # print(f'title was greater than 48, now it is {title_length}')
+
+    text = annotations.text
 
     for f in [chemical_pubtator, gene_pubtator, disease_pubtator, species_pubtator]:
         print(f'{identifier}|t|{title}', file=f)
         print(f'{identifier}|a|{text}', file=f)
 
-    annotations = annotation_json['documents'][0]['passages'][0]['annotations']
-
-    for annotation in annotations:
-        lo_offset = annotation['loLocationOffset']
-        hi_offset = annotation['hiLocationOffset']
-        keyword = annotation['keyword']
-        keyword_type = annotation['meta']['keywordType']
-        id = annotation['meta']['id']
+    for annotation in annotations.annotations:
+        lo_offset = annotation.lo_location_offset + 49  # (title length + 1)
+        hi_offset = annotation.hi_location_offset + 49
+        keyword = annotations.annotations_text_in_document
+        keyword_type = annotation.meta.keyword_type
+        id = annotation.meta.id
 
         if keyword_type == EntityType.Chemical.value:
             print(
@@ -58,7 +81,7 @@ def write_to_file(
             )
         elif keyword_type == EntityType.Species.value:
             # only Bacteria for now
-            if annotation['meta']['category'] == OrganismCategory.Bacteria.value:
+            if annotation.meta.category == OrganismCategory.Bacteria.value:
                 print(
                     f'{identifier}\t{lo_offset}\t{hi_offset}\t{keyword}\t{keyword_type}\t{id}',
                     file=species_pubtator,
@@ -84,7 +107,11 @@ def create_annotations(
 
     bioc = bioc_service.read(text=pdf_text, file_uri=filename)
     bioc_json = bioc_service.generate_bioc_json(annotations=annotations, bioc=bioc)
-    return bioc_json
+    return NLPAnnotations(
+        filename=filename,
+        text=pdf_text,
+        annotations=annotations,
+    ), bioc_json
 
 
 def main():
@@ -104,7 +131,7 @@ def main():
                 if fn.lower().endswith('.pdf'):
                     with open(os.path.join(parent, fn), 'rb') as f:
                         try:
-                            annotations = create_annotations(
+                            annotations, bioc_json = create_annotations(
                                 annotations_service=service,
                                 bioc_service=bioc_service,
                                 filename=fn,
@@ -117,19 +144,15 @@ def main():
 
                     annotation_file = os.path.join(directory, f'annotations/{fn}.json')
                     with open(annotation_file, 'w+') as a_f:
-                        json.dump(annotations, a_f)
+                        json.dump(bioc_json, a_f)
 
-        for parent, subfolders, filenames in os.walk(os.path.join(directory, 'annotations/')):
-            for fn in filenames:
-                with open(os.path.join(parent, fn), 'r') as f:
-                    if fn.lower().endswith('.json'):
-                        write_to_file(
-                            annotations=f,
-                            chemical_pubtator=chemical_pubtator,
-                            gene_pubtator=gene_pubtator,
-                            disease_pubtator=disease_pubtator,
-                            species_pubtator=species_pubtator,
-                        )
+                    write_to_file(
+                        annotations=annotations,
+                        chemical_pubtator=chemical_pubtator,
+                        gene_pubtator=gene_pubtator,
+                        disease_pubtator=disease_pubtator,
+                        species_pubtator=species_pubtator,
+                    )
 
     for f in [chemical_pubtator, gene_pubtator, disease_pubtator, species_pubtator]:
         f.close()
