@@ -120,22 +120,16 @@ const routes: Routes = [
     path: 'projects/:project_name',
     component: FileBrowserComponent,
     canActivate: [AuthGuard],
-  },
-  {
-    path: 'files/:file_id',
-    component: FileViewComponent,
-    data: {
-      title: 'PDF Viewer',
-      fontAwesomeIcon: 'file-pdf',
-    },
-  },
-  {
-    path: 'files/:file_id/:project_name',
-    component: FileViewComponent,
-    data: {
-      title: 'PDF Viewer',
-      fontAwesomeIcon: 'file-pdf',
-    },
+    children: [
+      {
+        path: 'files/:file_id',
+        component: FileViewComponent,
+        data: {
+          title:'PDF Viewer',
+          fontAwesomeIcon: 'file-pdf'
+        }
+      }
+    ]
   },
   {
     path: 'maps',

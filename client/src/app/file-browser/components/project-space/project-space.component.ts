@@ -27,7 +27,7 @@ import { Router } from '@angular/router';
   templateUrl: './project-space.component.html',
   styleUrls: ['./project-space.component.scss']
 })
-export class ProjectSpaceComponent implements OnInit {
+export class ProjectSpaceComponent {
 
   selectedProject: Project;
 
@@ -42,10 +42,6 @@ export class ProjectSpaceComponent implements OnInit {
       .subscribe(projects => {
         this.projects = projects;
       });
-  }
-
-  ngOnInit() {
-
   }
 
   createProject() {
