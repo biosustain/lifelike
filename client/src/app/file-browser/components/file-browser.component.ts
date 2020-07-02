@@ -441,7 +441,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
         const f: File = file as File;
         // tslint:disable-next-line: no-string-literal
         const fileId = f.file_id || f['fileId'];
-        return `files/${fileId}/${this.projectName}`;
+        return `projects/${this.projectName}files/${fileId}`;
       default:
         return '';
     }

@@ -38,9 +38,6 @@ from neo4japp.constants import ANNOTATION_STYLES_DICT
 # TODO: LL-415 Migrate the code to the projects folder once GUI is complete and API refactored
 from neo4japp.blueprints.projects import bp as newbp
 
-import graphviz as gv
-from PyPDF4 import PdfFileReader, PdfFileWriter
-from PyPDF4.generic import NameObject, ArrayObject
 from neo4japp.schemas.drawing_tool import ProjectBackupSchema
 
 bp = Blueprint('drawing_tool', __name__, url_prefix='/drawing-tool')

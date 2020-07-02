@@ -67,6 +67,10 @@ class ProjectsService(RDBMSBaseDao):
 
         self.session.commit()
 
+    def edit_collaborator(self, user: AppUser, role: AppRole, projects: Projects):
+        self.remove_collaborator(user, projects)
+        self.add_collaborator(user, role, projects)
+
     def remove_collaborator(self, user: AppUser, projects: Projects):
         """ Removes a collaborator """
         self.session.execute(

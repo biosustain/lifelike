@@ -166,6 +166,10 @@ def edit_collaborator(username: str, project_name: str = ''):
     if projects is None:
         raise RecordNotFoundException(f'No such projects: {project_name}')
 
+    user = g.current_user
+
+    yield user, projects
+
     new_collaborator = AppUser.query.filter(
         AppUser.username == username
     ).one_or_none()
@@ -173,14 +177,8 @@ def edit_collaborator(username: str, project_name: str = ''):
     if new_collaborator is None:
         raise RecordNotFoundException(f'No such username {username}')
 
-    user = g.current_user
-
-    yield user, projects
-
-    proj_service.remove_collaborator(new_collaborator, projects)
-
     new_role = AppRole.query.filter(AppRole.name == project_role).one()
-    proj_service.add_collaborator(new_collaborator, new_role, projects)
+    proj_service.edit_collaborator(new_collaborator, new_role, projects)
 
     yield jsonify(dict(result='success')), 200
 
