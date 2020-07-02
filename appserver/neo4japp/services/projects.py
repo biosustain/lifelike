@@ -33,6 +33,8 @@ class ProjectsService(RDBMSBaseDao):
         proj_admin_role = AppRole.query.filter(AppRole.name == 'project-admin').one()
         self.add_collaborator(user, proj_admin_role, projects)
 
+        self.session.commit()
+
         return projects
 
     def has_role(self, user: AppUser, projects: Projects) -> Optional[AppRole]:
