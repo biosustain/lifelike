@@ -10,8 +10,4 @@
                  (save)="save($event)"
                  (delete)="deleteEdge(selected.entity)"
                  (sourceOpen)="openSource($event)"></app-edge-form>
-
-  <div *ngIf="!isSelectionNode() && !isSelectionEdge()">
-    Select a node or edge to edit it.
-  </div>
 </div>
