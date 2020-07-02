@@ -35,7 +35,7 @@ def get_project(name):
     # Pull up directory id for project
     dir = Directory.query.filter(
         Directory.projects_id == projects.id,
-        # TODO - weird issue here is changing == to is 
+        # TODO - weird issue here is changing == to is
         # breaks it
         Directory.directory_parent_id == None
     ).first()

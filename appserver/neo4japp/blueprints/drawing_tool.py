@@ -3,8 +3,8 @@ import json
 import os
 from datetime import datetime
 
-import graphviz as gv		
-from PyPDF4 import PdfFileReader, PdfFileWriter		
+import graphviz as gv
+from PyPDF4 import PdfFileReader, PdfFileWriter
 from PyPDF4.generic import NameObject, ArrayObject
 from flask import (
     current_app,
