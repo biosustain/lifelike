@@ -101,6 +101,7 @@ const routes: Routes = [
   {
     path: 'workspaces/:space_id',
     component: WorkspaceComponent,
+    canActivate: [AuthGuard],
     data: {
       title: 'Knowledge Reconstruction Workspace',
     },
@@ -126,6 +127,7 @@ const routes: Routes = [
   {
     path: 'maps',
     component: MapBrowserComponent,
+    canActivate: [AuthGuard],
     data: {
       title: 'Map Browser',
       fontAwesomeIcon: 'project-diagram',
@@ -134,6 +136,7 @@ const routes: Routes = [
   {
     path: 'maps/:hash_id/edit',
     component: MapEditorComponent,
+    canActivate: [AuthGuard],
     canDeactivate: [UnloadConfirmationGuard],
     data: {
       title: 'Map Editor',

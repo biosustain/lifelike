@@ -30,6 +30,9 @@ export class ErrorHandler {
         } else if (res.status === 413) {
           title = 'Too Large';
           message = 'The server could not process your upload because it was too large.';
+        } else if (res.status === 500) {
+          title = 'Unexpected Application Problem';
+          message = 'Lifelike has encountered some unexpected problems. Please try again later.';
         } else if (res.error && res.error.message) {
           message = res.error.message;
         }
