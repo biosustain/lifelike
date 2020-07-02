@@ -1,0 +1,8 @@
+[defaults]
+roles_path = roles
+inventory = inventories/hosts
+remote_user = ansible
+private_key_file = ~/.ssh/ansible
+
+[inventory]
+enable_plugins = host_list, script, yaml, ini, auto, gcp_compute
