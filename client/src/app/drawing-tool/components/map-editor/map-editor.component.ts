@@ -1,6 +1,6 @@
 import {
-  Component,
-  HostListener, OnDestroy, OnInit,
+  Component, ElementRef,
+  HostListener, OnDestroy, OnInit, ViewChild,
 } from '@angular/core';
 
 import { cloneDeep } from 'lodash';
@@ -28,6 +28,7 @@ import { MapRestoreDialogComponent } from '../map-restore-dialog.component';
   styleUrls: ['./map-editor.component.scss'],
 })
 export class MapEditorComponent extends MapViewComponent<Project> implements OnInit, OnDestroy {
+  @ViewChild('modalContainer', {static: false}) modalContainer: ElementRef;
   autoSaveDelay = 5000;
   autoSaveSubscription: Subscription;
 
@@ -60,7 +61,9 @@ export class MapEditorComponent extends MapViewComponent<Project> implements OnI
 
   handleExtra(backup: Project) {
     if (backup != null) {
-      this.modalService.open(MapRestoreDialogComponent).result.then(() => {
+      this.modalService.open(MapRestoreDialogComponent, {
+        container: this.modalContainer.nativeElement,
+      }).result.then(() => {
         this.map = backup;
         this.unsavedChanges$.next(true);
       }, () => {

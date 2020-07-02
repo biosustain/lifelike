@@ -1,4 +1,4 @@
-<div class="position-relative h-100">
+<div class="position-relative h-100" #modalContainer>
   <ng-container *ngIf="(loadTask.status$ | async) as status">
     <app-content-progress
       [status]="status"

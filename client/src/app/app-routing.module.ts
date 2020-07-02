@@ -101,6 +101,7 @@ const routes: Routes = [
   {
     path: 'workspaces/:space_id',
     component: WorkspaceComponent,
+    canActivate: [AuthGuard],
     data: {
       title: 'Knowledge Reconstruction Workspace',
     },
@@ -126,6 +127,7 @@ const routes: Routes = [
   {
     path: 'maps',
     component: MapBrowserComponent,
+    canActivate: [AuthGuard],
     data: {
       title: 'Map Browser',
       fontAwesomeIcon: 'project-diagram',
@@ -134,6 +136,7 @@ const routes: Routes = [
   {
     path: 'maps/:hash_id/edit',
     component: MapEditorComponent,
+    canActivate: [AuthGuard],
     canDeactivate: [UnloadConfirmationGuard],
     data: {
       title: 'Map Editor',
@@ -156,13 +159,13 @@ const routes: Routes = [
     },
   },
   // Old links
-  {path: 'file-browser', redirectTo: '/files', pathMatch: 'full'},
-  {path: 'pdf-viewer/:file_id', redirectTo: '/files/:file_id', pathMatch: 'full'},
-  {path: 'dt/map', redirectTo: '/maps', pathMatch: 'full'},
-  {path: 'dt/map/:hash_id', redirectTo: '/maps/:hash_id', pathMatch: 'full'},
-  {path: 'dt/map/edit/:hash_id', redirectTo: '/maps/:hash_id/edit', pathMatch: 'full'},
-  {path: 'neo4j-upload', redirectTo: '/kg-visualizer/upload', pathMatch: 'full'},
-  {path: 'neo4j-visualizer', redirectTo: '/kg-visualizer', pathMatch: 'full'},
+  {path: 'file-browser', redirectTo: 'files', pathMatch: 'full'},
+  {path: 'pdf-viewer/:file_id', redirectTo: 'files/:file_id', pathMatch: 'full'},
+  {path: 'dt/map', redirectTo: 'maps', pathMatch: 'full'},
+  {path: 'dt/map/:hash_id', redirectTo: 'maps/:hash_id', pathMatch: 'full'},
+  {path: 'dt/map/edit/:hash_id', redirectTo: 'maps/:hash_id/edit', pathMatch: 'full'},
+  {path: 'neo4j-upload', redirectTo: 'kg-visualizer/upload', pathMatch: 'full'},
+  {path: 'neo4j-visualizer', redirectTo: 'kg-visualizer', pathMatch: 'full'},
 ];
 
 @NgModule({
