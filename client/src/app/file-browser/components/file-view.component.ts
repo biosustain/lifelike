@@ -3,7 +3,7 @@ import { combineLatest, Subject, Subscription, throwError, Observable } from 'rx
 import { PdfFilesService } from 'app/shared/services/pdf-files.service';
 import { Hyperlink, SearchLink } from 'app/shared/constants';
 
-import { DataFlowService, PdfAnnotationsService } from '../../drawing-tool/services';
+import { PdfAnnotationsService } from '../../drawing-tool/services';
 
 import {
   Annotation,
@@ -98,7 +98,6 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
     private pdfAnnService: PdfAnnotationsService,
     private pdf: PdfFilesService,
     private snackBar: MatSnackBar,
-    private dataFlow: DataFlowService,
     private readonly modalService: NgbModal,
     private route: ActivatedRoute,
     private readonly errorHandler: ErrorHandler,

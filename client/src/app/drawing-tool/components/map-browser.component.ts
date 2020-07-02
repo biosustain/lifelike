@@ -7,7 +7,6 @@ import { Router } from '@angular/router';
 
 import {
   ProjectsService,
-  DataFlowService,
 } from '../services';
 import { Project } from '../services/interfaces';
 import { MapCreateDialogComponent } from './map-create-dialog.component';
@@ -56,7 +55,6 @@ export class MapBrowserComponent {
     private workspaceManager: WorkspaceManager,
     private projectService: ProjectsService,
     private authService: AuthenticationService,
-    private dataFlow: DataFlowService,
     private snackBar: MatSnackBar,
     private progressDialog: ProgressDialog,
     private store: Store<State>,
