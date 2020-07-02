@@ -11,8 +11,8 @@ import {
 } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
-import { BehaviorSubject, Subscription} from 'rxjs';
-import { DataFlowService, ProjectsService } from '../services';
+import { BehaviorSubject, combineLatest, Observable, Subscription } from 'rxjs';
+import { ProjectsService } from '../services';
 import { Project } from '../services/interfaces';
 
 import { MapExportDialogComponent } from './map-export-dialog.component';
@@ -24,9 +24,10 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { MessageDialog } from '../../shared/services/message-dialog.service';
 import { MessageType } from '../../interfaces/message-dialog.interface';
 import { BackgroundTask } from '../../shared/rxjs/background-task';
-import { map } from 'rxjs/operators';
+import { map, startWith } from 'rxjs/operators';
 import { ErrorHandler } from '../../shared/services/error-handler.service';
 import { CopyKeyboardShortcut } from '../../graph-viewer/renderers/canvas/behaviors/copy-keyboard-shortcut';
+import { ObservableInput } from 'rxjs/src/internal/types';
 
 @Component({
   selector: 'app-map-view',
@@ -35,7 +36,7 @@ import { CopyKeyboardShortcut } from '../../graph-viewer/renderers/canvas/behavi
     './map-view.component.scss',
   ],
 })
-export class MapViewComponent implements OnInit, OnDestroy, AfterViewInit, ModuleAwareComponent {
+export class MapViewComponent<ExtraResult = void> implements OnDestroy, AfterViewInit, ModuleAwareComponent {
   @Input() titleVisible = true;
 
   @Output() saveStateListener: EventEmitter<boolean> = new EventEmitter<boolean>();
@@ -48,20 +49,17 @@ export class MapViewComponent implements OnInit, OnDestroy, AfterViewInit, Modul
   pendingInitialize = false;
   infoPinned = true;
 
-  loadTask: BackgroundTask<string, Project>;
+  loadTask: BackgroundTask<string, [Project, ExtraResult]>;
   loadSubscription: Subscription;
 
   graphCanvas: CanvasGraphView;
 
-  formDataSubscription: Subscription;
-  selectionSubscription: Subscription;
   historyChangesSubscription: Subscription;
   unsavedChangesSubscription: Subscription;
 
   unsavedChanges$ = new BehaviorSubject<boolean>(false);
 
   constructor(
-    readonly dataFlow: DataFlowService,
     readonly projectService: ProjectsService,
     readonly snackBar: MatSnackBar,
     readonly modalService: NgbModal,
@@ -71,16 +69,21 @@ export class MapViewComponent implements OnInit, OnDestroy, AfterViewInit, Modul
     readonly errorHandler: ErrorHandler,
   ) {
     this.loadTask = new BackgroundTask((hashId) => {
-      return this.projectService.serveProject(hashId).pipe(
-        errorHandler.create(),
-        // tslint:disable-next-line: no-string-literal
-        map(resp => resp['project'] as Project),
-        // TODO: This line is from the existing code and should be properly typed
+      return combineLatest([
+        this.projectService.serveProject(hashId).pipe(
+          // tslint:disable-next-line: no-string-literal
+          map(resp => resp['project'] as Project),
+          // TODO: This line is from the existing code and should be properly typed
+        ),
+        this.getExtraSource(),
+      ]).pipe(
+        this.errorHandler.create(),
       );
     });
 
-    this.loadSubscription = this.loadTask.results$.subscribe(({result, value}) => {
+    this.loadSubscription = this.loadTask.results$.subscribe(({result: [result, extra], value}) => {
       this.map = result;
+      this.handleExtra(extra);
     });
 
     if (this.route.snapshot.params.hash_id) {
@@ -88,16 +91,16 @@ export class MapViewComponent implements OnInit, OnDestroy, AfterViewInit, Modul
     }
   }
 
+  getExtraSource(): Observable<ExtraResult> {
+    return new BehaviorSubject(null);
+  }
+
+  handleExtra(data: ExtraResult) {
+  }
+
   // ========================================
   // Angular events
   // ========================================
-
-  ngOnInit() {
-    // Listen for graph update from info-panel-ui
-    this.formDataSubscription = this.dataFlow.formDataSource.subscribe(action => {
-      this.graphCanvas.execute(action);
-    });
-  }
 
   ngAfterViewInit() {
     const style = new KnowledgeMapStyle();
@@ -111,15 +114,6 @@ export class MapViewComponent implements OnInit, OnDestroy, AfterViewInit, Modul
     this.graphCanvas.startParentFillResizeListener();
     this.ngZone.runOutsideAngular(() => {
       this.graphCanvas.startAnimationLoop();
-    });
-
-    // Pass selections onto the data flow system
-    this.selectionSubscription = this.graphCanvas.selection.changeObservable.subscribe(([selected, previousSelected]) => {
-      if (selected.length === 1) {
-        this.dataFlow.pushSelection(selected[0]);
-      } else {
-        this.dataFlow.pushSelection(null);
-      }
     });
 
     this.historyChangesSubscription = this.graphCanvas.historyChanges$.subscribe(() => {
@@ -176,8 +170,6 @@ export class MapViewComponent implements OnInit, OnDestroy, AfterViewInit, Modul
   }
 
   ngOnDestroy() {
-    this.formDataSubscription.unsubscribe();
-    this.selectionSubscription.unsubscribe();
     this.historyChangesSubscription.unsubscribe();
     this.unsavedChangesSubscription.unsubscribe();
     this.graphCanvas.destroy();

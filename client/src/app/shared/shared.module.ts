@@ -36,6 +36,7 @@ import { ModalBodyComponent } from './components/modal/modal-body.component';
 import { ModalFooterComponent } from './components/modal/modal-footer.component';
 import { LoadingIndicatorComponent } from './components/loading-indicator.component';
 import { ContentProgressComponent } from './components/content-progress.component';
+import { ColorChooserComponent } from './components/form/color-chooser.component';
 
 const components = [
   MessageDialogComponent,
@@ -54,6 +55,7 @@ const components = [
   ModalFooterComponent,
   ContentProgressComponent,
   LoadingIndicatorComponent,
+  ColorChooserComponent,
 ];
 
 @NgModule({

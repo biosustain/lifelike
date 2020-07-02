@@ -61,7 +61,7 @@ bp = Blueprint('files', __name__, url_prefix='/files')
 def upload_pdf(project_name: str = ''):
 
     user = g.current_user
-    filename = secure_filename(request.form['filename'])
+    filename = secure_filename(request.form['filename'].strip())
     # TODO: Deprecate and make mandatory (no default) this once LL-415 is implemented
     dir_id = request.form.get('directoryId', 1)
 
@@ -262,7 +262,6 @@ def get_pdf(id: str, project_name: str = ''):
             raise RecordNotFoundException('Requested PDF file not found.')
         else:
             if filename and filename != file.filename:
-                filename = secure_filename(filename)
                 db.session.query(Files).filter(Files.file_id == id).update({
                     'filename': filename,
                 })
