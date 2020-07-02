@@ -22,19 +22,11 @@ export class AddContentDialogComponent implements OnInit, OnDestroy {
     description: new FormControl(),
     // subDir
     dirname: new FormControl('', Validators.required),
-    // pdf
-    filename: new FormControl('', Validators.required)
   });
 
   isInvalid = false;
 
   subscription: Subscription;
-
-  pickedFileName: string;
-
-  // Used to disable the the submit in the original component ..
-  // [disabled]="forbidUpload"
-  forbidUpload = true;
 
   constructor(
     public activeModal: NgbActiveModal
@@ -86,42 +78,8 @@ export class AddContentDialogComponent implements OnInit, OnDestroy {
           });
         }
         break;
-      case 'pdf':
-        if (!this.forbidUpload) {
-          this.payload.filename = this.form.get('filename').value;
-          this.activeModal.close(true);
-        }
-        break;
       default:
         break;
     }
-  }
-
-  /** Called upon picking a file from the Browse button */
-  onFilesPick(fileList: FileList) {
-    this.payload.files = this.transformFileList(fileList);
-    this.pickedFileName = fileList.length ? fileList[0].name : '';
-    this.form.get('filename').setValue(this.pickedFileName);
-    this.validatePayload();
-  }
-
-  /** Validates if the Upload button should be enabled or disabled */
-  validatePayload() {
-    this.payload.type = UploadType.Files;
-    const filesIsOk = this.payload.files && this.payload.files.length > 0;
-
-    this.forbidUpload = !(filesIsOk);
-  }
-
-  /**
-   * Transforms a FileList to a File[]
-   * Not sure why, but I can't pass a FileList back to the parent component
-   */
-  private transformFileList(fileList: FileList): File[] {
-    const files: File[] = [];
-    for (let i = 0; i < fileList.length; ++i) {
-      files.push(fileList.item(i));
-    }
-    return files;
   }
 }

@@ -33,12 +33,9 @@ def get_project(name):
         raise RecordNotFoundException(f'Project {name} not found')
 
     # Pull up directory id for project
-    dir = Directory.query.filter(
-        Directory.projects_id == projects.id,
-        # TODO - weird issue here is changing == to is
-        # breaks it
-        Directory.directory_parent_id == None
-    ).first()
+    proj_service = get_projects_service()
+    dir = proj_service.get_***ARANGO_USERNAME***_dir(projects)
+
 
     # Combine both dictionaries
     results = {

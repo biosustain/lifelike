@@ -18,27 +18,6 @@
 
     <div class="modal-body">
       <div [ngSwitch]='mode'>
-        <div *ngSwitchCase="'pdf'">
-          <!-- PDF Form -->
-          <div class="form-group">
-            <label for="nameInput">File Name</label>
-            <input
-              formControlName='filename'
-              type="text"
-              class="form-control"
-              [ngClass]='{"is-invalid": isInvalid}'
-              id="nameInput"
-              placeholder="">
-            <div class="invalid-feedback">
-              A name must be inputted before uploading a PDF.
-            </div>
-          </div>
-          <!-- File Input -->
-          <button (click)="fileInput.click()" class="btn btn-primary">Browser</button>
-          <input #fileInput hidden type="file" accept="application/pdf" (change)="onFilesPick($event.target.files); $event.target.value = null;">
-          <p class='mt3'>Selection: {{ pickedFileName || 'no files selected' }}</p>
-
-        </div>
         <div *ngSwitchCase="'map'">
           <!-- Map Form -->
           <div class="form-group">
