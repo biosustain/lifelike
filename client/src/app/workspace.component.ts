@@ -7,18 +7,18 @@ import {
   OnChanges,
   QueryList,
   ViewChild,
-  ViewChildren,
+  ViewChildren, ViewEncapsulation,
 } from '@angular/core';
 import { CdkDragDrop } from '@angular/cdk/drag-drop';
 import { Pane, Tab, WorkspaceManager } from './shared/workspace-manager';
 import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
 import { SplitComponent } from 'angular-split';
 
 @Component({
   selector: 'app-workspace',
   templateUrl: './workspace.component.html',
   styleUrls: ['./workspace.component.scss'],
+  encapsulation: ViewEncapsulation.None,
 })
 export class WorkspaceComponent implements AfterViewInit, OnChanges, AfterContentChecked {
   @ViewChild('container', {static: true, read: ElementRef}) container: ElementRef;
