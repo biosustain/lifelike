@@ -1,0 +1,6 @@
+#!/bin/bash
+# Gets the service account for authorizing
+# with Google Cloud Instances. Do not share
+# this service account file and do not add
+# to version control
+gsutil cp gs://kg-secrets/ansible_service_account.json ansible_service_account.json
