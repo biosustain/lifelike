@@ -1,39 +1,22 @@
-import { Component, EventEmitter, OnDestroy, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 
-import { DataFlowService } from '../../services';
-import { GraphEntity, GraphEntityType, LaunchApp } from '../../services/interfaces';
+import { GraphEntity, GraphEntityType } from '../../services/interfaces';
 
-import { Subscription } from 'rxjs';
 import { GraphEntityUpdate } from '../../../graph-viewer/actions/graph';
 import { EdgeDeletion, NodeDeletion } from '../../../graph-viewer/actions/nodes';
-import { openLink } from '../../../shared/utils/browser';
 import { WorkspaceManager } from '../../../shared/workspace-manager';
+import { GraphAction } from '../../../graph-viewer/actions/actions';
 
 @Component({
   selector: 'app-info-panel',
   templateUrl: './info-panel.component.html',
-  styleUrls: ['./info-panel.component.scss']
+  styleUrls: ['./info-panel.component.scss'],
 })
-export class InfoPanelComponent implements OnInit, OnDestroy {
-  @Output() openApp: EventEmitter<LaunchApp> = new EventEmitter<LaunchApp>();
+export class InfoPanelComponent {
+  @Input() selected: GraphEntity | undefined;
+  @Output() actionCreated = new EventEmitter<GraphAction>();
 
-  selected: GraphEntity | undefined;
-
-  private graphDataSubscription: Subscription = null;
-
-  constructor(private dataFlow: DataFlowService,
-              private workspaceManager: WorkspaceManager) {
-  }
-
-  ngOnInit() {
-    // Handle data received from the graph
-    this.graphDataSubscription = this.dataFlow.graphEntitySource.subscribe((selected: GraphEntity) => {
-      this.selected = selected;
-    });
-  }
-
-  ngOnDestroy() {
-    this.graphDataSubscription.unsubscribe();
+  constructor(private workspaceManager: WorkspaceManager) {
   }
 
   isSelectionNode() {
@@ -45,17 +28,17 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
   }
 
   save({originalData, updatedData}: { originalData: object, updatedData: object }) {
-    this.dataFlow.pushFormChange(
-      new GraphEntityUpdate('Update properties', this.selected, updatedData, originalData)
+    this.actionCreated.emit(
+      new GraphEntityUpdate('Update properties', this.selected, updatedData, originalData),
     );
   }
 
   deleteNode(node) {
-    this.dataFlow.pushFormChange(new NodeDeletion('Delete node', node));
+    this.actionCreated.emit(new NodeDeletion('Delete node', node));
   }
 
   deleteEdge(edge) {
-    this.dataFlow.pushFormChange(new EdgeDeletion('Delete edge', edge));
+    this.actionCreated.emit(new EdgeDeletion('Delete edge', edge));
   }
 
   /**
@@ -72,11 +55,13 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
         coordA,
         coordB,
         coordC,
-        coordD
+        coordD,
       ] = source.replace(/^\/dt\/pdf\//, '').split('/');
       const url = `/files/${fileId}#page=${page}&coords=${coordA},${coordB},${coordC},${coordD}`;
       this.workspaceManager.navigateByUrl(url, {
         newTab: true,
+        sideBySide: true,
+        replaceTabIfMatch: `^/files/${fileId}`,
       });
       return;
     }
@@ -85,6 +70,8 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
     if (m != null) {
       this.workspaceManager.navigateByUrl(`/dt/map/${m[1]}`, {
         newTab: true,
+        sideBySide: true,
+        replaceTabIfMatch: `/maps/${m[1]}`,
       });
     }
   }
