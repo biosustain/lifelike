@@ -1,0 +1,10 @@
+plugin: gcp_compute
+zones:
+    - us-central1-a
+filters: []
+groups:
+    gcp_instances: "'kg-' in name"
+scopes:
+    - https://www.googleapis.com/auth/compute
+service_account_file: 
+auth_kind: serviceaccount
