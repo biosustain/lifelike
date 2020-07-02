@@ -19,7 +19,7 @@ services:
             - frontend
             - backend
 
-    webservers:
+    webserver:
         image: ${REGISTRY:-gcr.io/able-goods-221820}/kg-webserver-staging:${GITHUB_HASH:-latest}
         ports:
             - 80:80
