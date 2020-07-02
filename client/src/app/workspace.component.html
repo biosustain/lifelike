@@ -6,25 +6,25 @@
         <as-split-area *ngFor="let pane of panes">
           <div class="h-100 d-flex flex-column">
             <div class="nav-workspace-tabs flex-shrink-0 align-items-start">
-              <div class="nav flex-fill flex-grow-0" cdkDropList cdkDropListOrientation="horizontal"
+              <div class="nav flex-fill" cdkDropList cdkDropListOrientation="horizontal"
                    (cdkDropListDropped)="tabDropped($event)"
                    [cdkDropListData]="pane">
                 <div class="nav-item d-flex text-truncate" [class.active]="pane.activeTab === tab"
                      *ngFor="let tab of pane.tabs; index as i"
-                     cdkDrag [style.width]="'250px'">
+                     cdkDrag style="max-width: 250px; width: 30%">
                   <div class="nav-link d-flex text-truncate" [class.active]="pane.activeTab === tab"
                        (click)="handleTabClick($event, pane, tab); $event.preventDefault()">
-                    <div class="d-block d-flex align-items-center text-truncate">
-                    <span class="d-block text-truncate">
-                      <i [class]="'fa fa-fw fa-' + (tab.fontAwesomeIcon || 'window-maximize')"></i>
-                      {{tab.title}}
-                    </span>
+                    <div class="d-block d-flex align-items-center text-truncate mr-2">
+                      <span class="d-block text-truncate">
+                        <i [class]="'fa fa-fw fa-' + (tab.fontAwesomeIcon || 'window-maximize')"></i>
+                        {{tab.title}}
+                      </span>
                       <span class="badge badge-danger badge-pill ml-1" *ngIf="tab.badge != null && tab.badge !== '*'">
-                      {{tab.badge}}
-                    </span>
+                        {{tab.badge}}
+                      </span>
                       <span class="badge badge-danger badge-pill ml-1" *ngIf="tab.badge === '*'">
-                      <i class="fa fa-asterisk"></i>
-                    </span>
+                        <i class="fa fa-asterisk"></i>
+                      </span>
                     </div>
                     <a href="#" (click)="closeTab(pane, tab); $event.preventDefault()" class="ml-auto text-muted">
                       <i class="fa fa-fw fa-times"></i>
@@ -52,10 +52,10 @@
               </div>
             </div>
 
-            <div class="d-flex flex-fill overflow-hidden w-100 h-100 tab-content-container">
+            <div class="d-flex flex-fill overflow-hidden w-100 h-100 workspace-tab-content-container">
               <div *ngFor="let tab of pane.tabs; index as i"
-                   class="flex-fill overflow-hidden position-absolute tab-content-inner-container"
-                   [class.hidden-tab-content]="pane.activeTab !== tab">
+                   class="flex-fill overflow-hidden position-absolute workspace-tab-content-inner-container"
+                   [class.workspace-hidden-tab-content]="pane.activeTab !== tab">
                 <app-workspace-outlet [name]="pane.id" [container]="tab.container"
                                       (outletFocus)="setFocus(pane)"
                                       [active]="pane.activeTab === tab"></app-workspace-outlet>
@@ -65,11 +65,8 @@
         </as-split-area>
       </as-split>
     </div>
-    <div *ngIf="canAddPane()" class="split-pane-placeholder" (click)="addPane()"
+    <div *ngIf="canAddPane()" class="workspace-split-pane-placeholder" (click)="addPane()"
          ngbTooltip="Add a side-by-side view" placement="left-top">
-      <div class="split-pane-arrow">
-        <i class="fa fa-fw fa-arrow-left"></i>
-      </div>
     </div>
   </ng-container>
 </div>
