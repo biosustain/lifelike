@@ -36,7 +36,6 @@ def get_project(name):
     proj_service = get_projects_service()
     dir = proj_service.get_***ARANGO_USERNAME***_dir(projects)
 
-
     # Combine both dictionaries
     results = {
         **projects.to_dict(),

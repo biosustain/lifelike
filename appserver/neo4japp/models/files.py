@@ -43,7 +43,7 @@ class LMDBsDates(RDBMSBase):
     name = db.Column(db.String(256), primary_key=True)
     date = db.Column(TIMESTAMP(timezone=True), nullable=False)
 
-    
+
 class Directory(RDBMSBase):
     id = db.Column(db.BigInteger, primary_key=True, autoincrement=True)
     name = db.Column(db.String(200), nullable=False)
