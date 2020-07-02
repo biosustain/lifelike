@@ -1,10 +1,14 @@
 plugin: gcp_compute
 zones:
     - us-central1-a
+projects:
+    - able-goods-221820
 filters: []
 groups:
-    gcp_instances: "'kg-' in name"
+    gce_instances: "'kg-' in name"
+hostnames:
+    - name
 scopes:
     - https://www.googleapis.com/auth/compute
-service_account_file: 
+service_account_file: ansible_service_account.json
 auth_kind: serviceaccount
