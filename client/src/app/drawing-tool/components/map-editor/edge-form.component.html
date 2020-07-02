@@ -38,9 +38,10 @@
     <label for="stroke-color" class="my-0 mr-2">
       <i class="fa fa-fw fa-fill"></i>
     </label>
-    <input type="color"
-           [(ngModel)]="edge.style.strokeColor" class="form-control mr-1" (change)="doSave()" id="stroke-color"
-           [style.width]="'5rem'">
+    <app-color-chooser-component
+      id="stroke-color" [palette]="paletteChoices"
+      [(color)]="edge.style.strokeColor" emptyLabel="Default"
+      (colorChange)="doSave()"></app-color-chooser-component>
   </div>
 
   <div class="form-group d-flex align-items-center">
@@ -91,18 +92,20 @@
   </div>
 </fieldset>
 
-<div *ngIf="!!edge.data.hyperlink" class="mb2">
-  <button mat-stroked-button color="primary" (click)="goToLink()" class="w-100">
-    Open Hyperlink
+<div class="mt-4">
+  <div *ngIf="!!edge.data.hyperlink" class="mb-2">
+    <button type="button" class="btn btn-outline-secondary btn-block" (click)="goToLink()">
+      Open Hyperlink
+    </button>
+  </div>
+
+  <div *ngIf="edge.data.source" class="mb-2">
+    <button *ngIf="edge.data.source" type="button" class="btn btn-outline-secondary btn-block" (click)="goToSource()">
+      Go to Source
+    </button>
+  </div>
+
+  <button (click)="doDelete()" type="button" class="btn btn-danger btn-block">
+    Delete
   </button>
 </div>
-
-<div *ngIf="edge.data.source" class="mb2">
-  <button *ngIf="edge.data.source" mat-stroked-button color="primary" (click)="goToSource()" class="w-100">
-    Go to Source
-  </button>
-</div>
-
-<button (click)="doDelete()" mat-stroked-button color="warn" class="delete w-100">
-  Delete
-</button>
