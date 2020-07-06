@@ -93,7 +93,7 @@ export class VisualizationComponent implements OnInit, OnDestroy {
         // subscriptions.
         this.getSnippetsSubscription = merge(
             // Merge the streams, so we can cancel one if the other emits; We always take the most recent
-            // emission betweent the streams.
+            // emission between the streams.
             this.getClusterSnippetsSubject,
             this.getEdgeSnippetsSubject,
             this.nodeSelectedSubject,
@@ -154,6 +154,8 @@ export class VisualizationComponent implements OnInit, OnDestroy {
             }),
             take(1),
         ).subscribe((result) => {
+            console.log('Router params changed, doing stuff in visualizer component!');
+            console.log(result);
             if (result) {
                 this.networkGraphData = this.setupInitialProperties(result);
                 this.nodes = new DataSet(this.networkGraphData.nodes);
