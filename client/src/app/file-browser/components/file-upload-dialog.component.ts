@@ -1,17 +1,23 @@
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
-import { UploadPayload, UploadType } from '../../interfaces/pdf-files.interface';
+import { SelectionModel } from '@angular/cdk/collections';
 import { FormControl } from '@angular/forms';
-import { Subscription } from 'rxjs';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
+
+import { Subscription } from 'rxjs';
+
+import { UploadPayload, UploadType } from '../../interfaces/pdf-files.interface';
+
 
 @Component({
   selector: 'app-dialog-upload',
   templateUrl: './file-upload-dialog.component.html',
 })
 export class FileUploadDialogComponent implements OnInit, OnDestroy {
+  @Input() payload: UploadPayload; // to avoid writing this.data.payload everywhere
+
   forbidUpload = true;
   pickedFileName: string;
-  @Input() payload: UploadPayload; // to avoid writing this.data.payload everywhere
+  selection = new SelectionModel<string>(false, []);
 
   filename = new FormControl('');
   filenameChange: Subscription;
@@ -19,6 +25,7 @@ export class FileUploadDialogComponent implements OnInit, OnDestroy {
   urlChange: Subscription;
 
   activeTab = 'upload';
+  readonly annotationMethods = ['NLP', 'Rules Based'];
 
   constructor(public activeModal: NgbActiveModal) {
   }
@@ -54,11 +61,18 @@ export class FileUploadDialogComponent implements OnInit, OnDestroy {
     const filesIsOk = this.payload.files && this.payload.files.length > 0;
     const filenameIsOk = this.payload.filename && this.payload.filename.length > 0;
     const urlIsOk = this.payload.url && this.payload.url.length > 0;
+    const annotationMethodSelected = this.selection.selected.length > 0;
     if (this.activeTab === 'upload') {
-      this.forbidUpload = !filesIsOk;
+      this.forbidUpload = !(filesIsOk && annotationMethodSelected);
     } else { // UploadType.Url
-      this.forbidUpload = !(filenameIsOk && urlIsOk);
+      this.forbidUpload = !(filenameIsOk && urlIsOk && annotationMethodSelected);
     }
+  }
+
+  onAnnotationMethodPick(method: string) {
+    this.selection.toggle(method);
+    this.payload.annotationMethod = method;
+    this.validatePayload();
   }
 
   /** Transforms a FileList to a File[]
