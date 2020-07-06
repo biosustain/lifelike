@@ -15,6 +15,8 @@ class PDFSearchResult:
         self.uploaded_date = ''
         self.highlight = data.get('highlight', {})
         self.preview_text_size = 400
+        self.external_url = ''
+        self.email = ''
         self.parse_pdf_entries(data)
 
     def parse_pdf_entries(self, data):
@@ -24,6 +26,8 @@ class PDFSearchResult:
         self.preview_text = source['data']['content']
         self.preview_text = self.parse_highlight('data.content', self.preview_text)
         self.uploaded_date = source['uploaded_date']
+        self.external_url = source['external_link']
+        self.email = source['email']
 
     def parse_highlight(self, field, data):
         start_tag = '<highlight>'
@@ -36,20 +40,16 @@ class PDFSearchResult:
         for highlight in self.highlight[field]:
             untagged = highlight.replace(start_tag, '').replace(end_tag, '')
             tagged = highlight.replace(start_tag, '<strong>').replace(end_tag, '</strong>')
-            if bkp_data:
-                bkp_data = '<br>'.join((bkp_data, tagged))
-            else:
-                bkp_data = tagged
+            bkp_data = '<br>'.join((bkp_data, tagged)) if bkp_data else tagged
             data = data.replace(untagged, tagged)
 
         if not data:
             data = bkp_data
 
         first_highlight = data.find('<strong')
-        if first_highlight < len(data) - self.preview_text_size:
-            data = '...' + data[first_highlight - 20:self.preview_text_size]
-        else:
-            data = '...' + data[-self.preview_text_size:]
+        data = '...' + data[first_highlight - 20:first_highlight + self.preview_text_size] \
+            if first_highlight < len(data) - self.preview_text_size \
+            else '...' + data[-self.preview_text_size:]
         return data
 
     def to_json(self):
@@ -58,7 +58,9 @@ class PDFSearchResult:
             'file_id': self.file_id,
             'doi': self.doi,
             'preview_text': self.preview_text,
-            'uploaded_date': self.uploaded_date
+            'uploaded_date': self.uploaded_date,
+            'external_url': self.external_url,
+            'email': self.email
         }
 
     def __str__(self):
