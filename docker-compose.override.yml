@@ -1,0 +1,157 @@
+version: '3.8'
+
+services:
+    pgdatabase:
+        container_name: pg-database
+        image: postgres:11
+        command: postgres -c max_wal_size=2GB -c log_statement='all'
+        environment:
+            - POSTGRES_PASSWORD=postgres
+        ports:
+            - "5431:5432"
+        networks:
+            - backend
+
+    database:
+        container_name: n4j-database
+        build: ./neo4j
+        environment:
+            - NEO4J_AUTH=neo4j/password
+        volumes:
+            - ./neo4j/data:/data
+            - ./neo4j/logs:/logs
+            - ./neo4j/import:/import
+            - ./neo4j/plugins:/plugins
+            - ./neo4j/backups:/backups
+        ports:
+            - "7474:7474"
+            - "7687:7687"
+        networks:
+            - backend
+
+    appserver:
+        container_name: appserver
+        build: ./appserver
+        command: [
+            '/usr/bin/env',
+            'bash',
+            'bin/wait-for-postgres',
+            'bin/wait-for-neo4j',
+            'bin/start-dev'
+        ]
+        ports:
+            - "5000:5000"
+        environment:
+            # Flask
+            - FLASK_APP=app
+            - FLASK_APP_CONFIG=Development
+            - FLASK_DEBUG=1
+            - FLASK_ENV=development
+            # Postgres
+            - POSTGRES_HOST=pgdatabase
+            - POSTGRES_PORT=5432
+            - POSTGRES_USER=postgres
+            - POSTGRES_PASSWORD=postgres
+            - POSTGRES_DB=postgres
+            # Neo4j
+            - NEO4J_HOST=n4j-database
+            - NEO4J_AUTH=neo4j/password
+            # Redis
+            - REDIS_HOST=redis
+            - REDIS_PORT=6379
+        stdin_open: true
+        volumes:
+            - ./appserver:/home/n4j
+        tty: true
+        networks:
+            - frontend
+            - backend
+        depends_on:
+            - database
+            - pgdatabase
+            - redis
+
+    webserver:
+        container_name: webservers
+        build:
+            context: ./client
+            dockerfile: Dockerfile
+        ports:
+            - "80:80"
+        networks:
+            - frontend
+        depends_on:
+            - appserver
+
+    client:
+        container_name: client
+        build:
+            context: ./client
+            dockerfile: Dockerfile
+            target: build
+        command: yarn dev-start
+        volumes:
+            - ./client:/home/node/client
+            # https://jdlm.info/articles/2019/09/06/lessons-building-node-app-docker.html
+            # Helps not overwrite the node_modules with host
+            - /home/node/client/node_modules
+        ports:
+            - "4200:4200"
+        networks:
+            - frontend
+
+    redis:
+        networks:
+            - backend
+
+    cache-invalidator:
+        build: ./cache-invalidator
+        volumes:
+            - ./cache-invalidator:/app
+        environment:
+            - NEO4J_HOST=n4j-database
+            - NEO4J_AUTH=neo4j/password
+            - REDIS_HOST=redis
+            - REDIS_PORT=6379
+        depends_on:
+            - database
+            - redis
+
+    elasticsearch:
+        container_name: elasticsearch
+        build:
+            dockerfile: Dockerfile
+            context: elasticsearch
+        environment:
+            - discovery.type=single-node
+            - http.max_content_length=200mb  #allow 200mb of content to be sent for indexing
+            - bootstrap.memory_lock=true
+            - xpack.graph.enabled=false
+            - xpack.watcher.enabled=false
+            - xpack.license.self_generated.type=basic
+        ulimits:
+            memlock:
+                soft: -1
+                hard: -1
+        ports:
+            - "9200:9200"
+            - "9300:9300"
+        networks:
+            - backend
+
+    kibana:
+        container_name: kibana
+        image: docker.elastic.co/kibana/kibana:7.2.0
+        ports:
+            - "5601:5601"
+        environment:
+            SERVER_NAME: localhost
+            ELASTICSEARCH_URL: http://elasticsearch:9200
+        networks:
+            - backend
+        depends_on:
+            - elasticsearch
+
+networks:
+    frontend:
+    backend:
