@@ -234,6 +234,7 @@ export class VisualizationCanvasComponent implements OnInit, AfterViewInit {
     isNewEdgeSidenavEntity: boolean;
 
     networkGraph: Network;
+    networkContainerId: string;
     selectedNodes: IdType[];
     selectedNodeEdgeLabelData: Map<string, Direction[]>;
     selectedEdges: IdType[];
@@ -257,6 +258,8 @@ export class VisualizationCanvasComponent implements OnInit, AfterViewInit {
         private messageDialog: MessageDialog,
         private visService: VisualizationService,
     ) {
+        this.networkContainerId = uuidv4();
+
         this.legendLabels = [];
 
         this.sidenavOpened = false;
@@ -293,7 +296,7 @@ export class VisualizationCanvasComponent implements OnInit, AfterViewInit {
     // Need to initialize the network after the view is initialized, otherwise we get weird re-sizing issues
     // for Vis.js
     ngAfterViewInit() {
-        const container = document.getElementById('network-viz');
+        const container = document.getElementById(this.networkContainerId);
         const data = {
             nodes: this.nodes,
             edges: this.edges,
