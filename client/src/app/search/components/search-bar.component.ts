@@ -5,7 +5,6 @@ import {
     Output,
 } from '@angular/core';
 import { FormGroup, FormControl } from '@angular/forms';
-import { SearchQuery } from 'app/interfaces';
 
 @Component({
     selector: 'app-search-bar',
@@ -13,10 +12,9 @@ import { SearchQuery } from 'app/interfaces';
     styleUrls: ['./search-bar.component.scss'],
 })
 export class SearchBarComponent {
-
     @Input() query = '';
     @Input() error = '';
-    @Output() search = new EventEmitter<SearchQuery>();
+    @Output() search = new EventEmitter<string>();
 
     searchForm = new FormGroup({
         searchInput: new FormControl(''),
@@ -25,11 +23,9 @@ export class SearchBarComponent {
     constructor() {}
 
     onSubmit() {
-        const query = {
-            query: this.searchForm.value.searchInput,
-            page: 1,
-            limit: 10,
-        } as SearchQuery;
-        this.search.emit(query);
+        // No need to emit if the search bar is empty
+        if (this.searchForm.value.searchInput !== '') {
+            this.search.emit(this.searchForm.value.searchInput);
+        }
     }
 }
