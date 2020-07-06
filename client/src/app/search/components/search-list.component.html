@@ -1,4 +1,4 @@
-<div class="h-100 p-3">
+<div *ngIf="currentQuery !== ''" class="h-100">
   <h3>Showing results for "{{ currentQuery }}"</h3>
   <h6 class="text-muted">Showing {{records.length}} of {{ totalRecords }} results</h6>
   <div class="search-record-container">

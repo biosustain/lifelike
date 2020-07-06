@@ -24,7 +24,7 @@ import {
     DuplicateEdgeConnectionData,
 } from 'app/interfaces';
 import { RootStoreModule } from 'app/root-store';
-import { SearchGraphComponent } from 'app/search/containers/search-graph.component';
+import { SearchBarComponent } from 'app/search/components/search-bar.component';
 import { SharedModule } from 'app/shared/shared.module';
 
 import { VisualizationComponent } from './visualization.component';
@@ -57,8 +57,8 @@ describe('VisualizationComponent', () => {
             declarations: [
                 VisualizationComponent,
                 MockComponents(
+                    SearchBarComponent,
                     VisualizationCanvasComponent,
-                    SearchGraphComponent
                 ),
             ],
             providers: [VisualizationService],
