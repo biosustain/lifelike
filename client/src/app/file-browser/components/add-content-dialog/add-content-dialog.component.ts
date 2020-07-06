@@ -4,16 +4,29 @@ import { Input } from '@angular/core';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { UploadPayload, UploadType } from 'app/interfaces/pdf-files.interface';
+import { CommonFormDialogComponent } from 'app/shared/components/dialog/common-form-dialog.component';
+import { MessageDialog } from 'app/shared/services/message-dialog.service';
 
 @Component({
   selector: 'app-add-content-dialog',
   templateUrl: './add-content-dialog.component.html',
   styleUrls: ['./add-content-dialog.component.scss']
 })
-export class AddContentDialogComponent implements OnInit, OnDestroy {
-  @Input() mode = 'dir';
-
-  @Input() payload: UploadPayload;
+export class AddContentDialogComponent extends CommonFormDialogComponent implements OnInit, OnDestroy {
+  MODE = 'dir';
+  @Input()
+  set mode(val) {
+    this.MODE = val;
+    
+    if (this.MODE === 'dir') {
+      this.form.get('label').clearValidators();
+    } else if (this.MODE === 'map') {
+      this.form.get('dirname').clearValidators();
+    }
+  }
+  get mode() {
+    return this.MODE;
+  }
 
   form: FormGroup = new FormGroup({
     directoryId: new FormControl(),
@@ -28,9 +41,9 @@ export class AddContentDialogComponent implements OnInit, OnDestroy {
 
   subscription: Subscription;
 
-  constructor(
-    public activeModal: NgbActiveModal
-  ) {}
+  constructor(modal: NgbActiveModal, messageDialog: MessageDialog) {
+    super(modal, messageDialog);
+  }
 
   ngOnInit() {
     this.subscription = this.form.valueChanges.subscribe(
@@ -42,44 +55,15 @@ export class AddContentDialogComponent implements OnInit, OnDestroy {
     this.subscription.unsubscribe();
   }
 
-  doNothing() {
-    this.activeModal.dismiss();
+  getValue() {
+    return this.form.value;
   }
 
   submit() {
-    switch (this.mode) {
-      case 'dir':
-        // Check if valid
-        const dirnameCtrl = this.form.get('dirname');
-        if (!dirnameCtrl.valid) {
-          this.isInvalid = true;
-        } else {
-          const {
-            dirname
-          } = this.form.value;
-          this.activeModal.close({
-            dirname
-          });
-        }
-        break;
-      case 'map':
-        // Check if valid
-        const labelCtrl = this.form.get('label');
-        if (!labelCtrl.valid) {
-          this.isInvalid = true;
-        } else {
-          const {
-            label,
-            description
-          } = this.form.value;
-          this.activeModal.close({
-            label,
-            description
-          });
-        }
-        break;
-      default:
-        break;
+    if (this.form.valid) {
+      super.submit();
+    } else {
+      this.isInvalid = true;
     }
   }
 }
