@@ -2,7 +2,8 @@
   <div class="card-body p-2">
     <h5 class="card-title">
       <a
-        [routerLink]="['/kg-visualizer/graph']"
+        href='/kg-visualizer/graph'
+        [appLink]="['/kg-visualizer/graph']"
         [queryParams]="{ data: nodeURL }"
       >Snippet: {{ node.node.displayName }}</a>
     </h5>
