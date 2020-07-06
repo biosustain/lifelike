@@ -3,13 +3,15 @@ import { ProjectSpaceService, Collaborator, Project } from '../../services/proje
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { FormArray, FormGroup, FormControl } from '@angular/forms';
 import { Subscription } from 'rxjs';
+import { CommonFormDialogComponent } from 'app/shared/components/dialog/common-form-dialog.component';
+import { MessageDialog } from 'app/shared/services/message-dialog.service';
 
 @Component({
   selector: 'app-edit-project-dialog',
   templateUrl: './edit-project-dialog.component.html',
   styleUrls: ['./edit-project-dialog.component.scss']
 })
-export class EditProjectDialogComponent implements OnInit, OnDestroy {
+export class EditProjectDialogComponent extends CommonFormDialogComponent implements OnDestroy {
   @Input()
   set project(proj: Project) {
     this.PROJECT = proj;
@@ -88,11 +90,12 @@ export class EditProjectDialogComponent implements OnInit, OnDestroy {
   collabFormSubscription: Subscription[] = [];
 
   constructor(
-    private projSpace: ProjectSpaceService,
-    public activeModal: NgbActiveModal
-  ) { }
-
-  ngOnInit() {}
+    modal: NgbActiveModal,
+    messageDialog: MessageDialog,
+    private projSpace: ProjectSpaceService
+  ) {
+    super(modal, messageDialog);
+  }
 
   ngOnDestroy() {
     this.collabFormSubscription.map(
@@ -100,8 +103,8 @@ export class EditProjectDialogComponent implements OnInit, OnDestroy {
     );
   }
 
-  doNothing() {
-    this.activeModal.dismiss();
+  getValue() {
+    return null;
   }
 
   /**
