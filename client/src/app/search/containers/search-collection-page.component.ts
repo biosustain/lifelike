@@ -1,48 +1,43 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { Observable } from 'rxjs';
-import { filter, tap, take } from 'rxjs/operators';
-import * as SearchActions from '../store/actions';
-import * as SearchSelectors from '../store/selectors';
-import { select, Store } from '@ngrx/store';
-import { State } from 'app/root-store';
+
+import { Subscription } from 'rxjs';
+import { filter, tap} from 'rxjs/operators';
+
 import { FTSQueryRecord, SearchQuery } from 'app/interfaces';
+import { VIZ_SEARCH_LIMIT } from 'app/shared/constants';
 import { LegendService } from 'app/shared/services/legend.service';
+import { WorkspaceManager } from 'app/shared/workspace-manager';
+
+import { SearchService } from '../services/search.service';
 
 @Component({
     selector: 'app-search-collection-page',
-    template: `
-                <app-search-graph></app-search-graph>
-                <app-search-list
-                    *ngIf="legend && (records$ | async)"
-                    [totalRecords]="totalRecords$ | async"
-                    [recordsInput]="records$ | async"
-                    [currentPage]="currentPage$ | async"
-                    [currentLimit]="currentLimit$ | async"
-                    [currentQuery]="currentQuery$ | async"
-                    [legend]="legend"
-                    (showMore)="showMore($event)"
-                ></app-search-list>`,
+    templateUrl: './search-collection-page.component.html',
+    styleUrls: ['./search-collection-page.component.scss']
 })
 export class SearchCollectionPageComponent implements OnInit, OnDestroy {
-    records$: Observable<FTSQueryRecord[]>;
-    totalRecords$: Observable<number>;
-    currentPage$: Observable<number>;
-    currentLimit$: Observable<number>;
-    currentQuery$: Observable<string>;
+    records: FTSQueryRecord[];
+    totalRecords: number;
+    currentPage: number;
+    currentLimit: number;
+    currentQuery: string;
 
     legend: Map<string, string>;
 
+    routerParamSub: Subscription;
+
     constructor(
         private route: ActivatedRoute,
-        private store: Store<State>,
+        private searchService: SearchService,
         private legendService: LegendService,
+        private workspaceManager: WorkspaceManager,
     ) {
-        this.currentLimit$ = store.pipe(select(SearchSelectors.selectSearchLimit));
-        this.currentPage$ = store.pipe(select(SearchSelectors.selectSearchPage));
-        this.currentQuery$ = store.pipe(select(SearchSelectors.selectSearchQuery));
-        this.records$ = store.pipe(select(SearchSelectors.selectSearchRecords));
-        this.totalRecords$ = store.pipe(select(SearchSelectors.selectSearchTotal));
+        this.records = [];
+        this.totalRecords = 0;
+        this.currentPage = 1;
+        this.currentLimit = VIZ_SEARCH_LIMIT;
+        this.currentQuery = '';
 
         this.legend = new Map<string, string>();
     }
@@ -57,25 +52,50 @@ export class SearchCollectionPageComponent implements OnInit, OnDestroy {
             });
         });
 
-        this.route.queryParams.pipe(
+        // Whenever the router params change, re-run search with the new query params.
+        this.routerParamSub = this.route.queryParams.pipe(
             filter(params => params.q),
             tap((params) => {
-                const searchQuery = {
-                    query: params.q,
-                    page: 1,
-                    limit: 10,
-                };
-                this.store.dispatch(SearchActions.search({searchQuery}));
+                this.searchService.visualizerSearchTemp(params.q, 1, VIZ_SEARCH_LIMIT, 'n:db_Literature').subscribe(result => {
+                    const { query, nodes, total, page, limit } = result;
+
+                    this.records = nodes;
+                    this.totalRecords = total;
+                    this.currentQuery = query;
+                    this.currentPage = page;
+                    this.currentLimit = limit;
+                });
             }),
-            take(1),
         ).subscribe();
     }
 
-    showMore(searchQuery: {searchQuery: SearchQuery}) {
-        this.store.dispatch(SearchActions.searchPaginate(searchQuery));
+    ngOnDestroy() {
+        this.routerParamSub.unsubscribe();
     }
 
-    ngOnDestroy() {
-        this.store.dispatch(SearchActions.searchReset());
+    /**
+     * Retrieves the next page of search results for the current term, and appends the new results
+     * to the current list. Also updates the total number of records and current query params.
+     * @param searchQuery object representing the current term, search limit and page
+     */
+    showMore(searchQuery: SearchQuery) {
+        const {query, page, limit} = searchQuery;
+        this.searchService.visualizerSearchTemp(query, page, limit, 'n:db_Literature').subscribe(result => {
+            const { nodes, total } = result;
+
+            this.records = this.records.concat(nodes);
+            this.totalRecords = total;
+            this.currentQuery = query;
+            this.currentPage = page;
+            this.currentLimit = limit;
+        });
+    }
+
+    /**
+     * Redirects to the visualizer search page with the new query term as a URL parameter.
+     * @param query string to search for
+     */
+    search(query: string) {
+        this.workspaceManager.navigateByUrl(`kg-visualizer/search?q=${query}`);
     }
 }

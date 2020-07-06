@@ -28,6 +28,7 @@ import {
     NODE_EXPANSION_LIMIT,
 } from 'app/shared/constants';
 import { LegendService } from 'app/shared/services/legend.service';
+import { WorkspaceManager } from 'app/shared/workspace-manager';
 import {
     LoadingClustersDialogComponent,
 } from 'app/visualization/components/loading-clusters-dialog/loading-clusters-dialog.component';
@@ -80,6 +81,7 @@ export class VisualizationComponent implements OnInit, OnDestroy {
         private route: ActivatedRoute,
         private visService: VisualizationService,
         private legendService: LegendService,
+        private workspaceManager: WorkspaceManager,
     ) {
         this.legend = new Map<string, string[]>();
 
@@ -199,6 +201,14 @@ export class VisualizationComponent implements OnInit, OnDestroy {
         this.getClusterSnippetsSubject.complete();
         this.getEdgeSnippetsSubject.complete();
         this.getSnippetsSubscription.unsubscribe();
+    }
+
+    /**
+     * Redirects to the visualizer search page with the new query term as a URL parameter.
+     * @param query string to search for
+     */
+    search(query: string) {
+        this.workspaceManager.navigateByUrl(`kg-visualizer/search?q=${query}`);
     }
 
     openNoResultsFromExpandDialog() {

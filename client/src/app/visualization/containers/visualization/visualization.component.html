@@ -1,6 +1,9 @@
-<div class="h-100">
+<div class="module h-100">
   <div id="viz-search-container">
-    <app-search-graph></app-search-graph>
+    <app-search-bar
+      class="w-100"
+      (search)="search($event)"
+    ></app-search-bar>
   </div>
   <div id="viz-canvas-container">
     <app-visualization-canvas
