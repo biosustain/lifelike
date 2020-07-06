@@ -1,0 +1,6 @@
+Flask==1.1.1
+flask-cors==3.0.8
+numpy==1.17.4
+tensorflow==2.1.0
+keras
+nltk
