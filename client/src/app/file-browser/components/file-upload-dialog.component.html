@@ -37,6 +37,20 @@
     <div [ngbNavOutlet]="nav" class="mt-4"></div>
   </div>
 
+  <div class="modal-body">
+    <label>Select annotation method</label>
+    <div *ngFor="let method of annotationMethods" (click)="selection.toggle(method)">
+      <div class="custom-control custom-checkbox">
+        <input type="checkbox" class="custom-control-input" id="annotation-type-{{method}}"
+               (change)="onAnnotationMethodPick(method)"
+               [checked]="selection.isSelected(method)">
+        <label class="custom-control-label d-flex align-items-center" for="annotation-type-{{method}}">
+          {{ method }}
+        </label>
+      </div>
+    </div>
+  </div>
+
   <div class="modal-footer">
     <button type="button" class="btn btn-light" (click)="activeModal.close()">Cancel</button>
     <button type="submit" class="btn btn-primary" [disabled]="forbidUpload">Upload</button>

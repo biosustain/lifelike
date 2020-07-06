@@ -301,6 +301,8 @@ def jsonify_with_class(
                     jsonify({'result': result}),
                     success_object.status_code,
                 )
+            elif isinstance(success_object, dict):
+                return jsonify(success_object)
             else:
                 return success_object.model_file, success_object.status_code
         return decorator

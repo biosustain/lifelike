@@ -26,7 +26,7 @@ from neo4japp.database import db
 from neo4japp.exceptions import InvalidFileNameException, RecordNotFoundException
 from neo4japp.models import Project, ProjectBackup, ProjectSchema
 from neo4japp.constants import ANNOTATION_STYLES_DICT
-from neo4japp.schemas.drawing_tool import ProjectBackupSchema
+from neo4japp.request_schemas.drawing_tool import ProjectBackupSchema
 
 import graphviz as gv
 from PyPDF4 import PdfFileReader, PdfFileWriter
