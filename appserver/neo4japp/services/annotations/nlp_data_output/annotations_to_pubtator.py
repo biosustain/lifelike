@@ -4,12 +4,15 @@ import json
 import os
 import time
 
+from typing import List
+
 from neo4japp.database import (
     get_annotations_service,
     get_annotations_pdf_parser,
     get_bioc_document_service,
     get_lmdb_dao,
 )
+from neo4japp.data_transfer_objects import Annotation
 from neo4japp.factory import create_app
 from neo4japp.services.annotations.constants import EntityType, OrganismCategory
 from neo4japp.util import compute_hash
@@ -60,7 +63,7 @@ def write_to_file(
     for annotation in annotations.annotations:
         lo_offset = annotation.lo_location_offset + 49  # (title length + 1)
         hi_offset = annotation.hi_location_offset + 49
-        keyword = annotations.annotations_text_in_document
+        keyword = annotation.text_in_document
         keyword_type = annotation.meta.keyword_type
         id = annotation.meta.id
 
@@ -115,15 +118,15 @@ def create_annotations(
 
 
 def main():
-    app = create_app('Functional Test Flask App', config='config.Testing')
     chemical_pubtator = open(os.path.join(directory, 'chemical_pubtator.txt'), 'w+')
     gene_pubtator = open(os.path.join(directory, 'gene_pubtator.txt'), 'w+')
     disease_pubtator = open(os.path.join(directory, 'disease_pubtator.txt'), 'w+')
     species_pubtator = open(os.path.join(directory, 'species_pubtator.txt'), 'w+')
 
-    with app.app_context():
-        for parent, subfolders, filenames in os.walk(os.path.join(directory, 'pdfs/')):
-            for fn in filenames:
+    for parent, subfolders, filenames in os.walk(os.path.join(directory, 'pdfs/')):
+        for fn in filenames:
+            app = create_app('Functional Test Flask App', config='config.Testing')
+            with app.app_context():
                 bioc_service = get_bioc_document_service()
                 service = get_annotations_service(lmdb_dao=get_lmdb_dao())
                 parser = get_annotations_pdf_parser()
@@ -138,8 +141,8 @@ def main():
                                 pdf_parser=parser,
                                 pdf=f,
                             )
-                        except Exception:
-                            print(f'Failed to annotate PDF {fn}')
+                        except Exception as ex:
+                            print(f'Failed to annotate PDF {fn}: {str(ex)}')
                             continue
 
                     annotation_file = os.path.join(directory, f'annotations/{fn}.json')
