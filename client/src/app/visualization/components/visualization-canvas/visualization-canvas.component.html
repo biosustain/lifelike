@@ -12,7 +12,7 @@
         (settingsFormChanges)="updateSettings($event)"
       ></app-visualization-settings>
 
-      <div id="network-viz" class="h-100"></div>
+      <div [id]="networkContainerId" class="h-100"></div>
 
       <!-- This isn't visible unless the user has right-clicked to open the context menu -->
       <app-context-menu
