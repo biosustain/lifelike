@@ -19,6 +19,26 @@ class ProjectsService(RDBMSBaseDao):
     def __init__(self, session: Session):
         super().__init__(session)
 
+    def projects_users_have_access_2(self, user: AppUser) -> Sequence[Projects]:
+        """ Return list a of projects that user either has collab rights to
+            or owns it
+        """
+        proj_collab_roles = self.session.execute(
+            projects_collaborator_role.select().where(
+                and_(
+                    projects_collaborator_role.c.appuser_id == user.id,
+                )
+            )
+        ).fetchall()
+
+        projects = []
+        for p_c_r in proj_collab_roles:
+            user_id, role_id, proj_id = p_c_r
+            proj = Projects.query.get(proj_id)
+            projects.append(proj)
+
+        return projects
+
     def create_projects(self, user: AppUser, projects: Projects) -> Projects:
         self.session.add(projects)
         self.session.flush()

@@ -9,8 +9,10 @@
     </div>
 
     <ul class="mt-3">
-      <li *ngFor="let item of files">
-        <div class="text-truncate">{{item.filename}}</div>
+      <li *ngFor="let item of files" [ngSwitch]='item.type'>
+        <div *ngSwitchCase="'map'" class="text-truncate">{{item.label}}</div>
+        <div *ngSwitchCase="'pdf'" class="text-truncate">{{item.filename}}</div>
+        <div *ngSwitchCase="'dir'" class="text-truncate">{{item.name}}</div>
       </li>
     </ul>
   </app-modal-body>

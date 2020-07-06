@@ -69,9 +69,10 @@ export class ProjectsService {
    * Downloads map as JSON by hashId
    * @param hashId - act as uri for map
    */
-  public downloadProject(hashId) {
+  public downloadProject(hashId, projectName: string = 'beta-project') {
+    const url = `/api/projects/${projectName}/map/${hashId}`;
     return this.http.get(
-      `${this.baseUrl}/map/download/${hashId}`,
+      url,
       this.createHttpOptions(true)
     );
   }

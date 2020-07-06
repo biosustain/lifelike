@@ -19,7 +19,7 @@ import { ProjectPageService } from '../services/project-page.service';
 import { isNullOrUndefined } from 'util';
 import { AddContentDialogComponent } from './add-content-dialog/add-content-dialog.component';
 
-interface File extends PdfFile {
+export interface File extends PdfFile {
   type: string;
 }
 
@@ -45,7 +45,6 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
     (dirArg: DirectoryArgument) => this.projPage.getProjectDir(dirArg.projectName, dirArg.directoryId)
   );
   loadTaskSubscription: Subscription;
-  selection = new SelectionModel<File>(true, []);
   isReannotating = false;
   uploadStarted = false;
   lmdbsDates = {};
@@ -63,6 +62,11 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
 
   // The list of files in a directory
   fileCollection: (Directory|Map|File)[] = [];
+  // The list of files filtered by query
+  showFileCollection: (Directory|Map|File)[] = [];
+  // Which files are selected to do action on
+  selection = new SelectionModel<(Directory|Map|File)>(true, []);
+
 
   fileSpaceSubscription: Subscription;
 
@@ -175,7 +179,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
     if (!this.selection.selected.length) {
       return false;
     }
-    for (const item of this.shownFiles) {
+    for (const item of this.fileCollection) {
       if (!this.selection.isSelected(item)) {
         return false;
       }
@@ -187,7 +191,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
     if (this.isAllSelected()) {
       this.selection.clear();
     } else {
-      this.selection.select(...this.shownFiles);
+      this.selection.select(...this.fileCollection);
     }
   }
 
@@ -196,7 +200,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
    */
   getSelectedShownFiles() {
     const result = [];
-    for (const item of this.shownFiles) {
+    for (const item of this.fileCollection) {
       if (this.selection.isSelected(item)) {
         result.push(item);
       }
@@ -357,7 +361,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
     const dialogRef = this.modalService.open(FileDeleteDialogComponent);
     dialogRef.componentInstance.files = files;
     dialogRef.result.then(() => {
-      this.deleteFiles(files);
+      files.map(f => this.delete(f));
     }, () => {
     });
   }
@@ -564,6 +568,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
           this.projectName,
           hashId
         ).subscribe(resp => {
+          this.snackBar.open(`Deletion completed`, 'Close', {duration: 5000});
           this.fileCollection = this.fileCollection.filter(
             (f) => {
               if (f.type !== 'map') {
@@ -587,6 +592,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
           this.projectName,
           fileId
         ).subscribe(resp => {
+          this.snackBar.open(`Deletion completed`, 'Close', {duration: 5000});
           this.fileCollection = this.fileCollection.filter(
             (f) => {
               if (f.type !== 'pdf') {

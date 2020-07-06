@@ -49,7 +49,9 @@ def get_project(name):
 def get_projects():
     # TODO: Add permission checks here
     user = g.current_user
-    projects_list = db.session.query(Projects).all()  # TODO: paginate
+
+    proj_service = get_projects_service()
+    projects_list = proj_service.projects_users_have_access_2(user)
     return jsonify(dict(results=[p.to_dict() for p in projects_list])), 200
 
 
