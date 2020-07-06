@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, jsonify
 from flask_cors import CORS, cross_origin
 app = Flask(__name__)
 CORS(app, resources={r"*": {"origins": "*"}})
@@ -9,10 +9,17 @@ def hello():
 
 import os
 from flask import Blueprint, request, abort, jsonify
+from services.ai_service import AIService
+aiservice = AIService()
 
-@app.route('/get_annotation/ai', methods=['POST'])
+@app.route('/infer/v1', methods=['POST'])
 def ai():
-    return 'this is ai service'
+    data = request.get_json()
+    text = data['text']
+    if text is None:
+        return jsonify('text invalid')
+    results = aiservice.infer(text)
+    return jsonify(results)
 
 
 if __name__ == '__main__':
