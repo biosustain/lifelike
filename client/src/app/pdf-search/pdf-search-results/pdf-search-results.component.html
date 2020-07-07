@@ -1,1 +1,29 @@
-<p>pdf-search-results works!</p>
+<div id="association-snippet-container" *ngIf="snippets.length > 0">
+  <mat-expansion-panel class="association-snippet-panel" *ngFor="let snippet of snippets">
+    <mat-expansion-panel-header [collapsedHeight]="'80px'" [expandedHeight]="'80px'">
+      <mat-panel-title
+        class="association-snippet-title">
+        {{ (snippet.filename || 'Unknown') | truncate:['240'] }}</mat-panel-title>
+      <mat-panel-description class="association-snippet-pub-data">
+        <i>{{ (snippet.description || 'Unknown') | truncate:['100'] }}
+          ({{ snippet.uploaded_date | date: 'fullDate'}} )</i>
+      </mat-panel-description>
+    </mat-expansion-panel-header>
+    <div fxLayout="column" fxLayoutAlign="space-between start">
+      <div>
+        <p [innerHTML]="snippet.preview_text"></p>
+      </div>
+      <div fxLayout="row" fxLayoutAlign="space-between center">
+        <div
+          fxLayout="row"
+          fxLayoutAlign="space-between center">
+          <a
+            class="doi-link"
+            [href]="snippet.doi"
+            target="_blank"> DOI</a>
+          <mat-icon>launch</mat-icon>
+        </div>
+      </div>
+    </div>
+  </mat-expansion-panel>
+</div>

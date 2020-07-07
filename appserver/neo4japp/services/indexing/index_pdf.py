@@ -1,6 +1,5 @@
 import base64
 import json
-import requests
 from elasticsearch import Elasticsearch
 from elasticsearch.helpers import parallel_bulk
 from neo4japp.database import db
