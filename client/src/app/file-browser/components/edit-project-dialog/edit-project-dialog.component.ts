@@ -5,6 +5,8 @@ import { FormArray, FormGroup, FormControl } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { CommonFormDialogComponent } from 'app/shared/components/dialog/common-form-dialog.component';
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
+import { MessageType } from 'app/interfaces/message-dialog.interface';
+import { MatSnackBar } from '@angular/material';
 
 @Component({
   selector: 'app-edit-project-dialog',
@@ -92,7 +94,8 @@ export class EditProjectDialogComponent extends CommonFormDialogComponent implem
   constructor(
     modal: NgbActiveModal,
     messageDialog: MessageDialog,
-    private projSpace: ProjectSpaceService
+    private projSpace: ProjectSpaceService,
+    private readonly snackBar: MatSnackBar,
   ) {
     super(modal, messageDialog);
   }
@@ -145,6 +148,10 @@ export class EditProjectDialogComponent extends CommonFormDialogComponent implem
       username,
       role
     ).subscribe(resp => {
+      this.snackBar.open('Collaborator added!.', null, {
+        duration: 2000,
+      });
+  
       this.collabs.push({
         role,
         username
@@ -187,6 +194,9 @@ export class EditProjectDialogComponent extends CommonFormDialogComponent implem
         this.project.projectName,
         username
       ).subscribe(resp => {
+        this.snackBar.open('Collaborator removed!.', null, {
+          duration: 2000,
+        });
         const index = (
           this.currentCollabs.value as any[]
         ).findIndex(c => c.id === id);
@@ -200,7 +210,9 @@ export class EditProjectDialogComponent extends CommonFormDialogComponent implem
         username,
         role
       ).subscribe(resp => {
-        console.log(resp);
+        this.snackBar.open('Collaborator updated!.', null, {
+          duration: 2000,
+        });
       });
     }
 
