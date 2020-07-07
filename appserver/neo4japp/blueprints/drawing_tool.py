@@ -1,8 +1,11 @@
 import io
-import os
 import json
+import os
 from datetime import datetime
 
+import graphviz as gv
+from PyPDF4 import PdfFileReader, PdfFileWriter
+from PyPDF4.generic import NameObject, ArrayObject
 from flask import (
     current_app,
     request,
@@ -11,24 +14,24 @@ from flask import (
     Response,
     jsonify,
 )
-from werkzeug.utils import secure_filename
-
+from sqlalchemy import or_
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy_searchable import search
+from werkzeug.utils import secure_filename
 
 from neo4japp.blueprints.auth import auth
 from neo4japp.blueprints.permissions import requires_role
+from neo4japp.constants import ANNOTATION_STYLES_DICT
 from neo4japp.database import db
 from neo4japp.exceptions import InvalidFileNameException, RecordNotFoundException
 from neo4japp.models import Project, ProjectBackup, ProjectSchema
 from neo4japp.constants import ANNOTATION_STYLES_DICT
-from neo4japp.schemas.drawing_tool import ProjectBackupSchema
+from neo4japp.request_schemas.drawing_tool import ProjectBackupSchema
 
 import graphviz as gv
 from PyPDF4 import PdfFileReader, PdfFileWriter
 from PyPDF4.generic import NameObject, ArrayObject
 from flask_apispec import use_kwargs
-
 
 bp = Blueprint('drawing_tool', __name__, url_prefix='/drawing-tool')
 
@@ -108,7 +111,6 @@ def download_map(hash_id):
 @auth.login_required
 @requires_role('admin')
 def upload_map():
-
     proj_name = request.form['projectName']
     proj_description = request.form['description']
 
@@ -301,7 +303,7 @@ def get_project_pdf(project_id):
     for annot, hash_id in references:
         annot[NameObject('/Dest')] = ArrayObject([processed[hash_id].getPage(0).indirectRef,
                                                   NameObject('/Fit')])
-        del(annot['/A'])
+        del (annot['/A'])
 
     return merge_pdfs(processed, processed_ids)
 
@@ -396,11 +398,24 @@ def find_maps():
     user = g.current_user
     data = request.get_json()
     query = search(Project.query, data['term'], sort=True)
-    personal = query.filter_by(user_id=user.id).all()
-    community = query.filter_by(public=True).all()
-    project_schema = ProjectSchema(many=True)
+    conditions = []
 
-    return {'projects': project_schema.dump(personal) + project_schema.dump(community)}, 200
+    filters = data.get('filters', {
+        'personal': True,
+        'community': True,
+    })
+    if filters.get('personal', True):
+        conditions.append(Project.user_id == user.id)
+    if filters.get('community', True):
+        conditions.append(Project.public)
+
+    if len(conditions):
+        projects = query.filter(or_(*conditions)).all()
+        project_schema = ProjectSchema(many=True)
+
+        return {'projects': project_schema.dump(projects)}, 200
+    else:
+        return {'projects': []}, 200
 
 
 @bp.route('/projects/<string:project_id>/<string:format>', methods=['get'])

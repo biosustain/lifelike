@@ -1,124 +1,94 @@
-interface UniversalGraphNode {
+export interface UniversalEntityData {
+  hyperlink?: string;
+  detail?: string;
+  source?: string;
+  search?: Hyperlink[];
+  subtype?: string;
+}
+
+export interface UniversalNodeStyle {
+  fontSizeScale?: number;
+  fillColor?: string;
+  strokeColor?: string;
+  lineType?: string;
+  lineWidthScale?: number;
+  showDetail?: boolean;
+}
+
+export interface UniversalGraphNode {
   data: {
     x: number;
     y: number;
-    hyperlink?: string;
-    detail?: string;
-    source?: string;
-    search?: Hyperlink[];
-    subtype?: string;
-  };
+    width?: number,
+    height?: number,
+  } & UniversalEntityData;
   display_name: string;
   hash: string;
   shape?: string;
-  icon?: any;
+  icon?: {
+    code: string,
+    color: string,
+    face: string,
+    size: number,
+    weight: string,
+  };
   label: string;
   sub_labels: string[];
-  color?: any;
+  style?: UniversalNodeStyle;
 }
-interface UniversalGraphEdge {
+
+export interface UniversalEdgeStyle {
+  fontSizeScale?: number;
+  strokeColor?: string;
+  lineType?: string;
+  lineWidthScale?: number;
+  sourceHeadType?: string;
+  targetHeadType?: string;
+}
+
+export interface UniversalGraphEdge {
+  data?: UniversalEntityData;
   label: string;
-  data: any;
   from: string;
   to: string;
+  style?: UniversalEdgeStyle;
 }
-interface UniversalGraph {
+
+export interface UniversalGraph {
   nodes: UniversalGraphNode[];
   edges: UniversalGraphEdge[];
 }
 
-interface VisNetworkGraphNode {
-  label?: string;
-  x?: number;
-  y?: number;
-  id?: string;
-  group?: string;
-  size?: number;
-  shape?: string;
-  icon?: any;
-  widthConstraint?: any;
-  data?: {
-    hyperlink?: string;
-    detail?: string;
-    source?: string;
-    search?: Hyperlink[];
-    subtype?: string;
-  };
-  color?: any;
-}
-interface VisNetworkGraphEdge {
-  id?: string;
-  from?: string;
-  to?: string;
-  label?: string;
-}
-interface VisNetworkGraph {
-  nodes: VisNetworkGraphNode[];
-  edges: VisNetworkGraphEdge[];
+export declare type UniversalGraphEntity = UniversalGraphNode | UniversalGraphEdge;
+
+export enum GraphEntityType {
+  Node = 'node',
+  Edge = 'edge',
 }
 
-/**
- * Interface for carring data relative
- * to either node or edge
- */
-interface GraphData {
-  id?: string;
-  label?: string;
-  group?: string;
-  edges?: VisNetworkGraphEdge[];
-  hyperlink?: string;
-  detail?: string;
-  x?: number;
-  y?: number;
-  data?: {
-    hyperlink?: string;
-    source?: string;
-    detail?: string;
-    search?: Hyperlink[];
-    subtype?: string;
-  };
+export interface GraphEntity {
+  type: GraphEntityType;
+  entity: UniversalGraphEntity;
 }
 
-/**
- * Interface for handling data between canvas and panels
- */
-interface GraphSelectionData {
-  edgeData?: VisNetworkGraphEdge;
-  nodeData?: {
-    id: string,
-    shape?: string,
-    group: string,
-    label: string,
-    edges: VisNetworkGraphEdge[],
-    data: {
-      hyperlink?: string;
-      detail?: string;
-      source?: string;
-      search?: Hyperlink[];
-      subtype?: string;
-    }
-  };
-  otherNodes?: VisNetworkGraphNode[];
-}
-
-interface Hyperlink {
+export interface Hyperlink {
   url: string;
   domain: string;
 }
 
-interface Location {
+export interface Location {
   pageNumber: number;
   rect: Rect;
 }
 
-interface Links {
+export interface Links {
   ncbi?: string;
   uniprot?: string;
   wikipedia?: string;
   google?: string;
 }
 
-interface Meta {
+export interface Meta {
   type: string;
   color: string;
   id?: string;
@@ -130,13 +100,14 @@ interface Meta {
   isExcluded?: boolean;
   exclusionReason?: string;
   exclusionComment?: string;
+  primaryLink?: string;
 }
 
-interface Rect {
+export interface Rect {
   [index: number]: number;
 }
 
-interface Annotation {
+export interface Annotation {
   pageNumber: number;
   keywords: string[];
   rects: Rect[];
@@ -147,7 +118,7 @@ interface Annotation {
 /**
  * Interface for launching app wit parameters
  */
-interface LaunchApp {
+export interface LaunchApp {
   app: string;
   arg?: {
     // For pdf-viewer, coordinate of the nnoation of pd
@@ -159,11 +130,10 @@ interface LaunchApp {
   };
 }
 
-
 /**
  * Project schema definition
  */
-interface Project {
+export interface Project {
   id?: string | number;
   author?: string;
   label: string;
@@ -180,28 +150,11 @@ interface Project {
   user_id?: number;
 }
 
-interface AnnotationExclusionData {
+export interface AnnotationExclusionData {
   id: string;
   reason: string;
   comment: string;
 }
 
-export {
-  Project,
-  VisNetworkGraph,
-  VisNetworkGraphEdge,
-  VisNetworkGraphNode,
-  UniversalGraph,
-  UniversalGraphEdge,
-  UniversalGraphNode,
-  Annotation,
-  Meta,
-  Rect,
-  Links,
-  Location,
-  GraphData,
-  GraphSelectionData,
-  LaunchApp,
-  Hyperlink,
-  AnnotationExclusionData
-};
+export const MAP_TYPE_ID = 'LifelikeKnowledgeMap/1';
+export const NODE_TYPE_ID = 'LifelikeKnowledgeNode/1';

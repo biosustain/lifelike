@@ -1,37 +1,31 @@
 import { NgModule } from '@angular/core';
-import { SharedModule } from '../shared/shared.module';
-import {
-  DialogConfirmDeletionComponent,
-  DialogEditFileComponent,
-  DialogUploadComponent,
-  FileBrowserComponent,
-} from './file-browser.component';
-import { FileSelectionDialogComponent } from './file-selection-dialog.component';
-import { FileListComponent } from './file-list.component';
+import { SharedModule } from 'app/shared/shared.module';
+import { FileBrowserComponent } from './components/file-browser.component';
+import { FileEditDialogComponent } from './components/file-edit-dialog.component';
+import { FileDeleteDialogComponent } from './components/file-delete-dialog.component';
+import { FileUploadDialogComponent } from './components/file-upload-dialog.component';
+import { FileViewComponent } from './components/file-view.component';
+import { PdfViewerLibModule } from '../pdf-viewer/pdf-viewer-lib.module';
 
 @NgModule({
   declarations: [
-    DialogConfirmDeletionComponent,
-    DialogEditFileComponent,
-    DialogUploadComponent,
+    FileEditDialogComponent,
+    FileDeleteDialogComponent,
+    FileUploadDialogComponent,
     FileBrowserComponent,
-    FileListComponent,
-    FileSelectionDialogComponent,
+    FileViewComponent,
   ],
   imports: [
     SharedModule,
+    PdfViewerLibModule,
   ],
   entryComponents: [
-    DialogConfirmDeletionComponent,
-    DialogEditFileComponent,
-    DialogUploadComponent,
-    FileSelectionDialogComponent,
-    FileListComponent,
+    FileEditDialogComponent,
+    FileDeleteDialogComponent,
+    FileUploadDialogComponent,
+    FileViewComponent,
   ],
-  exports: [
-    FileSelectionDialogComponent,
-    FileListComponent,
-  ]
+  exports: [],
 })
 export class FileBrowserModule {
 }

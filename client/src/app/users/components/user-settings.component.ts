@@ -5,23 +5,17 @@ import { AuthSelectors } from 'app/auth/store';
 import { Observable } from 'rxjs';
 
 import { State } from 'app/root-store';
-import { AppUser, UpdateUserRequest } from 'app/interfaces';
-import * as UserActions from '../store/actions';
+import { AppUser } from 'app/interfaces';
 
 @Component({
-    selector: 'app-user-settings',
-    templateUrl: './user-settings.component.html',
-    styleUrls: ['./user-settings.component.scss'],
+  selector: 'app-user-settings',
+  templateUrl: './user-settings.component.html',
 })
 export class UserSettingsComponent {
+  currentUsers$: Observable<AppUser>;
+  activeTab: 'profile' | 'security';
 
-    currentUsers$: Observable<AppUser>;
-
-    constructor(private store: Store<State>) {
-        this.currentUsers$ = this.store.pipe(select(AuthSelectors.selectAuthUser));
-    }
-
-    changePassword(userUpdates: UpdateUserRequest) {
-        this.store.dispatch(UserActions.updateUser({ userUpdates }));
-    }
+  constructor(private store: Store<State>) {
+    this.currentUsers$ = this.store.pipe(select(AuthSelectors.selectAuthUser));
+  }
 }

@@ -1,60 +1,64 @@
-<div fxLayout="row" fxFlexFill>
-  <div class="vertical-nav" fxLayout="column" fxLayoutAlign="start center">
-    <a matTooltip="Dashboard" matTooltipPosition="after" fxLayoutAlign="center center"
-       routerLink="/">
-      <mat-icon>home</mat-icon>
-    </a>
-    <a matTooltip="File Browser" matTooltipPosition="after" fxLayoutAlign="center center"
-       routerLink="/file-browser">
-      <mat-icon>folder_shared</mat-icon>
-    </a>
-    <a matTooltip="Knowledge Reconstruction" matTooltipPosition="after" fxLayoutAlign="center center"
-       routerLink="/dt/map">
-      <mat-icon>rate_review</mat-icon>
-    </a>
-    <a matTooltip="Knowledge Graph Explorer" matTooltipPosition="after" fxLayoutAlign="center center"
-       routerLink="/neo4j-visualizer">
-      <mat-icon>search</mat-icon>
-    </a>
-    <a matTooltip="Knowledge Graph Statistics" matTooltipPosition="after" fxLayoutAlign="center center"
-       routerLink="kg-statistics">
-      <mat-icon>bar_chart</mat-icon>
-    </a>
-    <div fxFlex></div>
-    <a matTooltip="Main Menu" matTooltipPosition="after" fxLayoutAlign="center center"
-       href="https://main.biosustain.dtu.dk" target="_blank">
-      <mat-icon>apps</mat-icon>
-    </a>
-    <a matTooltip="Main Menu" matTooltipPosition="after" fxLayoutAlign="center center"
-       [matMenuTriggerFor]="userMenu">
-      <mat-icon>account_circle</mat-icon>
-    </a>
-  </div>
+<div class="d-flex w-100 h-100">
+  <!-- Left menu -->
+  <div class="vertical-nav d-flex flex-column flex-wrap overflow-auto flex-shrink-0">
+    <!-- Top buttons -->
+    <div class="d-flex flex-column">
+      <a routerLink="/" placement="right" ngbTooltip="Dashboard">
+        <i class="fa fa-home"></i>
+      </a>
+      <a routerLink="/files" placement="right" ngbTooltip="File Browser">
+        <i class="fa fa-folder"></i>
+      </a>
+      <a routerLink="/workspaces/local" placement="right" ngbTooltip="Knowledge Reconstruction Workspace">
+        <i class="fa fa-project-diagram"></i>
+      </a>
+      <a routerLink="/neo4j-visualizer" placement="right" ngbTooltip="KG Visualizer">
+        <i class="fa fa-search"></i>
+      </a>
+      <a routerLink="kg-statistics" placement="right" ngbTooltip="Knowledge Graph Statistics">
+        <i class="fa fa-tachometer-alt"></i>
+      </a>
+    </div>
+    <!-- /Top buttons -->
 
-  <div fxFlex fxLayout="column" style="overflow-y: auto;">
+    <!-- Bottom buttons -->
+    <div class="d-flex flex-column mt-auto">
+      <a href="https://main.biosustain.dtu.dk" target="_blank" placement="right" ngbTooltip="Main Menu">
+        <i class="fa fa-grip-vertical"></i>
+      </a>
+
+      <ng-container *ngIf="(loggedIn$ | async); else loggedOut">
+        <div ngbDropdown placement="top-left" container="body">
+          <a id="account-dropdown" ngbDropdownToggle ngbTooltip="Options" container="body">
+            <i class="fa fa-user"></i>
+          </a>
+          <div ngbDropdownMenu aria-labelledby="account-dropdown" class="dropdown-menu">
+            <a class="dropdown-item" *ngIf="(userRoles$ | async)?.includes('admin')" [routerLink]="['/admin']"
+               placement="right">
+              Administration
+            </a>
+            <a class="dropdown-item" [routerLink]="['/users', (appUser$ | async)?.username]" placement="right">
+              Account
+            </a>
+            <a class="dropdown-item" (click)="logout()" placement="right">
+              Logout
+            </a>
+          </div>
+        </div>
+      </ng-container>
+      <ng-template #loggedOut>
+        <a (click)="login()" placement="right" ngbTooltip="Login">
+          <i class="fas fa-user"></i>
+        </a>
+      </ng-template>
+    </div>
+    <!-- /Bottom buttons -->
+  </div>
+  <!-- /Left menu -->
+
+  <!-- Module content -->
+  <div class="flex-fill overflow-auto">
     <router-outlet></router-outlet>
   </div>
+  <!-- /Module content -->
 </div>
-
-<mat-menu #userMenu="matMenu" xPosition="after">
-  <ng-container *ngIf="(loggedIn$ | async); else loggedOut">
-    <button *ngIf="(userRoles$ | async)?.includes('admin')" mat-menu-item [routerLink]="['/admin']">
-      <mat-icon>gavel</mat-icon>
-      Admin
-    </button>
-    <button mat-menu-item [routerLink]="['/users', (appuser$ | async)?.username]">
-      <mat-icon>person</mat-icon>
-      {{ (appuser$ | async)?.username }}
-    </button>
-    <button mat-menu-item (click)="logout()">
-      <mat-icon>lock</mat-icon>
-      Logout
-    </button>
-  </ng-container>
-  <ng-template #loggedOut>
-    <button mat-menu-item (click)="login()">
-      <mat-icon>lock</mat-icon>
-      Login
-    </button>
-  </ng-template>
-</mat-menu>
