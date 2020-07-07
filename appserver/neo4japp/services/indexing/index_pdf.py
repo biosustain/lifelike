@@ -17,20 +17,12 @@ ELASTICSEARCH_HOST = 'http://n4j-elasticsearch:9200'
 elastic_client = Elasticsearch(hosts=[ELASTICSEARCH_HOST])
 
 
-def ingest_pipeline_exists(pipeline_name):
-    response = requests.get(f'{ELASTICSEARCH_HOST}/_ingest/pipeline/{pipeline_name}')
-    return response.status_code == 404
-
-
 def create_ingest_pipeline():
-    ingest_pipeline = ingest_pipeline_exists(ATTACHMENT_PIPELINE_NAME)
-    if not ingest_pipeline:
-        with open(ATTACHMENT_PIPELINE) as f:
-            pipeline_definition = f.read()
-        pipeline_definition_json = json.loads(pipeline_definition)
-        elastic_client.ingest.put_pipeline(id='attachment', body=pipeline_definition_json)
-        print('Ingest Pipeline created.')
-    print('Ingest Pipeline was updated.')
+    with open(ATTACHMENT_PIPELINE) as f:
+        pipeline_definition = f.read()
+    pipeline_definition_json = json.loads(pipeline_definition)
+    elastic_client.ingest.put_pipeline(id='attachment', body=pipeline_definition_json)
+    print('Ingest Pipeline created.')
 
 
 def create_index_and_mappings():
