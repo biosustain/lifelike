@@ -1,10 +1,10 @@
 import { Component } from '@angular/core';
+import { SelectionModel } from '@angular/cdk/collections';
 import { AbstractControl, FormControl, FormGroup, Validators } from '@angular/forms';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
+
 import { CommonFormDialogComponent } from '../../shared/components/dialog/common-form-dialog.component';
 import { MessageDialog } from '../../shared/services/message-dialog.service';
-
-import { Subscription } from 'rxjs';
 
 import { UploadPayload, UploadType } from '../../interfaces/pdf-files.interface';
 
@@ -15,6 +15,11 @@ import { UploadPayload, UploadType } from '../../interfaces/pdf-files.interface'
 })
 export class FileUploadDialogComponent extends CommonFormDialogComponent {
   readonly uploadType = UploadType;
+
+  // select annotation method
+  readonly annotationMethods = ['NLP', 'Rules Based'];
+  selection = new SelectionModel<string>(false, [this.annotationMethods[1]]);
+
   readonly form: FormGroup = new FormGroup({
     type: new FormControl(''),
     files: new FormControl(''),
@@ -27,6 +32,7 @@ export class FileUploadDialogComponent extends CommonFormDialogComponent {
       },
     ]),
     description: new FormControl(''),
+    annotationMethod: new FormControl(this.annotationMethods[1], [Validators.required]),
   }, [
     (form: FormGroup) => {
       if (form.value.type === UploadType.Files) {
@@ -69,6 +75,15 @@ export class FileUploadDialogComponent extends CommonFormDialogComponent {
       this.form.get('filename').setValue(file.name);
     } else {
       this.form.get('files').setValue(null);
+    }
+  }
+
+  onAnnotationMethodPick(method: string) {
+    this.selection.toggle(method);
+    if (this.selection.isSelected(method)) {
+      this.form.get('annotationMethod').setValue(method);
+    } else {
+      this.form.get('annotationMethod').setValue(null);
     }
   }
 
