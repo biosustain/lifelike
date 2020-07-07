@@ -1,58 +1,45 @@
-<form (submit)="activeModal.close(true); $event.preventDefault()">
-  <div class="modal-header">
+<form [formGroup]="form" (ngSubmit)="submit()">
+  <app-modal-header (cancel)="cancel()">
     <h4 class="modal-title">Add File</h4>
-  </div>
+  </app-modal-header>
 
-  <div class="modal-body">
-    <ul ngbNav #nav="ngbNav" [(activeId)]="activeTab" class="nav-tabs" (activeIdChange)="validatePayload()">
-      <li [ngbNavItem]="'upload'">
+  <app-modal-body>
+    <ul ngbNav #nav="ngbNav" [(activeId)]="activeTab" class="nav-tabs" (activeIdChange)="activeTabChanged($event)">
+      <li [ngbNavItem]="uploadType.Files">
         <a ngbNavLink>From Device</a>
         <ng-template ngbNavContent>
-          <div class="d-flex align-items-center">
-            <button type="button" class="btn btn-secondary" (click)="fileInput.click()">Browse...</button>
-            <input #fileInput hidden type="file" accept="application/pdf"
-                   (change)="onFilesPick($event.target.files); $event.target.value = null;">
-            <div class="ml-3 text-truncate" *ngIf="pickedFileName">
-              {{pickedFileName}}
-            </div>
-          </div>
+          <app-form-row for="file" label="File" [control]="form.get('files')">
+            <input type="file" id="file" (change)="fileChanged($event)" accept="application/pdf">
+          </app-form-row>
         </ng-template>
       </li>
-      <li [ngbNavItem]="'url'">
+      <li [ngbNavItem]="uploadType.Url">
         <a ngbNavLink>From URL</a>
         <ng-template ngbNavContent>
-          <div class="form-group">
-            <label for="url">URL:</label>
-            <input id="url" class="form-control" [formControl]="url" placeholder="https://www.example.com/file.pdf">
-          </div>
-
-          <div class="form-group">
-            <label for="filename">Filename:</label>
-            <input id="filename" class="form-control" [formControl]="filename" placeholder="file.pdf">
-          </div>
+          <app-form-row for="url" label="URL" [control]="form.get('url')">
+            <input type="text" formControlName="url" id="url" [appFormInput]="form.get('url')"
+                   placeholder="https://www.example.com/file.pdf" (change)="urlChanged($event)">
+          </app-form-row>
         </ng-template>
       </li>
     </ul>
 
     <div [ngbNavOutlet]="nav" class="mt-4"></div>
-  </div>
 
-  <div class="modal-body">
-    <label>Select annotation method</label>
-    <div *ngFor="let method of annotationMethods" (click)="selection.toggle(method)">
-      <div class="custom-control custom-checkbox">
-        <input type="checkbox" class="custom-control-input" id="annotation-type-{{method}}"
-               (change)="onAnnotationMethodPick(method)"
-               [checked]="selection.isSelected(method)">
-        <label class="custom-control-label d-flex align-items-center" for="annotation-type-{{method}}">
-          {{ method }}
-        </label>
-      </div>
+    <div class="mt-2">
+      <app-form-row for="filename" label="Filename" [control]="form.get('filename')">
+        <input type="text" formControlName="filename" id="filename" [appFormInput]="form.get('filename')">
+      </app-form-row>
+
+      <app-form-row for="description" label="Description" [control]="form.get('description')">
+      <textarea formControlName="description" id="description" [appFormInput]="form.get('description')"
+                rows="5" maxlength="2048"></textarea>
+      </app-form-row>
     </div>
-  </div>
+  </app-modal-body>
 
-  <div class="modal-footer">
-    <button type="button" class="btn btn-light" (click)="activeModal.close()">Cancel</button>
-    <button type="submit" class="btn btn-primary" [disabled]="forbidUpload">Upload</button>
-  </div>
+  <app-modal-footer>
+    <button type="button" class="btn btn-light" (click)="cancel()">Cancel</button>
+    <button type="submit" class="btn btn-primary">Upload</button>
+  </app-modal-footer>
 </form>

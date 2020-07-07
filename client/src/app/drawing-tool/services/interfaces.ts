@@ -100,6 +100,7 @@ export interface Meta {
   isExcluded?: boolean;
   exclusionReason?: string;
   exclusionComment?: string;
+  primaryLink?: string;
 }
 
 export interface Rect {

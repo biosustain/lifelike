@@ -203,18 +203,9 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
   }
 
   displayUploadDialog() {
-    const uploadData: UploadPayload = {
-      type: UploadType.Files,
-      filename: '',
-      annotationMethod: '',
-    };
-
     const dialogRef = this.modalService.open(FileUploadDialogComponent);
-    dialogRef.componentInstance.payload = uploadData;
-    dialogRef.result.then((runUpload: boolean) => {
-      if (runUpload) {
-        this.upload(uploadData);
-      }
+    dialogRef.result.then(data => {
+      this.upload(data);
     }, () => {
     });
   }
