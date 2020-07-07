@@ -24,6 +24,8 @@
             - software-properties-common
             - gnupg-agent
             - python3-setuptools
+            - python3-pip
+            - python-pip
 
     - name: Add Docker repo GPG key
       apt_key:

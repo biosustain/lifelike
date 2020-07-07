@@ -1,0 +1,86 @@
+- name: Setup LMDB database and Seed
+  hosts: webservers
+  become: yes
+  vars:
+    database_path: /home/ubuntu/lmdb
+  vars_files:
+    - ../staging.secrets.yml
+    - ../gcloud_ansible_secrets.yml
+
+  tasks:
+
+    - name: Install Python dependencies
+      pip:
+        name:
+            - boto
+            - sqlalchemy
+            - google-cloud-storage
+            - psycopg2-binary
+        umask: "0022"
+      become: True
+
+    - name: Create LMDB database directories
+      become_user: ubuntu
+      file:
+        path: "{{ database_path }}/{{ item }}"
+        state: directory
+      loop:
+        - chemicals
+        - diseases
+        - compounds
+        - genes
+        - phenotypes
+        - proteins
+        - species
+
+    - name: Fetch 'data.mdb' files
+      become_user: ubuntu
+      gc_storage:
+        bucket: lmdb_database
+        object: "{{ item }}/data.mdb"
+        dest: "{{ database_path }}/{{ item }}/data.mdb"
+        mode: get
+        gs_access_key: "{{ gce_bucket_access_key }}"
+        gs_secret_key: "{{ gce_bucket_secret_key }}"
+        force: yes
+      register: lmdb_results
+      loop:
+        - chemicals
+        - diseases
+        - compounds
+        - genes
+        - phenotypes
+        - proteins
+        - species
+
+    - name: Fetch 'lock.mdb' files
+      become_user: ubuntu
+      gc_storage:
+        bucket: lmdb_database
+        object: "{{ item }}/lock.mdb"
+        dest: "{{ database_path }}/{{ item }}/lock.mdb"
+        mode: get
+        gs_access_key: "{{ gce_bucket_access_key }}"
+        gs_secret_key: "{{ gce_bucket_secret_key }}"
+        force: yes
+      loop:
+        - chemicals
+        - diseases
+        - compounds
+        - genes
+        - phenotypes
+        - proteins
+        - species
+
+    - name: Update LMDB Dates
+      become_user: ubuntu
+      script: lmdb_check.py
+      environment:
+        POSTGRES_HOST: "{{ POSTGRES_HOST }}"
+        POSTGRES_PASSWORD: "{{ POSTGRES_PASSWORD }}"
+        POSTGRES_PORT: "{{ POSTGRES_PORT }}"
+        POSTGRES_USER: "{{ POSTGRES_USER }}"
+        POSTGRES_DB: "{{ POSTGRES_DB }}"
+      register: outcome
+
+    - debug: msg="{{ outcome.stdout }}"
