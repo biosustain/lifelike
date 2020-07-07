@@ -234,6 +234,10 @@ export class ProjectsService {
   }
 
   public uploadProjectBackup(project: Project): Observable<any> {
+    project.description = project.description && project.description.length ?
+      project.description :
+      '';
+
     return this.http.post(
       `${this.baseUrl}/map/${project.hash_id}/backup`,
       project,

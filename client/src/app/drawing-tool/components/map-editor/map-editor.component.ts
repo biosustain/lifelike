@@ -62,7 +62,7 @@ export class MapEditorComponent extends MapViewComponent<Project> implements OnI
   handleExtra(backup: Project) {
     if (backup != null) {
       this.modalService.open(MapRestoreDialogComponent).result.then(() => {
-        this.map = backup;
+        this.map = backup['project'];
         this.unsavedChanges$.next(true);
       }, () => {
         this.projectService.deleteProjectBackup(this.map.hash_id).subscribe();
