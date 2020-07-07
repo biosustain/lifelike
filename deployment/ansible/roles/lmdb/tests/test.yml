@@ -1,0 +1,5 @@
+---
+- hosts: localhost
+  remote_user: ***ARANGO_USERNAME***
+  roles:
+    - lmdb
