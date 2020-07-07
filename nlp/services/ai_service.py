@@ -12,7 +12,7 @@ class AIService():
     MODEL_DIRECTORY = '/models/'
     ALL_MODELS = [
         {'path': 'bacteria/v1/model/1/', 'type': 'bacteria'},
-        {'path': 'chem/v1/model', 'type': 'chemical'},
+        {'path': 'chemical/v1/model', 'type': 'chemical'},
         {'path': 'disease/v1/model', 'type': 'disease'},
         {'path': 'gene/v1/model/1/', 'type': 'gene'}
     ]
