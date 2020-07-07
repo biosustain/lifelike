@@ -9,7 +9,7 @@ import {SearchService} from '../../search/services/search.service';
   styleUrls: ['./pdf-search-bar.component.scss']
 })
 export class PdfSearchBarComponent implements OnInit {
-  @Output() results = new EventEmitter<any>();
+  @Output() results = new EventEmitter<PDFResult>();
   searchForm = new FormGroup({
     searchInput: new FormControl(''),
   });

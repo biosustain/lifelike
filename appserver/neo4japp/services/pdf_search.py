@@ -17,6 +17,7 @@ class PDFSearchResult:
         self.preview_text_size = 400
         self.external_url = ''
         self.email = ''
+        self.description = ''
         self.parse_pdf_entries(data)
 
     def parse_pdf_entries(self, data):
@@ -28,6 +29,8 @@ class PDFSearchResult:
         self.uploaded_date = source['uploaded_date']
         self.external_url = source['external_link']
         self.email = source['email']
+        self.description = source['description']
+        self.filename = source['filename']
 
     def parse_highlight(self, field, data):
         start_tag = '<highlight>'
@@ -60,7 +63,8 @@ class PDFSearchResult:
             'preview_text': self.preview_text,
             'uploaded_date': self.uploaded_date,
             'external_url': self.external_url,
-            'email': self.email
+            'email': self.email,
+            'description': self.description
         }
 
     def __str__(self):
