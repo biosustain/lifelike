@@ -299,8 +299,8 @@ class AnnotationsPDFParser:
                             curr_char_idx_mappings[k] = v
                             last_char_idx_in_curr_keyword = k
 
-                    curr_keyword, curr_char_idx_mappings = self._remove_leading_and_trailing_punctuation(
-                        keyword=curr_keyword, curr_char_idx_mappings=curr_char_idx_mappings)  # noqa
+                    curr_keyword, curr_char_idx_mappings = self._remove_leading_and_trailing_punctuation(  # noqa
+                        keyword=curr_keyword, curr_char_idx_mappings=curr_char_idx_mappings)
 
                     # keyword could've been all punctuation
                     if curr_keyword:
