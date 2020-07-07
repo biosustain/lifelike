@@ -248,12 +248,6 @@ export class NetworkVis {
     });
 
     updatedNode = Object.assign({}, updatedNode);
-    if (data.group === 'link') {
-      updatedNode = {
-        ...updatedNode,
-        label: data.shape === 'icon' ? '' : data.data.detail,
-      };
-    }
 
     if (updatedNode.data.subtype) {
       updatedNode.label = `${updatedNode.label} - ${updatedNode.data.subtype}`;
