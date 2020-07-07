@@ -36,6 +36,20 @@
                 rows="5" maxlength="2048"></textarea>
       </app-form-row>
     </div>
+
+    <div class="mt-2">
+      <label>Select annotation method</label>
+      <div *ngFor="let method of annotationMethods" (click)="selection.toggle(method)">
+        <div class="custom-control custom-checkbox">
+          <input type="checkbox" class="custom-control-input" id="annotation-type-{{method.replace(' ', '-') | lowercase}}"
+                 (change)="onAnnotationMethodPick(method)"
+                 [checked]="selection.isSelected(method)">
+          <label class="custom-control-label d-flex align-items-center" for="annotation-type-{{method.replace(' ', '-') | lowercase}}">
+            {{ method }}
+          </label>
+        </div>
+      </div>
+    </div>
   </app-modal-body>
 
   <app-modal-footer>

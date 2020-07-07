@@ -175,12 +175,12 @@ class AnnotationsPDFParser:
                 updated_curr_char_idx_mappings.pop(remove)
 
             if keyword[-1] == period and keyword[-2] in trailing_punctuation:
-                updated_word = keyword[:-2]
+                updated_word = updated_word[:-2]
                 dict_keys = list(updated_curr_char_idx_mappings.keys())
                 for remove in [dict_keys[-1], dict_keys[-2]]:
                     updated_curr_char_idx_mappings.pop(remove)
             elif keyword[-1] in trailing_punctuation:
-                updated_word = keyword[:-1]
+                updated_word = updated_word[:-1]
                 dict_keys = list(updated_curr_char_idx_mappings.keys())
                 remove = dict_keys[-1]
                 updated_curr_char_idx_mappings.pop(remove)
