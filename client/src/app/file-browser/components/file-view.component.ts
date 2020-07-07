@@ -340,7 +340,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
     let source = '/dt/pdf/' + `${this.currentFileId}/${loc.pageNumber}/`;
     source = source + `${loc.rect[0]}/${loc.rect[1]}/${loc.rect[2]}/${loc.rect[3]}`;
 
-    const hyperlink = meta.idHyperlink || '';
+    const hyperlink = meta.idHyperlink || meta.primaryLink || '';
     const search = Object.keys(meta.links || []).map(k => {
       return {
         domain: k,
