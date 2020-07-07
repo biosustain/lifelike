@@ -29,11 +29,16 @@ const sortByDate = (a: Project, b: Project) => {
   }
 };
 
+/**
+ * Sort project by name
+ * @param a - item to sort
+ * @param b - item to sort against
+ */
 const sortAlphabetically = (a: Project, b: Project) => {
-  var textA = a.label.toUpperCase();
-  var textB = b.label.toUpperCase();
+  const textA = a.label.toUpperCase();
+  const textB = b.label.toUpperCase();
   return (textA < textB) ? -1 : (textA > textB) ? 1 : 0;
-}
+};
 
 @Component({
   selector: 'app-map-list',
@@ -60,7 +65,7 @@ export class MapListComponent implements OnInit {
   @Input() displayIndex = null;
 
   // To sort projects by date or alphabet
-  SORT_MODE = 'dateModified'
+  SORT_MODE = 'dateModified';
   set sortMode(val) {
     this.SORT_MODE = val;
 
