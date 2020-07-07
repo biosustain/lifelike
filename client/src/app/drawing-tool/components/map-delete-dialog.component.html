@@ -1,0 +1,15 @@
+<form (ngSubmit)="submit()">
+  <app-modal-header (cancel)="cancel()">
+    Confirm Map Deletion
+  </app-modal-header>
+
+  <app-modal-body>
+    Are you sure that you want to delete the selected map,
+    <strong>{{ map.label }}</strong>?
+  </app-modal-body>
+
+  <app-modal-footer>
+    <button type="button" class="btn btn-secondary mr-2" (click)="cancel()">Cancel</button>
+    <button type="submit" class="btn btn-danger">Delete</button>
+  </app-modal-footer>
+</form>

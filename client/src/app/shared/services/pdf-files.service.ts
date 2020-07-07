@@ -24,11 +24,14 @@ export class PdfFilesService {
     const options = { headers: this.getAuthHeader() };
     return this.http.get<PdfFiles>(`${this.baseUrl}/list`, options).pipe(
       map((res: PdfFiles) => res.files),
-      catchError(err => {
-        console.error(err);
-        return of([]);
-      }),
     );
+  }
+
+  getFileInfo(id: string): Observable<PdfFile> {
+    const options = {
+      headers: this.getAuthHeader(),
+    };
+    return this.http.get<PdfFile>(`${this.baseUrl}/${id}/info`, options);
   }
 
   getFile(id: string): Observable<ArrayBuffer> {
@@ -54,10 +57,11 @@ export class PdfFilesService {
       formData.append('description', data.description.substring(0, this.descriptionMaxLength));
     }
     if (data.type === UploadType.Files) {
-      formData.append('file', data.files[0]);
+      formData.append('fileInput', data.files[0]);
     } else {
       formData.append('url', data.url);
     }
+    formData.append('annotationMethod', data.annotationMethod);
     return this.http.post<PdfFileUpload>(`${this.baseUrl}/upload`, formData, {
       headers: this.getAuthHeader(),
       observe: 'events',

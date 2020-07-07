@@ -1,0 +1,152 @@
+<ng-container *ngIf="refreshTask.status$ | async as status">
+  <div class="module module-sidebar h-100">
+    <div class="module-header-container">
+      <div class="module-header">
+        <div class="module-title">
+          Maps
+        </div>
+
+        <div class="module-toolbar">
+          <button type="button" class="btn btn-primary" ngbTooltip="Create new map"
+                  placement="bottom" (click)="this.mapCreate.emit()">
+            <i class="fa fa-fw fa-plus"></i>
+          </button>
+
+          <button type="button" class="btn btn-outline-secondary ml-1" ngbTooltip="Import map data"
+                  placement="bottom" (click)="this.mapUpload.emit()">
+            <i class="fa fa-fw fa-upload"></i>
+          </button>
+
+          <button type="button" class="btn btn-outline-secondary ml-1" (click)="refresh()"
+                  ngbTooltip="Refresh the results" placement="bottom">
+            <i class="fa fa-sync"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="module-header-body">
+        <div class="input-group">
+        <span class="input-group-prepend">
+          <div class="input-group-text bg-white border-right-0">
+            <i class="fa fa-fw fa-search"></i>
+          </div>
+        </span>
+          <input class="form-control py-2 pl-0 input-border border-left-0"
+                 placeholder="Search within maps..."
+                 [(ngModel)]="term" (keyup)="refresh(true)">
+          <span class="input-group-append" *ngIf="term.length">
+          <button class="btn btn-outline-secondary" type="button" (click)="term = ''; refresh(true)">
+            <i class="fa fa-times"></i>
+          </button>
+        </span>
+        </div>
+
+        <div class="mt-2 d-flex">
+          <div class="custom-control custom-checkbox">
+            <input class="custom-control-input" type="checkbox" id="personal-filter" value="1"
+                   [(ngModel)]="showPersonal" (change)="refresh(true)">
+            <label class="custom-control-label" for="personal-filter">Your Maps</label>
+          </div>
+          <div class="custom-control custom-checkbox ml-3">
+            <input class="custom-control-input" type="checkbox" id="community-filter" value="1"
+                   [(ngModel)]="showCommunity" (change)="refresh(true)">
+            <label class="custom-control-label" for="community-filter">Community</label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="module-body">
+      <app-background-task-progress
+        [status]="status" (refresh)="this.refresh()" childClass="mt-2 mb-0 px-2"></app-background-task-progress>
+
+      <table class="table table-selectable my-0" style="table-layout: fixed">
+        <colgroup>
+          <col>
+          <col style="width: 90px">
+        </colgroup>
+        <thead>
+        <tr>
+          <th class="text-truncate">Name</th>
+          <th class="text-right text-truncate">Modified</th>
+        </tr>
+        </thead>
+
+        <tbody *ngIf="status.placeholdersShown && projects.length == 0">
+        <tr>
+          <td class="text-truncate">
+            <span class="placeholder-box">Loading loading</span>
+          </td>
+          <td class="text-truncate text-right">
+            <span class="placeholder-box">Loading</span>
+          </td>
+        </tr>
+        <tr>
+          <td class="text-truncate">
+            <span class="placeholder-box">Loading loading loading</span>
+          </td>
+          <td class="text-truncate text-right">
+            <span class="placeholder-box">Loading</span>
+          </td>
+        </tr>
+        <tr>
+          <td class="text-truncate">
+            <span class="placeholder-box">Loading loading</span>
+          </td>
+          <td class="text-truncate text-right">
+            <span class="placeholder-box">Loading</span>
+          </td>
+        </tr>
+        <tr>
+          <td class="text-truncate">
+            <span class="placeholder-box">Loading loading loading loading</span>
+          </td>
+          <td class="text-truncate text-right">
+            <span class="placeholder-box">Loading</span>
+          </td>
+        </tr>
+        </tbody>
+
+        <tbody *ngIf="status.resultsShown" cdkDropList cdkDropListSortingDisabled>
+        <tr *ngFor="let project of projects" [id]="project.hash_id"
+            (click)='select(project)' draggable="true"
+            (keydown)="$event.keyCode != 13 || select(project)"
+            (dragstart)="mapDragStarted($event, project)"
+            [class.active]="selectedMap?.hash_id === project.hash_id"
+            tabindex="0">
+          <td>
+            <div class="d-flex text-truncate">
+              <div>
+                <i class="fa fa-fw fa-project-diagram"></i>
+              </div>
+              <div class="ml-2 text-truncate">
+                <div class="text-truncate">
+                  {{ project.label }}
+                </div>
+                <div class="text-truncate text-muted">
+                  By {{project?.author}}
+                </div>
+              </div>
+            </div>
+          </td>
+          <td class="text-truncate text-right">
+            {{project?.date_modified | date: 'shortDate'}}
+          </td>
+        </tr>
+        </tbody>
+      </table>
+
+      <div *ngIf="status.emptyResultsShown && projects.length == 0"
+           class="text-center my-4 px-4">
+        <div *ngIf="!showPersonal && !showCommunity else filtersOk">
+          <i class="fa fa-info-circle"></i>
+          Select at least 'Your Projects' or 'Community' to see results.
+        </div>
+        <ng-template #filtersOk>
+          No projects match your current
+          filters{{term != '' ? ', matching "' + refreshTask.latestSuccessfulValue.term + '"' : ''}}.
+        </ng-template>
+      </div>
+    </div>
+  </div>
+</ng-container>
