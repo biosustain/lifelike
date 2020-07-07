@@ -35,6 +35,13 @@
       search
     </mat-icon>
     <mat-icon
+      [matTooltip]='currentApp==="pdf-search" ? "Close PDF Search" : "Open PDF Search"'
+      matTooltipPosition="right"
+      [ngClass]='{"active": currentApp==="pdf-search"}'
+      (click)='toggle("pdf-search")'>
+      find_in_page
+    </mat-icon>
+    <mat-icon
       [matTooltip]='currentApp==="map-search" ? "Close Map Search" : "Open Map Search"'
       matTooltipPosition="right"
       [ngClass]='{"active": currentApp==="map-search"}'
