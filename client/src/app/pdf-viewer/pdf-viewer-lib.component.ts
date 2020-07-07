@@ -678,6 +678,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   openAddLinkPanel() {
+    jQuery('.frictionless-annotation').qtip('destroy');
     this.isSelectionLink = true;
     // TODO: remove workaround and fix the issue with the selectedRects
     // Currently selection.getRangeAt(0).getClientRects() gives duplicates
