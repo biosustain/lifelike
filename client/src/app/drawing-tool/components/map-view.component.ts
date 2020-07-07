@@ -24,10 +24,12 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { MessageDialog } from '../../shared/services/message-dialog.service';
 import { MessageType } from '../../interfaces/message-dialog.interface';
 import { BackgroundTask } from '../../shared/rxjs/background-task';
-import { map, startWith } from 'rxjs/operators';
+import { map, startWith, tap } from 'rxjs/operators';
 import { ErrorHandler } from '../../shared/services/error-handler.service';
 import { CopyKeyboardShortcut } from '../../graph-viewer/renderers/canvas/behaviors/copy-keyboard-shortcut';
 import { ObservableInput } from 'rxjs/src/internal/types';
+import { ProgressDialog } from '../../shared/services/progress-dialog.service';
+import { Progress } from '../../interfaces/common-dialog.interface';
 
 @Component({
   selector: 'app-map-view',
@@ -64,6 +66,7 @@ export class MapViewComponent<ExtraResult = void> implements OnDestroy, AfterVie
     readonly snackBar: MatSnackBar,
     readonly modalService: NgbModal,
     readonly messageDialog: MessageDialog,
+    readonly progressDialog: ProgressDialog,
     readonly ngZone: NgZone,
     readonly route: ActivatedRoute,
     readonly errorHandler: ErrorHandler,
@@ -242,20 +245,29 @@ export class MapViewComponent<ExtraResult = void> implements OnDestroy, AfterVie
     }
   }
 
-  /**
-   * Saves and downloads the PDF version of the current map
-   */
-  downloadPDF() {
+  private requestDownload(project: () => Observable<any>, mimeType: string, extension: string) {
     if (this.unsavedChanges$.getValue()) {
       this.snackBar.open('Please save the project before exporting', null, {
         duration: 2000,
       });
     } else {
-      this.projectService.getPDF(this.map).subscribe(resp => {
+      const progressDialogRef = this.progressDialog.display({
+        title: `Export`,
+        progressObservable: new BehaviorSubject<Progress>(new Progress({
+          status: 'Generating the requested export...',
+        })),
+      });
+
+      project().pipe(
+        tap(
+          () => progressDialogRef.close(),
+          () => progressDialogRef.close()),
+        this.errorHandler.create(),
+      ).subscribe(resp => {
         // It is necessary to create a new blob object with mime-type explicitly set
         // otherwise only Chrome works like it should
         const newBlob = new Blob([resp], {
-          type: 'application/pdf',
+          type: mimeType,
         });
 
         // IE doesn't allow using a blob object directly as link href
@@ -271,7 +283,7 @@ export class MapViewComponent<ExtraResult = void> implements OnDestroy, AfterVie
 
         const link = document.createElement('a');
         link.href = data;
-        link.download = this.map.label + '.pdf';
+        link.download = this.map.label + extension;
         // this is necessary as link.click() does not work on the latest firefox
         link.dispatchEvent(new MouseEvent('click', {
           bubbles: true,
@@ -286,98 +298,39 @@ export class MapViewComponent<ExtraResult = void> implements OnDestroy, AfterVie
         }, 100);
       });
     }
+  }
+
+  /**
+   * Saves and downloads the PDF version of the current map
+   */
+  downloadPDF() {
+    this.requestDownload(
+      () => this.projectService.getPDF(this.map),
+      'application/pdf',
+      '.pdf',
+    );
   }
 
   /**
    * Saves and downloads the SVG version of the current map
    */
   downloadSVG() {
-    if (this.unsavedChanges$.getValue()) {
-      this.snackBar.open('Please save the project before exporting', null, {
-        duration: 2000,
-      });
-    } else {
-      this.projectService.getSVG(this.map).subscribe(resp => {
-        // It is necessary to create a new blob object with mime-type explicitly set
-        // otherwise only Chrome works like it should
-        const newBlob = new Blob([resp], {
-          type: 'image/svg',
-        });
-
-        // IE doesn't allow using a blob object directly as link href
-        // instead it is necessary to use msSaveOrOpenBlob
-        if (window.navigator && window.navigator.msSaveOrOpenBlob) {
-          window.navigator.msSaveOrOpenBlob(newBlob);
-          return;
-        }
-
-        // For other browsers:
-        // Create a link pointing to the ObjectURL containing the blob.
-        const data = window.URL.createObjectURL(newBlob);
-
-        const link = document.createElement('a');
-        link.href = data;
-        link.download = this.map.label + '.svg';
-        // this is necessary as link.click() does not work on the latest firefox
-        link.dispatchEvent(new MouseEvent('click', {
-          bubbles: true,
-          cancelable: true,
-          view: window,
-        }));
-
-        setTimeout(() => {
-          // For Firefox it is necessary to delay revoking the ObjectURL
-          window.URL.revokeObjectURL(data);
-          link.remove();
-        }, 100);
-      });
-    }
+    this.requestDownload(
+      () => this.projectService.getSVG(this.map),
+      'application/svg',
+      '.svg',
+    );
   }
 
   /**
    * Saves and downloads the PNG version of the current map
    */
   downloadPNG() {
-    if (this.unsavedChanges$.getValue()) {
-      this.snackBar.open('Please save the project before exporting', null, {
-        duration: 2000,
-      });
-    } else {
-      this.projectService.getPNG(this.map).subscribe(resp => {
-        // It is necessary to create a new blob object with mime-type explicitly set
-        // otherwise only Chrome works like it should
-        const newBlob = new Blob([resp], {
-          type: 'image/png',
-        });
-
-        // IE doesn't allow using a blob object directly as link href
-        // instead it is necessary to use msSaveOrOpenBlob
-        if (window.navigator && window.navigator.msSaveOrOpenBlob) {
-          window.navigator.msSaveOrOpenBlob(newBlob);
-          return;
-        }
-
-        // For other browsers:
-        // Create a link pointing to the ObjectURL containing the blob.
-        const data = window.URL.createObjectURL(newBlob);
-
-        const link = document.createElement('a');
-        link.href = data;
-        link.download = this.map.label + '.png';
-        // this is necessary as link.click() does not work on the latest firefox
-        link.dispatchEvent(new MouseEvent('click', {
-          bubbles: true,
-          cancelable: true,
-          view: window,
-        }));
-
-        setTimeout(() => {
-          // For Firefox it is necessary to delay revoking the ObjectURL
-          window.URL.revokeObjectURL(data);
-          link.remove();
-        }, 100);
-      });
-    }
+    this.requestDownload(
+      () => this.projectService.getPNG(this.map),
+      'application/png',
+      '.png',
+    );
   }
 
   // ========================================
