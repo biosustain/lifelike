@@ -20,7 +20,3 @@ def ai():
         return jsonify('text invalid')
     results = aiservice.infer(text)
     return jsonify(results)
-
-
-if __name__ == '__main__':
-    app.run()
