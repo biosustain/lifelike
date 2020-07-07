@@ -18,7 +18,7 @@ import { IdType } from 'vis-network';
 
 import { GroupRequest, Direction, VisNode } from 'app/interfaces';
 import { TooltipDetails } from 'app/shared/services/tooltip-control-service';
-import { TooltipComponent } from 'app/shared/components/tooltip/tooltip.component';
+import { TooltipComponent } from 'app/shared/components/tooltip.component';
 
 import { ContextMenuControlService } from '../../services/context-menu-control.service';
 

@@ -33,4 +33,5 @@ export interface UploadPayload {
   files?: File[];
   // if type === Url
   url?: string;
+  annotationMethod: string;
 }

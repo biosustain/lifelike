@@ -7,9 +7,6 @@ import {
   UniversalGraph,
   UniversalGraphEdge,
   UniversalGraphNode,
-  VisNetworkGraph,
-  VisNetworkGraphEdge,
-  VisNetworkGraphNode
 } from './interfaces';
 
 import {
@@ -148,10 +145,13 @@ export class ProjectsService {
    * Return results based on search terms
    * inside of nodes in drawing-tool map
    */
-  public searchForMaps(term: string): Observable<any> {
+  public searchForMaps(term: string, filters: {
+    personal?: boolean,
+    community?: boolean,
+  } = {}): Observable<any> {
     return this.http.post(
       `${this.baseUrl}/search`,
-      {term},
+      {term, filters},
       this.createHttpOptions(true)
     );
   }
@@ -222,99 +222,6 @@ export class ProjectsService {
       `${this.baseUrl}/projects/${project.id}`,
       this.createHttpOptions(true)
     );
-  }
-
-  /**
-   * Convert a graph to universal representation
-   * from Vis.js Network representation
-   */
-  public vis2Universe(graph: VisNetworkGraph): UniversalGraph {
-    const nodes: UniversalGraphNode[] = graph.nodes.map(
-      (n: VisNetworkGraphNode): UniversalGraphNode => {
-        return {
-          data: {
-            x: n.x,
-            y: n.y,
-            hyperlink: isNullOrUndefined(n.data.hyperlink) ? '' : n.data.hyperlink,
-            detail: isNullOrUndefined(n.data.detail) ? '' : n.data.detail,
-            source: isNullOrUndefined(n.data.source) ? '' : n.data.source,
-            search: isNullOrUndefined(n.data.source) ? [] : n.data.search,
-            subtype: isNullOrUndefined(n.data.subtype) ? '' : n.data.subtype
-          },
-          display_name: n.label,
-          hash: n.id,
-          shape: n.shape || 'box',
-          icon: n.icon,
-          label: n.group,
-          sub_labels: []
-        };
-      }
-    );
-
-    const edges: UniversalGraphEdge[] = graph.edges.map(
-      (e: VisNetworkGraphEdge): UniversalGraphEdge => {
-        return {
-          label: e.label,
-          from: e.from,
-          to: e.to,
-          data: {}
-        };
-      }
-    );
-
-    const visGraph: UniversalGraph = {
-      edges,
-      nodes
-    };
-
-    return visGraph;
-  }
-
-  /**
-   * Convert a graph to Vis.js Network Representation
-   * from Universal representation
-   * @param graph represents a UniversalGraph
-   */
-  public universe2Vis(graph: UniversalGraph): VisNetworkGraph {
-    const nodes: VisNetworkGraphNode[] = graph.nodes.map(
-      (n: UniversalGraphNode): VisNetworkGraphNode => {
-        return {
-          label: n.display_name,
-          shape: n.shape || 'box',
-          icon: n.icon,
-          x: n.data.x,
-          y: n.data.y,
-          id: n.hash,
-          color: isNullOrUndefined(n.color) ? {background: '#FFFFFF'} : n.color,
-          group: n.label,
-          data: {
-            hyperlink: isNullOrUndefined(n.data.hyperlink) ? '' : n.data.hyperlink,
-            detail: isNullOrUndefined(n.data.detail) ? '' : n.data.detail,
-            source: isNullOrUndefined(n.data.source) ? '' : n.data.source,
-            search: isNullOrUndefined(n.data.source) ? [] : n.data.search,
-            subtype: isNullOrUndefined(n.data.subtype) ? '' : n.data.subtype
-          }
-        };
-      }
-    );
-
-    const edges: VisNetworkGraphEdge[] = graph.edges.map(
-      (e: UniversalGraphEdge): VisNetworkGraphEdge => {
-        return {
-          from: e.from,
-          to: e.to,
-          label: e.label,
-          id: e.data.hash,
-        };
-      }
-    );
-
-    const visGraph: VisNetworkGraph = {
-      edges,
-      nodes
-    };
-
-    return visGraph;
   }
 
   public downloadProjectBackup(hashId: string): Observable<any> {

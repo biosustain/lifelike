@@ -1,0 +1,65 @@
+import { Injectable } from '@angular/core';
+import { Pane} from '../workspace-manager';
+
+const LOCAL_STORAGE_KEY = '***ARANGO_DB_NAME***_workspace_session';
+
+export interface TabData {
+  url: string;
+  title: string;
+  fontAwesomeIcon: string;
+}
+
+interface PaneData {
+  id: string;
+  tabs: TabData[];
+  activeTabHistory: number[];
+}
+
+interface SessionData {
+  panes: PaneData[];
+}
+
+export interface WorkspaceSessionLoader {
+  createPane(id: string): void;
+  loadTab(id: string, data: TabData): void;
+  setPaneActiveTabHistory(id: string, activeTabHistory: number[]): void;
+}
+
+@Injectable({
+  providedIn: '***ARANGO_USERNAME***',
+})
+export class WorkspaceSessionService {
+  save(panes: Pane[]) {
+    const data: SessionData = {
+      panes: panes.map(pane => {
+        return {
+          id: pane.id,
+          tabs: pane.tabs.map(tab => ({
+            url: tab.url,
+            title: tab.title,
+            fontAwesomeIcon: tab.fontAwesomeIcon,
+          })),
+          activeTabHistory: [...pane.activeTabHistory.values()].map((tab) => pane.tabs.indexOf(tab)),
+        };
+      }),
+    };
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data));
+  }
+
+  load(loader: WorkspaceSessionLoader): boolean {
+    const rawData = localStorage.getItem(LOCAL_STORAGE_KEY);
+    if (rawData) {
+      const data: SessionData = JSON.parse(rawData);
+      for (const pane of data.panes) {
+        loader.createPane(pane.id);
+        for (const tab of pane.tabs) {
+          loader.loadTab(pane.id, tab);
+        }
+        loader.setPaneActiveTabHistory(pane.id, pane.activeTabHistory);
+      }
+      return true;
+    } else {
+      return false;
+    }
+  }
+}

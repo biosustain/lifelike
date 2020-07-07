@@ -1,0 +1,18 @@
+<div class="palette-container">
+  <div class="palette-item-container" *ngFor='let template of nodeTemplatesShown' [id]='template.label'
+       draggable="true" (dragstart)="dragStarted($event, template)">
+    <div class="palette-item">
+      <div class="palette-item-icon" [style.background]="template.color">
+      </div>
+      <div class="palette-item-label">
+        {{template.label | titlecase}}
+      </div>
+    </div>
+  </div>
+
+  <div class="w-100 mt-2 d-flex align-items-center justify-content-center">
+    <button class="btn btn-secondary btn-sm" (click)="toggleExpansion()">
+      <i class="fa fa-caret-{{expanded ? 'up' : 'down'}}"></i>
+    </button>
+  </div>
+</div>

@@ -3,7 +3,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 import { configureTestSuite } from 'ng-bullet';
 
-import { MAX_CLUSTER_ROWS } from 'app/constants';
+import { MAX_CLUSTER_ROWS } from 'app/shared/constants';
 import { RootStoreModule } from 'app/***ARANGO_USERNAME***-store';
 import { SharedModule } from 'app/shared/shared.module';
 
