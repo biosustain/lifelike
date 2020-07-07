@@ -212,6 +212,11 @@ export class Tab {
  */
 export class Pane {
   /**
+   * Percentage width of the pane.
+   */
+  size: number | undefined;
+
+  /**
    * The tabs that are a part of this pane.
    */
   readonly tabs: Tab[] = [];
@@ -608,9 +613,10 @@ export class WorkspaceManager {
     const tasks = [];
 
     if (this.sessionService.load(new class implements WorkspaceSessionLoader {
-      createPane(id: string): void {
+      createPane(id: string, options): void {
         tasks.push(() => {
-          parent.panes.create(id);
+          const pane = parent.panes.create(id);
+          pane.size = options.size;
         });
       }
 
