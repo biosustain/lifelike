@@ -15,7 +15,7 @@ import { ResizedEvent } from 'angular-resize-event';
  * @param a - item to sort
  * @param b - item to sort against
  */
-const sort = (a: Project, b: Project) => {
+const sortByDate = (a: Project, b: Project) => {
   if (
     a.date_modified < b.date_modified
   ) {
@@ -28,6 +28,12 @@ const sort = (a: Project, b: Project) => {
     return -1;
   }
 };
+
+const sortAlphabetically = (a: Project, b: Project) => {
+  var textA = a.label.toUpperCase();
+  var textB = b.label.toUpperCase();
+  return (textA < textB) ? -1 : (textA > textB) ? 1 : 0;
+}
 
 @Component({
   selector: 'app-map-list',
@@ -53,13 +59,29 @@ export class MapListComponent implements OnInit {
   privateDisplayMode = 'personal';
   @Input() displayIndex = null;
 
+  // To sort projects by date or alphabet
+  SORT_MODE = 'dateModified'
+  set sortMode(val) {
+    this.SORT_MODE = val;
+
+    if (this.SORT_MODE === 'dateModified') {
+      this.projects.sort(sortByDate);
+      this.publicProjects.sort(sortByDate);
+    } else {
+      this.projects.sort(sortAlphabetically);
+      this.publicProjects.sort(sortAlphabetically);
+    }
+  }
+  get sortMode() {
+    return this.SORT_MODE;
+  }
+
   get displayMode() {
     return this.privateDisplayMode;
   }
   set displayMode(val) {
     this.privateDisplayMode = val;
     this.displayIndex = val === 'personal' ? 0 : val === 'community' ? 1 : 2;
-    this.projects.sort(sort);
   }
 
   /** Search form implementation */
@@ -102,6 +124,7 @@ export class MapListComponent implements OnInit {
         this.projects = (
           data.projects as Project[]
         );
+        this.projects.sort(sortByDate);
       });
     this.projService.pullCommunityProjects()
       .subscribe(data => {
@@ -109,6 +132,7 @@ export class MapListComponent implements OnInit {
           /* tslint:disable:no-string-literal */
           data['projects'] as Project[]
         );
+        this.publicProjects.sort(sortByDate);
       });
   }
 
