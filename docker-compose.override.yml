@@ -73,13 +73,13 @@ services:
 
     nlpapi:
         container_name: nlpapi
-        command: ./bin/run_server.sh
         build:
             context: ./nlp
             dockerfile: Dockerfile
         environment:
             - FLASK_DEBUG=1
             - FLASK_APP_CONFIG=Development
+            - FLASK_ENV=development
         ports:
             - "5001:5001"
         volumes:
