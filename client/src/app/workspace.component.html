@@ -2,8 +2,8 @@
   <ng-container *ngIf="(panes$ | async) as panes">
     <div class="flex-fill">
       <as-split unit="percent" direction="horizontal" [gutterSize]="5" cdkDropListGroup #splitComponent
-                (dragEnd)="splitterDragEnded()">
-        <as-split-area *ngFor="let pane of panes">
+                (dragEnd)="splitterDragEnded($event)">
+        <as-split-area *ngFor="let pane of panes" [size]="pane.size">
           <div class="h-100 d-flex flex-column">
             <div class="nav-workspace-tabs flex-shrink-0 align-items-start">
               <div class="nav flex-fill" cdkDropList cdkDropListOrientation="horizontal"

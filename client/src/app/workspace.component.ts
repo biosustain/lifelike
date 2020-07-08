@@ -5,9 +5,8 @@ import {
   ElementRef,
   HostListener,
   OnChanges,
-  QueryList,
   ViewChild,
-  ViewChildren, ViewEncapsulation,
+  ViewEncapsulation,
 } from '@angular/core';
 import { CdkDragDrop } from '@angular/cdk/drag-drop';
 import { Pane, Tab, WorkspaceManager } from './shared/workspace-manager';
@@ -73,7 +72,7 @@ export class WorkspaceComponent implements AfterViewInit, OnChanges, AfterConten
   }
 
   handleTabClick(e, pane: Pane, tab: Tab) {
-    if (e && (e.which === 2 || e.button === 4 )) {
+    if (e && (e.which === 2 || e.button === 4)) {
       this.closeTab(pane, tab);
     } else {
       this.setActiveTab(pane, tab);
@@ -81,7 +80,11 @@ export class WorkspaceComponent implements AfterViewInit, OnChanges, AfterConten
     e.preventDefault();
   }
 
-  splitterDragEnded() {
+  splitterDragEnded(result) {
+    result.sizes.forEach((size, index) => {
+      this.workspaceManager.panes.panes[index].size = size;
+    });
+    this.workspaceManager.save();
   }
 
   setActiveTab(pane: Pane, tab: Tab) {
