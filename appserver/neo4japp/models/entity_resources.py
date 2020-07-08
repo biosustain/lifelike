@@ -1,6 +1,5 @@
 from neo4japp.database import db
 from neo4japp.models.common import RDBMSBase
-from sqlalchemy.orm import relationship
 
 
 class DomainULRsMap(RDBMSBase):

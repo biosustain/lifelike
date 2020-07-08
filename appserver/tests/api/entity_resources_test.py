@@ -53,3 +53,42 @@ def test_user_can_get_specific_color_and_style(client, test_user, styles_fixture
                    "color": "#000"
                }
            } == get_response.get_json()
+
+
+def test_user_can_get_uri(client, test_user, uri_fixture):
+    login_resp = client.login_as_user(test_user.email, 'password')
+    headers = generate_headers(login_resp['access_jwt'])
+    headers['content_type'] = 'application/json'
+
+    post_payload = {'domain': 'CHEBI', 'identifier': 'CHEBI:27732'}
+
+    post_response = client.post('/annotations/uri', headers=headers, json=post_payload)
+    assert post_response.status_code == 200
+    assert post_response.json == {'uri': 'https://www.ebi.ac.uk/chebi/searchId.do?chebiId=CHEBI:27732'}
+
+
+def test_user_can_get_many_uris(client, test_user, uri_fixture):
+    login_resp = client.login_as_user(test_user.email, 'password')
+    headers = generate_headers(login_resp['access_jwt'])
+    headers['content_type'] = 'application/json'
+
+    post_payload = {'batch': [
+        {'domain': 'CHEBI', 'identifier': 'CHEBI:27732'},
+        {'domain': 'CHEBI', 'identifier': 'CHEBI:28177'},
+        {'domain': 'MESH', 'identifier': '68017572'},
+        {'domain': 'MESH', 'identifier': '68017594'}
+        ]
+    }
+
+    post_response = client.post('/annotations/uri/batch', headers=headers, json=post_payload)
+    assert post_response.status_code == 200
+    assert len(post_response.json['batch']) == 4
+    assert post_response.json == {
+        'batch': [
+            {'uri': 'https://www.ebi.ac.uk/chebi/searchId.do?chebiId=CHEBI:27732'},
+            {'uri': 'https://www.ebi.ac.uk/chebi/searchId.do?chebiId=CHEBI:28177'},
+            {'uri': 'https://www.ncbi.nlm.nih.gov/mesh/?term=68017572'},
+            {'uri': 'https://www.ncbi.nlm.nih.gov/mesh/?term=68017594'}
+        ]
+    }
+
