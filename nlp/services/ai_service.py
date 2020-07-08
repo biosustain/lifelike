@@ -8,7 +8,7 @@ import time
 
 
 class AIService():
-    
+
     MODEL_DIRECTORY = '/models/'
     ALL_MODELS = [
         {'path': 'bacteria/v1/model/1/', 'type': 'bacteria'},
