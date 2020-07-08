@@ -469,34 +469,34 @@ def example4_pdf_gene_and_organism_network(
     return graph
 
 
-# @pytest.fixture(scope='function')
-# def human_gene_pdf_gene_and_organism_network(
-#     graph,
-# ):
-#     tx = graph.begin()
+@pytest.fixture(scope='function')
+def human_gene_pdf_gene_and_organism_network(
+    graph,
+):
+    tx = graph.begin()
 
-#     ace2 = Node(
-#         'Gene',
-#         name='ace2',
-#         id='59272'
-#     )
+    ace2 = Node(
+        'Gene',
+        name='ace2',
+        id='59272'
+    )
 
-#     human = Node(
-#         'Taxonomy',
-#         name='Homo Sapiens',
-#         rank='species',
-#         id='9606',
-#     )
+    human = Node(
+        'Taxonomy',
+        name='Homo Sapiens',
+        rank='species',
+        id='9606',
+    )
 
-#     ace2_has_taxonomy_homo_sapiens = Relationship(
-#         ace2, 'HAS_TAXONOMY', human,
-#     )
+    ace2_has_taxonomy_homo_sapiens = Relationship(
+        ace2, 'HAS_TAXONOMY', human,
+    )
 
-#     tx.create(ace2_has_taxonomy_homo_sapiens)
+    tx.create(ace2_has_taxonomy_homo_sapiens)
 
-#     tx.commit()
+    tx.commit()
 
-#     return graph
+    return graph
 
 # End Graph Data Fixtures #
 

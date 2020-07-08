@@ -4,6 +4,7 @@ from neo4japp.database import get_annotations_pdf_parser
 from neo4japp.data_transfer_objects import PDFParsedCharacters
 
 
+@pytest.mark.skip
 @pytest.mark.parametrize(
     'index, text',
     [
@@ -100,6 +101,7 @@ def test_extract_tokens(annotations_setup, index, text):
         assert verify == tokens
 
 
+@pytest.mark.skip
 @pytest.mark.parametrize(
     'index, chars',
     [
