@@ -82,6 +82,17 @@ jobs:
                 path: ./cache-invalidator
                 dockerfile: ./cache-invalidator/Dockerfile
 
+            - name: Build NLP
+              uses: docker/build-push-action@v1
+              with:
+                username: _json_key
+                password: ${{ secrets.GCE_SA_KEY }}
+                registry: gcr.io
+                repository: ${{ secrets.GCE_PROJECT }}/kg-nlpapi-prod
+                tags: ${{ github.sha }}, latest
+                path: ./nlp
+                dockerfile: ./nlp/Dockerfile
+
             - name: Deploy Setup
               run: |-
                 echo "POSTGRES_HOST=$POSTGRES_HOST" >> prod.env
@@ -112,6 +123,7 @@ jobs:
                 gcloud compute scp docker-compose.prod.yml $GCE_INSTANCE:/srv --zone $GCE_INSTANCE_ZONE
                 gcloud compute scp ./deployment/bin/startup.sh ***ARANGO_USERNAME***@$GCE_INSTANCE:/srv --zone $GCE_INSTANCE_ZONE
                 gcloud compute scp ./deployment/bin/migration-manager.sh ***ARANGO_USERNAME***@$GCE_INSTANCE:/srv --zone $GCE_INSTANCE_ZONE
+                gcloud compute scp ./appserver/nlp/fetch-ai-models.sh $GCE_INSTANCE:/srv --zone $GCE_INSTANCE_ZONE
                 gcloud compute ssh ***ARANGO_USERNAME***@$GCE_INSTANCE --zone $GCE_INSTANCE_ZONE --command='chmod a+x /srv/startup.sh';
                 gcloud compute ssh ***ARANGO_USERNAME***@$GCE_INSTANCE --zone $GCE_INSTANCE_ZONE --command='chmod a+x /srv/migration-manager.sh';
 

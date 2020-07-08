@@ -29,6 +29,14 @@ services:
         networks:
             - frontend
 
+    nlpapi:
+        expose:
+            - 5001
+        volumes:
+            - /srv/models:/models
+        networks:
+            - backend
+
     cache-invalidator:
         env_file:
             - ./.env
