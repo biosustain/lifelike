@@ -33,3 +33,5 @@ ENV PYTHONPATH $NLP_HOME
 WORKDIR $NLP_HOME
 
 USER $NLP_USER
+
+CMD [ "bin/run_server.sh" ]
