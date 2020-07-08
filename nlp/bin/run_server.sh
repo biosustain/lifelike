@@ -1,10 +1,14 @@
 #!/usr/bin/env bash
 set -e
 
-bindir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
+if [ "$FLASK_ENV" = "development" ]
+then
+    echo "Running development server"
+    flask run --host 0.0.0.0 -p 5001
+fi
 
-dir="${bindir}/.."
-find ${dir} -type f -name "*.py[co]" -delete
-find ${dir} -depth -type d -name "__pycache__" -exec rm -rf "{}" \;
-
-exec "flask" "run" "--host" "0.0.0.0"
+if [ "$FLASK_ENV" = "production" ]
+then
+    echo "Running production server"
+    gunicorn -b 0.0.0.0:5001 -w 4 app:app --timeout 1200
+fi
