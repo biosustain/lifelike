@@ -1,6 +1,6 @@
 # TODO: Consider using a smaller image for deployment, using the base image to
 # enable installing Chrome for Karma testing
-FROM node:13.10.1
+FROM node:13.10.1 as build
 
 # OPTIONAL: Install dumb-init (Very handy for easier signal handling of SIGINT/SIGTERM/SIGKILL etc.)
 RUN wget https://github.com/Yelp/dumb-init/releases/download/v1.2.0/dumb-init_1.2.0_amd64.deb
@@ -29,6 +29,17 @@ COPY --chown=$N4J_USER:$N4J_USER package.json $N4J_CLIENT/package.json
 COPY --chown=$N4J_USER:$N4J_USER yarn.lock $N4J_CLIENT/yarn.lock
 RUN yarn install && chown -R $N4J_USER:$N4J_USER node_modules
 
+COPY . $N4J_CLIENT
+RUN yarn build --configuration=staging --output-path=dist
+
+FROM nginx:latest
+RUN mkdir -p /home/node/client/dist && chown $N4J_USER:$N4J_USER /home/node/client/dist
+COPY --from=build /home/node/client/dist /usr/share/nginx/html
+RUN rm /etc/nginx/conf.d/default.conf
+COPY --from=build /home/node/client/nginx/dev.conf /etc/nginx/conf.d/default.conf
+
 USER $N4J_USER
 
-COPY . $N4J_CLIENT
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]
