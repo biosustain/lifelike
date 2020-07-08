@@ -49,7 +49,8 @@ export class AnnotationPanelComponent {
         color: ENTITY_TYPE_MAP[this.entityType].color,
         links: this.links,
         isCustom: true,
-        allText: this.data.allText
+        allText: this.data.allText,
+        primaryLink: this.links.ncbi || this.links.uniprot || this.links.wikipedia || this.links.google
       }
     };
     this.dialogRef.close(annotation);
