@@ -60,10 +60,19 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
   dirPathChain: string[] = [];
   dirPathId: number[] = [];
 
-  // The list of files in a directory
-  fileCollection: (Directory|Map|File)[] = [];
   // The list of files filtered by query
   showFileCollection: (Directory|Map|File)[] = [];
+
+  // The list of files in a directory
+  FILE_COLLECTION: (Directory|Map|File)[] = [];
+  get fileCollection(): (Directory|Map|File)[] {
+    return this.FILE_COLLECTION;
+  }
+  set fileCollection(val: (Directory|Map|File)[]) {
+    this.FILE_COLLECTION = val;
+    this.showFileCollection = val;
+  }
+
   // Which files are selected to do action on
   selection = new SelectionModel<(Directory|Map|File)>(true, []);
 
@@ -312,7 +321,22 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
   }
 
   private updateFilter() {
-    this.shownFiles = this.filterQuery.length ? this.files.filter(file => file.filename.includes(this.filterQuery)) : this.files;
+    this.showFileCollection = this.filterQuery.length ? 
+      this.fileCollection.filter(
+        (f:(Map|File|Directory)) => {
+          switch(f.type) {
+            case 'pdf':
+              return (f as File).filename.includes(this.filterQuery);
+            case 'map':
+              return (f as Map).label.includes(this.filterQuery);
+            case 'dir':
+              return (f as Directory).name.includes(this.filterQuery);
+            default:
+              return false;
+          }
+        }
+      ) :
+      this.fileCollection;
   }
 
   displayUploadDialog() {
@@ -515,7 +539,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
           resp.dirname
         ).subscribe(
           (d: Directory) => {
-            this.fileCollection.push({
+            this.fileCollection = this.fileCollection.concat({
               ...d,
               type: 'dir',
               routeLink: this.generateRouteLink(d, 'dir')
@@ -544,7 +568,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
         ).subscribe(
           (newMap: { project: Project, status}) => {
             const { project } = newMap;
-            this.fileCollection.push({
+            this.fileCollection = this.fileCollection.concat({
               ...project,
               type: 'map',
               routeLink: this.generateRouteLink(project, 'map')
