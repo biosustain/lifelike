@@ -3,9 +3,9 @@ from flask_cors import CORS, cross_origin
 app = Flask(__name__)
 CORS(app, resources={r"*": {"origins": "*"}})
 
-@app.route('/')
+@app.route('/health')
 def hello():
-    return "NLP API v1!"
+    return "200"
 
 import os
 from flask import Blueprint, request, abort, jsonify
