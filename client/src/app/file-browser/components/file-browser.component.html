@@ -6,7 +6,7 @@
         <span>
           /
         </span>
-        <span (click)='goUp(-1)' id='***ARANGO_USERNAME***-dir' class='dim pointer' [ngClass]="{'blue': dirPathId[i]===currentDirectoryId}">{{ projectName }}</span>
+        <span (click)='goUp(-1)' id='***ARANGO_USERNAME***-dir' class='dim pointer' [ngClass]="{'blue': dirPathChain.length === 0}">{{ projectName }}</span>
         <span *ngFor='let d of dirPathChain; let i = index;'>
           <span>
             /

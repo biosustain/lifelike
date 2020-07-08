@@ -21,6 +21,8 @@ import { AddContentDialogComponent } from './add-content-dialog/add-content-dial
 
 export interface File extends PdfFile {
   type: string;
+  // Camel-case instead of snake-case version of file
+  fileId?: string;
 }
 
 interface DirectoryArgument {
@@ -40,14 +42,16 @@ export interface DirectoryContent {
 export class FileBrowserComponent implements OnInit, OnDestroy {
   files: File[] = [];
   shownFiles: File[] = [];
-  filterQuery = '';
-  loadTask: BackgroundTask<DirectoryArgument, DirectoryContent> = new BackgroundTask(
-    (dirArg: DirectoryArgument) => this.projPage.getProjectDir(dirArg.projectName, dirArg.directoryId)
-  );
-  loadTaskSubscription: Subscription;
   isReannotating = false;
   uploadStarted = false;
   lmdbsDates = {};
+
+  loadTask: BackgroundTask<DirectoryArgument, DirectoryContent> = new BackgroundTask(
+    (dirArg: DirectoryArgument) => this.projPage.getProjectDir(
+      dirArg.projectName, dirArg.directoryId
+    )
+  );
+  loadTaskSubscription: Subscription;
 
   // The project to pull content out of
   projectName = '';
@@ -60,6 +64,8 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
   dirPathChain: string[] = [];
   dirPathId: number[] = [];
 
+  // Query to filter files by
+  filterQuery = '';
   // The list of files filtered by query
   showFileCollection: (Directory|Map|File)[] = [];
 
@@ -75,7 +81,6 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
 
   // Which files are selected to do action on
   selection = new SelectionModel<(Directory|Map|File)>(true, []);
-
 
   fileSpaceSubscription: Subscription;
 
@@ -162,6 +167,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
         }
       ) => {
         this.processDirectoryContent(dirContent);
+
         // We assume that fetched files are correctly annotated
         // this.updateAnnotationsStatus(files);
         // this.updateFilter();
@@ -457,19 +463,13 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
 
         return `/projects/${this.projectName}?${querystring}`;
       case 'map':
-        // TODO - refactor to server responses returning in camel case
-        // .. pretty ugly right having to deal between camelCase and snakeCase
         const m: Map = file as Map;
-        // tslint:disable-next-line: no-string-literal
-        const hashId = m.hashId || m['hash_id'];
+        const hashId = m.hashId;
         return `maps/${hashId}/edit`;
       case 'pdf':
-        // TODO - refactor to server responses returning in camel case
-        // .. pretty ugly right having to deal between camelCase and snakeCase
         const f: File = file as File;
-        // tslint:disable-next-line: no-string-literal
-        const fileId = f.file_id || f['fileId'];
-        return `projects/${this.projectName}files/${fileId}`;
+        const fileId = f.fileId;
+        return `projects/${this.projectName}/files/${fileId}`;
       default:
         return '';
     }
@@ -585,9 +585,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
       file.type
     ) {
       case 'map':
-        // TODO - have responses return camelCase
-        // tslint:disable-next-line: no-string-literal
-        const hashId = (file as Map).hashId || file['hash_id'];
+        const hashId = (file as Map).hashId;
         this.projPage.deleteMap(
           this.projectName,
           hashId
@@ -598,9 +596,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
               if (f.type !== 'map') {
                 return true;
               } else {
-                // TODO - have responses return camelCase
-                // tslint:disable-next-line: no-string-literal
-                const fHashId = (f as Map).hashId || f['hash_id'];
+                const fHashId = (f as Map).hashId;
                 return hashId !== fHashId;
               }
             }
@@ -608,9 +604,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
         });
         break;
       case 'pdf':
-        // TODO - have responses return camelCase
-        // tslint:disable-next-line: no-string-literal
-        const fileId = (file as File).file_id || file['fileId'];
+        const fileId = (file as File).fileId;
 
         this.projPage.deletePDF(
           this.projectName,
@@ -622,9 +616,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
               if (f.type !== 'pdf') {
                 return true;
               } else {
-                // TODO - have responses return camelCase
-                // tslint:disable-next-line: no-string-literal
-                const fHashId = (f as File).file_id || f['fileId'];
+                const fHashId = (f as File).fileId;
                 return fileId !== fHashId;
               }
             }

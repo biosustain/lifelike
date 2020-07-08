@@ -1,4 +1,4 @@
-import { Component, OnInit, HostBinding } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import {
   ProjectSpaceService,
   Project
@@ -15,6 +15,8 @@ import {
   EditProjectDialogComponent
 } from '../edit-project-dialog/edit-project-dialog.component';
 import { Router } from '@angular/router';
+import { BackgroundTask } from 'app/shared/rxjs/background-task';
+import { Subscription } from 'rxjs';
 
 
 // TODO - Sort projects meaningfully: name or modified_data
@@ -27,21 +29,37 @@ import { Router } from '@angular/router';
   templateUrl: './project-space.component.html',
   styleUrls: ['./project-space.component.scss']
 })
-export class ProjectSpaceComponent {
+export class ProjectSpaceComponent implements OnInit {
 
   selectedProject: Project;
-
   projects: Project[] = [];
+
+  loadTask: BackgroundTask<void, Project[]> = new BackgroundTask(
+    () => this.projSpace.getProject()
+  );
+  loadTaskSubscription: Subscription;
+
 
   constructor(
     private projSpace: ProjectSpaceService,
     private ngbModal: NgbModal,
     private route: Router
   ) {
-    this.projSpace.getProject()
-      .subscribe(projects => {
+    this.refresh();
+  }
+
+  ngOnInit() {
+    this.loadTask.results$.subscribe(
+      ({
+        result: projects
+      }) => {
         this.projects = projects;
-      });
+      }
+    );
+  }
+
+  refresh() {
+    this.loadTask.update();
   }
 
   createProject() {
