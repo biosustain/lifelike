@@ -2,21 +2,19 @@
   [formGroup]='form'
   (submit)="submit(); $event.preventDefault()">
   <div>
-    <div class="modal-header">
-      <h4 [ngSwitch]="mode" class="modal-title text-truncate blue b">
-        <span *ngSwitchCase="'map'">
-          Add Map
-        </span>
-        <span *ngSwitchCase="'dir'">
-          Add Directory
-        </span>
-        <span *ngSwitchCase="'pdf'">
-          Add File
-        </span>
-      </h4>
-    </div>
+    <app-modal-header [ngSwitch]="mode" (cancel)="cancel()">
+      <span *ngSwitchCase="'map'">
+        Add Map
+      </span>
+      <span *ngSwitchCase="'dir'">
+        Add Directory
+      </span>
+      <span *ngSwitchCase="'pdf'">
+        Add File
+      </span>
+    </app-modal-header>
 
-    <div class="modal-body">
+    <app-modal-body>
       <div [ngSwitch]='mode'>
         <div *ngSwitchCase="'map'">
           <!-- Map Form -->
@@ -57,11 +55,11 @@
         <div *ngSwitchDefault>
         </div>
       </div>      
-    </div>
+    </app-modal-body>
 
-    <div class="modal-footer">
+    <app-modal-footer>
       <button type="button" class="btn btn-outline-danger" (click)="cancel()">Cancel</button>
       <button [disabled]='mode==="pdf" && forbidUpload' type="submit" class="btn btn-primary">Submit</button>
-    </div>
+    </app-modal-footer>
   </div>
 <form>

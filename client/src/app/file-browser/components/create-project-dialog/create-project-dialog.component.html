@@ -1,13 +1,11 @@
 <form 
   [formGroup]='form'
   (submit)="submit(); $event.preventDefault()">
-  <div class="modal-header">
-    <h4 class="modal-title text-truncate blue b">
-      Create Project
-    </h4>
-  </div>
+  <app-modal-header (cancel)="cancel()">
+    Create Project
+  </app-modal-header>
 
-  <div class="modal-body">
+  <app-modal-body>
     <div class="form-group">
       <label for="nameInput">Name</label>
       <input
@@ -25,10 +23,10 @@
       <label for="descriptionInput">Description</label>
       <textarea formControlName='description' class="form-control" id="descriptionInput" rows="3" placeholder=""></textarea>
     </div>
-  </div>
+  </app-modal-body>
 
-  <div class="modal-footer">
+  <app-modal-footer>
     <button type="button" class="btn btn-outline-danger" (click)="cancel()">Cancel</button>
     <button type="submit" class="btn btn-primary">Submit</button>
-  </div>
+  </app-modal-footer>
 </form>
