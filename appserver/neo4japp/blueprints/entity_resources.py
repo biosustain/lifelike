@@ -25,7 +25,7 @@ def get_uri():
     payload = request.json
 
     uri = DomainULRsMap.query.filter_by(domain=payload['domain'])[0]
-    return {'uri': uri.base_URL + payload['identifier']}
+    return {'uri': uri.base_URL.format(payload['term'])}
 
 
 @bp.route('/uri/batch', methods=['POST'])
@@ -35,6 +35,6 @@ def get_uri_batch():
     payload = request.json
     for entry in payload['batch']:
         uri = DomainULRsMap.query.filter_by(domain=entry['domain'])[0]
-        uris.append({'uri': uri.base_URL + entry['identifier']})
+        uris.append({'uri': uri.base_URL.format(entry['term'])})
 
     return {'batch': uris}
