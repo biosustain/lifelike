@@ -62,6 +62,7 @@ export class MapEditorComponent extends MapViewComponent<Project> implements OnI
   handleExtra(backup: Project) {
     if (backup != null) {
       this.modalService.open(MapRestoreDialogComponent).result.then(() => {
+        // tslint:disable-next-line: no-string-literal
         this.map = backup['project'];
         this.unsavedChanges$.next(true);
       }, () => {

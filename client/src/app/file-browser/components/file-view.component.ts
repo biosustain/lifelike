@@ -67,7 +67,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
 
   searchChanged: Subject<{ keyword: string, findPrevious: boolean }> = new Subject<{ keyword: string, findPrevious: boolean }>();
   goToPosition: Subject<Location> = new Subject<Location>();
-  loadTask: BackgroundTask<[PdfFile, Location], [ArrayBuffer, any]>;
+  loadTask: BackgroundTask<[PdfFile, Location], [PdfFile, ArrayBuffer, any]>;
   pendingScroll: Location;
   openPdfSub: Subscription;
   ready = false;
@@ -106,6 +106,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
       const projectName = this.route.snapshot.params.project_name || '';
 
       return combineLatest(
+        this.pdf.getFileInfo(file.file_id, projectName),
         this.pdf.getFile(file.file_id, projectName),
         this.pdfAnnService.getFileAnnotations(file.file_id, projectName),
       ).pipe(errorHandler.create());
@@ -113,17 +114,17 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
 
     // Listener for file open
     this.openPdfSub = this.loadTask.results$.subscribe(({
-                                                          result: [pdfFileContent, ann],
+                                                          result: [pdfFile, pdfFileContent, ann],
                                                           value: [file, loc],
                                                         }) => {
       this.pdfData = {data: new Uint8Array(pdfFileContent)};
       this.annotations = ann;
       this.updateAnnotationIndex();
       this.updateSortedEntityTypeEntries();
-      // this.modulePropertiesChange.next({
-      //   title: pdfFile.filename,
-      //   fontAwesomeIcon: 'file-pdf',
-      // });
+      this.modulePropertiesChange.next({
+        title: pdfFile.filename,
+        fontAwesomeIcon: 'file-pdf',
+      });
 
       this.currentFileId = file.file_id;
       setTimeout(() => {

@@ -17,7 +17,7 @@ export class AddContentDialogComponent extends CommonFormDialogComponent impleme
   @Input()
   set mode(val) {
     this.MODE = val;
-    
+
     if (this.MODE === 'dir') {
       this.form.get('label').clearValidators();
     } else if (this.MODE === 'map') {
