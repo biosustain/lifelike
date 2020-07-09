@@ -11,6 +11,7 @@ export interface TabData {
 
 interface PaneData {
   id: string;
+  size: number | undefined;
   tabs: TabData[];
   activeTabHistory: number[];
 }
@@ -19,8 +20,12 @@ interface SessionData {
   panes: PaneData[];
 }
 
+interface PaneCreateOptions {
+  size: number | undefined;
+}
+
 export interface WorkspaceSessionLoader {
-  createPane(id: string): void;
+  createPane(id: string, options: PaneCreateOptions): void;
   loadTab(id: string, data: TabData): void;
   setPaneActiveTabHistory(id: string, activeTabHistory: number[]): void;
 }
@@ -34,6 +39,7 @@ export class WorkspaceSessionService {
       panes: panes.map(pane => {
         return {
           id: pane.id,
+          size: pane.size,
           tabs: pane.tabs.map(tab => ({
             url: tab.url,
             title: tab.title,
@@ -51,7 +57,9 @@ export class WorkspaceSessionService {
     if (rawData) {
       const data: SessionData = JSON.parse(rawData);
       for (const pane of data.panes) {
-        loader.createPane(pane.id);
+        loader.createPane(pane.id, {
+          size: pane.size,
+        });
         for (const tab of pane.tabs) {
           loader.loadTab(pane.id, tab);
         }
