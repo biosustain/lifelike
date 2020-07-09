@@ -42,7 +42,8 @@ class PDFSearchResult:
 
         for highlight in self.highlight[field]:
             untagged = highlight.replace(start_tag, '').replace(end_tag, '')
-            tagged = highlight.replace(start_tag, '<strong class="highlight">').replace(end_tag, '</strong>')
+            tagged = highlight.replace(start_tag, '<strong class="highlight">')\
+                .replace(end_tag, '</strong>')
             bkp_data = '<br>'.join((bkp_data, tagged)) if bkp_data else tagged
             data = data.replace(untagged, tagged)
 

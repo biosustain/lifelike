@@ -1,6 +1,6 @@
 <div id="association-snippet-container" *ngIf="snippets.length > 0">
   <mat-expansion-panel class="association-snippet-panel" *ngFor="let snippet of snippets">
-    <mat-expansion-panel-header [collapsedHeight]="'100px'" [expandedHeight]="'80px'">
+    <mat-expansion-panel-header [collapsedHeight]="'150px'" [expandedHeight]="'150px'">
       <mat-panel-title
         class="association-snippet-title">
         <strong>Name:&nbsp;</strong> {{ snippet.filename  | truncate:['240'] }}
