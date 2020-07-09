@@ -83,6 +83,17 @@ jobs:
                 context: ./cache-invalidator
                 dockerfile: ./Dockerfile
 
+            - name: Build NLP
+              uses: docker/build-push-action@v1
+              with:
+                username: _json_key
+                password: ${{ secrets.GCE_SA_KEY }}
+                registry: gcr.io
+                repository: ${{ secrets.GCE_PROJECT }}/kg-nlpapi-staging
+                tags: ${{ github.sha }}, latest
+                path: ./nlp
+                dockerfile: ./nlp/Dockerfile
+
             - name: Deploy Setup
               run: |-
                 echo "POSTGRES_HOST=$POSTGRES_HOST" >> staging.env
