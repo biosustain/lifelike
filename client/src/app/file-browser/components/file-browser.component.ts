@@ -327,10 +327,10 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
   }
 
   private updateFilter() {
-    this.showFileCollection = this.filterQuery.length ? 
+    this.showFileCollection = this.filterQuery.length ?
       this.fileCollection.filter(
-        (f:(Map|File|Directory)) => {
-          switch(f.type) {
+        (f: ( Map|File|Directory)) => {
+          switch (f.type) {
             case 'pdf':
               return (f as File).filename.includes(this.filterQuery);
             case 'map':
@@ -469,7 +469,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
       case 'pdf':
         const f: File = file as File;
         const fileId = f.fileId;
-        return `projects/${this.projectName}/files/${fileId}`;
+        return `files/${fileId}`;
       default:
         return '';
     }

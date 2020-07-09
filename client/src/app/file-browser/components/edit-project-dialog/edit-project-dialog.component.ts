@@ -6,24 +6,85 @@ import { Subscription } from 'rxjs';
 import { CommonFormDialogComponent } from 'app/shared/components/dialog/common-form-dialog.component';
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { MatSnackBar } from '@angular/material';
+import { BackgroundTask } from 'app/shared/rxjs/background-task';
+import { AuthenticationService } from 'app/auth/services/authentication.service';
 
 @Component({
   selector: 'app-edit-project-dialog',
   templateUrl: './edit-project-dialog.component.html',
   styleUrls: ['./edit-project-dialog.component.scss']
 })
-export class EditProjectDialogComponent extends CommonFormDialogComponent implements OnDestroy {
+export class EditProjectDialogComponent extends CommonFormDialogComponent implements OnInit, OnDestroy {
+  loadTask: BackgroundTask<string, Collaborator[]> = new BackgroundTask(
+    (projectName) => this.projSpace.getCollaborators(projectName)
+  );
+  loadTaskSubscription: Subscription;
+
   @Input()
   set project(proj: Project) {
     this.PROJECT = proj;
 
-    // Pull list of collaborators as we
-    // get new project
-    this.projSpace.getCollaborators(
-      proj.projectName
-    ).subscribe(
-      collabs => {
+    this.loadTask.update(proj.projectName);
+  }
+
+  get project() {
+    return this.PROJECT;
+  }
+
+  PROJECT: Project = null;
+
+  userRoles = [{
+      value: 'project-admin',
+      label: 'Admin'
+    }, {
+      value: 'project-read',
+      label: 'Read'
+    }, {
+      value: 'project-write',
+      label: 'Write'
+    },
+    {
+      value: 'delete',
+      label: 'Remove user'
+    }];
+
+  /**
+   * Manages existing and pending collabs
+   */
+  collabForm: FormGroup = new FormGroup({
+    pendingCollabs: new FormArray([]),
+    currentCollabs: new FormArray([])
+  });
+  get pendingCollabs(): FormArray {
+    return this.collabForm.get('pendingCollabs') as FormArray;
+  }
+  get currentCollabs(): FormArray {
+    return this.collabForm.get('currentCollabs') as FormArray;
+  }
+  collabs: Collaborator[] = [];
+  userCollab: Collaborator = null;
+
+  collabFormSubscription: Subscription[] = [];
+
+  constructor(
+    modal: NgbActiveModal,
+    messageDialog: MessageDialog,
+    private projSpace: ProjectSpaceService,
+    private readonly snackBar: MatSnackBar,
+    private auth: AuthenticationService
+  ) {
+    super(modal, messageDialog);
+  }
+
+  ngOnInit() {
+    this.loadTask.results$.subscribe(
+      ({
+        result: collabs
+      }) => {
         this.collabs = collabs;
+
+        const userId = this.auth.whoAmI();
+        this.userCollab = collabs.filter(c => userId === c.id)[0];
 
         const listOfFormGroups = collabs.map(
           (c: Collaborator, index: number) => new FormGroup({
@@ -48,55 +109,6 @@ export class EditProjectDialogComponent extends CommonFormDialogComponent implem
         );
       }
     );
-  }
-  get project() {
-    return this.PROJECT;
-  }
-
-  PROJECT: Project = null;
-
-  userRoles = [
-    {
-      value: 'project-admin',
-      label: 'Admin'
-    }, {
-      value: 'project-read',
-      label: 'Read'
-    }, {
-      value: 'project-write',
-      label: 'Write'
-    },
-    {
-      value: 'delete',
-      label: 'Remove user'
-    }
-  ];
-
-  /**
-   * Manages existing and pending collabs
-   */
-  collabForm: FormGroup = new FormGroup({
-    pendingCollabs: new FormArray([]),
-    currentCollabs: new FormArray([])
-  });
-  get pendingCollabs(): FormArray {
-    return this.collabForm.get('pendingCollabs') as FormArray;
-  }
-  get currentCollabs(): FormArray {
-    return this.collabForm.get('currentCollabs') as FormArray;
-  }
-  collabs: Collaborator[] = [];
-
-
-  collabFormSubscription: Subscription[] = [];
-
-  constructor(
-    modal: NgbActiveModal,
-    messageDialog: MessageDialog,
-    private projSpace: ProjectSpaceService,
-    private readonly snackBar: MatSnackBar,
-  ) {
-    super(modal, messageDialog);
   }
 
   ngOnDestroy() {
@@ -214,8 +226,5 @@ export class EditProjectDialogComponent extends CommonFormDialogComponent implem
         });
       });
     }
-
-
   }
-
 }
