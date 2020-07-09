@@ -4,16 +4,14 @@ import json
 import os
 import re
 import uuid
+import urllib.request
+
 from datetime import datetime, timezone
 from enum import Enum
 from typing import Dict, Optional
-import urllib.request
 from urllib.error import URLError
-
 from flask import Blueprint, current_app, request, jsonify, g, make_response
-
 from sqlalchemy.orm.exc import NoResultFound
-
 from werkzeug.datastructures import FileStorage
 
 from neo4japp.blueprints.auth import auth
@@ -26,6 +24,7 @@ from neo4japp.database import (
     get_bioc_document_service,
     get_lmdb_dao,
 )
+from neo4japp.data_transfer_objects import FileUpload
 from neo4japp.exceptions import (
     AnnotationError,
     FileUploadError,
@@ -35,11 +34,13 @@ from neo4japp.exceptions import (
 from neo4japp.models import AppUser
 from neo4japp.models.files import Files, FileContent, LMDBsDates
 from neo4japp.utils.network import read_url
-from neo4japp.schemas.files import (
+from neo4japp.request_schemas.annotations import (
     AnnotationAdditionSchema,
     AnnotationRemovalSchema,
     AnnotationExclusionSchema,
 )
+from neo4japp.services.annotations.constants import AnnotationMethod
+from neo4japp.util import jsonify_with_class
 from flask_apispec import use_kwargs, marshal_with
 from pdfminer import high_level
 
@@ -53,11 +54,13 @@ bp = Blueprint('files', __name__, url_prefix='/files')
 
 @bp.route('/upload', methods=['POST'])
 @auth.login_required
-def upload_pdf():
-    filename = request.form['filename'].strip()
+@jsonify_with_class(FileUpload, has_file=True)
+def upload_pdf(request: FileUpload):
+    filename = request.filename.strip()
     pdf = None
-    if 'url' in request.form:
-        url = request.form['url']
+
+    if request.url:
+        url = request.url
         try:
             req = urllib.request.Request(url, headers={
                 'User-Agent': DOWNLOAD_USER_AGENT,
@@ -70,7 +73,8 @@ def upload_pdf():
                                   "check the spelling of the URL.")
         pdf = FileStorage(io.BytesIO(data), filename)
     else:
-        pdf = request.files['file']
+        pdf = request.file_input
+
     pdf_content = pdf.read()  # TODO: don't work with whole file in memory
     pdf.stream.seek(0)
     project = '1'  # TODO: remove hard coded project
@@ -87,8 +91,12 @@ def upload_pdf():
         filename = name[:max(0, max_filename_length - len(extension))] + extension
     file_id = str(uuid.uuid4())
 
-    annotations = annotate(filename, pdf)
-    annotations_date = datetime.now(TIMEZONE)
+    # Decide which annotation method to use
+    if request.annotation_method == AnnotationMethod.Rules.value:
+        annotations = annotate(filename, pdf)
+        annotations_date = datetime.now(TIMEZONE)
+    else:
+        raise NotImplementedError('NLP annotations not yet implemented')
 
     try:
         # First look for an existing copy of this file
@@ -104,9 +112,9 @@ def upload_pdf():
         db.session.add(file_content)
         db.session.commit()
 
-    description = request.form.get('description', '')
+    description = request.description
     doi = extract_doi(pdf_content, file_id, filename)
-    upload_url = request.form.get('url', None)
+    upload_url = request.url
 
     file = Files(
         file_id=file_id,
@@ -127,11 +135,11 @@ def upload_pdf():
     current_app.logger.info(
         f'User uploaded file: <{g.current_user.email}:{file.filename}>')
 
-    return jsonify({
+    return {
         'file_id': file_id,
         'filename': filename,
         'status': 'Successfully uploaded'
-    })
+    }
 
 
 @bp.route('/list', methods=['GET'])

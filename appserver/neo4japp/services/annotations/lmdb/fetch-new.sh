@@ -61,7 +61,7 @@ if [ "$TARGET" = "all" ]; then
     sudo gsutil cp -r gs://lmdb_database/compounds /mnt/disks/kg-staging-persistent/lmdb
     sudo gsutil cp -r gs://lmdb_database/diseases /mnt/disks/kg-staging-persistent/lmdb
     sudo gsutil cp -r gs://lmdb_database/genes /mnt/disks/kg-staging-persistent/lmdb
-    sudo gsutil cp -r gs://lmdb_database/phenotype /mnt/disks/kg-staging-persistent/lmdb
+    sudo gsutil cp -r gs://lmdb_database/phenotypes /mnt/disks/kg-staging-persistent/lmdb
     sudo gsutil cp -r gs://lmdb_database/proteins /mnt/disks/kg-staging-persistent/lmdb
     sudo gsutil cp -r gs://lmdb_database/species /mnt/disks/kg-staging-persistent/lmdb
 
