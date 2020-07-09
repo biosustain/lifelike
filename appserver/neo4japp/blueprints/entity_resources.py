@@ -22,6 +22,17 @@ def get_all_styles():
 @bp.route('/uri', methods=['POST'])
 @auth.login_required
 def get_uri():
+    """
+    POST body:
+    {
+        domain: string representing the domain name
+        term: string or number referring to be used on composing the URI for the element
+    }
+    :return:
+    {
+        uri: string with the URI for the resource
+    }
+    """
     payload = request.json
 
     uri = DomainULRsMap.query.filter_by(domain=payload['domain'])[0]
@@ -31,6 +42,26 @@ def get_uri():
 @bp.route('/uri/batch', methods=['POST'])
 @auth.login_required
 def get_uri_batch():
+    """
+        POST body:
+        {   batch: list of items to get the corresponfing URI
+            [
+                {
+                    domain: string representing the domain name
+                    term: string or number referring to be used on composing the URI for the element
+                }
+            ]
+        }
+        :return:
+        {
+            batch: list of uris for the given item
+            [
+                {
+                    uri: string with the URI for the resource
+                }
+            ]
+        }
+        """
     uris = []
     payload = request.json
     for entry in payload['batch']:
