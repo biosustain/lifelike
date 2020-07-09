@@ -7,8 +7,8 @@ from neo4japp.factory import create_app
 from neo4japp.models import Files, FileContent, AppUser
 
 FRAGMENT_SIZE = 2147483647
-PDF_MAPPING = 'mappings/pdf_snippets.json'
-ATTACHMENT_PIPELINE = 'pipelines/attachments_pipeline.json'
+PDF_MAPPING = '/home/n4j/neo4japp/services/indexing/mappings/pdf_snippets.json'
+ATTACHMENT_PIPELINE = '/home/n4j/neo4japp/services/indexing/pipelines/attachments_pipeline.json'
 ATTACHMENT_PIPELINE_NAME = 'attachment'
 PDF_FOLDER = 'downloaded_files/'
 ELASTICSEARCH_HOST = 'http://n4j-elasticsearch:9200'
