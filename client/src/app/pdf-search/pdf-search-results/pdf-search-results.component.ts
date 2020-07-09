@@ -25,7 +25,6 @@ export class PdfSearchResultsComponent implements OnInit, OnChanges {
         const previous = JSON.stringify(propertyChanges.previousValue);
         if (current !== previous) {
          this.snippets = this.searchResults.hits;
-         console.log(this.snippets)
         }
       }
     }
