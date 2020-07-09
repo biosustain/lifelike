@@ -5,7 +5,6 @@ import { FormArray, FormGroup, FormControl } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { CommonFormDialogComponent } from 'app/shared/components/dialog/common-form-dialog.component';
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
-import { MessageType } from 'app/interfaces/message-dialog.interface';
 import { MatSnackBar } from '@angular/material';
 
 @Component({
@@ -151,7 +150,7 @@ export class EditProjectDialogComponent extends CommonFormDialogComponent implem
       this.snackBar.open('Collaborator added!.', null, {
         duration: 2000,
       });
-  
+
       this.collabs.push({
         role,
         username
@@ -172,7 +171,8 @@ export class EditProjectDialogComponent extends CommonFormDialogComponent implem
   }
 
   /**
-   *
+   * Callback to execute collab api when ever
+   * collabForm privillege change is detected
    * @param value - represent user to add
    */
   updateCollaborator(value) {
@@ -186,7 +186,6 @@ export class EditProjectDialogComponent extends CommonFormDialogComponent implem
     // redundant change
     const curCollab = this.collabs.filter(c => c.id === id)[0];
     if (curCollab.role === role) {
-      console.log('here');
       return;
     } else if (role === 'delete') {
       // Remove the user from the list
