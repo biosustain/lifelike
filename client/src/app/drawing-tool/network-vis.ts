@@ -20,9 +20,6 @@ export class NetworkVis {
   // Visual layer through vis.js dataset collection
   visNodes = null;
   visEdges = null;
-  // Logic layer
-  logicNodes: VisNetworkGraphNode[] = [];
-
 
   /**  */
   network: Network = null;
@@ -94,20 +91,6 @@ export class NetworkVis {
    * @param edges array of edges
    */
   draw(nodes = [], edges = []) {
-    // Create the logic layer
-    this.logicNodes = JSON.parse(JSON.stringify(nodes));
-
-    // Create visual layer
-    nodes = nodes.map(
-      n => {
-        // If it has a sub-type
-        if (n.data.subtype) {
-          // Render the label fo have the subtype
-          n.label = `${n.label} - ${n.data.subtype}`;
-        }
-        return n;
-      }
-    );
     this.visNodes = new DataSet(nodes);
     this.visEdges = new DataSet(edges);
 
@@ -196,7 +179,6 @@ export class NetworkVis {
       subtype: n.subtype || ''
     };
 
-    this.logicNodes.push(n);
     this.visNodes.add([n]);
 
     return n;
@@ -208,7 +190,6 @@ export class NetworkVis {
    * @param id represents the node id
    */
   removeNode(id) {
-    this.logicNodes = this.logicNodes.filter(n => n.id !== id);
     this.visNodes.remove(id);
 
     // Pull the id of edges that node id
@@ -238,20 +219,8 @@ export class NetworkVis {
         shape: data.shape,
     };
 
-    // Record node update in logic layer
-    this.logicNodes = this.logicNodes.map(n => {
-      if (n.id === id) {
-        return updatedNode;
-      } else {
-        return n;
-      }
-    });
-
     updatedNode = Object.assign({}, updatedNode);
 
-    if (updatedNode.data.subtype) {
-      updatedNode.label = `${updatedNode.label} - ${updatedNode.data.subtype}`;
-    }
     this.visNodes.update(updatedNode);
   }
 
@@ -261,7 +230,7 @@ export class NetworkVis {
    * @param id - id of the node you want to info on
    */
   getNode(id): GraphSelectionData {
-    const node = this.logicNodes.filter(n => n.id === id)[0];
+    const node = this.visNodes.get(id);
     const edges = this.visEdges.get({
       filter: (item) => {
         return item.from === id;
@@ -307,7 +276,7 @@ export class NetworkVis {
     const nodePosDict = this.network.getPositions();
 
     return {
-      nodes: this.logicNodes.map(n => {
+      nodes: this.visNodes.get().map(n => {
         n.x = nodePosDict[n.id].x;
         n.y = nodePosDict[n.id].y;
 
@@ -323,20 +292,7 @@ export class NetworkVis {
    * Draw network graph from JSON representation
    */
   import(graph: {nodes: any[], edges: any[]}) {
-    this.logicNodes = graph.nodes;
-
-    // Import visual layer
-    const nodes = graph.nodes.map(
-      n => {
-        // If it has a sub-type
-        if (n.data.subtype) {
-          // Render the label fo have the subtype
-          n.label = `${n.label} - ${n.data.subtype}`;
-        }
-        return n;
-      }
-    );
-    this.visNodes = new DataSet(nodes);
+    this.visNodes = new DataSet(graph.nodes);
     this.visEdges = new DataSet(graph.edges);
 
     this.network.setData({
