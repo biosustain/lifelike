@@ -47,7 +47,7 @@
       </div>
     </div>
 
-    <div class="flex-fill">
+    <div class="flex-fill overflow-hidden">
       <as-split cdkDropListGroup unit="pixel" direction="horizontal" gutterSize="1">
         <as-split-area>
           <div class="position-relative h-100">
@@ -62,9 +62,11 @@
 
         <as-split-area [size]="250" [maxSize]="500">
           <ng-container *ngIf="(graphCanvas?.selection.changeObservable | async) as selected; else noSelection">
-            <app-info-panel *ngIf="selected[0].length > 0; else noSelection" [selected]="selected[0][0]"
-                            (actionCreated)="graphCanvas.execute($event)">
-            </app-info-panel>
+            <div class="h-100 overflow-auto">
+              <app-info-panel *ngIf="selected[0].length > 0; else noSelection" [selected]="selected[0][0]"
+                              (actionCreated)="graphCanvas.execute($event)">
+              </app-info-panel>
+            </div>
           </ng-container>
           <ng-template #noSelection>
             <div class="p-3">
