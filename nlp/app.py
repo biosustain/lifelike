@@ -1,16 +1,18 @@
-from flask import Flask, jsonify
+import os
+from flask import Flask, Blueprint, abort, request, jsonify
 from flask_cors import CORS, cross_origin
+from services.ai_service import AIService
+
 app = Flask(__name__)
 CORS(app, resources={r"*": {"origins": "*"}})
+
+aiservice = AIService()
+
 
 @app.route('/health')
 def hello():
     return "200"
 
-import os
-from flask import Blueprint, request, abort, jsonify
-from services.ai_service import AIService
-aiservice = AIService()
 
 @app.route('/infer/v1', methods=['POST'])
 def ai():

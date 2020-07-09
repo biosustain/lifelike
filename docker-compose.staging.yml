@@ -31,6 +31,15 @@ services:
         networks:
             - frontend
 
+    nlpapi:
+        image: ${REGISTRY:-gcr.io/able-goods-221820}/kg-nlpapi-staging:${GITHUB_HASH:-latest}
+        expose:
+            - 5001
+        volumes:
+            - /srv/models:/models
+        networks:
+            - backend
+
     cache-invalidator:
         image: ${REGISTRY:-gcr.io/able-goods-221820}/kg-cache-service-staging:${GITHUB_HASH:-latest}
         env_file:

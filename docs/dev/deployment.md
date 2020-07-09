@@ -2,6 +2,7 @@
 - [Current Infrastructure](#current-infrastructure)
 - [How do I deploy to Google Cloud?](#how-do-i-deploy-to-google-cloud)
 - [How do I update the LMDB database?](#how-do-i-update-the-lmdb-database)
+- [How do I update the NLP database (model)?](#how-do-i-update-the-nlp-database-model)
 - [How do I rollback to a previous build?](#how-do-i-rollback-to-a-previous-build)
 - [Something went wrong.. how do I fix it?](#something-went-wrong-how-do-i-fix-it)
   - [Common issues](#common-issues)
@@ -58,7 +59,7 @@ git tag <some-tag>
 
 # How do I update the LMDB database?
 
-This is a manual step which currently requires a user to ssh into the server and pulls the new images in from the Google Cloud Bucket. The bucket is named *lmdb_database*
+This is a manual step which currently requires a user to ssh into the server and pulls the new files in from the Google Cloud Bucket.
 
 A script should already be be in **kg-production** and **kg-staging** so all thats required is to run the `fetch-new.sh` script to pull in the required data. This should automatically update the LMDB as it is volume mounted. It will normally be found in the `/srv` directory.
 
@@ -66,6 +67,16 @@ for example, on **Staging**
 
 ```bash
 gcloud compute ssh kg-staging --zone us-central1-a --command="sudo /srv/fetch-new.sh";
+```
+
+# How do I update the NLP database (model)?
+
+This is a manual step which currently requires a user to ssh into the server and pulls the new files in from the Google Cloud Bucket.
+
+A script should already be be in **kg-production** and **kg-staging** so all thats required is to run the `fetch-ai-models.sh` script to pull in the required data. This should automatically update the NLP models as it is volume mounted.
+
+```bash
+gcloud compute ssh kg-staging --zone us-central1-a --command="sudo ./fetch-ai-models.sh";
 ```
 
 # How do I rollback to a previous build?
