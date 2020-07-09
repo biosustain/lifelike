@@ -83,6 +83,7 @@ services:
         ports:
             - "5001:5001"
         volumes:
+            - ./nlp:/home/nlp-api-user
             - ./nlp/models:/models
         networks:
             - backend
