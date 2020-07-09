@@ -28,26 +28,28 @@ import {
 import {
   NodeSearchModule
 } from '../../../node-search/node-search.module';
+import {PdfSearchModule} from '../../../pdf-search/pdf-search.module';
 
 describe('MapPreviewComponent', () => {
   let component: MapPreviewComponent;
-  let fixture: ComponentFixture < MapPreviewComponent > ;
+  let fixture: ComponentFixture<MapPreviewComponent>;
 
   configureTestSuite(() => {
 
     TestBed.configureTestingModule({
-        imports: [
-          AngularMaterialModule,
-          DrawingToolModule,
-          NodeSearchModule,
-          RootStoreModule,
-          RouterTestingModule
-        ],
-        providers: [{
-          provide: APP_BASE_HREF,
-          useValue: '/'
-        }]
-      })
+      imports: [
+        AngularMaterialModule,
+        DrawingToolModule,
+        NodeSearchModule,
+        PdfSearchModule,
+        RootStoreModule,
+        RouterTestingModule
+      ],
+      providers: [{
+        provide: APP_BASE_HREF,
+        useValue: '/'
+      }]
+    })
       .compileComponents();
   });
 
