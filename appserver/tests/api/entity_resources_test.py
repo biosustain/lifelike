@@ -60,7 +60,7 @@ def test_user_can_get_uri(client, test_user, uri_fixture):
     headers = generate_headers(login_resp['access_jwt'])
     headers['content_type'] = 'application/json'
 
-    post_payload = {'domain': 'CHEBI', 'identifier': 'CHEBI:27732'}
+    post_payload = {'domain': 'CHEBI', 'term': 'CHEBI:27732'}
 
     post_response = client.post('/annotations/uri', headers=headers, json=post_payload)
     assert post_response.status_code == 200
@@ -73,10 +73,10 @@ def test_user_can_get_many_uris(client, test_user, uri_fixture):
     headers['content_type'] = 'application/json'
 
     post_payload = {'batch': [
-        {'domain': 'CHEBI', 'identifier': 'CHEBI:27732'},
-        {'domain': 'CHEBI', 'identifier': 'CHEBI:28177'},
-        {'domain': 'MESH', 'identifier': '68017572'},
-        {'domain': 'MESH', 'identifier': '68017594'}
+        {'domain': 'CHEBI', 'term': 'CHEBI:27732'},
+        {'domain': 'CHEBI', 'term': 'CHEBI:28177'},
+        {'domain': 'MESH', 'term': '68017572'},
+        {'domain': 'MESH', 'term': '68017594'}
         ]
     }
 

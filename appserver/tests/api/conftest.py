@@ -184,8 +184,8 @@ def styles_fixture(client, session):
 
 @pytest.fixture(scope='function')
 def uri_fixture(client, session):
-    uri1 = DomainULRsMap(domain="CHEBI", base_URL="https://www.ebi.ac.uk/chebi/searchId.do?chebiId=")
-    uri2 = DomainULRsMap(domain="MESH", base_URL="https://www.ncbi.nlm.nih.gov/mesh/?term=")
+    uri1 = DomainULRsMap(domain="CHEBI", base_URL="https://www.ebi.ac.uk/chebi/searchId.do?chebiId={}")
+    uri2 = DomainULRsMap(domain="MESH", base_URL="https://www.ncbi.nlm.nih.gov/mesh/?term={}")
 
     session.add(uri1)
     session.add(uri2)
