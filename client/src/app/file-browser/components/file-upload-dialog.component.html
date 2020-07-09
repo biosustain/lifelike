@@ -37,7 +37,7 @@
       </app-form-row>
     </div>
 
-    <div class="mt-2">
+    <div class="mt-2" *ngIf="(userRoles$ | async)?.includes('admin')">
       <label>Select annotation method</label>
       <div *ngFor="let method of annotationMethods" (click)="selection.toggle(method)">
         <div class="custom-control custom-checkbox">

@@ -92,7 +92,7 @@ class AnnotationsPDFParser:
         device = PDFPageAggregator(rsrcmgr=rsrcmgr, laparams=LAParams())
         interpreter = PDFPageInterpreter(rsrcmgr=rsrcmgr, device=device)
 
-        max_idx_in_page: Dict[int, int] = {}
+        min_idx_in_page: Dict[int, int] = {}
         chars_in_pdf: List[str] = []
         char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]] = []
         cropbox_in_pdf: Tuple[int, int] = None  # type: ignore
@@ -116,13 +116,13 @@ class AnnotationsPDFParser:
             cropbox_in_pdf = (page.mediabox[0], page.mediabox[1])
             interpreter.process_page(page)
             layout = device.get_result()
+            min_idx_in_page[len(char_coord_objs_in_pdf)-1] = i+1
             self._get_lt_char(
                 layout=layout,
                 page_idx=i,
                 char_coord_objs_in_pdf=char_coord_objs_in_pdf,
                 compiled_regex=compiled_regex,
             )
-            max_idx_in_page[len(char_coord_objs_in_pdf)-1] = i+1
 
         for lt_char in char_coord_objs_in_pdf:
             # LTAnno are 'virtual' characters inserted by the parser
@@ -138,7 +138,7 @@ class AnnotationsPDFParser:
             char_coord_objs_in_pdf=char_coord_objs_in_pdf,
             chars_in_pdf=chars_in_pdf,
             cropbox_in_pdf=cropbox_in_pdf,
-            max_idx_in_page=max_idx_in_page,
+            min_idx_in_page=min_idx_in_page,
         )
 
     def _not_all_whitespace_or_punctuation(self, text: str) -> bool:
@@ -189,6 +189,26 @@ class AnnotationsPDFParser:
 
         return updated_word, updated_curr_char_idx_mappings
 
+    def combine_all_chars(
+        self,
+        parsed_chars: PDFParsedCharacters,
+    ) -> str:
+        """Combines a list of char into a large string. Cannot use
+        pdfminer.high_level() because it produces different string
+        compared to the chars produced with coordinates.
+
+        Different from self.combine_chars_into_words() because that one
+        combines into individual words (without double spacing) to use
+        in our sequential walking combination. So the chars and coordinate
+        index mapping will not match with the results returned from the
+        NLP service.
+
+        For NLP, use this function instead. This function also produces
+        exactly what pdfminer outputs.
+        """
+        char_list = parsed_chars.chars_in_pdf
+        return ''.join(char_list)
+
     def combine_chars_into_words(
         self,
         parsed_chars: PDFParsedCharacters,
@@ -196,8 +216,14 @@ class AnnotationsPDFParser:
         """Combines a list of char into a list of words with the
         position index of each char in the word.
 
-        E.g ['H', 'e', 'l', 'l', 'o', ' ', 'T', 'h', 'e', 'r', 'e']
-        becomes ['Hello', 'There']
+        Will not include double spacing. Index mapping to the coordinates
+        from pdfminer will be correct, as the index for the spaces will not
+        be included.
+
+        E.g {0: 'H', 1: 'e', 2: 'l', 3: 'l', 4: 'o', 5: ' ', 6: ' ', 7:'T', ...}
+            - this returns a list of tuples:
+            ('Hello', {0: 'H', 1: 'e', 2: 'l', 3: 'l', 4: 'o'})
+            ('There', {7: 'T', 8: 'h', 9: 'e', ...})
         """
         char_list = parsed_chars.chars_in_pdf
 
@@ -247,7 +273,7 @@ class AnnotationsPDFParser:
                             (curr_char in whitespace and prev_char == '-')):  # noqa
                             # word is possibly on new line
                             # so ignore the space
-                            pass
+                            continue
                         else:
                             word += curr_char
                             char_idx_map[i] = curr_char
@@ -305,12 +331,13 @@ class AnnotationsPDFParser:
                     # keyword could've been all punctuation
                     if curr_keyword:
                         page_idx = -1
-                        for max_page_idx in list(parsed_chars.max_idx_in_page):
-                            if last_char_idx_in_curr_keyword <= max_page_idx:
-                                page_idx = max_page_idx
+                        for min_page_idx in list(parsed_chars.min_idx_in_page):
+                            if last_char_idx_in_curr_keyword <= min_page_idx:
                                 # reminder: can break here because dict in python 3.8+ are
                                 # insertion order
                                 break
+                            else:
+                                page_idx = min_page_idx
 
                         # whitespaces don't exist in curr_char_idx_mappings
                         # they were added to separate words
@@ -325,7 +352,7 @@ class AnnotationsPDFParser:
                             curr_keyword not in digits):  # noqa
 
                             token = PDFTokenPositions(
-                                page_number=parsed_chars.max_idx_in_page[page_idx],
+                                page_number=parsed_chars.min_idx_in_page[page_idx],
                                 keyword=curr_keyword,
                                 char_positions=curr_char_idx_mappings,
                             )

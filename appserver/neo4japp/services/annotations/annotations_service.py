@@ -1,5 +1,6 @@
 import json
 import re
+import requests
 
 from collections import deque
 from math import inf
@@ -31,7 +32,8 @@ from .constants import (
     COMMON_TYPOS,
     UNIPROT_LINK,
     WIKIPEDIA_LINK,
-    LOWERCASE_FIRST_LETTER_UPPERCASE_LAST_LETTER_GENE_LENGTH,
+    # LOWERCASE_FIRST_LETTER_UPPERCASE_LAST_LETTER_GENE_LENGTH,
+    NLP_ENDPOINT,
 )
 from .lmdb_dao import LMDBDao
 from .util import normalize_str
@@ -40,10 +42,12 @@ from neo4japp.data_transfer_objects import (
     Annotation,
     GeneAnnotation,
     OrganismAnnotation,
+    PDFParsedCharacters,
     PDFTokenPositions,
     PDFTokenPositionsList,
 )
 from neo4japp.database import get_hybrid_neo4j_postgres_service
+from neo4japp.exceptions import AnnotationError
 
 
 class AnnotationsService:
@@ -88,6 +92,11 @@ class AnnotationsService:
         gene_val = chem_val = comp_val = None
         protein_val = species_val = diseases_val = phenotype_val = None
 
+        nlp_predicted_type = None
+
+        if token.token_type:
+            nlp_predicted_type = token.token_type
+
         if synonym:
             lookup_key = normalize_str(synonym).encode('utf-8')
         else:
@@ -95,52 +104,98 @@ class AnnotationsService:
 
         lowered_word = token.keyword.lower()
 
-        gene_val = self.lmdb_session.genes_txn.get(lookup_key)
+        # check gene
+        if nlp_predicted_type:
+            if nlp_predicted_type == EntityType.Gene.value:
+                gene_val = self.lmdb_session.genes_txn.get(lookup_key)
+        else:
+            gene_val = self.lmdb_session.genes_txn.get(lookup_key)
+
         if gene_val:
             if token.keyword in self.matched_genes:
                 self.matched_genes[token.keyword].append(token)
             else:
                 self.matched_genes[token.keyword] = [token]
 
-        if lowered_word not in CHEMICAL_EXCLUSION:
-            chem_val = self.lmdb_session.chemicals_txn.get(lookup_key)
-            if chem_val:
-                if token.keyword in self.matched_chemicals:
-                    self.matched_chemicals[token.keyword].append(token)
-                else:
-                    self.matched_chemicals[token.keyword] = [token]
+        # check chemical
+        if nlp_predicted_type:
+            if nlp_predicted_type == EntityType.Chemical.value and lowered_word not in CHEMICAL_EXCLUSION:  # noqa
+                chem_val = self.lmdb_session.chemicals_txn.get(lookup_key)
+        else:
+            if lowered_word not in CHEMICAL_EXCLUSION:
+                chem_val = self.lmdb_session.chemicals_txn.get(lookup_key)
 
-        if lowered_word not in COMPOUND_EXCLUSION:
-            comp_val = self.lmdb_session.compounds_txn.get(lookup_key)
-            if comp_val:
-                if token.keyword in self.matched_compounds:
-                    self.matched_compounds[token.keyword].append(token)
-                else:
-                    self.matched_compounds[token.keyword] = [token]
+        if chem_val:
+            if token.keyword in self.matched_chemicals:
+                self.matched_chemicals[token.keyword].append(token)
+            else:
+                self.matched_chemicals[token.keyword] = [token]
 
-        protein_val = self.lmdb_session.proteins_txn.get(lookup_key)
+        # check compound
+        if nlp_predicted_type:
+            if nlp_predicted_type == EntityType.Compound.value and lowered_word not in CHEMICAL_EXCLUSION:  # noqa
+                comp_val = self.lmdb_session.compounds_txn.get(lookup_key)
+        else:
+            if lowered_word not in CHEMICAL_EXCLUSION:
+                comp_val = self.lmdb_session.compounds_txn.get(lookup_key)
+
+        if comp_val:
+            if token.keyword in self.matched_compounds:
+                self.matched_compounds[token.keyword].append(token)
+            else:
+                self.matched_compounds[token.keyword] = [token]
+
+        # check protein
+        if nlp_predicted_type:
+            if nlp_predicted_type == EntityType.Protein.value:
+                protein_val = self.lmdb_session.proteins_txn.get(lookup_key)
+        else:
+            protein_val = self.lmdb_session.proteins_txn.get(lookup_key)
+
         if protein_val:
             if token.keyword in self.matched_proteins:
                 self.matched_proteins[token.keyword].append(token)
             else:
                 self.matched_proteins[token.keyword] = [token]
 
-        if lowered_word not in SPECIES_EXCLUSION:
-            species_val = self.lmdb_session.species_txn.get(lookup_key)
-            if species_val:
-                if token.keyword in self.matched_species:
-                    self.matched_species[token.keyword].append(token)
-                else:
-                    self.matched_species[token.keyword] = [token]
+        # check species
+        if nlp_predicted_type:
+            # TODO: Bacteria because for now NLP has that instead of
+            # generic `Species`
+            if ((nlp_predicted_type == EntityType.Species.value or
+                nlp_predicted_type == 'Bacteria') and
+                    lowered_word not in SPECIES_EXCLUSION):  # noqa
+                species_val = self.lmdb_session.species_txn.get(lookup_key)
+        else:
+            if lowered_word not in SPECIES_EXCLUSION:
+                species_val = self.lmdb_session.species_txn.get(lookup_key)
 
-        diseases_val = self.lmdb_session.diseases_txn.get(lookup_key)
+        if species_val:
+            if token.keyword in self.matched_species:
+                self.matched_species[token.keyword].append(token)
+            else:
+                self.matched_species[token.keyword] = [token]
+
+        # check disease
+        if nlp_predicted_type:
+            if nlp_predicted_type == EntityType.Disease.value:
+                diseases_val = self.lmdb_session.diseases_txn.get(lookup_key)
+        else:
+            diseases_val = self.lmdb_session.diseases_txn.get(lookup_key)
+
         if diseases_val:
             if token.keyword in self.matched_diseases:
                 self.matched_diseases[token.keyword].append(token)
             else:
                 self.matched_diseases[token.keyword] = [token]
 
-        phenotype_val = self.lmdb_session.phenotypes_txn.get(lookup_key)
+        # check phenotype
+        if nlp_predicted_type:
+            if nlp_predicted_type == EntityType.Phenotype.value:
+                phenotype_val = self.lmdb_session.phenotypes_txn.get(lookup_key)
+        else:
+            phenotype_val = self.lmdb_session.phenotypes_txn.get(lookup_key)
+
         if phenotype_val:
             if token.keyword in self.matched_phenotypes:
                 self.matched_phenotypes[token.keyword].append(token)
@@ -913,11 +968,13 @@ class AnnotationsService:
 
         return fixed_annotations
 
-    def create_annotations(
+    def _create_annotations(
         self,
-        tokens: PDFTokenPositionsList,
+        tokens: List[PDFTokenPositions],
+        char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
+        cropbox_in_pdf: Tuple[int, int],
     ) -> List[Annotation]:
-        deque(map(self._filter_tokens, tokens.token_positions), maxlen=0)
+        deque(map(self._filter_tokens, tokens), maxlen=0)
 
         unified_annotations: List[Annotation] = []
         entity_type_and_id_pairs = [
@@ -935,8 +992,8 @@ class AnnotationsService:
             annotations = self.annotate(
                 annotation_type=entity_type,
                 entity_id_str=entity_id_str,
-                char_coord_objs_in_pdf=tokens.char_coord_objs_in_pdf,
-                cropbox_in_pdf=tokens.cropbox_in_pdf,
+                char_coord_objs_in_pdf=char_coord_objs_in_pdf,
+                cropbox_in_pdf=cropbox_in_pdf,
             )
             unified_annotations.extend(annotations)
 
@@ -950,6 +1007,61 @@ class AnnotationsService:
 
         self.lmdb_session.close_envs()
         return fixed_unified_annotations
+
+    def create_rules_based_annotations(
+        self,
+        tokens: PDFTokenPositionsList,
+    ) -> List[Annotation]:
+        return self._create_annotations(
+            tokens=tokens.token_positions,
+            char_coord_objs_in_pdf=tokens.char_coord_objs_in_pdf,
+            cropbox_in_pdf=tokens.cropbox_in_pdf,
+        )
+
+    def create_nlp_annotations(
+        self,
+        text: str,
+        coordinates: PDFParsedCharacters,
+    ) -> List[Annotation]:
+        nlp_resp = None
+        try:
+            req = requests.post(NLP_ENDPOINT, data={'text': text})
+            nlp_resp = req.json()
+            print(f'NLP Response Output: {nlp_resp}')
+        except requests.exceptions.RequestException:
+            raise AnnotationError('An error occurred with the NLP service.')
+
+        nlp_tokens: List[PDFTokenPositions] = []
+
+        for predicted in nlp_resp:
+            curr_char_idx_mappings = {
+                i: char for i, char in zip(
+                    range(predicted['low_index'], predicted['high_index'],
+                ), predicted['item'])
+            }
+
+            # determine page keyword is on
+            page_idx = -1
+            for min_page_idx in list(coordinates.min_idx_in_page):
+                if predicted['high_index'] <= min_page_idx:
+                    # reminder: can break here because dict in python 3.8+ are
+                    # insertion order
+                    break
+                else:
+                    page_idx = min_page_idx
+            token = PDFTokenPositions(
+                page_number=coordinates.min_idx_in_page[page_idx],
+                keyword=predicted['item'],
+                char_positions=curr_char_idx_mappings,
+                token_type=predicted['type'],
+            )
+            nlp_tokens.append(token)
+
+        return self._create_annotations(
+            tokens=nlp_tokens,
+            char_coord_objs_in_pdf=coordinates.char_coord_objs_in_pdf,
+            cropbox_in_pdf=coordinates.cropbox_in_pdf,
+        )
 
     def fix_conflicting_annotations(
         self,
