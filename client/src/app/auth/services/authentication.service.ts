@@ -81,7 +81,7 @@ export class AuthenticationService {
       );
   }
 
-  public whoAmI() {
+  public whoAmI(): number {
     const auth = JSON.parse(localStorage.getItem('auth'));
 
     if (

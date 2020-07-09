@@ -34,6 +34,7 @@ export enum Role {
 }
 
 export interface Collaborator {
+  // Id of the AppUser
   id?: number;
   role: string;
   username: string;
