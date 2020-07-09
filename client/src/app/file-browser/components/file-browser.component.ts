@@ -84,6 +84,10 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
 
   fileSpaceSubscription: Subscription;
 
+  get amIRootDir() {
+    return this.dirPathChain.length === 0;
+  }
+
   constructor(
     private pdf: PdfFilesService,
     private router: Router,
@@ -186,7 +190,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
     this.selection.clear();
     this.loadTask.update({
       projectName: this.projectName,
-      directoryId: this.currentDirectoryId
+      directoryId: this.amIRootDir ? null : this.currentDirectoryId
     });
   }
 
@@ -469,7 +473,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
       case 'pdf':
         const f: File = file as File;
         const fileId = f.fileId;
-        return `files/${fileId}`;
+        return `files/${fileId}/${this.projectName}`;
       default:
         return '';
     }
