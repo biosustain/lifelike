@@ -57,10 +57,11 @@ export class PdfFilesService {
       formData.append('description', data.description.substring(0, this.descriptionMaxLength));
     }
     if (data.type === UploadType.Files) {
-      formData.append('file', data.files[0]);
+      formData.append('fileInput', data.files[0]);
     } else {
       formData.append('url', data.url);
     }
+    formData.append('annotationMethod', data.annotationMethod);
     return this.http.post<PdfFileUpload>(`${this.baseUrl}/upload`, formData, {
       headers: this.getAuthHeader(),
       observe: 'events',
