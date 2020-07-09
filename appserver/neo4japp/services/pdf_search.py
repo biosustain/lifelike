@@ -23,7 +23,7 @@ class PDFSearchResult:
     def parse_pdf_entries(self, data):
         source = data['_source']
         self.file_id = source['internal_link']
-        self.doi = source['doi'] if source['doi'] is not None else 'N/A'
+        self.doi = source['doi']
         self.preview_text = source['data']['content']
         self.preview_text = self.parse_highlight('data.content', self.preview_text)
         self.uploaded_date = source['uploaded_date']
