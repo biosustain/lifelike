@@ -1080,220 +1080,219 @@
     "records": [
       {
         "domain": "CHEBI",
-        "base_URL": "https://www.ebi.ac.uk/chebi/searchId.do?chebiId="
+        "base_URL": "https://www.ebi.ac.uk/chebi/searchId.do?chebiId={}"
       },
       {
         "domain": "MESH",
-        "base_URL": "https://www.ncbi.nlm.nih.gov/mesh/?term="
+        "base_URL": "https://www.ncbi.nlm.nih.gov/mesh/?term={}"
       },
       {
         "domain": "Literature",
-        "base_URL": "https://pubmed.ncbi.nlm.nih.gov/"
+        "base_URL": "https://pubmed.ncbi.nlm.nih.gov/{}"
       },
       {
         "domain": "NCBI_Gene",
-        "base_URL": "https://www.ncbi.nlm.nih.gov/gene/"
+        "base_URL": "https://www.ncbi.nlm.nih.gov/gene/{}"
       },
       {
         "domain": "NCBI_Taxonomy",
-        "base_URL": "https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id="
+        "base_URL": "https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id={}"
       },
       {
         "domain": "asap",
-        "base_URL": "http://identifiers.org/asap/",
+        "base_URL": "http://identifiers.org/asap/{}",
       },
       {
         "domain": "bigg.compartment",
-        "base_URL": "http://identifiers.org/bigg.compartment/"
+        "base_URL": "http://identifiers.org/bigg.compartment/{}"
       },
       {
         "domain": "bigg.metabolite",
-        "base_URL": "http://identifiers.org/bigg.metabolite/"
+        "base_URL": "http://identifiers.org/bigg.metabolite/{}"
       },
       {
         "domain": "bigg.reaction",
-        "base_URL": "http://identifiers.org/bigg.reaction/"
+        "base_URL": "http://identifiers.org/bigg.reaction/{}"
       },
       {
         "domain": "biocyc",
-        "base_URL": "http://identifiers.org/biocyc/",
-        "synonyms": "BioCyc"
+        "base_URL": "http://identifiers.org/biocyc/{}",
       },
       {
         "domain": "biopath.reaction",
-        "base_URL": "https://www.molecular-networks.com/biopath3/biopath/rxn/"
+        "base_URL": "https://www.molecular-networks.com/biopath3/biopath/rxn/{}"
       },
       {
         "domain": "biopath.molecule",
-        "base_URL": "https://www.molecular-networks.com/biopath3/biopath/mols/"
+        "base_URL": "https://www.molecular-networks.com/biopath3/biopath/mols/{}"
       },
       {
         "domain": "cas",
-        "base_URL": "http://identifiers.org/cas/",
+        "base_URL": "http://identifiers.org/cas/{}",
       },
       {
         "domain": "ccds",
-        "base_URL": "http://identifiers.org/ccds/",
+        "base_URL": "http://identifiers.org/ccds/{}",
       },
       {
         "domain": "cco",
-        "base_URL": "http://identifiers.org/cco/"
+        "base_URL": "http://identifiers.org/cco/{}"
       },
       {
         "domain": "chebi",
-        "base_URL": "http://identifiers.org/chebi/CHEBI:",
+        "base_URL": "http://identifiers.org/chebi/CHEBI:{}",
       },
       {
         "domain": "ecogene",
-        "base_URL": "http://identifiers.org/ecogene/",
+        "base_URL": "http://identifiers.org/ecogene/{}",
       },
       {
         "domain": "envipath",
-        "base_URL": "http://envipath.org/package/32de3cf4-e3e6-4168-956e-32fa5ddb0ce1/compound/"
+        "base_URL": "http://envipath.org/package/32de3cf4-e3e6-4168-956e-32fa5ddb0ce1/compound/{}"
       },
       {
         "domain": "go",
-        "base_URL": "http://identifiers.org/go/",
+        "base_URL": "http://identifiers.org/go/{}",
       },
       {
         "domain": "goa",
-        "base_URL": "http://identifiers.org/goa/",
+        "base_URL": "http://identifiers.org/goa/{}",
       },
       {
         "domain": "hgnc",
-        "base_URL": "http://identifiers.org/hgnc/",
+        "base_URL": "http://identifiers.org/hgnc/{}",
       },
       {
         "domain": "hmdb",
-        "base_URL": "http://identifiers.org/hmdb/",
+        "base_URL": "http://identifiers.org/hmdb/{}",
       },
       {
         "domain": "hprd",
-        "base_URL": "http://identifiers.org/hprd/",
+        "base_URL": "http://identifiers.org/hprd/{}",
       },
       {
         "domain": "hssp",
-        "base_URL": "http://identifiers.org/hssp/",
+        "base_URL": "http://identifiers.org/hssp/{}",
       },
       {
         "domain": "interpro",
-        "base_URL": "http://identifiers.org/interpro/",
+        "base_URL": "http://identifiers.org/interpro/{}",
       },
       {
         "domain": "kegg.compound",
-        "base_URL": "http://identifiers.org/kegg.compound/"
+        "base_URL": "http://identifiers.org/kegg.compound/{}"
       },
       {
         "domain": "kegg.drug",
-        "base_URL": "http://identifiers.org/kegg.drug/"
+        "base_URL": "http://identifiers.org/kegg.drug/{}"
       },
       {
         "domain": "kegg.reaction",
-        "base_URL": "http://identifiers.org/kegg.reaction/"
+        "base_URL": "http://identifiers.org/kegg.reaction/{}"
       },
       {
         "domain": "lipidmaps",
-        "base_URL": "http://identifiers.org/lipidmaps/",
+        "base_URL": "http://identifiers.org/lipidmaps/{}",
       },
       {
         "domain": "mgd",
-        "base_URL": "http://identifiers.org/mgd/",
+        "base_URL": "http://identifiers.org/mgd/{}",
       },
       {
         "domain": "mnx.chemical",
-        "base_URL": "http://identifiers.org/metanetx.chemical/"
+        "base_URL": "http://identifiers.org/metanetx.chemical/{}"
       },
       {
         "domain": "mnx.equation",
-        "base_URL": "http://identifiers.org/metanetx.reaction/"
+        "base_URL": "http://identifiers.org/metanetx.reaction/{}"
       },
       {
         "domain": "myco.tuber",
-        "base_URL": "http://identifiers.org/myco.tuber/"
+        "base_URL": "http://identifiers.org/myco.tuber/{}"
       },
       {
         "domain": "metacyc.compound",
-        "base_URL": "http://identifiers.org/metacyc.compound/"
+        "base_URL": "http://identifiers.org/metacyc.compound/{}"
       },
       {
         "domain": "metacyc.reaction",
-        "base_URL": "http://identifiers.org/metacyc.reaction/"
+        "base_URL": "http://identifiers.org/metacyc.reaction/{}"
       },
       {
         "domain": "ncbigene",
-        "base_URL": "http://identifiers.org/ncbigene/",
+        "base_URL": "http://identifiers.org/ncbigene/{}",
       },
       {
         "domain": "ncbigi",
-        "base_URL": "http://identifiers.org/ncbigi/gi:",
+        "base_URL": "http://identifiers.org/ncbigi/gi:{}",
       },
       {
         "domain": "omim",
-        "base_URL": "http://identifiers.org/omim/",
+        "base_URL": "http://identifiers.org/omim/{}",
       },
       {
         "domain": "pdb",
-        "base_URL": "http://identifiers.org/pdb/",
+        "base_URL": "http://identifiers.org/pdb/{}",
       },
       {
         "domain": "pubchem.compound",
-        "base_URL": "http://identifiers.org/pubchem.compound/",
+        "base_URL": "http://identifiers.org/pubchem.compound/{}",
       },
       {
         "domain": "reactome",
-        "base_URL": "http://www.reactome.org/content/detail/R-ALL-",
+        "base_URL": "http://www.reactome.org/content/detail/R-ALL-{}",
       },
       {
         "domain": "rhea",
-        "base_URL": "http://identifiers.org/rhea/",
+        "base_URL": "http://identifiers.org/rhea/{}",
       },
       {
         "domain": "sabiork",
-        "base_URL": "http://identifiers.org/sabiork.compound/"
+        "base_URL": "http://identifiers.org/sabiork.compound/{}"
       },
       {
         "domain": "sabiork.reaction",
-        "base_URL": "http://identifiers.org/sabiork.reaction/"
+        "base_URL": "http://identifiers.org/sabiork.reaction/{}"
       },
       {
         "domain": "seed",
-        "base_URL": "http://identifiers.org/seed.reaction/"
+        "base_URL": "http://identifiers.org/seed.reaction/{}"
       },
       {
         "domain": "seed.compound",
-        "base_URL": "http://identifiers.org/seed.compound/"
+        "base_URL": "http://identifiers.org/seed.compound/{}"
       },
       {
         "domain": "sgd",
-        "base_URL": "http://identifiers.org/sgd/",
+        "base_URL": "http://identifiers.org/sgd/{}",
       },
       {
         "domain": "slm",
-        "base_URL": "http://www.swisslipids.org/#/entity/SLM:"
+        "base_URL": "http://www.swisslipids.org/#/entity/SLM:{}"
       },
       {
         "domain": "subtilist",
-        "base_URL": "http://identifiers.org/subtilist/",
+        "base_URL": "http://identifiers.org/subtilist/{}",
       },
       {
         "domain": "umbbd.compound",
-        "base_URL": "http://identifiers.org/umbbd.compound/"
+        "base_URL": "http://identifiers.org/umbbd.compound/{}"
       },
       {
         "domain": "unipathway.compound",
-        "base_URL": "http://identifiers.org/unipathway.compound/"
+        "base_URL": "http://identifiers.org/unipathway.compound/{}"
       },
       {
         "domain": "unipathway.reaction",
-        "base_URL": "http://identifiers.org/unipathway.reaction/"
+        "base_URL": "http://identifiers.org/unipathway.reaction/{}"
       },
       {
         "domain": "uniprot",
-        "base_URL": "http://identifiers.org/uniprot/",
+        "base_URL": "http://identifiers.org/uniprot/{}",
       },
       {
         "domain": "ec",
-        "base_URL": "http://identifiers.org/ec-code/"
+        "base_URL": "http://identifiers.org/ec-code/{}"
       }
     ]
   },
