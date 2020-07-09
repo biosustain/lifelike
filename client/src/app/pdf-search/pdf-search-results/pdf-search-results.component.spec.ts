@@ -1,6 +1,12 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import {async, ComponentFixture, TestBed} from '@angular/core/testing';
 
-import { PdfSearchResultsComponent } from './pdf-search-results.component';
+import {PdfSearchResultsComponent} from './pdf-search-results.component';
+import {PdfSearchModule} from '../pdf-search.module';
+import {RootStoreModule} from '../../***ARANGO_USERNAME***-store';
+import {BrowserModule} from '@angular/platform-browser';
+import {DragDropModule} from '@angular/cdk/drag-drop';
+import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
+import {SearchService} from '../../search/services/search.service';
 
 describe('PdfSearchResultsComponent', () => {
   let component: PdfSearchResultsComponent;
@@ -8,9 +14,18 @@ describe('PdfSearchResultsComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ PdfSearchResultsComponent ]
+      imports: [
+        PdfSearchModule,
+        RootStoreModule,
+        BrowserModule,
+        DragDropModule,
+        BrowserAnimationsModule
+      ],
+      providers: [
+        SearchService
+      ]
     })
-    .compileComponents();
+      .compileComponents();
   }));
 
   beforeEach(() => {
