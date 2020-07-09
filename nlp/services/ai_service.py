@@ -1,3 +1,5 @@
+from enum import Enum
+
 import tensorflow as tf
 import string
 import nltk
@@ -7,14 +9,26 @@ import os
 import time
 
 
+# these are used across the app so
+# putting here to be consistent
+class EntityType(Enum):
+    Chemical = 'Chemical'
+    Compound = 'Compound'
+    Disease = 'Disease'
+    Gene = 'Gene'
+    Protein = 'Protein'
+    Species = 'Species'
+    Phenotype = 'Phenotype'
+
+
 class AIService():
 
     MODEL_DIRECTORY = '/models/'
     ALL_MODELS = [
-        {'path': 'bacteria/v1/model/1/', 'type': 'bacteria'},
-        {'path': 'chemical/v1/model', 'type': 'chemical'},
-        {'path': 'disease/v1/model', 'type': 'disease'},
-        {'path': 'gene/v1/model/1/', 'type': 'gene'}
+        {'path': 'bacteria/v1/model/1/', 'type': 'Bacteria'},  # TODO: this becomes species later?
+        {'path': 'chemical/v1/model', 'type': EntityType.Chemical.value},
+        {'path': 'disease/v1/model', 'type': EntityType.Disease.value},
+        {'path': 'gene/v1/model/1/', 'type': EntityType.Gene.value}
     ]
     LOADED_MODELS = []
     os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
