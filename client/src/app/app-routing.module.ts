@@ -122,7 +122,7 @@ const routes: Routes = [
     canActivate: [AuthGuard]
   },
   {
-    path: 'files/:file_id',
+    path: 'files/:file_id/:project_name',
     component: FileViewComponent,
     canActivate: [AuthGuard],
     data: {
