@@ -18,7 +18,10 @@ export class EditProjectDialogComponent extends CommonFormDialogComponent implem
   loadTask: BackgroundTask<string, Collaborator[]> = new BackgroundTask(
     (projectName) => this.projSpace.getCollaborators(projectName)
   );
+
   loadTaskSubscription: Subscription;
+
+  PROJECT: Project = null;
 
   @Input()
   set project(proj: Project) {
@@ -30,8 +33,6 @@ export class EditProjectDialogComponent extends CommonFormDialogComponent implem
   get project() {
     return this.PROJECT;
   }
-
-  PROJECT: Project = null;
 
   userRoles = [{
       value: 'project-admin',
@@ -55,13 +56,17 @@ export class EditProjectDialogComponent extends CommonFormDialogComponent implem
     pendingCollabs: new FormArray([]),
     currentCollabs: new FormArray([])
   });
+
   get pendingCollabs(): FormArray {
     return this.collabForm.get('pendingCollabs') as FormArray;
   }
+
   get currentCollabs(): FormArray {
     return this.collabForm.get('currentCollabs') as FormArray;
   }
+
   collabs: Collaborator[] = [];
+
   userCollab: Collaborator = null;
 
   collabFormSubscription: Subscription[] = [];
