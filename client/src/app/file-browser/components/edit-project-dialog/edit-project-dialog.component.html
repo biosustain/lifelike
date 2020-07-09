@@ -1,11 +1,10 @@
 <form [formGroup]='collabForm'>
   <div>
-    <div class="modal-header">
+    <app-modal-header>
       <h4 class="modal-title text-truncate blue b">
         {{project?.projectName}}
       </h4>
-    </div>
-
+    </app-modal-header>
     <div class="modal-body">
       <div *ngIf='project?.description'>
         <h5 class='blue b'>Description</h5>
@@ -84,13 +83,13 @@
 
     </div>
 
-    <div class="modal-footer">
+    <app-modal-footer>
       <button
         type="submit"
         class="btn btn-primary"
         (click)="cancel()">
         Done
       </button>
-    </div>
+    </app-modal-footer>
   </div>
 <form>
