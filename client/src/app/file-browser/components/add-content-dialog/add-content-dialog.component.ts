@@ -3,14 +3,12 @@ import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { Input } from '@angular/core';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { Subscription } from 'rxjs';
-import { UploadPayload, UploadType } from 'app/interfaces/pdf-files.interface';
 import { CommonFormDialogComponent } from 'app/shared/components/dialog/common-form-dialog.component';
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
 
 @Component({
   selector: 'app-add-content-dialog',
-  templateUrl: './add-content-dialog.component.html',
-  styleUrls: ['./add-content-dialog.component.scss']
+  templateUrl: './add-content-dialog.component.html'
 })
 export class AddContentDialogComponent extends CommonFormDialogComponent implements OnInit, OnDestroy {
   MODE = 'dir';
