@@ -10,13 +10,11 @@
           {{project?.description}}
         </p>
       </div>
-
       <div class='d-flex mb-3'>
         <h5>Members</h5>
       </div>
-      
-
-
+      <app-background-task-progress
+        [status]="status" (refresh)="refresh()" childClass="mb-2"></app-background-task-progress>
       <ul *ngIf="status.placeholdersShown; else collabList" class="list-group">
         <li *ngFor='let i of [0,0,0]' class="list-group-item d-flex align-items-center">
           <div class='bg-blue white avatar'>
@@ -27,7 +25,6 @@
           </small>
         </li>
       </ul>
-      
       <ng-template #collabList>
         <div *ngIf='amIAdmin; else readView'>
           <div *ngIf='hasError' class='text-danger mb-2'>
@@ -35,7 +32,6 @@
               {{ errorMsg }}
             </small>
           </div>
-
           <div class="input-group mb-3">
             <input formControlName='username' placeholder="Username" type="text" class="form-control" aria-label="Text input with segmented dropdown button">
             <select formControlName='role' class="custom-select input-group-prepend" id="inputGroupSelect04" aria-label="Example select with button addon">

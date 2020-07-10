@@ -38,10 +38,10 @@ export class EditProjectDialogComponent extends CommonFormDialogComponent implem
   userRoles = [{
       value: 'project-write',
       label: 'Write'
-    },{
+    }, {
       value: 'project-read',
       label: 'Read'
-    },{
+    }, {
       value: 'project-admin',
       label: 'Admin'
     }];
@@ -74,7 +74,7 @@ export class EditProjectDialogComponent extends CommonFormDialogComponent implem
   collabFormSubscription: Subscription[] = [];
 
   get amIAdmin(): boolean {
-    if (isNullOrUndefined(this.userCollab)) { return false }
+    if (isNullOrUndefined(this.userCollab)) { return false; }
     return this.userCollab.role === 'project-admin';
   }
 
@@ -122,15 +122,15 @@ export class EditProjectDialogComponent extends CommonFormDialogComponent implem
         this.collabFormSubscription.map(
           (sub: Subscription) => sub.unsubscribe()
         );
-        this.collabFormSubscription = [];          
+        this.collabFormSubscription = [];
 
         listOfFormGroups.map(
           (fg: FormGroup) => {
-            const subscription = fg.valueChanges.subscribe(
+            const sub = fg.valueChanges.subscribe(
               val => this.updateCollaborator(val)
             );
-            this.collabFormSubscription.push(subscription);
-            return subscription;
+            this.collabFormSubscription.push(sub);
+            return sub;
           }
         );
       }
@@ -163,7 +163,7 @@ export class EditProjectDialogComponent extends CommonFormDialogComponent implem
 
     if (isNullOrUndefined(username) || username.length === 0) {
       this.hasError = true;
-      this.errorMsg = 'Enter an username'
+      this.errorMsg = 'Enter an username';
       return;
     }
 

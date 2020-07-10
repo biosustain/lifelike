@@ -153,7 +153,7 @@ def add_collaborator(username: str, project_name: str = ''):
 @bp.route('/<string:project_name>/collaborators/<string:username>', methods=['PUT'])
 @auth.login_required
 @requires_project_role('project-admin')
-def edit_collaborator(username: str, project_name: str = ''):
+def edit_collaborator(username: str, project_name: str):
 
     proj_service = get_projects_service()
 
