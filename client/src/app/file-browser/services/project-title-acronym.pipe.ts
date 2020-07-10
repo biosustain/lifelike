@@ -1,4 +1,5 @@
 import { Pipe, PipeTransform } from '@angular/core';
+import { isNullOrUndefined } from 'util';
 
 @Pipe({
   name: 'projectTitleAcronym'
@@ -6,6 +7,8 @@ import { Pipe, PipeTransform } from '@angular/core';
 export class ProjectTitleAcronymPipe implements PipeTransform {
 
   transform(value: string, ...args: any[]): any {
+    if (isNullOrUndefined(value)) { return ''; }
+
     const acronymLength = args.length ? args[0] : 2;
 
     // split by multiple delimiters like dash and space
