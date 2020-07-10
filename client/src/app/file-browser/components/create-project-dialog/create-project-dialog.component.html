@@ -6,23 +6,28 @@
   </app-modal-header>
 
   <app-modal-body>
-    <div class="form-group">
-      <label for="nameInput">Name</label>
+    <app-form-row 
+      [control]="form.get('projectName')"
+      [errors]='errors'>
+      <label for="project-name">Name</label>
       <input
-        formControlName='projectName'
-        type="text"
-        class="form-control"
-        [ngClass]='{"is-invalid": isInvalid}'
-        id="nameInput"
-        placeholder="">
-      <div class="invalid-feedback">
-        A name must be inputted before creating a project.
-      </div>
-    </div>
-    <div class="form-group">
+        formControlName="projectName"
+        class='form-control'
+        id="project-name"
+        [appFormInput]="form.get('projectName')" 
+        type="text">
+    </app-form-row>
+    <app-form-row [control]="form.get('description')">
       <label for="descriptionInput">Description</label>
-      <textarea formControlName='description' class="form-control" id="descriptionInput" rows="3" placeholder=""></textarea>
-    </div>
+      <textarea
+        formControlName='description'
+        class="form-control"
+        id="descriptionInput"
+        [appFormInput]="form.get('description')"
+        rows="3"
+        placeholder="">
+      </textarea>
+    </app-form-row>
   </app-modal-body>
 
   <app-modal-footer>
