@@ -40,7 +40,7 @@ def test_can_add_projects(client, session, test_user):
     assert root_dir
 
 
-def test_can_get_project(client, fix_project, test_user):
+def test_can_get_project(client, fix_project, fix_directory, test_user):
     login_resp = client.login_as_user(test_user.email, 'password')
     headers = generate_headers(login_resp['access_jwt'])
     response = client.get('/projects/Lifelike', headers=headers)
@@ -53,17 +53,44 @@ def test_can_get_list_of_projects(client, session, test_user):
     login_resp = client.login_as_user(test_user.email, 'password')
     headers = generate_headers(login_resp['access_jwt'])
 
-    for i in range(2):
-        projects = Projects(project_name=f'project-{i}', description='', users=[])
+    number_of_projects_made_by_test_user = 2
+
+    for i in range(
+        number_of_projects_made_by_test_user
+    ):
+        projects = Projects(
+            project_name=f'project-{i}',
+            description='',
+            users=[test_user.id]
+        )
         session.add(projects)
+        session.flush()
+
+        default_dir = Directory(
+            name='/',
+            directory_parent_id=None,
+            projects_id=projects.id
+        )
+        session.add(default_dir)
+        session.flush()
+
+        role = AppRole.query.filter(
+            AppRole.name == 'project-admin'
+        ).one()
+        session.execute(
+            projects_collaborator_role.insert(),
+            [dict(
+                appuser_id=test_user.id,
+                app_role_id=role.id,
+                projects_id=projects.id,
+            )]
+        )
         session.flush()
 
     response = client.get('/projects/', headers=headers)
     assert response.status_code == 200
     response_data = response.get_json()['results']
-    projects_count = Projects.query.count()
-    assert projects_count != 0
-    assert len(response_data) == projects_count
+    assert len(response_data) == number_of_projects_made_by_test_user
 
 
 @pytest.mark.parametrize('username, email, expected_status', [
@@ -141,7 +168,10 @@ def test_can_add_directory(client, session, fix_project, fix_directory, test_use
 
     response = client.post(
         f'/projects/{fix_project.project_name}/directories',
-        data=json.dumps(dict(dirname='new-dir')),
+        data=json.dumps(dict(
+            dirname='new-dir',
+            parentDir=fix_directory.id
+        )),
         headers=headers,
         content_type='application/json',
     )
