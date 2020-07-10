@@ -66,11 +66,8 @@ export class ProjectSpaceComponent implements OnInit {
     const dialogRef = this.ngbModal.open(CreateProjectDialogComponent);
 
     dialogRef.result.then(
-      projectMeta => {
-        this.projSpace.createProject(projectMeta)
-          .subscribe(
-            newProject => this.projects.push(newProject)
-          );
+      newProject => {
+        this.projects.push(newProject);
       },
       () => {
       }
@@ -81,12 +78,6 @@ export class ProjectSpaceComponent implements OnInit {
 
     const dialogRef = this.ngbModal.open(EditProjectDialogComponent);
     dialogRef.componentInstance.project = project;
-
-    // TODO - do we need a callback after closing modal
-    dialogRef.result.then(
-      () => {},
-      () => {}
-    );
   }
 
   goToProject(p: Project) {
