@@ -9,8 +9,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
   selector: 'app-create-project-dialog',
-  templateUrl: './create-project-dialog.component.html',
-  styleUrls: ['./create-project-dialog.component.scss']
+  templateUrl: './create-project-dialog.component.html'
 })
 export class CreateProjectDialogComponent extends CommonFormDialogComponent implements OnInit, OnDestroy {
   form: FormGroup = new FormGroup({
