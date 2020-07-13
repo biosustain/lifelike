@@ -15,7 +15,7 @@ def hello():
 
 @app.route('/infer/v1', methods=['POST'])
 def ai():
-    data = request.form.to_dict()
+    data = request.get_json()
     text = data['text']
     if text is None:
         return jsonify('text invalid')
