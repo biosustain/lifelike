@@ -26,6 +26,7 @@
         </li>
       </ul>
       <ng-template #collabList>
+        <!-- Edit View -->
         <div *ngIf='amIAdmin; else readView'>
           <div *ngIf='hasError' class='text-danger mb-2'>
             <small>
@@ -51,7 +52,7 @@
                 <p>{{ userCollab?.username | projectTitleAcronym : 1}}</p>
               </div>
               {{ userCollab?.username }}
-              <small class='ml-auto'>Owner</small>
+              <small class='ml-auto'>Admin</small>
             </li>
             <li
               formArrayName='currentCollabs'
@@ -73,6 +74,7 @@
             </li>
           </ul>
         </div>
+        <!-- Read View -->
         <ng-template #readView>
           <ul class="list-group">
             <li *ngFor='let c of collabs' class="list-group-item d-flex align-items-center">

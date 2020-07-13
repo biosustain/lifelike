@@ -106,10 +106,10 @@ export class EditProjectDialogComponent extends CommonFormDialogComponent implem
       ({
         result: collabs
       }) => {
-        this.collabs = collabs;
-
         const userId = this.auth.whoAmI();
+
         this.userCollab = collabs.filter(c => userId === c.id)[0];
+        this.collabs = collabs.filter(c => userId !== c.id)
 
         const listOfFormGroups = collabs.filter(
           c => userId !== c.id
@@ -126,17 +126,17 @@ export class EditProjectDialogComponent extends CommonFormDialogComponent implem
           new FormArray(listOfFormGroups)
         );
 
-        this.collabFormSubscription.map(
+        this.collabFormSubscription.forEach(
           (sub: Subscription) => sub.unsubscribe()
         );
-        this.collabFormSubscription = [];
 
-        listOfFormGroups.map(
+        console.log(this.form);
+
+        this.collabFormSubscription = listOfFormGroups.map(
           (fg: FormGroup) => {
             const sub = fg.valueChanges.subscribe(
               val => this.updateCollaborator(val)
             );
-            this.collabFormSubscription.push(sub);
             return sub;
           }
         );
