@@ -585,35 +585,6 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
       }
 
       jQuery(el).css('cursor', 'move');
-      jQuery(el).draggable({
-        revert: true,
-        revertDuration: 0,
-        stack: '.draggable',
-        appendTo: that.dropAreaIdentifier,
-        zIndex: 99999,
-        helper: 'clone',
-        start(e, ui) {
-          jQuery(ui.helper).css('opacity', 1);
-          jQuery(ui.helper).css('width', '');
-          jQuery(ui.helper).css('height', '');
-          if (that.isSelectionLink) {
-            jQuery(ui.helper).css('border', 'none');
-            jQuery(ui.helper).css('background-color', 'transparent');
-            jQuery(ui.helper).html(`
-              <span class="fa" style="color: ${annotationTypes.find(type => type.label === 'link').color}; font-size: 30px">
-                ${annotationTypes.find(type => type.label === 'link').iconCode}
-              </span>
-            `);
-            jQuery(el).draggable('instance').offset.click = {
-              left: ui.helper.width(),
-              top: ui.helper.height()
-            };
-          } else {
-            jQuery(ui.helper).text(meta.allText);
-          };
-        }
-      });
-      jQuery(el).draggable('enable');
 
       (jQuery(el) as any).qtip(
         {
