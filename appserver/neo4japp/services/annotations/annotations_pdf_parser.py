@@ -1,5 +1,6 @@
 import re
 
+from copy import deepcopy
 from string import ascii_letters, digits, punctuation, whitespace
 from typing import Any, Dict, List, Set, Tuple, Union
 
@@ -36,7 +37,6 @@ class AnnotationsPDFParser:
     def _get_lt_char(
         self,
         layout: Any,
-        page_idx: int,
         char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
         compiled_regex: re.Pattern,
     ) -> None:
@@ -52,8 +52,8 @@ class AnnotationsPDFParser:
             curr_char: Union[LTAnno, LTChar]
         ):
             return (
-                isinstance(prev_char, LTChar) and prev_char.get_text() != ' ' and
-                isinstance(curr_char, LTChar) and curr_char.get_text() != ' ' and
+                isinstance(prev_char, LTChar) and self._not_whitespace(char=prev_char.get_text()) and  # noqa
+                isinstance(curr_char, LTChar) and self._not_whitespace(char=curr_char.get_text()) and  # noqa
                 space_exists_between_lt_chars(prev_char, curr_char)
             )
 
@@ -61,22 +61,37 @@ class AnnotationsPDFParser:
             if isinstance(lt_obj, LTTextBox) or isinstance(lt_obj, LTTextLine) or isinstance(lt_obj, LTFigure):  # noqa
                 self._get_lt_char(
                     layout=lt_obj,
-                    page_idx=page_idx,
                     char_coord_objs_in_pdf=char_coord_objs_in_pdf,
                     compiled_regex=compiled_regex,
                 )
             elif isinstance(lt_obj, LTChar) or isinstance(lt_obj, LTAnno):
+                lt_obj_text = lt_obj.get_text()
                 # ignore CID fonts
                 # these are arithmetic or other symbols the parser
                 # was not able to translate
                 # usually requires a license or better algorithm from parser
-                if not re.search(compiled_regex, lt_obj.get_text()):
+                if not re.search(compiled_regex, lt_obj_text):
+                    ligatures_list: List[LTChar] = []
+                    # first check for ligatures, e.g `fi`, `ffi`, etc
+                    if len(lt_obj_text) > 1:
+                        lt_obj._text = lt_obj_text[0]
+                        # copy the remaining into their own LTChar
+                        for c in lt_obj_text[1:]:
+                            lt_obj_cp = deepcopy(lt_obj)
+                            lt_obj_cp._text = c
+                            ligatures_list.append(lt_obj_cp)
+
                     if char_coord_objs_in_pdf:
-                        prev_char = char_coord_objs_in_pdf[-1]
+                        if ligatures_list:
+                            prev_char = ligatures_list[-1]
+                        else:
+                            prev_char = char_coord_objs_in_pdf[-1]
                         if should_add_virtual_space(prev_char, lt_obj):
                             virtual_space_char = LTAnno(' ')
                             char_coord_objs_in_pdf.append(virtual_space_char)
                     char_coord_objs_in_pdf.append(lt_obj)
+                    if ligatures_list:
+                        char_coord_objs_in_pdf.extend(ligatures_list)
 
     def parse_pdf_high_level(self, pdf) -> str:
         return high_level.extract_text(pdf)
@@ -119,19 +134,11 @@ class AnnotationsPDFParser:
             min_idx_in_page[len(char_coord_objs_in_pdf)-1] = i+1
             self._get_lt_char(
                 layout=layout,
-                page_idx=i,
                 char_coord_objs_in_pdf=char_coord_objs_in_pdf,
                 compiled_regex=compiled_regex,
             )
 
         for lt_char in char_coord_objs_in_pdf:
-            # LTAnno are 'virtual' characters inserted by the parser
-            # don't really care for \n so make them whitespace
-            # cannot simply deleted because after being parsed, some
-            # PDFs use \n as a space between words
-            # consider this when extracting tokens in @extract_tokens()
-            if isinstance(lt_char, LTAnno) and lt_char.get_text() == '\n':
-                lt_char._text = ' '
             chars_in_pdf.append(lt_char.get_text())
 
         return PDFParsedCharacters(
@@ -140,6 +147,12 @@ class AnnotationsPDFParser:
             cropbox_in_pdf=cropbox_in_pdf,
             min_idx_in_page=min_idx_in_page,
         )
+
+    def _is_whitespace(self, char: str) -> bool:
+        return char in whitespace or char == '\xa0'
+
+    def _not_whitespace(self, char: str) -> bool:
+        return char not in whitespace and char != '\xa0'
 
     def _not_all_whitespace_or_punctuation(self, text: str) -> bool:
         for c in text:
@@ -198,7 +211,7 @@ class AnnotationsPDFParser:
         compared to the chars produced with coordinates.
 
         Different from self.combine_chars_into_words() because that one
-        combines into individual words (without double spacing) to use
+        combines into individual words while ignoring unneeded chars to use
         in our sequential walking combination. So the chars and coordinate
         index mapping will not match with the results returned from the
         NLP service.
