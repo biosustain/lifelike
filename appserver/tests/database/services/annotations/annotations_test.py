@@ -851,6 +851,27 @@ def test_save_bioc_annotations_to_db(default_lmdb_setup, session):
                 ),
             ),
         ]),
+        (3, [
+            GeneAnnotation(
+                page_number=1,
+                keyword='CpxR',
+                lo_location_offset=5,
+                hi_location_offset=7,
+                keyword_length=3,
+                text_in_document='CpxR',
+                keywords=[''],
+                rects=[[1, 2]],
+                meta=GeneAnnotation.GeneMeta(
+                    keyword_type=EntityType.Gene.value,
+                    color='',
+                    id='',
+                    id_type='',
+                    id_hyperlink='',
+                    links=Annotation.Meta.Links(),
+                    category=OrganismCategory.Bacteria.value,
+                ),
+            ),
+        ]),
     ],
 )
 def test_fix_false_positive_gene_annotations(annotations_setup, index, annotations):
@@ -868,6 +889,10 @@ def test_fix_false_positive_gene_annotations(annotations_setup, index, annotatio
         # if correct gene synonym is all caps
         # but text in document is not
         # then remove the annotation
+        assert len(fixed) == 0
+    elif index == 3:
+        # bacteria gene should have three lowercase
+        # with one uppercase at the end
         assert len(fixed) == 0
 
 
