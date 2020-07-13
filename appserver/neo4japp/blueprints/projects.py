@@ -144,6 +144,10 @@ def add_collaborator(username: str, project_name: str = ''):
 
     yield user, projects
 
+    # If new collaborator and user are the same, throw error
+    if new_collaborator.id == user.id:
+        raise NotAuthorizedException(f'You\'re already admin. Why downgrade? ¯\_(ツ)_/¯')
+
     new_role = AppRole.query.filter(AppRole.name == project_role).one()
     proj_service.add_collaborator(new_collaborator, new_role, projects)
 

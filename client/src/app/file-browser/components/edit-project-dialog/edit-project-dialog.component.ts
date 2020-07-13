@@ -73,6 +73,8 @@ export class EditProjectDialogComponent extends CommonFormDialogComponent implem
 
   collabFormSubscription: Subscription[] = [];
 
+  formSubscription: Subscription;
+
   get amIAdmin(): boolean {
     if (isNullOrUndefined(this.userCollab)) { return false; }
     return this.userCollab.role === 'project-admin';
@@ -92,8 +94,13 @@ export class EditProjectDialogComponent extends CommonFormDialogComponent implem
   }
 
   ngOnInit() {
-    const subscription = this.form.get('username').valueChanges.subscribe(() => this.hasError = false);
-    this.collabFormSubscription.push(subscription);
+    this.formSubscription = this.form
+      .valueChanges
+      .subscribe(
+        () => {
+          this.hasError = false;
+        }
+      );
 
     this.loadTaskSubscription = this.loadTask.results$.subscribe(
       ({
@@ -142,6 +149,7 @@ export class EditProjectDialogComponent extends CommonFormDialogComponent implem
       (sub: Subscription) => sub.unsubscribe()
     );
     this.loadTaskSubscription.unsubscribe();
+    this.formSubscription.unsubscribe();
   }
 
   refresh() {
@@ -167,6 +175,13 @@ export class EditProjectDialogComponent extends CommonFormDialogComponent implem
       return;
     }
 
+    // check if that collab is already added
+    if (this.collabs.filter(c => c.username === username).length) {
+      this.hasError = true;
+      this.errorMsg = 'This user is already added. You can modify their privilege below.';
+      return;
+    }
+
     this.projSpace.addCollaborator(
       this.project.projectName,
       username,
@@ -176,25 +191,24 @@ export class EditProjectDialogComponent extends CommonFormDialogComponent implem
         duration: 2000,
       });
 
-      this.collabs.push({
-        role,
-        username
-      });
-
-      const fg = new FormGroup({
-        username: new FormControl(username),
-        role: new FormControl(role)
-      });
-      this.currentCollabs.push(fg);
-
-      const subscription = fg.valueChanges.subscribe(val => this.updateCollaborator(val));
-      this.collabFormSubscription.push(subscription);
-
+      this.refresh();
       this.form.get('username').reset();
+
     }, (err: HttpErrorResponse) => {
+      interface Error {
+        apiHttpError: {
+          message;
+          name;
+        }
+      };
+      const error: Error = err.error;
+
       if (err.status === 404) {
         this.hasError = true;
         this.errorMsg = 'User does not exist';
+      } else if (error.apiHttpError.name === 'Unauthorized Action') {
+        this.hasError = true;
+        this.errorMsg = error.apiHttpError.message;
       }
     });
   }
