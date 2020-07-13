@@ -16,17 +16,9 @@ import { ResizedEvent } from 'angular-resize-event';
  * @param b - item to sort against
  */
 const sortByDate = (a: Project, b: Project) => {
-  if (
-    a.date_modified < b.date_modified
-  ) {
-    return 1;
-  } else if (
-    a.date_modified === b.date_modified
-  ) {
-    return 0;
-  } else {
-    return -1;
-  }
+  const dateA = a.date_modified;
+  const dateB = b.date_modified;
+  return (dateA < dateB) ? -1 : (dateA > dateB) ? 1 : 0;
 };
 
 /**
