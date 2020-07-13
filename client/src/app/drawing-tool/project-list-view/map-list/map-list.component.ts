@@ -64,7 +64,7 @@ export class MapListComponent implements OnInit {
   set publicProjects(val: Project[]) {
     this.PUBLIC_PROJECTS = val;
     this.sortMap('dateModified');
-  };
+  }
   get publicProjects(): Project[] {
     return this.PUBLIC_PROJECTS;
   }
