@@ -83,7 +83,7 @@ export class PdfViewerComponent implements OnDestroy {
   addAnnotationExclusionSub: Subscription;
   showExcludedAnnotations = false;
   removeAnnotationExclusionSub: Subscription;
-  removedAnnotationExclusionId: string;
+  removedAnnotationExclusion: AnnotationExclusionData;
 
   // search
   pdfQuery;
@@ -275,10 +275,10 @@ export class PdfViewerComponent implements OnDestroy {
     });
   }
 
-  annotationExclusionAdded({ id, reason, comment }) {
-    this.addAnnotationExclusionSub = this.pdfAnnService.addAnnotationExclusion(this.currentFileId, id, reason, comment).subscribe(
+  annotationExclusionAdded({ id, text, reason, comment }) {
+    this.addAnnotationExclusionSub = this.pdfAnnService.addAnnotationExclusion(this.currentFileId, id, text, reason, comment).subscribe(
       response => {
-        this.addedAnnotationExclusion = { id, reason, comment };
+        this.addedAnnotationExclusion = { id, text, reason, comment };
         this.snackBar.open('Annotation has been excluded', 'Close', {duration: 5000});
       },
       err => {
@@ -287,10 +287,10 @@ export class PdfViewerComponent implements OnDestroy {
     );
   }
 
-  annotationExclusionRemoved(id) {
-    this.removeAnnotationExclusionSub = this.pdfAnnService.removeAnnotationExclusion(this.currentFileId, id).subscribe(
+  annotationExclusionRemoved({ id, text }) {
+    this.removeAnnotationExclusionSub = this.pdfAnnService.removeAnnotationExclusion(this.currentFileId, id, text).subscribe(
       response => {
-        this.removedAnnotationExclusionId = id;
+        this.removedAnnotationExclusion = { id, text, reason: '', comment: '' };
         this.snackBar.open('Unmarked successfully', 'Close', {duration: 5000});
       },
       err => {

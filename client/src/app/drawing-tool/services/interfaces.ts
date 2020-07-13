@@ -183,6 +183,7 @@ interface Project {
 
 interface AnnotationExclusionData {
   id: string;
+  text: string;
   reason: string;
   comment: string;
 }
