@@ -1019,41 +1019,65 @@ class AnnotationsService:
         self,
         text: str,
         coordinates: PDFParsedCharacters,
+        page_index: Dict[int, int]
     ) -> List[Annotation]:
-        nlp_resp = None
-        try:
-            req = requests.post(NLP_ENDPOINT, data={'text': text})
-            nlp_resp = req.json()
-            req.close()
-            print(f'NLP Response Output: {nlp_resp}')
-        except requests.exceptions.RequestException:
-            raise AnnotationError('An error occurred with the NLP service.')
-
+        cumm_nlp_resp = []
         nlp_tokens: List[PDFTokenPositions] = []
+        req = None
+        pages_to_index = {v: k for k, v in page_index.items()}
+        pages = list(pages_to_index)
+        text_in_page: List[Tuple[int, str]] = []
 
-        for predicted in nlp_resp:
-            curr_char_idx_mappings = {
-                i: char for i, char in zip(
-                    range(predicted['low_index'], predicted['high_index'],
-                ), predicted['item'])
-            }
+        # TODO: Breaking the request into pages
+        # because doing the entire PDF seem to cause
+        # the NLP service container to crash with no
+        # errors and exit code of 247...
+        length = len(pages) - 1
+        for i, page in enumerate(pages):
+            if i == length:
+                text_in_page.append((page, text[pages_to_index[page]:]))
+            else:
+                text_in_page.append((page, text[pages_to_index[page]:pages_to_index[page+1]]))
 
-            # determine page keyword is on
-            page_idx = -1
-            for min_page_idx in list(coordinates.min_idx_in_page):
-                if predicted['high_index'] <= min_page_idx:
-                    # reminder: can break here because dict in python 3.8+ are
-                    # insertion order
-                    break
-                else:
-                    page_idx = min_page_idx
-            token = PDFTokenPositions(
-                page_number=coordinates.min_idx_in_page[page_idx],
-                keyword=predicted['item'],
-                char_positions=curr_char_idx_mappings,
-                token_type=predicted['type'],
-            )
-            nlp_tokens.append(token)
+        for page, page_text in text_in_page:
+            try:
+                req = requests.post(NLP_ENDPOINT, json={'text': page_text})
+                nlp_resp = req.json()
+                cumm_nlp_resp.extend(nlp_resp)
+
+                for predicted in nlp_resp:
+                    # need to do offset here because index resets after each text string for page
+                    offset = pages_to_index[page]
+                    curr_char_idx_mappings = {
+                        i+offset: char for i, char in zip(
+                            range(predicted['low_index'], predicted['high_index'],
+                        ), predicted['item'])
+                    }
+
+                    # determine page keyword is on
+                    page_idx = -1
+                    for min_page_idx in list(coordinates.min_idx_in_page):
+                        # include offset here, see above
+                        if predicted['high_index']+offset <= min_page_idx:
+                            # reminder: can break here because dict in python 3.8+ are
+                            # insertion order
+                            break
+                        else:
+                            page_idx = min_page_idx
+                    token = PDFTokenPositions(
+                        page_number=coordinates.min_idx_in_page[page_idx],
+                        keyword=predicted['item'],
+                        char_positions=curr_char_idx_mappings,
+                        token_type=predicted['type'],
+                    )
+                    nlp_tokens.append(token)
+            except requests.exceptions.RequestException:
+                raise AnnotationError('An error occurred with the NLP service.')
+
+        print(f'NLP Response Output: {cumm_nlp_resp}')
+
+        if req:
+            req.close()
 
         return self._create_annotations(
             tokens=nlp_tokens,

@@ -77,7 +77,11 @@ def annotate(
             annotations = annotator.create_rules_based_annotations(tokens=tokens)
         elif annotation_method == AnnotationMethod.NLP.value:
             # NLP
-            annotations = annotator.create_nlp_annotations(text=pdf_text, coordinates=parsed_pdf_chars)
+            annotations = annotator.create_nlp_annotations(
+                text=pdf_text,
+                coordinates=parsed_pdf_chars,
+                page_index=parsed_pdf_chars.min_idx_in_page,
+            )
         else:
             raise AnnotationError('Your file could not be annotated and your PDF file was not saved.')  # noqa
         bioc = bioc_service.read(text=pdf_text, file_uri=filename)
