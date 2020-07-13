@@ -4,7 +4,7 @@ set -e
 if [ "$FLASK_ENV" = "development" ]
 then
     echo "Running development server"
-    flask run --host 0.0.0.0 -p 5001
+    flask run --host 0.0.0.0 -p 5001 --traceback
 fi
 
 if [ "$FLASK_ENV" = "production" ]

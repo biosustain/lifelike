@@ -954,12 +954,9 @@ class AnnotationsService:
                 elif isinstance(annotation.meta, GeneAnnotation.GeneMeta) and \
                         annotation.meta.category == OrganismCategory.Bacteria.value:
                     # bacteria genes are in the from of cysB, algA, deaD, etc
-                    # does not check first letter to account for when the
-                    # gene is start of a sentence
-                    #
                     # there are also bacterial genes that do not end
                     # with an uppercase, e.g apt - these will not be annotated
-                    if text_in_document[-1].isupper():
+                    if text_in_document[0].islower() and text_in_document[-1].isupper():  # noqa
                         fixed_annotations.append(annotation)
                 else:
                     fixed_annotations.append(annotation)
@@ -1027,6 +1024,7 @@ class AnnotationsService:
         try:
             req = requests.post(NLP_ENDPOINT, data={'text': text})
             nlp_resp = req.json()
+            req.close()
             print(f'NLP Response Output: {nlp_resp}')
         except requests.exceptions.RequestException:
             raise AnnotationError('An error occurred with the NLP service.')
