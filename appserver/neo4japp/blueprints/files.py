@@ -71,8 +71,7 @@ def annotate(
 
     try:
         tokens = pdf_parser.extract_tokens(parsed_chars=parsed_pdf_chars)
-        pdf_text_list = pdf_parser.combine_chars_into_words(parsed_pdf_chars)
-        pdf_text = ' '.join([text for text, _ in pdf_text_list])
+        pdf_text = pdf_parser.combine_all_chars(parsed_chars=parsed_pdf_chars)
 
         if annotation_method == AnnotationMethod.Rules.value:
             annotations = annotator.create_rules_based_annotations(tokens=tokens)
