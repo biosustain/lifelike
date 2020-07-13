@@ -1,12 +1,10 @@
+import os
+
 from enum import Enum
 
 import tensorflow as tf
-import string
 import nltk
 import numpy as np
-import argparse
-import os
-import time
 
 
 # these are used across the app so
@@ -22,7 +20,6 @@ class EntityType(Enum):
 
 
 class AIService():
-
     MODEL_DIRECTORY = '/models/'
     ALL_MODELS = [
         {'path': 'bacteria/v1/model/1/', 'type': 'Bacteria'},  # TODO: this becomes species later?
@@ -40,15 +37,14 @@ class AIService():
     def load_models(self):
         print("AI models loading")
         for model in self.ALL_MODELS:
-            modelPath = model['path']
-            modelType = model['type']
-            tfmodel = tf.saved_model.load(self.MODEL_DIRECTORY + modelPath)
-            self.LOADED_MODELS.append(tfmodel)
+            model_path = model['path']
+            model_type = model['type']
+            tfmodel = tf.saved_model.load(self.MODEL_DIRECTORY + model_path)
+            self.LOADED_MODELS.append((model_type, tfmodel))
         print("AI models loaded")
 
     def infer(self, text: str):
         # Tokenize abstract
-
         tokenizer = nltk.WordPunctTokenizer()
         tokens = tf.ragged.constant([tokenizer.tokenize(text)])
         tokens_spans = list(tokenizer.span_tokenize(text))
@@ -56,11 +52,7 @@ class AIService():
         tokens = tokens.to_tensor(default_value='PAD')
 
         result = []
-        for idx,model in enumerate(self.ALL_MODELS):
-
-            modelPath = model['path']
-            modelType = model['type']
-            tfmodel = self.LOADED_MODELS[idx]
+        for model_type, tfmodel in self.LOADED_MODELS:
             infer = tfmodel.signatures["serving_default"]
 
             # Tag abstract
@@ -70,7 +62,6 @@ class AIService():
             num_spans = tag_text['num_spans'][0].numpy()
 
             for i in range(num_spans):
-                predict = ""
                 for j in range(starts[i], ends[i]):
                     token = tokens.numpy()[0][j].decode("utf-8")
                 start = tokens_spans[starts[i]][0]
@@ -80,7 +71,7 @@ class AIService():
                     'low_index': start,
                     'high_index': end,
                     'item': found,
-                    'type': modelType
+                    'type': model_type
                 }
                 result.append(item)
         return result
