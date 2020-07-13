@@ -47,8 +47,27 @@ export class MapListComponent implements OnInit {
   @Input() childMode = false;
 
   @Input() selectedProject: Project = null;
-  @Input() projects: Project[] = [];
-  @Input() publicProjects: Project[] = [];
+
+  PROJECTS = [];
+  @Input()
+  set projects(val: Project[]) {
+    this.PROJECTS = val;
+    this.sortMap('dateModified');
+  }
+
+  get projects(): Project[] {
+    return this.PROJECTS;
+  }
+
+  PUBLIC_PROJECTS = [];
+  @Input()
+  set publicProjects(val: Project[]) {
+    this.PUBLIC_PROJECTS = val;
+    this.sortMap('dateModified');
+  };
+  get publicProjects(): Project[] {
+    return this.PUBLIC_PROJECTS;
+  }
 
   @Output() projectAPICaller: EventEmitter<any> = new EventEmitter();
 
@@ -56,22 +75,9 @@ export class MapListComponent implements OnInit {
   privateDisplayMode = 'personal';
   @Input() displayIndex = null;
 
-  // To sort projects by date or alphabet
-  SORT_MODE = 'dateModified';
-  set sortMode(val) {
-    this.SORT_MODE = val;
+  sortMode = 'dateModified';
 
-    if (this.SORT_MODE === 'dateModified') {
-      this.projects.sort(sortByDate);
-      this.publicProjects.sort(sortByDate);
-    } else {
-      this.projects.sort(sortAlphabetically);
-      this.publicProjects.sort(sortAlphabetically);
-    }
-  }
-  get sortMode() {
-    return this.SORT_MODE;
-  }
+  sortDirection = 'forward';
 
   get displayMode() {
     return this.privateDisplayMode;
@@ -108,6 +114,33 @@ export class MapListComponent implements OnInit {
     this.searchFormSubscription = this.searchForm.valueChanges.subscribe(val => {
       this.searchForm.setErrors({required: null});
     });
+  }
+
+  /**
+   * Sort the list of maps by an attribute. Feeding in the
+   * same sort attribute to sort by will trigger reverse sort
+   * @param val - the property to srt maps by
+   */
+  sortMap(val: string) {
+    const sortMethod = val === 'dateModified' ? sortByDate : sortAlphabetically;
+
+    if (this.sortMode === val) {
+      this.sortDirection = this.sortDirection === 'forward' ? 'reverse' : 'forward';
+
+      if (this.sortDirection === 'forward') {
+        this.projects.sort(sortMethod);
+        this.publicProjects.sort(sortMethod);
+      } else {
+        this.projects.sort(sortMethod).reverse();
+        this.publicProjects.sort(sortMethod).reverse();
+      }
+    } else {
+      this.sortMode = val;
+      this.sortDirection = 'forward';
+
+      this.projects.sort(sortMethod);
+      this.publicProjects.sort(sortMethod);
+    }
   }
 
   /**
