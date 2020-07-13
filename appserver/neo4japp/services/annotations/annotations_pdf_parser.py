@@ -64,7 +64,7 @@ class AnnotationsPDFParser:
                     char_coord_objs_in_pdf=char_coord_objs_in_pdf,
                     compiled_regex=compiled_regex,
                 )
-            elif isinstance(lt_obj, LTChar) or isinstance(lt_obj, LTAnno):
+            elif isinstance(lt_obj, LTChar) or (isinstance(lt_obj, LTAnno) and lt_obj.get_text() != '\n'):  # noqa
                 lt_obj_text = lt_obj.get_text()
                 # ignore CID fonts
                 # these are arithmetic or other symbols the parser
@@ -86,10 +86,15 @@ class AnnotationsPDFParser:
                             prev_char = ligatures_list[-1]
                         else:
                             prev_char = char_coord_objs_in_pdf[-1]
+
                         if should_add_virtual_space(prev_char, lt_obj):
                             virtual_space_char = LTAnno(' ')
                             char_coord_objs_in_pdf.append(virtual_space_char)
-                    char_coord_objs_in_pdf.append(lt_obj)
+                        # only append if previous is not a whitespace
+                        if self._not_whitespace(char=prev_char.get_text()) and self._not_whitespace(char=lt_obj.get_text()):  # noqa
+                            char_coord_objs_in_pdf.append(lt_obj)
+                    else:
+                        char_coord_objs_in_pdf.append(lt_obj)
                     if ligatures_list:
                         char_coord_objs_in_pdf.extend(ligatures_list)
 
@@ -131,7 +136,7 @@ class AnnotationsPDFParser:
             cropbox_in_pdf = (page.mediabox[0], page.mediabox[1])
             interpreter.process_page(page)
             layout = device.get_result()
-            min_idx_in_page[len(char_coord_objs_in_pdf)-1] = i+1
+            min_idx_in_page[len(char_coord_objs_in_pdf)] = i+1
             self._get_lt_char(
                 layout=layout,
                 char_coord_objs_in_pdf=char_coord_objs_in_pdf,

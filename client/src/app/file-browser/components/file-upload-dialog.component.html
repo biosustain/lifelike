@@ -38,7 +38,7 @@
     </div>
 
     <div class="mt-2" *ngIf="(userRoles$ | async)?.includes('admin')">
-      <label>Select annotation method</label>
+      <label>Select annotation method (Required)</label>
       <div *ngFor="let method of annotationMethods" (click)="selection.toggle(method)">
         <div class="custom-control custom-checkbox">
           <input type="checkbox" class="custom-control-input" id="annotation-type-{{method.replace(' ', '-') | lowercase}}"
