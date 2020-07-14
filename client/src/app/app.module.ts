@@ -18,7 +18,6 @@ import { BrowserModule, Title } from '@angular/platform-browser';
 import { VisualizationModule } from './visualization/visualization.module';
 import { DrawingToolModule } from './drawing-tool/drawing-tool.module';
 import { FileBrowserModule } from './file-browser/file-browser.module';
-import { NodeSearchModule } from './node-search/node-search.module';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { WorkspaceComponent } from './workspace.component';
 import { WorkspaceOutletComponent } from './workspace-outlet.component';
@@ -44,7 +43,6 @@ import { DashboardComponent } from './dashboard.component';
     FileBrowserModule,
     VisualizationModule,
     UserModule,
-    NodeSearchModule,
     // ngrx
     RootStoreModule,
     SearchModule,
