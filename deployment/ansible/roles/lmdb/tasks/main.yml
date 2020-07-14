@@ -1,2 +1,75 @@
----
-# tasks file for lmdb
+- include_vars: gcp_bucket_credentials.yml
+
+- name: Install Python dependencies
+  pip:
+    name:
+        - boto
+        - sqlalchemy
+        - google-cloud-storage
+    umask: "0022"
+  become: True
+
+- name: Create LMDB Database Directories
+  become_user: "{{ webserver_user }}"
+  file:
+    path: "{{ lmdb_path }}/{{ item }}"
+    state: directory
+  loop:
+    - chemicals
+    - diseases
+    - compounds
+    - genes
+    - phenotypes
+    - proteins
+    - species
+
+- name: Fetch 'data.mdb' files
+  become_user: "{{ webserver_user }}"
+  gc_storage:
+    bucket: lmdb_database
+    object: "{{ item }}/data.mdb"
+    dest: "{{ lmdb_path }}/{{ item }}/data.mdb"
+    mode: get
+    gs_access_key: "{{ gce_bucket_access_key }}"
+    gs_secret_key: "{{ gce_bucket_secret_key }}"
+    force: yes
+  loop:
+    - chemicals
+    - diseases
+    - compounds
+    - genes
+    - phenotypes
+    - proteins
+    - species
+
+- name: Fetch 'lock.mdb' files
+  become_user: ubuntu
+  gc_storage:
+    bucket: lmdb_database
+    object: "{{ item }}/lock.mdb"
+    dest: "{{ lmdb_path }}/{{ item }}/lock.mdb"
+    mode: get
+    gs_access_key: "{{ gce_bucket_access_key }}"
+    gs_secret_key: "{{ gce_bucket_secret_key }}"
+    force: yes
+  loop:
+    - chemicals
+    - diseases
+    - compounds
+    - genes
+    - phenotypes
+    - proteins
+    - species
+
+- name: Update LMDB Dates
+  become_user: ubuntu
+  script: lmdb_check.py
+  environment:
+    POSTGRES_HOST: "{{ POSTGRES_HOST }}"
+    POSTGRES_PASSWORD: "{{ POSTGRES_PASSWORD }}"
+    POSTGRES_PORT: "{{ POSTGRES_PORT }}"
+    POSTGRES_USER: "{{ POSTGRES_USER }}"
+    POSTGRES_DB: "{{ POSTGRES_DB }}"
+  register: outcome
+
+- debug: msg="{{ outcome.stdout }}"
