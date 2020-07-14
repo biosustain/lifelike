@@ -63,7 +63,7 @@ describe('VisualizationSettingsComponent', () => {
     });
 
     it('should show checkboxes for each label provided by the parent', () => {
-        const checkboxElements = document.getElementsByClassName('mat-checkbox-label');
+        const checkboxElements = document.getElementsByClassName('custom-checkbox custom-control');
         expect(checkboxElements.length).toEqual(2);
         expect(checkboxElements[0].textContent.trim()).toEqual('MockNode1');
         expect(checkboxElements[1].textContent.trim()).toEqual('MockNode2');
