@@ -31,4 +31,16 @@ export class SearchService {
       `${this.searchApi}/viz-search-temp`, {query, page, filter, limit},
     ).pipe(map(resp => resp.result));
   }
+
+  getOrganisms(query: string, limit: number = 50) {
+    return this.http.post<{ result: object }>(
+      `${this.searchApi}/organisms`, {query, limit},
+    ).pipe(map(resp => resp.result));
+  }
+
+  getGenesFilteredByOrganism(query: string, organismId: string) {
+    return this.http.post<{ result: object }>(
+      `${this.searchApi}/genes_filtered_by_organism`, {query, organismId},
+    ).pipe(map(resp => resp.result));
+  }
 }
