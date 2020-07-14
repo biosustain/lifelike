@@ -1,6 +1,6 @@
 import re
 
-from string import ascii_letters, punctuation, whitespace
+from string import ascii_letters, digits, punctuation, whitespace
 from typing import Any, Dict, List, Set, Tuple, Union
 
 from pdfminer import high_level
@@ -16,8 +16,10 @@ from neo4japp.data_transfer_objects import (
     PDFTokenPositions,
     PDFTokenPositionsList,
 )
+from neo4japp.exceptions import AnnotationError
 
 from .constants import (
+    COMMON_WORDS,
     MISC_SYMBOLS_AND_CHARS,
     PDF_CHARACTER_SPACING_THRESHOLD,
     PDF_NEW_LINE_THRESHOLD,
@@ -29,6 +31,7 @@ class AnnotationsPDFParser:
     def __init__(self) -> None:
         # TODO: go into constants.py if used by other classes
         self.max_word_length = 6
+        self.regex_for_floats = r'^-?\d+(?:\.\d+)?$'
 
     def _get_lt_char(
         self,
@@ -176,7 +179,10 @@ class AnnotationsPDFParser:
 
         for i, char in enumerate(char_list):
             try:
-                if ord(char) in MISC_SYMBOLS_AND_CHARS:
+                # some characters can be a combination of two characters
+                # e.g `fi` this is a legit character related to the
+                # production of the document and OCR
+                if len(char) == 1 and ord(char) in MISC_SYMBOLS_AND_CHARS:
                     # need to clean because some times hyphens
                     # are parsed as a char that's represented by a
                     # unicode and doesn't match the string hyphen
@@ -184,7 +190,7 @@ class AnnotationsPDFParser:
                 else:
                     curr_char = char
 
-                if ord(char_list[i-1]) in MISC_SYMBOLS_AND_CHARS:
+                if len(char_list[i-1]) == 1 and ord(char_list[i-1]) in MISC_SYMBOLS_AND_CHARS:
                     prev_char = clean_char(char_list[i-1])
                 else:
                     prev_char = char_list[i-1]
@@ -203,7 +209,7 @@ class AnnotationsPDFParser:
                         char_idx_map = {}
                         word = ''
                     else:
-                        if ord(char_list[i+1]) in MISC_SYMBOLS_AND_CHARS:
+                        if len(char_list[i+1]) == 1 and ord(char_list[i+1]) in MISC_SYMBOLS_AND_CHARS:  # noqa
                             next_char = clean_char(char_list[i+1])
                         else:
                             next_char = char_list[i+1]
@@ -218,9 +224,6 @@ class AnnotationsPDFParser:
                             char_idx_map[i] = curr_char
             except TypeError:
                 # checking ord() failed
-                # if a char is composed of multiple characters
-                # then it is a pdf parser problem
-                # need to find a better one
                 continue
         return words_with_char_idx
 
@@ -244,6 +247,7 @@ class AnnotationsPDFParser:
         # first combine the chars into words
         words_with_char_idx = self.combine_chars_into_words(parsed_chars=parsed_chars)
 
+        compiled_regex = re.compile(self.regex_for_floats)
         end_idx = curr_max_words = 1
         max_length = len(words_with_char_idx)
 
@@ -266,19 +270,22 @@ class AnnotationsPDFParser:
                             curr_char_idx_mappings[k] = v
                             last_char_idx_in_curr_keyword = k
 
-                    # strip out trailing punctuations
-                    while curr_keyword and self._has_unwanted_punctuation(curr_keyword[-1]):
-                        dict_keys = list(curr_char_idx_mappings.keys())
-                        last = dict_keys[-1]
-                        curr_char_idx_mappings.pop(last)
-                        curr_keyword = curr_keyword[:-1]
+                    try:
+                        # strip out trailing punctuation
+                        while curr_keyword and self._has_unwanted_punctuation(curr_keyword[-1]):
+                            dict_keys = list(curr_char_idx_mappings.keys())
+                            last = dict_keys[-1]
+                            curr_char_idx_mappings.pop(last)
+                            curr_keyword = curr_keyword[:-1]
 
-                    # strip out leading punctuations
-                    while curr_keyword and self._has_unwanted_punctuation(curr_keyword[0], leading=True):  # noqa
-                        dict_keys = list(curr_char_idx_mappings.keys())
-                        first = dict_keys[0]
-                        curr_char_idx_mappings.pop(first)
-                        curr_keyword = curr_keyword[1:]
+                        # strip out leading punctuation
+                        while curr_keyword and self._has_unwanted_punctuation(curr_keyword[0], leading=True):  # noqa
+                            dict_keys = list(curr_char_idx_mappings.keys())
+                            first = dict_keys[0]
+                            curr_char_idx_mappings.pop(first)
+                            curr_keyword = curr_keyword[1:]
+                    except KeyError:
+                        raise AnnotationError('Index key error occurred when stripping leading and trailing punctuation.')  # noqa
 
                     # keyword could've been all punctuation
                     if curr_keyword:
@@ -294,18 +301,25 @@ class AnnotationsPDFParser:
                         # they were added to separate words
                         # and might've been left behind after stripping out
                         # unwanted punctuation
-                        token = PDFTokenPositions(
-                            page_number=parsed_chars.max_idx_in_page[page_idx],
-                            keyword=curr_keyword.strip(),
-                            char_positions=curr_char_idx_mappings,
-                        )
-                        # need to do this check because
-                        # could potentially have duplicates due to
-                        # removing punctuation
-                        hashval = token.to_dict_hash()
-                        if hashval not in processed_tokens:
-                            keyword_tokens.append(token)
-                            processed_tokens.add(hashval)
+                        curr_keyword = curr_keyword.strip()
+
+                        if (curr_keyword.lower() not in COMMON_WORDS and
+                            not re.match(compiled_regex, curr_keyword) and
+                            curr_keyword not in ascii_letters and
+                            curr_keyword not in digits):  # noqa
+
+                            token = PDFTokenPositions(
+                                page_number=parsed_chars.max_idx_in_page[page_idx],
+                                keyword=curr_keyword,
+                                char_positions=curr_char_idx_mappings,
+                            )
+                            # need to do this check because
+                            # could potentially have duplicates due to
+                            # removing punctuation
+                            hashval = token.to_dict_hash()
+                            if hashval not in processed_tokens:
+                                keyword_tokens.append(token)
+                                processed_tokens.add(hashval)
 
                 curr_max_words += 1
                 end_idx += 1

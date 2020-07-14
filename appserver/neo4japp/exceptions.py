@@ -20,6 +20,12 @@ class AnnotationError(BaseException):
         super().__init__('Annotation Error', message, additional_msgs)
 
 
+class FileUploadError(BaseException):
+    """AN error occured during the file upload process"""
+    def __init__(self, message, additional_msgs=[]) -> None:
+        super().__init__('File Upload Error', message, additional_msgs)
+
+
 class DatabaseError(BaseException):
     """An error occured in database operation"""
     def __init__(self, message, additional_msgs=[]) -> None:

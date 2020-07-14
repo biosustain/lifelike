@@ -1,79 +1,80 @@
-import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { UploadPayload, UploadType } from '../../interfaces/pdf-files.interface';
-import { FormControl } from '@angular/forms';
-import { Subscription } from 'rxjs';
+import { AbstractControl, FormControl, FormGroup, Validators } from '@angular/forms';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
+import { CommonFormDialogComponent } from '../../shared/components/dialog/common-form-dialog.component';
+import { MessageDialog } from '../../shared/services/message-dialog.service';
 
 @Component({
   selector: 'app-dialog-upload',
   templateUrl: './file-upload-dialog.component.html',
 })
-export class FileUploadDialogComponent implements OnInit, OnDestroy {
-  forbidUpload = true;
-  pickedFileName: string;
-  @Input() payload: UploadPayload; // to avoid writing this.data.payload everywhere
+export class FileUploadDialogComponent extends CommonFormDialogComponent {
+  readonly uploadType = UploadType;
+  readonly form: FormGroup = new FormGroup({
+    type: new FormControl(''),
+    files: new FormControl(''),
+    url: new FormControl(''),
+    filename: new FormControl('', [
+      (control: AbstractControl): { [key: string]: any } | null => { // Validate against whitespace-only strings
+        const filename = control.value;
+        const forbidden = filename.trim().length <= 0;
+        return forbidden ? {required: {value: filename}} : null;
+      },
+    ]),
+    description: new FormControl(''),
+  }, [
+    (form: FormGroup) => {
+      if (form.value.type === UploadType.Files) {
+        return Validators.required(form.get('files'));
+      } else if (form.value.type === UploadType.Url) {
+        return Validators.required(form.get('url'));
+      } else {
+        return null;
+      }
+    }
+  ]);
+  activeTab = UploadType.Files;
 
-  filename = new FormControl('');
-  filenameChange: Subscription;
-  url = new FormControl('');
-  urlChange: Subscription;
-
-  activeTab = 'upload';
-
-  constructor(public activeModal: NgbActiveModal) {
-  }
-
-  ngOnInit() {
-    this.filenameChange = this.filename.valueChanges.subscribe((value: string) => {
-      this.payload.filename = value;
-      this.validatePayload();
-    });
-    this.urlChange = this.url.valueChanges.subscribe((value: string) => {
-      this.payload.url = value;
-      this.filename.setValue(this.extractFilenameFromUrl(value));
-      this.validatePayload();
-    });
-  }
-
-  ngOnDestroy() {
-    this.filenameChange.unsubscribe();
-    this.urlChange.unsubscribe();
-  }
-
-  /** Called upon picking a file from the Browse button */
-  onFilesPick(fileList: FileList) {
-    this.payload.files = this.transformFileList(fileList);
-    this.pickedFileName = fileList.length ? fileList[0].name : '';
-    this.filename.setValue(this.pickedFileName);
-    this.validatePayload();
-  }
-
-  /** Validates if the Upload button should be enabled or disabled */
-  validatePayload() {
-    this.payload.type = this.activeTab === 'upload' ? UploadType.Files : UploadType.Url;
-    const filesIsOk = this.payload.files && this.payload.files.length > 0;
-    const filenameIsOk = this.payload.filename && this.payload.filename.length > 0;
-    const urlIsOk = this.payload.url && this.payload.url.length > 0;
-    if (this.activeTab === 'upload') {
-      this.forbidUpload = !filesIsOk;
-    } else { // UploadType.Url
-      this.forbidUpload = !(filenameIsOk && urlIsOk);
+  private static extractFilename(s: string): string {
+    s = s.replace(/^.*[/\\]/, '').trim().replace(/ +/g, '_');
+    if (s.length) {
+      return s;
+    } else {
+      return 'document.pdf';
     }
   }
 
-  /** Transforms a FileList to a File[]
-   * Not sure why, but I can't pass a FileList back to the parent component
-   */
-  private transformFileList(fileList: FileList): File[] {
-    const files: File[] = [];
-    for (let i = 0; i < fileList.length; ++i) {
-      files.push(fileList.item(i));
-    }
-    return files;
+  constructor(modal: NgbActiveModal, messageDialog: MessageDialog) {
+    super(modal, messageDialog);
+    this.form.patchValue({
+      type: this.activeTab,
+      files: [],
+    });
   }
 
-  /** Attempts to extract a filename from a URL */
-  private extractFilenameFromUrl(url: string): string {
-    return url.substring(url.lastIndexOf('/') + 1);
+  activeTabChanged(newId) {
+    this.form.get('type').setValue(newId);
+    this.form.get('files').setValue([]);
+  }
+
+  fileChanged(event) {
+    if (event.target.files.length) {
+      const file = event.target.files[0];
+      this.form.get('files').setValue([file]);
+      this.form.get('filename').setValue(file.name);
+    } else {
+      this.form.get('files').setValue(null);
+    }
+  }
+
+  urlChanged(event) {
+    this.form.get('filename').setValue(FileUploadDialogComponent.extractFilename(event.target.value));
+  }
+
+  getValue(): UploadPayload {
+    return {
+      ...this.form.value,
+    };
   }
 }

@@ -212,6 +212,11 @@ export class Tab {
  */
 export class Pane {
   /**
+   * Percentage width of the pane.
+   */
+  size: number | undefined;
+
+  /**
    * The tabs that are a part of this pane.
    */
   readonly tabs: Tab[] = [];
@@ -542,13 +547,53 @@ export class WorkspaceManager {
   }
 
   navigateByUrl(url: string | UrlTree, extras?: NavigationExtras & WorkspaceNavigationExtras): Promise<boolean> {
-    this.interceptNextRoute = true;
     extras = extras || {};
+
+    let targetPane = this.focusedPane || this.panes.getFirstOrCreate();
+
     if (extras.newTab) {
-      const pane = this.focusedPane || this.panes.getFirstOrCreate();
-      this.focusedPane = pane;
-      pane.createTab();
+      if (extras.sideBySide) {
+        let sideBySidePane = null;
+        for (const otherPane of this.panes.panes) {
+          if (targetPane.id !== otherPane.id) {
+            sideBySidePane = otherPane;
+            break;
+          }
+        }
+
+        if (sideBySidePane == null) {
+          if (targetPane.id === 'left') {
+            targetPane = this.panes.create('right');
+          } else {
+            targetPane = this.panes.create('left');
+          }
+        } else {
+          targetPane = sideBySidePane;
+        }
+      }
+
+      if (extras.replaceTabIfMatch != null) {
+        let foundTab = false;
+
+        for (const tab of targetPane.tabs) {
+          if (tab.url.match(extras.replaceTabIfMatch)) {
+            targetPane.activeTab = tab;
+            foundTab = true;
+            break;
+          }
+        }
+
+        if (!foundTab) {
+          targetPane.createTab();
+        }
+      } else {
+        targetPane.createTab();
+      }
+
+      this.focusedPane = targetPane;
     }
+
+    this.interceptNextRoute = true;
     return this.router.navigateByUrl(url, extras);
   }
 
@@ -568,9 +613,10 @@ export class WorkspaceManager {
     const tasks = [];
 
     if (this.sessionService.load(new class implements WorkspaceSessionLoader {
-      createPane(id: string): void {
+      createPane(id: string, options): void {
         tasks.push(() => {
-          parent.panes.create(id);
+          const pane = parent.panes.create(id);
+          pane.size = options.size;
         });
       }
 
@@ -643,4 +689,6 @@ export class WorkspaceManager {
 
 export interface WorkspaceNavigationExtras {
   newTab?: boolean;
+  sideBySide?: boolean;
+  replaceTabIfMatch?: string | RegExp;
 }
