@@ -74,7 +74,6 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
     id: new FormControl(),
     label: new FormControl(),
     group: new FormControl(),
-    hyperlink: new FormControl(),
     detail: new FormControl(),
     subtype: new FormControl(),
     hyperlinks: new FormArray([])
@@ -145,7 +144,6 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
                 label: val.label,
                 group: val.group,
                 data: {
-                  hyperlink: val.hyperlink,
                   detail: val.detail,
                   source: this.graphData.data.source || '',
                   search: this.graphData.data.search || [],
@@ -183,7 +181,6 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
             id,
             label,
             group,
-            hyperlink,
             detail,
             hyperlinks
           } = val;
@@ -193,7 +190,6 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
             label,
             group,
             edges: this.graphData.edges,
-            hyperlink,
             detail,
             data: Object.assign(
               this.graphData.data,
@@ -208,8 +204,8 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
     this.graphDataSubscription = this.dataFlow.graphDataSource.subscribe((data: GraphSelectionData) => {
       if (!data) { return; }
 
-      // If a node is clicked on ..
       if (data.nodeData) {
+        // If a node is clicked on ..
         this.entityType = 'node';
 
         this.nodeIsIcon = data.nodeData.shape === 'icon';
@@ -241,7 +237,6 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
           id: this.graphData.id,
           label: this.graphData.label,
           group: this.graphData.group,
-          hyperlink: data.nodeData.data.hyperlink || '',
           detail: data.nodeData.data.detail || '',
           subtype: data.nodeData.data.subtype || '',
           hyperlinks: data.nodeData.data.hyperlinks || []
@@ -259,10 +254,6 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
         // Setup FormGroup for iterables ..
         this.pauseForm = true;
         this.entityForm.setControl(
-          'edges',
-          new FormArray([])
-        );
-        this.entityForm.setControl(
           'hyperlinks',
           new FormArray([])
         );
@@ -271,8 +262,6 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
           id: this.graphData.id,
           label: this.graphData.label,
           group: null,
-          edges: [],
-          hyperlink: null,
           detail: null,
           subtype: null,
           hyperlinks: []
@@ -301,13 +290,12 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
       label: '',
       group: '',
       edges: [],
-      hyperlink: '',
       detail: ''
     };
 
     this.pauseForm = true;
     this.entityForm.setControl(
-      'edges',
+      'hyperlinks',
       new FormArray([])
     );
     this.entityForm.reset();
