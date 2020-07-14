@@ -18,130 +18,132 @@
     </div>
   </div>
 
-  <div class="module-body">
-    <div class="mb-4 d-flex">
-      <div>
-        <button class="btn btn-primary" (click)="displayUploadDialog()">
-          <i class="fa fa-fw fa-file-upload"></i>
-          Add File
-        </button>
-        <div class="d-inline-block"
-             [ngbTooltip]="getSelectedShownFiles().length === 0 ? 'Select one or more files first.' : ''">
-          <button class="btn btn-primary ml-2"
-                  [disabled]="getSelectedShownFiles().length !== 1" (click)="displayEditDialog()">
-            <i class="fa fa-fw fa-pencil"></i> Edit
+  <div class="module-body-container">
+    <div class="module-body">
+      <div class="mb-4 d-flex">
+        <div>
+          <button class="btn btn-primary" (click)="displayUploadDialog()">
+            <i class="fa fa-fw fa-file-upload"></i>
+            Add File
           </button>
-          <button class="btn btn-outline-secondary ml-2"
-                  [disabled]="getSelectedShownFiles().length === 0" (click)="reannotate()">
-            Reannotate
-          </button>
-          <button class="btn btn-outline-secondary ml-2"
-                  [disabled]="getSelectedShownFiles().length === 0"
-                  (click)="displayDeleteDialog()">
-            Delete
+          <div class="d-inline-block"
+               [ngbTooltip]="getSelectedShownFiles().length === 0 ? 'Select one or more files first.' : ''">
+            <button class="btn btn-primary ml-2"
+                    [disabled]="getSelectedShownFiles().length !== 1" (click)="displayEditDialog()">
+              <i class="fa fa-fw fa-pencil"></i> Edit
+            </button>
+            <button class="btn btn-outline-secondary ml-2"
+                    [disabled]="getSelectedShownFiles().length === 0" (click)="reannotate()">
+              Reannotate
+            </button>
+            <button class="btn btn-outline-secondary ml-2"
+                    [disabled]="getSelectedShownFiles().length === 0"
+                    (click)="displayDeleteDialog()">
+              Delete
+            </button>
+          </div>
+        </div>
+        <div class="ml-auto">
+          <button type="button" class="btn btn-outline-secondary ml-2" (click)="this.refresh()"
+                  ngbTooltip="Refresh the results">
+            <i class="fa fa-sync"></i>
           </button>
         </div>
       </div>
-      <div class="ml-auto">
-        <button type="button" class="btn btn-outline-secondary ml-2" (click)="this.refresh()"
-                ngbTooltip="Refresh the results">
-          <i class="fa fa-sync"></i>
-        </button>
-      </div>
-    </div>
 
-    <app-background-task-progress
-      [status]="status" (refresh)="this.refresh()" childClass="mb-2"></app-background-task-progress>
+      <app-background-task-progress
+        [status]="status" (refresh)="this.refresh()" childClass="mb-2"></app-background-task-progress>
 
-    <table class="table" [class.table-selectable]="status.resultsShown" style="table-layout: fixed">
-      <colgroup>
-        <col style="width: 60%">
-      </colgroup>
-      <thead>
-      <tr>
-      <tr>
-        <th>
-          <div class="custom-control custom-checkbox">
-            <input type="checkbox" class="custom-control-input" id="select-all"
-                   [checked]="isAllSelected()" (change)="toggleAllSelected()">
-            <label class="custom-control-label" for="select-all">
-              Name
-            </label>
-          </div>
-        </th>
-        <th class="d-none d-lg-table-cell">Submitter</th>
-        <th class="d-none d-lg-table-cell">Modified</th>
-        <th class="d-none d-md-table-cell">Annotations</th>
-      </tr>
-      </thead>
+      <table class="table" [class.table-selectable]="status.resultsShown" style="table-layout: fixed">
+        <colgroup>
+          <col style="width: 60%">
+        </colgroup>
+        <thead>
+        <tr>
+        <tr>
+          <th>
+            <div class="custom-control custom-checkbox">
+              <input type="checkbox" class="custom-control-input" id="select-all"
+                     [checked]="isAllSelected()" (change)="toggleAllSelected()">
+              <label class="custom-control-label" for="select-all">
+                Name
+              </label>
+            </div>
+          </th>
+          <th class="d-none d-lg-table-cell">Submitter</th>
+          <th class="d-none d-lg-table-cell">Modified</th>
+          <th class="d-none d-md-table-cell">Annotations</th>
+        </tr>
+        </thead>
 
-      <tbody *ngIf="status.placeholdersShown">
-      <tr>
-        <td class="align-middle text-nowrap text-truncate">
-          <span class="placeholder-box">Loading loading</span>
-        </td>
-        <td class="align-middle d-none d-lg-table-cell text-nowrap text-truncate">
-          <span class="placeholder-box">Loading loading</span>
-        </td>
-        <td class="align-middle d-none d-lg-table-cell text-nowrap text-truncate">
-          <span class="placeholder-box">Loading loading</span>
-        </td>
-        <td class="align-middle d-none d-md-table-cell text-nowrap text-truncate">
-          <span class="placeholder-box">Loading</span>
-        </td>
-      </tr>
-      <tr>
-        <td class="align-middle text-nowrap text-truncate">
-          <span class="placeholder-box">Loading loading loading</span>
-        </td>
-        <td class="align-middle d-none d-lg-table-cell text-nowrap text-truncate">
-          <span class="placeholder-box">Loading loading</span>
-        </td>
-        <td class="align-middle d-none d-lg-table-cell text-nowrap text-truncate">
-          <span class="placeholder-box">Loading loading loading</span>
-        </td>
-        <td class="align-middle d-none d-md-table-cell text-nowrap text-truncate">
-          <span class="placeholder-box">Loading</span>
-        </td>
-      </tr>
-      </tbody>
+        <tbody *ngIf="status.placeholdersShown">
+        <tr>
+          <td class="align-middle text-nowrap text-truncate">
+            <span class="placeholder-box">Loading loading</span>
+          </td>
+          <td class="align-middle d-none d-lg-table-cell text-nowrap text-truncate">
+            <span class="placeholder-box">Loading loading</span>
+          </td>
+          <td class="align-middle d-none d-lg-table-cell text-nowrap text-truncate">
+            <span class="placeholder-box">Loading loading</span>
+          </td>
+          <td class="align-middle d-none d-md-table-cell text-nowrap text-truncate">
+            <span class="placeholder-box">Loading</span>
+          </td>
+        </tr>
+        <tr>
+          <td class="align-middle text-nowrap text-truncate">
+            <span class="placeholder-box">Loading loading loading</span>
+          </td>
+          <td class="align-middle d-none d-lg-table-cell text-nowrap text-truncate">
+            <span class="placeholder-box">Loading loading</span>
+          </td>
+          <td class="align-middle d-none d-lg-table-cell text-nowrap text-truncate">
+            <span class="placeholder-box">Loading loading loading</span>
+          </td>
+          <td class="align-middle d-none d-md-table-cell text-nowrap text-truncate">
+            <span class="placeholder-box">Loading</span>
+          </td>
+        </tr>
+        </tbody>
 
-      <tbody *ngIf="status.resultsShown">
-      <tr *ngFor="let file of shownFiles"
-          (click)="selection.toggle(file)"
-          [class.active]="selection.isSelected(file)"
-          (keydown)="$event.keyCode != 13 || selection.toggle(file)"
-          tabindex="0">
-        <td class="align-middle text-nowrap text-truncate">
-          <div class="custom-control custom-checkbox">
-            <input type="checkbox" class="custom-control-input" id="file-{{ file.file_id }}"
-                   (change)="selection.toggle(file)"
-                   [checked]="selection.isSelected(file)">
-            <label class="custom-control-label d-flex align-items-center" for="file-{{ file.file_id }}">
-              <a [href]="'/files/' + file.file_id" [appLink]="'/files/' + file.file_id" class="text-truncate">
-                {{ file.filename }}
-              </a>
-            </label>
-          </div>
-        </td>
-        <td class="align-middle d-none d-lg-table-cell text-nowrap text-truncate">
-          {{ file.username }}
-        </td>
-        <td class="align-middle d-none d-lg-table-cell text-nowrap text-truncate">
-          {{ file.creation_date | date:'shortDate' }}
-        </td>
-        <td class="align-middle d-none d-md-table-cell text-nowrap text-truncate"
-            [ngbTooltip]="!file.annotations_date_tooltip || file.annotations_date_tooltip.length === 0 ? '' : file.annotations_date_tooltip">
+        <tbody *ngIf="status.resultsShown">
+        <tr *ngFor="let file of shownFiles"
+            (click)="selection.toggle(file)"
+            [class.active]="selection.isSelected(file)"
+            (keydown)="$event.keyCode != 13 || selection.toggle(file)"
+            tabindex="0">
+          <td class="align-middle text-nowrap text-truncate">
+            <div class="custom-control custom-checkbox">
+              <input type="checkbox" class="custom-control-input" id="file-{{ file.file_id }}"
+                     (change)="selection.toggle(file)"
+                     [checked]="selection.isSelected(file)">
+              <label class="custom-control-label d-flex align-items-center" for="file-{{ file.file_id }}">
+                <a [href]="'/files/' + file.file_id" [appLink]="'/files/' + file.file_id" class="text-truncate">
+                  {{ file.filename }}
+                </a>
+              </label>
+            </div>
+          </td>
+          <td class="align-middle d-none d-lg-table-cell text-nowrap text-truncate">
+            {{ file.username }}
+          </td>
+          <td class="align-middle d-none d-lg-table-cell text-nowrap text-truncate">
+            {{ file.creation_date | date:'shortDate' }}
+          </td>
+          <td class="align-middle d-none d-md-table-cell text-nowrap text-truncate"
+              [ngbTooltip]="!file.annotations_date_tooltip || file.annotations_date_tooltip.length === 0 ? '' : file.annotations_date_tooltip">
           <span class="fa fa-fw fa-exclamation-triangle text-danger"
                 *ngIf="file.annotations_date_tooltip?.length > 0"></span>
-          {{ file.annotations_date | date:'shortDate' }}
-        </td>
-      </tr>
-      </tbody>
-    </table>
+            {{ file.annotations_date | date:'shortDate' }}
+          </td>
+        </tr>
+        </tbody>
+      </table>
 
-    <div *ngIf="status.emptyResultsShown && shownFiles.length === 0" class="text-center my-4">
-      There are no files to show.
+      <div *ngIf="status.emptyResultsShown && shownFiles.length === 0" class="text-center my-4">
+        There are no files to show.
+      </div>
     </div>
   </div>
 

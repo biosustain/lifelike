@@ -1,28 +1,26 @@
 import { NgModule } from '@angular/core';
 import { SharedModule } from 'app/shared/shared.module';
 
-import { SearchBarComponent } from './components/search-bar.component';
-import { SearchCollectionPageComponent } from './containers/search-collection-page.component';
-import { SearchListComponent } from './components/search-list.component';
+import { SearchFormComponent } from './components/search-form.component';
+import { SearchComponent } from './components/search.component';
 import { SearchRecordNodeComponent } from './components/search-record-node.component';
 import { SearchRecordRelationshipsComponent } from './components/search-record-relationships.component';
 import { SearchService } from './services/search.service';
 
-
 const components = [
-    SearchBarComponent,
-    SearchRecordNodeComponent,
-    SearchRecordRelationshipsComponent,
-    SearchCollectionPageComponent,
-    SearchListComponent,
+  SearchFormComponent,
+  SearchRecordNodeComponent,
+  SearchRecordRelationshipsComponent,
+  SearchComponent,
 ];
 
 @NgModule({
-    imports: [
-        SharedModule
-    ],
-    declarations: components,
-    providers: [SearchService],
-    exports: components,
+  imports: [
+    SharedModule,
+  ],
+  declarations: components,
+  providers: [SearchService],
+  exports: components,
 })
-export class SearchModule {}
+export class SearchModule {
+}
