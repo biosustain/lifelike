@@ -13,3 +13,6 @@ services:
 
     webserver:
         image: ${REGISTRY:-gcr.io/able-goods-221820}/kg-webserver-prod:${GITHUB_HASH:-latest}
+
+    nlpapi:
+        image: ${REGISTRY:-gcr.io/able-goods-221820}/kg-nlpapi-prod:${GITHUB_HASH:-latest}
