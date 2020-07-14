@@ -495,7 +495,9 @@ export class WorkspaceManager {
             } else {
               tab.defaultsSet = false;
             }
-            tab.url = '/' + routeSnapshot.url.map(segment => segment.toString()).join('/') +
+            tab.url = '/' +
+              routeSnapshot.pathFromRoot.map(child => child.url.map(segment => segment.toString()).join('/')).join('/') +
+              (routeSnapshot.queryParams ? `?${getQueryString(routeSnapshot.queryParams)}` : '') +
               (routeSnapshot.fragment ? `#${routeSnapshot.fragment}` : '');
             // TODO: Component may be a string
             tab.replaceComponent(routeSnapshot.component as Type<any>, [{
@@ -597,6 +599,10 @@ export class WorkspaceManager {
     return this.router.navigateByUrl(url, extras);
   }
 
+  navigate(commands: any[], extras: NavigationExtras = {skipLocationChange: false}): Promise<boolean> {
+    return this.navigateByUrl(this.router.createUrlTree(commands, extras), extras);
+  }
+
   emitEvents(): void {
     this.panes$.next(this.buildPanesSnapshot());
   }
@@ -691,4 +697,8 @@ export interface WorkspaceNavigationExtras {
   newTab?: boolean;
   sideBySide?: boolean;
   replaceTabIfMatch?: string | RegExp;
+}
+
+function getQueryString(params: { [key: string]: string }) {
+  return Object.entries(params).map(([key, value]) => encodeURIComponent(key) + '=' + encodeURIComponent(value)).join('&');
 }
