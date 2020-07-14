@@ -30,6 +30,18 @@ class PDFSearchRequest(CamelDictMixin):
     limit: int = attr.ib()
 
 
+@attr.s(frozen=True)
+class OrganismRequest(CamelDictMixin):
+    query: str = attr.ib()
+    limit: int = attr.ib()
+
+
+@attr.s(frozen=True)
+class GeneFilteredRequest(CamelDictMixin):
+    query: str = attr.ib()
+    organism_id: str = attr.ib()
+
+
 @bp.route('/search', methods=['POST'])
 @jsonify_with_class(SearchRequest)
 def fulltext_search(req: SearchRequest):
@@ -78,3 +90,19 @@ def search(req: PDFSearchRequest):
     else:
         res = {'hits': [], 'max_score': None, 'total': 0}
     return SuccessResponse(result=res, status_code=200)
+
+
+@bp.route('/organisms', methods=['POST'])
+@jsonify_with_class(OrganismRequest)
+def get_organisms(req: OrganismRequest):
+    search_dao = get_search_service_dao()
+    results = search_dao.get_organisms(req.query, req.limit)
+    return SuccessResponse(result=results, status_code=200)
+
+
+@bp.route('/genes_filtered_by_organism', methods=['POST'])
+@jsonify_with_class(GeneFilteredRequest)
+def get_genes_filtering_by_organism(req: GeneFilteredRequest):
+    search_dao = get_search_service_dao()
+    results = search_dao.search_gene_filtering_by_organism(req.query, req.organism_id)
+    return SuccessResponse(result=results, status_code=200)
