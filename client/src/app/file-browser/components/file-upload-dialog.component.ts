@@ -18,7 +18,6 @@ export class FileUploadDialogComponent extends CommonFormDialogComponent {
 
   // select annotation method
   readonly annotationMethods = ['NLP', 'Rules Based'];
-  selection = new SelectionModel<string>(false, [this.annotationMethods[1]]);
 
   readonly form: FormGroup = new FormGroup({
     type: new FormControl(''),
@@ -78,12 +77,13 @@ export class FileUploadDialogComponent extends CommonFormDialogComponent {
     }
   }
 
-  onAnnotationMethodPick(method: string) {
-    this.selection.toggle(method);
-    if (this.selection.isSelected(method)) {
-      this.form.get('annotationMethod').setValue(method);
+  onAnnotationMethodPick(method: string, checked: boolean) {
+    const field = this.form.get('annotationMethod');
+    field.markAsTouched();
+    if (checked) {
+      field.setValue(method);
     } else {
-      this.form.get('annotationMethod').setValue(null);
+      field.setValue(null);
     }
   }
 
