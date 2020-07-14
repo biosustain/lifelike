@@ -7,7 +7,7 @@
         *ngIf='graphData.id!==""'
         class='w-90 center'
         [formGroup]='entityForm'>
-
+        <!-- Entity Label -->
         <mat-form-field class="w-100 mt3">
             <mat-label>Name</mat-label>
             <input
@@ -15,7 +15,7 @@
                 (keydown.enter)="blurInput($event)"
                 formControlName='label'>
         </mat-form-field>
-
+        <!-- Entity Type -->
         <mat-form-field
             *ngIf='isNode'
             class='w-100'>
@@ -29,8 +29,7 @@
                 </mat-option>
             </mat-select>
         </mat-form-field>
-
-        <!-- TODO - setter and getter for subtype options -->
+        <!-- Entity Subtype -->
         <mat-form-field
             *ngIf='isNode && subtypes.length'
             class='w-100'>
@@ -44,7 +43,7 @@
                 </mat-option>
             </mat-select>
         </mat-form-field>
-
+        <!-- Entity Detail -->
         <mat-form-field
             *ngIf='isNode'
             class="w-100 mt3">
@@ -55,8 +54,8 @@
                 (keydown.enter)="blurInput($event)"
                 formControlName='detail'>
         </mat-form-field>
-
-        <div id='hyperlinks-menu' fxLayout='row wrap' fxLayoutAlign='center center'>
+        <!-- Multiple Hyperlinks -->
+        <div *ngIf='isNode' id='hyperlinks-menu' fxLayout='row wrap' fxLayoutAlign='center center'>
             <h4 class='blue dib'>Hyperlinks</h4>
             <button mat-icon-button disabled aria-label="Example icon button with a open in new tab icon">
                 <mat-icon (click)='addHyperlink()'>add</mat-icon>
@@ -77,7 +76,7 @@
                 </mat-form-field>
             </div>
         </div>
-
+        <!-- Multiple Search Links -->
         <app-search-links
             *ngIf='isNode'
             [graphData]='graphData'>
