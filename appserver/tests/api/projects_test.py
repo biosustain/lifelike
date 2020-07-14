@@ -94,13 +94,13 @@ def test_can_get_list_of_projects(client, session, test_user):
 
 
 @pytest.mark.parametrize('username, email, expected_status', [
-    ('test', 'test@***ARANGO_DB_NAME***.bio', 200),
-    ('pleb', 'pleblife@hut.org', 400),
+    ('test', 'test@***ARANGO_DB_NAME***.bio', 400),
+    ('pleb', 'pleblife@hut.org', 200),
 ])
-def test_only_admins_can_add_collaborators(
+def test_only_admins_can_add_collaborators_and_not_themselves(
         client, session, fix_project, test_user, test_user_2, username, email, expected_status):
 
-    login_resp = client.login_as_user(email, 'password')
+    login_resp = client.login_as_user(test_user.email, 'password')
     headers = generate_headers(login_resp['access_jwt'])
 
     response = client.post(

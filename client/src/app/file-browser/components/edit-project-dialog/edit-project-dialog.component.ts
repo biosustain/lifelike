@@ -109,7 +109,7 @@ export class EditProjectDialogComponent extends CommonFormDialogComponent implem
         const userId = this.auth.whoAmI();
 
         this.userCollab = collabs.filter(c => userId === c.id)[0];
-        this.collabs = collabs.filter(c => userId !== c.id)
+        this.collabs = collabs.filter(c => userId !== c.id);
 
         const listOfFormGroups = collabs.filter(
           c => userId !== c.id
@@ -199,8 +199,8 @@ export class EditProjectDialogComponent extends CommonFormDialogComponent implem
         apiHttpError: {
           message;
           name;
-        }
-      };
+        };
+      }
       const error: Error = err.error;
 
       if (err.status === 404) {
