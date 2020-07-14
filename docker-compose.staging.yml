@@ -3,8 +3,8 @@ version: '3.8'
 services:
     appserver:
         image: ${REGISTRY:-gcr.io/able-goods-221820}/kg-appserver-staging:${GITHUB_HASH:-latest}
-        expose:
-            - "5000"
+        ports:
+            - "5000:5000"
         env_file:
             - ./.env
         volumes:
@@ -19,7 +19,7 @@ services:
             - frontend
             - backend
 
-    webservers:
+    webserver:
         image: ${REGISTRY:-gcr.io/able-goods-221820}/kg-webserver-staging:${GITHUB_HASH:-latest}
         ports:
             - 80:80
@@ -30,6 +30,15 @@ services:
             - /docker-volumes/etc/letsencrypt/live/test.***ARANGO_DB_NAME***.bio/privkey.pem:/etc/letsencrypt/live/test.***ARANGO_DB_NAME***.bio/privkey.pem
         networks:
             - frontend
+
+    nlpapi:
+        image: ${REGISTRY:-gcr.io/able-goods-221820}/kg-nlpapi-staging:${GITHUB_HASH:-latest}
+        expose:
+            - 5001
+        volumes:
+            - /srv/models:/models
+        networks:
+            - backend
 
     cache-invalidator:
         image: ${REGISTRY:-gcr.io/able-goods-221820}/kg-cache-service-staging:${GITHUB_HASH:-latest}

@@ -2,8 +2,8 @@ version: '3.8'
 
 services:
     appserver:
-        expose:
-            - "5000"
+        ports:
+            - "5000:5000"
         env_file:
             - ./.env
         volumes:
@@ -28,6 +28,14 @@ services:
             - /docker-volumes/etc/letsencrypt/live/kg.***ARANGO_DB_NAME***.bio/privkey.pem:/etc/letsencrypt/live/kg.***ARANGO_DB_NAME***.bio/privkey.pem
         networks:
             - frontend
+
+    nlpapi:
+        expose:
+            - 5001
+        volumes:
+            - /srv/models:/models
+        networks:
+            - backend
 
     cache-invalidator:
         env_file:
