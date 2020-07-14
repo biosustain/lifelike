@@ -1,0 +1,33 @@
+- include_vars:
+    dir: vars
+# Sets up the application infrastructure using
+# a single VM for the entire application
+
+- name: Install Python dependencies
+  pip:
+    name:
+      - gsutil
+    umask: "0022"
+  become: true
+
+- name: Pull Github Branch
+  become_user: "{{ webserver_user }}"
+  git:
+    repo: "https://{{ gh_token }}@{{ github_repo }}"
+    dest: "{{ home_dir }}/app"
+    depth: 1
+    version: "{{ github_branch }}"
+
+- name: Create NLP model directory
+  file:
+    path: "{{ home_dir }}/app/nlp/models"
+    owner: "{{ webserver_user }}"
+    group: "{{ webserver_user }}"
+    state: directory
+
+- name: Fetch NLP models
+  become_user: "{{ webserver_user }}"
+  command: "{{ home_dir }}/app/nlp/fetch-ai-models.sh"
+  args:
+    chdir: "{{ home_dir }}/app/nlp"
+

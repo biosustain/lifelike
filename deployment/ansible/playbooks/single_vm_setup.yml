@@ -1,7 +1,6 @@
-- name: Configure Webserver
+- name: Run single application node
   hosts: webservers
   gather_facts: no
   become: yes
   roles:
-    - docker
-    - lmdb
+    - single-vm
