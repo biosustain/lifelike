@@ -1,6 +1,6 @@
 from py2neo import cypher
 import re
-from typing import List
+from typing import Any, Dict, List
 
 from neo4japp.data_transfer_objects import (
     FTSQueryRecord,
@@ -45,6 +45,7 @@ class SearchService(GraphBaseDao):
     def _fulltext_result_formatter(self, results) -> List[FTSQueryRecord]:
         formatted_results: List[FTSQueryRecord] = []
         for result in results:
+            print('result', result)
             node = result['node']
             score = result['score']
             # Assume the first label is the primary type
@@ -252,3 +253,74 @@ class SearchService(GraphBaseDao):
             total_query, parameters={'search_term': query_term}).evaluate()
 
         return FTSResult(term, records, total_results, page, limit)
+
+    def get_organisms(self, term: str, limit: int = 50) -> Dict[str, Any]:
+        query_term = self._fulltext_query_sanitizer(term)
+        if not query_term:
+            return {
+                'limit': limit,
+                'nodes': [],
+                'query': query_term,
+                'total': 0,
+            }
+
+        cypher_query = """
+            CALL db.index.fulltext.queryNodes("synonymIdx", $term)
+            YIELD node, score
+            MATCH (node)-[]-(t:Taxonomy)
+            WHERE t.rank = 'species'
+            RETURN t.id AS tax_id, t.name AS organism_name, node.name AS synonym
+            LIMIT $limit
+        """
+
+        nodes = self.graph.run(
+            cypher_query,
+            parameters={
+                'limit': limit,
+                'term': query_term,
+            }
+        ).data()
+
+        return {
+            'limit': limit,
+            'nodes': nodes,
+            'query': query_term,
+            'total': len(nodes),
+        }
+
+    def search_gene_filtering_by_organism(self, term: str, organism_id: str):
+        query_term = self._fulltext_query_sanitizer(term)
+        if not query_term:
+            return {
+                'nodes': [],
+                'query': query_term,
+                'total': 0,
+            }
+
+        cypher_query = '''
+            CALL db.index.fulltext.queryNodes('synonymIdx', $gene_term)
+            YIELD node
+            WITH node
+            MATCH (node)-[]-(g:Gene)-[:HAS_TAXONOMY]-(t)-[:HAS_PARENT*0..2]-(p)
+            WHERE p.id = $taxonomy_id
+            RETURN
+                node.name AS matched_term,
+                g.id AS gene_id,
+                g.name AS gene_name,
+                t.id AS organism_id,
+                t.name AS organism_name
+        '''
+
+        nodes = self.graph.run(
+            cypher_query,
+            parameters={
+                'gene_term': query_term,
+                'taxonomy_id': organism_id,
+            }
+        ).data()
+
+        return {
+            'nodes': nodes,
+            'query': query_term,
+            'total': len(nodes),
+        }
