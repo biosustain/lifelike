@@ -1,15 +1,23 @@
+@import '~bootstrap/scss/functions';
+@import '~bootstrap/scss/variables';
+
 #legend {
-    background: #F5F5F5;
-    border: thin solid #C0C0C0;
-    margin: 20px 0 0 20px;
-    padding: 5px;
-    position: absolute;
-    left: 0;
-    text-align: center;
-    width: 150px;
-    z-index: 100;
+  position: absolute;
+  margin: $spacer 0 0 $spacer;
+  width: 10rem;;
+  padding: 1rem;
+  z-index: 1;
+  background: $white;
 }
 
-.node-label-and-color {
-    width: 100%;
+#legend-header {
+  text-align: center;
+}
+
+.color-box {
+  border-radius: $border-radius;
+  margin-right: 5px;
+  height: 10px;
+  width: 10px;
+  border: 'thin solid';
 }

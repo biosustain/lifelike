@@ -10,7 +10,7 @@ from neo4japp.data_transfer_objects import (
 )
 from neo4japp.models import GraphNode
 from neo4japp.services.common import GraphBaseDao
-from neo4japp.util import get_first_known_label
+from neo4japp.util import get_first_known_label_from_node
 
 
 class SearchService(GraphBaseDao):
@@ -196,7 +196,7 @@ class SearchService(GraphBaseDao):
             graph_node = GraphNode.from_py2neo(
                 node,
                 display_fn=lambda x: x.get('name'),
-                primary_label_fn=get_first_known_label
+                primary_label_fn=get_first_known_label_from_node
             )
             formatted_results.append(FTSTaxonomyRecord(
                 node=graph_node,
