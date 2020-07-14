@@ -69,9 +69,11 @@
           </div>
         </div>
 
-        <div class="module-body flex-fill overflow-hidden d-flex">
-          <div class="position-relative flex-fill map-preview-container">
-            <app-map-view #previewComponent [map]='selectedMap' [titleVisible]="false"></app-map-view>
+        <div class="module-body-container">
+          <div class="module-body flex-fill overflow-hidden d-flex">
+            <div class="position-relative flex-fill map-preview-container">
+              <app-map-view #previewComponent [map]='selectedMap' [titleVisible]="false"></app-map-view>
+            </div>
           </div>
         </div>
       </div>

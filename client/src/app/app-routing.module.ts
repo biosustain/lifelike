@@ -4,7 +4,7 @@ import { Routes, RouterModule } from '@angular/router';
 import { AdminPanelComponent } from 'app/admin/components/admin-panel.component';
 import { UserFileImportComponent } from 'app/user-file-import/components/user-file-import.component';
 import { VisualizationComponent } from 'app/visualization/containers/visualization/visualization.component';
-import { SearchCollectionPageComponent } from 'app/search/containers/search-collection-page.component';
+import { SearchComponent } from 'app/search/components/search.component';
 import { FileBrowserComponent } from 'app/file-browser/components/file-browser.component';
 import { LoginComponent } from 'app/auth/components/login.component';
 import { DashboardComponent } from 'app/dashboard.component';
@@ -67,38 +67,38 @@ const routes: Routes = [
     },
   },
   {
+    path: 'search',
+    component: SearchComponent,
+    data: {
+      title: 'Search',
+    },
+  },
+  {
     path: 'kg-visualizer',
     canActivate: [AuthGuard],
     children: [
-        {
-            path: '',
-            redirectTo: 'search',
-            pathMatch: 'full',
+      {
+        path: '',
+        redirectTo: '/search',
+        pathMatch: 'full',
+      },
+      {
+        path: 'graph',
+        component: VisualizationComponent,
+        data: {
+          title: 'KG Visualizer',
         },
-        {
-            path: 'search',
-            component: SearchCollectionPageComponent,
-            data: {
-                title: 'Search',
-            },
+      },
+      {
+        path: 'upload',
+        component: UserFileImportComponent,
+        canActivate: [AuthGuard],
+        data: {
+          title: 'KG Visualizer Upload',
+          fontAwesomeIcon: 'search',
         },
-        {
-            path: 'graph',
-            component: VisualizationComponent,
-            data: {
-              title: 'KG Visualizer',
-            },
-        },
-        {
-            path: 'upload',
-            component: UserFileImportComponent,
-            canActivate: [AuthGuard],
-            data: {
-              title: 'KG Visualizer Upload',
-              fontAwesomeIcon: 'search',
-            },
-        },
-    ]
+      },
+    ],
   },
   {
     path: 'workspaces/:space_id',

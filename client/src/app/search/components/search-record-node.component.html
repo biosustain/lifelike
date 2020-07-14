@@ -1,10 +1,10 @@
-<div class="card w-100">
-  <div class="card-body p-2">
-    <h5 class="card-title">
+<div draggable="true" (dragstart)="dragStarted($event)">
+  <div class="search-results-item-header">
+    <h5>
       <a
         href='/kg-visualizer/graph'
         [appLink]="['/kg-visualizer/graph']"
-        [queryParams]="{ data: nodeURL }"
+        [queryParams]="getVisualizerQueryParams({ data: nodeURL })"
       >{{ node.node.displayName }}</a>
       <span
         [ngStyle]="{
@@ -17,34 +17,40 @@
         }"
       >{{ node.node.label }} </span>
     </h5>
-    <div class="card-text">
-      <div [ngSwitch]="node.node.label">
-        <div *ngSwitchCase="'Chemical'">
-          <div [ngSwitch]="node.node.data.id.split(':')[0]">
-            <span *ngSwitchCase="'CHEBI'">ID: <a target="_blank" href="http://identifiers.org/chebi/{{node.node.data.id}}">{{ node.node.data.id.split(':')[1] }}</a></span>
-            <span *ngSwitchCase="'MESH'">ID: <a target="_blank" href="https://meshb.nlm.nih.gov/record/ui?ui={{node.node.data.id.split(':')[1]}}">{{ node.node.data.id.split(':')[1] }}</a></span>
-            <i class="link-icon fa fa-external-link"></i>
-          </div>
+  </div>
+
+  <div class="search-results-item-body">
+    <div [ngSwitch]="node.node.label">
+      <div *ngSwitchCase="'Chemical'">
+        <div [ngSwitch]="node.node.data.id.split(':')[0]">
+          <span *ngSwitchCase="'CHEBI'">ID: <a target="_blank"
+                                               href="http://identifiers.org/chebi/{{node.node.data.id}}">{{ node.node.data.id.split(':')[1] }}</a></span>
+          <span *ngSwitchCase="'MESH'">ID: <a target="_blank"
+                                              href="https://meshb.nlm.nih.gov/record/ui?ui={{node.node.data.id.split(':')[1]}}">{{ node.node.data.id.split(':')[1] }}</a></span>
+          <i class="link-icon fa fa-external-link"></i>
         </div>
-        <div *ngSwitchCase="'Disease'">
+      </div>
+      <div *ngSwitchCase="'Disease'">
           <span>ID:
-            <a target="_blank" href="https://meshb.nlm.nih.gov/record/ui?ui={{node.node.data.id.split(':')[1]}}">{{ node.node.data.id.split(':')[1] }}</a>
+            <a target="_blank"
+               href="https://meshb.nlm.nih.gov/record/ui?ui={{node.node.data.id.split(':')[1]}}">{{ node.node.data.id.split(':')[1] }}</a>
             <i class="link-icon fa fa-external-link"></i>
           </span>
-        </div>
-        <div *ngSwitchCase="'Gene'">
+      </div>
+      <div *ngSwitchCase="'Gene'">
           <span>
-            ID: <a target="_blank" href="https://www.ncbi.nlm.nih.gov/gene/{{node.node.data.id}}">{{ node.node.data.id }}</a>
+            ID: <a target="_blank"
+                   href="https://www.ncbi.nlm.nih.gov/gene/{{node.node.data.id}}">{{ node.node.data.id }}</a>
             <i class="link-icon fa fa-external-link"></i>
           </span>
-          <br>
-          <span>
-            Taxonomy ID: <a target="_blank" href="https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id={{node.taxonomyId}}">{{ node.taxonomyId }}</a>
+        <br>
+        <span>
+            Taxonomy ID: <a target="_blank"
+                            href="https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id={{node.taxonomyId}}">{{ node.taxonomyId }}</a>
             <i class="link-icon fa fa-external-link"></i>
           </span>
-          <br>
-          <span>Taxonomy: {{ node.taxonomyName }}</span>
-        </div>
+        <br>
+        <span>Taxonomy: {{ node.taxonomyName }}</span>
       </div>
     </div>
   </div>
