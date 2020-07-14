@@ -60,6 +60,8 @@ export class InfoPanelComponent {
       const url = `/files/${fileId}#page=${page}&coords=${coordA},${coordB},${coordC},${coordD}`;
       this.workspaceManager.navigateByUrl(url, {
         newTab: true,
+        sideBySide: true,
+        replaceTabIfMatch: `^/files/${fileId}`,
       });
       return;
     }
@@ -68,6 +70,8 @@ export class InfoPanelComponent {
     if (m != null) {
       this.workspaceManager.navigateByUrl(`/dt/map/${m[1]}`, {
         newTab: true,
+        sideBySide: true,
+        replaceTabIfMatch: `/maps/${m[1]}`,
       });
     }
   }
