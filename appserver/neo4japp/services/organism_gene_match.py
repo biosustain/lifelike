@@ -1,4 +1,3 @@
-from sqlalchemy import func
 from sqlalchemy.orm.session import Session
 from sqlalchemy.sql.expression import and_
 
@@ -19,12 +18,12 @@ class OrganismGeneMatchService(RDBMSBaseDao):
     ) -> Dict[str, Dict[str, str]]:
 
         result = self.session.query(
-            func.lower(OrganismGeneMatch.gene_name),
+            OrganismGeneMatch.gene_name,
             OrganismGeneMatch.gene_id,
             OrganismGeneMatch.taxonomy_id,
         ).filter(
             and_(
-                func.lower(OrganismGeneMatch.synonym).in_(genes),
+                OrganismGeneMatch.synonym.in_(genes),
                 OrganismGeneMatch.taxonomy_id.in_(organism_ids),
             )
         )
