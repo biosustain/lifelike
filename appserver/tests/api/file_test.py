@@ -211,7 +211,8 @@ CUSTOM_ANNOTATION = {
             'uniprot': '',
             'wikipedia': '',
             'google': ''
-        }
+        },
+        'primaryLink': ''
     },
 }
 

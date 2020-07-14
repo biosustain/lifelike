@@ -34,6 +34,7 @@ def create_tree(annotations, tree):
                 lo_location_offset=17,
                 hi_location_offset=22,
                 keyword_length=6,
+                text_in_document='word a',
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
@@ -51,6 +52,7 @@ def create_tree(annotations, tree):
                 lo_location_offset=22,
                 hi_location_offset=32,
                 keyword_length=10,
+                text_in_document='a long word',
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
@@ -78,14 +80,9 @@ def test_merge_adjacent_intervals_with_same_type(annotations_setup, annotations)
         ),
     )
 
-    annotations_text_in_document = {}
-    for anno in annotations:
-        annotations_text_in_document[anno.to_dict_hash()] = anno.keyword
-
     tree = create_tree(annotations=annotations, tree=AnnotationIntervalTree())
     fixed = tree.merge_overlaps(
         data_reducer=annotation_service.determine_entity_precedence,
-        annotations_text_in_document=annotations_text_in_document,
     )
     assert len(fixed) == 1
     assert fixed[0] == annotations[1]
@@ -101,6 +98,7 @@ def test_merge_adjacent_intervals_with_same_type(annotations_setup, annotations)
                 lo_location_offset=17,
                 hi_location_offset=22,
                 keyword_length=6,
+                text_in_document='word a',
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
@@ -118,6 +116,7 @@ def test_merge_adjacent_intervals_with_same_type(annotations_setup, annotations)
                 lo_location_offset=22,
                 hi_location_offset=32,
                 keyword_length=10,
+                text_in_document='a long word',
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
@@ -145,14 +144,9 @@ def test_merge_adjacent_intervals_with_different_type(annotations_setup, annotat
         ),
     )
 
-    annotations_text_in_document = {}
-    for anno in annotations:
-        annotations_text_in_document[anno.to_dict_hash()] = anno.keyword
-
     tree = create_tree(annotations=annotations, tree=AnnotationIntervalTree())
     fixed = tree.merge_overlaps(
         data_reducer=annotation_service.determine_entity_precedence,
-        annotations_text_in_document=annotations_text_in_document,
     )
     assert len(fixed) == 1
     assert fixed[0] == annotations[1]
@@ -168,6 +162,7 @@ def test_merge_adjacent_intervals_with_different_type(annotations_setup, annotat
                 lo_location_offset=17,
                 hi_location_offset=22,
                 keyword_length=6,
+                text_in_document='word a',
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
@@ -185,6 +180,7 @@ def test_merge_adjacent_intervals_with_different_type(annotations_setup, annotat
                 lo_location_offset=17,
                 hi_location_offset=22,
                 keyword_length=6,
+                text_in_document='word a',
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
@@ -212,14 +208,9 @@ def test_merge_equal_intervals_with_same_type(annotations_setup, annotations):
         ),
     )
 
-    annotations_text_in_document = {}
-    for anno in annotations:
-        annotations_text_in_document[anno.to_dict_hash()] = anno.keyword
-
     tree = create_tree(annotations=annotations, tree=AnnotationIntervalTree())
     fixed = tree.merge_overlaps(
         data_reducer=annotation_service.determine_entity_precedence,
-        annotations_text_in_document=annotations_text_in_document,
     )
     assert len(fixed) == 1
     assert fixed[0] == annotations[1]
@@ -235,6 +226,7 @@ def test_merge_equal_intervals_with_same_type(annotations_setup, annotations):
                 lo_location_offset=17,
                 hi_location_offset=22,
                 keyword_length=6,
+                text_in_document='word a',
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
@@ -252,6 +244,7 @@ def test_merge_equal_intervals_with_same_type(annotations_setup, annotations):
                 lo_location_offset=17,
                 hi_location_offset=22,
                 keyword_length=6,
+                text_in_document='word a',
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
@@ -279,14 +272,9 @@ def test_merge_equal_intervals_with_different_type(annotations_setup, annotation
         ),
     )
 
-    annotations_text_in_document = {}
-    for anno in annotations:
-        annotations_text_in_document[anno.to_dict_hash()] = anno.keyword
-
     tree = create_tree(annotations=annotations, tree=AnnotationIntervalTree())
     fixed = tree.merge_overlaps(
         data_reducer=annotation_service.determine_entity_precedence,
-        annotations_text_in_document=annotations_text_in_document,
     )
     assert len(fixed) == 1
     assert fixed[0] == annotations[0]
