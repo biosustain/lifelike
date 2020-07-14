@@ -6,7 +6,6 @@ import { EditGuard } from './edit.guard';
 import { RootStoreModule } from 'app/root-store';
 import { RouterTestingModule } from '@angular/router/testing';
 import { DrawingToolModule } from '../drawing-tool.module';
-import { NodeSearchModule } from 'app/node-search/node-search.module';
 
 describe('EditGuardService', () => {
 
@@ -17,7 +16,6 @@ describe('EditGuardService', () => {
           RootStoreModule,
           RouterTestingModule,
           DrawingToolModule,
-          NodeSearchModule
         ]
       });
     }
