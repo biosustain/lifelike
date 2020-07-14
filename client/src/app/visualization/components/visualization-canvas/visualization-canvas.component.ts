@@ -234,6 +234,7 @@ export class VisualizationCanvasComponent implements OnInit, AfterViewInit {
     isNewEdgeSidenavEntity: boolean;
 
     networkGraph: Network;
+    networkContainerId: string;
     selectedNodes: IdType[];
     selectedNodeEdgeLabelData: Map<string, Direction[]>;
     selectedEdges: IdType[];
@@ -257,6 +258,8 @@ export class VisualizationCanvasComponent implements OnInit, AfterViewInit {
         private messageDialog: MessageDialog,
         private visService: VisualizationService,
     ) {
+        this.networkContainerId = uuidv4();
+
         this.legendLabels = [];
 
         this.sidenavOpened = false;
@@ -293,7 +296,7 @@ export class VisualizationCanvasComponent implements OnInit, AfterViewInit {
     // Need to initialize the network after the view is initialized, otherwise we get weird re-sizing issues
     // for Vis.js
     ngAfterViewInit() {
-        const container = document.getElementById('network-viz');
+        const container = document.getElementById(this.networkContainerId);
         const data = {
             nodes: this.nodes,
             edges: this.edges,
@@ -324,15 +327,10 @@ export class VisualizationCanvasComponent implements OnInit, AfterViewInit {
                     }
                 }
             });
-        }
-    }
 
-    /**
-     * Turns the physics (animation) on/off depending on the status
-     * @param animationOn - boolean to turn on/off the physics animation
-     */
-    toggleAnimation(animationOn: boolean) {
-        this.networkGraph.setOptions({physics: animationOn});
+            // Set the new animation state, if any
+            this.networkGraph.setOptions({physics: this.settingsFormValues.animation.value});
+        }
     }
 
     openSidenav() {
@@ -525,7 +523,7 @@ export class VisualizationCanvasComponent implements OnInit, AfterViewInit {
             const percentOfMax = row.snippetCount === 0 ? row.snippetCount : (row.snippetCount / maxSnippetCount) * 100;
             let rowHTMLString = `
             <tr class="reference-table-row">
-                <td class="entity-name-container">${row.nodeDisplayName}</td>
+                <td class="entity-name-container" style="color: ${this.legend.get(row.nodeLabel)[0]}">${row.nodeDisplayName}</td>
                 <td class="snippet-count-container">(${row.snippetCount})</td>
                 <td class="snippet-bar-container">
                     <div class="snippet-bar-repr" style="width: ${percentOfMax}px;"></div>
@@ -575,16 +573,16 @@ export class VisualizationCanvasComponent implements OnInit, AfterViewInit {
                 }
 
                 td {
-                    border: thin solid #C9CACC;
+                    border: thin solid #3797DB;
                     padding: 2.5px 3.5px;
                 }
 
                 .reference-table {
-                    background: #D4E2F4;
-                    border: thin solid #C9CACC;
+                    background: #FFFFFF;
+                    border: thin solid #3797DB;
                     border-radius: 2px;
-                    color: #5B6A80;
-                    font-family: "IBM Plex Sans", sans-serif;
+                    color: #3797DB;
+                    font-family: Roboto, "Helvetica Neue", sans-serif;
                     font-size: 12px;
                     font-weight: bold;
                     height: ${svgHeight}px;
@@ -613,7 +611,7 @@ export class VisualizationCanvasComponent implements OnInit, AfterViewInit {
 
                 .snippet-bar-repr {
                     height: 10px;
-                    background: #aaabad;
+                    background: #3797DB;
                 }
             </style>
             <foreignObject x="0" y="0" width="100%" height="100%">
@@ -859,6 +857,7 @@ export class VisualizationCanvasComponent implements OnInit, AfterViewInit {
                     node: {
                         id: pair.node.id,
                         displayName: pair.node.displayName,
+                        label: pair.node.primaryLabel,
                     },
                     edge: {
                         originalFrom: pair.edge.originalFrom,

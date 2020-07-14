@@ -4,6 +4,8 @@ export const SNIPPET_RESULT_LIMIT = 10000;
 export const SNIPPET_PAGE_LIMIT = 25;
 export const PubMedURL = 'https://pubmed.ncbi.nlm.nih.gov/';
 
+export const VIZ_SEARCH_LIMIT = 10;
+
 export enum Hyperlink {
   Chebi = 'https://www.ebi.ac.uk/chebi/searchId.do?chebiId=',
   Mesh = 'https://www.ncbi.nlm.nih.gov/mesh/',
