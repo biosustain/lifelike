@@ -5,9 +5,7 @@
     <div id="cluster-node-selection-group-1" class="context-menu-group">
       <div
         id="pull-out-node-from-cluster-menu-item"
-        class="context-menu-item"
-        fxLayout="row"
-        fxLayoutAlign="space-between center"
+        class="context-menu-item d-flex flex-row justify-content-between align-items-center"
         (mouseenter)="showPullOutNodeSubMenu()"
         (mouseleave)="mouseLeaveNodeRow()">
         <div>Pull out node from cluster</div>
@@ -37,9 +35,7 @@
           <div *ngIf="selectedNodeEdgeLabelData.size > 0" fxLayout="column">
               <div
                 id="group-by-rel-menu-item"
-                class="context-menu-item"
-                fxLayout="row"
-                fxLayoutAlign="space-between center"
+                class="context-menu-item d-flex flex-row justify-content-between align-items-center"
                 (mouseenter)="showGroupByRelSubMenu()"
                 (mouseleave)="mouseLeaveNodeRow()">
                 <div>Group neighbors by edge label</div>

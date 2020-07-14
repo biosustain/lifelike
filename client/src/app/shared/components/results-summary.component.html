@@ -1,0 +1,6 @@
+<ng-container *ngIf="page === 1 else morePages">
+  Showing {{ endResultCount }} of {{ collectionSize }} result{{ collectionSize === 1 ? '' : 's' }}
+</ng-container>
+<ng-template #morePages>
+  Showing {{ startResultCount }}&ndash;{{ endResultCount }} of {{ collectionSize }} result{{ collectionSize === 1 ? '' : 's' }}
+</ng-template>

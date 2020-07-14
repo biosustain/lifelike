@@ -127,6 +127,11 @@ class DatabaseType(Enum):
     Biocyc = 'BIOCYC'
 
 
+class AnnotationMethod(Enum):
+    NLP = 'NLP'
+    Rules = 'Rules Based'
+
+
 # these links are used in annotations and custom annotations
 # first are search links
 # then entity hyperlinks

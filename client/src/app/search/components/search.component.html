@@ -1,0 +1,104 @@
+<ng-container *ngIf="(loadTask.status$ | async) as status">
+  <div class="module module-sidebar h-100">
+    <div class="module-header-container">
+      <div class="module-header">
+        <div class="module-title">
+          <ng-container *ngIf="params; else noQuery">Visualizer Results for "{{ params.query }}"
+          </ng-container>
+          <ng-template #noQuery>Visualizer</ng-template>
+        </div>
+      </div>
+
+      <div class="module-header-body">
+        <app-search-bar
+          class="w-100"
+          [params]="params"
+          (search)="search($event)">
+        </app-search-bar>
+      </div>
+    </div>
+
+    <div class="module-body-container" #body>
+      <div class="module-body module-body-padded">
+        <ng-container *ngIf="params; else noQueryResults">
+          <app-background-task-progress
+            [status]="status" (refresh)="refresh()" childClass="mb-2"></app-background-task-progress>
+
+          <ng-container *ngIf="status.placeholdersShown">
+            <div class="mb-3">
+              <span class="placeholder-box">Showing 10 of 20 results</span>
+            </div>
+
+            <div class="search-results">
+              <div class="search-results-item">
+                <h5 class="search-results-item-title">
+                  <span class="placeholder-box">Loading loading</span>
+                </h5>
+                <div class="search-results-item-body">
+                  <div>
+                    <span class="placeholder-box">Loading loading loading</span>
+                  </div>
+                  <div class="mt-2">
+                    <span class="placeholder-box">Loading loading loading loading</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="search-results-item">
+                <h5 class="search-results-item-title">
+                  <span class="placeholder-box">Loading load loading</span>
+                </h5>
+                <div class="search-results-item-body">
+                  <div>
+                    <span class="placeholder-box">Loading loading</span>
+                  </div>
+                  <div class="mt-2">
+                    <span class="placeholder-box">Loading loading loading load loading</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </ng-container>
+
+          <ng-container *ngIf="status.resultsShown && results.length">
+            <div class="text-muted mb-3">
+              <app-results-summary
+                [page]="params.page"
+                [pageSize]="params.limit"
+                [collectionSize]="collectionSize"></app-results-summary>
+            </div>
+
+            <div class="search-results">
+              <div class="search-results-item"
+                   *ngFor="let n of results; let i = index"
+                   [ngSwitch]="n.node.label">
+                <app-search-record-relationships [node]="n" *ngSwitchCase="'Snippet'" [params]="params">
+                </app-search-record-relationships>
+                <app-search-record-node [node]="n" [legend]="legend" [params]="params" *ngSwitchDefault>
+                </app-search-record-node>
+              </div>
+            </div>
+
+            <div class="mt-4">
+              <ngb-pagination
+                [page]="params.page"
+                [pageSize]="params.limit"
+                [collectionSize]="collectionSize"
+                (pageChange)="goToPage($event)"></ngb-pagination>
+            </div>
+          </ng-container>
+
+          <div *ngIf="status.emptyResultsShown && results.length == 0"
+               class="text-center my-4 px-4">
+            No records match your current filters.
+          </div>
+        </ng-container>
+        <ng-template #noQueryResults>
+          <div class="text-center my-4 px-4">
+            Search for records above.
+          </div>
+        </ng-template>
+      </div>
+    </div>
+  </div>
+</ng-container>

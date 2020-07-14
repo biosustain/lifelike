@@ -4,7 +4,7 @@ import { Routes, RouterModule } from '@angular/router';
 import { AdminPanelComponent } from 'app/admin/components/admin-panel.component';
 import { UserFileImportComponent } from 'app/user-file-import/components/user-file-import.component';
 import { VisualizationComponent } from 'app/visualization/containers/visualization/visualization.component';
-import { SearchCollectionPageComponent } from 'app/search/containers/search-collection-page.component';
+import { SearchComponent } from 'app/search/components/search.component';
 import { FileBrowserComponent } from 'app/file-browser/components/file-browser.component';
 import { LoginComponent } from 'app/auth/components/login.component';
 import { DashboardComponent } from 'app/dashboard.component';
@@ -68,36 +68,38 @@ const routes: Routes = [
     },
   },
   {
-    path: 'kg-visualizer',
-    component: VisualizationComponent,
-    canActivate: [AuthGuard],
-    data: {
-      title: 'KG Visualizer',
-      fontAwesomeIcon: 'search',
-    },
-  },
-  {
-    path: 'kg-visualizer/upload',
-    component: UserFileImportComponent,
-    canActivate: [AuthGuard],
-    data: {
-      title: 'KG Visualizer Upload',
-      fontAwesomeIcon: 'search',
-    },
-  },
-  {
     path: 'search',
-    component: SearchCollectionPageComponent,
+    component: SearchComponent,
     data: {
       title: 'Search',
     },
   },
   {
-    path: 'search/:redirect',
-    component: SearchCollectionPageComponent,
-    data: {
-      title: 'Knowledge Graph Explorer',
-    },
+    path: 'kg-visualizer',
+    canActivate: [AuthGuard],
+    children: [
+      {
+        path: '',
+        redirectTo: '/search',
+        pathMatch: 'full',
+      },
+      {
+        path: 'graph',
+        component: VisualizationComponent,
+        data: {
+          title: 'KG Visualizer',
+        },
+      },
+      {
+        path: 'upload',
+        component: UserFileImportComponent,
+        canActivate: [AuthGuard],
+        data: {
+          title: 'KG Visualizer Upload',
+          fontAwesomeIcon: 'search',
+        },
+      },
+    ],
   },
   {
     path: 'workspaces/:space_id',

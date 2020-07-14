@@ -34,11 +34,10 @@ from neo4japp.models import (
     Directory, ProjectBackup,
 )
 from neo4japp.constants import ANNOTATION_STYLES_DICT
+from neo4japp.request_schemas.drawing_tool import ProjectBackupSchema
 
 # TODO: LL-415 Migrate the code to the projects folder once GUI is complete and API refactored
 from neo4japp.blueprints.projects import bp as newbp
-
-from neo4japp.schemas.drawing_tool import ProjectBackupSchema
 
 bp = Blueprint('drawing_tool', __name__, url_prefix='/drawing-tool')
 
