@@ -19,7 +19,6 @@ import { RouterModule } from '@angular/router';
 import { FileBrowserModule } from '../file-browser/file-browser.module';
 import { EdgeFormComponent } from './components/map-editor/edge-form.component';
 import { NodeFormComponent } from './components/map-editor/node-form.component';
-import { NodeSearchComponent } from '../node-search/containers/node-search.component';
 import { MapEditDialogComponent } from './components/map-edit-dialog.component';
 import { ConfirmDialogComponent } from 'app/shared/components/dialog/confirm-dialog.component';
 import { MapRestoreDialogComponent } from './components/map-restore-dialog.component';
@@ -51,7 +50,6 @@ import { MapRestoreDialogComponent } from './components/map-restore-dialog.compo
     MapListComponent,
     MapBrowserComponent,
     MapExportDialogComponent,
-    NodeSearchComponent,
     ConfirmDialogComponent,
     MapRestoreDialogComponent,
   ],

@@ -1,11 +1,13 @@
-<div class="module h-100">
-  <div id="viz-search-container">
-    <app-search-bar
-      class="w-100"
-      (search)="search($event)"
-    ></app-search-bar>
+<div class="module h-100 d-flex flex-column">
+  <div class="main-toolbar d-flex align-items-center toolbar d-flex" *ngIf="hasResultsButton()">
+    <div class="btn-group">
+      <button type="button" class="btn btn-light" (click)="goToResults()">
+        <i class="fa fa-fw fa-arrow-left"></i> Search Results
+      </button>
+    </div>
   </div>
-  <div id="viz-canvas-container">
+
+  <div class="flex-fill overflow-hidden">
     <app-visualization-canvas
       *ngIf="networkGraphData && !hideDisplay"
       [nodes]="nodes"
