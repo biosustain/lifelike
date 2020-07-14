@@ -8,24 +8,26 @@
       </div>
     </div>
 
-    <div class="module-body">
-      <ul ngbNav #nav="ngbNav" [(activeId)]="activeTab" class="nav-tabs">
-        <li ngbNavItem="profile">
-          <a ngbNavLink>Profile</a>
-          <ng-template ngbNavContent>
-            <app-user-profile [user]="user"></app-user-profile>
-          </ng-template>
-        </li>
+    <div class="module-body-container">
+      <div class="module-body">
+        <ul ngbNav #nav="ngbNav" [(activeId)]="activeTab" class="nav-tabs">
+          <li ngbNavItem="profile">
+            <a ngbNavLink>Profile</a>
+            <ng-template ngbNavContent>
+              <app-user-profile [user]="user"></app-user-profile>
+            </ng-template>
+          </li>
 
-        <li ngbNavItem="security">
-          <a ngbNavLink>Password</a>
-          <ng-template ngbNavContent>
-            <app-user-security [user]="user"></app-user-security>
-          </ng-template>
-        </li>
-      </ul>
+          <li ngbNavItem="security">
+            <a ngbNavLink>Password</a>
+            <ng-template ngbNavContent>
+              <app-user-security [user]="user"></app-user-security>
+            </ng-template>
+          </li>
+        </ul>
 
-      <div [ngbNavOutlet]="nav" class="mt-4"></div>
+        <div [ngbNavOutlet]="nav" class="mt-4"></div>
+      </div>
     </div>
   </div>
 </ng-container>

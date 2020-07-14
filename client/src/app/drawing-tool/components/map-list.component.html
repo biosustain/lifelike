@@ -26,19 +26,19 @@
 
       <div class="module-header-body">
         <div class="input-group">
-        <span class="input-group-prepend">
-          <div class="input-group-text bg-white border-right-0">
-            <i class="fa fa-fw fa-search"></i>
-          </div>
-        </span>
+          <span class="input-group-prepend">
+            <div class="input-group-text bg-white border-right-0">
+              <i class="fa fa-fw fa-search"></i>
+            </div>
+          </span>
           <input class="form-control py-2 pl-0 input-border border-left-0"
                  placeholder="Search within maps..."
                  [(ngModel)]="term" (keyup)="refresh(true)">
           <span class="input-group-append" *ngIf="term.length">
-          <button class="btn btn-outline-secondary" type="button" (click)="term = ''; refresh(true)">
-            <i class="fa fa-times"></i>
-          </button>
-        </span>
+            <button class="btn btn-outline-secondary" type="button" (click)="term = ''; refresh(true)">
+              <i class="fa fa-times"></i>
+            </button>
+          </span>
         </div>
 
         <div class="mt-2 d-flex">
@@ -56,96 +56,98 @@
       </div>
     </div>
 
-    <div class="module-body">
-      <app-background-task-progress
-        [status]="status" (refresh)="this.refresh()" childClass="mt-2 mb-0 px-2"></app-background-task-progress>
+    <div class="module-body-container">
+      <div class="module-body">
+        <app-background-task-progress
+          [status]="status" (refresh)="this.refresh()" childClass="mt-2 mb-0 px-2"></app-background-task-progress>
 
-      <table class="table table-selectable my-0" style="table-layout: fixed">
-        <colgroup>
-          <col>
-          <col style="width: 90px">
-        </colgroup>
-        <thead>
-        <tr>
-          <th class="text-truncate">Name</th>
-          <th class="text-right text-truncate">Modified</th>
-        </tr>
-        </thead>
+        <table class="table table-selectable my-0" style="table-layout: fixed">
+          <colgroup>
+            <col>
+            <col style="width: 90px">
+          </colgroup>
+          <thead>
+          <tr>
+            <th class="text-truncate">Name</th>
+            <th class="text-right text-truncate">Modified</th>
+          </tr>
+          </thead>
 
-        <tbody *ngIf="status.placeholdersShown && projects.length == 0">
-        <tr>
-          <td class="text-truncate">
-            <span class="placeholder-box">Loading loading</span>
-          </td>
-          <td class="text-truncate text-right">
-            <span class="placeholder-box">Loading</span>
-          </td>
-        </tr>
-        <tr>
-          <td class="text-truncate">
-            <span class="placeholder-box">Loading loading loading</span>
-          </td>
-          <td class="text-truncate text-right">
-            <span class="placeholder-box">Loading</span>
-          </td>
-        </tr>
-        <tr>
-          <td class="text-truncate">
-            <span class="placeholder-box">Loading loading</span>
-          </td>
-          <td class="text-truncate text-right">
-            <span class="placeholder-box">Loading</span>
-          </td>
-        </tr>
-        <tr>
-          <td class="text-truncate">
-            <span class="placeholder-box">Loading loading loading loading</span>
-          </td>
-          <td class="text-truncate text-right">
-            <span class="placeholder-box">Loading</span>
-          </td>
-        </tr>
-        </tbody>
+          <tbody *ngIf="status.placeholdersShown && projects.length == 0">
+          <tr>
+            <td class="text-truncate">
+              <span class="placeholder-box">Loading loading</span>
+            </td>
+            <td class="text-truncate text-right">
+              <span class="placeholder-box">Loading</span>
+            </td>
+          </tr>
+          <tr>
+            <td class="text-truncate">
+              <span class="placeholder-box">Loading loading loading</span>
+            </td>
+            <td class="text-truncate text-right">
+              <span class="placeholder-box">Loading</span>
+            </td>
+          </tr>
+          <tr>
+            <td class="text-truncate">
+              <span class="placeholder-box">Loading loading</span>
+            </td>
+            <td class="text-truncate text-right">
+              <span class="placeholder-box">Loading</span>
+            </td>
+          </tr>
+          <tr>
+            <td class="text-truncate">
+              <span class="placeholder-box">Loading loading loading loading</span>
+            </td>
+            <td class="text-truncate text-right">
+              <span class="placeholder-box">Loading</span>
+            </td>
+          </tr>
+          </tbody>
 
-        <tbody *ngIf="status.resultsShown" cdkDropList cdkDropListSortingDisabled>
-        <tr *ngFor="let project of projects" [id]="project.hash_id"
-            (click)='select(project)' draggable="true"
-            (keydown)="$event.keyCode != 13 || select(project)"
-            (dragstart)="mapDragStarted($event, project)"
-            [class.active]="selectedMap?.hash_id === project.hash_id"
-            tabindex="0">
-          <td>
-            <div class="d-flex text-truncate">
-              <div>
-                <i class="fa fa-fw fa-project-diagram"></i>
-              </div>
-              <div class="ml-2 text-truncate">
-                <div class="text-truncate">
-                  {{ project.label }}
+          <tbody *ngIf="status.resultsShown" cdkDropList cdkDropListSortingDisabled>
+          <tr *ngFor="let project of projects" [id]="project.hash_id"
+              (click)='select(project)' draggable="true"
+              (keydown)="$event.keyCode != 13 || select(project)"
+              (dragstart)="mapDragStarted($event, project)"
+              [class.active]="selectedMap?.hash_id === project.hash_id"
+              tabindex="0">
+            <td>
+              <div class="d-flex text-truncate">
+                <div>
+                  <i class="fa fa-fw fa-project-diagram"></i>
                 </div>
-                <div class="text-truncate text-muted">
-                  By {{project?.author}}
+                <div class="ml-2 text-truncate">
+                  <div class="text-truncate">
+                    {{ project.label }}
+                  </div>
+                  <div class="text-truncate text-muted">
+                    By {{project?.author}}
+                  </div>
                 </div>
               </div>
-            </div>
-          </td>
-          <td class="text-truncate text-right">
-            {{project?.date_modified | date: 'shortDate'}}
-          </td>
-        </tr>
-        </tbody>
-      </table>
+            </td>
+            <td class="text-truncate text-right">
+              {{project?.date_modified | date: 'shortDate'}}
+            </td>
+          </tr>
+          </tbody>
+        </table>
 
-      <div *ngIf="status.emptyResultsShown && projects.length == 0"
-           class="text-center my-4 px-4">
-        <div *ngIf="!showPersonal && !showCommunity else filtersOk">
-          <i class="fa fa-info-circle"></i>
-          Select at least 'Your Projects' or 'Community' to see results.
+        <div *ngIf="status.emptyResultsShown && projects.length == 0"
+             class="text-center my-4 px-4">
+          <div *ngIf="!showPersonal && !showCommunity else filtersOk">
+            <i class="fa fa-info-circle"></i>
+            Select at least 'Your Projects' or 'Community' to see results.
+          </div>
+          <ng-template #filtersOk>
+            No projects match your current
+            filters{{term != '' ? ', matching "' + refreshTask.latestSuccessfulValue.term + '"' : ''}}.
+          </ng-template>
         </div>
-        <ng-template #filtersOk>
-          No projects match your current
-          filters{{term != '' ? ', matching "' + refreshTask.latestSuccessfulValue.term + '"' : ''}}.
-        </ng-template>
       </div>
     </div>
   </div>

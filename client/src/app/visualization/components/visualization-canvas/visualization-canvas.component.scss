@@ -1,11 +1,6 @@
 #network-viz {
-    height: 80vh;
     background-color: #F5F5F5;
     border: 1px solid #C0C0C0;
-}
-
-#viz-content-container {
-  position: relative;
 }
 
 #sidenav-container {
@@ -20,20 +15,17 @@
 
 #sidenav-panel-close-btn {
   float: right;
-  background-color: #FFFFFF;
-  border: thin solid red;
-  border-radius: 4px;
-  color: rgb(255, 0, 0);
-  height: 26px;
+  border-radius: 0.25rem;
+  height: 1.5rem;
+  width: 1.5rem;
   padding: 0;
-  width: 26px;
   outline: none;
 }
 #sidenav-panel-close-btn:hover {
-  background-color: rgb(255, 235, 235);
+  background-color: #FFFFFF;
+  color: #dc3545;
   cursor: pointer;
 }
 #sidenav-panel-close-btn:active {
-  border: thin solid rgb(230, 0, 0);
-  color: rgb(230, 0, 0);
+  border: thin solid #dc3545;
 }
