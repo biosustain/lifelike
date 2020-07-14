@@ -71,6 +71,22 @@ services:
             - pgdatabase
             - redis
 
+    nlpapi:
+        container_name: nlpapi
+        build:
+            context: ./nlp
+            dockerfile: Dockerfile
+        environment:
+            - FLASK_DEBUG=1
+            - FLASK_APP_CONFIG=Development
+            - FLASK_ENV=development
+        ports:
+            - "5001:5001"
+        volumes:
+            - ./nlp/models:/models
+        networks:
+            - backend
+
     webserver:
         container_name: webservers
         build:
