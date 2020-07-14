@@ -147,18 +147,47 @@ class AnnotationsPDFParser:
                 return True
         return False
 
-    def _is_whitespace_or_punctuation(self, char: str) -> bool:
-        # whitespace contains newline
-        return char in whitespace or char == '\xa0' or char in punctuation  # noqa
+    def _remove_leading_and_trailing_punctuation(
+        self,
+        keyword: str,
+        curr_char_idx_mappings: Dict[int, str],
+    ) -> Tuple[str, Dict[int, str]]:
+        """Check if keyword had leading and trailing punctuation. If keyword
+        is end of sentence, will remove period and punctuation before period.
+        Will only remove the first leading and trailing punctuation, because
+        don't know if other punctuation are part of keyword or not.
 
-    def _has_unwanted_punctuation(self, char: str, leading: bool = False) -> bool:
-        # want to keep things like plus, minus, etc
-        ignore_these = set(punctuation) - {'+', '-'}
-        check = char in ignore_these
-        if leading:
-            # hyphens not minus
-            check = check or char == '-'
-        return check
+        Returns updated keyword and index mapping.
+        """
+        leading_punctuation = punctuation
+        # exclude +, - for chemicals
+        trailing_punctuation = set(leading_punctuation) - {'+', '-'}
+        period = '.'
+
+        updated_word = keyword
+        updated_curr_char_idx_mappings = {k: v for k, v in curr_char_idx_mappings.items()}
+
+        try:
+            if keyword[0] in leading_punctuation:
+                updated_word = keyword[1:]
+                dict_keys = list(updated_curr_char_idx_mappings.keys())
+                remove = dict_keys[0]
+                updated_curr_char_idx_mappings.pop(remove)
+
+            if keyword[-1] == period and keyword[-2] in trailing_punctuation:
+                updated_word = updated_word[:-2]
+                dict_keys = list(updated_curr_char_idx_mappings.keys())
+                for remove in [dict_keys[-1], dict_keys[-2]]:
+                    updated_curr_char_idx_mappings.pop(remove)
+            elif keyword[-1] in trailing_punctuation:
+                updated_word = updated_word[:-1]
+                dict_keys = list(updated_curr_char_idx_mappings.keys())
+                remove = dict_keys[-1]
+                updated_curr_char_idx_mappings.pop(remove)
+        except KeyError:
+            raise AnnotationError('Index key error occurred when stripping leading and trailing punctuation.')  # noqa
+
+        return updated_word, updated_curr_char_idx_mappings
 
     def combine_chars_into_words(
         self,
@@ -260,7 +289,7 @@ class AnnotationsPDFParser:
 
                 curr_keyword = ' '.join(words)
 
-                if not self._is_whitespace_or_punctuation(curr_keyword) and self._not_all_whitespace_or_punctuation(curr_keyword):  # noqa
+                if self._not_all_whitespace_or_punctuation(curr_keyword):  # noqa
                     curr_char_idx_mappings: Dict[int, str] = {}
 
                     # need to keep order here so can't unpack (?)
@@ -270,22 +299,8 @@ class AnnotationsPDFParser:
                             curr_char_idx_mappings[k] = v
                             last_char_idx_in_curr_keyword = k
 
-                    try:
-                        # strip out trailing punctuation
-                        while curr_keyword and self._has_unwanted_punctuation(curr_keyword[-1]):
-                            dict_keys = list(curr_char_idx_mappings.keys())
-                            last = dict_keys[-1]
-                            curr_char_idx_mappings.pop(last)
-                            curr_keyword = curr_keyword[:-1]
-
-                        # strip out leading punctuation
-                        while curr_keyword and self._has_unwanted_punctuation(curr_keyword[0], leading=True):  # noqa
-                            dict_keys = list(curr_char_idx_mappings.keys())
-                            first = dict_keys[0]
-                            curr_char_idx_mappings.pop(first)
-                            curr_keyword = curr_keyword[1:]
-                    except KeyError:
-                        raise AnnotationError('Index key error occurred when stripping leading and trailing punctuation.')  # noqa
+                    curr_keyword, curr_char_idx_mappings = self._remove_leading_and_trailing_punctuation(  # noqa
+                        keyword=curr_keyword, curr_char_idx_mappings=curr_char_idx_mappings)
 
                     # keyword could've been all punctuation
                     if curr_keyword:
@@ -300,7 +315,8 @@ class AnnotationsPDFParser:
                         # whitespaces don't exist in curr_char_idx_mappings
                         # they were added to separate words
                         # and might've been left behind after stripping out
-                        # unwanted punctuation
+                        # unwanted punctuation since they can
+                        # be separated word
                         curr_keyword = curr_keyword.strip()
 
                         if (curr_keyword.lower() not in COMMON_WORDS and
@@ -316,6 +332,10 @@ class AnnotationsPDFParser:
                             # need to do this check because
                             # could potentially have duplicates due to
                             # removing punctuation
+                            # because punctuation could've been a separated word
+                            # TODO: to_dict_hash() is a bottleneck if
+                            # the keyword_tokens list is large
+                            # but can't be helped atm
                             hashval = token.to_dict_hash()
                             if hashval not in processed_tokens:
                                 keyword_tokens.append(token)

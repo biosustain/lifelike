@@ -301,6 +301,8 @@ def jsonify_with_class(
                     jsonify({'result': result}),
                     success_object.status_code,
                 )
+            elif isinstance(success_object, dict):
+                return jsonify(success_object)
             else:
                 return success_object.model_file, success_object.status_code
         return decorator
@@ -347,10 +349,13 @@ def generate_jwt_token(
     ), secret, algorithm=algorithm)
 
 
-def get_first_known_label(node: Node):
+def get_first_known_label_from_node(node: Node):
     labels_as_str = str(node.labels).split(':')[1:]  # First item is always ''
+    return get_first_known_label_from_list(labels_as_str)
 
-    for label in labels_as_str:
+
+def get_first_known_label_from_list(labels: List[str]):
+    for label in labels:
         if label in DISPLAY_NAME_MAP:
             return label
 

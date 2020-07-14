@@ -59,27 +59,40 @@
   .module-header-container {
     background: $white;
     border-bottom: 1px solid $gray-300;
-    box-shadow: 0 1px 5px $gray-400;
   }
 
   .module-header {
     display: flex;
+    margin: auto;
     padding: 1.25rem 1rem;
     align-items: center;
     font-weight: bold;
+    max-width: map-get($grid-breakpoints, "xl");
   }
 
   .module-header-body {
+    margin: auto;
     padding: 0 1rem 1rem;
+    max-width: map-get($grid-breakpoints, "xl");
   }
 
   .module-title {
     font-size: $font-size-base * 1.1;
   }
 
+  .module-body-container {
+    flex: 1 1 auto;
+    overflow: auto;
+  }
+
   .module-body {
-    flex: 1;
-    overflow-y: scroll;
+    margin: auto;
+    max-width: map-get($grid-breakpoints, "xl");
+    height: 100%;
+  }
+
+  .module-body-padded {
+    padding: 1rem;
   }
 }
 
