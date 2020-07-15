@@ -39,16 +39,20 @@
 
     <div class="mt-2" *ngIf="(userRoles$ | async)?.includes('admin')">
       <label>Select annotation method (Required)</label>
-      <div *ngFor="let method of annotationMethods" (click)="selection.toggle(method)">
-        <div class="custom-control custom-checkbox">
-          <input type="checkbox" class="custom-control-input" id="annotation-type-{{method.replace(' ', '-') | lowercase}}"
-                 (change)="onAnnotationMethodPick(method)"
-                 [checked]="selection.isSelected(method)">
-          <label class="custom-control-label d-flex align-items-center" for="annotation-type-{{method.replace(' ', '-') | lowercase}}">
-            {{ method }}
-          </label>
+      <app-form-row for="annotationMethod" label="Annotations" [control]="form.get('annotationMethod')">
+        <div *ngFor="let method of annotationMethods">
+          <div class="custom-control custom-checkbox">
+            <input type="checkbox" class="custom-control-input"
+                   id="annotation-type-{{method.replace(' ', '-') | lowercase}}"
+                   (change)="onAnnotationMethodPick(method, $event.target.checked)"
+                   [checked]="form.get('annotationMethod').value === method">
+            <label class="custom-control-label d-flex align-items-center"
+                   for="annotation-type-{{method.replace(' ', '-') | lowercase}}">
+              {{ method }}
+            </label>
+          </div>
         </div>
-      </div>
+      </app-form-row>
     </div>
   </app-modal-body>
 
