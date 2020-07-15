@@ -1,125 +1,144 @@
-<div class="form-group">
-  <label for="label">
-    Node Label:
-  </label>
-  <input [(ngModel)]="node.display_name" class="form-control" (change)="doSave()" id="label"
-         maxlength="2000">
-</div>
+<ul ngbNav #nav="ngbNav" [(activeId)]="activeTab" class="nav-tabs">
+  <li ngbNavItem="properties">
+    <a ngbNavLink>
+      <i class="fas fa-info-circle"></i>
+    </a>
+    <ng-template ngbNavContent>
+      <div class="form-group">
+        <label for="label">
+          Node Label:
+        </label>
+        <input [(ngModel)]="node.display_name" class="form-control" (change)="doSave()" id="label"
+               maxlength="2000">
+      </div>
 
-<div class="form-group">
-  <label for="detail">Detail:</label>
-  <textarea [(ngModel)]="node.data.detail" class="form-control" (change)="doSave()" id="detail"
-            rows="5" maxlength="5000"></textarea>
-</div>
+      <div class="form-group">
+        <label for="detail">Detail:</label>
+        <textarea [(ngModel)]="node.data.detail" class="form-control" (change)="doSave()" id="detail"
+                  rows="5" maxlength="5000"></textarea>
+      </div>
 
-<div class="form-group" *ngIf="mayShowDetailText()">
-  <div class="custom-control custom-checkbox">
-    <input class="custom-control-input" type="checkbox" id="show-detail" value="1"
-           [(ngModel)]="node.style.showDetail" (change)="doSave()">
-    <label class="custom-control-label" for="show-detail">
-      Show detail text instead of the label
-    </label>
-  </div>
-</div>
+      <div class="form-group" *ngIf="mayShowDetailText()">
+        <div class="custom-control custom-checkbox">
+          <input class="custom-control-input" type="checkbox" id="show-detail" value="1"
+                 [(ngModel)]="node.style.showDetail" (change)="doSave()">
+          <label class="custom-control-label" for="show-detail">
+            Show detail text instead of the label
+          </label>
+        </div>
+      </div>
 
-<div class="form-group d-flex align-items-start">
-  <label for="type" class="mt-2 mr-2" ngbTooltip="Node type">
-    <i class="fa fa-fw fa-tag"></i>
-  </label>
-  <div class="d-flex flex-column flex-fill">
-    <select [(ngModel)]="node.label" (change)="doSave()" class="custom-select w-100" id="type">
-      <option *ngFor="let choice of nodeTypeChoices" [value]="choice.label">
-        {{choice.label | titlecase}}
-      </option>
-    </select>
-    <div class="mt-1" *ngIf="node.data?.source && node.label !== 'link'">
-      <button type="button" class="btn btn-light btn-block"
-              ngbTooltip="Make this node show as a note with a link back to the source"
-              (click)="node.label = 'link'; doSave()">
-        Change to Link
-      </button>
-    </div>
-  </div>
-</div>
+      <div class="form-group d-flex align-items-start">
+        <label for="type" class="mt-2 mr-2" ngbTooltip="Node type">
+          <i class="fa fa-fw fa-tag"></i>
+        </label>
+        <div class="d-flex flex-column flex-fill">
+          <select [(ngModel)]="node.label" (change)="doSave()" class="custom-select w-100" id="type">
+            <option *ngFor="let choice of nodeTypeChoices" [value]="choice.label">
+              {{choice.label | titlecase}}
+            </option>
+          </select>
+          <div class="mt-1" *ngIf="node.data?.source && node.label !== 'link'">
+            <button type="button" class="btn btn-light btn-block"
+                    ngbTooltip="Make this node show as a note with a link back to the source"
+                    (click)="node.label = 'link'; doSave()">
+              Change to Link
+            </button>
+          </div>
+        </div>
+      </div>
 
-<div class="form-group d-flex align-items-center">
-  <label for="url" class="my-0 mr-2" ngbTooltip="Link">
-    <i class="fa fa-fw fa-link"></i>
-  </label>
-  <input [(ngModel)]="node.data.hyperlink" class="form-control" (change)="doSave()" id="url">
-  <button type="button" class="btn btn-secondary btn-sm ml-1" (click)="goToLink()"
-          ngbTooltip="Open link">
-    <i class="fa fa-external-link-alt"></i>
-  </button>
-</div>
+      <div class="form-group d-flex align-items-center">
+        <label for="url" class="my-0 mr-2" ngbTooltip="Link">
+          <i class="fa fa-fw fa-link"></i>
+        </label>
+        <input [(ngModel)]="node.data.hyperlink" class="form-control" (change)="doSave()" id="url">
+        <button type="button" class="btn btn-secondary btn-sm ml-1" (click)="goToLink()"
+                ngbTooltip="Open link">
+          <i class="fa fa-external-link-alt"></i>
+        </button>
+      </div>
 
-<fieldset class="fieldset-properties mt-4">
-  <legend>Label Style</legend>
+      <fieldset class="fieldset-properties mt-4"
+                *ngIf="(node.display_name != null && node.display_name.length) || node.data?.search">
+        <legend>Quick Search</legend>
 
-  <div class="form-group d-flex align-items-center">
-    <label for="font-size" class="my-0 mr-2" ngbTooltip="Font size">
-      <i class="fa fa-fw fa-text-height"></i>
-    </label>
-    <app-percent-input min="20" max="1000" step="20" class="mr-1"
-                       [(value)]="node.style.fontSizeScale" (change)="doSave()" default="100" inputId="font-size"
-                       [style.width]="'6rem'"></app-percent-input>
-    %
-  </div>
+        <app-quick-search [query]="node.display_name" [links]="node.data?.search"></app-quick-search>
+      </fieldset>
+    </ng-template>
+  </li>
 
-  <div class="form-group d-flex align-items-center">
-    <label class="my-0 mr-2" ngbTooltip="Text color">
+  <li ngbNavItem="style">
+    <a ngbNavLink>
       <i class="fa fa-fw fa-fill"></i>
-    </label>
-    <app-color-chooser-component
-      id="fill-color" [palette]="paletteChoices"
-      [(color)]="node.style.fillColor" emptyLabel="Default"
-      (colorChange)="doSave()"></app-color-chooser-component>
-  </div>
+    </a>
+    <ng-template ngbNavContent>
+      <fieldset class="fieldset-properties mt-4">
+        <legend>Label Style</legend>
 
-</fieldset>
+        <div class="form-group d-flex align-items-center">
+          <label for="font-size" class="my-0 mr-2" ngbTooltip="Font size">
+            <i class="fa fa-fw fa-text-height"></i>
+          </label>
+          <app-percent-input min="20" max="1000" step="20" class="mr-1"
+                             [(value)]="node.style.fontSizeScale" (change)="doSave()" default="100" inputId="font-size"
+                             [style.width]="'6rem'"></app-percent-input>
+          %
+        </div>
 
-<fieldset class="fieldset-properties mt-4">
-  <legend>Border Style</legend>
+        <div class="form-group d-flex align-items-center">
+          <label class="my-0 mr-2" ngbTooltip="Text color">
+            <i class="fa fa-fw fa-fill"></i>
+          </label>
+          <app-color-chooser-component
+            id="fill-color" [palette]="paletteChoices"
+            [(color)]="node.style.fillColor" emptyLabel="Default"
+            (colorChange)="doSave()"></app-color-chooser-component>
+        </div>
 
-  <div class="form-group d-flex align-items-center">
-    <label for="stroke-color" class="my-0 mr-2" ngbTooltip="Border color">
-      <i class="fa fa-fw fa-fill"></i>
-    </label>
-    <app-color-chooser-component
-      id="stroke-color" [palette]="paletteChoices"
-      [(color)]="node.style.strokeColor" emptyLabel="Default"
-      (colorChange)="doSave()"></app-color-chooser-component>
-  </div>
+      </fieldset>
 
-  <div class="form-group d-flex align-items-center">
-    <label for="line-type" class="my-0 mr-2" ngbTooltip="Border line type">
-      <i class="fa fa-fw fa-border-style"></i>
-    </label>
-    <select [(ngModel)]="node.style.lineType" (change)="doSave()" class="custom-select" id="line-type">
-      <option *ngFor="let choice of lineTypeChoices" [value]="choice[0]">
-        {{choice[1].name}}
-      </option>
-    </select>
-  </div>
+      <fieldset class="fieldset-properties mt-4">
+        <legend>Border Style</legend>
 
-  <div class="form-group d-flex align-items-center">
-    <label for="line-width-scale" class="my-0 mr-2" ngbTooltip="Border line thicknesslmfi">
-      <i class="fa fa-fw fa-window-minimize"></i>
-    </label>
-    <app-percent-input min="20" max="1000" step="20" class="mr-1"
-                       [(value)]="node.style.lineWidthScale" (change)="doSave()" default="100"
-                       inputId="line-width-scale"
-                       [style.width]="'6rem'"></app-percent-input>
-    %
-  </div>
-</fieldset>
+        <div class="form-group d-flex align-items-center">
+          <label for="stroke-color" class="my-0 mr-2" ngbTooltip="Border color">
+            <i class="fa fa-fw fa-fill"></i>
+          </label>
+          <app-color-chooser-component
+            id="stroke-color" [palette]="paletteChoices"
+            [(color)]="node.style.strokeColor" emptyLabel="Default"
+            (colorChange)="doSave()"></app-color-chooser-component>
+        </div>
 
-<fieldset class="fieldset-properties mt-4"
-          *ngIf="(node.display_name != null && node.display_name.length) || node.data?.search">
-  <legend>Quick Search</legend>
+        <div class="form-group d-flex align-items-center">
+          <label for="line-type" class="my-0 mr-2" ngbTooltip="Border line type">
+            <i class="fa fa-fw fa-border-style"></i>
+          </label>
+          <select [(ngModel)]="node.style.lineType" (change)="doSave()" class="custom-select" id="line-type">
+            <option *ngFor="let choice of lineTypeChoices" [value]="choice[0]">
+              {{choice[1].name}}
+            </option>
+          </select>
+        </div>
 
-  <app-quick-search [query]="node.display_name" [links]="node.data?.search"></app-quick-search>
-</fieldset>
+        <div class="form-group d-flex align-items-center">
+          <label for="line-width-scale" class="my-0 mr-2" ngbTooltip="Border line thicknesslmfi">
+            <i class="fa fa-fw fa-window-minimize"></i>
+          </label>
+          <app-percent-input min="20" max="1000" step="20" class="mr-1"
+                             [(value)]="node.style.lineWidthScale" (change)="doSave()" default="100"
+                             inputId="line-width-scale"
+                             [style.width]="'6rem'"></app-percent-input>
+          %
+        </div>
+      </fieldset>
+    </ng-template>
+  </li>
+</ul>
+
+<div [ngbNavOutlet]="nav" class="mt-4">
+</div>
 
 <div class="mt-4">
   <div *ngIf="node.data.source" class="mb-2">
