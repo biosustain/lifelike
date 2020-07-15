@@ -42,7 +42,7 @@ def populate_index():
         .join(FileContent, FileContent.id == Files.content_id) \
         .all()
     for filename, description, file_id, doi, creation_date, \
-            uploaded_url, user_id, file in entries:
+        uploaded_url, user_id, file in entries:
         encoded_pdf = base64.b64encode(file)
         email = db.session.query(AppUser.email).filter(user_id == AppUser.id).one_or_none()
         data = encoded_pdf.decode('utf-8')
@@ -75,7 +75,3 @@ def main(config):
         create_index_and_mappings()
         populate_index()
         elastic_client.indices.refresh('pdf')
-
-
-if __name__ == '__main__':
-    main()
