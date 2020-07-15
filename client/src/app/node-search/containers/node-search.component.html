@@ -1,0 +1,12 @@
+<app-node-search-bar
+  (searchTermChange)="onNewSearchTerm($event)"
+></app-node-search-bar>
+
+<app-node-result-filter
+  (domainsFilter)="getDomainsFilter($event)"
+  (typesFilter)="getTypesFilter($event)"
+></app-node-result-filter>
+
+<app-node-result-list
+  [nodes]="dataSource"
+></app-node-result-list>
