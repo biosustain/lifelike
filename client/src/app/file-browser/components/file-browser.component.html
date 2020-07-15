@@ -140,7 +140,7 @@
                 <a *ngSwitchCase="'pdf'" [href]="file.routeLink" [appLink]="file.routeLink" class="text-truncate">
                   {{ file.filename }}
                 </a>
-                <a *ngSwitchCase="'dir'" [href]="file.routeLink" [appLink]="file.routeLink" class="text-truncate">
+                <a *ngSwitchCase="'dir'" [href]="file.routeLink" [appLink]="file.routeLink" [queryParams]="file.dirPath" class="text-truncate">
                   {{ file.name }}
                 </a>
               </label>
