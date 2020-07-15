@@ -248,7 +248,8 @@ def get_annotations(id):
     # Add additional information for annotations that were excluded
     for annotation in annotations:
         for excluded_annotation in file.excluded_annotations:
-            if excluded_annotation['id'] == annotation['meta']['id']:
+            if (excluded_annotation['id'] == annotation['meta']['id'] and
+                    excluded_annotation['text'] == annotation['textInDocument']):
                 annotation['meta']['isExcluded'] = True
                 annotation['meta']['exclusionReason'] = excluded_annotation['reason']
                 annotation['meta']['exclusionComment'] = excluded_annotation['comment']
@@ -455,13 +456,13 @@ def add_annotation_exclusion(file_id, **payload):
 
 @bp.route('/remove_annotation_exclusion/<file_id>', methods=['PATCH'])
 @auth.login_required
-@use_kwargs(AnnotationExclusionSchema(only=('id',)))
-def remove_annotation_exclusion(file_id, id):
+@use_kwargs(AnnotationExclusionSchema(only=('id', 'text')))
+def remove_annotation_exclusion(file_id, id, text):
     file = Files.query.filter_by(file_id=file_id).one_or_none()
     if file is None:
         raise RecordNotFoundException('File does not exist')
     excluded_annotation = next(
-        (ann for ann in file.excluded_annotations if ann['id'] == id), None
+        (ann for ann in file.excluded_annotations if ann['id'] == id and ann['text'] == text), None
     )
     if excluded_annotation is None:
         raise RecordNotFoundException('Annotation not found')
