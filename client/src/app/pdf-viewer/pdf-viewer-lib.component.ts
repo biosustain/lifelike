@@ -143,11 +143,6 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
         (window as any).pdfViewerRef.componentFn();
       });
     };
-    (window as any).openLinkPanel = () => {
-      (window as any).pdfViewerRef.zone.run(() => {
-        (window as any).pdfViewerRef.openLinkPanel();
-      });
-    }
     (window as any).copySelectedText = () => {
       (window as any).pdfViewerRef.zone.run(() => {
         (window as any).pdfViewerRef.copySelectedText();
@@ -171,7 +166,6 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
     (window as any).pdfViewerRef = {
       zone: this.zone,
       componentFn: () => this.openAnnotationPanel(),
-      openLinkPanel: () => this.openAddLinkPanel(),
       copySelectedText: () => this.copySelectedText(),
       removeCustomAnnotation: (uuid) => this.removeCustomAnnotation(uuid),
       openExclusionPanel: (id) => this.openExclusionPanel(id),
@@ -590,8 +584,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
         {
 
           content: `<img src="assets/images/annotate.png" onclick="openAnnotationPanel()">
-                <img src="assets/images/copy.png" onclick="copySelectedText()">
-            <img src="assets/images/link.png" onclick="openLinkPanel()">`,
+                <img src="assets/images/copy.png" onclick="copySelectedText()">`,
           position: {
             my: 'bottom center',
             target: 'mouse',
@@ -650,19 +643,6 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
         this.annotationCreated.emit(annotation);
         this.deleteFrictionless();
         this.resetSelection();
-      }
-    });
-  }
-
-  openAddLinkPanel() {
-    jQuery('.frictionless-annotation').qtip('destroy');
-    this.isSelectionLink = true;
-    // TODO: remove workaround and fix the issue with the selectedRects
-    // Currently selection.getRangeAt(0).getClientRects() gives duplicates
-    // for each selected line except the first and the last ones
-    this.selectedElements.forEach((el, index) => {
-      if (index === 0 || index === this.selectedElements.length - 1 || index % 2 !== 0) {
-        jQuery(el).css('border-bottom', '1px solid');
       }
     });
   }
