@@ -5,7 +5,6 @@ import { configureTestSuite } from 'ng-bullet';
 import { DrawingToolModule } from '../../drawing-tool.module';
 import { PaletteComponent } from './palette.component';
 import { RootStoreModule } from 'app/***ARANGO_USERNAME***-store';
-import {NodeSearchModule} from '../../../node-search/node-search.module';
 
 describe('PaletteComponent', () => {
     let component: PaletteComponent;
@@ -15,7 +14,6 @@ describe('PaletteComponent', () => {
         TestBed.configureTestingModule({
             imports: [
               DrawingToolModule,
-              NodeSearchModule,
               RootStoreModule
             ]
         });

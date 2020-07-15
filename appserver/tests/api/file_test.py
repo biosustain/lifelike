@@ -76,9 +76,10 @@ def test_can_upload_pdf(monkeypatch, client, test_user, fix_project, fix_directo
         f'/projects/{fix_project.project_name}/files',
         headers=headers,
         data={
-            'file': (mock_pdf, 'mock.pdf'),
+            'fileInput': (mock_pdf, 'mock.pdf'),
             'filename': 'mock.pdf',
             'directoryId': fix_directory.id,
+            'annotationMethod': 'Rules Based'
         },
         content_type='multipart/form-data'
     )
@@ -105,9 +106,10 @@ def test_cannot_upload_if_no_write_permission(
         f'/projects/{fix_project.project_name}/files',
         headers=headers,
         data={
-            'file': (mock_pdf, 'mock.pdf'),
+            'fileInput': (mock_pdf, 'mock.pdf'),
             'filename': 'mock.pdf',
             'directoryId': fix_directory.id,
+            'annotationMethod': 'Rules Based'
         },
         content_type='multipart/form-data'
     )
@@ -138,9 +140,10 @@ def test_can_view_all_files_in_project(monkeypatch, client, test_user, fix_proje
         f'/projects/{fix_project.project_name}/files',
         headers=headers,
         data={
-            'file': (mock_pdf, 'mock.pdf'),
+            'fileInput': (mock_pdf, 'mock.pdf'),
             'filename': 'mock.pdf',
             'directoryId': fix_directory.id,
+            'annotationMethod': 'Rules Based'
         },
         content_type='multipart/form-data'
     )

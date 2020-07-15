@@ -25,6 +25,10 @@ export interface Directory {
   projectsId: number;
   type?: string;
   routeLink?: string;
+  dirPath?: {
+    dir: string[];
+    id: number[];
+  };
 }
 
 export enum Role {

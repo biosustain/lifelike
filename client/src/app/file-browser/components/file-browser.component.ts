@@ -430,7 +430,16 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
       (m: Map) => ({...m, type: 'map', routeLink: this.generateRouteLink(m, 'map')})
     );
     childDirectories = childDirectories.map(
-      (d: Directory) => ({...d, type: 'dir', routeLink: this.generateRouteLink(d, 'dir')})
+      (d: Directory) => {
+        const {
+          name,
+          id
+        } = d;
+        const dirs = [...this.dirPathChain, name];
+        const ids = [...this.dirPathId, id];
+        const dirPath = { dir: dirs, id: ids };
+        return {dirPath, ...d, type: 'dir', routeLink: this.generateRouteLink(d, 'dir')};
+      }
     );
     files = files.map(
       (f: File) => ({...f, type: 'pdf', routeLink: this.generateRouteLink(f, 'pdf')})
@@ -448,24 +457,17 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
   private generateRouteLink(file: (Directory|Map), type) {
     switch (type) {
       case 'dir':
-        const {
-          name,
-          id
-        } = (file as Directory);
-
-        const dirs = [...this.dirPathChain, name];
-        const ids = [...this.dirPathId, id];
-        const querystring = this.encodeQueryData({ dir: dirs, id: ids });
-
-        return `/projects/${this.projectName}?${querystring}`;
+        return `/projects/${this.projectName}`;
       case 'map':
         const m: Map = file as Map;
-        const hashId = m.hashId;
-        return `maps/${hashId}/edit`;
+        // TODO - bring in jsonify_with_class
+        // tslint:disable-next-line: no-string-literal
+        const hashId = m.hashId || m['hash_id'];
+        return `/maps/${hashId}/edit`;
       case 'pdf':
         const f: File = file as File;
         const fileId = f.fileId;
-        return `files/${fileId}/${this.projectName}`;
+        return `/files/${fileId}/${this.projectName}`;
       default:
         return '';
     }
@@ -564,6 +566,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
         ).subscribe(
           (newMap: { project: Project, status}) => {
             const { project } = newMap;
+
             this.fileCollection = this.fileCollection.concat({
               ...project,
               type: 'map',
@@ -581,7 +584,9 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
       file.type
     ) {
       case 'map':
-        const hashId = (file as Map).hashId;
+        // TODO - bring in with jsonify_with_class
+        // tslint:disable-next-line: no-string-literal
+        const hashId = (file as Map).hashId || file['hash_id'];
         this.projPage.deleteMap(
           this.projectName,
           hashId
@@ -592,7 +597,9 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
               if (f.type !== 'map') {
                 return true;
               } else {
-                const fHashId = (f as Map).hashId;
+                // TODO - bring in with jsonify_with_class
+                // tslint:disable-next-line: no-string-literal
+                const fHashId = (f as Map).hashId || file['hash_id'];
                 return hashId !== fHashId;
               }
             }
