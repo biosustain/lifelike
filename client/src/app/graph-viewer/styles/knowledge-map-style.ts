@@ -1,5 +1,16 @@
-import { UniversalEdgeStyle, UniversalGraphEdge, UniversalGraphNode, UniversalNodeStyle } from 'app/drawing-tool/services/interfaces';
-import { EdgeRenderStyle, NodeRenderStyle, PlacedEdge, PlacedNode, PlacementOptions } from 'app/graph-viewer/styles/styles';
+import {
+  UniversalEdgeStyle,
+  UniversalGraphEdge,
+  UniversalGraphNode,
+  UniversalNodeStyle,
+} from 'app/drawing-tool/services/interfaces';
+import {
+  EdgeRenderStyle,
+  NodeRenderStyle,
+  PlacedEdge,
+  PlacedNode,
+  PlacementOptions,
+} from 'app/graph-viewer/styles/styles';
 import { nullCoalesce, nullIfEmpty } from 'app/graph-viewer/utils/types';
 import { RectangleNode } from 'app/graph-viewer/utils/canvas/graph-nodes/rectangle-node';
 import { TextAlignment, TextElement } from 'app/graph-viewer/utils/canvas/text-element';
@@ -37,18 +48,41 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
       (16 * labelFontSizeScale) + 'px ' + this.font;
     const forceHighDetailLevel = placementOptions.selected || placementOptions.highlighted;
 
+    let textColor = '#000';
+    let bgColor = '#fff';
+    let strokeColor = '#2B7CE9';
     let iconCode = null;
-    let color = '#000';
 
     // Pull style from the annotation types map
     const annotationStyle: AnnotationStyle = annotationTypesMap.get(d.label);
+
     if (annotationStyle) {
-      if (annotationStyle.color) {
-        color = annotationStyle.color;
-      }
       if (annotationStyle.iconCode) {
         iconCode = annotationStyle.iconCode;
       }
+    }
+
+    if (styleData.fillColor != null) {
+      textColor = styleData.fillColor;
+    } else if (annotationStyle) {
+      if (annotationStyle.color) {
+        textColor = annotationStyle.color;
+      }
+      if (annotationStyle.style) {
+        if (annotationStyle.style.background) {
+          bgColor = annotationStyle.style.background;
+        }
+        if (annotationStyle.style.color) {
+          textColor = annotationStyle.style.color;
+        }
+        if (annotationStyle.style.border) {
+          strokeColor = annotationStyle.style.border;
+        }
+      }
+    }
+
+    if (styleData.strokeColor != null) {
+      strokeColor = styleData.strokeColor;
     }
 
     if (d.label === 'note' && styleData.showDetail) {
@@ -78,7 +112,7 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
           nullCoalesce(styleData.lineType, 'dashed'),
           nullCoalesce(styleData.lineWidthScale, 1) *
           (placementOptions.selected || placementOptions.highlighted ? 1.3 : 1),
-          nullCoalesce(styleData.strokeColor, '#999')
+          nullCoalesce(styleData.strokeColor, '#999'),
         ),
         shapeFillColor: null,
         forceHighDetailLevel,
@@ -89,7 +123,7 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
       // Generic icon node + Note
       // ---------------------------------
 
-      const iconLabelColor = nullCoalesce(d.icon ? d.icon.color : null, color);
+      const iconLabelColor = nullCoalesce(d.icon ? d.icon.color : null, textColor);
       const iconSize = nullCoalesce(d.icon ? d.icon.size : null, 50);
       const iconFontFace = nullCoalesce(d.icon ? d.icon.face : null, 'FontAwesome');
       const iconFont = `${iconSize}px ${iconFontFace}`;
@@ -131,7 +165,7 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
         maxHeight: d.data.height ? null : this.maxHeightIfUnsized,
         text: d.display_name,
         font: labelFont,
-        fillStyle: nullCoalesce(styleData.fillColor, color),
+        fillStyle: textColor,
       });
 
       return new RectangleNode(ctx, {
@@ -144,9 +178,9 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
           nullCoalesce(styleData.lineType, 'solid'),
           nullCoalesce(styleData.lineWidthScale, 1) *
           (placementOptions.selected || placementOptions.highlighted ? 1.3 : 1),
-          nullCoalesce(styleData.strokeColor, '#2B7CE9')
+          strokeColor,
         ),
-        shapeFillColor: (placementOptions.highlighted ? '#E4EFFF' : (placementOptions.selected ? '#efefef' : '#fff')),
+        shapeFillColor: (placementOptions.highlighted ? '#E4EFFF' : (placementOptions.selected ? '#efefef' : bgColor)),
         forceHighDetailLevel,
       });
     }
@@ -178,7 +212,7 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
       nullIfEmpty(sourceHeadType),
       lineWidth,
       strokeColor,
-      this.defaultSourceLineEndDescriptor
+      this.defaultSourceLineEndDescriptor,
     );
 
     // Arrow/whatever at the end of the line
@@ -186,7 +220,7 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
       nullIfEmpty(targetHeadType),
       lineWidth,
       strokeColor,
-      this.defaultTargetLineEndDescriptor
+      this.defaultTargetLineEndDescriptor,
     );
 
     // Label textbox, if any
@@ -297,7 +331,7 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
                 this.lineEndBaseSize + lineWidth, {
                   fillStyle: strokeColor,
                   strokeStyle: null,
-                })
+                }),
             ];
           case 'diamond':
             return [
@@ -306,7 +340,7 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
                 this.lineEndBaseSize + lineWidth, {
                   fillStyle: strokeColor,
                   strokeStyle: null,
-                })
+                }),
             ];
           case 'square':
             return [
@@ -315,7 +349,7 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
                 this.lineEndBaseSize + lineWidth, {
                   fillStyle: strokeColor,
                   strokeStyle: null,
-                })
+                }),
             ];
           default:
             return [new Arrowhead(
@@ -331,7 +365,7 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
           compound.push(lineEnd);
         }
         return compound;
-      }, [])
+      }, []),
     );
   }
 }

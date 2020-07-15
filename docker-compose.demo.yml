@@ -33,6 +33,17 @@ services:
         networks:
             - backend
 
+    nlpapi:
+        image: ${REGISTRY:-gcr.io/able-goods-221820}/kg-nlpapi-demo:${GITHUB_HASH:-latest}
+        env_file:
+            - ./.env
+        expose:
+            - 5001
+        volumes:
+            - /srv/models:/models
+        networks:
+            - backend
+
 networks:
     frontend:
     backend:

@@ -9,7 +9,6 @@ import { CommonModule } from '@angular/common';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
-// ngrx
 import { EffectsModule } from '@ngrx/effects';
 
 import { AngularSplitModule } from 'angular-split';
@@ -40,6 +39,7 @@ import { ColorChooserComponent } from './components/form/color-chooser.component
 import { PercentInputComponent } from './components/form/percent-input.component';
 import { SelectComponent } from './components/form/select.component';
 import { ResultsSummaryComponent } from './components/results-summary.component';
+import { QuickSearchComponent } from './components/quick-search.component';
 
 const components = [
   MessageDialogComponent,
@@ -62,6 +62,7 @@ const components = [
   PercentInputComponent,
   SelectComponent,
   ResultsSummaryComponent,
+  QuickSearchComponent,
 ];
 
 @NgModule({
