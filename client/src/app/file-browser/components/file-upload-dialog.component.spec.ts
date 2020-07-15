@@ -44,16 +44,16 @@ describe('FileUploadDialogComponent', () => {
     });
 
     it('should update form annotation method with selected option', () => {
-        component.onAnnotationMethodPick(component.annotationMethods[0]);
+        component.onAnnotationMethodPick(component.annotationMethods[0], true);
         expect(component.form.get('annotationMethod').value).toEqual(component.annotationMethods[0]);
     });
 
     it('should mark form as invalid if no annotation method selected', () => {
-        component.onAnnotationMethodPick(component.annotationMethods[0]);
-        expect(component.selection.isSelected(component.annotationMethods[0])).toBeTrue();
+        component.onAnnotationMethodPick(component.annotationMethods[0], true);
+        expect(component.form.get('annotationMethod').valid).toBeTrue();
 
-        component.onAnnotationMethodPick(component.annotationMethods[0]);
-        expect(component.selection.isSelected(component.annotationMethods[0])).toBeFalse();
+        component.onAnnotationMethodPick(component.annotationMethods[0], false);
+        expect(component.form.get('annotationMethod').valid).toBeFalse();
 
         component.form.get('files').setValue(new File([new Blob()], 'blah'));
         component.form.get('filename').setValue('blah.pdf');
