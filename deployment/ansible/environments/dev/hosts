@@ -1,2 +1,2 @@
 [webservers]
-kg-sandbox ansible_host=35.209.245.238 ansible_python_interpreter=/usr/bin/python3
+kg-sandbox ansible_host=35.193.155.163 ansible_python_interpreter=/usr/bin/python3
