@@ -8,7 +8,6 @@ import { PdfViewerComponent } from './pdf-viewer.component';
 import { configureTestSuite } from 'ng-bullet';
 import { RootStoreModule } from 'app/***ARANGO_USERNAME***-store';
 import {NodeSearchModule} from '../../node-search/node-search.module';
-import {PdfSearchModule} from '../../pdf-search/pdf-search.module';
 
 describe('PdfViewerComponent', () => {
     let component: PdfViewerComponent;
@@ -20,7 +19,6 @@ describe('PdfViewerComponent', () => {
                 DrawingToolModule,
                 RouterTestingModule,
                 NodeSearchModule,
-                PdfSearchModule,
                 RootStoreModule
             ],
             providers: [
