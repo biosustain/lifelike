@@ -1,10 +1,14 @@
 import functools
 
-from neo4japp.database import get_authorization_service
+from neo4japp.models.auth import AccessActionType
+from neo4japp.database import (
+    get_authorization_service,
+    get_projects_service,
+)
 from neo4japp.exceptions import NotAuthorizedException
 
 
-def requires_permission(action: str):
+def requires_permission(action: AccessActionType):
     """Returns a check-permission decorator
 
      For use by flask endpoints to easily add request access control.
@@ -38,6 +42,56 @@ def requires_permission(action: str):
             return retval
         return decorator
     return check_permission
+
+
+def requires_project_permission(action: AccessActionType):
+    """ Returns a check project permission decorator """
+    def check_project_permission(f):
+        @functools.wraps(f)
+        def decorator(*args, **kwargs):
+            gen = f(*args, **kwargs)
+            try:
+                user, projects = next(gen)
+                auth = get_authorization_service()
+
+                # SUPER USER ADMIN overrides all permissions
+                is_superuser = auth.has_role(user, 'admin')
+
+                if not is_superuser:
+                    proj = get_projects_service()
+                    role = proj.has_role(user, projects)
+                    if role is None or not auth.is_allowed(role, action, projects):
+                        raise NotAuthorizedException(
+                            f'{user.username} does not have {action.name} priviledge'
+                        )
+                retval = next(gen)
+            finally:
+                gen.close()
+            return retval
+        return decorator
+    return check_project_permission
+
+
+def requires_project_role(role: str):
+    """ Returns a check project role decorator """
+    def check_project_role(f):
+        @functools.wraps(f)
+        def decorator(*args, **kwargs):
+            gen = f(*args, **kwargs)
+            try:
+                principal, asset = next(gen)
+                proj = get_projects_service()
+                roles = proj.has_role(principal, asset)
+                if roles is None or roles.name != role:
+                    raise NotAuthorizedException(
+                        f'{principal} does not have required role: {role}'
+                    )
+                retval = next(gen)
+            finally:
+                gen.close()
+            return retval
+        return decorator
+    return check_project_role
 
 
 def requires_role(role: str):
