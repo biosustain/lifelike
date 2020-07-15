@@ -125,7 +125,7 @@ export class MapEditorComponent extends MapViewComponent<Project> implements OnI
             x: hoverPosition.x,
             y: hoverPosition.y,
           },
-        },
+        }, true
       ));
     }
   }
