@@ -20,7 +20,7 @@ import {MatDialog, MatDialogConfig} from '@angular/material/dialog';
 import {FileSelectionDialogComponent} from '../../file-browser/file-selection-dialog.component';
 import {PdfFile} from '../../interfaces/pdf-files.interface';
 import {NodeSearchComponent} from '../../node-search/containers/node-search.component';
-import {PdfSearchComponent} from '../../pdf-search/containers/pdf-search.component';
+
 
 
 @Component({
@@ -149,10 +149,6 @@ export class SplitterComponent implements OnInit, OnDestroy, AfterViewInit {
           break;
         case 'node-search':
           factory = this.r.resolveComponentFactory(NodeSearchComponent);
-          this.splitPanelLength = 30;
-          break;
-        case 'pdf-search':
-          factory = this.r.resolveComponentFactory(PdfSearchComponent);
           this.splitPanelLength = 30;
           break;
         case 'pdf-viewer':

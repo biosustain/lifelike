@@ -46,7 +46,6 @@ import { EditProjectDialogComponent } from './project-list/edit-project-dialog/e
 import { SearchLinksComponent } from './drawing-tool/info-panel/search-links/search-links.component';
 import { ConfirmDialogComponent } from 'app/shared/components/confirm-dialog/confirm-dialog.component';
 import { EditGuard } from './services/edit.guard';
-import {PdfSearchComponent} from '../pdf-search/containers/pdf-search.component';
 
 export const routes = [
   {
@@ -99,7 +98,6 @@ export const routes = [
     NodeSearchComponent,
     ConfirmDialogComponent,
     RestoreProjectDialogComponent,
-    PdfSearchComponent
   ],
   imports: [
     SharedModule,
