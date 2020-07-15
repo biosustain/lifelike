@@ -68,13 +68,13 @@ bp = Blueprint('files', __name__, url_prefix='/files')
 @auth.login_required
 @jsonify_with_class(FileUpload, has_file=True)
 @requires_project_permission(AccessActionType.WRITE)
-def upload_pdf(request, project_name: str = ''):
+def upload_pdf(request, project_name: str):
 
     user = g.current_user
     filename = secure_filename(request.filename.strip())
 
     # TODO: Deprecate and make mandatory (no default) this once LL-415 is implemented
-    dir_id = request.directory_id
+    dir_id = request.directory_id if request.directory_id is not None else 1
 
     try:
         directory = Directory.query.get(dir_id)
