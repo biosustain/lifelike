@@ -4,10 +4,7 @@ import { Domain, EntityType, SearchParameters } from '../../interfaces';
 import { DOMAINS, ENTITY_TYPES } from '../../shared/database';
 import { MessageType } from '../../interfaces/message-dialog.interface';
 import { MessageDialog } from '../../shared/services/message-dialog.service';
-
-const requiredList = (control: AbstractControl): { [key: string]: any } | null => {
-  return control.value.length === 0 ? {required: {value: control.value}} : null;
-};
+import { nonEmptyList } from '../../shared/validators';
 
 @Component({
   selector: 'app-search-bar',
@@ -20,8 +17,8 @@ export class SearchFormComponent {
 
   form = new FormGroup({
     query: new FormControl('', Validators.required),
-    domains: new FormControl('', requiredList),
-    entityTypes: new FormControl('', requiredList),
+    domains: new FormControl('', nonEmptyList),
+    entityTypes: new FormControl('', nonEmptyList),
   });
 
   constructor(private readonly messageDialog: MessageDialog) {
