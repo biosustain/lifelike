@@ -127,7 +127,7 @@ def upload_pdf():
     current_app.logger.info(
         f'User uploaded file: <{g.current_user.email}:{file.filename}>')
 
-    index_pdf.main()
+    index_pdf.main(current_app)
 
     return jsonify({
         'file_id': file_id,
