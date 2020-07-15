@@ -54,11 +54,12 @@ export class PdfAnnotationsService {
    * Retrieves the annotations of the given file.
    * @param fileId id of the file
    */
-  getFileAnnotations(fileId: string): Observable<any> {
-      return this.http.get(
-        this.baseUrl + `/get_annotations/${fileId}`,
-        this.createHttpOptions(true),
-      );
+  getFileAnnotations(fileId: string, projectName: string = 'beta-project'): Observable<any> {
+    const url = `/api/projects/${projectName}/files/${fileId}/annotations`;
+    return this.http.get(
+      url,
+      this.createHttpOptions(true),
+    );
   }
 
   /**
@@ -66,9 +67,10 @@ export class PdfAnnotationsService {
    * @param fileId id of the file
    * @param annotation annotation to add
    */
-  addCustomAnnotation(fileId: string, annotation: Annotation): Observable<any> {
+  addCustomAnnotation(fileId: string, annotation: Annotation, projectName: string = 'beta-project'): Observable<any> {
+    const url = `/api/projects/${projectName}/files/${fileId}/annotations/add`;
     return this.http.patch(
-      this.baseUrl + `/add_custom_annotation/${fileId}`,
+      url,
       annotation,
       this.createHttpOptions(true)
     );
@@ -80,9 +82,10 @@ export class PdfAnnotationsService {
    * @param uuid uuid of the annotation to be deleted
    * @param removeAll indicates if all the matching annotations should be removed
    */
-  removeCustomAnnotation(fileId: string, uuid: string, removeAll: boolean): Observable<any> {
+  removeCustomAnnotation(fileId: string, uuid: string, removeAll: boolean, projectName: string = 'beta-project'): Observable<any> {
+    const url = `/api/projects/${projectName}/files/${fileId}/annotations/remove`;
     return this.http.patch(
-      this.baseUrl + `/remove_custom_annotation/${fileId}`,
+      url,
       { uuid, removeAll },
       this.createHttpOptions(true)
     );

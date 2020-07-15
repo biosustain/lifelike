@@ -69,9 +69,10 @@ export class ProjectsService {
    * Downloads map as JSON by hashId
    * @param hashId - act as uri for map
    */
-  public downloadProject(hashId) {
+  public downloadProject(hashId, projectName: string = 'beta-project') {
+    const url = `/api/projects/${projectName}/map/${hashId}`;
     return this.http.get(
-      `${this.baseUrl}/map/download/${hashId}`,
+      url,
       this.createHttpOptions(true)
     );
   }
@@ -85,6 +86,7 @@ export class ProjectsService {
     formData.append('projectName', payload.label);
     formData.append('description', payload.description);
     formData.append('filename', payload.filename);
+    formData.append('dirId', payload.dirId.toString());
     return this.http.post<{result: {hashId: string}}>(
       `${this.baseUrl}/map/upload`,
       formData,
@@ -232,6 +234,10 @@ export class ProjectsService {
   }
 
   public uploadProjectBackup(project: Project): Observable<any> {
+    project.description = project.description && project.description.length ?
+      project.description :
+      '';
+
     return this.http.post(
       `${this.baseUrl}/map/${project.hash_id}/backup`,
       project,

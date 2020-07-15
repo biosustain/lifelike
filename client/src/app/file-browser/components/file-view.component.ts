@@ -1,11 +1,17 @@
 import { Component, EventEmitter, OnDestroy, Output, ViewChild } from '@angular/core';
-import { combineLatest, Subject, Subscription, throwError } from 'rxjs';
+import { combineLatest, Subject, Subscription, throwError, Observable } from 'rxjs';
 import { PdfFilesService } from 'app/shared/services/pdf-files.service';
 import { Hyperlink, SearchLink } from 'app/shared/constants';
 
 import { PdfAnnotationsService } from '../../drawing-tool/services';
 
-import { Annotation, Location, Meta, AnnotationExclusionData, UniversalGraphNode } from '../../drawing-tool/services/interfaces';
+import {
+  Annotation,
+  Location,
+  Meta,
+  AnnotationExclusionData,
+  UniversalGraphNode,
+} from '../../drawing-tool/services/interfaces';
 
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { PdfFile } from '../../interfaces/pdf-files.interface';
@@ -97,10 +103,12 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
     private readonly errorHandler: ErrorHandler,
   ) {
     this.loadTask = new BackgroundTask(([file, loc]) => {
+      const projectName = this.route.snapshot.params.project_name || '';
+
       return combineLatest(
-        this.pdf.getFileInfo(file.file_id),
-        this.pdf.getFile(file.file_id),
-        this.pdfAnnService.getFileAnnotations(file.file_id),
+        this.pdf.getFileInfo(file.file_id, projectName),
+        this.pdf.getFile(file.file_id, projectName),
+        this.pdfAnnService.getFileAnnotations(file.file_id, projectName),
       ).pipe(errorHandler.create());
     });
 
@@ -138,8 +146,8 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
           parseFloat(coordMatch[1]),
           parseFloat(coordMatch[2]),
           parseFloat(coordMatch[3]),
-          parseFloat(coordMatch[4])
-        ]
+          parseFloat(coordMatch[4]),
+        ],
       } : null;
       this.openPdf(new DummyFile(linkedFileId), location);
     }
@@ -298,15 +306,15 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
     });
   }
 
-  annotationExclusionAdded({ id, reason, comment }) {
+  annotationExclusionAdded({id, reason, comment}) {
     this.addAnnotationExclusionSub = this.pdfAnnService.addAnnotationExclusion(this.currentFileId, id, reason, comment).subscribe(
       response => {
-        this.addedAnnotationExclusion = { id, reason, comment };
+        this.addedAnnotationExclusion = {id, reason, comment};
         this.snackBar.open('Annotation has been excluded', 'Close', {duration: 5000});
       },
       err => {
         this.snackBar.open(`Error: failed to exclude annotation`, 'Close', {duration: 10000});
-      }
+      },
     );
   }
 
@@ -317,9 +325,9 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
         this.snackBar.open('Unmarked successfully', 'Close', {duration: 5000});
       },
       err => {
-        const { message, name } = err.error.apiHttpError;
+        const {message, name} = err.error.apiHttpError;
         this.snackBar.open(`${name}: ${message}`, 'Close', {duration: 10000});
-      }
+      },
     );
   }
 
