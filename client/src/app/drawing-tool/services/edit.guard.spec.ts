@@ -7,6 +7,7 @@ import { RootStoreModule } from 'app/root-store';
 import { RouterTestingModule } from '@angular/router/testing';
 import { DrawingToolModule } from '../drawing-tool.module';
 import { NodeSearchModule } from 'app/node-search/node-search.module';
+import {PdfSearchModule} from '../../pdf-search/pdf-search.module';
 
 describe('EditGuardService', () => {
 
@@ -17,7 +18,8 @@ describe('EditGuardService', () => {
           RootStoreModule,
           RouterTestingModule,
           DrawingToolModule,
-          NodeSearchModule
+          NodeSearchModule,
+          PdfSearchModule
         ]
       });
     }
