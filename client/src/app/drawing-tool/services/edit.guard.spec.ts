@@ -15,7 +15,7 @@ describe('EditGuardService', () => {
         imports: [
           RootStoreModule,
           RouterTestingModule,
-          DrawingToolModule,
+          DrawingToolModule
         ]
       });
     }
