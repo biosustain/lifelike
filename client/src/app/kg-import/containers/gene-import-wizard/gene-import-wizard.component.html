@@ -1,0 +1,54 @@
+
+<div class="module module-centered">
+  <div class="module-header-container">
+    <div class="module-header">
+      <div class="module-title">Gene Import Wizard</div>
+    </div>
+  </div>
+  <div class="module-body">
+    <mat-horizontal-stepper linear="true" #stepper>
+      <mat-step state="upload" [stepControl]="importFileForm">
+        <ng-template matStepLabel>Choose Import File</ng-template>
+        <app-generic-file-upload
+          [accept]="acceptedFileTypes"
+          (fileChanged)="onFileChange($event)"
+        ></app-generic-file-upload>
+        <button class="btn btn-primary mt-2" [disabled]="!(importFileForm.valid)" matStepperNext>Next</button>
+      </mat-step>
+
+      <mat-step state="selectSheet" [stepControl]="sheetForm">
+        <ng-template matStepLabel>Choose Sheet</ng-template>
+        <div *ngIf="worksheetData" class="form-group">
+          <label>Please select the sheet you would like to import:</label>
+          <select class="custom-select" required (change)="onSheetNameChange($event)">
+            <option *ngFor="let sheet of worksheetData.sheets">{{ sheet.sheetName }}</option>
+          </select>
+        </div>
+        <div>
+          <button class="btn btn-primary mt-2" matStepperPrevious>Back</button>
+          <button class="btn btn-primary mt-2 ml-1" [disabled]="!(sheetForm.valid)" matStepperNext>Next</button>
+        </div>
+      </mat-step>
+
+      <mat-step state="configure">
+        <ng-template matStepLabel>Configure Import Data</ng-template>
+        <app-worksheet-preview
+          [worksheetData]="selectedSheet"
+        ></app-worksheet-preview>
+
+        <div>
+          <button class="btn btn-primary mt-2" matStepperPrevious>Back</button>
+          <button class="btn btn-primary mt-2 ml-1" matStepperNext>Next</button>
+        </div>
+      </mat-step>
+
+      <mat-step state="review">
+        <ng-template matStepLabel>Review Data Matching</ng-template>
+        <div>
+          <button class="btn btn-primary mt-2" matStepperPrevious>Back</button>
+          <button class="btn btn-primary mt-2 ml-1">Submit</button>
+        </div>
+      </mat-step>
+    </mat-horizontal-stepper>
+  </div>
+</div>
