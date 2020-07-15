@@ -1,13 +1,14 @@
 <div id="association-snippet-container" *ngIf="snippets.length > 0">
   <mat-expansion-panel class="association-snippet-panel" *ngFor="let snippet of snippets">
-    <mat-expansion-panel-header [collapsedHeight]="'150px'" [expandedHeight]="'150px'">
+    <mat-expansion-panel-header [collapsedHeight]="'130px'" [expandedHeight]="'130px'">
       <mat-panel-title
         class="association-snippet-title">
-        <strong>Name:&nbsp;</strong> {{ snippet.filename  | truncate:['240'] }}
+        <strong>Name:&nbsp;</strong> {{ snippet.filename  | truncate:['200'] }}
       </mat-panel-title>
-      <mat-panel-description class="association-snippet-pub-data">
-        <i><a href="mailto:{{snippet.email}}">{{ snippet.email }}</a> <br/>
-          {{ snippet.uploaded_date | date: 'fullDate'}}</i>
+      <mat-panel-description class="association-snippet-pub-data" fxLayout="end">
+        <i class="association-snippet-description">
+          <a href="mailto:{{snippet.email}}">{{ snippet.email }}</a> <br/>
+          {{ snippet.uploaded_date | date: 'fullDate' }}</i>
       </mat-panel-description>
     </mat-expansion-panel-header>
     <h3>Description</h3>
