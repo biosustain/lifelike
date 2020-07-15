@@ -134,12 +134,14 @@ export class ProjectPageService {
       formData.append('description', data.description.substring(0, this.descriptionMaxLength));
     }
     if (data.type === UploadType.Files) {
-      formData.append('file', data.files[0]);
+      formData.append('fileInput', data.files[0]);
     } else {
       formData.append('url', data.url);
     }
 
     formData.append('directoryId', parentDir);
+
+    formData.append('annotationMethod', data.annotationMethod);
 
     const url = `${this.projectsAPI}/${projectName}/files`;
     const options = this.createHttpOptions(true);

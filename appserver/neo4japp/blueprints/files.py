@@ -51,7 +51,7 @@ from neo4japp.request_schemas.annotations import (
 )
 from neo4japp.utils.network import read_url
 from neo4japp.services.annotations.constants import AnnotationMethod
-from neo4japp.util import jsonify_with_class
+from neo4japp.util import jsonify_with_class, SuccessResponse
 from flask_apispec import use_kwargs, marshal_with
 from pdfminer import high_level
 
@@ -66,14 +66,15 @@ bp = Blueprint('files', __name__, url_prefix='/files')
 @bp.route('/upload', methods=['POST'])
 @newbp.route('/<string:project_name>/files', methods=['POST'])  # TODO: use this once LL-415 done
 @auth.login_required
-@requires_project_permission(AccessActionType.WRITE)
 @jsonify_with_class(FileUpload, has_file=True)
-def upload_pdf(project_name: str = ''):
+@requires_project_permission(AccessActionType.WRITE)
+def upload_pdf(request, project_name: str = ''):
 
     user = g.current_user
-    filename = secure_filename(request.form['filename'].strip())
+    filename = secure_filename(request.filename.strip())
+
     # TODO: Deprecate and make mandatory (no default) this once LL-415 is implemented
-    dir_id = request.form.get('directoryId', 1)
+    dir_id = request.directory_id
 
     try:
         directory = Directory.query.get(dir_id)
@@ -83,8 +84,8 @@ def upload_pdf(project_name: str = ''):
 
     yield user, projects
 
-    if 'url' in request.form:
-        url = request.form['url']
+    if request.url:
+        url = request.url
         try:
             req = urllib.request.Request(url, headers={
                 'User-Agent': DOWNLOAD_USER_AGENT,
@@ -159,11 +160,14 @@ def upload_pdf(project_name: str = ''):
     current_app.logger.info(
         f'User uploaded file: <{g.current_user.email}:{file.filename}>')
 
-    yield jsonify({
-        'file_id': file_id,
-        'filename': filename,
-        'status': 'Successfully uploaded'
-    })
+    yield SuccessResponse(
+        result={
+            'file_id': file_id,
+            'filename': filename,
+            'status': 'Successfully uploaded'
+        },
+        status_code=200
+    )
 
 
 @bp.route('/list', methods=['GET'])
