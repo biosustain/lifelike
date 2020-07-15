@@ -1074,7 +1074,7 @@ class AnnotationsService:
             except requests.exceptions.RequestException:
                 raise AnnotationError('An error occurred with the NLP service.')
 
-        print(f'NLP Response Output: {cumm_nlp_resp}')
+        print(f'NLP Response Output: {json.dumps(cumm_nlp_resp)}')
 
         if req:
             req.close()
