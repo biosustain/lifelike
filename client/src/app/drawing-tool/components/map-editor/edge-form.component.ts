@@ -40,6 +40,8 @@ export class EdgeFormComponent {
   @Output() delete = new EventEmitter<object>();
   @Output() sourceOpen = new EventEmitter<string>();
 
+  activeTab: string;
+
   get edge() {
     return this.updatedEdge;
   }
