@@ -12,29 +12,24 @@ import {Nodes} from '../containers/node-search.component';
 export class NodeResultListComponent implements OnInit, OnChanges {
   @Input() nodes: Nodes[] = [];
   displayedColumns: string[] = ['id', 'name', 'type', 'domain', 'description'];
-  dataSource = new MatTableDataSource<Nodes>(this.nodes);
-  @ViewChild(MatPaginator, {static: false}) paginator: MatPaginator;
+  dataSource = new MatTableDataSource<Nodes>([]);
+  @ViewChild(MatPaginator, {static: true}) paginator: MatPaginator;
   childMode = false;
-  hiddenCustomFilter = false;
-  customFilterTooltip = 'Enable custom filter, this will only filter the result list.';
-
-  constructor() {
-  }
+  showFilter = false;
 
   ngOnInit() {
+    this.dataSource.filterPredicate = (data: Nodes, filter: string) =>
+      data.description.toLocaleLowerCase().includes(filter);
     this.dataSource.paginator = this.paginator;
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    this.dataSource = new MatTableDataSource<Nodes>(this.nodes);
-    this.dataSource.paginator = this.paginator;
+    const propName = 'nodes'; // making linter happy
+    this.dataSource.data = changes[propName].currentValue;
   }
 
   applyFilter(event: Event) {
-    // This will attach the filter only to the description column
-    this.dataSource.filterPredicate = (data: Nodes, filter: string) =>
-      data.description.indexOf(filter) !== -1;
-    const filterValue = (event.target as HTMLInputElement).value;
-    this.dataSource.filter = filterValue.trim().toLowerCase();
+    const filterValue: string = (event.target as HTMLInputElement).value;
+    this.dataSource.filter = filterValue.trim().toLocaleLowerCase();
   }
 }

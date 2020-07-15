@@ -5,9 +5,13 @@
       Drag and Drop any result into the canvas
     </mat-label>
   </div>
-  <mat-slide-toggle color="primary" [matTooltip]="customFilterTooltip" [(ngModel)]="hiddenCustomFilter">
+  <mat-slide-toggle
+    color="primary"
+    matTooltip="Enable custom filter, this will only filter the result list."
+    [(ngModel)]="showFilter"
+  >
   </mat-slide-toggle>
-  <mat-form-field id="filter-full-width" *ngIf="hiddenCustomFilter">
+  <mat-form-field id="filter-full-width" *ngIf="showFilter">
     <button mat-button matPrefix mat-icon-button>
       <mat-icon>search</mat-icon>
     </button>
