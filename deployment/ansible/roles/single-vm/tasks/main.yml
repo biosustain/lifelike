@@ -7,6 +7,8 @@
   pip:
     name:
       - gsutil
+      - docker
+      - docker-compose
     umask: "0022"
   become: true
 
@@ -31,8 +33,8 @@
   args:
     chdir: "{{ home_dir }}/app/nlp"
 
-- name: Fetch LMDB models
-  become_user: "{{ webserver_user }}"
-  command: "{{ home_dir }}/app/appserver/neo4japp/services/annotations/lmdb/fetch-lmdb.sh"
-  args:
-    chdir: "{{ home_dir }}/app/appserver/neo4japp/services/annotations/lmdb"
+# - name: Fetch LMDB models
+#   become_user: "{{ webserver_user }}"
+#   command: "{{ home_dir }}/app/appserver/neo4japp/services/annotations/lmdb/fetch-lmdb.sh"
+#   args:
+#     chdir: "{{ home_dir }}/app/appserver/neo4japp/services/annotations/lmdb"
