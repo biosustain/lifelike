@@ -1,0 +1,14 @@
+<ul class="list-unstyled m-0">
+  <li *ngFor="let link of shownLinks" class="text-truncate">
+    <a [href]="link.url" target="_blank">
+      {{ link.domain }}
+      <i class="fas fa-external-link-alt ml-1"></i>
+    </a>
+  </li>
+</ul>
+
+<div class="mt-1 text-muted" *ngIf="generated">
+  <small>
+    <i class="fas fa-info-circle"></i> These links were auto-generated.
+  </small>
+</div>
