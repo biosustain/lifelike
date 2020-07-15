@@ -1,7 +1,4 @@
-#search-bar-full-width {
-    width: 100%;
-}
-
-#search-bar-container {
-  height: 5%;
+.mat-form-field {
+  margin-bottom: -1.25em !important; // overrides mat-card-content styles applied by Material
+  width: 100%;
 }
