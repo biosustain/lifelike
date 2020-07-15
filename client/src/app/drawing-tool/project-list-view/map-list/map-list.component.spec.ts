@@ -11,7 +11,6 @@ import {Injectable} from '@angular/core';
 import {Observable, of} from 'rxjs';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {NodeSearchModule} from '../../../node-search/node-search.module';
-import {PdfSearchModule} from '../../../pdf-search/pdf-search.module';
 
 
 @Injectable()
@@ -37,8 +36,7 @@ describe('MapListComponent', () => {
         RootStoreModule,
         RouterModule,
         BrowserAnimationsModule,
-        NodeSearchModule,
-        PdfSearchModule
+        NodeSearchModule
       ],
       providers: [
         ProjectsService

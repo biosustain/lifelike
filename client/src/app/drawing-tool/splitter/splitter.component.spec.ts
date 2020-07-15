@@ -11,7 +11,6 @@ import { DrawingToolModule } from '../drawing-tool.module';
 import {NodeSearchModule} from '../../node-search/node-search.module';
 import { RootStoreModule } from 'app/***ARANGO_USERNAME***-store';
 import { RouterTestingModule } from '@angular/router/testing';
-import {PdfSearchModule} from '../../pdf-search/pdf-search.module';
 
 describe('SplitterComponent', () => {
   let component: SplitterComponent;
@@ -23,8 +22,7 @@ describe('SplitterComponent', () => {
         RootStoreModule,
         RouterTestingModule,
         DrawingToolModule,
-        NodeSearchModule,
-        PdfSearchModule
+        NodeSearchModule
       ],
       providers: [
         {provide: APP_BASE_HREF, useValue : '/' }
