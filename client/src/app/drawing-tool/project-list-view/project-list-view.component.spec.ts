@@ -8,6 +8,7 @@ import { DrawingToolModule } from '../drawing-tool.module';
 import { NodeSearchModule } from '../../node-search/node-search.module';
 import { RootStoreModule } from 'app/root-store';
 import { RouterTestingModule } from '@angular/router/testing';
+import {PdfSearchModule} from '../../pdf-search/pdf-search.module';
 
 // TODO: Looks like this is throwing an http error when the spec is cleaned up in `afterAll`.
 // Could be that a service is being called with funky data, or maybe a service response isn't
@@ -22,7 +23,8 @@ describe('ProjectListViewComponent', () => {
         RootStoreModule,
         RouterTestingModule,
         DrawingToolModule,
-        NodeSearchModule
+        NodeSearchModule,
+        PdfSearchModule
       ],
       providers: [
         {provide: APP_BASE_HREF, useValue : '/' }
