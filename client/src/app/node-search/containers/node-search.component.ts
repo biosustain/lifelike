@@ -1,5 +1,7 @@
 import {Component} from '@angular/core';
 import {DomSanitizer} from '@angular/platform-browser';
+import {SearchService} from 'app/search/services/search.service';
+import {FTSQueryRecord} from 'app/interfaces';
 
 export interface Nodes {
   id: string;
@@ -14,9 +16,7 @@ export interface Nodes {
   selector: 'app-search-collection-page',
   template: `
     <app-node-search-bar
-      (results)="getResults($event)"
-      [domainsFilter]="domainsFilter"
-      [typesFilter]="typesFilter"
+      (searchTermChange)="onNewSearchTerm($event)"
     ></app-node-search-bar>
     <app-node-result-filter
       (domainsFilter)="getDomainsFilter($event)"
@@ -38,10 +38,46 @@ export class NodeSearchComponent {
     NCBI_Taxonomy: 'https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id='
   };
   dataSource: Nodes[] = [];
+  searchTerm = '';
+  filter = 'labels(node)';
   domainsFilter = '';
   typesFilter = '';
 
-  constructor(private sanitizer: DomSanitizer) {
+  constructor(
+    private sanitizer: DomSanitizer,
+    private searchService: SearchService,
+  ) {
+  }
+
+  onNewSearchTerm(searchTerm: string) {
+    this.searchTerm = searchTerm;
+    this.search();
+  }
+
+  search() {
+    this.searchService.simpleFullTextSearch(this.searchTerm, 1, 100, this.filter).
+      subscribe((results) => {
+        this.getResults(results.nodes as FTSQueryRecord[]);
+      });
+  }
+
+  private filterComposer() {
+    const filters = [this.domainsFilter, this.typesFilter];
+    const isEmpty = (currentValue) => currentValue === '';
+    if (filters.every(isEmpty)) {
+      return 'labels(n)';
+    }
+    const hasContent = (currentValue) => currentValue !== '';
+    const appliedFilters = filters.filter(hasContent);
+    let filterString = '';
+    appliedFilters.forEach((filter, index) => {
+      if (appliedFilters.length - 1 === index) {
+        filterString += filter;
+        return;
+       }
+      filterString += filter + ' AND ';
+    });
+    return filterString;
   }
 
   getResults(results) {
@@ -109,32 +145,36 @@ export class NodeSearchComponent {
   }
 
   getDomainsFilter(selectedDomains: string[]) {
-    let domainsPredicate = '(';
     if (selectedDomains.length === 0) {
       this.domainsFilter = '';
-      return;
+    } else {
+      let domainsPredicate = '(';
+      selectedDomains.forEach((domain, index) => {
+        if (selectedDomains.length - 1 === index) {
+          return domainsPredicate += domain + ')';
+        }
+        domainsPredicate += domain + ' OR ';
+      });
+      this.domainsFilter = domainsPredicate;
     }
-    selectedDomains.forEach((domain, index) => {
-      if (selectedDomains.length - 1 === index) {
-        return domainsPredicate += domain + ')';
-      }
-      domainsPredicate += domain + ' OR ';
-    });
-    this.domainsFilter = domainsPredicate;
+    this.filter = this.filterComposer();
+    this.search();
   }
 
   getTypesFilter(selectedTypes: string[]) {
-    let typesPredicate = '(';
     if (selectedTypes.length === 0) {
       this.typesFilter = '';
-      return;
+    } else {
+      let typesPredicate = '(';
+      selectedTypes.forEach((type, index) => {
+        if (selectedTypes.length - 1 === index) {
+          return typesPredicate += type + ')';
+        }
+        typesPredicate += type + ' OR ';
+      });
+      this.typesFilter = typesPredicate;
     }
-    selectedTypes.forEach((type, index) => {
-      if (selectedTypes.length - 1 === index) {
-        return typesPredicate += type + ')';
-      }
-      typesPredicate += type + ' OR ';
-    });
-    this.typesFilter = typesPredicate;
+    this.filter = this.filterComposer();
+    this.search();
   }
 }
