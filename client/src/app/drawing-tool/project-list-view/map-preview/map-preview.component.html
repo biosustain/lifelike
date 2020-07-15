@@ -38,7 +38,7 @@
         Hyperlinks
       </p>
       <div *ngFor='let h of node?.data?.hyperlinks'>
-        <p class='attr link' (click)='goToLink(h)'>
+        <p class='attr link' (click)='goToLink(h.url)'>
           {{h.url}}
         </p>
       </div>
