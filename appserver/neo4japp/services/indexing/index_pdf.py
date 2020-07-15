@@ -68,8 +68,8 @@ def populate_index():
             print(info)
 
 
-def main():
-    app = create_app('Test', config='config.Testing')
+def main(config):
+    app = create_app(config)
     with app.app_context():
         create_ingest_pipeline()
         create_index_and_mappings()
