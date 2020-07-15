@@ -105,6 +105,13 @@
   </div>
 </fieldset>
 
+<fieldset class="fieldset-properties mt-4"
+          *ngIf="(node.display_name != null && node.display_name.length) || node.data?.search">
+  <legend>Quick Search</legend>
+
+  <app-quick-search [query]="node.display_name" [links]="node.data?.search"></app-quick-search>
+</fieldset>
+
 <div class="mt-4">
   <div *ngIf="node.data.source" class="mb-2">
     <button *ngIf="node.data.source" type="button" class="btn btn-outline-secondary btn-block" (click)="goToSource()">

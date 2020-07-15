@@ -95,6 +95,13 @@
   </div>
 </fieldset>
 
+<fieldset class="fieldset-properties mt-4"
+          *ngIf="(edge.label != null && edge.label.length) || edge.data?.search">
+  <legend>Quick Search</legend>
+
+  <app-quick-search [query]="edge.label" [links]="edge.data?.search"></app-quick-search>
+</fieldset>
+
 <div class="mt-4">
   <div *ngIf="!!edge.data.hyperlink" class="mb-2">
     <button type="button" class="btn btn-outline-secondary btn-block" (click)="goToLink()">
