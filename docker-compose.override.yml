@@ -18,10 +18,10 @@ services:
         environment:
             - NEO4J_AUTH=neo4j/password
         volumes:
-            - ./neo4j/data:/data
-            - ./neo4j/logs:/logs
-            - ./neo4j/import:/import
-            - ./neo4j/plugins:/plugins
+            - /data
+            - /logs
+            - /import
+            - /plugins
             - ./neo4j/backups:/backups
         ports:
             - "7474:7474"
