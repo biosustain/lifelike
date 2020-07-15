@@ -1,28 +1,22 @@
-import {Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges} from '@angular/core';
-import {FormControl, FormGroup} from '@angular/forms';
-import {SearchService} from '../../search/services/search.service';
-import {FTSQueryRecord} from '../../interfaces';
-
+import {Component, EventEmitter, Input, OnChanges, Output, SimpleChanges} from '@angular/core';
+import {FormControl} from '@angular/forms';
+import {SearchService} from 'app/search/services/search.service';
+import {FTSQueryRecord} from 'app/interfaces';
 
 @Component({
   selector: 'app-node-search-bar',
   templateUrl: './node-search-bar.component.html',
   styleUrls: ['./node-search-bar.component.scss']
 })
-export class NodeSearchBarComponent implements OnInit, OnChanges {
+export class NodeSearchBarComponent implements OnChanges {
 
   @Input() domainsFilter = '';
   @Input() typesFilter = '';
   filter = 'labels(node)';
   @Output() results = new EventEmitter<any>();
-  searchForm = new FormGroup({
-    searchInput: new FormControl(''),
-  });
+  searchInput = new FormControl('');
 
   constructor(private searchService: SearchService) {
-  }
-
-  ngOnInit() {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -59,10 +53,11 @@ export class NodeSearchBarComponent implements OnInit, OnChanges {
   }
 
   onSubmit() {
-    this.searchService.simpleFullTextSearch(
-      this.searchForm.value.searchInput,
-      1, 100, this.filter).subscribe((results) => {
-      this.results.emit(results.nodes as FTSQueryRecord[]);
-    });
+    const text: string = this.searchInput.value;
+
+    this.searchService.simpleFullTextSearch(text, 1, 100, this.filter).
+      subscribe((results) => {
+        this.results.emit(results.nodes as FTSQueryRecord[]);
+      });
   }
 }
