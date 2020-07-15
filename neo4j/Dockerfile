@@ -2,8 +2,8 @@ FROM neo4j:3.5.14
 
 COPY --chown=neo4j:neo4j . /var/lib/neo4j
 
-RUN chown -R neo4j:neo4j /var/lib/neo4j
 RUN chmod +x /var/lib/neo4j/seed-backup.sh
+RUN chown -R neo4j:neo4j /var/lib/neo4j
 
 USER neo4j
 
