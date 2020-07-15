@@ -34,7 +34,6 @@ from neo4japp.exceptions import (
 )
 from neo4japp.models import AppUser
 from neo4japp.models.files import Files, FileContent, LMDBsDates
-from neo4japp.services.indexing import index_pdf
 from neo4japp.utils.network import read_url
 from neo4japp.schemas.files import (
     AnnotationAdditionSchema,
@@ -127,8 +126,6 @@ def upload_pdf():
 
     current_app.logger.info(
         f'User uploaded file: <{g.current_user.email}:{file.filename}>')
-
-    index_pdf.main(current_app)
 
     return jsonify({
         'file_id': file_id,
