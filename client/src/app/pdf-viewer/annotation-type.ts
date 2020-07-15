@@ -33,10 +33,12 @@ export interface Annotation {
   rects: Rect[];
   meta: Meta;
   uuid?: string;
+  textInDocument?: string;
 }
 
 export interface AnnotationExclusionData {
   id: string;
+  text: string;
   reason: string;
   comment: string;
 }
