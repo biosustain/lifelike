@@ -14,18 +14,7 @@ export interface Nodes {
 
 @Component({
   selector: 'app-search-collection-page',
-  template: `
-    <app-node-search-bar
-      (searchTermChange)="onNewSearchTerm($event)"
-    ></app-node-search-bar>
-    <app-node-result-filter
-      (domainsFilter)="getDomainsFilter($event)"
-      (typesFilter)="getTypesFilter($event)"
-    ></app-node-result-filter>
-    <app-node-result-list
-      [nodes]="dataSource"
-    ></app-node-result-list>
-  `,
+  templateUrl: './node-search.component.html',
 })
 export class NodeSearchComponent {
 
@@ -54,7 +43,7 @@ export class NodeSearchComponent {
     this.search();
   }
 
-  search() {
+  private search() {
     this.searchService.simpleFullTextSearch(this.searchTerm, 1, 100, this.filter).
       subscribe((results) => {
         this.getResults(results.nodes as FTSQueryRecord[]);
@@ -63,24 +52,14 @@ export class NodeSearchComponent {
 
   private filterComposer() {
     const filters = [this.domainsFilter, this.typesFilter];
-    const isEmpty = (currentValue) => currentValue === '';
-    if (filters.every(isEmpty)) {
+    if (filters.every(f => f.length === 0)) {
       return 'labels(n)';
     }
-    const hasContent = (currentValue) => currentValue !== '';
-    const appliedFilters = filters.filter(hasContent);
-    let filterString = '';
-    appliedFilters.forEach((filter, index) => {
-      if (appliedFilters.length - 1 === index) {
-        filterString += filter;
-        return;
-       }
-      filterString += filter + ' AND ';
-    });
-    return filterString;
+    const nonEmptyFilters = filters.filter(f => f.length > 0);
+    return this.intersperseValue(nonEmptyFilters, ' AND ');
   }
 
-  getResults(results) {
+  private getResults(results) {
     this.dataSource = results.map((data) => {
       return {
         id: this.getId(data),
@@ -96,8 +75,7 @@ export class NodeSearchComponent {
     });
   }
 
-
-  getDomain(subLabels: string[]) {
+  private getDomain(subLabels: string[]) {
     this.removeUnneededLabels(subLabels);
     return subLabels.find(element => element.match(/^db_*/))
       .split('_')[1];
@@ -113,12 +91,12 @@ export class NodeSearchComponent {
     });
   }
 
-  getType(subLabels: string[]) {
+  private getType(subLabels: string[]) {
     this.removeUnneededLabels(subLabels);
     return subLabels.find(element => !element.match(/^db_*/));
   }
 
-  getLink(data) {
+  private getLink(data) {
     const domain = this.getDomain(data.node.subLabels);
     const type = this.getType(data.node.subLabels);
     if (domain === 'NCBI' && type === 'Gene') {
@@ -136,11 +114,11 @@ export class NodeSearchComponent {
     }
   }
 
-  getName(data) {
+  private getName(data) {
     return data.node.displayName;
   }
 
-  getId(data) {
+  private getId(data) {
     return data.node.data.id;
   }
 
@@ -148,14 +126,7 @@ export class NodeSearchComponent {
     if (selectedDomains.length === 0) {
       this.domainsFilter = '';
     } else {
-      let domainsPredicate = '(';
-      selectedDomains.forEach((domain, index) => {
-        if (selectedDomains.length - 1 === index) {
-          return domainsPredicate += domain + ')';
-        }
-        domainsPredicate += domain + ' OR ';
-      });
-      this.domainsFilter = domainsPredicate;
+      this.domainsFilter = `(${this.intersperseValue(selectedDomains, ' OR ')})`;
     }
     this.filter = this.filterComposer();
     this.search();
@@ -165,16 +136,22 @@ export class NodeSearchComponent {
     if (selectedTypes.length === 0) {
       this.typesFilter = '';
     } else {
-      let typesPredicate = '(';
-      selectedTypes.forEach((type, index) => {
-        if (selectedTypes.length - 1 === index) {
-          return typesPredicate += type + ')';
-        }
-        typesPredicate += type + ' OR ';
-      });
-      this.typesFilter = typesPredicate;
+      this.typesFilter = `(${this.intersperseValue(selectedTypes, ' OR ')})`;
     }
     this.filter = this.filterComposer();
     this.search();
+  }
+
+  /**
+   * @example
+   * // returns 'azbzc'
+   * intersperseValue(['a', 'b', 'c'], 'z');
+   */
+  private intersperseValue(arr: string[], value: string): string {
+    const last = arr.length - 1;
+    return arr.reduce((acc, curr, index) => {
+      const s = `${acc}${curr}`;
+      return index < last ? s + value : s;
+    }, '');
   }
 }
