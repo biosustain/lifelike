@@ -11,6 +11,4 @@
       docker_compose:
         project_src: "{{ home_dir }}/app"
         state: present
-      register: outcome
 
-    - debug: msg="{{ outcome.stdout }}"
