@@ -9,68 +9,63 @@
 
   <div class="module-body">
     <div class="mb-4 d-flex">
+      <div class="mr-2">
+        <button class="btn btn-primary" (click)="displayCreateDialog()">
+          <i class="fa fa-fw fa-plus-circle"></i>
+          Create
+        </button>
+
+        <button class="btn btn-outline-secondary ml-2" (click)="displayEditDialog(selectedProject)"
+                [disabled]="selectedProject == null">
+          <i class="fa fa-pencil fa-fw"></i> Edit
+        </button>
+      </div>
       <div class="ml-auto">
-        <button type="button" class="btn btn-outline-secondary ml-2" (click)="refresh()"
-                ngbTooltip="Refresh the results">
+        <button type="button" class="btn btn-outline-secondary ml-1" (click)="refresh()"
+                ngbTooltip="Refresh the results" placement="bottom">
           <i class="fa fa-sync"></i>
         </button>
       </div>
     </div>
+
     <app-background-task-progress
-      [status]="status" (refresh)="refresh()" childClass="mb-2"></app-background-task-progress>
-    <div class='mt-4 d-flex flex-wrap' *ngIf="status.placeholdersShown; else results">
-      <div *ngFor='let i of [0,0,0,0]' class='tile-container'>
-        <div
-          class='tile'>
-          <div class='w-100 h-100'>
+      [status]="status" (refresh)="refresh()" childClass="mb-3"></app-background-task-progress>
+
+    <ng-container *ngIf="status.placeholdersShown">
+      <div class="tile-deck">
+        <div *ngFor="let p of [0, 1, 2]" class="tile d-flex flex-column justify-content-center align-items-center">
+          <div class="flex-fill d-flex align-items-center">
+            <span class="placeholder-box">
+              <i class="fas fa-layer-group fa-4x"></i>
+            </span>
           </div>
-        </div>          
-      </div>
-    </div>
-    <ng-template #results>
-      <div class="mt-4 d-flex flex-wrap">
-        <!-- Add Project -->
-        <div (click)='createProject()' id='add-project' class='tile-container'>
-          <div
-            class=tile>
-            <div class='w-100 h-100 d-flex flex-column justify-content-center align-items-center'>
-              <p class='b silver f2 ma0'>
-                +
-              </p>
-            </div>
+          <div class="my-2 text-truncate">
+            <span class="placeholder-box">Loading loading</span>
           </div>
-          <p
-            class='title'>
-            Add Project
-          </p>
         </div>
-        <!-- List Of Projects -->
-        <div *ngFor='let p of projects' class='tile-container'>
-          <div
-            (click)='goToProject(p)'
-            class='tile'>
-            <div
-              class='w-100 h-100 d-flex flex-column justify-content-center align-items-center'>
-              <p class='b blue f2 ma0'>
-                {{
-                  p.projectName | projectTitleAcronym
-                }}
-              </p>
-            </div>
-            <div
-              style='position: absolute; top: 0; right: 0; z-index: 2;'>
-              <i
-                (click)='$event.stopPropagation(); editProject(p);'
-                class="ma3 fa fa-ellipsis-h silver hover-blue"
-                style='font-size: 1.2rem;'>
-              </i>
-            </div>
-          </div>
-          <p class='title'>
-            {{p.projectName | titlecase}}
-          </p>
-        </div>    
       </div>
-    </ng-template>
+    </ng-container>
+
+    <ng-container *ngIf="status.resultsShown">
+      <div class="tile-deck tile-deck-selectable">
+        <div *ngFor="let p of projects" class="tile d-flex flex-column justify-content-center align-items-center"
+             tabindex="0"
+             (click)='select(p)'
+             (keydown)="$event.keyCode != 13 || select(p)"
+             [class.active]="selectedProject === p">
+          <div class="flex-fill d-flex align-items-center">
+            <i class="fas fa-layer-group fa-4x"></i>
+          </div>
+          <div class="text-truncate">
+            <a href="#" (click)="goToProject(p); $event.preventDefault()"
+               class="p-2 d-block">{{ p.projectName }}</a>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+    <div *ngIf="status.emptyResultsShown && projects.length === 0" class="text-center my-4">
+      There are no projects to show.
+    </div>
   </div>
 </div>
