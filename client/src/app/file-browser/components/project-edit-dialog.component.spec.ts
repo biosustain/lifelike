@@ -1,20 +1,21 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { CreateProjectDialogComponent } from './create-project-dialog.component';
+import { ProjectEditDialogComponent } from './project-edit-dialog.component';
 import { configureTestSuite } from 'ng-bullet';
 import { SharedModule } from 'app/shared/shared.module';
+import { FileBrowserModule } from 'app/file-browser/file-browser.module';
 import { RootStoreModule } from 'app/root-store';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 
-describe('CreateProjectDialogComponent', () => {
-  let component: CreateProjectDialogComponent;
-  let fixture: ComponentFixture<CreateProjectDialogComponent>;
+describe('EditProjectDialogComponent', () => {
+  let component: ProjectEditDialogComponent;
+  let fixture: ComponentFixture<ProjectEditDialogComponent>;
 
   configureTestSuite(() => {
     TestBed.configureTestingModule({
-      declarations: [ CreateProjectDialogComponent ],
       imports: [
         SharedModule,
+        FileBrowserModule,
         RootStoreModule
       ],
       providers: [
@@ -25,7 +26,7 @@ describe('CreateProjectDialogComponent', () => {
   });
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(CreateProjectDialogComponent);
+    fixture = TestBed.createComponent(ProjectEditDialogComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

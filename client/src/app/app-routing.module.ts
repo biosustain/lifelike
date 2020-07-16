@@ -21,7 +21,7 @@ import { UnloadConfirmationGuard } from './shared/guards/UnloadConfirmation.guar
 import { MapBrowserComponent } from './drawing-tool/components/map-browser.component';
 import { MapEditorComponent } from './drawing-tool/components/map-editor/map-editor.component';
 import { MapViewComponent } from './drawing-tool/components/map-view.component';
-import { ProjectSpaceComponent } from './file-browser/components/project-space/project-space.component';
+import { ProjectBrowserComponent } from './file-browser/components/project-browser.component';
 
 // TODO: Add an unprotected home page
 const routes: Routes = [
@@ -112,7 +112,7 @@ const routes: Routes = [
   },
   {
     path: 'projects',
-    component: ProjectSpaceComponent,
+    component: ProjectBrowserComponent,
     canActivate: [AuthGuard],
     data: {
       title: 'Projects',
