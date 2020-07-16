@@ -103,6 +103,13 @@ def get_account_service():
     return g.account_service
 
 
+def get_projects_service():
+    if 'projects_service' not in g:
+        from neo4japp.services import ProjectsService
+        g.projects_service = ProjectsService(db.session)
+    return g.projects_service
+
+
 def get_lmdb_dao():
     if 'lmdb_dao' not in g:
         from neo4japp.services.annotations import LMDBDao
@@ -142,6 +149,7 @@ def reset_dao():
         'search_dao',
         'authorization_service',
         'account_service',
+        'projects_service',
         'lmdb_dao',
     ]:
         if dao in g:

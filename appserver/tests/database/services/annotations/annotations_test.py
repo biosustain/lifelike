@@ -745,6 +745,7 @@ def test_tokens_gene_vs_protein_serpina1_case_all_caps_from_knowledge_graph(
     assert annotations[1].meta.keyword_type == EntityType.Species.value
 
 
+@pytest.mark.skip(reason="This is not a good test")
 def test_save_bioc_annotations_to_db(default_lmdb_setup, session):
     annotator = get_test_annotations_service(
         genes_lmdb_path=path.join(directory, 'lmdb/genes'),

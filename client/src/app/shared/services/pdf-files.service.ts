@@ -27,19 +27,19 @@ export class PdfFilesService {
     );
   }
 
-  getFileInfo(id: string): Observable<PdfFile> {
+  getFileInfo(id: string, projectName: string = 'beta-project'): Observable<PdfFile> {
     const options = {
       headers: this.getAuthHeader(),
     };
-    return this.http.get<PdfFile>(`${this.baseUrl}/${id}/info`, options);
+    return this.http.get<PdfFile>(`/api/projects/${projectName}/files/${id}/info`, options);
   }
 
-  getFile(id: string): Observable<ArrayBuffer> {
+  getFile(id: string, projectName: string = 'beta-project'): Observable<ArrayBuffer> {
     const options = {
       headers: this.getAuthHeader(),
       responseType: 'arraybuffer' as const,
     };
-    return this.http.get(`${this.baseUrl}/${id}`, options);
+    return this.http.get(`/api/projects/${projectName}/files/${id}`, options);
   }
 
   deleteFiles(ids: string[]): Observable<object> {
