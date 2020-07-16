@@ -10,7 +10,7 @@ from neo4japp.blueprints.auth import auth
 from neo4japp.blueprints.permissions import requires_project_role, requires_project_permission
 from neo4japp.database import db, get_projects_service
 from neo4japp.data_transfer_objects import DirectoryContent
-from neo4japp.exceptions import RecordNotFoundException, NotAuthorizedException
+from neo4japp.exceptions import RecordNotFoundException, NotAuthorizedException, DuplicateRecord
 from neo4japp.models import (
     AccessActionType,
     AppRole,
@@ -19,6 +19,7 @@ from neo4japp.models import (
     Projects,
     projects_collaborator_role,
 )
+from neo4japp.services.exceptions import NameUnavailableError
 
 bp = Blueprint('projects', __name__, url_prefix='/projects')
 
@@ -72,7 +73,10 @@ def add_projects():
         f'User created projects: <{g.current_user.email}:{projects.project_name}>')
 
     proj_service = get_projects_service()
-    proj_service.create_projects(user, projects)
+    try:
+        proj_service.create_projects(user, projects)
+    except NameUnavailableError:
+        raise DuplicateRecord('There is a project with that name already.')
     return jsonify(dict(results=projects.to_dict())), 200
 
 
