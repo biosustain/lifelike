@@ -467,7 +467,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
       case 'pdf':
         const f: File = file as File;
         const fileId = f.fileId;
-        return `/files/${fileId}/${this.projectName}`;
+        return `/projects/${this.projectName}/files/${fileId}`;
       default:
         return '';
     }
