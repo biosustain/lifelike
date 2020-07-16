@@ -1,4 +1,4 @@
-<form 
+<form
   [formGroup]='form'
   (submit)="submit(); $event.preventDefault()">
   <app-modal-header (cancel)="cancel()">
@@ -6,7 +6,7 @@
   </app-modal-header>
 
   <app-modal-body>
-    <app-form-row 
+    <app-form-row
       [control]="form.get('projectName')"
       [errors]='errors'>
       <label for="project-name">Name</label>
@@ -14,8 +14,8 @@
         formControlName="projectName"
         class='form-control'
         id="project-name"
-        [appFormInput]="form.get('projectName')" 
-        type="text">
+        [appFormInput]="form.get('projectName')"
+        type="text" appAutoFocus>
     </app-form-row>
     <app-form-row [control]="form.get('description')">
       <label for="descriptionInput">Description</label>
@@ -31,7 +31,7 @@
   </app-modal-body>
 
   <app-modal-footer>
-    <button type="button" class="btn btn-outline-danger" (click)="cancel()">Cancel</button>
-    <button type="submit" class="btn btn-primary">Submit</button>
+    <button type="button" class="btn btn-secondary mr-2" (click)="cancel()">Cancel</button>
+    <button type="submit" class="btn btn-primary">Create</button>
   </app-modal-footer>
 </form>
