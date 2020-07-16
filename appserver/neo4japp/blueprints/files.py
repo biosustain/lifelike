@@ -171,7 +171,9 @@ def upload_pdf(request, project_name: str):
 @requires_project_permission(AccessActionType.READ)
 def list_files(project_name: str):
 
-    projects = Projects.query.filter(Projects.project_name == project_name).one()
+    projects = Projects.query.filter(Projects.project_name == project_name).one_or_none()
+    if projects is None:
+        raise RecordNotFoundException(f'Project {project_name} not found')
     projects_id = projects.id
 
     user = g.current_user
@@ -209,7 +211,9 @@ def get_file_info(id: str, project_name: str):
 
     user = g.current_user
 
-    projects = Projects.query.filter(Projects.project_name == project_name).one()
+    projects = Projects.query.filter(Projects.project_name == project_name).one_or_none()
+    if projects is None:
+        raise RecordNotFoundException(f'Project {project_name} not found')
 
     yield user, projects
 
@@ -249,7 +253,9 @@ def get_pdf(id: str, project_name: str):
 
     user = g.current_user
 
-    projects = Projects.query.filter(Projects.project_name == project_name).one()
+    projects = Projects.query.filter(Projects.project_name == project_name).one_or_none()
+    if projects is None:
+        raise RecordNotFoundException(f'Project {project_name} not found')
 
     yield user, projects
 
@@ -327,7 +333,9 @@ def map_annotations_to_correct_format(unformatted_annotations: dict):
 @requires_project_permission(AccessActionType.READ)
 def get_annotations(id: str, project_name: str):
 
-    projects = Projects.query.filter(Projects.project_name == project_name).one()
+    projects = Projects.query.filter(Projects.project_name == project_name).one_or_none()
+    if projects is None:
+        raise RecordNotFoundException(f'Project {project_name} not found')
 
     user = g.current_user
 
@@ -375,7 +383,9 @@ def get_annotations(id: str, project_name: str):
 @requires_project_permission(AccessActionType.WRITE)
 def add_custom_annotation(id, project_name, **payload):
 
-    projects = Projects.query.filter(Projects.project_name == project_name).one()
+    projects = Projects.query.filter(Projects.project_name == project_name).one_or_none()
+    if projects is None:
+        raise RecordNotFoundException(f'Project {project_name} not found')
 
     user = g.current_user
 
@@ -410,7 +420,9 @@ class AnnotationRemovalOutcome(Enum):
 @requires_project_permission(AccessActionType.WRITE)
 def remove_custom_annotation(id, uuid, removeAll, project_name):
 
-    projects = Projects.query.filter(Projects.project_name == project_name).one()
+    projects = Projects.query.filter(Projects.project_name == project_name).one_or_none()
+    if projects is None:
+        raise RecordNotFoundException(f'Project {project_name} not found')
 
     user = g.current_user
 
@@ -483,7 +495,9 @@ def reannotate(project_name: str):
 
     user = g.current_user
 
-    projects = Projects.query.filter(Projects.project_name == project_name).one()
+    projects = Projects.query.filter(Projects.project_name == project_name).one_or_none()
+    if projects is None:
+        raise RecordNotFoundException(f'Project {project_name} not found')
 
     yield user, projects
 
@@ -536,7 +550,9 @@ class DeletionOutcome(Enum):
 def delete_files(project_name: str):
     curr_user = g.current_user
 
-    projects = Projects.query.filter(Projects.project_name == project_name).one()
+    projects = Projects.query.filter(Projects.project_name == project_name).one_or_none()
+    if projects is None:
+        raise RecordNotFoundException(f'Project {project_name} not found')
 
     yield curr_user, projects
 
@@ -603,7 +619,9 @@ def search_doi(content: bytes) -> Optional[str]:
 @requires_project_permission(AccessActionType.WRITE)
 def add_annotation_exclusion(project_name: str, file_id: str, **payload):
 
-    projects = Projects.query.filter(Projects.project_name == project_name).one()
+    projects = Projects.query.filter(Projects.project_name == project_name).one_or_none()
+    if projects is None:
+        raise RecordNotFoundException(f'Project {project_name} not found')
 
     user = g.current_user
 
@@ -638,7 +656,9 @@ def remove_annotation_exclusion(project_name, file_id, id):
 
     user = g.current_user
 
-    projects = Projects.query.filter(Projects.project_name == project_name).one()
+    projects = Projects.query.filter(Projects.project_name == project_name).one_or_none()
+    if projects is None:
+        raise RecordNotFoundException(f'Project {project_name} not found')
 
     yield user, projects
 
