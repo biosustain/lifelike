@@ -39,12 +39,15 @@
           </ng-template>
           <ng-template ngbPanelContent>
             <div class="d-flex flex-column justify-content-between align-items-start">
+              <!-- Need to slightly edit the snippet entry type strings here because the keys on the legend match the
+              labels in the KG, which have uppercase first characters -->
               <app-highlight-snippet
                 [snippet]="snippet.reference.data.sentence"
                 [entry1Text]="snippet.reference.data.entry1Text"
                 [entry2Text]="snippet.reference.data.entry2Text"
-                [entry1Colors]="legend.get(result.from.primaryLabel)"
-                [entry2Colors]="legend.get(result.to.primaryLabel)"
+                [entry1Type]="snippet.reference.data.entry1Type.slice(0, 1).toUpperCase() + snippet.reference.data.entry1Type.slice(1)"
+                [entry2Type]="snippet.reference.data.entry2Type.slice(0, 1).toUpperCase() + snippet.reference.data.entry2Type.slice(1)"
+                [legend]="legend"
               ></app-highlight-snippet>
               <div>
                 <span
