@@ -42,6 +42,7 @@ from neo4japp.blueprints.projects import bp as newbp
 
 bp = Blueprint('drawing_tool', __name__, url_prefix='/drawing-tool')
 
+
 @newbp.route('/<string:projects_name>/map/<string:hash_id>', methods=['GET'])
 @auth.login_required
 @requires_project_permission(AccessActionType.READ)
@@ -55,7 +56,14 @@ def get_map_by_hash(hash_id: str, projects_name: str):
 
     # Pull up map by hash_id
     try:
-        project = Project.query.filter_by(hash_id=hash_id).one()
+        project = Project.query.filter(
+            Project.hash_id == hash_id,
+        ).join(
+            Directory,
+            Directory.id == Project.dir_id,
+        ).filter(
+            Directory.projects_id == projects.id,
+        ).one()
     except NoResultFound:
         raise RecordNotFoundException('not found :-( ')
 
@@ -76,7 +84,14 @@ def download_map(hash_id: str, projects_name: str):
     yield user, projects
 
     try:
-        project = Project.query.filter_by(hash_id=hash_id).one()
+        project = Project.query.filter(
+            Project.hash_id == hash_id,
+        ).join(
+            Directory,
+            Directory.id == Project.dir_id,
+        ).filter(
+            Directory.projects_id == projects.id,
+        ).one()
     except NoResultFound:
         raise RecordNotFoundException('not found :( ')
 
@@ -221,11 +236,23 @@ def update_project(hash_id: str, projects_name: str):
     user = g.current_user
     data = request.get_json()
 
-    projects = Projects.query.filter(Projects.project_name == projects_name).one()
+    projects = Projects.query.filter(Projects.project_name == projects_name).one_or_none()
+    if projects is None:
+        raise RecordNotFoundException(f'Project {projects_name} not found')
 
     yield user, projects
 
-    project = Project.query.filter_by(hash_id=hash_id).first_or_404()
+    try:
+        project = Project.query.filter(
+            Project.hash_id == hash_id,
+        ).join(
+            Directory,
+            Directory.id == Project.dir_id,
+        ).filter(
+            Directory.projects_id == projects.id,
+        ).one()
+    except NoResultFound:
+        raise RecordNotFoundException('not found :-( ')
 
     current_app.logger.info(f'User updated map: <{g.current_user.email}:{project.label}>')
 
@@ -250,11 +277,23 @@ def delete_project(hash_id: str, projects_name: str):
     """ Delete object owned by user """
     user = g.current_user
 
-    projects = Projects.query.filter(Projects.project_name == projects_name).one()
+    projects = Projects.query.filter(Projects.project_name == projects_name).one_or_none()
+    if projects is None:
+        raise RecordNotFoundException(f'Project {projects_name} not found')
 
     yield user, projects
 
-    project = Project.query.filter_by(hash_id=hash_id).first_or_404()
+    try:
+        project = Project.query.filter(
+            Project.hash_id == hash_id,
+        ).join(
+            Directory,
+            Directory.id == Project.dir_id,
+        ).filter(
+            Directory.projects_id == projects.id,
+        ).one()
+    except NoResultFound:
+        raise RecordNotFoundException('not found :-( ')
 
     # Commit to db
     db.session.delete(project)
@@ -276,11 +315,23 @@ def get_project_pdf(projects_name: str, hash_id: str):
 
     user = g.current_user
 
-    projects = Projects.query.filter(Projects.project_name == projects_name).one()
+    projects = Projects.query.filter(Projects.project_name == projects_name).one_or_none()
+    if projects is None:
+        raise RecordNotFoundException(f'Project {projects_name} not found')
 
     yield user, projects
 
-    project = Project.query.filter_by(hash_id=hash_id).first_or_404()
+    try:
+        project = Project.query.filter(
+            Project.hash_id == hash_id,
+        ).join(
+            Directory,
+            Directory.id == Project.dir_id,
+        ).filter(
+            Directory.projects_id == projects.id,
+        ).one()
+    except NoResultFound:
+        raise RecordNotFoundException('not found :-( ')
 
     unprocessed.append(project.hash_id)
 
