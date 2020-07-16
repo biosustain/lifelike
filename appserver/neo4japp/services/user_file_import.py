@@ -105,7 +105,7 @@ class UserFileImportService(GraphBaseDao):
 
             for row in current_ws.iter_rows(
                 min_row=2,
-                max_row=8,
+                max_row=5,
                 max_col=len(list(current_ws.columns)),
                 values_only=True,
             ):
@@ -113,7 +113,7 @@ class UserFileImportService(GraphBaseDao):
                     col_row_mapping = {}
                     for i, cell in enumerate(row):
                         if cell:
-                            if counter_for_ellipse == 8:  # max_row
+                            if counter_for_ellipse == 5:  # max_row
                                 col_row_mapping[col_name_map[i]] = '...'
                             else:
                                 col_row_mapping[col_name_map[i]] = cell

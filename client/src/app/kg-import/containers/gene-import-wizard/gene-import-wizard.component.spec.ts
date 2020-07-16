@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 import { configureTestSuite } from 'ng-bullet';
 
@@ -8,9 +9,9 @@ import { RootStoreModule } from 'app/***ARANGO_USERNAME***-store';
 import { SharedModule } from 'app/shared/shared.module';
 
 import { WorksheetPreviewComponent } from 'app/kg-import/components/worksheet-preview/worksheet-preview.component';
+import { GeneImportConfigComponent } from 'app/kg-import/components/gene-import-config/gene-import-config.component';
 
 import { GeneImportWizardComponent } from './gene-import-wizard.component';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 describe('GeneImportWizardComponent', () => {
     let component: GeneImportWizardComponent;
@@ -21,6 +22,7 @@ describe('GeneImportWizardComponent', () => {
             declarations: [
                 GeneImportWizardComponent,
                 MockComponents(
+                    GeneImportConfigComponent,
                     WorksheetPreviewComponent,
                 ),
             ],
