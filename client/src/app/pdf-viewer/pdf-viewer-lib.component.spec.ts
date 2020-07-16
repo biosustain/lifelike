@@ -5,6 +5,7 @@ import { PdfViewerLibModule } from './pdf-viewer-lib.module';
 import { FormsModule } from '@angular/forms';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MatSnackBarModule } from '@angular/material';
+import { SharedModule } from '../shared/shared.module';
 
 describe('PdfViewerLibComponent', () => {
   beforeEach(async(() => {
@@ -13,6 +14,7 @@ describe('PdfViewerLibComponent', () => {
         FormsModule,
         BrowserAnimationsModule,
         PdfViewerLibModule,
+        SharedModule,
         MatSnackBarModule
       ]
     }).compileComponents();
