@@ -8,9 +8,9 @@ import { MessageDialog } from 'app/shared/services/message-dialog.service';
 
 @Component({
   selector: 'app-add-content-dialog',
-  templateUrl: './add-content-dialog.component.html'
+  templateUrl: './content-add-dialog.component.html'
 })
-export class AddContentDialogComponent extends CommonFormDialogComponent implements OnInit, OnDestroy {
+export class ContentAddDialogComponent extends CommonFormDialogComponent implements OnInit, OnDestroy {
   MODE = 'dir';
   @Input()
   set mode(val) {
