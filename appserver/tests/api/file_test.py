@@ -323,7 +323,7 @@ def test_user_can_remove_annotation_exclusion(client, test_user, test_user_with_
     file_id = test_user_with_pdf.file_id
 
     client.patch(
-        f'/projects/{fix_project.project_name}/files/{file_id}/annotations/add_annotation_exclusion',
+        f'/projects/{fix_project.project_name}/files/{file_id}/annotations/add_annotation_exclusion',  # noqa
         headers=headers,
         data=json.dumps({
             'id': 'id',
@@ -334,7 +334,7 @@ def test_user_can_remove_annotation_exclusion(client, test_user, test_user_with_
     )
 
     remove_exc_resp = client.patch(
-        f'/projects/{fix_project.project_name}/files/{file_id}/annotations/remove_annotation_exclusion',
+        f'/projects/{fix_project.project_name}/files/{file_id}/annotations/remove_annotation_exclusion',  # noqa
         headers=headers,
         data=json.dumps({'id': 'id'}),
         content_type='application/json',
