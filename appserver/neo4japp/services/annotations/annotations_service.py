@@ -1050,8 +1050,9 @@ class AnnotationsService:
                     offset = pages_to_index[page]
                     curr_char_idx_mappings = {
                         i+offset: char for i, char in zip(
-                            range(predicted['low_index'], predicted['high_index'],
-                        ), predicted['item'])
+                            range(predicted['low_index'], predicted['high_index']),
+                            predicted['item'],
+                        )
                     }
 
                     # determine page keyword is on
