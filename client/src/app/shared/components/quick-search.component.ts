@@ -1,5 +1,7 @@
 import { Component, Input, OnChanges } from '@angular/core';
 import { Hyperlink } from '../../drawing-tool/services/interfaces';
+import { SEARCH_LINKS } from '../links';
+import { cloneDeep } from 'lodash';
 
 @Component({
   selector: 'app-quick-search',
@@ -8,19 +10,7 @@ import { Hyperlink } from '../../drawing-tool/services/interfaces';
 export class QuickSearchComponent implements OnChanges {
   @Input() query: string | undefined;
   @Input() links: Hyperlink[] | undefined;
-  @Input() linkTemplates: Hyperlink[] = [{
-    domain: 'NCBI',
-    url: 'https://www.ncbi.nlm.nih.gov/gene/?query=%s',
-  }, {
-    domain: 'UniProt',
-    url: 'https://www.uniprot.org/uniprot/?sort=score&query=%s',
-  }, {
-    domain: 'Wikipedia',
-    url: 'https://www.google.com/search?q=site:+wikipedia.org+%s',
-  }, {
-    domain: 'Google',
-    url: 'https://www.google.com/search?q=%s',
-  }];
+  @Input() linkTemplates: Hyperlink[] = cloneDeep(SEARCH_LINKS);
 
   generated = false;
   shownLinks: Hyperlink[] = [];

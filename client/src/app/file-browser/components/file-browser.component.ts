@@ -17,7 +17,7 @@ import { ErrorHandler } from '../../shared/services/error-handler.service';
 import { Directory, Map, ProjectSpaceService, Project } from '../services/project-space.service';
 import { ProjectPageService } from '../services/project-page.service';
 import { isNullOrUndefined } from 'util';
-import { AddContentDialogComponent } from './add-content-dialog/add-content-dialog.component';
+import { ContentAddDialogComponent } from './content-add-dialog.component';
 
 export interface File extends PdfFile {
   type: string;
@@ -467,7 +467,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
       case 'pdf':
         const f: File = file as File;
         const fileId = f.fileId;
-        return `/files/${fileId}/${this.projectName}`;
+        return `/projects/${this.projectName}/files/${fileId}`;
       default:
         return '';
     }
@@ -526,7 +526,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
    * Add sub-directory in current directory
    */
   addDir() {
-    const dialogRef = this.ngbModal.open(AddContentDialogComponent);
+    const dialogRef = this.ngbModal.open(ContentAddDialogComponent);
     dialogRef.componentInstance.mode = 'dir';
 
     dialogRef.result.then(
@@ -553,7 +553,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
    * Add map in current directory
    */
   addMap() {
-    const dialogRef = this.ngbModal.open(AddContentDialogComponent);
+    const dialogRef = this.ngbModal.open(ContentAddDialogComponent);
     dialogRef.componentInstance.mode = 'map';
 
     dialogRef.result.then(

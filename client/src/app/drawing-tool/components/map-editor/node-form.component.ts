@@ -35,6 +35,8 @@ export class NodeFormComponent {
   @Output() delete = new EventEmitter<object>();
   @Output() sourceOpen = new EventEmitter<string>();
 
+  activeTab: string;
+
   get node() {
     return this.updatedNode;
   }

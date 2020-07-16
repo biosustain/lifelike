@@ -21,7 +21,7 @@ import { UnloadConfirmationGuard } from './shared/guards/UnloadConfirmation.guar
 import { MapBrowserComponent } from './drawing-tool/components/map-browser.component';
 import { MapEditorComponent } from './drawing-tool/components/map-editor/map-editor.component';
 import { MapViewComponent } from './drawing-tool/components/map-view.component';
-import { ProjectSpaceComponent } from './file-browser/components/project-space/project-space.component';
+import { ProjectBrowserComponent } from './file-browser/components/project-browser.component';
 
 // TODO: Add an unprotected home page
 const routes: Routes = [
@@ -112,7 +112,7 @@ const routes: Routes = [
   },
   {
     path: 'projects',
-    component: ProjectSpaceComponent,
+    component: ProjectBrowserComponent,
     canActivate: [AuthGuard],
     data: {
       title: 'Projects',
@@ -125,7 +125,7 @@ const routes: Routes = [
     canActivate: [AuthGuard]
   },
   {
-    path: 'files/:file_id/:project_name',
+    path: 'projects/:project_name/files/:file_id',
     component: FileViewComponent,
     canActivate: [AuthGuard],
     data: {
@@ -168,8 +168,8 @@ const routes: Routes = [
     },
   },
   // Old links
-  {path: 'file-browser', redirectTo: 'files', pathMatch: 'full'},
-  {path: 'pdf-viewer/:file_id', redirectTo: 'files/:file_id', pathMatch: 'full'},
+  {path: 'file-browser', redirectTo: 'projects', pathMatch: 'full'},
+  {path: 'pdf-viewer/:file_id', redirectTo: 'projects/beta-project/files/:file_id', pathMatch: 'full'},
   {path: 'dt/map', redirectTo: 'maps', pathMatch: 'full'},
   {path: 'dt/map/:hash_id', redirectTo: 'maps/:hash_id', pathMatch: 'full'},
   {path: 'dt/map/edit/:hash_id', redirectTo: 'maps/:hash_id/edit', pathMatch: 'full'},
