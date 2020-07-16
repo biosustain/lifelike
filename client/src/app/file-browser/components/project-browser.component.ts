@@ -1,89 +1,74 @@
-import { Component, OnInit } from '@angular/core';
-import {
-  ProjectSpaceService,
-  Project,
-} from '../services/project-space.service';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Project, ProjectSpaceService } from '../services/project-space.service';
 
-import {
-  NgbModal,
-} from '@ng-bootstrap/ng-bootstrap';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
-import {
-  ProjectCreateDialogComponent,
-} from './project-create-dialog.component';
-import {
-  ProjectEditDialogComponent,
-} from './project-edit-dialog.component';
-import { Router } from '@angular/router';
+import { ProjectCreateDialogComponent } from './project-create-dialog.component';
+import { ProjectEditDialogComponent } from './project-edit-dialog.component';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { Subscription } from 'rxjs';
-
-
-// TODO - Sort projects meaningfully: name or modified_data
-// TODO - Add URL parameter that goes by project space & directory-id
-// TODO - capture error for duplicate project name
-// TODO - toggle between list and grid view
+import { WorkspaceManager } from '../../shared/workspace-manager';
+import { ProgressDialog } from '../../shared/services/progress-dialog.service';
 
 @Component({
   selector: 'app-project-space',
   templateUrl: './project-browser.component.html',
-  styleUrls: ['./project-browser.component.scss'],
 })
-export class ProjectBrowserComponent implements OnInit {
+export class ProjectBrowserComponent implements OnInit, OnDestroy {
 
-  selectedProject: Project;
-  projects: Project[] = [];
-
-  loadTask: BackgroundTask<void, Project[]> = new BackgroundTask(
-    () => this.projSpace.getProject(),
+  readonly loadTask: BackgroundTask<void, Project[]> = new BackgroundTask(
+    () => this.projectSpaceService.getProject(),
   );
-  loadTaskSubscription: Subscription;
+  private loadTaskSubscription: Subscription;
+  projects: Project[] = [];
+  selectedProject: Project = null;
 
-
-  constructor(
-    private projSpace: ProjectSpaceService,
-    private ngbModal: NgbModal,
-    private route: Router,
-  ) {
-    this.refresh();
+  constructor(private readonly projectSpaceService: ProjectSpaceService,
+              private readonly workspaceManager: WorkspaceManager,
+              private readonly progressDialog: ProgressDialog,
+              private readonly ngbModal: NgbModal) {
   }
 
   ngOnInit() {
-    this.loadTask.results$.subscribe(
-      ({
-         result: projects,
-       }) => {
-        this.projects = projects;
-      },
-    );
+    this.loadTaskSubscription = this.loadTask.results$.subscribe(({result: projects}) => {
+      this.projects = projects;
+    });
+
+    this.refresh();
+  }
+
+  ngOnDestroy() {
+    this.loadTaskSubscription.unsubscribe();
   }
 
   refresh() {
     this.loadTask.update();
   }
 
-  createProject() {
+  select(project: Project) {
+    this.selectedProject = project;
+  }
+
+  displayCreateDialog() {
     const dialogRef = this.ngbModal.open(ProjectCreateDialogComponent);
 
     dialogRef.result.then(
       newProject => {
         this.projects.push(newProject);
+        this.selectedProject = newProject;
       },
       () => {
       },
     );
   }
 
-  editProject(project: Project) {
-
+  displayEditDialog(project: Project) {
     const dialogRef = this.ngbModal.open(ProjectEditDialogComponent);
     dialogRef.componentInstance.project = project;
   }
 
   goToProject(p: Project) {
     const projectName = encodeURIComponent(p.projectName);
-    this.route.navigateByUrl(
-      `projects/${projectName}`,
-    );
+    this.workspaceManager.navigateByUrl(`/projects/${projectName}`);
   }
 }
