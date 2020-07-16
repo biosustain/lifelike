@@ -39,8 +39,8 @@ from neo4japp.request_schemas.drawing_tool import ProjectBackupSchema
 # TODO: LL-415 Migrate the code to the projects folder once GUI is complete and API refactored
 from neo4japp.blueprints.projects import bp as newbp
 
-bp = Blueprint('drawing_tool', __name__, url_prefix='/drawing-tool')
 
+bp = Blueprint('drawing_tool', __name__, url_prefix='/drawing-tool')
 
 @newbp.route('/<string:projects_name>/map/<string:hash_id>', methods=['GET'])
 @auth.login_required

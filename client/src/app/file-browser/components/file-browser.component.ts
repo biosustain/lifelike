@@ -146,7 +146,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
             this.projSpace.getProject(this.projectName)
               .subscribe(
                 (p: Project) => {
-                  this.currentDirectoryId = p.directory.projectsId;
+                  this.currentDirectoryId = p.directory.id
                 }
               );
             this.loadTask.update({

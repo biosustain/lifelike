@@ -289,7 +289,7 @@ def get_pdf(id: str, project_name: str):
 
     yield res
 
-
+# TODO: Convert this? Where is this getting used
 @bp.route('/bioc', methods=['GET'])
 def transform_to_bioc():
     TEMPLATE_PATH = os.path.abspath(os.getcwd()) + '/templates/bioc.json'
@@ -386,7 +386,10 @@ def add_custom_annotation(id, project_name, **payload):
         'user_id': g.current_user.id,
         'uuid': str(uuid.uuid4())
     }
-    file = Files.query.filter_by(file_id=id).one_or_none()
+    file = Files.query.filter_by(
+        file_id=id,
+        project=projects.id,
+    ).one_or_none()
     if file is None:
         raise RecordNotFoundException('File does not exist')
     file.custom_annotations = [annotation_to_add, *file.custom_annotations]
@@ -413,7 +416,10 @@ def remove_custom_annotation(id, uuid, removeAll, project_name):
 
     yield user, projects
 
-    file = Files.query.filter_by(file_id=id).one_or_none()
+    file = Files.query.filter_by(
+        file_id=id,
+        project=projects.id,
+    ).one_or_none()
     if file is None:
         raise RecordNotFoundException('File does not exist')
     user = g.current_user
@@ -493,7 +499,8 @@ def reannotate(project_name: str):
             FileContent,
             FileContent.id == Files.content_id
         ).filter(
-            Files.file_id == id
+            Files.file_id == id,
+            project=projects.id,
         ).one_or_none()
         if file is None:
             current_app.logger.error('Could not find file')
@@ -537,7 +544,10 @@ def delete_files(project_name: str):
     ids = request.get_json()
     outcome: Dict[str, str] = {}  # file id to deletion outcome
     for id in ids:
-        file = Files.query.filter_by(file_id=id).one_or_none()
+        file = Files.query.filter_by(
+            file_id=id,
+            project=projects.id,
+        ).one_or_none()
         if file is None:
             current_app.logger.error('Could not find file')
             outcome[id] = DeletionOutcome.NOT_FOUND.value
@@ -585,28 +595,58 @@ def search_doi(content: bytes) -> Optional[str]:
     return doi if doi.startswith('http') else f'https://doi.org/{doi}'
 
 
-@bp.route('/add_annotation_exclusion/<file_id>', methods=['PATCH'])
+@newbp.route(
+    '/<string:project_name>/files/<string:file_id>/annotations/add_annotation_exclusion',
+    methods=['PATCH'])
 @auth.login_required
 @use_kwargs(AnnotationExclusionSchema)
-def add_annotation_exclusion(file_id, **payload):
+@requires_project_permission(AccessActionType.WRITE)
+def add_annotation_exclusion(project_name: str, file_id: str, **payload):
+
+    projects = Projects.query.filter(Projects.project_name == project_name).one()
+
+    user = g.current_user
+
+    yield user, projects
+
     excluded_annotation = {
         **payload,
         'user_id': g.current_user.id,
         'exclusion_date': str(datetime.now(TIMEZONE))
     }
-    file = Files.query.filter_by(file_id=file_id).one_or_none()
+
+    file = Files.query.filter_by(
+        file_id=file_id,
+        project=projects.id,
+    ).one_or_none()
+
     if file is None:
         raise RecordNotFoundException('File does not exist')
     file.excluded_annotations = [excluded_annotation, *file.excluded_annotations]
     db.session.commit()
-    return jsonify({'status': 'success'})
+
+    yield jsonify({'status': 'success'})
 
 
-@bp.route('/remove_annotation_exclusion/<file_id>', methods=['PATCH'])
+@newbp.route(
+    '/<string:project_name>/files/<string:file_id>/annotations/remove_annotation_exclusion',
+    methods=['PATCH'])
 @auth.login_required
 @use_kwargs(AnnotationExclusionSchema(only=('id',)))
-def remove_annotation_exclusion(file_id, id):
-    file = Files.query.filter_by(file_id=file_id).one_or_none()
+@requires_project_permission(AccessActionType.WRITE)
+def remove_annotation_exclusion(project_name, file_id, id):
+
+    user = g.current_user
+
+    projects = Projects.query.filter(Projects.project_name == project_name).one()
+
+    yield user, projects
+
+    file = Files.query.filter_by(
+        file_id=file_id,
+        project=projects.id,
+    ).one_or_none()
+
     if file is None:
         raise RecordNotFoundException('File does not exist')
     excluded_annotation = next(
@@ -614,7 +654,6 @@ def remove_annotation_exclusion(file_id, id):
     )
     if excluded_annotation is None:
         raise RecordNotFoundException('Annotation not found')
-    user = g.current_user
     user_roles = [role.name for role in user.roles]
     if excluded_annotation['user_id'] != user.id and 'admin' not in user_roles:
         raise NotAuthorizedException('Another user has excluded this annotation')
@@ -622,7 +661,7 @@ def remove_annotation_exclusion(file_id, id):
     file.excluded_annotations.remove(excluded_annotation)
     db.session.merge(file)
     db.session.commit()
-    return jsonify({'status': 'success'})
+    yield jsonify({'status': 'success'})
 
 
 @bp.route('/lmdbs_dates', methods=['GET'])
