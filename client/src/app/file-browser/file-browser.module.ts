@@ -6,11 +6,11 @@ import { FileDeleteDialogComponent } from './components/file-delete-dialog.compo
 import { FileUploadDialogComponent } from './components/file-upload-dialog.component';
 import { FileViewComponent } from './components/file-view.component';
 import { PdfViewerLibModule } from '../pdf-viewer/pdf-viewer-lib.module';
-import { ProjectSpaceComponent } from './components/project-space/project-space.component';
+import { ProjectBrowserComponent } from './components/project-browser.component';
 import { ProjectTitleAcronymPipe } from './services/project-title-acronym.pipe';
-import { EditProjectDialogComponent } from './components/edit-project-dialog/edit-project-dialog.component';
-import { CreateProjectDialogComponent } from './components/create-project-dialog/create-project-dialog.component';
-import { AddContentDialogComponent } from './components/add-content-dialog/add-content-dialog.component';
+import { ProjectEditDialogComponent } from './components/project-edit-dialog.component';
+import { ProjectCreateDialogComponent } from './components/project-create-dialog.component';
+import { ContentAddDialogComponent } from './components/content-add-dialog.component';
 
 @NgModule({
   declarations: [
@@ -19,11 +19,11 @@ import { AddContentDialogComponent } from './components/add-content-dialog/add-c
     FileUploadDialogComponent,
     FileBrowserComponent,
     FileViewComponent,
-    ProjectSpaceComponent,
+    ProjectBrowserComponent,
     ProjectTitleAcronymPipe,
-    EditProjectDialogComponent,
-    CreateProjectDialogComponent,
-    AddContentDialogComponent
+    ProjectEditDialogComponent,
+    ProjectCreateDialogComponent,
+    ContentAddDialogComponent,
   ],
   imports: [
     SharedModule,
@@ -34,9 +34,9 @@ import { AddContentDialogComponent } from './components/add-content-dialog/add-c
     FileDeleteDialogComponent,
     FileUploadDialogComponent,
     FileViewComponent,
-    CreateProjectDialogComponent,
-    EditProjectDialogComponent,
-    AddContentDialogComponent
+    ProjectCreateDialogComponent,
+    ProjectEditDialogComponent,
+    ContentAddDialogComponent,
   ],
   exports: [],
 })

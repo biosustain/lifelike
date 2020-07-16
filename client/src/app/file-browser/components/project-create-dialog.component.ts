@@ -9,9 +9,9 @@ import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
   selector: 'app-create-project-dialog',
-  templateUrl: './create-project-dialog.component.html'
+  templateUrl: './project-create-dialog.component.html'
 })
-export class CreateProjectDialogComponent extends CommonFormDialogComponent implements OnInit, OnDestroy {
+export class ProjectCreateDialogComponent extends CommonFormDialogComponent implements OnInit, OnDestroy {
   form: FormGroup = new FormGroup({
     projectName: new FormControl('', Validators.required),
     description: new FormControl('')

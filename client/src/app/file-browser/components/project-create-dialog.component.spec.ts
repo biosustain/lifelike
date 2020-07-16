@@ -1,30 +1,31 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ProjectSpaceComponent } from './project-space.component';
+import { ProjectCreateDialogComponent } from './project-create-dialog.component';
 import { configureTestSuite } from 'ng-bullet';
 import { SharedModule } from 'app/shared/shared.module';
-import { FileBrowserModule } from 'app/file-browser/file-browser.module';
 import { RootStoreModule } from 'app/***ARANGO_USERNAME***-store';
-import { RouterTestingModule } from '@angular/router/testing';
+import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 
-describe('ProjectSpaceComponent', () => {
-  let component: ProjectSpaceComponent;
-  let fixture: ComponentFixture<ProjectSpaceComponent>;
+describe('CreateProjectDialogComponent', () => {
+  let component: ProjectCreateDialogComponent;
+  let fixture: ComponentFixture<ProjectCreateDialogComponent>;
 
   configureTestSuite(() => {
     TestBed.configureTestingModule({
+      declarations: [ ProjectCreateDialogComponent ],
       imports: [
         SharedModule,
-        FileBrowserModule,
-        RootStoreModule,
-        RouterTestingModule
+        RootStoreModule
+      ],
+      providers: [
+        NgbActiveModal
       ]
     })
     .compileComponents();
   });
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(ProjectSpaceComponent);
+    fixture = TestBed.createComponent(ProjectCreateDialogComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
