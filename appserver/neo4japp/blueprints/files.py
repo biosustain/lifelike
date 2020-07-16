@@ -548,7 +548,7 @@ def reannotate(project_name: str = ''):
             current_app.logger.error('Could not find file')
             outcome[id] = AnnotationOutcome.NOT_FOUND.value
             continue
-        fp = io.BytesIO(file.raw_file)
+        fp = FileStorage(io.BytesIO(file.raw_file), file.filename)
         try:
             annotations = annotate(file.filename, fp)
         except Exception as e:

@@ -234,10 +234,6 @@ class AnnotationsPDFParser:
         """Combines a list of char into a list of words with the
         position index of each char in the word.
 
-        Will not include double spacing. Index mapping to the coordinates
-        from pdfminer will be correct, as the index for the spaces will not
-        be included.
-
         E.g {0: 'H', 1: 'e', 2: 'l', 3: 'l', 4: 'o', 5: ' ', 6: ' ', 7:'T', ...}
             - this returns a list of tuples:
             ('Hello', {0: 'H', 1: 'e', 2: 'l', 3: 'l', 4: 'o'})
