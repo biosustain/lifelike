@@ -125,7 +125,7 @@ const routes: Routes = [
     canActivate: [AuthGuard]
   },
   {
-    path: 'files/:file_id/:project_name',
+    path: 'projects/:project_name/files/:file_id',
     component: FileViewComponent,
     canActivate: [AuthGuard],
     data: {
@@ -168,8 +168,8 @@ const routes: Routes = [
     },
   },
   // Old links
-  {path: 'file-browser', redirectTo: 'files', pathMatch: 'full'},
-  {path: 'pdf-viewer/:file_id', redirectTo: 'files/:file_id', pathMatch: 'full'},
+  {path: 'file-browser', redirectTo: 'projects', pathMatch: 'full'},
+  {path: 'pdf-viewer/:file_id', redirectTo: 'projects/beta-project/files/:file_id', pathMatch: 'full'},
   {path: 'dt/map', redirectTo: 'maps', pathMatch: 'full'},
   {path: 'dt/map/:hash_id', redirectTo: 'maps/:hash_id', pathMatch: 'full'},
   {path: 'dt/map/edit/:hash_id', redirectTo: 'maps/:hash_id/edit', pathMatch: 'full'},
