@@ -42,20 +42,14 @@ from neo4japp.blueprints.projects import bp as newbp
 bp = Blueprint('drawing_tool', __name__, url_prefix='/drawing-tool')
 
 
-@bp.route('/map/<string:hash_id>', methods=['GET'])
-# TODO: use this once LL-415 done
 @newbp.route('/<string:projects_name>/map/<string:hash_id>', methods=['GET'])
 @auth.login_required
 @requires_project_permission(AccessActionType.READ)
-def get_map_by_hash(hash_id: str, projects_name: str = ''):
+def get_map_by_hash(hash_id: str, projects_name: str):
     """ Serve map by hash_id lookup """
     user = g.current_user
 
-    # TODO: LL-415 - remove default once GUI deprecates old API
-    projects = Projects.query.filter(Projects.project_name == 'beta-project').one()
-
-    if projects_name:
-        projects = Projects.query.filter(Projects.project_name == projects_name).one()
+    projects = Projects.query.filter(Projects.project_name == projects_name).one()
 
     yield user, projects
 
@@ -70,20 +64,14 @@ def get_map_by_hash(hash_id: str, projects_name: str = ''):
     yield jsonify({'project': project_schema.dump(project)})
 
 
-@bp.route('/map/download/<string:hash_id>', methods=['GET'])
-# TODO: use this once LL-415 done
 @newbp.route('/<string:projects_name>/map/<string:hash_id>/download', methods=['GET'])
 @auth.login_required
 @requires_project_permission(AccessActionType.READ)
-def download_map(hash_id: str, projects_name: str = ''):
+def download_map(hash_id: str, projects_name: str):
     """ Exports map to JSON format """
     user = g.current_user
 
-    # TODO: LL-415 - remove default once GUI deprecates old API
-    projects = Projects.query.filter(Projects.project_name == 'beta-project').one()
-
-    if projects_name:
-        projects = Projects.query.filter(Projects.project_name == projects_name).one()
+    projects = Projects.query.filter(Projects.project_name == projects_name).one()
 
     yield user, projects
 
@@ -100,12 +88,10 @@ def download_map(hash_id: str, projects_name: str = ''):
     )
 
 
-@bp.route('/map/upload', methods=['POST'])
-# TODO: use this once LL-415 done
 @newbp.route('/<string:projects_name>/map/upload', methods=['POST'])
 @auth.login_required
 @requires_project_permission(AccessActionType.WRITE)
-def upload_map(projects_name: str = ''):
+def upload_map(projects_name: str):
 
     draw_proj_name = request.form['projectName']
     proj_description = request.form['description']
@@ -113,11 +99,7 @@ def upload_map(projects_name: str = ''):
 
     user = g.current_user
 
-    # TODO: LL-415 - remove default once GUI deprecates old API
-    projects = Projects.query.filter(Projects.project_name == 'beta-project').one()
-
-    if projects_name:
-        projects = Projects.query.filter(Projects.project_name == projects_name).one()
+    projects = Projects.query.filter(Projects.project_name == projects_name).one()
 
     yield user, projects
 
@@ -174,24 +156,17 @@ def get_project():
     return {'projects': project_schema.dump(projects)}, 200
 
 
-@bp.route('/projects', methods=['POST'])
-# TODO: use this once LL-415 done
 @newbp.route('/<string:projects_name>/map', methods=['POST'])
 @auth.login_required
 @requires_project_permission(AccessActionType.WRITE)
-def add_project(projects_name: str = ''):
+def add_project(projects_name: str):
     """ Create a new project under a user """
     data = request.get_json()
     user = g.current_user
 
-    # TODO: LL-415 - remove default once GUI deprecates old API
-    projects = Projects.query.filter(Projects.project_name == 'beta-project').one()
+    projects = Projects.query.filter(Projects.project_name == projects_name).one()
 
-    if projects_name:
-        projects = Projects.query.filter(Projects.project_name == projects_name).one()
-
-    # TODO: Deprecate and make mandatory (no default) this once LL-415 is implemented
-    dir_id = data.get('directoryId', 1)
+    dir_id = data['directoryId']
 
     try:
         directory = Directory.query.get(dir_id)
@@ -238,33 +213,19 @@ def add_project(projects_name: str = ''):
     })
 
 
-@bp.route('/projects/<string:project_id>', methods=['PUT'])
-# TODO: use this once LL-415 done
 @newbp.route('/<string:projects_name>/map/<string:hash_id>', methods=['PATCH'])
 @auth.login_required
 @requires_project_permission(AccessActionType.WRITE)
-def update_project(project_id: str = '', hash_id: str = '', projects_name: str = ''):
+def update_project(hash_id: str, projects_name: str):
     """ Update the project's content and its metadata. """
     user = g.current_user
     data = request.get_json()
 
-    # TODO: LL-415 - remove default once GUI deprecates old API
-    projects = Projects.query.filter(Projects.project_name == 'beta-project').one()
-
-    if projects_name:
-        projects = Projects.query.filter(Projects.project_name == projects_name).one()
+    projects = Projects.query.filter(Projects.project_name == projects_name).one()
 
     yield user, projects
 
-    # Pull up project by id
-    if hash_id:
-        project = Project.query.filter_by(hash_id=hash_id).first_or_404()
-    # TODO: LL-415 Remove 'project_id' after deprecating the API and use hash_id
-    else:
-        project = Project.query.filter_by(
-            id=project_id,
-            user_id=user.id
-        ).first_or_404()
+    project = Project.query.filter_by(hash_id=hash_id).first_or_404()
 
     current_app.logger.info(f'User updated map: <{g.current_user.email}:{project.label}>')
 
@@ -282,31 +243,18 @@ def update_project(project_id: str = '', hash_id: str = '', projects_name: str =
     yield jsonify({'status': 'success'}), 200
 
 
-@bp.route('/projects/<string:project_id>', methods=['DELETE'])
-# TODO: use this once LL-415 done
 @newbp.route('/<string:projects_name>/map/<string:hash_id>', methods=['DELETE'])
 @auth.login_required
 @requires_project_permission(AccessActionType.WRITE)
-def delete_project(project_id: str = '', hash_id: str = '', projects_name: str = ''):
+def delete_project(hash_id: str, projects_name: str):
     """ Delete object owned by user """
     user = g.current_user
 
-    # TODO: LL-415 - remove default once GUI deprecates old API
-    projects = Projects.query.filter(Projects.project_name == 'beta-project').one()
-
-    if projects_name:
-        projects = Projects.query.filter(Projects.project_name == projects_name).one()
+    projects = Projects.query.filter(Projects.project_name == projects_name).one()
 
     yield user, projects
 
-    if hash_id:
-        project = Project.query.filter_by(hash_id=hash_id).first_or_404()
-    # TODO: LL-415 Remove 'project_id' after deprecating the API and use hash_id
-    else:
-        project = Project.query.filter_by(
-            id=project_id,
-            user_id=user.id
-        ).first_or_404()
+    project = Project.query.filter_by(hash_id=hash_id).first_or_404()
 
     # Commit to db
     db.session.delete(project)
@@ -315,12 +263,10 @@ def delete_project(project_id: str = '', hash_id: str = '', projects_name: str =
     yield jsonify({'status': 'success'}), 200
 
 
-@bp.route('/projects/<string:project_id>/pdf', methods=['GET'])
-# TODO: use this once LL-415 done
 @newbp.route('/<string:projects_name>/map/<string:hash_id>/pdf', methods=['GET'])
 @auth.login_required
 @requires_project_permission(AccessActionType.READ)
-def get_project_pdf(project_id: str = '', projects_name: str = '', hash_id: str = ''):
+def get_project_pdf(projects_name: str, hash_id: str):
     """ Gets a PDF file from the project drawing """
 
     unprocessed = []
@@ -330,22 +276,11 @@ def get_project_pdf(project_id: str = '', projects_name: str = '', hash_id: str 
 
     user = g.current_user
 
-    # TODO: LL-415 - remove default once GUI deprecates old API
-    projects = Projects.query.filter(Projects.project_name == 'beta-project').one()
-
-    if projects_name:
-        projects = Projects.query.filter(Projects.project_name == projects_name).one()
+    projects = Projects.query.filter(Projects.project_name == projects_name).one()
 
     yield user, projects
 
-    if hash_id:
-        project = Project.query.filter_by(hash_id=hash_id).first_or_404()
-    # TODO: LL-415 Remove 'project_id' after deprecating the API and use hash_id
-    else:
-        project = Project.query.filter_by(
-            id=project_id,
-            user_id=user.id
-        ).first_or_404()
+    project = Project.query.filter_by(hash_id=hash_id).first_or_404()
 
     unprocessed.append(project.hash_id)
 
