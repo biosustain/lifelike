@@ -1,19 +1,19 @@
 import { Component, OnInit } from '@angular/core';
 import {
   ProjectSpaceService,
-  Project
-} from '../../services/project-space.service';
+  Project,
+} from '../services/project-space.service';
 
 import {
-  NgbModal
+  NgbModal,
 } from '@ng-bootstrap/ng-bootstrap';
 
 import {
-  CreateProjectDialogComponent
-} from '../create-project-dialog/create-project-dialog.component';
+  ProjectCreateDialogComponent,
+} from './project-create-dialog.component';
 import {
-  EditProjectDialogComponent
-} from '../edit-project-dialog/edit-project-dialog.component';
+  ProjectEditDialogComponent,
+} from './project-edit-dialog.component';
 import { Router } from '@angular/router';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { Subscription } from 'rxjs';
@@ -26,16 +26,16 @@ import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-project-space',
-  templateUrl: './project-space.component.html',
-  styleUrls: ['./project-space.component.scss']
+  templateUrl: './project-browser.component.html',
+  styleUrls: ['./project-browser.component.scss'],
 })
-export class ProjectSpaceComponent implements OnInit {
+export class ProjectBrowserComponent implements OnInit {
 
   selectedProject: Project;
   projects: Project[] = [];
 
   loadTask: BackgroundTask<void, Project[]> = new BackgroundTask(
-    () => this.projSpace.getProject()
+    () => this.projSpace.getProject(),
   );
   loadTaskSubscription: Subscription;
 
@@ -43,7 +43,7 @@ export class ProjectSpaceComponent implements OnInit {
   constructor(
     private projSpace: ProjectSpaceService,
     private ngbModal: NgbModal,
-    private route: Router
+    private route: Router,
   ) {
     this.refresh();
   }
@@ -51,10 +51,10 @@ export class ProjectSpaceComponent implements OnInit {
   ngOnInit() {
     this.loadTask.results$.subscribe(
       ({
-        result: projects
-      }) => {
+         result: projects,
+       }) => {
         this.projects = projects;
-      }
+      },
     );
   }
 
@@ -63,27 +63,27 @@ export class ProjectSpaceComponent implements OnInit {
   }
 
   createProject() {
-    const dialogRef = this.ngbModal.open(CreateProjectDialogComponent);
+    const dialogRef = this.ngbModal.open(ProjectCreateDialogComponent);
 
     dialogRef.result.then(
       newProject => {
         this.projects.push(newProject);
       },
       () => {
-      }
+      },
     );
   }
 
   editProject(project: Project) {
 
-    const dialogRef = this.ngbModal.open(EditProjectDialogComponent);
+    const dialogRef = this.ngbModal.open(ProjectEditDialogComponent);
     dialogRef.componentInstance.project = project;
   }
 
   goToProject(p: Project) {
     const projectName = encodeURIComponent(p.projectName);
     this.route.navigateByUrl(
-      `projects/${projectName}`
+      `projects/${projectName}`,
     );
   }
 }

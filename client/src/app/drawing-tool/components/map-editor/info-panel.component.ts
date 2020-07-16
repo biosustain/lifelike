@@ -57,11 +57,11 @@ export class InfoPanelComponent {
         coordC,
         coordD,
       ] = source.replace(/^\/dt\/pdf\//, '').split('/');
-      const url = `/files/${fileId}#page=${page}&coords=${coordA},${coordB},${coordC},${coordD}`;
+      const url = `/projects/beta-project/files/${fileId}#page=${page}&coords=${coordA},${coordB},${coordC},${coordD}`;
       this.workspaceManager.navigateByUrl(url, {
         newTab: true,
         sideBySide: true,
-        replaceTabIfMatch: `^/files/${fileId}`,
+        replaceTabIfMatch: `^/projects/beta-project/files/${fileId}`,
       });
       return;
     }
