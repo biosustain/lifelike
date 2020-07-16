@@ -5,48 +5,63 @@
       <div class="module-title">Gene Import Wizard</div>
     </div>
   </div>
-  <div class="module-body">
+  <div id="gene-import-body">
     <mat-horizontal-stepper linear="true" #stepper>
-      <mat-step state="upload" [stepControl]="importFileForm">
+      <mat-step state="upload" [completed]="importFileForm.valid">
         <ng-template matStepLabel>Choose Import File</ng-template>
+        <div class="d-flex justify-content-between mb-2">
+          <a routerLink="/kg-import">
+            <button class="btn btn-primary">Back</button>
+          </a>
+          <button class="btn btn-primary" [disabled]="!(importFileForm.valid)" matStepperNext>Next</button>
+        </div>
         <app-generic-file-upload
           [accept]="acceptedFileTypes"
           (fileChanged)="onFileChange($event)"
         ></app-generic-file-upload>
-        <button class="btn btn-primary mt-2" [disabled]="!(importFileForm.valid)" matStepperNext>Next</button>
       </mat-step>
 
-      <mat-step state="selectSheet" [stepControl]="sheetForm">
+      <mat-step state="selectSheet" [completed]="sheetForm.valid">
         <ng-template matStepLabel>Choose Sheet</ng-template>
+        <div class="d-flex justify-content-between mb-2">
+          <button class="btn btn-primary" matStepperPrevious>Back</button>
+          <button class="btn btn-primary" [disabled]="!(sheetForm.valid)" matStepperNext>Next</button>
+        </div>
         <div *ngIf="worksheetData" class="form-group">
           <label>Please select the sheet you would like to import:</label>
           <select class="custom-select" required (change)="onSheetNameChange($event)">
             <option *ngFor="let sheet of worksheetData.sheets">{{ sheet.sheetName }}</option>
           </select>
         </div>
-        <div>
-          <button class="btn btn-primary mt-2" matStepperPrevious>Back</button>
-          <button class="btn btn-primary mt-2 ml-1" [disabled]="!(sheetForm.valid)" matStepperNext>Next</button>
-        </div>
       </mat-step>
 
-      <mat-step state="configure">
+      <mat-step [completed]="geneConfigFormValid" state="configure">
         <ng-template matStepLabel>Configure Import Data</ng-template>
+        <div class="d-flex justify-content-between mb-2">
+          <button class="btn btn-primary" matStepperPrevious>Back</button>
+          <button
+            class="btn btn-primary"
+            [disabled]="!geneConfigFormValid"
+            (click)="getNodeMatches()"
+            matStepperNext
+          >Match Nodes</button>
+        </div>
+        <h3>Sheet Slice</h3>
         <app-worksheet-preview
           [worksheetData]="selectedSheet"
         ></app-worksheet-preview>
-
-        <div>
-          <button class="btn btn-primary mt-2" matStepperPrevious>Back</button>
-          <button class="btn btn-primary mt-2 ml-1" matStepperNext>Next</button>
-        </div>
+        <app-gene-import-config
+          [worksheetData]="selectedSheet"
+          (relationshipFormValidityChanged)="onRelationshipFormValidityChanged($event)"
+          (relationshipsChanged)="onRelationshipsChanged($event)"
+        ></app-gene-import-config>
       </mat-step>
 
-      <mat-step state="review">
+      <mat-step [completed]="false" state="review">
         <ng-template matStepLabel>Review Data Matching</ng-template>
-        <div>
-          <button class="btn btn-primary mt-2" matStepperPrevious>Back</button>
-          <button class="btn btn-primary mt-2 ml-1">Submit</button>
+        <div class="d-flex justify-content-between mb-2">
+          <button class="btn btn-primary" matStepperPrevious>Back</button>
+          <button class="btn btn-primary">Submit</button>
         </div>
       </mat-step>
     </mat-horizontal-stepper>

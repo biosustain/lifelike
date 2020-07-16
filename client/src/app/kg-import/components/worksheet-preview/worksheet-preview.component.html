@@ -1,12 +1,14 @@
-<table *ngIf="headers && preview" class="table table-striped layout-fixed">
-  <thead>
-    <tr>
-      <th *ngFor="let header of headers" scope="col">{{ header }}</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr *ngFor="let row of preview">
-      <td *ngFor="let header of headers">{{ row[header] }}</td>
-    </tr>
-  </tbody>
-</table>
+<div class="overflow-auto">
+  <table *ngIf="headers && preview" class="table table-striped">
+    <thead>
+      <tr>
+        <th *ngFor="let header of headers" scope="col">{{ header }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let row of preview">
+        <td *ngFor="let header of headers">{{ row[header] }}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>

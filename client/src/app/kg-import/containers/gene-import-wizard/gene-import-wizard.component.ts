@@ -1,6 +1,6 @@
 // import { STEPPER_GLOBAL_OPTIONS } from '@angular/cdk/stepper';
 import { Component } from '@angular/core';
-import { FormGroup, FormBuilder, Validators } from '@angular/forms';
+import { FormGroup, FormBuilder, Validators, FormArray } from '@angular/forms';
 
 import { FileNameAndSheets, SheetNameAndColumnNames } from 'app/interfaces';
 import { UserFileImportService } from 'app/user-file-import/services/user-file-import.service';
@@ -23,8 +23,8 @@ export class GeneImportWizardComponent {
 
     acceptedFileTypes: string;
 
-    // TEMP
-    organisms: Map<string, number>;
+    geneConfigFormValid: boolean;
+    geneConfigFormArray: FormArray;
 
     constructor(
         private fb: FormBuilder,
@@ -35,13 +35,6 @@ export class GeneImportWizardComponent {
         this.worksheetData = null;
         this.selectedSheet = null;
 
-        this.organisms = new Map<string, number>([
-            ['Escherichia coli str. K-12 substr. MG1655', 29424357],
-            ['Saccharomyces cerevisiae S288C', 29816395],
-            ['Pseudomonas aeruginosa PAO1', 29434923],
-            ['Clostridioides difficile 630', 29605729],
-        ]);
-
         this.importFileForm = this.fb.group({
             fileInput: ['', Validators.required],
         });
@@ -49,6 +42,9 @@ export class GeneImportWizardComponent {
         this.sheetForm = this.fb.group({
             sheetName: ['', Validators.required],
         });
+
+        this.geneConfigFormValid = false;
+        this.geneConfigFormArray =  null;
     }
 
     /**
@@ -77,5 +73,23 @@ export class GeneImportWizardComponent {
     onSheetNameChange(event) {
        this.sheetForm.controls.sheetName.setValue(event.target.value);
        this.selectedSheet = this.worksheetData.sheets.filter(sheet => sheet.sheetName === event.target.value)[0];
+
+       // Reset the gene config form objects whenever a new sheet is chosen. We can't do this in the
+       // gene config component without triggering "Expression Changed After Checks" errors.
+       this.geneConfigFormValid = false;
+       this.geneConfigFormArray = null;
+    }
+
+    onRelationshipFormValidityChanged(valid: boolean) {
+        this.geneConfigFormValid = valid;
+    }
+
+    onRelationshipsChanged(relationshipForms: FormGroup[]) {
+        this.geneConfigFormArray = this.fb.array(relationshipForms);
+    }
+
+    getNodeMatches() {
+        // TEMP --> Backend magic happens here
+        console.log(this.geneConfigFormArray.value);
     }
 }
