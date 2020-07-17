@@ -3,10 +3,17 @@ import { SelectionModel } from '@angular/cdk/collections';
 import { AbstractControl, FormControl, FormGroup, Validators } from '@angular/forms';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 
+import { select, Store } from '@ngrx/store';
+import { State } from 'app/***ARANGO_USERNAME***-store';
+
+import { Observable } from 'rxjs';
+
 import { CommonFormDialogComponent } from '../../shared/components/dialog/common-form-dialog.component';
 import { MessageDialog } from '../../shared/services/message-dialog.service';
 
 import { UploadPayload, UploadType } from '../../interfaces/pdf-files.interface';
+
+import { AuthSelectors } from 'app/auth/store';
 
 
 @Component({
@@ -15,6 +22,7 @@ import { UploadPayload, UploadType } from '../../interfaces/pdf-files.interface'
 })
 export class FileUploadDialogComponent extends CommonFormDialogComponent {
   readonly uploadType = UploadType;
+  readonly userRoles$: Observable<string[]>;
 
   // select annotation method
   readonly annotationMethods = ['NLP', 'Rules Based'];
@@ -54,12 +62,18 @@ export class FileUploadDialogComponent extends CommonFormDialogComponent {
     }
   }
 
-  constructor(modal: NgbActiveModal, messageDialog: MessageDialog) {
+  constructor(
+    modal: NgbActiveModal,
+    messageDialog: MessageDialog,
+    private store: Store<State>,
+  ) {
     super(modal, messageDialog);
     this.form.patchValue({
       type: this.activeTab,
       files: [],
     });
+
+    this.userRoles$ = store.pipe(select(AuthSelectors.selectRoles));
   }
 
   activeTabChanged(newId) {
