@@ -4,8 +4,8 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { UploadPayload, PdfFileUpload, UploadType } from 'app/interfaces/pdf-files.interface';
 import { isNullOrUndefined } from 'util';
-import { DirectoryContent } from '../components/file-browser.component';
 import { option } from 'vis-util';
+import { DirectoryContent } from '../../interfaces/projects.interface';
 
 @Injectable({
   providedIn: 'root'

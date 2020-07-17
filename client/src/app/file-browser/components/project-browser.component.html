@@ -8,11 +8,15 @@
   </div>
 
   <div class="module-body">
+    <ol class="breadcrumb mb-3">
+      <li class="breadcrumb-item">Projects</li>
+    </ol>
+
     <div class="mb-4 d-flex">
       <div class="mr-2">
         <button class="btn btn-primary" (click)="displayCreateDialog()">
           <i class="fa fa-fw fa-plus-circle"></i>
-          Add Project
+          New Project
         </button>
       </div>
       <div class="ml-auto">
@@ -44,7 +48,7 @@
           <div class="d-flex tile-toolbar">
             <div ngbDropdown class="d-inline-block ml-auto">
               <button class="btn btn-light btn-sm" ngbDropdownToggle>
-                <i class="fas fa-ellipsis-v fa-fw"></i>
+                <i class="fas fa-cog fa-fw"></i>
               </button>
               <div ngbDropdownMenu>
                 <button ngbDropdownItem (click)="displayShareDialog(p)">Share...</button>
@@ -52,13 +56,12 @@
             </div>
           </div>
           <div class="flex-fill d-flex justify-content-center align-items-center my-2">
-            <a href="#" (click)="goToProject(p); $event.preventDefault()" class="text-muted">
+            <a [appLink]="[p.projectName]" class="text-muted">
               <i class="fas fa-layer-group fa-4x"></i>
             </a>
           </div>
           <div class="text-truncate text-center">
-            <a href="#" (click)="goToProject(p); $event.preventDefault()"
-               class="d-block">{{ p.projectName }}</a>
+            <a [appLink]="[p.projectName]" class="d-block">{{ p.projectName }}</a>
           </div>
         </div>
       </div>

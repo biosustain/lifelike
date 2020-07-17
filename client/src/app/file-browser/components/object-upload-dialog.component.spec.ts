@@ -13,11 +13,11 @@ import { SharedModule } from 'app/shared/shared.module';
 import { FileBrowserModule } from '../file-browser.module';
 import { MessageDialog } from '../../shared/services/message-dialog.service';
 
-import { FileUploadDialogComponent } from './file-upload-dialog.component';
+import { ObjectUploadDialogComponent } from './object-upload-dialog.component';
 
 describe('FileUploadDialogComponent', () => {
-    let component: FileUploadDialogComponent;
-    let fixture: ComponentFixture<FileUploadDialogComponent>;
+    let component: ObjectUploadDialogComponent;
+    let fixture: ComponentFixture<ObjectUploadDialogComponent>;
     let mockStore: MockStore<State>;
 
     configureTestSuite(() => {
@@ -37,7 +37,7 @@ describe('FileUploadDialogComponent', () => {
     });
 
     beforeEach(() => {
-        fixture = TestBed.createComponent(FileUploadDialogComponent);
+        fixture = TestBed.createComponent(ObjectUploadDialogComponent);
         component = fixture.componentInstance;
         fixture.detectChanges();
 
