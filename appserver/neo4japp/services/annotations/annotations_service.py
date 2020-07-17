@@ -645,8 +645,8 @@ class AnnotationsService:
                     txn=transaction, key=lookup_key, token_type=EntityType.Gene.value)
 
                 for entity in entities:
-                    entity_common_name = entity['name']
-                    gene_names.add(entity_common_name)
+                    entity_synonym = entity['synonym']
+                    gene_names.add(entity_synonym)
 
                     entity_tokenpos_pairs.append((entity, token_positions))
 
