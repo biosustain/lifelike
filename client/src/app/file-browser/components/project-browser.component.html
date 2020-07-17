@@ -43,10 +43,10 @@
         <div *ngFor="let p of projects" class="tile d-flex flex-column">
           <div class="d-flex tile-toolbar">
             <div ngbDropdown class="d-inline-block ml-auto">
-              <button class="btn btn-light btn-sm" id="dropdownBasic1" ngbDropdownToggle>
+              <button class="btn btn-light btn-sm" ngbDropdownToggle>
                 <i class="fas fa-ellipsis-v fa-fw"></i>
               </button>
-              <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
+              <div ngbDropdownMenu>
                 <button ngbDropdownItem (click)="displayShareDialog(p)">Share...</button>
               </div>
             </div>
