@@ -21,7 +21,6 @@ export class ProjectBrowserComponent implements OnInit, OnDestroy {
   );
   private loadTaskSubscription: Subscription;
   projects: Project[] = [];
-  selectedProject: Project = null;
 
   constructor(private readonly projectSpaceService: ProjectSpaceService,
               private readonly workspaceManager: WorkspaceManager,
@@ -45,24 +44,19 @@ export class ProjectBrowserComponent implements OnInit, OnDestroy {
     this.loadTask.update();
   }
 
-  select(project: Project) {
-    this.selectedProject = project;
-  }
-
   displayCreateDialog() {
     const dialogRef = this.ngbModal.open(ProjectCreateDialogComponent);
 
     dialogRef.result.then(
       newProject => {
         this.projects.push(newProject);
-        this.selectedProject = newProject;
       },
       () => {
       },
     );
   }
 
-  displayEditDialog(project: Project) {
+  displayShareDialog(project: Project) {
     const dialogRef = this.ngbModal.open(ProjectEditDialogComponent);
     dialogRef.componentInstance.project = project;
   }
