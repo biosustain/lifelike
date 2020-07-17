@@ -59,7 +59,7 @@ def test_can_upload_pdf(monkeypatch, client, test_user, fix_project, fix_directo
     login_resp = client.login_as_user(test_user.email, 'password')
     headers = generate_headers(login_resp['access_jwt'])
 
-    def mockannotate(filename, pdf):
+    def mockannotate(filename, pdf, annotation_method):
         """ Mocks out the 'annotate' function in the module
         since we don't care about the annotation process """
         return dict()
@@ -94,7 +94,7 @@ def test_cannot_upload_if_no_write_permission(
     login_resp = client.login_as_user(test_user_2.email, 'password')
     headers = generate_headers(login_resp['access_jwt'])
 
-    def mockannotate(filename, pdf):
+    def mockannotate(filename, pdf, annotation_method):
         """ Mocks out the 'annotate' function in the module
         since we don't care about the annotation process """
         return dict()
@@ -123,7 +123,7 @@ def test_can_view_all_files_in_project(monkeypatch, client, test_user, fix_proje
     login_resp = client.login_as_user(test_user.email, 'password')
     headers = generate_headers(login_resp['access_jwt'])
 
-    def mockannotate(filename, pdf):
+    def mockannotate(filename, pdf, annotation_method):
         """ Mocks out the 'annotate' function in the module
         since we don't care about the annotation process """
         return dict()
