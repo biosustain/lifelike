@@ -363,7 +363,7 @@ class Neo4JService(GraphBaseDao):
             organism_id: str = row['organism_id']
             # For now just get the first gene in the list of matches, no way for us to infer which
             # to use
-            gene_id: str = row['genes_in_organism_with_name'][0]
+            gene_id: str = row['gene_ids'][0]
 
             if gene_to_organism_map.get(gene_name, None) is not None:
                 gene_to_organism_map[gene_name][organism_id] = gene_id
@@ -688,12 +688,11 @@ class Neo4JService(GraphBaseDao):
         """Retrieves a list of all the genes with a given name
         in a particular organism."""
         query = """
-            MATCH (g:Gene)-[:HAS_TAXONOMY]->(o:Taxonomy)
-            WHERE
-                g.name IN $genes AND
-                o.id IN $organisms
-            WITH g.name AS gene, g.id AS gene_id, o.id AS organism_id
-            RETURN gene, collect(gene_id) AS genes_in_organism_with_name, organism_id
+            MATCH (s:Synonym)-[]-(g:Gene)
+            WHERE s.name IN $genes
+            WITH s, g MATCH (g)-[:HAS_TAXONOMY]-(t:Taxonomy)-[:HAS_PARENT*0..2]->(p)
+            WHERE p.id IN $organisms
+            RETURN s.name AS gene, collect(g.id) AS gene_ids, p.id AS organism_id
         """
         return query
 
