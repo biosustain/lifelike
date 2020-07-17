@@ -1,3 +1,5 @@
+import re
+
 from flask import (
     current_app,
     request,
@@ -62,6 +64,9 @@ def add_projects():
 
     data = request.get_json()
     user = g.current_user
+
+    if not re.match('^[A-Za-z0-9-]{1,50}$', data['projectName']):
+        raise ValueError('incorrect project name format')
 
     projects = Projects(
         project_name=data['projectName'],
