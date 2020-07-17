@@ -10,10 +10,10 @@
         class="btn btn-outline-primary w-100"
         disabled>
         <app-node-relationship
-          [leftNodeName]="relationshipGroup.get('columnSelection1').value"
+          [leftNodeName]="indexToColumn.get(relationshipGroup.get('columnSelection1').value)"
           [leftNodeLabel]="relationshipGroup.get('nodeLabel1').value"
           [leftNodeColor]="labelColors.get(relationshipGroup.get('nodeLabel1').value)"
-          [rightNodeName]="relationshipGroup.get('columnSelection2').value"
+          [rightNodeName]="indexToColumn.get(relationshipGroup.get('columnSelection2').value)"
           [rightNodeLabel]="relationshipGroup.get('nodeLabel2').value"
           [rightNodeColor]="labelColors.get(relationshipGroup.get('nodeLabel2').value)"
           [edge]="relationshipGroup.get('relationshipLabel').value"
@@ -22,10 +22,10 @@
       <ng-template #fromRelationship>
         <button class="btn btn-outline-primary w-100" disabled>
           <app-node-relationship
-            [leftNodeName]="relationshipGroup.get('columnSelection2').value"
+          [leftNodeName]="indexToColumn.get(relationshipGroup.get('columnSelection2').value)"
             [leftNodeLabel]="relationshipGroup.get('nodeLabel2').value"
             [leftNodeColor]="labelColors.get(relationshipGroup.get('nodeLabel2').value)"
-            [rightNodeName]="relationshipGroup.get('columnSelection1').value"
+            [rightNodeName]="indexToColumn.get(relationshipGroup.get('columnSelection1').value)"
             [rightNodeLabel]="relationshipGroup.get('nodeLabel1').value"
             [rightNodeColor]="labelColors.get(relationshipGroup.get('nodeLabel1').value)"
             [edge]="relationshipGroup.get('relationshipLabel').value"
@@ -52,7 +52,7 @@
     <div class="row">
       <div class="col-md-4">
         <select class="custom-select" formControlName="columnSelection1">
-          <option *ngFor="let col of columns.slice(0, columns.length - 1)" [value]="col">{{ col }}</option>
+          <option *ngFor="let col of columns.slice(0, columns.length - 1); let i = index" [value]="i">{{ col }}</option>
         </select>
         <small id="column-1-help-block" class="form-text text-muted">
           Each unique cell of this column will be imported into the KG as a new node.
@@ -70,7 +70,7 @@
     <div class="row">
       <div class="col-md-4">
         <select class="custom-select" formControlName="columnSelection2" (change)="columnSelection2Changed()">
-          <option *ngFor="let col of columns" [value]="col">{{ col }}</option>
+          <option *ngFor="let col of columns; let i = index" [value]="i">{{ col }}</option>
         </select>
         <small id="column-2-help-block" class="form-text text-muted">
           Each unique cell of this column will be imported into the KG as a new node, UNLESS you choose 'KG Gene', in which case we use existing Gene nodes.
@@ -87,7 +87,7 @@
     </div>
   </div>
 
-  <div *ngIf="activeFormGroup.get('columnSelection2').value === 'KG Gene'">
+  <div *ngIf="indexToColumn.get(activeFormGroup.get('columnSelection2').value) === 'KG Gene'">
     <div class="form-group">
       <label>Does your first chosen column represent gene name, or ID?</label>
       <div class="custom-control custom-radio">
@@ -178,7 +178,7 @@
     <div *ngFor="let propertyGroup of activeFormGroup.get('relationshipProperties').controls; let i = index" class="row mt-2" [formGroup]="propertyGroup">
       <div class="col">
         <select class="custom-select" formControlName="column">
-          <option *ngFor="let col of columns.slice(0, columns.length - 1)">{{ col }}</option>
+          <option *ngFor="let col of columns.slice(0, columns.length - 1); let i = index" [value]="i">{{ col }}</option>
         </select>
       </div>
       <div class="col">
