@@ -970,6 +970,7 @@ class AnnotationsService:
         tokens: List[PDFTokenPositions],
         char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
         cropbox_in_pdf: Tuple[int, int],
+        nlp_resp: List[dict] = [],
     ) -> List[Annotation]:
         deque(map(self._filter_tokens, tokens), maxlen=0)
 
@@ -993,6 +994,37 @@ class AnnotationsService:
                 cropbox_in_pdf=cropbox_in_pdf,
             )
             unified_annotations.extend(annotations)
+
+        # TODO: TEMP to keep track of things not matched in LMDB
+        if nlp_resp:
+            not_matched = []
+            matched = set()
+            from neo4japp.util import compute_hash
+            predicted = {
+                compute_hash(
+                    {
+                        'low_index': predicted['low_index'],
+                        'high_index': predicted['high_index'],
+                        'keyword': predicted['item'],
+                    },
+                ): predicted for predicted in nlp_resp
+            }
+
+            for anno in unified_annotations:
+                hashval = compute_hash(
+                    {
+                        'low_index': anno.lo_location_offset,
+                        'high_index': anno.hi_location_offset,
+                        'keyword': anno.keyword,
+                    }
+                )
+                matched.add(hashval)
+
+            for k, v in predicted.items():
+                if k not in matched:
+                    not_matched.append(v)
+
+            print(f'NLP TOKENS NOT MATCHED TO LMDB {json.dumps(not_matched)}')
 
         fixed_unified_annotations = self._get_fixed_false_positive_unified_annotations(
             annotations_list=unified_annotations,
@@ -1043,7 +1075,6 @@ class AnnotationsService:
             try:
                 req = requests.post(NLP_ENDPOINT, json={'text': page_text})
                 nlp_resp = req.json()
-                cumm_nlp_resp.extend(nlp_resp)
 
                 for predicted in nlp_resp:
                     # need to do offset here because index resets after each text string for page
@@ -1072,6 +1103,12 @@ class AnnotationsService:
                         token_type=predicted['type'],
                     )
                     nlp_tokens.append(token)
+
+                    offset_predicted = {k: v for k, v in predicted.items()}
+                    offset_predicted['high_index'] += offset
+                    offset_predicted['low_index'] += offset
+
+                    cumm_nlp_resp.append(offset_predicted)
             except requests.exceptions.RequestException:
                 raise AnnotationError('An error occurred with the NLP service.')
 
@@ -1084,6 +1121,7 @@ class AnnotationsService:
             tokens=nlp_tokens,
             char_coord_objs_in_pdf=coordinates.char_coord_objs_in_pdf,
             cropbox_in_pdf=coordinates.cropbox_in_pdf,
+            nlp_resp=cumm_nlp_resp,  # TODO: just temp for now
         )
 
     def fix_conflicting_annotations(
