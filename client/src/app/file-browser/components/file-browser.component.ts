@@ -1,8 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
-import { SelectionModel } from '@angular/cdk/collections';
+import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { BehaviorSubject, Subscription, throwError, } from 'rxjs';
+import { BehaviorSubject, combineLatest, Observable, Subscription, throwError } from 'rxjs';
 import { PdfFile, UploadPayload, UploadType } from 'app/interfaces/pdf-files.interface';
 import { PdfFilesService } from 'app/shared/services/pdf-files.service';
 import { HttpEventType } from '@angular/common/http';
@@ -10,29 +9,32 @@ import { Progress, ProgressMode } from 'app/interfaces/common-dialog.interface';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { FileDeleteDialogComponent } from './file-delete-dialog.component';
-import { FileUploadDialogComponent } from './file-upload-dialog.component';
+import { ObjectDeleteDialogComponent } from './object-delete-dialog.component';
+import { ObjectUploadDialogComponent } from './object-upload-dialog.component';
 import { FileEditDialogComponent } from './file-edit-dialog.component';
 import { ErrorHandler } from '../../shared/services/error-handler.service';
-import { Directory, Map, ProjectSpaceService, Project } from '../services/project-space.service';
+import { Directory, Map, ProjectSpaceService } from '../services/project-space.service';
 import { ProjectPageService } from '../services/project-page.service';
-import { isNullOrUndefined } from 'util';
-import { ContentAddDialogComponent } from './content-add-dialog.component';
+import { DirectoryCreateDialogComponent } from './directory-create-dialog.component';
+import { DirectoryContent, DirectoryObject } from '../../interfaces/projects.interface';
+import { CollectionModal } from '../../shared/utils/collection-modal';
+import { MapEditDialogComponent } from '../../drawing-tool/components/map-edit-dialog.component';
+import { ProjectsService } from '../../drawing-tool/services';
+import { cloneDeep } from 'lodash';
+import { WorkspaceManager } from '../../shared/workspace-manager';
+import { MapCreateDialogComponent } from '../../drawing-tool/components/map-create-dialog.component';
+import { MessageDialog } from '../../shared/services/message-dialog.service';
+import { MessageType } from '../../interfaces/message-dialog.interface';
 
 export interface File extends PdfFile {
-  type: string;
   // Camel-case instead of snake-case version of file
   fileId?: string;
+  // TODO: wtf we need to fix this
 }
 
-interface DirectoryArgument {
+interface PathLocator {
   projectName?: string;
   directoryId?: string;
-}
-export interface DirectoryContent {
-  files: File[];
-  maps: Map[];
-  childDirectories: Directory[];
 }
 
 @Component({
@@ -40,200 +42,215 @@ export interface DirectoryContent {
   templateUrl: './file-browser.component.html',
 })
 export class FileBrowserComponent implements OnInit, OnDestroy {
-  files: File[] = [];
-  shownFiles: File[] = [];
-  isReannotating = false;
-  uploadStarted = false;
+  loadTask: BackgroundTask<PathLocator, DirectoryContent>;
+  loadTaskSubscription: Subscription;
+  paramsSubscription: Subscription;
+
+  locator: PathLocator;
+  directory: Directory;
+  path: Directory[];
+  readonly results = new CollectionModal<DirectoryObject>([], {
+    multipleSelection: true,
+    sort: (a: DirectoryObject, b: DirectoryObject) => {
+      if (a.type === 'dir' && b.type !== 'dir') {
+        return -1;
+      } else if (a.type !== 'dir' && b.type === 'dir') {
+        return 1;
+      } else {
+        return a.name.localeCompare(b.name);
+      }
+    },
+  });
+
   lmdbsDates = {};
 
-  loadTask: BackgroundTask<DirectoryArgument, DirectoryContent> = new BackgroundTask(
-    (dirArg: DirectoryArgument) => this.projPage.getProjectDir(
-      dirArg.projectName, dirArg.directoryId
-    )
-  );
-  loadTaskSubscription: Subscription;
-
-  // The project to pull content out of
-  projectName = '';
-
-  // The current directory we're residing in
-  currentDirectoryId;
-  currentDirectoryName = '';
-
-  // The directory path from parent
-  dirPathChain: string[] = [];
-  dirPathId: number[] = [];
-
-  // Query to filter files by
-  filterQuery = '';
-  // The list of files filtered by query
-  showFileCollection: (Directory|Map|File)[] = [];
-
-  // The list of files in a directory
-  FILE_COLLECTION: (Directory|Map|File)[] = [];
-  get fileCollection(): (Directory|Map|File)[] {
-    return this.FILE_COLLECTION;
-  }
-  set fileCollection(val: (Directory|Map|File)[]) {
-    this.FILE_COLLECTION = val;
-    this.showFileCollection = val;
-  }
-
-  // Which files are selected to do action on
-  selection = new SelectionModel<(Directory|Map|File)>(true, []);
-
-  fileSpaceSubscription: Subscription;
-
-  get amIRootDir() {
-    return this.dirPathChain.length === 0;
-  }
-
-  constructor(
-    private pdf: PdfFilesService,
-    private router: Router,
-    private snackBar: MatSnackBar,
-    private readonly modalService: NgbModal,
-    private progressDialog: ProgressDialog,
-    private readonly errorHandler: ErrorHandler,
-    private route: ActivatedRoute,
-    private projSpace: ProjectSpaceService,
-    private projPage: ProjectPageService,
-    private ngbModal: NgbModal
-  ) {
-    if (this.route.snapshot.params.project_name) {
-      this.projectName = this.route.snapshot.params.project_name;
-
-      this.fileSpaceSubscription = this.route.queryParams
-        .subscribe(resp => {
-          if (isNullOrUndefined(resp)) { return; }
-
-          const {
-            dir, id
-          } = resp;
-
-          // If an array .. override directory chain with
-          // those from url parameters
-          if (
-            Array.isArray(dir) &&
-            Array.isArray(id)
-          ) {
-            this.dirPathChain = dir;
-            this.dirPathId = id;
-          } else {
-            if (!isNullOrUndefined(dir) && !isNullOrUndefined(id)) {
-              this.dirPathChain = [dir];
-              // tslint:disable-next-line: radix
-              this.dirPathId = [parseInt(id)];
-            } else {
-              // Reset back to ***ARANGO_USERNAME*** directory
-              this.dirPathChain = [];
-              this.dirPathId = [];
-            }
-          }
-
-          // If not empty, pull content from current dir id
-          if (this.dirPathChain.length && this.dirPathId.length) {
-            // Pull Content form subdir
-            this.currentDirectoryId = this.dirPathId.slice(-1)[0];
-            this.currentDirectoryName = this.dirPathChain.slice(-1)[0];
-
-            this.loadTask.update({
-                projectName: this.projectName,
-                directoryId: this.currentDirectoryId
-              });
-          } else {
-            // Else pull Content from ***ARANGO_USERNAME***
-            this.projSpace.getProject(this.projectName)
-              .subscribe(
-                (p: Project) => {
-                  this.currentDirectoryId = p.directory.projectsId;
-                }
-              );
-            this.loadTask.update({
-                projectName: this.projectName,
-                directoryId: null
-              });
-          }
-        }
-      );
-    }
+  constructor(private readonly filesService: PdfFilesService,
+              private readonly router: Router,
+              private readonly snackBar: MatSnackBar,
+              private readonly modalService: NgbModal,
+              private readonly progressDialog: ProgressDialog,
+              private readonly errorHandler: ErrorHandler,
+              private readonly route: ActivatedRoute,
+              private readonly projectSpaceService: ProjectSpaceService,
+              private readonly projectPageService: ProjectPageService,
+              private readonly workspaceManager: WorkspaceManager,
+              private readonly projectService: ProjectsService,
+              private readonly ngbModal: NgbModal,
+              private readonly messageDialog: MessageDialog) {
   }
 
   ngOnInit() {
-    this.pdf.getLMDBsDates().subscribe(lmdbsDates => {
+    this.filesService.getLMDBsDates().subscribe(lmdbsDates => {
       this.lmdbsDates = lmdbsDates;
-      this.updateAnnotationsStatus(this.files);
+      // this.updateAnnotationsStatus(this.results.items);
     });
-    this.loadTaskSubscription = this.loadTask.results$.subscribe(
-      (
-        {
-          result: dirContent,
-        }
-      ) => {
-        this.processDirectoryContent(dirContent);
 
-        // We assume that fetched files are correctly annotated
-        // this.updateAnnotationsStatus(files);
-        // this.updateFilter();
-      },
+    this.loadTask = new BackgroundTask(
+      (locator: PathLocator) => this.projectPageService.getProjectDir(
+        locator.projectName,
+        locator.directoryId,
+      ),
     );
 
-    this.refresh();
+    this.loadTaskSubscription = this.loadTask.results$.subscribe(({result}) => {
+      this.directory = result.dir;
+      this.path = result.path;
+      const objects = result.objects;
+      this.updateAnnotationsStatus(objects);
+      this.results.replace(objects);
+    });
+
+    this.paramsSubscription = this.route.params.subscribe(params => {
+      this.locator = {
+        projectName: params.project_name,
+        directoryId: params.dir_id,
+      };
+
+      this.loadTask.update(this.locator);
+    });
   }
 
   ngOnDestroy(): void {
+    this.paramsSubscription.unsubscribe();
     this.loadTaskSubscription.unsubscribe();
-    this.fileSpaceSubscription.unsubscribe();
   }
 
   refresh() {
-    this.selection.clear();
-    this.loadTask.update({
-      projectName: this.projectName,
-      directoryId: this.amIRootDir ? null : this.currentDirectoryId
+    this.loadTask.update(this.locator);
+  }
+
+  private updateAnnotationsStatus(objects: DirectoryObject[]) {
+    objects.forEach((object: DirectoryObject) => {
+      if (object.type === 'file') {
+        const file = object.data as File; // TODO: does this work?
+        file.annotations_date_tooltip = this.generateTooltipContent(file);
+      }
     });
   }
 
-  isAllSelected(): boolean {
-    if (!this.selection.selected.length) {
-      return false;
+  private generateTooltipContent(file: File): string {
+    const outdated = Array
+      .from(Object.entries(this.lmdbsDates))
+      .filter(([, date]: [string, string]) => Date.parse(date) >= Date.parse(file.annotations_date));
+    if (outdated.length === 0) {
+      return '';
     }
-    for (const item of this.fileCollection) {
-      if (!this.selection.isSelected(item)) {
-        return false;
-      }
-    }
-    return true;
+    return outdated.reduce(
+      (tooltip: string, [name, date]: [string, string]) => `${tooltip}\n- ${name}, ${new Date(date).toDateString()}`,
+      'Outdated:',
+    );
   }
 
-  toggleAllSelected(): void {
-    if (this.isAllSelected()) {
-      this.selection.clear();
+  private normalizeFilter(filter: string): string {
+    return filter.trim().toLowerCase().replace(/[ _]+/g, ' ');
+  }
+
+  applyFilter(filter: string) {
+    const normalizedFilter = this.normalizeFilter(filter);
+    this.results.filter = normalizedFilter.length ? (item: DirectoryObject) => {
+      return this.normalizeFilter(item.name).includes(normalizedFilter);
+    } : null;
+  }
+
+  // ========================================
+  // Dialogs
+  // ========================================
+
+  displayUploadDialog() {
+    const dialogRef = this.modalService.open(ObjectUploadDialogComponent);
+    dialogRef.result.then(data => {
+      this.upload(data);
+    }, () => {
+    });
+  }
+
+  displayDirectoryCreateDialog() {
+    const dialogRef = this.ngbModal.open(DirectoryCreateDialogComponent);
+    dialogRef.result.then(
+      resp => {
+        this.projectPageService.addDir(
+          this.locator.projectName,
+          this.directory.id,
+          resp.name,
+        ).subscribe(() => {
+          this.refresh();
+        });
+      },
+      () => {
+      },
+    );
+  }
+
+  displayMapCreateDialog() {
+    const dialogRef = this.modalService.open(MapCreateDialogComponent);
+    dialogRef.result.then(newMap => {
+      this.projectPageService.addMap(
+        this.locator.projectName,
+        this.directory.id,
+        newMap.label,
+        newMap.description,
+        // TODO: public flag lost!!
+      )
+        .pipe(this.errorHandler.create())
+        .subscribe((result) => {
+          this.workspaceManager.navigate(['/maps', result.project.hash_id, 'edit']);
+        });
+    });
+  }
+
+  displayEditDialog(object: DirectoryObject) {
+    if (object.type === 'dir') {
+      this.messageDialog.display({
+        title: 'Not Yet Implemented',
+        message: 'Directories cannot yet be edited. Sorry.',
+        type: MessageType.Warning,
+      });
+    } else if (object.type === 'file') {
+      const file = object.data as File;
+      const dialogRef = this.modalService.open(FileEditDialogComponent);
+      dialogRef.componentInstance.file = file;
+      dialogRef.result.then(data => {
+        if (data) {
+          this.filesService.updateFile(
+            file.file_id,
+            data.filename,
+            data.description,
+          ).subscribe(() => {
+            this.refresh();
+          });
+        }
+      }, () => {
+      });
+    } else if (object.type === 'map') {
+      const dialogRef = this.modalService.open(MapEditDialogComponent);
+      dialogRef.componentInstance.map = cloneDeep(object.data);
+      dialogRef.result.then(newMap => {
+        this.projectService.updateProject(newMap)
+          .pipe(this.errorHandler.create())
+          .subscribe(() => {
+            this.refresh();
+          });
+      }, () => {
+      });
     } else {
-      this.selection.select(...this.fileCollection);
+      throw new Error(`unsupported type: ${object.type}`);
     }
   }
 
-  /**
-   * Get selected files that are also shown.
-   */
-  getSelectedShownFiles() {
-    const result = [];
-    for (const item of this.fileCollection) {
-      if (this.selection.isSelected(item)) {
-        result.push(item);
-      }
-    }
-    return result;
+  displayDeleteDialog(objects: DirectoryObject[]) {
+    const dialogRef = this.modalService.open(ObjectDeleteDialogComponent);
+    dialogRef.componentInstance.objects = objects;
+    dialogRef.result.then(() => {
+      this.delete(objects);
+    }, () => {
+    });
   }
+
+  // ========================================
+  // Actions
+  // ========================================
 
   upload(data: UploadPayload) {
-    // The user shouldn't be able to initiate a new file upload
-    if (this.uploadStarted) {
-      return;
-    }
-    this.uploadStarted = true;
-
     // Let's show some progress!
     const progressObservable = new BehaviorSubject<Progress>(new Progress({
       status: 'Preparing file for upload...',
@@ -244,10 +261,10 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
       progressObservable,
     });
 
-    this.projPage.addPdf(
-      this.projectName,
-      this.currentDirectoryId,
-      data
+    this.projectPageService.addPdf(
+      this.locator.projectName,
+      this.directory.id,
+      data,
     ).pipe(this.errorHandler.create()).subscribe(event => {
         if (event.type === HttpEventType.UploadProgress) {
           if (event.loaded >= event.total) {
@@ -265,371 +282,119 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
           }
         } else if (event.type === HttpEventType.Response) {
           progressDialogRef.close();
-          this.uploadStarted = false;
           this.snackBar.open(`File uploaded: ${event.body.filename}`, 'Close', {duration: 5000});
           this.refresh(); // updates the list on successful upload
         }
       },
       err => {
         progressDialogRef.close();
-        this.uploadStarted = false;
         return throwError(err);
       },
     );
   }
 
-  deleteFiles(files) {
-    const ids: string[] = files.map((file: File) => file.file_id);
-    this.pdf.deleteFiles(ids).pipe(this.errorHandler.create()).subscribe(
-      (res) => {
-        let msg = 'Deletion completed';
-        if (Object.values(res).includes('Not an owner')) { // check if any file was not owned by the current user
-          msg = `${msg}, but one or more files could not be deleted because you are not the owner`;
-        }
-        this.snackBar.open(msg, 'Close', {duration: 10000});
-        this.refresh(); // updates the list on successful deletion
-        console.log('deletion result', res);
-      },
-      err => {
-        this.snackBar.open(`Deletion failed`, 'Close', {duration: 10000});
-        console.error('deletion error', err);
-      },
-    );
-  }
+  reannotate(objects: DirectoryObject[]) {
+    const files: File[] = objects
+      .filter(object => object.type === 'file')
+      .map(file => file.data as File);
 
-  reannotate() {
-    this.isReannotating = true;
-    const ids: string[] = this.selection.selected.map((file: File) => file.file_id);
-    // Let's show some progress!
-    const progressObservable = new BehaviorSubject<Progress>(new Progress({
-      status: 'Re-creating annotations in file...',
-      mode: ProgressMode.Buffer,
-    }));
-    const progressDialogRef = this.progressDialog.display({
-      title: `Reannotating file${this.selection.selected.length === 1 ? '' : 's'}...`,
-      progressObservable,
-    });
-    this.pdf.reannotateFiles(ids).pipe(this.errorHandler.create()).subscribe(
-      (res) => {
-        this.refresh();
-        this.isReannotating = false;
-        this.snackBar.open(`Reannotation completed`, 'Close', {duration: 5000});
-        progressDialogRef.close();
-      },
-      err => {
-        this.refresh();
-        this.isReannotating = false;
-        this.snackBar.open(`Reannotation failed`, 'Close', {duration: 10000});
-        progressDialogRef.close();
-      },
-    );
-  }
-
-  applyFilter(query: string) {
-    this.filterQuery = query.trim();
-    this.updateFilter();
-  }
-
-  private updateFilter() {
-    this.showFileCollection = this.filterQuery.length ?
-      this.fileCollection.filter(
-        (f: ( Map|File|Directory)) => {
-          switch (f.type) {
-            case 'pdf':
-              return (f as File).filename.includes(this.filterQuery);
-            case 'map':
-              return (f as Map).label.includes(this.filterQuery);
-            case 'dir':
-              return (f as Directory).name.includes(this.filterQuery);
-            default:
-              return false;
-          }
-        }
-      ) :
-      this.fileCollection;
-  }
-
-  displayUploadDialog() {
-    const dialogRef = this.modalService.open(FileUploadDialogComponent);
-    dialogRef.result.then(data => {
-      this.upload(data);
-    }, () => {
-    });
-  }
-
-  displayEditDialog(file: File = null) {
-    if (file == null) {
-      const selected = this.getSelectedShownFiles();
-      if (selected.length === 1) {
-        file = selected[0];
-      } else {
-        return null;
-      }
-    }
-    const dialogRef = this.modalService.open(FileEditDialogComponent);
-    dialogRef.componentInstance.file = file;
-    dialogRef.result.then(data => {
-      if (data) {
-        this.pdf.updateFile(
-          file.file_id,
-          data.filename,
-          data.description,
-        ).subscribe(() => {
+    if (files.length) {
+      const ids: string[] = files.map((file: File) => file.fileId);
+      // Let's show some progress`!
+      const progressObservable = new BehaviorSubject<Progress>(new Progress({
+        status: 'Re-creating annotations in file...',
+        mode: ProgressMode.Buffer,
+      }));
+      const progressDialogRef = this.progressDialog.display({
+        title: `Reannotating file${files.length === 1 ? '' : 's'}...`,
+        progressObservable,
+      });
+      this.filesService.reannotateFiles(ids).pipe(this.errorHandler.create()).subscribe(
+        (res) => {
           this.refresh();
-        });
-      }
-    }, () => {
-    });
-  }
-
-  displayDeleteDialog() {
-    const files = [...this.getSelectedShownFiles()];
-    const dialogRef = this.modalService.open(FileDeleteDialogComponent);
-    dialogRef.componentInstance.files = files;
-    dialogRef.result.then(() => {
-      files.map(f => this.delete(f));
-    }, () => {
-    });
-  }
-
-  private updateAnnotationsStatus(files: File[]) {
-    files.forEach((file: File) => {
-      file.annotations_date_tooltip = this.generateTooltipContent(file);
-    });
-    this.files = [...files];
-  }
-
-  private generateTooltipContent(file: File): string {
-    const outdated = Array
-      .from(Object.entries(this.lmdbsDates))
-      .filter(([, date]: [string, string]) => Date.parse(date) >= Date.parse(file.annotations_date));
-    if (outdated.length === 0) {
-      return '';
-    }
-    return outdated.reduce(
-      (tooltip: string, [name, date]: [string, string]) => `${tooltip}\n- ${name}, ${new Date(date).toDateString()}`,
-      'Outdated:',
-    );
-  }
-
-  /**
-   * Handle processing directory file content into
-   * component variables
-   * @param dirContent - the content for this project and directory
-   */
-  private processDirectoryContent(dirContent: DirectoryContent) {
-    const content: {maps, childDirectories, files} = dirContent;
-
-    let {
-      maps,
-      childDirectories,
-      files
-    } = content;
-
-    maps = maps.map(
-      (m: Map) => ({...m, type: 'map', routeLink: this.generateRouteLink(m, 'map')})
-    );
-    childDirectories = childDirectories.map(
-      (d: Directory) => {
-        const {
-          name,
-          id
-        } = d;
-        const dirs = [...this.dirPathChain, name];
-        const ids = [...this.dirPathId, id];
-        const dirPath = { dir: dirs, id: ids };
-        return {dirPath, ...d, type: 'dir', routeLink: this.generateRouteLink(d, 'dir')};
-      }
-    );
-    files = files.map(
-      (f: File) => ({...f, type: 'pdf', routeLink: this.generateRouteLink(f, 'pdf')})
-    );
-
-    this.fileCollection = [].concat(maps, childDirectories, files);
-  }
-
-  // TODO - should I worry about default routing/testing for edit/read view
-  /**
-   * Construct a link to access that resource
-   * @param file - either map, directory, or pdf
-   * @param type - the type of it
-   */
-  private generateRouteLink(file: (Directory|Map), type) {
-    switch (type) {
-      case 'dir':
-        return `/projects/${this.projectName}`;
-      case 'map':
-        const m: Map = file as Map;
-        // TODO - bring in jsonify_with_class
-        // tslint:disable-next-line: no-string-literal
-        const hashId = m.hashId || m['hash_id'];
-        return `/maps/${hashId}/edit`;
-      case 'pdf':
-        const f: File = file as File;
-        const fileId = f.fileId;
-        return `/projects/${this.projectName}/files/${fileId}`;
-      default:
-        return '';
-    }
-  }
-
-  /**
-   * Construct a query param url from a javascript object
-   * @param data - object
-   */
-  private encodeQueryData(data) {
-    const ret = [];
-
-    for (const d in data) {
-      if (d in data) {
-        (data[d] as any[]).forEach(param => {
-          ret.push(encodeURIComponent(d) + '=' + encodeURIComponent(param));
-        });
-      }
-    }
-    return ret.join('&');
- }
-
-  /**
-   * Navigate to a parent directory
-   * @param index - idx of the parent directory in the directory chain
-   */
-  goUp(index) {
-    const dirs = this.dirPathChain.slice(0, index + 1);
-    const ids = this.dirPathId.slice(0, index + 1);
-
-    this.fileCollection = [];
-
-    if (dirs.length && ids.length) {
-      // Go to sub directory
-      this.router.navigate(
-        [`/projects/${this.projectName}/`],
-        { queryParams: { dir: dirs, id: ids } }
+          this.snackBar.open(`Reannotation completed`, 'Close', {duration: 5000});
+          progressDialogRef.close();
+        },
+        err => {
+          this.refresh();
+          this.snackBar.open(`Reannotation failed`, 'Close', {duration: 10000});
+          progressDialogRef.close();
+        },
       );
     } else {
-      // Go to project ***ARANGO_USERNAME***
-      this.router.navigateByUrl(
-        `/projects/${this.projectName}`
-      );
+      this.messageDialog.display({
+        title: 'Nothing to Re-annotate',
+        message: 'No files were selected to re-annotate.',
+        type: MessageType.Warning,
+      });
     }
-
   }
 
-  /**
-   * Go back to the project space
-   */
-  goBack() {
-    this.router.navigateByUrl('projects');
-  }
+  delete(objects: DirectoryObject[]) {
+    // TODO: not being able to delete directory is super lame
+    const supportedObjects = objects.filter(object => object.type !== 'dir');
 
-  /**
-   * Add sub-directory in current directory
-   */
-  addDir() {
-    const dialogRef = this.ngbModal.open(ContentAddDialogComponent);
-    dialogRef.componentInstance.mode = 'dir';
+    if (supportedObjects.length) {
+      combineLatest(supportedObjects.map(object => this.deleteObject(object)))
+        .pipe(this.errorHandler.create())
+        .subscribe(() => {
+          this.refresh();
 
-    dialogRef.result.then(
-      resp => {
-        this.projPage.addDir(
-          this.projectName,
-          this.currentDirectoryId,
-          resp.dirname
-        ).subscribe(
-          (d: Directory) => {
-            this.fileCollection = this.fileCollection.concat({
-              ...d,
-              type: 'dir',
-              routeLink: this.generateRouteLink(d, 'dir')
+          this.snackBar.open(`Deletion completed`, 'Close', {duration: 5000});
+
+          if (supportedObjects.length !== objects.length) {
+            this.messageDialog.display({
+              title: 'Some Items Not Deleted',
+              message: 'Everything but the selected folders were deleted. You cannot delete folders yet.',
+              type: MessageType.Warning,
             });
+          }
         });
-      },
-      () => {
-      }
-    );
+    } else {
+      this.messageDialog.display({
+        title: 'Some Items Not Deleted',
+        message: 'Folders cannot yet be deleted. Sorry.',
+        type: MessageType.Warning,
+      });
+    }
   }
 
-  /**
-   * Add map in current directory
-   */
-  addMap() {
-    const dialogRef = this.ngbModal.open(ContentAddDialogComponent);
-    dialogRef.componentInstance.mode = 'map';
-
-    dialogRef.result.then(
-      resp => {
-        this.projPage.addMap(
-          this.projectName,
-          this.currentDirectoryId,
-          resp.label,
-          resp.description
-        ).subscribe(
-          (newMap: { project: Project, status}) => {
-            const { project } = newMap;
-
-            this.fileCollection = this.fileCollection.concat({
-              ...project,
-              type: 'map',
-              routeLink: this.generateRouteLink(project, 'map')
-            });
-        });
-      },
-      () => {
-      }
-    );
-  }
-
-  delete(file: (Map|File|Directory)) {
-    switch (
-      file.type
-    ) {
+  private deleteObject(object: DirectoryObject): Observable<any> {
+    switch (object.type) {
       case 'map':
-        // TODO - bring in with jsonify_with_class
-        // tslint:disable-next-line: no-string-literal
-        const hashId = (file as Map).hashId || file['hash_id'];
-        this.projPage.deleteMap(
-          this.projectName,
-          hashId
-        ).subscribe(resp => {
-          this.snackBar.open(`Deletion completed`, 'Close', {duration: 5000});
-          this.fileCollection = this.fileCollection.filter(
-            (f) => {
-              if (f.type !== 'map') {
-                return true;
-              } else {
-                // TODO - bring in with jsonify_with_class
-                // tslint:disable-next-line: no-string-literal
-                const fHashId = (f as Map).hashId || file['hash_id'];
-                return hashId !== fHashId;
-              }
-            }
-          );
-        });
-        break;
-      case 'pdf':
-        const fileId = (file as File).fileId;
+        const hashId = (object.data as Map).hashId;
+        return this.projectPageService.deleteMap(
+          this.locator.projectName,
+          hashId,
+        );
+      case 'file':
+        const fileId = (object.data as File).fileId;
 
-        this.projPage.deletePDF(
-          this.projectName,
-          fileId
-        ).subscribe(resp => {
-          this.snackBar.open(`Deletion completed`, 'Close', {duration: 5000});
-          this.fileCollection = this.fileCollection.filter(
-            (f) => {
-              if (f.type !== 'pdf') {
-                return true;
-              } else {
-                const fHashId = (f as File).fileId;
-                return fileId !== fHashId;
-              }
-            }
-          );
-        });
-        break;
+        return this.projectPageService.deletePDF(
+          this.locator.projectName,
+          fileId,
+        );
       case 'dir':
-        break;
+        throw new Error('not implemented');
       default:
-        break;
+        throw new Error(`unknown directory object type: ${object.type}`);
+    }
+  }
+
+  getObjectCommands(object: DirectoryObject): any[] {
+    switch (object.type) {
+      case 'dir':
+        const directory = object.data as Directory;
+        // TODO: Convert to hash ID
+        return ['/projects', this.locator.projectName, 'folders', directory.id];
+      case 'file':
+        const file = object.data as File;
+        return ['/projects', this.locator.projectName, 'files', file.fileId];
+      case 'map':
+        const map = object.data as Map;
+        return ['/maps', map.hashId, 'edit'];
+      default:
+        throw new Error(`unknown directory object type: ${object.type}`);
     }
   }
 }
