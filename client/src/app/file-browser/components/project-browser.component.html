@@ -48,6 +48,7 @@
         <div *ngFor="let p of projects" class="tile d-flex flex-column justify-content-center align-items-center"
              tabindex="0"
              (click)='select(p)'
+             (dblclick)="goToProject(p)"
              (keydown)="$event.keyCode != 13 || select(p)"
              [class.active]="selectedProject === p">
           <div class="flex-fill d-flex align-items-center">
