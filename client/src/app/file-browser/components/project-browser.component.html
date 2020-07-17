@@ -12,12 +12,7 @@
       <div class="mr-2">
         <button class="btn btn-primary" (click)="displayCreateDialog()">
           <i class="fa fa-fw fa-plus-circle"></i>
-          Create
-        </button>
-
-        <button class="btn btn-outline-secondary ml-2" (click)="displayEditDialog(selectedProject)"
-                [disabled]="selectedProject == null">
-          <i class="fa fa-pencil fa-fw"></i> Edit
+          Add Project
         </button>
       </div>
       <div class="ml-auto">
@@ -39,26 +34,31 @@
               <i class="fas fa-layer-group fa-4x"></i>
             </span>
           </div>
-          <div class="my-2 text-truncate">
-            <span class="placeholder-box">Loading loading</span>
-          </div>
         </div>
       </div>
     </ng-container>
 
-    <ng-container *ngIf="status.resultsShown">
-      <div class="tile-deck tile-deck-selectable">
-        <div *ngFor="let p of projects" class="tile d-flex flex-column justify-content-center align-items-center"
-             tabindex="0"
-             (click)='select(p)'
-             (keydown)="$event.keyCode != 13 || select(p)"
-             [class.active]="selectedProject === p">
-          <div class="flex-fill d-flex align-items-center">
-            <i class="fas fa-layer-group fa-4x"></i>
+    <ng-container *ngIf="status.resultsShown && projects.length">
+      <div class="tile-deck">
+        <div *ngFor="let p of projects" class="tile d-flex flex-column">
+          <div class="d-flex tile-toolbar">
+            <div ngbDropdown class="d-inline-block ml-auto">
+              <button class="btn btn-light btn-sm" ngbDropdownToggle>
+                <i class="fas fa-ellipsis-v fa-fw"></i>
+              </button>
+              <div ngbDropdownMenu>
+                <button ngbDropdownItem (click)="displayShareDialog(p)">Share...</button>
+              </div>
+            </div>
           </div>
-          <div class="text-truncate">
+          <div class="flex-fill d-flex justify-content-center align-items-center my-2">
+            <a href="#" (click)="goToProject(p); $event.preventDefault()" class="text-muted">
+              <i class="fas fa-layer-group fa-4x"></i>
+            </a>
+          </div>
+          <div class="text-truncate text-center">
             <a href="#" (click)="goToProject(p); $event.preventDefault()"
-               class="p-2 d-block">{{ p.projectName }}</a>
+               class="d-block">{{ p.projectName }}</a>
           </div>
         </div>
       </div>

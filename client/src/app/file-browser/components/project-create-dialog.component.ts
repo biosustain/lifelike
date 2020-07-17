@@ -31,6 +31,10 @@ export class ProjectCreateDialogComponent extends CommonDialogComponent {
     super(modal, messageDialog);
   }
 
+  get transformedName(): string {
+    return this.form.value.projectName.replace(/[^A-Za-z0-9-]/g, '-');
+  }
+
   getValue() {
     return {
       ...this.form.value,
@@ -41,6 +45,7 @@ export class ProjectCreateDialogComponent extends CommonDialogComponent {
     if (!this.form.invalid) {
       this.projectSpaceService.createProject({
         ...this.form.value,
+        projectName: this.transformedName,
       }).pipe(
         catchError((error: HttpErrorResponse) => {
           if (error.status === 400 && error.error.apiHttpError && error.error.apiHttpError.name === 'Duplicate record') {

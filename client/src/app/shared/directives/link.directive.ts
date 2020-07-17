@@ -1,15 +1,15 @@
-import { Directive, HostBinding, HostListener, Input } from '@angular/core';
+import { Directive, HostBinding, HostListener, Input, OnChanges } from '@angular/core';
 import { WorkspaceManager } from '../workspace-manager';
-import { ActivatedRoute, QueryParamsHandling, Router, UrlTree } from '@angular/router';
+import { ActivatedRoute, NavigationEnd, QueryParamsHandling, Router, UrlTree } from '@angular/router';
+import { Subscription } from 'rxjs';
+import { LocationStrategy } from '@angular/common';
 
 /**
  * Implements a version of [routerLink] that works with the workspace manager to load
  * routes in the current workspace.
  */
-@Directive({
-  selector: '[appLink]',
-})
-export class LinkDirective {
+export class AbstractLinkDirective {
+  @HostBinding('attr.href') @Input() href: string;
   @HostBinding('attr.target') @Input() target: string;
   @Input() queryParams: { [k: string]: any };
   @Input() fragment: string;
@@ -18,11 +18,11 @@ export class LinkDirective {
   @Input() skipLocationChange: boolean;
   @Input() replaceUrl: boolean;
   @Input() state?: { [k: string]: any };
-  private commands: any[] = [];
+  commands: any[] = [];
 
-  constructor(private readonly workspaceManager: WorkspaceManager,
-              private router: Router,
-              private route: ActivatedRoute) {
+  constructor(readonly workspaceManager: WorkspaceManager,
+              readonly router: Router,
+              readonly route: ActivatedRoute) {
   }
 
   @Input()
@@ -64,6 +64,44 @@ export class LinkDirective {
     });
   }
 
+}
+
+@Directive({
+  selector: ':not(a):not(area)[appLink]',
+})
+export class LinkWithoutHrefDirective extends AbstractLinkDirective {
+  constructor(workspaceManager: WorkspaceManager, router: Router, route: ActivatedRoute) {
+    super(workspaceManager, router, route);
+  }
+}
+
+@Directive({
+  selector: 'a[appLink],area[appLink]',
+})
+export class LinkWithHrefDirective extends AbstractLinkDirective implements OnChanges {
+  @HostBinding() href: string;
+
+  private subscription: Subscription;
+
+  constructor(workspaceManager: WorkspaceManager,
+              router: Router,
+              route: ActivatedRoute,
+              private locationStrategy: LocationStrategy) {
+    super(workspaceManager, router, route);
+    this.subscription = router.events.subscribe(s => {
+      if (s instanceof NavigationEnd) {
+        this.updateTargetUrlAndHref();
+      }
+    });
+  }
+
+  ngOnChanges() {
+    this.updateTargetUrlAndHref();
+  }
+
+  private updateTargetUrlAndHref(): void {
+    this.href = this.locationStrategy.prepareExternalUrl(this.router.serializeUrl(this.urlTree));
+  }
 }
 
 function attrBoolValue(s: any): boolean {
