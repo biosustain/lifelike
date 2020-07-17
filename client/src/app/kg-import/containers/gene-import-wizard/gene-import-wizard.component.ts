@@ -90,6 +90,8 @@ export class GeneImportWizardComponent {
 
     getNodeMatches() {
         // TEMP --> Backend magic happens here
-        console.log(this.geneConfigFormArray.value);
+        // Need to use rawValue here to get the value of any disabled inputs (e.g.
+        // the "nodeLabel2" input if KG Gene was selected for the column value).
+        console.log(this.geneConfigFormArray.getRawValue());
     }
 }

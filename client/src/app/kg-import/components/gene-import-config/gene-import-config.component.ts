@@ -18,11 +18,13 @@ export class GeneImportConfigComponent {
         if (!isNullOrUndefined(worksheetData)) {
             this.resetForm();
 
-            worksheetData.sheetColumnNames.forEach(column => {
+            worksheetData.sheetColumnNames.forEach((column, index) => {
                 this.columns.push(Object.keys(column)[0]);
+                this.indexToColumn.set(index.toString(), Object.keys(column)[0]);
             });
             // 'KG Gene' should always be the last element of the list
             this.columns.push('KG Gene');
+            this.indexToColumn.set(worksheetData.sheetColumnNames.length.toString(), 'KG Gene');
         }
     }
 
@@ -30,6 +32,7 @@ export class GeneImportConfigComponent {
 
     editingRelationship: boolean;
     columns: string[];
+    indexToColumn: Map<string, string>;
 
     activeFormGroup: FormGroup;
     relationshipFormGroupArray: FormGroup[];
@@ -61,6 +64,7 @@ export class GeneImportConfigComponent {
      */
     resetForm() {
         this.columns = [];
+        this.indexToColumn = new Map<string, string>();
         this.editingRelationship = false;
         this.relationshipFormGroupArray = [];
         this.activeFormGroup = null;
@@ -114,7 +118,7 @@ export class GeneImportConfigComponent {
         this.activeFormGroup.removeControl('speciesSelection');
         this.activeFormGroup.removeControl('geneMatchingProperty');
 
-        if (this.activeFormGroup.get('columnSelection2').value === 'KG Gene') {
+        if (this.indexToColumn.get(this.activeFormGroup.get('columnSelection2').value) === 'KG Gene') {
             this.activeFormGroup.get('nodeLabel2').setValue('Gene');
             this.activeFormGroup.get('nodeLabel2').disable();
 
@@ -173,7 +177,6 @@ export class GeneImportConfigComponent {
             if (!this.labelColors.has(nodeLabel2)) {
                 this.labelColors.set(this.activeFormGroup.get('nodeLabel2').value, getRandomColor());
             }
-
             this.relationshipFormValidityChanged.emit(true);
             this.relationshipsChanged.emit(this.relationshipFormGroupArray);
         }
