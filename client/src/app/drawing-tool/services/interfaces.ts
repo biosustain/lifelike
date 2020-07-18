@@ -1,13 +1,17 @@
+interface EntityData {
+  hyperlink?: string;
+  detail?: string;
+  source?: string;
+  search?: Hyperlink[];
+  subtype?: string;
+  hyperlinks?: Hyperlink[];
+}
+
 interface UniversalGraphNode {
   data: {
     x: number;
     y: number;
-    hyperlink?: string;
-    detail?: string;
-    source?: string;
-    search?: Hyperlink[];
-    subtype?: string;
-  };
+  } & EntityData;
   display_name: string;
   hash: string;
   shape?: string;
@@ -37,13 +41,7 @@ interface VisNetworkGraphNode {
   shape?: string;
   icon?: any;
   widthConstraint?: any;
-  data?: {
-    hyperlink?: string;
-    detail?: string;
-    source?: string;
-    search?: Hyperlink[];
-    subtype?: string;
-  };
+  data?: EntityData;
   color?: any;
 }
 interface VisNetworkGraphEdge {
@@ -70,13 +68,7 @@ interface GraphData {
   detail?: string;
   x?: number;
   y?: number;
-  data?: {
-    hyperlink?: string;
-    source?: string;
-    detail?: string;
-    search?: Hyperlink[];
-    subtype?: string;
-  };
+  data?: EntityData;
 }
 
 /**
@@ -90,13 +82,7 @@ interface GraphSelectionData {
     group: string,
     label: string,
     edges: VisNetworkGraphEdge[],
-    data: {
-      hyperlink?: string;
-      detail?: string;
-      source?: string;
-      search?: Hyperlink[];
-      subtype?: string;
-    }
+    data: EntityData
   };
   otherNodes?: VisNetworkGraphNode[];
 }

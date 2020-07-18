@@ -238,8 +238,9 @@ export class ProjectsService {
             hyperlink: isNullOrUndefined(n.data.hyperlink) ? '' : n.data.hyperlink,
             detail: isNullOrUndefined(n.data.detail) ? '' : n.data.detail,
             source: isNullOrUndefined(n.data.source) ? '' : n.data.source,
-            search: isNullOrUndefined(n.data.source) ? [] : n.data.search,
-            subtype: isNullOrUndefined(n.data.subtype) ? '' : n.data.subtype
+            search: isNullOrUndefined(n.data.search) ? [] : n.data.search,
+            subtype: isNullOrUndefined(n.data.subtype) ? '' : n.data.subtype,
+            hyperlinks: isNullOrUndefined(n.data.hyperlinks) ? [] : n.data.hyperlinks
           },
           display_name: n.label,
           hash: n.id,
@@ -291,8 +292,9 @@ export class ProjectsService {
             hyperlink: isNullOrUndefined(n.data.hyperlink) ? '' : n.data.hyperlink,
             detail: isNullOrUndefined(n.data.detail) ? '' : n.data.detail,
             source: isNullOrUndefined(n.data.source) ? '' : n.data.source,
-            search: isNullOrUndefined(n.data.source) ? [] : n.data.search,
-            subtype: isNullOrUndefined(n.data.subtype) ? '' : n.data.subtype
+            search: isNullOrUndefined(n.data.search) ? [] : n.data.search,
+            subtype: isNullOrUndefined(n.data.subtype) ? '' : n.data.subtype,
+            hyperlinks: isNullOrUndefined(n.data.hyperlinks) ? [] : n.data.hyperlinks
           }
         };
       }
