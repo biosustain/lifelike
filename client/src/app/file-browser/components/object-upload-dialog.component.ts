@@ -18,9 +18,9 @@ import { AuthSelectors } from 'app/auth/store';
 
 @Component({
   selector: 'app-dialog-upload',
-  templateUrl: './file-upload-dialog.component.html',
+  templateUrl: './object-upload-dialog.component.html',
 })
-export class FileUploadDialogComponent extends CommonFormDialogComponent {
+export class ObjectUploadDialogComponent extends CommonFormDialogComponent {
   readonly uploadType = UploadType;
   readonly userRoles$: Observable<string[]>;
 
@@ -102,7 +102,7 @@ export class FileUploadDialogComponent extends CommonFormDialogComponent {
   }
 
   urlChanged(event) {
-    this.form.get('filename').setValue(FileUploadDialogComponent.extractFilename(event.target.value));
+    this.form.get('filename').setValue(ObjectUploadDialogComponent.extractFilename(event.target.value));
   }
 
   getValue(): UploadPayload {

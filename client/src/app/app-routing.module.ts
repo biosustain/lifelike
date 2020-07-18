@@ -116,13 +116,31 @@ const routes: Routes = [
     canActivate: [AuthGuard],
     data: {
       title: 'Projects',
-      fontAwesomeIcon: 'folder'
+      fontAwesomeIcon: 'fa-layer-group'
     }
   },
   {
     path: 'projects/:project_name',
     component: FileBrowserComponent,
-    canActivate: [AuthGuard]
+    canActivate: [AuthGuard],
+    data: {
+      title: 'Projects',
+      fontAwesomeIcon: 'fa-layer-group'
+    }
+  },
+  {
+    path: 'projects/:project_name/folders',
+    redirectTo: 'projects/:project_name',
+    pathMatch: 'full'
+  },
+  {
+    path: 'projects/:project_name/folders/:dir_id',
+    component: FileBrowserComponent,
+    canActivate: [AuthGuard],
+    data: {
+      title: 'Projects',
+      fontAwesomeIcon: 'fa-layer-group'
+    }
   },
   {
     path: 'projects/:project_name/files/:file_id',
