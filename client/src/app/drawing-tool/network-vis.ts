@@ -176,7 +176,8 @@ export class NetworkVis {
       detail: n.detail || '',
       search: n.search || [],
       hyperlink: n.hyperlink || '',
-      subtype: n.subtype || ''
+      subtype: n.subtype || '',
+      hyperlinks: n.hyperlinks || []
     };
 
     this.visNodes.add([n]);

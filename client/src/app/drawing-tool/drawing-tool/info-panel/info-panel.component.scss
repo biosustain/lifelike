@@ -10,12 +10,36 @@
   @include no-select;
 }
 
+#hyperlinks-menu {
+  h4 {
+    width: fit-content;
+  }
+  button {
+    width: fit-content;
+    margin: 0;
+    margin-left: auto;
+  }
+
+  mat-icon {
+    transition: color ease-in;
+  }
+
+  mat-icon:hover {
+    color: #3797DB;
+  }
+}
+
 mat-icon {
   margin: 0.75rem;
   width: 28px;
   height: 28px;
-  color: #3797DB;
   cursor: pointer;
+}
+mat-icon.link {
+  color: #3797DB;
+}
+mat-icon.delete {
+  color: lighten($color: #ff2d55, $amount: 10);
 }
 
 p.collapsible {
