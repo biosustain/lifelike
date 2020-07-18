@@ -60,7 +60,8 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
     data: {
       source: '',
       search: [],
-      subtype: ''
+      subtype: '',
+      hyperlinks: []
     }
   };
 
@@ -73,10 +74,9 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
     id: new FormControl(),
     label: new FormControl(),
     group: new FormControl(),
-    edges: new FormArray([]),
-    hyperlink: new FormControl(),
     detail: new FormControl(),
     subtype: new FormControl(),
+    hyperlinks: new FormArray([])
   }, {
     updateOn: 'blur'
   });
@@ -90,27 +90,6 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
   nodeBank: VisNetworkGraphNode[] = [];
   nodeBankDict: {[hash: string]: object} = {};
 
-  /** Whether or not show all edges */
-  edgeCollapsed = false;
-
-  get edgeListStyle() {
-    return {
-      collapsed: this.edgeCollapsed
-    };
-  }
-
-  /**
-   * Return true or false if any edges exist
-   */
-  get edges() {
-    return this.entityForm.value.edges.length === 0 ? false : true;
-  }
-  /**
-   *
-   */
-  get edgeFormArr() {
-    return this.entityForm.get('edges') as FormArray;
-  }
   get isNode() {
     return this.entityType === 'node';
   }
@@ -130,6 +109,10 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
     } else {
       return [];
     }
+  }
+
+  get hyperlinksForm() {
+    return this.entityForm.get('hyperlinks') as FormArray;
   }
 
   graphDataSubscription: Subscription = null;
@@ -155,30 +138,19 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
 
           if (this.entityType === 'node') {
             // Get node data
-
-            // tslint:disable-next-line: no-shadowed-variable
-            const edges = val.edges.map((e: VisNetworkGraphEdge) => {
-              return {
-                id: e.id,
-                label: e.label,
-                from: val.id,
-                to: e.to
-              };
-            });
-
             data = {
               node: {
                 id: this.graphData.id,
                 label: val.label,
                 group: val.group,
                 data: {
-                  hyperlink: val.hyperlink,
                   detail: val.detail,
                   source: this.graphData.data.source || '',
                   search: this.graphData.data.search || [],
+                  hyperlinks: val.hyperlinks || []
                 }
               },
-              edges
+              edges: this.graphData.edges || []
             };
 
             const nodeTemplate = this.nodeTemplates.filter(
@@ -209,19 +181,20 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
             id,
             label,
             group,
-            edges,
-            hyperlink,
-            detail
+            detail,
+            hyperlinks
           } = val;
 
           this.graphData = {
             id,
             label,
             group,
-            edges,
-            hyperlink,
+            edges: this.graphData.edges,
             detail,
-            data: this.graphData.data
+            data: Object.assign(
+              this.graphData.data,
+              { hyperlinks }
+            )
           };
         }
       );
@@ -231,8 +204,8 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
     this.graphDataSubscription = this.dataFlow.graphDataSource.subscribe((data: GraphSelectionData) => {
       if (!data) { return; }
 
-      // If a node is clicked on ..
       if (data.nodeData) {
+        // If a node is clicked on ..
         this.entityType = 'node';
 
         this.nodeIsIcon = data.nodeData.shape === 'icon';
@@ -248,13 +221,12 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
 
         // Set FormArray of FormControls to edges of node
         this.entityForm.setControl(
-          'edges',
+          'hyperlinks',
           new FormArray(
-            this.graphData.edges.map(e => {
+            this.graphData.data.hyperlinks.map(e => {
               return new FormGroup({
-                to: new FormControl(),
-                label: new FormControl(),
-                id: new FormControl()
+                url: new FormControl(''),
+                domain: new FormControl('')
               });
             })
           )
@@ -265,16 +237,9 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
           id: this.graphData.id,
           label: this.graphData.label,
           group: this.graphData.group,
-          edges: this.graphData.edges.map((e: VisNetworkGraphEdge) => {
-            return {
-              id: e.id,
-              label: e.label,
-              to: e.to
-            };
-          }),
-          hyperlink: data.nodeData.data.hyperlink || '',
           detail: data.nodeData.data.detail || '',
-          subtype: data.nodeData.data.subtype || ''
+          subtype: data.nodeData.data.subtype || '',
+          hyperlinks: data.nodeData.data.hyperlinks || []
         };
         this.entityForm.setValue(formData, {emitEvent: false});
 
@@ -289,7 +254,7 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
         // Setup FormGroup for iterables ..
         this.pauseForm = true;
         this.entityForm.setControl(
-          'edges',
+          'hyperlinks',
           new FormArray([])
         );
         this.pauseForm = false;
@@ -297,10 +262,9 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
           id: this.graphData.id,
           label: this.graphData.label,
           group: null,
-          edges: [],
-          hyperlink: null,
           detail: null,
-          subtype: null
+          subtype: null,
+          hyperlinks: []
         };
         this.entityForm.setValue(formData, {emitEvent: false});
       }
@@ -317,13 +281,6 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Hide or show the edges
-   */
-  toggleCollapsible() {
-    this.edgeCollapsed = !this.edgeCollapsed;
-  }
-
-  /**
    * Reset info-panel to a clean state
    */
   reset(minimize= true) {
@@ -333,15 +290,12 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
       label: '',
       group: '',
       edges: [],
-      hyperlink: '',
       detail: ''
     };
 
-    this.edgeCollapsed = false;
-
     this.pauseForm = true;
     this.entityForm.setControl(
-      'edges',
+      'hyperlinks',
       new FormArray([])
     );
     this.entityForm.reset();
@@ -373,23 +327,19 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Add edge to through FormControl
+   * Add hyperlink through FormControl
    */
-  addEdge() {
-    this.edgeCollapsed = false;
+  addHyperlink() {
     this.pauseForm = true;
 
     // add form control to modify edge
-    (this.entityForm.controls.edges as FormArray).push(
+    (this.entityForm.controls.hyperlinks as FormArray).push(
       new FormGroup({
-        to: new FormControl(
-          null
+        url: new FormControl(
+          ''
         ),
-        label: new FormControl(
-          null
-        ),
-        id: new FormControl(
-          uuidv4()
+        domain: new FormControl(
+          ''
         )
       })
     );
@@ -401,25 +351,16 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
    * @param form the form control to manipulate
    * @param i the index of the edge to remove
    */
-  deleteEdge(form, i) {
-    const edge = form.value;
+  deleteHyperlink(form, i) {
+    const hyperlink = form.value;
 
     // remove form control
-    (this.entityForm.controls.edges as FormArray).removeAt(i);
+    (this.entityForm.controls.hyperlinks as FormArray).removeAt(i);
 
     // remove from information dislay
-    this.graphData.edges = this.graphData.edges.filter(
-      e => e.id !== edge.id
+    this.graphData.data.hyperlinks = this.graphData.data.hyperlinks.filter(
+      h => h.url !== hyperlink.url
     );
-
-    // push changes to app.component.ts
-    this.dataFlow.pushGraphUpdate({
-      event: 'delete',
-      type: 'edge',
-      data: {
-        id: edge.id
-      }
-    });
   }
 
   changeSize(paletteMode = null) {
@@ -449,8 +390,8 @@ export class InfoPanelComponent implements OnInit, OnDestroy {
   /**
    * Allow user to navigate to a link in a new tab
    */
-  goToLink(url= null) {
-    const hyperlink: string = url || this.entityForm.value.hyperlink;
+  goToLink(h: FormControl) {
+    const hyperlink: string = h.value.url;
 
     if (!hyperlink) { return; }
 
