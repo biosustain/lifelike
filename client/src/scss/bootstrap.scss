@@ -106,6 +106,7 @@ fieldset.fieldset-properties {
 }
 
 .breadcrumb {
+  display: flex;
   background: none;
   padding: 0;
   margin: 0;
@@ -114,14 +115,17 @@ fieldset.fieldset-properties {
 
 .breadcrumb-item {
   display: flex;
+  align-items: center;
 
   + .breadcrumb-item {
     &::before {
-      position: relative;
-      top: 25%;
+      display: block;
       font-family: FontAwesome, sans-serif;
       font-size: 60%;
       content: '\f054';
+      line-height: 1;
+      position: relative;
+      top: -1px;
     }
   }
 }
