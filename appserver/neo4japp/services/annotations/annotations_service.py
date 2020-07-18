@@ -997,34 +997,21 @@ class AnnotationsService:
 
         # TODO: TEMP to keep track of things not matched in LMDB
         if nlp_resp:
-            not_matched = []
-            matched = set()
-            from neo4japp.util import compute_hash
-            predicted = {
-                compute_hash(
-                    {
-                        'low_index': predicted['low_index'],
-                        'high_index': predicted['high_index'],
-                        'keyword': predicted['item'],
-                    },
-                ): predicted for predicted in nlp_resp
-            }
+            matched: Set[str] = set()
+            predicted_set: Set[str] = set()
+            for predicted in nlp_resp:
+                predicted_str = predicted['item']
+                predicted_type = predicted['type']
+                predicted_hashstr = f'{predicted_str},{predicted_type}'
+                predicted_set.add(predicted_hashstr)
 
             for anno in unified_annotations:
-                hashval = compute_hash(
-                    {
-                        'low_index': anno.lo_location_offset,
-                        'high_index': anno.hi_location_offset,
-                        'keyword': anno.keyword,
-                    }
-                )
-                matched.add(hashval)
+                hashstr = f'{anno.text_in_document},{anno.meta.keyword_type}'
+                matched.add(hashstr)
 
-            for k, v in predicted.items():
-                if k not in matched:
-                    not_matched.append(v)
+            not_matched = predicted_set - matched
 
-            print(f'NLP TOKENS NOT MATCHED TO LMDB {json.dumps(not_matched)}')
+            print(f'NLP TOKENS NOT MATCHED TO LMDB {not_matched}')
 
         fixed_unified_annotations = self._get_fixed_false_positive_unified_annotations(
             annotations_list=unified_annotations,
