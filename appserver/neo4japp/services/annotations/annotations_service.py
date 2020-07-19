@@ -1006,7 +1006,12 @@ class AnnotationsService:
                 predicted_set.add(predicted_hashstr)
 
             for anno in unified_annotations:
-                hashstr = f'{anno.text_in_document},{anno.meta.keyword_type}'
+                # TODO: temp for now as NLP only use Bacteria
+                if anno.meta.keyword_type == 'Species':
+                    keyword_type = 'Bacteria'
+                else:
+                    keyword_type = anno.meta.keyword_type
+                hashstr = f'{anno.text_in_document},{keyword_type}'
                 matched.add(hashstr)
 
             not_matched = predicted_set - matched
