@@ -40,6 +40,7 @@ class OrganismRequest(CamelDictMixin):
 class GeneFilteredRequest(CamelDictMixin):
     query: str = attr.ib()
     organism_id: str = attr.ib()
+    filters: str = attr.ib()
 
 
 @bp.route('/search', methods=['POST'])
@@ -100,9 +101,10 @@ def get_organisms(req: OrganismRequest):
     return SuccessResponse(result=results, status_code=200)
 
 
-@bp.route('/genes_filtered_by_organism', methods=['POST'])
+@bp.route('/genes_filtered_by_organism_and_others', methods=['POST'])
 @jsonify_with_class(GeneFilteredRequest)
 def get_genes_filtering_by_organism(req: GeneFilteredRequest):
     search_dao = get_search_service_dao()
-    results = search_dao.search_gene_filtering_by_organism(req.query, req.organism_id)
+    results = search_dao.search_genes_filtering_by_organism_and_others(
+        req.query, req.organism_id, req.filters)
     return SuccessResponse(result=results, status_code=200)

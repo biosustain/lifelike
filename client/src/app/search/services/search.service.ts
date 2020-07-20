@@ -5,6 +5,7 @@ import {map} from 'rxjs/operators';
 
 import {
   FTSResult,
+  OrganismsResult,
 } from 'app/interfaces';
 
 @Injectable()
@@ -33,14 +34,15 @@ export class SearchService {
   }
 
   getOrganisms(query: string, limit: number = 50) {
-    return this.http.post<{ result: object }>(
+    return this.http.post<{ result: OrganismsResult }>(
       `${this.searchApi}/organisms`, {query, limit},
     ).pipe(map(resp => resp.result));
   }
 
-  getGenesFilteredByOrganism(query: string, organismId: string) {
-    return this.http.post<{ result: object }>(
-      `${this.searchApi}/genes_filtered_by_organism`, {query, organismId},
+  getGenesFilteredByOrganism(query: string, organismId: string, filters: string) {
+    return this.http.post<{ result: FTSResult }>(
+      `${this.searchApi}/genes_filtered_by_organism_and_others`,
+      {query, organismId, filters},
     ).pipe(map(resp => resp.result));
   }
 }
