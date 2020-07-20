@@ -4,10 +4,9 @@ from neo4japp.util import CamelDictMixin
 
 
 @attr.s(frozen=True)
-class DirectoryUpdateRequest(CamelDictMixin):
+class DirectoryRenameRequest(CamelDictMixin):
     """ Directory update request """
-    attribute: str = attr.ib()
-    value: Union[str, int] = attr.ib()
+    name: str = attr.ib()
 
 
 @attr.s(frozen=True)

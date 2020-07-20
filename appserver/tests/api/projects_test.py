@@ -191,12 +191,9 @@ def test_can_rename_directory(client, session, fix_project, fix_directory, test_
     session.add(new_dir)
     session.flush()
 
-    response = client.patch(
+    response = client.post(
         f'/projects/{fix_project.project_name}/directories/{new_dir.id}',
-        data=json.dumps(dict(
-            attribute='name',
-            value='sledbob'
-        )),
+        data=json.dumps(dict(name='sledbob')),
         headers=headers,
         content_type='application/json',
     )

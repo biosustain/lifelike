@@ -1,3 +1,4 @@
+import re
 from flask import (
     current_app,
     request,
@@ -11,9 +12,10 @@ from neo4japp.blueprints.permissions import requires_project_role, requires_proj
 from neo4japp.database import db, get_projects_service
 from neo4japp.data_transfer_objects import (
     DirectoryContent,
-    DirectoryUpdateRequest,
+    DirectoryRenameRequest,
 )
 from neo4japp.exceptions import (
+    InvalidDirectoryNameException,
     RecordNotFoundException,
     NotAuthorizedException,
 )
@@ -276,11 +278,11 @@ def add_directory(project_name: str = ''):
     yield jsonify(dict(results=new_dir.to_dict()))
 
 
-@bp.route('/<string:project_name>/directories/<int:current_dir_id>', methods=['PATCH'])
-@jsonify_with_class(DirectoryUpdateRequest)
+@bp.route('/<string:project_name>/directories/<int:current_dir_id>', methods=['POST'])
+@jsonify_with_class(DirectoryRenameRequest)
 @auth.login_required
 @requires_project_permission(AccessActionType.WRITE)
-def update_directory(req: DirectoryUpdateRequest, current_dir_id: int, project_name: str):
+def rename_directory(req: DirectoryRenameRequest, current_dir_id: int, project_name: str):
 
     proj_service = get_projects_service()
     projects = Projects.query.filter(
@@ -294,17 +296,16 @@ def update_directory(req: DirectoryUpdateRequest, current_dir_id: int, project_n
 
     yield user, projects
 
-    # Contains directory attributes that could be modified
-    editable_attr = ['name', 'directory_parent_id']
-    edit_attr_req = req.attribute
-    if edit_attr_req not in editable_attr:
-        raise NotAuthorizedException(f'{edit_attr_req} attribute cannot be edited')
-
     dir = Directory.query.filter(Directory.id == current_dir_id).one_or_none()
+
     if dir is None:
         raise RecordNotFoundException(f'No directory found')
 
-    modified_dir = proj_service.update_directory(edit_attr_req, req.value, dir)
+    pattern = re.compile(r'\s*')
+    if pattern.sub('', req.name) == '':
+        raise InvalidDirectoryNameException('Directory cannot be empty')
+
+    modified_dir = proj_service.rename_directory(req.name, dir)
 
     yield SuccessResponse(result=modified_dir.to_dict(), status_code=200)
 

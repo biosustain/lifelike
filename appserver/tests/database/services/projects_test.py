@@ -184,7 +184,7 @@ def test_can_rename_directory(session, fix_projects, fix_directory, original_nam
 
     assert current_dir is not None
 
-    proj_service.update_directory('name', new_name, current_dir)
+    proj_service.rename_directory(new_name, current_dir)
 
     old_dir_name = session.query(Directory).filter(
         Directory.name == original_name
