@@ -192,7 +192,7 @@ def test_can_rename_directory(client, session, fix_project, fix_directory, test_
     session.flush()
 
     response = client.post(
-        f'/projects/{fix_project.project_name}/directories/{new_dir.id}',
+        f'/projects/{fix_project.project_name}/directories/{new_dir.id}/rename',
         data=json.dumps(dict(name='sledbob')),
         headers=headers,
         content_type='application/json',
@@ -201,3 +201,25 @@ def test_can_rename_directory(client, session, fix_project, fix_directory, test_
     assert response.status_code == 200
     result = response.get_json()['result']
     assert result['name'] == 'sledbob'
+
+
+def test_can_delete_directory(client, session, fix_project, fix_directory, test_user):
+    login_resp = client.login_as_user(test_user.email, 'password')
+    headers = generate_headers(login_resp['access_jwt'])
+
+    new_dir = Directory(
+        name='bobsled',
+        directory_parent_id=fix_directory.id,
+        projects_id=fix_project.id,
+    )
+    session.add(new_dir)
+    session.flush()
+
+    response = client.post(
+        f'/projects/{fix_project.project_name}/directories/{new_dir.id}/delete',
+        data=json.dumps(dict(dir_id=new_dir.id)),
+        headers=headers,
+        content_type='application/json',
+    )
+
+    assert response.status_code == 200
