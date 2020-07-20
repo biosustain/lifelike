@@ -164,3 +164,37 @@ def test_owner_gets_default_admin_permission(session, test_user):
     ).one_or_none()
 
     assert user_role.name == 'project-admin'
+
+
+@pytest.mark.parametrize('original_name, new_name', [
+    ('purple_rain', 'blue_rain'),
+    ('c o u n t r y', 'b l u e s!'),
+    ('king', ' king ')
+])
+def test_can_rename_directory(session, fix_projects, fix_directory, original_name, new_name):
+    proj_service = ProjectsService(session)
+    new_dir = proj_service.add_directory(
+        projects=fix_projects,
+        dir_name=original_name,
+    )
+
+    current_dir = session.query(Directory).filter(
+        Directory.name == new_dir.name
+    ).one_or_none()
+
+    assert current_dir is not None
+
+    proj_service.update_directory('name', new_name, current_dir)
+
+    old_dir_name = session.query(Directory).filter(
+        Directory.name == original_name
+    ).one_or_none()
+
+    assert old_dir_name is None
+
+    renamed_dir = session.query(Directory).filter(
+        Directory.name == new_name
+    ).one_or_none()
+
+    assert renamed_dir is not None
+    assert renamed_dir.name == new_name
