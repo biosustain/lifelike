@@ -1,14 +1,13 @@
-import {Component, EventEmitter, OnInit, Output} from '@angular/core';
+import {Component, EventEmitter, Output} from '@angular/core';
 import {MatListOption} from '@angular/material/list';
+import {OrganismAutocomplete} from 'app/interfaces';
 
 @Component({
   selector: 'app-node-result-filter',
   templateUrl: './node-result-filter.component.html',
   styleUrls: ['./node-result-filter.component.scss']
 })
-
-
-export class NodeResultFilterComponent implements OnInit {
+export class NodeResultFilterComponent {
   typeOfDomains: string[] = ['CHEBI', 'MESH', 'NCBI', 'GO', 'UNIPROT'].sort();
   typesOfEntities: string[] = ['GENE', 'CHEMICAL', 'DISEASE', 'TAXONOMY', 'PROTEIN'].sort();
   selectedDomains: string[] = [];
@@ -16,6 +15,7 @@ export class NodeResultFilterComponent implements OnInit {
   @Output() domainsFilter = new EventEmitter<string[]>();
   @Output() goClassesFilter = new EventEmitter<string[]>();
   @Output() typesFilter = new EventEmitter<string[]>();
+  @Output() organismFilter = new EventEmitter<OrganismAutocomplete|null>();
 
   DOMAINS_LABEL = {
     CHEBI: 'n:db_CHEBI',
@@ -24,12 +24,6 @@ export class NodeResultFilterComponent implements OnInit {
     NCBI: 'n:db_NCBI',
     UNIPROT: 'n:db_UniProt'
   };
-
-  constructor() {
-  }
-
-  ngOnInit() {
-  }
 
   getDomains(options: MatListOption[]) {
     this.selectedDomains = options.map(option => {
@@ -43,6 +37,10 @@ export class NodeResultFilterComponent implements OnInit {
       return 'n:' + this.capitalize((option.value).toString().toLowerCase());
     });
     this.typesFilter.emit(this.selectedTypes);
+  }
+
+  getOrganism(organism: OrganismAutocomplete|null) {
+    this.organismFilter.emit(organism);
   }
 
   capitalize(s: string) {
