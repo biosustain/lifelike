@@ -2,6 +2,10 @@
   <h1>Maps</h1>
   <mat-tab-group [selectedIndex]="displayIndex" (selectedTabChange)="toggleView($event)">
     <mat-tab label="Personal">
+      <mat-button-toggle-group class='ma3 fr'>
+        <mat-button-toggle (click)="sortMap('dateModified')">Date</mat-button-toggle>
+        <mat-button-toggle (click)="sortMap('alphabetical')">Name</mat-button-toggle>
+      </mat-button-toggle-group>
       <div [fxLayout]='layout' [fxLayoutAlign]='layoutAlign' class='w-100' cdkDropList>
         <div class='map-template map shadow' *ngFor='let project of projects' [id]='project.hash_id'
           (contextmenu)="open($event, project)" (click)='clickHandler("pick", project)' cdkDrag
@@ -21,6 +25,10 @@
       </div>
     </mat-tab>
     <mat-tab label="Community">
+      <mat-button-toggle-group class='ma3 fr'>
+        <mat-button-toggle (click)="sortMap('dateModified')">Date</mat-button-toggle>
+        <mat-button-toggle (click)="sortMap('alphabetical')">Name</mat-button-toggle>
+      </mat-button-toggle-group>
       <div [fxLayout]='layout' [fxLayoutAlign]='layoutAlign' class='w-100' cdkDropList>
         <div [id]='project.hash_id' class='map-template map shadow' *ngFor='let project of publicProjects'
           (contextmenu)="open($event, project)" (click)='clickHandler("pick", project)' cdkDrag
