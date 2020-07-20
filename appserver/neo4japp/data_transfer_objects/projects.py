@@ -1,6 +1,13 @@
 import attr
-from typing import Dict, Sequence
+from typing import Dict, Sequence, Union
 from neo4japp.util import CamelDictMixin
+
+
+@attr.s(frozen=True)
+class DirectoryUpdateRequest(CamelDictMixin):
+    """ Directory update request """
+    attribute: str = attr.ib()
+    value: Union[str, int] = attr.ib()
 
 
 @attr.s(frozen=True)
