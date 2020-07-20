@@ -1,9 +1,12 @@
 import {
   ComponentFactory,
   ComponentFactoryResolver,
-  ComponentRef, Injectable, Injector,
+  ComponentRef,
+  Injectable,
+  Injector,
   StaticProvider,
-  Type, ViewContainerRef,
+  Type,
+  ViewContainerRef,
 } from '@angular/core';
 import {
   ActivatedRoute,
@@ -391,7 +394,7 @@ export class PaneManager {
    */
   getFirstOrCreate() {
     const it = this.panes.values().next();
-    return !it.done ? it.value : this.create('primary');
+    return !it.done ? it.value : this.create('left');
   }
 
   /**
@@ -599,7 +602,7 @@ export class WorkspaceManager {
     return this.router.navigateByUrl(url, extras);
   }
 
-  navigate(commands: any[], extras: NavigationExtras = {skipLocationChange: false}): Promise<boolean> {
+  navigate(commands: any[], extras: NavigationExtras & WorkspaceNavigationExtras = {skipLocationChange: false}): Promise<boolean> {
     return this.navigateByUrl(this.router.createUrlTree(commands, extras), extras);
   }
 
@@ -652,7 +655,7 @@ export class WorkspaceManager {
       }, Promise.resolve());
     } else {
       const leftPane = this.panes.create('left');
-      this.openTabByUrl(leftPane, '/dt/map').then(() => {
+      this.openTabByUrl(leftPane, '/projects').then(() => {
         this.load();
       });
     }

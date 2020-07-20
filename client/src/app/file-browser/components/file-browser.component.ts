@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, EventEmitter, OnDestroy, OnInit, Output } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { BehaviorSubject, combineLatest, Observable, Subscription, throwError } from 'rxjs';
@@ -25,6 +25,7 @@ import { WorkspaceManager } from '../../shared/workspace-manager';
 import { MapCreateDialogComponent } from '../../drawing-tool/components/map-create-dialog.component';
 import { MessageDialog } from '../../shared/services/message-dialog.service';
 import { MessageType } from '../../interfaces/message-dialog.interface';
+import { ModuleProperties } from '../../shared/modules';
 
 export interface File extends PdfFile {
   // Camel-case instead of snake-case version of file
@@ -42,6 +43,7 @@ interface PathLocator {
   templateUrl: './file-browser.component.html',
 })
 export class FileBrowserComponent implements OnInit, OnDestroy {
+  @Output() modulePropertiesChange = new EventEmitter<ModuleProperties>();
   loadTask: BackgroundTask<PathLocator, DirectoryContent>;
   loadTaskSubscription: Subscription;
   paramsSubscription: Subscription;
@@ -98,6 +100,11 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
       const objects = result.objects;
       this.updateAnnotationsStatus(objects);
       this.results.replace(objects);
+
+      this.modulePropertiesChange.emit({
+        title: this.locator.projectName + (this.path.length > 1 ? ' / ' + this.directory.name : ''),
+        fontAwesomeIcon: 'layer-group',
+      });
     });
 
     this.paramsSubscription = this.route.params.subscribe(params => {
@@ -105,6 +112,11 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
         projectName: params.project_name,
         directoryId: params.dir_id,
       };
+
+      this.modulePropertiesChange.emit({
+        title: this.locator.projectName + ' - Loading...',
+        fontAwesomeIcon: 'layer-group',
+      });
 
       this.loadTask.update(this.locator);
     });
@@ -193,7 +205,10 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
       )
         .pipe(this.errorHandler.create())
         .subscribe((result) => {
-          this.workspaceManager.navigate(['/maps', result.project.hash_id, 'edit']);
+          this.refresh();
+          this.workspaceManager.navigate(['/maps', result.project.hash_id, 'edit'], {
+            newTab: true,
+          });
         });
     });
   }
