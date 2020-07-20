@@ -288,28 +288,24 @@ class SearchService(GraphBaseDao):
             'total': len(nodes),
         }
 
-    def search_gene_filtering_by_organism(self, term: str, organism_id: str):
+    def search_genes_filtering_by_organism_and_others(self, term: str, organism_id: str,
+                                                      filters: str = 'labels(node)') -> FTSResult:
         query_term = self._fulltext_query_sanitizer(term)
         if not query_term:
-            return {
-                'nodes': [],
-                'query': query_term,
-                'total': 0,
-            }
+            return FTSResult(query_term, [], 0, 1, 0)
 
         cypher_query = '''
             CALL db.index.fulltext.queryNodes('synonymIdx', $gene_term)
-            YIELD node
-            WITH node
-            MATCH (node)-[]-(g:Gene)-[:HAS_TAXONOMY]-(t)-[:HAS_PARENT*0..2]-(p)
-            WHERE p.id = $taxonomy_id
+            YIELD node, score
+            MATCH (node)-[]-(n:Gene)-[:HAS_TAXONOMY]-(t)-[:HAS_PARENT*0..2]-(p)
+            WHERE p.id = $taxonomy_id AND %s
             RETURN
-                node.name AS matched_term,
-                g.id AS gene_id,
-                g.name AS gene_name,
-                t.id AS organism_id,
-                t.name AS organism_name
-        '''
+                n as node,
+                score,
+                t.id AS taxonomy_id,
+                t.name AS taxonomy_name,
+                n.namespace as go_class
+        ''' % filters
 
         nodes = self.graph.run(
             cypher_query,
@@ -319,8 +315,6 @@ class SearchService(GraphBaseDao):
             }
         ).data()
 
-        return {
-            'nodes': nodes,
-            'query': query_term,
-            'total': len(nodes),
-        }
+        nodes = self._simple_fulltext_result_formatter(nodes)
+
+        return FTSResult(query_term, nodes, len(nodes), 1, 0)
