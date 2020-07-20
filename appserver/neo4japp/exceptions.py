@@ -32,6 +32,12 @@ class DatabaseError(BaseException):
         super().__init__('Database Error', message, additional_msgs)
 
 
+class DirectoryError(BaseException):
+    """An error occured in directory operation"""
+    def __init__(self, message, additional_msgs=[]) -> None:
+        super().__init__('Directory Error', message, additional_msgs)
+
+
 class DuplicateRecord(BaseException):
     def __init__(self, message, additional_msgs=[]):
         super().__init__('Duplicate record', message, additional_msgs)
