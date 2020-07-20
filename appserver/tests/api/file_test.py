@@ -317,7 +317,12 @@ def test_can_delete_files(client, test_user, test_user_with_pdf, fix_project):
     assert resp.status_code == 200
 
 
-def test_user_can_remove_annotation_exclusion(client, test_user, test_user_with_pdf):
+def test_user_can_remove_annotation_exclusion(
+    client,
+    test_user,
+    test_user_with_pdf,
+    default_lmdb_setup,     # this is to set up a temp test lmdb
+):
     login_resp = client.login_as_user(test_user.email, 'password')
     headers = generate_headers(login_resp['access_jwt'])
     file_id = test_user_with_pdf.file_id
