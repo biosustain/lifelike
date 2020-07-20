@@ -1,9 +1,7 @@
-import re
 from sqlalchemy import and_
 from sqlalchemy.orm.session import Session
 from neo4japp.exceptions import (
     DuplicateRecord,
-    InvalidDirectoryNameException,
 )
 from neo4japp.services.common import RDBMSBaseDao
 from neo4japp.models import (
@@ -144,12 +142,14 @@ class ProjectsService(RDBMSBaseDao):
         # How will the cascade work?
         raise NotImplementedError()
 
-    def update_directory(
-            self, attr_name: str, attr_val: Union[str, int], dir: Directory) -> Directory:
-        setattr(dir, attr_name, attr_val)
+    def rename_directory(self, new_name: str, dir: Directory) -> Directory:
+        setattr(dir, 'name', new_name)
         self.session.add(dir)
         self.session.commit()
         return dir
+
+    def move_directory(self, dest: int, dir: Directory) -> Directory:
+        raise NotImplementedError()
 
     def get_all_child_dirs(self, projects: Projects, current_dir: Directory) -> Sequence[Directory]:
         """ Gets all of the children and the parent, starting from the specified directory
