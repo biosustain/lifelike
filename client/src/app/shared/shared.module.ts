@@ -30,6 +30,7 @@ import {
 import { NodeTextStylePipe } from './node-text-style.pipe';
 import { ConfirmDialogComponent } from './components/confirm-dialog/confirm-dialog.component';
 import { AngularResizedEventModule } from 'angular-resize-event';
+import { OrganismAutocompleteComponent } from './components/organism-autocomplete/organism-autocomplete.component';
 
 const components = [
   MessageDialogComponent,
@@ -39,6 +40,7 @@ const components = [
   NodeRelationshipComponent,
   TooltipComponent,
   ConfirmDialogComponent,
+  OrganismAutocompleteComponent,
 ];
 
 @NgModule({
