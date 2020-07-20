@@ -3,7 +3,7 @@ import { Component, Input } from '@angular/core';
 import { isNullOrUndefined } from 'util';
 
 import { FTSReferenceRecord, GraphNode, SearchParameters } from 'app/interfaces';
-import { PubMedURL } from 'app/shared/constants';
+import { PUBMEDURL } from 'app/shared/constants';
 import { stringToHex } from 'app/shared/utils';
 import { UniversalGraphNode } from '../../drawing-tool/services/interfaces';
 import { getLink } from '../utils/records';
@@ -16,7 +16,7 @@ import { getQueryParams } from 'app/search/utils/search';
 })
 export class SearchRecordRelationshipsComponent {
 
-  PUBMEDURL: string = PubMedURL;
+  PUBMEDURL: string = PUBMEDURL;
 
   // TODO: We should come up with a consistent way to mark variables as private without using '_', or
   // just disable that check for tslint.
