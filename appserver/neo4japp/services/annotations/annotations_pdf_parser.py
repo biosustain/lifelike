@@ -391,4 +391,5 @@ class AnnotationsPDFParser:
             token_positions=keyword_tokens,
             char_coord_objs_in_pdf=parsed_chars.char_coord_objs_in_pdf,
             cropbox_in_pdf=parsed_chars.cropbox_in_pdf,
+            min_idx_in_page=parsed_chars.min_idx_in_page,
         )
