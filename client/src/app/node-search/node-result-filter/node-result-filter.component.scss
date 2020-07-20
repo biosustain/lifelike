@@ -1,12 +1,7 @@
-.filter-section {
-  display: block;
-  align-content: center;
-  align-items: center;
-}
-
-.mat-list-base .mat-list-item, .mat-list-base .mat-list-option {
-  display: block;
-  height: 22px;
+.mat-list-base {
+  .mat-list-item, .mat-list-option {
+    height: 22px;
+  }
 }
 
 .mat-expansion-panel-header-title {
@@ -15,4 +10,9 @@
 
 .mat-list-base .mat-subheader {
   color: rgba(8, 140, 170, 1);
+}
+
+.filter-section > app-organism-autocomplete {
+  display: block;
+  margin: 0 16px;
 }

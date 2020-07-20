@@ -9,6 +9,9 @@
       </mat-panel-description>
     </mat-expansion-panel-header>
     <div class="filter-section">
+      <app-organism-autocomplete
+        (organismPicked)="getOrganism($event)"
+      ></app-organism-autocomplete>
       <mat-selection-list #domains (selectionChange)="getDomains(domains.selectedOptions.selected)">
         <div mat-subheader>Domains</div>
         <mat-list-option color="primary" *ngFor="let domain of typeOfDomains" [value]="domain">
