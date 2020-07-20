@@ -1,7 +1,7 @@
 import {Component} from '@angular/core';
 import {DomSanitizer} from '@angular/platform-browser';
 import {SearchService} from 'app/search/services/search.service';
-import {FTSQueryRecord} from 'app/interfaces';
+import {OrganismAutocomplete, FTSResult} from 'app/interfaces';
 
 export interface Nodes {
   id: string;
@@ -31,6 +31,7 @@ export class NodeSearchComponent {
   filter = 'labels(node)';
   domainsFilter = '';
   typesFilter = '';
+  organismFilter: OrganismAutocomplete;
 
   constructor(
     private sanitizer: DomSanitizer,
@@ -44,10 +45,18 @@ export class NodeSearchComponent {
   }
 
   private search() {
-    this.searchService.simpleFullTextSearch(this.searchTerm, 1, 100, this.filter).
-      subscribe((results) => {
-        this.getResults(results.nodes as FTSQueryRecord[]);
-      });
+    const handleResults = (results: FTSResult) => {
+      this.getResults(results.nodes);
+    };
+    if (this.organismFilter) {
+      this.searchService.
+        getGenesFilteredByOrganism(this.searchTerm, this.organismFilter.tax_id, this.filter).
+        subscribe(handleResults);
+    } else {
+      this.searchService.
+        simpleFullTextSearch(this.searchTerm, 1, 100, this.filter).
+        subscribe(handleResults);
+    }
   }
 
   private filterComposer() {
@@ -139,6 +148,11 @@ export class NodeSearchComponent {
       this.typesFilter = `(${this.intersperseValue(selectedTypes, ' OR ')})`;
     }
     this.filter = this.filterComposer();
+    this.search();
+  }
+
+  getOrganismFilter(organism: OrganismAutocomplete) {
+    this.organismFilter = organism;
     this.search();
   }
 
