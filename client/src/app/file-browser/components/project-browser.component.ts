@@ -9,6 +9,7 @@ import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { Subscription } from 'rxjs';
 import { WorkspaceManager } from '../../shared/workspace-manager';
 import { ProgressDialog } from '../../shared/services/progress-dialog.service';
+import { CollectionModal } from '../../shared/utils/collection-modal';
 
 @Component({
   selector: 'app-project-space',
@@ -20,7 +21,13 @@ export class ProjectBrowserComponent implements OnInit, OnDestroy {
     () => this.projectSpaceService.getProject(),
   );
   private loadTaskSubscription: Subscription;
-  projects: Project[] = [];
+
+  readonly results = new CollectionModal<Project>([], {
+    multipleSelection: true,
+    sort: (a: Project, b: Project) => {
+      return a.projectName.localeCompare(b.projectName);
+    },
+  });
 
   constructor(private readonly projectSpaceService: ProjectSpaceService,
               private readonly workspaceManager: WorkspaceManager,
@@ -30,7 +37,7 @@ export class ProjectBrowserComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.loadTaskSubscription = this.loadTask.results$.subscribe(({result: projects}) => {
-      this.projects = projects;
+      this.results.replace(projects);
     });
 
     this.refresh();
@@ -44,12 +51,23 @@ export class ProjectBrowserComponent implements OnInit, OnDestroy {
     this.loadTask.update();
   }
 
+  private normalizeFilter(filter: string): string {
+    return filter.trim().toLowerCase().replace(/[ _]+/g, ' ');
+  }
+
+  applyFilter(filter: string) {
+    const normalizedFilter = this.normalizeFilter(filter);
+    this.results.filter = normalizedFilter.length ? (item: Project) => {
+      return this.normalizeFilter(item.projectName).includes(normalizedFilter);
+    } : null;
+  }
+
   displayCreateDialog() {
     const dialogRef = this.ngbModal.open(ProjectCreateDialogComponent);
 
     dialogRef.result.then(
       newProject => {
-        this.projects.push(newProject);
+        this.results.push(newProject);
       },
       () => {
       },
