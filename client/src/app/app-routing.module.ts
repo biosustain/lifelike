@@ -116,7 +116,7 @@ const routes: Routes = [
     canActivate: [AuthGuard],
     data: {
       title: 'Projects',
-      fontAwesomeIcon: 'fa-layer-group'
+      fontAwesomeIcon: 'layer-group'
     }
   },
   {
@@ -125,7 +125,7 @@ const routes: Routes = [
     canActivate: [AuthGuard],
     data: {
       title: 'Projects',
-      fontAwesomeIcon: 'fa-layer-group'
+      fontAwesomeIcon: 'layer-group'
     }
   },
   {
@@ -139,7 +139,7 @@ const routes: Routes = [
     canActivate: [AuthGuard],
     data: {
       title: 'Projects',
-      fontAwesomeIcon: 'fa-layer-group'
+      fontAwesomeIcon: 'layer-group'
     }
   },
   {
