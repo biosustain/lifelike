@@ -9,8 +9,14 @@ from flask import (
 from neo4japp.blueprints.auth import auth
 from neo4japp.blueprints.permissions import requires_project_role, requires_project_permission
 from neo4japp.database import db, get_projects_service
-from neo4japp.data_transfer_objects import DirectoryContent
-from neo4japp.exceptions import RecordNotFoundException, NotAuthorizedException
+from neo4japp.data_transfer_objects import (
+    DirectoryContent,
+    DirectoryUpdateRequest,
+)
+from neo4japp.exceptions import (
+    RecordNotFoundException,
+    NotAuthorizedException,
+)
 from neo4japp.models import (
     AccessActionType,
     AppRole,
@@ -19,6 +25,8 @@ from neo4japp.models import (
     Projects,
     projects_collaborator_role,
 )
+from neo4japp.util import jsonify_with_class, SuccessResponse
+
 
 bp = Blueprint('projects', __name__, url_prefix='/projects')
 
@@ -268,10 +276,43 @@ def add_directory(project_name: str = ''):
     yield jsonify(dict(results=new_dir.to_dict()))
 
 
+@bp.route('/<string:project_name>/directories/<int:current_dir_id>', methods=['PATCH'])
+@jsonify_with_class(DirectoryUpdateRequest)
+@auth.login_required
+@requires_project_permission(AccessActionType.WRITE)
+def update_directory(req: DirectoryUpdateRequest, current_dir_id: int, project_name: str):
+
+    proj_service = get_projects_service()
+    projects = Projects.query.filter(
+        Projects.project_name == project_name
+    ).one_or_none()
+
+    if projects is None:
+        raise RecordNotFoundException(f'No such projects: {project_name}')
+
+    user = g.current_user
+
+    yield user, projects
+
+    # Contains directory attributes that could be modified
+    editable_attr = ['name', 'directory_parent_id']
+    edit_attr_req = req.attribute
+    if edit_attr_req not in editable_attr:
+        raise NotAuthorizedException(f'{edit_attr_req} attribute cannot be edited')
+
+    dir = Directory.query.filter(Directory.id == current_dir_id).one_or_none()
+    if dir is None:
+        raise RecordNotFoundException(f'No directory found')
+
+    modified_dir = proj_service.update_directory(edit_attr_req, req.value, dir)
+
+    yield SuccessResponse(result=modified_dir.to_dict(), status_code=200)
+
+
 @bp.route('/<string:project_name>/directories/<int:current_dir_id>', methods=['GET'])
 @auth.login_required
 @requires_project_permission(AccessActionType.READ)
-def get_child_directories(current_dir_id: int, project_name: str = ''):
+def get_child_directories(current_dir_id: int, project_name: str):
     """ Used similar to a 'next' function """
     proj_service = get_projects_service()
     projects = Projects.query.filter(

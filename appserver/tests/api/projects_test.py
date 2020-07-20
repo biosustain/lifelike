@@ -177,3 +177,30 @@ def test_can_add_directory(client, session, fix_project, fix_directory, test_use
     )
 
     assert response.status_code == 200
+
+
+def test_can_rename_directory(client, session, fix_project, fix_directory, test_user):
+    login_resp = client.login_as_user(test_user.email, 'password')
+    headers = generate_headers(login_resp['access_jwt'])
+
+    new_dir = Directory(
+        name='bobsled',
+        directory_parent_id=fix_directory.id,
+        projects_id=fix_project.id,
+    )
+    session.add(new_dir)
+    session.flush()
+
+    response = client.patch(
+        f'/projects/{fix_project.project_name}/directories/{new_dir.id}',
+        data=json.dumps(dict(
+            attribute='name',
+            value='sledbob'
+        )),
+        headers=headers,
+        content_type='application/json',
+    )
+
+    assert response.status_code == 200
+    result = response.get_json()['result']
+    assert result['name'] == 'sledbob'

@@ -1,6 +1,10 @@
+import re
 from sqlalchemy import and_
 from sqlalchemy.orm.session import Session
-from neo4japp.exceptions import DuplicateRecord
+from neo4japp.exceptions import (
+    DuplicateRecord,
+    InvalidDirectoryNameException,
+)
 from neo4japp.services.common import RDBMSBaseDao
 from neo4japp.models import (
     AppUser,
@@ -11,7 +15,7 @@ from neo4japp.models import (
     Files,
     Project,
 )
-from typing import Sequence, Optional
+from typing import Sequence, Optional, Union
 
 
 class ProjectsService(RDBMSBaseDao):
@@ -139,6 +143,13 @@ class ProjectsService(RDBMSBaseDao):
         # This is so users don't lose ALL of their data
         # How will the cascade work?
         raise NotImplementedError()
+
+    def update_directory(
+            self, attr_name: str, attr_val: Union[str, int], dir: Directory) -> Directory:
+        setattr(dir, attr_name, attr_val)
+        self.session.add(dir)
+        self.session.commit()
+        return dir
 
     def get_all_child_dirs(self, projects: Projects, current_dir: Directory) -> Sequence[Directory]:
         """ Gets all of the children and the parent, starting from the specified directory
