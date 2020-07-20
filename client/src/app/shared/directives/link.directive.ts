@@ -18,6 +18,8 @@ export class AbstractLinkDirective {
   @Input() skipLocationChange: boolean;
   @Input() replaceUrl: boolean;
   @Input() state?: { [k: string]: any };
+  @Input() newTab: boolean;
+  @Input() sideBySide: boolean;
   commands: any[] = [];
 
   constructor(readonly workspaceManager: WorkspaceManager,
@@ -48,6 +50,8 @@ export class AbstractLinkDirective {
       skipLocationChange: attrBoolValue(this.skipLocationChange),
       replaceUrl: attrBoolValue(this.replaceUrl),
       state: this.state,
+      newTab: attrBoolValue(this.newTab),
+      sideBySide: attrBoolValue(this.sideBySide),
     };
     this.workspaceManager.navigateByUrl(this.urlTree, extras);
 

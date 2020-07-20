@@ -14,7 +14,7 @@
         </span>
           <input class="form-control py-2 pl-0 border-left-0 border"
                  (keyup)="applyFilter($event.target.value)"
-                 placeholder="Search list..." [disabled]="status.running" maxlength="40">
+                 placeholder="Search current list..." maxlength="40">
         </div>
       </div>
     </div>
@@ -66,7 +66,7 @@
         <div ngbDropdown class="d-inline-block">
           <button class="btn btn-primary" ngbDropdownToggle>
             <i class="fa fa-fw fa-plus-circle"></i>
-            New...
+            New
           </button>
           <div ngbDropdownMenu>
             <button ngbDropdownItem (click)="displayMapCreateDialog()">New Map...</button>
@@ -166,7 +166,7 @@
                 <i *ngSwitchCase="'map'" class="fa fa-fw fa-project-diagram text-muted"></i>
               </span>
 
-              <a [appLink]="getObjectCommands(object)">
+              <a [appLink]="getObjectCommands(object)" [newTab]="object.type !== 'dir'">
                 {{ object.name }}
               </a>
             </label>
