@@ -1,6 +1,7 @@
 from sqlalchemy import and_
 from sqlalchemy.orm.session import Session
 from neo4japp.exceptions import (
+    DirectoryError,
     DuplicateRecord,
 )
 from neo4japp.services.common import RDBMSBaseDao
@@ -136,11 +137,17 @@ class ProjectsService(RDBMSBaseDao):
         self.session.commit()
         return new_dir
 
-    def delete_directory(self):
-        # TODO: Should we 'soft' delete or 'hard delete?'
-        # This is so users don't lose ALL of their data
-        # How will the cascade work?
-        raise NotImplementedError()
+    def delete_directory(self, dir: Directory):
+        # Check if directory is empty before allowing deletes
+        files = self.session.query(Files.query.filter(Files.dir_id == dir.id).exists()).scalar()
+        maps = self.session.query(Project.query.filter(Project.dir_id == dir.id).exists()).scalar()
+        nested_dirs = self.session.query(Directory.query.filter(Directory.directory_parent_id == dir.id).exists()).scalar()
+        if any([files, maps, nested_dirs]):
+            raise DirectoryError('Cannot delete non-empty directory')
+        elif dir.directory_parent_id is None:
+            raise DirectoryError('Cannot delete ***ARANGO_USERNAME*** directory')
+        self.session.delete(dir)
+        self.session.commit()
 
     def rename_directory(self, new_name: str, dir: Directory) -> Directory:
         setattr(dir, 'name', new_name)

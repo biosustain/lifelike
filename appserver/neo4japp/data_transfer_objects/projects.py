@@ -10,6 +10,12 @@ class DirectoryRenameRequest(CamelDictMixin):
 
 
 @attr.s(frozen=True)
+class DirectoryDeleteRequest(CamelDictMixin):
+    """ Direcotry delete request """
+    dir_id: int = attr.ib()
+
+
+@attr.s(frozen=True)
 class DirectoryContent(CamelDictMixin):
     """ Contains contents of a directory """
     child_directories: Sequence[Dict] = attr.ib()

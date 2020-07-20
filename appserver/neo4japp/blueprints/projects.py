@@ -7,11 +7,13 @@ from flask import (
     g,
     abort,
 )
+from sqlalchemy import and_
 from neo4japp.blueprints.auth import auth
 from neo4japp.blueprints.permissions import requires_project_role, requires_project_permission
 from neo4japp.database import db, get_projects_service
 from neo4japp.data_transfer_objects import (
     DirectoryContent,
+    DirectoryDeleteRequest,
     DirectoryRenameRequest,
 )
 from neo4japp.exceptions import (
@@ -278,7 +280,7 @@ def add_directory(project_name: str = ''):
     yield jsonify(dict(results=new_dir.to_dict()))
 
 
-@bp.route('/<string:project_name>/directories/<int:current_dir_id>', methods=['POST'])
+@bp.route('/<string:project_name>/directories/<int:current_dir_id>/rename', methods=['POST'])
 @jsonify_with_class(DirectoryRenameRequest)
 @auth.login_required
 @requires_project_permission(AccessActionType.WRITE)
@@ -296,7 +298,12 @@ def rename_directory(req: DirectoryRenameRequest, current_dir_id: int, project_n
 
     yield user, projects
 
-    dir = Directory.query.filter(Directory.id == current_dir_id).one_or_none()
+    dir = Directory.query.filter(
+        and_(
+            Directory.id == current_dir_id,
+            Projects.id == projects.id,
+        )
+    ).one_or_none()
 
     if dir is None:
         raise RecordNotFoundException(f'No directory found')
@@ -308,6 +315,39 @@ def rename_directory(req: DirectoryRenameRequest, current_dir_id: int, project_n
     modified_dir = proj_service.rename_directory(req.name, dir)
 
     yield SuccessResponse(result=modified_dir.to_dict(), status_code=200)
+
+
+@bp.route('/<string:project_name>/directories/<int:current_dir_id>/delete', methods=['POST'])
+@jsonify_with_class(DirectoryDeleteRequest)
+@auth.login_required
+@requires_project_permission(AccessActionType.WRITE)
+def delete_directory(req: DirectoryDeleteRequest, current_dir_id: int, project_name: str):
+
+    proj_service = get_projects_service()
+    projects = Projects.query.filter(
+        Projects.project_name == project_name
+    ).one_or_none()
+
+    if projects is None:
+        raise RecordNotFoundException(f'No such projects: {project_name}')
+
+    user = g.current_user
+
+    yield user, projects
+
+    dir = Directory.query.filter(
+        and_(
+            Directory.id == current_dir_id,
+            Projects.id == projects.id,
+        )
+    ).one_or_none()
+
+    if dir is None:
+        raise RecordNotFoundException(f'No directory found')
+
+    proj_service.delete_directory(dir)
+
+    yield SuccessResponse(result='successful deleted', status_code=200)
 
 
 @bp.route('/<string:project_name>/directories/<int:current_dir_id>', methods=['GET'])

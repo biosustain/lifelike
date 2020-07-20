@@ -1,10 +1,14 @@
 import pytest
 import os
+import json
+from datetime import date
 from pathlib import Path
 from sqlalchemy import and_
 from typing import Sequence
 
+from neo4japp.exceptions import DirectoryError
 from neo4japp.models.files import Directory
+from neo4japp.models.drawing_tool import Project
 from neo4japp.models.projects import (
     Projects,
     projects_collaborator_role,
@@ -198,3 +202,44 @@ def test_can_rename_directory(session, fix_projects, fix_directory, original_nam
 
     assert renamed_dir is not None
     assert renamed_dir.name == new_name
+
+
+def test_can_delete_directory(session, fix_projects, fix_directory):
+    proj_service = ProjectsService(session)
+    new_dir = proj_service.add_directory(
+        projects=fix_projects,
+        dir_name='nested',
+    )
+    proj_service.delete_directory(new_dir)
+    assert Directory.query.filter(Directory.id == new_dir.id).one_or_none() is None
+
+
+def test_cannot_delete_***ARANGO_USERNAME***_dir(session, fix_projects, fix_directory):
+    proj_service = ProjectsService(session)
+    with pytest.raises(DirectoryError):
+        proj_service.delete_directory(fix_directory)
+
+
+def test_cannot_delete_nonempty_dir(session, fix_owner, fix_nested_dir):
+    project = Project(
+        id=808,
+        label='&heartbreaks',
+        description='beforecr8zy',
+        author='yeezy',
+        date_modified=str(date.today()),
+        graph=json.dumps({}),
+        user_id=fix_owner.id,
+        dir_id=fix_nested_dir.id,
+    )
+    session.add(project)
+    session.flush()
+    proj_service = ProjectsService(session)
+
+    with pytest.raises(DirectoryError):
+        proj_service.delete_directory(fix_nested_dir)
+
+    session.delete(project)
+    session.flush()
+
+    proj_service.delete_directory(fix_nested_dir)
+    assert Directory.query.filter(Directory.id == fix_nested_dir.id).one_or_none() is None
