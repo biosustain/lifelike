@@ -1371,7 +1371,8 @@ class AnnotationsService:
                     # TODO: nlp only checks for Bacteria right now
                     # replace with Species in the future
                     if predicted['type'] != 'Bacteria':
-                        # need to do offset here because index resets after each text string for page
+                        # need to do offset here because index resets
+                        # after each text string for page
                         offset = pages_to_index[page]
                         curr_char_idx_mappings = {
                             i+offset: char for i, char in zip(
