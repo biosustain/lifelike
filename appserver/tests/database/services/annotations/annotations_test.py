@@ -557,7 +557,7 @@ def test_tokens_gene_vs_protein(
             token_positions=tokens,
             char_coord_objs_in_pdf=char_coord_objs_in_pdf,
             cropbox_in_pdf=(5, 5),
-            min_idx_in_page=[1,5,10],
+            min_idx_in_page=[1, 5, 10],
         ),
     )
 
@@ -661,7 +661,7 @@ def test_tokens_gene_vs_protein_serpina1_cases(
             token_positions=tokens,
             char_coord_objs_in_pdf=char_coord_objs_in_pdf,
             cropbox_in_pdf=(5, 5),
-            min_idx_in_page=[1,5,10],
+            min_idx_in_page=[1, 5, 10],
         ),
     )
 
@@ -732,7 +732,7 @@ def test_tokens_gene_vs_protein_serpina1_case_all_caps_from_knowledge_graph(
             token_positions=tokens,
             char_coord_objs_in_pdf=char_coord_objs_in_pdf,
             cropbox_in_pdf=(5, 5),
-            min_idx_in_page=[1,5,10],
+            min_idx_in_page=[1, 5, 10],
         ),
     )
 
@@ -1067,7 +1067,7 @@ def test_gene_annotation_uses_id_from_knowledge_graph(
             token_positions=tokens,
             char_coord_objs_in_pdf=char_coord_objs_in_pdf,
             cropbox_in_pdf=(5, 5),
-            min_idx_in_page=[1,5,10],
+            min_idx_in_page=[1, 5, 10],
         ),
     )
 
@@ -1126,7 +1126,7 @@ def test_gene_annotation_human_vs_rat(
             token_positions=tokens,
             char_coord_objs_in_pdf=char_coord_objs_in_pdf,
             cropbox_in_pdf=(5, 5),
-            min_idx_in_page=[1,5,10],
+            min_idx_in_page=[1, 5, 10],
         ),
     )
 
