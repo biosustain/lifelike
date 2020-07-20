@@ -15,18 +15,21 @@ import { ResizedEvent } from 'angular-resize-event';
  * @param a - item to sort
  * @param b - item to sort against
  */
-const sort = (a: Project, b: Project) => {
-  if (
-    a.date_modified < b.date_modified
-  ) {
-    return 1;
-  } else if (
-    a.date_modified === b.date_modified
-  ) {
-    return 0;
-  } else {
-    return -1;
-  }
+const sortByDate = (a: Project, b: Project) => {
+  const dateA = a.date_modified;
+  const dateB = b.date_modified;
+  return (dateA < dateB) ? -1 : (dateA > dateB) ? 1 : 0;
+};
+
+/**
+ * Sort project by name
+ * @param a - item to sort
+ * @param b - item to sort against
+ */
+const sortAlphabetically = (a: Project, b: Project) => {
+  const textA = a.label.toUpperCase();
+  const textB = b.label.toUpperCase();
+  return (textA < textB) ? -1 : (textA > textB) ? 1 : 0;
 };
 
 @Component({
@@ -44,8 +47,27 @@ export class MapListComponent implements OnInit {
   @Input() childMode = false;
 
   @Input() selectedProject: Project = null;
-  @Input() projects: Project[] = [];
-  @Input() publicProjects: Project[] = [];
+
+  PROJECTS = [];
+  @Input()
+  set projects(val: Project[]) {
+    this.PROJECTS = val;
+    this.sortMap('dateModified');
+  }
+
+  get projects(): Project[] {
+    return this.PROJECTS;
+  }
+
+  PUBLIC_PROJECTS = [];
+  @Input()
+  set publicProjects(val: Project[]) {
+    this.PUBLIC_PROJECTS = val;
+    this.sortMap('dateModified');
+  }
+  get publicProjects(): Project[] {
+    return this.PUBLIC_PROJECTS;
+  }
 
   @Output() projectAPICaller: EventEmitter<any> = new EventEmitter();
 
@@ -53,13 +75,16 @@ export class MapListComponent implements OnInit {
   privateDisplayMode = 'personal';
   @Input() displayIndex = null;
 
+  sortMode = 'dateModified';
+
+  sortDirection = 'forward';
+
   get displayMode() {
     return this.privateDisplayMode;
   }
   set displayMode(val) {
     this.privateDisplayMode = val;
     this.displayIndex = val === 'personal' ? 0 : val === 'community' ? 1 : 2;
-    this.projects.sort(sort);
   }
 
   /** Search form implementation */
@@ -92,6 +117,33 @@ export class MapListComponent implements OnInit {
   }
 
   /**
+   * Sort the list of maps by an attribute. Feeding in the
+   * same sort attribute to sort by will trigger reverse sort
+   * @param val - the property to srt maps by
+   */
+  sortMap(val: string) {
+    const sortMethod = val === 'dateModified' ? sortByDate : sortAlphabetically;
+
+    if (this.sortMode === val) {
+      this.sortDirection = this.sortDirection === 'forward' ? 'reverse' : 'forward';
+
+      if (this.sortDirection === 'forward') {
+        this.projects.sort(sortMethod);
+        this.publicProjects.sort(sortMethod);
+      } else {
+        this.projects.sort(sortMethod).reverse();
+        this.publicProjects.sort(sortMethod).reverse();
+      }
+    } else {
+      this.sortMode = val;
+      this.sortDirection = 'forward';
+
+      this.projects.sort(sortMethod);
+      this.publicProjects.sort(sortMethod);
+    }
+  }
+
+  /**
    * Pull projects from server both
    * personal and community
    */
@@ -102,6 +154,7 @@ export class MapListComponent implements OnInit {
         this.projects = (
           data.projects as Project[]
         );
+        this.projects.sort(sortByDate);
       });
     this.projService.pullCommunityProjects()
       .subscribe(data => {
@@ -109,6 +162,7 @@ export class MapListComponent implements OnInit {
           /* tslint:disable:no-string-literal */
           data['projects'] as Project[]
         );
+        this.publicProjects.sort(sortByDate);
       });
   }
 
