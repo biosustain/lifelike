@@ -3,7 +3,7 @@
     Single hyperlink into multiple hyperlinks
 
     Revision ID: cc345dcad75c
-    Revises: b6b9fb435404
+    Revises: f71f7fc1e1c2
     Create Date: 2020-07-07 15:13:38.895016
 """
 from alembic import context
@@ -21,7 +21,7 @@ from neo4japp.models import (
 
 # revision identifiers, used by Alembic.
 revision = 'cc345dcad75c'
-down_revision = 'b6b9fb435404'
+down_revision = 'f71f7fc1e1c2'
 branch_labels = None
 depends_on = None
 
