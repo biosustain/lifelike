@@ -92,13 +92,14 @@ export class PdfAnnotationsService {
    * Excludes automatic annotation from the given file.
    * @param fileId id of the file that contains the annotation
    * @param id id of the annotation to be excluded
+   * @param text annotated text
    * @param reason reason for an exclusion
    * @param comment additional comment
    */
-  addAnnotationExclusion(fileId: string, id: string, reason: string, comment: string): Observable<any> {
+  addAnnotationExclusion(fileId: string, id: string, text: string, reason: string, comment: string): Observable<any> {
     return this.http.patch(
       this.baseUrl + `/add_annotation_exclusion/${fileId}`,
-      { id, reason, comment },
+      { id, text, reason, comment },
       this.createHttpOptions(true)
     );
   }
@@ -107,11 +108,12 @@ export class PdfAnnotationsService {
    * Removes the exclusion mark from the automatic annotation in the given file.
    * @param fileId id of the file that contains the annotation
    * @param id id of the annotation
+   * @param text annotated text
    */
-  removeAnnotationExclusion(fileId: string, id: string): Observable<any> {
+  removeAnnotationExclusion(fileId: string, id: string, text: string): Observable<any> {
     return this.http.patch(
       this.baseUrl + `/remove_annotation_exclusion/${fileId}`,
-      { id },
+      { id, text },
       this.createHttpOptions(true)
     );
   }
