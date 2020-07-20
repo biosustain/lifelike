@@ -119,7 +119,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
     this.loadTask.update(this.locator);
   }
 
-  private updateAnnotationsStatus(objects: DirectoryObject[]) {
+  private updateAnnotationsStatus(objects: readonly DirectoryObject[]) {
     objects.forEach((object: DirectoryObject) => {
       if (object.type === 'file') {
         const file = object.data as File; // TODO: does this work?
@@ -237,7 +237,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
     }
   }
 
-  displayDeleteDialog(objects: DirectoryObject[]) {
+  displayDeleteDialog(objects: readonly DirectoryObject[]) {
     const dialogRef = this.modalService.open(ObjectDeleteDialogComponent);
     dialogRef.componentInstance.objects = objects;
     dialogRef.result.then(() => {
@@ -293,7 +293,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
     );
   }
 
-  reannotate(objects: DirectoryObject[]) {
+  reannotate(objects: readonly DirectoryObject[]) {
     const files: File[] = objects
       .filter(object => object.type === 'file')
       .map(file => file.data as File);
@@ -330,7 +330,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
     }
   }
 
-  delete(objects: DirectoryObject[]) {
+  delete(objects: readonly DirectoryObject[]) {
     // TODO: not being able to delete directory is super lame
     const supportedObjects = objects.filter(object => object.type !== 'dir');
 
