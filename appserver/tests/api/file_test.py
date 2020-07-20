@@ -167,6 +167,7 @@ def test_user_can_remove_annotation_exclusion(client, test_user, test_user_with_
         headers=headers,
         data=json.dumps({
             'id': 'id',
+            'text': 'text',
             'reason': 'reason',
             'comment': 'comment'
         }),
@@ -176,7 +177,10 @@ def test_user_can_remove_annotation_exclusion(client, test_user, test_user_with_
     remove_exc_resp = client.patch(
         f'/files/remove_annotation_exclusion/{file_id}',
         headers=headers,
-        data=json.dumps({'id': 'id'}),
+        data=json.dumps({
+            'id': 'id',
+            'text': 'text'
+        }),
         content_type='application/json',
     )
 

@@ -33,13 +33,15 @@
       </p>
     </div>
     <!-- Link -->
-    <div *ngIf='node?.data?.hyperlink'>
+    <div *ngIf='node?.data?.hyperlinks.length'>
       <p [ngClass]='nodeStyle' class='b'>
-        Hyperlink
+        Hyperlinks
       </p>
-      <p class='attr link' (click)='goToLink(node.data.hyperlink)'>
-        {{node?.data?.hyperlink}}
-      </p>
+      <div *ngFor='let h of node?.data?.hyperlinks'>
+        <p class='attr link' (click)='goToLink(h.url)'>
+          {{h.url}}
+        </p>
+      </div>
     </div>
     <!-- Edges-->
     <div *ngIf='node?.edges.length'>
