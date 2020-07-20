@@ -5,7 +5,6 @@ import {map} from 'rxjs/operators';
 
 import {
   FTSResult,
-  OrganismsResult,
 } from 'app/interfaces';
 
 @Injectable()
@@ -30,12 +29,6 @@ export class SearchService {
   visualizerSearchTemp(query: string, page: number = 1, limit: number = 10, filter: string = 'labels(node)') {
     return this.http.post<{ result: FTSResult }>(
       `${this.searchApi}/viz-search-temp`, {query, page, filter, limit},
-    ).pipe(map(resp => resp.result));
-  }
-
-  getOrganisms(query: string, limit: number = 50) {
-    return this.http.post<{ result: OrganismsResult }>(
-      `${this.searchApi}/organisms`, {query, limit},
     ).pipe(map(resp => resp.result));
   }
 
