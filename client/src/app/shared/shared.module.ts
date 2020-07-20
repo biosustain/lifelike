@@ -31,6 +31,7 @@ import { NodeTextStylePipe } from './node-text-style.pipe';
 import { ConfirmDialogComponent } from './components/confirm-dialog/confirm-dialog.component';
 import { AngularResizedEventModule } from 'angular-resize-event';
 import { OrganismAutocompleteComponent } from './components/organism-autocomplete/organism-autocomplete.component';
+import { SharedSearchService } from './services/shared-search.service';
 
 const components = [
   MessageDialogComponent,
@@ -69,7 +70,10 @@ const components = [
       FriendlyDateStrPipe,
       NodeTextStylePipe
   ],
-  providers: [SharedNgrxEffects],
+  providers: [
+    SharedNgrxEffects,
+    SharedSearchService,
+  ],
   // exported modules are visible to modules that import this one
   exports: [
     // Modules

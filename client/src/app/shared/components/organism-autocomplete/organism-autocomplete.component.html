@@ -1,6 +1,6 @@
 <mat-form-field>
   <mat-label>Organisms</mat-label>
-  <input type="text" matInput [formControl]="query" [matAutocomplete]="auto">
+  <input type="text" matInput [formControl]="query" [matAutocomplete]="auto" placeholder="Filter by organism">
   <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayFn" (optionSelected)="notifySelection($event)">
     <mat-option *ngFor="let opt of organisms | async" [value]="opt">
       {{ opt.synonym }} <em>({{ opt.organism_name }})</em>
