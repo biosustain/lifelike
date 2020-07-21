@@ -6,6 +6,11 @@ import { isNullOrUndefined } from 'util';
 import { SheetNameAndColumnNames } from 'app/interfaces';
 import { getRandomColor } from 'app/shared/utils';
 
+enum GeneMatchingPropertyType {
+    ID = 'ID',
+    NAME = 'Name',
+}
+
 @Component({
   selector: 'app-gene-import-config',
   templateUrl: './gene-import-config.component.html',
@@ -28,6 +33,8 @@ export class GeneImportConfigComponent {
         }
     }
 
+    readonly geneMatchingPropertyEnum = GeneMatchingPropertyType;
+
     labelColors: Map<string, string>;
 
     editingRelationship: boolean;
@@ -47,7 +54,7 @@ export class GeneImportConfigComponent {
         this.relationshipFormValidityChanged = new EventEmitter<boolean>();
 
         this.organisms = new Map<string, number>([
-            ['Homo sapiens', 30118368],
+            ['Homo sapiens', 78602],
             ['SARS-CoV-2', 2697049],
             ['Escherichia coli str. K-12 substr. MG1655', 29424357],
             ['Saccharomyces cerevisiae S288C', 29816395],
@@ -73,14 +80,18 @@ export class GeneImportConfigComponent {
 
     addRelationship() {
         this.activeFormGroup = this.fb.group({
-            columnSelection1: ['', Validators.required],
-            columnSelection2: ['', Validators.required],
+            columnIndex1: ['', Validators.required],
+            columnIndex2: ['', Validators.required],
             nodeLabel1: ['', Validators.required],
             nodeLabel2: ['', Validators.required],
+            nodeProperties1: this.fb.array([]),
+            nodeProperties2: this.fb.array([]),
             relationshipLabel: ['', Validators.required],
             useExistingRel: [true, Validators.required],
             relationshipDirection: ['', Validators.required],
-            relationshipProperties: this.fb.array([])
+            relationshipProperties: this.fb.array([]),
+            speciesSelection: [null],
+            geneMatchingProperty: [null],
         });
 
         this.editingRelationship = true;
@@ -110,20 +121,27 @@ export class GeneImportConfigComponent {
     }
 
     /**
-     * Adds additional form controls to the active form if the selection for the second column
-     * is for knowledge graph genes. Removes these controls if the selection is changed to
-     * anything else.
+     * Resets the 'speciesSelection' and 'geneMatchingProperty' controls whenever the 'columnIndex2'
+     * selection changes. The former two controls are required if the user is matching to KG
+     * genes, and here we set their values/validators accordingly.
      */
     columnSelection2Changed() {
-        this.activeFormGroup.removeControl('speciesSelection');
-        this.activeFormGroup.removeControl('geneMatchingProperty');
+        const speciesSelectionControl = this.activeFormGroup.get('speciesSelection');
+        const geneMatchingPropertyControl = this.activeFormGroup.get('geneMatchingProperty');
 
-        if (this.indexToColumn.get(this.activeFormGroup.get('columnSelection2').value) === 'KG Gene') {
+        speciesSelectionControl.setValue(null);
+        speciesSelectionControl.setValidators([]);
+        geneMatchingPropertyControl.setValue(null);
+        geneMatchingPropertyControl.setValidators([]);
+
+        if (this.indexToColumn.get(this.activeFormGroup.get('columnIndex2').value) === 'KG Gene') {
             this.activeFormGroup.get('nodeLabel2').setValue('Gene');
             this.activeFormGroup.get('nodeLabel2').disable();
 
-            this.activeFormGroup.addControl('speciesSelection', this.fb.control('', [Validators.required]));
-            this.activeFormGroup.addControl('geneMatchingProperty', this.fb.control('', [Validators.required]));
+            speciesSelectionControl.setValue('');
+            speciesSelectionControl.setValidators([Validators.required]);
+            geneMatchingPropertyControl.setValue('');
+            geneMatchingPropertyControl.setValidators([Validators.required]);
         } else {
             this.activeFormGroup.get('nodeLabel2').setValue('');
             this.activeFormGroup.get('nodeLabel2').enable();
@@ -137,8 +155,8 @@ export class GeneImportConfigComponent {
         this.activeFormGroup.get('relationshipLabel').setValue('');
     }
 
-    addRelationshipProperty() {
-        (this.activeFormGroup.get('relationshipProperties') as FormArray).push(
+    addProperty(propertyFormArray: string) {
+        (this.activeFormGroup.get(propertyFormArray) as FormArray).push(
             this.fb.group({
                 column: ['', Validators.required],
                 propertyName: ['', Validators.required],
@@ -146,8 +164,8 @@ export class GeneImportConfigComponent {
         );
     }
 
-    removeRelationshipProperty(index: number) {
-        (this.activeFormGroup.get('relationshipProperties') as FormArray).removeAt(index);
+    removeProperty(index: number, propertyFormArray: string) {
+        (this.activeFormGroup.get(propertyFormArray) as FormArray).removeAt(index);
     }
 
     /**

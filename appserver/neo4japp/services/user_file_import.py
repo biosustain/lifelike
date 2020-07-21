@@ -1,4 +1,9 @@
-from typing import Dict, List
+from typing import (
+    Any,
+    Dict,
+    List,
+    Tuple
+)
 
 from werkzeug.datastructures import FileStorage
 
@@ -10,17 +15,23 @@ from py2neo import (
     Node,
     Transaction,
     Relationship,
+    cypher_escape,
+    cypher_repr
 )
 
 from neo4japp.factory import cache
 from neo4japp.data_transfer_objects.user_file_import import (
-    Neo4jColumnMapping,
     FileNameAndSheets,
     GraphCreationMapping,
+    GeneImportRelationship,
     GraphNodeCreationMapping,
+    GeneMatchingProperty,
     GraphRelationshipCreationMapping,
+    Neo4jColumnMapping,
+    Properties,
 )
 from neo4japp.services.common import GraphBaseDao
+from neo4japp.util import compute_hash
 
 
 class UserFileImportService(GraphBaseDao):
@@ -424,3 +435,164 @@ class UserFileImportService(GraphBaseDao):
                     tx.create(Relationship(source_node, edge_label, target_node, **{}))
         tx.commit()
         print('Done creating relationships between new nodes')
+
+    def get_props_from_col_and_propname(
+        self,
+        worksheet: Worksheet,
+        row: int,
+        relationship_properties: List[Properties],
+    ) -> Dict[str, Any]:
+        new_props: Dict[str, Any] = {}
+
+        for prop in relationship_properties:
+            col = int(prop.column)
+            propname = prop.property_name
+            new_props[propname] = worksheet.cell(row=row, column=col+1).value
+
+        return new_props
+
+    def match_import_column_to_gene_query(
+        self,
+        gene_matching_property: GeneMatchingProperty,
+    ) -> str:
+        if gene_matching_property == GeneMatchingProperty.ID.value:
+            return """
+            MATCH (g:Gene)-[:HAS_TAXONOMY]->(t:Taxonomy)
+            WHERE g.id=$gene_val AND ID(t)=$tax_id
+            RETURN g
+            """
+        elif gene_matching_property == GeneMatchingProperty.NAME.value:
+            return """
+            MATCH (g:Gene)-[:HAS_TAXONOMY]->(t:Taxonomy)
+            WHERE g.name=$gene_val AND ID(t)=$tax_id
+            RETURN g
+            """
+        else:
+            raise ValueError(f'Cannot match on unknown gene property {gene_matching_property}')
+
+    def match_import_column_to_gene(
+        self,
+        gene_val: str,
+        species_id: int,
+        gene_matching_property: str,
+    ):
+        query = self.match_import_column_to_gene_query(gene_matching_property)
+        return self.graph.run(
+            query,
+            {
+                'gene_val': gene_val,
+                'tax_id': species_id,
+            }
+        ).evaluate()
+
+    def get_or_create_node(
+        self,
+        tx,
+        label: str,
+        props: Dict[str, Any]
+    ):
+        existing_node = self.graph.nodes.match(label, **props).first()
+
+        if existing_node is None:
+            new_node = Node(label, **props)
+            tx.create(new_node)
+            return new_node
+        else:
+            return existing_node
+
+    def get_worksheet(self, file_name: str, sheet_name: str):
+        workbook = cache.get(file_name)
+
+        for i, name in enumerate(workbook.sheetnames):
+            if name == sheet_name:
+                workbook.active = i
+                break
+
+        return workbook.active
+
+    def import_gene_relationships(
+        self,
+        file_name: str,
+        sheet_name: str,
+        relationships: List[GeneImportRelationship],
+    ):
+        worksheet = self.get_worksheet(file_name, sheet_name)
+        max_row = len(list(worksheet.rows))
+
+        curr_row = 2  # start at the second row because we don't want to include headers
+
+        unmatched_rows: List[Tuple[int, Dict]] = []
+
+        tx = self.graph.begin()
+        while curr_row <= max_row:
+            for relationship in relationships:
+                # openpyxl is 1-based, so add 1 to the column_index
+                node1_val = worksheet.cell(row=curr_row, column=int(relationship.column_index1)+1).value  # noqa
+                node_props1 = {
+                    'cell_value': node1_val,
+                    'row': curr_row,
+                    'col': int(relationship.column_index1)+1
+                }
+                node_props1.update(
+                    self.get_props_from_col_and_propname(
+                        worksheet,
+                        curr_row,
+                        relationship.node_properties1
+                    )
+                )
+                node1 = self.get_or_create_node(tx, relationship.node_label1, node_props1)
+
+                if relationship.species_selection is None or relationship.gene_matching_property is None:  # noqa
+                    node2_val = worksheet.cell(row=curr_row, column=int(relationship.column_index2)+1).value  # noqa
+                    node_props2 = {
+                        'cell_value': node2_val,
+                        'row': curr_row,
+                        'col': int(relationship.column_index2)+1
+                    }
+                    node_props2.update(
+                        self.get_props_from_col_and_propname(
+                            worksheet,
+                            curr_row,
+                            relationship.node_properties2
+                        )
+                    )
+                    node2 = self.get_or_create_node(tx, relationship.node_label2, node_props2)  # noqa
+
+                else:
+                    node2 = self.match_import_column_to_gene(
+                        node1_val,
+                        int(relationship.species_selection),
+                        relationship.gene_matching_property,
+                    )
+
+                    if not node2:
+                        # Couldn't match to any gene, so save the row number and relationship object
+                        unmatched_rows.append((curr_row, relationship.to_dict()))
+                        continue
+
+                relationship_props = self.get_props_from_col_and_propname(
+                    worksheet,
+                    curr_row,
+                    relationship.relationship_properties
+                )
+
+                if relationship.relationship_direction == 'To':
+                    relationship = Relationship(
+                        node1,
+                        relationship.relationship_label,
+                        node2,
+                        **relationship_props
+                    )
+                else:
+                    relationship = Relationship(
+                        node2,
+                        relationship.relationship_label,
+                        node1,
+                        **relationship_props
+                    )
+                tx.create(relationship)
+            curr_row += 1
+
+        tx.commit()
+
+        return unmatched_rows
