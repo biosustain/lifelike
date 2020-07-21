@@ -1,6 +1,6 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ProjectSpaceComponent } from './project-space.component';
+import { ProjectBrowserComponent } from './project-browser.component';
 import { configureTestSuite } from 'ng-bullet';
 import { SharedModule } from 'app/shared/shared.module';
 import { FileBrowserModule } from 'app/file-browser/file-browser.module';
@@ -8,8 +8,8 @@ import { RootStoreModule } from 'app/root-store';
 import { RouterTestingModule } from '@angular/router/testing';
 
 describe('ProjectSpaceComponent', () => {
-  let component: ProjectSpaceComponent;
-  let fixture: ComponentFixture<ProjectSpaceComponent>;
+  let component: ProjectBrowserComponent;
+  let fixture: ComponentFixture<ProjectBrowserComponent>;
 
   configureTestSuite(() => {
     TestBed.configureTestingModule({
@@ -24,7 +24,7 @@ describe('ProjectSpaceComponent', () => {
   });
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(ProjectSpaceComponent);
+    fixture = TestBed.createComponent(ProjectBrowserComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

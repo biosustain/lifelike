@@ -16,7 +16,10 @@
                        (click)="handleTabClick($event, pane, tab); $event.preventDefault()">
                     <div class="d-block d-flex align-items-center text-truncate mr-2">
                       <span class="d-block text-truncate">
-                        <i [class]="'fa fa-fw fa-' + (tab.fontAwesomeIcon || 'window-maximize')"></i>
+                        <i class="fas fa-spinner fa-pulse fa-fw" *ngIf="tab.loading; else notLoading"></i>
+                        <ng-template #notLoading>
+                          <i [class]="'fa fa-fw fa-' + (tab.fontAwesomeIcon || 'window-maximize')"></i>
+                        </ng-template>
                         {{tab.title}}
                       </span>
                       <span class="badge badge-danger badge-pill ml-1" *ngIf="tab.badge != null && tab.badge !== '*'">
@@ -34,15 +37,13 @@
               </div>
               <div class="mr-2 mt-2">
                 <div ngbDropdown placement="bottom-right" container="body">
-                  <button type="button" class="btn btn-primary btn-sm" ngbDropdownToggle ngbTooltip="New Tab" container="body">
+                  <button type="button" class="btn btn-primary btn-sm" ngbDropdownToggle ngbTooltip="New Tab"
+                          container="body">
                     <i class="fa fa-fw fa-plus"></i>
                   </button>
                   <div ngbDropdownMenu class="dropdown-menu">
-                    <a class="dropdown-item" (click)="addTab(pane, '/maps')">
-                      Maps
-                    </a>
-                    <a class="dropdown-item" (click)="addTab(pane, '/files')">
-                      Files
+                    <a class="dropdown-item" (click)="addTab(pane, '/projects')">
+                      Browser
                     </a>
                     <a class="dropdown-item" (click)="addTab(pane, '/kg-visualizer')">
                       KG Visualizer

@@ -59,10 +59,12 @@ services:
             # Redis
             - REDIS_HOST=redis
             - REDIS_PORT=6379
+        # Allow debugging w/ IPython or pdb
         stdin_open: true
+        tty: true
+        # End debugging section
         volumes:
             - ./appserver:/home/n4j
-        tty: true
         networks:
             - frontend
             - backend
@@ -80,6 +82,10 @@ services:
             - FLASK_DEBUG=1
             - FLASK_APP_CONFIG=Development
             - FLASK_ENV=development
+        # Allow debugging w/ IPython or pdb
+        stdin_open: true
+        tty: true
+        # End debugging section
         ports:
             - "5001:5001"
         volumes:

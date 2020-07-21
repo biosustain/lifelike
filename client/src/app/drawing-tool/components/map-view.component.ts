@@ -1,14 +1,4 @@
-import {
-  AfterViewInit,
-  Component,
-  EventEmitter,
-  Input,
-  NgZone,
-  OnDestroy,
-  OnInit,
-  Output,
-  ViewChild,
-} from '@angular/core';
+import { AfterViewInit, Component, EventEmitter, Input, NgZone, OnDestroy, Output, ViewChild } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { BehaviorSubject, combineLatest, Observable, Subscription } from 'rxjs';
@@ -24,12 +14,12 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { MessageDialog } from '../../shared/services/message-dialog.service';
 import { MessageType } from '../../interfaces/message-dialog.interface';
 import { BackgroundTask } from '../../shared/rxjs/background-task';
-import { map, startWith, tap } from 'rxjs/operators';
+import { map, tap } from 'rxjs/operators';
 import { ErrorHandler } from '../../shared/services/error-handler.service';
 import { CopyKeyboardShortcut } from '../../graph-viewer/renderers/canvas/behaviors/copy-keyboard-shortcut';
-import { ObservableInput } from 'rxjs/src/internal/types';
 import { ProgressDialog } from '../../shared/services/progress-dialog.service';
 import { Progress } from '../../interfaces/common-dialog.interface';
+import { WorkspaceManager } from '../../shared/workspace-manager';
 
 @Component({
   selector: 'app-map-view',
@@ -53,6 +43,9 @@ export class MapViewComponent<ExtraResult = void> implements OnDestroy, AfterVie
 
   loadTask: BackgroundTask<string, [Project, ExtraResult]>;
   loadSubscription: Subscription;
+  paramsSubscription: Subscription;
+
+  returnUrl: string;
 
   graphCanvas: CanvasGraphView;
 
@@ -70,6 +63,7 @@ export class MapViewComponent<ExtraResult = void> implements OnDestroy, AfterVie
     readonly ngZone: NgZone,
     readonly route: ActivatedRoute,
     readonly errorHandler: ErrorHandler,
+    readonly workspaceManager: WorkspaceManager,
   ) {
     this.loadTask = new BackgroundTask((hashId) => {
       return combineLatest([
@@ -87,6 +81,10 @@ export class MapViewComponent<ExtraResult = void> implements OnDestroy, AfterVie
     this.loadSubscription = this.loadTask.results$.subscribe(({result: [result, extra], value}) => {
       this.map = result;
       this.handleExtra(extra);
+    });
+
+    this.paramsSubscription = this.route.queryParams.subscribe(params => {
+      this.returnUrl = params.return;
     });
 
     if (this.route.snapshot.params.hash_id) {
@@ -173,6 +171,7 @@ export class MapViewComponent<ExtraResult = void> implements OnDestroy, AfterVie
   }
 
   ngOnDestroy() {
+    this.paramsSubscription.unsubscribe();
     this.historyChangesSubscription.unsubscribe();
     this.unsavedChangesSubscription.unsubscribe();
     this.graphCanvas.destroy();
@@ -347,5 +346,15 @@ export class MapViewComponent<ExtraResult = void> implements OnDestroy, AfterVie
 
   redo() {
     this.graphCanvas.redo();
+  }
+
+  goToReturnUrl() {
+    if (this.shouldConfirmUnload()) {
+      if (confirm('Leave editor? Changes you made may not be saved.')) {
+        this.workspaceManager.navigateByUrl(this.returnUrl);
+      }
+    } else {
+      this.workspaceManager.navigateByUrl(this.returnUrl);
+    }
   }
 }

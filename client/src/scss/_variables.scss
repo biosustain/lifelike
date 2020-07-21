@@ -1,7 +1,7 @@
 @import '~bootstrap/scss/functions';
 
 $primary: #0c8caa;
-$white:    #fff;
+$white: #fff;
 $gray-100: #f8f9fa;
 $gray-200: #e9ecef;
 $gray-300: #dee2e6;
@@ -11,9 +11,12 @@ $gray-600: #6c757d;
 $gray-700: #495057;
 $gray-800: #343a40;
 $gray-900: #212529;
-$black:    #000;
+$black: #000;
 
 @import '~bootstrap/scss/variables';
+
+$font-family-sans-serif: Roboto, "Helvetica Neue", Arial, Helvetica, sans-serif;
+$font-family-base: $font-family-sans-serif;
 
 $form-group-margin-bottom: 0.5rem;
 
@@ -30,3 +33,5 @@ $floating-toolbar-border-radius: $border-radius;
 
 $table-row-active-bg: rgba($component-active-bg, .1);
 $table-row-focus-box-shadow: inset 0 0 0 $input-btn-focus-width $input-btn-focus-color;
+
+$modal-md: 600px;

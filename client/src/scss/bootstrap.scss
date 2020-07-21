@@ -7,6 +7,7 @@
 @import './toolbars';
 @import './graph';
 @import './tabs';
+@import './tile';
 @import './search';
 
 body {
@@ -105,6 +106,7 @@ fieldset.fieldset-properties {
 }
 
 .breadcrumb {
+  display: flex;
   background: none;
   padding: 0;
   margin: 0;
@@ -113,16 +115,38 @@ fieldset.fieldset-properties {
 
 .breadcrumb-item {
   display: flex;
+  align-items: center;
 
   + .breadcrumb-item {
     &::before {
-      position: relative;
-      top: 25%;
+      display: block;
       font-family: FontAwesome, sans-serif;
       font-size: 60%;
       content: '\f054';
+      line-height: 1;
+      position: relative;
+      top: -1px;
     }
   }
+}
+
+.modal-content {
+  border: 0;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+}
+
+.modal-header {
+  border: 0;
+  padding: 1.5rem 1.5rem 1rem;
+}
+
+.modal-body {
+  padding: 0.7rem 1.5rem 1.5rem;
+}
+
+.modal-footer {
+  border: 0;
+  padding: 0 1.5rem 1.5rem;
 }
 
 .input-border {
