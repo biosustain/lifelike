@@ -3,7 +3,7 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { cloneDeep } from 'lodash';
 import { UniversalGraphNode } from '../../services/interfaces';
 import { LINE_TYPES } from '../../services/line-types';
-import { annotationTypes } from '../../../shared/annotation-styles';
+import { annotationTypes, annotationTypesMap } from '../../../shared/annotation-styles';
 import { RecursivePartial } from '../../../graph-viewer/utils/types';
 import { openLink } from '../../../shared/utils/browser';
 import { PALETTE_COLORS } from '../../services/palette';
@@ -15,14 +15,12 @@ import { PALETTE_COLORS } from '../../services/palette';
 export class NodeFormComponent {
 
   nodeTypeChoices = annotationTypes;
-
   lineTypeChoices = [
     [null, {
       name: '(Default)',
     }],
-    ...LINE_TYPES.entries()
+    ...LINE_TYPES.entries(),
   ];
-
   paletteChoices = [...PALETTE_COLORS];
 
   originalNode: UniversalGraphNode;
@@ -37,6 +35,15 @@ export class NodeFormComponent {
 
   activeTab: string;
 
+  get nodeSubtypeChoices() {
+    const type = annotationTypesMap.get(this.node.label);
+    if (type && type.subtypes) {
+      return type.subtypes;
+    } else {
+      return [];
+    }
+  }
+
   get node() {
     return this.updatedNode;
   }
@@ -50,12 +57,28 @@ export class NodeFormComponent {
     this.updatedNode.style = this.updatedNode.style || {};
   }
 
+  checkSubtype() {
+    if (this.node.data && this.node.data.subtype) {
+      let found = false;
+      for (const subtype of this.nodeSubtypeChoices) {
+        if (subtype === this.node.data.subtype) {
+          found = true;
+          break;
+        }
+      }
+      if (!found) {
+        this.node.data.subtype = null;
+      }
+    }
+  }
+
   doSave() {
     this.save.next({
       originalData: {
         data: {
           hyperlink: this.originalNode.data.hyperlink,
           detail: this.originalNode.data.detail,
+          subtype: this.originalNode.data.subtype,
         },
         display_name: this.originalNode.display_name,
         label: this.originalNode.label,
@@ -72,6 +95,7 @@ export class NodeFormComponent {
         data: {
           hyperlink: this.updatedNode.data.hyperlink,
           detail: this.updatedNode.data.detail,
+          subtype: this.updatedNode.data.subtype,
         },
         display_name: this.updatedNode.display_name,
         label: this.updatedNode.label,
