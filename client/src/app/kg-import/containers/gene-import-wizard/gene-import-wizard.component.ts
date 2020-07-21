@@ -1,6 +1,7 @@
 // import { STEPPER_GLOBAL_OPTIONS } from '@angular/cdk/stepper';
 import { Component } from '@angular/core';
 import { FormGroup, FormBuilder, Validators, FormArray } from '@angular/forms';
+import { MatSnackBar } from '@angular/material';
 
 import { FileNameAndSheets, SheetNameAndColumnNames } from 'app/interfaces';
 import { GeneImportRelationship } from 'app/interfaces/kg-import.interface';
@@ -17,6 +18,8 @@ import { UserFileImportService } from 'app/user-file-import/services/user-file-i
     // }]
 })
 export class GeneImportWizardComponent {
+    loadingSheet: boolean;
+
     worksheetData: FileNameAndSheets;
     selectedSheet: SheetNameAndColumnNames;
 
@@ -32,7 +35,10 @@ export class GeneImportWizardComponent {
         private fb: FormBuilder,
         private userFileImportService: UserFileImportService,
         private kgImportService: KgImportService,
+        private snackbar: MatSnackBar,
     ) {
+        this.loadingSheet = false;
+
         this.acceptedFileTypes = '.xlsx';
 
         this.worksheetData = null;
@@ -60,12 +66,16 @@ export class GeneImportWizardComponent {
         const formData = new FormData();
         formData.append('fileInput', this.importFileForm.value.fileInput);
 
+        this.loadingSheet = true;
         this.userFileImportService.uploadExperimentalDataFile(formData).subscribe(result => {
             this.worksheetData = result;
 
             // Set the first sheet as the default value for the sheet form dropdown
             this.sheetForm.controls.sheetName.setValue(this.worksheetData.sheets[0].sheetName);
             this.selectedSheet = this.worksheetData.sheets[0];
+
+            this.loadingSheet = false;
+            this.snackbar.open('Finished loading worksheet!', 'Close', {duration: 5000});
         });
     }
 
