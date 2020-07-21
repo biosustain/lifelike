@@ -113,7 +113,7 @@ def annotate(
 def upload_pdf(request, project_name: str):
 
     user = g.current_user
-    filename = secure_filename(request.filename.strip())
+    filename = request.filename.strip()
 
     # TODO: Deprecate and make mandatory (no default) this once LL-415 is implemented
     dir_id = request.directory_id if request.directory_id is not None else 1
@@ -327,7 +327,7 @@ def get_pdf(id: str, project_name: str = ''):
                     'description': description,
                 })
             db.session.commit()
-        return ''
+        yield ''
     try:
         entry = db.session \
             .query(Files.id, FileContent.raw_file) \
