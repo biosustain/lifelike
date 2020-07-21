@@ -64,6 +64,8 @@ export class CollectionModal<T> {
 
   push(item: T): void {
     if (!this._items.has(item)) {
+      this._items.add(item);
+
       this.viewOutdated = true;
 
       this.itemChanges$.next({
