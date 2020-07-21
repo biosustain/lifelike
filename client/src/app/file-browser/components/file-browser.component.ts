@@ -91,7 +91,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
       (locator: PathLocator) => this.projectPageService.getProjectDir(
         locator.projectName,
         locator.directoryId,
-      ),
+      ).pipe(this.errorHandler.create()),
     );
 
     this.loadTaskSubscription = this.loadTask.results$.subscribe(({result}) => {
