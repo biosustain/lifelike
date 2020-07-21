@@ -295,6 +295,7 @@ def get_child_directories(current_dir_id: int, project_name: str = ''):
                     'id': f.user_id,
                     'name': AppUser.query.get(f.user_id).username
                 },
+                'description': 'f.description',
                 'data': f.to_dict(),
             } for f in dir.files],
             *[{
@@ -304,6 +305,7 @@ def get_child_directories(current_dir_id: int, project_name: str = ''):
                     'id': m.user_id,
                     'name': AppUser.query.get(m.user_id).username
                 },
+                'description': m.description,
                 'data': m.to_dict(),
             } for m in dir.project],
         ],
