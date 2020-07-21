@@ -13,7 +13,6 @@ from neo4japp.blueprints.permissions import requires_project_role, requires_proj
 from neo4japp.database import db, get_projects_service
 from neo4japp.data_transfer_objects import (
     DirectoryContent,
-    DirectoryDeleteRequest,
     DirectoryRenameRequest,
     FileType,
     MoveFileRequest,
@@ -343,8 +342,8 @@ def move_files(req: MoveFileRequest, project_name: str):
 
 
 @bp.route('/<string:project_name>/directories/<int:current_dir_id>/rename', methods=['POST'])
-@jsonify_with_class(DirectoryRenameRequest)
 @auth.login_required
+@jsonify_with_class(DirectoryRenameRequest)
 @requires_project_permission(AccessActionType.WRITE)
 def rename_directory(req: DirectoryRenameRequest, current_dir_id: int, project_name: str):
 
@@ -380,10 +379,9 @@ def rename_directory(req: DirectoryRenameRequest, current_dir_id: int, project_n
 
 
 @bp.route('/<string:project_name>/directories/<int:current_dir_id>/delete', methods=['POST'])
-@jsonify_with_class(DirectoryDeleteRequest)
 @auth.login_required
 @requires_project_permission(AccessActionType.WRITE)
-def delete_directory(req: DirectoryDeleteRequest, current_dir_id: int, project_name: str):
+def delete_directory(current_dir_id: int, project_name: str):
 
     proj_service = get_projects_service()
     projects = Projects.query.filter(
@@ -409,7 +407,7 @@ def delete_directory(req: DirectoryDeleteRequest, current_dir_id: int, project_n
 
     proj_service.delete_directory(dir)
 
-    yield SuccessResponse(result='successful deleted', status_code=200)
+    yield jsonify(result='successful deleted', status_code=200)
 
 
 @bp.route('/<string:project_name>/directories/<int:current_dir_id>', methods=['GET'])
