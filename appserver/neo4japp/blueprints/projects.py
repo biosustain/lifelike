@@ -286,17 +286,24 @@ def get_child_directories(current_dir_id: int, project_name: str = ''):
             *[{
                 'type': 'dir',
                 'name': c.name,
-                'creator': None,
                 'data': c.to_dict(),
             } for c in child_dirs],
             *[{
                 'type': 'file',
                 'name': f.filename,
+                'creator': {
+                    'id': f.user_id,
+                    'name': AppUser.query.get(f.user_id).username
+                },
                 'data': f.to_dict(),
             } for f in dir.files],
             *[{
                 'type': 'map',
                 'name': m.label,
+                'creator': {
+                    'id': m.user_id,
+                    'name': AppUser.query.get(m.user_id).username
+                },
                 'data': m.to_dict(),
             } for m in dir.project],
         ],
