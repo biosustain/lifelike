@@ -4,6 +4,7 @@ import { Observable, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { AuthenticationService } from 'app/auth/services/authentication.service';
 import { PdfFiles, PdfFile, PdfFileUpload, UploadPayload, UploadType } from 'app/interfaces/pdf-files.interface';
+import { encode } from 'punycode';
 
 @Injectable({
   providedIn: 'root'
@@ -72,14 +73,6 @@ export class PdfFilesService {
   reannotateFiles(ids: string[]): Observable<object> {
     const options = { headers: this.getAuthHeader() };
     return this.http.post(`${this.baseUrl}/reannotate`, ids, options);
-  }
-
-  updateFile(id: string, filename: string, description: string = ''): Observable<string> {
-    const options = { headers: this.getAuthHeader() };
-    const formData: FormData = new FormData();
-    formData.append('filename', filename.substring(0, this.filenameMaxLength));
-    formData.append('description', description.substring(0, this.descriptionMaxLength));
-    return this.http.patch<string>(`${this.baseUrl}/${id}`, formData, options);
   }
 
   private getAuthHeader() {

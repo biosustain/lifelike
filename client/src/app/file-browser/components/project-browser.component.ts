@@ -68,6 +68,7 @@ export class ProjectBrowserComponent implements OnInit, OnDestroy {
     dialogRef.result.then(
       newProject => {
         this.results.push(newProject);
+        this.goToProject(newProject);
       },
       () => {
       },
