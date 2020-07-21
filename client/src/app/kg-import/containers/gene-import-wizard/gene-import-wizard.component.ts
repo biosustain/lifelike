@@ -19,6 +19,7 @@ import { UserFileImportService } from 'app/user-file-import/services/user-file-i
 })
 export class GeneImportWizardComponent {
     loadingSheet: boolean;
+    importingRelationships: boolean;
 
     worksheetData: FileNameAndSheets;
     selectedSheet: SheetNameAndColumnNames;
@@ -26,10 +27,10 @@ export class GeneImportWizardComponent {
     importFileForm: FormGroup;
     sheetForm: FormGroup;
 
-    acceptedFileTypes: string;
-
     geneConfigFormValid: boolean;
     geneConfigFormArray: FormArray;
+
+    readonly acceptedFileTypes = '.xlsx';
 
     constructor(
         private fb: FormBuilder,
@@ -38,8 +39,7 @@ export class GeneImportWizardComponent {
         private snackbar: MatSnackBar,
     ) {
         this.loadingSheet = false;
-
-        this.acceptedFileTypes = '.xlsx';
+        this.importingRelationships = false;
 
         this.worksheetData = null;
         this.selectedSheet = null;
@@ -75,7 +75,7 @@ export class GeneImportWizardComponent {
             this.selectedSheet = this.worksheetData.sheets[0];
 
             this.loadingSheet = false;
-            this.snackbar.open('Finished loading worksheet!', 'Close', {duration: 5000});
+            this.snackbar.open('Finished loading worksheet!', 'Close', {duration: 3000});
         });
     }
 
@@ -101,14 +101,19 @@ export class GeneImportWizardComponent {
         this.geneConfigFormArray = this.fb.array(relationshipForms);
     }
 
-    getNodeMatches() {
+    importGeneRelationships() {
+        this.importingRelationships = true;
         // Need to use rawValue here to get the value of any disabled inputs (e.g.
         // the "nodeLabel2" input if KG Gene was selected for the column value).
-        this.kgImportService.matchGenes(
+        this.kgImportService.importGeneRelationships(
             this.worksheetData.filename,
             this.selectedSheet.sheetName,
             this.geneConfigFormArray.getRawValue() as GeneImportRelationship[],
-        // TEMP: Eventually we may do something with this result
-        ).subscribe(result => console.log(result));
+        ).subscribe(result => {
+            // TODO: Eventually we may do something with the result, which is a list
+            // of relationships which didn't get matched to genes, if any.
+            this.importingRelationships = false;
+            this.snackbar.open('Finished importing relationships!', 'Close', {duration: 3000});
+        });
     }
 }

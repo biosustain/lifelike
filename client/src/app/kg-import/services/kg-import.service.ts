@@ -16,7 +16,7 @@ export class KgImportService {
         private http: HttpClient,
     ) { }
 
-    matchGenes(fileName: string, sheetName: string, relationships: GeneImportRelationship[]): Observable<any> {
+    importGeneRelationships(fileName: string, sheetName: string, relationships: GeneImportRelationship[]): Observable<any> {
         return this.http.post<{result: any}>(
             `${this.importApi}/import-genes`, { fileName, sheetName, relationships }
         ).pipe(map(resp => resp.result));
