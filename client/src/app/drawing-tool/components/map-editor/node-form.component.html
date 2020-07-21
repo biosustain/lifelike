@@ -34,7 +34,7 @@
         </label>
         <div class="d-flex flex-column flex-fill">
           <select [(ngModel)]="node.label" (change)="doSave()" class="custom-select w-100" id="type"
-            (ngModelChange)="checkSubtype()">
+                  (ngModelChange)="checkSubtype()">
             <option *ngFor="let choice of nodeTypeChoices" [value]="choice.label">
               {{choice.label | titlecase}}
             </option>
@@ -63,7 +63,8 @@
         <label for="url" class="my-0 mr-2" ngbTooltip="Link">
           <i class="fa fa-fw fa-link"></i>
         </label>
-        <input [(ngModel)]="node.data.hyperlink" class="form-control" (change)="doSave()" id="url">
+        <input [(ngModel)]="node.data.hyperlink" class="form-control flex-fill" (change)="doSave()" id="url"
+               [style.width]="0">
         <button type="button" class="btn btn-secondary btn-sm ml-1" (click)="goToLink()"
                 ngbTooltip="Open link">
           <i class="fa fa-external-link-alt"></i>
