@@ -117,6 +117,12 @@ def get_lmdb_dao():
     return g.lmdb_dao
 
 
+def close_lmdb(e=None):
+    lmdb_dao = g.pop('lmdb_dao', None)
+    if lmdb_dao:
+        lmdb_dao.close_envs()
+
+
 def get_annotations_service(lmdb_dao):
     from neo4japp.services.annotations import AnnotationsService
     return AnnotationsService(lmdb_session=lmdb_dao)

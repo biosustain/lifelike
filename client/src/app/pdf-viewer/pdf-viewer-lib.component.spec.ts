@@ -6,6 +6,7 @@ import { FormsModule } from '@angular/forms';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MatSnackBarModule } from '@angular/material';
 import { SharedModule } from '../shared/shared.module';
+import { RootStoreModule } from 'app/***ARANGO_USERNAME***-store';
 
 describe('PdfViewerLibComponent', () => {
   beforeEach(async(() => {
@@ -15,7 +16,8 @@ describe('PdfViewerLibComponent', () => {
         BrowserAnimationsModule,
         PdfViewerLibModule,
         SharedModule,
-        MatSnackBarModule
+        MatSnackBarModule,
+        RootStoreModule,
       ]
     }).compileComponents();
   }));
