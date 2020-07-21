@@ -105,13 +105,6 @@ def annotate(
 #################################
 
 
-@bp.teardown_request
-def close_lmdb(response):
-    print('Closing LMDB...')
-    get_lmdb_dao().close_envs()
-    return response
-
-
 @bp.route('/upload', methods=['POST'])
 @newbp.route('/<string:project_name>/files', methods=['POST'])  # TODO: use this once LL-415 done
 @auth.login_required

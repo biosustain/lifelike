@@ -1383,8 +1383,8 @@ class AnnotationsService:
 
                         # determine page keyword is on
                         page_idx = -1
-                        mind_page_idx_list = list(tokens.min_idx_in_page)
-                        for min_page_idx in mind_page_idx_list:
+                        min_page_idx_list = list(tokens.min_idx_in_page)
+                        for min_page_idx in min_page_idx_list:
                             # include offset here, see above
                             if predicted['high_index']+offset <= min_page_idx:
                                 # reminder: can break here because dict in python 3.8+ are
