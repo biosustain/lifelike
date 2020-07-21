@@ -1,9 +1,8 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { MatDialog, MatDialogRef } from '@angular/material';
 import { ActivatedRoute } from '@angular/router';
 
-import { EMPTY as empty, merge, of, Subject, Subscription } from 'rxjs';
+import { BehaviorSubject, EMPTY as empty, merge, of, Subject, Subscription } from 'rxjs';
 import { filter, map, switchMap, take, tap } from 'rxjs/operators';
 
 import { DataSet } from 'vis-network';
@@ -28,12 +27,13 @@ import {
 import { NODE_EXPANSION_LIMIT } from 'app/shared/constants';
 import { LegendService } from 'app/shared/services/legend.service';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
-import { LoadingClustersDialogComponent } from 'app/visualization/components/loading-clusters-dialog/loading-clusters-dialog.component';
-import { NoResultsFromExpandDialogComponent } from
-    'app/visualization/components/no-results-from-expand-dialog/no-results-from-expand-dialog.component';
 
 import { VisualizationService } from '../../services/visualization.service';
 import { createSearchParamsFromQuery, getQueryParams } from '../../../search/utils/search';
+import { ProgressDialog } from '../../../shared/services/progress-dialog.service';
+import { MessageDialog } from '../../../shared/services/message-dialog.service';
+import { MessageType } from '../../../interfaces/message-dialog.interface';
+import { Progress } from '../../../interfaces/common-dialog.interface';
 
 @Component({
   selector: 'app-visualization',
@@ -66,20 +66,18 @@ export class VisualizationComponent implements OnInit, OnDestroy {
   // data, biocyc, etc...
   legend: Map<string, string[]>;
 
-  dontShowDialogAgain = false;
-  clusterExpandedNodes = false;
-
-  loadingClustersDialogRef: MatDialogRef<LoadingClustersDialogComponent>;
+  loadingClustersDialogRef;
 
   // TODO: Will we need to add more of these?
   LITERATURE_LABELS = ['disease', 'chemical', 'gene'];
 
   constructor(
-    public dialog: MatDialog,
     private route: ActivatedRoute,
     private visService: VisualizationService,
     private legendService: LegendService,
     private workspaceManager: WorkspaceManager,
+    private readonly progressDialog: ProgressDialog,
+    private readonly messageDialog: MessageDialog,
   ) {
     this.legend = new Map<string, string[]>();
 
@@ -215,18 +213,21 @@ export class VisualizationComponent implements OnInit, OnDestroy {
   }
 
   openNoResultsFromExpandDialog() {
-    this.dialog.open(NoResultsFromExpandDialogComponent, {
-      width: '250px',
-      height: '120px',
+    this.messageDialog.display({
+      title: 'No Relationships',
+      message: 'Expanded node had no connected relationships.',
+      type: MessageType.Info,
     });
   }
 
   openLoadingClustersDialog() {
-    this.loadingClustersDialogRef = this.dialog.open(LoadingClustersDialogComponent, {
-      disableClose: true,
-      width: '240px',
-      height: '120px',
+    this.loadingClustersDialogRef = this.progressDialog.display({
+      title: `Node Expansion`,
+      progressObservable: new BehaviorSubject<Progress>(new Progress({
+        status: 'Loading clusters...',
+      })),
     });
+
   }
 
   finishedClustering(event: boolean) {

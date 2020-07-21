@@ -10,9 +10,9 @@
         </div>
     </div>
     <div id="relationship-container" *ngIf="edge">
-        <div><i class="material-icons">remove</i></div>
+        <div>&minus;</div>
         <div>{{ edge }}</div>
-        <div *ngIf="rightNodeName"><i class="material-icons">arrow_forward</i></div>
+        <div *ngIf="rightNodeName"><i class="fa fa-fw fa-caret-right"></i></div>
     </div>
     <div class="node-detail" id="right-node-container" *ngIf="rightNodeName && rightNodeLabel">
         <div
