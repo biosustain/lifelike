@@ -102,7 +102,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
       this.results.replace(objects);
 
       this.modulePropertiesChange.emit({
-        title: this.locator.projectName + (this.path.length > 1 ? ' / ' + this.directory.name : ''),
+        title: this.locator.projectName + (this.path.length > 1 ? ' - ' + this.directory.name : ''),
         fontAwesomeIcon: 'layer-group',
       });
     });
@@ -114,8 +114,9 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
       };
 
       this.modulePropertiesChange.emit({
-        title: this.locator.projectName + ' - Loading...',
+        title: this.locator.projectName,
         fontAwesomeIcon: 'layer-group',
+        loading: true,
       });
 
       this.loadTask.update(this.locator);
@@ -184,9 +185,11 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
           this.locator.projectName,
           this.directory.id,
           resp.name,
-        ).subscribe(() => {
-          this.refresh();
-        });
+        )
+          .pipe(this.errorHandler.create())
+          .subscribe(() => {
+            this.refresh();
+          });
       },
       () => {
       },
@@ -226,13 +229,16 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
       dialogRef.componentInstance.file = file;
       dialogRef.result.then(data => {
         if (data) {
-          this.filesService.updateFile(
-            file.file_id,
+          this.projectPageService.updateFile(
+            this.locator.projectName,
+            file.fileId,
             data.filename,
             data.description,
-          ).subscribe(() => {
-            this.refresh();
-          });
+          )
+            .pipe(this.errorHandler.create())
+            .subscribe(() => {
+              this.refresh();
+            });
         }
       }, () => {
       });
@@ -280,32 +286,34 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
       this.locator.projectName,
       this.directory.id,
       data,
-    ).pipe(this.errorHandler.create()).subscribe(event => {
-        if (event.type === HttpEventType.UploadProgress) {
-          if (event.loaded >= event.total) {
-            progressObservable.next(new Progress({
-              mode: ProgressMode.Buffer,
-              status: 'Creating annotations in file...',
-              value: event.loaded / event.total,
-            }));
-          } else {
-            progressObservable.next(new Progress({
-              mode: ProgressMode.Determinate,
-              status: 'Uploading file...',
-              value: event.loaded / event.total,
-            }));
+    )
+      .pipe(this.errorHandler.create())
+      .subscribe(event => {
+          if (event.type === HttpEventType.UploadProgress) {
+            if (event.loaded >= event.total) {
+              progressObservable.next(new Progress({
+                mode: ProgressMode.Buffer,
+                status: 'Creating annotations in file...',
+                value: event.loaded / event.total,
+              }));
+            } else {
+              progressObservable.next(new Progress({
+                mode: ProgressMode.Determinate,
+                status: 'Uploading file...',
+                value: event.loaded / event.total,
+              }));
+            }
+          } else if (event.type === HttpEventType.Response) {
+            progressDialogRef.close();
+            this.snackBar.open(`File uploaded: ${event.body.filename}`, 'Close', {duration: 5000});
+            this.refresh(); // updates the list on successful upload
           }
-        } else if (event.type === HttpEventType.Response) {
+        },
+        err => {
           progressDialogRef.close();
-          this.snackBar.open(`File uploaded: ${event.body.filename}`, 'Close', {duration: 5000});
-          this.refresh(); // updates the list on successful upload
-        }
-      },
-      err => {
-        progressDialogRef.close();
-        return throwError(err);
-      },
-    );
+          return throwError(err);
+        },
+      );
   }
 
   reannotate(objects: readonly DirectoryObject[]) {
@@ -410,6 +418,17 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
         return ['/maps', map.hashId, 'edit'];
       default:
         throw new Error(`unknown directory object type: ${object.type}`);
+    }
+  }
+
+  getObjectQueryParams() {
+    if (this.router.url === this.workspaceManager.workspaceUrl) {
+      return {};
+    } else {
+      return {
+        return: `/projects/${encodeURIComponent(this.locator.projectName)}`
+          + (this.locator.directoryId ? `/folders/${this.locator.directoryId}` : ''),
+      };
     }
   }
 }
