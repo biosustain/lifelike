@@ -29,9 +29,8 @@ import { NODE_EXPANSION_LIMIT } from 'app/shared/constants';
 import { LegendService } from 'app/shared/services/legend.service';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { LoadingClustersDialogComponent } from 'app/visualization/components/loading-clusters-dialog/loading-clusters-dialog.component';
-import {
-  NoResultsFromExpandDialogComponent,
-} from 'app/visualization/components/no-results-from-expand-dialog/no-results-from-expand-dialog.component';
+import { NoResultsFromExpandDialogComponent } from
+    'app/visualization/components/no-results-from-expand-dialog/no-results-from-expand-dialog.component';
 
 import { VisualizationService } from '../../services/visualization.service';
 import { createSearchParamsFromQuery, getQueryParams } from '../../../search/utils/search';
@@ -158,8 +157,6 @@ export class VisualizationComponent implements OnInit, OnDestroy {
       }),
       take(1),
     ).subscribe((result) => {
-      console.log('Router params changed, doing stuff in visualizer component!');
-      console.log(result);
       if (result) {
         this.networkGraphData = this.setupInitialProperties(result);
         this.nodes = new DataSet(this.networkGraphData.nodes);
