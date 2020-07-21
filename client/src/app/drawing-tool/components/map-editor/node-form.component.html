@@ -33,11 +33,22 @@
           <i class="fa fa-fw fa-tag"></i>
         </label>
         <div class="d-flex flex-column flex-fill">
-          <select [(ngModel)]="node.label" (change)="doSave()" class="custom-select w-100" id="type">
+          <select [(ngModel)]="node.label" (change)="doSave()" class="custom-select w-100" id="type"
+            (ngModelChange)="checkSubtype()">
             <option *ngFor="let choice of nodeTypeChoices" [value]="choice.label">
               {{choice.label | titlecase}}
             </option>
           </select>
+          <div class="d-flex align-items-center mt-2" *ngIf="nodeSubtypeChoices.length">
+            <div class="mr-2">
+              Subtype:
+            </div>
+            <select [(ngModel)]="node.data.subtype" (change)="doSave()" class="custom-select flex-fill" id="subtype">
+              <option *ngFor="let choice of nodeSubtypeChoices" [value]="choice">
+                {{choice | titlecase}}
+              </option>
+            </select>
+          </div>
           <div class="mt-1" *ngIf="node.data?.source && node.label !== 'link'">
             <button type="button" class="btn btn-light btn-block"
                     ngbTooltip="Make this node show as a note with a link back to the source"
