@@ -270,15 +270,17 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
 
     annotationToAdd.meta.idHyperlink = this.generateHyperlink(annotationToAdd);
 
-    this.addAnnotationSub = this.pdfAnnService.addCustomAnnotation(this.currentFileId, annotationToAdd).subscribe(
-      response => {
-        this.addedAnnotation = Object.assign({}, annotationToAdd, {uuid: response.uuid});
-        this.snackBar.open('Annotation has been added', 'Close', {duration: 5000});
-      },
-      err => {
-        this.snackBar.open(`Error: failed to add annotation`, 'Close', {duration: 10000});
-      },
-    );
+    this.addAnnotationSub = this.pdfAnnService.addCustomAnnotation(this.currentFileId, annotationToAdd)
+      .pipe(this.errorHandler.create())
+      .subscribe(
+        response => {
+          this.addedAnnotation = Object.assign({}, annotationToAdd, {uuid: response.uuid});
+          this.snackBar.open('Annotation has been added', 'Close', {duration: 5000});
+        },
+        err => {
+          this.snackBar.open(`Error: failed to add annotation`, 'Close', {duration: 10000});
+        },
+      );
 
     this.addedAnnotations.push(annotation);
     this.updateAnnotationIndex();
@@ -289,50 +291,56 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
     const dialogRef = this.modalService.open(ConfirmDialogComponent);
     dialogRef.componentInstance.message = 'Do you want to remove all matching annotations from the file as well?';
     dialogRef.result.then((removeAll: boolean) => {
-      this.removeAnnotationSub = this.pdfAnnService.removeCustomAnnotation(this.currentFileId, uuid, removeAll).subscribe(
-        response => {
-          this.removedAnnotationIds = [];
-          let msg = 'Removal completed';
-          for (const [id, status] of Object.entries(response)) {
-            if (status === 'Removed') {
-              this.removedAnnotationIds.push(id);
-            } else {
-              msg = `${msg}, but one or more annotations could not be removed because you are not the owner`;
+      this.removeAnnotationSub = this.pdfAnnService.removeCustomAnnotation(this.currentFileId, uuid, removeAll)
+        .pipe(this.errorHandler.create())
+        .subscribe(
+          response => {
+            this.removedAnnotationIds = [];
+            let msg = 'Removal completed';
+            for (const [id, status] of Object.entries(response)) {
+              if (status === 'Removed') {
+                this.removedAnnotationIds.push(id);
+              } else {
+                msg = `${msg}, but one or more annotations could not be removed because you are not the owner`;
+              }
             }
-          }
-          this.snackBar.open(msg, 'Close', {duration: 10000});
-        },
-        err => {
-          this.snackBar.open(`Error: removal failed`, 'Close', {duration: 10000});
-        },
-      );
+            this.snackBar.open(msg, 'Close', {duration: 10000});
+          },
+          err => {
+            this.snackBar.open(`Error: removal failed`, 'Close', {duration: 10000});
+          },
+        );
     }, () => {
     });
   }
 
   annotationExclusionAdded({id, reason, comment}) {
-    this.addAnnotationExclusionSub = this.pdfAnnService.addAnnotationExclusion(this.currentFileId, id, reason, comment).subscribe(
-      response => {
-        this.addedAnnotationExclusion = {id, reason, comment};
-        this.snackBar.open('Annotation has been excluded', 'Close', {duration: 5000});
-      },
-      err => {
-        this.snackBar.open(`Error: failed to exclude annotation`, 'Close', {duration: 10000});
-      },
-    );
+    this.addAnnotationExclusionSub = this.pdfAnnService.addAnnotationExclusion(this.currentFileId, id, reason, comment)
+      .pipe(this.errorHandler.create())
+      .subscribe(
+        response => {
+          this.addedAnnotationExclusion = {id, reason, comment};
+          this.snackBar.open('Annotation has been excluded', 'Close', {duration: 5000});
+        },
+        err => {
+          this.snackBar.open(`Error: failed to exclude annotation`, 'Close', {duration: 10000});
+        },
+      );
   }
 
   annotationExclusionRemoved(id) {
-    this.removeAnnotationExclusionSub = this.pdfAnnService.removeAnnotationExclusion(this.currentFileId, id).subscribe(
-      response => {
-        this.removedAnnotationExclusionId = id;
-        this.snackBar.open('Unmarked successfully', 'Close', {duration: 5000});
-      },
-      err => {
-        const {message, name} = err.error.apiHttpError;
-        this.snackBar.open(`${name}: ${message}`, 'Close', {duration: 10000});
-      },
-    );
+    this.removeAnnotationExclusionSub = this.pdfAnnService.removeAnnotationExclusion(this.currentFileId, id)
+      .pipe(this.errorHandler.create())
+      .subscribe(
+        response => {
+          this.removedAnnotationExclusionId = id;
+          this.snackBar.open('Unmarked successfully', 'Close', {duration: 5000});
+        },
+        err => {
+          const {message, name} = err.error.apiHttpError;
+          this.snackBar.open(`${name}: ${message}`, 'Close', {duration: 10000});
+        },
+      );
   }
 
   /**
