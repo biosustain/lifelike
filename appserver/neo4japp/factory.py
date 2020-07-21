@@ -86,7 +86,7 @@ def create_app(name='neo4japp', config='config.Development'):
 
     app = Flask(name)
     app.config.from_object(config)
-    app.teardown_appcontext_funcs=[close_lmdb]
+    app.teardown_appcontext_funcs = [close_lmdb]
 
     cors.init_app(app)
     db.init_app(app)
