@@ -1,5 +1,7 @@
 import attr
 
+from enum import Enum
+
 from typing import Dict, List, Optional
 
 from werkzeug.datastructures import FileStorage
@@ -100,3 +102,41 @@ class GraphRelationshipCreationMapping(CamelDictMixin):
 class GraphCreationMapping(CamelDictMixin):
     new_nodes: List[GraphNodeCreationMapping] = attr.ib(default=attr.Factory(list))
     new_relationships: List[GraphRelationshipCreationMapping] = attr.ib(default=attr.Factory(list))
+
+
+@attr.s(frozen=True)
+class Properties(CamelDictMixin):
+    column: str = attr.ib()
+    property_name: str = attr.ib()
+
+
+@attr.s(frozen=True)
+class ImportRelationship(CamelDictMixin):
+    column_index1: str = attr.ib()
+    column_index2: str = attr.ib()
+    node_label1: str = attr.ib()
+    node_label2: str = attr.ib()
+    node_properties1: List[Properties] = attr.ib()
+    node_properties2: List[Properties] = attr.ib()
+    relationship_label: str = attr.ib()
+    relationship_direction: str = attr.ib()
+    relationship_properties: List[Properties] = attr.ib()
+
+
+@attr.s(frozen=True)
+class GeneImportRelationship(ImportRelationship):
+    species_selection: Optional[str] = attr.ib()
+    # Should map to any of the values in the GeneMatchingProperty enum
+    gene_matching_property: Optional[str] = attr.ib()
+
+
+@attr.s(frozen=True)
+class ImportGenesRequest(CamelDictMixin):
+    file_name: str = attr.ib()
+    sheet_name: str = attr.ib()
+    relationships: List[GeneImportRelationship] = attr.ib()
+
+
+class GeneMatchingProperty(Enum):
+    ID = 'ID'
+    NAME = 'Name'

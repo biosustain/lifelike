@@ -3,6 +3,8 @@ import { Component } from '@angular/core';
 import { FormGroup, FormBuilder, Validators, FormArray } from '@angular/forms';
 
 import { FileNameAndSheets, SheetNameAndColumnNames } from 'app/interfaces';
+import { GeneImportRelationship } from 'app/interfaces/kg-import.interface';
+import { KgImportService } from 'app/kg-import/services/kg-import.service';
 import { UserFileImportService } from 'app/user-file-import/services/user-file-import.service';
 
 @Component({
@@ -29,6 +31,7 @@ export class GeneImportWizardComponent {
     constructor(
         private fb: FormBuilder,
         private userFileImportService: UserFileImportService,
+        private kgImportService: KgImportService,
     ) {
         this.acceptedFileTypes = '.xlsx';
 
@@ -89,9 +92,13 @@ export class GeneImportWizardComponent {
     }
 
     getNodeMatches() {
-        // TEMP --> Backend magic happens here
         // Need to use rawValue here to get the value of any disabled inputs (e.g.
         // the "nodeLabel2" input if KG Gene was selected for the column value).
-        console.log(this.geneConfigFormArray.getRawValue());
+        this.kgImportService.matchGenes(
+            this.worksheetData.filename,
+            this.selectedSheet.sheetName,
+            this.geneConfigFormArray.getRawValue() as GeneImportRelationship[],
+        // TEMP: Eventually we may do something with this result
+        ).subscribe(result => console.log(result));
     }
 }
