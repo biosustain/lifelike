@@ -243,3 +243,28 @@ def test_cannot_delete_nonempty_dir(session, fix_owner, fix_nested_dir):
 
     proj_service.delete_directory(fix_nested_dir)
     assert Directory.query.filter(Directory.id == fix_nested_dir.id).one_or_none() is None
+
+
+def test_can_move_directory(session, fix_directory, fix_nested_dir):
+    proj_service = ProjectsService(session)
+    child_dir_2 = Directory(
+        name='child-level-2',
+        directory_parent_id=fix_nested_dir.id,
+        projects_id=fix_nested_dir.projects_id,
+    )
+    session.add(child_dir_2)
+    session.flush()
+
+    assert child_dir_2.directory_parent_id == fix_nested_dir.id
+    proj_service.move_directory(child_dir_2, fix_directory)
+    assert Directory.query.get(child_dir_2.id).directory_parent_id == fix_directory.id
+
+
+def test_can_move_map(session, fix_project, fix_directory, fix_nested_dir):
+    proj_service = ProjectsService(session)
+
+    assert fix_project.dir_id == fix_directory.id
+
+    proj_service.move_map(fix_project, fix_nested_dir)
+
+    assert fix_project.dir_id == fix_nested_dir.id
