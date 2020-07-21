@@ -442,18 +442,17 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
     }
     if (an.meta.isExcluded) {
       base.push(`
-        <div class="mt1 mat-small" style="display: flex; align-items: center">
-          <span class="mr2 material-icons">info</span>
-          <div style="display: flex; flex-direction: column">
+        <div class="mt-2">
+          <div>
             <span style="line-height: 16px">Manually excluded</span>
             <span style="line-height: 16px"><i>reason: </i>${an.meta.exclusionReason}</span>
             ${an.meta.exclusionComment ? `<span style="line-height: 16px"><i>comment: </i>${an.meta.exclusionComment}</span>` : ''}
-            <div class="mt-1">
-              <button type="button" class="btn btn-primary btn-block" onclick="removeAnnotationExclusion('${an.meta.id}')">
-                <i class="fas fa-fw fa-undo"></i>
-                <span>Unmark Exclusion</span>
-              </button>
-            </div>
+          </div>
+          <div class="mt-1">
+            <button type="button" class="btn btn-primary btn-block" onclick="removeAnnotationExclusion('${an.meta.id}')">
+              <i class="fas fa-fw fa-undo"></i>
+              <span>Unmark Exclusion</span>
+            </button>
           </div>
         </div>`);
     }
