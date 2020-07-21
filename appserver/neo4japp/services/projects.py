@@ -141,7 +141,8 @@ class ProjectsService(RDBMSBaseDao):
         # Check if directory is empty before allowing deletes
         files = self.session.query(Files.query.filter(Files.dir_id == dir.id).exists()).scalar()
         maps = self.session.query(Project.query.filter(Project.dir_id == dir.id).exists()).scalar()
-        nested_dirs = self.session.query(Directory.query.filter(Directory.directory_parent_id == dir.id).exists()).scalar()
+        nested_dirs = self.session.query(
+            Directory.query.filter(Directory.directory_parent_id == dir.id).exists()).scalar()
         if any([files, maps, nested_dirs]):
             raise DirectoryError('Cannot delete non-empty directory')
         elif dir.directory_parent_id is None:
@@ -155,8 +156,34 @@ class ProjectsService(RDBMSBaseDao):
         self.session.commit()
         return dir
 
-    def move_directory(self, dest: int, dir: Directory) -> Directory:
-        raise NotImplementedError()
+    def move_directory(self, origin_dir: Directory, dest: Directory) -> Directory:
+        """ Moves directory within the same project """
+        if origin_dir.projects_id != dest.projects_id:
+            raise DirectoryError('Cannot move directory into a different project')
+        setattr(origin_dir, 'directory_parent_id', dest.id)
+        self.session.add(origin_dir)
+        self.session.commit()
+        return dest
+
+    def move_pdf(self, pdf: Files, dest: Directory) -> Directory:
+        """ Moves pdf within the same project """
+        curr_file_dir = Directory.query.get(pdf.dir_id)
+        if curr_file_dir.projects_id != dest.projects_id:
+            raise DirectoryError('Cannot move pdf into a different project')
+        setattr(pdf, 'dir_id', dest.id)
+        self.session.add(curr_file_dir)
+        self.session.commit()
+        return dest
+
+    def move_map(self, drawing_map: Project, dest: Directory) -> Directory:
+        """ Moves map within the same project """
+        curr_map_dir = Directory.query.get(drawing_map.dir_id)
+        if curr_map_dir.projects_id != dest.projects_id:
+            raise DirectoryError('Cannot move map into a different project')
+        setattr(drawing_map, 'dir_id', dest.id)
+        self.session.add(curr_map_dir)
+        self.session.commit()
+        return dest
 
     def get_all_child_dirs(self, projects: Projects, current_dir: Directory) -> Sequence[Directory]:
         """ Gets all of the children and the parent, starting from the specified directory

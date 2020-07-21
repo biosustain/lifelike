@@ -15,8 +15,12 @@ from neo4japp.data_transfer_objects import (
     DirectoryContent,
     DirectoryDeleteRequest,
     DirectoryRenameRequest,
+    FileType,
+    MoveFileRequest,
+    MoveFileResponse,
 )
 from neo4japp.exceptions import (
+    DirectoryError,
     InvalidDirectoryNameException,
     RecordNotFoundException,
     NotAuthorizedException,
@@ -25,7 +29,9 @@ from neo4japp.models import (
     AccessActionType,
     AppRole,
     AppUser,
+    Files,
     Directory,
+    Project,
     Projects,
     projects_collaborator_role,
 )
@@ -91,7 +97,7 @@ def add_projects():
 @bp.route('/<string:project_name>/collaborators', methods=['GET'])
 @auth.login_required
 @requires_project_permission(AccessActionType.READ)
-def get_project_collaborators(project_name: str = ''):
+def get_project_collaborators(project_name: str):
     proj_service = get_projects_service()
 
     projects = Projects.query.filter(
@@ -130,7 +136,7 @@ def get_project_collaborators(project_name: str = ''):
 @bp.route('/<string:project_name>/collaborators/<string:username>', methods=['POST'])
 @auth.login_required
 @requires_project_role('project-admin')
-def add_collaborator(username: str, project_name: str = ''):
+def add_collaborator(username: str, project_name: str):
 
     proj_service = get_projects_service()
 
@@ -204,7 +210,7 @@ def edit_collaborator(username: str, project_name: str):
 @bp.route('/<string:project_name>/collaborators/<string:username>', methods=['DELETE'])
 @auth.login_required
 @requires_project_role('project-admin')
-def remove_collaborator(username: str, project_name: str = ''):
+def remove_collaborator(username: str, project_name: str):
 
     proj_service = get_projects_service()
 
@@ -233,7 +239,7 @@ def remove_collaborator(username: str, project_name: str = ''):
 @bp.route('/<string:project_name>/directories', methods=['GET'])
 @auth.login_required
 @requires_project_permission(AccessActionType.READ)
-def get_top_level_directories(project_name: str = ''):
+def get_top_level_directories(project_name: str):
     proj_service = get_projects_service()
     projects = Projects.query.filter(
         Projects.project_name == project_name
@@ -258,7 +264,7 @@ def get_top_level_directories(project_name: str = ''):
 @bp.route('/<string:project_name>/directories', methods=['POST'])
 @auth.login_required
 @requires_project_permission(AccessActionType.WRITE)
-def add_directory(project_name: str = ''):
+def add_directory(project_name: str):
     proj_service = get_projects_service()
     projects = Projects.query.filter(
         Projects.project_name == project_name
@@ -278,6 +284,56 @@ def add_directory(project_name: str = ''):
     yield user, projects
     new_dir = proj_service.add_directory(projects, dir_name, parent_dir)
     yield jsonify(dict(results=new_dir.to_dict()))
+
+
+@bp.route('/<string:project_name>/directories/move', methods=['POST'])
+@jsonify_with_class(MoveFileRequest)
+@auth.login_required
+@requires_project_permission(AccessActionType.WRITE)
+def move_files(req: MoveFileRequest, project_name: str):
+
+    project_service = get_projects_service()
+    projects = Projects.query.filter(
+        Projects.project_name == project_name
+    ).one_or_none()
+
+    if projects is None:
+        raise RecordNotFoundException(f'No such projects: {project_name}')
+
+    user = g.current_user
+
+    yield user, projects
+
+    dest_dir = Directory.query.filter(
+        Directory.id == req.dest_dir_id
+    ).one_or_none()
+
+    if dest_dir is None:
+        raise RecordNotFoundException(f'No such directory')
+
+    if req.asset_type == FileType.PDF:
+        asset = Files.query.filter(Files.id == req.asset_id).one_or_none()
+        if asset is None:
+            raise RecordNotFoundException(f'No such file found')
+        dest = project_service.move_pdf(asset, dest_dir)
+    elif req.asset_type == FileType.MAP:
+        asset = Project.query.filter(Project.id == req.asset_id).one_or_none()
+        if asset is None:
+            raise RecordNotFoundException(f'No such drawing map (project) found')
+        dest = project_service.move_map(asset, dest_dir)
+    elif req.asset_type == FileType.DIR:
+        asset = Directory.query.filter(Directory.id == req.asset_id).one_or_none()
+        if asset is None:
+            raise RecordNotFoundException(f'No such directory found')
+        dest = project_service.move_directory(asset, dest_dir)
+    else:
+        raise DirectoryError('No asset type defined for move operation')
+
+    yield SuccessResponse(
+        result=MoveFileResponse(
+            dest=dest.to_dict(),
+            asset=asset.to_dict()
+        ), status_code=200)
 
 
 @bp.route('/<string:project_name>/directories/<int:current_dir_id>/rename', methods=['POST'])
