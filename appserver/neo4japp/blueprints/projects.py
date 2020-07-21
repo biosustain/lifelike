@@ -21,6 +21,7 @@ from neo4japp.data_transfer_objects import (
 )
 from neo4japp.exceptions import (
     DirectoryError,
+    DuplicateRecord,
     InvalidDirectoryNameException,
     RecordNotFoundException,
     NotAuthorizedException,
@@ -37,6 +38,7 @@ from neo4japp.models import (
 )
 from neo4japp.util import jsonify_with_class, SuccessResponse
 
+from neo4japp.services.exceptions import NameUnavailableError
 
 bp = Blueprint('projects', __name__, url_prefix='/projects')
 
@@ -76,9 +78,11 @@ def get_projects():
 @bp.route('/', methods=['POST'])
 @auth.login_required
 def add_projects():
-
     data = request.get_json()
     user = g.current_user
+
+    if not re.match('^[A-Za-z0-9-]{1,50}$', data['projectName']):
+        raise ValueError('incorrect project name format')
 
     projects = Projects(
         project_name=data['projectName'],
@@ -90,7 +94,10 @@ def add_projects():
         f'User created projects: <{g.current_user.email}:{projects.project_name}>')
 
     proj_service = get_projects_service()
-    proj_service.create_projects(user, projects)
+    try:
+        proj_service.create_projects(user, projects)
+    except NameUnavailableError:
+        raise DuplicateRecord('There is a project with that name already.')
     return jsonify(dict(results=projects.to_dict())), 200
 
 
@@ -176,7 +183,6 @@ def add_collaborator(username: str, project_name: str):
 @auth.login_required
 @requires_project_role('project-admin')
 def edit_collaborator(username: str, project_name: str):
-
     proj_service = get_projects_service()
 
     data = request.get_json()
@@ -422,11 +428,40 @@ def get_child_directories(current_dir_id: int, project_name: str):
     user = g.current_user
 
     yield user, projects
-    current_dir = Directory.query.get(current_dir_id)
-    child_dirs = proj_service.get_immediate_child_dirs(projects, current_dir)
+
+    if current_dir_id:
+        dir = Directory.query.get(current_dir_id)
+    else:
+        dir = proj_service.get_root_dir(projects)
+
+    parents = proj_service.get_absolute_dir_path(projects, dir)
+    child_dirs = proj_service.get_immediate_child_dirs(projects, dir)
+
     contents = DirectoryContent(
-        child_directories=[c.to_dict() for c in child_dirs],
-        files=[f.to_dict() for f in current_dir.files],
-        maps=[m.to_dict() for m in current_dir.project],
+        dir=dir.to_dict(),
+        path=[{
+            'id': d[0],
+            'name': d[1],
+            'directoryParentId': d[2],
+            'projectsId': d[3],  # TODO: get_absolute_dir_path() should return Directory[]
+        } for d in reversed(parents)],
+        objects=[
+            *[{
+                'type': 'dir',
+                'name': c.name,
+                'creator': None,
+                'data': c.to_dict(),
+            } for c in child_dirs],
+            *[{
+                'type': 'file',
+                'name': f.filename,
+                'data': f.to_dict(),
+            } for f in dir.files],
+            *[{
+                'type': 'map',
+                'name': m.label,
+                'data': m.to_dict(),
+            } for m in dir.project],
+        ],
     )
     yield jsonify(dict(result=contents.to_dict()))

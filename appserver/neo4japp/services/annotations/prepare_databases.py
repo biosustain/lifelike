@@ -70,23 +70,22 @@ def prepare_lmdb_genes_database(filename: str):
                 gene_name = line[1]
                 synonym = line[2]
 
-                if gene_name != 'null':
-                    gene = {
-                        'id_type': DatabaseType.Ncbi.value,
-                        'name': gene_name,
-                        'synonym': synonym,
-                    }
+                gene = {
+                    'id_type': DatabaseType.Ncbi.value,
+                    'name': gene_name,
+                    'synonym': synonym,
+                }
 
-                    try:
-                        transaction.put(
-                            normalize_str(synonym).encode('utf-8'),
-                            json.dumps(gene).encode('utf-8'),
-                        )
-                    except lmdb.BadValsizeError:
-                        # ignore any keys that are too large
-                        # LMDB has max key size 512 bytes
-                        # can change but larger keys mean performance issues
-                        continue
+                try:
+                    transaction.put(
+                        normalize_str(synonym).encode('utf-8'),
+                        json.dumps(gene).encode('utf-8'),
+                    )
+                except lmdb.BadValsizeError:
+                    # ignore any keys that are too large
+                    # LMDB has max key size 512 bytes
+                    # can change but larger keys mean performance issues
+                    continue
 
 
 def prepare_lmdb_chemicals_database(filename: str):

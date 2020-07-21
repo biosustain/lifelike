@@ -1,5 +1,5 @@
 import { Component, OnInit, Input, OnDestroy } from '@angular/core';
-import { ProjectSpaceService, Collaborator, Project } from '../../services/project-space.service';
+import { ProjectSpaceService, Collaborator, Project } from '../services/project-space.service';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { FormArray, FormGroup, FormControl } from '@angular/forms';
 import { Subscription } from 'rxjs';
@@ -13,10 +13,10 @@ import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
   selector: 'app-edit-project-dialog',
-  templateUrl: './edit-project-dialog.component.html',
-  styleUrls: ['./edit-project-dialog.component.scss']
+  templateUrl: './project-edit-dialog.component.html',
+  styleUrls: ['./project-edit-dialog.component.scss']
 })
-export class EditProjectDialogComponent extends CommonFormDialogComponent implements OnInit, OnDestroy {
+export class ProjectEditDialogComponent extends CommonFormDialogComponent implements OnInit, OnDestroy {
   loadTask: BackgroundTask<string, Collaborator[]> = new BackgroundTask(
     (projectName) => this.projSpace.getCollaborators(projectName)
   );

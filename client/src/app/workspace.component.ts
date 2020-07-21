@@ -57,7 +57,7 @@ export class WorkspaceComponent implements AfterViewInit, OnChanges, AfterConten
         this.workspaceManager.panes.delete(pane);
       }
       if (pane.id === 'left' && pane.tabs.length === 0) {
-        this.workspaceManager.openTabByUrl(pane, '/dt/map');
+        this.workspaceManager.openTabByUrl(pane, '/projects');
       }
       this.workspaceManager.save();
       this.workspaceManager.emitEvents();
@@ -102,7 +102,7 @@ export class WorkspaceComponent implements AfterViewInit, OnChanges, AfterConten
 
   addPane() {
     const pane = this.workspaceManager.panes.getOrCreate('right');
-    this.workspaceManager.openTabByUrl(pane, '/files');
+    this.workspaceManager.openTabByUrl(pane, '/projects');
   }
 
   shouldConfirmUnload(): boolean {

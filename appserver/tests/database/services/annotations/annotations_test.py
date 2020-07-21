@@ -442,7 +442,7 @@ def test_escherichia_coli_pdf(
 
     with open(pdf, 'rb') as f:
         pdf_text = pdf_parser.parse_pdf(pdf=f)
-        annotations = annotation_service.create_annotations(
+        annotations = annotation_service.create_rules_based_annotations(
             tokens=pdf_parser.extract_tokens(parsed_chars=pdf_text))
 
     keywords = {o.keyword: o.meta.keyword_type for o in annotations}
@@ -486,7 +486,7 @@ def test_human_gene_pdf(
 
     with open(pdf, 'rb') as f:
         pdf_text = pdf_parser.parse_pdf(pdf=f)
-        annotations = annotation_service.create_annotations(
+        annotations = annotation_service.create_rules_based_annotations(
             tokens=pdf_parser.extract_tokens(parsed_chars=pdf_text))
 
     keywords = {o.keyword: o.meta.keyword_type for o in annotations}
@@ -552,7 +552,7 @@ def test_tokens_gene_vs_protein(
             char_coord_objs_in_pdf.append(get_dummy_LTChar(text=c))
         char_coord_objs_in_pdf.append(get_dummy_LTChar(text=' '))
 
-    annotations = annotation_service.create_annotations(
+    annotations = annotation_service.create_rules_based_annotations(
         tokens=PDFTokenPositionsList(
             token_positions=tokens,
             char_coord_objs_in_pdf=char_coord_objs_in_pdf,
@@ -655,7 +655,7 @@ def test_tokens_gene_vs_protein_serpina1_cases(
             char_coord_objs_in_pdf.append(get_dummy_LTChar(text=c))
         char_coord_objs_in_pdf.append(get_dummy_LTChar(text=' '))
 
-    annotations = annotation_service.create_annotations(
+    annotations = annotation_service.create_rules_based_annotations(
         tokens=PDFTokenPositionsList(
             token_positions=tokens,
             char_coord_objs_in_pdf=char_coord_objs_in_pdf,
@@ -725,7 +725,7 @@ def test_tokens_gene_vs_protein_serpina1_case_all_caps_from_knowledge_graph(
             char_coord_objs_in_pdf.append(get_dummy_LTChar(text=c))
         char_coord_objs_in_pdf.append(get_dummy_LTChar(text=' '))
 
-    annotations = annotation_service.create_annotations(
+    annotations = annotation_service.create_rules_based_annotations(
         tokens=PDFTokenPositionsList(
             token_positions=tokens,
             char_coord_objs_in_pdf=char_coord_objs_in_pdf,
@@ -766,7 +766,7 @@ def test_save_bioc_annotations_to_db(default_lmdb_setup, session):
         tokens = pdf_parser.extract_tokens(parsed_chars=parsed_pdf_chars)
         pdf_text_list = pdf_parser.combine_chars_into_words(parsed_pdf_chars)
         pdf_text = ' '.join([text for text, _ in pdf_text_list])
-        annotations = annotator.create_annotations(tokens=tokens)
+        annotations = annotator.create_rules_based_annotations(tokens=tokens)
 
     bioc = bioc_service.read(
         text=pdf_text,
@@ -852,6 +852,27 @@ def test_save_bioc_annotations_to_db(default_lmdb_setup, session):
                 ),
             ),
         ]),
+        (3, [
+            GeneAnnotation(
+                page_number=1,
+                keyword='CpxR',
+                lo_location_offset=5,
+                hi_location_offset=7,
+                keyword_length=3,
+                text_in_document='CpxR',
+                keywords=[''],
+                rects=[[1, 2]],
+                meta=GeneAnnotation.GeneMeta(
+                    keyword_type=EntityType.Gene.value,
+                    color='',
+                    id='',
+                    id_type='',
+                    id_hyperlink='',
+                    links=Annotation.Meta.Links(),
+                    category=OrganismCategory.Bacteria.value,
+                ),
+            ),
+        ]),
     ],
 )
 def test_fix_false_positive_gene_annotations(annotations_setup, index, annotations):
@@ -869,6 +890,10 @@ def test_fix_false_positive_gene_annotations(annotations_setup, index, annotatio
         # if correct gene synonym is all caps
         # but text in document is not
         # then remove the annotation
+        assert len(fixed) == 0
+    elif index == 3:
+        # bacteria gene should have three lowercase
+        # with one uppercase at the end
         assert len(fixed) == 0
 
 
@@ -1034,7 +1059,7 @@ def test_gene_annotation_uses_id_from_knowledge_graph(
             char_coord_objs_in_pdf.append(get_dummy_LTChar(text=c))
         char_coord_objs_in_pdf.append(get_dummy_LTChar(text=' '))
 
-    annotations = annotation_service.create_annotations(
+    annotations = annotation_service.create_rules_based_annotations(
         tokens=PDFTokenPositionsList(
             token_positions=tokens,
             char_coord_objs_in_pdf=char_coord_objs_in_pdf,
@@ -1092,7 +1117,7 @@ def test_gene_annotation_human_vs_rat(
             char_coord_objs_in_pdf.append(get_dummy_LTChar(text=c))
         char_coord_objs_in_pdf.append(get_dummy_LTChar(text=' '))
 
-    annotations = annotation_service.create_annotations(
+    annotations = annotation_service.create_rules_based_annotations(
         tokens=PDFTokenPositionsList(
             token_positions=tokens,
             char_coord_objs_in_pdf=char_coord_objs_in_pdf,

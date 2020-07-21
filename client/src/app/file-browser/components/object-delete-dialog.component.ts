@@ -5,19 +5,20 @@ import { MessageDialog } from '../../shared/services/message-dialog.service';
 import { PdfFile } from '../../interfaces/pdf-files.interface';
 import { File } from './file-browser.component';
 import { Directory, Map } from '../services/project-space.service';
+import { DirectoryObject } from '../../interfaces/projects.interface';
 
 @Component({
   selector: 'app-dialog-confirm-deletion',
-  templateUrl: './file-delete-dialog.component.html',
+  templateUrl: './object-delete-dialog.component.html',
 })
-export class FileDeleteDialogComponent extends CommonDialogComponent {
-  @Input() files: (File|Map|Directory)[];
+export class ObjectDeleteDialogComponent extends CommonDialogComponent {
+  @Input() objects: DirectoryObject[];
 
   constructor(modal: NgbActiveModal, messageDialog: MessageDialog) {
     super(modal, messageDialog);
   }
 
-  getValue(): (File|Map|Directory)[] {
-    return this.files;
+  getValue(): DirectoryObject[] {
+    return this.objects;
   }
 }

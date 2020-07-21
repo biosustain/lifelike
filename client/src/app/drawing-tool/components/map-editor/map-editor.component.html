@@ -10,6 +10,10 @@
   <div class="position-absolute w-100 h-100 d-flex flex-column" style="z-index: 0">
     <div class="main-toolbar d-flex align-items-center toolbar d-flex">
       <div class="btn-group">
+        <button type="button" class="btn btn-light" ngbTooltip="Go back to the browser"
+                placement="bottom-left" (click)="goToReturnUrl()" *ngIf="returnUrl">
+          <i class="fa fa-fw fa-folder"></i>
+        </button>
         <button type="button" class="btn btn-light"
                 [disabled]="(unsavedChanges$ | async) == null"
                 ngbTooltip="Save" placement="bottom"
