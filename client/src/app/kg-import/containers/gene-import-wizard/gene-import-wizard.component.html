@@ -7,18 +7,30 @@
   </div>
   <div id="gene-import-body">
     <mat-horizontal-stepper linear="true" #stepper>
-      <mat-step state="upload" [completed]="importFileForm.valid">
+      <mat-step state="upload" [completed]="importFileForm.valid && !loadingSheet">
         <ng-template matStepLabel>Choose Import File</ng-template>
         <div class="d-flex justify-content-between mb-2">
           <a routerLink="/kg-import">
             <button class="btn btn-primary">Back</button>
           </a>
-          <button class="btn btn-primary" [disabled]="!(importFileForm.valid)" matStepperNext>Next</button>
+          <button class="btn btn-primary" [disabled]="!importFileForm.valid || loadingSheet" matStepperNext>Next</button>
         </div>
         <app-generic-file-upload
           [accept]="acceptedFileTypes"
           (fileChanged)="onFileChange($event)"
         ></app-generic-file-upload>
+        <div *ngIf="loadingSheet" class="mt-2">
+          <div class="row">
+            <div class="col d-flex justify-content-center text-center">
+              <div class="spinner-border text-primary" role="status">
+                <span class="sr-only">Loading worksheet...</span>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col d-flex justify-content-center text-center">Loading worksheet...</div>
+          </div>
+        </div>
       </mat-step>
 
       <mat-step state="selectSheet" [completed]="sheetForm.valid">
