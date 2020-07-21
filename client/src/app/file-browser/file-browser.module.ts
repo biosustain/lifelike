@@ -2,28 +2,28 @@ import { NgModule } from '@angular/core';
 import { SharedModule } from 'app/shared/shared.module';
 import { FileBrowserComponent } from './components/file-browser.component';
 import { FileEditDialogComponent } from './components/file-edit-dialog.component';
-import { FileDeleteDialogComponent } from './components/file-delete-dialog.component';
-import { FileUploadDialogComponent } from './components/file-upload-dialog.component';
+import { ObjectDeleteDialogComponent } from './components/object-delete-dialog.component';
+import { ObjectUploadDialogComponent } from './components/object-upload-dialog.component';
 import { FileViewComponent } from './components/file-view.component';
 import { PdfViewerLibModule } from '../pdf-viewer/pdf-viewer-lib.module';
-import { ProjectSpaceComponent } from './components/project-space/project-space.component';
+import { ProjectBrowserComponent } from './components/project-browser.component';
 import { ProjectTitleAcronymPipe } from './services/project-title-acronym.pipe';
-import { EditProjectDialogComponent } from './components/edit-project-dialog/edit-project-dialog.component';
-import { CreateProjectDialogComponent } from './components/create-project-dialog/create-project-dialog.component';
-import { AddContentDialogComponent } from './components/add-content-dialog/add-content-dialog.component';
+import { ProjectEditDialogComponent } from './components/project-edit-dialog.component';
+import { ProjectCreateDialogComponent } from './components/project-create-dialog.component';
+import { DirectoryCreateDialogComponent } from './components/directory-create-dialog.component';
 
 @NgModule({
   declarations: [
     FileEditDialogComponent,
-    FileDeleteDialogComponent,
-    FileUploadDialogComponent,
+    ObjectDeleteDialogComponent,
+    ObjectUploadDialogComponent,
     FileBrowserComponent,
     FileViewComponent,
-    ProjectSpaceComponent,
+    ProjectBrowserComponent,
     ProjectTitleAcronymPipe,
-    EditProjectDialogComponent,
-    CreateProjectDialogComponent,
-    AddContentDialogComponent
+    ProjectEditDialogComponent,
+    ProjectCreateDialogComponent,
+    DirectoryCreateDialogComponent,
   ],
   imports: [
     SharedModule,
@@ -31,12 +31,12 @@ import { AddContentDialogComponent } from './components/add-content-dialog/add-c
   ],
   entryComponents: [
     FileEditDialogComponent,
-    FileDeleteDialogComponent,
-    FileUploadDialogComponent,
+    ObjectDeleteDialogComponent,
+    ObjectUploadDialogComponent,
     FileViewComponent,
-    CreateProjectDialogComponent,
-    EditProjectDialogComponent,
-    AddContentDialogComponent
+    ProjectCreateDialogComponent,
+    ProjectEditDialogComponent,
+    DirectoryCreateDialogComponent,
   ],
   exports: [],
 })

@@ -3,22 +3,29 @@ import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { configureTestSuite } from 'ng-bullet';
 
+import { MemoizedSelector, Store } from '@ngrx/store';
+import { MockStore, provideMockStore } from '@ngrx/store/testing';
+
+import { State } from 'app/***ARANGO_USERNAME***-store';
+import { AuthSelectors } from 'app/auth/store';
 import { RootStoreModule } from 'app/***ARANGO_USERNAME***-store';
 import { SharedModule } from 'app/shared/shared.module';
 import { FileBrowserModule } from '../file-browser.module';
 import { MessageDialog } from '../../shared/services/message-dialog.service';
 
-import { FileUploadDialogComponent } from './file-upload-dialog.component';
+import { ObjectUploadDialogComponent } from './object-upload-dialog.component';
 
 describe('FileUploadDialogComponent', () => {
-    let component: FileUploadDialogComponent;
-    let fixture: ComponentFixture<FileUploadDialogComponent>;
+    let component: ObjectUploadDialogComponent;
+    let fixture: ComponentFixture<ObjectUploadDialogComponent>;
+    let mockStore: MockStore<State>;
 
     configureTestSuite(() => {
         TestBed.configureTestingModule({
             providers: [
                 MessageDialog,
                 NgbActiveModal,
+                provideMockStore(),
             ],
             imports: [
                 FileBrowserModule,
@@ -30,9 +37,15 @@ describe('FileUploadDialogComponent', () => {
     });
 
     beforeEach(() => {
-        fixture = TestBed.createComponent(FileUploadDialogComponent);
+        fixture = TestBed.createComponent(ObjectUploadDialogComponent);
         component = fixture.componentInstance;
         fixture.detectChanges();
+
+        mockStore = TestBed.get(Store);
+
+        let userAuthRoleSelector: MemoizedSelector<State, string[]>;
+        userAuthRoleSelector = mockStore.overrideSelector(
+            AuthSelectors.selectRoles, ['admin']);
     });
 
     it('should create', () => {

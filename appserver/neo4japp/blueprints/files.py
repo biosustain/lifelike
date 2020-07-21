@@ -63,14 +63,57 @@ DOWNLOAD_USER_AGENT = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML
 bp = Blueprint('files', __name__, url_prefix='/files')
 
 
-@newbp.route('/<string:project_name>/files', methods=['POST'])
+######################################
+# Shared functions used by blueprints
+######################################
+def annotate(
+    filename: str,
+    pdf_file_object: FileStorage,
+    annotation_method: str = AnnotationMethod.Rules.value,  # default to Rules Based
+) -> dict:
+    lmdb_dao = get_lmdb_dao()
+    pdf_parser = get_annotations_pdf_parser()
+    annotator = get_annotations_service(lmdb_dao=lmdb_dao)
+    bioc_service = get_bioc_document_service()
+    try:
+        parsed_pdf_chars = pdf_parser.parse_pdf(pdf=pdf_file_object)
+    except AnnotationError:
+        raise AnnotationError('Your file could not be imported. Please check if it is a valid PDF.')
+
+    try:
+        tokens = pdf_parser.extract_tokens(parsed_chars=parsed_pdf_chars)
+        pdf_text = pdf_parser.combine_all_chars(parsed_chars=parsed_pdf_chars)
+
+        if annotation_method == AnnotationMethod.Rules.value:
+            annotations = annotator.create_rules_based_annotations(tokens=tokens)
+        elif annotation_method == AnnotationMethod.NLP.value:
+            # NLP
+            annotations = annotator.create_nlp_annotations(
+                text=pdf_text,
+                coordinates=parsed_pdf_chars,
+                page_index=parsed_pdf_chars.min_idx_in_page,
+            )
+        else:
+            raise AnnotationError('Your file could not be annotated and your PDF file was not saved.')  # noqa
+        bioc = bioc_service.read(text=pdf_text, file_uri=filename)
+        return bioc_service.generate_bioc_json(annotations=annotations, bioc=bioc)
+    except AnnotationError:
+        raise AnnotationError('Your file could not be annotated and your PDF file was not saved.')
+
+#################################
+# End shared blueprint functions
+#################################
+
+
+@bp.route('/upload', methods=['POST'])
+@newbp.route('/<string:project_name>/files', methods=['POST'])  # TODO: use this once LL-415 done
 @auth.login_required
 @jsonify_with_class(FileUpload, has_file=True)
 @requires_project_permission(AccessActionType.WRITE)
 def upload_pdf(request, project_name: str):
 
     user = g.current_user
-    filename = secure_filename(request.filename.strip())
+    filename = request.filename.strip()
 
     try:
         directory = Directory.query.get(request.directory_id)
@@ -111,12 +154,8 @@ def upload_pdf(request, project_name: str):
         filename = name[:max(0, max_filename_length - len(extension))] + extension
     file_id = str(uuid.uuid4())
 
-    # Decide which annotation method to use
-    if request.annotation_method == AnnotationMethod.Rules.value:
-        annotations = annotate(filename, pdf)
-        annotations_date = datetime.now(TIMEZONE)
-    else:
-        raise NotImplementedError('NLP annotations not yet implemented')
+    annotations = annotate(filename, pdf, request.annotation_method)
+    annotations_date = datetime.now(TIMEZONE)
 
     try:
         # First look for an existing copy of this file
@@ -276,7 +315,7 @@ def get_pdf(id: str, project_name: str):
                     'description': description,
                 })
             db.session.commit()
-        return ''
+        yield ''
     try:
         entry = db.session.query(
             Files.id,
@@ -461,27 +500,6 @@ def remove_custom_annotation(id, uuid, removeAll, project_name):
     yield jsonify(outcome)
 
 
-def annotate(filename, pdf_file_object) -> dict:
-    lmdb_dao = get_lmdb_dao()
-    pdf_parser = get_annotations_pdf_parser()
-    annotator = get_annotations_service(lmdb_dao=lmdb_dao)
-    bioc_service = get_bioc_document_service()
-    try:
-        parsed_pdf_chars = pdf_parser.parse_pdf(pdf=pdf_file_object)
-    except AnnotationError:
-        raise AnnotationError('Your file could not be imported. Please check if it is a valid PDF.')
-
-    try:
-        tokens = pdf_parser.extract_tokens(parsed_chars=parsed_pdf_chars)
-        pdf_text_list = pdf_parser.combine_chars_into_words(parsed_pdf_chars)
-        pdf_text = ' '.join([text for text, _ in pdf_text_list])
-        annotations = annotator.create_annotations(tokens=tokens)
-        bioc = bioc_service.read(text=pdf_text, file_uri=filename)
-        return bioc_service.generate_bioc_json(annotations=annotations, bioc=bioc)
-    except AnnotationError:
-        raise AnnotationError('Your file could not be annotated and your PDF file was not saved.')
-
-
 class AnnotationOutcome(Enum):
     ANNOTATED = 'Annotated'
     NOT_ANNOTATED = 'Not annotated'
@@ -520,7 +538,7 @@ def reannotate(project_name: str):
             current_app.logger.error('Could not find file')
             outcome[id] = AnnotationOutcome.NOT_FOUND.value
             continue
-        fp = io.BytesIO(file.raw_file)
+        fp = FileStorage(io.BytesIO(file.raw_file), file.filename)
         try:
             annotations = annotate(file.filename, fp)
         except Exception as e:

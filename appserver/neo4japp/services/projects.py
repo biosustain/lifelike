@@ -1,4 +1,5 @@
 from sqlalchemy import and_
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.session import Session
 from neo4japp.exceptions import (
     DirectoryError,
@@ -15,6 +16,8 @@ from neo4japp.models import (
     Project,
 )
 from typing import Sequence, Optional, Union
+
+from neo4japp.services.exceptions import NameUnavailableError
 
 
 class ProjectsService(RDBMSBaseDao):
@@ -43,8 +46,11 @@ class ProjectsService(RDBMSBaseDao):
         return projects
 
     def create_projects(self, user: AppUser, projects: Projects) -> Projects:
-        self.session.add(projects)
-        self.session.flush()
+        try:
+            self.session.add(projects)
+            self.session.flush()
+        except IntegrityError as e:
+            raise NameUnavailableError()
 
         # Create a default directory for every project
         default_dir = Directory(name='/', directory_parent_id=None, projects_id=projects.id)

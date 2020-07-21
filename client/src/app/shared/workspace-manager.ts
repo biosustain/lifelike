@@ -1,9 +1,12 @@
 import {
   ComponentFactory,
   ComponentFactoryResolver,
-  ComponentRef, Injectable, Injector,
+  ComponentRef,
+  Injectable,
+  Injector,
   StaticProvider,
-  Type, ViewContainerRef,
+  Type,
+  ViewContainerRef,
 } from '@angular/core';
 import {
   ActivatedRoute,
@@ -18,6 +21,7 @@ import { BehaviorSubject, Subscription } from 'rxjs';
 import { moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
 import { ModuleAwareComponent, ModuleProperties } from './modules';
 import { TabData, WorkspaceSessionLoader, WorkspaceSessionService } from './services/workspace-session.service';
+import { cloneDeep } from 'lodash';
 
 export interface TabDefaults {
   title: string;
@@ -117,32 +121,28 @@ export class Tab {
   title = 'New Tab';
   fontAwesomeIcon: string = null;
   badge: string = null;
+  loading = false;
   component: Type<any>;
   providers: StaticProvider[] = [];
   container: Container<any>;
 
-  pendingChanges = false;
-  pendingTitle: string;
-  pendingFontAwesomeIcon: string;
-  pendingBadge: string;
+  pendingProperties: ModuleProperties | undefined;
 
   constructor(private readonly injector: Injector,
               private readonly componentFactoryResolver: ComponentFactoryResolver) {
   }
 
   queuePropertyChange(properties: ModuleProperties) {
-    this.pendingChanges = true;
-    this.pendingTitle = properties.title;
-    this.pendingFontAwesomeIcon = properties.fontAwesomeIcon;
-    this.pendingBadge = properties.badge;
+    this.pendingProperties = cloneDeep(properties);
   }
 
   applyPendingChanges() {
-    if (this.pendingChanges) {
-      this.title = this.pendingTitle;
-      this.fontAwesomeIcon = this.pendingFontAwesomeIcon;
-      this.badge = this.pendingBadge;
-      this.pendingChanges = false;
+    if (this.pendingProperties) {
+      this.title = this.pendingProperties.title;
+      this.fontAwesomeIcon = this.pendingProperties.fontAwesomeIcon;
+      this.badge = this.pendingProperties.badge;
+      this.loading = !!this.pendingProperties.loading;
+      this.pendingProperties = null;
     }
   }
 
@@ -391,7 +391,7 @@ export class PaneManager {
    */
   getFirstOrCreate() {
     const it = this.panes.values().next();
-    return !it.done ? it.value : this.create('primary');
+    return !it.done ? it.value : this.create('left');
   }
 
   /**
@@ -444,7 +444,7 @@ export class PaneManager {
 })
 export class WorkspaceManager {
   panes: PaneManager;
-  private workspaceUrl = '/workspaces/local';
+  readonly workspaceUrl = '/workspaces/local';
   focusedPane: Pane | undefined;
   private interceptNextRoute = false;
   panes$ = new BehaviorSubject<Pane[]>([]);
@@ -599,7 +599,7 @@ export class WorkspaceManager {
     return this.router.navigateByUrl(url, extras);
   }
 
-  navigate(commands: any[], extras: NavigationExtras = {skipLocationChange: false}): Promise<boolean> {
+  navigate(commands: any[], extras: NavigationExtras & WorkspaceNavigationExtras = {skipLocationChange: false}): Promise<boolean> {
     return this.navigateByUrl(this.router.createUrlTree(commands, extras), extras);
   }
 
@@ -652,7 +652,7 @@ export class WorkspaceManager {
       }, Promise.resolve());
     } else {
       const leftPane = this.panes.create('left');
-      this.openTabByUrl(leftPane, '/dt/map').then(() => {
+      this.openTabByUrl(leftPane, '/projects').then(() => {
         this.load();
       });
     }
