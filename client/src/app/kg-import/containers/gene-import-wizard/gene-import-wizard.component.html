@@ -54,9 +54,9 @@
           <button
             class="btn btn-primary"
             [disabled]="!geneConfigFormValid"
-            (click)="getNodeMatches()"
+            (click)="importGeneRelationships()"
             matStepperNext
-          >Match Nodes</button>
+          >Import Relationships</button>
         </div>
         <h3>Sheet Slice</h3>
         <app-worksheet-preview
@@ -70,10 +70,23 @@
       </mat-step>
 
       <mat-step [completed]="false" state="review">
-        <ng-template matStepLabel>Review Data Matching</ng-template>
+        <ng-template matStepLabel>Review Data Import</ng-template>
         <div class="d-flex justify-content-between mb-2">
           <button class="btn btn-primary" matStepperPrevious>Back</button>
-          <button class="btn btn-primary">Submit</button>
+          <a routerLink="/kg-import"><button class="btn btn-primary">Done</button></a>
+        </div>
+        <!-- TODO: Some component that lets the user explore the unmatched results -->
+        <div *ngIf="importingRelationships" class="mt-2">
+          <div class="row">
+            <div class="col d-flex justify-content-center text-center">
+              <div class="spinner-border text-primary" role="status">
+                <span class="sr-only">Importing...</span>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col d-flex justify-content-center text-center">Importing...</div>
+          </div>
         </div>
       </mat-step>
     </mat-horizontal-stepper>
