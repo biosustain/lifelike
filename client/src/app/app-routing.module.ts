@@ -115,7 +115,7 @@ const routes: Routes = [
     component: ProjectBrowserComponent,
     canActivate: [AuthGuard],
     data: {
-      title: 'Projects',
+      title: 'Browser',
       fontAwesomeIcon: 'layer-group'
     }
   },
