@@ -40,6 +40,7 @@ export class GeneImportConfigComponent {
     editingRelationship: boolean;
     columns: string[];
     indexToColumn: Map<string, string>;
+    prevColumn2Selection: string;
 
     activeFormGroup: FormGroup;
     relationshipFormGroupArray: FormGroup[];
@@ -76,6 +77,7 @@ export class GeneImportConfigComponent {
         this.relationshipFormGroupArray = [];
         this.activeFormGroup = null;
         this.labelColors = new Map<string, string>();
+        this.prevColumn2Selection = '';
     }
 
     addRelationship() {
@@ -129,11 +131,6 @@ export class GeneImportConfigComponent {
         const speciesSelectionControl = this.activeFormGroup.get('speciesSelection');
         const geneMatchingPropertyControl = this.activeFormGroup.get('geneMatchingProperty');
 
-        speciesSelectionControl.setValue(null);
-        speciesSelectionControl.setValidators([]);
-        geneMatchingPropertyControl.setValue(null);
-        geneMatchingPropertyControl.setValidators([]);
-
         if (this.indexToColumn.get(this.activeFormGroup.get('columnIndex2').value) === 'KG Gene') {
             this.activeFormGroup.get('nodeLabel2').setValue('Gene');
             this.activeFormGroup.get('nodeLabel2').disable();
@@ -142,10 +139,17 @@ export class GeneImportConfigComponent {
             speciesSelectionControl.setValidators([Validators.required]);
             geneMatchingPropertyControl.setValue('');
             geneMatchingPropertyControl.setValidators([Validators.required]);
-        } else {
+        } else if (this.prevColumn2Selection === 'KG Gene') {
             this.activeFormGroup.get('nodeLabel2').setValue('');
             this.activeFormGroup.get('nodeLabel2').enable();
+
+            speciesSelectionControl.setValue(null);
+            speciesSelectionControl.setValidators([]);
+            geneMatchingPropertyControl.setValue(null);
+            geneMatchingPropertyControl.setValidators([]);
         }
+
+        this.prevColumn2Selection = this.indexToColumn.get(this.activeFormGroup.get('columnIndex2').value);
     }
 
     /**
