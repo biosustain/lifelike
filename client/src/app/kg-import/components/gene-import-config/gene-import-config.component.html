@@ -52,6 +52,7 @@
     <div class="row">
       <div class="col-md-4">
         <select class="custom-select" formControlName="columnIndex1">
+          <option value="" disabled selected hidden>Worksheet column</option>
           <option *ngFor="let col of columns.slice(0, columns.length - 1); let i = index" [value]="i">{{ col }}</option>
         </select>
         <small id="column-1-help-block" class="form-text text-muted">
@@ -72,12 +73,13 @@
       </div>
     </div>
     <div *ngFor="let propertyGroup of activeFormGroup.get('nodeProperties1').controls; let i = index" class="row mt-2" [formGroup]="propertyGroup">
-      <div class="col">
+      <div class="col-md-4">
         <select class="custom-select" formControlName="column">
+          <option value="" disabled selected hidden>Worksheet column</option>
           <option *ngFor="let col of columns.slice(0, columns.length - 1); let i = index" [value]="i">{{ col }}</option>
         </select>
       </div>
-      <div class="col">
+      <div class="col-md-6">
         <input class="form-control" type="text" formControlName="propertyName" placeholder="Property name">
       </div>
       <div class="col pl-0">
@@ -91,6 +93,7 @@
     <div class="row">
       <div class="col-md-4">
         <select class="custom-select" formControlName="columnIndex2" (change)="columnSelection2Changed()">
+          <option value="" disabled selected hidden>Worksheet column</option>
           <option *ngFor="let col of columns; let i = index" [value]="i">{{ col }}</option>
         </select>
         <small id="column-2-help-block" class="form-text text-muted">
@@ -115,12 +118,13 @@
       </div>
     </div>
     <div *ngFor="let propertyGroup of activeFormGroup.get('nodeProperties2').controls; let i = index" class="row mt-2" [formGroup]="propertyGroup">
-      <div class="col">
+      <div class="col-md-4">
         <select class="custom-select" formControlName="column">
+          <option value="" disabled selected hidden>Worksheet column</option>
           <option *ngFor="let col of columns.slice(0, columns.length - 1); let i = index" [value]="i">{{ col }}</option>
         </select>
       </div>
-      <div class="col">
+      <div class="col-md-6">
         <input class="form-control" type="text" formControlName="propertyName" placeholder="Property name">
       </div>
       <div class="col pl-0">
@@ -155,6 +159,7 @@
     <div class="form-group">
       <label>To what species do these genes belong?</label>
       <select class="custom-select" formControlName="speciesSelection">
+        <option value="" disabled selected hidden>Species</option>
         <option *ngFor="let keyvalue of organisms | keyvalue" [value]="organisms.get(keyvalue.key)">{{ keyvalue.key }}</option>
       </select>
     </div>
@@ -166,6 +171,7 @@
       <div class="col">
         <!-- TODO LL-1201: Need to get some list of relationship types from the backend -->
         <select *ngIf="activeFormGroup.get('useExistingRel').value; else customRelNameInput" class="custom-select" formControlName="relationshipLabel">
+          <option value="" disabled selected hidden>Relationship name</option>
           <!-- TEMP -->
           <option>MAPPED_TO</option>
           <option>IS_A</option>
@@ -198,6 +204,7 @@
       </div>
       <div class="col">
         <select class="custom-select" formControlName="relationshipDirection">
+          <option value="" disabled selected hidden>Direction</option>
           <option>To</option>
           <option>From</option>
         </select>
@@ -218,12 +225,13 @@
       </div>
     </div>
     <div *ngFor="let propertyGroup of activeFormGroup.get('relationshipProperties').controls; let i = index" class="row mt-2" [formGroup]="propertyGroup">
-      <div class="col">
+      <div class="col-md-4">
         <select class="custom-select" formControlName="column">
+          <option value="" disabled selected hidden>Worksheet column</option>
           <option *ngFor="let col of columns.slice(0, columns.length - 1); let i = index" [value]="i">{{ col }}</option>
         </select>
       </div>
-      <div class="col">
+      <div class="col-md-6">
         <input class="form-control" type="text" formControlName="propertyName" placeholder="Property name">
       </div>
       <div class="col pl-0">
