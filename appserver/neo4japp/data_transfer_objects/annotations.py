@@ -37,6 +37,7 @@ class PDFTokenPositionsList(CamelDictMixin):
     token_positions: List[PDFTokenPositions] = attr.ib()
     char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]] = attr.ib()
     cropbox_in_pdf: Tuple[int, int] = attr.ib()
+    min_idx_in_page: Dict[int, int] = attr.ib()
 
 
 # IMPORTANT NOTE/TODO: JIRA LL-465

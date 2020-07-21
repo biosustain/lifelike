@@ -89,9 +89,9 @@ def annotate(
         elif annotation_method == AnnotationMethod.NLP.value:
             # NLP
             annotations = annotator.create_nlp_annotations(
-                text=pdf_text,
-                coordinates=parsed_pdf_chars,
                 page_index=parsed_pdf_chars.min_idx_in_page,
+                text=pdf_text,
+                tokens=tokens,
             )
         else:
             raise AnnotationError('Your file could not be annotated and your PDF file was not saved.')  # noqa
