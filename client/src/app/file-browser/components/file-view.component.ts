@@ -21,7 +21,7 @@ import { ENTITY_TYPE_MAP, ENTITY_TYPES, EntityType } from 'app/shared/annotation
 import { ActivatedRoute } from '@angular/router';
 import { ModuleAwareComponent, ModuleProperties } from '../../shared/modules';
 import { ConfirmDialogComponent } from '../../shared/components/dialog/confirm-dialog.component';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { NgbDropdown, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ErrorHandler } from '../../shared/services/error-handler.service';
 
 class DummyFile implements PdfFile {
@@ -47,6 +47,7 @@ class EntityTypeEntry {
 })
 
 export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
+  @ViewChild('dropdown', {static: false, read: NgbDropdown}) dropdownComponent: NgbDropdown;
   @Output() requestClose: EventEmitter<any> = new EventEmitter();
   @Output() fileOpen: EventEmitter<PdfFile> = new EventEmitter();
 
@@ -63,7 +64,6 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
   annotationEntityTypeMap: Map<string, Annotation[]> = new Map();
   entityTypeVisibilityMap: Map<string, boolean> = new Map();
   @Output() filterChangeSubject = new Subject<void>();
-  filterPopupOpen = false;
 
   searchChanged: Subject<{ keyword: string, findPrevious: boolean }> = new Subject<{ keyword: string, findPrevious: boolean }>();
   goToPosition: Subject<Location> = new Subject<Location>();
@@ -223,15 +223,8 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
     this.filterChangeSubject.next();
   }
 
-  toggleFilterPopup() {
-    if (!this.ready) {
-      return;
-    }
-    this.filterPopupOpen = !this.filterPopupOpen;
-  }
-
   closeFilterPopup() {
-    this.filterPopupOpen = false;
+    this.dropdownComponent.close();
   }
 
   annotationCreated(annotation: Annotation) {

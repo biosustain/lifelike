@@ -55,7 +55,7 @@
 
       <div>
         <div class="btn-group" role="group">
-          <div ngbDropdown class="d-inline-block">
+          <div ngbDropdown class="d-inline-block" #dropdown>
             <button class="btn btn-light" id="filters-dropdown" ngbDropdownToggle>Filters</button>
             <div ngbDropdownMenu aria-labelledby="filters-dropdown" [style.width]="'220px'"
                  class="dropdown-body dropdown-menu dropdown-menu-right">
@@ -120,6 +120,8 @@
           [filterChanges]="filterChangeSubject"
           [searchChanged]="searchChanged"
           (annotationDragStart)="addAnnotationDragData($event)"
+          (annotation-exclusion-added)="annotationExclusionAdded($event)"
+          (annotation-exclusion-removed)="annotationExclusionRemoved($event)"
           (custom-annotation-created)="annotationCreated($event)"
           (loadCompleted)="loadCompleted($event)"
           (custom-annotation-removed)="annotationRemoved($event)"
