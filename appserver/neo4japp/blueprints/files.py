@@ -495,7 +495,7 @@ def remove_custom_annotation(id, uuid, removeAll, project_name=''):
     outcome: Dict[str, str] = {}  # annotation uuid to deletion outcome
     if annotation_to_remove is None:
         outcome[uuid] = AnnotationRemovalOutcome.NOT_FOUND.value
-        return jsonify(outcome)
+        yield jsonify(outcome)
     text = annotation_to_remove['meta']['allText']
     for annotation in file.custom_annotations:
         if (removeAll and annotation['meta']['allText'] == text or
