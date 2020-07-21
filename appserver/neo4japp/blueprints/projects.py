@@ -271,6 +271,9 @@ def get_child_directories(current_dir_id: int, project_name: str = ''):
     else:
         dir = proj_service.get_***ARANGO_USERNAME***_dir(projects)
 
+    if dir is None:
+        raise RecordNotFoundException("Directory not found")
+
     parents = proj_service.get_absolute_dir_path(projects, dir)
     child_dirs = proj_service.get_immediate_child_dirs(projects, dir)
 
