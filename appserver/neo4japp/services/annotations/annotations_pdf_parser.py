@@ -21,6 +21,7 @@ from neo4japp.exceptions import AnnotationError
 
 from .constants import (
     COMMON_WORDS,
+    LIGATURES,
     MISC_SYMBOLS_AND_CHARS,
     PDF_CHARACTER_SPACING_THRESHOLD,
     PDF_NEW_LINE_THRESHOLD,
@@ -72,20 +73,78 @@ class AnnotationsPDFParser:
                 # usually requires a license or better algorithm from parser
                 if not re.search(compiled_regex, lt_obj_text):
                     ligatures_list: List[LTChar] = []
+                    char_unicode = ord(lt_obj_text)
                     # first check for ligatures, e.g `fi`, `ffi`, etc
-                    if len(lt_obj_text) > 1:
-                        lt_obj._text = lt_obj_text[0]
-                        # copy the remaining into their own LTChar
-                        for c in lt_obj_text[1:]:
+                    # the ligatures are one char, so need to expand them
+                    # essentially creating new chars for each supposed chars
+                    # in the ligature
+                    if char_unicode in LIGATURES:
+                        decoded_str = LIGATURES[char_unicode]
+                        decoded_str_len = len(decoded_str)
+
+                        original_lig_end_x = lt_obj.x1
+
+                        if decoded_str_len == 2:
+                            # for two characters ligatures
+                            lt_obj.set_bbox(
+                                (
+                                    lt_obj.x0,
+                                    lt_obj.y0,
+                                    lt_obj.x0 + lt_obj.width/2 - 0.01,
+                                    lt_obj.y1,
+                                ),
+                            )
+                            lt_obj._text = decoded_str[0]
+
                             lt_obj_cp = deepcopy(lt_obj)
-                            lt_obj_cp._text = c
+                            lt_obj_cp.set_bbox(
+                                (
+                                    lt_obj.x0 + lt_obj.width/2 + 0.01,
+                                    lt_obj.y0,
+                                    original_lig_end_x,
+                                    lt_obj.y1,
+                                ),
+                            )
+                            lt_obj_cp._text = decoded_str[1]
                             ligatures_list.append(lt_obj_cp)
+                        elif decoded_str_len == 3:
+                            # for three characters ligatures
+                            lt_obj.set_bbox(
+                                (
+                                    lt_obj.x0,
+                                    lt_obj.y0,
+                                    lt_obj.x0 + lt_obj.width/3 - 0.01,
+                                    lt_obj.y1,
+                                ),
+                            )
+                            lt_obj._text = decoded_str[0]
+
+                            # See LL-1252 for suggested calculations
+                            for i, c in enumerate(decoded_str[1:]):
+                                lt_obj_cp = deepcopy(lt_obj)
+                                if i == 0:
+                                    prev_end_x = lt_obj.x1
+                                else:
+                                    prev_end_x = ligatures_list[-1].x1
+
+                                if i == decoded_str_len - 1:
+                                    new_end_x = original_lig_end_x
+                                else:
+                                    new_end_x = ligatures_list[-1].x0 + 2 * lt_obj_cp.width/3 - 0.01
+
+                                lt_obj_cp.set_bbox(
+                                    (
+                                        prev_end_x + 0.02,
+                                        lt_obj_cp.y0,
+                                        new_end_x,
+                                        lt_obj_cp.y1,
+                                    ),
+                                )
+                                lt_obj_cp._text = c
+                                ligatures_list.append(lt_obj_cp)
 
                     if char_coord_objs_in_pdf:
-                        if ligatures_list:
-                            prev_char = ligatures_list[-1]
-                        else:
-                            prev_char = char_coord_objs_in_pdf[-1]
+                        prev_char = char_coord_objs_in_pdf[-1]
 
                         if should_add_virtual_space(prev_char, lt_obj):
                             virtual_space_char = LTAnno(' ')
