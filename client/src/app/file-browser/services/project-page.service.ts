@@ -1,14 +1,14 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders, HttpEvent } from '@angular/common/http';
+import { HttpClient, HttpEvent, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { UploadPayload, PdfFileUpload, UploadType } from 'app/interfaces/pdf-files.interface';
+import { PdfFileUpload, UploadPayload, UploadType } from 'app/interfaces/pdf-files.interface';
 import { isNullOrUndefined } from 'util';
 import { option } from 'vis-util';
 import { DirectoryContent } from '../../interfaces/projects.interface';
 
 @Injectable({
-  providedIn: '***ARANGO_USERNAME***'
+  providedIn: '***ARANGO_USERNAME***',
 })
 export class ProjectPageService {
   readonly projectsAPI = '/api/projects';
@@ -17,7 +17,8 @@ export class ProjectPageService {
   readonly filenameMaxLength = 200;
   readonly descriptionMaxLength = 2048;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) {
+  }
 
   /**
    * Create http options with authorization
@@ -33,9 +34,9 @@ export class ProjectPageService {
       };
     } else {
       return {
-          headers: new HttpHeaders({
+        headers: new HttpHeaders({
           'Content-Type': 'application/json',
-          }),
+        }),
       };
     }
   }
@@ -45,13 +46,13 @@ export class ProjectPageService {
    * @param projectName - name of project
    */
   projectRootDir(
-    projectName
+    projectName,
   ): Observable<any> {
     return this.http.get<DirectoryContent>(
       `${this.projectsAPI}/${projectName}/directories`,
-      this.createHttpOptions(true)
+      this.createHttpOptions(true),
     ).pipe(
-      map((resp: any) => resp.result)
+      map((resp: any) => resp.result),
     );
   }
 
@@ -62,16 +63,16 @@ export class ProjectPageService {
    */
   getProjectDir(
     projectName,
-    directoryId = null
+    directoryId = null,
   ): Observable<DirectoryContent> {
     if (isNullOrUndefined(directoryId)) {
       return this.projectRootDir(projectName);
     } else {
       return this.http.get<any>(
         `${this.projectsAPI}/${projectName}/directories/${directoryId}`,
-        this.createHttpOptions(true)
+        this.createHttpOptions(true),
       ).pipe(
-        map(resp => resp.result)
+        map(resp => resp.result),
       );
     }
   }
@@ -82,16 +83,16 @@ export class ProjectPageService {
     projectName,
     directoryId,
     label,
-    description
+    description,
   ): Observable<any> {
     return this.http.post<any>(
       `${this.projectsAPI}/${projectName}/map`,
       {
         label,
         description,
-        directoryId
+        directoryId,
       },
-      this.createHttpOptions(true)
+      this.createHttpOptions(true),
     );
   }
 
@@ -104,14 +105,14 @@ export class ProjectPageService {
   addDir(
     projectName,
     parentDir = null,
-    dirname
+    dirname,
   ): Observable<any> {
     return this.http.post<any>(
       `${this.projectsAPI}/${projectName}/directories`,
-      { dirname, parentDir },
-      this.createHttpOptions(true)
+      {dirname, parentDir},
+      this.createHttpOptions(true),
     ).pipe(
-      map(resp => resp.results)
+      map(resp => resp.results),
     );
   }
 
@@ -124,7 +125,7 @@ export class ProjectPageService {
   addPdf(
     projectName,
     parentDir,
-    data: UploadPayload
+    data: UploadPayload,
   ): Observable<HttpEvent<PdfFileUpload>> {
     const formData: FormData = new FormData();
 
@@ -153,7 +154,18 @@ export class ProjectPageService {
         ...options,
         observe: 'events',
         reportProgress: true,
-      }
+      },
+    );
+  }
+
+  updateFile(projectName: string, id: string, filename: string, description: string = ''): Observable<string> {
+    const formData: FormData = new FormData();
+    formData.append('filename', filename.substring(0, this.filenameMaxLength));
+    formData.append('description', description.substring(0, this.descriptionMaxLength));
+    return this.http.patch<string>(
+      `${this.projectsAPI}/${encodeURIComponent(projectName)}/files/${encodeURIComponent(id)}`,
+      formData,
+      this.createHttpOptions(true),
     );
   }
 
@@ -164,16 +176,17 @@ export class ProjectPageService {
    */
   deleteMap(
     projectName,
-    hashId
+    hashId,
   ): Observable<any> {
     return this.http.delete(
       `${this.projectsAPI}/${projectName}/map/${hashId}`,
-      this.createHttpOptions(true)
+      this.createHttpOptions(true),
     );
   }
+
   deletePDF(
     projectName,
-    fileId
+    fileId,
   ): Observable<any> {
     const options = this.createHttpOptions(true);
 
@@ -182,10 +195,12 @@ export class ProjectPageService {
       `${this.projectsAPI}/${projectName}/files`,
       {
         body: [fileId],
-        ...option
+        ...option,
       });
   }
 
   // TODO - no delete dir endpoint exist rignt now
-  deleteDirectory(): Observable<any> { return null; }
+  deleteDirectory(): Observable<any> {
+    return null;
+  }
 }
