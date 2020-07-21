@@ -1,5 +1,5 @@
 import { Component, EventEmitter, OnDestroy, Output, ViewChild } from '@angular/core';
-import { combineLatest, Subject, Subscription, throwError, Observable } from 'rxjs';
+import { combineLatest, Subject, Subscription } from 'rxjs';
 import { PdfFilesService } from 'app/shared/services/pdf-files.service';
 import { Hyperlink, SearchLink } from 'app/shared/constants';
 
@@ -7,9 +7,9 @@ import { PdfAnnotationsService } from '../../drawing-tool/services';
 
 import {
   Annotation,
+  AnnotationExclusionData,
   Location,
   Meta,
-  AnnotationExclusionData,
   UniversalGraphNode,
 } from '../../drawing-tool/services/interfaces';
 
@@ -22,10 +22,7 @@ import { ActivatedRoute } from '@angular/router';
 import { ModuleAwareComponent, ModuleProperties } from '../../shared/modules';
 import { ConfirmDialogComponent } from '../../shared/components/dialog/confirm-dialog.component';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { catchError } from 'rxjs/operators';
 import { ErrorHandler } from '../../shared/services/error-handler.service';
-import { HttpErrorResponse } from '@angular/common/http';
-import { UserError } from 'app/shared/exceptions';
 
 class DummyFile implements PdfFile {
   constructor(
@@ -52,6 +49,9 @@ class EntityTypeEntry {
 export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
   @Output() requestClose: EventEmitter<any> = new EventEmitter();
   @Output() fileOpen: EventEmitter<PdfFile> = new EventEmitter();
+
+  paramsSubscription: Subscription;
+  returnUrl: string;
 
   annotations: Annotation[] = [];
   // We don't want to modify the above array when we add annotations, because
@@ -110,6 +110,10 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
         this.pdf.getFile(file.file_id, projectName),
         this.pdfAnnService.getFileAnnotations(file.file_id, projectName),
       ).pipe(errorHandler.create());
+    });
+
+    this.paramsSubscription = this.route.queryParams.subscribe(params => {
+      this.returnUrl = params.return;
     });
 
     // Listener for file open
@@ -401,6 +405,9 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
   }
 
   ngOnDestroy() {
+    if (this.paramsSubscription) {
+      this.paramsSubscription.unsubscribe();
+    }
     if (this.openPdfSub) {
       this.openPdfSub.unsubscribe();
     }

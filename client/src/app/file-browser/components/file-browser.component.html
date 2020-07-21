@@ -166,7 +166,7 @@
                 <i *ngSwitchCase="'map'" class="fa fa-fw fa-project-diagram text-muted"></i>
               </span>
 
-              <a [appLink]="getObjectCommands(object)" [newTab]="object.type !== 'dir'">
+              <a [appLink]="getObjectCommands(object)" [queryParams]="getObjectQueryParams()" [newTab]="object.type !== 'dir'">
                 {{ object.name }}
               </a>
             </label>

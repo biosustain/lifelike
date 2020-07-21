@@ -35,7 +35,6 @@ export class MapEditorComponent extends MapViewComponent<Project> implements OnI
   ngOnInit() {
     this.autoSaveSubscription = this.unsavedChanges$.pipe(auditTime(this.autoSaveDelay)).subscribe(changed => {
       if (changed) {
-        console.log('harmony');
         this.saveBackup();
       }
     });
@@ -48,7 +47,7 @@ export class MapEditorComponent extends MapViewComponent<Project> implements OnI
 
   getExtraSource(): Observable<Project> {
     return from([this.mapHashId]).pipe(switchMap(id => {
-      return this.projectService.downloadProject(id).pipe(catchError(error => {
+      return this.projectService.downloadProjectBackup(id).pipe(catchError(error => {
         if (error instanceof HttpErrorResponse) {
           const res = error as HttpErrorResponse;
           if (res.status === 404) {
