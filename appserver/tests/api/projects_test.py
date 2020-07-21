@@ -223,3 +223,40 @@ def test_can_delete_directory(client, session, fix_project, fix_directory, test_
     )
 
     assert response.status_code == 200
+
+
+def test_can_move_directory(client, session, fix_project, fix_directory, test_user):
+    login_resp = client.login_as_user(test_user.email, 'password')
+    headers = generate_headers(login_resp['access_jwt'])
+
+    nested_dir = Directory(
+        name='child-1',
+        directory_parent_id=fix_directory.id,
+        projects_id=fix_project.id,
+    )
+    session.add(nested_dir)
+    session.flush()
+
+    nested_dir_2 = Directory(
+        name='child-2',
+        directory_parent_id=nested_dir.id,
+        projects_id=fix_project.id,
+    )
+
+    session.add(nested_dir_2)
+    session.flush()
+
+    response = client.post(
+        f'/projects/{fix_project.project_name}/directories/move',
+        data=json.dumps(dict(
+            asset_id=nested_dir_2.id,
+            dest_dir_id=fix_directory.id,
+            asset_type='dir'
+        )),
+        headers=headers,
+        content_type='application/json',
+    )
+
+    assert response.status_code == 200
+    result = response.get_json()['result']
+    assert result['dest']['id'] == fix_directory.id
