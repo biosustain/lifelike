@@ -422,17 +422,21 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
     }
     if (an.meta.isCustom) {
       base.push(`
-        <div class="mt1" style="display: flex; align-items: center; cursor: pointer" onclick="removeCustomAnnotation('${an.uuid}')">
-          <span class="mr1 material-icons">delete</span>
-          <span>Delete annotation</span>
+        <div class="mt-1">
+          <button type="button" class="btn btn-primary btn-block" onclick="removeCustomAnnotation('${an.meta.id}')">
+            <i class="fas fa-fw fa-trash"></i>
+            <span>Delete Annotation</span>
+          </button>
         </div>
       `);
     }
     if (!an.meta.isCustom && !an.meta.isExcluded) {
       base.push(`
-        <div class="mt1" style="display: flex; align-items: center; cursor: pointer" onclick="openExclusionPanel('${an.meta.id}')">
-          <span class="mr1 material-icons">highlight_off</span>
-          <span>Mark for exclusion</span>
+        <div class="mt-1">
+          <button type="button" class="btn btn-primary btn-block" onclick="openExclusionPanel('${an.meta.id}')">
+            <i class="fas fa-fw fa-minus-circle"></i>
+            <span>Mark for Exclusion</span>
+          </button>
         </div>
       `)
     }
@@ -444,9 +448,11 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
             <span style="line-height: 16px">Manually excluded</span>
             <span style="line-height: 16px"><i>reason: </i>${an.meta.exclusionReason}</span>
             ${an.meta.exclusionComment ? `<span style="line-height: 16px"><i>comment: </i>${an.meta.exclusionComment}</span>` : ''}
-            <div class="mt1" style="display: flex; align-items: center; cursor: pointer" onclick="removeAnnotationExclusion('${an.meta.id}')">
-              <span class="mr1 material-icons">undo</span>
-              <span>Unmark exclusion</span>
+            <div class="mt-1">
+              <button type="button" class="btn btn-primary btn-block" onclick="removeAnnotationExclusion('${an.meta.id}')">
+                <i class="fas fa-fw fa-undo"></i>
+                <span>Unmark Exclusion</span>
+              </button>
             </div>
           </div>
         </div>`);
