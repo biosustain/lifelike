@@ -54,7 +54,7 @@ export class ObjectUploadDialogComponent extends CommonFormDialogComponent {
   activeTab = UploadType.Files;
 
   private static extractFilename(s: string): string {
-    s = s.replace(/^.*[/\\]/, '').trim().replace(/ +/g, '_');
+    s = s.replace(/^.*[/\\]/, '').trim();
     if (s.length) {
       return s;
     } else {
