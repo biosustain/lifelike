@@ -10,10 +10,10 @@
         class="btn btn-outline-primary w-100"
         disabled>
         <app-node-relationship
-          [leftNodeName]="indexToColumn.get(relationshipGroup.get('columnSelection1').value)"
+          [leftNodeName]="indexToColumn.get(relationshipGroup.get('columnIndex1').value)"
           [leftNodeLabel]="relationshipGroup.get('nodeLabel1').value"
           [leftNodeColor]="labelColors.get(relationshipGroup.get('nodeLabel1').value)"
-          [rightNodeName]="indexToColumn.get(relationshipGroup.get('columnSelection2').value)"
+          [rightNodeName]="indexToColumn.get(relationshipGroup.get('columnIndex2').value)"
           [rightNodeLabel]="relationshipGroup.get('nodeLabel2').value"
           [rightNodeColor]="labelColors.get(relationshipGroup.get('nodeLabel2').value)"
           [edge]="relationshipGroup.get('relationshipLabel').value"
@@ -22,10 +22,10 @@
       <ng-template #fromRelationship>
         <button class="btn btn-outline-primary w-100" disabled>
           <app-node-relationship
-          [leftNodeName]="indexToColumn.get(relationshipGroup.get('columnSelection2').value)"
+          [leftNodeName]="indexToColumn.get(relationshipGroup.get('columnIndex2').value)"
             [leftNodeLabel]="relationshipGroup.get('nodeLabel2').value"
             [leftNodeColor]="labelColors.get(relationshipGroup.get('nodeLabel2').value)"
-            [rightNodeName]="indexToColumn.get(relationshipGroup.get('columnSelection1').value)"
+            [rightNodeName]="indexToColumn.get(relationshipGroup.get('columnIndex1').value)"
             [rightNodeLabel]="relationshipGroup.get('nodeLabel1').value"
             [rightNodeColor]="labelColors.get(relationshipGroup.get('nodeLabel1').value)"
             [edge]="relationshipGroup.get('relationshipLabel').value"
@@ -51,7 +51,7 @@
     <label>Please choose a column to represent one side of the new relationship:</label>
     <div class="row">
       <div class="col-md-4">
-        <select class="custom-select" formControlName="columnSelection1">
+        <select class="custom-select" formControlName="columnIndex1">
           <option *ngFor="let col of columns.slice(0, columns.length - 1); let i = index" [value]="i">{{ col }}</option>
         </select>
         <small id="column-1-help-block" class="form-text text-muted">
@@ -63,13 +63,34 @@
         <input type="text" class="form-control" formControlName="nodeLabel1" placeholder="Node label">
       </div>
     </div>
+
+    <div class="row">
+      <div class="col">
+        <button class="btn btn-primary btn-sm mt-2"
+          (click)="addProperty('nodeProperties1')"
+        >Add Node Property<i class="fa fa-plus ml-1"></i></button>
+      </div>
+    </div>
+    <div *ngFor="let propertyGroup of activeFormGroup.get('nodeProperties1').controls; let i = index" class="row mt-2" [formGroup]="propertyGroup">
+      <div class="col">
+        <select class="custom-select" formControlName="column">
+          <option *ngFor="let col of columns.slice(0, columns.length - 1); let i = index" [value]="i">{{ col }}</option>
+        </select>
+      </div>
+      <div class="col">
+        <input class="form-control" type="text" formControlName="propertyName" placeholder="Property name">
+      </div>
+      <div class="col pl-0">
+        <button class="btn btn-danger" (click)="removeProperty(i, 'nodeProperties1')"><i class="fa fa-trash-o"></i></button>
+      </div>
+    </div>
   </div>
 
   <div class="form-group">
     <label>Please choose another column to represent the second side of the new relationship:</label>
     <div class="row">
       <div class="col-md-4">
-        <select class="custom-select" formControlName="columnSelection2" (change)="columnSelection2Changed()">
+        <select class="custom-select" formControlName="columnIndex2" (change)="columnSelection2Changed()">
           <option *ngFor="let col of columns; let i = index" [value]="i">{{ col }}</option>
         </select>
         <small id="column-2-help-block" class="form-text text-muted">
@@ -85,16 +106,37 @@
           placeholder="Node label">
       </div>
     </div>
+
+    <div *ngIf="indexToColumn.get(activeFormGroup.get('columnIndex2').value) !== 'KG Gene'" class="row">
+      <div class="col">
+        <button class="btn btn-primary btn-sm mt-2"
+          (click)="addProperty('nodeProperties2')"
+        >Add Node Property<i class="fa fa-plus ml-1"></i></button>
+      </div>
+    </div>
+    <div *ngFor="let propertyGroup of activeFormGroup.get('nodeProperties2').controls; let i = index" class="row mt-2" [formGroup]="propertyGroup">
+      <div class="col">
+        <select class="custom-select" formControlName="column">
+          <option *ngFor="let col of columns.slice(0, columns.length - 1); let i = index" [value]="i">{{ col }}</option>
+        </select>
+      </div>
+      <div class="col">
+        <input class="form-control" type="text" formControlName="propertyName" placeholder="Property name">
+      </div>
+      <div class="col pl-0">
+        <button class="btn btn-danger" (click)="removeProperty(i, 'nodeProperties2')"><i class="fa fa-trash-o"></i></button>
+      </div>
+    </div>
   </div>
 
-  <div *ngIf="indexToColumn.get(activeFormGroup.get('columnSelection2').value) === 'KG Gene'">
+  <div *ngIf="indexToColumn.get(activeFormGroup.get('columnIndex2').value) === 'KG Gene'">
     <div class="form-group">
       <label>Does your first chosen column represent gene name, or ID?</label>
       <div class="custom-control custom-radio">
         <input
           type="radio"
           id="gene-match-selection-radio-id"
-          value="ID"
+          [value]="geneMatchingPropertyEnum.ID"
           formControlName="geneMatchingProperty"
           class="custom-control-input">
         <label class="custom-control-label" for="gene-match-selection-radio-id">ID</label>
@@ -103,7 +145,7 @@
         <input
           type="radio"
           id="gene-match-selection-radio-name"
-          value="Name"
+          [value]="geneMatchingPropertyEnum.NAME"
           formControlName="geneMatchingProperty"
           class="custom-control-input">
         <label class="custom-control-label" for="gene-match-selection-radio-name">Name</label>
@@ -171,8 +213,8 @@
     <div class="row">
       <div class="col">
         <button class="btn btn-primary btn-sm"
-          (click)="addRelationshipProperty()"
-        >Add New Property<i class="fa fa-plus ml-1"></i></button>
+          (click)="addProperty('relationshipProperties')"
+        >Add Relationship Property<i class="fa fa-plus ml-1"></i></button>
       </div>
     </div>
     <div *ngFor="let propertyGroup of activeFormGroup.get('relationshipProperties').controls; let i = index" class="row mt-2" [formGroup]="propertyGroup">
@@ -185,7 +227,7 @@
         <input class="form-control" type="text" formControlName="propertyName" placeholder="Property name">
       </div>
       <div class="col pl-0">
-        <button class="btn btn-danger" (click)="removeRelationshipProperty(i)"><i class="fa fa-trash-o"></i></button>
+        <button class="btn btn-danger" (click)="removeProperty(i, 'relationshipProperties')"><i class="fa fa-trash-o"></i></button>
       </div>
     </div>
   </div>
