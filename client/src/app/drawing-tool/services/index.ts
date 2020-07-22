@@ -1,6 +1,6 @@
 import {
-  ProjectsService,
-} from './projects.service';
+  MapService,
+} from './map.service';
 import {
   PdfAnnotationsService,
 } from './pdf-annotations.service';
@@ -37,7 +37,7 @@ function makeid(length = 3) {
 }
 
 export {
-  ProjectsService,
+  MapService,
   PdfAnnotationsService,
   uuidv4,
   makeid,

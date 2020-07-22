@@ -1,6 +1,5 @@
 import { NgModule } from '@angular/core';
 
-import { MapBrowserComponent } from './components/map-browser.component';
 import { MapCreateDialogComponent } from './components/map-create-dialog.component';
 import { MapDeleteDialogComponent } from './components/map-delete-dialog.component';
 import { MapCloneDialogComponent } from './components/map-clone-dialog.component';
@@ -13,7 +12,6 @@ import { PaletteComponent } from './components/map-editor/palette.component';
 import { InfoPanelComponent } from './components/map-editor/info-panel.component';
 import { MapExportDialogComponent } from './components/map-export-dialog.component';
 import { MapViewComponent } from './components/map-view.component';
-import { MapListComponent } from './components/map-list.component';
 import { SharedModule } from 'app/shared/shared.module';
 import { RouterModule } from '@angular/router';
 import { FileBrowserModule } from '../file-browser/file-browser.module';
@@ -25,7 +23,6 @@ import { MapRestoreDialogComponent } from './components/map-restore-dialog.compo
 
 @NgModule({
   declarations: [
-    MapBrowserComponent,
     MapCreateDialogComponent,
     MapDeleteDialogComponent,
     MapCloneDialogComponent,
@@ -34,7 +31,6 @@ import { MapRestoreDialogComponent } from './components/map-restore-dialog.compo
     PaletteComponent,
     InfoPanelComponent,
     MapViewComponent,
-    MapListComponent,
     MapExportDialogComponent,
     NodeFormComponent,
     EdgeFormComponent,
@@ -47,8 +43,6 @@ import { MapRestoreDialogComponent } from './components/map-restore-dialog.compo
     MapCloneDialogComponent,
     MapUploadDialogComponent,
     MapEditDialogComponent,
-    MapListComponent,
-    MapBrowserComponent,
     MapExportDialogComponent,
     ConfirmDialogComponent,
     MapRestoreDialogComponent,
