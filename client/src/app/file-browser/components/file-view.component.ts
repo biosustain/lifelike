@@ -88,6 +88,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
   showExcludedAnnotations = false;
   removeAnnotationExclusionSub: Subscription;
   removedAnnotationExclusionId: string;
+  projectName: string;
 
   // search
   pdfQuery;
@@ -102,13 +103,13 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
     private route: ActivatedRoute,
     private readonly errorHandler: ErrorHandler,
   ) {
-    this.loadTask = new BackgroundTask(([file, loc]) => {
-      const projectName = this.route.snapshot.params.project_name || '';
+    this.projectName = this.route.snapshot.params.project_name || '';
 
+    this.loadTask = new BackgroundTask(([file, loc]) => {
       return combineLatest(
-        this.pdf.getFileInfo(file.file_id, projectName),
-        this.pdf.getFile(file.file_id, projectName),
-        this.pdfAnnService.getFileAnnotations(file.file_id, projectName),
+        this.pdf.getFileInfo(file.file_id, this.projectName),
+        this.pdf.getFile(file.file_id, this.projectName),
+        this.pdfAnnService.getFileAnnotations(file.file_id, this.projectName),
       ).pipe(errorHandler.create());
     });
 
@@ -308,7 +309,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
   }
 
   annotationExclusionAdded({id, reason, comment}) {
-    this.addAnnotationExclusionSub = this.pdfAnnService.addAnnotationExclusion(this.currentFileId, id, reason, comment)
+    this.addAnnotationExclusionSub = this.pdfAnnService.addAnnotationExclusion(this.currentFileId, id, reason, comment, this.projectName)
       .pipe(this.errorHandler.create())
       .subscribe(
         response => {
@@ -322,7 +323,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
   }
 
   annotationExclusionRemoved(id) {
-    this.removeAnnotationExclusionSub = this.pdfAnnService.removeAnnotationExclusion(this.currentFileId, id)
+    this.removeAnnotationExclusionSub = this.pdfAnnService.removeAnnotationExclusion(this.currentFileId, id, this.projectName)
       .pipe(this.errorHandler.create())
       .subscribe(
         response => {
