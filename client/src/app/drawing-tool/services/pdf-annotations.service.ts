@@ -98,12 +98,12 @@ export class PdfAnnotationsService {
    * @param reason reason for an exclusion
    * @param comment additional comment
    */
-  addAnnotationExclusion(fileId: string, id: string, reason: string, comment: string): Observable<any> {
+  addAnnotationExclusion(fileId: string, id: string, reason: string, comment: string, projectName: string): Observable<any> {
     return this.http.patch(
-      this.baseUrl + `/add_annotation_exclusion/${fileId}`,
+      `/api/projects/${projectName}/files/${fileId}/annotations/add_annotation_exclusion`,
       { id, reason, comment },
-      this.createHttpOptions(true)
-    );
+      this.createHttpOptions(true),
+    )
   }
 
   /**
@@ -111,9 +111,9 @@ export class PdfAnnotationsService {
    * @param fileId id of the file that contains the annotation
    * @param id id of the annotation
    */
-  removeAnnotationExclusion(fileId: string, id: string): Observable<any> {
+  removeAnnotationExclusion(fileId: string, id: string, projectName: string): Observable<any> {
     return this.http.patch(
-      this.baseUrl + `/remove_annotation_exclusion/${fileId}`,
+      `/api/projects/${projectName}/files/${fileId}/annotations/remove_annotation_exclusion`,
       { id },
       this.createHttpOptions(true)
     );
