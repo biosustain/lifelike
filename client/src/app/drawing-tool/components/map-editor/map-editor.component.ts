@@ -112,6 +112,7 @@ export class MapEditorComponent extends MapViewComponent<Project> implements OnI
   }
 
   drop(event: DragEvent) {
+    event.preventDefault();
     const data = event.dataTransfer.getData('application/***ARANGO_DB_NAME***-node');
     const node = JSON.parse(data) as UniversalGraphNode;
     const hoverPosition = this.graphCanvas.hoverPosition;
