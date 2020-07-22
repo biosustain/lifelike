@@ -19,7 +19,7 @@ import { DirectoryCreateDialogComponent } from './directory-create-dialog.compon
 import { DirectoryContent, DirectoryObject } from '../../interfaces/projects.interface';
 import { CollectionModal } from '../../shared/utils/collection-modal';
 import { MapEditDialogComponent } from '../../drawing-tool/components/map-edit-dialog.component';
-import { ProjectsService } from '../../drawing-tool/services';
+import { MapService } from '../../drawing-tool/services';
 import { cloneDeep } from 'lodash';
 import { WorkspaceManager } from '../../shared/workspace-manager';
 import { MapCreateDialogComponent } from '../../drawing-tool/components/map-create-dialog.component';
@@ -76,7 +76,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
               private readonly projectSpaceService: ProjectSpaceService,
               private readonly projectPageService: ProjectPageService,
               private readonly workspaceManager: WorkspaceManager,
-              private readonly projectService: ProjectsService,
+              private readonly projectService: MapService,
               private readonly ngbModal: NgbModal,
               private readonly messageDialog: MessageDialog) {
   }
@@ -209,7 +209,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
         .pipe(this.errorHandler.create())
         .subscribe((result) => {
           this.refresh();
-          this.workspaceManager.navigate(['/maps', result.project.hash_id, 'edit'], {
+          this.workspaceManager.navigate(['/projects', this.locator.projectName, 'maps', result.project.hash_id, 'edit'], {
             newTab: true,
           });
         });
@@ -246,7 +246,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
       const dialogRef = this.modalService.open(MapEditDialogComponent);
       dialogRef.componentInstance.map = cloneDeep(object.data);
       dialogRef.result.then(newMap => {
-        this.projectService.updateProject(newMap)
+        this.projectService.update(this.locator.projectName, newMap)
           .pipe(this.errorHandler.create())
           .subscribe(() => {
             this.refresh();
@@ -415,7 +415,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
         return ['/projects', this.locator.projectName, 'files', file.fileId];
       case 'map':
         const map = object.data as Map;
-        return ['/maps', map.hashId, 'edit'];
+        return ['/projects', this.locator.projectName, 'maps', map.hashId, 'edit'];
       default:
         throw new Error(`unknown directory object type: ${object.type}`);
     }

@@ -13,9 +13,6 @@ class DirectoryRenameRequest(CamelDictMixin):
 @attr.s(frozen=True)
 class DirectoryContent(CamelDictMixin):
     """ Contains contents of a directory """
-    child_directories: Sequence[Dict] = attr.ib()
-    files: Sequence[Dict] = attr.ib()
-    maps: Sequence[Dict] = attr.ib()
     dir: Dict = attr.ib()
     path: Sequence[Dict] = attr.ib()
     objects: Sequence[Dict] = attr.ib()
