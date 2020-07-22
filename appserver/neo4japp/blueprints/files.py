@@ -115,11 +115,8 @@ def upload_pdf(request, project_name: str):
     user = g.current_user
     filename = request.filename.strip()
 
-    # TODO: Deprecate and make mandatory (no default) this once LL-415 is implemented
-    dir_id = request.directory_id if request.directory_id is not None else 1
-
     try:
-        directory = Directory.query.get(dir_id)
+        directory = Directory.query.get(request.directory_id)
         projects = Projects.query.get(directory.projects_id)
     except NoResultFound as err:
         raise RecordNotFoundException(f'No record found: {err}')
@@ -186,7 +183,7 @@ def upload_pdf(request, project_name: str):
         user_id=user.id,
         annotations=annotations,
         project=projects.id,
-        dir_id=dir_id,
+        dir_id=directory.id,
         annotations_date=annotations_date,
         doi=doi,
         upload_url=upload_url,
@@ -208,21 +205,15 @@ def upload_pdf(request, project_name: str):
     )
 
 
-@bp.route('/list', methods=['GET'])
-@newbp.route('/<string:project_name>/files', methods=['GET'])  # TODO: use this once LL-415 done
+@newbp.route('/<string:project_name>/files', methods=['GET'])
 @auth.login_required
 @requires_project_permission(AccessActionType.READ)
-def list_files(project_name: str = ''):
-    """TODO: See JIRA LL-322"""
-    # TODO: remove hard coded project
+def list_files(project_name: str):
 
-    # LL-415 - remove default once GUI deprecates old API
-    projects = Projects.query.filter(Projects.project_name == 'beta-project').one()
+    projects = Projects.query.filter(Projects.project_name == project_name).one_or_none()
+    if projects is None:
+        raise RecordNotFoundException(f'Project {project_name} not found')
     projects_id = projects.id
-
-    if project_name:
-        projects = Projects.query.filter(Projects.project_name == project_name).one()
-        projects_id = projects.id
 
     user = g.current_user
 
@@ -252,35 +243,35 @@ def list_files(project_name: str = ''):
     yield jsonify({'files': files})
 
 
-@bp.route('/<id>/info', methods=['GET'])
 @newbp.route('/<string:project_name>/files/<string:id>/info', methods=['GET', 'PATCH'])
 @auth.login_required
 @requires_project_permission(AccessActionType.READ)
-def get_file_info(id: str, project_name: str = ''):
+def get_file_info(id: str, project_name: str):
 
     user = g.current_user
 
-    # LL-415 - remove default once GUI deprecates old API
-    projects = Projects.query.filter(Projects.project_name == 'beta-project').one()
-
-    if project_name:
-        projects = Projects.query.filter(Projects.project_name == project_name).one()
+    projects = Projects.query.filter(Projects.project_name == project_name).one_or_none()
+    if projects is None:
+        raise RecordNotFoundException(f'Project {project_name} not found')
 
     yield user, projects
 
     try:
-        row = db.session \
-            .query(Files.id,
-                   Files.file_id,
-                   Files.filename,
-                   Files.description,
-                   Files.user_id,
-                   AppUser.username,
-                   Files.creation_date
-                   ) \
-            .join(AppUser, Files.user_id == AppUser.id) \
-            .filter(Files.file_id == id, Files.project == projects.id) \
-            .one()
+        row = db.session.query(
+                Files.id,
+                Files.file_id,
+                Files.filename,
+                Files.description,
+                Files.user_id,
+                AppUser.username,
+                Files.creation_date
+            ).join(
+                AppUser,
+                Files.user_id == AppUser.id
+            ).filter(
+                Files.file_id == id,
+                Files.project == projects.id
+            ).one()
     except NoResultFound:
         raise RecordNotFoundException('Requested PDF file not found.')
 
@@ -294,19 +285,16 @@ def get_file_info(id: str, project_name: str = ''):
     })
 
 
-@bp.route('/<id>', methods=['GET', 'PATCH'])
-@newbp.route('/<string:project_name>/files/<string:id>', methods=['GET', 'PATCH'])  # TODO: LL-415
+@newbp.route('/<string:project_name>/files/<string:id>', methods=['GET', 'PATCH'])
 @auth.login_required
 @requires_project_permission(AccessActionType.READ)
-def get_pdf(id: str, project_name: str = ''):
+def get_pdf(id: str, project_name: str):
 
     user = g.current_user
 
-    # LL-415 - remove default once GUI deprecates old API
-    projects = Projects.query.filter(Projects.project_name == 'beta-project').one()
-
-    if project_name:
-        projects = Projects.query.filter(Projects.project_name == project_name).one()
+    projects = Projects.query.filter(Projects.project_name == project_name).one_or_none()
+    if projects is None:
+        raise RecordNotFoundException(f'Project {project_name} not found')
 
     yield user, projects
 
@@ -329,11 +317,16 @@ def get_pdf(id: str, project_name: str = ''):
             db.session.commit()
         yield ''
     try:
-        entry = db.session \
-            .query(Files.id, FileContent.raw_file) \
-            .join(FileContent, FileContent.id == Files.content_id) \
-            .filter(Files.file_id == id, Files.project == projects.id) \
-            .one()
+        entry = db.session.query(
+            Files.id,
+            FileContent.raw_file
+        ).join(
+            FileContent,
+            FileContent.id == Files.content_id
+        ).filter(
+            Files.file_id == id,
+            Files.project == projects.id
+        ).one()
     except NoResultFound:
         raise RecordNotFoundException('Requested PDF file not found.')
     res = make_response(entry.raw_file)
@@ -341,7 +334,7 @@ def get_pdf(id: str, project_name: str = ''):
 
     yield res
 
-
+# TODO: Convert this? Where is this getting used
 @bp.route('/bioc', methods=['GET'])
 def transform_to_bioc():
     TEMPLATE_PATH = os.path.abspath(os.getcwd()) + '/templates/bioc.json'
@@ -374,18 +367,14 @@ def map_annotations_to_correct_format(unformatted_annotations: dict):
     return formatted_annotations_list
 
 
-@bp.route('/get_annotations/<id>', methods=['GET'])
-# TODO: LL-415 - use this API URL
 @newbp.route('/<string:project_name>/files/<string:id>/annotations', methods=['GET'])
 @auth.login_required
 @requires_project_permission(AccessActionType.READ)
-def get_annotations(id: str, project_name: str = ''):
+def get_annotations(id: str, project_name: str):
 
-    # LL-415 - remove default once GUI deprecates old API
-    projects = Projects.query.filter(Projects.project_name == 'beta-project').one()
-
-    if project_name:
-        projects = Projects.query.filter(Projects.project_name == project_name).one()
+    projects = Projects.query.filter(Projects.project_name == project_name).one_or_none()
+    if projects is None:
+        raise RecordNotFoundException(f'Project {project_name} not found')
 
     user = g.current_user
 
@@ -426,20 +415,16 @@ def get_annotations(id: str, project_name: str = ''):
     yield jsonify(annotations + file.custom_annotations)
 
 
-@bp.route('/add_custom_annotation/<id>', methods=['PATCH'])
-# TODO: LL-415 - use this API URL
 @newbp.route('/<string:project_name>/files/<string:id>/annotations/add', methods=['PATCH'])
 @use_kwargs(AnnotationAdditionSchema(exclude=('uuid', 'user_id')))
 @marshal_with(AnnotationAdditionSchema(only=('uuid',)), code=200)
 @auth.login_required
 @requires_project_permission(AccessActionType.WRITE)
-def add_custom_annotation(id, project_name='', **payload):
+def add_custom_annotation(id, project_name, **payload):
 
-    # LL-415 - remove default once GUI deprecates old API
-    projects = Projects.query.filter(Projects.project_name == 'beta-project').one()
-
-    if project_name:
-        projects = Projects.query.filter(Projects.project_name == project_name).one()
+    projects = Projects.query.filter(Projects.project_name == project_name).one_or_none()
+    if projects is None:
+        raise RecordNotFoundException(f'Project {project_name} not found')
 
     user = g.current_user
 
@@ -450,7 +435,10 @@ def add_custom_annotation(id, project_name='', **payload):
         'user_id': g.current_user.id,
         'uuid': str(uuid.uuid4())
     }
-    file = Files.query.filter_by(file_id=id).one_or_none()
+    file = Files.query.filter_by(
+        file_id=id,
+        project=projects.id,
+    ).one_or_none()
     if file is None:
         raise RecordNotFoundException('File does not exist')
     file.custom_annotations = [annotation_to_add, *file.custom_annotations]
@@ -465,25 +453,24 @@ class AnnotationRemovalOutcome(Enum):
     NOT_FOUND = 'Not found'
 
 
-@bp.route('/remove_custom_annotation/<id>', methods=['PATCH'])
-# TODO: LL-415 - use this API URL
 @newbp.route('/<string:project_name>/files/<string:id>/annotations/remove', methods=['PATCH'])
 @auth.login_required
 @use_kwargs(AnnotationRemovalSchema)
 @requires_project_permission(AccessActionType.WRITE)
-def remove_custom_annotation(id, uuid, removeAll, project_name=''):
+def remove_custom_annotation(id, uuid, removeAll, project_name):
 
-    # LL-415 - remove default once GUI deprecates old API
-    projects = Projects.query.filter(Projects.project_name == 'beta-project').one()
-
-    if project_name:
-        projects = Projects.query.filter(Projects.project_name == project_name).one()
+    projects = Projects.query.filter(Projects.project_name == project_name).one_or_none()
+    if projects is None:
+        raise RecordNotFoundException(f'Project {project_name} not found')
 
     user = g.current_user
 
     yield user, projects
 
-    file = Files.query.filter_by(file_id=id).one_or_none()
+    file = Files.query.filter_by(
+        file_id=id,
+        project=projects.id,
+    ).one_or_none()
     if file is None:
         raise RecordNotFoundException('File does not exist')
     user = g.current_user
@@ -519,31 +506,34 @@ class AnnotationOutcome(Enum):
     NOT_FOUND = 'Not found'
 
 
-@bp.route('/reannotate', methods=['POST'])
-# TODO: LL-415 - use this API URL
 @newbp.route('/<string:project_name>/files/reannotate', methods=['POST'])
 @auth.login_required
 @requires_project_permission(AccessActionType.WRITE)
-def reannotate(project_name: str = ''):
+def reannotate(project_name: str):
 
     user = g.current_user
 
-    # LL-415 - remove default once GUI deprecates old API
-    projects = Projects.query.filter(Projects.project_name == 'beta-project').one()
-
-    if project_name:
-        projects = Projects.query.filter(Projects.project_name == project_name).one()
+    projects = Projects.query.filter(Projects.project_name == project_name).one_or_none()
+    if projects is None:
+        raise RecordNotFoundException(f'Project {project_name} not found')
 
     yield user, projects
 
     ids = request.get_json()
     outcome: Dict[str, str] = {}  # file id to annotation outcome
     for id in ids:
-        file = db.session \
-            .query(Files.id, Files.filename, Files.annotations, FileContent.raw_file) \
-            .join(FileContent, FileContent.id == Files.content_id) \
-            .filter(Files.file_id == id) \
-            .one_or_none()
+        file = db.session.query(
+            Files.id,
+            Files.filename,
+            Files.annotations,
+            FileContent.raw_file
+        ).join(
+            FileContent,
+            FileContent.id == Files.content_id
+        ).filter(
+            Files.file_id == id,
+            project=projects.id,
+        ).one_or_none()
         if file is None:
             current_app.logger.error('Could not find file')
             outcome[id] = AnnotationOutcome.NOT_FOUND.value
@@ -572,18 +562,15 @@ class DeletionOutcome(Enum):
     NOT_FOUND = 'Not found'
 
 
-@bp.route('/bulk_delete', methods=['DELETE'])
-# TODO: LL-415 - use this API URL
 @newbp.route('/<string:project_name>/files', methods=['DELETE'])
 @auth.login_required
 @requires_project_permission(AccessActionType.WRITE)
-def delete_files(project_name: str = ''):
+def delete_files(project_name: str):
     curr_user = g.current_user
-    # LL-415 - remove default once GUI deprecates old API
-    projects = Projects.query.filter(Projects.project_name == 'beta-project').one()
 
-    if project_name:
-        projects = Projects.query.filter(Projects.project_name == project_name).one()
+    projects = Projects.query.filter(Projects.project_name == project_name).one_or_none()
+    if projects is None:
+        raise RecordNotFoundException(f'Project {project_name} not found')
 
     yield curr_user, projects
 
@@ -591,7 +578,10 @@ def delete_files(project_name: str = ''):
     ids = request.get_json()
     outcome: Dict[str, str] = {}  # file id to deletion outcome
     for id in ids:
-        file = Files.query.filter_by(file_id=id).one_or_none()
+        file = Files.query.filter_by(
+            file_id=id,
+            project=projects.id,
+        ).one_or_none()
         if file is None:
             current_app.logger.error('Could not find file')
             outcome[id] = DeletionOutcome.NOT_FOUND.value
@@ -639,28 +629,62 @@ def search_doi(content: bytes) -> Optional[str]:
     return doi if doi.startswith('http') else f'https://doi.org/{doi}'
 
 
-@bp.route('/add_annotation_exclusion/<file_id>', methods=['PATCH'])
+@newbp.route(
+    '/<string:project_name>/files/<string:file_id>/annotations/add_annotation_exclusion',
+    methods=['PATCH'])
 @auth.login_required
 @use_kwargs(AnnotationExclusionSchema)
-def add_annotation_exclusion(file_id, **payload):
+@requires_project_permission(AccessActionType.WRITE)
+def add_annotation_exclusion(project_name: str, file_id: str, **payload):
+
+    projects = Projects.query.filter(Projects.project_name == project_name).one_or_none()
+    if projects is None:
+        raise RecordNotFoundException(f'Project {project_name} not found')
+
+    user = g.current_user
+
+    yield user, projects
+
     excluded_annotation = {
         **payload,
         'user_id': g.current_user.id,
         'exclusion_date': str(datetime.now(TIMEZONE))
     }
-    file = Files.query.filter_by(file_id=file_id).one_or_none()
+
+    file = Files.query.filter_by(
+        file_id=file_id,
+        project=projects.id,
+    ).one_or_none()
+
     if file is None:
         raise RecordNotFoundException('File does not exist')
     file.excluded_annotations = [excluded_annotation, *file.excluded_annotations]
     db.session.commit()
-    return jsonify({'status': 'success'})
+
+    yield jsonify({'status': 'success'})
 
 
-@bp.route('/remove_annotation_exclusion/<file_id>', methods=['PATCH'])
+@newbp.route(
+    '/<string:project_name>/files/<string:file_id>/annotations/remove_annotation_exclusion',
+    methods=['PATCH'])
 @auth.login_required
 @use_kwargs(AnnotationExclusionSchema(only=('id',)))
-def remove_annotation_exclusion(file_id, id):
-    file = Files.query.filter_by(file_id=file_id).one_or_none()
+@requires_project_permission(AccessActionType.WRITE)
+def remove_annotation_exclusion(project_name, file_id, id):
+
+    user = g.current_user
+
+    projects = Projects.query.filter(Projects.project_name == project_name).one_or_none()
+    if projects is None:
+        raise RecordNotFoundException(f'Project {project_name} not found')
+
+    yield user, projects
+
+    file = Files.query.filter_by(
+        file_id=file_id,
+        project=projects.id,
+    ).one_or_none()
+
     if file is None:
         raise RecordNotFoundException('File does not exist')
     excluded_annotation = next(
@@ -668,7 +692,6 @@ def remove_annotation_exclusion(file_id, id):
     )
     if excluded_annotation is None:
         raise RecordNotFoundException('Annotation not found')
-    user = g.current_user
     user_roles = [role.name for role in user.roles]
     if excluded_annotation['user_id'] != user.id and 'admin' not in user_roles:
         raise NotAuthorizedException('Another user has excluded this annotation')
@@ -676,7 +699,7 @@ def remove_annotation_exclusion(file_id, id):
     file.excluded_annotations.remove(excluded_annotation)
     db.session.merge(file)
     db.session.commit()
-    return jsonify({'status': 'success'})
+    yield jsonify({'status': 'success'})
 
 
 @bp.route('/lmdbs_dates', methods=['GET'])

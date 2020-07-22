@@ -1,7 +1,10 @@
 from sqlalchemy import and_
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.session import Session
-from neo4japp.exceptions import DuplicateRecord
+from neo4japp.exceptions import (
+    DirectoryError,
+    DuplicateRecord,
+)
 from neo4japp.services.common import RDBMSBaseDao
 from neo4japp.models import (
     AppUser,
@@ -12,7 +15,7 @@ from neo4japp.models import (
     Files,
     Project,
 )
-from typing import Sequence, Optional
+from typing import Sequence, Optional, Union
 
 from neo4japp.services.exceptions import NameUnavailableError
 
@@ -140,11 +143,53 @@ class ProjectsService(RDBMSBaseDao):
         self.session.commit()
         return new_dir
 
-    def delete_directory(self):
-        # TODO: Should we 'soft' delete or 'hard delete?'
-        # This is so users don't lose ALL of their data
-        # How will the cascade work?
-        raise NotImplementedError()
+    def delete_directory(self, dir: Directory):
+        # Check if directory is empty before allowing deletes
+        files = self.session.query(Files.query.filter(Files.dir_id == dir.id).exists()).scalar()
+        maps = self.session.query(Project.query.filter(Project.dir_id == dir.id).exists()).scalar()
+        nested_dirs = self.session.query(
+            Directory.query.filter(Directory.directory_parent_id == dir.id).exists()).scalar()
+        if any([files, maps, nested_dirs]):
+            raise DirectoryError('Cannot delete non-empty directory')
+        elif dir.directory_parent_id is None:
+            raise DirectoryError('Cannot delete root directory')
+        self.session.delete(dir)
+        self.session.commit()
+
+    def rename_directory(self, new_name: str, dir: Directory) -> Directory:
+        setattr(dir, 'name', new_name)
+        self.session.add(dir)
+        self.session.commit()
+        return dir
+
+    def move_directory(self, origin_dir: Directory, dest: Directory) -> Directory:
+        """ Moves directory within the same project """
+        if origin_dir.projects_id != dest.projects_id:
+            raise DirectoryError('Cannot move directory into a different project')
+        setattr(origin_dir, 'directory_parent_id', dest.id)
+        self.session.add(origin_dir)
+        self.session.commit()
+        return dest
+
+    def move_pdf(self, pdf: Files, dest: Directory) -> Directory:
+        """ Moves pdf within the same project """
+        curr_file_dir = Directory.query.get(pdf.dir_id)
+        if curr_file_dir.projects_id != dest.projects_id:
+            raise DirectoryError('Cannot move pdf into a different project')
+        setattr(pdf, 'dir_id', dest.id)
+        self.session.add(curr_file_dir)
+        self.session.commit()
+        return dest
+
+    def move_map(self, drawing_map: Project, dest: Directory) -> Directory:
+        """ Moves map within the same project """
+        curr_map_dir = Directory.query.get(drawing_map.dir_id)
+        if curr_map_dir.projects_id != dest.projects_id:
+            raise DirectoryError('Cannot move map into a different project')
+        setattr(drawing_map, 'dir_id', dest.id)
+        self.session.add(curr_map_dir)
+        self.session.commit()
+        return dest
 
     def get_all_child_dirs(self, projects: Projects, current_dir: Directory) -> Sequence[Directory]:
         """ Gets all of the children and the parent, starting from the specified directory

@@ -1,10 +1,14 @@
 import pytest
 import os
+import json
+from datetime import date
 from pathlib import Path
 from sqlalchemy import and_
 from typing import Sequence
 
+from neo4japp.exceptions import DirectoryError
 from neo4japp.models.files import Directory
+from neo4japp.models.drawing_tool import Project
 from neo4japp.models.projects import (
     Projects,
     projects_collaborator_role,
@@ -164,3 +168,103 @@ def test_owner_gets_default_admin_permission(session, test_user):
     ).one_or_none()
 
     assert user_role.name == 'project-admin'
+
+
+@pytest.mark.parametrize('original_name, new_name', [
+    ('purple_rain', 'blue_rain'),
+    ('c o u n t r y', 'b l u e s!'),
+    ('king', ' king ')
+])
+def test_can_rename_directory(session, fix_projects, fix_directory, original_name, new_name):
+    proj_service = ProjectsService(session)
+    new_dir = proj_service.add_directory(
+        projects=fix_projects,
+        dir_name=original_name,
+    )
+
+    current_dir = session.query(Directory).filter(
+        Directory.name == new_dir.name
+    ).one_or_none()
+
+    assert current_dir is not None
+
+    proj_service.rename_directory(new_name, current_dir)
+
+    old_dir_name = session.query(Directory).filter(
+        Directory.name == original_name
+    ).one_or_none()
+
+    assert old_dir_name is None
+
+    renamed_dir = session.query(Directory).filter(
+        Directory.name == new_name
+    ).one_or_none()
+
+    assert renamed_dir is not None
+    assert renamed_dir.name == new_name
+
+
+def test_can_delete_directory(session, fix_projects, fix_directory):
+    proj_service = ProjectsService(session)
+    new_dir = proj_service.add_directory(
+        projects=fix_projects,
+        dir_name='nested',
+    )
+    proj_service.delete_directory(new_dir)
+    assert Directory.query.filter(Directory.id == new_dir.id).one_or_none() is None
+
+
+def test_cannot_delete_root_dir(session, fix_projects, fix_directory):
+    proj_service = ProjectsService(session)
+    with pytest.raises(DirectoryError):
+        proj_service.delete_directory(fix_directory)
+
+
+def test_cannot_delete_nonempty_dir(session, fix_owner, fix_nested_dir):
+    project = Project(
+        id=808,
+        label='&heartbreaks',
+        description='beforecr8zy',
+        author='yeezy',
+        date_modified=str(date.today()),
+        graph=json.dumps({}),
+        user_id=fix_owner.id,
+        dir_id=fix_nested_dir.id,
+    )
+    session.add(project)
+    session.flush()
+    proj_service = ProjectsService(session)
+
+    with pytest.raises(DirectoryError):
+        proj_service.delete_directory(fix_nested_dir)
+
+    session.delete(project)
+    session.flush()
+
+    proj_service.delete_directory(fix_nested_dir)
+    assert Directory.query.filter(Directory.id == fix_nested_dir.id).one_or_none() is None
+
+
+def test_can_move_directory(session, fix_directory, fix_nested_dir):
+    proj_service = ProjectsService(session)
+    child_dir_2 = Directory(
+        name='child-level-2',
+        directory_parent_id=fix_nested_dir.id,
+        projects_id=fix_nested_dir.projects_id,
+    )
+    session.add(child_dir_2)
+    session.flush()
+
+    assert child_dir_2.directory_parent_id == fix_nested_dir.id
+    proj_service.move_directory(child_dir_2, fix_directory)
+    assert Directory.query.get(child_dir_2.id).directory_parent_id == fix_directory.id
+
+
+def test_can_move_map(session, fix_project, fix_directory, fix_nested_dir):
+    proj_service = ProjectsService(session)
+
+    assert fix_project.dir_id == fix_directory.id
+
+    proj_service.move_map(fix_project, fix_nested_dir)
+
+    assert fix_project.dir_id == fix_nested_dir.id
