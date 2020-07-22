@@ -119,9 +119,6 @@ class AnnotationsPDFParser:
                             )
                             lt_obj._text = decoded_str[0]
 
-                            # doing this as a loop in case we
-                            # look at ligatures with longer length
-                            # in the future
                             for i, c in enumerate(decoded_str[1:]):
                                 lt_obj_cp = deepcopy(lt_obj)
                                 if i == 0:
