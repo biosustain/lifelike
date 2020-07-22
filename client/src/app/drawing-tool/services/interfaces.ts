@@ -131,9 +131,9 @@ export interface LaunchApp {
 }
 
 /**
- * Project schema definition
+ * Map schema definition
  */
-export interface Project {
+export interface Map {
   id?: string | number;
   author?: string;
   label: string;

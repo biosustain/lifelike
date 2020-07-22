@@ -263,6 +263,8 @@ def update_project(hash_id: str, projects_name: str):
     project.date_modified = datetime.now()
     project.public = data.get("public", False)
 
+
+
     # Commit to db
     db.session.add(project)
     db.session.commit()
@@ -467,20 +469,33 @@ def find_maps():
         return {'projects': []}, 200
 
 
-@bp.route('/projects/<string:project_id>/<string:format>', methods=['get'])
+@newbp.route('/<string:projects_name>/map/<string:hash_id>/<string:format>', methods=['GET'])
 @auth.login_required
-def get_project_image(project_id, format):
+@requires_project_permission(AccessActionType.READ)
+def get_project_image(projects_name: str, hash_id: str, format: str):
     # TODO: LL-415, what do we do with this now that we have projects?
     """ Gets a image file from the project drawing """
     user = g.current_user
 
-    # Pull up project by id
-    data_source = Project.query.filter_by(
-        id=project_id,
-        user_id=user.id
-    ).first_or_404()
+    projects = Projects.query.filter(Projects.project_name == projects_name).one_or_none()
+    if projects is None:
+        raise RecordNotFoundException(f'Project {projects_name} not found')
 
-    return process(data_source, format)
+    yield user, projects
+
+    try:
+        project = Project.query.filter(
+            Project.hash_id == hash_id,
+            ).join(
+            Directory,
+            Directory.id == Project.dir_id,
+            ).filter(
+            Directory.projects_id == projects.id,
+            ).one()
+    except NoResultFound:
+        raise RecordNotFoundException('not found :-( ')
+
+    yield process(project, format)
 
 
 @bp.route('/map/<string:hash_id>/backup', methods=['GET'])

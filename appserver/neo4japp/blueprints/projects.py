@@ -241,31 +241,6 @@ def remove_collaborator(username: str, project_name: str):
     yield jsonify(dict(result='success')), 200
 
 
-@bp.route('/<string:project_name>/directories', methods=['GET'])
-@auth.login_required
-@requires_project_permission(AccessActionType.READ)
-def get_top_level_directories(project_name: str):
-    proj_service = get_projects_service()
-    projects = Projects.query.filter(
-        Projects.project_name == project_name
-    ).one_or_none()
-
-    if projects is None:
-        raise RecordNotFoundException(f'No such projects: {project_name}')
-
-    user = g.current_user
-
-    yield user, projects
-    root_dir = proj_service.get_root_dir(projects)
-    child_dirs = proj_service.get_immediate_child_dirs(projects, root_dir)
-    contents = DirectoryContent(
-        child_directories=[c.to_dict() for c in child_dirs],
-        files=[f.to_dict() for f in root_dir.files],
-        maps=[m.to_dict() for m in root_dir.project],
-    )
-    yield jsonify(dict(result=contents.to_dict()))
-
-
 @bp.route('/<string:project_name>/directories', methods=['POST'])
 @auth.login_required
 @requires_project_permission(AccessActionType.WRITE)
@@ -410,6 +385,7 @@ def delete_directory(current_dir_id: int, project_name: str):
     yield jsonify(result='successful deleted', status_code=200)
 
 
+@bp.route('/<string:project_name>/directories', methods=['GET'], defaults={'current_dir_id': None})
 @bp.route('/<string:project_name>/directories/<int:current_dir_id>', methods=['GET'])
 @auth.login_required
 @requires_project_permission(AccessActionType.READ)

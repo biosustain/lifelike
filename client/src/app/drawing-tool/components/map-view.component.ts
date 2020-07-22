@@ -2,8 +2,8 @@ import { AfterViewInit, Component, EventEmitter, Input, NgZone, OnDestroy, Outpu
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { BehaviorSubject, combineLatest, Observable, Subscription } from 'rxjs';
-import { ProjectsService } from '../services';
-import { Project } from '../services/interfaces';
+import { MapService } from '../services';
+import { Map } from '../services/interfaces';
 
 import { MapExportDialogComponent } from './map-export-dialog.component';
 import { KnowledgeMapStyle } from 'app/graph-viewer/styles/knowledge-map-style';
@@ -36,16 +36,17 @@ export class MapViewComponent<ExtraResult = void> implements OnDestroy, AfterVie
 
   @ViewChild('canvas', {static: true}) canvasChild;
 
-  currentMapHashId: string | undefined;
-  currentMap: Project | undefined;
-  pendingInitialize = false;
-  infoPinned = true;
-
-  loadTask: BackgroundTask<string, [Project, ExtraResult]>;
+  loadTask: BackgroundTask<MapLocator, [Map, ExtraResult]>;
   loadSubscription: Subscription;
   paramsSubscription: Subscription;
+  queryParamsSubscription: Subscription;
 
+  locator: MapLocator | undefined;
   returnUrl: string;
+
+  _map: Map | undefined;
+  pendingInitialize = false;
+  infoPinned = true;
 
   graphCanvas: CanvasGraphView;
 
@@ -55,7 +56,7 @@ export class MapViewComponent<ExtraResult = void> implements OnDestroy, AfterVie
   unsavedChanges$ = new BehaviorSubject<boolean>(false);
 
   constructor(
-    readonly projectService: ProjectsService,
+    readonly projectService: MapService,
     readonly snackBar: MatSnackBar,
     readonly modalService: NgbModal,
     readonly messageDialog: MessageDialog,
@@ -65,11 +66,11 @@ export class MapViewComponent<ExtraResult = void> implements OnDestroy, AfterVie
     readonly errorHandler: ErrorHandler,
     readonly workspaceManager: WorkspaceManager,
   ) {
-    this.loadTask = new BackgroundTask((hashId) => {
+    this.loadTask = new BackgroundTask((locator) => {
       return combineLatest([
-        this.projectService.serveProject(hashId).pipe(
+        this.projectService.get(locator.projectName, locator.hashId).pipe(
           // tslint:disable-next-line: no-string-literal
-          map(resp => resp['project'] as Project),
+          map(resp => resp['project'] as Map),
           // TODO: This line is from the existing code and should be properly typed
         ),
         this.getExtraSource(),
@@ -83,13 +84,18 @@ export class MapViewComponent<ExtraResult = void> implements OnDestroy, AfterVie
       this.handleExtra(extra);
     });
 
-    this.paramsSubscription = this.route.queryParams.subscribe(params => {
+    this.queryParamsSubscription = this.route.queryParams.subscribe(params => {
       this.returnUrl = params.return;
     });
 
-    if (this.route.snapshot.params.hash_id) {
-      this.mapHashId = this.route.snapshot.params.hash_id;
-    }
+    this.paramsSubscription = this.route.params.subscribe(params => {
+      this.locator = {
+        projectName: params.project_name,
+        hashId: params.hash_id,
+      };
+
+      this.loadTask.update(this.locator);
+    });
   }
 
   getExtraSource(): Observable<ExtraResult> {
@@ -131,24 +137,13 @@ export class MapViewComponent<ExtraResult = void> implements OnDestroy, AfterVie
   }
 
   @Input()
-  set mapHashId(value: string | undefined) {
-    this.currentMapHashId = value;
-    this.currentMap = null;
-    this.load(value);
-  }
-
-  get mapHashId() {
-    return this.currentMapHashId;
-  }
-
-  @Input()
-  set map(value: Project | undefined) {
-    this.currentMap = value;
+  set map(value: Map | undefined) {
+    this._map = value;
     this.initializeMap();
   }
 
   get map() {
-    return this.currentMap;
+    return this._map;
   }
 
   private initializeMap() {
@@ -171,7 +166,7 @@ export class MapViewComponent<ExtraResult = void> implements OnDestroy, AfterVie
   }
 
   ngOnDestroy() {
-    this.paramsSubscription.unsubscribe();
+    this.queryParamsSubscription.unsubscribe();
     this.historyChangesSubscription.unsubscribe();
     this.unsavedChangesSubscription.unsubscribe();
     this.graphCanvas.destroy();
@@ -193,10 +188,6 @@ export class MapViewComponent<ExtraResult = void> implements OnDestroy, AfterVie
   // States
   // ========================================
 
-  private load(hashId: string): void {
-    this.loadTask.update(hashId);
-  }
-
   /**
    * Save the current representation of knowledge model
    */
@@ -205,13 +196,15 @@ export class MapViewComponent<ExtraResult = void> implements OnDestroy, AfterVie
     this.map.date_modified = new Date().toISOString();
 
     // Push to backend to save
-    this.projectService.updateProject(this.map).subscribe(() => {
-      this.unsavedChanges$.next(false);
-      this.emitModuleProperties();
-      this.snackBar.open('Map saved.', null, {
-        duration: 2000,
+    this.projectService.update(this.locator.projectName, this.map)
+      .pipe(this.errorHandler.create())
+      .subscribe(() => {
+        this.unsavedChanges$.next(false);
+        this.emitModuleProperties();
+        this.snackBar.open('Map saved.', null, {
+          duration: 2000,
+        });
       });
-    });
   }
 
   // ========================================
@@ -304,7 +297,7 @@ export class MapViewComponent<ExtraResult = void> implements OnDestroy, AfterVie
    */
   downloadPDF() {
     this.requestDownload(
-      () => this.projectService.getPDF(this.map),
+      () => this.projectService.generatePDF(this.locator.projectName, this.locator.hashId),
       'application/pdf',
       '.pdf',
     );
@@ -315,7 +308,7 @@ export class MapViewComponent<ExtraResult = void> implements OnDestroy, AfterVie
    */
   downloadSVG() {
     this.requestDownload(
-      () => this.projectService.getSVG(this.map),
+      () => this.projectService.generateSVG(this.locator.projectName, this.locator.hashId),
       'application/svg',
       '.svg',
     );
@@ -326,7 +319,7 @@ export class MapViewComponent<ExtraResult = void> implements OnDestroy, AfterVie
    */
   downloadPNG() {
     this.requestDownload(
-      () => this.projectService.getPNG(this.map),
+      () => this.projectService.generatePNG(this.locator.projectName, this.locator.hashId),
       'application/png',
       '.png',
     );
@@ -357,4 +350,9 @@ export class MapViewComponent<ExtraResult = void> implements OnDestroy, AfterVie
       this.workspaceManager.navigateByUrl(this.returnUrl);
     }
   }
+}
+
+export interface MapLocator {
+  projectName: string;
+  hashId: string;
 }
