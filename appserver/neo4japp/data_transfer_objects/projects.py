@@ -10,6 +10,7 @@ class DirectoryRenameRequest(CamelDictMixin):
     """ Directory update request """
     name: str = attr.ib()
 
+
 @attr.s(frozen=True)
 class DirectoryContent(CamelDictMixin):
     """ Contains contents of a directory """
