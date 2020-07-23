@@ -442,7 +442,7 @@ def get_child_directories(current_dir_id: int, project_name: str):
                     'name': username
                 },
                 'description': f.description,
-                'data': CasePreservedDict(f.to_dict()),
+                'data': CasePreservedDict(f.to_dict(keyfn=lambda x: x)),
             } for (f, username) in files],
             *[{
                 'type': 'map',
