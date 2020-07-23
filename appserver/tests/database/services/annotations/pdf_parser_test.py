@@ -1,7 +1,13 @@
 import pytest
 
+from os import path
+
 from neo4japp.database import get_annotations_pdf_parser
 from neo4japp.data_transfer_objects import PDFParsedCharacters
+
+
+# reference to this directory
+directory = path.realpath(path.dirname(__file__))
 
 
 @pytest.mark.skip
@@ -180,3 +186,16 @@ def test_combine_char_into_word(annotations_setup, index, chars):
             ('saying…', {5: 's', 6: 'a', 7: 'y', 8: 'i', 9: 'n', 10: 'g', 11: '…'}),
         ]
         assert combined == words
+
+
+def test_expand_ligatures(annotations_setup):
+    pdf_parser = get_annotations_pdf_parser()
+    pdf = path.join(directory, 'pdf_samples/ligatures.pdf')
+    parsed_pdf_chars = []
+
+    with open(pdf, 'rb') as f:
+        parsed_pdf_chars = pdf_parser.parse_pdf(pdf=f)
+
+    # every character should have a LT object
+    # ligatures should be expanded
+    assert len(parsed_pdf_chars.char_coord_objs_in_pdf) == 59
