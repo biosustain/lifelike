@@ -38,6 +38,10 @@ interface PathLocator {
   directoryId?: string;
 }
 
+interface AnnotatedDirectoryObject extends DirectoryObject {
+  annotationsTooltipContent?: string;
+}
+
 @Component({
   selector: 'app-file-browser',
   templateUrl: './file-browser.component.html',
@@ -51,9 +55,9 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
   locator: PathLocator;
   directory: Directory;
   path: Directory[];
-  readonly results = new CollectionModal<DirectoryObject>([], {
+  readonly results = new CollectionModal<AnnotatedDirectoryObject>([], {
     multipleSelection: true,
-    sort: (a: DirectoryObject, b: DirectoryObject) => {
+    sort: (a: AnnotatedDirectoryObject, b: AnnotatedDirectoryObject) => {
       if (a.type === 'dir' && b.type !== 'dir') {
         return -1;
       } else if (a.type !== 'dir' && b.type === 'dir') {
@@ -84,7 +88,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.filesService.getLMDBsDates().subscribe(lmdbsDates => {
       this.lmdbsDates = lmdbsDates;
-      // this.updateAnnotationsStatus(this.results.items);
+      this.updateAnnotationsStatus(this.results.items);
     });
 
     this.loadTask = new BackgroundTask(
@@ -132,19 +136,19 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
     this.loadTask.update(this.locator);
   }
 
-  private updateAnnotationsStatus(objects: readonly DirectoryObject[]) {
-    objects.forEach((object: DirectoryObject) => {
+  private updateAnnotationsStatus(objects: readonly AnnotatedDirectoryObject[]) {
+    objects.forEach((object: AnnotatedDirectoryObject) => {
       if (object.type === 'file') {
-        const file = object.data as File; // TODO: does this work?
-        file.annotations_date_tooltip = this.generateTooltipContent(file);
+        const file = object.data as File;
+        object.annotationsTooltipContent = this.generateTooltipContent(file);
       }
     });
   }
 
-  private generateTooltipContent(file: File): string {
+  private generateTooltipContent(file): string {
     const outdated = Array
       .from(Object.entries(this.lmdbsDates))
-      .filter(([, date]: [string, string]) => Date.parse(date) >= Date.parse(file.annotations_date));
+      .filter(([, date]: [string, string]) => Date.parse(date) >= Date.parse(file.annotationsDate));
     if (outdated.length === 0) {
       return '';
     }
@@ -160,7 +164,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
 
   applyFilter(filter: string) {
     const normalizedFilter = this.normalizeFilter(filter);
-    this.results.filter = normalizedFilter.length ? (item: DirectoryObject) => {
+    this.results.filter = normalizedFilter.length ? (item: AnnotatedDirectoryObject) => {
       return this.normalizeFilter(item.name).includes(normalizedFilter);
     } : null;
   }
@@ -216,7 +220,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
     });
   }
 
-  displayEditDialog(object: DirectoryObject) {
+  displayEditDialog(object: AnnotatedDirectoryObject) {
     if (object.type === 'dir') {
       this.messageDialog.display({
         title: 'Not Yet Implemented',
@@ -258,7 +262,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
     }
   }
 
-  displayDeleteDialog(objects: readonly DirectoryObject[]) {
+  displayDeleteDialog(objects: readonly AnnotatedDirectoryObject[]) {
     const dialogRef = this.modalService.open(ObjectDeleteDialogComponent);
     dialogRef.componentInstance.objects = objects;
     dialogRef.result.then(() => {
@@ -316,7 +320,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
       );
   }
 
-  reannotate(objects: readonly DirectoryObject[]) {
+  reannotate(objects: readonly AnnotatedDirectoryObject[]) {
     const files: File[] = objects
       .filter(object => object.type === 'file')
       .map(file => file.data as File);
@@ -353,7 +357,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
     }
   }
 
-  delete(objects: readonly DirectoryObject[]) {
+  delete(objects: readonly AnnotatedDirectoryObject[]) {
     // TODO: not being able to delete directory is super lame
     const supportedObjects = objects.filter(object => object.type !== 'dir');
 
@@ -382,7 +386,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
     }
   }
 
-  private deleteObject(object: DirectoryObject): Observable<any> {
+  private deleteObject(object: AnnotatedDirectoryObject): Observable<any> {
     switch (object.type) {
       case 'map':
         const hashId = (object.data as Map).hashId;
@@ -404,7 +408,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
     }
   }
 
-  getObjectCommands(object: DirectoryObject): any[] {
+  getObjectCommands(object: AnnotatedDirectoryObject): any[] {
     switch (object.type) {
       case 'dir':
         const directory = object.data as Directory;

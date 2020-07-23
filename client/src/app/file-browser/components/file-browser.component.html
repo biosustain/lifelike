@@ -100,20 +100,22 @@
 
       <table class="table" [class.table-selectable]="status.resultsShown" style="table-layout: fixed">
         <colgroup>
+          <col style="width: 50%">
           <col>
-          <col>
-          <col style="width: 100px">
+          <col style="width: 20%">
+          <col style="width: 60px">
         </colgroup>
         <thead>
         <tr>
-          <th>
+          <th class="text-truncate">
             <div class="custom-control custom-checkbox">
               <input type="checkbox" class="custom-control-input" id="select-all" [checked]="results.isAllSelected()"
                      (change)="results.toggleAll()">
               <label class="custom-control-label" for="select-all">Name</label>
             </div>
           </th>
-          <th>Details</th>
+          <th class="text-truncate">Annotation Date</th>
+          <th class="text-truncate">Creator</th>
           <th></th>
         </tr>
         </thead>
@@ -123,7 +125,10 @@
           <td class="align-middle text-nowrap text-truncate">
             <span class="placeholder-box">Loading loading</span>
           </td>
-          <td class="align-middle d-none d-lg-table-cell text-nowrap text-truncate">
+          <td class="align-middle text-nowrap text-truncate">
+            <span class="placeholder-box">Loading loading</span>
+          </td>
+          <td class="align-middle text-nowrap text-truncate">
             <span class="placeholder-box">Loading loading</span>
           </td>
           <td class="d-flex align-items-end">
@@ -138,7 +143,10 @@
           <td class="align-middle text-nowrap text-truncate">
             <span class="placeholder-box">Loading loading loading</span>
           </td>
-          <td class="align-middle d-none d-lg-table-cell text-nowrap text-truncate">
+          <td class="align-middle text-nowrap text-truncate">
+            <span class="placeholder-box">Loading loading</span>
+          </td>
+          <td class="align-middle text-nowrap text-truncate">
             <span class="placeholder-box">Loading loading</span>
           </td>
           <td class="d-flex align-items-end">
@@ -156,47 +164,66 @@
             [class.active]="this.results.isSelected(object)">
           <td class="align-middle text-nowrap text-truncate"
               (click)="results.toggle(object)">
-            <div class="custom-control custom-checkbox">
+            <div class="custom-control custom-checkbox text-truncate">
               <input type="checkbox" class="custom-control-input" id="object-{{ objectIndex }}"
                      (change)="results.toggle(object)"
                      [checked]="results.isSelected(object)">
               <label class="custom-control-label d-flex align-items-center" for="object-{{ objectIndex }}">
-              <span [ngSwitch]="object.type" class="d-inline-block mr-1">
-                <i *ngSwitchCase="'dir'" class="fa fa-fw fa-folder text-primary"></i>
-                <i *ngSwitchCase="'file'" class="fa fa-fw fa-file text-muted"></i>
-                <i *ngSwitchCase="'map'" class="fa fa-fw fa-project-diagram text-muted"></i>
-              </span>
+                <span [ngSwitch]="object.type" class="d-inline-block mr-1">
+                  <i *ngSwitchCase="'dir'" class="fa fa-fw fa-folder text-primary"></i>
+                  <i *ngSwitchCase="'file'" class="fa fa-fw fa-file text-muted"></i>
+                  <i *ngSwitchCase="'map'" class="fa fa-fw fa-project-diagram text-muted"></i>
+                </span>
 
-                <a [appLink]="getObjectCommands(object)" [queryParams]="getObjectQueryParams()"
-                   [newTab]="object.type !== 'dir'">
-                  {{ object.name }}
-                </a>
+                <span class="d-inline-block text-truncate">
+                  <a [appLink]="getObjectCommands(object)" [queryParams]="getObjectQueryParams()"
+                     [newTab]="object.type !== 'dir'">
+                    {{ object.name }}
+                  </a>
+                </span>
               </label>
             </div>
           </td>
-          <td class="align-middle text-nowrap text-truncate"
-              (click)="results.toggle(object)">
+
+          <td class="align-middle text-nowrap text-truncate" (click)="results.toggle(object)">
+            <ng-container *ngIf="object.type === 'file'">
+              <div [ngbTooltip]="object.annotationsTooltipContent">
+                <ng-container *ngIf="object.annotationsTooltipContent && object.annotationsTooltipContent.length">
+                  <i class="fas fa-exclamation-triangle fa-fw mr-1"></i>
+                </ng-container>
+                {{ object.data.annotationsDate | date: 'short' }}
+              </div>
+            </ng-container>
           </td>
-          <td class="d-flex align-items-end">
-            <div ngbDropdown class="d-inline-block ml-auto" placement="bottom-right">
-              <button class="btn btn-sm" ngbDropdownToggle>
-                <i class="fas fa-cog fa-fw"></i>
-              </button>
-              <div ngbDropdownMenu>
-                <button ngbDropdownItem [appLink]="getObjectCommands(object)">
-                  Open
+
+          <td class="align-middle text-nowrap text-truncate" (click)="results.toggle(object)">
+            <ng-container *ngIf="object.creator">
+              {{ object.creator.name }}
+            </ng-container>
+          </td>
+
+          <td>
+            <div class="d-flex align-items-end">
+              <div ngbDropdown class="d-inline-block ml-auto" placement="bottom-right">
+                <button class="btn btn-sm" ngbDropdownToggle>
+                  <i class="fas fa-cog fa-fw"></i>
                 </button>
-                <button ngbDropdownItem (click)="displayEditDialog(object)">
-                  Edit...
-                </button>
-                <button ngbDropdownItem *ngIf="object.type === 'file'"
-                        (click)="reannotate([object])">
-                  Re-annotate
-                </button>
-                <div class="dropdown-divider"></div>
-                <button ngbDropdownItem (click)="displayDeleteDialog([object])">
-                  Delete...
-                </button>
+                <div ngbDropdownMenu>
+                  <button ngbDropdownItem [appLink]="getObjectCommands(object)">
+                    Open
+                  </button>
+                  <button ngbDropdownItem (click)="displayEditDialog(object)">
+                    Edit...
+                  </button>
+                  <button ngbDropdownItem *ngIf="object.type === 'file'"
+                          (click)="reannotate([object])">
+                    Re-annotate
+                  </button>
+                  <div class="dropdown-divider"></div>
+                  <button ngbDropdownItem (click)="displayDeleteDialog([object])">
+                    Delete...
+                  </button>
+                </div>
               </div>
             </div>
           </td>
