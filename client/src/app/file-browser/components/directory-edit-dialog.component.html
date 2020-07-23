@@ -12,7 +12,7 @@
 
     <app-modal-footer>
       <button type="button" class="btn btn-secondary mr-2" (click)="cancel()">Cancel</button>
-      <button type="submit" class="btn btn-primary">Create</button>
+      <button type="submit" class="btn btn-primary">{{ editing ? 'Save' : 'Create' }}</button>
     </app-modal-footer>
   </div>
 </form>
