@@ -75,7 +75,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
               private readonly projectSpaceService: ProjectSpaceService,
               private readonly projectPageService: ProjectPageService,
               private readonly workspaceManager: WorkspaceManager,
-              private readonly projectService: MapService,
+              private readonly mapService: MapService,
               private readonly ngbModal: NgbModal,
               private readonly messageDialog: MessageDialog) {
   }
@@ -87,7 +87,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
     });
 
     this.loadTask = new BackgroundTask(
-      (locator: PathLocator) => this.projectPageService.getProjectDir(
+      (locator: PathLocator) => this.projectPageService.getDirectory(
         locator.projectName,
         locator.directoryId,
       ).pipe(this.errorHandler.create()),
@@ -180,7 +180,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
     const dialogRef = this.ngbModal.open(DirectoryCreateDialogComponent);
     dialogRef.result.then(
       resp => {
-        this.projectPageService.addDir(
+        this.projectPageService.createDirectory(
           this.locator.projectName,
           this.directory.id,
           resp.name,
@@ -188,6 +188,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
           .pipe(this.errorHandler.create())
           .subscribe(() => {
             this.refresh();
+            this.snackBar.open(`Folder '${resp.name}' created`, 'Close', {duration: 5000});
           });
       },
       () => {
@@ -198,7 +199,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
   displayMapCreateDialog() {
     const dialogRef = this.modalService.open(MapCreateDialogComponent);
     dialogRef.result.then((newMap: KnowledgeMap) => {
-      this.projectPageService.addMap(
+      this.mapService.createMap(
         this.locator.projectName,
         this.directory.id,
         newMap.label,
@@ -213,6 +214,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
             queryParams: this.getObjectQueryParams(),
           });
         });
+        this.snackBar.open(`Map '${newMap.label}' created, opening...`, 'Close', {duration: 5000});
       });
     });
   }
@@ -230,7 +232,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
       dialogRef.componentInstance.file = file;
       dialogRef.result.then(data => {
         if (data) {
-          this.projectPageService.updateFile(
+          this.filesService.updateFileMeta(
             this.locator.projectName,
             file.file_id,
             data.filename,
@@ -239,6 +241,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
             .pipe(this.errorHandler.create())
             .subscribe(() => {
               this.refresh();
+              this.snackBar.open(`File details updated`, 'Close', {duration: 5000});
             });
         }
       }, () => {
@@ -247,10 +250,11 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
       const dialogRef = this.modalService.open(MapEditDialogComponent);
       dialogRef.componentInstance.map = cloneDeep(object.data);
       dialogRef.result.then(newMap => {
-        this.projectService.update(this.locator.projectName, newMap)
+        this.mapService.updateMap(this.locator.projectName, newMap)
           .pipe(this.errorHandler.create())
           .subscribe(() => {
             this.refresh();
+            this.snackBar.open(`Map details updated`, 'Close', {duration: 5000});
           });
       }, () => {
       });
@@ -283,7 +287,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
       progressObservable,
     });
 
-    this.projectPageService.addPdf(
+    this.filesService.uploadFile(
       this.locator.projectName,
       this.directory.id,
       data,
@@ -306,7 +310,8 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
             }
           } else if (event.type === HttpEventType.Response) {
             progressDialogRef.close();
-            this.snackBar.open(`File uploaded: ${event.body.filename}`, 'Close', {duration: 5000});
+            const body = event.body as any;
+            this.snackBar.open(`File '${body.result.filename}' uploaded`, 'Close', {duration: 5000});
             this.refresh(); // updates the list on successful upload
           }
         },
@@ -333,7 +338,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
         title: `Reannotating file${files.length === 1 ? '' : 's'}...`,
         progressObservable,
       });
-      this.filesService.reannotateFiles(ids).pipe(this.errorHandler.create()).subscribe(
+      this.filesService.reannotateFiles(this.locator.projectName, ids).pipe(this.errorHandler.create()).subscribe(
         (res) => {
           this.refresh();
           this.snackBar.open(`Reannotation completed`, 'Close', {duration: 5000});
@@ -387,14 +392,14 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
     switch (object.type) {
       case 'map':
         const hashId = (object.data as KnowledgeMap).hash_id;
-        return this.projectPageService.deleteMap(
+        return this.mapService.deleteMap(
           this.locator.projectName,
           hashId,
         );
       case 'file':
         const fileId = (object.data as PdfFile).file_id;
 
-        return this.projectPageService.deletePDF(
+        return this.filesService.deleteFile(
           this.locator.projectName,
           fileId,
         );
