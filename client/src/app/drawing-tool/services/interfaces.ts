@@ -1,5 +1,6 @@
 export interface UniversalEntityData {
   hyperlink?: string;
+  hyperlinks?: Hyperlink[];
   detail?: string;
   source?: string;
   search?: Hyperlink[];
@@ -152,6 +153,7 @@ export interface Map {
 
 export interface AnnotationExclusionData {
   id: string;
+  text: string;
   reason: string;
   comment: string;
 }
