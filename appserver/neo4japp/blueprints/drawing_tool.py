@@ -39,7 +39,6 @@ from neo4japp.request_schemas.drawing_tool import ProjectBackupSchema
 # TODO: LL-415 Migrate the code to the projects folder once GUI is complete and API refactored
 from neo4japp.blueprints.projects import bp as newbp
 
-
 bp = Blueprint('drawing_tool', __name__, url_prefix='/drawing-tool')
 
 
@@ -107,7 +106,6 @@ def download_map(hash_id: str, projects_name: str):
 @auth.login_required
 @requires_project_permission(AccessActionType.WRITE)
 def upload_map(projects_name: str):
-
     draw_proj_name = request.form['projectName']
     proj_description = request.form['description']
     dir_id = request.form['dirId']
@@ -263,8 +261,6 @@ def update_project(hash_id: str, projects_name: str):
     project.graph = data.get("graph", {"edges": [], "nodes": []})
     project.date_modified = datetime.now()
     project.public = data.get("public", False)
-
-
 
     # Commit to db
     db.session.add(project)
@@ -487,12 +483,12 @@ def get_project_image(projects_name: str, hash_id: str, format: str):
     try:
         project = Project.query.filter(
             Project.hash_id == hash_id,
-            ).join(
+        ).join(
             Directory,
             Directory.id == Project.dir_id,
-            ).filter(
+        ).filter(
             Directory.projects_id == projects.id,
-            ).one()
+        ).one()
     except NoResultFound:
         raise RecordNotFoundException('not found :-( ')
 
