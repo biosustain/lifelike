@@ -402,14 +402,43 @@ def get_child_directories(current_dir_id: int, project_name: str):
         dir = Directory.query.get(current_dir_id)
     else:
         dir = proj_service.get_root_dir(projects)
+        current_dir_id = dir.id
 
     if dir is None:
         raise RecordNotFoundException("Directory not found")
 
+    # Pull up directory path to current dir
     parents = proj_service.get_absolute_dir_path(projects, dir)
-    child_dirs = proj_service.get_immediate_child_dirs(projects, dir)
+
+    # Get children directories
+    child_dirs = db.session.query(
+        Directory,
+        AppUser.username,
+    ).join(
+        AppUser, Directory.user_id == AppUser.id
+    ).filter(
+        Directory.directory_parent_id == current_dir_id
+    ).all()
 
     project_schema = ProjectSchema()
+
+    files = db.session.query(
+        Files,
+        AppUser.username,
+    ).join(
+        AppUser, Files.user_id == AppUser.id
+    ).filter(
+        Files.dir_id == current_dir_id
+    ).all()
+
+    maps = db.session.query(
+        Project,
+        AppUser.username,
+    ).join(
+        AppUser, Project.user_id == AppUser.id
+    ).filter(
+        Project.dir_id == current_dir_id
+    ).all()
 
     contents = DirectoryContent(
         dir=dir.to_dict(),
@@ -428,27 +457,27 @@ def get_child_directories(current_dir_id: int, project_name: str):
                     'name': AppUser.query.get(c.user_id).username
                 },
                 'data': c.to_dict(),
-            } for c in child_dirs],
+            } for (c, username) in child_dirs],
             *[{
                 'type': 'file',
                 'name': f.filename,
                 'creator': {
                     'id': f.user_id,
-                    'name': AppUser.query.get(f.user_id).username
+                    'name': username
                 },
                 'description': f.description,
                 'data': CasePreservedDict(f.to_dict()),
-            } for f in dir.files],
+            } for (f, username) in files],
             *[{
                 'type': 'map',
                 'name': m.label,
                 'creator': {
                     'id': m.user_id,
-                    'name': AppUser.query.get(m.user_id).username
+                    'name': username
                 },
                 'description': m.description,
                 'data': CasePreservedDict(project_schema.dump(m)),
-            } for m in dir.project],
+            } for (m, username) in maps],
         ],
     )
     yield jsonify(dict(result=contents.to_dict()))
