@@ -208,13 +208,14 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
         this.directory.id,
         newMap.label,
         newMap.description,
-        // TODO: public flag lost!!
+        newMap.public,
       )
         .pipe(this.errorHandler.create())
         .subscribe((result) => {
           this.refresh();
           this.workspaceManager.navigate(['/projects', this.locator.projectName, 'maps', result.project.hash_id, 'edit'], {
             newTab: true,
+            queryParams: this.getObjectQueryParams(),
           });
         });
     });

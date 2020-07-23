@@ -84,6 +84,7 @@ export class ProjectPageService {
     directoryId,
     label,
     description,
+    publicMap,
   ): Observable<any> {
     return this.http.post<any>(
       `${this.projectsAPI}/${projectName}/map`,
@@ -91,6 +92,7 @@ export class ProjectPageService {
         label,
         description,
         directoryId,
+        public: publicMap,
       },
       this.createHttpOptions(true),
     );
