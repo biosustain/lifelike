@@ -33,9 +33,9 @@ from neo4japp.models import (
     Directory,
     Project,
     Projects,
-    projects_collaborator_role,
+    projects_collaborator_role, ProjectSchema,
 )
-from neo4japp.util import jsonify_with_class, SuccessResponse
+from neo4japp.util import jsonify_with_class, SuccessResponse, CasePreservedDict
 
 from neo4japp.services.exceptions import NameUnavailableError
 
@@ -143,7 +143,6 @@ def get_project_collaborators(project_name: str):
 @auth.login_required
 @requires_project_role('project-admin')
 def add_collaborator(username: str, project_name: str):
-
     proj_service = get_projects_service()
 
     data = request.get_json()
@@ -216,7 +215,6 @@ def edit_collaborator(username: str, project_name: str):
 @auth.login_required
 @requires_project_role('project-admin')
 def remove_collaborator(username: str, project_name: str):
-
     proj_service = get_projects_service()
 
     user = g.current_user
@@ -271,7 +269,6 @@ def add_directory(project_name: str):
 @auth.login_required
 @requires_project_permission(AccessActionType.WRITE)
 def move_files(req: MoveFileRequest, project_name: str):
-
     project_service = get_projects_service()
     projects = Projects.query.filter(
         Projects.project_name == project_name
@@ -321,7 +318,6 @@ def move_files(req: MoveFileRequest, project_name: str):
 @jsonify_with_class(DirectoryRenameRequest)
 @requires_project_permission(AccessActionType.WRITE)
 def rename_directory(req: DirectoryRenameRequest, current_dir_id: int, project_name: str):
-
     proj_service = get_projects_service()
     projects = Projects.query.filter(
         Projects.project_name == project_name
@@ -357,7 +353,6 @@ def rename_directory(req: DirectoryRenameRequest, current_dir_id: int, project_n
 @auth.login_required
 @requires_project_permission(AccessActionType.WRITE)
 def delete_directory(current_dir_id: int, project_name: str):
-
     proj_service = get_projects_service()
     projects = Projects.query.filter(
         Projects.project_name == project_name
@@ -414,6 +409,8 @@ def get_child_directories(current_dir_id: int, project_name: str):
     parents = proj_service.get_absolute_dir_path(projects, dir)
     child_dirs = proj_service.get_immediate_child_dirs(projects, dir)
 
+    project_schema = ProjectSchema()
+
     contents = DirectoryContent(
         dir=dir.to_dict(),
         path=[{
@@ -440,7 +437,7 @@ def get_child_directories(current_dir_id: int, project_name: str):
                     'name': AppUser.query.get(f.user_id).username
                 },
                 'description': f.description,
-                'data': f.to_dict(),
+                'data': CasePreservedDict(f.to_dict()),
             } for f in dir.files],
             *[{
                 'type': 'map',
@@ -450,7 +447,7 @@ def get_child_directories(current_dir_id: int, project_name: str):
                     'name': AppUser.query.get(m.user_id).username
                 },
                 'description': m.description,
-                'data': m.to_dict(),
+                'data': CasePreservedDict(project_schema.dump(m)),
             } for m in dir.project],
         ],
     )

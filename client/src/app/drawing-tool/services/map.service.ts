@@ -3,7 +3,7 @@ import {Observable} from 'rxjs';
 import {HttpClient, HttpHeaders} from '@angular/common/http';
 
 import {
-  Map,
+  KnowledgeMap,
   UniversalGraph,
   UniversalGraphEdge,
   UniversalGraphNode,
@@ -41,7 +41,7 @@ export class MapService {
     );
   }
 
-  update(projectName: string, map: Map): Observable<any> {
+  update(projectName: string, map: KnowledgeMap): Observable<any> {
     return this.http.patch(
       `/api/projects/${encodeURIComponent(projectName)}/map/${encodeURIComponent(map.hash_id)}`,
       map,
@@ -92,7 +92,7 @@ export class MapService {
     );
   }
 
-  createOrUpdateBackup(projectName: string, map: Map): Observable<any> {
+  createOrUpdateBackup(projectName: string, map: KnowledgeMap): Observable<any> {
     map.description = map.description && map.description.length ?
       map.description :
       '';

@@ -3,7 +3,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { BehaviorSubject, combineLatest, Observable, Subscription } from 'rxjs';
 import { MapService } from '../services';
-import { Map } from '../services/interfaces';
+import { KnowledgeMap } from '../services/interfaces';
 
 import { MapExportDialogComponent } from './map-export-dialog.component';
 import { KnowledgeMapStyle } from 'app/graph-viewer/styles/knowledge-map-style';
@@ -36,7 +36,7 @@ export class MapViewComponent<ExtraResult = void> implements OnDestroy, AfterVie
 
   @ViewChild('canvas', {static: true}) canvasChild;
 
-  loadTask: BackgroundTask<MapLocator, [Map, ExtraResult]>;
+  loadTask: BackgroundTask<MapLocator, [KnowledgeMap, ExtraResult]>;
   loadSubscription: Subscription;
   paramsSubscription: Subscription;
   queryParamsSubscription: Subscription;
@@ -44,7 +44,7 @@ export class MapViewComponent<ExtraResult = void> implements OnDestroy, AfterVie
   locator: MapLocator | undefined;
   returnUrl: string;
 
-  _map: Map | undefined;
+  _map: KnowledgeMap | undefined;
   pendingInitialize = false;
   infoPinned = true;
 
@@ -70,7 +70,7 @@ export class MapViewComponent<ExtraResult = void> implements OnDestroy, AfterVie
       return combineLatest([
         this.projectService.get(locator.projectName, locator.hashId).pipe(
           // tslint:disable-next-line: no-string-literal
-          map(resp => resp['project'] as Map),
+          map(resp => resp['project'] as KnowledgeMap),
           // TODO: This line is from the existing code and should be properly typed
         ),
         this.getExtraSource(),
@@ -137,7 +137,7 @@ export class MapViewComponent<ExtraResult = void> implements OnDestroy, AfterVie
   }
 
   @Input()
-  set map(value: Map | undefined) {
+  set map(value: KnowledgeMap | undefined) {
     this._map = value;
     this.initializeMap();
   }
