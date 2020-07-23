@@ -131,11 +131,13 @@
           <td class="align-middle text-nowrap text-truncate">
             <span class="placeholder-box">Loading loading</span>
           </td>
-          <td class="d-flex align-items-end">
-            <div ngbDropdown class="d-inline-block ml-auto">
-              <button class="btn btn-sm" ngbDropdownToggle>
-                <span class="placeholder-box"><i class="fas fa-cog fa-fw"></i></span>
-              </button>
+          <td>
+            <div class="d-flex align-items-end">
+              <div ngbDropdown class="d-inline-block ml-auto">
+                <button class="btn btn-sm" ngbDropdownToggle>
+                  <span class="placeholder-box"><i class="fas fa-cog fa-fw"></i></span>
+                </button>
+              </div>
             </div>
           </td>
         </tr>
@@ -149,11 +151,13 @@
           <td class="align-middle text-nowrap text-truncate">
             <span class="placeholder-box">Loading loading</span>
           </td>
-          <td class="d-flex align-items-end">
-            <div ngbDropdown class="d-inline-block ml-auto">
-              <button class="btn btn-sm" ngbDropdownToggle>
-                <span class="placeholder-box"><i class="fas fa-cog fa-fw"></i></span>
-              </button>
+          <td>
+            <div class="d-flex align-items-end">
+              <div ngbDropdown class="d-inline-block ml-auto">
+                <button class="btn btn-sm" ngbDropdownToggle>
+                  <span class="placeholder-box"><i class="fas fa-cog fa-fw"></i></span>
+                </button>
+              </div>
             </div>
           </td>
         </tr>
@@ -168,26 +172,34 @@
               <input type="checkbox" class="custom-control-input" id="object-{{ objectIndex }}"
                      (change)="results.toggle(object)"
                      [checked]="results.isSelected(object)">
-              <label class="custom-control-label d-flex align-items-center" for="object-{{ objectIndex }}">
-                <span [ngSwitch]="object.type" class="d-inline-block mr-1">
-                  <i *ngSwitchCase="'dir'" class="fa fa-fw fa-folder text-primary"></i>
-                  <i *ngSwitchCase="'file'" class="fa fa-fw fa-file text-muted"></i>
-                  <i *ngSwitchCase="'map'" class="fa fa-fw fa-project-diagram text-muted"></i>
-                </span>
+              <label class="custom-control-label d-block" for="object-{{ objectIndex }}">
+                <div class="d-flex align-items-center text-truncate">
+                  <div [ngSwitch]="object.type" class="d-inline-block mr-1">
+                    <i *ngSwitchCase="'dir'" class="fa fa-fw fa-folder text-primary"></i>
+                    <i *ngSwitchCase="'file'" class="fa fa-fw fa-file text-muted"></i>
+                    <i *ngSwitchCase="'map'" class="fa fa-fw fa-project-diagram text-muted"></i>
+                  </div>
 
-                <span class="d-inline-block text-truncate">
-                  <a [appLink]="getObjectCommands(object)" [queryParams]="getObjectQueryParams()"
-                     [newTab]="object.type !== 'dir'">
-                    {{ object.name }}
-                  </a>
-                </span>
+                  <div class="d-inline-block text-truncate">
+                    <a [appLink]="getObjectCommands(object)" [queryParams]="getObjectQueryParams()"
+                       [newTab]="object.type !== 'dir'">
+                      {{ object.name }}
+                    </a>
+                  </div>
+                </div>
+                <div *ngIf="object.description" class="text-truncate text-muted"
+                     popoverTitle="Description" container="body" triggers="mouseenter:mouseleave" placement="right"
+                     [ngbPopover]="object.description">
+                  {{ object.description }}
+                </div>
               </label>
             </div>
           </td>
 
           <td class="align-middle text-nowrap text-truncate" (click)="results.toggle(object)">
             <ng-container *ngIf="object.type === 'file'">
-              <div [ngbTooltip]="object.annotationsTooltipContent">
+              <div popoverTitle="Annotation Status" [ngbPopover]="object.annotationsTooltipContent" container="body"
+                   placement="right" triggers="mouseenter:mouseleave" [disablePopover]="!object.annotationsTooltipContent">
                 <ng-container *ngIf="object.annotationsTooltipContent && object.annotationsTooltipContent.length">
                   <i class="fas fa-exclamation-triangle fa-fw mr-1"></i>
                 </ng-container>
