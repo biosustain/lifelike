@@ -10,7 +10,7 @@ import { ProjectBrowserComponent } from './components/project-browser.component'
 import { ProjectTitleAcronymPipe } from './services/project-title-acronym.pipe';
 import { ProjectEditDialogComponent } from './components/project-edit-dialog.component';
 import { ProjectCreateDialogComponent } from './components/project-create-dialog.component';
-import { DirectoryCreateDialogComponent } from './components/directory-create-dialog.component';
+import { DirectoryEditDialogComponent } from './components/directory-edit-dialog.component';
 import { ObjectDeletionResultDialogComponent } from './components/object-deletion-result-dialog.component';
 
 @NgModule({
@@ -25,7 +25,7 @@ import { ObjectDeletionResultDialogComponent } from './components/object-deletio
     ProjectTitleAcronymPipe,
     ProjectEditDialogComponent,
     ProjectCreateDialogComponent,
-    DirectoryCreateDialogComponent,
+    DirectoryEditDialogComponent,
   ],
   imports: [
     SharedModule,
@@ -38,7 +38,7 @@ import { ObjectDeletionResultDialogComponent } from './components/object-deletio
     FileViewComponent,
     ProjectCreateDialogComponent,
     ProjectEditDialogComponent,
-    DirectoryCreateDialogComponent,
+    DirectoryEditDialogComponent,
     ObjectDeletionResultDialogComponent,
   ],
   exports: [],

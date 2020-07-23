@@ -47,10 +47,20 @@ export class ProjectPageService extends AbstractService {
   // CRUD
   // ========================================
 
-  createDirectory(projectName, parentDir = null, dirname): Observable<any> {
+  createDirectory(projectName: string, parentDir: number = null, name: string): Observable<any> {
     return this.http.post<any>(
       `${this.PROJECTS_BASE_URL}/${encodeURIComponent(projectName)}/directories`,
-      {dirname, parentDir},
+      {dirname: name, parentDir},
+      this.getHttpOptions(true),
+    ).pipe(
+      map(resp => resp.results),
+    );
+  }
+
+  renameDirectory(projectName: string, directoryId: number, newName: string): Observable<any> {
+    return this.http.post<any>(
+      `${this.PROJECTS_BASE_URL}/${encodeURIComponent(projectName)}/directories/${encodeURIComponent(directoryId)}/rename`,
+      {name: newName},
       this.getHttpOptions(true),
     ).pipe(
       map(resp => resp.results),

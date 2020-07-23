@@ -2,14 +2,14 @@ import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { configureTestSuite } from 'ng-bullet';
 
-import { DirectoryCreateDialogComponent } from './directory-create-dialog.component';
+import { DirectoryEditDialogComponent } from './directory-edit-dialog.component';
 import { SharedModule } from 'app/shared/shared.module';
 import { RootStoreModule } from 'app/***ARANGO_USERNAME***-store';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 
 describe('AddContentDialogComponent', () => {
-  let component: DirectoryCreateDialogComponent;
-  let fixture: ComponentFixture<DirectoryCreateDialogComponent>;
+  let component: DirectoryEditDialogComponent;
+  let fixture: ComponentFixture<DirectoryEditDialogComponent>;
 
   configureTestSuite(() => {
     TestBed.configureTestingModule({
@@ -17,7 +17,7 @@ describe('AddContentDialogComponent', () => {
         SharedModule,
         RootStoreModule
       ],
-      declarations: [ DirectoryCreateDialogComponent ],
+      declarations: [ DirectoryEditDialogComponent ],
       providers: [
         NgbActiveModal
       ]
@@ -26,7 +26,7 @@ describe('AddContentDialogComponent', () => {
   });
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(DirectoryCreateDialogComponent);
+    fixture = TestBed.createComponent(DirectoryEditDialogComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
