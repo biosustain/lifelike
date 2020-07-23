@@ -95,9 +95,8 @@ export class ProjectPageService {
     directoryId,
     label,
     description,
-    isPublic= false
+    publicMap = false,
   ): Observable<any> {
-    console.log(isPublic);
 
     return this.http.post<any>(
       `${this.projectsAPI}/${projectName}/map`,
@@ -105,7 +104,7 @@ export class ProjectPageService {
         label,
         description,
         directoryId,
-        public: isPublic
+        public: publicMap,
       },
       this.createHttpOptions(true),
     );

@@ -1,7 +1,7 @@
 import { Component, Input} from '@angular/core';
 
 import {
-  Project,
+  Map,
 } from '../services/interfaces';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { MessageDialog } from '../../shared/services/message-dialog.service';
@@ -12,7 +12,7 @@ import { CommonDialogComponent } from '../../shared/components/dialog/common-dia
   templateUrl: './map-restore-dialog.component.html',
 })
 export class MapRestoreDialogComponent extends CommonDialogComponent {
-  @Input() map: Project;
+  @Input() map: Map;
 
   constructor(modal: NgbActiveModal, messageDialog: MessageDialog) {
     super(modal, messageDialog);
