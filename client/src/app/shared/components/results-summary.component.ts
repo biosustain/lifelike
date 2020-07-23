@@ -5,15 +5,15 @@ import { Component, Input } from '@angular/core';
   templateUrl: './results-summary.component.html',
 })
 export class ResultsSummaryComponent {
-  @Input() page: number;
+  @Input() page: number; // pages should be 1-indexed
   @Input() pageSize: number;
   @Input() collectionSize: number;
 
   get startResultCount(): number {
-    return this.pageSize * this.page + 1;
+    return (this.pageSize * (this.page - 1)) + 1;
   }
 
   get endResultCount(): number {
-    return Math.min(this.pageSize * (this.page + 1), this.collectionSize);
+    return Math.min(this.pageSize * this.page, this.collectionSize);
   }
 }
