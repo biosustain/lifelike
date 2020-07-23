@@ -56,7 +56,7 @@ export class MapViewComponent<ExtraResult = void> implements OnDestroy, AfterVie
   unsavedChanges$ = new BehaviorSubject<boolean>(false);
 
   constructor(
-    readonly projectService: MapService,
+    readonly mapService: MapService,
     readonly snackBar: MatSnackBar,
     readonly modalService: NgbModal,
     readonly messageDialog: MessageDialog,
@@ -68,7 +68,7 @@ export class MapViewComponent<ExtraResult = void> implements OnDestroy, AfterVie
   ) {
     this.loadTask = new BackgroundTask((locator) => {
       return combineLatest([
-        this.projectService.get(locator.projectName, locator.hashId).pipe(
+        this.mapService.getMap(locator.projectName, locator.hashId).pipe(
           // tslint:disable-next-line: no-string-literal
           map(resp => resp['project'] as KnowledgeMap),
           // TODO: This line is from the existing code and should be properly typed
@@ -196,7 +196,7 @@ export class MapViewComponent<ExtraResult = void> implements OnDestroy, AfterVie
     this.map.date_modified = new Date().toISOString();
 
     // Push to backend to save
-    this.projectService.update(this.locator.projectName, this.map)
+    this.mapService.updateMap(this.locator.projectName, this.map)
       .pipe(this.errorHandler.create())
       .subscribe(() => {
         this.unsavedChanges$.next(false);
@@ -297,7 +297,7 @@ export class MapViewComponent<ExtraResult = void> implements OnDestroy, AfterVie
    */
   downloadPDF() {
     this.requestDownload(
-      () => this.projectService.generatePDF(this.locator.projectName, this.locator.hashId),
+      () => this.mapService.generatePDF(this.locator.projectName, this.locator.hashId),
       'application/pdf',
       '.pdf',
     );
@@ -308,7 +308,7 @@ export class MapViewComponent<ExtraResult = void> implements OnDestroy, AfterVie
    */
   downloadSVG() {
     this.requestDownload(
-      () => this.projectService.generateSVG(this.locator.projectName, this.locator.hashId),
+      () => this.mapService.generateSVG(this.locator.projectName, this.locator.hashId),
       'application/svg',
       '.svg',
     );
@@ -319,7 +319,7 @@ export class MapViewComponent<ExtraResult = void> implements OnDestroy, AfterVie
    */
   downloadPNG() {
     this.requestDownload(
-      () => this.projectService.generatePNG(this.locator.projectName, this.locator.hashId),
+      () => this.mapService.generatePNG(this.locator.projectName, this.locator.hashId),
       'application/png',
       '.png',
     );
