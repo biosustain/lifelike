@@ -44,21 +44,6 @@ export interface Collaborator {
   username: string;
 }
 
-export interface Map {
-  author?: string;
-  dateModified?: string;
-  description?: string;
-  dirId?: number;
-  graph?: { nodes: any[], edges: any[]};
-  hashId?: string;
-  id?: number;
-  label?: string;
-  pubic?: boolean;
-  userId?: number;
-  type?: string;
-  routeLink?: string;
-}
-
 @Injectable({
   providedIn: 'root'
 })

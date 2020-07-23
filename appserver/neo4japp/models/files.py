@@ -59,6 +59,7 @@ class Directory(RDBMSBase):
     )
     files = db.relationship('Files')
     project = db.relationship('Project')
+    user_id = db.Column(db.Integer, db.ForeignKey('appuser.id'), nullable=True) 
 
     @classmethod
     def query_child_directories(cls, dir_id: int) -> Query:
