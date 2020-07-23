@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+    elasticsearch:
+        container_name: elasticsearch
+        image: docker.elastic.co/elasticsearch/elasticsearch:7.8.0
+        environment:
+            - discovery.type=single-node
+            - http.max_content_length=200mb  #allow 200mb of content to be sent for indexing
+            - bootstrap.memory_lock=true
+            - xpack.graph.enabled=false
+            - xpack.watcher.enabled=false
+            - xpack.license.self_generated.type=basic
+        ulimits:
+            memlock:
+                soft: -1
+                hard: -1
+        ports:
+            - "9200:9200"
+            - "9300:9300"
+        networks:
+            - backend
+
+    kibana:
+        container_name: kibana
+        image: docker.elastic.co/kibana/kibana:7.2.0
+        ports:
+            - "5601:5601"
+        environment:
+            SERVER_NAME: localhost
+            ELASTICSEARCH_URL: http://elasticsearch:9200
+        networks:
+            - backend
+        depends_on:
+            - elasticsearch
+
+networks:
+    backend:
