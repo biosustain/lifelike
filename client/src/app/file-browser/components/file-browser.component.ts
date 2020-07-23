@@ -197,7 +197,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
 
   displayMapCreateDialog() {
     const dialogRef = this.modalService.open(MapCreateDialogComponent);
-    dialogRef.result.then((newMap: Map) => {
+    dialogRef.result.then((newMap: KnowledgeMap) => {
       this.projectPageService.addMap(
         this.locator.projectName,
         this.directory.id,
