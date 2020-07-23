@@ -53,7 +53,7 @@ export interface Map {
   hashId?: string;
   id?: number;
   label?: string;
-  pubic?: boolean;
+  public?: boolean;
   userId?: number;
   type?: string;
   routeLink?: string;
