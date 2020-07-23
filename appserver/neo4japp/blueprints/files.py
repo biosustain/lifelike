@@ -501,7 +501,7 @@ def export_excluded_annotations():
             'reason': exclusion['reason'],
             'comment': exclusion['comment'],
             'exclusion_date': exclusion['exclusion_date'],
-            'user': f'{user.first_name} {user.last_name}' if user is None else 'not found',
+            'user': f'{user.first_name} {user.last_name}' if user is not None else 'not found',
             'filename': filename,
             'hyperlink': f'{domain}/pdf-viewer/{file_id}'
         }
@@ -530,7 +530,7 @@ def export_included_annotations():
             'type': inclusion['meta']['type'],
             'primary_link': inclusion['meta'].get('primaryLink', ''),
             'inclusion_date': inclusion.get('inclusion_date', ''),
-            'user': f'{user.first_name} {user.last_name}' if user is None else 'not found',
+            'user': f'{user.first_name} {user.last_name}' if user is not None else 'not found',
             'filename': filename,
             'hyperlink': f'{domain}/pdf-viewer/{file_id}'
         }
