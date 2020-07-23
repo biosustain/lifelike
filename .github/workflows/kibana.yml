@@ -39,7 +39,7 @@ jobs:
                 echo "PROJECT_ID=$PROJECT_ID" >> kibana.env
                 echo "$GCE_SERVICE_ACCOUNT" >> keyfile.json
                 gsutil cp kibana.env gs://kg-secrets
-                gcloud compute ssh $GCE_INSTANCE --zone $GCE_INSTANCE_ZONE --command='sudo chown root /srv';
+                gcloud compute ssh $GCE_INSTANCE --zone $GCE_INSTANCE_ZONE --command='sudo chown -R root /srv';
                 gcloud compute scp kibana.env $GCE_INSTANCE:/srv/.env --zone $GCE_INSTANCE_ZONE
                 gcloud compute scp keyfile.json $GCE_INSTANCE:/srv --zone $GCE_INSTANCE_ZONE
                 gcloud compute scp docker-compose.kibana.yml $GCE_INSTANCE:/srv --zone $GCE_INSTANCE_ZONE
