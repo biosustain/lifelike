@@ -13,7 +13,7 @@ import { ObjectDeleteDialogComponent } from './object-delete-dialog.component';
 import { ObjectUploadDialogComponent } from './object-upload-dialog.component';
 import { FileEditDialogComponent } from './file-edit-dialog.component';
 import { ErrorHandler } from '../../shared/services/error-handler.service';
-import { Directory, Map, ProjectSpaceService } from '../services/project-space.service';
+import { Directory, ProjectSpaceService } from '../services/project-space.service';
 import { ProjectPageService } from '../services/project-page.service';
 import { DirectoryCreateDialogComponent } from './directory-create-dialog.component';
 import { DirectoryContent, DirectoryObject } from '../../interfaces/projects.interface';
@@ -26,12 +26,7 @@ import { MapCreateDialogComponent } from '../../drawing-tool/components/map-crea
 import { MessageDialog } from '../../shared/services/message-dialog.service';
 import { MessageType } from '../../interfaces/message-dialog.interface';
 import { ModuleProperties } from '../../shared/modules';
-
-export interface File extends PdfFile {
-  // Camel-case instead of snake-case version of file
-  fileId?: string;
-  // TODO: wtf we need to fix this
-}
+import { KnowledgeMap } from '../../drawing-tool/services/interfaces';
 
 interface PathLocator {
   projectName?: string;
@@ -139,7 +134,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
   private updateAnnotationsStatus(objects: readonly AnnotatedDirectoryObject[]) {
     objects.forEach((object: AnnotatedDirectoryObject) => {
       if (object.type === 'file') {
-        const file = object.data as File;
+        const file = object.data as PdfFile;
         object.annotationsTooltipContent = this.generateTooltipContent(file);
       }
     });
@@ -229,14 +224,14 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
         type: MessageType.Warning,
       });
     } else if (object.type === 'file') {
-      const file = object.data as File;
+      const file = object.data as PdfFile;
       const dialogRef = this.modalService.open(FileEditDialogComponent);
       dialogRef.componentInstance.file = file;
       dialogRef.result.then(data => {
         if (data) {
           this.projectPageService.updateFile(
             this.locator.projectName,
-            file.fileId,
+            file.file_id,
             data.filename,
             data.description,
           )
@@ -322,12 +317,12 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
   }
 
   reannotate(objects: readonly AnnotatedDirectoryObject[]) {
-    const files: File[] = objects
+    const files: PdfFile[] = objects
       .filter(object => object.type === 'file')
-      .map(file => file.data as File);
+      .map(file => file.data as PdfFile);
 
     if (files.length) {
-      const ids: string[] = files.map((file: File) => file.fileId);
+      const ids: string[] = files.map((file: PdfFile) => file.file_id);
       // Let's show some progress`!
       const progressObservable = new BehaviorSubject<Progress>(new Progress({
         status: 'Re-creating annotations in file...',
@@ -390,13 +385,13 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
   private deleteObject(object: AnnotatedDirectoryObject): Observable<any> {
     switch (object.type) {
       case 'map':
-        const hashId = (object.data as Map).hashId;
+        const hashId = (object.data as KnowledgeMap).hash_id;
         return this.projectPageService.deleteMap(
           this.locator.projectName,
           hashId,
         );
       case 'file':
-        const fileId = (object.data as File).fileId;
+        const fileId = (object.data as PdfFile).file_id;
 
         return this.projectPageService.deletePDF(
           this.locator.projectName,
@@ -416,11 +411,11 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
         // TODO: Convert to hash ID
         return ['/projects', this.locator.projectName, 'folders', directory.id];
       case 'file':
-        const file = object.data as File;
-        return ['/projects', this.locator.projectName, 'files', file.fileId];
+        const file = object.data as PdfFile;
+        return ['/projects', this.locator.projectName, 'files', file.file_id];
       case 'map':
-        const map = object.data as Map;
-        return ['/projects', this.locator.projectName, 'maps', map.hashId, 'edit'];
+        const map = object.data as KnowledgeMap;
+        return ['/projects', this.locator.projectName, 'maps', map.hash_id, 'edit'];
       default:
         throw new Error(`unknown directory object type: ${object.type}`);
     }
