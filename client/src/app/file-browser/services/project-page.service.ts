@@ -6,6 +6,7 @@ import { PdfFileUpload, UploadPayload, UploadType } from 'app/interfaces/pdf-fil
 import { isNullOrUndefined } from 'util';
 import { option } from 'vis-util';
 import { DirectoryContent } from '../../interfaces/projects.interface';
+import { Map } from './project-space.service';
 
 @Injectable({
   providedIn: 'root',
@@ -39,6 +40,16 @@ export class ProjectPageService {
         }),
       };
     }
+  }
+
+  /**
+   * Return list of maps that are made public by user
+   */
+  publicMaps(): Observable<Map[]> {
+    return this.http.get<Map[]>(
+      `/api/drawing-tool/community`,
+      this.createHttpOptions(true)
+    );
   }
 
   /**
@@ -84,13 +95,17 @@ export class ProjectPageService {
     directoryId,
     label,
     description,
+    isPublic= false
   ): Observable<any> {
+    console.log(isPublic);
+
     return this.http.post<any>(
       `${this.projectsAPI}/${projectName}/map`,
       {
         label,
         description,
         directoryId,
+        public: isPublic
       },
       this.createHttpOptions(true),
     );

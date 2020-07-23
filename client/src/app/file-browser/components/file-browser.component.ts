@@ -198,21 +198,21 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
 
   displayMapCreateDialog() {
     const dialogRef = this.modalService.open(MapCreateDialogComponent);
-    dialogRef.result.then(newMap => {
+    dialogRef.result.then((newMap: Map) => {
       this.projectPageService.addMap(
         this.locator.projectName,
         this.directory.id,
         newMap.label,
         newMap.description,
-        // TODO: public flag lost!!
+        newMap.public
       )
-        .pipe(this.errorHandler.create())
-        .subscribe((result) => {
-          this.refresh();
-          this.workspaceManager.navigate(['/maps', result.project.hash_id, 'edit'], {
-            newTab: true,
-          });
+      .pipe(this.errorHandler.create())
+      .subscribe((result) => {
+        this.refresh();
+        this.workspaceManager.navigate(['/maps', result.project.hash_id, 'edit'], {
+          newTab: true,
         });
+      });
     });
   }
 

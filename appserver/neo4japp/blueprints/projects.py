@@ -244,7 +244,7 @@ def add_directory(project_name: str = ''):
     user = g.current_user
 
     yield user, projects
-    new_dir = proj_service.add_directory(projects, dir_name, parent_dir)
+    new_dir = proj_service.add_directory(projects, dir_name, user, parent_dir)
     yield jsonify(dict(results=new_dir.to_dict()))
 
 
@@ -289,6 +289,10 @@ def get_child_directories(current_dir_id: int, project_name: str = ''):
             *[{
                 'type': 'dir',
                 'name': c.name,
+                'creator': {
+                    'id': c.user_id,
+                    'name': AppUser.query.get(c.user_id).username
+                },
                 'data': c.to_dict(),
             } for c in child_dirs],
             *[{

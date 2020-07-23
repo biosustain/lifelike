@@ -113,11 +113,12 @@ def test_can_get_root_dir(session, fix_projects, fix_directory):
     assert proj_service.get_root_dir(fix_projects).name == '/'
 
 
-def test_can_add_directory(session, fix_projects, fix_directory):
+def test_can_add_directory(session, fix_owner, fix_projects, fix_directory):
     proj_service = ProjectsService(session)
     new_dir = proj_service.add_directory(
         projects=fix_projects,
         dir_name='purple_rain',
+        user=fix_owner
     )
     created_dir = session.query(Directory).filter(
         Directory.name == new_dir.name
