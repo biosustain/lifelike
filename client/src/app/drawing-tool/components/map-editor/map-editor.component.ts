@@ -47,7 +47,7 @@ export class MapEditorComponent extends MapViewComponent<KnowledgeMap> implement
 
   getExtraSource(): Observable<KnowledgeMap> {
     return from([this.locator]).pipe(switchMap(locator => {
-      return this.projectService.getBackup(locator.projectName, locator.hashId).pipe(catchError(error => {
+      return this.mapService.getBackup(locator.projectName, locator.hashId).pipe(catchError(error => {
         if (error instanceof HttpErrorResponse) {
           const res = error as HttpErrorResponse;
           if (res.status === 404) {
@@ -67,7 +67,7 @@ export class MapEditorComponent extends MapViewComponent<KnowledgeMap> implement
         this.map = backup;
         this.unsavedChanges$.next(true);
       }, () => {
-        this.projectService.deleteBackup(this.locator.projectName, this.locator.hashId).subscribe();
+        this.mapService.deleteBackup(this.locator.projectName, this.locator.hashId).subscribe();
       });
     }
   }
@@ -85,14 +85,14 @@ export class MapEditorComponent extends MapViewComponent<KnowledgeMap> implement
 
   save() {
     super.save();
-    this.projectService.deleteBackup(this.locator.projectName, this.locator.hashId).subscribe();
+    this.mapService.deleteBackup(this.locator.projectName, this.locator.hashId).subscribe();
   }
 
   saveBackup() {
     if (this.map) {
       this.map.graph = this.graphCanvas.getGraph();
       this.map.date_modified = new Date().toISOString();
-      const observable = this.projectService.createOrUpdateBackup(this.locator.projectName, cloneDeep(this.map));
+      const observable = this.mapService.createOrUpdateBackup(this.locator.projectName, cloneDeep(this.map));
       observable.subscribe();
       return observable;
     }

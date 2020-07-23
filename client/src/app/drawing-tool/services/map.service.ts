@@ -1,58 +1,67 @@
-import {Injectable} from '@angular/core';
-import {Observable} from 'rxjs';
-import {HttpClient, HttpHeaders} from '@angular/common/http';
+import { Injectable } from '@angular/core';
+import { Observable } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
 
-import {
-  KnowledgeMap,
-  UniversalGraph,
-  UniversalGraphEdge,
-  UniversalGraphNode,
-} from './interfaces';
-
-import {
-  DrawingUploadPayload
-} from 'app/interfaces/drawing.interface';
-
-import {
-  utiProject,
-  microbiomeProject
-} from './mock_data';
-import {isNullOrUndefined} from 'util';
-import { encode } from 'punycode';
-
+import { KnowledgeMap } from './interfaces';
+import { AbstractService } from '../../shared/services/abstract-service';
+import { AuthenticationService } from '../../auth/services/authentication.service';
 
 @Injectable({
-  providedIn: '***ARANGO_USERNAME***'
+  providedIn: '***ARANGO_USERNAME***',
 })
-export class MapService {
-  readonly baseUrl = '/api/drawing-tool';
+export class MapService extends AbstractService {
+  readonly PROJECTS_BASE_URL = '/api/projects';
+  readonly MAPS_BASE_URL = '/api/drawing-tool';
 
-  constructor(private http: HttpClient) {
+  constructor(auth: AuthenticationService, http: HttpClient) {
+    super(auth, http);
+  }
+
+  // ========================================
+  // Listing
+  // ========================================
+
+  getCommunityMaps(): Observable<KnowledgeMap[]> {
+    return this.http.get<KnowledgeMap[]>(
+      `/api/drawing-tool/community`,
+      this.getHttpOptions(true),
+    );
   }
 
   // ========================================
   // CRUD
   // ========================================
 
-  get(projectName: string, hashId: string) {
+  createMap(projectName: string, directoryId: number, label: string, description: string, publicMap = false): Observable<any> {
+    return this.http.post<any>(
+      `${this.PROJECTS_BASE_URL}/${encodeURIComponent(projectName)}/map`, {
+        label,
+        description,
+        directoryId,
+        public: publicMap,
+      }, this.getHttpOptions(true),
+    );
+  }
+
+  getMap(projectName: string, hashId: string) {
     return this.http.get(
-      `/api/projects/${encodeURIComponent(projectName)}/map/${encodeURIComponent(hashId)}`,
-      this.createHttpOptions(true)
+      `${this.PROJECTS_BASE_URL}/${encodeURIComponent(projectName)}/map/${encodeURIComponent(hashId)}`,
+      this.getHttpOptions(true),
     );
   }
 
-  update(projectName: string, map: KnowledgeMap): Observable<any> {
+  updateMap(projectName: string, map: KnowledgeMap): Observable<any> {
     return this.http.patch(
-      `/api/projects/${encodeURIComponent(projectName)}/map/${encodeURIComponent(map.hash_id)}`,
+      `${this.PROJECTS_BASE_URL}/${encodeURIComponent(projectName)}/map/${encodeURIComponent(map.hash_id)}`,
       map,
-      this.createHttpOptions(true)
+      this.getHttpOptions(true),
     );
   }
 
-  delete(projectName: string, hashId: string): Observable<any> {
+  deleteMap(projectName: string, hashId: string): Observable<any> {
     return this.http.delete(
-      `/api/projects/${encodeURIComponent(projectName)}/map/${encodeURIComponent(hashId)}`,
-      this.createHttpOptions(true)
+      `${this.PROJECTS_BASE_URL}/${encodeURIComponent(projectName)}/map/${encodeURIComponent(hashId)}`,
+      this.getHttpOptions(true),
     );
   }
 
@@ -60,25 +69,34 @@ export class MapService {
   // Export
   // ========================================
 
+  generateExport(projectName: string, hashId: string, format: 'pdf' | 'svg' | 'png'): Observable<any> {
+    return this.http.get(
+      `${this.PROJECTS_BASE_URL}/${encodeURIComponent(projectName)}/map/${encodeURIComponent(hashId)}/${encodeURIComponent(format)}`, {
+        ...this.getHttpOptions(true),
+        responseType: 'blob',
+      },
+    );
+  }
+
+  /**
+   * @deprecated use {@link generateExport}
+   */
   generatePDF(projectName: string, hashId: string): Observable<any> {
-    return this.http.get(
-      `/api/projects/${encodeURIComponent(projectName)}/map/${encodeURIComponent(hashId)}/pdf`,
-      this.createHttpOptions(true, true)
-    );
+    return this.generateExport(projectName, hashId, 'pdf');
   }
 
+  /**
+   * @deprecated use {@link generateExport}
+   */
   generateSVG(projectName: string, hashId: string): Observable<any> {
-    return this.http.get(
-      `/api/projects/${encodeURIComponent(projectName)}/map/${encodeURIComponent(hashId)}/svg`,
-      this.createHttpOptions(true, true)
-    );
+    return this.generateExport(projectName, hashId, 'svg');
   }
 
+  /**
+   * @deprecated use {@link generateExport}
+   */
   generatePNG(projectName: string, hashId: string): Observable<any> {
-    return this.http.get(
-      `/api/projects/${encodeURIComponent(projectName)}/map/${encodeURIComponent(hashId)}/png`,
-      this.createHttpOptions(true, true)
-    );
+    return this.generateExport(projectName, hashId, 'png');
   }
 
   // ========================================
@@ -87,8 +105,8 @@ export class MapService {
 
   getBackup(projectName: string, hashId: string): Observable<any> {
     return this.http.get(
-      `${this.baseUrl}/map/${encodeURIComponent(hashId)}/backup`,
-      this.createHttpOptions(true)
+      `${this.MAPS_BASE_URL}/map/${encodeURIComponent(hashId)}/backup`,
+      this.getHttpOptions(true),
     );
   }
 
@@ -98,16 +116,16 @@ export class MapService {
       '';
 
     return this.http.post(
-      `${this.baseUrl}/map/${encodeURIComponent(map.hash_id)}/backup`,
+      `${this.MAPS_BASE_URL}/map/${encodeURIComponent(map.hash_id)}/backup`,
       map,
-      this.createHttpOptions(true)
+      this.getHttpOptions(true),
     );
   }
 
   deleteBackup(projectName: string, hashId: string): Observable<any> {
     return this.http.delete(
-      `${this.baseUrl}/map/${encodeURIComponent(hashId)}/backup`,
-      this.createHttpOptions(true)
+      `${this.MAPS_BASE_URL}/map/${encodeURIComponent(hashId)}/backup`,
+      this.getHttpOptions(true),
     );
   }
 
@@ -117,38 +135,8 @@ export class MapService {
 
   isEditableByUser(projectName: string, hashId: string): Observable<any> {
     return this.http.get(
-      `${this.baseUrl}/map/${encodeURIComponent(hashId)}/meta`,
-      this.createHttpOptions(true)
+      `${this.MAPS_BASE_URL}/map/${encodeURIComponent(hashId)}/meta`,
+      this.getHttpOptions(true),
     );
-  }
-
-  // ========================================
-
-  createHttpOptions(withJwt = false, blob = false) {
-    let headers;
-
-    if (withJwt) {
-      headers = {
-        'Content-Type': 'application/json',
-        Authorization: 'Bearer ' + localStorage.getItem('access_jwt')
-      };
-    } else {
-      headers = {
-        'Content-Type': 'application/json'
-      };
-    }
-    let httpOptions: any;
-
-    if (blob) {
-      httpOptions = {
-        headers: new HttpHeaders(headers),
-        responseType: 'blob'
-      };
-    } else {
-      httpOptions = {
-        headers: new HttpHeaders(headers)
-      };
-    }
-    return httpOptions;
   }
 }
