@@ -57,8 +57,10 @@ export class ProjectPageService extends AbstractService {
     );
   }
 
-  // TODO - no delete dir endpoint exist rignt now
-  deleteDirectory(): Observable<any> {
-    throw new Error('not implemented');
+  deleteDirectory(projectName: string, directoryId: number): Observable<any> {
+    return this.http.delete<any>(
+      `${this.PROJECTS_BASE_URL}/${encodeURIComponent(projectName)}/directories/${encodeURIComponent(directoryId)}`,
+      this.getHttpOptions(true),
+    );
   }
 }
