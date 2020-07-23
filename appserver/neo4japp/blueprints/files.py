@@ -27,6 +27,7 @@ from neo4japp.database import (
     get_annotations_pdf_parser,
     get_bioc_document_service,
     get_lmdb_dao,
+    get_excel_export_service,
 )
 from neo4japp.data_transfer_objects import FileUpload
 from neo4japp.exceptions import (
@@ -406,7 +407,8 @@ def get_annotations(id: str, project_name: str):
     # Add additional information for annotations that were excluded
     for annotation in annotations:
         for excluded_annotation in file.excluded_annotations:
-            if excluded_annotation['id'] == annotation['meta']['id']:
+            if (excluded_annotation['id'] == annotation['meta']['id'] and
+                    excluded_annotation['text'] == annotation['textInDocument']):
                 annotation['meta']['isExcluded'] = True
                 annotation['meta']['exclusionReason'] = excluded_annotation['reason']
                 annotation['meta']['exclusionComment'] = excluded_annotation['comment']
@@ -668,9 +670,9 @@ def add_annotation_exclusion(project_name: str, file_id: str, **payload):
     '/<string:project_name>/files/<string:file_id>/annotations/remove_annotation_exclusion',
     methods=['PATCH'])
 @auth.login_required
-@use_kwargs(AnnotationExclusionSchema(only=('id',)))
+@use_kwargs(AnnotationExclusionSchema(only=('id', 'text')))
 @requires_project_permission(AccessActionType.WRITE)
-def remove_annotation_exclusion(project_name, file_id, id):
+def remove_annotation_exclusion(project_name, file_id, id, text):
 
     user = g.current_user
 
@@ -688,7 +690,7 @@ def remove_annotation_exclusion(project_name, file_id, id):
     if file is None:
         raise RecordNotFoundException('File does not exist')
     excluded_annotation = next(
-        (ann for ann in file.excluded_annotations if ann['id'] == id), None
+        (ann for ann in file.excluded_annotations if ann['id'] == id and ann['text'] == text), None
     )
     if excluded_annotation is None:
         raise RecordNotFoundException('Annotation not found')
@@ -707,3 +709,52 @@ def remove_annotation_exclusion(project_name, file_id, id):
 def get_lmdbs_dates():
     rows = LMDBsDates.query.all()
     return {row.name: row.date for row in rows}
+
+
+@bp.route('/global_exclusion_file')
+@auth.login_required
+def export_excluded_annotations():
+    files = db.session.query(Files.filename, Files.excluded_annotations).all()
+
+    def get_exclusion_for_review(filename, exclusion):
+        user = AppUser.query.filter_by(id=exclusion['user_id']).one_or_none()
+        exclusion['user'] = f'{user.first_name} {user.last_name}' if user else 'not found'
+        del exclusion['user_id']
+        exclusion['filename'] = filename
+        return exclusion
+
+    data = [get_exclusion_for_review(filename, exclusion)
+            for filename, excluded_annotations in files for exclusion in excluded_annotations]
+
+    exporter = get_excel_export_service()
+    response = make_response(exporter.get_bytes(data), 200)
+    response.headers['Content-Type'] = exporter.mimetype
+    response.headers['Content-Disposition'] = \
+        f'attachment; filename={exporter.get_filename("excluded_annotations")}'
+    return response
+
+
+@bp.route('/global_inclusion_file')
+@auth.login_required
+def export_included_annotations():
+    files = db.session.query(Files.filename, Files.custom_annotations).all()
+
+    def get_inclusion_for_review(filename, inclusion):
+        user = AppUser.query.filter_by(id=inclusion['user_id']).one_or_none()
+        return {
+            'text': inclusion['meta']['allText'],
+            'type': inclusion['meta']['type'],
+            'primary_link': inclusion['meta']['primaryLink'],
+            'user': f'{user.first_name} {user.last_name}' if user else 'not found',
+            'filename': filename
+        }
+
+    data = [get_inclusion_for_review(filename, inclusion)
+            for filename, custom_annotations in files for inclusion in custom_annotations]
+
+    exporter = get_excel_export_service()
+    response = make_response(exporter.get_bytes(data), 200)
+    response.headers['Content-Type'] = exporter.mimetype
+    response.headers['Content-Disposition'] = \
+        f'attachment; filename={exporter.get_filename("included_annotations")}'
+    return response
