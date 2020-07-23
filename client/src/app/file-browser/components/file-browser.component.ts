@@ -15,7 +15,7 @@ import { FileEditDialogComponent } from './file-edit-dialog.component';
 import { ErrorHandler } from '../../shared/services/error-handler.service';
 import { Directory, ProjectSpaceService } from '../services/project-space.service';
 import { ProjectPageService } from '../services/project-page.service';
-import { DirectoryCreateDialogComponent } from './directory-create-dialog.component';
+import { DirectoryEditDialogComponent } from './directory-edit-dialog.component';
 import { DirectoryContent, DirectoryObject } from '../../interfaces/projects.interface';
 import { CollectionModal } from '../../shared/utils/collection-modal';
 import { MapEditDialogComponent } from '../../drawing-tool/components/map-edit-dialog.component';
@@ -27,7 +27,7 @@ import { MessageDialog } from '../../shared/services/message-dialog.service';
 import { MessageType } from '../../interfaces/message-dialog.interface';
 import { ModuleProperties } from '../../shared/modules';
 import { KnowledgeMap } from '../../drawing-tool/services/interfaces';
-import { catchError, tap } from 'rxjs/operators';
+import { catchError } from 'rxjs/operators';
 import { ObjectDeletionResultDialogComponent } from './object-deletion-result-dialog.component';
 
 interface PathLocator {
@@ -179,9 +179,9 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
   }
 
   displayDirectoryCreateDialog() {
-    const dialogRef = this.ngbModal.open(DirectoryCreateDialogComponent);
+    const dialogRef = this.ngbModal.open(DirectoryEditDialogComponent);
     dialogRef.result.then(
-      resp => {
+      (resp: Directory) => {
         this.projectPageService.createDirectory(
           this.locator.projectName,
           this.directory.id,
@@ -222,11 +222,25 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
 
   displayEditDialog(object: AnnotatedDirectoryObject) {
     if (object.type === 'dir') {
-      this.messageDialog.display({
-        title: 'Not Yet Implemented',
-        message: 'Directories cannot yet be edited. Sorry.',
-        type: MessageType.Warning,
-      });
+      const dialogRef = this.ngbModal.open(DirectoryEditDialogComponent);
+      dialogRef.componentInstance.editing = true;
+      dialogRef.componentInstance.directory = cloneDeep(object.data);
+      dialogRef.result.then(
+        (resp: Directory) => {
+          this.projectPageService.renameDirectory(
+            this.locator.projectName,
+            (object.data as Directory).id,
+            resp.name,
+          )
+            .pipe(this.errorHandler.create())
+            .subscribe(() => {
+              this.refresh();
+              this.snackBar.open(`Folder '${object.name}' renamed to '${resp.name}'`, 'Close', {duration: 5000});
+            });
+        },
+        () => {
+        },
+      );
     } else if (object.type === 'file') {
       const file = object.data as PdfFile;
       const dialogRef = this.modalService.open(FileEditDialogComponent);
