@@ -12,11 +12,20 @@ class DirectoryRenameRequest(CamelDictMixin):
 
 
 @attr.s(frozen=True)
+class DirectoryObject(CamelDictMixin):
+    type: str = attr.ib()
+    name: str = attr.ib()
+    creator: Dict = attr.ib()
+    description: str = attr.ib()
+    data: Dict = attr.ib()
+
+
+@attr.s(frozen=True)
 class DirectoryContent(CamelDictMixin):
     """ Contains contents of a directory """
     dir: Dict = attr.ib()
     path: Sequence[Dict] = attr.ib()
-    objects: Sequence[Dict] = attr.ib()
+    objects: Sequence[DirectoryObject] = attr.ib()
 
 
 class FileType(Enum):
