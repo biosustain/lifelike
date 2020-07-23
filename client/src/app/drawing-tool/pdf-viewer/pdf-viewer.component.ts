@@ -5,7 +5,7 @@ import { Hyperlink, SearchLink } from 'app/shared/constants';
 
 import { DataFlowService, PdfAnnotationsService, } from '../services';
 
-import { Annotation, GraphData, Location, Meta, AnnotationExclusionData } from '../services/interfaces';
+import { Annotation, GraphData, Location, Meta, AnnotationExclusion, StoredAnnotationExclusion } from '../services/interfaces';
 
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
@@ -79,11 +79,11 @@ export class PdfViewerComponent implements OnDestroy {
   pdfFileLoaded = false;
   sortedEntityTypeEntries = [];
   entityTypeVisibilityChanged = false;
-  addedAnnotationExclusion: AnnotationExclusionData;
+  addedAnnotationExclusion: AnnotationExclusion;
   addAnnotationExclusionSub: Subscription;
   showExcludedAnnotations = false;
   removeAnnotationExclusionSub: Subscription;
-  removedAnnotationExclusion: AnnotationExclusionData;
+  removedAnnotationExclusion: AnnotationExclusion;
 
   // search
   pdfQuery;
@@ -275,10 +275,10 @@ export class PdfViewerComponent implements OnDestroy {
     });
   }
 
-  annotationExclusionAdded({ id, text, reason, comment }) {
-    this.addAnnotationExclusionSub = this.pdfAnnService.addAnnotationExclusion(this.currentFileId, id, text, reason, comment).subscribe(
+  annotationExclusionAdded(exclusionData: StoredAnnotationExclusion) {
+    this.addAnnotationExclusionSub = this.pdfAnnService.addAnnotationExclusion(this.currentFileId, exclusionData).subscribe(
       response => {
-        this.addedAnnotationExclusion = { id, text, reason, comment };
+        this.addedAnnotationExclusion = (({ id, text, reason, comment }) => ({ id, text, reason, comment }))(exclusionData);
         this.snackBar.open('Annotation has been excluded', 'Close', {duration: 5000});
       },
       err => {
