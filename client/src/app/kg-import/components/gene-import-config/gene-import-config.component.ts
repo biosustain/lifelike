@@ -55,7 +55,7 @@ export class GeneImportConfigComponent {
         this.relationshipFormValidityChanged = new EventEmitter<boolean>();
 
         this.organisms = new Map<string, number>([
-            ['Homo sapiens', 78602],
+            ['Homo sapiens', 30042460],
             ['SARS-CoV-2', 2697049],
             ['Escherichia coli str. K-12 substr. MG1655', 29424357],
             ['Saccharomyces cerevisiae S288C', 29816395],
