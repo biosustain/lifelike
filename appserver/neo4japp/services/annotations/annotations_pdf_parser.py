@@ -119,29 +119,31 @@ class AnnotationsPDFParser:
                             )
                             lt_obj._text = decoded_str[0]
 
-                            for i, c in enumerate(decoded_str[1:]):
-                                lt_obj_cp = deepcopy(lt_obj)
-                                if i == 0:
-                                    prev_end_x = lt_obj.x1
-                                else:
-                                    prev_end_x = ligatures_list[-1].x1
+                            # second char in ligature
+                            lt_obj_c2 = deepcopy(lt_obj)
+                            lt_obj_c2.set_bbox(
+                                (
+                                    lt_obj.x0 + lt_obj.width/3 + 0.01,
+                                    lt_obj.y0,
+                                    lt_obj.x0 + 2 * lt_obj.width/3 - 0.01,
+                                    lt_obj.y1,
+                                ),
+                            )
+                            lt_obj_c2._text = decoded_str[1]
+                            ligatures_list.append(lt_obj_c2)
 
-                                if i == decoded_str_len - 1:
-                                    new_end_x = original_lig_end_x
-                                else:
-                                    new_end_x = ligatures_list[-1].x0 + 2 * lt_obj_cp.width/3 - 0.01
-
-                                lt_obj_cp.set_bbox(
-                                    (
-                                        prev_end_x + 0.02,
-                                        lt_obj_cp.y0,
-                                        new_end_x,
-                                        lt_obj_cp.y1,
-                                    ),
-                                )
-                                lt_obj_cp._text = c
-                                ligatures_list.append(lt_obj_cp)
-
+                            # third char in ligature
+                            lt_obj_c3 = deepcopy(lt_obj)
+                            lt_obj_c3.set_bbox(
+                                (
+                                    lt_obj.x0 + 2 * lt_obj.width/3 + 0.01,
+                                    lt_obj.y0,
+                                    original_lig_end_x,
+                                    lt_obj.y1,
+                                ),
+                            )
+                            lt_obj_c3._text = decoded_str[-1]
+                            ligatures_list.append(lt_obj_c3)
                     if char_coord_objs_in_pdf:
                         prev_char = char_coord_objs_in_pdf[-1]
 

@@ -5,12 +5,14 @@
             matTooltip="{{ leftNodeLabel }}"
             [matTooltipPosition]="tooltipPosition"
         >
-            <mat-icon [ngStyle]="{'color': leftNodeColor}">lens</mat-icon>
+            <i class="fas fa-fw fa-circle" [ngStyle]="{'color': leftNodeColor}"></i>
             {{ leftNodeName }}
         </div>
     </div>
     <div id="relationship-container" *ngIf="edge">
-        <div>&minus;</div>
+        <div class="mx-1">
+          &mdash;
+        </div>
         <div>{{ edge }}</div>
         <div *ngIf="rightNodeName"><i class="fa fa-fw fa-caret-right"></i></div>
     </div>
@@ -20,7 +22,7 @@
             matTooltip="{{ rightNodeLabel }}"
             [matTooltipPosition]="tooltipPosition"
         >
-            <mat-icon [style.color]="rightNodeColor">lens</mat-icon>
+            <i class="fas fa-fw fa-circle" [ngStyle]="{'color': rightNodeColor}"></i>
             {{ rightNodeName }}
         </div>
     </div>
