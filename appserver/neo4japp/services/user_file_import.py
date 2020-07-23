@@ -1,3 +1,5 @@
+from math import floor
+
 from typing import (
     Any,
     Dict,
@@ -436,69 +438,92 @@ class UserFileImportService(GraphBaseDao):
         tx.commit()
         print('Done creating relationships between new nodes')
 
-    def get_props_from_col_and_propname(
+    def get_props_str_from_propnames_and_varname(self, varname: str, propnames: List[str]):
+        if (len(propnames) == 0):
+            return '{}'
+
+        retval = '{'
+        for propname in propnames:
+            retval += f'{propname}: {varname}.{propname}, '
+
+        return retval[0:-2] + '}'  # remove trailing ' ,' and add closing curly bracket
+
+    def get_props_obj_from_worksheet(
         self,
         worksheet: Worksheet,
-        row: int,
-        relationship_properties: List[Properties],
-    ) -> Dict[str, Any]:
-        new_props: Dict[str, Any] = {}
+        props: List[Properties],
+        row: int
+    ):
+        props_obj = {}
 
-        for prop in relationship_properties:
-            col = int(prop.column)
-            propname = prop.property_name
-            new_props[propname] = worksheet.cell(row=row, column=col+1).value
+        for prop in props:
+            props_obj[prop.property_name] = worksheet.cell(
+                row=row,
+                column=int(prop.column) + 1
+            ).value or ''
 
-        return new_props
+        return props_obj
 
-    def match_import_column_to_gene_query(
+    def get_merge_col_match_query(
         self,
-        gene_matching_property: GeneMatchingProperty,
-    ) -> str:
-        if gene_matching_property == GeneMatchingProperty.ID.value:
-            return """
+        node_label1,
+        node_label2,
+        node_propnames1,
+        node_propnames2,
+        rel_label,
+        rel_propnames,
+    ):
+        node_props1 = self.get_props_str_from_propnames_and_varname('tuple[0]', node_propnames1)
+        node_props2 = self.get_props_str_from_propnames_and_varname('tuple[1]', node_propnames2)
+        rel_props = self.get_props_str_from_propnames_and_varname('tuple[2]', rel_propnames)
+
+        return f"""
+        UNWIND $col_match_prop_tuples AS tuple
+        MERGE (n:{node_label1} {node_props1})
+        MERGE (m:{node_label2} {node_props2})
+        MERGE (n)-[r:{rel_label} {rel_props}]->(m)
+        """
+
+    def get_merge_gene_match_query(
+        self,
+        node_label1,
+        node_propnames1,
+        rel_label,
+        rel_propnames,
+        gene_matching_property,
+    ):
+        node_props1 = self.get_props_str_from_propnames_and_varname('tuple[0]', node_propnames1)
+        rel_props = self.get_props_str_from_propnames_and_varname('tuple[1]', rel_propnames)
+
+        if gene_matching_property == GeneMatchingProperty.NAME.value:
+            return f"""
+            UNWIND $gene_match_prop_tuples AS tuple
+            MERGE (n:{node_label1} {node_props1})
+            WITH n
             MATCH (g:Gene)-[:HAS_TAXONOMY]->(t:Taxonomy)
-            WHERE g.id=$gene_val AND ID(t)=$tax_id
-            RETURN g
-            """
-        elif gene_matching_property == GeneMatchingProperty.NAME.value:
-            return """
-            MATCH (g:Gene)-[:HAS_TAXONOMY]->(t:Taxonomy)
-            WHERE g.name=$gene_val AND ID(t)=$tax_id
-            RETURN g
+            WHERE g.name=n.cell_value AND ID(t)=$tax_id
+            MERGE (n)-[r:{rel_label} {rel_props}]->(g)
             """
         else:
-            raise ValueError(f'Cannot match on unknown gene property {gene_matching_property}')
+            return f"""
+            UNWIND $gene_match_prop_tuples AS tuple
+            MERGE (n:{node_label1} {node_props1})
+            WITH n
+            MATCH (g:Gene)-[:HAS_TAXONOMY]->(t:Taxonomy)
+            WHERE g.id=n.cell_value AND ID(t)=$tax_id
+            MERGE (n)-[r:{rel_label} {rel_props}]->(g)
+            """
 
-    def match_import_column_to_gene(
+    def get_import_batches(
         self,
-        gene_val: str,
-        species_id: int,
-        gene_matching_property: str,
+        data,
     ):
-        query = self.match_import_column_to_gene_query(gene_matching_property)
-        return self.graph.run(
-            query,
-            {
-                'gene_val': gene_val,
-                'tax_id': species_id,
-            }
-        ).evaluate()
-
-    def get_or_create_node(
-        self,
-        tx,
-        label: str,
-        props: Dict[str, Any]
-    ):
-        existing_node = self.graph.nodes.match(label, **props).first()
-
-        if existing_node is None:
-            new_node = Node(label, **props)
-            tx.create(new_node)
-            return new_node
-        else:
-            return existing_node
+        num_batches = floor((len(data) / 512)) + 1
+        batches = []
+        for i in range(0, num_batches):
+            batch = data[i * 512:(i + 1) * 512]
+            batches.append(batch)
+        return batches
 
     def get_worksheet(self, file_name: str, sheet_name: str):
         workbook = cache.get(file_name)
@@ -518,80 +543,117 @@ class UserFileImportService(GraphBaseDao):
     ):
         worksheet = self.get_worksheet(file_name, sheet_name)
         max_row = len(list(worksheet.rows))
-
         curr_row = 2  # start at the second row because we don't want to include headers
 
         unmatched_rows: List[Tuple[int, Dict]] = []
 
-        tx = self.graph.begin()
+        relationship_hashes = []
+        rel_hash_map = {}  # {relhash: relationship}
+        col_match_prop_tuples = {}  # {rel_hash: [(node1, node2, relationship_props)]}
+        gene_match_prop_tuples = {}  # {rel_hash: [(node1, relationship_props)]}
+
+        # Setup hash maps
+        for relationship in relationships:
+            rel_hash = compute_hash(relationship.to_dict())
+            relationship_hashes.append(rel_hash)
+
+            rel_hash_map[rel_hash] = relationship
+
+            if col_match_prop_tuples.get(rel_hash, None) is None:
+                col_match_prop_tuples[rel_hash] = []
+            if gene_match_prop_tuples.get(rel_hash, None) is None:
+                gene_match_prop_tuples[rel_hash] = []
+
         while curr_row <= max_row:
             for relationship in relationships:
+                relationship_props = self.get_props_obj_from_worksheet(
+                    worksheet=worksheet,
+                    props=relationship.relationship_properties,
+                    row=curr_row,
+                )
+
                 # openpyxl is 1-based, so add 1 to the column_index
                 node1_val = worksheet.cell(row=curr_row, column=int(relationship.column_index1)+1).value  # noqa
                 node_props1 = {
-                    'cell_value': node1_val,
-                    'row': curr_row,
-                    'col': int(relationship.column_index1)+1
+                    'cell_value': node1_val or '',
                 }
                 node_props1.update(
-                    self.get_props_from_col_and_propname(
-                        worksheet,
-                        curr_row,
-                        relationship.node_properties1
+                    self.get_props_obj_from_worksheet(
+                        worksheet=worksheet,
+                        props=relationship.node_properties1,
+                        row=curr_row,
                     )
                 )
-                node1 = self.get_or_create_node(tx, relationship.node_label1, node_props1)
 
                 if relationship.species_selection is None or relationship.gene_matching_property is None:  # noqa
                     node2_val = worksheet.cell(row=curr_row, column=int(relationship.column_index2)+1).value  # noqa
                     node_props2 = {
-                        'cell_value': node2_val,
-                        'row': curr_row,
-                        'col': int(relationship.column_index2)+1
+                        'cell_value': node2_val or '',
                     }
                     node_props2.update(
-                        self.get_props_from_col_and_propname(
-                            worksheet,
-                            curr_row,
-                            relationship.node_properties2
+                        self.get_props_obj_from_worksheet(
+                            worksheet=worksheet,
+                            props=relationship.node_properties2,
+                            row=curr_row,
                         )
                     )
-                    node2 = self.get_or_create_node(tx, relationship.node_label2, node_props2)  # noqa
-
-                else:
-                    node2 = self.match_import_column_to_gene(
-                        node1_val,
-                        int(relationship.species_selection),
-                        relationship.gene_matching_property,
+                    col_match_prop_tuples[rel_hash].append(
+                        (node_props1, node_props2, relationship_props)
                     )
+                else:
+                    gene_match_prop_tuples[rel_hash].append(
+                        (node_props1, relationship_props)
+                    )
+            curr_row += 1
 
-                    if not node2:
-                        # Couldn't match to any gene, so save the row number and relationship object
-                        unmatched_rows.append((curr_row, relationship.to_dict()))
-                        continue
+        tx = self.graph.begin()
+        for rel_hash in relationship_hashes:
+            relationship = rel_hash_map[rel_hash]
+            relationship_label = relationship.relationship_label
+            relationship_propnames = [
+                prop.property_name for prop in relationship.relationship_properties
+            ]
+            node_label1 = relationship.node_label1
+            node_label2 = relationship.node_label2
 
-                relationship_props = self.get_props_from_col_and_propname(
-                    worksheet,
-                    curr_row,
-                    relationship.relationship_properties
+            if relationship.species_selection is None or relationship.gene_matching_property is None:  # noqa
+                merge_col_match_query = self.get_merge_col_match_query(
+                    node_label1,
+                    node_label2,
+                    [prop.property_name for prop in relationship.node_properties1] + ['cell_value'],  # noqa
+                    [prop.property_name for prop in relationship.node_properties2] + ['cell_value'],  # noqa
+                    relationship_label,
+                    relationship_propnames,
                 )
 
-                if relationship.relationship_direction == 'To':
-                    relationship = Relationship(
-                        node1,
-                        relationship.relationship_label,
-                        node2,
-                        **relationship_props
+                batches = self.get_import_batches(col_match_prop_tuples[rel_hash])
+
+                for batch in batches:
+                    tx.run(
+                        merge_col_match_query,
+                        {
+                            'col_match_prop_tuples': batch,
+                        }
                     )
-                else:
-                    relationship = Relationship(
-                        node2,
-                        relationship.relationship_label,
-                        node1,
-                        **relationship_props
+            else:
+                merge_gene_match_query = self.get_merge_gene_match_query(
+                    node_label1,
+                    [prop.property_name for prop in relationship.node_properties1] + ['cell_value'],  # noqa
+                    relationship_label,
+                    relationship_propnames,
+                    relationship.gene_matching_property
+                )
+
+                batches = self.get_import_batches(gene_match_prop_tuples[rel_hash])
+
+                for batch in batches:
+                    tx.run(
+                        merge_gene_match_query,
+                        {
+                            'gene_match_prop_tuples': batch,
+                            'tax_id': int(relationship.species_selection),
+                        }
                     )
-                tx.create(relationship)
-            curr_row += 1
 
         tx.commit()
 
