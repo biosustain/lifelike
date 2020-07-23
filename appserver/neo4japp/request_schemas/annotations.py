@@ -41,5 +41,6 @@ class AnnotationRemovalSchema(StrictSchema):
 
 class AnnotationExclusionSchema(StrictSchema):
     id = ma.String(required=True)
+    text = ma.String(required=True)
     reason = ma.String(required=True)
     comment = ma.String(required=True)
