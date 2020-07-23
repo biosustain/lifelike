@@ -104,7 +104,7 @@ export class PdfAnnotationsService {
       `/api/projects/${projectName}/files/${fileId}/annotations/add_annotation_exclusion`,
       { id, text, reason, comment },
       this.createHttpOptions(true),
-    )
+    );
   }
 
   /**
