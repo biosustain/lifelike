@@ -198,4 +198,4 @@ def test_expand_ligatures(annotations_setup):
 
     # every character should have a LT object
     # ligatures should be expanded
-    assert len(parsed_pdf_chars.char_coord_objs_in_pdf) == 41
+    assert len(parsed_pdf_chars.char_coord_objs_in_pdf) == 59
