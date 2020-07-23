@@ -204,6 +204,7 @@ def add_project(projects_name: str):
         label=data.get("label", ""),
         description=data.get("description", ""),
         date_modified=date_modified,
+        public=data.get("public", False),
         graph=data.get("graph", dict(nodes=[], edges=[])),
         user_id=user.id,
         dir_id=dir_id,
