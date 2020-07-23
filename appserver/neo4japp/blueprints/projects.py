@@ -349,7 +349,7 @@ def rename_directory(req: DirectoryRenameRequest, current_dir_id: int, project_n
     yield SuccessResponse(result=modified_dir.to_dict(), status_code=200)
 
 
-@bp.route('/<string:project_name>/directories/<int:current_dir_id>/delete', methods=['POST'])
+@bp.route('/<string:project_name>/directories/<int:current_dir_id>', methods=['DELETE'])
 @auth.login_required
 @requires_project_permission(AccessActionType.WRITE)
 def delete_directory(current_dir_id: int, project_name: str):
