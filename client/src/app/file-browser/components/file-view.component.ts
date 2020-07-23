@@ -87,7 +87,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
   addAnnotationExclusionSub: Subscription;
   showExcludedAnnotations = false;
   removeAnnotationExclusionSub: Subscription;
-  removedAnnotationExclusionId: string;
+  removedAnnotationExclusion: AnnotationExclusionData;
   projectName: string;
 
   // search
@@ -264,7 +264,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
 
     annotationToAdd.meta.idHyperlink = this.generateHyperlink(annotationToAdd);
 
-    this.addAnnotationSub = this.pdfAnnService.addCustomAnnotation(this.currentFileId, annotationToAdd)
+    this.addAnnotationSub = this.pdfAnnService.addCustomAnnotation(this.currentFileId, annotationToAdd, this.projectName)
       .pipe(this.errorHandler.create())
       .subscribe(
         response => {
@@ -285,7 +285,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
     const dialogRef = this.modalService.open(ConfirmDialogComponent);
     dialogRef.componentInstance.message = 'Do you want to remove all matching annotations from the file as well?';
     dialogRef.result.then((removeAll: boolean) => {
-      this.removeAnnotationSub = this.pdfAnnService.removeCustomAnnotation(this.currentFileId, uuid, removeAll)
+      this.removeAnnotationSub = this.pdfAnnService.removeCustomAnnotation(this.currentFileId, uuid, removeAll, this.projectName)
         .pipe(this.errorHandler.create())
         .subscribe(
           response => {
@@ -308,12 +308,14 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
     });
   }
 
-  annotationExclusionAdded({id, reason, comment}) {
-    this.addAnnotationExclusionSub = this.pdfAnnService.addAnnotationExclusion(this.currentFileId, id, reason, comment, this.projectName)
+  annotationExclusionAdded({id, text, reason, comment}) {
+    this.addAnnotationExclusionSub = this.pdfAnnService.addAnnotationExclusion(
+      this.currentFileId, id, text, reason, comment, this.projectName,
+    )
       .pipe(this.errorHandler.create())
       .subscribe(
         response => {
-          this.addedAnnotationExclusion = {id, reason, comment};
+          this.addedAnnotationExclusion = {id, text, reason, comment};
           this.snackBar.open('Annotation has been excluded', 'Close', {duration: 5000});
         },
         err => {
@@ -322,12 +324,12 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
       );
   }
 
-  annotationExclusionRemoved(id) {
-    this.removeAnnotationExclusionSub = this.pdfAnnService.removeAnnotationExclusion(this.currentFileId, id, this.projectName)
+  annotationExclusionRemoved({id, text}) {
+    this.removeAnnotationExclusionSub = this.pdfAnnService.removeAnnotationExclusion(this.currentFileId, id, text, this.projectName)
       .pipe(this.errorHandler.create())
       .subscribe(
         response => {
-          this.removedAnnotationExclusionId = id;
+          this.removedAnnotationExclusion = {id, text, reason: '', comment: ''};
           this.snackBar.open('Unmarked successfully', 'Close', {duration: 5000});
         },
         err => {
