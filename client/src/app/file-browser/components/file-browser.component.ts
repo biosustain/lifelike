@@ -1,10 +1,10 @@
 import { Component, EventEmitter, OnDestroy, OnInit, Output } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { BehaviorSubject, combineLatest, Observable, Subscription, throwError } from 'rxjs';
+import { BehaviorSubject, combineLatest, from, Observable, Subscription, throwError } from 'rxjs';
 import { PdfFile, UploadPayload, UploadType } from 'app/interfaces/pdf-files.interface';
 import { PdfFilesService } from 'app/shared/services/pdf-files.service';
-import { HttpEventType } from '@angular/common/http';
+import { HttpErrorResponse, HttpEventType } from '@angular/common/http';
 import { Progress, ProgressMode } from 'app/interfaces/common-dialog.interface';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
@@ -27,6 +27,8 @@ import { MessageDialog } from '../../shared/services/message-dialog.service';
 import { MessageType } from '../../interfaces/message-dialog.interface';
 import { ModuleProperties } from '../../shared/modules';
 import { KnowledgeMap } from '../../drawing-tool/services/interfaces';
+import { catchError, tap } from 'rxjs/operators';
+import { ObjectDeletionResultDialogComponent } from './object-deletion-result-dialog.component';
 
 interface PathLocator {
   projectName?: string;
@@ -213,9 +215,8 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
             newTab: true,
             queryParams: this.getObjectQueryParams(),
           });
+          this.snackBar.open(`Map '${newMap.label}' created, opening...`, 'Close', {duration: 5000});
         });
-        this.snackBar.open(`Map '${newMap.label}' created, opening...`, 'Close', {duration: 5000});
-      });
     });
   }
 
@@ -360,32 +361,34 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
   }
 
   delete(objects: readonly AnnotatedDirectoryObject[]) {
-    // TODO: not being able to delete directory is super lame
-    const supportedObjects = objects.filter(object => object.type !== 'dir');
+    const failed: { object: DirectoryObject, message: string }[] = [];
 
-    if (supportedObjects.length) {
-      combineLatest(supportedObjects.map(object => this.deleteObject(object)))
-        .pipe(this.errorHandler.create())
-        .subscribe(() => {
-          this.refresh();
-
-          this.snackBar.open(`Deletion completed`, 'Close', {duration: 5000});
-
-          if (supportedObjects.length !== objects.length) {
-            this.messageDialog.display({
-              title: 'Some Items Not Deleted',
-              message: 'Everything but the selected folders were deleted. You cannot delete folders yet.',
-              type: MessageType.Warning,
+    combineLatest(
+      objects.map(object => this.deleteObject(object).pipe(
+        catchError(error => {
+          if (error instanceof DeletionError) {
+            failed.push({
+              object,
+              message: error.message,
             });
+            return from([object]);
+          } else {
+            return throwError(error);
           }
-        });
-    } else {
-      this.messageDialog.display({
-        title: 'Some Items Not Deleted',
-        message: 'Folders cannot yet be deleted. Sorry.',
-        type: MessageType.Warning,
-      });
-    }
+        }),
+      )))
+      .pipe(this.errorHandler.create())
+      .subscribe(() => {
+        this.refresh();
+
+        if (failed.length) {
+          const dialogRef = this.modalService.open(ObjectDeletionResultDialogComponent);
+          dialogRef.componentInstance.failed = failed;
+        } else {
+          this.snackBar.open(`Deletion completed`, 'Close', {duration: 5000});
+        }
+      })
+    ;
   }
 
   private deleteObject(object: AnnotatedDirectoryObject): Observable<any> {
@@ -404,7 +407,20 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
           fileId,
         );
       case 'dir':
-        throw new Error('not implemented');
+        const dirId = (object.data as Directory).id;
+
+        return this.projectPageService.deleteDirectory(
+          this.locator.projectName,
+          dirId,
+        ).pipe(
+          catchError((error: HttpErrorResponse) => {
+            if (error.status === 400 && error.error.apiHttpError && error.error.apiHttpError.name === 'Directory Error') {
+              return throwError(new DeletionError('Directory is not empty and cannot be deleted'));
+            } else {
+              return throwError(error);
+            }
+          }),
+        );
       default:
         throw new Error(`unknown directory object type: ${object.type}`);
     }
@@ -439,3 +455,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
   }
 }
 
+class DeletionError {
+  constructor(readonly message: string) {
+  }
+}
