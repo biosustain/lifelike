@@ -11,12 +11,14 @@ import { ProjectTitleAcronymPipe } from './services/project-title-acronym.pipe';
 import { ProjectEditDialogComponent } from './components/project-edit-dialog.component';
 import { ProjectCreateDialogComponent } from './components/project-create-dialog.component';
 import { DirectoryCreateDialogComponent } from './components/directory-create-dialog.component';
+import { ObjectDeletionResultDialogComponent } from './components/object-deletion-result-dialog.component';
 
 @NgModule({
   declarations: [
     FileEditDialogComponent,
     ObjectDeleteDialogComponent,
     ObjectUploadDialogComponent,
+    ObjectDeletionResultDialogComponent,
     FileBrowserComponent,
     FileViewComponent,
     ProjectBrowserComponent,
@@ -37,6 +39,7 @@ import { DirectoryCreateDialogComponent } from './components/directory-create-di
     ProjectCreateDialogComponent,
     ProjectEditDialogComponent,
     DirectoryCreateDialogComponent,
+    ObjectDeletionResultDialogComponent,
   ],
   exports: [],
 })

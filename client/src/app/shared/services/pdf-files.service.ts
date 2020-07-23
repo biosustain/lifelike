@@ -89,10 +89,12 @@ export class PdfFilesService extends AbstractService {
   }
 
   deleteFile(projectName, fileId): Observable<any> {
-    return this.http.request('delete', `/api/projects/${encodeURIComponent(projectName)}/files`, {
-      body: [fileId],
-      ...this.getHttpOptions(true),
-    });
+    return this.http.request(
+      'delete',
+      `${this.PROJECTS_BASE_URL}/${encodeURIComponent(projectName)}/files`, {
+        body: [fileId],
+        ...this.getHttpOptions(true),
+      });
   }
 
   // ========================================
