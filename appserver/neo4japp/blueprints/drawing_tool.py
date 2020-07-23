@@ -206,7 +206,6 @@ def add_project(projects_name: str):
         graph=data.get("graph", dict(nodes=[], edges=[])),
         user_id=user.id,
         dir_id=dir_id,
-        public=data.get("public", False)
     )
 
     current_app.logger.info(f'User created map: <{g.current_user.email}:{project.label}>')
