@@ -248,12 +248,12 @@ def get_annotations(id):
 
     # Add additional information for annotations that were excluded
     for annotation in annotations:
-        for excluded_annotation in file.excluded_annotations:
-            if (excluded_annotation['id'] == annotation['meta']['id'] and
-                    excluded_annotation['text'] == annotation['textInDocument']):
+        for exclusion in file.excluded_annotations:
+            if exclusion['id'] == annotation['meta']['id'] and \
+                    exclusion.get('text', True) == annotation.get('textInDocument', False):
                 annotation['meta']['isExcluded'] = True
-                annotation['meta']['exclusionReason'] = excluded_annotation['reason']
-                annotation['meta']['exclusionComment'] = excluded_annotation['comment']
+                annotation['meta']['exclusionReason'] = exclusion['reason']
+                annotation['meta']['exclusionComment'] = exclusion['comment']
 
     # for now, custom annotations are stored in the format that pdf-viewer supports
     return jsonify(annotations + file.custom_annotations)
@@ -266,6 +266,7 @@ def get_annotations(id):
 def add_custom_annotation(id, **payload):
     annotation_to_add = {
         **payload,
+        'inclusion_date': str(datetime.now(TIMEZONE)),
         'user_id': g.current_user.id,
         'uuid': str(uuid.uuid4())
     }
@@ -492,10 +493,16 @@ def export_excluded_annotations():
 
     def get_exclusion_for_review(filename, exclusion):
         user = AppUser.query.filter_by(id=exclusion['user_id']).one_or_none()
-        exclusion['user'] = f'{user.first_name} {user.last_name}' if user else 'not found'
-        del exclusion['user_id']
-        exclusion['filename'] = filename
-        return exclusion
+        return {
+            'id': exclusion['id'],
+            'text': exclusion.get('text', ''),
+            'type': exclusion.get('type', ''),
+            'reason': exclusion['reason'],
+            'comment': exclusion['comment'],
+            'exclusion_date': exclusion['exclusion_date'],
+            'user': f'{user.first_name} {user.last_name}' if user is None else 'not found',
+            'filename': filename
+        }
 
     data = [get_exclusion_for_review(filename, exclusion)
             for filename, excluded_annotations in files for exclusion in excluded_annotations]
@@ -518,8 +525,9 @@ def export_included_annotations():
         return {
             'text': inclusion['meta']['allText'],
             'type': inclusion['meta']['type'],
-            'primary_link': inclusion['meta']['primaryLink'],
-            'user': f'{user.first_name} {user.last_name}' if user else 'not found',
+            'primary_link': inclusion['meta'].get('primaryLink', ''),
+            'inclusion_date': inclusion.get('inclusion_date', ''),
+            'user': f'{user.first_name} {user.last_name}' if user is None else 'not found',
             'filename': filename
         }
 
