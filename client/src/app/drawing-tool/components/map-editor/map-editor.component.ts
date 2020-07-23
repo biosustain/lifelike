@@ -6,7 +6,7 @@ import {
 import { cloneDeep } from 'lodash';
 
 import { makeid } from '../../services';
-import { Project, UniversalGraphNode } from '../../services/interfaces';
+import { KnowledgeMap, UniversalGraphNode } from '../../services/interfaces';
 
 import { NodeCreation } from 'app/graph-viewer/actions/nodes';
 import { MovableNode } from 'app/graph-viewer/renderers/canvas/behaviors/node-move';
@@ -27,7 +27,7 @@ import { MapRestoreDialogComponent } from '../map-restore-dialog.component';
   templateUrl: './map-editor.component.html',
   styleUrls: ['./map-editor.component.scss'],
 })
-export class MapEditorComponent extends MapViewComponent<Project> implements OnInit, OnDestroy {
+export class MapEditorComponent extends MapViewComponent<KnowledgeMap> implements OnInit, OnDestroy {
   @ViewChild('modalContainer', {static: false}) modalContainer: ElementRef;
   autoSaveDelay = 5000;
   autoSaveSubscription: Subscription;
@@ -45,9 +45,9 @@ export class MapEditorComponent extends MapViewComponent<Project> implements OnI
     this.autoSaveSubscription.unsubscribe();
   }
 
-  getExtraSource(): Observable<Project> {
-    return from([this.mapHashId]).pipe(switchMap(id => {
-      return this.projectService.downloadProjectBackup(id).pipe(catchError(error => {
+  getExtraSource(): Observable<KnowledgeMap> {
+    return from([this.locator]).pipe(switchMap(locator => {
+      return this.projectService.getBackup(locator.projectName, locator.hashId).pipe(catchError(error => {
         if (error instanceof HttpErrorResponse) {
           const res = error as HttpErrorResponse;
           if (res.status === 404) {
@@ -59,7 +59,7 @@ export class MapEditorComponent extends MapViewComponent<Project> implements OnI
     }));
   }
 
-  handleExtra(backup: Project) {
+  handleExtra(backup: KnowledgeMap) {
     if (backup != null) {
       this.modalService.open(MapRestoreDialogComponent, {
         container: this.modalContainer.nativeElement,
@@ -67,7 +67,7 @@ export class MapEditorComponent extends MapViewComponent<Project> implements OnI
         this.map = backup;
         this.unsavedChanges$.next(true);
       }, () => {
-        this.projectService.deleteProjectBackup(this.map.hash_id).subscribe();
+        this.projectService.deleteBackup(this.locator.projectName, this.locator.hashId).subscribe();
       });
     }
   }
@@ -85,14 +85,14 @@ export class MapEditorComponent extends MapViewComponent<Project> implements OnI
 
   save() {
     super.save();
-    this.projectService.deleteProjectBackup(this.map.hash_id).subscribe();
+    this.projectService.deleteBackup(this.locator.projectName, this.locator.hashId).subscribe();
   }
 
   saveBackup() {
     if (this.map) {
       this.map.graph = this.graphCanvas.getGraph();
       this.map.date_modified = new Date().toISOString();
-      const observable = this.projectService.uploadProjectBackup(cloneDeep(this.map));
+      const observable = this.projectService.createOrUpdateBackup(this.locator.projectName, cloneDeep(this.map));
       observable.subscribe();
       return observable;
     }

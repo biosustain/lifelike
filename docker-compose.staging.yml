@@ -35,6 +35,8 @@ services:
         image: ${REGISTRY:-gcr.io/able-goods-221820}/kg-nlpapi-staging:${GITHUB_HASH:-latest}
         expose:
             - 5001
+        env_file:
+            - ./.env
         volumes:
             - /srv/models:/models
         networks:
