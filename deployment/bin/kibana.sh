@@ -3,7 +3,8 @@
 # sudo apt-get update \
 #     && sudo apt-get install docker-compose -y
 
-mkdir /srv/lmdb
+cd /srv
+sudo mkdir lmdb
 
 sudo gsutil cp -r gs://lmdb_database/chemicals /srv/lmdb/
 sudo gsutil cp -r gs://lmdb_database/compounds /srv/lmdb/
@@ -14,8 +15,6 @@ sudo gsutil cp -r gs://lmdb_database/proteins /srv/lmdb/
 sudo gsutil cp -r gs://lmdb_database/species /srv/lmdb/
 
 sudo gsutil cp -r gs://lmdb_database/index_annotations.py /srv/lmdb/
-
-cd /srv
 
 sudo docker-compose -f docker-compose.kibana.yml up -d
 
