@@ -1,0 +1,50 @@
+name: Kibana Deployment
+
+on:
+  push:
+    tags: [annotations-kibana]
+
+env:
+  PROJECT_ID: ${{ secrets.GCE_PROJECT }}
+  GCE_INSTANCE: kg-kibana-annotations
+  GCE_INSTANCE_ZONE: us-central1-a
+  GCE_SERVICE_ACCOUNT: ${{ secrets.GCE_SA_KEY }}
+  CLOUD_SQL_ALIAS: kg-kibana-annotations
+
+jobs:
+
+    setup-build-publish-deploy:
+
+        name: Setup, Build, Publish, and Deploy
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v2
+
+            # Setup gcloud CLI
+            # https://github.com/GoogleCloudPlatform/github-actions
+            - uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
+              with:
+                version: '286.0.0'
+                service_account_key: ${{ secrets.GCE_SA_KEY }}
+                project_id: ${{ secrets.GCE_PROJECT }}
+
+            # Configure Docker to use gcloud command line tool
+            - run: |-
+                gcloud --quiet auth configure-docker
+
+            - name: Deploy Setup
+              run: |-
+                echo "DOCKER_USER=_json_key" >> staging.env
+                echo "PROJECT_ID=$PROJECT_ID" >> staging.env
+                echo "$GCE_SERVICE_ACCOUNT" >> keyfile.json
+                gcloud compute scp staging.env $GCE_INSTANCE:/srv/.env --zone $GCE_INSTANCE_ZONE
+                gcloud compute scp keyfile.json $GCE_INSTANCE:/srv --zone $GCE_INSTANCE_ZONE
+                gcloud compute scp docker-compose.kibana.yml $GCE_INSTANCE:/srv --zone $GCE_INSTANCE_ZONE
+                gcloud compute scp ./deployment/bin/kibana.sh $GCE_INSTANCE:/srv --zone $GCE_INSTANCE_ZONE
+
+            - name: Deploy
+              run: |-
+                gcloud compute ssh $GCE_INSTANCE --zone $GCE_INSTANCE_ZONE --command='sudo /srv/kibana.sh';
+
