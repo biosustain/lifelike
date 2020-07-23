@@ -1,5 +1,6 @@
 export interface UniversalEntityData {
   hyperlink?: string;
+  hyperlinks?: Hyperlink[];
   detail?: string;
   source?: string;
   search?: Hyperlink[];
@@ -131,9 +132,9 @@ export interface LaunchApp {
 }
 
 /**
- * Project schema definition
+ * Map schema definition
  */
-export interface Project {
+export interface KnowledgeMap {
   id?: string | number;
   author?: string;
   label: string;
@@ -152,6 +153,7 @@ export interface Project {
 
 export interface AnnotationExclusionData {
   id: string;
+  text: string;
   reason: string;
   comment: string;
 }

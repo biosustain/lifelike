@@ -11,6 +11,7 @@ from .auth import (
     AppRole,
     AppUser,
 )
+from .files import Directory
 
 
 projects_collaborator_role = db.Table(
