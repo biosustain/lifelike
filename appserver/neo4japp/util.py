@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 from decimal import Decimal, InvalidOperation
 from enum import EnumMeta, Enum
 from json import JSONDecodeError
-from typing import Any, List, Optional, Type, Iterator
+from typing import Any, List, Optional, Type, Iterator, Dict
 
 from flask import json, jsonify, request
 
@@ -243,7 +243,7 @@ class CamelDictMixin(DictMixin):
 
 
 class CasePreservedDict(DictMixin):
-    items = {}
+    items: Dict = {}
 
     def __init__(self, items=None):
         self.items = items or {}
