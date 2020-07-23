@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 from decimal import Decimal, InvalidOperation
 from enum import EnumMeta, Enum
 from json import JSONDecodeError
-from typing import Any, List, Optional, Type, MutableMapping, Iterator
+from typing import Any, List, Optional, Type, Iterator
 
 from flask import json, jsonify, request
 
@@ -181,7 +181,7 @@ class DictMixin:
                 # create an instance of it
                 value = json_dict.get(a.name)
                 if (value and
-                   issubclass(attr_type, CamelDictMixin)):
+                        issubclass(attr_type, CamelDictMixin)):
                     # assumption is if attr_type is a subclass
                     # then value must be type dict
                     if isinstance(value, list):
@@ -242,7 +242,7 @@ class CamelDictMixin(DictMixin):
         return snake_to_camel_dict(self.to_dict_formatter(attr.asdict(self)), {})
 
 
-class CasePreservedDict(DictMixin, MutableMapping, ABC):
+class CasePreservedDict(DictMixin):
     items = {}
 
     def __init__(self, items=None):
@@ -303,6 +303,7 @@ def jsonify_with_class(
     Raises IllegalArgumentException if the request does not have the
     correct attribute field.
     """
+
     def converter(f):
         @functools.wraps(f)
         def decorator(*args, **kwargs):
@@ -357,7 +358,9 @@ def jsonify_with_class(
                 return jsonify(success_object)
             else:
                 return success_object.model_file, success_object.status_code
+
         return decorator
+
     return converter
 
 
@@ -374,12 +377,12 @@ def compute_hash(data: dict, **kwargs) -> str:
 
 
 def generate_jwt_token(
-    sub: str,
-    secret: str,
-    token_type: str = 'access',
-    time_offset: int = 1,
-    time_unit: str = 'hours',
-    algorithm: str = 'HS256'
+        sub: str,
+        secret: str,
+        token_type: str = 'access',
+        time_offset: int = 1,
+        time_unit: str = 'hours',
+        algorithm: str = 'HS256'
 ):
     """
     Generates an authentication or refresh JWT Token
