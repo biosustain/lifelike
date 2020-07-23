@@ -50,7 +50,10 @@ class ProjectsService(RDBMSBaseDao):
             raise NameUnavailableError()
 
         # Create a default directory for every project
-        default_dir = Directory(name='/', directory_parent_id=None, projects_id=projects.id)
+        default_dir = Directory(
+            name='/', directory_parent_id=None,
+            projects_id=projects.id, user_id=user.id
+        )
 
         self.session.add(default_dir)
         self.session.flush()
@@ -124,7 +127,8 @@ class ProjectsService(RDBMSBaseDao):
         self.session.commit()
 
     def add_directory(
-            self, projects: Projects, dir_name: str, root_dir: Directory = None) -> Directory:
+            self, projects: Projects, dir_name: str,
+            user: AppUser, root_dir: Directory = None) -> Directory:
         """ Adds a directory to a project """
 
         # Default directory is top level
@@ -135,7 +139,9 @@ class ProjectsService(RDBMSBaseDao):
         if dir_name in [d.name for d in existing_dirs]:
             raise DuplicateRecord(f'{dir_name} already exists')
 
-        new_dir = Directory(name=dir_name, directory_parent_id=root_dir.id, projects_id=projects.id)
+        new_dir = Directory(
+            name=dir_name, directory_parent_id=root_dir.id, projects_id=projects.id, user_id=user.id
+        )
         self.session.add(new_dir)
         self.session.commit()
         return new_dir
