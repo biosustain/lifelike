@@ -748,68 +748,6 @@ def test_tokens_gene_vs_protein_serpina1_case_all_caps_from_knowledge_graph(
     assert annotations[1].meta.keyword_type == EntityType.Species.value
 
 
-@pytest.mark.skip(reason="This is not a good test")
-def test_save_bioc_annotations_to_db(default_lmdb_setup, session):
-    annotator = get_test_annotations_service(
-        genes_lmdb_path=path.join(directory, 'lmdb/genes'),
-        chemicals_lmdb_path=path.join(directory, 'lmdb/chemicals'),
-        compounds_lmdb_path=path.join(directory, 'lmdb/compounds'),
-        proteins_lmdb_path=path.join(directory, 'lmdb/proteins'),
-        species_lmdb_path=path.join(directory, 'lmdb/species'),
-        diseases_lmdb_path=path.join(directory, 'lmdb/diseases'),
-        phenotypes_lmdb_path=path.join(directory, 'lmdb/phenotypes'),
-    )
-    pdf_parser = get_annotations_pdf_parser()
-    bioc_service = get_bioc_document_service()
-
-    pdf = path.join(directory, 'pdf_samples/Branched-Chain Amino Acid Metabolism.pdf')
-
-    with open(pdf, 'rb') as f:
-        parsed_pdf_chars = pdf_parser.parse_pdf(pdf=f)
-        tokens = pdf_parser.extract_tokens(parsed_chars=parsed_pdf_chars)
-        pdf_text_list = pdf_parser.combine_chars_into_words(parsed_pdf_chars)
-        pdf_text = ' '.join([text for text, _ in pdf_text_list])
-        annotations = annotator.create_rules_based_annotations(tokens=tokens)
-
-    bioc = bioc_service.read(
-        text=pdf_text,
-        file_uri=path.join(directory, 'pdf_samples/Branched-Chain Amino Acid Metabolism.pdf'))
-    annotations_json = bioc_service.generate_bioc_json(annotations=annotations, bioc=bioc)
-
-    annotated_json_f = path.join(directory, 'pdf_samples/annotations-test.json')
-    with open(annotated_json_f, 'w') as a_f:
-        json.dump(annotations_json, a_f)
-
-    file_content = FileContent(
-        raw_file=b'',
-        checksum_sha256=b'checksum_sha256',
-    )
-
-    session.add(file_content)
-    session.flush()
-
-    f = Files(
-        file_id=123,
-        filename='filename',
-        description='description',
-        content_id=file_content.id,
-        user_id=3,
-        annotations=annotations_json,
-        annotations_date='1970-01-01 00:00:00',
-        project=1,
-        doi='doi',
-        upload_url='upload_url',
-    )
-
-    session.add(f)
-    session.commit()
-
-    pdf_file_model = session.query(Files).first()
-    assert pdf_file_model.filename == 'filename'
-    assert pdf_file_model.file_id == '123'
-    assert pdf_file_model.annotations == annotations_json
-
-
 @pytest.mark.parametrize(
     'index, annotations',
     [

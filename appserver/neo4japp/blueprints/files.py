@@ -534,7 +534,7 @@ def reannotate(project_name: str):
             FileContent.id == Files.content_id
         ).filter(
             Files.file_id == id,
-            project=projects.id,
+            Files.project == projects.id,
         ).one_or_none()
         if file is None:
             current_app.logger.error('Could not find file')
