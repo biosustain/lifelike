@@ -24,6 +24,7 @@ from neo4japp.exceptions import (
     InvalidDirectoryNameException,
     RecordNotFoundException,
     NotAuthorizedException,
+    NameUnavailableError,
 )
 from neo4japp.models import (
     AccessActionType,
@@ -36,8 +37,6 @@ from neo4japp.models import (
     projects_collaborator_role, ProjectSchema,
 )
 from neo4japp.util import jsonify_with_class, SuccessResponse, CasePreservedDict
-
-from neo4japp.services.exceptions import NameUnavailableError
 
 bp = Blueprint('projects', __name__, url_prefix='/projects')
 

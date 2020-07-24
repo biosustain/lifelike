@@ -96,3 +96,9 @@ class DataNotAvailableException(BaseException):
     """Signals that the requested data is not available in a storage."""
     def __init__(self, message):
         super().__init__('Data Not Available Error', message)
+
+
+class NameUnavailableError(BaseException):
+    """Raised when a name has been taken."""
+    def __init__(self, message):
+        super().__init__('Name Unavailable Error', message)
