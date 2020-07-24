@@ -27,6 +27,7 @@
       <div *ngIf="exactlyOneSelectedNode; else singleSelectedEdge">
         <div class="context-menu-group">
           <div
+            [id]="'select-neighbors-menu-item-' + tooltipId"
             class="context-menu-item"
             (mouseenter)="hideAllSubMenus()"
             (click)="requestNeighborSelection()"
@@ -49,15 +50,16 @@
       </ng-template>
     </ng-template>
   </ng-template>
-  <div class="context-menu-group">
+  <div [id]="'settings-group-' + tooltipId" class="context-menu-group">
     <div class="context-menu-item" (mouseenter)="hideAllSubMenus()">Settings</div>
   </div>
 </div>
 
 <!-- Templates -->
 <ng-template #nodeSelectionGroup>
-  <div class="context-menu-group">
+  <div [id]="'node-selection-group-' + tooltipId" class="context-menu-group">
     <div
+      [id]="'remove-selected-nodes-menu-item-' + tooltipId"
       class="context-menu-item"
       (mouseenter)="hideAllSubMenus()"
       (click)="requestNodeRemoval()"
@@ -66,8 +68,9 @@
 </ng-template>
 
 <ng-template #edgeSelectionGroup>
-  <div class="context-menu-group">
+  <div [id]="'edge-selection-group-' + tooltipId" class="context-menu-group">
     <div
+      [id]="'remove-selected-edges-menu-item-' + tooltipId"
       class="context-menu-item"
       (mouseenter)="hideAllSubMenus()"
       (click)="requestEdgeRemoval()"
