@@ -1,10 +1,10 @@
 import { Component, EventEmitter, OnDestroy, OnInit, Output } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { BehaviorSubject, combineLatest, Observable, Subscription, throwError } from 'rxjs';
+import { BehaviorSubject, combineLatest, from, Observable, Subscription, throwError } from 'rxjs';
 import { PdfFile, UploadPayload, UploadType } from 'app/interfaces/pdf-files.interface';
 import { PdfFilesService } from 'app/shared/services/pdf-files.service';
-import { HttpEventType } from '@angular/common/http';
+import { HttpErrorResponse, HttpEventType } from '@angular/common/http';
 import { Progress, ProgressMode } from 'app/interfaces/common-dialog.interface';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
@@ -13,9 +13,9 @@ import { ObjectDeleteDialogComponent } from './object-delete-dialog.component';
 import { ObjectUploadDialogComponent } from './object-upload-dialog.component';
 import { FileEditDialogComponent } from './file-edit-dialog.component';
 import { ErrorHandler } from '../../shared/services/error-handler.service';
-import { Directory, Map, ProjectSpaceService } from '../services/project-space.service';
+import { Directory, ProjectSpaceService } from '../services/project-space.service';
 import { ProjectPageService } from '../services/project-page.service';
-import { DirectoryCreateDialogComponent } from './directory-create-dialog.component';
+import { DirectoryEditDialogComponent } from './directory-edit-dialog.component';
 import { DirectoryContent, DirectoryObject } from '../../interfaces/projects.interface';
 import { CollectionModal } from '../../shared/utils/collection-modal';
 import { MapEditDialogComponent } from '../../drawing-tool/components/map-edit-dialog.component';
@@ -26,12 +26,9 @@ import { MapCreateDialogComponent } from '../../drawing-tool/components/map-crea
 import { MessageDialog } from '../../shared/services/message-dialog.service';
 import { MessageType } from '../../interfaces/message-dialog.interface';
 import { ModuleProperties } from '../../shared/modules';
-
-export interface File extends PdfFile {
-  // Camel-case instead of snake-case version of file
-  fileId?: string;
-  // TODO: wtf we need to fix this
-}
+import { KnowledgeMap } from '../../drawing-tool/services/interfaces';
+import { catchError } from 'rxjs/operators';
+import { ObjectDeletionResultDialogComponent } from './object-deletion-result-dialog.component';
 
 interface PathLocator {
   projectName?: string;
@@ -80,7 +77,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
               private readonly projectSpaceService: ProjectSpaceService,
               private readonly projectPageService: ProjectPageService,
               private readonly workspaceManager: WorkspaceManager,
-              private readonly projectService: MapService,
+              private readonly mapService: MapService,
               private readonly ngbModal: NgbModal,
               private readonly messageDialog: MessageDialog) {
   }
@@ -92,7 +89,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
     });
 
     this.loadTask = new BackgroundTask(
-      (locator: PathLocator) => this.projectPageService.getProjectDir(
+      (locator: PathLocator) => this.projectPageService.getDirectory(
         locator.projectName,
         locator.directoryId,
       ).pipe(this.errorHandler.create()),
@@ -139,7 +136,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
   private updateAnnotationsStatus(objects: readonly AnnotatedDirectoryObject[]) {
     objects.forEach((object: AnnotatedDirectoryObject) => {
       if (object.type === 'file') {
-        const file = object.data as File;
+        const file = object.data as PdfFile;
         object.annotationsTooltipContent = this.generateTooltipContent(file);
       }
     });
@@ -182,10 +179,10 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
   }
 
   displayDirectoryCreateDialog() {
-    const dialogRef = this.ngbModal.open(DirectoryCreateDialogComponent);
+    const dialogRef = this.ngbModal.open(DirectoryEditDialogComponent);
     dialogRef.result.then(
-      resp => {
-        this.projectPageService.addDir(
+      (resp: Directory) => {
+        this.projectPageService.createDirectory(
           this.locator.projectName,
           this.directory.id,
           resp.name,
@@ -193,6 +190,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
           .pipe(this.errorHandler.create())
           .subscribe(() => {
             this.refresh();
+            this.snackBar.open(`Folder '${resp.name}' created`, 'Close', {duration: 5000});
           });
       },
       () => {
@@ -202,8 +200,8 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
 
   displayMapCreateDialog() {
     const dialogRef = this.modalService.open(MapCreateDialogComponent);
-    dialogRef.result.then(newMap => {
-      this.projectPageService.addMap(
+    dialogRef.result.then((newMap: KnowledgeMap) => {
+      this.mapService.createMap(
         this.locator.projectName,
         this.directory.id,
         newMap.label,
@@ -217,32 +215,48 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
             newTab: true,
             queryParams: this.getObjectQueryParams(),
           });
+          this.snackBar.open(`Map '${newMap.label}' created, opening...`, 'Close', {duration: 5000});
         });
     });
   }
 
   displayEditDialog(object: AnnotatedDirectoryObject) {
     if (object.type === 'dir') {
-      this.messageDialog.display({
-        title: 'Not Yet Implemented',
-        message: 'Directories cannot yet be edited. Sorry.',
-        type: MessageType.Warning,
-      });
+      const dialogRef = this.ngbModal.open(DirectoryEditDialogComponent);
+      dialogRef.componentInstance.editing = true;
+      dialogRef.componentInstance.directory = cloneDeep(object.data);
+      dialogRef.result.then(
+        (resp: Directory) => {
+          this.projectPageService.renameDirectory(
+            this.locator.projectName,
+            (object.data as Directory).id,
+            resp.name,
+          )
+            .pipe(this.errorHandler.create())
+            .subscribe(() => {
+              this.refresh();
+              this.snackBar.open(`Folder '${object.name}' renamed to '${resp.name}'`, 'Close', {duration: 5000});
+            });
+        },
+        () => {
+        },
+      );
     } else if (object.type === 'file') {
-      const file = object.data as File;
+      const file = object.data as PdfFile;
       const dialogRef = this.modalService.open(FileEditDialogComponent);
       dialogRef.componentInstance.file = file;
       dialogRef.result.then(data => {
         if (data) {
-          this.projectPageService.updateFile(
+          this.filesService.updateFileMeta(
             this.locator.projectName,
-            file.fileId,
+            file.file_id,
             data.filename,
             data.description,
           )
             .pipe(this.errorHandler.create())
             .subscribe(() => {
               this.refresh();
+              this.snackBar.open(`File details updated`, 'Close', {duration: 5000});
             });
         }
       }, () => {
@@ -251,10 +265,11 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
       const dialogRef = this.modalService.open(MapEditDialogComponent);
       dialogRef.componentInstance.map = cloneDeep(object.data);
       dialogRef.result.then(newMap => {
-        this.projectService.update(this.locator.projectName, newMap)
+        this.mapService.updateMap(this.locator.projectName, newMap)
           .pipe(this.errorHandler.create())
           .subscribe(() => {
             this.refresh();
+            this.snackBar.open(`Map details updated`, 'Close', {duration: 5000});
           });
       }, () => {
       });
@@ -287,7 +302,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
       progressObservable,
     });
 
-    this.projectPageService.addPdf(
+    this.filesService.uploadFile(
       this.locator.projectName,
       this.directory.id,
       data,
@@ -310,7 +325,8 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
             }
           } else if (event.type === HttpEventType.Response) {
             progressDialogRef.close();
-            this.snackBar.open(`File uploaded: ${event.body.filename}`, 'Close', {duration: 5000});
+            const body = event.body as any;
+            this.snackBar.open(`File '${body.result.filename}' uploaded`, 'Close', {duration: 5000});
             this.refresh(); // updates the list on successful upload
           }
         },
@@ -322,12 +338,12 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
   }
 
   reannotate(objects: readonly AnnotatedDirectoryObject[]) {
-    const files: File[] = objects
+    const files: PdfFile[] = objects
       .filter(object => object.type === 'file')
-      .map(file => file.data as File);
+      .map(file => file.data as PdfFile);
 
     if (files.length) {
-      const ids: string[] = files.map((file: File) => file.fileId);
+      const ids: string[] = files.map((file: PdfFile) => file.file_id);
       // Let's show some progress`!
       const progressObservable = new BehaviorSubject<Progress>(new Progress({
         status: 'Re-creating annotations in file...',
@@ -337,7 +353,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
         title: `Reannotating file${files.length === 1 ? '' : 's'}...`,
         progressObservable,
       });
-      this.filesService.reannotateFiles(ids).pipe(this.errorHandler.create()).subscribe(
+      this.filesService.reannotateFiles(this.locator.projectName, ids).pipe(this.errorHandler.create()).subscribe(
         (res) => {
           this.refresh();
           this.snackBar.open(`Reannotation completed`, 'Close', {duration: 5000});
@@ -359,51 +375,66 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
   }
 
   delete(objects: readonly AnnotatedDirectoryObject[]) {
-    // TODO: not being able to delete directory is super lame
-    const supportedObjects = objects.filter(object => object.type !== 'dir');
+    const failed: { object: DirectoryObject, message: string }[] = [];
 
-    if (supportedObjects.length) {
-      combineLatest(supportedObjects.map(object => this.deleteObject(object)))
-        .pipe(this.errorHandler.create())
-        .subscribe(() => {
-          this.refresh();
-
-          this.snackBar.open(`Deletion completed`, 'Close', {duration: 5000});
-
-          if (supportedObjects.length !== objects.length) {
-            this.messageDialog.display({
-              title: 'Some Items Not Deleted',
-              message: 'Everything but the selected folders were deleted. You cannot delete folders yet.',
-              type: MessageType.Warning,
+    combineLatest(
+      objects.map(object => this.deleteObject(object).pipe(
+        catchError(error => {
+          if (error instanceof DeletionError) {
+            failed.push({
+              object,
+              message: error.message,
             });
+            return from([object]);
+          } else {
+            return throwError(error);
           }
-        });
-    } else {
-      this.messageDialog.display({
-        title: 'Some Items Not Deleted',
-        message: 'Folders cannot yet be deleted. Sorry.',
-        type: MessageType.Warning,
-      });
-    }
+        }),
+      )))
+      .pipe(this.errorHandler.create())
+      .subscribe(() => {
+        this.refresh();
+
+        if (failed.length) {
+          const dialogRef = this.modalService.open(ObjectDeletionResultDialogComponent);
+          dialogRef.componentInstance.failed = failed;
+        } else {
+          this.snackBar.open(`Deletion completed`, 'Close', {duration: 5000});
+        }
+      })
+    ;
   }
 
   private deleteObject(object: AnnotatedDirectoryObject): Observable<any> {
     switch (object.type) {
       case 'map':
-        const hashId = (object.data as Map).hashId;
-        return this.projectPageService.deleteMap(
+        const hashId = (object.data as KnowledgeMap).hash_id;
+        return this.mapService.deleteMap(
           this.locator.projectName,
           hashId,
         );
       case 'file':
-        const fileId = (object.data as File).fileId;
+        const fileId = (object.data as PdfFile).file_id;
 
-        return this.projectPageService.deletePDF(
+        return this.filesService.deleteFile(
           this.locator.projectName,
           fileId,
         );
       case 'dir':
-        throw new Error('not implemented');
+        const dirId = (object.data as Directory).id;
+
+        return this.projectPageService.deleteDirectory(
+          this.locator.projectName,
+          dirId,
+        ).pipe(
+          catchError((error: HttpErrorResponse) => {
+            if (error.status === 400 && error.error.apiHttpError && error.error.apiHttpError.name === 'Directory Error') {
+              return throwError(new DeletionError('Directory is not empty and cannot be deleted'));
+            } else {
+              return throwError(error);
+            }
+          }),
+        );
       default:
         throw new Error(`unknown directory object type: ${object.type}`);
     }
@@ -416,11 +447,11 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
         // TODO: Convert to hash ID
         return ['/projects', this.locator.projectName, 'folders', directory.id];
       case 'file':
-        const file = object.data as File;
-        return ['/projects', this.locator.projectName, 'files', file.fileId];
+        const file = object.data as PdfFile;
+        return ['/projects', this.locator.projectName, 'files', file.file_id];
       case 'map':
-        const map = object.data as Map;
-        return ['/projects', this.locator.projectName, 'maps', map.hashId, 'edit'];
+        const map = object.data as KnowledgeMap;
+        return ['/projects', this.locator.projectName, 'maps', map.hash_id, 'edit'];
       default:
         throw new Error(`unknown directory object type: ${object.type}`);
     }
@@ -438,3 +469,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
   }
 }
 
+class DeletionError {
+  constructor(readonly message: string) {
+  }
+}
