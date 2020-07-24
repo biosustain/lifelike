@@ -215,8 +215,8 @@ def test_can_delete_directory(client, session, fix_project, fix_directory, test_
     session.add(new_dir)
     session.flush()
 
-    response = client.post(
-        f'/projects/{fix_project.project_name}/directories/{new_dir.id}/delete',
+    response = client.delete(
+        f'/projects/{fix_project.project_name}/directories/{new_dir.id}',
         headers=headers,
         content_type='application/json',
     )
