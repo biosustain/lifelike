@@ -27,3 +27,11 @@ ansible-playbook -i inventories/hosts -l sandbox playbooks/docker-install.yml
 ansible-playbook -i environments/dev --vault-password-file=.vault_secrets_pw playbooks/single_vm_setup.yml -e "github_branch=reduce-docker-size"
 ```
 *This will access the VM specified in 'dev' and clone the GitHub branch 'reduce-docker-size'*
+
+- Spin up ELK stack for production
+1. Fetch the vault secrets from google bucket (TODO: add here) `.vault_secrets_pw`
+2. Run the following command
+```bash
+ansible-playbook -i inventories --vault-password-file=.vault_secrets_pw playbooks/elk_setup.yml
+```
+*This will create the infrastructure for ELK with a Kibana dashboard accessible via https://elk.prod.***ARANGO_DB_NAME***.bio*
