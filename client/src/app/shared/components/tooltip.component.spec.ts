@@ -22,7 +22,7 @@ describe('TooltipComponent', () => {
         fixture = TestBed.createComponent(TooltipComponent);
         component = fixture.componentInstance;
         component.tooltipOptions = null;
-        component.tooltipSelector = '#mock-element';
+        component.tooltipSelector = 'mock-element';
 
         const mockElement = document.createElement('div');
         mockElement.setAttribute('id', 'mock-element');
