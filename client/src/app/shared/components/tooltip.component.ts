@@ -1,26 +1,33 @@
-import { Component, OnInit, Input, OnDestroy } from '@angular/core';
+import { Component, Input, OnDestroy, AfterViewInit } from '@angular/core';
 
 import { VirtualElement, Instance, createPopper, Options } from '@popperjs/core';
 
 import { isNullOrUndefined } from 'util';
+
+import { uuidv4 } from '../utils';
 
 @Component({
   selector: 'app-tooltip',
   template: '<div id="tooltip">I am a Tooltip</div>',
   styles: [],
 })
-export class TooltipComponent implements OnInit, OnDestroy {
-    @Input() tooltipSelector: string;
+export class TooltipComponent implements AfterViewInit, OnDestroy {
     @Input() tooltipOptions: Partial<Options>;
 
     virtualElement: VirtualElement;
     popper: Instance;
     tooltip: HTMLElement;
+    tooltipId: string;
+    tooltipSelector: string; // Should be specified in any inheriting component's constructor
 
-    constructor() {}
+    constructor() {
+        this.tooltipId = uuidv4();
+    }
 
-    ngOnInit() {
-        this.tooltip = document.querySelector(this.tooltipSelector);
+    ngAfterViewInit() {
+        // Need to get the DOM element after the view as been created by Angular,
+        // otherwise the element with the ID we're looking for might not exist.
+        this.tooltip = document.getElementById(this.tooltipSelector);
         this.setupPopper();
     }
 
