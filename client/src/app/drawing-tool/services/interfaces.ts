@@ -167,11 +167,17 @@ interface Project {
   user_id?: number;
 }
 
-interface AnnotationExclusionData {
+interface AnnotationExclusion {
   id: string;
   text: string;
   reason: string;
   comment: string;
+}
+
+interface StoredAnnotationExclusion extends AnnotationExclusion {
+  type: string;
+  rects: Rect[];
+  pageNumber: number;
 }
 
 export {
@@ -191,5 +197,6 @@ export {
   GraphSelectionData,
   LaunchApp,
   Hyperlink,
-  AnnotationExclusionData
+  AnnotationExclusion,
+  StoredAnnotationExclusion
 };

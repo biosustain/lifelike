@@ -248,12 +248,12 @@ def get_annotations(id):
 
     # Add additional information for annotations that were excluded
     for annotation in annotations:
-        for excluded_annotation in file.excluded_annotations:
-            if (excluded_annotation['id'] == annotation['meta']['id'] and
-                    excluded_annotation['text'] == annotation['textInDocument']):
+        for exclusion in file.excluded_annotations:
+            if exclusion['id'] == annotation['meta']['id'] and \
+                    exclusion.get('text', True) == annotation.get('textInDocument', False):
                 annotation['meta']['isExcluded'] = True
-                annotation['meta']['exclusionReason'] = excluded_annotation['reason']
-                annotation['meta']['exclusionComment'] = excluded_annotation['comment']
+                annotation['meta']['exclusionReason'] = exclusion['reason']
+                annotation['meta']['exclusionComment'] = exclusion['comment']
 
     # for now, custom annotations are stored in the format that pdf-viewer supports
     return jsonify(annotations + file.custom_annotations)
@@ -266,6 +266,7 @@ def get_annotations(id):
 def add_custom_annotation(id, **payload):
     annotation_to_add = {
         **payload,
+        'inclusion_date': str(datetime.now(TIMEZONE)),
         'user_id': g.current_user.id,
         'uuid': str(uuid.uuid4())
     }
@@ -488,17 +489,25 @@ def get_lmdbs_dates():
 @bp.route('/global_exclusion_file')
 @auth.login_required
 def export_excluded_annotations():
-    files = db.session.query(Files.filename, Files.excluded_annotations).all()
+    files = db.session.query(Files.filename, Files.file_id, Files.excluded_annotations).all()
 
-    def get_exclusion_for_review(filename, exclusion):
+    def get_exclusion_for_review(filename, file_id, exclusion):
         user = AppUser.query.filter_by(id=exclusion['user_id']).one_or_none()
-        exclusion['user'] = f'{user.first_name} {user.last_name}' if user else 'not found'
-        del exclusion['user_id']
-        exclusion['filename'] = filename
-        return exclusion
+        domain = current_app.config.get('DOMAIN')
+        return {
+            'id': exclusion['id'],
+            'text': exclusion.get('text', ''),
+            'type': exclusion.get('type', ''),
+            'reason': exclusion['reason'],
+            'comment': exclusion['comment'],
+            'exclusion_date': exclusion['exclusion_date'],
+            'user': f'{user.first_name} {user.last_name}' if user is not None else 'not found',
+            'filename': filename,
+            'hyperlink': f'{domain}/pdf-viewer/{file_id}'
+        }
 
-    data = [get_exclusion_for_review(filename, exclusion)
-            for filename, excluded_annotations in files for exclusion in excluded_annotations]
+    data = [get_exclusion_for_review(filename, file_id, exclusion)
+            for filename, file_id, exclusions in files for exclusion in exclusions]
 
     exporter = get_excel_export_service()
     response = make_response(exporter.get_bytes(data), 200)
@@ -511,20 +520,23 @@ def export_excluded_annotations():
 @bp.route('/global_inclusion_file')
 @auth.login_required
 def export_included_annotations():
-    files = db.session.query(Files.filename, Files.custom_annotations).all()
+    files = db.session.query(Files.filename, Files.file_id, Files.custom_annotations).all()
 
-    def get_inclusion_for_review(filename, inclusion):
+    def get_inclusion_for_review(filename, file_id, inclusion):
         user = AppUser.query.filter_by(id=inclusion['user_id']).one_or_none()
+        domain = current_app.config.get('DOMAIN')
         return {
             'text': inclusion['meta']['allText'],
             'type': inclusion['meta']['type'],
-            'primary_link': inclusion['meta']['primaryLink'],
-            'user': f'{user.first_name} {user.last_name}' if user else 'not found',
-            'filename': filename
+            'primary_link': inclusion['meta'].get('primaryLink', ''),
+            'inclusion_date': inclusion.get('inclusion_date', ''),
+            'user': f'{user.first_name} {user.last_name}' if user is not None else 'not found',
+            'filename': filename,
+            'hyperlink': f'{domain}/pdf-viewer/{file_id}'
         }
 
-    data = [get_inclusion_for_review(filename, inclusion)
-            for filename, custom_annotations in files for inclusion in custom_annotations]
+    data = [get_inclusion_for_review(filename, file_id, inclusion)
+            for filename, file_id, custom_annotations in files for inclusion in custom_annotations]
 
     exporter = get_excel_export_service()
     response = make_response(exporter.get_bytes(data), 200)
