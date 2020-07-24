@@ -1,7 +1,7 @@
 import { AfterViewInit, Component, EventEmitter, HostListener, Input, NgZone, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
 import { Observable, Subject, Subscription  } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
-import { Annotation, Location, Meta, AnnotationExclusionData, Rect } from './annotation-type';
+import { Annotation, Location, Meta, AnnotationExclusion, Rect } from './annotation-type';
 import { PDFDocumentProxy, PDFProgressData, PDFSource } from './pdf-viewer/pdf-viewer.module';
 import { PdfViewerComponent } from './pdf-viewer/pdf-viewer.component';
 import { MatDialog } from '@angular/material/dialog';
@@ -55,14 +55,14 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   @Input()
-  set addedAnnotationExclusion(exclusionData: AnnotationExclusionData) {
+  set addedAnnotationExclusion(exclusionData: AnnotationExclusion) {
     if (exclusionData) {
       this.changeAnnotationExclusionMark(true, exclusionData);
     }
   }
 
   @Input()
-  set removedAnnotationExclusion(exclusionData: AnnotationExclusionData) {
+  set removedAnnotationExclusion(exclusionData: AnnotationExclusion) {
     if (exclusionData) {
       this.changeAnnotationExclusionMark(false, exclusionData);
     }
@@ -157,9 +157,9 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
         (window as any).pdfViewerRef.removeCustomAnnotation(uuid);
       });
     }
-    (window as any).openExclusionPanel = (id, text) => {
+    (window as any).openExclusionPanel = (annExclusion) => {
       (window as any).pdfViewerRef.zone.run(() => {
-        (window as any).pdfViewerRef.openExclusionPanel(id, text);
+        (window as any).pdfViewerRef.openExclusionPanel(annExclusion);
       });
     }
     (window as any).removeAnnotationExclusion = (id, text) => {
@@ -173,7 +173,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
       openLinkPanel: () => this.openAddLinkPanel(),
       copySelectedText: () => this.copySelectedText(),
       removeCustomAnnotation: (uuid) => this.removeCustomAnnotation(uuid),
-      openExclusionPanel: (id, text) => this.openExclusionPanel(id, text),
+      openExclusionPanel: (annExclusion) => this.openExclusionPanel(annExclusion),
       removeAnnotationExclusion: (id, text) => this.removeAnnotationExclusion(id, text),
       component: this
     };
@@ -431,8 +431,15 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
       `);
     }
     if (!an.meta.isCustom && !an.meta.isExcluded) {
+      const annExclusion = JSON.stringify({
+        id: an.meta.id,
+        text: an.textInDocument,
+        type: an.meta.type,
+        rects: an.rects,
+        pageNumber: an.pageNumber
+      }).replace(/"/g, '&quot;');
       base.push(`
-        <div class="mt1" style="display: flex; align-items: center; cursor: pointer" onclick="openExclusionPanel('${an.meta.id}', '${an.textInDocument}')">
+        <div class="mt1" style="display: flex; align-items: center; cursor: pointer" onclick="openExclusionPanel('${annExclusion}')">
           <span class="mr1 material-icons">highlight_off</span>
           <span>Mark for exclusion</span>
         </div>
@@ -702,7 +709,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
     });
   }
 
-  openExclusionPanel(id, text) {
+  openExclusionPanel(annExclusion) {
     jQuery('.system-annotation').qtip('hide');
     const dialogRef = this.dialog.open(ExclusionPanelComponent, {
       width: '350px',
@@ -711,7 +718,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
 
     dialogRef.afterClosed().subscribe(exclusionData => {
       if (exclusionData) {
-        this.annotationExclusionAdded.emit({ ...exclusionData, id, text });
+        this.annotationExclusionAdded.emit({ ...exclusionData, ...JSON.parse(annExclusion) });
       }
     });
   }
