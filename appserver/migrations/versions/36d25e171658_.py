@@ -57,6 +57,12 @@ def downgrade():
 
 def data_upgrades():
     """Add optional data upgrade migrations here"""
+    
+    # Code block for data upgrade was intially in 3b70d9c2c76f_.py
+    # but moved here and modified to allow dev envionrment
+    # to do data-migration for beta-project after all schema-migration
+    # to directory is done
+
     session = Session(op.get_bind())
 
     # There's only one hardcoded project right now
@@ -71,108 +77,43 @@ def data_upgrades():
         )
         session.add(projects)
         session.flush()
-    else:
-        # Setup roles for the existing project
-        read_role = AppRole(name='project-read')
-        write_role = AppRole(name='project-write')
-        admin_role = AppRole(name='project-admin')
-        session.add(read_role)
-        session.add(write_role)
-        session.add(admin_role)
-        session.flush()
 
-        # Sets up the 'READ' role
-        session.execute(AccessControlPolicy.__table__.insert().values(
-            action=AccessActionType.READ,
-            asset_type=Projects.__tablename__,
-            asset_id=projects.id,
-            principal_type=AppRole.__tablename__,
-            principal_id=read_role.id,
-            rule_type=AccessRuleType.ALLOW,
-        ))
-        session.execute(AccessControlPolicy.__table__.insert().values(
-            action=AccessActionType.WRITE,
-            asset_type=Projects.__tablename__,
-            asset_id=projects.id,
-            principal_type=AppRole.__tablename__,
-            principal_id=read_role.id,
-            rule_type=AccessRuleType.DENY,
-        ))
-
-        # Sets up the 'WRITE' role
-        session.execute(AccessControlPolicy.__table__.insert().values(
-            action=AccessActionType.READ,
-            asset_type=Projects.__tablename__,
-            asset_id=projects.id,
-            principal_type=AppRole.__tablename__,
-            principal_id=write_role.id,
-            rule_type=AccessRuleType.ALLOW,
-        ))
-        session.execute(AccessControlPolicy.__table__.insert().values(
-            action=AccessActionType.WRITE,
-            asset_type=Projects.__tablename__,
-            asset_id=projects.id,
-            principal_type=AppRole.__tablename__,
-            principal_id=write_role.id,
-            rule_type=AccessRuleType.ALLOW,
-        ))
-
-        # Sets up the 'ADMIN' role
-        session.execute(AccessControlPolicy.__table__.insert().values(
-            action=AccessActionType.READ,
-            asset_type=Projects.__tablename__,
-            asset_id=projects.id,
-            principal_type=AppRole.__tablename__,
-            principal_id=admin_role.id,
-            rule_type=AccessRuleType.ALLOW,
-        ))
-        session.execute(AccessControlPolicy.__table__.insert().values(
-            action=AccessActionType.WRITE,
-            asset_type=Projects.__tablename__,
-            asset_id=projects.id,
-            principal_type=AppRole.__tablename__,
-            principal_id=admin_role.id,
-            rule_type=AccessRuleType.ALLOW,
-        ))
-
-        session.flush()
-
-    # Bucket everything into a single directory
-    directory = Directory(
-        name='/',
-        directory_parent_id=None,
-        projects_id=projects.id,
-    )
-
-    session.add(directory)
-    session.flush()
-
-    # Get writer role
-    write_role = session.query(AppRole).filter(
-        AppRole.name == 'project-write'
-    ).one()
-
-    # Set all existing users to write role
-    for user in session.query(AppUser).all():
-        session.execute(
-            projects_collaborator_role.insert(),
-            [dict(
-                appuser_id=user.id,
-                projects_id=projects.id,
-                app_role_id=write_role.id,
-            )]
+        # Bucket everything into a single directory
+        directory = Directory(
+            name='/',
+            directory_parent_id=None,
+            projects_id=projects.id,
         )
+
+        session.add(directory)
         session.flush()
 
-    for fi in session.query(Files).all():
-        setattr(fi, 'dir_id', directory.id)
-        session.add(fi)
+        # Get writer role
+        write_role = session.query(AppRole).filter(
+            AppRole.name == 'project-write'
+        ).one()
 
-    for proj in session.query(Project).all():
-        setattr(proj, 'dir_id', directory.id)
-        session.add(proj)
+        # Set all existing users to write role
+        for user in session.query(AppUser).all():
+            session.execute(
+                projects_collaborator_role.insert(),
+                [dict(
+                    appuser_id=user.id,
+                    projects_id=projects.id,
+                    app_role_id=write_role.id,
+                )]
+            )
+            session.flush()
 
-    session.commit()
+        for fi in session.query(Files).all():
+            setattr(fi, 'dir_id', directory.id)
+            session.add(fi)
+
+        for proj in session.query(Project).all():
+            setattr(proj, 'dir_id', directory.id)
+            session.add(proj)
+
+        session.commit()
 
 
 def data_downgrades():
