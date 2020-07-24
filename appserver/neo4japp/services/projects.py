@@ -3,7 +3,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.session import Session
 from neo4japp.exceptions import (
     DirectoryError,
-    DuplicateRecord,
+    DuplicateRecord, NameUnavailableError,
 )
 from neo4japp.services.common import RDBMSBaseDao
 from neo4japp.models import (
@@ -16,8 +16,6 @@ from neo4japp.models import (
     Project,
 )
 from typing import Sequence, Optional, Union, Tuple
-
-from neo4japp.services.exceptions import NameUnavailableError
 
 
 class ProjectsService(RDBMSBaseDao):
