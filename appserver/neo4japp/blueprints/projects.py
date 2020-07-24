@@ -33,9 +33,9 @@ from neo4japp.models import (
     Directory,
     Project,
     Projects,
-    projects_collaborator_role,
+    projects_collaborator_role, ProjectSchema,
 )
-from neo4japp.util import jsonify_with_class, SuccessResponse
+from neo4japp.util import jsonify_with_class, SuccessResponse, CasePreservedDict
 
 from neo4japp.services.exceptions import NameUnavailableError
 
@@ -143,7 +143,6 @@ def get_project_collaborators(project_name: str):
 @auth.login_required
 @requires_project_role('project-admin')
 def add_collaborator(username: str, project_name: str):
-
     proj_service = get_projects_service()
 
     data = request.get_json()
@@ -216,7 +215,6 @@ def edit_collaborator(username: str, project_name: str):
 @auth.login_required
 @requires_project_role('project-admin')
 def remove_collaborator(username: str, project_name: str):
-
     proj_service = get_projects_service()
 
     user = g.current_user
@@ -262,7 +260,7 @@ def add_directory(project_name: str):
     user = g.current_user
 
     yield user, projects
-    new_dir = proj_service.add_directory(projects, dir_name, parent_dir)
+    new_dir = proj_service.add_directory(projects, dir_name, user, parent_dir)
     yield jsonify(dict(results=new_dir.to_dict()))
 
 
@@ -271,7 +269,6 @@ def add_directory(project_name: str):
 @auth.login_required
 @requires_project_permission(AccessActionType.WRITE)
 def move_files(req: MoveFileRequest, project_name: str):
-
     project_service = get_projects_service()
     projects = Projects.query.filter(
         Projects.project_name == project_name
@@ -321,7 +318,6 @@ def move_files(req: MoveFileRequest, project_name: str):
 @jsonify_with_class(DirectoryRenameRequest)
 @requires_project_permission(AccessActionType.WRITE)
 def rename_directory(req: DirectoryRenameRequest, current_dir_id: int, project_name: str):
-
     proj_service = get_projects_service()
     projects = Projects.query.filter(
         Projects.project_name == project_name
@@ -353,11 +349,10 @@ def rename_directory(req: DirectoryRenameRequest, current_dir_id: int, project_n
     yield SuccessResponse(result=modified_dir.to_dict(), status_code=200)
 
 
-@bp.route('/<string:project_name>/directories/<int:current_dir_id>/delete', methods=['POST'])
+@bp.route('/<string:project_name>/directories/<int:current_dir_id>', methods=['DELETE'])
 @auth.login_required
 @requires_project_permission(AccessActionType.WRITE)
 def delete_directory(current_dir_id: int, project_name: str):
-
     proj_service = get_projects_service()
     projects = Projects.query.filter(
         Projects.project_name == project_name
@@ -407,12 +402,19 @@ def get_child_directories(current_dir_id: int, project_name: str):
         dir = Directory.query.get(current_dir_id)
     else:
         dir = proj_service.get_root_dir(projects)
+        current_dir_id = dir.id
 
     if dir is None:
         raise RecordNotFoundException("Directory not found")
 
+    # Pull up directory path to current dir
     parents = proj_service.get_absolute_dir_path(projects, dir)
-    child_dirs = proj_service.get_immediate_child_dirs(projects, dir)
+
+    project_schema = ProjectSchema()
+
+    child_dirs, files, maps = proj_service.get_dir_content(
+        projects, dir
+    )
 
     contents = DirectoryContent(
         dir=dir.to_dict(),
@@ -426,28 +428,32 @@ def get_child_directories(current_dir_id: int, project_name: str):
             *[{
                 'type': 'dir',
                 'name': c.name,
+                'creator': {
+                    'id': c.user_id,
+                    'name': username
+                },
                 'data': c.to_dict(),
-            } for c in child_dirs],
+            } for (c, username) in child_dirs],
             *[{
                 'type': 'file',
                 'name': f.filename,
                 'creator': {
                     'id': f.user_id,
-                    'name': AppUser.query.get(f.user_id).username
+                    'name': username
                 },
                 'description': f.description,
-                'data': f.to_dict(),
-            } for f in dir.files],
+                'data': CasePreservedDict(f.to_dict(keyfn=lambda x: x)),
+            } for (f, username) in files],
             *[{
                 'type': 'map',
                 'name': m.label,
                 'creator': {
                     'id': m.user_id,
-                    'name': AppUser.query.get(m.user_id).username
+                    'name': username
                 },
                 'description': m.description,
-                'data': m.to_dict(),
-            } for m in dir.project],
+                'data': CasePreservedDict(project_schema.dump(m)),
+            } for (m, username) in maps],
         ],
     )
     yield jsonify(dict(result=contents.to_dict()))

@@ -117,11 +117,12 @@ def test_can_get_root_dir(session, fix_projects, fix_directory):
     assert proj_service.get_root_dir(fix_projects).name == '/'
 
 
-def test_can_add_directory(session, fix_projects, fix_directory):
+def test_can_add_directory(session, fix_owner, fix_projects, fix_directory):
     proj_service = ProjectsService(session)
     new_dir = proj_service.add_directory(
         projects=fix_projects,
         dir_name='purple_rain',
+        user=fix_owner
     )
     created_dir = session.query(Directory).filter(
         Directory.name == new_dir.name
@@ -175,11 +176,15 @@ def test_owner_gets_default_admin_permission(session, test_user):
     ('c o u n t r y', 'b l u e s!'),
     ('king', ' king ')
 ])
-def test_can_rename_directory(session, fix_projects, fix_directory, original_name, new_name):
+def test_can_rename_directory(
+    session, fix_owner, fix_projects,
+    fix_directory, original_name, new_name
+):
     proj_service = ProjectsService(session)
     new_dir = proj_service.add_directory(
         projects=fix_projects,
         dir_name=original_name,
+        user=fix_owner
     )
 
     current_dir = session.query(Directory).filter(
@@ -204,11 +209,12 @@ def test_can_rename_directory(session, fix_projects, fix_directory, original_nam
     assert renamed_dir.name == new_name
 
 
-def test_can_delete_directory(session, fix_projects, fix_directory):
+def test_can_delete_directory(session, fix_owner, fix_projects, fix_directory):
     proj_service = ProjectsService(session)
     new_dir = proj_service.add_directory(
         projects=fix_projects,
         dir_name='nested',
+        user=fix_owner
     )
     proj_service.delete_directory(new_dir)
     assert Directory.query.filter(Directory.id == new_dir.id).one_or_none() is None

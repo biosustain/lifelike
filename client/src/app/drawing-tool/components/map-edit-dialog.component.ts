@@ -3,7 +3,7 @@ import {
   FormGroup, FormControl, Validators
 } from '@angular/forms';
 import {
-  Map
+  KnowledgeMap
 } from '../services/interfaces';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { CommonFormDialogComponent } from '../../shared/components/dialog/common-form-dialog.component';
@@ -14,7 +14,7 @@ import { MessageDialog } from '../../shared/services/message-dialog.service';
   templateUrl: './map-edit-dialog.component.html',
 })
 export class MapEditDialogComponent extends CommonFormDialogComponent {
-  @Input() currentMap: Map;
+  @Input() currentMap: KnowledgeMap;
 
   readonly form: FormGroup = new FormGroup({
     label: new FormControl('', Validators.required),
@@ -31,7 +31,7 @@ export class MapEditDialogComponent extends CommonFormDialogComponent {
   }
 
   @Input()
-  set map(value: Map) {
+  set map(value: KnowledgeMap) {
     this.currentMap = value;
     this.form.setValue({
       label: value.label || '',
@@ -40,7 +40,7 @@ export class MapEditDialogComponent extends CommonFormDialogComponent {
     });
   }
 
-  getValue(): Map {
+  getValue(): KnowledgeMap {
     const map = this.map;
     map.label = this.form.value.label;
     map.description = this.form.value.description;
