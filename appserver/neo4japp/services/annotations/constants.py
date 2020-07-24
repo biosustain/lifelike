@@ -67,6 +67,14 @@ COMMON_TYPOS = {
     'S-Phase kinase associated protein 2': ['S-Phase kinase-associated protein 2'],
 }
 
+LIGATURES = {
+    64256: 'ff',
+    64257: 'fi',
+    64258: 'fl',
+    64259: 'ffi',
+    64260: 'ffl',
+}
+
 
 class EntityType(Enum):
     Chemical = 'Chemical'

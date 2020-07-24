@@ -107,7 +107,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
 
     this.loadTask = new BackgroundTask(([file, loc]) => {
       return combineLatest(
-        this.pdf.getFileInfo(file.file_id, this.projectName),
+        this.pdf.getFileMeta(file.file_id, this.projectName),
         this.pdf.getFile(file.file_id, this.projectName),
         this.pdfAnnService.getFileAnnotations(file.file_id, this.projectName),
       ).pipe(errorHandler.create());

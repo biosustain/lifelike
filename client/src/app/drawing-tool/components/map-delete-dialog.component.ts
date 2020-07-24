@@ -1,7 +1,7 @@
 import { Component, Input} from '@angular/core';
 
 import {
-  Map,
+  KnowledgeMap,
 } from '../services/interfaces';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { MessageDialog } from '../../shared/services/message-dialog.service';
@@ -12,13 +12,13 @@ import { CommonDialogComponent } from '../../shared/components/dialog/common-dia
   templateUrl: './map-delete-dialog.component.html',
 })
 export class MapDeleteDialogComponent extends CommonDialogComponent {
-  @Input() map: Map;
+  @Input() map: KnowledgeMap;
 
   constructor(modal: NgbActiveModal, messageDialog: MessageDialog) {
     super(modal, messageDialog);
   }
 
-  getValue(): Map {
+  getValue(): KnowledgeMap {
     return this.map;
   }
 }
