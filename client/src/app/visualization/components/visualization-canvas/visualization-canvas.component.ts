@@ -246,10 +246,7 @@ export class VisualizationCanvasComponent implements OnInit, AfterViewInit {
     clusterCreatedSource: Subject<boolean>;
     clusteringSubscription: Subscription;
 
-    contextMenuTooltipSelector: string;
     contextMenuTooltipOptions: Partial<Options>;
-    referenceTableTooltipSelector: string;
-    referenceTableTooltipOptions: Partial<Options>;
 
     settingsFormValues: SettingsFormValues;
 
@@ -273,13 +270,7 @@ export class VisualizationCanvasComponent implements OnInit, AfterViewInit {
         this.selectedNodeEdgeLabelData = new Map<string, Direction[]>();
         this.referenceTableData = [];
 
-        this.contextMenuTooltipSelector = '#***ARANGO_USERNAME***-menu';
         this.contextMenuTooltipOptions = {
-            placement: 'right-start',
-        };
-
-        this.referenceTableTooltipSelector = '#***ARANGO_USERNAME***-table';
-        this.referenceTableTooltipOptions = {
             placement: 'right-start',
         };
 
@@ -1255,7 +1246,7 @@ export class VisualizationCanvasComponent implements OnInit, AfterViewInit {
         params.event.preventDefault();
 
         // Update the canvas location
-        const canvas = document.querySelector('canvas').getBoundingClientRect() as DOMRect;
+        const canvas = document.getElementById(this.networkContainerId).getBoundingClientRect() as DOMRect;
 
         const contextMenuXPos = params.pointer.DOM.x + canvas.x;
         const contextMenuYPos = params.pointer.DOM.y + canvas.y;

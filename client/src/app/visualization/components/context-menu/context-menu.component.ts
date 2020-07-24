@@ -65,6 +65,8 @@ export class ContextMenuComponent extends TooltipComponent implements OnDestroy,
     ) {
         super();
 
+        this.tooltipSelector = '***ARANGO_USERNAME***-menu-' + this.tooltipId;
+
         this.contextMenuClass = this.DEFAULT_STYLE;
         this.subMenuClass = this.DEFAULT_STYLE;
 
@@ -111,8 +113,8 @@ export class ContextMenuComponent extends TooltipComponent implements OnDestroy,
     }
 
     showSubmenu(contextMenuItemLocator: string, tooltipLocator: string, popper: Instance) {
-        const contextMenuItem = document.querySelector(contextMenuItemLocator);
-        const tooltip = document.querySelector(tooltipLocator) as HTMLElement;
+        const contextMenuItem = document.getElementById(contextMenuItemLocator);
+        const tooltip = document.getElementById(tooltipLocator) as HTMLElement;
         tooltip.style.display = 'block';
         this.subMenuClass = this.DEFAULT_STYLE;
 
@@ -133,7 +135,11 @@ export class ContextMenuComponent extends TooltipComponent implements OnDestroy,
             first(),
             filter(showGroupByRel => showGroupByRel)
         ).subscribe(() => {
-            this.showSubmenu('#group-by-rel-menu-item', '#single-node-selection-group-1-submenu', this.groupByRelSubmenuPopper);
+            this.showSubmenu(
+                'group-by-rel-menu-item-' + this.tooltipId,
+                'single-node-selection-group-1-submenu-' + this.tooltipId,
+                this.groupByRelSubmenuPopper
+            );
         });
     }
 
@@ -144,7 +150,11 @@ export class ContextMenuComponent extends TooltipComponent implements OnDestroy,
             first(),
             filter(showPullOutNode => showPullOutNode)
         ).subscribe(() => {
-            this.showSubmenu('#pull-out-node-from-cluster-menu-item', '#pull-out-node-from-cluster-submenu', this.pullOutNodeSubmenuPopper);
+            this.showSubmenu(
+                'pull-out-node-from-cluster-menu-item-' + this.tooltipId,
+                'pull-out-node-from-cluster-submenu-' + this.tooltipId,
+                this.pullOutNodeSubmenuPopper
+            );
         });
     }
 
@@ -154,7 +164,7 @@ export class ContextMenuComponent extends TooltipComponent implements OnDestroy,
     }
 
     hideSubmenu(tooltipSelector: string) {
-        const tooltip = document.querySelector(tooltipSelector) as HTMLElement;
+        const tooltip = document.getElementById(tooltipSelector) as HTMLElement;
         tooltip.style.display = 'none';
     }
 
@@ -162,7 +172,7 @@ export class ContextMenuComponent extends TooltipComponent implements OnDestroy,
         this.contextMenuControlService.interruptGroupByRel();
         this.contextMenuControlService.interruptPullOutNode();
         this.subMenus.forEach(subMenu => {
-            const tooltip = document.querySelector(`#${subMenu}`) as HTMLElement;
+            const tooltip = document.getElementById(`${subMenu}-${this.tooltipId}`) as HTMLElement;
             tooltip.style.display = 'none';
         });
     }
@@ -187,7 +197,7 @@ export class ContextMenuComponent extends TooltipComponent implements OnDestroy,
     requestGroupByRelationship(rel: string, direction: Direction) {
         // If this is the last possible label, update the submenu display so it is hidden
         if (this.selectedNodeEdgeLabelData.size === 1) {
-            this.hideSubmenu('#single-node-selection-group-1-submenu');
+            this.hideSubmenu('single-node-selection-group-1-submenu-' + this.tooltipId);
         }
         this.groupNeighborsWithRelationship.emit({
             relationship: rel,
@@ -199,7 +209,7 @@ export class ContextMenuComponent extends TooltipComponent implements OnDestroy,
     requestPullNodeFromCluster(clusteredNode: VisNode) {
         // If this is the last node in the cluster, update the submenu display so it is hidden
         if (this.selectedClusterNodeData.length === 1) {
-            this.hideSubmenu('#pull-out-node-from-cluster-submenu');
+            this.hideSubmenu('pull-out-node-from-cluster-submenu-' + this.tooltipId);
         }
         this.pullOutNodeFromCluster.emit(clusteredNode.id);
     }
