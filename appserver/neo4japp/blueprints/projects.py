@@ -410,35 +410,11 @@ def get_child_directories(current_dir_id: int, project_name: str):
     # Pull up directory path to current dir
     parents = proj_service.get_absolute_dir_path(projects, dir)
 
-    # Get children directories
-    child_dirs = db.session.query(
-        Directory,
-        AppUser.username,
-    ).join(
-        AppUser, Directory.user_id == AppUser.id
-    ).filter(
-        Directory.directory_parent_id == current_dir_id
-    ).all()
-
     project_schema = ProjectSchema()
 
-    files = db.session.query(
-        Files,
-        AppUser.username,
-    ).join(
-        AppUser, Files.user_id == AppUser.id
-    ).filter(
-        Files.dir_id == current_dir_id
-    ).all()
-
-    maps = db.session.query(
-        Project,
-        AppUser.username,
-    ).join(
-        AppUser, Project.user_id == AppUser.id
-    ).filter(
-        Project.dir_id == current_dir_id
-    ).all()
+    child_dirs, files, maps = proj_service.get_dir_content(
+        projects, dir
+    )
 
     contents = DirectoryContent(
         dir=dir.to_dict(),
@@ -454,7 +430,7 @@ def get_child_directories(current_dir_id: int, project_name: str):
                 'name': c.name,
                 'creator': {
                     'id': c.user_id,
-                    'name': AppUser.query.get(c.user_id).username
+                    'name': username
                 },
                 'data': c.to_dict(),
             } for (c, username) in child_dirs],
