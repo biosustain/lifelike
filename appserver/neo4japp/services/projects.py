@@ -15,7 +15,7 @@ from neo4japp.models import (
     Files,
     Project,
 )
-from typing import Sequence, Optional, Union
+from typing import Sequence, Optional, Union, Tuple
 
 from neo4japp.services.exceptions import NameUnavailableError
 
@@ -245,3 +245,44 @@ class ProjectsService(RDBMSBaseDao):
             )
         ).one()
         return root_dirs
+
+    def get_dir_content(
+        self,
+        projects: Projects,
+        current_dir: Directory
+    ) -> Tuple[
+            Sequence[Tuple[Directory, str]],
+            Sequence[Tuple[Files, str]],
+            Sequence[Tuple[Project, str]]
+    ]:
+        """ Return list of content in directory
+            with ownership
+        """
+        dirs = self.session.query(
+            Directory,
+            AppUser.username,
+        ).join(
+            AppUser, Directory.user_id == AppUser.id
+        ).filter(
+            Directory.directory_parent_id == current_dir.id
+        ).all()
+
+        files = self.session.query(
+            Files,
+            AppUser.username,
+        ).join(
+            AppUser, Files.user_id == AppUser.id
+        ).filter(
+            Files.dir_id == current_dir.id
+        ).all()
+
+        maps = self.session.query(
+            Project,
+            AppUser.username,
+        ).join(
+            AppUser, Project.user_id == AppUser.id
+        ).filter(
+            Project.dir_id == current_dir.id
+        ).all()
+
+        return dirs, files, maps
