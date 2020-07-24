@@ -23,6 +23,12 @@
       - python3-pip
       - python-pip
 
+- name: Install Python dependencies
+  pip:
+    name:
+      - docker
+      - docker-compose
+
 - name: Add Docker repo GPG key
   apt_key:
     url: https://download.docker.com/linux/ubuntu/gpg

@@ -1,0 +1,4 @@
+- name: restart nginx container
+  docker_container:
+    name: ng01
+    restart: true
