@@ -15,7 +15,7 @@ from neo4japp.models import (
     Files,
     Project,
 )
-from typing import Sequence, Optional, Union
+from typing import Sequence, Optional, Union, Tuple
 
 from neo4japp.services.exceptions import NameUnavailableError
 
@@ -53,7 +53,10 @@ class ProjectsService(RDBMSBaseDao):
             raise NameUnavailableError()
 
         # Create a default directory for every project
-        default_dir = Directory(name='/', directory_parent_id=None, projects_id=projects.id)
+        default_dir = Directory(
+            name='/', directory_parent_id=None,
+            projects_id=projects.id, user_id=user.id
+        )
 
         self.session.add(default_dir)
         self.session.flush()
@@ -127,7 +130,8 @@ class ProjectsService(RDBMSBaseDao):
         self.session.commit()
 
     def add_directory(
-            self, projects: Projects, dir_name: str, root_dir: Directory = None) -> Directory:
+            self, projects: Projects, dir_name: str,
+            user: AppUser, root_dir: Directory = None) -> Directory:
         """ Adds a directory to a project """
 
         # Default directory is top level
@@ -138,7 +142,9 @@ class ProjectsService(RDBMSBaseDao):
         if dir_name in [d.name for d in existing_dirs]:
             raise DuplicateRecord(f'{dir_name} already exists')
 
-        new_dir = Directory(name=dir_name, directory_parent_id=root_dir.id, projects_id=projects.id)
+        new_dir = Directory(
+            name=dir_name, directory_parent_id=root_dir.id, projects_id=projects.id, user_id=user.id
+        )
         self.session.add(new_dir)
         self.session.commit()
         return new_dir
@@ -239,3 +245,44 @@ class ProjectsService(RDBMSBaseDao):
             )
         ).one()
         return root_dirs
+
+    def get_dir_content(
+        self,
+        projects: Projects,
+        current_dir: Directory
+    ) -> Tuple[
+            Sequence[Tuple[Directory, str]],
+            Sequence[Tuple[Files, str]],
+            Sequence[Tuple[Project, str]]
+    ]:
+        """ Return list of content in directory
+            with ownership
+        """
+        dirs = self.session.query(
+            Directory,
+            AppUser.username,
+        ).join(
+            AppUser, Directory.user_id == AppUser.id
+        ).filter(
+            Directory.directory_parent_id == current_dir.id
+        ).all()
+
+        files = self.session.query(
+            Files,
+            AppUser.username,
+        ).join(
+            AppUser, Files.user_id == AppUser.id
+        ).filter(
+            Files.dir_id == current_dir.id
+        ).all()
+
+        maps = self.session.query(
+            Project,
+            AppUser.username,
+        ).join(
+            AppUser, Project.user_id == AppUser.id
+        ).filter(
+            Project.dir_id == current_dir.id
+        ).all()
+
+        return dirs, files, maps

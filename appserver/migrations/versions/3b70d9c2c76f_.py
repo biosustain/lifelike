@@ -56,135 +56,21 @@ def upgrade():
     op.create_foreign_key(op.f('fk_files_dir_id_directory'), 'files', 'directory', ['dir_id'], ['id'])
     op.add_column('project', sa.Column('dir_id', sa.Integer(), nullable=True))
     op.create_foreign_key(op.f('fk_project_dir_id_directory'), 'project', 'directory', ['dir_id'], ['id'])
-    # ### end Alembic commands ###
-    session = Session(op.get_bind())
 
     actions = postgresql.ENUM('READ', 'WRITE', name='accessactiontype')
     actions.create(op.get_bind())
 
-    op.alter_column('access_control_policy', 'action',
-               existing_type=sa.VARCHAR(length=50),
-               type_=sa.Enum('READ', 'WRITE', name='accessactiontype'),
-               existing_nullable=False,
-               postgresql_using="action::accessactiontype")
-
-    # There's only one hardcoded project right now
-    projects = session.query(Projects).filter(Projects.project_name == 'beta-project').one_or_none()
-
-    # This will only be true in development
-    if not projects:
-        projects = Projects(
-            project_name='beta-project',
-            description='',
-            users=[],
-        )
-        session.add(projects)
-        session.flush()
-    else:
-        # Setup roles for the existing project
-        read_role = AppRole(name='project-read')
-        write_role = AppRole(name='project-write')
-        admin_role = AppRole(name='project-admin')
-        session.add(read_role)
-        session.add(write_role)
-        session.add(admin_role)
-        session.flush()
-
-        # Sets up the 'READ' role
-        session.execute(AccessControlPolicy.__table__.insert().values(
-            action=AccessActionType.READ,
-            asset_type=Projects.__tablename__,
-            asset_id=projects.id,
-            principal_type=AppRole.__tablename__,
-            principal_id=read_role.id,
-            rule_type=AccessRuleType.ALLOW,
-        ))
-        session.execute(AccessControlPolicy.__table__.insert().values(
-            action=AccessActionType.WRITE,
-            asset_type=Projects.__tablename__,
-            asset_id=projects.id,
-            principal_type=AppRole.__tablename__,
-            principal_id=read_role.id,
-            rule_type=AccessRuleType.DENY,
-        ))
-
-        # Sets up the 'WRITE' role
-        session.execute(AccessControlPolicy.__table__.insert().values(
-            action=AccessActionType.READ,
-            asset_type=Projects.__tablename__,
-            asset_id=projects.id,
-            principal_type=AppRole.__tablename__,
-            principal_id=write_role.id,
-            rule_type=AccessRuleType.ALLOW,
-        ))
-        session.execute(AccessControlPolicy.__table__.insert().values(
-            action=AccessActionType.WRITE,
-            asset_type=Projects.__tablename__,
-            asset_id=projects.id,
-            principal_type=AppRole.__tablename__,
-            principal_id=write_role.id,
-            rule_type=AccessRuleType.ALLOW,
-        ))
-
-        # Sets up the 'ADMIN' role
-        session.execute(AccessControlPolicy.__table__.insert().values(
-            action=AccessActionType.READ,
-            asset_type=Projects.__tablename__,
-            asset_id=projects.id,
-            principal_type=AppRole.__tablename__,
-            principal_id=admin_role.id,
-            rule_type=AccessRuleType.ALLOW,
-        ))
-        session.execute(AccessControlPolicy.__table__.insert().values(
-            action=AccessActionType.WRITE,
-            asset_type=Projects.__tablename__,
-            asset_id=projects.id,
-            principal_type=AppRole.__tablename__,
-            principal_id=admin_role.id,
-            rule_type=AccessRuleType.ALLOW,
-        ))
-
-        session.flush()
-
-    # Bucket everything into a single directory
-    directory = Directory(
-        name='/',
-        directory_parent_id=None,
-        projects_id=projects.id,
+    op.alter_column(
+        'access_control_policy', 'action',
+        existing_type=sa.VARCHAR(length=50),
+        type_=sa.Enum('READ', 'WRITE', name='accessactiontype'),
+        existing_nullable=False,
+        postgresql_using="action::accessactiontype"
     )
-
-    session.add(directory)
-    session.flush()
-
-    # Get writer role
-    write_role = session.query(AppRole).filter(
-        AppRole.name == 'project-write'
-    ).one()
-
-    # Set all existing users to write role
-    for user in session.query(AppUser).all():
-        session.execute(
-            projects_collaborator_role.insert(),
-            [dict(
-                appuser_id=user.id,
-                projects_id=projects.id,
-                app_role_id=write_role.id,
-            )]
-        )
-        session.flush()
-
-    for fi in session.query(Files).all():
-        setattr(fi, 'dir_id', directory.id)
-        session.add(fi)
-
-    for proj in session.query(Project).all():
-        setattr(proj, 'dir_id', directory.id)
-        session.add(proj)
-
-    session.commit()
 
     op.alter_column('files', 'dir_id', nullable=False)
     op.alter_column('project', 'dir_id', nullable=False)
+    # ### end Alembic commands ###
 
     if context.get_x_argument(as_dictionary=True).get('data_migrate', None):
         data_upgrades()
@@ -196,10 +82,12 @@ def downgrade():
     op.drop_column('project', 'dir_id')
     op.drop_constraint(op.f('fk_files_dir_id_directory'), 'files', type_='foreignkey')
     op.drop_column('files', 'dir_id')
-    op.alter_column('access_control_policy', 'action',
-               existing_type=sa.Enum('READ', 'WRITE', name='accessactiontype'),
-               type_=sa.VARCHAR(length=50),
-               existing_nullable=False)
+    op.alter_column(
+        'access_control_policy', 'action',
+        existing_type=sa.Enum('READ', 'WRITE', name='accessactiontype'),
+        type_=sa.VARCHAR(length=50),
+        existing_nullable=False
+    )
     op.drop_table('projects_collaborator_role')
     op.drop_table('directory')
     # ### end Alembic commands ###
