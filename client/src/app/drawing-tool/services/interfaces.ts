@@ -134,7 +134,7 @@ export interface LaunchApp {
 /**
  * Map schema definition
  */
-export interface Map {
+export interface KnowledgeMap {
   id?: string | number;
   author?: string;
   label: string;

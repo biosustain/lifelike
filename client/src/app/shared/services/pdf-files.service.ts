@@ -1,86 +1,110 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpEvent } from '@angular/common/http';
-import { Observable, of } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
+import { Observable } from 'rxjs';
 import { AuthenticationService } from 'app/auth/services/authentication.service';
-import { PdfFiles, PdfFile, PdfFileUpload, UploadPayload, UploadType } from 'app/interfaces/pdf-files.interface';
-import { encode } from 'punycode';
+import { PdfFile, PdfFileUpload, UploadPayload, UploadType } from 'app/interfaces/pdf-files.interface';
+import { AbstractService } from './abstract-service';
 
 @Injectable({
-  providedIn: '***ARANGO_USERNAME***'
+  providedIn: '***ARANGO_USERNAME***',
 })
-export class PdfFilesService {
-  readonly baseUrl = '/api/files';
-  // Length limits. Keep these in sync with the values in the backend code (/models folder)
-  readonly filenameMaxLength = 200;
-  readonly descriptionMaxLength = 2048;
+export class PdfFilesService extends AbstractService {
+  readonly PROJECTS_BASE_URL = '/api/projects';
+  readonly FILES_BASE_URL = '/api/files';
 
-  constructor(
-    private auth: AuthenticationService,
-    private http: HttpClient,
-  ) {
+  // Length limits. Keep these in sync with the values in the backend code (/models folder)
+  readonly FILENAME_MAX_LENGTH = 200;
+  readonly DESCRIPTION_MAX_LENGTH = 2048;
+
+  constructor(auth: AuthenticationService, http: HttpClient) {
+    super(auth, http);
   }
 
-  getFiles(): Observable<PdfFile[]> {
-    const options = { headers: this.getAuthHeader() };
-    return this.http.get<PdfFiles>(`${this.baseUrl}/list`, options).pipe(
-      map((res: PdfFiles) => res.files),
+  // ========================================
+  // Fetch
+  // ========================================
+
+  getFileMeta(id: string, projectName: string = 'beta-project'): Observable<PdfFile> {
+    return this.http.get<PdfFile>(
+      `${this.PROJECTS_BASE_URL}/${encodeURIComponent(projectName)}/files/${encodeURIComponent(id)}/info`,
+      this.getHttpOptions(true),
     );
   }
 
-  getFileInfo(id: string, projectName: string = 'beta-project'): Observable<PdfFile> {
-    const options = {
-      headers: this.getAuthHeader(),
-    };
-    return this.http.get<PdfFile>(`/api/projects/${projectName}/files/${id}/info`, options);
-  }
-
   getFile(id: string, projectName: string = 'beta-project'): Observable<ArrayBuffer> {
-    const options = {
-      headers: this.getAuthHeader(),
-      responseType: 'arraybuffer' as const,
-    };
-    return this.http.get(`/api/projects/${projectName}/files/${id}`, options);
+    return this.http.get(
+      `${this.PROJECTS_BASE_URL}/${encodeURIComponent(projectName)}/files/${encodeURIComponent(id)}`, {
+        ...this.getHttpOptions(true),
+        responseType: 'arraybuffer',
+      });
   }
 
-  deleteFiles(ids: string[]): Observable<object> {
-    const options = {
-      body: ids,
-      headers: this.getAuthHeader(),
-    };
-    return this.http.request('DELETE', `${this.baseUrl}/bulk_delete`, options);
-  }
+  // ========================================
+  // CRUD
+  // ========================================
 
-  uploadFile(data: UploadPayload): Observable<HttpEvent<PdfFileUpload>> {
+  uploadFile(projectName, parentDir, data: UploadPayload): Observable<HttpEvent<PdfFileUpload>> {
     const formData: FormData = new FormData();
-    formData.append('filename', data.filename.substring(0, this.filenameMaxLength));
-    if (data.description && data.description.length > 0) {
-      formData.append('description', data.description.substring(0, this.descriptionMaxLength));
-    }
-    if (data.type === UploadType.Files) {
-      formData.append('fileInput', data.files[0]);
-    } else {
-      formData.append('url', data.url);
-    }
+
+    formData.append('filename', data.filename.substring(0, this.FILENAME_MAX_LENGTH));
+    formData.append('directoryId', parentDir);
     formData.append('annotationMethod', data.annotationMethod);
-    return this.http.post<PdfFileUpload>(`${this.baseUrl}/upload`, formData, {
-      headers: this.getAuthHeader(),
-      observe: 'events',
-      reportProgress: true,
-    });
+    formData.append('description', data.description ? data.description.substring(0, this.DESCRIPTION_MAX_LENGTH) : '');
+
+    switch (data.type) {
+      case UploadType.Files:
+        formData.append('fileInput', data.files[0]);
+        break;
+      case UploadType.Url:
+        formData.append('url', data.url);
+        break;
+      default:
+        throw new Error('unsupported upload type');
+    }
+
+    return this.http.post<PdfFileUpload>(
+      `${this.PROJECTS_BASE_URL}/${encodeURIComponent(projectName)}/files`,
+      formData,
+      {
+        ...this.getHttpOptions(true),
+        observe: 'events',
+        reportProgress: true,
+      },
+    );
   }
 
-  reannotateFiles(ids: string[]): Observable<object> {
-    const options = { headers: this.getAuthHeader() };
-    return this.http.post(`${this.baseUrl}/reannotate`, ids, options);
+  updateFileMeta(projectName: string, id: string, filename: string, description: string = ''): Observable<any> {
+    const formData: FormData = new FormData();
+    formData.append('filename', filename.substring(0, this.FILENAME_MAX_LENGTH));
+    formData.append('description', description.substring(0, this.DESCRIPTION_MAX_LENGTH));
+    return this.http.patch<string>(
+      `${this.PROJECTS_BASE_URL}/${encodeURIComponent(projectName)}/files/${encodeURIComponent(id)}`,
+      formData,
+      this.getHttpOptions(true),
+    );
   }
 
-  private getAuthHeader() {
-    return { Authorization: `Bearer ${this.auth.getAccessToken()}` };
+  reannotateFiles(projectName: string, ids: string[]): Observable<object> {
+    return this.http.post(`${this.PROJECTS_BASE_URL}/${encodeURIComponent(projectName)}/files/reannotate`, ids, this.getHttpOptions(true));
   }
+
+  deleteFile(projectName, fileId): Observable<any> {
+    return this.http.request(
+      'delete',
+      `${this.PROJECTS_BASE_URL}/${encodeURIComponent(projectName)}/files`, {
+        body: [fileId],
+        ...this.getHttpOptions(true),
+      });
+  }
+
+  // ========================================
+  // Utility
+  // ========================================
 
   getLMDBsDates(): Observable<object> {
-    const options = { headers: this.getAuthHeader() };
-    return this.http.get<object>(`${this.baseUrl}/lmdbs_dates`, options);
+    return this.http.get<object>(
+      `${this.FILES_BASE_URL}/lmdbs_dates`,
+      this.getHttpOptions(true),
+    );
   }
 }

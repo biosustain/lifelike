@@ -1,5 +1,6 @@
-import { Directory, Map } from '../file-browser/services/project-space.service';
-import { File } from '../file-browser/components/file-browser.component';
+import { Directory } from '../file-browser/services/project-space.service';
+import { PdfFile } from './pdf-files.interface';
+import { KnowledgeMap } from '../drawing-tool/services/interfaces';
 
 export interface DirectoryContent {
   dir: Directory;
@@ -15,5 +16,5 @@ export interface DirectoryObject {
     id: number,
     name: string;
   };
-  data: Directory | Map | File;
+  data: Directory | KnowledgeMap | PdfFile;
 }
