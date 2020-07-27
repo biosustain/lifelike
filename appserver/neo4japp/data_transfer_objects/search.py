@@ -39,3 +39,16 @@ class FTSResult(CamelDictMixin):
     total: int = attr.ib()
     page: int = attr.ib()
     limit: int = attr.ib()
+
+
+@attr.s(frozen=True)
+class GeneFilteredRequest(CamelDictMixin):
+    query: str = attr.ib()
+    organism_id: str = attr.ib()
+    filters: str = attr.ib()
+
+
+@attr.s(frozen=True)
+class OrganismRequest(CamelDictMixin):
+    query: str = attr.ib()
+    limit: int = attr.ib()

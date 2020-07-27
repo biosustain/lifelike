@@ -4,6 +4,7 @@ from neo4japp.blueprints.auth import auth
 from neo4japp.database import get_search_service_dao, get_neo4j_service_dao
 from neo4japp.services.pdf_search import PDFSearch, PDFSearchResult
 from neo4japp.util import CamelDictMixin, jsonify_with_class, SuccessResponse
+from neo4japp.data_transfer_objects import GeneFilteredRequest, OrganismRequest
 
 bp = Blueprint('search', __name__, url_prefix='/search')
 
@@ -28,19 +29,6 @@ class PDFSearchRequest(CamelDictMixin):
     query: str = attr.ib()
     offset: int = attr.ib()
     limit: int = attr.ib()
-
-
-@attr.s(frozen=True)
-class OrganismRequest(CamelDictMixin):
-    query: str = attr.ib()
-    limit: int = attr.ib()
-
-
-@attr.s(frozen=True)
-class GeneFilteredRequest(CamelDictMixin):
-    query: str = attr.ib()
-    organism_id: str = attr.ib()
-    filters: str = attr.ib()
 
 
 @bp.route('/search', methods=['POST'])
