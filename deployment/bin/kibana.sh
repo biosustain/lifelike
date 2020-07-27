@@ -7,6 +7,15 @@
 cd /srv
 sudo mkdir lmdb
 
+sudo apt-get update && sudo apt-get install python3-pip -y
+
+# set python
+RUN echo 'alias python=python3' >> ~/.bashrc && \
+    echo 'alias pip=pip3' >> ~/.bashrc && \
+    source ~/.bashrc
+
+pip install elasticsearch==7.6.0
+
 sudo gsutil cp -r gs://lmdb_database/chemicals /srv/lmdb/
 sudo gsutil cp -r gs://lmdb_database/compounds /srv/lmdb/
 sudo gsutil cp -r gs://lmdb_database/diseases /srv/lmdb/
@@ -15,7 +24,7 @@ sudo gsutil cp -r gs://lmdb_database/phenotypes /srv/lmdb/
 sudo gsutil cp -r gs://lmdb_database/proteins /srv/lmdb/
 sudo gsutil cp -r gs://lmdb_database/species /srv/lmdb/
 
-sudo gsutil cp -r gs://lmdb_database/index_annotations.py /srv/lmdb/
+sudo gsutil cp -r gs://lmdb_database/index_annotations.py /srv/
 
 sudo docker-compose -f docker-compose.kibana.yml up -d
 
