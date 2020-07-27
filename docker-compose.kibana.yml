@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
     appserver:
-        image: ${REGISTRY:-gcr.io/able-goods-221820}/kg-appserver-staging:${GITHUB_HASH:-latest}
+        image: ${REGISTRY:-gcr.io/able-goods-221820}/kg-appserver-demo:${GITHUB_HASH:-latest}
         ports:
             - "5000:5000"
         env_file:
