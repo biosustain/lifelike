@@ -2,7 +2,7 @@ import { Component, EventEmitter, Output } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 import { Observable } from 'rxjs';
-import { debounceTime, flatMap, map, tap } from 'rxjs/operators';
+import { debounceTime, map, switchMap, tap } from 'rxjs/operators';
 import { SharedSearchService } from 'app/shared/services/shared-search.service';
 import {
   OrganismAutocomplete,
@@ -27,7 +27,7 @@ export class OrganismAutocompleteComponent {
           this.organismPicked.emit(null);
         }
       }),
-      flatMap(q => {
+      switchMap(q => {
         if (typeof q !== 'string') { // q is an OrganismAutocomplete when the user selects an option
           return [];
         }
