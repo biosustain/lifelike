@@ -72,7 +72,7 @@
         >Add Node Property<i class="fa fa-plus ml-1"></i></button>
       </div>
     </div>
-    <div *ngFor="let propertyGroup of activeFormGroup.get('nodeProperties1').controls; let i = index" class="row mt-2" [formGroup]="propertyGroup">
+    <div *ngFor="let propertyGroup of nodeProperties1; let i = index" class="row mt-2" [formGroup]="propertyGroup">
       <div class="col-md-4">
         <select class="custom-select" formControlName="column">
           <option value="" disabled selected hidden>Worksheet column</option>
@@ -110,14 +110,14 @@
       </div>
     </div>
 
-    <div *ngIf="indexToColumn.get(activeFormGroup.get('columnIndex2').value) !== 'KG Gene'" class="row">
+    <div *ngIf="indexToColumn.get(columnIndex2.value) !== 'KG Gene'" class="row">
       <div class="col">
         <button class="btn btn-primary btn-sm mt-2"
           (click)="addProperty('nodeProperties2')"
         >Add Node Property<i class="fa fa-plus ml-1"></i></button>
       </div>
     </div>
-    <div *ngFor="let propertyGroup of activeFormGroup.get('nodeProperties2').controls; let i = index" class="row mt-2" [formGroup]="propertyGroup">
+    <div *ngFor="let propertyGroup of nodeProperties2; let i = index" class="row mt-2" [formGroup]="propertyGroup">
       <div class="col-md-4">
         <select class="custom-select" formControlName="column">
           <option value="" disabled selected hidden>Worksheet column</option>
@@ -133,7 +133,7 @@
     </div>
   </div>
 
-  <div *ngIf="indexToColumn.get(activeFormGroup.get('columnIndex2').value) === 'KG Gene'">
+  <div *ngIf="indexToColumn.get(columnIndex2.value) === 'KG Gene'">
     <div class="form-group">
       <label>Does your first chosen column represent gene name, or ID?</label>
       <div class="custom-control custom-radio">
@@ -170,7 +170,7 @@
     <div class="row">
       <div class="col">
         <!-- TODO LL-1201: Need to get some list of relationship types from the backend -->
-        <select *ngIf="activeFormGroup.get('useExistingRel').value; else customRelNameInput" class="custom-select" formControlName="relationshipLabel">
+        <select *ngIf="useExistingRel.value; else customRelNameInput" class="custom-select" formControlName="relationshipLabel">
           <option value="" disabled selected hidden>Relationship name</option>
           <!-- TEMP -->
           <option>MAPPED_TO</option>
@@ -200,7 +200,7 @@
     <label>In which direction does the new relationship travel?</label>
     <div class="row">
       <div class="col">
-        <input class="form-control" type="text" [value]="activeFormGroup.get('nodeLabel1').value" disabled>
+        <input class="form-control" type="text" [value]="nodeLabel1.value" disabled>
       </div>
       <div class="col">
         <select class="custom-select" formControlName="relationshipDirection">
@@ -210,7 +210,7 @@
         </select>
       </div>
       <div class="col">
-        <input class="form-control" type="text" [value]="activeFormGroup.get('nodeLabel2').value" disabled>
+        <input class="form-control" type="text" [value]="nodeLabel2.value" disabled>
       </div>
     </div>
   </div>
@@ -224,7 +224,7 @@
         >Add Relationship Property<i class="fa fa-plus ml-1"></i></button>
       </div>
     </div>
-    <div *ngFor="let propertyGroup of activeFormGroup.get('relationshipProperties').controls; let i = index" class="row mt-2" [formGroup]="propertyGroup">
+    <div *ngFor="let propertyGroup of relationshipProperties; let i = index" class="row mt-2" [formGroup]="propertyGroup">
       <div class="col-md-4">
         <select class="custom-select" formControlName="column">
           <option value="" disabled selected hidden>Worksheet column</option>

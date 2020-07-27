@@ -1,5 +1,5 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, FormArray } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, FormArray, AbstractControl } from '@angular/forms';
 
 import { isNullOrUndefined } from 'util';
 
@@ -31,6 +31,34 @@ export class GeneImportConfigComponent {
             this.columns.push('KG Gene');
             this.indexToColumn.set(worksheetData.sheetColumnNames.length.toString(), 'KG Gene');
         }
+    }
+
+    get useExistingRel(): AbstractControl {
+        return this.activeFormGroup.get('useExistingRel');
+    }
+
+    get nodeLabel1(): AbstractControl {
+        return this.activeFormGroup.get('nodeLabel1');
+    }
+
+    get nodeLabel2(): AbstractControl {
+        return this.activeFormGroup.get('nodeLabel2');
+    }
+
+    get columnIndex2(): AbstractControl {
+        return this.activeFormGroup.get('columnIndex2');
+    }
+
+    get nodeProperties1(): AbstractControl[] {
+        return (this.activeFormGroup.get('nodeProperties1') as FormArray).controls;
+    }
+
+    get nodeProperties2(): AbstractControl[] {
+        return (this.activeFormGroup.get('nodeProperties2') as FormArray).controls;
+    }
+
+    get relationshipProperties(): AbstractControl[] {
+        return (this.activeFormGroup.get('relationshipProperties') as FormArray).controls;
     }
 
     readonly geneMatchingPropertyEnum = GeneMatchingPropertyType;
@@ -131,9 +159,15 @@ export class GeneImportConfigComponent {
         const speciesSelectionControl = this.activeFormGroup.get('speciesSelection');
         const geneMatchingPropertyControl = this.activeFormGroup.get('geneMatchingProperty');
 
-        if (this.indexToColumn.get(this.activeFormGroup.get('columnIndex2').value) === 'KG Gene') {
+        if (this.indexToColumn.get(this.columnIndex2.value) === 'KG Gene') {
             this.activeFormGroup.get('nodeLabel2').setValue('Gene');
             this.activeFormGroup.get('nodeLabel2').disable();
+
+            // Remove any properties the user might have added before choosing 'KG Gene', as at the
+            // moment we don't want to add new properties to existing Gene nodes.
+            while ((this.activeFormGroup.get('nodeProperties2') as FormArray).length !== 0) {
+                (this.activeFormGroup.get('nodeProperties2') as FormArray).removeAt(0);
+            }
 
             speciesSelectionControl.setValue('');
             speciesSelectionControl.setValidators([Validators.required]);
@@ -149,7 +183,7 @@ export class GeneImportConfigComponent {
             geneMatchingPropertyControl.setValidators([]);
         }
 
-        this.prevColumn2Selection = this.indexToColumn.get(this.activeFormGroup.get('columnIndex2').value);
+        this.prevColumn2Selection = this.indexToColumn.get(this.columnIndex2.value);
     }
 
     /**
