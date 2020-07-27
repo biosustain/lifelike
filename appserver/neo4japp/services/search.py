@@ -45,7 +45,6 @@ class SearchService(GraphBaseDao):
     def _fulltext_result_formatter(self, results) -> List[FTSQueryRecord]:
         formatted_results: List[FTSQueryRecord] = []
         for result in results:
-            print('result', result)
             node = result['node']
             score = result['score']
             # Assume the first label is the primary type
