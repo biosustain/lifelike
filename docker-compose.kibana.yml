@@ -1,6 +1,23 @@
 version: '3.8'
 
 services:
+    appserver:
+        image: ${REGISTRY:-gcr.io/able-goods-221820}/kg-appserver-staging:${GITHUB_HASH:-latest}
+        ports:
+            - "5000:5000"
+        env_file:
+            - ./.env
+        volumes:
+            - /srv/lmdb/chemicals:/home/n4j/neo4japp/services/annotations/lmdb/chemicals
+            - /srv/lmdb/compounds:/home/n4j/neo4japp/services/annotations/lmdb/compounds
+            - /srv/lmdb/diseases:/home/n4j/neo4japp/services/annotations/lmdb/diseases
+            - /srv/lmdb/genes:/home/n4j/neo4japp/services/annotations/lmdb/genes
+            - /srv/lmdb/proteins:/home/n4j/neo4japp/services/annotations/lmdb/proteins
+            - /srv/lmdb/species:/home/n4j/neo4japp/services/annotations/lmdb/species
+            - /srv/lmdb/phenotypes:/home/n4j/neo4japp/services/annotations/lmdb/phenotypes
+        networks:
+            - backend
+
     elasticsearch:
         container_name: elasticsearch
         image: docker.elastic.co/elasticsearch/elasticsearch:7.8.0
