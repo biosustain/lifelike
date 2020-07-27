@@ -23,6 +23,7 @@ sudo gsutil cp -r gs://lmdb_database/phenotypes /srv/lmdb/
 sudo gsutil cp -r gs://lmdb_database/proteins /srv/lmdb/
 sudo gsutil cp -r gs://lmdb_database/species /srv/lmdb/
 
+export $(cat .env | xargs)
 sudo docker login -u $DOCKER_USER -p "$(cat keyfile.json)" https://gcr.io
 sudo docker pull gcr.io/$PROJECT_ID/kg-appserver-demo:latest
 
