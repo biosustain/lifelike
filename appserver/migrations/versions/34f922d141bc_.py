@@ -63,7 +63,7 @@ def data_upgrades():
         session.flush()
 
         # Get admin role
-        write_role = session.query(AppRole).filter(
+        admin_role = session.query(AppRole).filter(
             AppRole.name == 'project-admin'
         ).one()
 
@@ -72,7 +72,7 @@ def data_upgrades():
             [dict(
                 appuser_id=user.id,
                 projects_id=projects.id,
-                app_role_id=write_role.id,
+                app_role_id=admin_role.id,
             )]
         )
         session.flush()
