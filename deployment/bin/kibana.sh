@@ -24,8 +24,6 @@ sudo gsutil cp -r gs://lmdb_database/phenotypes /srv/lmdb/
 sudo gsutil cp -r gs://lmdb_database/proteins /srv/lmdb/
 sudo gsutil cp -r gs://lmdb_database/species /srv/lmdb/
 
-sudo gsutil cp -r gs://lmdb_database/index_annotations.py /srv/
-
 sudo docker-compose -f docker-compose.kibana.yml up -d
 
-python /srv/lmdb/index_annotations.py -a
+sudo docker-compose -f docker-compose.kibana.yml exec appserver python neo4japp/services/annotations/index_annotations.py -a
