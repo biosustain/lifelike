@@ -1,4 +1,0 @@
----
-# vars file for lmdb
-webserver_user: ubuntu
-lmdb_path: /home/ubuntu/lmdb
