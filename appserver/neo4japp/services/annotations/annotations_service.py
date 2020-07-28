@@ -387,14 +387,14 @@ class AnnotationsService:
         if word:
             if word in COMMON_TYPOS:
                 for correct_spelling in COMMON_TYPOS[word]:
-                    validations = self.validate_chemicals_lmdb(
+                    exist = self.validate_chemicals_lmdb(
                         token=token,
                         synonym=correct_spelling,
                     )
 
                     # if any that means there was a match
                     # so save the correct spelling
-                    if any(validations):
+                    if exist is not None:
                         self.correct_spellings[word] = correct_spelling
                         break
             else:
@@ -407,14 +407,14 @@ class AnnotationsService:
         if word:
             if word in COMMON_TYPOS:
                 for correct_spelling in COMMON_TYPOS[word]:
-                    validations = self.validate_compounds_lmdb(
+                    exist = self.validate_compounds_lmdb(
                         token=token,
                         synonym=correct_spelling,
                     )
 
                     # if any that means there was a match
                     # so save the correct spelling
-                    if any(validations):
+                    if exist is not None:
                         self.correct_spellings[word] = correct_spelling
                         break
             else:
@@ -427,14 +427,14 @@ class AnnotationsService:
         if word:
             if word in COMMON_TYPOS:
                 for correct_spelling in COMMON_TYPOS[word]:
-                    validations = self.validate_diseases_lmdb(
+                    exist = self.validate_diseases_lmdb(
                         token=token,
                         synonym=correct_spelling,
                     )
 
                     # if any that means there was a match
                     # so save the correct spelling
-                    if any(validations):
+                    if exist is not None:
                         self.correct_spellings[word] = correct_spelling
                         break
             else:
@@ -447,14 +447,14 @@ class AnnotationsService:
         if word:
             if word in COMMON_TYPOS:
                 for correct_spelling in COMMON_TYPOS[word]:
-                    validations = self.validate_genes_lmdb(
+                    exist = self.validate_genes_lmdb(
                         token=token,
                         synonym=correct_spelling,
                     )
 
                     # if any that means there was a match
                     # so save the correct spelling
-                    if any(validations):
+                    if exist is not None:
                         self.correct_spellings[word] = correct_spelling
                         break
             else:
@@ -467,14 +467,14 @@ class AnnotationsService:
         if word:
             if word in COMMON_TYPOS:
                 for correct_spelling in COMMON_TYPOS[word]:
-                    validations = self.validate_phenotypes_lmdb(
+                    exist = self.validate_phenotypes_lmdb(
                         token=token,
                         synonym=correct_spelling,
                     )
 
                     # if any that means there was a match
                     # so save the correct spelling
-                    if any(validations):
+                    if exist is not None:
                         self.correct_spellings[word] = correct_spelling
                         break
             else:
@@ -487,14 +487,14 @@ class AnnotationsService:
         if word:
             if word in COMMON_TYPOS:
                 for correct_spelling in COMMON_TYPOS[word]:
-                    validations = self.validate_proteins_lmdb(
+                    exist = self.validate_proteins_lmdb(
                         token=token,
                         synonym=correct_spelling,
                     )
 
                     # if any that means there was a match
                     # so save the correct spelling
-                    if any(validations):
+                    if exist is not None:
                         self.correct_spellings[word] = correct_spelling
                         break
             else:
@@ -507,14 +507,14 @@ class AnnotationsService:
         if word:
             if word in COMMON_TYPOS:
                 for correct_spelling in COMMON_TYPOS[word]:
-                    validations = self.validate_species_lmdb(
+                    exist = self.validate_species_lmdb(
                         token=token,
                         synonym=correct_spelling,
                     )
 
                     # if any that means there was a match
                     # so save the correct spelling
-                    if any(validations):
+                    if exist is not None:
                         self.correct_spellings[word] = correct_spelling
                         break
             else:
