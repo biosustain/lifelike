@@ -102,21 +102,22 @@ class AnnotationsService:
 
         lowered_word = token.keyword.lower()
 
-        # check chemical
-        if nlp_predicted_type:
-            if nlp_predicted_type == EntityType.Chemical.value and lowered_word not in CHEMICAL_EXCLUSION:  # noqa
-                chem_val = self.lmdb_session.chemicals_txn.get(lookup_key)
-        else:
-            if lowered_word not in CHEMICAL_EXCLUSION:
-                chem_val = self.lmdb_session.chemicals_txn.get(lookup_key)
-
-        if chem_val:
-            if token.keyword in self.matched_chemicals:
-                self.matched_chemicals[token.keyword].append(token)
+        if len(lookup_key) > 2:
+            # check chemical
+            if nlp_predicted_type:
+                if nlp_predicted_type == EntityType.Chemical.value and lowered_word not in CHEMICAL_EXCLUSION:  # noqa
+                    chem_val = self.lmdb_session.chemicals_txn.get(lookup_key)
             else:
-                self.matched_chemicals[token.keyword] = [token]
+                if lowered_word not in CHEMICAL_EXCLUSION:
+                    chem_val = self.lmdb_session.chemicals_txn.get(lookup_key)
 
-        return chem_val
+            if chem_val:
+                if token.keyword in self.matched_chemicals:
+                    self.matched_chemicals[token.keyword].append(token)
+                else:
+                    self.matched_chemicals[token.keyword] = [token]
+
+            return chem_val
 
     def validate_compounds_lmdb(
         self,
@@ -146,21 +147,22 @@ class AnnotationsService:
 
         lowered_word = token.keyword.lower()
 
-        # check compound
-        if nlp_predicted_type:
-            if nlp_predicted_type == EntityType.Compound.value and lowered_word not in CHEMICAL_EXCLUSION:  # noqa
-                comp_val = self.lmdb_session.compounds_txn.get(lookup_key)
-        else:
-            if lowered_word not in CHEMICAL_EXCLUSION:
-                comp_val = self.lmdb_session.compounds_txn.get(lookup_key)
-
-        if comp_val:
-            if token.keyword in self.matched_compounds:
-                self.matched_compounds[token.keyword].append(token)
+        if len(lookup_key) > 2:
+            # check compound
+            if nlp_predicted_type:
+                if nlp_predicted_type == EntityType.Compound.value and lowered_word not in CHEMICAL_EXCLUSION:  # noqa
+                    comp_val = self.lmdb_session.compounds_txn.get(lookup_key)
             else:
-                self.matched_compounds[token.keyword] = [token]
+                if lowered_word not in CHEMICAL_EXCLUSION:
+                    comp_val = self.lmdb_session.compounds_txn.get(lookup_key)
 
-        return comp_val
+            if comp_val:
+                if token.keyword in self.matched_compounds:
+                    self.matched_compounds[token.keyword].append(token)
+                else:
+                    self.matched_compounds[token.keyword] = [token]
+
+            return comp_val
 
     def validate_diseases_lmdb(
         self,
@@ -190,20 +192,21 @@ class AnnotationsService:
 
         lowered_word = token.keyword.lower()
 
-        # check disease
-        if nlp_predicted_type:
-            if nlp_predicted_type == EntityType.Disease.value:
-                diseases_val = self.lmdb_session.diseases_txn.get(lookup_key)
-        else:
-            diseases_val = self.lmdb_session.diseases_txn.get(lookup_key)
-
-        if diseases_val:
-            if token.keyword in self.matched_diseases:
-                self.matched_diseases[token.keyword].append(token)
+        if len(lookup_key) > 2:
+            # check disease
+            if nlp_predicted_type:
+                if nlp_predicted_type == EntityType.Disease.value:
+                    diseases_val = self.lmdb_session.diseases_txn.get(lookup_key)
             else:
-                self.matched_diseases[token.keyword] = [token]
+                diseases_val = self.lmdb_session.diseases_txn.get(lookup_key)
 
-        return diseases_val
+            if diseases_val:
+                if token.keyword in self.matched_diseases:
+                    self.matched_diseases[token.keyword].append(token)
+                else:
+                    self.matched_diseases[token.keyword] = [token]
+
+            return diseases_val
 
     def validate_genes_lmdb(
         self,
@@ -233,20 +236,21 @@ class AnnotationsService:
 
         lowered_word = token.keyword.lower()
 
-        # check gene
-        if nlp_predicted_type:
-            if nlp_predicted_type == EntityType.Gene.value:
-                gene_val = self.lmdb_session.genes_txn.get(lookup_key)
-        else:
-            gene_val = self.lmdb_session.genes_txn.get(lookup_key)
-
-        if gene_val:
-            if token.keyword in self.matched_genes:
-                self.matched_genes[token.keyword].append(token)
+        if len(lookup_key) > 2:
+            # check gene
+            if nlp_predicted_type:
+                if nlp_predicted_type == EntityType.Gene.value:
+                    gene_val = self.lmdb_session.genes_txn.get(lookup_key)
             else:
-                self.matched_genes[token.keyword] = [token]
+                gene_val = self.lmdb_session.genes_txn.get(lookup_key)
 
-        return gene_val
+            if gene_val:
+                if token.keyword in self.matched_genes:
+                    self.matched_genes[token.keyword].append(token)
+                else:
+                    self.matched_genes[token.keyword] = [token]
+
+            return gene_val
 
     def validate_phenotypes_lmdb(
         self,
@@ -276,20 +280,21 @@ class AnnotationsService:
 
         lowered_word = token.keyword.lower()
 
-        # check phenotype
-        if nlp_predicted_type:
-            if nlp_predicted_type == EntityType.Phenotype.value:
-                phenotype_val = self.lmdb_session.phenotypes_txn.get(lookup_key)
-        else:
-            phenotype_val = self.lmdb_session.phenotypes_txn.get(lookup_key)
-
-        if phenotype_val:
-            if token.keyword in self.matched_phenotypes:
-                self.matched_phenotypes[token.keyword].append(token)
+        if len(lookup_key) > 2:
+            # check phenotype
+            if nlp_predicted_type:
+                if nlp_predicted_type == EntityType.Phenotype.value:
+                    phenotype_val = self.lmdb_session.phenotypes_txn.get(lookup_key)
             else:
-                self.matched_phenotypes[token.keyword] = [token]
+                phenotype_val = self.lmdb_session.phenotypes_txn.get(lookup_key)
 
-        return phenotype_val
+            if phenotype_val:
+                if token.keyword in self.matched_phenotypes:
+                    self.matched_phenotypes[token.keyword].append(token)
+                else:
+                    self.matched_phenotypes[token.keyword] = [token]
+
+            return phenotype_val
 
     def validate_proteins_lmdb(
         self,
@@ -319,20 +324,21 @@ class AnnotationsService:
 
         lowered_word = token.keyword.lower()
 
-        # check protein
-        if nlp_predicted_type:
-            if nlp_predicted_type == EntityType.Protein.value:
-                protein_val = self.lmdb_session.proteins_txn.get(lookup_key)
-        else:
-            protein_val = self.lmdb_session.proteins_txn.get(lookup_key)
-
-        if protein_val:
-            if token.keyword in self.matched_proteins:
-                self.matched_proteins[token.keyword].append(token)
+        if len(lookup_key) > 2:
+            # check protein
+            if nlp_predicted_type:
+                if nlp_predicted_type == EntityType.Protein.value:
+                    protein_val = self.lmdb_session.proteins_txn.get(lookup_key)
             else:
-                self.matched_proteins[token.keyword] = [token]
+                protein_val = self.lmdb_session.proteins_txn.get(lookup_key)
 
-        return protein_val
+            if protein_val:
+                if token.keyword in self.matched_proteins:
+                    self.matched_proteins[token.keyword].append(token)
+                else:
+                    self.matched_proteins[token.keyword] = [token]
+
+            return protein_val
 
     def validate_species_lmdb(
         self,
@@ -362,25 +368,27 @@ class AnnotationsService:
 
         lowered_word = token.keyword.lower()
 
-        # check species
-        if nlp_predicted_type:
-            # TODO: Bacteria because for now NLP has that instead of
-            # generic `Species`
-            if ((nlp_predicted_type == EntityType.Species.value or
-                nlp_predicted_type == 'Bacteria') and
-                    lowered_word not in SPECIES_EXCLUSION):  # noqa
-                species_val = self.lmdb_session.species_txn.get(lookup_key)
-        else:
-            if lowered_word not in SPECIES_EXCLUSION:
-                species_val = self.lmdb_session.species_txn.get(lookup_key)
 
-        if species_val:
-            if token.keyword in self.matched_species:
-                self.matched_species[token.keyword].append(token)
+        if len(lookup_key) > 2:
+            # check species
+            if nlp_predicted_type:
+                # TODO: Bacteria because for now NLP has that instead of
+                # generic `Species`
+                if ((nlp_predicted_type == EntityType.Species.value or
+                    nlp_predicted_type == 'Bacteria') and
+                        lowered_word not in SPECIES_EXCLUSION):  # noqa
+                    species_val = self.lmdb_session.species_txn.get(lookup_key)
             else:
-                self.matched_species[token.keyword] = [token]
+                if lowered_word not in SPECIES_EXCLUSION:
+                    species_val = self.lmdb_session.species_txn.get(lookup_key)
 
-        return species_val
+            if species_val:
+                if token.keyword in self.matched_species:
+                    self.matched_species[token.keyword].append(token)
+                else:
+                    self.matched_species[token.keyword] = [token]
+
+            return species_val
 
     def _find_chemical_match(self, token: PDFTokenPositions) -> None:
         word = token.keyword
