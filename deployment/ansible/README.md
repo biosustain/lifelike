@@ -10,6 +10,14 @@ make venv
 source venv/bin/activate
 ```
 
+3. Setup SSH on the servers you want to run Ansible on.
+You can do this
+-- 1. Going to the Google Compute Engine page
+-- 2. Create a SSH key
+-- 3. Copy said SSH key
+(on a Mac, you can do `cat ~/.ssh/yourkey | pbcopy` to copy the key to the clipboard)
+-- 4. Add it to the server and save
+
 ## Ansible Cheat Sheet
 
 ### What can I do with ansible?
@@ -34,8 +42,10 @@ https://docs.ansible.com/ansible/latest/user_guide/vault.html
 
 # Playbooks
 
-## ELK (Elastic, Logstash, Kibana)
+## Elastic Stack (Elastic, Logstash, Kibana, Beats)
 The following playbook will set up the ELK stack at a specified location. By default, the original playbook will attempt to set up a SSL/TLS secure Kibana, but this can be disabled by individually running each *role* separately; you may want to do this if you're trying to deploy a development environment.
+
+### ELK (Elastic, Kibana, Logstash)
 
 __Usage 1__
 1. Fetch the vault secrets from google bucket (TODO: add here) `.vault_secrets_pw`
@@ -55,4 +65,14 @@ __Usage 3__
 Deploy to a different host besides production
 ```bash
 ansible-playbook -i inventories --vault-password-file=.vault_secrets_pw playbooks/elk_setup.yml --tags nginx --extra-vars "elkhost=sandbox"
+```
+
+### Beats (Filebeats, Metricbeats, etc)
+
+Filebeat is used to send logs to the ELK stack. For example, if we had a VM with our application server, Filebeat would be installed along side and will forward any logs to the VM that contains the ELK stack.
+
+__Usage 1__
+Deploy Filebeat to production
+```bash
+ansible-playbook -i inventories --vault-password-file=.vault_secrets_pw playbooks/filebeat_setup.yml --extra-vars "webserver=prod"
 ```
