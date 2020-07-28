@@ -1074,3 +1074,59 @@ def test_gene_annotation_human_vs_rat(
                 # id should change to match KG
                 # value from mock_get_gene_to_organism_match_result_for_human_rat_gene
                 assert annotations[1].meta.id == '80267'
+
+
+@pytest.mark.parametrize(
+    'index, tokens',
+    [
+        (1, [
+                PDFTokenPositions(
+                    page_number=1,
+                    keyword='Arg',
+                    char_positions={0: 'A', 1: 'r', 2: 'g'},
+                ),
+                PDFTokenPositions(
+                    page_number=1,
+                    keyword='FO(-)',
+                    char_positions={4: 'F', 5: 'O', 6: '(', 7: '-', 8: ')'},
+                ),
+                PDFTokenPositions(
+                    page_number=1,
+                    keyword='H',
+                    char_positions={10: 'H'},
+                ),
+        ]),
+    ],
+)
+def test_ignore_terms_length_two_or_less(
+    default_lmdb_setup,
+    index,
+    tokens,
+):
+    annotation_service = get_test_annotations_service(
+        genes_lmdb_path=path.join(directory, 'lmdb/genes'),
+        chemicals_lmdb_path=path.join(directory, 'lmdb/chemicals'),
+        compounds_lmdb_path=path.join(directory, 'lmdb/compounds'),
+        proteins_lmdb_path=path.join(directory, 'lmdb/proteins'),
+        species_lmdb_path=path.join(directory, 'lmdb/species'),
+        diseases_lmdb_path=path.join(directory, 'lmdb/diseases'),
+        phenotypes_lmdb_path=path.join(directory, 'lmdb/phenotypes'),
+    )
+
+    char_coord_objs_in_pdf = []
+    for t in tokens:
+        for c in t.keyword:
+            char_coord_objs_in_pdf.append(get_dummy_LTChar(text=c))
+        char_coord_objs_in_pdf.append(get_dummy_LTChar(text=' '))
+
+    annotations = annotation_service.create_rules_based_annotations(
+        tokens=PDFTokenPositionsList(
+            token_positions=tokens,
+            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
+            cropbox_in_pdf=(5, 5),
+            min_idx_in_page=[1, 5, 10],
+        ),
+    )
+
+    assert len(annotations) == 1
+    assert annotations[0].keyword == tokens[0].keyword
