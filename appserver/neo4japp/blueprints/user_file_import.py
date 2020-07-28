@@ -70,6 +70,7 @@ def import_genes(req: ImportGenesRequest):
     match_result = import_service.import_gene_relationships(
         file_name=req.file_name,
         sheet_name=req.sheet_name,
+        worksheet_node_name=req.worksheet_node_name,
         relationships=req.relationships,
     )
 
