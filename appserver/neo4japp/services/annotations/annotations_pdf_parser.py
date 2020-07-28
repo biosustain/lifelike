@@ -161,7 +161,8 @@ class AnnotationsPDFParser:
                                 ligatures_list.extend(expand_ligatures(decoded_str))
                             else:
                                 # ligature not in our set of expected ones
-                                raise AnnotationError(f'Failed to parse PDF, unexpected ligature found: {lt_obj_text}')
+                                raise AnnotationError(
+                                    f'Failed to parse PDF, unexpected ligature found: {lt_obj_text}')  # noqa
 
                     if char_coord_objs_in_pdf:
                         prev_char = char_coord_objs_in_pdf[-1]
