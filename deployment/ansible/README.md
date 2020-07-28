@@ -2,10 +2,17 @@
 
 ## Quick Start
 1. Run the `makefile` to setup the dependencies
+
+This will set up the Ansible environment
 ```bash
 make venv
 ```
-2. Activate the new virtual environment
+
+This will fetch the Ansible Vault secrets
+```bash
+make vault
+```
+1. Activate the new virtual environment
 ```
 source venv/bin/activate
 ```
