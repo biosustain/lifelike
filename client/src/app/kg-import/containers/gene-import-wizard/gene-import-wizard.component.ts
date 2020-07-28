@@ -52,6 +52,7 @@ export class GeneImportWizardComponent {
 
         this.sheetForm = this.fb.group({
             sheet: [null, Validators.required],
+            worksheetNodeName: ['', Validators.required],
         });
 
         this.geneConfigFormValid = false;
