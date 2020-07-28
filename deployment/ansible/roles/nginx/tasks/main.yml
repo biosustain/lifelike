@@ -69,9 +69,9 @@
     name: ng01
     image: "{{ nginx_image }}"
     ports:
+        - 9200:9200
         - 80:80
         - 443:443
-        - 9200:9200
     volumes:
         - "{{ nginx_conf_dir }}/:/etc/nginx/conf.d/:ro"
         - "{{ certbot_conf_dir }}/:/etc/letsencrypt"

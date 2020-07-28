@@ -12,7 +12,7 @@ elasticsearch_conf_dir: /usr/share/elasticsearch
 kibana_image: docker.elastic.co/kibana/kibana:7.8.0
 kibana_hostname: ki01
 
-logstash_image: docker.elastic.co/logstash/logstash:7.4.0
+logstash_image: docker.elastic.co/logstash/logstash:7.8.0
 logstash_hostname: lo01
 logstash_conf_dir: /usr/share/logstash
 
