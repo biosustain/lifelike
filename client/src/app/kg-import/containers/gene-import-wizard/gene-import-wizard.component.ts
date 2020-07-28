@@ -22,7 +22,6 @@ export class GeneImportWizardComponent {
     importingRelationships: boolean;
 
     worksheetData: FileNameAndSheets;
-    selectedSheet: SheetNameAndColumnNames;
 
     importFileForm: FormGroup;
     sheetForm: FormGroup;
@@ -31,6 +30,10 @@ export class GeneImportWizardComponent {
     geneConfigFormArray: FormArray;
 
     readonly acceptedFileTypes = '.xlsx';
+
+    get selectedSheet(): SheetNameAndColumnNames {
+      return this.sheetForm.get('sheet').value;
+    }
 
     constructor(
         private fb: FormBuilder,
@@ -42,14 +45,13 @@ export class GeneImportWizardComponent {
         this.importingRelationships = false;
 
         this.worksheetData = null;
-        this.selectedSheet = null;
 
         this.importFileForm = this.fb.group({
             fileInput: ['', Validators.required],
         });
 
         this.sheetForm = this.fb.group({
-            sheetName: ['', Validators.required],
+            sheet: [null, Validators.required],
         });
 
         this.geneConfigFormValid = false;
@@ -70,23 +72,12 @@ export class GeneImportWizardComponent {
         this.userFileImportService.uploadExperimentalDataFile(formData).subscribe(result => {
             this.worksheetData = result;
 
-            // Set the first sheet as the default value for the sheet form dropdown
-            this.sheetForm.controls.sheetName.setValue(this.worksheetData.sheets[0].sheetName);
-            this.selectedSheet = this.worksheetData.sheets[0];
-
             this.loadingSheet = false;
             this.snackbar.open('Finished loading worksheet!', 'Close', {duration: 3000});
         });
     }
 
-    /**
-     * Updates both the sheet form and the selectedSheet variable.
-     * @param event the name of the selected sheet
-     */
-    onSheetNameChange(event) {
-       this.sheetForm.controls.sheetName.setValue(event.target.value);
-       this.selectedSheet = this.worksheetData.sheets.filter(sheet => sheet.sheetName === event.target.value)[0];
-
+    onSheetNameChange() {
        // Reset the gene config form objects whenever a new sheet is chosen. We can't do this in the
        // gene config component without triggering "Expression Changed After Checks" errors.
        this.geneConfigFormValid = false;

@@ -39,10 +39,11 @@
           <button class="btn btn-primary" matStepperPrevious>Back</button>
           <button class="btn btn-primary" [disabled]="!(sheetForm.valid)" matStepperNext>Next</button>
         </div>
-        <div *ngIf="worksheetData" class="form-group">
+        <div *ngIf="worksheetData" class="form-group" [formGroup]="sheetForm">
           <label>Please select the sheet you would like to import:</label>
-          <select class="custom-select" required (change)="onSheetNameChange($event)">
-            <option *ngFor="let sheet of worksheetData.sheets">{{ sheet.sheetName }}</option>
+          <select class="custom-select" required formControlName="sheet" (change)="onSheetNameChange($event)">
+            <option value="null" disabled selected hidden>Worksheet</option>
+            <option *ngFor="let sheet of worksheetData.sheets" [ngValue]="sheet">{{ sheet.sheetName }}</option>
           </select>
         </div>
       </mat-step>
