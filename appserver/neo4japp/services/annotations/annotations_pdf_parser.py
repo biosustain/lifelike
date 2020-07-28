@@ -143,26 +143,21 @@ class AnnotationsPDFParser:
                     ligatures_list: List[LTChar] = []
                     char_unicode = None
 
-                    if len(lt_obj_text) > 1:
-                        try:
-                            char_unicode = ord(lt_obj_text)
-                        except Exception:
-                            # pdfminer sometimes parses ligatures as actually two chars
-                            # in one LTChar object
-                            ligatures_list.extend(expand_ligatures(lt_obj_text))
+                    try:
+                        char_unicode = ord(lt_obj_text)
+                    except Exception:
+                        # pdfminer sometimes parses ligatures as actually two chars
+                        # in one LTChar object
+                        ligatures_list.extend(expand_ligatures(lt_obj_text))
 
-                        # first check for ligatures, e.g `fi`, `ffi`, etc
-                        # the ligatures are one char, so need to expand them
-                        # essentially creating new chars for each supposed chars
-                        # in the ligature
-                        if char_unicode:
-                            if char_unicode in LIGATURES:
-                                decoded_str = LIGATURES[char_unicode]
-                                ligatures_list.extend(expand_ligatures(decoded_str))
-                            else:
-                                # ligature not in our set of expected ones
-                                raise AnnotationError(
-                                    f'Failed to parse PDF, unexpected ligature found: {lt_obj_text}')  # noqa
+                    # first check for ligatures, e.g `fi`, `ffi`, etc
+                    # the ligatures are one char, so need to expand them
+                    # essentially creating new chars for each supposed chars
+                    # in the ligature
+                    if char_unicode:
+                        if char_unicode in LIGATURES:
+                            decoded_str = LIGATURES[char_unicode]
+                            ligatures_list.extend(expand_ligatures(decoded_str))
 
                     if char_coord_objs_in_pdf:
                         prev_char = char_coord_objs_in_pdf[-1]
