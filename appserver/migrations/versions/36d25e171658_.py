@@ -9,20 +9,7 @@ from alembic import context
 from alembic import op
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
-from sqlalchemy.orm.session import Session
 
-from neo4japp.models import (
-    AppRole,
-    AppUser,
-    AccessControlPolicy,
-    AccessActionType,
-    AccessRuleType,
-    Directory,
-    Files,
-    Project,
-    Projects,
-    projects_collaborator_role,
-)
 
 # revision identifiers, used by Alembic.
 revision = '36d25e171658'
@@ -58,63 +45,6 @@ def downgrade():
 def data_upgrades():
     """Add optional data upgrade migrations here"""
     pass
-
-    # Code block for data upgrade was intially in 3b70d9c2c76f_.py
-    # but moved here and modified to allow dev envionrment
-    # to do data-migration for beta-project after all schema-migration
-    # to directory is done
-
-    # session = Session(op.get_bind())
-
-    # # There's only one hardcoded project right now
-    # projects = session.query(Projects).filter(Projects.project_name == 'beta-project').one_or_none()
-
-    # # This will only be true in development
-    # if not projects:
-    #     projects = Projects(
-    #         project_name='beta-project',
-    #         description='',
-    #         users=[],
-    #     )
-    #     session.add(projects)
-    #     session.flush()
-
-    #     # Bucket everything into a single directory
-    #     directory = Directory(
-    #         name='/',
-    #         directory_parent_id=None,
-    #         projects_id=projects.id,
-    #     )
-
-    #     session.add(directory)
-    #     session.flush()
-
-    #     # Get writer role
-    #     write_role = session.query(AppRole).filter(
-    #         AppRole.name == 'project-write'
-    #     ).one()
-
-    #     # Set all existing users to write role
-    #     for user in session.query(AppUser).all():
-    #         session.execute(
-    #             projects_collaborator_role.insert(),
-    #             [dict(
-    #                 appuser_id=user.id,
-    #                 projects_id=projects.id,
-    #                 app_role_id=write_role.id,
-    #             )]
-    #         )
-    #         session.flush()
-
-    #     for fi in session.query(Files).all():
-    #         setattr(fi, 'dir_id', directory.id)
-    #         session.add(fi)
-
-    #     for proj in session.query(Project).all():
-    #         setattr(proj, 'dir_id', directory.id)
-    #         session.add(proj)
-
-    #     session.commit()
 
 
 def data_downgrades():
