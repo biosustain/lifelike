@@ -1,7 +1,0 @@
-- name: Configure Webserver
-  hosts: webservers
-  gather_facts: no
-  become: yes
-  roles:
-    - docker
-    - lmdb
