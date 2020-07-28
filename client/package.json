@@ -10,6 +10,11 @@
     "lint": "ng lint",
     "e2e": "ng e2e"
   },
+  "husky": {
+    "hooks": {
+      "pre-commit": "ng lint && docker-compose exec -T appserver mypy ."
+    }
+  },
   "private": true,
   "dependencies": {
     "@angular/animations": "~8.2.14",
@@ -74,6 +79,7 @@
     "@types/pdfjs-dist": "^2.1.0",
     "@types/vis": "^4.21.19",
     "codelyzer": "^5.0.0",
+    "husky": "^4.2.5",
     "jasmine-core": "~3.4.0",
     "jasmine-marbles": "^0.6.0",
     "jasmine-spec-reporter": "~4.2.1",
