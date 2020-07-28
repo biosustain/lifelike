@@ -539,6 +539,7 @@ class UserFileImportService(GraphBaseDao):
         self,
         file_name: str,
         sheet_name: str,
+        worksheet_node_name: str,
         relationships: List[GeneImportRelationship],
     ):
         worksheet = self.get_worksheet(file_name, sheet_name)
