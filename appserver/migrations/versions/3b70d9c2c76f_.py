@@ -147,14 +147,32 @@ def upgrade():
         session.flush()
 
     # Bucket everything into a single directory
-    directory = Directory(
-        name='/',
-        directory_parent_id=None,
-        projects_id=projects.id,
+    t_directory = sa.Table(
+        'directory',
+        sa.MetaData(),
+        sa.Column('id', sa.Integer(), primary_key=True, autoincrement=True),
+        sa.Column('name', sa.String(200), nullable=False),
+        sa.Column(
+            'directory_parent_id',
+            sa.Integer,
+            sa.ForeignKey('directory.id'),
+            nullable=True,
+        ),
+        sa.Column(
+            'projects_id',
+            sa.Integer,
+            sa.ForeignKey('projects.id'),
+            nullable=False,
+        )
     )
-
-    session.add(directory)
-    session.flush()
+    conn = op.get_bind()
+    directory_id = conn.execute(
+        t_directory.insert().values(
+            name='/',
+            directory_parent_id=None,
+            projects_id=projects.id,
+        )
+    )
 
     # Get writer role
     write_role = session.query(AppRole).filter(
@@ -174,11 +192,11 @@ def upgrade():
         session.flush()
 
     for fi in session.query(Files).all():
-        setattr(fi, 'dir_id', directory.id)
+        setattr(fi, 'dir_id', directory_id)
         session.add(fi)
 
     for proj in session.query(Project).all():
-        setattr(proj, 'dir_id', directory.id)
+        setattr(proj, 'dir_id', directory_id)
         session.add(proj)
 
     session.commit()
