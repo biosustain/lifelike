@@ -41,10 +41,21 @@
         </div>
         <div *ngIf="worksheetData" class="form-group" [formGroup]="sheetForm">
           <label>Please select the sheet you would like to import:</label>
-          <select class="custom-select" required formControlName="sheet" (change)="onSheetNameChange($event)">
-            <option value="null" disabled selected hidden>Worksheet</option>
-            <option *ngFor="let sheet of worksheetData.sheets" [ngValue]="sheet">{{ sheet.sheetName }}</option>
-          </select>
+          <div class="row">
+            <div class="col-md-4">
+              <select class="custom-select" required formControlName="sheet" (change)="onSheetNameChange($event)">
+                <option value="null" disabled selected hidden>Worksheet</option>
+                <option *ngFor="let sheet of worksheetData.sheets" [ngValue]="sheet">{{ sheet.sheetName }}</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <!-- TODO LL-1201: Need to add a validation regex to this so we can prevent weird labels from being added -->
+              <input type="text" class="form-control" formControlName="worksheetNodeName" placeholder="Worksheet Node Name">
+              <small class="form-text text-muted">
+                When we create the worksheet node in the KG which represents this sheet, we will give it this name.
+              </small>
+            </div>
+          </div>
         </div>
       </mat-step>
 
