@@ -100,6 +100,7 @@ export class GeneImportWizardComponent {
         this.kgImportService.importGeneRelationships(
             this.worksheetData.filename,
             this.selectedSheet.sheetName,
+            this.sheetForm.get('worksheetNodeName').value,
             this.geneConfigFormArray.getRawValue() as GeneImportRelationship[],
         ).subscribe(result => {
             // TODO: Eventually we may do something with the result, which is a list

@@ -16,9 +16,14 @@ export class KgImportService {
         private http: HttpClient,
     ) { }
 
-    importGeneRelationships(fileName: string, sheetName: string, relationships: GeneImportRelationship[]): Observable<any> {
+    importGeneRelationships(
+      fileName: string,
+      sheetName: string,
+      worksheetNodeName: string,
+      relationships: GeneImportRelationship[],
+    ): Observable<any> {
         return this.http.post<{result: any}>(
-            `${this.importApi}/import-genes`, { fileName, sheetName, relationships }
+            `${this.importApi}/import-genes`, { fileName, sheetName, worksheetNodeName, relationships }
         ).pipe(map(resp => resp.result));
     }
 }
