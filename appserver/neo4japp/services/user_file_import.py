@@ -478,10 +478,14 @@ class UserFileImportService(GraphBaseDao):
         rel_props = self.get_props_str_from_propnames_and_varname('tuple[2]', rel_propnames)
 
         return f"""
+        MERGE (w:Worksheet {{name: $worksheet_node_name}})
+        WITH w
         UNWIND $col_match_prop_tuples AS tuple
         MERGE (n:{node_label1} {node_props1})
         MERGE (m:{node_label2} {node_props2})
         MERGE (n)-[r:{rel_label} {rel_props}]->(m)
+        MERGE (m)-[:IMPORTED_FROM]->(w)
+        MERGE (n)-[:IMPORTED_FROM]->(w)
         """
 
     def get_merge_gene_match_query(
@@ -497,8 +501,11 @@ class UserFileImportService(GraphBaseDao):
 
         if gene_matching_property == GeneMatchingProperty.NAME.value:
             return f"""
+            MERGE (w:Worksheet {{name: $worksheet_node_name}})
+            WITH w
             UNWIND $gene_match_prop_tuples AS tuple
             MERGE (n:{node_label1} {node_props1})
+            MERGE (n)-[:IMPORTED_FROM]->(w)
             WITH n
             MATCH (g:Gene)-[:HAS_TAXONOMY]->(t:Taxonomy)
             WHERE g.name=n.cell_value AND ID(t)=$tax_id
@@ -506,8 +513,11 @@ class UserFileImportService(GraphBaseDao):
             """
         else:
             return f"""
+            MERGE (w:Worksheet {{name: $worksheet_node_name}})
+            WITH w
             UNWIND $gene_match_prop_tuples AS tuple
             MERGE (n:{node_label1} {node_props1})
+            MERGE (n)-[:IMPORTED_FROM]->(w)
             WITH n
             MATCH (g:Gene)-[:HAS_TAXONOMY]->(t:Taxonomy)
             WHERE g.id=n.cell_value AND ID(t)=$tax_id
@@ -634,6 +644,7 @@ class UserFileImportService(GraphBaseDao):
                         merge_col_match_query,
                         {
                             'col_match_prop_tuples': batch,
+                            'worksheet_node_name': worksheet_node_name,
                         }
                     )
             else:
@@ -652,6 +663,7 @@ class UserFileImportService(GraphBaseDao):
                         merge_gene_match_query,
                         {
                             'gene_match_prop_tuples': batch,
+                            'worksheet_node_name': worksheet_node_name,
                             'tax_id': int(relationship.species_selection),
                         }
                     )
