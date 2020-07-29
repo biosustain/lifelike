@@ -1100,6 +1100,7 @@ def test_gene_annotation_human_vs_rat(
 )
 def test_ignore_terms_length_two_or_less(
     default_lmdb_setup,
+    mock_empty_gene_to_organism,
     index,
     tokens,
 ):
