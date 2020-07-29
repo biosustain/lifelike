@@ -368,7 +368,6 @@ class AnnotationsService:
 
         lowered_word = token.keyword.lower()
 
-
         if len(lookup_key) > 2:
             # check species
             if nlp_predicted_type:

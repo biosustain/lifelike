@@ -195,7 +195,7 @@ def default_lmdb_setup(app, request):
     )
 
     entities = [
-        (CHEMICALS_CHEBI_LMDB, 'chemicals', [arginine, hypofluorite, histidine]),  # TODO: Create test chemical data
+        (CHEMICALS_CHEBI_LMDB, 'chemicals', [arginine, hypofluorite, histidine]),
         (COMPOUNDS_BIOCYC_LMDB, 'compounds', []),  # TODO: Create test compound data
         (DISEASES_MESH_LMDB, 'diseases', []),  # TODO: Create test disease data
         (GENES_NCBI_LMDB, 'genes', [hyp27_gene, serpina1_gene, serpina1_gene2]),
