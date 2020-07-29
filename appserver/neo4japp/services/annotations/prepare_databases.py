@@ -173,19 +173,20 @@ def prepare_lmdb_compounds_database(filename: str):
 
                         if synonyms:
                             for synonym_term in synonyms:
-                                normalized_key = normalize_str(synonym_term)
+                                if synonym_term != 'null':
+                                    normalized_key = normalize_str(synonym_term)
 
-                                synonym = {
-                                    'compound_id': compound_id,
-                                    'id_type': DatabaseType.Biocyc.value,
-                                    'name': compound_name,
-                                    'synonym': synonym_term,
-                                }
+                                    synonym = {
+                                        'compound_id': compound_id,
+                                        'id_type': DatabaseType.Biocyc.value,
+                                        'name': compound_name,
+                                        'synonym': synonym_term,
+                                    }
 
-                                transaction.put(
-                                    normalized_key.encode('utf-8'),
-                                    json.dumps(synonym).encode('utf-8'),
-                                )
+                                    transaction.put(
+                                        normalized_key.encode('utf-8'),
+                                        json.dumps(synonym).encode('utf-8'),
+                                    )
                     except lmdb.BadValsizeError:
                         # ignore any keys that are too large
                         # LMDB has max key size 512 bytes
