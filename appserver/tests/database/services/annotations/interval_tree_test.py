@@ -1,5 +1,6 @@
 import pytest
 
+from neo4japp.database import get_annotation_neo4j
 from neo4japp.data_transfer_objects import Annotation
 from neo4japp.services.annotations import (
     AnnotationsService,
@@ -38,7 +39,7 @@ def create_tree(annotations, tree):
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    keyword_type=EntityType.Chemical.value,
+                    type=EntityType.Chemical.value,
                     color='',
                     id='',
                     id_type='',
@@ -56,7 +57,7 @@ def create_tree(annotations, tree):
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    keyword_type=EntityType.Chemical.value,
+                    type=EntityType.Chemical.value,
                     color='',
                     id='',
                     id_type='',
@@ -78,6 +79,7 @@ def test_merge_adjacent_intervals_with_same_type(annotations_setup, annotations)
             diseases_lmdb_path='',
             phenotypes_lmdb_path='',
         ),
+        annotation_neo4j=get_annotation_neo4j(),
     )
 
     tree = create_tree(annotations=annotations, tree=AnnotationIntervalTree())
@@ -102,7 +104,7 @@ def test_merge_adjacent_intervals_with_same_type(annotations_setup, annotations)
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    keyword_type=EntityType.Chemical.value,
+                    type=EntityType.Chemical.value,
                     color='',
                     id='',
                     id_type='',
@@ -120,7 +122,7 @@ def test_merge_adjacent_intervals_with_same_type(annotations_setup, annotations)
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    keyword_type=EntityType.Protein.value,
+                    type=EntityType.Protein.value,
                     color='',
                     id='',
                     id_type='',
@@ -142,6 +144,7 @@ def test_merge_adjacent_intervals_with_different_type(annotations_setup, annotat
             diseases_lmdb_path='',
             phenotypes_lmdb_path='',
         ),
+        annotation_neo4j=get_annotation_neo4j(),
     )
 
     tree = create_tree(annotations=annotations, tree=AnnotationIntervalTree())
@@ -166,7 +169,7 @@ def test_merge_adjacent_intervals_with_different_type(annotations_setup, annotat
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    keyword_type=EntityType.Chemical.value,
+                    type=EntityType.Chemical.value,
                     color='',
                     id='',
                     id_type='',
@@ -184,7 +187,7 @@ def test_merge_adjacent_intervals_with_different_type(annotations_setup, annotat
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    keyword_type=EntityType.Chemical.value,
+                    type=EntityType.Chemical.value,
                     color='',
                     id='',
                     id_type='',
@@ -206,6 +209,7 @@ def test_merge_equal_intervals_with_same_type(annotations_setup, annotations):
             diseases_lmdb_path='',
             phenotypes_lmdb_path='',
         ),
+        annotation_neo4j=get_annotation_neo4j(),
     )
 
     tree = create_tree(annotations=annotations, tree=AnnotationIntervalTree())
@@ -230,7 +234,7 @@ def test_merge_equal_intervals_with_same_type(annotations_setup, annotations):
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    keyword_type=EntityType.Gene.value,
+                    type=EntityType.Gene.value,
                     color='',
                     id='',
                     id_type='',
@@ -248,7 +252,7 @@ def test_merge_equal_intervals_with_same_type(annotations_setup, annotations):
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    keyword_type=EntityType.Chemical.value,
+                    type=EntityType.Chemical.value,
                     color='',
                     id='',
                     id_type='',
@@ -270,6 +274,7 @@ def test_merge_equal_intervals_with_different_type(annotations_setup, annotation
             diseases_lmdb_path='',
             phenotypes_lmdb_path='',
         ),
+        annotation_neo4j=get_annotation_neo4j(),
     )
 
     tree = create_tree(annotations=annotations, tree=AnnotationIntervalTree())

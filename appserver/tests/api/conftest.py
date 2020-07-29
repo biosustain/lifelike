@@ -69,37 +69,30 @@ def test_user_2(session) -> AppUser:
 def test_user_with_pdf(
         session, test_user, fix_project, fix_directory, pdf_dir) -> Files:
     pdf_path = os.path.join(pdf_dir, 'example3.pdf')
-    pdf_file = open(pdf_path, 'rb')
-    pdf_content = pdf_file.read()
-    pdf_file.seek(0)
+    fake_file = None
+    with open(pdf_path, 'rb') as pdf_file:
+        pdf_content = pdf_file.read()
+        pdf_file.seek(0)
 
-    file_content = FileContent(
-        raw_file=pdf_file.read(),
-        checksum_sha256=hashlib.sha256(pdf_content).digest(),
-        creation_date=datetime.now(),
-    )
-    session.add(file_content)
-    session.flush()
+        file_content = FileContent(
+            raw_file=pdf_file.read(),
+            checksum_sha256=hashlib.sha256(pdf_content).digest(),
+            creation_date=datetime.now(),
+        )
+        session.add(file_content)
+        session.flush()
 
-    fake_file = Files(
-        file_id='unknown',
-        filename='example3.pdf',
-        content_id=file_content.id,
-        user_id=test_user.id,
-        creation_date=datetime.now(),
-        annotations={},
-        annotations_date=datetime.now(),
-        project=fix_project.id,
-        dir_id=fix_directory.id,
-        custom_annotations=[],
-        excluded_annotations=[],
-    )
-    session.add(fake_file)
-    session.flush()
-    # TODO: Refactor the file ids
-    fake_file.file_id = fake_file.id
-    session.add(fake_file)
-    session.flush()
+        fake_file = Files(
+            file_id='unknown',
+            filename='example3.pdf',
+            content_id=file_content.id,
+            user_id=test_user.id,
+            creation_date=datetime.now(),
+            project=fix_project.id,
+            dir_id=fix_directory.id,
+        )
+        session.add(fake_file)
+        session.flush()
     return fake_file
 
 
