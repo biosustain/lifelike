@@ -71,7 +71,7 @@ bp = Blueprint('files', __name__, url_prefix='/files')
 def annotate(
     filename: str,
     pdf_file_object: FileStorage,
-    custom_annotations: List[dict] = [],
+    custom_annotations: List[dict],
     annotation_method: str = AnnotationMethod.Rules.value,  # default to Rules Based
 ) -> dict:
     lmdb_dao = get_lmdb_dao()
@@ -161,13 +161,6 @@ def upload_pdf(request, project_name: str):
         filename = name[:max(0, max_filename_length - len(extension))] + extension
     file_id = str(uuid.uuid4())
 
-    annotations = annotate(
-        filename=filename,
-        pdf_file_object=pdf,
-        annotation_method=request.annotation_method,
-    )
-    annotations_date = datetime.now(TIMEZONE)
-
     try:
         # First look for an existing copy of this file
         file_content = db.session.query(FileContent.id) \
@@ -192,15 +185,28 @@ def upload_pdf(request, project_name: str):
         description=description,
         content_id=file_content.id,
         user_id=user.id,
-        annotations=annotations,
         project=projects.id,
         dir_id=directory.id,
-        annotations_date=annotations_date,
         doi=doi,
         upload_url=upload_url,
     )
 
     db.session.add(file)
+
+    try:
+        annotations = annotate(
+            filename=filename,
+            pdf_file_object=pdf,
+            custom_annotations=file.custom_annotations or [],
+            annotation_method=request.annotation_method,
+        )
+        annotations_date = datetime.now(TIMEZONE)
+
+        file.annotations = annotations
+        file.annotations_date = annotations_date
+    except AnnotationError:
+        db.session.delete(file)
+        raise  # bubble up the exception
     db.session.commit()
 
     current_app.logger.info(
@@ -359,24 +365,6 @@ def transform_to_bioc():
         template['documents'][0]['passages'][0]['text'] = data['text']
         template['documents'][0]['passages'][0]['annotations'] = data['annotations']
         return jsonify(template)
-
-
-# TODO: Should remove this eventually...the annotator should return data readable by the
-# lib-pdf-viewer-lib, or the lib should conform to what is being returned by the annotator.
-# Something has to give.
-def map_annotations_to_correct_format(unformatted_annotations: dict):
-    unformatted_annotations_list = unformatted_annotations['documents'][0]['passages'][0]['annotations']  # noqa
-    formatted_annotations_list = []
-
-    for unformatted_annotation in unformatted_annotations_list:
-        # Remove the 'keywordType' attribute and replace it with 'type', as the
-        # lib-pdf-viewer-lib does not recognize 'keywordType'
-        keyword_type = unformatted_annotation['meta']['keywordType']
-        del unformatted_annotation['meta']['keywordType']
-        unformatted_annotation['meta']['type'] = keyword_type
-
-        formatted_annotations_list.append(unformatted_annotation)
-    return formatted_annotations_list
 
 
 @newbp.route('/<string:project_name>/files/<string:id>/annotations', methods=['GET'])
