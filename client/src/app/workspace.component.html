@@ -25,8 +25,9 @@
                       <span class="badge badge-danger badge-pill ml-1" *ngIf="tab.badge != null && tab.badge !== '*'">
                         {{tab.badge}}
                       </span>
-                      <span class="badge badge-danger badge-pill ml-1" *ngIf="tab.badge === '*'">
-                        <i class="fa fa-asterisk"></i>
+                      <span class="badge badge-danger badge-pill ml-1" *ngIf="tab.badge === '*'"
+                            ngbTooltip="Has unsaved changes" container="body">
+                        <i class="fa fa-pencil-alt"></i>
                       </span>
                     </div>
                     <a href="#" (click)="closeTab(pane, tab); $event.preventDefault()" class="ml-auto text-muted">
