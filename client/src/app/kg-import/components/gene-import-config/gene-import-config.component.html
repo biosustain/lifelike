@@ -10,11 +10,11 @@
         class="btn btn-outline-primary w-100"
         disabled>
         <app-node-relationship
-          [leftNodeName]="indexToColumn.get(relationshipGroup.get('columnIndex1').value)"
-          [leftNodeLabel]="relationshipGroup.get('nodeLabel1').value"
+          [leftNodeLabel]="indexToColumn.get(relationshipGroup.get('columnIndex1').value)"
+          [leftNodeName]="relationshipGroup.get('nodeLabel1').value"
           [leftNodeColor]="labelColors.get(relationshipGroup.get('nodeLabel1').value)"
-          [rightNodeName]="indexToColumn.get(relationshipGroup.get('columnIndex2').value)"
-          [rightNodeLabel]="relationshipGroup.get('nodeLabel2').value"
+          [rightNodeLabel]="indexToColumn.get(relationshipGroup.get('columnIndex2').value)"
+          [rightNodeName]="relationshipGroup.get('nodeLabel2').value"
           [rightNodeColor]="labelColors.get(relationshipGroup.get('nodeLabel2').value)"
           [edge]="relationshipGroup.get('relationshipLabel').value"
         ></app-node-relationship>
@@ -22,11 +22,11 @@
       <ng-template #fromRelationship>
         <button class="btn btn-outline-primary w-100" disabled>
           <app-node-relationship
-          [leftNodeName]="indexToColumn.get(relationshipGroup.get('columnIndex2').value)"
-            [leftNodeLabel]="relationshipGroup.get('nodeLabel2').value"
+            [leftNodeLabel]="indexToColumn.get(relationshipGroup.get('columnIndex2').value)"
+            [leftNodeName]="relationshipGroup.get('nodeLabel2').value"
             [leftNodeColor]="labelColors.get(relationshipGroup.get('nodeLabel2').value)"
-            [rightNodeName]="indexToColumn.get(relationshipGroup.get('columnIndex1').value)"
-            [rightNodeLabel]="relationshipGroup.get('nodeLabel1').value"
+            [rightNodeLabel]="indexToColumn.get(relationshipGroup.get('columnIndex1').value)"
+            [rightNodeName]="relationshipGroup.get('nodeLabel1').value"
             [rightNodeColor]="labelColors.get(relationshipGroup.get('nodeLabel1').value)"
             [edge]="relationshipGroup.get('relationshipLabel').value"
           ></app-node-relationship>
