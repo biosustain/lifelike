@@ -5,6 +5,10 @@ import { HttpClient } from '@angular/common/http';
 import { KnowledgeMap } from './interfaces';
 import { AbstractService } from '../../shared/services/abstract-service';
 import { AuthenticationService } from '../../auth/services/authentication.service';
+import { map } from 'rxjs/operators';
+import { PaginatedRequestOptions, ResultList } from '../../interfaces/shared.interface';
+import { Project } from '../../file-browser/services/project-space.service';
+import { AppUser } from '../../interfaces';
 
 @Injectable({
   providedIn: '***ARANGO_USERNAME***',
@@ -21,10 +25,12 @@ export class MapService extends AbstractService {
   // Listing
   // ========================================
 
-  getCommunityMaps(): Observable<KnowledgeMap[]> {
-    return this.http.get<KnowledgeMap[]>(
-      `/api/drawing-tool/community`,
-      this.getHttpOptions(true),
+  getCommunityMaps(options: PaginatedRequestOptions = {}): Observable<ResultList<PublicMap>> {
+    return this.http.get<ResultList<PublicMap>>(
+      `${this.MAPS_BASE_URL}/community`, {
+        ...this.getHttpOptions(true),
+        params: options as any,
+      },
     );
   }
 
@@ -139,4 +145,10 @@ export class MapService extends AbstractService {
       this.getHttpOptions(true),
     );
   }
+}
+
+export interface PublicMap {
+  map: KnowledgeMap;
+  user: AppUser;
+  project: Project;
 }

@@ -1,5 +1,6 @@
 import attr
 
+from neo4japp.models import AppUser
 from neo4japp.util import CamelDictMixin
 
 from typing import List
@@ -18,3 +19,18 @@ class UserRequest(CamelDictMixin):
 @attr.s(frozen=True)
 class UserUpdateRequest(UserRequest):
     new_password: str = attr.ib(default='')
+
+
+@attr.s(frozen=True)
+class UserData(CamelDictMixin):
+    id: id = attr.ib()
+    username: str = attr.ib()
+
+    @classmethod
+    def from_model(cls, user: AppUser):
+        if user is None:
+            return None
+        return UserData(
+            id=user.id,
+            username=user.username,
+        )
