@@ -5,12 +5,12 @@ import os
 import re
 import urllib.request
 import uuid
-import urllib.request
 
 from datetime import datetime, timezone
 from enum import Enum
-from typing import Dict, Optional
+from typing import Dict, List, Optional
 from urllib.error import URLError
+
 from flask import Blueprint, current_app, request, jsonify, g, make_response
 from sqlalchemy.orm.exc import NoResultFound
 from werkzeug.datastructures import FileStorage
@@ -44,6 +44,10 @@ from neo4japp.models import (
     Directory,
     Projects,
     LMDBsDates
+)
+from neo4japp.models.files_queries import (
+    get_all_files_by_id,
+    get_all_files_and_content_by_id,
 )
 from neo4japp.request_schemas.annotations import (
     AnnotationAdditionSchema,
@@ -95,11 +99,11 @@ def annotate(
                 tokens=tokens,
             )
         else:
-            raise AnnotationError('Your file could not be annotated and your PDF file was not saved.')  # noqa
+            raise AnnotationError('Your file could not be annotated.')  # noqa
         bioc = bioc_service.read(text=pdf_text, file_uri=filename)
         return bioc_service.generate_bioc_json(annotations=annotations, bioc=bioc)
     except AnnotationError:
-        raise AnnotationError('Your file could not be annotated and your PDF file was not saved.')
+        raise AnnotationError('Your file could not be annotated.')
 
 #################################
 # End shared blueprint functions
@@ -220,6 +224,7 @@ def list_files(project_name: str):
 
     yield user, projects
 
+    # TODO: this needs to be paginated
     files = [{
         'annotations_date': row.annotations_date,
         'id': row.id,  # TODO: is this of any use?
@@ -512,49 +517,48 @@ class AnnotationOutcome(Enum):
 @auth.login_required
 @requires_project_permission(AccessActionType.WRITE)
 def reannotate(project_name: str):
-
     user = g.current_user
-
     projects = Projects.query.filter(Projects.project_name == project_name).one_or_none()
+
     if projects is None:
         raise RecordNotFoundException(f'Project {project_name} not found')
 
     yield user, projects
 
-    ids = request.get_json()
+    ids = set(request.get_json())
     outcome: Dict[str, str] = {}  # file id to annotation outcome
-    for id in ids:
-        file = db.session.query(
-            Files.id,
-            Files.filename,
-            Files.annotations,
-            FileContent.raw_file
-        ).join(
-            FileContent,
-            FileContent.id == Files.content_id
-        ).filter(
-            Files.file_id == id,
-            Files.project == projects.id,
-        ).one_or_none()
-        if file is None:
-            current_app.logger.error('Could not find file')
-            outcome[id] = AnnotationOutcome.NOT_FOUND.value
-            continue
-        fp = FileStorage(io.BytesIO(file.raw_file), file.filename)
+    files = get_all_files_and_content_by_id(file_ids=ids, project_id=projects.id)
+
+    files_not_found = ids - set(f.file_id for f in files)
+    for not_found in files_not_found:
+        outcome[not_found] = AnnotationOutcome.NOT_FOUND.value
+
+    updated_files: List[dict] = []
+
+    for f in files:
+        fp = FileStorage(io.BytesIO(f.raw_file), f.filename)
         try:
-            annotations = annotate(file.filename, fp)
-        except Exception as e:
-            current_app.logger.error('Could not annotate file: %s, %s, %s', id, file.filename, e)
-            outcome[id] = AnnotationOutcome.NOT_ANNOTATED.value
+            annotations = annotate(f.filename, fp)
+        except AnnotationError as e:
+            current_app.logger.error(
+                'Could not reannotate file: %s, %s, %s', f.file_id, f.filename, e)
+            outcome[f.file_id] = AnnotationOutcome.NOT_ANNOTATED.value
         else:
-            db.session.query(Files).filter(Files.file_id == id).update({
-                'annotations': annotations,
-                'annotations_date': datetime.now(timezone.utc),
-            })
-            db.session.commit()
-            current_app.logger.debug('File successfully annotated: %s, %s', id, file.filename)
-            outcome[id] = AnnotationOutcome.ANNOTATED.value
+            updated_files.append(
+                {
+                    'id': f.id,
+                    'annotations': annotations,
+                    'annotations_date': datetime.now(timezone.utc),
+                }
+            )
+            current_app.logger.debug(
+                'File successfully reannotated: %s, %s', f.file_id, f.filename)
+            outcome[f.file_id] = AnnotationOutcome.ANNOTATED.value
         fp.close()
+
+    # low level fast bulk operation
+    db.session.bulk_update_mappings(Files, updated_files)
+    db.session.commit()
     yield jsonify(outcome)
 
 
@@ -577,25 +581,33 @@ def delete_files(project_name: str):
     yield curr_user, projects
 
     user_roles = [r.name for r in curr_user.roles]
-    ids = request.get_json()
+    ids = set(request.get_json())
     outcome: Dict[str, str] = {}  # file id to deletion outcome
-    for id in ids:
-        file = Files.query.filter_by(
-            file_id=id,
-            project=projects.id,
-        ).one_or_none()
-        if file is None:
-            current_app.logger.error('Could not find file')
-            outcome[id] = DeletionOutcome.NOT_FOUND.value
-            continue
-        if 'admin' not in user_roles and curr_user.id != int(file.user_id):
-            current_app.logger.error('Cannot delete file (not an owner): %s, %s', id, file.filename)
-            outcome[id] = DeletionOutcome.NOT_OWNER.value
-            continue
-        db.session.delete(file)
-        db.session.commit()
-        current_app.logger.info(f'User deleted file: <{g.current_user.email}:{file.filename}>')
-        outcome[id] = DeletionOutcome.DELETED.value
+    files = get_all_files_by_id(file_ids=ids, project_id=projects.id)
+
+    files_not_found = ids - set(f.file_id for f in files)
+    for not_found in files_not_found:
+        outcome[not_found] = DeletionOutcome.NOT_FOUND.value
+
+    files_to_delete: List[Files] = []
+
+    for f in files:
+        if 'admin' not in user_roles and curr_user.id != int(f.user_id):
+            current_app.logger.error(
+                'Cannot delete file (not an owner): %s, %s', f.file_id, f.filename)
+            outcome[f.file_id] = DeletionOutcome.NOT_OWNER.value
+        else:
+            files_to_delete.append(f)
+
+    for deleted in files_to_delete:
+        current_app.logger.info(f'User deleted file: <{g.current_user.email}:{deleted.filename}>')
+        outcome[deleted.file_id] = DeletionOutcome.DELETED.value
+
+    # low level fast bulk operation
+    delete_query = Files.__table__.delete().where(
+        Files.file_id.in_(set(to_delete.file_id for to_delete in files_to_delete)))
+    db.session.execute(delete_query)
+    db.session.commit()
 
     yield jsonify(outcome)
 
