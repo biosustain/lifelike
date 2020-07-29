@@ -65,12 +65,9 @@ DOWNLOAD_USER_AGENT = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML
 bp = Blueprint('files', __name__, url_prefix='/files')
 
 
-######################################
-# Shared functions used by blueprints
-######################################
 def annotate(
     filename: str,
-    pdf_file_object: FileStorage,
+    pdf_fp: FileStorage,
     custom_annotations: List[dict],
     annotation_method: str = AnnotationMethod.Rules.value,  # default to Rules Based
 ) -> dict:
@@ -79,7 +76,7 @@ def annotate(
     annotator = get_annotations_service(lmdb_dao=lmdb_dao)
     bioc_service = get_bioc_document_service()
     try:
-        parsed_pdf_chars = pdf_parser.parse_pdf(pdf=pdf_file_object)
+        parsed_pdf_chars = pdf_parser.parse_pdf(pdf=pdf_fp)
     except AnnotationError:
         raise AnnotationError('Your file could not be imported. Please check if it is a valid PDF.')
 
@@ -107,9 +104,36 @@ def annotate(
     except AnnotationError:
         raise AnnotationError('Your file could not be annotated.')
 
-#################################
-# End shared blueprint functions
-#################################
+
+def extract_doi(pdf_content: bytes, file_id: str = None, filename: str = None) -> Optional[str]:
+    # Attempt 1: search through the first N bytes (most probably containing only metadata)
+    chunk = pdf_content[:2 ** 17]
+    doi = search_doi(chunk)
+    if doi is not None:
+        return doi
+
+    # Attempt 2: search through the first two pages of text (no metadata)
+    fp = io.BytesIO(pdf_content)
+    text = high_level.extract_text(fp, page_numbers=[0, 1], caching=False)
+    doi = search_doi(bytes(text, encoding='utf8'))
+    if doi is not None:
+        return doi
+
+    current_app.logger.warning('No DOI for file: %s, %s', file_id, filename)
+    return None
+
+
+def search_doi(content: bytes) -> Optional[str]:
+    doi_re = rb'(?:doi|DOI)(?::|=)\s*([\d\w\./%]+)'
+    match = re.search(doi_re, content)
+    if match is None:
+        return None
+    doi = match.group(1).decode('utf-8').replace('%2F', '/')
+    # Make sure that the match does not contain undesired characters at the end.
+    # E.g. when the match is at the end of a line, and there is a full stop.
+    while doi[-1] in './%':
+        doi = doi[:-1]
+    return doi if doi.startswith('http') else f'https://doi.org/{doi}'
 
 
 @bp.route('/upload', methods=['POST'])
@@ -196,7 +220,7 @@ def upload_pdf(request, project_name: str):
     try:
         annotations = annotate(
             filename=filename,
-            pdf_file_object=pdf,
+            pdf_fp=pdf,
             custom_annotations=file.custom_annotations or [],
             annotation_method=request.annotation_method,
         )
@@ -324,16 +348,18 @@ def get_pdf(id: str, project_name: str):
         except NoResultFound:
             raise RecordNotFoundException('Requested PDF file not found.')
         else:
+            update: Dict[str, str] = {}
             if filename and filename != file.filename:
-                db.session.query(Files).filter(Files.file_id == id).update({
-                    'filename': filename,
-                })
+                update['filename'] = filename
+
             if description != file.description:
-                db.session.query(Files).filter(Files.file_id == id).update({
-                    'description': description,
-                })
-            db.session.commit()
+                update['description'] = description
+
+            if update:
+                db.session.query(Files).filter(Files.file_id == id).update(update)
+                db.session.commit()
         yield ''
+
     try:
         entry = db.session.query(
             Files.id,
@@ -347,6 +373,7 @@ def get_pdf(id: str, project_name: str):
         ).one()
     except NoResultFound:
         raise RecordNotFoundException('Requested PDF file not found.')
+
     res = make_response(entry.raw_file)
     res.headers['Content-Type'] = 'application/pdf'
 
@@ -384,24 +411,7 @@ def get_annotations(id: str, project_name: str):
     if not file:
         raise RecordNotFoundException('File does not exist')
 
-    # TODO: Should remove this eventually...the annotator should return data readable by the
-    # lib-pdf-viewer-lib, or the lib should conform to what is being returned by the annotator.
-    # Something has to give.
-    def map_annotations_to_correct_format(unformatted_annotations: dict):
-        unformatted_annotations_list = unformatted_annotations['documents'][0]['passages'][0]['annotations']  # noqa
-        formatted_annotations_list = []
-
-        for unformatted_annotation in unformatted_annotations_list:
-            # Remove the 'keywordType' attribute and replace it with 'type', as the
-            # lib-pdf-viewer-lib does not recognize 'keywordType'
-            keyword_type = unformatted_annotation['meta']['keywordType']
-            del unformatted_annotation['meta']['keywordType']
-            unformatted_annotation['meta']['type'] = keyword_type
-
-            formatted_annotations_list.append(unformatted_annotation)
-        return formatted_annotations_list
-
-    annotations = map_annotations_to_correct_format(file.annotations)
+    annotations = file.annotations['documents'][0]['passages'][0]['annotations']
 
     # Add additional information for annotations that were excluded
     for annotation in annotations:
@@ -412,7 +422,6 @@ def get_annotations(id: str, project_name: str):
                 annotation['meta']['exclusionReason'] = excluded_annotation['reason']
                 annotation['meta']['exclusionComment'] = excluded_annotation['comment']
 
-    # for now, custom annotations are stored in the format that pdf-viewer supports
     yield jsonify(annotations + file.custom_annotations)
 
 
@@ -534,7 +543,7 @@ def reannotate(project_name: str):
         try:
             annotations = annotate(
                 filename=f.filename,
-                pdf_file_object=fp,
+                pdf_fp=fp,
                 custom_annotations=f.custom_annotations,
             )
         except AnnotationError as e:
@@ -608,37 +617,6 @@ def delete_files(project_name: str):
     db.session.commit()
 
     yield jsonify(outcome)
-
-
-def extract_doi(pdf_content: bytes, file_id: str = None, filename: str = None) -> Optional[str]:
-    # Attempt 1: search through the first N bytes (most probably containing only metadata)
-    chunk = pdf_content[:2 ** 17]
-    doi = search_doi(chunk)
-    if doi is not None:
-        return doi
-
-    # Attempt 2: search through the first two pages of text (no metadata)
-    fp = io.BytesIO(pdf_content)
-    text = high_level.extract_text(fp, page_numbers=[0, 1], caching=False)
-    doi = search_doi(bytes(text, encoding='utf8'))
-    if doi is not None:
-        return doi
-
-    current_app.logger.warning('No DOI for file: %s, %s', file_id, filename)
-    return None
-
-
-def search_doi(content: bytes) -> Optional[str]:
-    doi_re = rb'(?:doi|DOI)(?::|=)\s*([\d\w\./%]+)'
-    match = re.search(doi_re, content)
-    if match is None:
-        return None
-    doi = match.group(1).decode('utf-8').replace('%2F', '/')
-    # Make sure that the match does not contain undesired characters at the end.
-    # E.g. when the match is at the end of a line, and there is a full stop.
-    while doi[-1] in './%':
-        doi = doi[:-1]
-    return doi if doi.startswith('http') else f'https://doi.org/{doi}'
 
 
 @newbp.route(
