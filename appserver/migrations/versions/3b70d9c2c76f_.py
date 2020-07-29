@@ -1,4 +1,4 @@
-"""Adds a directory structure to store projects and maps. Adds
+""" Adds a directory structure to store projects and maps. Adds
 access controls on the project level.
 
 Revision ID: 3b70d9c2c76f
@@ -11,6 +11,7 @@ from alembic import op
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.orm.session import Session
+from sqlalchemy_utils.types import TSVectorType
 
 from neo4japp.models import (
     AppRole,
@@ -30,6 +31,111 @@ revision = '3b70d9c2c76f'
 down_revision = '868c69bf2137'
 branch_labels = None
 depends_on = None
+
+t_files_content = sa.Table(
+    'files_content',
+    sa.MetaData(),
+    sa.Column('id', sa.Integer(), primary_key=True, autoincrement=True),
+    sa.Column('raw_file', sa.LargeBinary, nullable=True),
+    sa.Column('checksum_sha256', sa.Binary(32), nullable=False, index=True, unique=True),
+    sa.Column('creation_date', sa.DateTime, nullable=False, default=sa.func.now()),
+)
+
+t_files = sa.Table(
+    'files',
+    sa.MetaData(),
+    sa.Column('id', sa.Integer(), primary_key=True, autoincrement=True),
+    sa.Column('filename', sa.String(60)),
+    sa.Column('content_id', sa.Integer, sa.ForeignKey(t_files_content.c.id, ondelete='CASCADE')),
+    sa.Column('raw_file', sa.LargeBinary, nullable=True),
+    sa.Column(
+        'dir_id',
+        sa.Integer,
+        sa.ForeignKey('directory.id'),
+        nullable=False,
+    ),
+    sa.Column(
+        'user_id',
+        sa.Integer,
+        sa.ForeignKey('appuser.id'),
+        nullable=False,
+    )
+)
+
+t_directory = sa.Table(
+    'directory',
+    sa.MetaData(),
+    sa.Column('id', sa.Integer(), primary_key=True, autoincrement=True),
+    sa.Column('name', sa.String(200), nullable=False),
+    sa.Column(
+        'directory_parent_id',
+        sa.Integer,
+        sa.ForeignKey('directory.id'),
+        nullable=True,
+    ),
+    sa.Column(
+        'projects_id',
+        sa.Integer,
+        sa.ForeignKey('projects.id'),
+        nullable=False,
+    )
+)
+
+t_app_user = sa.Table(
+    'appuser',
+    sa.MetaData(),
+    sa.Column('id', sa.Integer(), primary_key=True),
+    sa.Column('username', sa.String(64), index=True, unique=True),
+    sa.Column('email', sa.String(120), index=True, unique=True),
+    sa.Column('first_name', sa.String(120), nullable=False),
+    sa.Column('last_name', sa.String(120), nullable=False),
+)
+
+t_app_role = sa.Table(
+    'app_role',
+    sa.MetaData(),
+    sa.Column('id', sa.Integer(), primary_key=True),
+    sa.Column('name', sa.String(128), nullable=False, unique=True),
+)
+
+t_project = sa.Table(
+    'project',
+    sa.MetaData(),
+    sa.Column('id', sa.Integer(), primary_key=True),
+    sa.Column('label', sa.String(250), nullable=False),
+    sa.Column('description', sa.Text),
+    sa.Column('date_modified', sa.DateTime),
+    sa.Column('graph', sa.JSON),
+  	sa.Column('author', sa.String(240), nullable=False),
+  	sa.Column('public', sa.Boolean(), default=False),
+    sa.Column('user_id', sa.Integer, sa.ForeignKey(t_app_user.c.id)),
+    sa.Column('dir_id', sa.Integer, sa.ForeignKey(t_directory.c.id)),
+    sa.Column('hash_id', sa.String(50), unique=True),
+  	sa.Column('search_vector', TSVectorType('label'))
+)
+
+t_access_control_policy = sa.Table(
+    'access_control_policy',
+    sa.MetaData(),
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('action', sa.String(length=50), nullable=False),
+    sa.Column('asset_type', sa.String(length=200), nullable=False),
+    sa.Column('asset_id', sa.Integer(), nullable=True),
+    sa.Column('principal_type', sa.String(length=50), nullable=False),
+    sa.Column('principal_id', sa.Integer(), nullable=True),
+    sa.Column('rule_type', sa.Enum('ALLOW', 'DENY', name='accessruletype'), nullable=False),
+    sa.PrimaryKeyConstraint('id')
+)
+
+t_projects = sa.Table(
+    'projects',
+    sa.MetaData(),
+    sa.Column('id', sa.Integer(), primary_key=True, autoincrement=True),
+    sa.Column('project_name', sa.String(250), unique=True, nullable=False),
+    sa.Column('description', sa.Text),
+    sa.Column('creation_date', sa.DateTime, nullable=False, default=sa.func.now()),
+    sa.Column('users', sa.ARRAY(sa.Integer), nullable=False)
+)
 
 
 def upgrade():
@@ -56,153 +162,10 @@ def upgrade():
     op.create_foreign_key(op.f('fk_files_dir_id_directory'), 'files', 'directory', ['dir_id'], ['id'])
     op.add_column('project', sa.Column('dir_id', sa.Integer(), nullable=True))
     op.create_foreign_key(op.f('fk_project_dir_id_directory'), 'project', 'directory', ['dir_id'], ['id'])
-    # ### end Alembic commands ###
-    session = Session(op.get_bind())
-
-    actions = postgresql.ENUM('READ', 'WRITE', name='accessactiontype')
-    actions.create(op.get_bind())
-
-    op.alter_column('access_control_policy', 'action',
-               existing_type=sa.VARCHAR(length=50),
-               type_=sa.Enum('READ', 'WRITE', name='accessactiontype'),
-               existing_nullable=False,
-               postgresql_using="action::accessactiontype")
-
-    # There's only one hardcoded project right now
-    projects = session.query(Projects).filter(Projects.project_name == 'beta-project').one_or_none()
-
-    # This will only be true in development
-    if not projects:
-        projects = Projects(
-            project_name='beta-project',
-            description='',
-            users=[],
-        )
-        session.add(projects)
-        session.flush()
-    else:
-        # Setup roles for the existing project
-        read_role = AppRole(name='project-read')
-        write_role = AppRole(name='project-write')
-        admin_role = AppRole(name='project-admin')
-        session.add(read_role)
-        session.add(write_role)
-        session.add(admin_role)
-        session.flush()
-
-        # Sets up the 'READ' role
-        session.execute(AccessControlPolicy.__table__.insert().values(
-            action=AccessActionType.READ,
-            asset_type=Projects.__tablename__,
-            asset_id=projects.id,
-            principal_type=AppRole.__tablename__,
-            principal_id=read_role.id,
-            rule_type=AccessRuleType.ALLOW,
-        ))
-        session.execute(AccessControlPolicy.__table__.insert().values(
-            action=AccessActionType.WRITE,
-            asset_type=Projects.__tablename__,
-            asset_id=projects.id,
-            principal_type=AppRole.__tablename__,
-            principal_id=read_role.id,
-            rule_type=AccessRuleType.DENY,
-        ))
-
-        # Sets up the 'WRITE' role
-        session.execute(AccessControlPolicy.__table__.insert().values(
-            action=AccessActionType.READ,
-            asset_type=Projects.__tablename__,
-            asset_id=projects.id,
-            principal_type=AppRole.__tablename__,
-            principal_id=write_role.id,
-            rule_type=AccessRuleType.ALLOW,
-        ))
-        session.execute(AccessControlPolicy.__table__.insert().values(
-            action=AccessActionType.WRITE,
-            asset_type=Projects.__tablename__,
-            asset_id=projects.id,
-            principal_type=AppRole.__tablename__,
-            principal_id=write_role.id,
-            rule_type=AccessRuleType.ALLOW,
-        ))
-
-        # Sets up the 'ADMIN' role
-        session.execute(AccessControlPolicy.__table__.insert().values(
-            action=AccessActionType.READ,
-            asset_type=Projects.__tablename__,
-            asset_id=projects.id,
-            principal_type=AppRole.__tablename__,
-            principal_id=admin_role.id,
-            rule_type=AccessRuleType.ALLOW,
-        ))
-        session.execute(AccessControlPolicy.__table__.insert().values(
-            action=AccessActionType.WRITE,
-            asset_type=Projects.__tablename__,
-            asset_id=projects.id,
-            principal_type=AppRole.__tablename__,
-            principal_id=admin_role.id,
-            rule_type=AccessRuleType.ALLOW,
-        ))
-
-        session.flush()
-
-    # Bucket everything into a single directory
-    t_directory = sa.Table(
-        'directory',
-        sa.MetaData(),
-        sa.Column('id', sa.Integer(), primary_key=True, autoincrement=True),
-        sa.Column('name', sa.String(200), nullable=False),
-        sa.Column(
-            'directory_parent_id',
-            sa.Integer,
-            sa.ForeignKey('directory.id'),
-            nullable=True,
-        ),
-        sa.Column(
-            'projects_id',
-            sa.Integer,
-            sa.ForeignKey('projects.id'),
-            nullable=False,
-        )
-    )
-    conn = op.get_bind()
-    directory_id = conn.execute(
-        t_directory.insert().values(
-            name='/',
-            directory_parent_id=None,
-            projects_id=projects.id,
-        )
-    )
-
-    # Get writer role
-    write_role = session.query(AppRole).filter(
-        AppRole.name == 'project-write'
-    ).one()
-
-    # Set all existing users to write role
-    for user in session.query(AppUser).all():
-        session.execute(
-            projects_collaborator_role.insert(),
-            [dict(
-                appuser_id=user.id,
-                projects_id=projects.id,
-                app_role_id=write_role.id,
-            )]
-        )
-        session.flush()
-
-    for fi in session.query(Files).all():
-        setattr(fi, 'dir_id', directory_id)
-        session.add(fi)
-
-    for proj in session.query(Project).all():
-        setattr(proj, 'dir_id', directory_id)
-        session.add(proj)
-
-    session.commit()
 
     op.alter_column('files', 'dir_id', nullable=False)
     op.alter_column('project', 'dir_id', nullable=False)
+    # ### end Alembic commands ###
 
     if context.get_x_argument(as_dictionary=True).get('data_migrate', None):
         data_upgrades()
@@ -230,7 +193,157 @@ def downgrade():
 
 def data_upgrades():
     """Add optional data upgrade migrations here"""
-    pass
+    session = Session(op.get_bind())
+
+    conn = op.get_bind()
+
+    actions = postgresql.ENUM('READ', 'WRITE', name='accessactiontype')
+    actions.create(op.get_bind())
+
+    op.alter_column('access_control_policy', 'action',
+               existing_type=sa.VARCHAR(length=50),
+               type_=sa.Enum('READ', 'WRITE', name='accessactiontype'),
+               existing_nullable=False,
+               postgresql_using="action::accessactiontype")
+
+    # There's only one hardcoded project right now
+    row = conn.execute(sa.select([
+        t_projects.c.id
+    ]).where(t_projects.c.project_name == 'beta-project')).fetchone()
+
+    # This will only be true in development
+    if row is None:
+        projects_id = conn.execute(
+            t_projects.insert().values(
+                project_name='beta-project',
+                description='',
+                users=[],
+            )
+        ).inserted_primary_key[0]
+
+    else:
+        (projects_id,) = row
+
+        # Setup roles for the existing project
+        read_role_id = conn.execute(
+            t_app_role.insert().values(name='project-read')
+        ).inserted_primary_key[0]
+        write_role_id = conn.execute(
+            t_app_role.insert().values(name='project-write')
+        ).inserted_primary_key[0]
+        admin_role_id = conn.execute(
+            t_app_role.insert().values(name='project-admin')
+        ).inserted_primary_key[0]
+
+        # Sets up the 'READ' role
+        conn.execute(t_access_control_policy.insert().values(
+            action=AccessActionType.READ,
+            asset_type=Projects.__tablename__,
+            asset_id=projects_id,
+            principal_type=AppRole.__tablename__,
+            principal_id=read_role_id,
+            rule_type=AccessRuleType.ALLOW,
+        ))
+        conn.execute(t_access_control_policy.insert().values(
+            action=AccessActionType.WRITE,
+            asset_type=Projects.__tablename__,
+            asset_id=projects_id,
+            principal_type=AppRole.__tablename__,
+            principal_id=read_role_id,
+            rule_type=AccessRuleType.DENY,
+        ))
+
+        # Sets up the 'WRITE' role
+        conn.execute(t_access_control_policy.insert().values(
+            action=AccessActionType.READ,
+            asset_type=Projects.__tablename__,
+            asset_id=projects_id,
+            principal_type=AppRole.__tablename__,
+            principal_id=write_role_id,
+            rule_type=AccessRuleType.ALLOW,
+        ))
+        conn.execute(t_access_control_policy.insert().values(
+            action=AccessActionType.WRITE,
+            asset_type=Projects.__tablename__,
+            asset_id=projects_id,
+            principal_type=AppRole.__tablename__,
+            principal_id=write_role_id,
+            rule_type=AccessRuleType.ALLOW,
+        ))
+
+        # Sets up the 'ADMIN' role
+        conn.execute(t_access_control_policy.insert().values(
+            action=AccessActionType.READ,
+            asset_type=Projects.__tablename__,
+            asset_id=projects_id,
+            principal_type=AppRole.__tablename__,
+            principal_id=admin_role_id,
+            rule_type=AccessRuleType.ALLOW,
+        ))
+        conn.execute(t_access_control_policy.insert().values(
+            action=AccessActionType.WRITE,
+            asset_type=Projects.__tablename__,
+            asset_id=projects_id,
+            principal_type=AppRole.__tablename__,
+            principal_id=admin_role_id,
+            rule_type=AccessRuleType.ALLOW,
+        ))
+
+    # Bucket everything into a single directory
+    directory_id = conn.execute(
+        t_directory.insert().values(
+            name='/',
+            directory_parent_id=None,
+            projects_id=projects_id,
+        )
+    ).inserted_primary_key[0]
+
+    # Get writer role
+    write_role_id = conn.execute(sa.select([
+        t_app_role.c.id
+    ]).where(t_app_role.c.name == 'project-write')).fetchone()
+
+    # If none, create it
+    if write_role_id is None:
+        write_role_id = conn.execute(
+            t_app_role.insert().values(name='project-write')
+        ).inserted_primary_key[0]
+
+    # Set all existing users to write role
+    user_ids = conn.execute(sa.select([
+        t_app_user.c.id
+    ])).fetchall()
+    
+    for user_id in user_ids:
+        session.execute(
+            projects_collaborator_role.insert(),
+            [dict(
+                appuser_id=user_id,
+                projects_id=projects_id,
+                app_role_id=write_role_id,
+            )]
+        )
+        session.flush()
+
+    file_ids = conn.execute(sa.select([
+        t_files.c.id
+    ])).fetchall()
+    for file_id in file_ids:
+        conn.execute(t_files
+                     .update()
+                     .where(t_files.c.id == file_id)
+                     .values(dir_id=directory_id))
+
+    proj_ids = conn.execute(sa.select([
+        t_project.c.id
+    ])).fetchall()
+    for proj_id in proj_ids:
+        conn.execute(t_project
+                     .update()
+                     .where(t_project.c.id == proj_id)
+                     .values(dir_id=directory_id))
+
+    session.commit()
 
 
 def data_downgrades():
