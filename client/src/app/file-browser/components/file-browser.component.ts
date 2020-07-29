@@ -26,9 +26,10 @@ import { MapCreateDialogComponent } from '../../drawing-tool/components/map-crea
 import { MessageDialog } from '../../shared/services/message-dialog.service';
 import { MessageType } from '../../interfaces/message-dialog.interface';
 import { ModuleProperties } from '../../shared/modules';
-import { KnowledgeMap } from '../../drawing-tool/services/interfaces';
+import { KnowledgeMap, UniversalGraphNode } from '../../drawing-tool/services/interfaces';
 import { catchError } from 'rxjs/operators';
 import { ObjectDeletionResultDialogComponent } from './object-deletion-result-dialog.component';
+import { getLink } from '../../search/utils/records';
 
 interface PathLocator {
   projectName?: string;
@@ -466,6 +467,19 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
           + (this.locator.directoryId ? `/folders/${this.locator.directoryId}` : ''),
       };
     }
+  }
+
+  dragStarted(event: DragEvent, object: AnnotatedDirectoryObject) {
+    const dataTransfer: DataTransfer = event.dataTransfer;
+    dataTransfer.setData('text/plain', object.name);
+    dataTransfer.setData('application/lifelike-node', JSON.stringify({
+      display_name: object.name,
+      label: object.type === 'map' ? 'map' : 'link',
+      sub_labels: [],
+      data: {
+        source: this.getObjectCommands(object).join('/'),
+      },
+    } as Partial<UniversalGraphNode>));
   }
 }
 
