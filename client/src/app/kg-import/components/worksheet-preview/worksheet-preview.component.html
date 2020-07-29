@@ -1,4 +1,4 @@
-<div class="overflow-auto">
+<div class="table-responsive">
   <table *ngIf="headers && preview" class="table table-striped">
     <thead>
       <tr>
@@ -7,7 +7,7 @@
     </thead>
     <tbody>
       <tr *ngFor="let row of preview">
-        <td *ngFor="let header of headers">{{ row[header] }}</td>
+        <td *ngFor="let header of headers" class="text-truncate">{{ row[header] }}</td>
       </tr>
     </tbody>
   </table>
