@@ -12,7 +12,7 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit": "ng lint && docker-compose exec -T appserver mypy ."
+      "pre-commit": "ng lint && docker-compose exec -T appserver mypy . && docker-compose exec -T appserver pycodestyle ."
     }
   },
   "private": true,
