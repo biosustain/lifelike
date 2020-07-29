@@ -25,13 +25,17 @@ class MetaSchema(StrictSchema):
     primaryLink = ma.String(required=True)
 
 
-class AnnotationAdditionSchema(StrictSchema):
+class AnnotationSchema(StrictSchema):
     uuid = ma.String(required=True)
-    user_id = ma.String(required=True)
     pageNumber = ma.Integer(required=True)
     keywords = ma.List(ma.String(required=True))
     rects = ma.List(ma.List(ma.Float(required=True)))
     meta = ma.Nested(MetaSchema, required=True)
+
+
+class AnnotationAdditionSchema(StrictSchema):
+    annotation = ma.Nested(AnnotationSchema, required=True)
+    annotateAll = ma.Boolean(required=True)
 
 
 class AnnotationRemovalSchema(StrictSchema):
