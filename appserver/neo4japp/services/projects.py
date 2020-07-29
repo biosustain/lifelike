@@ -48,7 +48,7 @@ class ProjectsService(RDBMSBaseDao):
             self.session.add(projects)
             self.session.flush()
         except IntegrityError as e:
-            raise NameUnavailableError()
+            raise NameUnavailableError('Unable to create projects.')
 
         # Create a default directory for every project
         default_dir = Directory(
