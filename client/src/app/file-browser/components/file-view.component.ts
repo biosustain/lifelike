@@ -7,7 +7,8 @@ import { PdfAnnotationsService } from '../../drawing-tool/services';
 
 import {
   Annotation,
-  AnnotationExclusionData,
+  AnnotationExclusion,
+  StoredAnnotationExclusion,
   Location,
   Meta,
   UniversalGraphNode,
@@ -83,11 +84,11 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
   sortedEntityTypeEntries: EntityTypeEntry[] = [];
   entityTypeVisibilityChanged = false;
   modulePropertiesChange = new EventEmitter<ModuleProperties>();
-  addedAnnotationExclusion: AnnotationExclusionData;
+  addedAnnotationExclusion: AnnotationExclusion;
   addAnnotationExclusionSub: Subscription;
   showExcludedAnnotations = false;
   removeAnnotationExclusionSub: Subscription;
-  removedAnnotationExclusion: AnnotationExclusionData;
+  removedAnnotationExclusion: AnnotationExclusion;
   projectName: string;
 
   // search
@@ -313,14 +314,14 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
     });
   }
 
-  annotationExclusionAdded({id, text, reason, comment}) {
+  annotationExclusionAdded(exclusionData: StoredAnnotationExclusion) {
     this.addAnnotationExclusionSub = this.pdfAnnService.addAnnotationExclusion(
-      this.currentFileId, id, text, reason, comment, this.projectName,
+      this.currentFileId, exclusionData, this.projectName,
     )
       .pipe(this.errorHandler.create())
       .subscribe(
         response => {
-          this.addedAnnotationExclusion = {id, text, reason, comment};
+          this.addedAnnotationExclusion = (({ id, text, reason, comment }) => ({ id, text, reason, comment }))(exclusionData);
           this.snackBar.open('Annotation has been excluded', 'Close', {duration: 5000});
         },
         err => {
