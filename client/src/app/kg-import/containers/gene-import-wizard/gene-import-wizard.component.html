@@ -43,7 +43,7 @@
           <label>Please select the sheet you would like to import:</label>
           <div class="row">
             <div class="col-md-4">
-              <select class="custom-select" required formControlName="sheet" (change)="onSheetNameChange($event)">
+              <select class="custom-select" required formControlName="sheet" (change)="onSheetNameChange()">
                 <option value="null" disabled selected hidden>Worksheet</option>
                 <option *ngFor="let sheet of worksheetData.sheets" [ngValue]="sheet">{{ sheet.sheetName }}</option>
               </select>
