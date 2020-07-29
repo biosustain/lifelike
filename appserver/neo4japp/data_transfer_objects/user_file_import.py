@@ -134,6 +134,7 @@ class GeneImportRelationship(ImportRelationship):
 class ImportGenesRequest(CamelDictMixin):
     file_name: str = attr.ib()
     sheet_name: str = attr.ib()
+    file_input: FileStorage = attr.ib()
     worksheet_node_name: str = attr.ib()
     relationships: List[GeneImportRelationship] = attr.ib()
 

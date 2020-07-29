@@ -1,14 +1,20 @@
 import attr
+import hashlib
 
 from flask import Blueprint
+from sqlalchemy.orm.exc import NoResultFound
 from werkzeug.datastructures import FileStorage
 
-from neo4japp.database import get_neo4j_service_dao, get_user_file_import_service
+from neo4japp.database import db, get_neo4j_service_dao, get_user_file_import_service
 from neo4japp.data_transfer_objects.user_file_import import (
     ImportGenesRequest,
     Neo4jColumnMapping,
     NodePropertiesRequest,
     UploadFileRequest,
+)
+from neo4japp.models import (
+    FileContent,
+    Worksheet
 )
 from neo4japp.util import CamelDictMixin, SuccessResponse, jsonify_with_class
 
@@ -63,15 +69,50 @@ def upload_node_mapping(req: Neo4jColumnMapping):
     return SuccessResponse(result='', status_code=200)
 
 
+# TODO: Needs error handling
 @bp.route('/import-genes', methods=['POST'])
-@jsonify_with_class(ImportGenesRequest)
+@jsonify_with_class(ImportGenesRequest, has_file=True)
 def import_genes(req: ImportGenesRequest):
     import_service = get_user_file_import_service()
-    match_result = import_service.import_gene_relationships(
+    worksheet_node_id = import_service.import_gene_relationships(
         file_name=req.file_name,
         sheet_name=req.sheet_name,
         worksheet_node_name=req.worksheet_node_name,
         relationships=req.relationships,
     )
 
-    return SuccessResponse(result=match_result, status_code=200)
+    # TODO: What should happen if for some reason an error is thrown after we've already created
+    # and matched nodes in neo4j? Delete all the nodes we just created?
+
+    worksheet = req.file_input
+    worksheet_content = worksheet.read()
+    worksheet.stream.seek(0)
+
+    checksum_sha256 = hashlib.sha256(worksheet_content).digest()
+
+    try:
+        # First look for an existing copy of this file
+        file_content = db.session.query(
+            FileContent.id
+        ).filter(
+            FileContent.checksum_sha256 == checksum_sha256
+        ).one()
+    except NoResultFound:
+        # Otherwise, let's add the file content to the database
+        file_content = FileContent(
+            raw_file=worksheet_content,
+            checksum_sha256=checksum_sha256
+        )
+        db.session.add(file_content)
+        db.session.flush()
+
+    new_worksheet = Worksheet(
+        filename=req.file_name,
+        sheetname=req.sheet_name,
+        neo4j_node_id=worksheet_node_id,
+        content_id=file_content.id
+    )
+    db.session.add(new_worksheet)
+    db.session.commit()
+
+    return SuccessResponse(result=[], status_code=200)
