@@ -70,7 +70,7 @@ class Annotation(CamelDictMixin):
                     'google': self.google,
                 })
 
-        keyword_type: str = attr.ib()
+        type: str = attr.ib()
         color: str = attr.ib()
         links: Links = attr.ib()
         id: str = attr.ib()
@@ -81,7 +81,7 @@ class Annotation(CamelDictMixin):
 
         def to_dict_hash(self):
             return compute_hash({
-                'keyword_type': self.keyword_type,
+                'type': self.type,
                 'color': self.color,
                 'links': self.links.to_dict_hash(),
                 'id': self.id,
@@ -142,7 +142,7 @@ class OrganismAnnotation(Annotation):
 
         def to_dict_hash(self):
             return compute_hash({
-                'keyword_type': self.keyword_type,
+                'type': self.type,
                 'color': self.color,
                 'links': self.links.to_dict_hash(),
                 'id': self.id,
@@ -162,7 +162,7 @@ class GeneAnnotation(Annotation):
 
         def to_dict_hash(self):
             return compute_hash({
-                'keyword_type': self.keyword_type,
+                'type': self.type,
                 'color': self.color,
                 'links': self.links.to_dict_hash(),
                 'id': self.id,

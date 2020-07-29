@@ -671,7 +671,7 @@ class AnnotationsService:
         if token_type == EntityType.Species.value:
             organism_meta = OrganismAnnotation.OrganismMeta(
                 category=entity_category or '',
-                keyword_type=token_type,
+                type=token_type,
                 color=color,
                 id=entity_id,
                 id_type=entity['id_type'],
@@ -702,7 +702,7 @@ class AnnotationsService:
         elif token_type == EntityType.Gene.value:
             gene_meta = GeneAnnotation.GeneMeta(
                 category=entity_category or '',
-                keyword_type=token_type,
+                type=token_type,
                 color=color,
                 id=entity_id,
                 id_type=entity['id_type'],
@@ -728,7 +728,7 @@ class AnnotationsService:
             )
         else:
             meta = Annotation.Meta(
-                keyword_type=token_type,
+                type=token_type,
                 color=color,
                 id=entity_id,
                 id_type=entity['id_type'],
@@ -1502,10 +1502,10 @@ class AnnotationsService:
 
         for anno in unified_annotations:
             # TODO: temp for now as NLP only use Bacteria
-            if anno.meta.keyword_type == 'Species':
+            if anno.meta.type == 'Species':
                 keyword_type = 'Bacteria'
             else:
-                keyword_type = anno.meta.keyword_type
+                keyword_type = anno.meta.type
             hashstr = f'{anno.text_in_document},{keyword_type}'
             matched.add(hashstr)
 
@@ -1586,20 +1586,20 @@ class AnnotationsService:
         anno1: Annotation,
         anno2: Annotation,
     ) -> Annotation:
-        key1 = ENTITY_TYPE_PRECEDENCE[anno1.meta.keyword_type]
-        key2 = ENTITY_TYPE_PRECEDENCE[anno2.meta.keyword_type]
+        key1 = ENTITY_TYPE_PRECEDENCE[anno1.meta.type]
+        key2 = ENTITY_TYPE_PRECEDENCE[anno2.meta.type]
 
         # only do special gene vs protein comparison if they have
         # exact intervals
         # because that means the same normalized text was matched
         # to both
-        if ((anno1.meta.keyword_type == EntityType.Protein.value or
-                anno1.meta.keyword_type == EntityType.Gene.value) and
-            (anno2.meta.keyword_type == EntityType.Protein.value or
-                anno2.meta.keyword_type == EntityType.Gene.value) and
+        if ((anno1.meta.type == EntityType.Protein.value or
+                anno1.meta.type == EntityType.Gene.value) and
+            (anno2.meta.type == EntityType.Protein.value or
+                anno2.meta.type == EntityType.Gene.value) and
             (anno1.lo_location_offset == anno2.lo_location_offset and
                 anno1.hi_location_offset == anno2.hi_location_offset)):  # noqa
-            if anno1.meta.keyword_type != anno2.meta.keyword_type:
+            if anno1.meta.type != anno2.meta.type:
                 # protein vs gene
                 # protein has capital first letter: CysB
                 # gene has lowercase: cysB
