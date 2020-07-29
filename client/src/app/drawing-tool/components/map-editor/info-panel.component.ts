@@ -6,6 +6,8 @@ import { GraphEntityUpdate } from '../../../graph-viewer/actions/graph';
 import { EdgeDeletion, NodeDeletion } from '../../../graph-viewer/actions/nodes';
 import { WorkspaceManager } from '../../../shared/workspace-manager';
 import { GraphAction } from '../../../graph-viewer/actions/actions';
+import { MessageDialog } from '../../../shared/services/message-dialog.service';
+import { MessageType } from '../../../interfaces/message-dialog.interface';
 
 @Component({
   selector: 'app-info-panel',
@@ -16,7 +18,8 @@ export class InfoPanelComponent {
   @Input() selected: GraphEntity | undefined;
   @Output() actionCreated = new EventEmitter<GraphAction>();
 
-  constructor(private workspaceManager: WorkspaceManager) {
+  constructor(private readonly workspaceManager: WorkspaceManager,
+              private readonly messageDialog: MessageDialog) {
   }
 
   isSelectionNode() {
@@ -47,6 +50,19 @@ export class InfoPanelComponent {
   openSource(source: string): void {
     let m;
 
+    m = source.match(/^\/projects\/[^\/]+\/(files|maps)\/[^\/]+/);
+    if (m != null) {
+      this.workspaceManager.navigateByUrl(source, {
+        newTab: true,
+        sideBySide: true,
+        // Only replace tab if it's a file
+        ...(m[1] === 'files' ? {
+          replaceTabIfMatch: source.replace(/#.*$/g, ''),
+        } : {}),
+      });
+      return;
+    }
+
     m = source.match(/^\/dt\/pdf/);
     if (m != null) {
       const [
@@ -73,6 +89,13 @@ export class InfoPanelComponent {
         sideBySide: true,
         replaceTabIfMatch: `/maps/${m[1]}`,
       });
+      return;
     }
+
+    this.messageDialog.display({
+      type: MessageType.Warning,
+      title: 'Unknown Source Link',
+      message: `The selected item has an unknown source link of '${source}'.`,
+    });
   }
 }

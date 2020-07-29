@@ -165,7 +165,8 @@
 
         <tbody *ngIf="status.resultsShown">
         <tr *ngFor="let object of results.view; index as objectIndex" tabindex="0"
-            [class.active]="this.results.isSelected(object)">
+            [class.active]="this.results.isSelected(object)" draggable="true"
+            (dragstart)="dragStarted($event, object)">
           <td class="align-middle text-nowrap text-truncate"
               (click)="results.toggle(object)">
             <div class="custom-control custom-checkbox text-truncate">
