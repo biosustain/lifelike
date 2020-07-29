@@ -481,8 +481,8 @@ class UserFileImportService(GraphBaseDao):
         MERGE (w:Worksheet {{name: $worksheet_node_name}})
         WITH w
         UNWIND $col_match_prop_tuples AS tuple
-        MERGE (n:{node_label1} {node_props1})
-        MERGE (m:{node_label2} {node_props2})
+        MERGE (n:{node_label1}:UserData {node_props1})
+        MERGE (m:{node_label2}:UserData {node_props2})
         MERGE (n)-[r:{rel_label} {rel_props}]->(m)
         MERGE (m)-[:IMPORTED_FROM]->(w)
         MERGE (n)-[:IMPORTED_FROM]->(w)
@@ -504,7 +504,7 @@ class UserFileImportService(GraphBaseDao):
             MERGE (w:Worksheet {{name: $worksheet_node_name}})
             WITH w
             UNWIND $gene_match_prop_tuples AS tuple
-            MERGE (n:{node_label1} {node_props1})
+            MERGE (n:{node_label1}:UserData {node_props1})
             MERGE (n)-[:IMPORTED_FROM]->(w)
             WITH n
             MATCH (g:Gene)-[:HAS_TAXONOMY]->(t:Taxonomy)
@@ -516,7 +516,7 @@ class UserFileImportService(GraphBaseDao):
             MERGE (w:Worksheet {{name: $worksheet_node_name}})
             WITH w
             UNWIND $gene_match_prop_tuples AS tuple
-            MERGE (n:{node_label1} {node_props1})
+            MERGE (n:{node_label1}:UserData {node_props1})
             MERGE (n)-[:IMPORTED_FROM]->(w)
             WITH n
             MATCH (g:Gene)-[:HAS_TAXONOMY]->(t:Taxonomy)
@@ -576,7 +576,8 @@ class UserFileImportService(GraphBaseDao):
                 gene_match_prop_tuples[rel_hash] = []
 
         while curr_row <= max_row:
-            for relationship in relationships:
+            for rel_hash in relationship_hashes:
+                relationship = rel_hash_map[rel_hash]
                 relationship_props = self.get_props_obj_from_worksheet(
                     worksheet=worksheet,
                     props=relationship.relationship_properties,
