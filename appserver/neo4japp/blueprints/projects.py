@@ -34,8 +34,9 @@ from neo4japp.models import (
     Directory,
     Project,
     Projects,
-    projects_collaborator_role, ProjectSchema,
+    projects_collaborator_role,
 )
+from neo4japp.models.schema import ProjectSchema
 from neo4japp.util import jsonify_with_class, SuccessResponse, CasePreservedDict
 
 bp = Blueprint('projects', __name__, url_prefix='/projects')

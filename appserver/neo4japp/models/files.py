@@ -6,7 +6,6 @@ from sqlalchemy.types import TIMESTAMP
 
 from neo4japp.database import db
 from neo4japp.models.common import RDBMSBase
-from neo4japp.models.drawing_tool import Project
 
 
 class FileContent(RDBMSBase):
@@ -58,8 +57,9 @@ class Directory(RDBMSBase):
         nullable=False,
     )
     files = db.relationship('Files')
-    project = db.relationship('Project')
+    project = db.relationship('Projects', foreign_keys=projects_id)
     user_id = db.Column(db.Integer, db.ForeignKey('appuser.id'), nullable=True)
+    user = db.relationship('AppUser', foreign_keys=user_id)
 
     @classmethod
     def query_child_directories(cls, dir_id: int) -> Query:
