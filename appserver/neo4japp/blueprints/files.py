@@ -45,10 +45,7 @@ from neo4japp.models import (
     Projects,
     LMDBsDates
 )
-from neo4japp.models.files_queries import (
-    get_all_files_by_id,
-    get_all_files_and_content_by_id,
-)
+import neo4japp.models.files_queries as files_queries
 from neo4japp.request_schemas.annotations import (
     AnnotationAdditionSchema,
     AnnotationRemovalSchema,
@@ -74,6 +71,7 @@ bp = Blueprint('files', __name__, url_prefix='/files')
 def annotate(
     filename: str,
     pdf_file_object: FileStorage,
+    custom_annotations: List[dict] = [],
     annotation_method: str = AnnotationMethod.Rules.value,  # default to Rules Based
 ) -> dict:
     lmdb_dao = get_lmdb_dao()
@@ -90,13 +88,17 @@ def annotate(
         pdf_text = pdf_parser.combine_all_chars(parsed_chars=parsed_pdf_chars)
 
         if annotation_method == AnnotationMethod.Rules.value:
-            annotations = annotator.create_rules_based_annotations(tokens=tokens)
+            annotations = annotator.create_rules_based_annotations(
+                tokens=tokens,
+                custom_annotations=custom_annotations,
+            )
         elif annotation_method == AnnotationMethod.NLP.value:
             # NLP
             annotations = annotator.create_nlp_annotations(
                 page_index=parsed_pdf_chars.min_idx_in_page,
                 text=pdf_text,
                 tokens=tokens,
+                custom_annotations=custom_annotations,
             )
         else:
             raise AnnotationError('Your file could not be annotated.')  # noqa
@@ -159,7 +161,11 @@ def upload_pdf(request, project_name: str):
         filename = name[:max(0, max_filename_length - len(extension))] + extension
     file_id = str(uuid.uuid4())
 
-    annotations = annotate(filename, pdf, request.annotation_method)
+    annotations = annotate(
+        filename=filename,
+        pdf_file_object=pdf,
+        annotation_method=request.annotation_method,
+    )
     annotations_date = datetime.now(TIMEZONE)
 
     try:
@@ -527,7 +533,7 @@ def reannotate(project_name: str):
 
     ids = set(request.get_json())
     outcome: Dict[str, str] = {}  # file id to annotation outcome
-    files = get_all_files_and_content_by_id(file_ids=ids, project_id=projects.id)
+    files = files_queries.get_all_files_and_content_by_id(file_ids=ids, project_id=projects.id)
 
     files_not_found = ids - set(f.file_id for f in files)
     for not_found in files_not_found:
@@ -538,7 +544,11 @@ def reannotate(project_name: str):
     for f in files:
         fp = FileStorage(io.BytesIO(f.raw_file), f.filename)
         try:
-            annotations = annotate(f.filename, fp)
+            annotations = annotate(
+                filename=f.filename,
+                pdf_file_object=fp,
+                custom_annotations=f.custom_annotations,
+            )
         except AnnotationError as e:
             current_app.logger.error(
                 'Could not reannotate file: %s, %s, %s', f.file_id, f.filename, e)
@@ -583,7 +593,7 @@ def delete_files(project_name: str):
     user_roles = [r.name for r in curr_user.roles]
     ids = set(request.get_json())
     outcome: Dict[str, str] = {}  # file id to deletion outcome
-    files = get_all_files_by_id(file_ids=ids, project_id=projects.id)
+    files = files_queries.get_all_files_by_id(file_ids=ids, project_id=projects.id)
 
     files_not_found = ids - set(f.file_id for f in files)
     for not_found in files_not_found:

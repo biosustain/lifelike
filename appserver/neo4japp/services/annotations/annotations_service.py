@@ -12,6 +12,7 @@ from .annotation_interval_tree import (
     AnnotationInterval,
     AnnotationIntervalTree,
 )
+from .annotations_neo4j_service import AnnotationsNeo4jService
 from .constants import (
     DatabaseType,
     EntityColor,
@@ -46,7 +47,6 @@ from neo4japp.data_transfer_objects import (
     PDFTokenPositions,
     PDFTokenPositionsList,
 )
-from neo4japp.database import get_hybrid_neo4j_postgres_service
 from neo4japp.exceptions import AnnotationError
 
 
@@ -54,10 +54,10 @@ class AnnotationsService:
     def __init__(
         self,
         lmdb_session: LMDBDao,
+        annotation_neo4j: AnnotationsNeo4jService,
     ) -> None:
         self.lmdb_session = lmdb_session
-
-        self.hybrid_neo4j_postgres_service = get_hybrid_neo4j_postgres_service()
+        self.annotation_neo4j = annotation_neo4j
 
         # for word tokens that are typos
         self.correct_spellings: Dict[str, str] = {}
@@ -905,6 +905,7 @@ class AnnotationsService:
         entity_id_str: str,
         char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
         cropbox_in_pdf: Tuple[int, int],
+        organisms_from_custom_annotations: Set[str],
     ) -> List[Annotation]:
         """Gene specific annotation. Nearly identical to `_get_annotation`,
         except that we check genes against the matched organisms found in the
@@ -950,10 +951,15 @@ class AnnotationsService:
 
                     entity_tokenpos_pairs.append((entity, token_positions))
 
+        organism_ids_from_custom_annotations = self.annotation_neo4j.get_organisms_from_synonyms(
+            synonyms=list(organisms_from_custom_annotations))
+
+        organism_ids_to_query = organism_ids_from_custom_annotations + list(self.organism_frequency.keys())  # noqa
+
         gene_organism_matches = \
-            self.hybrid_neo4j_postgres_service.get_gene_to_organism_match_result(
+            self.annotation_neo4j.get_gene_to_organism_match_result(
                 genes=list(gene_names),
-                matched_organism_ids=list(self.organism_frequency.keys()),
+                matched_organism_ids=organism_ids_to_query,
             )
 
         fixed_gene_organism_matches: Dict[str, Dict[str, str]] = {}
@@ -1109,6 +1115,7 @@ class AnnotationsService:
         entity_id_str: str,
         char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
         cropbox_in_pdf: Tuple[int, int],
+        organisms_from_custom_annotations: Set[str],
     ) -> List[Annotation]:
         funcs = {
             EntityType.Chemical.value: self._annotate_chemicals,
@@ -1121,11 +1128,19 @@ class AnnotationsService:
         }
 
         annotate_entities = funcs[annotation_type]
-        return annotate_entities(
-            entity_id_str=entity_id_str,
-            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
-            cropbox_in_pdf=cropbox_in_pdf,
-        )
+        if annotation_type == EntityType.Gene.value:
+            return annotate_entities(
+                entity_id_str=entity_id_str,
+                char_coord_objs_in_pdf=char_coord_objs_in_pdf,
+                cropbox_in_pdf=cropbox_in_pdf,
+                organisms_from_custom_annotations=organisms_from_custom_annotations,
+            )  # type: ignore
+        else:
+            return annotate_entities(
+                entity_id_str=entity_id_str,
+                char_coord_objs_in_pdf=char_coord_objs_in_pdf,
+                cropbox_in_pdf=cropbox_in_pdf,
+            )  # type: ignore
 
     def _update_entity_frequency_map(
         self,
@@ -1272,6 +1287,7 @@ class AnnotationsService:
         cropbox_in_pdf: Tuple[int, int],
         lmdbs_to_validate,
         types_to_annotate: List[Tuple[str, str]],
+        organisms_from_custom_annotations: Set[str],
     ) -> List[Annotation]:
         """Create annotations.
 
@@ -1308,6 +1324,7 @@ class AnnotationsService:
                 entity_id_str=entity_id_str,
                 char_coord_objs_in_pdf=char_coord_objs_in_pdf,
                 cropbox_in_pdf=cropbox_in_pdf,
+                organisms_from_custom_annotations=organisms_from_custom_annotations,
             )
             unified_annotations.extend(annotations)
 
@@ -1316,6 +1333,7 @@ class AnnotationsService:
     def create_rules_based_annotations(
         self,
         tokens: PDFTokenPositionsList,
+        custom_annotations: List[dict],
     ) -> List[Annotation]:
         entity_type_and_id_pairs = [
             # Order is IMPORTANT here, Species should always be annotated before Genes
@@ -1342,6 +1360,10 @@ class AnnotationsService:
             cropbox_in_pdf=tokens.cropbox_in_pdf,
             lmdbs_to_validate=lmdbs_to_validate,
             types_to_annotate=entity_type_and_id_pairs,
+            organisms_from_custom_annotations=set(
+                custom['meta']['allText'] for custom in custom_annotations
+                if custom['meta']['type'] == EntityType.Species.value
+            )
         )
         return self._clean_annotations(annotations=annotations)
 
@@ -1350,6 +1372,7 @@ class AnnotationsService:
         page_index: Dict[int, int],
         text: str,
         tokens: PDFTokenPositionsList,
+        custom_annotations: List[dict]
     ) -> List[Annotation]:
         cumm_nlp_resp = []
         nlp_tokens: List[PDFTokenPositions] = []
@@ -1433,6 +1456,7 @@ class AnnotationsService:
             cropbox_in_pdf=tokens.cropbox_in_pdf,
             lmdbs_to_validate=lmdbs_to_validate,
             types_to_annotate=entity_type_and_id_pairs,
+            organisms_from_custom_annotations=set(),
         )
 
         # now annotate what nlp found
@@ -1459,6 +1483,10 @@ class AnnotationsService:
             cropbox_in_pdf=tokens.cropbox_in_pdf,
             lmdbs_to_validate=lmdbs_to_validate,
             types_to_annotate=entity_type_and_id_pairs,
+            organisms_from_custom_annotations=set(
+                custom['meta']['allText'] for custom in custom_annotations
+                if custom['meta']['type'] == EntityType.Species.value
+            )
         )
 
         unified_annotations = species_annotations + nlp_annotations
