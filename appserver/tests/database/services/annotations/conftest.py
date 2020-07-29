@@ -4,8 +4,7 @@ import pytest
 
 from os import path, remove, walk
 
-from neo4japp.higher_order_services import HybridNeo4jPostgresService
-from neo4japp.services.annotations import prepare_databases
+from neo4japp.services.annotations import prepare_databases, AnnotationsNeo4jService
 from neo4japp.services.annotations.constants import (
     DatabaseType,
     OrganismCategory,
@@ -461,7 +460,7 @@ def mock_empty_gene_to_organism(monkeypatch):
         return {}
 
     monkeypatch.setattr(
-        HybridNeo4jPostgresService,
+        AnnotationsNeo4jService,
         'get_gene_to_organism_match_result',
         get_match_result,
     )
@@ -474,7 +473,7 @@ def mock_get_gene_to_organism_match_result(monkeypatch):
         return {'hyp27': {'221103': '2846957'}}
 
     monkeypatch.setattr(
-        HybridNeo4jPostgresService,
+        AnnotationsNeo4jService,
         'get_gene_to_organism_match_result',
         get_match_result,
     )
@@ -486,7 +485,7 @@ def mock_get_gene_to_organism_serpina1_match_result(monkeypatch):
         return {'serpina1': {'9606': '5265'}}
 
     monkeypatch.setattr(
-        HybridNeo4jPostgresService,
+        AnnotationsNeo4jService,
         'get_gene_to_organism_match_result',
         get_match_result,
     )
@@ -498,7 +497,7 @@ def mock_get_gene_to_organism_serpina1_match_result_all_caps(monkeypatch):
         return {'SERPINA1': {'9606': '5265'}}
 
     monkeypatch.setattr(
-        HybridNeo4jPostgresService,
+        AnnotationsNeo4jService,
         'get_gene_to_organism_match_result',
         get_match_result,
     )
@@ -510,7 +509,7 @@ def mock_get_gene_to_organism_match_result_for_fish_gene(monkeypatch):
         return {'IL7': {'7897': '102353780'}, 'il-7': {'31033': '99999'}}
 
     monkeypatch.setattr(
-        HybridNeo4jPostgresService,
+        AnnotationsNeo4jService,
         'get_gene_to_organism_match_result',
         get_match_result,
     )
@@ -522,7 +521,7 @@ def mock_get_gene_to_organism_match_result_for_human_gene_pdf(monkeypatch):
         return {'ACE2': {'9606': '59272'}}
 
     monkeypatch.setattr(
-        HybridNeo4jPostgresService,
+        AnnotationsNeo4jService,
         'get_gene_to_organism_match_result',
         get_match_result,
     )
@@ -534,7 +533,7 @@ def mock_get_gene_to_organism_match_result_for_human_rat_gene(monkeypatch):
         return {'EDEM3': {'9606': '80267'}, 'Edem3': {'10116': '289085'}}
 
     monkeypatch.setattr(
-        HybridNeo4jPostgresService,
+        AnnotationsNeo4jService,
         'get_gene_to_organism_match_result',
         get_match_result,
     )
@@ -552,7 +551,7 @@ def mock_get_gene_to_organism_match_result_for_escherichia_coli_pdf(monkeypatch)
         }
 
     monkeypatch.setattr(
-        HybridNeo4jPostgresService,
+        AnnotationsNeo4jService,
         'get_gene_to_organism_match_result',
         get_match_result,
     )
