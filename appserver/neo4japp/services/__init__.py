@@ -4,5 +4,4 @@ from .user_file_import import UserFileImportService
 from .search import SearchService
 from .auth import AuthService
 from .account import AccountService
-from .organism_gene_match import OrganismGeneMatchService
 from .projects import ProjectsService
