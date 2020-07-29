@@ -26,6 +26,20 @@ directory = path.realpath(path.dirname(__file__))
 
 
 # Start LMDB Data Helpers
+def lmdb_chemical_factory(
+    chemical_id: str,
+    id_type: str,
+    name: str,
+    synonym: str,
+):
+    return {
+        'chemical_id': chemical_id,
+        'id_type': id_type,
+        'name': name,
+        'synonym': synonym,
+    }
+
+
 def lmdb_disease_factory(
     disease_id: str,
     id_type: str,
@@ -159,8 +173,29 @@ def default_lmdb_setup(app, request):
         synonym='Moniliophthora roreri',
     )
 
+    arginine = lmdb_chemical_factory(
+        chemical_id='CHEBI:29952',
+        id_type=DatabaseType.Chebi.value,
+        name='L-arginine residue',
+        synonym='Arg',
+    )
+
+    hypofluorite = lmdb_chemical_factory(
+        chemical_id='CHEBI:30244',
+        id_type=DatabaseType.Chebi.value,
+        name='hypofluorite',
+        synonym='FO(-)',
+    )
+
+    histidine = lmdb_chemical_factory(
+        chemical_id='CHEBI:29979',
+        id_type=DatabaseType.Chebi.value,
+        name='L-histidine residue',
+        synonym='H',
+    )
+
     entities = [
-        (CHEMICALS_CHEBI_LMDB, 'chemicals', []),  # TODO: Create test chemical data
+        (CHEMICALS_CHEBI_LMDB, 'chemicals', [arginine, hypofluorite, histidine]),
         (COMPOUNDS_BIOCYC_LMDB, 'compounds', []),  # TODO: Create test compound data
         (DISEASES_MESH_LMDB, 'diseases', []),  # TODO: Create test disease data
         (GENES_NCBI_LMDB, 'genes', [hyp27_gene, serpina1_gene, serpina1_gene2]),
@@ -420,6 +455,18 @@ def fish_gene_lmdb_setup(app, request):
 # Start monkeypatch mocks here
 # doc on how to monkeypatch: https://docs.pytest.org/en/latest/monkeypatch.html
 ###############################################################################
+@pytest.fixture(scope='function')
+def mock_empty_gene_to_organism(monkeypatch):
+    def get_match_result(*args, **kwargs):
+        return {}
+
+    monkeypatch.setattr(
+        HybridNeo4jPostgresService,
+        'get_gene_to_organism_match_result',
+        get_match_result,
+    )
+
+
 @pytest.fixture(scope='function')
 def mock_get_gene_to_organism_match_result(monkeypatch):
     def get_match_result(*args, **kwargs):
