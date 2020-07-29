@@ -1,5 +1,5 @@
 import { NgModule } from '@angular/core';
-import { Routes, RouterModule } from '@angular/router';
+import { RouterModule, Routes } from '@angular/router';
 
 import { AdminPanelComponent } from 'app/admin/components/admin-panel.component';
 import { UserFileImportComponent } from 'app/user-file-import/components/user-file-import.component';
@@ -20,7 +20,8 @@ import { WorkspaceComponent } from './workspace.component';
 import { UnloadConfirmationGuard } from './shared/guards/UnloadConfirmation.guard';
 import { MapEditorComponent } from './drawing-tool/components/map-editor/map-editor.component';
 import { MapViewComponent } from './drawing-tool/components/map-view.component';
-import { ProjectBrowserComponent } from './file-browser/components/project-browser.component';
+import { CommunityBrowserComponent } from './file-browser/components/community-browser.component';
+import { BrowserComponent } from './file-browser/components/browser/browser.component';
 
 // TODO: Add an unprotected home page
 const routes: Routes = [
@@ -107,18 +108,27 @@ const routes: Routes = [
     component: WorkspaceComponent,
     canActivate: [AuthGuard],
     data: {
-      title: 'Knowledge Reconstruction Workspace',
+      title: 'Workbench',
     },
     canDeactivate: [UnloadConfirmationGuard],
   },
   {
+    path: 'community',
+    component: CommunityBrowserComponent,
+    canActivate: [AuthGuard],
+    data: {
+      title: 'Community Content',
+      fontAwesomeIcon: 'globe',
+    },
+  },
+  {
     path: 'projects',
-    component: ProjectBrowserComponent,
+    component: BrowserComponent,
     canActivate: [AuthGuard],
     data: {
       title: 'Browser',
-      fontAwesomeIcon: 'layer-group'
-    }
+      fontAwesomeIcon: 'layer-group',
+    },
   },
   {
     path: 'projects/:project_name',
@@ -126,13 +136,13 @@ const routes: Routes = [
     canActivate: [AuthGuard],
     data: {
       title: 'Projects',
-      fontAwesomeIcon: 'layer-group'
-    }
+      fontAwesomeIcon: 'layer-group',
+    },
   },
   {
     path: 'projects/:project_name/folders',
     redirectTo: 'projects/:project_name',
-    pathMatch: 'full'
+    pathMatch: 'full',
   },
   {
     path: 'projects/:project_name/folders/:dir_id',
@@ -140,8 +150,8 @@ const routes: Routes = [
     canActivate: [AuthGuard],
     data: {
       title: 'Projects',
-      fontAwesomeIcon: 'layer-group'
-    }
+      fontAwesomeIcon: 'layer-group',
+    },
   },
   {
     path: 'projects/:project_name/files/:file_id',
@@ -149,8 +159,8 @@ const routes: Routes = [
     canActivate: [AuthGuard],
     data: {
       title: 'PDF Viewer',
-      fontAwesomeIcon: 'file-pdf'
-    }
+      fontAwesomeIcon: 'file-pdf',
+    },
   },
   {
     path: 'projects/:project_name/maps/:hash_id',

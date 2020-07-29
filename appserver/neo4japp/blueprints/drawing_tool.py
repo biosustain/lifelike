@@ -15,13 +15,19 @@ from flask import (
     jsonify,
 )
 from flask_apispec import use_kwargs
-from sqlalchemy import or_
+from sqlalchemy import or_, func
+from sqlalchemy.orm import joinedload
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy_searchable import search
 from werkzeug.utils import secure_filename
 
 from neo4japp.blueprints.auth import auth
 from neo4japp.blueprints.permissions import requires_project_permission
+# TODO: LL-415 Migrate the code to the projects folder once GUI is complete and API refactored
+from neo4japp.blueprints.projects import bp as newbp
+from neo4japp.constants import ANNOTATION_STYLES_DICT
+from neo4japp.data_transfer_objects import PublicMap
+from neo4japp.data_transfer_objects.common import ResultList, PaginatedRequest
 from neo4japp.database import db
 from neo4japp.exceptions import (
     InvalidFileNameException, RecordNotFoundException, NotAuthorizedException
@@ -29,16 +35,15 @@ from neo4japp.exceptions import (
 from neo4japp.models import (
     AccessActionType,
     Project,
-    ProjectSchema,
     Projects,
     Directory,
     ProjectBackup,
 )
+from neo4japp.models.schema import ProjectSchema
 from neo4japp.constants import ANNOTATION_STYLES_DICT
 from neo4japp.request_schemas.drawing_tool import ProjectBackupSchema
-
-# TODO: LL-415 Migrate the code to the projects folder once GUI is complete and API refactored
-from neo4japp.blueprints.projects import bp as newbp
+from neo4japp.util import jsonify_with_class, CasePreservedDict
+from neo4japp.utils.request import parse_sort, parse_page, parse_limit, paginate_from_args
 
 bp = Blueprint('drawing_tool', __name__, url_prefix='/drawing-tool')
 
@@ -144,14 +149,50 @@ def upload_map(projects_name: str):
 @bp.route('/community', methods=['GET'])
 @auth.login_required
 def get_community_projects():
-    # TODO: LL-415, what do we do with this now that we have projects?
     """ Return a list of all the projects made public by users """
 
-    # Pull the projects that are made public
-    projects = Project.query.filter_by(public=True).all()
-    project_schema = ProjectSchema(many=True)
+    query = Project.query \
+        .options(joinedload(Project.user),
+                 joinedload(Project.dir),
+                 joinedload(Project.dir, Directory.project)) \
+        .filter(Project.public == True)
 
-    return {'projects': project_schema.dump(projects)}, 200
+    filter_query = request.args.get('q', '').strip()
+    if len(filter_query):
+        query = query.filter(or_(
+            func.lower(Project.label).contains(func.lower(filter_query)),
+            func.lower(Project.description).contains(func.lower(filter_query))
+        ))
+
+    query = paginate_from_args(
+        query,
+        request.args,
+        columns={
+            'dateModified': Project.date_modified,
+            'label': Project.label,
+        },
+        default_sort='label',
+        upper_limit=200
+    )
+
+    response = ResultList(
+        total=query.total,
+        results=[
+            PublicMap(
+                map=CasePreservedDict(o.to_dict(exclude=[
+                    'graph',
+                    'search_vector'
+                ], keyfn=lambda x: x)),
+                user=o.user.to_dict(
+                    exclude=[
+                        'first_name', 'last_name', 'email', 'roles',
+                    ],
+                ),
+                project=o.dir.project
+            ) for o in query.items
+        ])
+
+    return jsonify(response.to_dict())
 
 
 @bp.route('/projects', methods=['GET'])

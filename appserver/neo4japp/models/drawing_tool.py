@@ -1,13 +1,9 @@
 import hashlib
 
-from neo4japp.database import db, ma
-from neo4japp.models.common import RDBMSBase, ModelConverter
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy_searchable import make_searchable
 from sqlalchemy_utils.types import TSVectorType
 
-Base = declarative_base()
-make_searchable(Base.metadata)
+from neo4japp.database import db
+from neo4japp.models.common import RDBMSBase
 
 
 class Project(RDBMSBase):
@@ -22,7 +18,9 @@ class Project(RDBMSBase):
     author = db.Column(db.String(240), nullable=False)
     public = db.Column(db.Boolean, default=False)
     user_id = db.Column(db.Integer, db.ForeignKey('appuser.id'), nullable=False)
+    user = db.relationship('AppUser', foreign_keys=user_id)
     dir_id = db.Column(db.Integer, db.ForeignKey('directory.id'), nullable=False)
+    dir = db.relationship('Directory', foreign_keys=dir_id)
     hash_id = db.Column(db.String(50), unique=True)
     search_vector = db.Column(TSVectorType('label'))
 
@@ -35,13 +33,6 @@ class Project(RDBMSBase):
             "{} {}".format(self.id, salt).encode()
         )
         self.hash_id = h.hexdigest()
-
-
-class ProjectSchema(ma.ModelSchema):  # type: ignore
-    class Meta:
-        include_fk = True
-        model = Project
-        model_converter = ModelConverter
 
 
 class ProjectBackup(RDBMSBase):
