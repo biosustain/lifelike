@@ -464,6 +464,12 @@ class UserFileImportService(GraphBaseDao):
 
         return props_obj
 
+    def get_merge_worksheet_node_query(self):
+        return """
+            MERGE (w:Worksheet {name: $worksheet_node_name})
+            RETURN ID(w) as worksheet_node_id
+        """
+
     def get_merge_col_match_query(
         self,
         node_label1,
@@ -478,7 +484,8 @@ class UserFileImportService(GraphBaseDao):
         rel_props = self.get_props_str_from_propnames_and_varname('tuple[2]', rel_propnames)
 
         return f"""
-        MERGE (w:Worksheet {{name: $worksheet_node_name}})
+        MATCH (w:Worksheet)
+        WHERE ID(w)=$worksheet_node_id
         WITH w
         UNWIND $col_match_prop_tuples AS tuple
         MERGE (n:{node_label1}:UserData {node_props1})
@@ -501,7 +508,8 @@ class UserFileImportService(GraphBaseDao):
 
         if gene_matching_property == GeneMatchingProperty.NAME.value:
             return f"""
-            MERGE (w:Worksheet {{name: $worksheet_node_name}})
+            MATCH (w:Worksheet)
+            WHERE ID(w)=$worksheet_node_id
             WITH w
             UNWIND $gene_match_prop_tuples AS tuple
             MERGE (n:{node_label1}:UserData {node_props1})
@@ -513,7 +521,8 @@ class UserFileImportService(GraphBaseDao):
             """
         else:
             return f"""
-            MERGE (w:Worksheet {{name: $worksheet_node_name}})
+            MATCH (w:Worksheet)
+            WHERE ID(w)=$worksheet_node_id
             WITH w
             UNWIND $gene_match_prop_tuples AS tuple
             MERGE (n:{node_label1}:UserData {node_props1})
@@ -556,8 +565,6 @@ class UserFileImportService(GraphBaseDao):
         max_row = len(list(worksheet.rows))
         curr_row = 2  # start at the second row because we don't want to include headers
 
-        unmatched_rows: List[Tuple[int, Dict]] = []
-
         relationship_hashes = []
         rel_hash_map = {}  # {relhash: relationship}
         col_match_prop_tuples = {}  # {rel_hash: [(node1, node2, relationship_props)]}
@@ -575,6 +582,7 @@ class UserFileImportService(GraphBaseDao):
             if gene_match_prop_tuples.get(rel_hash, None) is None:
                 gene_match_prop_tuples[rel_hash] = []
 
+        # Setup lists of property tuples by reading data from the spreadsheet.
         while curr_row <= max_row:
             for rel_hash in relationship_hashes:
                 relationship = rel_hash_map[rel_hash]
@@ -597,6 +605,8 @@ class UserFileImportService(GraphBaseDao):
                     )
                 )
 
+                # If either species_selection or gene_matching_property are null, then this
+                # relationship is a column-to-column relationship.
                 if relationship.species_selection is None or relationship.gene_matching_property is None:  # noqa
                     node2_val = worksheet.cell(row=curr_row, column=int(relationship.column_index2)+1).value  # noqa
                     node_props2 = {
@@ -619,6 +629,16 @@ class UserFileImportService(GraphBaseDao):
             curr_row += 1
 
         tx = self.graph.begin()
+
+        # Merge (get or create) the worksheet node, and get the ID of the merged node
+        merge_worksheet_query = self.get_merge_worksheet_node_query()
+        worksheet_node_id = tx.run(
+            merge_worksheet_query,
+            {
+                'worksheet_node_name': worksheet_node_name
+            }
+        ).evaluate()
+
         for rel_hash in relationship_hashes:
             relationship = rel_hash_map[rel_hash]
             relationship_label = relationship.relationship_label
@@ -628,6 +648,8 @@ class UserFileImportService(GraphBaseDao):
             node_label1 = relationship.node_label1
             node_label2 = relationship.node_label2
 
+            # If this relationship describes a column-to-column mapping, merge the two new nodes
+            # and map them to each other.
             if relationship.species_selection is None or relationship.gene_matching_property is None:  # noqa
                 merge_col_match_query = self.get_merge_col_match_query(
                     node_label1,
@@ -638,16 +660,18 @@ class UserFileImportService(GraphBaseDao):
                     relationship_propnames,
                 )
 
+                # Running the merges in batches gives a noticeable performance increase
                 batches = self.get_import_batches(col_match_prop_tuples[rel_hash])
-
                 for batch in batches:
                     tx.run(
                         merge_col_match_query,
                         {
                             'col_match_prop_tuples': batch,
-                            'worksheet_node_name': worksheet_node_name,
+                            'worksheet_node_id': worksheet_node_id
                         }
                     )
+            # If this relationship describes a column-to-KG-gene mapping, merge the column node,
+            # and map it to the corresponding KG node.
             else:
                 merge_gene_match_query = self.get_merge_gene_match_query(
                     node_label1,
@@ -657,18 +681,17 @@ class UserFileImportService(GraphBaseDao):
                     relationship.gene_matching_property
                 )
 
+                # Running the merges in batches gives a noticeable performance increase
                 batches = self.get_import_batches(gene_match_prop_tuples[rel_hash])
-
                 for batch in batches:
                     tx.run(
                         merge_gene_match_query,
                         {
                             'gene_match_prop_tuples': batch,
-                            'worksheet_node_name': worksheet_node_name,
                             'tax_id': int(relationship.species_selection),
+                            'worksheet_node_id': worksheet_node_id
                         }
                     )
-
         tx.commit()
 
-        return unmatched_rows
+        return worksheet_node_id

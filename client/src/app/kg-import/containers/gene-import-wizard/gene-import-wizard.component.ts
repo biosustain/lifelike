@@ -94,15 +94,17 @@ export class GeneImportWizardComponent {
     }
 
     importGeneRelationships() {
+        const formData = new FormData();
+        formData.append('fileName', this.worksheetData.filename);
+        formData.append('sheetName', this.selectedSheet.sheetName);
+        formData.append('fileInput', this.importFileForm.value.fileInput);
+        formData.append('worksheetNodeName', this.sheetForm.get('worksheetNodeName').value);
+        formData.append('relationships', JSON.stringify(this.geneConfigFormArray.getRawValue()));
+
         this.importingRelationships = true;
         // Need to use rawValue here to get the value of any disabled inputs (e.g.
         // the "nodeLabel2" input if KG Gene was selected for the column value).
-        this.kgImportService.importGeneRelationships(
-            this.worksheetData.filename,
-            this.selectedSheet.sheetName,
-            this.sheetForm.get('worksheetNodeName').value,
-            this.geneConfigFormArray.getRawValue() as GeneImportRelationship[],
-        ).subscribe(result => {
+        this.kgImportService.importGeneRelationships(formData).subscribe(result => {
             // TODO: Eventually we may do something with the result, which is a list
             // of relationships which didn't get matched to genes, if any.
             this.importingRelationships = false;
