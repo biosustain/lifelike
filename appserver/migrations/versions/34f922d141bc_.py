@@ -10,6 +10,7 @@ from alembic import context
 from alembic import op
 import sqlalchemy as sa
 from sqlalchemy.orm.session import Session
+from sqlalchemy_utils.types import TSVectorType
 
 from neo4japp.models import (
     AppUser, Project as Map, Files,
@@ -23,6 +24,116 @@ down_revision = '36d25e171658'
 branch_labels = None
 depends_on = None
 
+t_files_content = sa.Table(
+    'files_content',
+    sa.MetaData(),
+    sa.Column('id', sa.Integer(), primary_key=True, autoincrement=True),
+    sa.Column('raw_file', sa.LargeBinary, nullable=True),
+    sa.Column('checksum_sha256', sa.Binary(32), nullable=False, index=True, unique=True),
+    sa.Column('creation_date', sa.DateTime, nullable=False, default=sa.func.now()),
+)
+
+t_files = sa.Table(
+    'files',
+    sa.MetaData(),
+    sa.Column('id', sa.Integer(), primary_key=True, autoincrement=True),
+    sa.Column('filename', sa.String(60)),
+    sa.Column('content_id', sa.Integer, sa.ForeignKey(t_files_content.c.id, ondelete='CASCADE')),
+    sa.Column('raw_file', sa.LargeBinary, nullable=True),
+    sa.Column(
+        'dir_id',
+        sa.Integer,
+        sa.ForeignKey('directory.id'),
+        nullable=False,
+    ),
+    sa.Column(
+        'user_id',
+        sa.Integer,
+        sa.ForeignKey('appuser.id'),
+        nullable=False,
+    )
+)
+
+t_directory = sa.Table(
+    'directory',
+    sa.MetaData(),
+    sa.Column('id', sa.Integer(), primary_key=True, autoincrement=True),
+    sa.Column('name', sa.String(200), nullable=False),
+    sa.Column(
+        'directory_parent_id',
+        sa.Integer,
+        sa.ForeignKey('directory.id'),
+        nullable=True,
+    ),
+    sa.Column(
+        'projects_id',
+        sa.Integer,
+        sa.ForeignKey('projects.id'),
+        nullable=False,
+    ),
+    sa.Column(
+        'user_id',
+        sa.Integer,
+        sa.ForeignKey('appuser.id'),
+        nullable=False,
+    )
+)
+
+t_app_user = sa.Table(
+    'appuser',
+    sa.MetaData(),
+    sa.Column('id', sa.Integer(), primary_key=True),
+    sa.Column('username', sa.String(64), index=True, unique=True),
+    sa.Column('email', sa.String(120), index=True, unique=True),
+    sa.Column('first_name', sa.String(120), nullable=False),
+    sa.Column('last_name', sa.String(120), nullable=False),
+)
+
+t_app_role = sa.Table(
+    'app_role',
+    sa.MetaData(),
+    sa.Column('id', sa.Integer(), primary_key=True),
+    sa.Column('name', sa.String(128), nullable=False, unique=True),
+)
+
+t_project = sa.Table(
+    'project',
+    sa.MetaData(),
+    sa.Column('id', sa.Integer(), primary_key=True),
+    sa.Column('label', sa.String(250), nullable=False),
+    sa.Column('description', sa.Text),
+    sa.Column('date_modified', sa.DateTime),
+    sa.Column('graph', sa.JSON),
+  	sa.Column('author', sa.String(240), nullable=False),
+  	sa.Column('public', sa.Boolean(), default=False),
+    sa.Column('user_id', sa.Integer, sa.ForeignKey(t_app_user.c.id)),
+    sa.Column('dir_id', sa.Integer, sa.ForeignKey(t_directory.c.id)),
+    sa.Column('hash_id', sa.String(50), unique=True),
+  	sa.Column('search_vector', TSVectorType('label'))
+)
+
+t_access_control_policy = sa.Table(
+    'access_control_policy',
+    sa.MetaData(),
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('action', sa.String(length=50), nullable=False),
+    sa.Column('asset_type', sa.String(length=200), nullable=False),
+    sa.Column('asset_id', sa.Integer(), nullable=True),
+    sa.Column('principal_type', sa.String(length=50), nullable=False),
+    sa.Column('principal_id', sa.Integer(), nullable=True),
+    sa.Column('rule_type', sa.Enum('ALLOW', 'DENY', name='accessruletype'), nullable=False),
+    sa.PrimaryKeyConstraint('id')
+)
+
+t_projects = sa.Table(
+    'projects',
+    sa.MetaData(),
+    sa.Column('id', sa.Integer(), primary_key=True, autoincrement=True),
+    sa.Column('project_name', sa.String(250), unique=True, nullable=False),
+    sa.Column('description', sa.Text),
+    sa.Column('creation_date', sa.DateTime, nullable=False, default=sa.func.now()),
+    sa.Column('users', sa.ARRAY(sa.Integer), nullable=False)
+)
 
 def upgrade():
     pass
@@ -43,50 +154,69 @@ def data_upgrades():
     """Add optional data upgrade migrations here"""
     session = Session(op.get_bind())
 
-    users = session.query(AppUser).all()
+    conn = op.get_bind()
 
-    for user in users:
+    users = conn.execute(sa.select([
+        t_app_user.c.id,
+        t_app_user.c.username
+    ])).fetchall()
+
+    for (user_id, username) in users:
+
         # Create personal project for that user
-        projects = Projects(
-            project_name="{}'s Personal Project".format(user.username),
-            description='Personal Project folder',
-            users=[user.id]
-        )
-        session.add(projects)
-        session.flush()
+        projects_id = conn.execute(
+            t_projects.insert().values(
+                project_name="{}'s Personal Project".format(username),
+                description="Personal Project folder",
+                users=[user_id],
+            )
+        ).inserted_primary_key[0]
 
-        default_dir = Directory(
-            name='/', directory_parent_id=None,
-            projects_id=projects.id, user_id=user.id
-        )
-        session.add(default_dir)
-        session.flush()
+        directory_id = conn.execute(
+            t_directory.insert().values(
+                name='/',
+                directory_parent_id=None,
+                projects_id=projects_id,
+                user_id=user_id
+            )
+        ).inserted_primary_key[0]
+
 
         # Get admin role
-        admin_role = session.query(AppRole).filter(
-            AppRole.name == 'project-admin'
-        ).one()
+        (admin_role_id,) = conn.execute(sa.select([
+            t_app_role.c.id
+        ]).where(t_app_role.c.name == 'project-admin')).fetchone()
 
         session.execute(
             projects_collaborator_role.insert(),
             [dict(
-                appuser_id=user.id,
-                projects_id=projects.id,
-                app_role_id=admin_role.id,
+                appuser_id=user_id,
+                projects_id=projects_id,
+                app_role_id=admin_role_id,
             )]
         )
         session.flush()
 
-
         # Go through every map and assign directory id to map
-        for m in session.query(Map).filter(Map.user_id == user.id).all():
-            setattr(m, 'dir_id', default_dir.id)
-            session.add(m)
+        proj_ids = conn.execute(sa.select([
+            t_project.c.id
+        ]).where(t_project.c.user_id == user_id)).fetchall()
+        for (proj_id,) in proj_ids:
+            conn.execute(t_project
+                        .update()
+                        .where(t_project.c.id == proj_id)
+                        .values(dir_id=directory_id))
+
 
         # Go through every file and assign directory id to file
-        for fi in session.query(Files).filter(Files.user_id == user.id).all():
-            setattr(fi, 'dir_id', default_dir.id)
-            session.add(fi)
+        file_ids = conn.execute(sa.select([
+            t_files.c.id
+        ]).where(t_files.c.user_id == user_id)).fetchall()
+        for (file_id,) in file_ids:
+            conn.execute(t_files
+                        .update()
+                        .where(t_files.c.id == file_id)
+                        .values(dir_id=directory_id))
 
         session.commit()
 
