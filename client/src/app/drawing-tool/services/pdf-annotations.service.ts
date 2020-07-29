@@ -66,12 +66,13 @@ export class PdfAnnotationsService {
    * Adds custom annotation for the given file.
    * @param fileId id of the file
    * @param annotation annotation to add
+   * @param annotateAll indicates if the rest of the document should be annotated
    */
-  addCustomAnnotation(fileId: string, annotation: Annotation, projectName: string = 'beta-project'): Observable<any> {
+  addCustomAnnotation(fileId: string, annotation: Annotation, annotateAll: boolean, projectName: string = 'beta-project'): Observable<any> {
     const url = `/api/projects/${projectName}/files/${fileId}/annotations/add`;
     return this.http.patch(
       url,
-      annotation,
+      { annotation, annotateAll },
       this.createHttpOptions(true)
     );
   }

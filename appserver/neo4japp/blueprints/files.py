@@ -47,6 +47,7 @@ from neo4japp.models import (
 )
 from neo4japp.request_schemas.annotations import (
     AnnotationAdditionSchema,
+    AnnotationSchema,
     AnnotationRemovalSchema,
     AnnotationExclusionSchema,
 )
@@ -335,6 +336,7 @@ def get_pdf(id: str, project_name: str):
 
     yield res
 
+
 # TODO: Convert this? Where is this getting used
 @bp.route('/bioc', methods=['GET'])
 def transform_to_bioc():
@@ -418,8 +420,8 @@ def get_annotations(id: str, project_name: str):
 
 
 @newbp.route('/<string:project_name>/files/<string:id>/annotations/add', methods=['PATCH'])
-@use_kwargs(AnnotationAdditionSchema(exclude=('uuid', 'user_id')))
-@marshal_with(AnnotationAdditionSchema(only=('uuid',)), code=200)
+@use_kwargs(AnnotationAdditionSchema(exclude=('annotation.uuid',)))
+@marshal_with(AnnotationSchema(many=True), code=200)
 @auth.login_required
 @requires_project_permission(AccessActionType.WRITE)
 def add_custom_annotation(id, project_name, **payload):
@@ -432,21 +434,65 @@ def add_custom_annotation(id, project_name, **payload):
 
     yield user, projects
 
-    annotation_to_add = {
-        **payload,
-        'user_id': g.current_user.id,
-        'uuid': str(uuid.uuid4())
-    }
     file = Files.query.filter_by(
         file_id=id,
         project=projects.id,
     ).one_or_none()
     if file is None:
         raise RecordNotFoundException('File does not exist')
-    file.custom_annotations = [annotation_to_add, *file.custom_annotations]
+
+    annotation_to_add = {
+        **payload['annotation'],
+        'inclusion_date': str(datetime.now(TIMEZONE)),
+        'user_id': user.id,
+        'uuid': str(uuid.uuid4())
+    }
+
+    if payload['annotateAll']:
+        file_content = FileContent.query.filter_by(id=file.content_id).one_or_none()
+        if file_content is None:
+            raise RecordNotFoundException('Content for a given file does not exist')
+
+        fp = io.BytesIO(file_content.raw_file)
+        pdf_parser = get_annotations_pdf_parser()
+        parsed_pdf_chars = pdf_parser.parse_pdf(pdf=fp)
+        tokens = pdf_parser.extract_tokens(parsed_chars=parsed_pdf_chars)
+        lmdb_dao = get_lmdb_dao()
+        annotator = get_annotations_service(lmdb_dao=lmdb_dao)
+        term = payload['annotation']['meta']['allText']
+        matches = annotator.get_matching_manual_annotations(keyword=term, tokens=tokens)
+
+        def annotation_exists(new_annotation, diff):
+            for annotation in file.custom_annotations:
+                if annotation['meta']['allText'] == term and \
+                        len(annotation['rects']) == len(new_annotation['rects']):
+                    # coordinates can have a small difference depending on
+                    # where they come from: annotator or pdf viewer
+                    for coords, new_coords in zip(annotation['rects'], new_annotation['rects']):
+                        if abs(coords[0] - new_coords[0]) < diff and \
+                                abs(coords[1] - new_coords[1]) < diff and \
+                                abs(coords[2] - new_coords[2]) < diff and \
+                                abs(coords[3] - new_coords[3] < diff):
+                            return True
+            return False
+
+        def add_annotation(new_annotation):
+            return {
+                **annotation_to_add,
+                'pageNumber': new_annotation['pageNumber'],
+                'rects': new_annotation['rects'],
+                'keywords': new_annotation['keywords'],
+                'uuid': str(uuid.uuid4())
+            }
+
+        inclusions = [add_annotation(match) for match in matches if not annotation_exists(match, 5)]
+    else:
+        inclusions = [annotation_to_add]
+
+    file.custom_annotations = [*inclusions, *file.custom_annotations]
     db.session.commit()
 
-    yield annotation_to_add, 200
+    yield inclusions, 200
 
 
 class AnnotationRemovalOutcome(Enum):

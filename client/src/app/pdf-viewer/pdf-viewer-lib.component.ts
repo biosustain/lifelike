@@ -44,11 +44,13 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
   private filterChangeSubscription: Subscription;
 
   @Input()
-  set addedAnnotation(annotation: Annotation) {
-    if (annotation) {
-      this.addAnnotation(annotation, annotation.pageNumber);
-      this.annotations.push(annotation);
-      this.updateAnnotationVisibility(annotation);
+  set addedAnnotations(annotations: Annotation[]) {
+    if (annotations) {
+      annotations.forEach(annotation => {
+        this.addAnnotation(annotation, annotation.pageNumber);
+        this.annotations.push(annotation);
+        this.updateAnnotationVisibility(annotation);
+      });
     }
   }
 
