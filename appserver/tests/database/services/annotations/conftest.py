@@ -456,6 +456,18 @@ def fish_gene_lmdb_setup(app, request):
 # doc on how to monkeypatch: https://docs.pytest.org/en/latest/monkeypatch.html
 ###############################################################################
 @pytest.fixture(scope='function')
+def mock_empty_gene_to_organism(monkeypatch):
+    def get_match_result(*args, **kwargs):
+        return {}
+
+    monkeypatch.setattr(
+        HybridNeo4jPostgresService,
+        'get_gene_to_organism_match_result',
+        get_match_result,
+    )
+
+
+@pytest.fixture(scope='function')
 def mock_get_gene_to_organism_match_result(monkeypatch):
     def get_match_result(*args, **kwargs):
         # match to 'Moniliophthora roreri' in create_species_lmdb()
