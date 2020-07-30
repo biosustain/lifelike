@@ -35,20 +35,20 @@
                     </a>
                   </div>
                 </div>
-              </div>
-              <div class="mr-2 mt-2">
-                <div ngbDropdown placement="bottom-right" container="body">
-                  <button type="button" class="btn btn-primary btn-sm" ngbDropdownToggle ngbTooltip="New Tab"
-                          container="body">
-                    <i class="fa fa-fw fa-plus"></i>
-                  </button>
-                  <div ngbDropdownMenu class="dropdown-menu">
-                    <a class="dropdown-item" (click)="addTab(pane, '/projects')">
-                      Project Browser
-                    </a>
-                    <a class="dropdown-item" (click)="addTab(pane, '/kg-visualizer')">
-                      Knowledge Graph Search
-                    </a>
+                <div class="ml-2 mt-1">
+                  <div ngbDropdown placement="bottom-right" container="body">
+                    <button type="button" class="btn btn-secondary btn-sm" ngbDropdownToggle ngbTooltip="New Tab"
+                            container="body">
+                      <i class="fa fa-fw fa-plus"></i>
+                    </button>
+                    <div ngbDropdownMenu class="dropdown-menu">
+                      <a class="dropdown-item" (click)="addTab(pane, '/projects')">
+                        Project Browser
+                      </a>
+                      <a class="dropdown-item" (click)="addTab(pane, '/kg-visualizer')">
+                        Knowledge Graph Search
+                      </a>
+                    </div>
                   </div>
                 </div>
               </div>
