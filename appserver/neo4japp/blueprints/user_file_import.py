@@ -12,6 +12,10 @@ from neo4japp.data_transfer_objects.user_file_import import (
     NodePropertiesRequest,
     UploadFileRequest,
 )
+from neo4japp.exceptions import (
+    DatabaseError,
+    FileUploadError,
+)
 from neo4japp.models import (
     FileContent,
     Worksheet
@@ -81,38 +85,57 @@ def import_genes(req: ImportGenesRequest):
         relationships=req.relationships,
     )
 
-    # TODO: What should happen if for some reason an error is thrown after we've already created
-    # and matched nodes in neo4j? Delete all the nodes we just created?
+    try:
+        worksheet = req.file_input
+        worksheet_content = worksheet.read()
+        worksheet.stream.seek(0)
 
-    worksheet = req.file_input
-    worksheet_content = worksheet.read()
-    worksheet.stream.seek(0)
-
-    checksum_sha256 = hashlib.sha256(worksheet_content).digest()
+        checksum_sha256 = hashlib.sha256(worksheet_content).digest()
+    except Exception:
+        # If _any_ error is thrown after importing nodes, we should discard what was imported
+        # to make sure the KG and Postgres don't get out of sync.
+        # TODO: import_service.detach_and_delete_worksheet(worksheet_node_id)
+        raise FileUploadError(
+            'Nodes were successfully imported, but an unexpected error occurred ' +
+            'while parsing the uploaded worksheet. The imported nodes have been discarded.' +
+            'Please try importing again.'
+        )
 
     try:
-        # First look for an existing copy of this file
-        file_content = db.session.query(
-            FileContent.id
-        ).filter(
-            FileContent.checksum_sha256 == checksum_sha256
-        ).one()
-    except NoResultFound:
-        # Otherwise, let's add the file content to the database
-        file_content = FileContent(
-            raw_file=worksheet_content,
-            checksum_sha256=checksum_sha256
-        )
-        db.session.add(file_content)
-        db.session.flush()
+        # TODO: Really should add this chunk of code to the import_service, but how to write the
+        # UserFileImportService so that it can use both GraphBaseDao and RDBMSBaseDao...?
+        try:
+            # First look for an existing copy of this file
+            file_content = db.session.query(
+                FileContent.id
+            ).filter(
+                FileContent.checksum_sha256 == checksum_sha256
+            ).one()
+        except NoResultFound:
+            # Otherwise, let's add the file content to the database
+            file_content = FileContent(
+                raw_file=worksheet_content,
+                checksum_sha256=checksum_sha256
+            )
+            db.session.add(file_content)
+            db.session.flush()
 
-    new_worksheet = Worksheet(
-        filename=req.file_name,
-        sheetname=req.sheet_name,
-        neo4j_node_id=worksheet_node_id,
-        content_id=file_content.id
-    )
-    db.session.add(new_worksheet)
-    db.session.commit()
+        new_worksheet = Worksheet(
+            filename=req.file_name,
+            sheetname=req.sheet_name,
+            neo4j_node_id=worksheet_node_id,
+            content_id=file_content.id
+        )
+        db.session.add(new_worksheet)
+        db.session.commit()
+    except Exception:
+        # If _any_ error is thrown after importing nodes, we should discard what was imported
+        # to make sure the KG and Postgres don't get out of sync.
+        # TODO: import_service.detach_and_delete_worksheet(worksheet_node_id)
+        raise DatabaseError(
+            'Nodes were successfully imported, but an unexpected error occurred ' +
+            'while saving your worksheet to the database. The imported nodes have been discarded.' +
+            'Please try importing again.'
+        )
 
     return SuccessResponse(result=[], status_code=200)
