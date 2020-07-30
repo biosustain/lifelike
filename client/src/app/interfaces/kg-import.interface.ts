@@ -1,3 +1,13 @@
+export enum GeneMatchingPropertyType {
+    ID = 'ID',
+    NAME = 'Name',
+}
+
+export enum RelationshipDirection {
+    TO = 'To',
+    FROM = 'From'
+}
+
 export interface Properties {
     column: number;
     propertyName: string;

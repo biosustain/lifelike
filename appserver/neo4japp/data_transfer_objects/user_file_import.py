@@ -104,6 +104,17 @@ class GraphCreationMapping(CamelDictMixin):
     new_relationships: List[GraphRelationshipCreationMapping] = attr.ib(default=attr.Factory(list))
 
 
+# Begin KG Import Classes
+class GeneMatchingProperty(Enum):
+    ID = 'ID'
+    NAME = 'Name'
+
+
+class RelationshipDirection(Enum):
+    TO = 'To'
+    FROM = 'From'
+
+
 @attr.s(frozen=True)
 class Properties(CamelDictMixin):
     column: str = attr.ib()
@@ -119,6 +130,7 @@ class ImportRelationship(CamelDictMixin):
     node_properties1: List[Properties] = attr.ib()
     node_properties2: List[Properties] = attr.ib()
     relationship_label: str = attr.ib()
+    # Should map to any of the values in the RelationshipDirection enum
     relationship_direction: str = attr.ib()
     relationship_properties: List[Properties] = attr.ib()
 
@@ -137,8 +149,4 @@ class ImportGenesRequest(CamelDictMixin):
     file_input: FileStorage = attr.ib()
     worksheet_node_name: str = attr.ib()
     relationships: List[GeneImportRelationship] = attr.ib()
-
-
-class GeneMatchingProperty(Enum):
-    ID = 'ID'
-    NAME = 'Name'
+# End KG Import classes

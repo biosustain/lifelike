@@ -60,7 +60,7 @@
         </small>
       </div>
       <div class="col-md-6">
-        <!-- TODO LL-1201: Need to add a validation regex to this so we can prevent weird labels from being added -->
+        <!-- TODO: Need to add a validation regex to this so we can prevent weird labels from being added -->
         <input type="text" class="form-control" formControlName="nodeLabel1" placeholder="Node label">
       </div>
     </div>
@@ -101,7 +101,7 @@
         </small>
       </div>
       <div class="col-md-6">
-        <!-- TODO LL-1201: Need to add a validation regex to this so we can prevent weird labels from being added -->
+        <!-- TODO: Need to add a validation regex to this so we can prevent weird labels from being added -->
         <input
           class="form-control"
           type="text"
@@ -143,7 +143,7 @@
           [value]="geneMatchingPropertyEnum.ID"
           formControlName="geneMatchingProperty"
           class="custom-control-input">
-        <label class="custom-control-label" for="gene-match-selection-radio-id">ID</label>
+        <label class="custom-control-label" for="gene-match-selection-radio-id">{{ geneMatchingPropertyEnum.ID }}</label>
       </div>
       <div class="custom-control custom-radio">
         <input
@@ -152,7 +152,7 @@
           [value]="geneMatchingPropertyEnum.NAME"
           formControlName="geneMatchingProperty"
           class="custom-control-input">
-        <label class="custom-control-label" for="gene-match-selection-radio-name">Name</label>
+        <label class="custom-control-label" for="gene-match-selection-radio-name">{{geneMatchingPropertyEnum.NAME }}</label>
       </div>
     </div>
 
@@ -169,7 +169,7 @@
     <label>Please select a name for the new relationship:</label>
     <div class="row">
       <div class="col">
-        <!-- TODO LL-1201: Need to get some list of relationship types from the backend -->
+        <!-- TODO: Need to get some list of relationship types from the backend -->
         <select *ngIf="useExistingRel.value; else customRelNameInput" class="custom-select" formControlName="relationshipLabel">
           <option value="" disabled selected hidden>Relationship name</option>
           <!-- TEMP -->
@@ -205,8 +205,8 @@
       <div class="col">
         <select class="custom-select" formControlName="relationshipDirection">
           <option value="" disabled selected hidden>Direction</option>
-          <option>To</option>
-          <option>From</option>
+          <option>{{ relationshipDirectionEnum.TO }}</option>
+          <option>{{ relationshipDirectionEnum.FROM }}</option>
         </select>
       </div>
       <div class="col">
