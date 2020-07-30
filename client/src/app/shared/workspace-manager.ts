@@ -356,6 +356,11 @@ export class PaneManager {
    * @param id the pane ID that must be unique
    */
   create(id: string): Pane {
+    for (const existingPane of this.panes) {
+      if (existingPane.id === id) {
+        return existingPane;
+      }
+    }
     const pane = new Pane(id, this.injector);
     this.panes.push(pane);
     return pane;
@@ -651,6 +656,7 @@ export class WorkspaceManager {
         return previousTask.then(task);
       }, Promise.resolve());
     } else {
+      this.panes.create('right');
       const leftPane = this.panes.create('left');
       this.openTabByUrl(leftPane, '/projects').then(() => {
         this.load();
