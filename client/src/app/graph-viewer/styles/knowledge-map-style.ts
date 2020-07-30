@@ -95,7 +95,7 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
         height: d.data.height,
         maxWidth: !d.data.width ? this.maxWidthIfUnsized : null,
         maxHeight: !d.data.height ? this.maxHeightIfUnsized : null,
-        text: d.data.detail,
+        text: d.data.detail != null ? d.data.detail : '',
         font: labelFont,
         fillStyle: nullCoalesce(styleData.fillColor, '#999'),
         horizontalAlign: TextAlignment.Start,

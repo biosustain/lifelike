@@ -353,8 +353,9 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
     // use location object to scroll in the pdf.
     const loc: Location = JSON.parse(nodeDom.getAttribute('location')) as Location;
 
-    let source = '/dt/pdf/' + `${this.currentFileId}/${loc.pageNumber}/`;
-    source = source + `${loc.rect[0]}/${loc.rect[1]}/${loc.rect[2]}/${loc.rect[3]}`;
+    const source = `/projects/${encodeURIComponent(this.projectName)}`
+      + `/files/${encodeURIComponent(this.currentFileId)}`
+      + `#page=${loc.pageNumber}&coords=${loc.rect[0]},${loc.rect[1]},${loc.rect[2]},${loc.rect[3]}`;
 
     const hyperlink = meta.idHyperlink || meta.primaryLink || '';
     const search = Object.keys(meta.links || []).map(k => {
