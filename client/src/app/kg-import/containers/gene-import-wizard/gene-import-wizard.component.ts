@@ -3,9 +3,12 @@ import { Component } from '@angular/core';
 import { FormGroup, FormBuilder, Validators, FormArray } from '@angular/forms';
 import { MatSnackBar } from '@angular/material';
 
+import { Subject } from 'rxjs';
+
 import { FileNameAndSheets, SheetNameAndColumnNames } from 'app/interfaces';
-import { GeneImportRelationship } from 'app/interfaces/kg-import.interface';
+import { MessageType } from 'app/interfaces/message-dialog.interface';
 import { KgImportService } from 'app/kg-import/services/kg-import.service';
+import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { UserFileImportService } from 'app/user-file-import/services/user-file-import.service';
 
 @Component({
@@ -29,6 +32,8 @@ export class GeneImportWizardComponent {
     geneConfigFormValid: boolean;
     geneConfigFormArray: FormArray;
 
+    resetFileInputSubject: Subject<boolean>;
+
     readonly acceptedFileTypes = '.xlsx';
 
     get selectedSheet(): SheetNameAndColumnNames {
@@ -40,6 +45,7 @@ export class GeneImportWizardComponent {
         private userFileImportService: UserFileImportService,
         private kgImportService: KgImportService,
         private snackbar: MatSnackBar,
+        private readonly messageDialog: MessageDialog,
     ) {
         this.loadingSheet = false;
         this.importingRelationships = false;
@@ -57,6 +63,8 @@ export class GeneImportWizardComponent {
 
         this.geneConfigFormValid = false;
         this.geneConfigFormArray =  null;
+
+        this.resetFileInputSubject = new Subject<boolean>();
     }
 
     /**
@@ -64,18 +72,37 @@ export class GeneImportWizardComponent {
      * @param file file input object
      */
     onFileChange(file: File) {
-        this.importFileForm.controls.fileInput.setValue(file);
+        this.importFileForm.get('fileInput').setValue(file);
 
         const formData = new FormData();
         formData.append('fileInput', this.importFileForm.value.fileInput);
 
+        this.worksheetData = null;
         this.loadingSheet = true;
-        this.userFileImportService.uploadExperimentalDataFile(formData).subscribe(result => {
-            this.worksheetData = result;
+        this.userFileImportService.uploadExperimentalDataFile(formData).subscribe(
+            result => {
+                this.worksheetData = result;
 
-            this.loadingSheet = false;
-            this.snackbar.open('Finished loading worksheet!', 'Close', {duration: 3000});
-        });
+                this.loadingSheet = false;
+                this.snackbar.open('Finished loading worksheet!', 'Close', {duration: 3000});
+            },
+            error => {
+                const { message } = error.error.apiHttpError;
+
+                // Reset the fileInput for the purpose of detecting a file change (and having clean data). Otherwise,
+                // if the user tries to re-select the file that failed to upload, no change will be detected.
+                this.importFileForm.get('fileInput').setValue('');
+                this.resetFileInputSubject.next(true);
+                this.loadingSheet = false;
+                this.messageDialog.display(
+                    {
+                        title: 'File Upload Error',
+                        message,
+                        type: MessageType.Error,
+                    }
+                );
+            }
+        );
     }
 
     onSheetNameChange() {
@@ -104,11 +131,25 @@ export class GeneImportWizardComponent {
         this.importingRelationships = true;
         // Need to use rawValue here to get the value of any disabled inputs (e.g.
         // the "nodeLabel2" input if KG Gene was selected for the column value).
-        this.kgImportService.importGeneRelationships(formData).subscribe(result => {
-            // TODO: Eventually we may do something with the result, which is a list
-            // of relationships which didn't get matched to genes, if any.
-            this.importingRelationships = false;
-            this.snackbar.open('Finished importing relationships!', 'Close', {duration: 3000});
-        });
+        this.kgImportService.importGeneRelationships(formData).subscribe(
+            result => {
+                // TODO: Eventually we may do something with the result, which is a list
+                // of relationships which didn't get matched to genes, if any.
+                this.importingRelationships = false;
+                this.snackbar.open('Finished importing relationships!', 'Close', {duration: 3000});
+            },
+            error => {
+                const { message } = error.error.apiHttpError;
+
+                this.importingRelationships = false;
+                this.messageDialog.display(
+                    {
+                        title: 'Import Error',
+                        message,
+                        type: MessageType.Error,
+                    }
+                );
+            }
+        );
     }
 }
