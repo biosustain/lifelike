@@ -13,8 +13,7 @@ from neo4japp.data_transfer_objects.user_file_import import (
     UploadFileRequest,
 )
 from neo4japp.exceptions import (
-    DatabaseError,
-    FileUploadError,
+    KgImportException
 )
 from neo4japp.models import (
     FileContent,
@@ -77,13 +76,19 @@ def upload_node_mapping(req: Neo4jColumnMapping):
 @bp.route('/import-genes', methods=['POST'])
 @jsonify_with_class(ImportGenesRequest, has_file=True)
 def import_genes(req: ImportGenesRequest):
-    import_service = get_user_file_import_service()
-    worksheet_node_id = import_service.import_gene_relationships(
-        file_name=req.file_name,
-        sheet_name=req.sheet_name,
-        worksheet_node_name=req.worksheet_node_name,
-        relationships=req.relationships,
-    )
+    try:
+        import_service = get_user_file_import_service()
+        worksheet_node_id = import_service.import_gene_relationships(
+            file_name=req.file_name,
+            sheet_name=req.sheet_name,
+            worksheet_node_name=req.worksheet_node_name,
+            relationships=req.relationships,
+        )
+    except Exception:
+        raise KgImportException(
+            'An unexpected error occurred while trying to import your \n' +
+            'relationships into the knowledge graph. Please try again later.'
+        )
 
     try:
         worksheet = req.file_input
@@ -95,9 +100,9 @@ def import_genes(req: ImportGenesRequest):
         # If _any_ error is thrown after importing nodes, we should discard what was imported
         # to make sure the KG and Postgres don't get out of sync.
         # TODO: import_service.detach_and_delete_worksheet(worksheet_node_id)
-        raise FileUploadError(
+        raise KgImportException(
             'Nodes were successfully imported, but an unexpected error occurred ' +
-            'while parsing the uploaded worksheet. The imported nodes have been discarded.' +
+            'while parsing the uploaded worksheet. The imported nodes have been discarded. ' +
             'Please try importing again.'
         )
 
@@ -132,10 +137,10 @@ def import_genes(req: ImportGenesRequest):
         # If _any_ error is thrown after importing nodes, we should discard what was imported
         # to make sure the KG and Postgres don't get out of sync.
         # TODO: import_service.detach_and_delete_worksheet(worksheet_node_id)
-        raise DatabaseError(
+        raise KgImportException(
             'Nodes were successfully imported, but an unexpected error occurred ' +
-            'while saving your worksheet to the database. The imported nodes have been discarded.' +
-            'Please try importing again.'
+            'while saving your worksheet to the database. The imported nodes have been ' +
+            'discarded. Please try importing again.'
         )
 
     return SuccessResponse(result=[], status_code=200)
