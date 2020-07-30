@@ -8,6 +8,7 @@ export class CollapsibleWindowComponent {
   @Input() title = 'Window';
   @Input() reversed = false;
   @Input() sideCollapse = false;
+  @Input() borderless = false;
   expanded = true;
 
   collapse() {
