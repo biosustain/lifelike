@@ -1,4 +1,5 @@
-<div class="window d-flex flex-column h-100" [class.d-inline-flex]="!expanded && sideCollapse">
+<div class="window d-flex flex-column h-100" [class.d-inline-flex]="!expanded && sideCollapse"
+     [class.border-0]="borderless" [class.rounded-0]="borderless">
   <div class="window-header window-header-selectable" (click)="toggle()"
        (keydown)="$event.keyCode != 13 || toggle()" tabindex="0">
     <h5 class="window-title" *ngIf="expanded || !sideCollapse">

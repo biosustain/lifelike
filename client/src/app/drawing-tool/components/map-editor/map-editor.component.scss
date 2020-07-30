@@ -32,8 +32,9 @@
   right: 0;
   bottom: 0;
   width: 250px;
-  padding: 0.2rem;
   z-index: 20;
   overflow: auto;
-  background: $gray-100;
+  overflow-y: scroll;
+  background: $white;
+  border-left: 1px solid $window-border-color;
 }
