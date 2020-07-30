@@ -26,6 +26,7 @@ env:
     SENTRY_KEY: ${{ secrets.SENTRY_KEY }}
     REDIS_HOST: ${{ secrets.REDIS_HOST }}
     REDIS_PORT: ${{ secrets.REDIS_PORT }}
+    DOMAIN: ${{ secrets.DOMAIN }}
 
 jobs:
     setup-build-publish-deploy:

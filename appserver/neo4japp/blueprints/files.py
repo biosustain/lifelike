@@ -772,7 +772,7 @@ def export_excluded_annotations():
     def get_exclusion_for_review(filename, file_id, project_id, exclusion):
         user = AppUser.query.filter_by(id=exclusion['user_id']).one_or_none()
         project = Projects.query.filter_by(id=project_id).one_or_none()
-        domain = current_app.config.get('DOMAIN')
+        domain = os.environ.get('DOMAIN')
         return {
             'id': exclusion['id'],
             'text': exclusion.get('text', ''),
@@ -811,7 +811,7 @@ def export_included_annotations():
     def get_inclusion_for_review(filename, file_id, project_id, inclusion):
         user = AppUser.query.filter_by(id=inclusion['user_id']).one_or_none()
         project = Projects.query.filter_by(id=project_id).one_or_none()
-        domain = current_app.config.get('DOMAIN')
+        domain = os.environ.get('DOMAIN')
         return {
             'text': inclusion['meta']['allText'],
             'type': inclusion['meta']['type'],
