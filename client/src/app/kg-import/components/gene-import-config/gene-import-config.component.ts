@@ -4,12 +4,8 @@ import { FormBuilder, FormGroup, Validators, FormArray, AbstractControl } from '
 import { isNullOrUndefined } from 'util';
 
 import { SheetNameAndColumnNames } from 'app/interfaces';
+import { GeneMatchingPropertyType, RelationshipDirection } from 'app/interfaces/kg-import.interface';
 import { getRandomColor } from 'app/shared/utils';
-
-enum GeneMatchingPropertyType {
-    ID = 'ID',
-    NAME = 'Name',
-}
 
 @Component({
   selector: 'app-gene-import-config',
@@ -62,6 +58,7 @@ export class GeneImportConfigComponent {
     }
 
     readonly geneMatchingPropertyEnum = GeneMatchingPropertyType;
+    readonly relationshipDirectionEnum = RelationshipDirection;
 
     labelColors: Map<string, string>;
     columnLabels: Map<string, string>;

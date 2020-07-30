@@ -31,6 +31,7 @@ from neo4japp.data_transfer_objects.user_file_import import (
     GraphRelationshipCreationMapping,
     Neo4jColumnMapping,
     Properties,
+    RelationshipDirection,
 )
 from neo4japp.services.common import GraphBaseDao
 from neo4japp.util import compute_hash
@@ -472,16 +473,22 @@ class UserFileImportService(GraphBaseDao):
 
     def get_merge_col_match_query(
         self,
-        node_label1,
-        node_label2,
-        node_propnames1,
-        node_propnames2,
-        rel_label,
-        rel_propnames,
+        node_label1: str,
+        node_label2: str,
+        node_propnames1: List[str],
+        node_propnames2: List[str],
+        rel_label: str,
+        rel_propnames: List[str],
+        relationship_direction: RelationshipDirection,
     ):
         node_props1 = self.get_props_str_from_propnames_and_varname('tuple[0]', node_propnames1)
         node_props2 = self.get_props_str_from_propnames_and_varname('tuple[1]', node_propnames2)
         rel_props = self.get_props_str_from_propnames_and_varname('tuple[2]', rel_propnames)
+
+        if relationship_direction == RelationshipDirection.TO.value:
+            merge_rel_string = f'MERGE (n)-[r:{rel_label} {rel_props}]->(m)'
+        else:
+            merge_rel_string = f'MERGE (n)<-[r:{rel_label} {rel_props}]-(m)'
 
         return f"""
         MATCH (w:Worksheet)
@@ -490,21 +497,27 @@ class UserFileImportService(GraphBaseDao):
         UNWIND $col_match_prop_tuples AS tuple
         MERGE (n:{node_label1}:UserData {node_props1})
         MERGE (m:{node_label2}:UserData {node_props2})
-        MERGE (n)-[r:{rel_label} {rel_props}]->(m)
+        {merge_rel_string}
         MERGE (m)-[:IMPORTED_FROM]->(w)
         MERGE (n)-[:IMPORTED_FROM]->(w)
         """
 
     def get_merge_gene_match_query(
         self,
-        node_label1,
-        node_propnames1,
-        rel_label,
-        rel_propnames,
-        gene_matching_property,
+        node_label1: str,
+        node_propnames1: List[str],
+        rel_label: str,
+        rel_propnames: List[str],
+        gene_matching_property: GeneMatchingProperty,
+        relationship_direction: RelationshipDirection,
     ):
         node_props1 = self.get_props_str_from_propnames_and_varname('tuple[0]', node_propnames1)
         rel_props = self.get_props_str_from_propnames_and_varname('tuple[1]', rel_propnames)
+
+        if relationship_direction == RelationshipDirection.TO.value:
+            merge_rel_string = f'MERGE (n)-[r:{rel_label} {rel_props}]->(g)'
+        else:
+            merge_rel_string = f'MERGE (n)<-[r:{rel_label} {rel_props}]-(g)'
 
         if gene_matching_property == GeneMatchingProperty.NAME.value:
             return f"""
@@ -517,7 +530,7 @@ class UserFileImportService(GraphBaseDao):
             WITH n
             MATCH (g:Gene)-[:HAS_TAXONOMY]->(t:Taxonomy)
             WHERE g.name=n.cell_value AND ID(t)=$tax_id
-            MERGE (n)-[r:{rel_label} {rel_props}]->(g)
+            {merge_rel_string}
             """
         else:
             return f"""
@@ -530,12 +543,12 @@ class UserFileImportService(GraphBaseDao):
             WITH n
             MATCH (g:Gene)-[:HAS_TAXONOMY]->(t:Taxonomy)
             WHERE g.id=n.cell_value AND ID(t)=$tax_id
-            MERGE (n)-[r:{rel_label} {rel_props}]->(g)
+            {merge_rel_string}
             """
 
     def get_import_batches(
         self,
-        data,
+        data: List[Any],
     ):
         num_batches = floor((len(data) / 512)) + 1
         batches = []
@@ -645,6 +658,7 @@ class UserFileImportService(GraphBaseDao):
             relationship_propnames = [
                 prop.property_name for prop in relationship.relationship_properties
             ]
+            relationship_direction = relationship.relationship_direction
             node_label1 = relationship.node_label1
             node_label2 = relationship.node_label2
 
@@ -658,6 +672,7 @@ class UserFileImportService(GraphBaseDao):
                     [prop.property_name for prop in relationship.node_properties2] + ['cell_value'],  # noqa
                     relationship_label,
                     relationship_propnames,
+                    relationship_direction
                 )
 
                 # Running the merges in batches gives a noticeable performance increase
@@ -678,7 +693,8 @@ class UserFileImportService(GraphBaseDao):
                     [prop.property_name for prop in relationship.node_properties1] + ['cell_value'],  # noqa
                     relationship_label,
                     relationship_propnames,
-                    relationship.gene_matching_property
+                    relationship.gene_matching_property,
+                    relationship_direction
                 )
 
                 # Running the merges in batches gives a noticeable performance increase
