@@ -1,18 +1,21 @@
-import {Component} from '@angular/core';
+import { Component } from '@angular/core';
 
-import {AnnotationStyle, annotationTypes} from 'app/shared/annotation-styles';
-import {NODE_TYPE_ID, UniversalGraphNode} from '../../services/interfaces';
+import { AnnotationStyle, annotationTypes } from 'app/shared/annotation-styles';
+import { NODE_TYPE_ID, UniversalGraphNode } from '../../services/interfaces';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-palette',
   templateUrl: './palette.component.html',
-  styleUrls: ['./palette.component.scss']
+  styleUrls: ['./palette.component.scss'],
 })
 export class PaletteComponent {
   nodeTemplates = annotationTypes;
   expanded = false;
 
-  constructor() {
+  constructor(
+    private readonly snackBar: MatSnackBar,
+  ) {
   }
 
   /**
@@ -39,5 +42,11 @@ export class PaletteComponent {
       label: annotationStyle.label,
       sub_labels: [],
     } as Partial<UniversalGraphNode>));
+  }
+
+  clicked() {
+    this.snackBar.open('Drag from the palette to the graph to create new nodes.', null, {
+      duration: 3000,
+    });
   }
 }

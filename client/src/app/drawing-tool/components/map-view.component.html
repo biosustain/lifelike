@@ -41,31 +41,22 @@
     <div class="flex-fill position-relative">
       <canvas #canvas class="graph-view"></canvas>
 
-      <div class="top-toolbar d-flex align-items-center" *ngIf="!infoPinned">
-        <div class="btn-group">
-          <button type="button" class="btn btn-secondary" (click)="infoPinned = !infoPinned"
-                  ngbTooltip="Show description." placement="right" container="body">
-            <i class="fa fa-fw fa-angle-right"></i>
-          </button>
-        </div>
-      </div>
-
-      <div class="detail-overlay" [class.pinned]="infoPinned" *ngIf="map != null">
-        <button type="button" class="close float-right" aria-label="Close"
-                (click)="infoPinned = false" *ngIf="infoPinned">
-          <span aria-hidden="true">&times;</span>
-        </button>
-        <div class="detail-overlay-properties text-muted">
-          <div class="text-truncate">
-            By {{map.author}}
+      <div class="detail-overlay">
+        <app-collapsible-window title="Information" class="flex-fill" [sideCollapse]="true">
+          <div class="window-body">
+            <div class="detail-overlay-properties text-muted">
+              <div class="text-truncate">
+                By {{map.author}}
+              </div>
+              <div class="text-truncate">
+                Modified {{map.date_modified | friendlyDateStr}}
+              </div>
+            </div>
+            <div class="detail-overlay-description mt-2">
+              {{map.description}}
+            </div>
           </div>
-          <div class="text-truncate">
-            Modified {{map.date_modified | friendlyDateStr}}
-          </div>
-        </div>
-        <div class="detail-overlay-description mt-2">
-          {{map.description}}
-        </div>
+        </app-collapsible-window>
       </div>
     </div>
   </div>
