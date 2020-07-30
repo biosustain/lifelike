@@ -18,7 +18,6 @@ import { KgStatisticsComponent } from './kg-statistics.component';
 import { TermsOfServiceComponent } from './users/components/terms-of-service.component';
 import { WorkspaceComponent } from './workspace.component';
 import { UnloadConfirmationGuard } from './shared/guards/UnloadConfirmation.guard';
-import { MapBrowserComponent } from './drawing-tool/components/map-browser.component';
 import { MapEditorComponent } from './drawing-tool/components/map-editor/map-editor.component';
 import { MapViewComponent } from './drawing-tool/components/map-view.component';
 import { ProjectBrowserComponent } from './file-browser/components/project-browser.component';
@@ -152,29 +151,20 @@ const routes: Routes = [
     }
   },
   {
-    path: 'maps',
-    component: MapBrowserComponent,
-    canActivate: [AuthGuard],
+    path: 'projects/:project_name/maps/:hash_id',
+    component: MapViewComponent,
     data: {
-      title: 'Map Browser',
+      title: 'Map',
       fontAwesomeIcon: 'project-diagram',
     },
   },
   {
-    path: 'maps/:hash_id/edit',
+    path: 'projects/:project_name/maps/:hash_id/edit',
     component: MapEditorComponent,
     canActivate: [AuthGuard],
     canDeactivate: [UnloadConfirmationGuard],
     data: {
       title: 'Map Editor',
-      fontAwesomeIcon: 'project-diagram',
-    },
-  },
-  {
-    path: 'maps/:hash_id',
-    component: MapViewComponent,
-    data: {
-      title: 'Map',
       fontAwesomeIcon: 'project-diagram',
     },
   },
@@ -188,9 +178,9 @@ const routes: Routes = [
   // Old links
   {path: 'file-browser', redirectTo: 'projects', pathMatch: 'full'},
   {path: 'pdf-viewer/:file_id', redirectTo: 'projects/beta-project/files/:file_id', pathMatch: 'full'},
-  {path: 'dt/map', redirectTo: 'maps', pathMatch: 'full'},
-  {path: 'dt/map/:hash_id', redirectTo: 'maps/:hash_id', pathMatch: 'full'},
-  {path: 'dt/map/edit/:hash_id', redirectTo: 'maps/:hash_id/edit', pathMatch: 'full'},
+  {path: 'dt/map', redirectTo: 'projects', pathMatch: 'full'},
+  {path: 'dt/map/:hash_id', redirectTo: 'projects/beta-project/maps/maps/:hash_id', pathMatch: 'full'},
+  {path: 'dt/map/edit/:hash_id', redirectTo: 'projects/beta-project/maps/:hash_id/edit', pathMatch: 'full'},
   {path: 'neo4j-upload', redirectTo: 'kg-visualizer/upload', pathMatch: 'full'},
   {path: 'neo4j-visualizer', redirectTo: 'kg-visualizer', pathMatch: 'full'},
 ];
