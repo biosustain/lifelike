@@ -5,6 +5,7 @@ import { Hyperlink, SearchLink } from 'app/shared/constants';
 
 import { PdfAnnotationsService } from '../../drawing-tool/services';
 
+import { cloneDeep } from 'lodash';
 import {
   Annotation,
   AnnotationExclusion,
@@ -24,6 +25,7 @@ import { ModuleAwareComponent, ModuleProperties } from '../../shared/modules';
 import { ConfirmDialogComponent } from '../../shared/components/dialog/confirm-dialog.component';
 import { NgbDropdown, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ErrorHandler } from '../../shared/services/error-handler.service';
+import { FileEditDialogComponent } from './file-edit-dialog.component';
 
 class DummyFile implements PdfFile {
   constructor(
@@ -72,6 +74,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
   pendingScroll: Location;
   openPdfSub: Subscription;
   ready = false;
+  pdfFile: PdfFile;
   // Type information coming from interface PDFSource at:
   // https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/pdfjs-dist/index.d.ts
   pdfData: { url?: string, data?: Uint8Array };
@@ -97,6 +100,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
   @ViewChild(PdfViewerLibComponent, {static: false}) pdfViewerLib;
 
   constructor(
+    private readonly filesService: PdfFilesService,
     private pdfAnnService: PdfAnnotationsService,
     private pdf: PdfFilesService,
     private snackBar: MatSnackBar,
@@ -127,10 +131,8 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
       this.annotations = ann;
       this.updateAnnotationIndex();
       this.updateSortedEntityTypeEntries();
-      this.modulePropertiesChange.next({
-        title: pdfFile.filename,
-        fontAwesomeIcon: 'file-pdf',
-      });
+      this.pdfFile = pdfFile;
+      this.emitModuleProperties();
 
       this.currentFileId = file.file_id;
       setTimeout(() => {
@@ -500,6 +502,35 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
     this.searchChanged.next({
       keyword: query,
       findPrevious: true,
+    });
+  }
+
+  displayEditDialog() {
+    const dialogRef = this.modalService.open(FileEditDialogComponent);
+    dialogRef.componentInstance.file = cloneDeep(this.pdfFile);
+    dialogRef.result.then(newFile => {
+      if (newFile) {
+        this.filesService.updateFileMeta(
+          this.projectName,
+          this.pdfFile.file_id,
+          newFile.filename,
+          newFile.description,
+        )
+          .pipe(this.errorHandler.create())
+          .subscribe(() => {
+            this.pdfFile = newFile;
+            this.emitModuleProperties();
+            this.snackBar.open(`File details updated`, 'Close', {duration: 5000});
+          });
+      }
+    }, () => {
+    });
+  }
+
+  emitModuleProperties() {
+    this.modulePropertiesChange.next({
+      title: this.pdfFile.filename,
+      fontAwesomeIcon: 'file-pdf',
     });
   }
 

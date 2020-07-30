@@ -8,77 +8,79 @@
   </ng-container>
 
   <div class="position-absolute w-100 h-100 d-flex flex-column" style="z-index: 0">
-    <div class="main-toolbar d-flex align-items-center toolbar d-flex">
-      <div class="btn-group">
-        <button type="button" class="btn btn-light" ngbTooltip="Go back to the browser"
-                placement="bottom-left" (click)="goToReturnUrl()" *ngIf="returnUrl">
-          <i class="fa fa-fw fa-folder"></i>
-        </button>
-        <button type="button" class="btn btn-light"
-                [disabled]="(unsavedChanges$ | async) == null"
-                ngbTooltip="Save" placement="bottom"
-                (click)="save()">
-          <i class="fa fa-fw fa-save"></i>
-        </button>
-        <button type="button" class="btn btn-light"
-                ngbTooltip="Export" placement="bottom"
-                (click)="download()">
-          <i class="fa fa-fw fa-file-export"></i>
-        </button>
+    <div class="toolbar">
+      <div class="toolbar-header d-flex align-items-center">
+        <h2 class="toolbar-title text-truncate">
+          <button type="button" class="btn btn-sm btn-link" (click)="goToReturnUrl()" *ngIf="returnUrl">
+            <i class="fa fa-fw fa-arrow-left"></i>
+          </button>
+          <span (click)="displayEditDialog()">{{ map?.label }}</span>
+        </h2>
+        <div class="text-danger ml-2" *ngIf="unsavedChanges$.value; else saved">
+          <i class="fa fa-fw fa-pencil-alt"></i> Unsaved changes
+        </div>
+        <ng-template #saved>
+          <div class="ml-2 text-muted" ngbTooltip="Saved to the cloud" container="body">
+            <i class="fa fa-fw fa-cloud-upload-alt"></i>
+          </div>
+        </ng-template>
       </div>
 
-      <div class="btn-group ml-2">
-        <button type="button" class="btn btn-light"
-                ngbTooltip="Undo" placement="bottom"
-                (click)="undo()"
-                [disabled]="!graphCanvas || !graphCanvas.canUndo()">
-          <i class="fa fa-fw fa-undo"></i>
-        </button>
-        <button type="button" class="btn btn-light"
-                ngbTooltip="Redo" placement="bottom"
-                (click)="redo()"
-                [disabled]="!graphCanvas || !graphCanvas.canRedo()">
-          <i class="fa fa-fw fa-redo"></i>
-        </button>
-      </div>
+      <div class="toolbar-body d-flex align-items-center">
+        <div class="btn-group">
+          <button type="button" class="btn btn-secondary"
+                  [disabled]="(unsavedChanges$ | async) == null"
+                  ngbTooltip="Save" placement="bottom" container="body"
+                  (click)="save()">
+            <i class="fa fa-fw fa-save"></i> Save
+          </button>
+          <button type="button" class="btn btn-secondary"
+                  ngbTooltip="Download map as an image or PDF" placement="bottom" container="body"
+                  (click)="download()">
+            <i class="fa fa-fw fa-file-export"></i> Export
+          </button>
+        </div>
 
-      <div class="btn-group ml-auto">
-        <button type="button" class="btn btn-light"
-                ngbTooltip="Fit map" placement="bottom"
-                (click)="zoomToFit()">
-          <i class="fa fa-fw fa-expand"></i>
-        </button>
+        <div class="btn-group ml-2">
+          <button type="button" class="btn btn-secondary"
+                  ngbTooltip="Undo" placement="bottom" container="body"
+                  (click)="undo()"
+                  [disabled]="!graphCanvas || !graphCanvas.canUndo()">
+            <i class="fa fa-fw fa-undo"></i>
+          </button>
+          <button type="button" class="btn btn-secondary"
+                  ngbTooltip="Redo" placement="bottom" container="body"
+                  (click)="redo()"
+                  [disabled]="!graphCanvas || !graphCanvas.canRedo()">
+            <i class="fa fa-fw fa-redo"></i>
+          </button>
+        </div>
+
+        <div class="btn-group ml-2">
+          <button type="button" class="btn btn-secondary" container="body"
+                  ngbTooltip="Make map fit on screen" placement="bottom"
+                  (click)="zoomToFit()">
+            Fit to Map
+          </button>
+        </div>
       </div>
     </div>
 
-    <div class="flex-fill overflow-hidden">
-      <as-split cdkDropListGroup unit="pixel" direction="horizontal" gutterSize="1">
-        <as-split-area>
-          <div class="position-relative h-100">
-            <div class="graph-container">
-              <canvas #canvas class="graph-view" (dragover)="dragOver($event)" (drop)="drop($event)"></canvas>
-            </div>
+    <div class="flex-fill position-relative overflow-hidden">
+      <div class="graph-container">
+        <canvas #canvas class="graph-view" (dragover)="dragOver($event)" (drop)="drop($event)"></canvas>
+      </div>
 
-            <app-palette class="palette-panel">
-            </app-palette>
-          </div>
-        </as-split-area>
+      <app-palette class="palette-panel">
+      </app-palette>
 
-        <as-split-area [size]="250" [maxSize]="500">
-          <ng-container *ngIf="(graphCanvas?.selection.changeObservable | async) as selected; else noSelection">
-            <div class="h-100 overflow-auto">
-              <app-info-panel *ngIf="selected[0].length > 0; else noSelection" [selected]="selected[0][0]"
-                              (actionCreated)="graphCanvas.execute($event)">
-              </app-info-panel>
-            </div>
-          </ng-container>
-          <ng-template #noSelection>
-            <div class="p-3">
-              Select a node or edge.
-            </div>
-          </ng-template>
-        </as-split-area>
-      </as-split>
+      <ng-container *ngIf="(graphCanvas?.selection.changeObservable | async) as selected">
+        <div class="info-panel" *ngIf="selected[0].length > 0">
+          <app-info-panel [selected]="selected[0][0]"
+                          (actionCreated)="graphCanvas.execute($event)">
+          </app-info-panel>
+        </div>
+      </ng-container>
     </div>
   </div>
 </div>
