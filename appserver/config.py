@@ -37,13 +37,11 @@ class Development(Base):
 
     ASSETS_DEBUG = True
     WTF_CSRF_ENABLED = False
-    DOMAIN = 'http://localhost:4200'
 
 
 class Staging(Base):
     """Staging configurations"""
     SITE_NAME = 'Lifelike Knowledge Search (Staging)'
-    DOMAIN = 'https://test.lifelike.bio'
 
 
 class Testing(Base):
@@ -54,4 +52,3 @@ class Testing(Base):
 
 class Production(Base):
     """ Production configuration """
-    DOMAIN = 'https://kg.lifelike.bio'
