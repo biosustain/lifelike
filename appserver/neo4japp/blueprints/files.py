@@ -17,7 +17,7 @@ from werkzeug.datastructures import FileStorage
 from werkzeug.utils import secure_filename
 
 from neo4japp.blueprints.auth import auth
-from neo4japp.blueprints.permissions import requires_project_permission
+from neo4japp.blueprints.permissions import requires_project_permission, requires_role
 # TODO: LL-415 Migrate the code to the projects folder once GUI is complete and API refactored
 from neo4japp.blueprints.projects import bp as newbp
 from neo4japp.constants import TIMEZONE
@@ -759,6 +759,7 @@ def get_lmdbs_dates():
 
 @bp.route('/global_exclusion_file')
 @auth.login_required
+@requires_role('admin')
 def export_excluded_annotations():
     files = db.session.query(
         Files.filename,
@@ -797,6 +798,7 @@ def export_excluded_annotations():
 
 @bp.route('/global_inclusion_file')
 @auth.login_required
+@requires_role('admin')
 def export_included_annotations():
     files = db.session.query(
         Files.filename,
