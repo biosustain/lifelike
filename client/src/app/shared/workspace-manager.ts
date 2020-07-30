@@ -358,7 +358,7 @@ export class PaneManager {
   create(id: string): Pane {
     for (const existingPane of this.panes) {
       if (existingPane.id === id) {
-        return existingPane;
+        throw new Error(`pane ${existingPane.id} already created`);
       }
     }
     const pane = new Pane(id, this.injector);
@@ -656,11 +656,9 @@ export class WorkspaceManager {
         return previousTask.then(task);
       }, Promise.resolve());
     } else {
-      this.panes.create('right');
       const leftPane = this.panes.create('left');
-      this.openTabByUrl(leftPane, '/projects').then(() => {
-        this.load();
-      });
+      this.panes.create('right');
+      this.openTabByUrl(leftPane, '/projects');
     }
   }
 
