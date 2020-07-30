@@ -1,7 +1,7 @@
 """ Add author for directory
 
 Revision ID: 36d25e171658
-Revises: 101b9a60aa29
+Revises: cc345dcad75c
 Create Date: 2020-07-22 19:25:59.212662
 
 """
@@ -13,7 +13,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = '36d25e171658'
-down_revision = '101b9a60aa29'
+down_revision = 'cc345dcad75c'
 branch_labels = None
 depends_on = None
 
