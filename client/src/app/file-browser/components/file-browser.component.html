@@ -77,24 +77,18 @@
             </div>
           </div>
 
-          <button class="btn btn-light ml-2"
+          <button class="btn btn-secondary ml-2"
                   [disabled]="results.selection.length === 0"
                   (click)="reannotate(results.selection)">
             Re-annotate
           </button>
 
-          <button class="btn btn-light ml-2"
+          <button class="btn btn-secondary ml-2"
                   [disabled]="results.selection.length === 0"
                   (click)="displayDeleteDialog(results.selection)">
             Delete
           </button>
 
-        </div>
-        <div class="ml-auto">
-          <button type="button" class="btn btn-light ml-2" (click)="this.refresh()"
-                  ngbTooltip="Refresh the results">
-            <i class="fa fa-sync"></i>
-          </button>
         </div>
       </div>
 
@@ -250,7 +244,7 @@
     </ng-container>
 
     <ng-template #errorShown>
-      <div class="text-center text-secondary">
+      <div class="text-center text-muted">
         <div>
           <i class="fa fa-exclamation-circle fa-4x"></i>
         </div>

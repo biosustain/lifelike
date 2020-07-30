@@ -1,7 +1,4 @@
-import {
-  Component, ElementRef,
-  HostListener, OnDestroy, OnInit, ViewChild,
-} from '@angular/core';
+import { Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core';
 
 import { cloneDeep } from 'lodash';
 
@@ -18,9 +15,12 @@ import { PasteKeyboardShortcut } from '../../../graph-viewer/renderers/canvas/be
 import { HistoryKeyboardShortcuts } from '../../../graph-viewer/renderers/canvas/behaviors/history-keyboard-shortcuts';
 import { MapViewComponent } from '../map-view.component';
 import { from, Observable, Subscription, throwError } from 'rxjs';
-import { auditTime, catchError, switchMap} from 'rxjs/operators';
+import { auditTime, catchError, switchMap } from 'rxjs/operators';
 import { HttpErrorResponse } from '@angular/common/http';
 import { MapRestoreDialogComponent } from '../map-restore-dialog.component';
+import { MapEditDialogComponent } from '../map-edit-dialog.component';
+import { GraphAction, GraphActionReceiver } from '../../../graph-viewer/actions/actions';
+import { mergeDeep } from '../../../graph-viewer/utils/objects';
 
 @Component({
   selector: 'app-drawing-tool',
@@ -98,6 +98,27 @@ export class MapEditorComponent extends MapViewComponent<KnowledgeMap> implement
     }
   }
 
+  displayEditDialog() {
+    const dialogRef = this.modalService.open(MapEditDialogComponent);
+    dialogRef.componentInstance.map = cloneDeep(this.map);
+    dialogRef.result.then((newMap: KnowledgeMap) => {
+      this.graphCanvas.execute(new KnowledgeMapUpdate(
+        'Update map properties',
+        this.map, {
+          label: newMap.label,
+          description: newMap.description,
+          public: newMap.public,
+        }, {
+          label: this.map.label,
+          description: this.map.description,
+          public: this.map.public,
+        },
+      ));
+      this.unsavedChanges$.next(true);
+    }, () => {
+    });
+  }
+
   @HostListener('window:beforeunload', ['$event'])
   handleBeforeUnload(event) {
     if (this.shouldConfirmUnload()) {
@@ -126,8 +147,24 @@ export class MapEditorComponent extends MapViewComponent<KnowledgeMap> implement
             x: hoverPosition.x,
             y: hoverPosition.y,
           },
-        }, true
+        }, true,
       ));
     }
+  }
+}
+
+class KnowledgeMapUpdate implements GraphAction {
+  constructor(public description: string,
+              public map: KnowledgeMap,
+              public updatedData: Partial<KnowledgeMap>,
+              public originalData: Partial<KnowledgeMap>) {
+  }
+
+  apply(component: GraphActionReceiver) {
+    mergeDeep(this.map, this.updatedData);
+  }
+
+  rollback(component: GraphActionReceiver) {
+    mergeDeep(this.map, this.originalData);
   }
 }

@@ -50,7 +50,7 @@
             </select>
           </div>
           <div class="mt-1" *ngIf="node.data?.source && node.label !== 'link'">
-            <button type="button" class="btn btn-light btn-block"
+            <button type="button" class="btn btn-secondary btn-block"
                     ngbTooltip="Make this node show as a note with a link back to the source"
                     (click)="node.label = 'link'; doSave()">
               Change to Link
