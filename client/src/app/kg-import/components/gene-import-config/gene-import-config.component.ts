@@ -64,6 +64,7 @@ export class GeneImportConfigComponent {
     readonly geneMatchingPropertyEnum = GeneMatchingPropertyType;
 
     labelColors: Map<string, string>;
+    columnLabels: Map<string, string>;
 
     editingRelationship: boolean;
     columns: string[];
@@ -105,6 +106,7 @@ export class GeneImportConfigComponent {
         this.relationshipFormGroupArray = [];
         this.activeFormGroup = null;
         this.labelColors = new Map<string, string>();
+        this.columnLabels = new Map<string, string>();
         this.prevColumn2Selection = '';
     }
 
@@ -132,6 +134,23 @@ export class GeneImportConfigComponent {
         this.relationshipFormGroupArray.splice(index, 1);
         this.relationshipsChanged.emit(this.relationshipFormGroupArray);
 
+        // Remove any column labels that won't exist in any relationship
+        const columnLabelsToKeep = new Set<string>();
+        this.relationshipFormGroupArray.forEach(formGroup => {
+            const column1 = formGroup.get('columnIndex1').value;
+            const column2 = formGroup.get('columnIndex2').value;
+            columnLabelsToKeep.add(column1);
+            columnLabelsToKeep.add(column2);
+        });
+
+        const columnLabelsToRemove = Array.from(this.columnLabels.keys()).filter(
+            column => !columnLabelsToKeep.has(column)
+        );
+
+        columnLabelsToRemove.forEach(column => {
+            this.columnLabels.delete(column);
+        });
+
         // Only set form validity to true if there is at least one relationship remaining.
         this.relationshipFormValidityChanged.emit(this.relationshipFormGroupArray.length > 0);
     }
@@ -151,36 +170,60 @@ export class GeneImportConfigComponent {
     }
 
     /**
+     * Pre-populates the label input if the user has previously created a label for this column.
+     */
+    columnSelection1Changed() {
+        const columnIndex1Control = this.activeFormGroup.get('columnIndex1');
+        const nodeLabel1Control = this.activeFormGroup.get('nodeLabel1');
+
+        if (this.columnLabels.has(columnIndex1Control.value)) {
+            nodeLabel1Control.setValue(this.columnLabels.get(columnIndex1Control.value));
+        }
+    }
+
+    /**
      * Resets the 'speciesSelection' and 'geneMatchingProperty' controls whenever the 'columnIndex2'
      * selection changes. The former two controls are required if the user is matching to KG
-     * genes, and here we set their values/validators accordingly.
+     * genes, and here we set their values/validators accordingly. Also pre-populates the label field
+     * in the case of previously chosen columns, as with the columnSelection1 control.
      */
     columnSelection2Changed() {
         const speciesSelectionControl = this.activeFormGroup.get('speciesSelection');
         const geneMatchingPropertyControl = this.activeFormGroup.get('geneMatchingProperty');
+        const nodeLabel2Control = this.activeFormGroup.get('nodeLabel2');
+        const columnIndex2Control = this.activeFormGroup.get('columnIndex2');
 
         if (this.indexToColumn.get(this.columnIndex2.value) === 'KG Gene') {
-            this.activeFormGroup.get('nodeLabel2').setValue('Gene');
-            this.activeFormGroup.get('nodeLabel2').disable();
+            nodeLabel2Control.setValue('Gene');
+            nodeLabel2Control.disable();
 
             // Remove any properties the user might have added before choosing 'KG Gene', as at the
             // moment we don't want to add new properties to existing Gene nodes.
-            while ((this.activeFormGroup.get('nodeProperties2') as FormArray).length !== 0) {
-                (this.activeFormGroup.get('nodeProperties2') as FormArray).removeAt(0);
+            const nodeProperties2Control = this.activeFormGroup.get('nodeProperties2') as FormArray;
+            while (nodeProperties2Control.length !== 0) {
+                nodeProperties2Control.removeAt(0);
             }
 
             speciesSelectionControl.setValue('');
             speciesSelectionControl.setValidators([Validators.required]);
             geneMatchingPropertyControl.setValue('');
             geneMatchingPropertyControl.setValidators([Validators.required]);
-        } else if (this.prevColumn2Selection === 'KG Gene') {
-            this.activeFormGroup.get('nodeLabel2').setValue('');
-            this.activeFormGroup.get('nodeLabel2').enable();
+
+            return;
+        }
+
+        if (this.prevColumn2Selection === 'KG Gene') {
+            nodeLabel2Control.enable();
+            nodeLabel2Control.setValue('');
 
             speciesSelectionControl.setValue(null);
             speciesSelectionControl.setValidators([]);
             geneMatchingPropertyControl.setValue(null);
             geneMatchingPropertyControl.setValidators([]);
+        }
+
+        if (this.columnLabels.has(columnIndex2Control.value)) {
+            nodeLabel2Control.setValue(this.columnLabels.get(columnIndex2Control.value));
         }
 
         this.prevColumn2Selection = this.indexToColumn.get(this.columnIndex2.value);
@@ -233,6 +276,26 @@ export class GeneImportConfigComponent {
             if (!this.labelColors.has(nodeLabel2)) {
                 this.labelColors.set(this.activeFormGroup.get('nodeLabel2').value, getRandomColor());
             }
+
+            // Create new mappings for column name to label. This is so we can pre-populate the label field
+            // with a previously chosen label for the given column.
+            if (!this.columnLabels.has(this.activeFormGroup.get('columnIndex1').value)) {
+                this.columnLabels.set(
+                    this.activeFormGroup.get('columnIndex1').value,
+                    nodeLabel1,
+                );
+            }
+
+            if (
+                parseInt(this.activeFormGroup.get('columnIndex2').value, 10) !== this.columns.length - 1 &&
+                !this.columnLabels.has(this.activeFormGroup.get('columnIndex2').value)
+            ) {
+                this.columnLabels.set(
+                    this.activeFormGroup.get('columnIndex2').value,
+                    nodeLabel2,
+                );
+            }
+
             this.relationshipFormValidityChanged.emit(true);
             this.relationshipsChanged.emit(this.relationshipFormGroupArray);
         }

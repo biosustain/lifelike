@@ -51,7 +51,7 @@
     <label>Please choose a column to represent one side of the new relationship:</label>
     <div class="row">
       <div class="col-md-4">
-        <select class="custom-select" formControlName="columnIndex1">
+        <select class="custom-select" formControlName="columnIndex1" (change)="columnSelection1Changed()">
           <option value="" disabled selected hidden>Worksheet column</option>
           <option *ngFor="let col of columns.slice(0, columns.length - 1); let i = index" [value]="i">{{ col }}</option>
         </select>
