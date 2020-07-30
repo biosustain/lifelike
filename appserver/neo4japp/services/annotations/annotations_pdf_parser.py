@@ -1,3 +1,4 @@
+import json
 import re
 
 from copy import deepcopy
@@ -445,17 +446,14 @@ class AnnotationsPDFParser:
                                 keyword=curr_keyword,
                                 char_positions=curr_char_idx_mappings,
                             )
+                            uid = f'{str(token.page_number)}{token.keyword}{json.dumps(token.char_positions)}'  # noqa
                             # need to do this check because
                             # could potentially have duplicates due to
                             # removing punctuation
                             # because punctuation could've been a separated word
-                            # TODO: to_dict_hash() is a bottleneck if
-                            # the keyword_tokens list is large
-                            # but can't be helped atm
-                            hashval = token.to_dict_hash()
-                            if hashval not in processed_tokens:
+                            if uid not in processed_tokens:
                                 keyword_tokens.append(token)
-                                processed_tokens.add(hashval)
+                                processed_tokens.add(uid)
 
                 curr_max_words += 1
                 end_idx += 1
