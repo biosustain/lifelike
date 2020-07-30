@@ -317,30 +317,30 @@ def test_can_delete_files(client, test_user, test_user_with_pdf, fix_project):
     assert resp.status_code == 200
 
 
-def test_user_can_remove_annotation_exclusion(
-    client,
-    test_user,
-    test_user_with_pdf,
-):
+def test_user_can_remove_annotation_exclusion(client, test_user, test_user_with_pdf, fix_project):
     login_resp = client.login_as_user(test_user.email, 'password')
     headers = generate_headers(login_resp['access_jwt'])
     file_id = test_user_with_pdf.file_id
 
-    add_exc_resp = client.patch(
-        f'/files/add_annotation_exclusion/{file_id}',
+    client.patch(
+        f'/projects/{fix_project.project_name}/files/{file_id}/annotations/add_annotation_exclusion',  # noqa
         headers=headers,
         data=json.dumps({
             'id': 'id',
+            'text': 'text',
             'reason': 'reason',
-            'comment': 'comment'
+            'comment': 'comment',
         }),
         content_type='application/json',
     )
 
     remove_exc_resp = client.patch(
-        f'/files/remove_annotation_exclusion/{file_id}',
+        f'/projects/{fix_project.project_name}/files/{file_id}/annotations/remove_annotation_exclusion',  # noqa
         headers=headers,
-        data=json.dumps({'id': 'id'}),
+        data=json.dumps({
+            'id': 'id',
+            'text': 'text'
+        }),
         content_type='application/json',
     )
 

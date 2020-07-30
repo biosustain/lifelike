@@ -95,7 +95,7 @@ export class ProjectPageService {
     directoryId,
     label,
     description,
-    isPublic= false
+    publicMap,
   ): Observable<any> {
     console.log(isPublic);
 
@@ -105,7 +105,7 @@ export class ProjectPageService {
         label,
         description,
         directoryId,
-        public: isPublic
+        public: publicMap,
       },
       this.createHttpOptions(true),
     );
