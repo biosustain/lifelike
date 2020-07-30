@@ -456,6 +456,7 @@ def add_custom_annotation(id, project_name, **payload):
         fp = io.BytesIO(file_content.raw_file)
         pdf_parser = get_annotations_pdf_parser()
         parsed_pdf_chars = pdf_parser.parse_pdf(pdf=fp)
+        fp.close()
         tokens = pdf_parser.extract_tokens(parsed_chars=parsed_pdf_chars)
         lmdb_dao = get_lmdb_dao()
         annotator = get_annotations_service(lmdb_dao=lmdb_dao)
