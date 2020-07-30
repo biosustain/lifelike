@@ -56,7 +56,16 @@ $font-family-base: $font-family-sans-serif;
 
 $form-group-margin-bottom: 0.5rem;
 
-$toolbar-padding: 0.75rem;
+$window-spacer: 0.75rem; // Spacing between the edge of container and the window
+$window-background: $white;
+$window-border-color: $gray-300;
+$window-border-radius: $border-radius;
+$window-header-bg: $gray-300;
+$window-header-selectable-hover-bg: $gray-300;
+$window-title-font-size: $font-size-sm;
+$window-title-font-weight: bold;
+
+$toolbar-padding: $window-spacer;
 $toolbar-border-width: 1px;
 $toolbar-border-color: $gray-400;
 $toolbar-bg: $white;
@@ -70,5 +79,6 @@ $floating-toolbar-border-radius: $border-radius;
 
 $table-row-active-bg: rgba($component-active-bg, .1);
 $table-row-focus-box-shadow: inset 0 0 0 $input-btn-focus-width $input-btn-focus-color;
+
 
 $modal-md: 600px;

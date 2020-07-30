@@ -1,0 +1,25 @@
+<div class="window d-flex flex-column h-100" [class.d-inline-flex]="!expanded && sideCollapse">
+  <div class="window-header window-header-selectable" (click)="toggle()"
+       (keydown)="$event.keyCode != 13 || toggle()" tabindex="0">
+    <h5 class="window-title" *ngIf="expanded || !sideCollapse">
+      {{ title }}
+    </h5>
+    <button type="button" class="window-btn" aria-label="Close" tabindex="-1">
+      <ng-container *ngIf="!sideCollapse; else sideCollapseButton">
+        <i class="fa" [class.fa-chevron-down]="reversed && expanded"></i>
+        <i class="fa" [class.fa-chevron-up]="!reversed && expanded"></i>
+        <i class="fa" [class.fa-chevron-down]="!reversed && !expanded"></i>
+        <i class="fa" [class.fa-chevron-up]="reversed && !expanded"></i>
+      </ng-container>
+      <ng-template #sideCollapseButton>
+        <i class="fa" [class.fa-chevron-left]="expanded"></i>
+        <i class="fa" [class.fa-chevron-right]="!expanded"></i>
+      </ng-template>
+    </button>
+  </div>
+  <ng-container *ngIf="expanded">
+    <div class="overflow-auto">
+      <ng-content></ng-content>
+    </div>
+  </ng-container>
+</div>

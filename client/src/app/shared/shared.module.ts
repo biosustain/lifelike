@@ -40,6 +40,7 @@ import { PercentInputComponent } from './components/form/percent-input.component
 import { SelectComponent } from './components/form/select.component';
 import { ResultsSummaryComponent } from './components/results-summary.component';
 import { QuickSearchComponent } from './components/quick-search.component';
+import { CollapsibleWindowComponent } from './components/collapsible-window.component';
 
 const components = [
   MessageDialogComponent,
@@ -63,6 +64,7 @@ const components = [
   SelectComponent,
   ResultsSummaryComponent,
   QuickSearchComponent,
+  CollapsibleWindowComponent,
 ];
 
 @NgModule({

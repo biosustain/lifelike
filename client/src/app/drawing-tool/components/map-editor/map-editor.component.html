@@ -71,8 +71,13 @@
         <canvas #canvas class="graph-view" (dragover)="dragOver($event)" (drop)="drop($event)"></canvas>
       </div>
 
-      <app-palette class="palette-panel">
-      </app-palette>
+      <div class="palette-panel">
+        <app-collapsible-window title="Palette" [reversed]="true" class="flex-fill">
+          <div class="window-body">
+            <app-palette></app-palette>
+          </div>
+        </app-collapsible-window>
+      </div>
 
       <ng-container *ngIf="(graphCanvas?.selection.changeObservable | async) as selected">
         <div class="info-panel" *ngIf="selected[0].length > 0">
