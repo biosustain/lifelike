@@ -73,7 +73,7 @@
 
       <fieldset class="fieldset-properties mt-4"
                 *ngIf="(node.display_name != null && node.display_name.length) || node.data?.search">
-        <legend>Quick Search</legend>
+        <legend>Quick Search <i class="fas fa-external-link-alt ml-1"></i></legend>
 
         <app-quick-search [query]="node.display_name" [links]="node.data?.search"></app-quick-search>
       </fieldset>
