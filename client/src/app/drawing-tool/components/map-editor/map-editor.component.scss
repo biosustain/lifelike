@@ -17,17 +17,13 @@
 }
 
 .palette-panel {
+  display: flex;
   position: absolute;
-  left: $spacer;
-  bottom: $spacer;
-  width: 16rem;;
-  padding: 1rem;
+  left: $window-spacer;
+  bottom: $window-spacer;
+  width: 16rem;
   z-index: 1;
-  overflow: auto;
-  max-height: calc(100vh - 7rem);
-  background: $white;
-  border: 1px solid $floating-toolbar-border-color;
-  border-radius: $floating-toolbar-border-radius;
+  max-height: calc(100% - 50px);
 }
 
 .info-panel {
