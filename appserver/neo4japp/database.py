@@ -143,6 +143,11 @@ def get_hybrid_neo4j_postgres_service():
     return HybridNeo4jPostgresService()
 
 
+def get_excel_export_service():
+    from neo4japp.services.export import ExcelExportService
+    return ExcelExportService()
+
+
 def reset_dao():
     """ Cleans up DAO bound to flask request context
 

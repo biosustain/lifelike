@@ -32,6 +32,12 @@ class DatabaseError(BaseException):
         super().__init__('Database Error', message, additional_msgs)
 
 
+class DirectoryError(BaseException):
+    """An error occured in directory operation"""
+    def __init__(self, message, additional_msgs=[]) -> None:
+        super().__init__('Directory Error', message, additional_msgs)
+
+
 class DuplicateRecord(BaseException):
     def __init__(self, message, additional_msgs=[]):
         super().__init__('Duplicate record', message, additional_msgs)
@@ -41,6 +47,12 @@ class InvalidFileNameException(BaseException):
     """Signals invalid filename"""
     def __init__(self, message, additional_msgs=[]):
         super().__init__('File has incorrect filename', message, additional_msgs)
+
+
+class InvalidDirectoryNameException(BaseException):
+    """Signals invalid directory name"""
+    def __init__(self, message, additional_msgs=[]):
+        super().__init__('Directory has incorrect directory name', message, additional_msgs)
 
 
 class InvalidCredentialsException(BaseException):

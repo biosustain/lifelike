@@ -10,5 +10,10 @@ export interface DirectoryContent {
 export interface DirectoryObject {
   type: 'dir' | 'file' | 'map';
   name: string;
+  description?: string;
+  creator?: {
+    id: number,
+    name: string;
+  };
   data: Directory | Map | File;
 }
