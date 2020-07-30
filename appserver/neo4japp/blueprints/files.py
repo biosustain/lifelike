@@ -762,6 +762,8 @@ def get_lmdbs_dates():
 @auth.login_required
 @requires_role('admin')
 def export_excluded_annotations():
+    yield g.current_user
+
     files = db.session.query(
         Files.filename,
         Files.file_id,
@@ -794,13 +796,15 @@ def export_excluded_annotations():
     response.headers['Content-Type'] = exporter.mimetype
     response.headers['Content-Disposition'] = \
         f'attachment; filename={exporter.get_filename("excluded_annotations")}'
-    return response
+    yield response
 
 
 @bp.route('/global_inclusion_file')
 @auth.login_required
 @requires_role('admin')
 def export_included_annotations():
+    yield g.current_user
+
     files = db.session.query(
         Files.filename,
         Files.file_id,
@@ -831,4 +835,4 @@ def export_included_annotations():
     response.headers['Content-Type'] = exporter.mimetype
     response.headers['Content-Disposition'] = \
         f'attachment; filename={exporter.get_filename("included_annotations")}'
-    return response
+    yield response
