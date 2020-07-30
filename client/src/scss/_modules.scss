@@ -46,6 +46,19 @@
     margin-top: $spacer * 2;
     margin-bottom: $spacer * 4;
   }
+
+  .module-section {
+    margin-bottom: $spacer * 2.5;
+  }
+
+  .module-section-header {
+    margin-bottom: $spacer * 1.25;
+
+    h2 {
+      font-size: 180%;
+      font-weight: bold;
+    }
+  }
 }
 
 // ========================================
