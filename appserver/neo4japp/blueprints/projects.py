@@ -411,9 +411,7 @@ def get_child_directories(current_dir_id: int, project_name: str):
 
     project_schema = ProjectSchema()
 
-    child_dirs, files, maps = proj_service.get_dir_content(
-        projects, dir
-    )
+    child_dirs, files, maps = proj_service.get_dir_content(projects, dir)
 
     contents = DirectoryContent(
         dir=dir.to_dict(),
@@ -441,7 +439,10 @@ def get_child_directories(current_dir_id: int, project_name: str):
                     'name': username
                 },
                 'description': f.description,
-                'data': CasePreservedDict(f.to_dict(keyfn=lambda x: x)),
+                'data': CasePreservedDict(
+                    f.to_dict(exclude=[
+                        'annotations', 'annotations_date', 'custom_annotations',
+                        'excluded_annotations'], keyfn=lambda x: x)),
             } for (f, username) in files],
             *[{
                 'type': 'map',
@@ -451,7 +452,7 @@ def get_child_directories(current_dir_id: int, project_name: str):
                     'name': username
                 },
                 'description': m.description,
-                'data': CasePreservedDict(project_schema.dump(m)),
+                'data': CasePreservedDict(m.to_dict(exclude=['graph'], keyfn=lambda x: x)),
             } for (m, username) in maps],
         ],
     )

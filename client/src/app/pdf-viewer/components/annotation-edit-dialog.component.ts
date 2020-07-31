@@ -57,7 +57,7 @@ export class AnnotationEditDialogComponent extends CommonFormDialogComponent {
 
     return {
       pageNumber: this.pageNumber,
-      keywords: this.text,
+      keywords: this.text.map(keyword => keyword.trim()),
       rects: this.coords.map((coord) => {
         return [coord[0], coord[3], coord[2], coord[1]];
       }),
@@ -66,7 +66,7 @@ export class AnnotationEditDialogComponent extends CommonFormDialogComponent {
         color: ENTITY_TYPE_MAP[this.form.value.entityType].color,
         links,
         isCustom: true,
-        allText: this.allText,
+        allText: this.allText.trim(),
         primaryLink,
       },
     };
