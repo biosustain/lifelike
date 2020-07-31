@@ -24,7 +24,7 @@ import {
     DuplicateEdgeConnectionData,
 } from 'app/interfaces';
 import { RootStoreModule } from 'app/***ARANGO_USERNAME***-store';
-import { SearchGraphComponent } from 'app/search/containers/search-graph.component';
+import { SearchFormComponent } from 'app/search/components/search-form.component';
 import { SharedModule } from 'app/shared/shared.module';
 
 import { VisualizationComponent } from './visualization.component';
@@ -57,8 +57,8 @@ describe('VisualizationComponent', () => {
             declarations: [
                 VisualizationComponent,
                 MockComponents(
+                    SearchFormComponent,
                     VisualizationCanvasComponent,
-                    SearchGraphComponent
                 ),
             ],
             providers: [VisualizationService],

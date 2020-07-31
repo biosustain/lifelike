@@ -5,37 +5,40 @@ import { Store } from '@ngrx/store';
 import { State } from 'app/***ARANGO_USERNAME***-store';
 
 import { AuthActions } from '../store';
-import { MatDialog, MatSnackBar } from '@angular/material';
-
-
+import { MessageType } from '../../interfaces/message-dialog.interface';
+import { MessageDialog } from '../../shared/services/message-dialog.service';
 
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
-  styleUrls: ['./login.component.scss']
 })
 export class LoginComponent {
-
-  form = new FormGroup({
+  readonly form = new FormGroup({
     email: new FormControl('', [Validators.required, Validators.email]),
-    password: new FormControl('', [Validators.required])
+    password: new FormControl('', [Validators.required]),
   });
 
   constructor(
     private store: Store<State>,
-    public dialog: MatDialog,
-  ) { }
+    private readonly messageDialog: MessageDialog,
+  ) {
+  }
 
-  /**
-   * Call login API for jwt credential
-   */
   submit() {
-    const { email, password } = this.form.value;
+    if (!this.form.invalid) {
+      const {email, password} = this.form.value;
 
-    this.store.dispatch(
-      AuthActions.checkTermsOfService(
-        {credential: {email, password}}
-      )
-    );
+      this.store.dispatch(AuthActions.checkTermsOfService(
+        {credential: {email, password}},
+      ));
+
+      this.form.get('password').reset('');
+    } else {
+      this.messageDialog.display({
+        title: 'Invalid Input',
+        message: 'There are some errors with your input.',
+        type: MessageType.Error,
+      });
+    }
   }
 }

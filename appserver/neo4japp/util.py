@@ -1,3 +1,5 @@
+from abc import ABC
+
 import attr
 import functools
 import hashlib
@@ -8,7 +10,7 @@ from datetime import datetime, timedelta
 from decimal import Decimal, InvalidOperation
 from enum import EnumMeta, Enum
 from json import JSONDecodeError
-from typing import Any, List, Optional, Type
+from typing import Any, List, Optional, Type, Iterator, Dict
 
 from flask import json, jsonify, request
 
@@ -36,7 +38,9 @@ def snake_to_camel_dict(d, new_dict: dict) -> dict:
     if type(d) is not dict:
         return d
     for k, v in d.items():
-        if type(v) is list:
+        if callable(getattr(v, 'to_dict', None)):
+            new_dict.update({snake_to_camel(encode_to_str(k)): v.to_dict()})
+        elif type(v) is list:
             new_dict.update({snake_to_camel(encode_to_str(k)): [snake_to_camel_dict(i, {}) for i in v]})  # noqa
         elif type(v) is dict:
             new_dict.update({snake_to_camel(encode_to_str(k)): snake_to_camel_dict(v, {})})  # noqa
@@ -134,7 +138,7 @@ def camel_to_snake_dict(d, new_dict: dict) -> dict:
     return new_dict
 
 
-class CamelDictMixin:
+class DictMixin:
     def build_from_dict_formatter(self, d: dict):
         """Returns a formatted version of the input dictionary. Default
         function definition simply returns the input without formatting.
@@ -177,7 +181,7 @@ class CamelDictMixin:
                 # create an instance of it
                 value = json_dict.get(a.name)
                 if (value and
-                   issubclass(attr_type, CamelDictMixin)):
+                        issubclass(attr_type, CamelDictMixin)):
                     # assumption is if attr_type is a subclass
                     # then value must be type dict
                     if isinstance(value, list):
@@ -221,7 +225,55 @@ class CamelDictMixin:
         that are also attrs classes.
         """
 
+        return self.to_dict_formatter(attr.asdict(self))
+
+
+class CamelDictMixin(DictMixin):
+    def to_dict(self):
+        """Convert an attr.s class into a dict with camel case key values for
+        JSON serialization.
+
+        Converts Decimal to str and Enum to the Enum name.
+
+        Recurse is set to true in `attr.asdict` to recurse into classes
+        that are also attrs classes.
+        """
+
         return snake_to_camel_dict(self.to_dict_formatter(attr.asdict(self)), {})
+
+
+class CasePreservedDict(DictMixin):
+    items: Dict = {}
+
+    def __init__(self, items=None):
+        self.items = items or {}
+
+    def __setitem__(self, k, v) -> None:
+        self.items.__setitem__(k, v)
+
+    def __delitem__(self, v) -> None:
+        self.items.__delitem__(v)
+
+    def __getitem__(self, k):
+        return self.items.__getitem__(k)
+
+    def __len__(self) -> int:
+        return self.items.__len__()
+
+    def __iter__(self) -> Iterator:
+        return self.items.__iter__()
+
+    def to_dict(self):
+        """Convert an attr.s class into a dict with camel case key values for
+        JSON serialization.
+
+        Converts Decimal to str and Enum to the Enum name.
+
+        Recurse is set to true in `attr.asdict` to recurse into classes
+        that are also attrs classes.
+        """
+
+        return self.items
 
 
 @attr.s(frozen=True)
@@ -251,6 +303,7 @@ def jsonify_with_class(
     Raises IllegalArgumentException if the request does not have the
     correct attribute field.
     """
+
     def converter(f):
         @functools.wraps(f)
         def decorator(*args, **kwargs):
@@ -301,9 +354,13 @@ def jsonify_with_class(
                     jsonify({'result': result}),
                     success_object.status_code,
                 )
+            elif isinstance(success_object, dict):
+                return jsonify(success_object)
             else:
                 return success_object.model_file, success_object.status_code
+
         return decorator
+
     return converter
 
 
@@ -320,12 +377,12 @@ def compute_hash(data: dict, **kwargs) -> str:
 
 
 def generate_jwt_token(
-    sub: str,
-    secret: str,
-    token_type: str = 'access',
-    time_offset: int = 1,
-    time_unit: str = 'hours',
-    algorithm: str = 'HS256'
+        sub: str,
+        secret: str,
+        token_type: str = 'access',
+        time_offset: int = 1,
+        time_unit: str = 'hours',
+        algorithm: str = 'HS256'
 ):
     """
     Generates an authentication or refresh JWT Token
@@ -347,10 +404,13 @@ def generate_jwt_token(
     ), secret, algorithm=algorithm)
 
 
-def get_first_known_label(node: Node):
+def get_first_known_label_from_node(node: Node):
     labels_as_str = str(node.labels).split(':')[1:]  # First item is always ''
+    return get_first_known_label_from_list(labels_as_str)
 
-    for label in labels_as_str:
+
+def get_first_known_label_from_list(labels: List[str]):
+    for label in labels:
         if label in DISPLAY_NAME_MAP:
             return label
 

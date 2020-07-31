@@ -1,8 +1,8 @@
-import { Injectable } from '@angular/core';
-import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
-import { ProgressDialogComponent } from '../components/progress-dialog/progress-dialog.component';
-import { Observable } from 'rxjs';
-import { Progress } from '../../interfaces/common-dialog.interface';
+import {Injectable} from '@angular/core';
+import {ProgressDialogComponent} from '../components/dialog/progress-dialog.component';
+import {Observable} from 'rxjs';
+import {Progress} from '../../interfaces/common-dialog.interface';
+import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
 
 export interface ProgressDialogArguments {
   title: string;
@@ -14,21 +14,14 @@ export interface ProgressDialogArguments {
 })
 export class ProgressDialog {
   constructor(
-    public dialog: MatDialog
+    public modalService: NgbModal
   ) {
   }
 
   display(args: ProgressDialogArguments) {
-    const dialogConfig = new MatDialogConfig();
-
-    dialogConfig.width = '400px';
-    dialogConfig.disableClose = true;
-    dialogConfig.autoFocus = true;
-    dialogConfig.data = {
-      title: args.title,
-      progressObservable: args.progressObservable,
-    };
-
-    return this.dialog.open(ProgressDialogComponent, dialogConfig);
+    const modalRef = this.modalService.open(ProgressDialogComponent);
+    modalRef.componentInstance.title = args.title;
+    modalRef.componentInstance.progressObservable = args.progressObservable;
+    return modalRef;
   }
 }

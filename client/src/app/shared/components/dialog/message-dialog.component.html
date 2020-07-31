@@ -1,0 +1,20 @@
+<form (ngSubmit)="close()">
+  <app-modal-header (cancel)="close()">
+    {{ title }}
+  </app-modal-header>
+
+  <app-modal-body>
+    <div>
+      {{message}}
+    </div>
+
+    <div *ngIf="detail" class="detail">
+      <div class="detail-title">Error Detail (Visible due to app being in debug mode)</div>
+      <pre>{{detail}}</pre>
+    </div>
+  </app-modal-body>
+
+  <app-modal-footer>
+    <button type="submit" class="btn btn-danger">OK</button>
+  </app-modal-footer>
+</form>

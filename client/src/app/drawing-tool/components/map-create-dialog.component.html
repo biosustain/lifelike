@@ -1,0 +1,28 @@
+<form [formGroup]="form" (ngSubmit)="submit()">
+  <app-modal-header (cancel)="cancel()">
+    Create Map
+  </app-modal-header>
+
+  <app-modal-body>
+    <app-form-row for="label" label="Name" [control]="form.get('label')">
+      <input type="text" formControlName="label" id="label" [appFormInput]="form.get('label')" appAutoFocus>
+    </app-form-row>
+
+    <app-form-row for="description" label="Description" [control]="form.get('description')">
+      <textarea formControlName="description" id="description" [appFormInput]="form.get('description')"
+                rows="10"></textarea>
+    </app-form-row>
+
+    <app-form-row [control]="form.get('description')">
+      <div class="custom-control custom-checkbox">
+        <input type="checkbox" class="custom-control-input" id="public" formControlName="public">
+        <label class="custom-control-label" for="public">Make this map viewable by others</label>
+      </div>
+    </app-form-row>
+  </app-modal-body>
+
+  <app-modal-footer>
+    <button type="button" class="btn btn-secondary mr-2" (click)="cancel()">Cancel</button>
+    <button type="submit" class="btn btn-primary">Create</button>
+  </app-modal-footer>
+</form>

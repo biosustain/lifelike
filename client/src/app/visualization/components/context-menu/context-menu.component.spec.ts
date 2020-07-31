@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed, fakeAsync, flush } from '@angular/core/testing';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 import { configureTestSuite } from 'ng-bullet';
 
@@ -7,10 +8,10 @@ import { IdType } from 'vis-network';
 import { Direction, VisNode } from 'app/interfaces';
 import { SharedModule } from 'app/shared/shared.module';
 import { RootStoreModule } from 'app/***ARANGO_USERNAME***-store';
+import { uuidv4 } from 'app/shared/utils';
 import { ContextMenuControlService } from 'app/visualization/services/context-menu-control.service';
 
 import { ContextMenuComponent } from './context-menu.component';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 describe('ContextMenuComponent', () => {
     let component: ContextMenuComponent;
@@ -67,7 +68,8 @@ describe('ContextMenuComponent', () => {
         component.selectedNodeEdgeLabelData = new Map<string, Direction[]>();
         component.selectedClusterNodeData = [];
 
-        component.tooltipSelector = '#***ARANGO_USERNAME***-menu';
+        component.tooltipId = uuidv4();
+        component.tooltipSelector = '***ARANGO_USERNAME***-menu-' + component.tooltipId;
         component.tooltipOptions = {
             placement: 'right-start',
         };
@@ -84,7 +86,7 @@ describe('ContextMenuComponent', () => {
         fixture.detectChanges();
 
         await fixture.whenStable().then(() => {
-            const settingsGroupElement = document.getElementById('settings-group');
+            const settingsGroupElement = document.getElementById('settings-group-' + component.tooltipId);
             expect(settingsGroupElement).toBeTruthy();
         });
     });
@@ -95,7 +97,7 @@ describe('ContextMenuComponent', () => {
         fixture.detectChanges();
 
         await fixture.whenStable().then(() => {
-            const nodeSelectionGroupElement = document.getElementById('node-selection-group');
+            const nodeSelectionGroupElement = document.getElementById('node-selection-group-' + component.tooltipId);
             expect(nodeSelectionGroupElement).toBeTruthy();
         });
     });
@@ -106,7 +108,7 @@ describe('ContextMenuComponent', () => {
         fixture.detectChanges();
 
         await fixture.whenStable().then(() => {
-            const edgeSelectionGroupElement = document.getElementById('edge-selection-group');
+            const edgeSelectionGroupElement = document.getElementById('edge-selection-group-' + component.tooltipId);
             expect(edgeSelectionGroupElement).toBeTruthy();
         });
     });
@@ -120,7 +122,7 @@ describe('ContextMenuComponent', () => {
         fixture.detectChanges();
 
         await fixture.whenStable().then(() => {
-            const groupByRelElement = document.getElementById('group-by-rel-menu-item');
+            const groupByRelElement = document.getElementById('group-by-rel-menu-item-' + component.tooltipId);
             expect(groupByRelElement).toBeTruthy();
         });
     });
@@ -135,8 +137,8 @@ describe('ContextMenuComponent', () => {
         fixture.detectChanges();
 
         await fixture.whenStable().then(() => {
-            const groupByRelRowElement = document.getElementById('group-by-rel-menu-item');
-            groupByRelRowElement.dispatchEvent(new Event('mouseenter'));
+            const groupByRelElement = document.getElementById('group-by-rel-menu-item-' + component.tooltipId);
+            groupByRelElement.dispatchEvent(new Event('mouseenter'));
             expect(showGroupByRelSubMenuSpy).toHaveBeenCalled();
         });
     });
@@ -159,7 +161,7 @@ describe('ContextMenuComponent', () => {
 
             fixture.detectChanges();
             await fixture.whenStable().then(() => {
-                const groupByRelSubmenuElement = document.getElementById('single-node-selection-group-1-submenu');
+                const groupByRelSubmenuElement = document.getElementById('single-node-selection-group-1-submenu-' + component.tooltipId);
                 expect(groupByRelSubmenuElement.style.display).toBe('block');
 
                 jasmine.clock().uninstall();
@@ -178,8 +180,8 @@ describe('ContextMenuComponent', () => {
         fixture.detectChanges();
 
         await fixture.whenStable().then(() => {
-            const groupByRelRowElement = document.getElementById('group-by-rel-menu-item');
-            groupByRelRowElement.dispatchEvent(new Event('mouseleave'));
+            const groupByRelElement = document.getElementById('group-by-rel-menu-item-' + component.tooltipId);
+            groupByRelElement.dispatchEvent(new Event('mouseleave'));
 
             expect(mouseLeaveNodeRowSpy).toHaveBeenCalled();
             expect(interruptGroupByRelSpy).toHaveBeenCalled();
@@ -207,7 +209,7 @@ describe('ContextMenuComponent', () => {
 
             fixture.detectChanges();
             await fixture.whenStable().then(() => {
-                const groupByRelSubmenuElement = document.getElementById('single-node-selection-group-1-submenu');
+                const groupByRelSubmenuElement = document.getElementById('single-node-selection-group-1-submenu-' + component.tooltipId);
                 expect(groupByRelSubmenuElement.style.display).toBe('none');
                 jasmine.clock().uninstall();
             });
@@ -221,7 +223,7 @@ describe('ContextMenuComponent', () => {
         fixture.detectChanges();
 
         await fixture.whenStable().then(() => {
-            const pullOutNodeElement = document.getElementById('pull-out-node-from-cluster-menu-item');
+            const pullOutNodeElement = document.getElementById('pull-out-node-from-cluster-menu-item-' + component.tooltipId);
             expect(pullOutNodeElement).toBeTruthy();
         });
     });
@@ -234,8 +236,8 @@ describe('ContextMenuComponent', () => {
         fixture.detectChanges();
 
         await fixture.whenStable().then(() => {
-            const groupByRelRowElement = document.getElementById('pull-out-node-from-cluster-menu-item');
-            groupByRelRowElement.dispatchEvent(new Event('mouseenter'));
+            const pullOutNodeElement = document.getElementById('pull-out-node-from-cluster-menu-item-' + component.tooltipId);
+            pullOutNodeElement.dispatchEvent(new Event('mouseenter'));
             expect(showGroupByRelSubMenuSpy).toHaveBeenCalled();
         });
     });
@@ -257,8 +259,8 @@ describe('ContextMenuComponent', () => {
 
             fixture.detectChanges();
             await fixture.whenStable().then(() => {
-                const groupByRelSubmenuElement = document.getElementById('pull-out-node-from-cluster-submenu');
-                expect(groupByRelSubmenuElement.style.display).toBe('block');
+                const pullOutNodeSubmenuElement = document.getElementById('pull-out-node-from-cluster-submenu-' + component.tooltipId);
+                expect(pullOutNodeSubmenuElement.style.display).toBe('block');
 
                 jasmine.clock().uninstall();
             });
@@ -274,8 +276,8 @@ describe('ContextMenuComponent', () => {
         fixture.detectChanges();
 
         await fixture.whenStable().then(() => {
-            const groupByRelRowElement = document.getElementById('pull-out-node-from-cluster-menu-item');
-            groupByRelRowElement.dispatchEvent(new Event('mouseleave'));
+            const pullOutNodeElement = document.getElementById('pull-out-node-from-cluster-menu-item-' + component.tooltipId);
+            pullOutNodeElement.dispatchEvent(new Event('mouseleave'));
 
             expect(mouseLeaveNodeRowSpy).toHaveBeenCalled();
             expect(interruptPullOutNodeSpy).toHaveBeenCalled();
@@ -302,7 +304,7 @@ describe('ContextMenuComponent', () => {
 
             fixture.detectChanges();
             await fixture.whenStable().then(() => {
-                const pullOutNodeSubmenuElement = document.getElementById('pull-out-node-from-cluster-submenu');
+                const pullOutNodeSubmenuElement = document.getElementById('pull-out-node-from-cluster-submenu-' + component.tooltipId);
                 expect(pullOutNodeSubmenuElement.style.display).toBe('none');
                 jasmine.clock().uninstall();
             });
@@ -318,7 +320,7 @@ describe('ContextMenuComponent', () => {
         fixture.detectChanges();
 
         await fixture.whenStable().then(() => {
-            const selectNeighborsElement = document.getElementById('select-neighbors-menu-item');
+            const selectNeighborsElement = document.getElementById('select-neighbors-menu-item-' + component.tooltipId);
             selectNeighborsElement.dispatchEvent(new Event('click'));
             expect(requestNeighborSelectionSpy).toHaveBeenCalled();
         });
@@ -333,7 +335,7 @@ describe('ContextMenuComponent', () => {
         fixture.detectChanges();
 
         await fixture.whenStable().then(() => {
-            const removeSelectedNodesElement = document.getElementById('remove-selected-nodes-menu-item');
+            const removeSelectedNodesElement = document.getElementById('remove-selected-nodes-menu-item-' + component.tooltipId);
             removeSelectedNodesElement.dispatchEvent(new Event('click'));
             expect(requestNodeRemovalSpy).toHaveBeenCalled();
         });
@@ -348,7 +350,7 @@ describe('ContextMenuComponent', () => {
         fixture.detectChanges();
 
         await fixture.whenStable().then(() => {
-            const removeSelectedEdgesElement = document.getElementById('remove-selected-edges-menu-item');
+            const removeSelectedEdgesElement = document.getElementById('remove-selected-edges-menu-item-' + component.tooltipId);
             removeSelectedEdgesElement.dispatchEvent(new Event('click'));
             expect(requestEdgeRemovalSpy).toHaveBeenCalled();
         });

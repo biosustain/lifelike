@@ -10,7 +10,7 @@ import { of } from 'rxjs';
 
 import { DataSet } from 'vis-network';
 
-import { MAX_CLUSTER_ROWS } from 'app/constants';
+import { MAX_CLUSTER_ROWS } from 'app/shared/constants';
 import {
     ClusterData,
     Direction,
@@ -210,12 +210,14 @@ describe('VisualizationCanvasComponent', () => {
             {
                 nodeId: '2',
                 nodeDisplayName: 'Mock Node 2',
+                nodeLabel: 'Mock Node',
                 snippetCount: 1,
                 edge: mockDuplicateEdgeGenerator(101, 1, 'to', 2),
             } as ReferenceTableRow,
             {
                 nodeId: '3',
                 nodeDisplayName: 'Mock Node 3',
+                nodeLabel: 'Mock Node',
                 snippetCount: 1,
                 edge: mockDuplicateEdgeGenerator(101, 1, 'to', 3),
             } as ReferenceTableRow,
@@ -226,23 +228,19 @@ describe('VisualizationCanvasComponent', () => {
         } as GetReferenceTableDataResult;
 
         mockLegend = new Map<string, string[]>([
-            ['Chemical', ['#CD5D67', '#410B13']]
+            ['Mock Node', ['#CD5D67', '#410B13']]
         ]);
 
         mockValidSettingsFormValues = {
+            animation: {
+                value: true,
+                valid: true,
+            },
             maxClusterShownRows: {
                 value: MAX_CLUSTER_ROWS,
                 valid: true,
             },
-            Chemical: {
-                value: true,
-                valid: true,
-            },
-            Gene: {
-                value: true,
-                valid: true,
-            },
-            Diseases: {
+            'Mock Node': {
                 value: true,
                 valid: true,
             },
@@ -280,19 +278,15 @@ describe('VisualizationCanvasComponent', () => {
 
     it('updateSettings should update settings values if inputs are valid', () => {
         const newSettings = {
+            animation: {
+                value: false,
+                valid: true,
+            },
             maxClusterShownRows: {
                 value: 10,
                 valid: true,
             },
-            Chemical: {
-                value: true,
-                valid: true,
-            },
-            Gene: {
-                value: true,
-                valid: true,
-            },
-            Diseases: {
+            'Mock Node': {
                 value: true,
                 valid: true,
             },
@@ -304,19 +298,15 @@ describe('VisualizationCanvasComponent', () => {
 
     it('updateSettings should not update update settings values if inputs are invalid', () => {
         const newSettings = {
+            animation: {
+                value: false,
+                valid: false,
+            },
             maxClusterShownRows: {
                 value: 2,
                 valid: false,
             },
-            Chemical: {
-                value: true,
-                valid: false,
-            },
-            Gene: {
-                value: true,
-                valid: false,
-            },
-            Diseases: {
+            'Mock Node': {
                 value: true,
                 valid: false,
             },
@@ -324,6 +314,14 @@ describe('VisualizationCanvasComponent', () => {
 
         instance.updateSettings(newSettings);
         expect(instance.settingsFormValues).toEqual(mockValidSettingsFormValues);
+    });
+
+    it('should call network setOptions to set animation status when settings are updated', () => {
+        const networkGraphSetOptionsSpy = spyOn(instance.networkGraph, 'setOptions');
+
+        instance.updateSettings(mockValidSettingsFormValues);
+
+        expect(networkGraphSetOptionsSpy).toHaveBeenCalledWith({physics: true});
     });
 
     it('should update sidenav entity data when getEdgeSnippetsResult changes', () => {
@@ -418,32 +416,6 @@ describe('VisualizationCanvasComponent', () => {
             totalResults: mockGetClusterSnippetDataResult.totalResults,
             snippetData: data,
         } as SidenavClusterEntity);
-    });
-
-    it('should turn animation off if quickbar component animationStatus emits false', () => {
-        const toggleAnimationSpy = spyOn(instance, 'toggleAnimation').and.callThrough();
-        const networkGraphSetOptionsSpy = spyOn(instance.networkGraph, 'setOptions');
-        const visualizationQuickbarComponentMock = fixture.debugElement.query(
-            By.directive(VisualizationQuickbarComponent)
-        ).componentInstance as VisualizationQuickbarComponent;
-
-        visualizationQuickbarComponentMock.animationStatus.emit(false);
-
-        expect(toggleAnimationSpy).toHaveBeenCalledWith(false);
-        expect(networkGraphSetOptionsSpy).toHaveBeenCalledWith({physics: false});
-    });
-
-    it('should turn animation on if quickbar component animationStatus emits true', () => {
-        const toggleAnimationSpy = spyOn(instance, 'toggleAnimation').and.callThrough();
-        const networkGraphSetOptionsSpy = spyOn(instance.networkGraph, 'setOptions');
-        const visualizationQuickbarComponentMock = fixture.debugElement.query(
-            By.directive(VisualizationQuickbarComponent)
-        ).componentInstance as VisualizationQuickbarComponent;
-
-        visualizationQuickbarComponentMock.animationStatus.emit(true);
-
-        expect(toggleAnimationSpy).toHaveBeenCalledWith(true);
-        expect(networkGraphSetOptionsSpy).toHaveBeenCalledWith({physics: true});
     });
 
     it('openSidenav should change sidenavOpened to true', () => {
