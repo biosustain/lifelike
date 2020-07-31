@@ -5,9 +5,11 @@ import { Hyperlink, SearchLink } from 'app/shared/constants';
 
 import { PdfAnnotationsService } from '../../drawing-tool/services';
 
+import { cloneDeep } from 'lodash';
 import {
   Annotation,
-  AnnotationExclusionData,
+  AnnotationExclusion,
+  StoredAnnotationExclusion,
   Location,
   Meta,
   UniversalGraphNode,
@@ -23,6 +25,7 @@ import { ModuleAwareComponent, ModuleProperties } from '../../shared/modules';
 import { ConfirmDialogComponent } from '../../shared/components/dialog/confirm-dialog.component';
 import { NgbDropdown, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ErrorHandler } from '../../shared/services/error-handler.service';
+import { FileEditDialogComponent } from './file-edit-dialog.component';
 
 class DummyFile implements PdfFile {
   constructor(
@@ -57,7 +60,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
   annotations: Annotation[] = [];
   // We don't want to modify the above array when we add annotations, because
   // data flow right now is very messy
-  addedAnnotations: Annotation[] = [];
+  addedCustomAnnotations: Annotation[] = [];
   /**
    * A mapping of annotation type (i.e. Genes) to a list of those annotations.
    */
@@ -71,11 +74,12 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
   pendingScroll: Location;
   openPdfSub: Subscription;
   ready = false;
+  pdfFile: PdfFile;
   // Type information coming from interface PDFSource at:
   // https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/pdfjs-dist/index.d.ts
   pdfData: { url?: string, data?: Uint8Array };
   currentFileId: string;
-  addedAnnotation: Annotation;
+  addedAnnotations: Annotation[];
   addAnnotationSub: Subscription;
   removedAnnotationIds: string[];
   removeAnnotationSub: Subscription;
@@ -83,11 +87,11 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
   sortedEntityTypeEntries: EntityTypeEntry[] = [];
   entityTypeVisibilityChanged = false;
   modulePropertiesChange = new EventEmitter<ModuleProperties>();
-  addedAnnotationExclusion: AnnotationExclusionData;
+  addedAnnotationExclusion: AnnotationExclusion;
   addAnnotationExclusionSub: Subscription;
   showExcludedAnnotations = false;
   removeAnnotationExclusionSub: Subscription;
-  removedAnnotationExclusion: AnnotationExclusionData;
+  removedAnnotationExclusion: AnnotationExclusion;
   projectName: string;
 
   // search
@@ -96,6 +100,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
   @ViewChild(PdfViewerLibComponent, {static: false}) pdfViewerLib;
 
   constructor(
+    private readonly filesService: PdfFilesService,
     private pdfAnnService: PdfAnnotationsService,
     private pdf: PdfFilesService,
     private snackBar: MatSnackBar,
@@ -126,10 +131,8 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
       this.annotations = ann;
       this.updateAnnotationIndex();
       this.updateSortedEntityTypeEntries();
-      this.modulePropertiesChange.next({
-        title: pdfFile.filename,
-        fontAwesomeIcon: 'file-pdf',
-      });
+      this.pdfFile = pdfFile;
+      this.emitModuleProperties();
 
       this.currentFileId = file.file_id;
       setTimeout(() => {
@@ -161,7 +164,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
   updateAnnotationIndex() {
     // Create index of annotation types
     this.annotationEntityTypeMap.clear();
-    for (const annotation of [...this.annotations, ...this.addedAnnotations]) {
+    for (const annotation of [...this.annotations, ...this.addedCustomAnnotations]) {
       const entityType: EntityType = ENTITY_TYPE_MAP[annotation.meta.type];
       if (!entityType) {
         throw new Error(`unknown entity type ${annotation.meta.type} not in ENTITY_TYPE_MAP`);
@@ -264,19 +267,24 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
 
     annotationToAdd.meta.idHyperlink = this.generateHyperlink(annotationToAdd);
 
-    this.addAnnotationSub = this.pdfAnnService.addCustomAnnotation(this.currentFileId, annotationToAdd, this.projectName)
-      .pipe(this.errorHandler.create())
-      .subscribe(
-        response => {
-          this.addedAnnotation = Object.assign({}, annotationToAdd, {uuid: response.uuid});
-          this.snackBar.open('Annotation has been added', 'Close', {duration: 5000});
-        },
-        err => {
-          this.snackBar.open(`Error: failed to add annotation`, 'Close', {duration: 10000});
-        },
-      );
+    const dialogRef = this.modalService.open(ConfirmDialogComponent);
+    dialogRef.componentInstance.message = 'Do you want to annotate the rest of the document with this term as well?';
+    dialogRef.result.then((annotateAll: boolean) => {
+      this.addAnnotationSub = this.pdfAnnService.addCustomAnnotation(this.currentFileId, annotationToAdd, annotateAll, this.projectName)
+        .pipe(this.errorHandler.create())
+        .subscribe(
+          (annotations: Annotation[]) => {
+            this.addedAnnotations = annotations;
+            this.snackBar.open('Annotation has been added', 'Close', {duration: 5000});
+          },
+          err => {
+            this.snackBar.open(`Error: failed to add annotation`, 'Close', {duration: 10000});
+          },
+        );
+    }, () => {
+    });
 
-    this.addedAnnotations.push(annotation);
+    this.addedCustomAnnotations.push(annotation);
     this.updateAnnotationIndex();
     this.updateSortedEntityTypeEntries();
   }
@@ -308,14 +316,14 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
     });
   }
 
-  annotationExclusionAdded({id, text, reason, comment}) {
+  annotationExclusionAdded(exclusionData: StoredAnnotationExclusion) {
     this.addAnnotationExclusionSub = this.pdfAnnService.addAnnotationExclusion(
-      this.currentFileId, id, text, reason, comment, this.projectName,
+      this.currentFileId, exclusionData, this.projectName,
     )
       .pipe(this.errorHandler.create())
       .subscribe(
         response => {
-          this.addedAnnotationExclusion = {id, text, reason, comment};
+          this.addedAnnotationExclusion = (({ id, text, reason, comment }) => ({ id, text, reason, comment }))(exclusionData);
           this.snackBar.open('Annotation has been excluded', 'Close', {duration: 5000});
         },
         err => {
@@ -494,6 +502,35 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
     this.searchChanged.next({
       keyword: query,
       findPrevious: true,
+    });
+  }
+
+  displayEditDialog() {
+    const dialogRef = this.modalService.open(FileEditDialogComponent);
+    dialogRef.componentInstance.file = cloneDeep(this.pdfFile);
+    dialogRef.result.then(newFile => {
+      if (newFile) {
+        this.filesService.updateFileMeta(
+          this.projectName,
+          this.pdfFile.file_id,
+          newFile.filename,
+          newFile.description,
+        )
+          .pipe(this.errorHandler.create())
+          .subscribe(() => {
+            this.pdfFile = newFile;
+            this.emitModuleProperties();
+            this.snackBar.open(`File details updated`, 'Close', {duration: 5000});
+          });
+      }
+    }, () => {
+    });
+  }
+
+  emitModuleProperties() {
+    this.modulePropertiesChange.next({
+      title: this.pdfFile.filename,
+      fontAwesomeIcon: 'file-pdf',
     });
   }
 

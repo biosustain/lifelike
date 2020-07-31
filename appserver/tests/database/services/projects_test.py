@@ -22,7 +22,7 @@ from neo4japp.services import ProjectsService
 
 
 @pytest.fixture(scope='function')
-def nested_dirs(session, fix_projects) -> Sequence[Directory]:
+def nested_dirs(session, fix_projects, test_user) -> Sequence[Directory]:
     """ Mock directories
     /child1-a
     /child1-a/child-2a
@@ -32,6 +32,7 @@ def nested_dirs(session, fix_projects) -> Sequence[Directory]:
         name='/',
         directory_parent_id=None,
         projects_id=fix_projects.id,
+        user_id=test_user.id,
     )
 
     session.add(root_dir)
@@ -41,6 +42,7 @@ def nested_dirs(session, fix_projects) -> Sequence[Directory]:
         name='child-1a',
         directory_parent_id=root_dir.id,
         projects_id=fix_projects.id,
+        user_id=test_user.id,
     )
     session.add(child_1a)
 
@@ -48,6 +50,7 @@ def nested_dirs(session, fix_projects) -> Sequence[Directory]:
         name='child-1b',
         directory_parent_id=root_dir.id,
         projects_id=fix_projects.id,
+        user_id=test_user.id,
     )
     session.add(child_1b)
     session.flush()
@@ -56,6 +59,7 @@ def nested_dirs(session, fix_projects) -> Sequence[Directory]:
         name='child-2a',
         directory_parent_id=child_1a.id,
         projects_id=fix_projects.id,
+        user_id=test_user.id,
     )
     session.add(child_2)
     session.flush()
@@ -251,12 +255,13 @@ def test_cannot_delete_nonempty_dir(session, fix_owner, fix_nested_dir):
     assert Directory.query.filter(Directory.id == fix_nested_dir.id).one_or_none() is None
 
 
-def test_can_move_directory(session, fix_directory, fix_nested_dir):
+def test_can_move_directory(session, fix_directory, fix_nested_dir, test_user):
     proj_service = ProjectsService(session)
     child_dir_2 = Directory(
         name='child-level-2',
         directory_parent_id=fix_nested_dir.id,
         projects_id=fix_nested_dir.projects_id,
+        user_id=test_user.id,
     )
     session.add(child_dir_2)
     session.flush()

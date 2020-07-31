@@ -69,7 +69,8 @@ def test_can_get_list_of_projects(client, session, test_user):
         default_dir = Directory(
             name='/',
             directory_parent_id=None,
-            projects_id=projects.id
+            projects_id=projects.id,
+            user_id=test_user.id,
         )
         session.add(default_dir)
         session.flush()
@@ -187,6 +188,7 @@ def test_can_rename_directory(client, session, fix_project, fix_directory, test_
         name='bobsled',
         directory_parent_id=fix_directory.id,
         projects_id=fix_project.id,
+        user_id=test_user.id,
     )
     session.add(new_dir)
     session.flush()
@@ -211,6 +213,7 @@ def test_can_delete_directory(client, session, fix_project, fix_directory, test_
         name='bobsled',
         directory_parent_id=fix_directory.id,
         projects_id=fix_project.id,
+        user_id=test_user.id,
     )
     session.add(new_dir)
     session.flush()
@@ -232,6 +235,7 @@ def test_can_move_directory(client, session, fix_project, fix_directory, test_us
         name='child-1',
         directory_parent_id=fix_directory.id,
         projects_id=fix_project.id,
+        user_id=test_user.id,
     )
     session.add(nested_dir)
     session.flush()
@@ -240,6 +244,7 @@ def test_can_move_directory(client, session, fix_project, fix_directory, test_us
         name='child-2',
         directory_parent_id=nested_dir.id,
         projects_id=fix_project.id,
+        user_id=test_user.id,
     )
 
     session.add(nested_dir_2)

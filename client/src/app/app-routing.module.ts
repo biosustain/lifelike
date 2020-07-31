@@ -70,7 +70,8 @@ const routes: Routes = [
     path: 'search',
     component: SearchComponent,
     data: {
-      title: 'Search',
+      title: 'Knowledge Graph Search',
+      fontAwesomeIcon: 'search',
     },
   },
   {
@@ -87,6 +88,7 @@ const routes: Routes = [
         component: VisualizationComponent,
         data: {
           title: 'KG Visualizer',
+          fontAwesomeIcon: 'search',
         },
       },
       {

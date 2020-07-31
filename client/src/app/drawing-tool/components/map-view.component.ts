@@ -44,6 +44,7 @@ export class MapViewComponent<ExtraResult = void> implements OnDestroy, AfterVie
   locator: MapLocator | undefined;
   returnUrl: string;
 
+  hasEditPermission = false;
   _map: KnowledgeMap | undefined;
   pendingInitialize = false;
   infoPinned = true;
