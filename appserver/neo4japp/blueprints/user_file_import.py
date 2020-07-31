@@ -1,8 +1,6 @@
 import attr
-import hashlib
 
 from flask import Blueprint
-from sqlalchemy.orm.exc import NoResultFound
 from werkzeug.datastructures import FileStorage
 
 from neo4japp.database import db, get_neo4j_service_dao, get_user_file_import_service
@@ -91,52 +89,16 @@ def import_genes(req: ImportGenesRequest):
         )
 
     try:
-        worksheet = req.file_input
-        worksheet_content = worksheet.read()
-        worksheet.stream.seek(0)
-
-        checksum_sha256 = hashlib.sha256(worksheet_content).digest()
+        import_service.upload_worksheet_to_pg_db(
+            req.file_name,
+            req.sheet_name,
+            req.file_input,
+            worksheet_node_id
+        )
     except Exception:
         # If _any_ error is thrown after importing nodes, we should discard what was imported
         # to make sure the KG and Postgres don't get out of sync.
-        # TODO: import_service.detach_and_delete_worksheet(worksheet_node_id)
-        raise KgImportException(
-            'Nodes were successfully imported, but an unexpected error occurred ' +
-            'while parsing the uploaded worksheet. The imported nodes have been discarded. ' +
-            'Please try importing again.'
-        )
-
-    try:
-        # TODO: Really should add this chunk of code to the import_service, but how to write the
-        # UserFileImportService so that it can use both GraphBaseDao and RDBMSBaseDao...?
-        try:
-            # First look for an existing copy of this file
-            file_content = db.session.query(
-                FileContent.id
-            ).filter(
-                FileContent.checksum_sha256 == checksum_sha256
-            ).one()
-        except NoResultFound:
-            # Otherwise, let's add the file content to the database
-            file_content = FileContent(
-                raw_file=worksheet_content,
-                checksum_sha256=checksum_sha256
-            )
-            db.session.add(file_content)
-            db.session.flush()
-
-        new_worksheet = Worksheet(
-            filename=req.file_name,
-            sheetname=req.sheet_name,
-            neo4j_node_id=worksheet_node_id,
-            content_id=file_content.id
-        )
-        db.session.add(new_worksheet)
-        db.session.commit()
-    except Exception:
-        # If _any_ error is thrown after importing nodes, we should discard what was imported
-        # to make sure the KG and Postgres don't get out of sync.
-        # TODO: import_service.detach_and_delete_worksheet(worksheet_node_id)
+        import_service.detach_and_delete_worksheet(worksheet_node_id)
         raise KgImportException(
             'Nodes were successfully imported, but an unexpected error occurred ' +
             'while saving your worksheet to the database. The imported nodes have been ' +
