@@ -49,6 +49,10 @@ services:
         networks:
             - backend
 
+    redis:
+        networks:
+            - backend
+
 networks:
     frontend:
     backend:
