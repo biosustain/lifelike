@@ -1,7 +1,7 @@
 """merge migration
 
 Revision ID: 847a58fbcf30
-Revises: 3b70d9c2c76f, b6b9fb435404
+Revises: 868c69bf2137, b6b9fb435404
 Create Date: 2020-06-24 19:06:40.789829
 
 """
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = '847a58fbcf30'
-down_revision = ('3b70d9c2c76f', 'b6b9fb435404')
+down_revision = ('868c69bf2137', 'b6b9fb435404')
 branch_labels = None
 depends_on = None
 
