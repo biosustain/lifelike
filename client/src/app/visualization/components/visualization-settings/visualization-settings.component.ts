@@ -3,7 +3,7 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 
 import { Subscription } from 'rxjs';
 
-import { MAX_CLUSTER_ROWS } from 'app/constants';
+import { MAX_CLUSTER_ROWS } from 'app/shared/constants';
 import { SettingsFormValues, SettingsFormControl } from 'app/interfaces';
 
 @Component({
@@ -19,8 +19,13 @@ export class VisualizationSettingsComponent implements OnInit {
     settingsForm: FormGroup;
     settingsFormValueChangesSub: Subscription;
 
+    navbarCollapsed: boolean;
+
     constructor() {
+        this.navbarCollapsed = true;
+
         this.settingsForm = new FormGroup({
+            animation: new FormControl(true),
             maxClusterShownRows: new FormControl(
                 MAX_CLUSTER_ROWS, [Validators.required, Validators.min(1), Validators.pattern(/^-?[0-9][^\.]*$/)]
             ),
@@ -49,6 +54,10 @@ export class VisualizationSettingsComponent implements OnInit {
      */
     getSettingsFormValuesObject() {
         const settingsFormValues = {
+            animation: {
+                value: this.settingsForm.get('animation').value,
+                valid: this.settingsForm.get('animation').valid,
+            },
             maxClusterShownRows: {
                 value: this.settingsForm.get('maxClusterShownRows').value,
                 valid: this.settingsForm.get('maxClusterShownRows').valid,

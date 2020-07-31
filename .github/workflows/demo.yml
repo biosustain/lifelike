@@ -25,6 +25,7 @@ env:
     SENTRY_KEY: ${{ secrets.SENTRY_KEY }}
     REDIS_HOST: ${{ secrets.REDIS_HOST }}
     REDIS_PORT: ${{ secrets.REDIS_PORT }}
+    DOMAIN: http://demo.lifelike.bio
 
 jobs:
 
@@ -81,6 +82,17 @@ jobs:
                 image_tag: ${{ github.sha }}, latest
                 context: ./cache-invalidator
                 dockerfile: ./Dockerfile
+
+            - name: Build NLP
+              uses: docker/build-push-action@v1
+              with:
+                username: _json_key
+                password: ${{ secrets.GCE_SA_KEY }}
+                registry: gcr.io
+                repository: ${{ secrets.GCE_PROJECT }}/kg-nlpapi-demo
+                tags: ${{ github.sha }}, latest
+                path: ./nlp
+                dockerfile: ./nlp/Dockerfile
 
             - name: Deploy Setup
               run: |-
