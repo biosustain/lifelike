@@ -12,7 +12,7 @@ import {
 } from '@angular/core';
 import { Observable, Subject, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
-import { Annotation, AnnotationExclusionData, Location, Meta, Rect } from './annotation-type';
+import { Annotation, AnnotationExclusion, Location, Meta, Rect } from './annotation-type';
 import { PDFDocumentProxy, PDFProgressData, PDFSource } from './pdf-viewer/pdf-viewer.module';
 import { PdfViewerComponent } from './pdf-viewer/pdf-viewer.component';
 import { PDFPageViewport } from 'pdfjs-dist';
@@ -44,11 +44,13 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
   private filterChangeSubscription: Subscription;
 
   @Input()
-  set addedAnnotation(annotation: Annotation) {
-    if (annotation) {
-      this.addAnnotation(annotation, annotation.pageNumber);
-      this.annotations.push(annotation);
-      this.updateAnnotationVisibility(annotation);
+  set addedAnnotations(annotations: Annotation[]) {
+    if (annotations) {
+      annotations.forEach(annotation => {
+        this.addAnnotation(annotation, annotation.pageNumber);
+        this.annotations.push(annotation);
+        this.updateAnnotationVisibility(annotation);
+      });
     }
   }
 
@@ -65,14 +67,14 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   @Input()
-  set addedAnnotationExclusion(exclusionData: AnnotationExclusionData) {
+  set addedAnnotationExclusion(exclusionData: AnnotationExclusion) {
     if (exclusionData) {
       this.changeAnnotationExclusionMark(true, exclusionData);
     }
   }
 
   @Input()
-  set removedAnnotationExclusion(exclusionData: AnnotationExclusionData) {
+  set removedAnnotationExclusion(exclusionData: AnnotationExclusion) {
     if (exclusionData) {
       this.changeAnnotationExclusionMark(false, exclusionData);
     }
@@ -167,9 +169,9 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
         (window as any).pdfViewerRef.removeCustomAnnotation(uuid);
       });
     }
-    (window as any).openExclusionPanel = (id, text) => {
+    (window as any).openExclusionPanel = (annExclusion) => {
       (window as any).pdfViewerRef.zone.run(() => {
-        (window as any).pdfViewerRef.openExclusionPanel(id, text);
+        (window as any).pdfViewerRef.openExclusionPanel(annExclusion);
       });
     }
     (window as any).removeAnnotationExclusion = (id, text) => {
@@ -182,7 +184,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
       componentFn: () => this.openAnnotationPanel(),
       copySelectedText: () => this.copySelectedText(),
       removeCustomAnnotation: (uuid) => this.removeCustomAnnotation(uuid),
-      openExclusionPanel: (id, text) => this.openExclusionPanel(id, text),
+      openExclusionPanel: (annExclusion) => this.openExclusionPanel(annExclusion),
       removeAnnotationExclusion: (id, text) => this.removeAnnotationExclusion(id, text),
       component: this,
     };
@@ -431,9 +433,16 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
       `);
     }
     if (!an.meta.isCustom && !an.meta.isExcluded) {
+      const annExclusion = JSON.stringify({
+        id: an.meta.id,
+        text: an.textInDocument,
+        type: an.meta.type,
+        rects: an.rects,
+        pageNumber: an.pageNumber
+      }).replace(/"/g, '&quot;');
       base.push(`
         <div class="mt-1">
-          <button type="button" class="btn btn-primary btn-block" onclick="openExclusionPanel('${an.meta.id}', '${an.textInDocument}')">
+          <button type="button" class="btn btn-primary btn-block" onclick="openExclusionPanel('${annExclusion}')">
             <i class="fas fa-fw fa-minus-circle"></i>
             <span>Mark for Exclusion</span>
           </button>
@@ -661,12 +670,12 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
     });
   }
 
-  openExclusionPanel(id, text) {
+  openExclusionPanel(annExclusion) {
     jQuery('.system-annotation').qtip('hide');
 
     const dialogRef = this.modalService.open(AnnotationExcludeDialogComponent);
     dialogRef.result.then(exclusionData => {
-      this.annotationExclusionAdded.emit({...exclusionData, id, text});
+      this.annotationExclusionAdded.emit({ ...exclusionData, ...JSON.parse(annExclusion) });
     }, () => {
     });
   }

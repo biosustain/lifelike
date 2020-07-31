@@ -228,12 +228,15 @@ def test_user_can_add_custom_annotation(client, test_user, test_user_with_pdf, f
     resp = client.patch(
         f'/projects/{fix_project.project_name}/files/{file_id}/annotations/add',
         headers=headers,
-        data=json.dumps(CUSTOM_ANNOTATION),
+        data=json.dumps({
+            'annotation': CUSTOM_ANNOTATION,
+            'annotateAll': False
+        }),
         content_type='application/json',
     )
 
     assert resp.status_code == 200
-    assert 'uuid' in resp.get_json()
+    assert 'uuid' in resp.get_json()[0]
 
 
 def test_user_can_remove_custom_annotation(client, test_user, test_user_with_pdf, fix_project):
@@ -244,11 +247,14 @@ def test_user_can_remove_custom_annotation(client, test_user, test_user_with_pdf
     add_resp = client.patch(
         f'/projects/{fix_project.project_name}/files/{file_id}/annotations/add',
         headers=headers,
-        data=json.dumps(CUSTOM_ANNOTATION),
+        data=json.dumps({
+            'annotation': CUSTOM_ANNOTATION,
+            'annotateAll': False
+        }),
         content_type='application/json',
     )
 
-    uuid = add_resp.get_json()['uuid']
+    uuid = add_resp.get_json()[0]['uuid']
 
     remove_resp = client.patch(
         f'/projects/{fix_project.project_name}/files/{file_id}/annotations/remove',
@@ -273,20 +279,26 @@ def test_user_can_remove_matching_custom_annotations(
     add_resp_1 = client.patch(
         f'/projects/{fix_project.project_name}/files/{file_id}/annotations/add',
         headers=headers,
-        data=json.dumps(CUSTOM_ANNOTATION),
+        data=json.dumps({
+            'annotation': CUSTOM_ANNOTATION,
+            'annotateAll': False
+        }),
         content_type='application/json',
     )
 
-    uuid_1 = add_resp_1.get_json()['uuid']
+    uuid_1 = add_resp_1.get_json()[0]['uuid']
 
     add_resp_2 = client.patch(
         f'/projects/{fix_project.project_name}/files/{file_id}/annotations/add',
         headers=headers,
-        data=json.dumps(CUSTOM_ANNOTATION),
+        data=json.dumps({
+            'annotation': CUSTOM_ANNOTATION,
+            'annotateAll': False
+        }),
         content_type='application/json',
     )
 
-    uuid_2 = add_resp_2.get_json()['uuid']
+    uuid_2 = add_resp_2.get_json()[0]['uuid']
 
     remove_resp = client.patch(
         f'/projects/{fix_project.project_name}/files/{file_id}/annotations/remove',
@@ -328,6 +340,9 @@ def test_user_can_remove_annotation_exclusion(client, test_user, test_user_with_
         data=json.dumps({
             'id': 'id',
             'text': 'text',
+            'type': 'type',
+            'rects': [],
+            'pageNumber': 1,
             'reason': 'reason',
             'comment': 'comment',
         }),

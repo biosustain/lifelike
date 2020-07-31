@@ -34,7 +34,7 @@
         </div>
       </div>
       <div class="ml-auto">
-        <button type="button" class="btn btn-light ml-1" (click)="refresh()"
+        <button type="button" class="btn btn-secondary ml-1" (click)="refresh()"
                 ngbTooltip="Refresh the results" placement="bottom">
           <i class="fa fa-sync"></i>
         </button>
@@ -61,7 +61,7 @@
         <div *ngFor="let p of results.view" class="tile d-flex flex-column">
           <div class="d-flex tile-toolbar">
             <div ngbDropdown class="d-inline-block ml-auto">
-              <button class="btn btn-light btn-sm" ngbDropdownToggle>
+              <button class="btn btn-secondary btn-sm" ngbDropdownToggle>
                 <i class="fas fa-cog fa-fw"></i>
               </button>
               <div ngbDropdownMenu>

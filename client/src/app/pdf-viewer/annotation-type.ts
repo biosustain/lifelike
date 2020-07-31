@@ -36,9 +36,15 @@ export interface Annotation {
   textInDocument?: string;
 }
 
-export interface AnnotationExclusionData {
+export interface AnnotationExclusion {
   id: string;
   text: string;
   reason: string;
   comment: string;
+}
+
+export interface StoredAnnotationExclusion extends AnnotationExclusion {
+  type: string;
+  rects: Rect[];
+  pageNumber: number;
 }
