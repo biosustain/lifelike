@@ -45,8 +45,7 @@ class ProjectSchema(ma.ModelSchema):  # type: ignore
 
 
 class ProjectBackup(RDBMSBase):
-    """ Backup version of Project
-    """
+    """ Backup version of Project """
     project_id = db.Column(db.Integer, primary_key=True, nullable=False)
     label = db.Column(db.String(250), nullable=False)
     description = db.Column(db.Text)
