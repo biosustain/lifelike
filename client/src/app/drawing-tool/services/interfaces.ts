@@ -157,6 +157,8 @@ export interface RemovedAnnotationExclusion {
 }
 
 export interface AddedAnnotationExclsuion extends RemovedAnnotationExclusion {
+  id: string;
+  idHyperlink: string;
   reason: string;
   comment: string;
   rects: Rect[];

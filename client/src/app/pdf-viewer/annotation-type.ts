@@ -42,6 +42,8 @@ export interface RemovedAnnotationExclsuion {
 }
 
 export interface AddedAnnotationExclsuion extends RemovedAnnotationExclsuion {
+  id: string;
+  idHyperlink: string;
   reason: string;
   comment: string;
   rects: Rect[];
