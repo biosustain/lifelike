@@ -62,7 +62,7 @@ def get_neo4j_service_dao():
     if 'neo4j_dao' not in g:
         from neo4japp.services import Neo4JService
         graph = _connect_to_neo4j()
-        g.neo4j_service_dao = Neo4JService(graph)
+        g.neo4j_service_dao = Neo4JService(graph=graph)
     return g.neo4j_service_dao
 
 
@@ -70,7 +70,7 @@ def get_user_file_import_service():
     if 'user_file_import_service' not in g:
         from neo4japp.services import UserFileImportService
         graph = _connect_to_neo4j()
-        g.current_user_file_import_service = UserFileImportService(graph)
+        g.current_user_file_import_service = UserFileImportService(graph=graph, session=db.session)
     return g.current_user_file_import_service
 
 
@@ -78,35 +78,35 @@ def get_search_service_dao():
     if 'search_dao' not in g:
         from neo4japp.services import SearchService
         graph = _connect_to_neo4j()
-        g.search_service_dao = SearchService(graph)
+        g.search_service_dao = SearchService(graph=graph)
     return g.search_service_dao
 
 
 def get_authorization_service():
     if 'authorization_service' not in g:
         from neo4japp.services import AuthService
-        g.authorization_service = AuthService(db.session)
+        g.authorization_service = AuthService(session=db.session)
     return g.authorization_service
 
 
 def get_organism_gene_match_service():
     if 'organism_gene_match_service' not in g:
         from neo4japp.services import OrganismGeneMatchService
-        g.organism_gene_match_service = OrganismGeneMatchService(db.session)
+        g.organism_gene_match_service = OrganismGeneMatchService(session=db.session)
     return g.organism_gene_match_service
 
 
 def get_account_service():
     if 'account_service' not in g:
         from neo4japp.services import AccountService
-        g.account_service = AccountService(db.session)
+        g.account_service = AccountService(session=db.session)
     return g.account_service
 
 
 def get_projects_service():
     if 'projects_service' not in g:
         from neo4japp.services import ProjectsService
-        g.projects_service = ProjectsService(db.session)
+        g.projects_service = ProjectsService(session=db.session)
     return g.projects_service
 
 
