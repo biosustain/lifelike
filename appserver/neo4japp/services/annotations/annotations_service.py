@@ -1650,3 +1650,31 @@ class AnnotationsService:
                 ),
             )
         return fixed_annotations
+
+    def get_matching_manual_annotations(
+        self,
+        keyword: str,
+        tokens: PDFTokenPositionsList
+    ):
+        """Returns coordinate positions and page numbers
+        for all matching terms in the document
+        """
+        matches = []
+        for token in tokens.token_positions:
+            if token.keyword != keyword:
+                continue
+            keyword_positions: List[Annotation.TextPosition] = []
+            self._create_keyword_objects(
+                curr_page_coor_obj=tokens.char_coord_objs_in_pdf,
+                indexes=list(token.char_positions.keys()),
+                keyword_positions=keyword_positions,
+                cropbox=tokens.cropbox_in_pdf,
+            )
+            rects = [pos.positions for pos in keyword_positions]
+            keywords = [pos.value for pos in keyword_positions]
+            matches.append({
+                'pageNumber': token.page_number,
+                'rects': rects,
+                'keywords': keywords
+            })
+        return matches

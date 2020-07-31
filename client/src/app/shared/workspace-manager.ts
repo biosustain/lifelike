@@ -356,6 +356,11 @@ export class PaneManager {
    * @param id the pane ID that must be unique
    */
   create(id: string): Pane {
+    for (const existingPane of this.panes) {
+      if (existingPane.id === id) {
+        throw new Error(`pane ${existingPane.id} already created`);
+      }
+    }
     const pane = new Pane(id, this.injector);
     this.panes.push(pane);
     return pane;
@@ -652,9 +657,8 @@ export class WorkspaceManager {
       }, Promise.resolve());
     } else {
       const leftPane = this.panes.create('left');
-      this.openTabByUrl(leftPane, '/projects').then(() => {
-        this.load();
-      });
+      this.panes.create('right');
+      this.openTabByUrl(leftPane, '/projects');
     }
   }
 

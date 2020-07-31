@@ -151,11 +151,17 @@ export interface KnowledgeMap {
   user_id?: number;
 }
 
-export interface AnnotationExclusionData {
+export interface AnnotationExclusion {
   id: string;
   text: string;
   reason: string;
   comment: string;
+}
+
+export interface StoredAnnotationExclusion extends AnnotationExclusion {
+  type: string;
+  rects: Rect[];
+  pageNumber: number;
 }
 
 export const MAP_TYPE_ID = 'LifelikeKnowledgeMap/1';
