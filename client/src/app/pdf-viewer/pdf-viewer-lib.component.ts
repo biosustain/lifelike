@@ -12,7 +12,7 @@ import {
 } from '@angular/core';
 import { Observable, Subject, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
-import { Annotation, AnnotationExclusion, Location, Meta, Rect } from './annotation-type';
+import { Annotation, RemovedAnnotationExclsuion, Location, Meta, Rect } from './annotation-type';
 import { PDFDocumentProxy, PDFProgressData, PDFSource } from './pdf-viewer/pdf-viewer.module';
 import { PdfViewerComponent } from './pdf-viewer/pdf-viewer.component';
 import { PDFPageViewport } from 'pdfjs-dist';
@@ -20,6 +20,7 @@ import { AnnotationEditDialogComponent } from './components/annotation-edit-dial
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { AnnotationExcludeDialogComponent } from './components/annotation-exclude-dialog.component';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { AddedAnnotationExclsuion } from 'app/drawing-tool/services/interfaces';
 
 declare var jQuery: any;
 
@@ -67,14 +68,14 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   @Input()
-  set addedAnnotationExclusion(exclusionData: AnnotationExclusion) {
+  set addedAnnotationExclusion(exclusionData: AddedAnnotationExclsuion) {
     if (exclusionData) {
       this.changeAnnotationExclusionMark(true, exclusionData);
     }
   }
 
   @Input()
-  set removedAnnotationExclusion(exclusionData: AnnotationExclusion) {
+  set removedAnnotationExclusion(exclusionData: RemovedAnnotationExclsuion) {
     if (exclusionData) {
       this.changeAnnotationExclusionMark(false, exclusionData);
     }
@@ -458,7 +459,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
             ${an.meta.exclusionComment ? `<span style="line-height: 16px"><i>comment: </i>${an.meta.exclusionComment}</span>` : ''}
           </div>
           <div class="mt-1">
-            <button type="button" class="btn btn-primary btn-block" onclick="removeAnnotationExclusion('${an.meta.id}', '${an.textInDocument}')">
+            <button type="button" class="btn btn-primary btn-block" onclick="removeAnnotationExclusion('${an.meta.type}', '${an.textInDocument}')">
               <i class="fas fa-fw fa-undo"></i>
               <span>Unmark Exclusion</span>
             </button>
@@ -680,9 +681,9 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
     });
   }
 
-  removeAnnotationExclusion(id, text) {
+  removeAnnotationExclusion(type, text) {
     jQuery('.system-annotation').qtip('hide');
-    this.annotationExclusionRemoved.emit({id, text});
+    this.annotationExclusionRemoved.emit({type, text});
   }
 
   clearSelection() {
@@ -882,14 +883,16 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
     this.annotationRemoved.emit(uuid);
   }
 
-  changeAnnotationExclusionMark(isExcluded, {id, text, reason, comment}) {
+  changeAnnotationExclusionMark(isExcluded, exclusionData: AddedAnnotationExclsuion | RemovedAnnotationExclsuion) {
     this.annotations.forEach((ann: Annotation) => {
-      if (ann.meta.id === id && ann.textInDocument === text) {
+      if (ann.meta.type === exclusionData.type && ann.textInDocument === exclusionData.text) {
         const ref = this.annotationHighlightElementMap.get(ann);
         jQuery(ref).remove();
         ann.meta.isExcluded = isExcluded;
-        ann.meta.exclusionReason = reason;
-        ann.meta.exclusionComment = comment;
+        if ('reason' in exclusionData && 'comment' in exclusionData) {
+          ann.meta.exclusionReason = exclusionData.reason;
+          ann.meta.exclusionComment = exclusionData.comment;
+        }
         this.addAnnotation(ann, ann.pageNumber);
       }
     });

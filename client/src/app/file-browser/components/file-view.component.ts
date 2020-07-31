@@ -7,8 +7,8 @@ import { PdfAnnotationsService } from '../../drawing-tool/services';
 
 import {
   Annotation,
-  AnnotationExclusion,
-  StoredAnnotationExclusion,
+  RemovedAnnotationExclusion,
+  AddedAnnotationExclsuion,
   Location,
   Meta,
   UniversalGraphNode,
@@ -84,11 +84,11 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
   sortedEntityTypeEntries: EntityTypeEntry[] = [];
   entityTypeVisibilityChanged = false;
   modulePropertiesChange = new EventEmitter<ModuleProperties>();
-  addedAnnotationExclusion: AnnotationExclusion;
+  addedAnnotationExclusion: AddedAnnotationExclsuion;
   addAnnotationExclusionSub: Subscription;
   showExcludedAnnotations = false;
   removeAnnotationExclusionSub: Subscription;
-  removedAnnotationExclusion: AnnotationExclusion;
+  removedAnnotationExclusion: RemovedAnnotationExclusion;
   projectName: string;
 
   // search
@@ -314,14 +314,14 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
     });
   }
 
-  annotationExclusionAdded(exclusionData: StoredAnnotationExclusion) {
+  annotationExclusionAdded(exclusionData: AddedAnnotationExclsuion) {
     this.addAnnotationExclusionSub = this.pdfAnnService.addAnnotationExclusion(
       this.currentFileId, exclusionData, this.projectName,
     )
       .pipe(this.errorHandler.create())
       .subscribe(
         response => {
-          this.addedAnnotationExclusion = (({ id, text, reason, comment }) => ({ id, text, reason, comment }))(exclusionData);
+          this.addedAnnotationExclusion = exclusionData;
           this.snackBar.open('Annotation has been excluded', 'Close', {duration: 5000});
         },
         err => {
@@ -330,12 +330,12 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
       );
   }
 
-  annotationExclusionRemoved({id, text}) {
-    this.removeAnnotationExclusionSub = this.pdfAnnService.removeAnnotationExclusion(this.currentFileId, id, text, this.projectName)
+  annotationExclusionRemoved({type, text}) {
+    this.removeAnnotationExclusionSub = this.pdfAnnService.removeAnnotationExclusion(this.currentFileId, type, text, this.projectName)
       .pipe(this.errorHandler.create())
       .subscribe(
         response => {
-          this.removedAnnotationExclusion = {id, text, reason: '', comment: ''};
+          this.removedAnnotationExclusion = {type, text};
           this.snackBar.open('Unmarked successfully', 'Close', {duration: 5000});
         },
         err => {
