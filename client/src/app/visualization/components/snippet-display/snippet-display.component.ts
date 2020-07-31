@@ -126,7 +126,8 @@ export class SnippetDisplayComponent implements OnDestroy {
         }
     }
 
-    onLimitChange() {
+    onLimitChange(event) {
+        this.pageLimit = parseInt(event.target.value, 10);
         // Need to reset the page, otherwise we might request a weird page/pageLimit combo
         this.page = 1;
 

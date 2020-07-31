@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { PdfViewerLibComponent } from './pdf-viewer-lib.component';
-import { AnnotationPanelComponent } from './annotation-panel/annotation-panel.component';
-import { ExclusionPanelComponent } from './exclusion-panel/exclusion-panel.component';
+import { AnnotationEditDialogComponent } from './components/annotation-edit-dialog.component';
+import { AnnotationExcludeDialogComponent } from './components/annotation-exclude-dialog.component';
 
 import { PdfViewerModule } from './pdf-viewer/pdf-viewer.module';
 
@@ -15,9 +15,10 @@ import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatChipsModule, MatDialogModule, MatInputModule, MatSelectModule } from '@angular/material';
 import { MatButtonModule } from '@angular/material/button';
 import { MatRadioModule } from '@angular/material/radio';
+import { SharedModule } from '../shared/shared.module';
 
 @NgModule({
-  declarations: [PdfViewerLibComponent, AnnotationPanelComponent, ExclusionPanelComponent],
+  declarations: [PdfViewerLibComponent, AnnotationEditDialogComponent, AnnotationExcludeDialogComponent],
   imports: [
     PdfViewerModule,
     CommonModule,
@@ -32,9 +33,10 @@ import { MatRadioModule } from '@angular/material/radio';
     MatInputModule,
     FlexLayoutModule,
     MatButtonModule,
-    MatRadioModule
+    MatRadioModule,
+    SharedModule,
   ],
-  entryComponents: [AnnotationPanelComponent, ExclusionPanelComponent],
+  entryComponents: [AnnotationEditDialogComponent, AnnotationExcludeDialogComponent],
   exports: [PdfViewerLibComponent]
 })
 export class PdfViewerLibModule {

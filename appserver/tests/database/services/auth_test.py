@@ -1,10 +1,14 @@
 import pytest
-from neo4japp.models import AccessControlPolicy
+from neo4japp.models import (
+    AccessRuleType,
+    AccessActionType,
+    AccessControlPolicy
+)
 
 
 @pytest.mark.parametrize('permission, expected', [
-    ('read', ['read']),
-    ('write', ['read', 'write']),
+    (AccessActionType.READ, [AccessActionType.READ]),
+    (AccessActionType.WRITE, [AccessActionType.READ, AccessActionType.WRITE]),
 ])
 def test_can_grant_permissions(
         fix_owner, auth_service, fix_project,
@@ -16,8 +20,8 @@ def test_can_grant_permissions(
 
 
 @pytest.mark.parametrize('revoke_permission', [
-    'read',
-    'write',
+    AccessActionType.READ,
+    AccessActionType.WRITE,
 ])
 def test_can_revoke_permissions(
         fix_owner, auth_service, fix_project,
@@ -28,7 +32,7 @@ def test_can_revoke_permissions(
         asset_id=fix_project.id,
         principal_type='user',
         principal_id=fix_owner.id,
-        rule_type='ALLOW'
+        rule_type=AccessRuleType.ALLOW
     )
     session.add(acp)
     session.flush()
