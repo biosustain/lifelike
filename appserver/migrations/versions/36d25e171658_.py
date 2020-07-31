@@ -318,10 +318,10 @@ def data_upgrades():
         pwhash = bcrypt.hashpw('password'.encode('utf-8'), bcrypt.gensalt())
         default_owner_id = conn.execute(
             t_app_user.insert().values(dict(
-                username='test',
-                email='test@***ARANGO_DB_NAME***.bio',
-                first_name='test',
-                last_name='test',
+                username='demo',
+                email='demo@***ARANGO_DB_NAME***.bio',
+                first_name='demo',
+                last_name='demo',
                 password_hash=pwhash.decode('utf-8')
             ))
         ).inserted_primary_key

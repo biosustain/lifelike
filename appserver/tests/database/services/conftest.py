@@ -52,11 +52,12 @@ def fix_projects(session) -> Projects:
 
 
 @pytest.fixture(scope='function')
-def fix_directory(session, fix_projects) -> Directory:
+def fix_directory(session, fix_projects, test_user) -> Directory:
     directory = Directory(
         name='/',
         directory_parent_id=None,
         projects_id=fix_projects.id,
+        user_id=test_user.id,
     )
     session.add(directory)
     session.flush()
@@ -86,6 +87,7 @@ def fix_nested_dir(fix_owner, fix_directory, session) -> Directory:
         name='child-level-1',
         directory_parent_id=fix_directory.id,
         projects_id=fix_directory.projects_id,
+        user_id=fix_owner.id,
     )
     session.add(child_dir)
     session.flush()

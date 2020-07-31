@@ -52,8 +52,10 @@ class ProjectsService(RDBMSBaseDao):
 
         # Create a default directory for every project
         default_dir = Directory(
-            name='/', directory_parent_id=None,
-            projects_id=projects.id, user_id=user.id
+            name='/',
+            directory_parent_id=None,
+            projects_id=projects.id,
+            user_id=user.id,
         )
 
         self.session.add(default_dir)

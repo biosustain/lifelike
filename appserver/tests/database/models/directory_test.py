@@ -1,5 +1,19 @@
 import pytest
-from neo4japp.models import Directory, Projects
+from neo4japp.models import AppUser, Directory, Projects
+
+
+@pytest.fixture(scope='function')
+def mock_user(session):
+    a = AppUser(
+        username='dirtest',
+        email='dirtest@***ARANGO_DB_NAME***.bio',
+        first_name='dir',
+        last_name='ty',
+        password_hash='123'
+    )
+    session.add(a)
+    session.flush()
+    return a
 
 
 @pytest.fixture(scope='function')
@@ -11,7 +25,7 @@ def project(session):
 
 
 @pytest.fixture(scope='function')
-def mock_directory_path(session, project):
+def mock_directory_path(session, mock_user, project):
     """ Directory structure
 
     parent/child-1/child-1a
@@ -21,7 +35,8 @@ def mock_directory_path(session, project):
     parent_dir = Directory(
         name='parent',
         directory_parent_id=None,
-        projects_id=project.id
+        projects_id=project.id,
+        user_id=mock_user.id,
     )
     session.add(parent_dir)
     session.flush()
@@ -29,7 +44,8 @@ def mock_directory_path(session, project):
     child_dir = Directory(
         name='child-1',
         directory_parent_id=parent_dir.id,
-        projects_id=project.id
+        projects_id=project.id,
+        user_id=mock_user.id,
     )
     session.add(child_dir)
     session.flush()
@@ -37,7 +53,8 @@ def mock_directory_path(session, project):
     child_dir1a = Directory(
         name='child-1a',
         directory_parent_id=child_dir.id,
-        projects_id=project.id
+        projects_id=project.id,
+        user_id=mock_user.id,
     )
     session.add(child_dir1a)
     session.flush()
@@ -45,7 +62,8 @@ def mock_directory_path(session, project):
     child_dir2 = Directory(
         name='child-2',
         directory_parent_id=parent_dir.id,
-        projects_id=project.id
+        projects_id=project.id,
+        user_id=mock_user.id,
     )
     session.add(child_dir2)
     session.flush()
