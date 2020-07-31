@@ -1705,7 +1705,7 @@ class AnnotationsService:
         for all matching terms in the document
         """
         matches = []
-        for token in tokens.token_positions:
+        for token in list(tokens.token_positions):
             if token.keyword != keyword:
                 continue
             keyword_positions: List[Annotation.TextPosition] = []
