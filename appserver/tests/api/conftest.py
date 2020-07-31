@@ -131,11 +131,12 @@ def fix_project(test_user, session):
 
 
 @pytest.fixture(scope='function')
-def fix_directory(fix_project, session):
+def fix_directory(fix_project, test_user, session):
     directory = Directory(
         name='/',
         directory_parent_id=None,
         projects_id=fix_project.id,
+        user_id=test_user.id,
     )
     session.add(directory)
     session.flush()
