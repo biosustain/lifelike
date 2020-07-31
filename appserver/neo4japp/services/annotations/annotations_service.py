@@ -389,6 +389,28 @@ class AnnotationsService:
 
             return species_val
 
+    def _find_lmdb_match(self, token: PDFTokenPositions, check_entities: Dict[str, bool]) -> None:
+        if check_entities[EntityType.Chemical.value]:
+            self._find_chemical_match(token)
+
+        if check_entities[EntityType.Compound.value]:
+            self._find_compound_match(token)
+
+        if check_entities[EntityType.Disease.value]:
+            self._find_disease_match(token)
+
+        if check_entities[EntityType.Gene.value]:
+            self._find_gene_match(token)
+
+        if check_entities[EntityType.Phenotype.value]:
+            self._find_phenotype_match(token)
+
+        if check_entities[EntityType.Protein.value]:
+            self._find_protein_match(token)
+
+        if check_entities[EntityType.Species.value]:
+            self._find_species_match(token)
+
     def _find_chemical_match(self, token: PDFTokenPositions) -> None:
         word = token.keyword
         if word:
@@ -962,26 +984,11 @@ class AnnotationsService:
                 matched_organism_ids=organism_ids_to_query,
             )
 
-        fixed_gene_organism_matches: Dict[str, Dict[str, str]] = {}
-
-        # some genes have identical spelling except for captialization
-        # this can cause some important genes that we want
-        # to identify to be lost when we fix conflicting intervals
-        # so lowercase since it shouldn't matter at this point
-        # after we already have the results from the KG
-        for k, v in gene_organism_matches.items():
-            key = k.lower()
-            if key in fixed_gene_organism_matches:
-                existing_dict = fixed_gene_organism_matches[key]
-                fixed_gene_organism_matches[key] = {**existing_dict, **v}
-            else:
-                fixed_gene_organism_matches[key] = v
-
         for entity, token_positions in entity_tokenpos_pairs:
             if entity['name'] in gene_organism_matches:
                 gene_id, organism_id = self._get_closest_gene_organism_pair(
                     gene_position=token_positions,
-                    organism_matches=fixed_gene_organism_matches[entity['name'].lower()]
+                    organism_matches=gene_organism_matches[entity['name']]
                 )
 
                 category = self.organism_categories[organism_id]
@@ -1285,7 +1292,7 @@ class AnnotationsService:
         tokens: List[PDFTokenPositions],
         char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
         cropbox_in_pdf: Tuple[int, int],
-        lmdbs_to_validate,
+        check_entities_in_lmdb: Dict[str, bool],
         types_to_annotate: List[Tuple[str, str]],
         organisms_from_custom_annotations: Set[str],
     ) -> List[Annotation]:
@@ -1295,17 +1302,12 @@ class AnnotationsService:
             tokens: list of PDFTokenPositions
             char_coord_objs_in_pdf: list of char objects from pdfminer
             cropbox_in_pdf: the mediabox/cropbox offset from pdfminer
-            lmdbs_to_validate: the list of functions to be called
-                - e.g [
-                    self._find_chemical_match,
-                    self._find_compound_match,
-                    self._find_disease_match,
-                    self._find_gene_match,
-                    ...
-                ]
+            check_entities_in_lmdb: a dictionary of entity types and boolean
+                - boolean determines whether to check lmdb for that entity
             types_to_annotate: list of entity types to create annotations of
-                - NOTE: IMPORTANT: should always match with `lmdbs_to_validate`
+                - NOTE: IMPORTANT: should always match with `check_entities_in_lmdb`
                 - NOTE: IMPORTANT: Species should always be before Genes
+                    - because species is used to do gene organism matching
                 - e.g [
                     (EntityType.Species.value, EntityIdStr.Species.value),
                     (EntityType.Chemical.value, EntityIdStr.Chemical.value),
@@ -1313,8 +1315,8 @@ class AnnotationsService:
                 ]
         """
         # find matches in lmdb
-        for func in lmdbs_to_validate:
-            deque(map(func, tokens), maxlen=0)
+        from functools import partial
+        deque(map(partial(self._find_lmdb_match, check_entities=check_entities_in_lmdb), tokens), maxlen=0)  # noqa
 
         unified_annotations: List[Annotation] = []
 
@@ -1345,20 +1347,22 @@ class AnnotationsService:
             (EntityType.Phenotype.value, EntityIdStr.Phenotype.value),
             (EntityType.Gene.value, EntityIdStr.Gene.value),
         ]
-        lmdbs_to_validate = [
-            self._find_chemical_match,
-            self._find_compound_match,
-            self._find_disease_match,
-            self._find_phenotype_match,
-            self._find_protein_match,
-            self._find_species_match,
-            self._find_gene_match,
-        ]
+
+        # TODO: hard coding for now until UI is done
+        entities_to_check = {
+            EntityType.Chemical.value: True,
+            EntityType.Compound.value: True,
+            EntityType.Disease.value: True,
+            EntityType.Gene.value: True,
+            EntityType.Phenotype.value: True,
+            EntityType.Protein.value: True,
+            EntityType.Species.value: True,
+        }
         annotations = self._create_annotations(
             tokens=tokens.token_positions,
             char_coord_objs_in_pdf=tokens.char_coord_objs_in_pdf,
             cropbox_in_pdf=tokens.cropbox_in_pdf,
-            lmdbs_to_validate=lmdbs_to_validate,
+            check_entities_in_lmdb=entities_to_check,
             types_to_annotate=entity_type_and_id_pairs,
             organisms_from_custom_annotations=set(
                 custom['meta']['allText'] for custom in custom_annotations
@@ -1384,7 +1388,7 @@ class AnnotationsService:
         # TODO: Breaking the request into pages
         # because doing the entire PDF seem to cause
         # the NLP service container to crash with no
-        # errors and exit code of 247...
+        # errors and exit code of 247... (memory related)
         length = len(pages) - 1
         for i, page in enumerate(pages):
             if i == length:
@@ -1448,13 +1452,23 @@ class AnnotationsService:
         entity_type_and_id_pairs = [
             (EntityType.Species.value, EntityIdStr.Species.value),
         ]
-        lmdbs_to_validate = [self._find_species_match]
+
+        # TODO: hard coding for now until UI is done
+        entities_to_check = {
+            EntityType.Chemical.value: False,
+            EntityType.Compound.value: False,
+            EntityType.Disease.value: False,
+            EntityType.Gene.value: False,
+            EntityType.Phenotype.value: False,
+            EntityType.Protein.value: False,
+            EntityType.Species.value: True,
+        }
 
         species_annotations = self._create_annotations(
             tokens=tokens.token_positions,
             char_coord_objs_in_pdf=tokens.char_coord_objs_in_pdf,
             cropbox_in_pdf=tokens.cropbox_in_pdf,
-            lmdbs_to_validate=lmdbs_to_validate,
+            check_entities_in_lmdb=entities_to_check,
             types_to_annotate=entity_type_and_id_pairs,
             organisms_from_custom_annotations=set(),
         )
@@ -1468,20 +1482,23 @@ class AnnotationsService:
             (EntityType.Phenotype.value, EntityIdStr.Phenotype.value),
             (EntityType.Gene.value, EntityIdStr.Gene.value),
         ]
-        lmdbs_to_validate = [
-            self._find_chemical_match,
-            self._find_compound_match,
-            self._find_disease_match,
-            self._find_gene_match,
-            self._find_phenotype_match,
-            self._find_protein_match,
-        ]
+
+        # TODO: hard coding for now until UI is done
+        entities_to_check = {
+            EntityType.Chemical.value: True,
+            EntityType.Compound.value: True,
+            EntityType.Disease.value: True,
+            EntityType.Gene.value: True,
+            EntityType.Phenotype.value: True,
+            EntityType.Protein.value: True,
+            EntityType.Species.value: False,
+        }
 
         nlp_annotations = self._create_annotations(
             tokens=nlp_tokens,
             char_coord_objs_in_pdf=tokens.char_coord_objs_in_pdf,
             cropbox_in_pdf=tokens.cropbox_in_pdf,
-            lmdbs_to_validate=lmdbs_to_validate,
+            check_entities_in_lmdb=entities_to_check,
             types_to_annotate=entity_type_and_id_pairs,
             organisms_from_custom_annotations=set(
                 custom['meta']['allText'] for custom in custom_annotations
