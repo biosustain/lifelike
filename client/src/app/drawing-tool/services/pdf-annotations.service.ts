@@ -6,7 +6,7 @@ import {
 } from 'rxjs';
 
 import { ANNOTATIONS } from './mock_data';
-import { Annotation, StoredAnnotationExclusion } from './interfaces';
+import { Annotation, AddedAnnotationExclsuion } from './interfaces';
 
 @Injectable({
   providedIn: '***ARANGO_USERNAME***'
@@ -95,7 +95,7 @@ export class PdfAnnotationsService {
    * @param fileId id of the file that contains the annotation
    * @param exclusionData data needed to exclude the annotation
    */
-  addAnnotationExclusion(fileId: string, exclusionData: StoredAnnotationExclusion, projectName: string): Observable<any> {
+  addAnnotationExclusion(fileId: string, exclusionData: AddedAnnotationExclsuion, projectName: string): Observable<any> {
     return this.http.patch(
       `/api/projects/${projectName}/files/${fileId}/annotations/add_annotation_exclusion`,
       exclusionData,
@@ -106,13 +106,13 @@ export class PdfAnnotationsService {
   /**
    * Removes the exclusion mark from the automatic annotation in the given file.
    * @param fileId id of the file that contains the annotation
-   * @param id id of the annotation
+   * @param type type of the annotation
    * @param text annotated text
    */
-  removeAnnotationExclusion(fileId: string, id: string, text: string, projectName: string): Observable<any> {
+  removeAnnotationExclusion(fileId: string, type: string, text: string, projectName: string): Observable<any> {
     return this.http.patch(
       `/api/projects/${projectName}/files/${fileId}/annotations/remove_annotation_exclusion`,
-      { id, text },
+      { type, text },
       this.createHttpOptions(true)
     );
   }
