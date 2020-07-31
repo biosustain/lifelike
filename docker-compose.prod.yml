@@ -46,6 +46,7 @@ services:
             - backend
 
     redis:
+        image: redis:6.0.3-alpine
         networks:
             - backend
 
