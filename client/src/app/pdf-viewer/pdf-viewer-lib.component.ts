@@ -436,6 +436,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
     if (!an.meta.isCustom && !an.meta.isExcluded) {
       const annExclusion = JSON.stringify({
         id: an.meta.id,
+        idHyperlink: an.meta.idHyperlink,
         text: an.textInDocument,
         type: an.meta.type,
         rects: an.rects,
