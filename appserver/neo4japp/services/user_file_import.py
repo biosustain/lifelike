@@ -1,3 +1,4 @@
+import hashlib
 from math import floor
 
 from typing import (
@@ -12,6 +13,8 @@ from werkzeug.datastructures import FileStorage
 from openpyxl import load_workbook
 from openpyxl import Workbook
 from openpyxl.worksheet.worksheet import Worksheet
+
+from sqlalchemy.orm.exc import NoResultFound
 
 from py2neo import (
     Node,
@@ -33,13 +36,17 @@ from neo4japp.data_transfer_objects.user_file_import import (
     Properties,
     RelationshipDirection,
 )
-from neo4japp.services.common import GraphBaseDao
+from neo4japp.models import (
+    FileContent,
+    Worksheet
+)
+from neo4japp.services.common import HybridDBDao
 from neo4japp.util import compute_hash
 
 
-class UserFileImportService(GraphBaseDao):
-    def __init__(self, graph):
-        super().__init__(graph)
+class UserFileImportService(HybridDBDao):
+    def __init__(self, graph, session):
+        super().__init__(graph=graph, session=session)
 
     # def strip_leading_and_trailing_spaces(self, current_ws: Worksheet) -> Worksheet:
     #     # remove leading and trailing space
@@ -546,6 +553,14 @@ class UserFileImportService(GraphBaseDao):
             {merge_rel_string}
             """
 
+    def get_detach_and_delete_worksheet_query(self):
+        return """
+            MATCH (w:Worksheet)<-[:IMPORTED_FROM]-(n)
+            WHERE ID(w)=$worksheet_node_id
+            DETACH DELETE n
+            DETACH DELETE w
+        """
+
     def get_import_batches(
         self,
         data: List[Any],
@@ -711,3 +726,52 @@ class UserFileImportService(GraphBaseDao):
         tx.commit()
 
         return worksheet_node_id
+
+    def detach_and_delete_worksheet(self, worksheet_node_id: int):
+        detach_and_delete_worksheet_query = self.get_detach_and_delete_worksheet_query()
+
+        tx = self.graph.begin()
+        tx.run(
+            detach_and_delete_worksheet_query,
+            {
+                'worksheet_node_id': worksheet_node_id
+            }
+        )
+        tx.commit()
+
+    def upload_worksheet_to_pg_db(
+        self,
+        file_name: str,
+        sheet_name: str,
+        worksheet: FileStorage,
+        worksheet_node_id: int
+    ):
+        worksheet_content = worksheet.read()
+        worksheet.stream.seek(0)
+
+        checksum_sha256 = hashlib.sha256(worksheet_content).digest()
+
+        try:
+            # First look for an existing copy of this file
+            file_content = self.session.query(
+                FileContent.id
+            ).filter(
+                FileContent.checksum_sha256 == checksum_sha256
+            ).one()
+        except NoResultFound:
+            # Otherwise, let's add the file content to the database
+            file_content = FileContent(
+                raw_file=worksheet_content,
+                checksum_sha256=checksum_sha256
+            )
+            self.session.add(file_content)
+            self.session.flush()
+
+        new_worksheet = Worksheet(
+            filename=file_name,
+            sheetname=sheet_name,
+            neo4j_node_id=worksheet_node_id,
+            content_id=file_content.id
+        )
+        self.session.add(new_worksheet)
+        self.session.commit()
