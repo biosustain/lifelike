@@ -31,7 +31,8 @@ from neo4japp.models import (
     Project,
     ProjectSchema,
     Projects,
-    Directory, ProjectBackup,
+    Directory,
+    ProjectBackup,
 )
 from neo4japp.constants import ANNOTATION_STYLES_DICT
 from neo4japp.request_schemas.drawing_tool import ProjectBackupSchema
