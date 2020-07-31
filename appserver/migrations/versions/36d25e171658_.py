@@ -7,6 +7,7 @@ Create Date: 2020-07-22 19:25:59.212662
 """
 from alembic import context
 from alembic import op
+import bcrypt
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 from sqlalchemy_utils.types import TSVectorType
@@ -96,6 +97,7 @@ t_app_user = sa.Table(
     sa.Column('email', sa.String(120), index=True, unique=True),
     sa.Column('first_name', sa.String(120), nullable=False),
     sa.Column('last_name', sa.String(120), nullable=False),
+    sa.Column('password_hash', sa.String(256))
 )
 
 t_app_role = sa.Table(
@@ -214,6 +216,16 @@ def data_upgrades():
         t_projects.c.id
     ]).where(t_projects.c.project_name == 'beta-project')).fetchone()
 
+    read_role_id = conn.execute(
+        t_app_role.insert().values(name='project-read')
+    ).inserted_primary_key[0]
+    write_role_id = conn.execute(
+        t_app_role.insert().values(name='project-write')
+    ).inserted_primary_key[0]
+    admin_role_id = conn.execute(
+        t_app_role.insert().values(name='project-admin')
+    ).inserted_primary_key[0]
+
     # This will only be true in development
     if row is None:
         projects_id = conn.execute(
@@ -228,16 +240,6 @@ def data_upgrades():
         (projects_id,) = row
 
         # Setup roles for the existing project
-        read_role_id = conn.execute(
-            t_app_role.insert().values(name='project-read')
-        ).inserted_primary_key[0]
-        write_role_id = conn.execute(
-            t_app_role.insert().values(name='project-write')
-        ).inserted_primary_key[0]
-        admin_role_id = conn.execute(
-            t_app_role.insert().values(name='project-admin')
-        ).inserted_primary_key[0]
-
         t_access_control_policy = sa.Table(
             'access_control_policy',
             sa.MetaData(),
@@ -307,7 +309,22 @@ def data_upgrades():
 
     default_owner_id = conn.execute(sa.select([
         t_app_user.c.id
-    ]).where(t_app_user.c.email == 'test@***ARANGO_DB_NAME***.bio')).fetchone()[0]
+    ]).where(t_app_user.c.email == 'test@***ARANGO_DB_NAME***.bio')).fetchone()
+
+    # This is only true in development
+    # TODO: Move data migrations out of the dev process to keep
+    # the database empty; in other words, defer to fixture seeding
+    if default_owner_id is None:
+        pwhash = bcrypt.hashpw('password'.encode('utf-8'), bcrypt.gensalt())
+        default_owner_id = conn.execute(
+            t_app_user.insert().values(dict(
+                username='test',
+                email='test@***ARANGO_DB_NAME***.bio',
+                first_name='test',
+                last_name='test',
+                password_hash=pwhash.decode('utf-8')
+            ))
+        ).inserted_primary_key
 
     # Bucket everything into a single directory
     directory_id = conn.execute(
@@ -315,7 +332,7 @@ def data_upgrades():
             name='/',
             directory_parent_id=None,
             projects_id=projects_id,
-            user_id=default_owner_id,
+            user_id=default_owner_id[0],
         )
     ).inserted_primary_key[0]
 
@@ -323,12 +340,6 @@ def data_upgrades():
     write_role_id = conn.execute(sa.select([
         t_app_role.c.id
     ]).where(t_app_role.c.name == 'project-write')).fetchone()
-
-    # If none, create it
-    if write_role_id is None:
-        write_role_id = conn.execute(
-            t_app_role.insert().values(name='project-write')
-        ).inserted_primary_key[0]
 
     # Set all existing users to write role
     user_ids = conn.execute(sa.select([
