@@ -9,12 +9,17 @@ import { CommonDialogComponent } from './common-dialog.component';
 })
 export class ConfirmDialogComponent extends CommonDialogComponent {
   @Input() message: string;
+  value: boolean;
 
   constructor(modal: NgbActiveModal, messageDialog: MessageDialog) {
     super(modal, messageDialog);
   }
 
+  setValue(value: boolean) {
+    this.value = value;
+  }
+
   getValue(): boolean {
-    return true;
+    return this.value;
   }
 }
