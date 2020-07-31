@@ -7,7 +7,8 @@ import { PdfAnnotationsService } from '../../drawing-tool/services';
 
 import {
   Annotation,
-  AnnotationExclusionData,
+  AnnotationExclusion,
+  StoredAnnotationExclusion,
   Location,
   Meta,
   UniversalGraphNode,
@@ -57,7 +58,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
   annotations: Annotation[] = [];
   // We don't want to modify the above array when we add annotations, because
   // data flow right now is very messy
-  addedAnnotations: Annotation[] = [];
+  addedCustomAnnotations: Annotation[] = [];
   /**
    * A mapping of annotation type (i.e. Genes) to a list of those annotations.
    */
@@ -75,7 +76,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
   // https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/pdfjs-dist/index.d.ts
   pdfData: { url?: string, data?: Uint8Array };
   currentFileId: string;
-  addedAnnotation: Annotation;
+  addedAnnotations: Annotation[];
   addAnnotationSub: Subscription;
   removedAnnotationIds: string[];
   removeAnnotationSub: Subscription;
@@ -83,11 +84,11 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
   sortedEntityTypeEntries: EntityTypeEntry[] = [];
   entityTypeVisibilityChanged = false;
   modulePropertiesChange = new EventEmitter<ModuleProperties>();
-  addedAnnotationExclusion: AnnotationExclusionData;
+  addedAnnotationExclusion: AnnotationExclusion;
   addAnnotationExclusionSub: Subscription;
   showExcludedAnnotations = false;
   removeAnnotationExclusionSub: Subscription;
-  removedAnnotationExclusion: AnnotationExclusionData;
+  removedAnnotationExclusion: AnnotationExclusion;
   projectName: string;
 
   // search
@@ -161,7 +162,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
   updateAnnotationIndex() {
     // Create index of annotation types
     this.annotationEntityTypeMap.clear();
-    for (const annotation of [...this.annotations, ...this.addedAnnotations]) {
+    for (const annotation of [...this.annotations, ...this.addedCustomAnnotations]) {
       const entityType: EntityType = ENTITY_TYPE_MAP[annotation.meta.type];
       if (!entityType) {
         throw new Error(`unknown entity type ${annotation.meta.type} not in ENTITY_TYPE_MAP`);
@@ -264,19 +265,24 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
 
     annotationToAdd.meta.idHyperlink = this.generateHyperlink(annotationToAdd);
 
-    this.addAnnotationSub = this.pdfAnnService.addCustomAnnotation(this.currentFileId, annotationToAdd, this.projectName)
-      .pipe(this.errorHandler.create())
-      .subscribe(
-        response => {
-          this.addedAnnotation = Object.assign({}, annotationToAdd, {uuid: response.uuid});
-          this.snackBar.open('Annotation has been added', 'Close', {duration: 5000});
-        },
-        err => {
-          this.snackBar.open(`Error: failed to add annotation`, 'Close', {duration: 10000});
-        },
-      );
+    const dialogRef = this.modalService.open(ConfirmDialogComponent);
+    dialogRef.componentInstance.message = 'Do you want to annotate the rest of the document with this term as well?';
+    dialogRef.result.then((annotateAll: boolean) => {
+      this.addAnnotationSub = this.pdfAnnService.addCustomAnnotation(this.currentFileId, annotationToAdd, annotateAll, this.projectName)
+        .pipe(this.errorHandler.create())
+        .subscribe(
+          (annotations: Annotation[]) => {
+            this.addedAnnotations = annotations;
+            this.snackBar.open('Annotation has been added', 'Close', {duration: 5000});
+          },
+          err => {
+            this.snackBar.open(`Error: failed to add annotation`, 'Close', {duration: 10000});
+          },
+        );
+    }, () => {
+    });
 
-    this.addedAnnotations.push(annotation);
+    this.addedCustomAnnotations.push(annotation);
     this.updateAnnotationIndex();
     this.updateSortedEntityTypeEntries();
   }
@@ -308,14 +314,14 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
     });
   }
 
-  annotationExclusionAdded({id, text, reason, comment}) {
+  annotationExclusionAdded(exclusionData: StoredAnnotationExclusion) {
     this.addAnnotationExclusionSub = this.pdfAnnService.addAnnotationExclusion(
-      this.currentFileId, id, text, reason, comment, this.projectName,
+      this.currentFileId, exclusionData, this.projectName,
     )
       .pipe(this.errorHandler.create())
       .subscribe(
         response => {
-          this.addedAnnotationExclusion = {id, text, reason, comment};
+          this.addedAnnotationExclusion = (({ id, text, reason, comment }) => ({ id, text, reason, comment }))(exclusionData);
           this.snackBar.open('Annotation has been excluded', 'Close', {duration: 5000});
         },
         err => {
