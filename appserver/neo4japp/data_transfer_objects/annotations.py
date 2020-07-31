@@ -1,6 +1,6 @@
 import attr
 
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 from pdfminer.layout import LTAnno, LTChar
 
@@ -26,7 +26,7 @@ class PDFTokenPositions(CamelDictMixin):
 
 @attr.s(frozen=True)
 class PDFTokenPositionsList(CamelDictMixin):
-    token_positions: List[PDFTokenPositions] = attr.ib()
+    token_positions: Any = attr.ib()
     char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]] = attr.ib()
     cropbox_in_pdf: Tuple[int, int] = attr.ib()
     min_idx_in_page: Dict[int, int] = attr.ib()
