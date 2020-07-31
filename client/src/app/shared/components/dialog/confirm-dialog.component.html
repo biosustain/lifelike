@@ -8,7 +8,7 @@
   </app-modal-body>
 
   <app-modal-footer>
-    <button type="button" class="btn btn-secondary mr-2" (click)="cancel()">No</button>
-    <button type="submit" class="btn btn-primary">Yes</button>
+    <button type="submit" class="btn btn-secondary mr-2" (click)="setValue(false)">No</button>
+    <button type="submit" class="btn btn-primary" (click)="setValue(true)">Yes</button>
   </app-modal-footer>
 </form>
