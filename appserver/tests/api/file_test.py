@@ -339,6 +339,7 @@ def test_user_can_remove_annotation_exclusion(client, test_user, test_user_with_
         headers=headers,
         data=json.dumps({
             'id': 'id',
+            'idHyperlink': 'link',
             'text': 'text',
             'type': 'type',
             'rects': [],
