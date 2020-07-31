@@ -1,4 +1,4 @@
-// import { STEPPER_GLOBAL_OPTIONS } from '@angular/cdk/stepper';
+import { STEPPER_GLOBAL_OPTIONS } from '@angular/cdk/stepper';
 import { Component } from '@angular/core';
 import { FormGroup, FormBuilder, Validators, FormArray } from '@angular/forms';
 import { MatSnackBar } from '@angular/material';
@@ -15,10 +15,9 @@ import { UserFileImportService } from 'app/user-file-import/services/user-file-i
     selector: 'app-gene-import',
     templateUrl: './gene-import-wizard.component.html',
     styleUrls: ['./gene-import-wizard.component.scss'],
-    // Uncommenting this will allow the use of custom icons in the stepper
-    // providers: [{
-    //     provide: STEPPER_GLOBAL_OPTIONS, useValue: {displayDefaultIndicatorType: false}
-    // }]
+    providers: [{
+        provide: STEPPER_GLOBAL_OPTIONS, useValue: {displayDefaultIndicatorType: false}
+    }]
 })
 export class GeneImportWizardComponent {
     loadingSheet: boolean;
