@@ -7,6 +7,35 @@
   </div>
   <div id="gene-import-body">
     <mat-horizontal-stepper linear="true" #stepper>
+      <!-- Begin change default icons -->
+      <ng-template matStepperIcon="edit">
+        <i class="fa fa-pencil"></i>
+      </ng-template>
+
+      <ng-template matStepperIcon="done">
+        <i class="fa fa-check"></i>
+      </ng-template>
+
+      <!-- Begin change default icons -->
+
+      <!-- Begin changed step icons -->
+      <ng-template matStepperIcon="upload">
+        <i class="fa fa-file-excel-o"></i>
+      </ng-template>
+
+      <ng-template matStepperIcon="select-sheet">
+        <i class="fa fa-clone"></i>
+      </ng-template>
+
+      <ng-template matStepperIcon="configure">
+        <i class="fa fa-gears"></i>
+      </ng-template>
+
+      <ng-template matStepperIcon="review">
+        <i class="fa fa-rocket"></i>
+      </ng-template>
+      <!-- End changed step icons -->
+
       <mat-step state="upload" [completed]="importFileForm.valid && !loadingSheet">
         <ng-template matStepLabel>Choose Import File</ng-template>
         <div class="d-flex justify-content-between mb-2">
@@ -34,7 +63,7 @@
         </div>
       </mat-step>
 
-      <mat-step state="selectSheet" [completed]="sheetForm.valid">
+      <mat-step state="select-sheet" [completed]="sheetForm.valid">
         <ng-template matStepLabel>Choose Sheet</ng-template>
         <div class="d-flex justify-content-between mb-2">
           <button class="btn btn-primary" matStepperPrevious>Back</button>
@@ -60,7 +89,7 @@
         </div>
       </mat-step>
 
-      <mat-step [completed]="geneConfigFormValid" state="configure">
+      <mat-step state="configure" [completed]="geneConfigFormValid">
         <ng-template matStepLabel>Configure Import Data</ng-template>
         <div class="d-flex justify-content-between mb-2">
           <button class="btn btn-primary" matStepperPrevious>Back</button>
@@ -82,7 +111,7 @@
         ></app-gene-import-config>
       </mat-step>
 
-      <mat-step [completed]="false" state="review">
+      <mat-step state="review" [completed]="false">
         <ng-template matStepLabel>Review Data Import</ng-template>
         <div class="d-flex justify-content-between mb-2">
           <button class="btn btn-primary" matStepperPrevious>Back</button>
