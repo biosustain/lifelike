@@ -6,9 +6,7 @@ import {
 } from 'rxjs';
 
 import { ANNOTATIONS } from './mock_data';
-import {
-  Annotation
-} from './interfaces';
+import { Annotation, StoredAnnotationExclusion } from './interfaces';
 
 @Injectable({
   providedIn: '***ARANGO_USERNAME***'
@@ -66,12 +64,13 @@ export class PdfAnnotationsService {
    * Adds custom annotation for the given file.
    * @param fileId id of the file
    * @param annotation annotation to add
+   * @param annotateAll indicates if the rest of the document should be annotated
    */
-  addCustomAnnotation(fileId: string, annotation: Annotation, projectName: string = 'beta-project'): Observable<any> {
+  addCustomAnnotation(fileId: string, annotation: Annotation, annotateAll: boolean, projectName: string = 'beta-project'): Observable<any> {
     const url = `/api/projects/${projectName}/files/${fileId}/annotations/add`;
     return this.http.patch(
       url,
-      annotation,
+      { annotation, annotateAll },
       this.createHttpOptions(true)
     );
   }
@@ -94,15 +93,12 @@ export class PdfAnnotationsService {
   /**
    * Excludes automatic annotation from the given file.
    * @param fileId id of the file that contains the annotation
-   * @param id id of the annotation to be excluded
-   * @param text annotated text
-   * @param reason reason for an exclusion
-   * @param comment additional comment
+   * @param exclusionData data needed to exclude the annotation
    */
-  addAnnotationExclusion(fileId: string, id: string, text: string, reason: string, comment: string, projectName: string): Observable<any> {
+  addAnnotationExclusion(fileId: string, exclusionData: StoredAnnotationExclusion, projectName: string): Observable<any> {
     return this.http.patch(
       `/api/projects/${projectName}/files/${fileId}/annotations/add_annotation_exclusion`,
-      { id, text, reason, comment },
+      exclusionData,
       this.createHttpOptions(true),
     );
   }
