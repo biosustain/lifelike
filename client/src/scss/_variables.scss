@@ -1,6 +1,5 @@
 @import '~bootstrap/scss/functions';
 
-$primary: #0c8caa;
 $white: #fff;
 $gray-100: #f8f9fa;
 $gray-200: #e9ecef;
@@ -13,6 +12,43 @@ $gray-800: #343a40;
 $gray-900: #212529;
 $black: #000;
 
+$blue: #007bff;
+$indigo: #6610f2;
+$purple: #6f42c1;
+$pink: #e83e8c;
+$red: #dc3545;
+$orange: #fd7e14;
+$yellow: #ffc107;
+$green: #28a745;
+$teal: #20c997;
+$cyan: #17a2b8;
+
+$primary: #0c8caa;
+$secondary: $gray-300;
+$success: $green;
+$info: $cyan;
+$warning: $yellow;
+$danger: $red;
+$light: $gray-100;
+$dark: $gray-800;
+
+$theme-colors: ();
+// stylelint-disable-next-line scss/dollar-variable-default
+$theme-colors: map-merge(
+    (
+      "primary": $primary,
+      "secondary": $secondary,
+      "success": $success,
+      "info": $info,
+      "warning": $warning,
+      "danger": $danger,
+      "light": $light,
+      "dark": $dark,
+      "button": $gray-400,
+    ),
+    $theme-colors
+);
+
 @import '~bootstrap/scss/variables';
 
 $font-family-sans-serif: Roboto, "Helvetica Neue", Arial, Helvetica, sans-serif;
@@ -20,18 +56,29 @@ $font-family-base: $font-family-sans-serif;
 
 $form-group-margin-bottom: 0.5rem;
 
-$toolbar-padding: 0.5rem;
+$window-spacer: 0.75rem; // Spacing between the edge of container and the window
+$window-background: $white;
+$window-border-color: $gray-300;
+$window-border-radius: $border-radius;
+$window-header-bg: $gray-300;
+$window-header-selectable-hover-bg: $gray-300;
+$window-title-font-size: $font-size-sm;
+$window-title-font-weight: bold;
+
+$toolbar-padding: $window-spacer;
 $toolbar-border-width: 1px;
-$toolbar-border-color: $gray-200;
+$toolbar-border-color: $gray-400;
 $toolbar-bg: $white;
 $toolbar-box-shadow: none;
+$toolbar-font-size: $font-size-base;
 
 $floating-toolbar-padding: $spacer / 2;
 $floating-toolbar-border-color: $gray-400;
-$floating-toolbar-bg: $gray-300;
+$floating-toolbar-bg: $gray-400;
 $floating-toolbar-border-radius: $border-radius;
 
 $table-row-active-bg: rgba($component-active-bg, .1);
 $table-row-focus-box-shadow: inset 0 0 0 $input-btn-focus-width $input-btn-focus-color;
+
 
 $modal-md: 600px;

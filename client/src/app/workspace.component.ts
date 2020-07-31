@@ -53,12 +53,6 @@ export class WorkspaceComponent implements AfterViewInit, OnChanges, AfterConten
   closeTab(pane: Pane, tab: Tab) {
     const performClose = () => {
       pane.deleteTab(tab);
-      if (pane.id === 'right' && pane.tabs.length === 0) {
-        this.workspaceManager.panes.delete(pane);
-      }
-      if (pane.id === 'left' && pane.tabs.length === 0) {
-        this.workspaceManager.openTabByUrl(pane, '/projects');
-      }
       this.workspaceManager.save();
       this.workspaceManager.emitEvents();
     };
@@ -101,8 +95,13 @@ export class WorkspaceComponent implements AfterViewInit, OnChanges, AfterConten
   }
 
   addPane() {
-    const pane = this.workspaceManager.panes.getOrCreate('right');
-    this.workspaceManager.openTabByUrl(pane, '/projects');
+    this.workspaceManager.panes.getOrCreate('right');
+    this.workspaceManager.save();
+  }
+
+  closeRightPane() {
+    this.workspaceManager.panes.delete(this.workspaceManager.panes.get('right'));
+    this.workspaceManager.save();
   }
 
   shouldConfirmUnload(): boolean {
