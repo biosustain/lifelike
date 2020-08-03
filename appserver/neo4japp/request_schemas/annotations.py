@@ -45,6 +45,7 @@ class AnnotationRemovalSchema(StrictSchema):
 
 class AnnotationExclusionSchema(StrictSchema):
     id = ma.String(required=True)
+    idHyperlink = ma.String(required=True)
     text = ma.String(required=True)
     type = ma.String(required=True)
     rects = ma.List(ma.List(ma.Float(required=True)))
