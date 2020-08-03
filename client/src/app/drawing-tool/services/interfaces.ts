@@ -156,7 +156,9 @@ export interface RemovedAnnotationExclusion {
   text: string;
 }
 
-export interface AddedAnnotationExclsuion extends RemovedAnnotationExclusion {
+export interface AddedAnnotationExclsuion {
+  type: string;
+  text: string;
   id: string;
   idHyperlink: string;
   reason: string;
