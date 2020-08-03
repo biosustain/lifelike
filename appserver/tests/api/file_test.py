@@ -215,7 +215,8 @@ CUSTOM_ANNOTATION = {
             'wikipedia': '',
             'google': ''
         },
-        'primaryLink': ''
+        'primaryLink': '',
+        'includeGlobally': False
     },
 }
 
@@ -345,6 +346,7 @@ def test_user_can_remove_annotation_exclusion(client, test_user, test_user_with_
             'pageNumber': 1,
             'reason': 'reason',
             'comment': 'comment',
+            'excludeGlobally': False
         }),
         content_type='application/json',
     )
