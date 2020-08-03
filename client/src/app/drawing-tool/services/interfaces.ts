@@ -5,6 +5,7 @@ export interface UniversalEntityData {
   source?: string;
   search?: Hyperlink[];
   subtype?: string;
+  sources?: Hyperlink[];
 }
 
 export interface UniversalNodeStyle {
