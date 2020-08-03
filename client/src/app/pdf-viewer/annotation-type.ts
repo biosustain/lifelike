@@ -23,6 +23,7 @@ export interface Meta {
   exclusionReason?: string;
   exclusionComment?: string;
   primaryLink?: string;
+  includeGlobally?: boolean;
 }
 
 export type Rect = number[];
