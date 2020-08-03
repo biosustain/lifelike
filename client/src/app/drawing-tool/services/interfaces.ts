@@ -151,15 +151,18 @@ export interface KnowledgeMap {
   user_id?: number;
 }
 
-export interface AnnotationExclusion {
-  id: string;
+export interface RemovedAnnotationExclusion {
+  type: string;
   text: string;
-  reason: string;
-  comment: string;
 }
 
-export interface StoredAnnotationExclusion extends AnnotationExclusion {
+export interface AddedAnnotationExclsuion {
   type: string;
+  text: string;
+  id: string;
+  idHyperlink: string;
+  reason: string;
+  comment: string;
   rects: Rect[];
   pageNumber: number;
 }
