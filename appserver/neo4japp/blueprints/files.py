@@ -409,7 +409,7 @@ def get_annotations(id: str, project_name: str):
     # Add additional information for annotations that were excluded
     for annotation in annotations:
         for exclusion in file.excluded_annotations:
-            if (exclusion['id'] == annotation['meta']['id'] and
+            if (exclusion['type'] == annotation['meta']['type'] and
                     exclusion.get('text', True) == annotation.get('textInDocument', False)):
                 annotation['meta']['isExcluded'] = True
                 annotation['meta']['exclusionReason'] = exclusion['reason']
@@ -696,7 +696,7 @@ def add_annotation_exclusion(project_name: str, file_id: str, **payload):
 
     excluded_annotation = {
         **payload,
-        'user_id': g.current_user.id,
+        'user_id': user.id,
         'exclusion_date': str(datetime.now(TIMEZONE))
     }
 
@@ -717,9 +717,9 @@ def add_annotation_exclusion(project_name: str, file_id: str, **payload):
     '/<string:project_name>/files/<string:file_id>/annotations/remove_annotation_exclusion',
     methods=['PATCH'])
 @auth.login_required
-@use_kwargs(AnnotationExclusionSchema(only=('id', 'text')))
+@use_kwargs(AnnotationExclusionSchema(only=('type', 'text')))
 @requires_project_permission(AccessActionType.WRITE)
-def remove_annotation_exclusion(project_name, file_id, id, text):
+def remove_annotation_exclusion(project_name, file_id, type, text):
 
     user = g.current_user
 
@@ -737,7 +737,8 @@ def remove_annotation_exclusion(project_name, file_id, id, text):
     if file is None:
         raise RecordNotFoundException('File does not exist')
     excluded_annotation = next(
-        (ann for ann in file.excluded_annotations if ann['id'] == id and ann['text'] == text), None
+        (ann for ann in file.excluded_annotations if ann['type'] == type and ann['text'] == text),
+        None
     )
     if excluded_annotation is None:
         raise RecordNotFoundException('Annotation not found')
