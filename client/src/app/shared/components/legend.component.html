@@ -1,0 +1,11 @@
+<div id="legend" class="floating-toolbar">
+  <div id="legend-header">Legend</div>
+  <div class="d-flex flex-column align-items-center">
+    <span
+      *ngFor="let nodeType of legend | keyvalue"
+      class="w-100 d-flex flex-row align-items-center">
+      <div class="color-box" [ngStyle]="{'background': nodeType.value[0]}"></div>
+      <div>{{nodeType.key}}</div>
+    </span>
+  </div>
+</div>

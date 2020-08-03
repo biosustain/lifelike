@@ -32,7 +32,8 @@
               "node_modules/qtip2/dist/jquery.qtip.min.css",
               "node_modules/jquery-ui-dist/jquery-ui.css",
               "src/***ARANGO_DB_NAME***-theme.scss",
-              "src/styles.scss"
+              "src/styles.scss",
+              "src/scss/bootstrap.scss"
             ],
             "scripts": [
               "node_modules/vis-network/dist/vis-network.min.js",
@@ -72,7 +73,7 @@
                   "with": "src/environments/environment.staging.ts"
                 }
               ],
-              "optimization": true,
+              "optimization": false,
               "outputHashing": "all",
               "sourceMap": false,
               "extractCss": true,
@@ -80,7 +81,7 @@
               "aot": true,
               "extractLicenses": true,
               "vendorChunk": false,
-              "buildOptimizer": true,
+              "buildOptimizer": false,
               "budgets": [
                 {
                   "type": "initial",
@@ -101,7 +102,7 @@
                   "with": "src/environments/environment.prod.ts"
                 }
               ],
-              "optimization": true,
+              "optimization": false,
               "outputHashing": "all",
               "sourceMap": false,
               "extractCss": true,
@@ -109,7 +110,7 @@
               "aot": true,
               "extractLicenses": true,
               "vendorChunk": false,
-              "buildOptimizer": true,
+              "buildOptimizer": false,
               "budgets": [
                 {
                   "type": "initial",
@@ -154,6 +155,7 @@
               "src/assets"
             ],
             "styles": [
+              "src/scss/bootstrap.scss",
               "src/***ARANGO_DB_NAME***-theme.scss",
               "src/styles.scss"
             ],

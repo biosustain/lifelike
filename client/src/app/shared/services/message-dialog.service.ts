@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
-import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { MessageType } from 'app/interfaces/message-dialog.interface';
-import { MessageDialogComponent } from '../components/message-dialog/message-dialog.component';
+import { MessageDialogComponent } from '../components/dialog/message-dialog.component';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 export interface MessageArguments {
   title: string;
@@ -15,23 +15,17 @@ export interface MessageArguments {
 })
 export class MessageDialog {
   constructor(
-    public dialog: MatDialog
+    private modalService: NgbModal,
   ) {
   }
 
   display(args: MessageArguments) {
-    const dialogConfig = new MatDialogConfig();
-
-    dialogConfig.width = args.detail ? '800px' : '400px';
-    dialogConfig.disableClose = false;
-    dialogConfig.autoFocus = true;
-    dialogConfig.data = {
-      title: args.title,
-      message: args.message,
-      detail: args.detail,
-      type: args.type,
-    };
-
-    this.dialog.open(MessageDialogComponent, dialogConfig);
+    const modalRef = this.modalService.open(MessageDialogComponent, {
+      size: args.detail ? 'lg' : 'md',
+    });
+    modalRef.componentInstance.title = args.title;
+    modalRef.componentInstance.message = args.message;
+    modalRef.componentInstance.detail = args.detail;
+    modalRef.componentInstance.type = args.type;
   }
 }

@@ -3,7 +3,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 import { configureTestSuite } from 'ng-bullet';
 
-import { MAX_CLUSTER_ROWS } from 'app/constants';
+import { MAX_CLUSTER_ROWS } from 'app/shared/constants';
 import { RootStoreModule } from 'app/***ARANGO_USERNAME***-store';
 import { SharedModule } from 'app/shared/shared.module';
 
@@ -63,7 +63,7 @@ describe('VisualizationSettingsComponent', () => {
     });
 
     it('should show checkboxes for each label provided by the parent', () => {
-        const checkboxElements = document.getElementsByClassName('mat-checkbox-label');
+        const checkboxElements = document.getElementsByClassName('custom-checkbox custom-control');
         expect(checkboxElements.length).toEqual(2);
         expect(checkboxElements[0].textContent.trim()).toEqual('MockNode1');
         expect(checkboxElements[1].textContent.trim()).toEqual('MockNode2');

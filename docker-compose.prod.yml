@@ -32,6 +32,8 @@ services:
     nlpapi:
         expose:
             - 5001
+        env_file:
+            - ./.env
         volumes:
             - /srv/models:/models
         networks:
@@ -40,6 +42,11 @@ services:
     cache-invalidator:
         env_file:
             - ./.env
+        networks:
+            - backend
+
+    redis:
+        image: redis:6.0.3-alpine
         networks:
             - backend
 

@@ -69,6 +69,7 @@ export interface ReferenceTablePair {
     node: {
         id: string;
         displayName: string;
+        label: string;
     };
     edge: {
         originalFrom: number;
@@ -80,6 +81,7 @@ export interface ReferenceTablePair {
 export interface ReferenceTableRow {
     nodeId: string;
     nodeDisplayName: string;
+    nodeLabel: string;
     snippetCount: number;
 }
 
@@ -89,6 +91,7 @@ export interface SettingsFormControl {
 }
 
 export interface SettingsFormValues {
+    animation: SettingsFormControl;
     maxClusterShownRows: SettingsFormControl;
     [key: string]: SettingsFormControl; // Could be any number of node entity checkboxes
 }
