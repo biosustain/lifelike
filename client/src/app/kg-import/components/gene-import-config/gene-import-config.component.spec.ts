@@ -2,6 +2,9 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { configureTestSuite } from 'ng-bullet';
 
+import { RootStoreModule } from 'app/***ARANGO_USERNAME***-store';
+import { SharedModule } from 'app/shared/shared.module';
+
 import { GeneImportConfigComponent } from './gene-import-config.component';
 
 describe('GeneImportConfigComponent', () => {
@@ -10,7 +13,13 @@ describe('GeneImportConfigComponent', () => {
 
     configureTestSuite(() => {
         TestBed.configureTestingModule({
-            declarations: [ GeneImportConfigComponent ]
+            declarations: [
+                GeneImportConfigComponent,
+            ],
+            imports: [
+                SharedModule,
+                RootStoreModule
+            ]
         });
     });
 

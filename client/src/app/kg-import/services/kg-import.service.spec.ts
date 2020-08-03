@@ -2,10 +2,18 @@ import { TestBed } from '@angular/core/testing';
 
 import { configureTestSuite } from 'ng-bullet';
 
+import { RootStoreModule } from 'app/***ARANGO_USERNAME***-store';
+
 import { KgImportService } from './kg-import.service';
 
 describe('KgImportService', () => {
-    configureTestSuite(() => TestBed.configureTestingModule({}));
+    configureTestSuite(() => {
+        TestBed.configureTestingModule({
+            imports: [
+                RootStoreModule,
+            ],
+        });
+    });
 
     it('should be created', () => {
         const service: KgImportService = TestBed.get(KgImportService);
