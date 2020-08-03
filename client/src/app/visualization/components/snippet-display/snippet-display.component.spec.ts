@@ -58,7 +58,9 @@ describe('SnippetDisplayComponentComponent', () => {
             label: 'Mock Reference',
             data: {
                 entry1Text: 'Mock Entry 1',
+                entry1Type: 'mockNode1',
                 entry2Text: 'Mock Entry 2',
+                entry2Type: 'mockNode2',
                 id: 'mockReferenceId1',
                 score: 0,
                 sentence: 'Mock Sentence',
