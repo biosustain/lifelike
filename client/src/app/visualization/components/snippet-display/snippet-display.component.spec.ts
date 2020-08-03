@@ -120,14 +120,14 @@ describe('SnippetDisplayComponentComponent', () => {
     });
 
     it('should load snippet panels', () => {
-        const snippetPanels = document.getElementsByClassName('association-snippet-panel');
+        const snippetPanels = document.getElementsByClassName('accordion');
 
         expect(snippetPanels.length).toEqual(1);
     });
 
     it('should show publication data on snippet panels', () => {
-        const snippetPanelTitles = document.getElementsByClassName('association-snippet-title');
-        const snippetPanelPubData = document.getElementsByClassName('association-snippet-pub-data');
+        const snippetPanelTitles = document.getElementsByClassName('snippet-panel-header');
+        const snippetPanelPubData = document.getElementsByClassName('snippet-panel-pub-data');
 
         expect(snippetPanelTitles.length).toEqual(1);
         expect(snippetPanelPubData.length).toEqual(1);
@@ -140,7 +140,12 @@ describe('SnippetDisplayComponentComponent', () => {
     });
 
     it('should link to pubtator', () => {
-        const pubmedLinks = document.getElementsByClassName('pubmed-link');
+        const snippetPanel = document.getElementsByClassName('snippet-panel-header')[0] as HTMLElement;
+        const pubmedLinks = document.getElementsByClassName('pubtator-link');
+
+        snippetPanel.click();
+
+        fixture.detectChanges();
 
         expect(pubmedLinks.length).toEqual(1);
 
