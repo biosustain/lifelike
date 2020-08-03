@@ -1,11 +1,12 @@
 from datetime import datetime, timezone
 
 from sqlalchemy.dialects import postgresql
+from sqlalchemy.orm.query import Query
 from sqlalchemy.types import TIMESTAMP
 
 from neo4japp.database import db
-from neo4japp.models import AppUser
 from neo4japp.models.common import RDBMSBase
+from neo4japp.models.drawing_tool import Project
 
 
 class FileContent(RDBMSBase):
@@ -31,6 +32,7 @@ class Files(RDBMSBase):  # type: ignore
     annotations_date = db.Column(TIMESTAMP(timezone=True), nullable=False)
     project = db.Column(db.Integer(), db.ForeignKey('projects.id'), nullable=False)
     custom_annotations = db.Column(postgresql.JSONB, nullable=False, server_default='[]')
+    dir_id = db.Column(db.Integer, db.ForeignKey('directory.id'), nullable=False)
     doi = db.Column(db.String(1024), nullable=True)
     upload_url = db.Column(db.String(2048), nullable=True)
     excluded_annotations = db.Column(postgresql.JSONB, nullable=False, server_default='[]')
@@ -40,3 +42,43 @@ class LMDBsDates(RDBMSBase):
     __tablename__ = 'lmdbs_dates'
     name = db.Column(db.String(256), primary_key=True)
     date = db.Column(TIMESTAMP(timezone=True), nullable=False)
+
+
+class Directory(RDBMSBase):
+    id = db.Column(db.BigInteger, primary_key=True, autoincrement=True)
+    name = db.Column(db.String(200), nullable=False)
+    directory_parent_id = db.Column(
+        db.BigInteger,
+        db.ForeignKey('directory.id'),
+        nullable=True,  # original parent is null
+    )
+    projects_id = db.Column(
+        db.Integer,
+        db.ForeignKey('projects.id'),
+        nullable=False,
+    )
+    files = db.relationship('Files')
+    project = db.relationship('Project')
+    user_id = db.Column(db.Integer, db.ForeignKey('appuser.id'), nullable=True)
+
+    @classmethod
+    def query_child_directories(cls, dir_id: int) -> Query:
+        base_query = db.session.query(cls).filter(cls.id == dir_id).cte(recursive=True)
+        query = base_query.union_all(
+            db.session.query(cls).join(
+                base_query,
+                base_query.c.id == cls.directory_parent_id
+            )
+        )
+        return query
+
+    @classmethod
+    def query_absolute_dir_path(cls, dir_id: int) -> Query:
+        base_query = db.session.query(cls).filter(cls.id == dir_id).cte(recursive=True)
+        query = base_query.union_all(
+            db.session.query(cls).join(
+                base_query,
+                base_query.c.directory_parent_id == Directory.id
+            )
+        )
+        return query

@@ -1,11 +1,9 @@
-import {Injectable} from '@angular/core';
-import {HttpClient} from '@angular/common/http';
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 
-import {map} from 'rxjs/operators';
+import { map } from 'rxjs/operators';
 
-import {
-  FTSResult,
-} from 'app/interfaces';
+import { FTSResult } from 'app/interfaces';
 
 @Injectable()
 export class SearchService {

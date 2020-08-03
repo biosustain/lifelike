@@ -1,6 +1,6 @@
 from flask import json
 from py2neo import Node, Relationship
-from neo4japp.models import NEO4JBase
+from neo4japp.models.common import NEO4JBase
 from neo4japp.util import snake_to_camel_dict
 
 

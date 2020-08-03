@@ -1,0 +1,63 @@
+<div class="position-relative h-100 map-preview-container">
+  <ng-container *ngIf="(loadTask.status$ | async) as status">
+    <app-content-progress
+      [status]="status"
+      loadingText="Fetching map..."
+      errorText="The requested map could not be loaded.">
+    </app-content-progress>
+  </ng-container>
+
+  <div class="position-absolute w-100 h-100 d-flex flex-column" style="z-index: 0">
+    <div class="toolbar">
+      <div class="toolbar-header d-flex align-items-center">
+        <h2 class="toolbar-title text-truncate">
+          <button type="button" class="btn btn-sm btn-link" (click)="goToReturnUrl()" *ngIf="returnUrl">
+            <i class="fa fa-fw fa-arrow-left"></i>
+          </button>
+          {{ map?.label }}
+        </h2>
+        <div class="text-muted ml-2">
+          <i class="fa fa-fw fa-eye"></i> View-only mode
+        </div>
+      </div>
+
+      <div class="toolbar-body d-flex align-items-center">
+        <div class="btn-group mr-2" *ngIf="hasEditPermission">
+          <button type="button" class="btn btn-secondary" [appLink]="['/projects', this.locator.projectName, 'maps', this.locator.hashId, 'edit']">
+            <i class="fa fa-fw fa-pencil-alt"></i> Edit
+          </button>
+        </div>
+
+        <div class="btn-group">
+          <button type="button" class="btn btn-secondary" container="body"
+                  ngbTooltip="Make map fit on screen" placement="bottom"
+                  (click)="zoomToFit()">
+            Fit to Map
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex-fill position-relative">
+      <canvas #canvas class="graph-view"></canvas>
+
+      <div class="detail-overlay">
+        <app-collapsible-window title="Information" class="flex-fill" [sideCollapse]="true">
+          <div class="window-body">
+            <div class="detail-overlay-properties text-muted">
+              <div class="text-truncate">
+                By {{map.author}}
+              </div>
+              <div class="text-truncate">
+                Modified {{map.date_modified | friendlyDateStr}}
+              </div>
+            </div>
+            <div class="detail-overlay-description mt-2">
+              {{map.description}}
+            </div>
+          </div>
+        </app-collapsible-window>
+      </div>
+    </div>
+  </div>
+</div>
