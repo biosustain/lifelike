@@ -466,6 +466,87 @@ def test_escherichia_coli_pdf(
     assert keywords['purF'] == EntityType.Gene.value
 
 
+def test_custom_annotations_gene_organism_matching_no_match(
+    default_lmdb_setup,
+    mock_general_human_genes,
+):
+    annotation_service = get_test_annotations_service(
+        genes_lmdb_path=path.join(directory, 'lmdb/genes'),
+        chemicals_lmdb_path=path.join(directory, 'lmdb/chemicals'),
+        compounds_lmdb_path=path.join(directory, 'lmdb/compounds'),
+        proteins_lmdb_path=path.join(directory, 'lmdb/proteins'),
+        species_lmdb_path=path.join(directory, 'lmdb/species'),
+        diseases_lmdb_path=path.join(directory, 'lmdb/diseases'),
+        phenotypes_lmdb_path=path.join(directory, 'lmdb/phenotypes'),
+    )
+    pdf_parser = get_annotations_pdf_parser()
+
+    pdf = path.join(directory, f'pdf_samples/custom_annotations_gene_matching.pdf')
+
+    with open(pdf, 'rb') as f:
+        pdf_text = pdf_parser.parse_pdf(pdf=f)
+        annotations = annotation_service.create_rules_based_annotations(
+            tokens=pdf_parser.extract_tokens(parsed_chars=pdf_text),
+            custom_annotations=[],
+        )
+
+    assert len(annotations) == 0
+
+
+def test_custom_annotations_gene_organism_matching_has_match(
+    default_lmdb_setup,
+    mock_general_human_genes,
+):
+    annotation_service = get_test_annotations_service(
+        genes_lmdb_path=path.join(directory, 'lmdb/genes'),
+        chemicals_lmdb_path=path.join(directory, 'lmdb/chemicals'),
+        compounds_lmdb_path=path.join(directory, 'lmdb/compounds'),
+        proteins_lmdb_path=path.join(directory, 'lmdb/proteins'),
+        species_lmdb_path=path.join(directory, 'lmdb/species'),
+        diseases_lmdb_path=path.join(directory, 'lmdb/diseases'),
+        phenotypes_lmdb_path=path.join(directory, 'lmdb/phenotypes'),
+    )
+    pdf_parser = get_annotations_pdf_parser()
+
+    pdf = path.join(directory, f'pdf_samples/custom_annotations_gene_matching.pdf')
+
+    custom_annotation = {
+        'meta': {
+            'id': '9606',
+            'type': 'Species',
+            'color': '#3177b8',
+            'links': {
+                'ncbi': 'https://www.ncbi.nlm.nih.gov/gene/?query=hooman',
+                'google': 'https://www.google.com/search?q=hooman',
+                'uniprot': 'https://www.uniprot.org/uniprot/?sort=score&query=hooman',
+                'wikipedia': 'https://www.google.com/search?q=site:+wikipedia.org+hooman',
+            },
+            'idType': '',
+            'allText': 'hooman',
+            'isCustom': True,
+            'idHyperlink': '',
+            'primaryLink': '',
+            'includeGlobally': False,
+        },
+        'uuid': 'a66ec5d5-f65b-467d-b16e-b833161e07d1',
+        'rects': [[76.8953975, 706.52786608, 119.3537674652, 718.27682008]],
+        'user_id': 2,
+        'keywords': ['hooman'],
+        'pageNumber': 1,
+        'inclusion_date': '2020-08-03 23:00:09.728591+00:00',
+    }
+
+    with open(pdf, 'rb') as f:
+        pdf_text = pdf_parser.parse_pdf(pdf=f)
+        annotations = annotation_service.create_rules_based_annotations(
+            tokens=pdf_parser.extract_tokens(parsed_chars=pdf_text),
+            custom_annotations=[custom_annotation],
+        )
+
+    assert len(annotations) == 1
+    assert annotations[0].meta.id == '388962'  # human gene
+
+
 def test_human_gene_pdf(
     human_gene_pdf_lmdb_setup,
     human_gene_pdf_gene_and_organism_network,
