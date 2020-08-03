@@ -29,6 +29,7 @@ export class AnnotationEditDialogComponent extends CommonFormDialogComponent {
   readonly form: FormGroup = new FormGroup({
     entityType: new FormControl('', Validators.required),
     links: new FormArray([]),
+    includeGlobally: new FormControl(false),
   });
   readonly links = this.form.get('links') as FormArray;
 
@@ -68,6 +69,7 @@ export class AnnotationEditDialogComponent extends CommonFormDialogComponent {
         isCustom: true,
         allText: this.allText.trim(),
         primaryLink,
+        includeGlobally: this.form.value.includeGlobally,
       },
     };
   }
