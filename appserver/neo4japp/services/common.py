@@ -1,4 +1,3 @@
-from sqlalchemy.orm.session import Session
 from sqlalchemy.exc import SQLAlchemyError
 from neo4japp.exceptions import DatabaseError
 
@@ -10,7 +9,7 @@ class GraphBaseDao:
 
 
 class RDBMSBaseDao:
-    def __init__(self, session: Session, **kwargs):
+    def __init__(self, session, **kwargs):
         self.session = session
         super().__init__(**kwargs)
 

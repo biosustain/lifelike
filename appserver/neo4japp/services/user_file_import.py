@@ -594,9 +594,9 @@ class UserFileImportService(HybridDBDao):
         curr_row = 2  # start at the second row because we don't want to include headers
 
         relationship_hashes = []
-        rel_hash_map = {}  # {relhash: relationship}
-        col_match_prop_tuples = {}  # {rel_hash: [(node1, node2, relationship_props)]}
-        gene_match_prop_tuples = {}  # {rel_hash: [(node1, relationship_props)]}
+        rel_hash_map: Dict[str, Relationship] = {}
+        col_match_prop_tuples: Dict[str, List[Tuple[Dict, Dict, Dict]]] = {}
+        gene_match_prop_tuples: Dict[str, List[Tuple[Dict, Dict]]] = {}
 
         # Setup hash maps
         for relationship in relationships:
