@@ -2,6 +2,10 @@
 @import '~bootstrap/scss/variables';
 @import 'src/scss/variables';
 
+#page-limit-select {
+  max-width: 95px;
+}
+
 .mat-icon {
   font-size: 12px;
 }
@@ -39,4 +43,8 @@
   .card {
     margin: 0.5rem 0;
   }
+}
+
+.snippet-result {
+  white-space: normal;
 }

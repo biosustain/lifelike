@@ -1,21 +1,25 @@
 <div *ngIf="dataLoaded && snippets && legend; else loadingSpinner">
-  <div id="num-snippets-container" class="mb-1 d-flex justify-content-between align-items-center">
-    <span *ngIf="totalResults === 0; else nonZeroResults">Showing 0 - 0 of 0 snippets</span>
-    <ng-template #nonZeroResults>
-      <span *ngIf="pageLimit * (page) > totalResults; else multiPageResults">Showing {{ pageLimit * (page - 1) + 1 }} - {{ totalResults }} of {{ totalResults }}</span>
-      <ng-template #multiPageResults>
-        <span>Showing {{ pageLimit * (page - 1) + 1 }} - {{ pageLimit * (page) }} of {{ totalResults }}</span>
+  <div id="num-snippets-container" class="row align-items-center mb-2">
+    <div class="col">
+      <span *ngIf="totalResults === 0; else nonZeroResults">Showing 0 - 0 of 0 snippets</span>
+      <ng-template #nonZeroResults>
+        <span *ngIf="pageLimit * (page) > totalResults; else multiPageResults">Showing {{ pageLimit * (page - 1) + 1 }} - {{ totalResults }} of {{ totalResults }}</span>
+        <ng-template #multiPageResults>
+          <span>Showing {{ pageLimit * (page - 1) + 1 }} - {{ pageLimit * (page) }} of {{ totalResults }}</span>
+        </ng-template>
       </ng-template>
-    </ng-template>
+    </div>
 
-    <div class="form-group" *ngIf="totalResults !== 0">
-      <label>Page Limit</label>
-      <select class="custom-select" [ngModel]="pageLimit" (change)="onLimitChange($event)">
-        <option type="number" *ngFor="let limit of pageLimitList" [value]="limit">{{ limit }}</option>
-      </select>
+    <div class="col">
+      <div class="d-flex justify-content-end align-items-center" *ngIf="totalResults !== 0">
+        <label class="mr-1 mb-0">Page Limit</label>
+        <select id="page-limit-select" class="custom-select" [ngModel]="pageLimit" (change)="onLimitChange($event)">
+          <option type="number" *ngFor="let limit of pageLimitList" [value]="limit">{{ limit }}</option>
+        </select>
+      </div>
     </div>
   </div>
-  <div *ngFor="let result of snippets">
+  <div class="snippet-result" *ngFor="let result of snippets">
     <app-node-relationship
       [leftNodeName]="result.from.displayName"
       [leftNodeLabel]="result.from.primaryLabel"
