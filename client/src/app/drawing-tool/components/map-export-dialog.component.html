@@ -1,0 +1,21 @@
+<form [formGroup]="form" (ngSubmit)="submit()">
+  <app-modal-header (cancel)="cancel()">
+    Export Map
+  </app-modal-header>
+
+  <app-modal-body>
+    <app-form-row for="format" label="Format" [control]="form.get('label')">
+      <select class="custom-select" formControlName="format" id="format"
+              [appFormInput]="form.get('format')" appAutoFocus>
+        <option value="pdf">PDF</option>
+        <option value="png">PNG</option>
+        <option value="svg">SVG</option>
+      </select>
+    </app-form-row>
+  </app-modal-body>
+
+  <app-modal-footer>
+    <button type="button" class="btn btn-secondary mr-2" (click)="cancel()">Cancel</button>
+    <button type="submit" class="btn btn-primary">Export</button>
+  </app-modal-footer>
+</form>

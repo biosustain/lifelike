@@ -442,7 +442,7 @@ def test_escherichia_coli_pdf(
 
     with open(pdf, 'rb') as f:
         pdf_text = pdf_parser.parse_pdf(pdf=f)
-        annotations = annotation_service.create_annotations(
+        annotations = annotation_service.create_rules_based_annotations(
             tokens=pdf_parser.extract_tokens(parsed_chars=pdf_text))
 
     keywords = {o.keyword: o.meta.keyword_type for o in annotations}
@@ -486,7 +486,7 @@ def test_human_gene_pdf(
 
     with open(pdf, 'rb') as f:
         pdf_text = pdf_parser.parse_pdf(pdf=f)
-        annotations = annotation_service.create_annotations(
+        annotations = annotation_service.create_rules_based_annotations(
             tokens=pdf_parser.extract_tokens(parsed_chars=pdf_text))
 
     keywords = {o.keyword: o.meta.keyword_type for o in annotations}
@@ -552,11 +552,12 @@ def test_tokens_gene_vs_protein(
             char_coord_objs_in_pdf.append(get_dummy_LTChar(text=c))
         char_coord_objs_in_pdf.append(get_dummy_LTChar(text=' '))
 
-    annotations = annotation_service.create_annotations(
+    annotations = annotation_service.create_rules_based_annotations(
         tokens=PDFTokenPositionsList(
             token_positions=tokens,
             char_coord_objs_in_pdf=char_coord_objs_in_pdf,
             cropbox_in_pdf=(5, 5),
+            min_idx_in_page=[1, 5, 10],
         ),
     )
 
@@ -655,11 +656,12 @@ def test_tokens_gene_vs_protein_serpina1_cases(
             char_coord_objs_in_pdf.append(get_dummy_LTChar(text=c))
         char_coord_objs_in_pdf.append(get_dummy_LTChar(text=' '))
 
-    annotations = annotation_service.create_annotations(
+    annotations = annotation_service.create_rules_based_annotations(
         tokens=PDFTokenPositionsList(
             token_positions=tokens,
             char_coord_objs_in_pdf=char_coord_objs_in_pdf,
             cropbox_in_pdf=(5, 5),
+            min_idx_in_page=[1, 5, 10],
         ),
     )
 
@@ -725,11 +727,12 @@ def test_tokens_gene_vs_protein_serpina1_case_all_caps_from_knowledge_graph(
             char_coord_objs_in_pdf.append(get_dummy_LTChar(text=c))
         char_coord_objs_in_pdf.append(get_dummy_LTChar(text=' '))
 
-    annotations = annotation_service.create_annotations(
+    annotations = annotation_service.create_rules_based_annotations(
         tokens=PDFTokenPositionsList(
             token_positions=tokens,
             char_coord_objs_in_pdf=char_coord_objs_in_pdf,
             cropbox_in_pdf=(5, 5),
+            min_idx_in_page=[1, 5, 10],
         ),
     )
 
@@ -743,67 +746,6 @@ def test_tokens_gene_vs_protein_serpina1_case_all_caps_from_knowledge_graph(
 
     assert annotations[1].keyword == 'human'
     assert annotations[1].meta.keyword_type == EntityType.Species.value
-
-
-def test_save_bioc_annotations_to_db(default_lmdb_setup, session):
-    annotator = get_test_annotations_service(
-        genes_lmdb_path=path.join(directory, 'lmdb/genes'),
-        chemicals_lmdb_path=path.join(directory, 'lmdb/chemicals'),
-        compounds_lmdb_path=path.join(directory, 'lmdb/compounds'),
-        proteins_lmdb_path=path.join(directory, 'lmdb/proteins'),
-        species_lmdb_path=path.join(directory, 'lmdb/species'),
-        diseases_lmdb_path=path.join(directory, 'lmdb/diseases'),
-        phenotypes_lmdb_path=path.join(directory, 'lmdb/phenotypes'),
-    )
-    pdf_parser = get_annotations_pdf_parser()
-    bioc_service = get_bioc_document_service()
-
-    pdf = path.join(directory, 'pdf_samples/Branched-Chain Amino Acid Metabolism.pdf')
-
-    with open(pdf, 'rb') as f:
-        parsed_pdf_chars = pdf_parser.parse_pdf(pdf=f)
-        tokens = pdf_parser.extract_tokens(parsed_chars=parsed_pdf_chars)
-        pdf_text_list = pdf_parser.combine_chars_into_words(parsed_pdf_chars)
-        pdf_text = ' '.join([text for text, _ in pdf_text_list])
-        annotations = annotator.create_annotations(tokens=tokens)
-
-    bioc = bioc_service.read(
-        text=pdf_text,
-        file_uri=path.join(directory, 'pdf_samples/Branched-Chain Amino Acid Metabolism.pdf'))
-    annotations_json = bioc_service.generate_bioc_json(annotations=annotations, bioc=bioc)
-
-    annotated_json_f = path.join(directory, 'pdf_samples/annotations-test.json')
-    with open(annotated_json_f, 'w') as a_f:
-        json.dump(annotations_json, a_f)
-
-    file_content = FileContent(
-        raw_file=b'',
-        checksum_sha256=b'checksum_sha256',
-    )
-
-    session.add(file_content)
-    session.flush()
-
-    f = Files(
-        file_id=123,
-        filename='filename',
-        description='description',
-        content_id=file_content.id,
-        user_id=1,
-        annotations=annotations_json,
-        annotations_date='1970-01-01 00:00:00',
-        project=1,
-        doi='doi',
-        upload_url='upload_url',
-    )
-
-    session.add(f)
-    session.commit()
-
-    pdf_file_model = session.query(Files).first()
-    assert pdf_file_model.filename == 'filename'
-    assert pdf_file_model.file_id == '123'
-    assert pdf_file_model.annotations == annotations_json
 
 
 @pytest.mark.parametrize(
@@ -851,6 +793,27 @@ def test_save_bioc_annotations_to_db(default_lmdb_setup, session):
                 ),
             ),
         ]),
+        (3, [
+            GeneAnnotation(
+                page_number=1,
+                keyword='CpxR',
+                lo_location_offset=5,
+                hi_location_offset=7,
+                keyword_length=3,
+                text_in_document='CpxR',
+                keywords=[''],
+                rects=[[1, 2]],
+                meta=GeneAnnotation.GeneMeta(
+                    keyword_type=EntityType.Gene.value,
+                    color='',
+                    id='',
+                    id_type='',
+                    id_hyperlink='',
+                    links=Annotation.Meta.Links(),
+                    category=OrganismCategory.Bacteria.value,
+                ),
+            ),
+        ]),
     ],
 )
 def test_fix_false_positive_gene_annotations(annotations_setup, index, annotations):
@@ -868,6 +831,10 @@ def test_fix_false_positive_gene_annotations(annotations_setup, index, annotatio
         # if correct gene synonym is all caps
         # but text in document is not
         # then remove the annotation
+        assert len(fixed) == 0
+    elif index == 3:
+        # bacteria gene should have three lowercase
+        # with one uppercase at the end
         assert len(fixed) == 0
 
 
@@ -1033,11 +1000,12 @@ def test_gene_annotation_uses_id_from_knowledge_graph(
             char_coord_objs_in_pdf.append(get_dummy_LTChar(text=c))
         char_coord_objs_in_pdf.append(get_dummy_LTChar(text=' '))
 
-    annotations = annotation_service.create_annotations(
+    annotations = annotation_service.create_rules_based_annotations(
         tokens=PDFTokenPositionsList(
             token_positions=tokens,
             char_coord_objs_in_pdf=char_coord_objs_in_pdf,
             cropbox_in_pdf=(5, 5),
+            min_idx_in_page=[1, 5, 10],
         ),
     )
 
@@ -1091,11 +1059,12 @@ def test_gene_annotation_human_vs_rat(
             char_coord_objs_in_pdf.append(get_dummy_LTChar(text=c))
         char_coord_objs_in_pdf.append(get_dummy_LTChar(text=' '))
 
-    annotations = annotation_service.create_annotations(
+    annotations = annotation_service.create_rules_based_annotations(
         tokens=PDFTokenPositionsList(
             token_positions=tokens,
             char_coord_objs_in_pdf=char_coord_objs_in_pdf,
             cropbox_in_pdf=(5, 5),
+            min_idx_in_page=[1, 5, 10],
         ),
     )
 
@@ -1105,3 +1074,60 @@ def test_gene_annotation_human_vs_rat(
                 # id should change to match KG
                 # value from mock_get_gene_to_organism_match_result_for_human_rat_gene
                 assert annotations[1].meta.id == '80267'
+
+
+@pytest.mark.parametrize(
+    'index, tokens',
+    [
+        (1, [
+                PDFTokenPositions(
+                    page_number=1,
+                    keyword='Arg',
+                    char_positions={0: 'A', 1: 'r', 2: 'g'},
+                ),
+                PDFTokenPositions(
+                    page_number=1,
+                    keyword='FO(-)',
+                    char_positions={4: 'F', 5: 'O', 6: '(', 7: '-', 8: ')'},
+                ),
+                PDFTokenPositions(
+                    page_number=1,
+                    keyword='H',
+                    char_positions={10: 'H'},
+                ),
+        ]),
+    ],
+)
+def test_ignore_terms_length_two_or_less(
+    default_lmdb_setup,
+    mock_empty_gene_to_organism,
+    index,
+    tokens,
+):
+    annotation_service = get_test_annotations_service(
+        genes_lmdb_path=path.join(directory, 'lmdb/genes'),
+        chemicals_lmdb_path=path.join(directory, 'lmdb/chemicals'),
+        compounds_lmdb_path=path.join(directory, 'lmdb/compounds'),
+        proteins_lmdb_path=path.join(directory, 'lmdb/proteins'),
+        species_lmdb_path=path.join(directory, 'lmdb/species'),
+        diseases_lmdb_path=path.join(directory, 'lmdb/diseases'),
+        phenotypes_lmdb_path=path.join(directory, 'lmdb/phenotypes'),
+    )
+
+    char_coord_objs_in_pdf = []
+    for t in tokens:
+        for c in t.keyword:
+            char_coord_objs_in_pdf.append(get_dummy_LTChar(text=c))
+        char_coord_objs_in_pdf.append(get_dummy_LTChar(text=' '))
+
+    annotations = annotation_service.create_rules_based_annotations(
+        tokens=PDFTokenPositionsList(
+            token_positions=tokens,
+            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
+            cropbox_in_pdf=(5, 5),
+            min_idx_in_page=[1, 5, 10],
+        ),
+    )
+
+    assert len(annotations) == 1
+    assert annotations[0].keyword == tokens[0].keyword

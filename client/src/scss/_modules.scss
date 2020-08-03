@@ -1,0 +1,139 @@
+.module {
+}
+
+.module-header {
+  display: flex;
+  padding: 2rem 0;
+  align-items: center;
+}
+
+.module-title {
+  @include text-truncate();
+}
+
+.module-toolbar {
+  margin-left: auto;
+  padding-left: 1rem;
+  white-space: nowrap;
+}
+
+// ========================================
+// Main module
+// ========================================
+
+.module.module-centered {
+  .module-header-container {
+    border-bottom: 1px solid $gray-200;
+  }
+
+  .module-title {
+    font-size: $font-size-base * 2;
+    font-weight: bold;
+  }
+
+  .module-toolbar {
+    margin-left: auto;
+  }
+
+  .module-header, .module-body {
+    margin: auto;
+    padding-left: 2rem;
+    padding-right: 2rem;
+    max-width: map-get($container-max-widths, 'lg');
+  }
+
+  .module-body {
+    margin-top: $spacer * 2;
+    margin-bottom: $spacer * 4;
+  }
+
+  .module-section {
+    margin-bottom: $spacer * 2.5;
+  }
+
+  .module-section-header {
+    margin-bottom: $spacer * 1.25;
+
+    h2 {
+      font-size: 180%;
+      font-weight: bold;
+    }
+  }
+}
+
+// ========================================
+// Sidebar
+// ========================================
+
+.module.module-sidebar {
+  display: flex;
+  flex-direction: column;
+
+  .module-header-container {
+    background: $white;
+    border-bottom: 1px solid $gray-300;
+    box-shadow: 0 1px 5px $gray-400;
+  }
+
+  .module-header {
+    display: flex;
+    margin: auto;
+    padding: 1.25rem 1rem;
+    align-items: center;
+    font-weight: bold;
+    max-width: map-get($grid-breakpoints, "xl");
+  }
+
+  .module-header-body {
+    margin: auto;
+    padding: 0 1rem 1rem;
+    max-width: map-get($grid-breakpoints, "xl");
+  }
+
+  .module-title {
+    font-size: $font-size-base * 1.1;
+  }
+
+  .module-body-container {
+    flex: 1 1 auto;
+    overflow: auto;
+  }
+
+  .module-body {
+    margin: auto;
+    max-width: map-get($grid-breakpoints, "xl");
+    height: 100%;
+  }
+
+  .module-body-padded {
+    padding: 1rem;
+  }
+}
+
+// ========================================
+// Document
+// ========================================
+
+.module.module-document {
+  display: flex;
+  flex-direction: column;
+
+  .module-header-container {
+  }
+
+  .module-header {
+    display: flex;
+    padding: 1rem;
+    align-items: center;
+    font-weight: bold;
+    border-bottom: 1px solid $gray-200;
+  }
+
+  .module-header-body {
+    padding: 0 1rem 1rem;
+  }
+
+  .module-title {
+    font-size: $font-size-base * 1.4;
+  }
+}

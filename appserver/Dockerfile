@@ -32,4 +32,6 @@ COPY --chown=1000:1000 . .
 ENV PYTHONUNBUFFERED 1
 ENV PYTHONPATH $N4J_HOME
 
+RUN echo 'alias python=python3' >> ~/.bashrc && source ~/.bashrc
+
 USER $N4J_USER
