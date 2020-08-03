@@ -59,6 +59,9 @@
                 </span>
                 <ng-template #unknownPmid>Unknown</ng-template>
               </div>
+              <div>
+                <strong>Snippet Confidence Score: </strong>{{ snippet.normalizedScore.toFixed(3) }}
+              </div>
             </div>
           </ng-template>
         </ngb-panel>

@@ -276,7 +276,9 @@ class Neo4JService(GraphBaseDao):
                             reference['publication'],
                             display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label_from_node(reference['publication'])]),  # type: ignore  # noqa
                             primary_label_fn=get_first_known_label_from_node,
-                        )
+                        ),
+                        raw_score=reference['raw_score'],
+                        normalized_score=reference['normalized_score']
                     )
                 )
 
@@ -331,7 +333,9 @@ class Neo4JService(GraphBaseDao):
                         reference['publication'],
                         display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label_from_node(reference['publication'])]),  # type: ignore  # noqa
                         primary_label_fn=get_first_known_label_from_node,
-                    )
+                    ),
+                    raw_score=reference['raw_score'],
+                    normalized_score=reference['normalized_score']
                 ) for reference in row['references']]
             ) for row in data
         ]
@@ -620,10 +624,15 @@ class Neo4JService(GraphBaseDao):
                 ID(f) as from_id,
                 ID(t) as to_id,
                 a.description as description
-            MATCH (association)<-[:PREDICTS]-(s:Snippet)-[:IN_PUB]-(p:Publication)
+            MATCH (association)<-[r:PREDICTS]-(s:Snippet)-[:IN_PUB]-(p:Publication)
             WITH
                 COUNT(s) as snippet_count,
-                collect({snippet:s, publication:p}) as references,
+                collect({
+                    snippet:s,
+                    publication:p,
+                    raw_score:r.raw_score,
+                    normalized_score:r.normalized_score
+                }) as references,
                 max(p.pub_year) as max_pub_year,
                 from_id,
                 to_id,
