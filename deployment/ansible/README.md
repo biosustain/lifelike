@@ -1,20 +1,15 @@
 # User Manual
 
 ## Quick Start
-1. Run the `makefile` to setup the dependencies
+1. Set up the Ansible environment
 
-This will set up the Ansible environment
-```bash
-make venv
-```
-
-This will fetch the Ansible Vault secrets
-```bash
-make vault
-```
-1. Activate the new virtual environment
 ```
 source venv/bin/activate
+```
+
+2. Fetch the secrets from Google Cloud for *Ansible Vault*
+```
+gsutil cp gs://kg-secrets/.vault_secrets_pw .
 ```
 
 3. Setup SSH on the servers you want to run Ansible on.
