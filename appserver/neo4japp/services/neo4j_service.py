@@ -372,9 +372,9 @@ class Neo4JService(GraphBaseDao):
 
         return gene_to_organism_map
 
-    def get_organisms_from_synonyms(self, synonyms: List[str]) -> List[str]:
+    def get_organisms_from_with_ids(self, tax_ids: List[str]) -> List[str]:
         query = self.get_taxonomy_from_synonyms()
-        result = self.graph.run(query, {'names': synonyms}).data()
+        result = self.graph.run(query, {'ids': tax_ids}).data()
 
         return [row['organism_id'] for row in result]
 
@@ -703,12 +703,10 @@ class Neo4JService(GraphBaseDao):
         return query
 
     def get_taxonomy_from_synonyms(self):
-        """Retrieves a list of all taxonomy with a given synonym name.
+        """Retrieves a list of all taxonomy with a given taxonomy id.
         """
         query = """
-            MATCH (s:Synonym)--(t:Taxonomy)
-            WHERE s.name IN $names
-            RETURN collect(s.name) AS synonym_names, t.id AS organism_id, t.name AS organism_name
+            MATCH (t:Taxonomy) WHERE t.id IN $ids RETURN t.id as organism_id
         """
         return query
 
