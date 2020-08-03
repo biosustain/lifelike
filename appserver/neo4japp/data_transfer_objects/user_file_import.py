@@ -131,7 +131,7 @@ class ImportRelationship(CamelDictMixin):
     node_properties2: List[Properties] = attr.ib()
     relationship_label: str = attr.ib()
     # Should map to any of the values in the RelationshipDirection enum
-    relationship_direction: str = attr.ib()
+    relationship_direction: RelationshipDirection = attr.ib()
     relationship_properties: List[Properties] = attr.ib()
 
 
@@ -139,7 +139,7 @@ class ImportRelationship(CamelDictMixin):
 class GeneImportRelationship(ImportRelationship):
     species_selection: Optional[str] = attr.ib()
     # Should map to any of the values in the GeneMatchingProperty enum
-    gene_matching_property: Optional[str] = attr.ib()
+    gene_matching_property: Optional[GeneMatchingProperty] = attr.ib()
 
 
 @attr.s(frozen=True)
