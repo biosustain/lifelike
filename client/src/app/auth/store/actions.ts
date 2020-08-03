@@ -1,7 +1,7 @@
 import { createAction, props } from '@ngrx/store';
 
 import { AppUser, Credential } from 'app/interfaces';
-import { LOGOUT_SUCCESS } from 'app/constants';
+import { LOGOUT_SUCCESS } from 'app/shared/constants';
 
 export const checkTermsOfService = createAction(
     '[Auth] Check Terms Of Serivce',

@@ -13,6 +13,9 @@ PROTEINS_UNIPROT_LMDB = 'proteins_uniprot'
 CHEMICALS_PUBCHEM_LMDB = 'chemicals_pubchem'
 SPECIES_NCBI_LMDB = 'species_ncbi'
 
+# NLP endpoint
+NLP_ENDPOINT = 'http://nlpapi:5001/infer/v1'
+
 LOWERCASE_FIRST_LETTER_UPPERCASE_LAST_LETTER_GENE_LENGTH = 4
 PDF_NEW_LINE_THRESHOLD = .30
 PDF_CHARACTER_SPACING_THRESHOLD = .325
@@ -51,8 +54,8 @@ COMMON_WORDS = set.union(*[
     COMMON_MISC_WORDS,
 ])
 
-CHEMICAL_EXCLUSION = {'aa'}
-COMPOUND_EXCLUSION = {'aa'}  # should this be the same as chemical?
+CHEMICAL_EXCLUSION = {'aa', 'same'}
+COMPOUND_EXCLUSION = {'aa', 'same'}  # should this be the same as chemical?
 SPECIES_EXCLUSION = {'collection', 'covid-19', 'covid19', 'artificial', 'aa', 'pigs', 'electron'}
 
 # utf-32 unicode
@@ -60,10 +63,16 @@ SPECIES_EXCLUSION = {'collection', 'covid-19', 'covid19', 'artificial', 'aa', 'p
 MISC_SYMBOLS_AND_CHARS = {8211, 160, 8220, 8221, 8216, 8217, 183, 61623}
 
 COMMON_TYPOS = {
-    # 'e coli': ['E. coli', 'Escherichia coli', 'Enterococcus coli'],
-    # 'E.coli': ['E. coli', 'Escherichia coli', 'Enterococcus coli'],
     'Multiple Mitochondrial Dysfunctions Syndromes': ['Multiple Mitochondrial Dysfunctions Syndrome'],  # noqa
     'S-Phase kinase associated protein 2': ['S-Phase kinase-associated protein 2'],
+}
+
+LIGATURES = {
+    64256: 'ff',
+    64257: 'fi',
+    64258: 'fl',
+    64259: 'ffi',
+    64260: 'ffl',
 }
 
 
@@ -125,6 +134,11 @@ class DatabaseType(Enum):
     Uniprot = 'UNIPROT'
     Ncbi = 'NCBI'
     Biocyc = 'BIOCYC'
+
+
+class AnnotationMethod(Enum):
+    NLP = 'NLP'
+    Rules = 'Rules Based'
 
 
 # these links are used in annotations and custom annotations

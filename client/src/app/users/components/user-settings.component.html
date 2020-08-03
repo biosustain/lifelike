@@ -1,16 +1,33 @@
-<mat-toolbar>User Settings</mat-toolbar>
-<div class="container" fxLayout="column" fxLayoutAlign="start start" fxLayoutGap="8px">
-  <div>
-    <mat-tab-group>
-      <mat-tab label="Profile">
-        <app-user-profile [user]="currentUsers$ | async"></app-user-profile>
-      </mat-tab>
-      <mat-tab label="Security">
-        <app-user-security [user]="currentUsers$ | async" (changePassReq)="changePassword($event)"></app-user-security>
-      </mat-tab>
-      <mat-tab label="Projects">
-        Projects will go here
-      </mat-tab>
-    </mat-tab-group>
+<ng-container *ngIf="(currentUsers$ | async) as user">
+  <div class="module module-centered">
+    <div class="module-header-container">
+      <div class="module-header">
+        <div class="module-title">
+          User Settings
+        </div>
+      </div>
+    </div>
+
+    <div class="module-body-container">
+      <div class="module-body">
+        <ul ngbNav #nav="ngbNav" [(activeId)]="activeTab" class="nav-tabs">
+          <li ngbNavItem="profile">
+            <a ngbNavLink>Profile</a>
+            <ng-template ngbNavContent>
+              <app-user-profile [user]="user"></app-user-profile>
+            </ng-template>
+          </li>
+
+          <li ngbNavItem="security">
+            <a ngbNavLink>Password</a>
+            <ng-template ngbNavContent>
+              <app-user-security [user]="user"></app-user-security>
+            </ng-template>
+          </li>
+        </ul>
+
+        <div [ngbNavOutlet]="nav" class="mt-4"></div>
+      </div>
+    </div>
   </div>
-</div>
+</ng-container>

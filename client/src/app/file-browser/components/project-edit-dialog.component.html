@@ -1,0 +1,105 @@
+<form [formGroup]='form' *ngIf="(loadTask.status$ | async) as status">
+  <div>
+    <app-modal-header (cancel)="cancel()">
+      {{project?.projectName}}
+    </app-modal-header>
+    <div class="modal-body">
+      <div *ngIf='project?.description'>
+        <h5>Description</h5>
+        <p>
+          {{project?.description}}
+        </p>
+      </div>
+      <div class='d-flex mb-3'>
+        <h5>Members</h5>
+      </div>
+      <app-background-task-progress
+        [status]="status" (refresh)="refresh()" childClass="mb-2"></app-background-task-progress>
+      <ul *ngIf="status.placeholdersShown; else collabList" class="list-group">
+        <li *ngFor='let i of [0,0,0]' class="list-group-item d-flex align-items-center">
+          <div class='bg-blue white avatar'>
+          </div>
+          <span class="placeholder-box">Loading loading</span>
+          <small class='ml-auto'>
+            <span class="placeholder-box">Loading loading</span>
+          </small>
+        </li>
+      </ul>
+      <ng-template #collabList>
+        <!-- Edit View -->
+        <div *ngIf='amIAdmin; else readView'>
+          <div *ngIf='hasError' class='text-danger mb-2'>
+            <small>
+              {{ errorMsg }}
+            </small>
+          </div>
+          <div class="input-group mb-3">
+            <input formControlName='username' placeholder="Username" type="text" class="form-control" aria-label="Text input with segmented dropdown button">
+            <select formControlName='role' class="custom-select input-group-prepend" id="inputGroupSelect04" aria-label="Example select with button addon">
+              <option
+                *ngFor="let r of userRoles"
+                [value]="r.value">
+                {{r.label}}
+              </option>
+            </select>
+            <div class="input-group-append">
+              <button (click)='addCollaborator()' class="btn btn-primary" type="button">Invite</button>
+            </div>
+          </div>
+          <ul class="list-group">
+            <li class="list-group-item d-flex align-items-center">
+              <div class='bg-blue white avatar'>
+                <p>{{ userCollab?.username | projectTitleAcronym : 1}}</p>
+              </div>
+              {{ userCollab?.username }}
+              <small class='ml-auto'>Admin</small>
+            </li>
+            <li
+              formArrayName='currentCollabs'
+              class="list-group-item d-flex align-items-center"
+              *ngFor='let c of currentCollabs.controls; let i = index;'>
+              <div class='bg-blue white avatar'>
+                <p>{{ collabs[i]?.username | projectTitleAcronym : 1 }}</p>
+              </div>
+              {{ collabs[i]?.username }}
+              <div [formGroupName]='i' class="ml-auto">
+                <select
+                  formControlName='role'
+                  class="custom-select" id="type">
+                  <option *ngFor="let role of userActions" [value]="role.value">
+                    {{role?.label}}
+                  </option>
+                </select>
+              </div> 
+            </li>
+          </ul>
+        </div>
+        <!-- Read View -->
+        <ng-template #readView>
+          <ul class="list-group">
+            <li *ngFor='let c of collabs' class="list-group-item d-flex align-items-center">
+              <div class='bg-blue white avatar'>
+                <p>{{ c?.username | projectTitleAcronym : 1}}</p>
+              </div>
+              {{ c?.username }}
+              <small [ngSwitch]="c.role" class='ml-auto'>
+                <span *ngSwitchCase="'project-read'">Read</span>
+                <span *ngSwitchCase="'project-write'">Write</span>
+                <span *ngSwitchCase="'project-admin'">Admin</span>
+              </small>
+            </li>
+          </ul>
+        </ng-template>
+      </ng-template>
+    </div>
+
+    <app-modal-footer>
+      <button
+        type="submit"
+        class="btn btn-primary"
+        (click)="cancel()">
+        Done
+      </button>
+    </app-modal-footer>
+  </div>
+<form>
