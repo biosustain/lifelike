@@ -28,6 +28,7 @@ export class AnnotationEditDialogComponent extends CommonFormDialogComponent {
 
   readonly form: FormGroup = new FormGroup({
     entityType: new FormControl('', Validators.required),
+    id: new FormControl(''),
     links: new FormArray([]),
     includeGlobally: new FormControl(false),
   });
@@ -63,6 +64,7 @@ export class AnnotationEditDialogComponent extends CommonFormDialogComponent {
         return [coord[0], coord[3], coord[2], coord[1]];
       }),
       meta: {
+        id: this.form.value.id,
         type: this.form.value.entityType,
         color: ENTITY_TYPE_MAP[this.form.value.entityType].color,
         links,
@@ -76,5 +78,16 @@ export class AnnotationEditDialogComponent extends CommonFormDialogComponent {
 
   substituteLink(s: string, query: string) {
     return s.replace(/%s/, encodeURIComponent(query));
+  }
+
+  toggleIdFieldValidity() {
+    // user should provide id if annotation is flagged for a global inclusion
+    if (this.form.value.includeGlobally) {
+      this.form.controls.id.setValidators([Validators.required]);
+      this.form.controls.id.updateValueAndValidity();
+    } else {
+      this.form.controls.id.setValidators(null);
+      this.form.controls.id.updateValueAndValidity();
+    }
   }
 }
