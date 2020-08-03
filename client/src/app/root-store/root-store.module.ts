@@ -15,7 +15,7 @@ import { environment } from '../../environments/environment';
 
 import { State } from './state';
 
-import { LOGOUT_SUCCESS } from 'app/constants';
+import { LOGOUT_SUCCESS } from 'app/shared/constants';
 
 /**
  * Syncs ngrx-store with local storage for persistent client state.

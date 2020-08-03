@@ -43,7 +43,8 @@ export class AuthenticationService {
       {email, password},
       this.createHttpOptions(),
     ).pipe(
-      map((resp) => {
+      map((resp: any) => {
+        localStorage.setItem('auth', resp.user);
         localStorage.setItem('access_jwt', resp.access_jwt);
         localStorage.setItem('refresh_jwt', resp.refresh_jwt);
         return resp;
@@ -73,7 +74,7 @@ export class AuthenticationService {
       { jwt },
       this.createHttpOptions()
     ).pipe(
-        map((resp) => {
+        map((resp: any) => {
           localStorage.setItem('access_jwt', resp.access_jwt);
           localStorage.setItem('refresh_jwt', resp.refresh_jwt);
           return resp;
@@ -81,7 +82,7 @@ export class AuthenticationService {
       );
   }
 
-  public whoAmI() {
+  public whoAmI(): number {
     const auth = JSON.parse(localStorage.getItem('auth'));
 
     if (

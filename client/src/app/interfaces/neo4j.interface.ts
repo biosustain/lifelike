@@ -96,8 +96,10 @@ export interface FTSResult {
   limit: number;
 }
 
-export interface SearchQuery {
+export interface SearchParameters {
   query: string;
+  domains?: Domain[];
+  entityTypes?: EntityType[];
   page: number;
   limit: number;
 }
@@ -121,4 +123,16 @@ export interface OrganismAutocomplete {
   organism_name: string;
   synonym: string;
   tax_id: string;
+}
+
+export interface Domain {
+  id: string;
+  name: string;
+  label: string;
+}
+
+export interface EntityType {
+  id: string;
+  name: string;
+  label: string;
 }

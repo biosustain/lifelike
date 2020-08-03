@@ -18,7 +18,7 @@ from werkzeug.utils import (
     import_string,
 )
 
-from neo4japp.database import db, ma, migrate
+from neo4japp.database import db, ma, migrate, close_lmdb
 from neo4japp.encoders import CustomJSONEncoder
 from neo4japp.exceptions import (
     BaseException,
@@ -86,6 +86,7 @@ def create_app(name='neo4japp', config='config.Development'):
 
     app = Flask(name)
     app.config.from_object(config)
+    app.teardown_appcontext_funcs = [close_lmdb]
 
     cors.init_app(app)
     db.init_app(app)

@@ -5,7 +5,7 @@ import { PDFJSStatic } from 'pdfjs-dist';
 
 declare global {
   const PDFJS: PDFJSStatic;
-  const PDFJSViewer: any;
+  const pdfjsViewer: any;
 }
 
 export {

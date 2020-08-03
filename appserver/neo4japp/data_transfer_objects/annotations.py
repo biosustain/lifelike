@@ -1,6 +1,6 @@
 import attr
 
-from typing import Dict, List, Tuple, Union
+from typing import Dict, List, Optional, Tuple, Union
 
 from pdfminer.layout import LTAnno, LTChar
 
@@ -12,7 +12,7 @@ class PDFParsedCharacters(CamelDictMixin):
     chars_in_pdf: List[str] = attr.ib()
     char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]] = attr.ib()
     cropbox_in_pdf: Tuple[int, int] = attr.ib()
-    max_idx_in_page: Dict[int, int] = attr.ib()
+    min_idx_in_page: Dict[int, int] = attr.ib()
 
 
 @attr.s(frozen=True)
@@ -20,12 +20,15 @@ class PDFTokenPositions(CamelDictMixin):
     page_number: int = attr.ib()
     keyword: str = attr.ib()
     char_positions: Dict[int, str] = attr.ib()
+    # used in NLP because it returns the type
+    token_type: Optional[str] = attr.ib(default='')
 
     def to_dict_hash(self):
         return compute_hash({
             'page_number': self.page_number,
             'keyword': self.keyword,
             'char_positions': self.char_positions,
+            'token_type': self.token_type,
         })
 
 
@@ -34,6 +37,7 @@ class PDFTokenPositionsList(CamelDictMixin):
     token_positions: List[PDFTokenPositions] = attr.ib()
     char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]] = attr.ib()
     cropbox_in_pdf: Tuple[int, int] = attr.ib()
+    min_idx_in_page: Dict[int, int] = attr.ib()
 
 
 # IMPORTANT NOTE/TODO: JIRA LL-465
