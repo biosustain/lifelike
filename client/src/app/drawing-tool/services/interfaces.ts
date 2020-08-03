@@ -102,6 +102,7 @@ export interface Meta {
   exclusionReason?: string;
   exclusionComment?: string;
   primaryLink?: string;
+  includeGlobally?: boolean;
 }
 
 export interface Rect {
@@ -165,6 +166,7 @@ export interface AddedAnnotationExclsuion {
   comment: string;
   rects: Rect[];
   pageNumber: number;
+  excludeGlobally: boolean;
 }
 
 export const MAP_TYPE_ID = 'LifelikeKnowledgeMap/1';

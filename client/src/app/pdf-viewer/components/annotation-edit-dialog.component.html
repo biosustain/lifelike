@@ -16,6 +16,10 @@
       </select>
     </app-form-row>
 
+    <app-form-row for="id" label="Id" [control]="form.get('id')">
+      <input type="text" formControlName="id" class="form-control" id="id">
+    </app-form-row>
+
     <fieldset class="fieldset-properties mt-4">
       <legend>Search Links</legend>
 
@@ -39,6 +43,12 @@
         </div>
       </ng-container>
     </fieldset>
+
+    <div class="custom-control custom-checkbox mt-4">
+      <input type="checkbox" class="custom-control-input" id="include-globally"
+             formControlName="includeGlobally" (change)="toggleIdFieldValidity()">
+      <label class="custom-control-label" for="include-globally">Add this annotation to a global list</label>
+    </div>
   </app-modal-body>
 
   <app-modal-footer>
