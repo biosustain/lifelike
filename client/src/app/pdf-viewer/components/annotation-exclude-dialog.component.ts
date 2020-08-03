@@ -12,12 +12,14 @@ export class AnnotationExcludeDialogComponent extends CommonFormDialogComponent 
   readonly reasonChoices = [
     'Not an entity',
     'Wrong annotation type',
+    'Exclude from the synonym list',
     'Other',
   ];
 
   readonly form: FormGroup = new FormGroup({
     reason: new FormControl(this.reasonChoices[0], Validators.required),
     comment: new FormControl(''),
+    excludeGlobally: new FormControl(false),
   });
 
   constructor(modal: NgbActiveModal, messageDialog: MessageDialog) {
