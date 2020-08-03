@@ -55,9 +55,8 @@ terraform-gcloud.json
 
 #virtual environments
 .venv/
-outputs/
 venv/
-*venv*
+outputs/
 
 # LMDB files
 appserver/neo4japp/services/annotations/**/*.mdb
@@ -77,4 +76,3 @@ appserver/neo4japp/services/annotations/nlp_data_output/*.txt
 
 # GCP secrets
 *service_account*
-*secret*
