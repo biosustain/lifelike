@@ -967,14 +967,19 @@ class AnnotationsService:
                 entities = self.lmdb_session.get_lmdb_values(
                     txn=transaction, key=lookup_key, token_type=EntityType.Gene.value)
 
-                for entity in entities:
+                entities_to_use = [entity for entity in entities if entity['synonym'] == word]
+
+                if len(entities_to_use) == 0:
+                    entities_to_use = entities
+
+                for entity in entities_to_use:
                     entity_synonym = entity['synonym']
                     gene_names.add(entity_synonym)
 
                     entity_tokenpos_pairs.append((entity, token_positions))
 
-        organism_ids_from_custom_annotations = self.annotation_neo4j.get_organisms_from_synonyms(
-            synonyms=list(organisms_from_custom_annotations))
+        organism_ids_from_custom_annotations = self.annotation_neo4j.get_organisms_from_with_ids(
+            tax_ids=list(organisms_from_custom_annotations))
 
         organism_ids_to_query = organism_ids_from_custom_annotations + list(self.organism_frequency.keys())  # noqa
 
@@ -1358,6 +1363,10 @@ class AnnotationsService:
             EntityType.Protein.value: True,
             EntityType.Species.value: True,
         }
+
+        # for c in custom_annotations:
+        #     c['meta']['id'] = '9606'
+
         annotations = self._create_annotations(
             tokens=tokens.token_positions,
             char_coord_objs_in_pdf=tokens.char_coord_objs_in_pdf,
@@ -1367,7 +1376,7 @@ class AnnotationsService:
             organisms_from_custom_annotations=set(
                 custom['meta']['allText'] for custom in custom_annotations
                 if custom['meta']['type'] == EntityType.Species.value
-            )
+            ),
         )
         return self._clean_annotations(annotations=annotations)
 
