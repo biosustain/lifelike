@@ -364,7 +364,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
     const source = `/projects/${encodeURIComponent(this.projectName)}`
       + `/files/${encodeURIComponent(this.currentFileId)}`
       + `#page=${loc.pageNumber}&coords=${loc.rect[0]},${loc.rect[1]},${loc.rect[2]},${loc.rect[3]}`;
-    
+
     const sources = [{
       domain: 'File Source',
       url: source
