@@ -1,8 +1,7 @@
 import { Component, EventEmitter, Output } from '@angular/core';
-import { FormControl } from '@angular/forms';
-import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
-import { Observable } from 'rxjs';
-import { debounceTime, map, switchMap, tap } from 'rxjs/operators';
+import { Observable, of } from 'rxjs';
+import { catchError, debounceTime, distinctUntilChanged, map, switchMap, tap } from 'rxjs/operators';
+import { NgbTypeaheadSelectItemEvent } from '@ng-bootstrap/ng-bootstrap';
 import { SharedSearchService } from 'app/shared/services/shared-search.service';
 import {
   OrganismAutocomplete,
@@ -16,33 +15,36 @@ import {
 })
 export class OrganismAutocompleteComponent {
   @Output() organismPicked = new EventEmitter<OrganismAutocomplete|null>();
-  organisms: Observable<OrganismAutocomplete[]>;
-  query = new FormControl('');
+  fetchFailed = false;
+  isFetching = false;
+  model: any;
 
   constructor(private search: SharedSearchService) {
-    this.organisms = this.query.valueChanges.pipe(
-      debounceTime(300),
-      tap(q => {
-        if (typeof q === 'string' && q.length === 0) {
-          this.organismPicked.emit(null);
-        }
-      }),
-      switchMap(q => {
-        if (typeof q !== 'string') { // q is an OrganismAutocomplete when the user selects an option
-          return [];
-        }
-        return this.search.getOrganisms(q).pipe(
-          map((organisms: OrganismsResult) => organisms.nodes),
-        );
-      }),
-    );
   }
 
-  displayFn(organism?: OrganismAutocomplete): string | undefined {
-    return organism ? organism.organism_name : undefined;
-  }
+  searcher = (text$: Observable<string>) => text$.pipe(
+    debounceTime(300),
+    distinctUntilChanged((prev, curr) => prev.toLocaleLowerCase() === curr.toLocaleLowerCase()),
+    tap(() => {
+      this.isFetching = true;
+      this.organismPicked.emit(null);
+    }),
+    switchMap(q =>
+      this.search.getOrganisms(q, 10).pipe(
+        tap(() => this.fetchFailed = false),
+        catchError(() => {
+          this.fetchFailed = true;
+          return of([]);
+        }),
+        map((organisms: OrganismsResult) => organisms.nodes),
+      )
+    ),
+    tap(() => this.isFetching = false),
+  )
 
-  notifySelection(event: MatAutocompleteSelectedEvent) {
-    this.organismPicked.emit(event.option.value);
+  formatter = (organism: OrganismAutocomplete) => organism.organism_name;
+
+  notifySelection(event: NgbTypeaheadSelectItemEvent) {
+    this.organismPicked.emit(event.item);
   }
 }
