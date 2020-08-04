@@ -1000,7 +1000,7 @@ class AnnotationsService:
 
                     entity_tokenpos_pairs.append((entity, token_positions))
 
-        organism_ids_from_custom_annotations = self.annotation_neo4j.get_organisms_from_with_ids(
+        organism_ids_from_custom_annotations = self.annotation_neo4j.get_organisms_from_ids(
             tax_ids=list(organisms_from_custom_annotations))
 
         organism_ids_to_query = organism_ids_from_custom_annotations + list(self.organism_frequency.keys())  # noqa
@@ -1152,13 +1152,10 @@ class AnnotationsService:
             else:
                 # words broken into multiple lines
                 maxlen = len(coordinates)
-                for i, rect in enumerate(coordinates):
-                    if i == 0:
-                        x2 = rect[2]
-                        y2 = rect[3]
-                    elif i == maxlen - 1:
-                        x1 = rect[0]
-                        y1 = rect[1]
+                x1 = coordinates[maxlen - 1][0]
+                y1 = coordinates[maxlen - 1][1]
+                x2 = coordinates[0][2]
+                y2 = coordinates[0][3]
             return x1, y1, x2, y2
 
         # we only want the annotations with correct coordinates

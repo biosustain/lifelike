@@ -72,10 +72,9 @@ def test_user_with_pdf(
     fake_file = None
     with open(pdf_path, 'rb') as pdf_file:
         pdf_content = pdf_file.read()
-        pdf_file.seek(0)
 
         file_content = FileContent(
-            raw_file=pdf_file.read(),
+            raw_file=pdf_content,
             checksum_sha256=hashlib.sha256(pdf_content).digest(),
             creation_date=datetime.now(),
         )

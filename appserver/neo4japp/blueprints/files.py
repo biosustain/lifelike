@@ -217,6 +217,7 @@ def upload_pdf(request, project_name: str):
     )
 
     db.session.add(file)
+    db.session.commit()
 
     try:
         annotations = annotate(
@@ -231,6 +232,10 @@ def upload_pdf(request, project_name: str):
         file.annotations_date = annotations_date
     except AnnotationError:
         db.session.delete(file)
+        # TODO: delete from FileContent too?
+        # if it's the first upload then yes,
+        # but no if not because the content could be used by
+        # other files
         raise  # bubble up the exception
     db.session.commit()
 
