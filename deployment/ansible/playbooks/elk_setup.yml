@@ -1,0 +1,13 @@
+- hosts: "{{ elkhost | default('prod') }}"
+  become: true
+  roles:
+    - role: docker
+      tags: ["docker"]
+    - role: elasticsearch
+      tags: ["elasticsearch"]
+    - role: kibana
+      tags: ["kibana"]
+    - role: logstash
+      tags: ["logstash"]
+    - role: nginx
+      tags: ["nginx"]

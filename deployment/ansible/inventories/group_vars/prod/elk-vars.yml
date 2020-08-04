@@ -1,0 +1,25 @@
+elk_server_name: elk.prod.lifelike.bio
+network_name: elknet
+
+nginx_image: nginx:1.19.1-alpine
+nginx_hostname: ng01
+nginx_conf_dir: /usr/share/nginx
+
+elasticsearch_image: docker.elastic.co/elasticsearch/elasticsearch:7.8.0
+elasticsearch_hostname: es01
+elasticsearch_conf_dir: /usr/share/elasticsearch
+
+kibana_image: docker.elastic.co/kibana/kibana:7.8.0
+kibana_hostname: ki01
+
+logstash_image: docker.elastic.co/logstash/logstash:7.8.0
+logstash_hostname: lo01
+logstash_conf_dir: /usr/share/logstash
+
+certbot_image: certbot/certbot
+certbot_hostname: cb01
+certbot_conf_dir: /usr/share/certbot
+certbot_email: dbour@eng.ucsd.edu
+
+elastic_password: "{{ vault_elastic_password }}"
+kibana_password: "{{ vault_kibana_password }}"
