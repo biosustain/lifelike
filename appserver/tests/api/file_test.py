@@ -268,7 +268,7 @@ def test_user_can_remove_custom_annotation(client, test_user, test_user_with_pdf
     )
 
     assert remove_resp.status_code == 200
-    assert remove_resp.get_json()[uuid] == 'Removed'
+    assert uuid in remove_resp.get_json()
 
 
 def test_user_can_remove_matching_custom_annotations(
@@ -312,8 +312,8 @@ def test_user_can_remove_matching_custom_annotations(
     )
 
     assert remove_resp.status_code == 200
-    assert remove_resp.get_json()[uuid_1] == 'Removed'
-    assert remove_resp.get_json()[uuid_2] == 'Removed'
+    assert uuid_1 in remove_resp.get_json()
+    assert uuid_2 in remove_resp.get_json()
 
 
 def test_can_delete_files(client, test_user, test_user_with_pdf, fix_project):
