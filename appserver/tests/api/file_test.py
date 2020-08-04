@@ -215,7 +215,8 @@ CUSTOM_ANNOTATION = {
             'wikipedia': '',
             'google': ''
         },
-        'primaryLink': ''
+        'primaryLink': '',
+        'includeGlobally': False
     },
 }
 
@@ -339,12 +340,14 @@ def test_user_can_remove_annotation_exclusion(client, test_user, test_user_with_
         headers=headers,
         data=json.dumps({
             'id': 'id',
+            'idHyperlink': 'link',
             'text': 'text',
             'type': 'type',
             'rects': [],
             'pageNumber': 1,
             'reason': 'reason',
             'comment': 'comment',
+            'excludeGlobally': False
         }),
         content_type='application/json',
     )
@@ -353,7 +356,7 @@ def test_user_can_remove_annotation_exclusion(client, test_user, test_user_with_
         f'/projects/{fix_project.project_name}/files/{file_id}/annotations/remove_annotation_exclusion',  # noqa
         headers=headers,
         data=json.dumps({
-            'id': 'id',
+            'type': 'type',
             'text': 'text'
         }),
         content_type='application/json',
