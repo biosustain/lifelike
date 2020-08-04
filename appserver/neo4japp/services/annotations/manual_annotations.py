@@ -169,3 +169,30 @@ class ManualAnnotationsService:
         file.excluded_annotations.remove(excluded_annotation)
         db.session.merge(file)
         db.session.commit()
+
+    @staticmethod
+    def get_combined_annotations(project_id, file_id):
+        """ Returns automatic annotations that were not marked for exclusion
+        combined with custom annotations.
+        """
+        file = Files.query.filter_by(
+            file_id=file_id,
+            project=project_id,
+        ).one_or_none()
+        if file is None:
+            raise RecordNotFoundException('File does not exist')
+
+        def isExcluded(exclusions, annotation):
+            for exclusion in exclusions:
+                if annotation['meta']['keywordType'] == exclusion['type'] and \
+                        annotation['textInDocument'] == exclusion['text']:
+                    return True
+            return False
+
+        annotations = file.annotations['documents'][0]['passages'][0]['annotations']
+        filtered_annotations = [
+            annotation for annotation in annotations
+            if not isExcluded(file.excluded_annotations, annotation)
+        ]
+
+        return filtered_annotations + file.custom_annotations
