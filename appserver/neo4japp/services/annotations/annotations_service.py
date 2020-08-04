@@ -1087,10 +1087,10 @@ class AnnotationsService:
 
     def _annotate_custom_species(
         self,
-        entity_id_str,
-        char_coord_objs_in_pdf,
-        cropbox_in_pdf
-    ):
+        entity_id_str: str,
+        char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
+        cropbox_in_pdf: Tuple[int, int],
+    ) -> List[Annotation]:
         tokens = self.matched_custom_species
 
         custom_annotations: List[Annotation] = []
@@ -1175,7 +1175,7 @@ class AnnotationsService:
 
                 # if center point is in custom annotation rectangle
                 # then add it to list
-                if cus_x1 <= x1 <= cus_x2 and cus_y1 <= y1 <= cus_y2:
+                if cus_x1 <= center_x <= cus_x2 and cus_y1 <= center_y <= cus_y2:
                     filtered_custom_species_annotations.append(custom_anno)
 
         self.organism_frequency, self.organism_locations, self.organism_categories = \
