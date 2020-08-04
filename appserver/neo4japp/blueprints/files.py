@@ -51,6 +51,7 @@ from neo4japp.request_schemas.annotations import (
     AnnotationRemovalSchema,
     AnnotationExclusionSchema,
 )
+from neo4japp.services.indexing import index_pdf
 from neo4japp.utils.network import read_url
 from neo4japp.services.annotations.constants import AnnotationMethod
 from neo4japp.util import jsonify_with_class, SuccessResponse
@@ -196,6 +197,7 @@ def upload_pdf(request, project_name: str):
 
     current_app.logger.info(
         f'User uploaded file: <{g.current_user.email}:{file.filename}>')
+    index_pdf.main(current_app.config)
 
     yield SuccessResponse(
         result={
