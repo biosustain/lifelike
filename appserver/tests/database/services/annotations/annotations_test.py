@@ -466,33 +466,6 @@ def test_escherichia_coli_pdf(
     assert keywords['purF'] == EntityType.Gene.value
 
 
-def test_custom_annotations_gene_organism_matching_no_match(
-    default_lmdb_setup,
-    mock_general_human_genes,
-):
-    annotation_service = get_test_annotations_service(
-        genes_lmdb_path=path.join(directory, 'lmdb/genes'),
-        chemicals_lmdb_path=path.join(directory, 'lmdb/chemicals'),
-        compounds_lmdb_path=path.join(directory, 'lmdb/compounds'),
-        proteins_lmdb_path=path.join(directory, 'lmdb/proteins'),
-        species_lmdb_path=path.join(directory, 'lmdb/species'),
-        diseases_lmdb_path=path.join(directory, 'lmdb/diseases'),
-        phenotypes_lmdb_path=path.join(directory, 'lmdb/phenotypes'),
-    )
-    pdf_parser = get_annotations_pdf_parser()
-
-    pdf = path.join(directory, f'pdf_samples/custom_annotations_gene_matching.pdf')
-
-    with open(pdf, 'rb') as f:
-        pdf_text = pdf_parser.parse_pdf(pdf=f)
-        annotations = annotation_service.create_rules_based_annotations(
-            tokens=pdf_parser.extract_tokens(parsed_chars=pdf_text),
-            custom_annotations=[],
-        )
-
-    assert len(annotations) == 0
-
-
 def test_custom_annotations_gene_organism_matching_has_match(
     default_lmdb_setup,
     mock_general_human_genes,
