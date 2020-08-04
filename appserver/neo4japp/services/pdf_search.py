@@ -1,4 +1,5 @@
 import json
+import os
 from typing import Dict, List, Union
 from elasticsearch import Elasticsearch
 
@@ -80,7 +81,7 @@ class PDFSearchResult:
 # Constants
 FRAGMENT_SIZE = 2147483647
 WILDCARD_MIN_LEN = 3
-ELASTICSEARCH_HOST = 'http://n4j-elasticsearch:9200'
+ELASTICSEARCH_HOST = os.environ.get('ELASTICSEARCH_HOSTS')
 
 
 class PDFSearch:
