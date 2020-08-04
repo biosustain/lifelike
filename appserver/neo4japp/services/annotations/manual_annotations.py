@@ -55,19 +55,22 @@ class ManualAnnotationsService:
             term = custom_annotation['meta']['allText']
             matches = annotator.get_matching_manual_annotations(keyword=term, tokens=tokens)
 
-            def annotation_exists(new_annotation, diff):
+            def annotation_exists(new_annotation):
                 for annotation in file.custom_annotations:
                     if annotation['meta']['allText'] == term and \
                             len(annotation['rects']) == len(new_annotation['rects']):
                         # coordinates can have a small difference depending on
                         # where they come from: annotator or pdf viewer
                         for coords, new_coords in zip(annotation['rects'], new_annotation['rects']):
-                            if abs(coords[0] - new_coords[0]) < diff and \
-                                    abs(coords[1] - new_coords[1]) < diff and \
-                                    abs(coords[2] - new_coords[2]) < diff and \
-                                    abs(coords[3] - new_coords[3] < diff):
-                                return True
-                return False
+                            center_x = (coords[0] + coords[2]) / 2
+                            center_y = (coords[1] + coords[3]) / 2
+                            new_x1, new_y1, new_x2, new_y2 = new_coords
+                            # not a match if center point of existing annotation
+                            # is not in the rectangle coordinates of the new annotation
+                            if center_x < new_x1 or center_x > new_x2 or \
+                                    center_y < new_y1 or center_y > new_y2:
+                                return False
+                return True
 
             def add_annotation(new_annotation):
                 return {
@@ -79,7 +82,7 @@ class ManualAnnotationsService:
                 }
 
             inclusions = [
-                add_annotation(match) for match in matches if not annotation_exists(match, 5)
+                add_annotation(match) for match in matches if not annotation_exists(match)
             ]
         else:
             inclusions = [annotation_to_add]
