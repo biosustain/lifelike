@@ -284,10 +284,10 @@ export class ProjectEditDialogComponent extends CommonFormDialogComponent implem
   }
 
   /**
-   * 
+   *
    * @param value - username to search against
    */
-  private _filterGroup(value: string) : string[] {
+  private _filterGroup(value: string): string[] {
     if (value) {
       const x =  _filter(this.listOfUsers, value);
       console.log(x);
