@@ -24,9 +24,9 @@
       </div>
     </div>
 
-    <div class="form-group d-flex align-items-start">
-      <label for="type" class="mt-2 mr-2" ngbTooltip="Node type">
-        <i class="fa fa-fw fa-tag"></i>
+    <div class="form-group">
+      <label for="type" ngbTooltip="Node type">
+        Type:
       </label>
       <div class="d-flex flex-column flex-fill">
         <select [(ngModel)]="node.label" (change)="doSave()" class="custom-select w-100" id="type"
@@ -35,10 +35,10 @@
             {{choice.label | titlecase}}
           </option>
         </select>
-        <div class="d-flex align-items-center mt-2" *ngIf="nodeSubtypeChoices.length">
-          <div class="mr-2">
-            Subtype:
-          </div>
+        <div class="mt-2" *ngIf="nodeSubtypeChoices.length">
+          <label for="subtype" ngbTooltip="Node subtype">
+            Type:
+          </label>
           <select [(ngModel)]="node.data.subtype" (change)="doSave()" class="custom-select flex-fill" id="subtype">
             <option *ngFor="let choice of nodeSubtypeChoices" [value]="choice">
               {{choice | titlecase}}
@@ -55,16 +55,22 @@
       </div>
     </div>
 
-    <div class="form-group d-flex align-items-center">
-      <label for="url" class="my-0 mr-2" ngbTooltip="Link">
-        <i class="fa fa-fw fa-link"></i>
-      </label>
-      <input [(ngModel)]="node.data.hyperlink" class="form-control flex-fill" (change)="doSave()" id="url"
-             [style.width]="0">
-      <button type="button" class="btn btn-secondary btn-sm ml-1" (click)="goToLink()"
-              ngbTooltip="Open link" placement="left" container="body">
-        <i class="fa fa-external-link-alt"></i>
-      </button>
+    <label class='d-table w-100'>
+      <span class='d-table-cell' style="width: inherit;">Hyperlinks:</span>
+      <span class='d-tabble-cell badge badge-primary'><i class="fa fa-plus"></i></span>
+    </label>
+    <div class="input-group">
+      <div class="input-group-prepend">
+        <button class="btn btn-secondary btn-sm" type="button">
+          <i class="fa fa-external-link-alt"></i>
+        </button>
+      </div>
+      <input [(ngModel)]="node.data.hyperlink" placeholder="URL" type="text" class="form-control" aria-label="Text input with segmented dropdown button">
+      <div class="input-group-append">
+        <button class="btn btn-outline-danger btn-sm" type="button">
+          <i class="fa fa-trash"></i>
+        </button>
+      </div>
     </div>
 
     <fieldset class="fieldset-properties mt-4"
