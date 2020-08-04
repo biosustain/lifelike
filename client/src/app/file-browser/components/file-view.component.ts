@@ -1,5 +1,5 @@
 import { Component, EventEmitter, OnDestroy, Output, ViewChild } from '@angular/core';
-import { combineLatest, Subject, Subscription } from 'rxjs';
+import { combineLatest, Subject, Subscription, BehaviorSubject } from 'rxjs';
 import { PdfFilesService } from 'app/shared/services/pdf-files.service';
 import { Hyperlink, SearchLink } from 'app/shared/constants';
 
@@ -26,6 +26,8 @@ import { ConfirmDialogComponent } from '../../shared/components/dialog/confirm-d
 import { NgbDropdown, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ErrorHandler } from '../../shared/services/error-handler.service';
 import { FileEditDialogComponent } from './file-edit-dialog.component';
+import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
+import { Progress } from 'app/interfaces/common-dialog.interface';
 
 class DummyFile implements PdfFile {
   constructor(
@@ -107,6 +109,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
     private readonly modalService: NgbModal,
     private route: ActivatedRoute,
     private readonly errorHandler: ErrorHandler,
+    private readonly progressDialog: ProgressDialog,
   ) {
     this.projectName = this.route.snapshot.params.project_name || '';
 
@@ -270,14 +273,23 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
     const dialogRef = this.modalService.open(ConfirmDialogComponent);
     dialogRef.componentInstance.message = 'Do you want to annotate the rest of the document with this term as well?';
     dialogRef.result.then((annotateAll: boolean) => {
+      const progressDialogRef = this.progressDialog.display({
+        title: `Adding Annotations`,
+        progressObservable: new BehaviorSubject<Progress>(new Progress({
+          status: 'Adding annotations to the file...',
+        })),
+      });
+
       this.addAnnotationSub = this.pdfAnnService.addCustomAnnotation(this.currentFileId, annotationToAdd, annotateAll, this.projectName)
         .pipe(this.errorHandler.create())
         .subscribe(
           (annotations: Annotation[]) => {
+            progressDialogRef.close();
             this.addedAnnotations = annotations;
             this.snackBar.open('Annotation has been added', 'Close', {duration: 5000});
           },
           err => {
+            progressDialogRef.close();
             this.snackBar.open(`Error: failed to add annotation`, 'Close', {duration: 10000});
           },
         );
