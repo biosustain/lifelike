@@ -66,7 +66,9 @@ def seed():
                             fk_model = relationships[key].mapper
                             if isinstance(record[key], list):
                                 for value in record[key]:
-                                    getattr(instance, key).append(find_existing_row(fk_model, value))
+                                    getattr(instance, key).append(
+                                        find_existing_row(fk_model, value)
+                                    )
                             else:
                                 setattr(instance, key, find_existing_row(fk_model, record[key]))
                         else:
