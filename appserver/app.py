@@ -61,6 +61,7 @@ def seed():
 
                     directory = Directory(
                         name='home',
+                        user_id=1,
                         projects_id=proj.id,
                     )
 
