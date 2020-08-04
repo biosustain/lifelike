@@ -16,6 +16,11 @@
     <app-form-row for="comment" label="Comment">
       <input type="text" class="form-control" id="comment" formControlName="comment">
     </app-form-row>
+
+    <div class="custom-control custom-checkbox mt-4">
+      <input type="checkbox" class="custom-control-input" id="exclude-globally" formControlName="excludeGlobally">
+      <label class="custom-control-label" for="exclude-globally">Exclude this annotation from a global list</label>
+    </div>
   </app-modal-body>
 
   <app-modal-footer>

@@ -23,6 +23,7 @@ class MetaSchema(StrictSchema):
     allText = ma.String(required=True)
     links = ma.Nested(LinksSchema, required=True)
     primaryLink = ma.String(required=True)
+    includeGlobally = ma.Boolean(required=True)
 
 
 class AnnotationSchema(StrictSchema):
@@ -45,9 +46,11 @@ class AnnotationRemovalSchema(StrictSchema):
 
 class AnnotationExclusionSchema(StrictSchema):
     id = ma.String(required=True)
+    idHyperlink = ma.String(required=True)
     text = ma.String(required=True)
     type = ma.String(required=True)
     rects = ma.List(ma.List(ma.Float(required=True)))
     pageNumber = ma.Integer(required=True)
     reason = ma.String(required=True)
     comment = ma.String(required=True)
+    excludeGlobally = ma.Boolean(required=True)
