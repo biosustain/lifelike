@@ -2,7 +2,7 @@ import { Component, OnInit, Input, OnDestroy } from '@angular/core';
 import { ProjectSpaceService, Collaborator, Project } from '../services/project-space.service';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { FormArray, FormGroup, FormControl } from '@angular/forms';
-import { Subscription } from 'rxjs';
+import { Subscription, combineLatest, Observable } from 'rxjs';
 import { CommonFormDialogComponent } from 'app/shared/components/dialog/common-form-dialog.component';
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { MatSnackBar } from '@angular/material';
@@ -10,6 +10,16 @@ import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { AuthenticationService } from 'app/auth/services/authentication.service';
 import { isNullOrUndefined } from 'util';
 import { HttpErrorResponse } from '@angular/common/http';
+import { AppUser } from 'app/interfaces';
+import { AccountService } from 'app/users/services/account.service';
+import { startWith, map } from 'rxjs/operators';
+
+export const _filter = (opt: string[], value: string): string[] => {
+  // Normaize string value
+  const filterValue = value.toLowerCase();
+  // Filter value against list of real values with normalized strings
+  return opt.filter(item => item.toLowerCase().indexOf(filterValue) === 0);
+};
 
 @Component({
   selector: 'app-edit-project-dialog',
@@ -17,8 +27,12 @@ import { HttpErrorResponse } from '@angular/common/http';
   styleUrls: ['./project-edit-dialog.component.scss']
 })
 export class ProjectEditDialogComponent extends CommonFormDialogComponent implements OnInit, OnDestroy {
-  loadTask: BackgroundTask<string, Collaborator[]> = new BackgroundTask(
-    (projectName) => this.projSpace.getCollaborators(projectName)
+  // TODO - pull smaller list of users to lookup instead of whole list
+  loadTask: BackgroundTask<string, [Collaborator[], AppUser[]]> = new BackgroundTask(
+    (projectName) => combineLatest(
+      this.projSpace.getCollaborators(projectName),
+      this.acc.listOfUsers()
+    )
   );
 
   loadTaskSubscription: Subscription;
@@ -63,6 +77,9 @@ export class ProjectEditDialogComponent extends CommonFormDialogComponent implem
     currentCollabs: new FormArray([])
   });
 
+  listOfUsers: string[] = [];
+  userOptions: Observable<string[]>;
+
   get currentCollabs(): FormArray {
     return this.form.get('currentCollabs') as FormArray;
   }
@@ -88,12 +105,21 @@ export class ProjectEditDialogComponent extends CommonFormDialogComponent implem
     messageDialog: MessageDialog,
     private projSpace: ProjectSpaceService,
     private readonly snackBar: MatSnackBar,
-    private auth: AuthenticationService
+    private auth: AuthenticationService,
+    private acc: AccountService
   ) {
     super(modal, messageDialog);
   }
 
   ngOnInit() {
+    this.userOptions = this.form.get('username').valueChanges
+      .pipe(
+        // Make sure a value is being pushed
+        startWith(''),
+        // Return an observable list of states that made the cut
+        map(value => this._filterGroup(value))
+      );
+
     this.formSubscription = this.form
       .valueChanges
       .subscribe(
@@ -104,9 +130,11 @@ export class ProjectEditDialogComponent extends CommonFormDialogComponent implem
 
     this.loadTaskSubscription = this.loadTask.results$.subscribe(
       ({
-        result: collabs
+        result: [collabs, users]
       }) => {
         const userId = this.auth.whoAmI();
+
+        this.listOfUsers = users.map(u => u.username);
 
         this.userCollab = collabs.filter(c => userId === c.id)[0];
         this.collabs = collabs.filter(c => userId !== c.id);
@@ -252,6 +280,20 @@ export class ProjectEditDialogComponent extends CommonFormDialogComponent implem
           duration: 2000,
         });
       });
+    }
+  }
+
+  /**
+   * 
+   * @param value - username to search against
+   */
+  private _filterGroup(value: string) : string[] {
+    if (value) {
+      const x =  _filter(this.listOfUsers, value);
+      console.log(x);
+      return x;
+    } else {
+      return [];
     }
   }
 }

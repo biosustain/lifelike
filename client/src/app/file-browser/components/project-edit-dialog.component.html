@@ -34,7 +34,7 @@
             </small>
           </div>
           <div class="input-group mb-3">
-            <input formControlName='username' placeholder="Username" type="text" class="form-control" aria-label="Text input with segmented dropdown button">
+            <input [matAutocomplete]='autoUsers' formControlName='username' placeholder="Username" type="text" class="form-control" aria-label="Text input with segmented dropdown button">
             <select formControlName='role' class="custom-select input-group-prepend" id="inputGroupSelect04" aria-label="Example select with button addon">
               <option
                 *ngFor="let r of userRoles"
@@ -102,4 +102,9 @@
       </button>
     </app-modal-footer>
   </div>
+  <mat-autocomplete #autoUsers="matAutocomplete">
+    <mat-option *ngFor="let name of userOptions | async" [value]="name">
+      {{name}}
+    </mat-option>
+  </mat-autocomplete>
 <form>
