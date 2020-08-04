@@ -49,6 +49,9 @@ $theme-colors: map-merge(
     $theme-colors
 );
 
+$input-btn-padding-y:        .325rem;
+$input-btn-padding-x:        .65rem;
+
 @import '~bootstrap/scss/variables';
 
 $font-family-sans-serif: Roboto, "Helvetica Neue", Arial, Helvetica, sans-serif;
