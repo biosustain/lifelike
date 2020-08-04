@@ -987,6 +987,8 @@ class AnnotationsService:
                 entities = self.lmdb_session.get_lmdb_values(
                     txn=transaction, key=lookup_key, token_type=EntityType.Gene.value)
 
+                # for genes we can be more strict and check for exact match
+                # if there are exact matches we want those and ignore the others
                 entities_to_use = [entity for entity in entities if entity['synonym'] == word]
 
                 if len(entities_to_use) == 0:
