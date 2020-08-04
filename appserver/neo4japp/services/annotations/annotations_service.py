@@ -1182,6 +1182,8 @@ class AnnotationsService:
             self._get_entity_frequency_location_and_category(
                 annotations=species_annotations + filtered_custom_species_annotations,
             )
+
+        # don't return the custom annotations because they should stay as custom
         return species_annotations
 
     def _annotate_diseases(
