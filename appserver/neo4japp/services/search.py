@@ -253,7 +253,7 @@ class SearchService(GraphBaseDao):
 
         return FTSResult(term, records, total_results, page, limit)
 
-    def get_organisms(self, term: str, limit: int = 50) -> Dict[str, Any]:
+    def get_organisms(self, term: str, limit: int) -> Dict[str, Any]:
         query_term = self._fulltext_query_sanitizer(term)
         if not query_term:
             return {
