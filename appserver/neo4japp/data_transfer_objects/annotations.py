@@ -76,7 +76,7 @@ class Annotation(CamelDictMixin):
     # each index in the list correspond to the other
     # these two replaced the old lower_left/upper_right in TextPosition
     keywords: List[str] = attr.ib()
-    rects: List[float] = attr.ib()
+    rects: List[List[float]] = attr.ib()
     # the matched str keyword
     keyword: str = attr.ib()
     # string from document
