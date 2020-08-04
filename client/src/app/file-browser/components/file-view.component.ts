@@ -297,16 +297,8 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
         .pipe(this.errorHandler.create())
         .subscribe(
           response => {
-            this.removedAnnotationIds = [];
-            let msg = 'Removal completed';
-            for (const [id, status] of Object.entries(response)) {
-              if (status === 'Removed') {
-                this.removedAnnotationIds.push(id);
-              } else {
-                msg = `${msg}, but one or more annotations could not be removed because you are not the owner`;
-              }
-            }
-            this.snackBar.open(msg, 'Close', {duration: 10000});
+            this.removedAnnotationIds = response;
+            this.snackBar.open('Removal completed', 'Close', {duration: 10000});
           },
           err => {
             this.snackBar.open(`Error: removal failed`, 'Close', {duration: 10000});
