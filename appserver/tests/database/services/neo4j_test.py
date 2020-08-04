@@ -70,13 +70,31 @@ def test_get_snippets_for_edge(
     assert len(result.snippets) == 2
     assert result.association == 'treatment/therapy (including investigatory)'
 
+    snippet1 = result.snippets[0]
+    snippet2 = result.snippets[1]
+
     sentences = [
         'Toxin suppression and rapid bacterial killing may...',
         '...suppresses toxins and rapidly kills bacteria...',
     ]
 
-    assert result.snippets[0].reference.data['sentence'] in sentences
-    assert result.snippets[1].reference.data['sentence'] in sentences
+    # Both snippets come from the same publication, so can't guarantee the order
+    if snippet1.reference.data['sentence'] == sentences[0]:
+        assert snippet1.raw_score == 1
+        assert snippet1.normalized_score == 0.222
+
+        assert snippet2.reference.data['sentence'] == '...suppresses toxins and rapidly kills bacteria...'  # noqa
+        assert snippet2.raw_score == 3
+        assert snippet2.normalized_score == 0.456
+    elif snippet2.reference.data['sentence'] == sentences[0]:
+        assert snippet2.raw_score == 1
+        assert snippet2.normalized_score == 0.222
+
+        assert snippet1.reference.data['sentence'] == '...suppresses toxins and rapidly kills bacteria...'  # noqa
+        assert snippet1.raw_score == 3
+        assert snippet1.normalized_score == 0.456
+    else:
+        assert False
 
 
 def test_get_snippets_for_edge_low_limit(
@@ -121,8 +139,6 @@ def test_get_snippets_for_edge_orders_by_pub_year(
     assert len(result.snippets) == 2
     assert result.association == 'alleviates, reduces'
 
-    print(result)
-
     reference_node1 = result.snippets[0].reference.to_dict()
     reference_node2 = result.snippets[1].reference.to_dict()
 
@@ -151,13 +167,31 @@ def test_get_snippets_for_cluster(
     assert len(result.snippets) == 2
     assert result.association == 'treatment/therapy (including investigatory)'
 
+    snippet1 = result.snippets[0]
+    snippet2 = result.snippets[1]
+
     sentences = [
         'Toxin suppression and rapid bacterial killing may...',
         '...suppresses toxins and rapidly kills bacteria...',
     ]
 
-    assert result.snippets[0].reference.data['sentence'] in sentences
-    assert result.snippets[1].reference.data['sentence'] in sentences
+    # Both snippets come from the same publication, so can't guarantee the order
+    if snippet1.reference.data['sentence'] == sentences[0]:
+        assert snippet1.raw_score == 1
+        assert snippet1.normalized_score == 0.222
+
+        assert snippet2.reference.data['sentence'] == '...suppresses toxins and rapidly kills bacteria...'  # noqa
+        assert snippet2.raw_score == 3
+        assert snippet2.normalized_score == 0.456
+    elif snippet2.reference.data['sentence'] == sentences[0]:
+        assert snippet2.raw_score == 1
+        assert snippet2.normalized_score == 0.222
+
+        assert snippet1.reference.data['sentence'] == '...suppresses toxins and rapidly kills bacteria...'  # noqa
+        assert snippet1.raw_score == 3
+        assert snippet1.normalized_score == 0.456
+    else:
+        assert False
 
 
 def test_get_snippets_for_cluster_low_limit(
