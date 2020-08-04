@@ -81,14 +81,13 @@ class PDFSearchResult:
 # Constants
 FRAGMENT_SIZE = 2147483647
 WILDCARD_MIN_LEN = 3
-ELASTICSEARCH_HOST = os.environ.get('ELASTICSEARCH_HOSTS')
 
 
 class PDFSearch:
     """Wrapper around elastic search client"""
 
     def __init__(self):
-        self.es = Elasticsearch(hosts=[ELASTICSEARCH_HOST])
+        self.es = Elasticsearch(hosts=[os.environ.get('ELASTICSEARCH_HOSTS')])
 
     EmptyResult: Dict[str, Dict[str, Union[int, List[int], None]]] = \
         {'hits': {'hits': [], 'max_score': None, 'total': 0}}
