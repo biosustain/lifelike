@@ -1,0 +1,39 @@
+- name: Install dependencies
+  apt:
+    pkg:
+        - apt-transport-https
+        - ca-certificates
+        - software-properties-common
+        - gnupg2
+    update_cache: yes
+
+- name: Add Filebeat repo GPG key
+  apt_key:
+    id: 46095ACC8548582C1A2699A9D27D666CD88E42B4
+    url: https://artifacts.elastic.co/GPG-KEY-elasticsearch
+    state: present
+
+- name: Add Filebeat repo
+  apt_repository:
+    repo: deb https://artifacts.elastic.co/packages/7.x/apt stable main
+    state: present
+
+- name: Install Filebeat
+  apt:
+    pkg:
+      - filebeat
+    update_cache: yes
+
+- name: Copy filebeat conf
+  template: src={{ item.src }} dest={{ item.dest }}
+  with_items:
+    - {
+      src: "templates/filebeat.yml",
+      dest: "/{{ filebeat_conf_dir }}/filebeat.yml"
+    }
+
+- name: Run Filebeat
+  systemd:
+    name: filebeat
+    daemon_reload: yes
+    state: restarted
