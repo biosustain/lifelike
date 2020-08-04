@@ -6,7 +6,6 @@ from sqlalchemy.types import TIMESTAMP
 
 from neo4japp.database import db
 from neo4japp.models.common import RDBMSBase
-from neo4japp.models.drawing_tool import Project
 
 
 class FileContent(RDBMSBase):
