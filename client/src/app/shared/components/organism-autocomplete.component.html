@@ -1,9 +1,16 @@
-<mat-form-field>
-  <mat-label>Organisms</mat-label>
-  <input type="text" matInput [formControl]="query" [matAutocomplete]="auto" placeholder="Filter by organism">
-  <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayFn" (optionSelected)="notifySelection($event)">
-    <mat-option *ngFor="let opt of organisms | async" [value]="opt">
-      {{ opt.synonym }} <em>({{ opt.organism_name }})</em>
-    </mat-option>
-  </mat-autocomplete>
-</mat-form-field>
+<ng-template #rt let-r="result" let-t="term">
+  <ngb-highlight [result]="r.synonym" [term]="t"></ngb-highlight>
+  <span><em> ({{ r.organism_name }})</em></span>
+</ng-template>
+
+<div class="input-group">
+  <input type="text" class="form-control" placeholder="Filter by organism"
+    [class.is-invalid]="fetchFailed" [(ngModel)]="model"
+    [editable]='false' [inputFormatter]="formatter" [ngbTypeahead]="searcher" [resultTemplate]="rt"
+    (selectItem)="notifySelection($event)"
+  >
+  <div class="input-group-append" *ngIf="isFetching">
+    <span class="input-group-text">Searching...</span>
+  </div>
+  <div class="invalid-feedback" *ngIf="fetchFailed">Sorry, suggestions could not be loaded.</div>
+</div>
