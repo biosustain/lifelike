@@ -57,19 +57,21 @@
 
     <label class='d-table w-100'>
       <span class='d-table-cell' style="width: inherit;">Hyperlinks:</span>
-      <span class='d-tabble-cell badge badge-primary'><i class="fa fa-plus"></i></span>
+      <span (click)='addHyperlink()' class='d-tabble-cell badge badge-primary'><i class="fa fa-plus"></i></span>
     </label>
-    <div class="input-group">
-      <div class="input-group-prepend">
-        <button class="btn btn-secondary btn-sm" type="button">
-          <i class="fa fa-external-link-alt"></i>
-        </button>
-      </div>
-      <input [(ngModel)]="node.data.hyperlink" placeholder="URL" type="text" class="form-control" aria-label="Text input with segmented dropdown button">
-      <div class="input-group-append">
-        <button class="btn btn-outline-danger btn-sm" type="button">
-          <i class="fa fa-trash"></i>
-        </button>
+    <div *ngFor='let h of hyperlinks; let i = index;'>
+      <div class="input-group mb-2">
+        <div class="input-group-prepend">
+          <button (click)='goToLink(h.url)' class="btn btn-secondary btn-sm" type="button">
+            <i class="fa fa-external-link-alt"></i>
+          </button>
+        </div>
+        <input [(ngModel)]="node.data.hyperlinks[i].url" (change)='doSave()' placeholder="URL" type="text" class="form-control" aria-label="Text input with segmented dropdown button">
+        <div class="input-group-append">
+          <button (click)='removeHyperlink(i)' class="btn btn-outline-danger btn-sm" type="button">
+            <i class="fa fa-trash"></i>
+          </button>
+        </div>
       </div>
     </div>
 
