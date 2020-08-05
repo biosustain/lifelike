@@ -7,9 +7,17 @@ from neo4japp.services.common import RDBMSBaseDao
 from neo4japp.models import OrganismGeneMatch
 
 
-class OrganismGeneMatchService(RDBMSBaseDao):
-    def __init__(self, session: Session):
+class AnnotationsNeo4jService(RDBMSBaseDao):
+    """Allows access to the main Neo4jService. Separated due
+    to being specific for annotations.
+    """
+    def __init__(
+        self,
+        session: Session,
+        neo4j_service,
+    ):
         super().__init__(session)
+        self.neo4j = neo4j_service
 
     def get_genes(
         self,
@@ -43,3 +51,25 @@ class OrganismGeneMatchService(RDBMSBaseDao):
                 gene_to_organism_map[gene_name] = {organism_id: gene_id}
 
         return gene_to_organism_map
+
+    def get_gene_to_organism_match_result(
+        self,
+        genes: List[str],
+        matched_organism_ids: List[str],
+    ) -> Dict[str, Dict[str, str]]:
+        """Returns a map of gene name to gene id."""
+        # First check if the gene/organism match exists in the postgres lookup table
+        postgres_result = self.get_genes(genes, matched_organism_ids)
+
+        # Collect all the genes that were not matched to an organism in the table, and search
+        # the Neo4j database for them
+        second_round_genes = [gene for gene in genes if gene not in postgres_result.keys()]
+        neo4j_result = self.neo4j.get_genes_to_organisms(second_round_genes, matched_organism_ids)
+
+        # Join the results of the two queries
+        postgres_result.update(neo4j_result)
+
+        return postgres_result
+
+    def get_organisms_from_ids(self, tax_ids: List[str]) -> List[str]:
+        return self.neo4j.get_organisms_from_ids(tax_ids)

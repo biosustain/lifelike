@@ -5,12 +5,12 @@ import os
 import re
 import urllib.request
 import uuid
-import urllib.request
 
 from datetime import datetime, timezone
 from enum import Enum
-from typing import Dict, Optional
+from typing import Dict, List, Optional
 from urllib.error import URLError
+
 from flask import Blueprint, current_app, request, jsonify, g, make_response
 from sqlalchemy.orm.exc import NoResultFound
 from werkzeug.datastructures import FileStorage
@@ -45,6 +45,7 @@ from neo4japp.models import (
     Projects,
     LMDBsDates
 )
+import neo4japp.models.files_queries as files_queries
 from neo4japp.request_schemas.annotations import (
     AnnotationAdditionSchema,
     AnnotationSchema,
@@ -65,12 +66,10 @@ DOWNLOAD_USER_AGENT = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML
 bp = Blueprint('files', __name__, url_prefix='/files')
 
 
-######################################
-# Shared functions used by blueprints
-######################################
 def annotate(
     filename: str,
-    pdf_file_object: FileStorage,
+    pdf_fp: FileStorage,
+    custom_annotations: List[dict],
     annotation_method: str = AnnotationMethod.Rules.value,  # default to Rules Based
 ) -> dict:
     lmdb_dao = get_lmdb_dao()
@@ -78,7 +77,7 @@ def annotate(
     annotator = get_annotations_service(lmdb_dao=lmdb_dao)
     bioc_service = get_bioc_document_service()
     try:
-        parsed_pdf_chars = pdf_parser.parse_pdf(pdf=pdf_file_object)
+        parsed_pdf_chars = pdf_parser.parse_pdf(pdf=pdf_fp)
     except AnnotationError:
         raise AnnotationError('Your file could not be imported. Please check if it is a valid PDF.')
 
@@ -87,24 +86,55 @@ def annotate(
         pdf_text = pdf_parser.combine_all_chars(parsed_chars=parsed_pdf_chars)
 
         if annotation_method == AnnotationMethod.Rules.value:
-            annotations = annotator.create_rules_based_annotations(tokens=tokens)
+            annotations = annotator.create_rules_based_annotations(
+                tokens=tokens,
+                custom_annotations=custom_annotations,
+            )
         elif annotation_method == AnnotationMethod.NLP.value:
             # NLP
             annotations = annotator.create_nlp_annotations(
                 page_index=parsed_pdf_chars.min_idx_in_page,
                 text=pdf_text,
                 tokens=tokens,
+                custom_annotations=custom_annotations,
             )
         else:
-            raise AnnotationError('Your file could not be annotated and your PDF file was not saved.')  # noqa
+            raise AnnotationError('Your file could not be annotated.')  # noqa
         bioc = bioc_service.read(text=pdf_text, file_uri=filename)
         return bioc_service.generate_bioc_json(annotations=annotations, bioc=bioc)
     except AnnotationError:
-        raise AnnotationError('Your file could not be annotated and your PDF file was not saved.')
+        raise AnnotationError('Your file could not be annotated.')
 
-#################################
-# End shared blueprint functions
-#################################
+
+def extract_doi(pdf_content: bytes, file_id: str = None, filename: str = None) -> Optional[str]:
+    # Attempt 1: search through the first N bytes (most probably containing only metadata)
+    chunk = pdf_content[:2 ** 17]
+    doi = search_doi(chunk)
+    if doi is not None:
+        return doi
+
+    # Attempt 2: search through the first two pages of text (no metadata)
+    fp = io.BytesIO(pdf_content)
+    text = high_level.extract_text(fp, page_numbers=[0, 1], caching=False)
+    doi = search_doi(bytes(text, encoding='utf8'))
+    if doi is not None:
+        return doi
+
+    current_app.logger.warning('No DOI for file: %s, %s', file_id, filename)
+    return None
+
+
+def search_doi(content: bytes) -> Optional[str]:
+    doi_re = rb'(?:doi|DOI)(?::|=)\s*([\d\w\./%]+)'
+    match = re.search(doi_re, content)
+    if match is None:
+        return None
+    doi = match.group(1).decode('utf-8').replace('%2F', '/')
+    # Make sure that the match does not contain undesired characters at the end.
+    # E.g. when the match is at the end of a line, and there is a full stop.
+    while doi[-1] in './%':
+        doi = doi[:-1]
+    return doi if doi.startswith('http') else f'https://doi.org/{doi}'
 
 
 @bp.route('/upload', methods=['POST'])
@@ -156,9 +186,6 @@ def upload_pdf(request, project_name: str):
         filename = name[:max(0, max_filename_length - len(extension))] + extension
     file_id = str(uuid.uuid4())
 
-    annotations = annotate(filename, pdf, request.annotation_method)
-    annotations_date = datetime.now(TIMEZONE)
-
     try:
         # First look for an existing copy of this file
         file_content = db.session.query(FileContent.id) \
@@ -183,15 +210,33 @@ def upload_pdf(request, project_name: str):
         description=description,
         content_id=file_content.id,
         user_id=user.id,
-        annotations=annotations,
         project=projects.id,
         dir_id=directory.id,
-        annotations_date=annotations_date,
         doi=doi,
         upload_url=upload_url,
     )
 
     db.session.add(file)
+    db.session.commit()
+
+    try:
+        annotations = annotate(
+            filename=filename,
+            pdf_fp=pdf,
+            custom_annotations=file.custom_annotations or [],
+            annotation_method=request.annotation_method,
+        )
+        annotations_date = datetime.now(TIMEZONE)
+
+        file.annotations = annotations
+        file.annotations_date = annotations_date
+    except AnnotationError:
+        db.session.delete(file)
+        # TODO: delete from FileContent too?
+        # if it's the first upload then yes,
+        # but no if not because the content could be used by
+        # other files
+        raise  # bubble up the exception
     db.session.commit()
 
     current_app.logger.info(
@@ -221,6 +266,7 @@ def list_files(project_name: str):
 
     yield user, projects
 
+    # TODO: this needs to be paginated
     files = [{
         'annotations_date': row.annotations_date,
         'id': row.id,  # TODO: is this of any use?
@@ -316,16 +362,18 @@ def get_pdf(id: str, project_name: str):
         except NoResultFound:
             raise RecordNotFoundException('Requested PDF file not found.')
         else:
+            update: Dict[str, str] = {}
             if filename and filename != file.filename:
-                db.session.query(Files).filter(Files.file_id == id).update({
-                    'filename': filename,
-                })
+                update['filename'] = filename
+
             if description != file.description:
-                db.session.query(Files).filter(Files.file_id == id).update({
-                    'description': description,
-                })
-            db.session.commit()
+                update['description'] = description
+
+            if update:
+                db.session.query(Files).filter(Files.file_id == id).update(update)
+                db.session.commit()
         yield ''
+
     try:
         entry = db.session.query(
             Files.id,
@@ -339,6 +387,7 @@ def get_pdf(id: str, project_name: str):
         ).one()
     except NoResultFound:
         raise RecordNotFoundException('Requested PDF file not found.')
+
     res = make_response(entry.raw_file)
     res.headers['Content-Type'] = 'application/pdf'
 
@@ -360,24 +409,6 @@ def transform_to_bioc():
         return jsonify(template)
 
 
-# TODO: Should remove this eventually...the annotator should return data readable by the
-# lib-pdf-viewer-lib, or the lib should conform to what is being returned by the annotator.
-# Something has to give.
-def map_annotations_to_correct_format(unformatted_annotations: dict):
-    unformatted_annotations_list = unformatted_annotations['documents'][0]['passages'][0]['annotations']  # noqa
-    formatted_annotations_list = []
-
-    for unformatted_annotation in unformatted_annotations_list:
-        # Remove the 'keywordType' attribute and replace it with 'type', as the
-        # lib-pdf-viewer-lib does not recognize 'keywordType'
-        keyword_type = unformatted_annotation['meta']['keywordType']
-        del unformatted_annotation['meta']['keywordType']
-        unformatted_annotation['meta']['type'] = keyword_type
-
-        formatted_annotations_list.append(unformatted_annotation)
-    return formatted_annotations_list
-
-
 @newbp.route('/<string:project_name>/files/<string:id>/annotations', methods=['GET'])
 @auth.login_required
 @requires_project_permission(AccessActionType.READ)
@@ -395,24 +426,7 @@ def get_annotations(id: str, project_name: str):
     if not file:
         raise RecordNotFoundException('File does not exist')
 
-    # TODO: Should remove this eventually...the annotator should return data readable by the
-    # lib-pdf-viewer-lib, or the lib should conform to what is being returned by the annotator.
-    # Something has to give.
-    def map_annotations_to_correct_format(unformatted_annotations: dict):
-        unformatted_annotations_list = unformatted_annotations['documents'][0]['passages'][0]['annotations']  # noqa
-        formatted_annotations_list = []
-
-        for unformatted_annotation in unformatted_annotations_list:
-            # Remove the 'keywordType' attribute and replace it with 'type', as the
-            # lib-pdf-viewer-lib does not recognize 'keywordType'
-            keyword_type = unformatted_annotation['meta']['keywordType']
-            del unformatted_annotation['meta']['keywordType']
-            unformatted_annotation['meta']['type'] = keyword_type
-
-            formatted_annotations_list.append(unformatted_annotation)
-        return formatted_annotations_list
-
-    annotations = map_annotations_to_correct_format(file.annotations)
+    annotations = file.annotations['documents'][0]['passages'][0]['annotations']
 
     # Add additional information for annotations that were excluded
     for annotation in annotations:
@@ -423,7 +437,6 @@ def get_annotations(id: str, project_name: str):
                 annotation['meta']['exclusionReason'] = exclusion['reason']
                 annotation['meta']['exclusionComment'] = exclusion['comment']
 
-    # for now, custom annotations are stored in the format that pdf-viewer supports
     yield jsonify(annotations + file.custom_annotations)
 
 
@@ -567,49 +580,52 @@ class AnnotationOutcome(Enum):
 @auth.login_required
 @requires_project_permission(AccessActionType.WRITE)
 def reannotate(project_name: str):
-
     user = g.current_user
-
     projects = Projects.query.filter(Projects.project_name == project_name).one_or_none()
+
     if projects is None:
         raise RecordNotFoundException(f'Project {project_name} not found')
 
     yield user, projects
 
-    ids = request.get_json()
+    ids = set(request.get_json())
     outcome: Dict[str, str] = {}  # file id to annotation outcome
-    for id in ids:
-        file = db.session.query(
-            Files.id,
-            Files.filename,
-            Files.annotations,
-            FileContent.raw_file
-        ).join(
-            FileContent,
-            FileContent.id == Files.content_id
-        ).filter(
-            Files.file_id == id,
-            Files.project == projects.id,
-        ).one_or_none()
-        if file is None:
-            current_app.logger.error('Could not find file')
-            outcome[id] = AnnotationOutcome.NOT_FOUND.value
-            continue
-        fp = FileStorage(io.BytesIO(file.raw_file), file.filename)
+    files = files_queries.get_all_files_and_content_by_id(file_ids=ids, project_id=projects.id)
+
+    files_not_found = ids - set(f.file_id for f in files)
+    for not_found in files_not_found:
+        outcome[not_found] = AnnotationOutcome.NOT_FOUND.value
+
+    updated_files: List[dict] = []
+
+    for f in files:
+        fp = FileStorage(io.BytesIO(f.raw_file), f.filename)
         try:
-            annotations = annotate(file.filename, fp)
-        except Exception as e:
-            current_app.logger.error('Could not annotate file: %s, %s, %s', id, file.filename, e)
-            outcome[id] = AnnotationOutcome.NOT_ANNOTATED.value
+            annotations = annotate(
+                filename=f.filename,
+                pdf_fp=fp,
+                custom_annotations=f.custom_annotations,
+            )
+        except AnnotationError as e:
+            current_app.logger.error(
+                'Could not reannotate file: %s, %s, %s', f.file_id, f.filename, e)
+            outcome[f.file_id] = AnnotationOutcome.NOT_ANNOTATED.value
         else:
-            db.session.query(Files).filter(Files.file_id == id).update({
-                'annotations': annotations,
-                'annotations_date': datetime.now(timezone.utc),
-            })
-            db.session.commit()
-            current_app.logger.debug('File successfully annotated: %s, %s', id, file.filename)
-            outcome[id] = AnnotationOutcome.ANNOTATED.value
+            updated_files.append(
+                {
+                    'id': f.id,
+                    'annotations': annotations,
+                    'annotations_date': datetime.now(timezone.utc),
+                }
+            )
+            current_app.logger.debug(
+                'File successfully reannotated: %s, %s', f.file_id, f.filename)
+            outcome[f.file_id] = AnnotationOutcome.ANNOTATED.value
         fp.close()
+
+    # low level fast bulk operation
+    db.session.bulk_update_mappings(Files, updated_files)
+    db.session.commit()
     yield jsonify(outcome)
 
 
@@ -632,58 +648,35 @@ def delete_files(project_name: str):
     yield curr_user, projects
 
     user_roles = [r.name for r in curr_user.roles]
-    ids = request.get_json()
+    ids = set(request.get_json())
     outcome: Dict[str, str] = {}  # file id to deletion outcome
-    for id in ids:
-        file = Files.query.filter_by(
-            file_id=id,
-            project=projects.id,
-        ).one_or_none()
-        if file is None:
-            current_app.logger.error('Could not find file')
-            outcome[id] = DeletionOutcome.NOT_FOUND.value
-            continue
-        if 'admin' not in user_roles and curr_user.id != int(file.user_id):
-            current_app.logger.error('Cannot delete file (not an owner): %s, %s', id, file.filename)
-            outcome[id] = DeletionOutcome.NOT_OWNER.value
-            continue
-        db.session.delete(file)
-        db.session.commit()
-        current_app.logger.info(f'User deleted file: <{g.current_user.email}:{file.filename}>')
-        outcome[id] = DeletionOutcome.DELETED.value
+    files = files_queries.get_all_files_by_id(file_ids=ids, project_id=projects.id)
+
+    files_not_found = ids - set(f.file_id for f in files)
+    for not_found in files_not_found:
+        outcome[not_found] = DeletionOutcome.NOT_FOUND.value
+
+    files_to_delete: List[Files] = []
+
+    for f in files:
+        if 'admin' not in user_roles and curr_user.id != int(f.user_id):
+            current_app.logger.error(
+                'Cannot delete file (not an owner): %s, %s', f.file_id, f.filename)
+            outcome[f.file_id] = DeletionOutcome.NOT_OWNER.value
+        else:
+            files_to_delete.append(f)
+
+    for deleted in files_to_delete:
+        current_app.logger.info(f'User deleted file: <{g.current_user.email}:{deleted.filename}>')
+        outcome[deleted.file_id] = DeletionOutcome.DELETED.value
+
+    # low level fast bulk operation
+    delete_query = Files.__table__.delete().where(
+        Files.file_id.in_(set(to_delete.file_id for to_delete in files_to_delete)))
+    db.session.execute(delete_query)
+    db.session.commit()
 
     yield jsonify(outcome)
-
-
-def extract_doi(pdf_content: bytes, file_id: str = None, filename: str = None) -> Optional[str]:
-    # Attempt 1: search through the first N bytes (most probably containing only metadata)
-    chunk = pdf_content[:2 ** 17]
-    doi = search_doi(chunk)
-    if doi is not None:
-        return doi
-
-    # Attempt 2: search through the first two pages of text (no metadata)
-    fp = io.BytesIO(pdf_content)
-    text = high_level.extract_text(fp, page_numbers=[0, 1], caching=False)
-    doi = search_doi(bytes(text, encoding='utf8'))
-    if doi is not None:
-        return doi
-
-    current_app.logger.warning('No DOI for file: %s, %s', file_id, filename)
-    return None
-
-
-def search_doi(content: bytes) -> Optional[str]:
-    doi_re = rb'(?:doi|DOI)(?::|=)\s*([\d\w\./%]+)'
-    match = re.search(doi_re, content)
-    if match is None:
-        return None
-    doi = match.group(1).decode('utf-8').replace('%2F', '/')
-    # Make sure that the match does not contain undesired characters at the end.
-    # E.g. when the match is at the end of a line, and there is a full stop.
-    while doi[-1] in './%':
-        doi = doi[:-1]
-    return doi if doi.startswith('http') else f'https://doi.org/{doi}'
 
 
 @newbp.route(
