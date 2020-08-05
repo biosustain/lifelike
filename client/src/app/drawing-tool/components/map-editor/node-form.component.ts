@@ -53,6 +53,7 @@ export class NodeFormComponent {
     return isNullOrUndefined(this.node.data.hyperlinks) ? [] : this.node.data.hyperlinks;
   }
 
+  // tslint:disable-next-line: adjacent-overload-signatures
   @Input()
   set node(node) {
     this.originalNode = cloneDeep(node);
