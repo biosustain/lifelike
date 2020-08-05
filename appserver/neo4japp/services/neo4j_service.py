@@ -372,6 +372,12 @@ class Neo4JService(GraphBaseDao):
 
         return gene_to_organism_map
 
+    def get_organisms_from_ids(self, tax_ids: List[str]) -> List[str]:
+        query = self.get_taxonomy_from_synonyms()
+        result = self.graph.run(query, {'ids': tax_ids}).data()
+
+        return [row['organism_id'] for row in result]
+
     def load_reaction_graph(self, biocyc_id: str):
         query = self.get_reaction_query(biocyc_id)
         return self._query_neo4j(query)
@@ -693,6 +699,14 @@ class Neo4JService(GraphBaseDao):
             WITH s, g MATCH (g)-[:HAS_TAXONOMY]-(t:Taxonomy)-[:HAS_PARENT*0..2]->(p)
             WHERE p.id IN $organisms
             RETURN s.name AS gene, collect(g.id) AS gene_ids, p.id AS organism_id
+        """
+        return query
+
+    def get_taxonomy_from_synonyms(self):
+        """Retrieves a list of all taxonomy with a given taxonomy id.
+        """
+        query = """
+            MATCH (t:Taxonomy) WHERE t.id IN $ids RETURN t.id as organism_id
         """
         return query
 

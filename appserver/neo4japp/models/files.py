@@ -28,14 +28,14 @@ class Files(RDBMSBase):  # type: ignore
                            nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('appuser.id', ondelete='CASCADE'), nullable=False)
     creation_date = db.Column(db.DateTime, default=db.func.now())
-    annotations = db.Column(postgresql.JSONB, nullable=False, server_default='[]')
-    annotations_date = db.Column(TIMESTAMP(timezone=True), nullable=False)
+    annotations = db.Column(postgresql.JSONB, nullable=True, server_default='[]')
+    annotations_date = db.Column(TIMESTAMP(timezone=True), nullable=True)
     project = db.Column(db.Integer(), db.ForeignKey('projects.id'), nullable=False)
-    custom_annotations = db.Column(postgresql.JSONB, nullable=False, server_default='[]')
+    custom_annotations = db.Column(postgresql.JSONB, nullable=True, server_default='[]')
     dir_id = db.Column(db.Integer, db.ForeignKey('directory.id'), nullable=False)
     doi = db.Column(db.String(1024), nullable=True)
     upload_url = db.Column(db.String(2048), nullable=True)
-    excluded_annotations = db.Column(postgresql.JSONB, nullable=False, server_default='[]')
+    excluded_annotations = db.Column(postgresql.JSONB, nullable=True, server_default='[]')
 
 
 class LMDBsDates(RDBMSBase):
