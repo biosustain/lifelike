@@ -365,7 +365,27 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
       + `/files/${encodeURIComponent(this.currentFileId)}`
       + `#page=${loc.pageNumber}&coords=${loc.rect[0]},${loc.rect[1]},${loc.rect[2]},${loc.rect[3]}`;
 
+    const sources = [{
+      domain: 'File Source',
+      url: source
+    }];
+
+    if (this.pdfFile.doi) {
+      sources.push({
+        domain: 'DOI',
+        url: this.pdfFile.doi
+      });
+    }
+
+    if (this.pdfFile.upload_url) {
+      sources.push({
+        domain: 'Upload URL',
+        url: this.pdfFile.upload_url
+      });
+    }
+
     const hyperlink = meta.idHyperlink || meta.primaryLink || '';
+
     const search = Object.keys(meta.links || []).map(k => {
       return {
         domain: k,
@@ -382,7 +402,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
       label: meta.type.toLowerCase(),
       sub_labels: [],
       data: {
-        source,
+        sources,
         search,
         hyperlink,
         detail: meta.type === 'Link' ? meta.allText : '',
