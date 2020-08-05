@@ -7,6 +7,7 @@ import { LINE_TYPES } from '../../services/line-types';
 import { RecursivePartial } from '../../../graph-viewer/utils/types';
 import { openLink } from '../../../shared/utils/browser';
 import { PALETTE_COLORS } from '../../services/palette';
+import { isNullOrUndefined } from 'util';
 
 @Component({
   selector: 'app-edge-form',
@@ -44,6 +45,10 @@ export class EdgeFormComponent {
 
   get edge() {
     return this.updatedEdge;
+  }
+
+  get hyperlinks() {
+    return isNullOrUndefined(this.edge.data.hyperlinks) ? [] : this.edge.data.hyperlinks;
   }
 
   @Input()
@@ -102,8 +107,29 @@ export class EdgeFormComponent {
   /**
    * Allow user to navigate to a link in a new tab
    */
-  goToLink() {
-    openLink(this.edge.data.hyperlink);
+  goToLink(hyperlink) {
+    openLink(hyperlink);
+  }
+
+  /**
+   * Create a blank hyperlink template to add to model
+   */
+  addHyperlink() {
+    if (isNullOrUndefined(this.edge.data.hyperlinks)) {
+      this.edge.data.hyperlinks = [];
+    }
+
+    const [domain, url] = ['', ''];
+    this.edge.data.hyperlinks.push({url, domain});
+  }
+
+  /**
+   * Remove hyperlink from specified index
+   * @param i - index of hyperlink to remove
+   */
+  removeHyperlink(i) {
+    this.edge.data.hyperlinks.splice(i, 1);
+    this.doSave();
   }
 
   /**
