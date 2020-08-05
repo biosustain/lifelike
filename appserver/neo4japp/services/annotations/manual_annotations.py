@@ -160,17 +160,15 @@ class ManualAnnotationsService:
         if file is None:
             raise RecordNotFoundException('File does not exist')
 
-        excluded_annotation = next(
-            (exclusion for exclusion in file.excluded_annotations
-                if exclusion['type'] == entity_type and exclusion['text'] == term),
-            None
-        )
-        if excluded_annotation is None:
+        initial_length = len(file.excluded_annotations)
+        file.excluded_annotations = [
+            exclusion for exclusion in file.excluded_annotations
+            if not (exclusion['type'] == entity_type and exclusion['text'] == term)
+        ]
+
+        if initial_length == len(file.excluded_annotations):
             raise RecordNotFoundException('Annotation not found')
 
-        file.excluded_annotations = list(file.excluded_annotations)
-        file.excluded_annotations.remove(excluded_annotation)
-        db.session.merge(file)
         db.session.commit()
 
     @staticmethod
