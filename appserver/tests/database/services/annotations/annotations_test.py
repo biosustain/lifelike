@@ -3,6 +3,7 @@ import json
 import pytest
 
 from os import path
+from uuid import uuid4
 
 from pdfminer.layout import LTChar
 
@@ -96,6 +97,7 @@ def get_dummy_LTChar(text):
                     id_hyperlink='',
                     links=Annotation.Meta.Links(),
                 ),
+                uuid=str(uuid4()),
             ),
             Annotation(
                 page_number=1,
@@ -114,6 +116,7 @@ def get_dummy_LTChar(text):
                     id_hyperlink='',
                     links=Annotation.Meta.Links(),
                 ),
+                uuid=str(uuid4()),
             ),
         ]),
         (2, [
@@ -134,6 +137,7 @@ def get_dummy_LTChar(text):
                     id_hyperlink='',
                     links=Annotation.Meta.Links(),
                 ),
+                uuid=str(uuid4()),
             ),
             Annotation(
                 page_number=1,
@@ -152,6 +156,7 @@ def get_dummy_LTChar(text):
                     id_hyperlink='',
                     links=Annotation.Meta.Links(),
                 ),
+                uuid=str(uuid4()),
             ),
         ]),
         (3, [
@@ -172,6 +177,7 @@ def get_dummy_LTChar(text):
                     id_hyperlink='',
                     links=Annotation.Meta.Links(),
                 ),
+                uuid=str(uuid4()),
             ),
             Annotation(
                 page_number=1,
@@ -190,6 +196,7 @@ def get_dummy_LTChar(text):
                     id_hyperlink='',
                     links=Annotation.Meta.Links(),
                 ),
+                uuid=str(uuid4()),
             ),
         ]),
         (4, [
@@ -210,6 +217,7 @@ def get_dummy_LTChar(text):
                     id_hyperlink='',
                     links=Annotation.Meta.Links(),
                 ),
+                uuid=str(uuid4()),
             ),
             Annotation(
                 page_number=1,
@@ -228,6 +236,7 @@ def get_dummy_LTChar(text):
                     id_hyperlink='',
                     links=Annotation.Meta.Links(),
                 ),
+                uuid=str(uuid4()),
             ),
         ]),
         (5, [
@@ -248,6 +257,7 @@ def get_dummy_LTChar(text):
                     id_hyperlink='',
                     links=Annotation.Meta.Links(),
                 ),
+                uuid=str(uuid4()),
             ),
         ]),
         (6, [
@@ -268,6 +278,7 @@ def get_dummy_LTChar(text):
                     id_hyperlink='',
                     links=Annotation.Meta.Links(),
                 ),
+                uuid=str(uuid4()),
             ),
             Annotation(
                 page_number=1,
@@ -286,6 +297,7 @@ def get_dummy_LTChar(text):
                     id_hyperlink='',
                     links=Annotation.Meta.Links(),
                 ),
+                uuid=str(uuid4()),
             ),
             Annotation(
                 page_number=1,
@@ -304,6 +316,7 @@ def get_dummy_LTChar(text):
                     id_hyperlink='',
                     links=Annotation.Meta.Links(),
                 ),
+                uuid=str(uuid4()),
             ),
         ]),
         # adjacent intervals
@@ -325,6 +338,7 @@ def get_dummy_LTChar(text):
                     id_hyperlink='',
                     links=Annotation.Meta.Links(),
                 ),
+                uuid=str(uuid4()),
             ),
             Annotation(
                 page_number=1,
@@ -343,6 +357,7 @@ def get_dummy_LTChar(text):
                     id_hyperlink='',
                     links=Annotation.Meta.Links(),
                 ),
+                uuid=str(uuid4()),
             ),
         ]),
         # adjacent intervals
@@ -364,6 +379,7 @@ def get_dummy_LTChar(text):
                     id_hyperlink='',
                     links=Annotation.Meta.Links(),
                 ),
+                uuid=str(uuid4()),
             ),
             Annotation(
                 page_number=1,
@@ -382,6 +398,7 @@ def get_dummy_LTChar(text):
                     id_hyperlink='',
                     links=Annotation.Meta.Links(),
                 ),
+                uuid=str(uuid4()),
             ),
         ]),
     ],
@@ -770,6 +787,7 @@ def test_tokens_gene_vs_protein_serpina1_case_all_caps_from_knowledge_graph(
                     links=Annotation.Meta.Links(),
                     category=OrganismCategory.Bacteria.value,
                 ),
+                uuid=str(uuid4()),
             ),
         ]),
         (2, [
@@ -791,6 +809,7 @@ def test_tokens_gene_vs_protein_serpina1_case_all_caps_from_knowledge_graph(
                     links=Annotation.Meta.Links(),
                     category=OrganismCategory.Eukaryota.value,
                 ),
+                uuid=str(uuid4()),
             ),
         ]),
         (3, [
@@ -812,6 +831,7 @@ def test_tokens_gene_vs_protein_serpina1_case_all_caps_from_knowledge_graph(
                     links=Annotation.Meta.Links(),
                     category=OrganismCategory.Bacteria.value,
                 ),
+                uuid=str(uuid4()),
             ),
         ]),
     ],
@@ -860,6 +880,7 @@ def test_fix_false_positive_gene_annotations(annotations_setup, index, annotatio
                     links=Annotation.Meta.Links(),
                     category=OrganismCategory.Eukaryota.value,
                 ),
+                uuid=str(uuid4()),
             ),
             Annotation(
                 page_number=1,
@@ -878,6 +899,7 @@ def test_fix_false_positive_gene_annotations(annotations_setup, index, annotatio
                     id_hyperlink='',
                     links=Annotation.Meta.Links(),
                 ),
+                uuid=str(uuid4()),
             ),
         ]),
         (2, [
@@ -899,6 +921,7 @@ def test_fix_false_positive_gene_annotations(annotations_setup, index, annotatio
                     links=Annotation.Meta.Links(),
                     category=OrganismCategory.Eukaryota.value,
                 ),
+                uuid=str(uuid4()),
             ),
             Annotation(
                 page_number=1,
@@ -917,6 +940,7 @@ def test_fix_false_positive_gene_annotations(annotations_setup, index, annotatio
                     id_hyperlink='',
                     links=Annotation.Meta.Links(),
                 ),
+                uuid=str(uuid4()),
             ),
         ]),
     ],

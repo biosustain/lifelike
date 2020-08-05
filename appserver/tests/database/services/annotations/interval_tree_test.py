@@ -1,5 +1,7 @@
 import pytest
 
+from uuid import uuid4
+
 from neo4japp.data_transfer_objects import Annotation
 from neo4japp.services.annotations import (
     AnnotationsService,
@@ -45,6 +47,7 @@ def create_tree(annotations, tree):
                     id_hyperlink='',
                     links=Annotation.Meta.Links(),
                 ),
+                uuid=str(uuid4()),
             ),
             Annotation(
                 page_number=1,
@@ -63,6 +66,7 @@ def create_tree(annotations, tree):
                     id_hyperlink='',
                     links=Annotation.Meta.Links(),
                 ),
+                uuid=str(uuid4()),
             ),
         ],
     ],
@@ -109,6 +113,7 @@ def test_merge_adjacent_intervals_with_same_type(annotations_setup, annotations)
                     id_hyperlink='',
                     links=Annotation.Meta.Links(),
                 ),
+                uuid=str(uuid4()),
             ),
             Annotation(
                 page_number=1,
@@ -127,6 +132,7 @@ def test_merge_adjacent_intervals_with_same_type(annotations_setup, annotations)
                     id_hyperlink='',
                     links=Annotation.Meta.Links(),
                 ),
+                uuid=str(uuid4()),
             ),
         ],
     ],
@@ -173,6 +179,7 @@ def test_merge_adjacent_intervals_with_different_type(annotations_setup, annotat
                     id_hyperlink='',
                     links=Annotation.Meta.Links(),
                 ),
+                uuid=str(uuid4()),
             ),
             Annotation(
                 page_number=1,
@@ -191,6 +198,7 @@ def test_merge_adjacent_intervals_with_different_type(annotations_setup, annotat
                     id_hyperlink='',
                     links=Annotation.Meta.Links(),
                 ),
+                uuid=str(uuid4()),
             ),
         ],
     ],
@@ -237,6 +245,7 @@ def test_merge_equal_intervals_with_same_type(annotations_setup, annotations):
                     id_hyperlink='',
                     links=Annotation.Meta.Links(),
                 ),
+                uuid=str(uuid4()),
             ),
             Annotation(
                 page_number=1,
@@ -255,6 +264,7 @@ def test_merge_equal_intervals_with_same_type(annotations_setup, annotations):
                     id_hyperlink='',
                     links=Annotation.Meta.Links(),
                 ),
+                uuid=str(uuid4()),
             ),
         ],
     ],
