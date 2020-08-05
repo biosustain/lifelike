@@ -348,19 +348,23 @@ def gas_gangrene_with_associations_and_references(
 
     # Association <- Snippet Relationships
     penicillins_alleviates_reduces_association_to_snippet_edge = Relationship(
-        penicillins_to_gas_gangrene_snippet_node1, 'PREDICTS', penicillins_to_gas_gangrene_association_node1  # noqa
+        penicillins_to_gas_gangrene_snippet_node1, 'PREDICTS', penicillins_to_gas_gangrene_association_node1,  # noqa
+        raw_score=2, normalized_score=0.385
     )
 
     penicillins_alleviates_reduces_association_to_snippet_edge2 = Relationship(
-        penicillins_to_gas_gangrene_snippet_node3, 'PREDICTS', penicillins_to_gas_gangrene_association_node1  # noqa
+        penicillins_to_gas_gangrene_snippet_node3, 'PREDICTS', penicillins_to_gas_gangrene_association_node1,  # noqa
+        raw_score=5, normalized_score=0.693
     )
 
     penicillins_treatment_association_to_snippet_edge = Relationship(
         penicillins_to_gas_gangrene_snippet_node2, 'PREDICTS', penicillins_to_gas_gangrene_association_node2,   # noqa
+        raw_score=1, normalized_score=0.222
     )
 
     penicillins_treatment_association_to_snippet_edge2 = Relationship(
         penicillins_to_gas_gangrene_snippet_node4, 'PREDICTS', penicillins_to_gas_gangrene_association_node2,   # noqa
+        raw_score=3, normalized_score=0.456
     )
 
     tx.create(penicillins_alleviates_reduces_association_to_snippet_edge)
