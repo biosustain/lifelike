@@ -1185,13 +1185,10 @@ class AnnotationsService:
                     # then add it to list
                     valid = None
                     while results:
-                        if len(custom_anno.rects) == 1:
+                        if valid is None:
                             valid = results.pop()
                         else:
-                            if valid is None:
-                                valid = results.pop()
-                            else:
-                                valid = valid and results.pop()
+                            valid = valid and results.pop()
 
                     if valid:
                         filtered_custom_species_annotations.append(custom_anno)
