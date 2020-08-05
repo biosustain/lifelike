@@ -1149,24 +1149,12 @@ class AnnotationsService:
             cropbox_in_pdf=cropbox_in_pdf,
         )
 
-        def contain_center_point(
-            rects: Tuple[float, float, float, float],
-            center: Tuple[float, float],
-        ) -> bool:
-            rect_x1, rect_y1, rect_x2, rect_y2 = rects
-            center_x, center_y = center
-
-            return rect_x1 <= center_x <= rect_x2 and rect_y1 <= center_y <= rect_y2
-
         # we only want the annotations with correct coordinates
         # because it is possible for a word to only have one
         # of its occurrences annotated as a custom annotation
         filtered_custom_species_annotations: List[Annotation] = []
         for custom in organisms_from_custom_annotations:
             for custom_anno in custom_species_annotations:
-                # rects list length should be max of two
-                # haven't seen a word term span three lines yet
-                # only check when lengths are equal
                 if len(custom['rects']) == len(custom_anno.rects):
                     results: List[bool] = []
                     for custom_rects, custom_anno_rects in zip(custom['rects'], custom_anno.rects):
@@ -1182,25 +1170,31 @@ class AnnotationsService:
                         custom_rect_y1 = custom_rects[1]
                         custom_rect_x2 = custom_rects[2]
                         custom_rect_y2 = custom_rects[3]
-                        results.append(contain_center_point(
-                            rects=(custom_rect_x1, custom_rect_y1, custom_rect_x2, custom_rect_y2),
-                            center=(center_x, center_y),
-                        ))
 
-                    # if center point is in custom annotation rectangle
-                    # then add it to list
-                    if len(custom_anno.rects) == 1:
-                        if results.pop():
-                            filtered_custom_species_annotations.append(custom_anno)
-                    elif len(custom_anno.rects) == 2:
-                        one = results.pop()
-                        two = results.pop()
-                        if one and two:
-                            filtered_custom_species_annotations.append(custom_anno)
-                    else:
+                        # check if center point for each rect in custom_anno.rects
+                        # is in the corresponding rectangle from custom annotations
+                        has_center_point = custom_rect_x1 <= center_x <= custom_rect_x2 and custom_rect_y1 <= center_y <= custom_rect_y2  # noqa
+                        results.append(has_center_point)
+
+                    if len(results) != len(custom_anno.rects):
                         # unexpected length of rects
                         raise AnnotationError(
                             'Received unexpected length in rects in custom annotation')
+
+                    # if center point is in custom annotation rectangle
+                    # then add it to list
+                    valid = None
+                    while results:
+                        if len(custom_anno.rects) == 1:
+                            valid = results.pop()
+                        else:
+                            if valid is None:
+                                valid = results.pop()
+                            else:
+                                valid = valid and results.pop()
+
+                    if valid:
+                        filtered_custom_species_annotations.append(custom_anno)
 
         self.organism_frequency, self.organism_locations, self.organism_categories = \
             self._get_entity_frequency_location_and_category(
