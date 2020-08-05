@@ -74,14 +74,14 @@
       <app-quick-search [query]="node.display_name" [links]="node.data?.search"></app-quick-search>
     </fieldset>
 
-    <div class="mt-4">
-      <div *ngIf="node.data.source" class="mb-2">
-        <button *ngIf="node.data.source" type="button" class="btn btn-secondary btn-block"
-                (click)="goToSource()">
-          Go to Source
-        </button>
-      </div>
+    <fieldset class="fieldset-properties mt-4"
+          *ngIf="node.data?.sources">
+      <legend>Sources <i class="fas fa-external-link-alt ml-1"></i></legend>
 
+      <app-sources (executeFileSource)="goToSource($event)" [links]="node.data?.sources"></app-sources>
+    </fieldset>
+
+    <div class="mt-4">
       <button (click)="doDelete()" type="button" class="btn btn-danger btn-block">
         Delete
       </button>
