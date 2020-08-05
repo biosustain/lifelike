@@ -1,5 +1,7 @@
 import pytest
 
+from uuid import uuid4
+
 from neo4japp.database import get_annotation_neo4j
 from neo4japp.data_transfer_objects import Annotation
 from neo4japp.services.annotations import (
@@ -46,6 +48,7 @@ def create_tree(annotations, tree):
                     id_hyperlink='',
                     links=Annotation.Meta.Links(),
                 ),
+                uuid='',
             ),
             Annotation(
                 page_number=1,
@@ -64,6 +67,7 @@ def create_tree(annotations, tree):
                     id_hyperlink='',
                     links=Annotation.Meta.Links(),
                 ),
+                uuid='',
             ),
         ],
     ],
@@ -87,7 +91,11 @@ def test_merge_adjacent_intervals_with_same_type(annotations_setup, annotations)
         data_reducer=annotation_service.determine_entity_precedence,
     )
     assert len(fixed) == 1
-    assert fixed[0] == annotations[1]
+    # have to do asserts like this because the uuid will be different
+    assert fixed[0].keyword == annotations[1].keyword
+    assert fixed[0].lo_location_offset == annotations[1].lo_location_offset
+    assert fixed[0].hi_location_offset == annotations[1].hi_location_offset
+    assert fixed[0].meta.type == annotations[1].meta.type
 
 
 @pytest.mark.parametrize(
@@ -111,6 +119,7 @@ def test_merge_adjacent_intervals_with_same_type(annotations_setup, annotations)
                     id_hyperlink='',
                     links=Annotation.Meta.Links(),
                 ),
+                uuid='',
             ),
             Annotation(
                 page_number=1,
@@ -129,6 +138,7 @@ def test_merge_adjacent_intervals_with_same_type(annotations_setup, annotations)
                     id_hyperlink='',
                     links=Annotation.Meta.Links(),
                 ),
+                uuid='',
             ),
         ],
     ],
@@ -152,7 +162,11 @@ def test_merge_adjacent_intervals_with_different_type(annotations_setup, annotat
         data_reducer=annotation_service.determine_entity_precedence,
     )
     assert len(fixed) == 1
-    assert fixed[0] == annotations[1]
+    # have to do asserts like this because the uuid will be different
+    assert fixed[0].keyword == annotations[1].keyword
+    assert fixed[0].lo_location_offset == annotations[1].lo_location_offset
+    assert fixed[0].hi_location_offset == annotations[1].hi_location_offset
+    assert fixed[0].meta.type == annotations[1].meta.type
 
 
 @pytest.mark.parametrize(
@@ -176,6 +190,7 @@ def test_merge_adjacent_intervals_with_different_type(annotations_setup, annotat
                     id_hyperlink='',
                     links=Annotation.Meta.Links(),
                 ),
+                uuid='',
             ),
             Annotation(
                 page_number=1,
@@ -194,6 +209,7 @@ def test_merge_adjacent_intervals_with_different_type(annotations_setup, annotat
                     id_hyperlink='',
                     links=Annotation.Meta.Links(),
                 ),
+                uuid='',
             ),
         ],
     ],
@@ -217,7 +233,11 @@ def test_merge_equal_intervals_with_same_type(annotations_setup, annotations):
         data_reducer=annotation_service.determine_entity_precedence,
     )
     assert len(fixed) == 1
-    assert fixed[0] == annotations[1]
+    # have to do asserts like this because the uuid will be different
+    assert fixed[0].keyword == annotations[1].keyword
+    assert fixed[0].lo_location_offset == annotations[1].lo_location_offset
+    assert fixed[0].hi_location_offset == annotations[1].hi_location_offset
+    assert fixed[0].meta.type == annotations[1].meta.type
 
 
 @pytest.mark.parametrize(
@@ -241,6 +261,7 @@ def test_merge_equal_intervals_with_same_type(annotations_setup, annotations):
                     id_hyperlink='',
                     links=Annotation.Meta.Links(),
                 ),
+                uuid='',
             ),
             Annotation(
                 page_number=1,
@@ -259,6 +280,7 @@ def test_merge_equal_intervals_with_same_type(annotations_setup, annotations):
                     id_hyperlink='',
                     links=Annotation.Meta.Links(),
                 ),
+                uuid='',
             ),
         ],
     ],
@@ -282,4 +304,8 @@ def test_merge_equal_intervals_with_different_type(annotations_setup, annotation
         data_reducer=annotation_service.determine_entity_precedence,
     )
     assert len(fixed) == 1
-    assert fixed[0] == annotations[0]
+    # have to do asserts like this because the uuid will be different
+    assert fixed[0].keyword == annotations[0].keyword
+    assert fixed[0].lo_location_offset == annotations[0].lo_location_offset
+    assert fixed[0].hi_location_offset == annotations[0].hi_location_offset
+    assert fixed[0].meta.type == annotations[0].meta.type
