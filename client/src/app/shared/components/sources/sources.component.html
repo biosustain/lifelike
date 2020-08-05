@@ -1,0 +1,13 @@
+<ul class="list-unstyled m-0">
+  <li *ngFor="let link of links" class="text-truncate">
+
+    <a *ngIf='link.domain==="File Source"; else default' [routerLink]="" (click)="executeFileSource.emit(link.url)">
+      {{ link.domain }}
+    </a>
+    <ng-template #default>
+      <a [href]="link.url" target="_blank">
+        {{ link.domain }}
+      </a>
+    </ng-template>
+  </li>
+</ul>
