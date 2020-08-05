@@ -5,6 +5,7 @@ import requests
 from collections import deque
 from math import inf
 from typing import cast, Dict, List, Optional, Set, Tuple, Union
+from uuid import uuid4
 
 from pdfminer.layout import LTAnno, LTChar
 
@@ -698,6 +699,7 @@ class AnnotationsService:
                 lo_location_offset=keyword_starting_idx,
                 hi_location_offset=keyword_ending_idx,
                 meta=organism_meta,
+                uuid=str(uuid4()),
             )
         elif token_type == EntityType.Gene.value:
             gene_meta = GeneAnnotation.GeneMeta(
@@ -725,6 +727,7 @@ class AnnotationsService:
                 lo_location_offset=keyword_starting_idx,
                 hi_location_offset=keyword_ending_idx,
                 meta=gene_meta,
+                uuid=str(uuid4()),
             )
         else:
             meta = Annotation.Meta(
@@ -751,6 +754,7 @@ class AnnotationsService:
                 lo_location_offset=keyword_starting_idx,
                 hi_location_offset=keyword_ending_idx,
                 meta=meta,
+                uuid=str(uuid4()),
             )
         return annotation
 
