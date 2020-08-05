@@ -289,9 +289,7 @@ export class ProjectEditDialogComponent extends CommonFormDialogComponent implem
    */
   private _filterGroup(value: string): string[] {
     if (value) {
-      const x =  _filter(this.listOfUsers, value);
-      console.log(x);
-      return x;
+      return  _filter(this.listOfUsers, value);
     } else {
       return [];
     }
