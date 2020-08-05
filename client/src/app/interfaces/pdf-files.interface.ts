@@ -6,6 +6,8 @@ export interface PdfFile {
   // minimum field needed for the interface
   file_id: string;
   // optional
+  doi?: string;
+  upload_url?: string;
   filename?: string;
   creation_date?: string;
   description?: string;
