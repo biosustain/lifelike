@@ -598,7 +598,7 @@ class AnnotationsService:
             pos_idx: int,
         ) -> int:
             i = pos_idx
-            while isinstance(curr_page_coor_obj[i], LTAnno) and i >= 0:
+            while i >= 0 and isinstance(curr_page_coor_obj[i], LTAnno):
                 i -= 1
             return i
 
@@ -609,38 +609,47 @@ class AnnotationsService:
 
         keyword = ''
         for i, pos_idx in enumerate(indexes):
-            if isinstance(curr_page_coor_obj[pos_idx], LTChar):
-                lower_x, lower_y, upper_x, upper_y = curr_page_coor_obj[pos_idx].bbox  # noqa
+            try:
+                if isinstance(curr_page_coor_obj[pos_idx], LTChar):
+                    lower_x, lower_y, upper_x, upper_y = curr_page_coor_obj[pos_idx].bbox  # noqa
 
-                if (start_lower_x is None and
-                        start_lower_y is None and
-                        end_upper_x is None and
-                        end_upper_y is None):
-                    start_lower_x = lower_x
-                    start_lower_y = lower_y
-                    end_upper_x = upper_x
-                    end_upper_y = upper_y
+                    if (start_lower_x is None and
+                            start_lower_y is None and
+                            end_upper_x is None and
+                            end_upper_y is None):
+                        start_lower_x = lower_x
+                        start_lower_y = lower_y
+                        end_upper_x = upper_x
+                        end_upper_y = upper_y
 
-                    keyword += curr_page_coor_obj[pos_idx].get_text()
-                else:
-                    if lower_y != start_lower_y:
-                        diff = abs(lower_y - start_lower_y)
-                        prev_idx = _skip_lt_anno(
-                            curr_page_coor_obj=curr_page_coor_obj,
-                            pos_idx=pos_idx-1,
-                        )
-                        height = curr_page_coor_obj[prev_idx].height
-
-                        # if diff is greater than height ratio
-                        # then part of keyword is on a new line
-                        if diff > height * PDF_NEW_LINE_THRESHOLD:
-                            self._create_keyword_objects(
+                        keyword += curr_page_coor_obj[pos_idx].get_text()
+                    else:
+                        if lower_y != start_lower_y:
+                            diff = abs(lower_y - start_lower_y)
+                            prev_idx = _skip_lt_anno(
                                 curr_page_coor_obj=curr_page_coor_obj,
-                                indexes=indexes[i:],
-                                keyword_positions=keyword_positions,
-                                cropbox=cropbox,
+                                pos_idx=pos_idx-1,
                             )
-                            break
+                            height = curr_page_coor_obj[prev_idx].height
+
+                            # if diff is greater than height ratio
+                            # then part of keyword is on a new line
+                            if diff > height * PDF_NEW_LINE_THRESHOLD:
+                                self._create_keyword_objects(
+                                    curr_page_coor_obj=curr_page_coor_obj,
+                                    indexes=indexes[i:],
+                                    keyword_positions=keyword_positions,
+                                    cropbox=cropbox,
+                                )
+                                break
+                            else:
+                                if upper_y > end_upper_y:
+                                    end_upper_y = upper_y
+
+                                if upper_x > end_upper_x:
+                                    end_upper_x = upper_x
+
+                                keyword += curr_page_coor_obj[pos_idx].get_text()
                         else:
                             if upper_y > end_upper_y:
                                 end_upper_y = upper_y
@@ -649,14 +658,9 @@ class AnnotationsService:
                                 end_upper_x = upper_x
 
                             keyword += curr_page_coor_obj[pos_idx].get_text()
-                    else:
-                        if upper_y > end_upper_y:
-                            end_upper_y = upper_y
-
-                        if upper_x > end_upper_x:
-                            end_upper_x = upper_x
-
-                        keyword += curr_page_coor_obj[pos_idx].get_text()
+            except Exception as exc:
+                raise AnnotationError(
+                    'Unexpected error when creating annotation keyword objects', [str(exc)])
 
         start_lower_x += cropbox[0]  # type: ignore
         end_upper_x += cropbox[0]  # type: ignore
@@ -1141,39 +1145,58 @@ class AnnotationsService:
             cropbox_in_pdf=cropbox_in_pdf,
         )
 
-        def get_rectangle(coordinates: List[List[float]]):
-            x1 = y1 = x2 = y2 = None
+        def contain_center_point(
+            rects: Tuple[float, float, float, float],
+            center: Tuple[float, float],
+        ) -> bool:
+            rect_x1, rect_y1, rect_x2, rect_y2 = rects
+            center_x, center_y = center
 
-            if len(coordinates) == 1:
-                x1 = coordinates[0][0]
-                y1 = coordinates[0][1]
-                x2 = coordinates[0][2]
-                y2 = coordinates[0][3]
-            else:
-                # words broken into multiple lines
-                maxlen = len(coordinates)
-                x1 = coordinates[maxlen - 1][0]
-                y1 = coordinates[maxlen - 1][1]
-                x2 = coordinates[0][2]
-                y2 = coordinates[0][3]
-            return x1, y1, x2, y2
+            return rect_x1 <= center_x <= rect_x2 and rect_y1 <= center_y <= rect_y2
 
         # we only want the annotations with correct coordinates
         # because it is possible for a word to only have one
         # of its occurrences annotated as a custom annotation
         filtered_custom_species_annotations: List[Annotation] = []
         for custom in organisms_from_custom_annotations:
-            cus_x1, cus_y1, cus_x2, cus_y2 = get_rectangle(custom['rects'])
-
             for custom_anno in custom_species_annotations:
-                x1, y1, x2, y2 = get_rectangle(custom_anno.rects)
-                center_x = (x1 + x2)/2
-                center_y = (y1 + y2)/2
+                # rects list length should be max of two
+                # haven't seen a word term span three lines yet
+                # only check when lengths are equal
+                if len(custom['rects']) == len(custom_anno.rects):
+                    results: List[bool] = []
+                    for custom_rects, custom_anno_rects in zip(custom['rects'], custom_anno.rects):
+                        x1 = custom_anno_rects[0]
+                        y1 = custom_anno_rects[1]
+                        x2 = custom_anno_rects[2]
+                        y2 = custom_anno_rects[3]
 
-                # if center point is in custom annotation rectangle
-                # then add it to list
-                if cus_x1 <= center_x <= cus_x2 and cus_y1 <= center_y <= cus_y2:
-                    filtered_custom_species_annotations.append(custom_anno)
+                        center_x = (x1 + x2)/2
+                        center_y = (y1 + y2)/2
+
+                        custom_rect_x1 = custom_rects[0]
+                        custom_rect_y1 = custom_rects[1]
+                        custom_rect_x2 = custom_rects[2]
+                        custom_rect_y2 = custom_rects[3]
+                        results.append(contain_center_point(
+                            rects=(custom_rect_x1, custom_rect_y1, custom_rect_x2, custom_rect_y2),
+                            center=(center_x, center_y),
+                        ))
+
+                    # if center point is in custom annotation rectangle
+                    # then add it to list
+                    if len(custom_anno.rects) == 1:
+                        if results.pop():
+                            filtered_custom_species_annotations.append(custom_anno)
+                    elif len(custom_anno.rects) == 2:
+                        one = results.pop()
+                        two = results.pop()
+                        if one and two:
+                            filtered_custom_species_annotations.append(custom_anno)
+                    else:
+                        # unexpected length of rects
+                        raise AnnotationError(
+                            'Received unexpected length in rects in custom annotation')
 
         self.organism_frequency, self.organism_locations, self.organism_categories = \
             self._get_entity_frequency_location_and_category(
