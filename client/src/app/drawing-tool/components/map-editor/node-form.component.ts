@@ -7,6 +7,7 @@ import { annotationTypes, annotationTypesMap } from '../../../shared/annotation-
 import { RecursivePartial } from '../../../graph-viewer/utils/types';
 import { openLink } from '../../../shared/utils/browser';
 import { PALETTE_COLORS } from '../../services/palette';
+import { isNullOrUndefined } from 'util';
 
 @Component({
   selector: 'app-node-form',
@@ -46,6 +47,10 @@ export class NodeFormComponent {
 
   get node() {
     return this.updatedNode;
+  }
+
+  get hyperlinks() {
+    return isNullOrUndefined(this.node.data.hyperlinks) ? [] : this.node.data.hyperlinks;
   }
 
   @Input()
@@ -124,8 +129,29 @@ export class NodeFormComponent {
   /**
    * Allow user to navigate to a link in a new tab
    */
-  goToLink() {
-    openLink(this.node.data.hyperlink);
+  goToLink(hyperlink) {
+    openLink(hyperlink);
+  }
+
+  /**
+   * Create a blank hyperlink template to add to model
+   */
+  addHyperlink() {
+    if (isNullOrUndefined(this.node.data.hyperlinks)) {
+      this.node.data.hyperlinks = [];
+    }
+
+    const [domain, url] = ['', ''];
+    this.node.data.hyperlinks.push({url, domain});
+  }
+
+  /**
+   * Remove hyperlink from specified index
+   * @param i - index of hyperlink to remove
+   */
+  removeHyperlink(i) {
+    this.node.data.hyperlinks.splice(i, 1);
+    this.doSave();
   }
 
   /**
