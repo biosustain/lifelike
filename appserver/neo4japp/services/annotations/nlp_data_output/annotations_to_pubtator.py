@@ -38,7 +38,7 @@ def write_to_file(
         lo_offset = annotation['loLocationOffset']
         hi_offset = annotation['hiLocationOffset']
         keyword = annotation['keyword']
-        keyword_type = annotation['meta']['keywordType']
+        keyword_type = annotation['meta']['type']
         id = annotation['meta']['id']
 
         if keyword_type == EntityType.Chemical.value:

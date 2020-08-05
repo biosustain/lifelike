@@ -1,10 +1,10 @@
 import attr
 
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 from pdfminer.layout import LTAnno, LTChar
 
-from neo4japp.util import CamelDictMixin, compute_hash
+from neo4japp.util import CamelDictMixin
 
 
 @attr.s(frozen=True)
@@ -23,18 +23,10 @@ class PDFTokenPositions(CamelDictMixin):
     # used in NLP because it returns the type
     token_type: Optional[str] = attr.ib(default='')
 
-    def to_dict_hash(self):
-        return compute_hash({
-            'page_number': self.page_number,
-            'keyword': self.keyword,
-            'char_positions': self.char_positions,
-            'token_type': self.token_type,
-        })
-
 
 @attr.s(frozen=True)
 class PDFTokenPositionsList(CamelDictMixin):
-    token_positions: List[PDFTokenPositions] = attr.ib()
+    token_positions: Any = attr.ib()
     char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]] = attr.ib()
     cropbox_in_pdf: Tuple[int, int] = attr.ib()
     min_idx_in_page: Dict[int, int] = attr.ib()
@@ -62,15 +54,7 @@ class Annotation(CamelDictMixin):
             wikipedia: str = attr.ib(default='')
             google: str = attr.ib(default='')
 
-            def to_dict_hash(self):
-                return compute_hash({
-                    'ncbi': self.ncbi,
-                    'uniprot': self.uniprot,
-                    'wikipedia': self.wikipedia,
-                    'google': self.google,
-                })
-
-        keyword_type: str = attr.ib()
+        type: str = attr.ib()
         color: str = attr.ib()
         links: Links = attr.ib()
         id: str = attr.ib()
@@ -78,18 +62,6 @@ class Annotation(CamelDictMixin):
         id_hyperlink: str = attr.ib()
         is_custom: bool = attr.ib(default=False)
         all_text: str = attr.ib(default='')
-
-        def to_dict_hash(self):
-            return compute_hash({
-                'keyword_type': self.keyword_type,
-                'color': self.color,
-                'links': self.links.to_dict_hash(),
-                'id': self.id,
-                'id_type': self.id_type,
-                'id_hyperlink': self.id_hyperlink,
-                'is_custom': self.is_custom,
-                'all_text': self.all_text,
-            })
 
     @attr.s(frozen=True)
     class TextPosition(CamelDictMixin):
@@ -99,18 +71,12 @@ class Annotation(CamelDictMixin):
     #     lower_left: Dict[str, float] = attr.ib()
     #     upper_right: Dict[str, float] = attr.ib()
 
-        def to_dict_hash(self):
-            return compute_hash({
-                'positions': self.positions,
-                'value': self.value,
-            })
-
     page_number: int = attr.ib()
     # keywords and rects are a pair
     # each index in the list correspond to the other
     # these two replaced the old lower_left/upper_right in TextPosition
     keywords: List[str] = attr.ib()
-    rects: List[float] = attr.ib()
+    rects: List[List[float]] = attr.ib()
     # the matched str keyword
     keyword: str = attr.ib()
     # string from document
@@ -121,19 +87,6 @@ class Annotation(CamelDictMixin):
     meta: Meta = attr.ib()
     uuid: str = attr.ib()
 
-    def to_dict_hash(self):
-        return compute_hash({
-            'page_number': self.page_number,
-            'keywords': self.keywords,
-            'rects': self.rects,
-            'keyword': self.keywords,
-            'text_in_document': self.text_in_document,
-            'keyword_length': self.keyword_length,
-            'lo_location_offset': self.lo_location_offset,
-            'hi_location_offset': self.hi_location_offset,
-            'meta': self.meta.to_dict_hash(),
-        })
-
 
 @attr.s(frozen=True)
 class OrganismAnnotation(Annotation):
@@ -141,35 +94,9 @@ class OrganismAnnotation(Annotation):
     class OrganismMeta(Annotation.Meta):
         category: str = attr.ib(default='')
 
-        def to_dict_hash(self):
-            return compute_hash({
-                'keyword_type': self.keyword_type,
-                'color': self.color,
-                'links': self.links.to_dict_hash(),
-                'id': self.id,
-                'id_type': self.id_type,
-                'id_hyperlink': self.id_hyperlink,
-                'is_custom': self.is_custom,
-                'all_text': self.all_text,
-                'category': self.category,
-            })
-
 
 @attr.s(frozen=True)
 class GeneAnnotation(Annotation):
     @attr.s(frozen=True)
     class GeneMeta(Annotation.Meta):
         category: str = attr.ib(default='')
-
-        def to_dict_hash(self):
-            return compute_hash({
-                'keyword_type': self.keyword_type,
-                'color': self.color,
-                'links': self.links.to_dict_hash(),
-                'id': self.id,
-                'id_type': self.id_type,
-                'id_hyperlink': self.id_hyperlink,
-                'is_custom': self.is_custom,
-                'all_text': self.all_text,
-                'category': self.category,
-            })
