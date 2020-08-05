@@ -95,7 +95,7 @@ def get_dummy_LTChar(text):
                     id_hyperlink='',
                     links=Annotation.Meta.Links(),
                 ),
-                uuid=str(uuid4()),
+                uuid='',
             ),
             Annotation(
                 page_number=1,
@@ -114,7 +114,7 @@ def get_dummy_LTChar(text):
                     id_hyperlink='',
                     links=Annotation.Meta.Links(),
                 ),
-                uuid=str(uuid4()),
+                uuid='',
             ),
         ]),
         (2, [
@@ -135,7 +135,7 @@ def get_dummy_LTChar(text):
                     id_hyperlink='',
                     links=Annotation.Meta.Links(),
                 ),
-                uuid=str(uuid4()),
+                uuid='',
             ),
             Annotation(
                 page_number=1,
@@ -154,7 +154,7 @@ def get_dummy_LTChar(text):
                     id_hyperlink='',
                     links=Annotation.Meta.Links(),
                 ),
-                uuid=str(uuid4()),
+                uuid='',
             ),
         ]),
         (3, [
@@ -175,7 +175,7 @@ def get_dummy_LTChar(text):
                     id_hyperlink='',
                     links=Annotation.Meta.Links(),
                 ),
-                uuid=str(uuid4()),
+                uuid='',
             ),
             Annotation(
                 page_number=1,
@@ -194,7 +194,7 @@ def get_dummy_LTChar(text):
                     id_hyperlink='',
                     links=Annotation.Meta.Links(),
                 ),
-                uuid=str(uuid4()),
+                uuid='',
             ),
         ]),
         (4, [
@@ -215,7 +215,7 @@ def get_dummy_LTChar(text):
                     id_hyperlink='',
                     links=Annotation.Meta.Links(),
                 ),
-                uuid=str(uuid4()),
+                uuid='',
             ),
             Annotation(
                 page_number=1,
@@ -234,7 +234,7 @@ def get_dummy_LTChar(text):
                     id_hyperlink='',
                     links=Annotation.Meta.Links(),
                 ),
-                uuid=str(uuid4()),
+                uuid='',
             ),
         ]),
         (5, [
@@ -255,7 +255,7 @@ def get_dummy_LTChar(text):
                     id_hyperlink='',
                     links=Annotation.Meta.Links(),
                 ),
-                uuid=str(uuid4()),
+                uuid='',
             ),
         ]),
         (6, [
@@ -276,7 +276,7 @@ def get_dummy_LTChar(text):
                     id_hyperlink='',
                     links=Annotation.Meta.Links(),
                 ),
-                uuid=str(uuid4()),
+                uuid='',
             ),
             Annotation(
                 page_number=1,
@@ -295,7 +295,7 @@ def get_dummy_LTChar(text):
                     id_hyperlink='',
                     links=Annotation.Meta.Links(),
                 ),
-                uuid=str(uuid4()),
+                uuid='',
             ),
             Annotation(
                 page_number=1,
@@ -314,7 +314,7 @@ def get_dummy_LTChar(text):
                     id_hyperlink='',
                     links=Annotation.Meta.Links(),
                 ),
-                uuid=str(uuid4()),
+                uuid='',
             ),
         ]),
         # adjacent intervals
@@ -336,7 +336,7 @@ def get_dummy_LTChar(text):
                     id_hyperlink='',
                     links=Annotation.Meta.Links(),
                 ),
-                uuid=str(uuid4()),
+                uuid='',
             ),
             Annotation(
                 page_number=1,
@@ -355,7 +355,7 @@ def get_dummy_LTChar(text):
                     id_hyperlink='',
                     links=Annotation.Meta.Links(),
                 ),
-                uuid=str(uuid4()),
+                uuid='',
             ),
         ]),
         # adjacent intervals
@@ -377,7 +377,7 @@ def get_dummy_LTChar(text):
                     id_hyperlink='',
                     links=Annotation.Meta.Links(),
                 ),
-                uuid=str(uuid4()),
+                uuid='',
             ),
             Annotation(
                 page_number=1,
@@ -396,7 +396,7 @@ def get_dummy_LTChar(text):
                     id_hyperlink='',
                     links=Annotation.Meta.Links(),
                 ),
-                uuid=str(uuid4()),
+                uuid='',
             ),
         ]),
     ],
@@ -409,33 +409,59 @@ def test_fix_conflicting_annotations(annotations_setup, index, annotations):
 
     if index == 1:
         assert len(fixed) == 1
-        assert fixed[0] == annotations[1]
+        # have to do asserts like this because the uuid will be different
+        assert fixed[0].keyword == annotations[1].keyword
+        assert fixed[0].lo_location_offset == annotations[1].lo_location_offset
+        assert fixed[0].hi_location_offset == annotations[1].hi_location_offset
+        assert fixed[0].meta.type == annotations[1].meta.type
     elif index == 2:
         assert len(fixed) == 1
-        assert fixed[0] == annotations[0]
+        # have to do asserts like this because the uuid will be different
+        assert fixed[0].keyword == annotations[0].keyword
+        assert fixed[0].lo_location_offset == annotations[0].lo_location_offset
+        assert fixed[0].hi_location_offset == annotations[0].hi_location_offset
+        assert fixed[0].meta.type == annotations[0].meta.type
     elif index == 3:
         assert len(fixed) == 2
-        assert annotations[0] in fixed
-        assert annotations[1] in fixed
+        matches = {f.keyword for f in fixed}
+        assert annotations[0].keyword in matches
+        assert annotations[1].keyword in matches
     elif index == 4:
         assert len(fixed) == 1
-        assert fixed[0] == annotations[0]
+        # have to do asserts like this because the uuid will be different
+        assert fixed[0].keyword == annotations[0].keyword
+        assert fixed[0].lo_location_offset == annotations[0].lo_location_offset
+        assert fixed[0].hi_location_offset == annotations[0].hi_location_offset
+        assert fixed[0].meta.type == annotations[0].meta.type
     elif index == 5:
         assert len(fixed) == 1
-        assert fixed[0] == annotations[0]
+        # have to do asserts like this because the uuid will be different
+        assert fixed[0].keyword == annotations[0].keyword
+        assert fixed[0].lo_location_offset == annotations[0].lo_location_offset
+        assert fixed[0].hi_location_offset == annotations[0].hi_location_offset
+        assert fixed[0].meta.type == annotations[0].meta.type
     elif index == 6:
         assert len(fixed) == 2
-        assert annotations[0] in fixed
-        assert annotations[1] not in fixed
-        assert annotations[2] in fixed
+        matches = {f.keyword for f in fixed}
+        assert annotations[0].keyword in matches
+        assert annotations[1].keyword not in matches
+        assert annotations[2].keyword in matches
     elif index == 7:
         # test adjacent intervals
         assert len(fixed) == 1
-        assert fixed[0] == annotations[0]
+        # have to do asserts like this because the uuid will be different
+        assert fixed[0].keyword == annotations[0].keyword
+        assert fixed[0].lo_location_offset == annotations[0].lo_location_offset
+        assert fixed[0].hi_location_offset == annotations[0].hi_location_offset
+        assert fixed[0].meta.type == annotations[0].meta.type
     elif index == 8:
         # test adjacent intervals
         assert len(fixed) == 1
-        assert fixed[0] == annotations[1]
+        # have to do asserts like this because the uuid will be different
+        assert fixed[0].keyword == annotations[1].keyword
+        assert fixed[0].lo_location_offset == annotations[1].lo_location_offset
+        assert fixed[0].hi_location_offset == annotations[1].hi_location_offset
+        assert fixed[0].meta.type == annotations[1].meta.type
 
 
 def test_escherichia_coli_pdf(
@@ -846,7 +872,7 @@ def test_tokens_gene_vs_protein_serpina1_case_all_caps_from_knowledge_graph(
                     links=Annotation.Meta.Links(),
                     category=OrganismCategory.Bacteria.value,
                 ),
-                uuid=str(uuid4()),
+                uuid='',
             ),
         ]),
         (2, [
@@ -868,7 +894,7 @@ def test_tokens_gene_vs_protein_serpina1_case_all_caps_from_knowledge_graph(
                     links=Annotation.Meta.Links(),
                     category=OrganismCategory.Eukaryota.value,
                 ),
-                uuid=str(uuid4()),
+                uuid='',
             ),
         ]),
         (3, [
@@ -890,7 +916,7 @@ def test_tokens_gene_vs_protein_serpina1_case_all_caps_from_knowledge_graph(
                     links=Annotation.Meta.Links(),
                     category=OrganismCategory.Bacteria.value,
                 ),
-                uuid=str(uuid4()),
+                uuid='',
             ),
         ]),
     ],
@@ -939,7 +965,7 @@ def test_fix_false_positive_gene_annotations(annotations_setup, index, annotatio
                     links=Annotation.Meta.Links(),
                     category=OrganismCategory.Eukaryota.value,
                 ),
-                uuid=str(uuid4()),
+                uuid='',
             ),
             Annotation(
                 page_number=1,
@@ -958,7 +984,7 @@ def test_fix_false_positive_gene_annotations(annotations_setup, index, annotatio
                     id_hyperlink='',
                     links=Annotation.Meta.Links(),
                 ),
-                uuid=str(uuid4()),
+                uuid='',
             ),
         ]),
         (2, [
@@ -980,7 +1006,7 @@ def test_fix_false_positive_gene_annotations(annotations_setup, index, annotatio
                     links=Annotation.Meta.Links(),
                     category=OrganismCategory.Eukaryota.value,
                 ),
-                uuid=str(uuid4()),
+                uuid='',
             ),
             Annotation(
                 page_number=1,
@@ -999,7 +1025,7 @@ def test_fix_false_positive_gene_annotations(annotations_setup, index, annotatio
                     id_hyperlink='',
                     links=Annotation.Meta.Links(),
                 ),
-                uuid=str(uuid4()),
+                uuid='',
             ),
         ]),
     ],
@@ -1025,10 +1051,18 @@ def test_gene_vs_protein_annotations(
 
     if index == 1:
         assert len(fixed) == 1
-        assert fixed[0] == annotations[1]
+        # have to do asserts like this because the uuid will be different
+        assert fixed[0].keyword == annotations[1].keyword
+        assert fixed[0].lo_location_offset == annotations[1].lo_location_offset
+        assert fixed[0].hi_location_offset == annotations[1].hi_location_offset
+        assert fixed[0].meta.type == annotations[1].meta.type
     elif index == 2:
         assert len(fixed) == 1
-        assert fixed[0] == annotations[0]
+        # have to do asserts like this because the uuid will be different
+        assert fixed[0].keyword == annotations[0].keyword
+        assert fixed[0].lo_location_offset == annotations[0].lo_location_offset
+        assert fixed[0].hi_location_offset == annotations[0].hi_location_offset
+        assert fixed[0].meta.type == annotations[0].meta.type
 
 
 @pytest.mark.parametrize(
