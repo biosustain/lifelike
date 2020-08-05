@@ -51,6 +51,7 @@ export class EdgeFormComponent {
     return isNullOrUndefined(this.edge.data.hyperlinks) ? [] : this.edge.data.hyperlinks;
   }
 
+  // tslint:disable-next-line: adjacent-overload-signatures
   @Input()
   set edge(edge) {
     this.originalEdge = cloneDeep(edge);
