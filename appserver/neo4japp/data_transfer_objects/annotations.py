@@ -85,6 +85,7 @@ class Annotation(CamelDictMixin):
     lo_location_offset: int = attr.ib()
     hi_location_offset: int = attr.ib()
     meta: Meta = attr.ib()
+    uuid: str = attr.ib()
 
 
 @attr.s(frozen=True)

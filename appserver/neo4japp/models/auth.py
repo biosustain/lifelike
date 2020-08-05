@@ -1,3 +1,5 @@
+from typing import Sequence
+
 import bcrypt
 import enum
 
@@ -55,6 +57,14 @@ class AppUser(RDBMSBase):
         # `users`, but don't load them
         backref=db.backref('users', lazy=True)
     )
+
+    @property
+    def password(self):
+        raise NotImplementedError('password is hashed and cannot be retrieved')
+
+    @password.setter
+    def password(self, password):
+        self.set_password(password)
 
     def set_password(self, password):
         pwhash = bcrypt.hashpw(password.encode('utf8'), bcrypt.gensalt())

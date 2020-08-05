@@ -217,6 +217,7 @@ def upload_pdf(request, project_name: str):
     )
 
     db.session.add(file)
+    db.session.commit()
 
     try:
         annotations = annotate(
@@ -231,6 +232,10 @@ def upload_pdf(request, project_name: str):
         file.annotations_date = annotations_date
     except AnnotationError:
         db.session.delete(file)
+        # TODO: delete from FileContent too?
+        # if it's the first upload then yes,
+        # but no if not because the content could be used by
+        # other files
         raise  # bubble up the exception
     db.session.commit()
 
@@ -270,6 +275,8 @@ def list_files(project_name: str):
         'description': row.description,
         'username': row.username,
         'creation_date': row.creation_date,
+        'doi': row.doi,
+        'upload_url': row.upload_url
     } for row in db.session.query(
         Files.annotations_date,
         Files.id,
@@ -278,7 +285,9 @@ def list_files(project_name: str):
         Files.description,
         Files.user_id,
         AppUser.username,
-        Files.creation_date)
+        Files.creation_date,
+        Files.doi,
+        Files.upload_url)
         .join(AppUser, Files.user_id == AppUser.id)
         .filter(Files.project == projects_id)
         .order_by(Files.creation_date.desc())
@@ -307,7 +316,9 @@ def get_file_info(id: str, project_name: str):
                 Files.description,
                 Files.user_id,
                 AppUser.username,
-                Files.creation_date
+                Files.creation_date,
+                Files.doi,
+                Files.upload_url
             ).join(
                 AppUser,
                 Files.user_id == AppUser.id
@@ -325,6 +336,8 @@ def get_file_info(id: str, project_name: str):
         'description': row.description,
         'username': row.username,
         'creation_date': row.creation_date,
+        'doi': row.doi,
+        'upload_url': row.upload_url
     })
 
 
