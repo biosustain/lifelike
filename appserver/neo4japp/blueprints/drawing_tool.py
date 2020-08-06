@@ -266,8 +266,21 @@ def update_project(hash_id: str, projects_name: str):
     project.date_modified = datetime.now()
     project.public = data.get("public", False)
 
+    # Create new project
+    project_version = ProjectVersion(
+        label=data.get("label", ""),
+        description=data.get("description", ""),
+        date_modified=date_modified,
+        public=data.get("public", False),
+        graph=data.get("graph", {"edges": [], "nodes": []}),
+        user_id=user.id,
+        dir_id=project.dir_id,
+        creation_date=datetime.now(),
+    )
+
     # Commit to db
     db.session.add(project)
+    db.session.add(project_version)
     db.session.commit()
 
     yield jsonify({'status': 'success'}), 200
@@ -305,81 +318,14 @@ def delete_project(hash_id: str, projects_name: str):
     yield jsonify({'status': 'success'}), 200
 
 
-@newbp.route('/<string:projects_name>/map/<string:hash_id>', methods=['POST'])
-@auth.login_required
-@requires_project_permission(AccessActionType.WRITE)
-def add_project_version(projects_name: str, hash_id: str):
-    """ Create a new project under a user """
-    data = request.get_json()
-    user = g.current_user
-            
-    projects = Projects.query.filter(Projects.project_name == projects_name).one()
-
-    dir_id = data['directoryId']
-
-    try:
-        directory = Directory.query.get(dir_id)
-        project = Project.query.filter(
-            Project.hash_id == hash_id,
-        ).join(
-            Directory,
-            Directory.id == Project.dir_id,
-        ).filter(
-            Directory.projects_id == projects.id,
-        ).one()
-    except NoResultFound as err:
-        raise RecordNotFoundException(f'No record found: {err}')
-
-    yield user, project
-
-    date_modified = datetime.strptime(
-        data.get("date_modified", ""),
-        "%Y-%m-%dT%H:%M:%S.%fZ"
-    ) if data.get(
-        "date_modified"
-    ) is not None else datetime.now()
-
-    # Create new project
-    project_version = ProjectVersion(
-        author=f"{user.first_name} {user.last_name}",
-        label=data.get("label", ""),
-        description=data.get("description", ""),
-        date_modified=date_modified,
-        public=data.get("public", False),
-        graph=data.get("graph", {"edges": [], "nodes": []}),
-        user_id=user.id,
-        dir_id=dir_id,
-        creation_date=datetime.now(),
-        version_name=data.get("version", ""),
-    )
-
-    current_app.logger.info(f'User created map: ' +
-                            '<{g.current_user.email}:{project_version.version_name}>')
-
-    # Flush it to database to that user
-    db.session.add(project_version)
-    db.session.flush()
-
-    # Assign hash_id to map
-    project_version.set_version_hash_id()
-
-    db.session.commit()
-
-    project_schema = ProjectSchema()
-
-    yield jsonify({
-        'status': 'success',
-        'version': project_schema.dump(project_version)
-    })
-
-
-@newbp.route('/<string:projects_name>/map/<string:hash_id>/version/<string:version_hash_id>', 
-             methods=['GET'])
+@newbp.route('/<string:projects_name>/map/<string:hash_id>/<string:version_string', methods=['GET'])
 @auth.login_required
 @requires_project_permission(AccessActionType.READ)
-def get_version_by_hash(version_hash_id: str, hash_id: str, projects_name: str):
-    """ Serve map by hash_id lookup """
+def get_version(hash_id: str, projects_name: str, version_string: str):
+    """ Get map version by version id lookup """
     user = g.current_user
+
+    version_id = int(version_string)
 
     projects = Projects.query.filter(Projects.project_name == projects_name).one()
 
@@ -388,7 +334,7 @@ def get_version_by_hash(version_hash_id: str, hash_id: str, projects_name: str):
     # Pull up map by hash_id
     try:
         project_version = ProjectVersion.query.filter(
-            Project.hash_id == hash_id and ProjectVersion.version_hash_id == version_hash_id,
+            ProjectVersion.id == version_id and ProjectVersion.hash_id == hash_id
         ).join(
             Directory,
             Directory.id == Project.dir_id,
