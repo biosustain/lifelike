@@ -100,6 +100,7 @@ export interface SearchParameters {
   query: string;
   domains?: Domain[];
   entityTypes?: EntityType[];
+  organism?: string | null;
   page: number;
   limit: number;
 }
