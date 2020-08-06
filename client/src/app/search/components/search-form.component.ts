@@ -1,10 +1,11 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { AbstractControl, FormControl, FormGroup, Validators } from '@angular/forms';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Domain, EntityType, SearchParameters } from '../../interfaces';
 import { DOMAINS, ENTITY_TYPES } from '../../shared/database';
 import { MessageType } from '../../interfaces/message-dialog.interface';
 import { MessageDialog } from '../../shared/services/message-dialog.service';
 import { nonEmptyList } from '../../shared/validators';
+import { OrganismAutocomplete } from 'app/interfaces';
 
 @Component({
   selector: 'app-search-bar',
@@ -19,6 +20,7 @@ export class SearchFormComponent {
     query: new FormControl('', Validators.required),
     domains: new FormControl('', nonEmptyList),
     entityTypes: new FormControl('', nonEmptyList),
+    organism: new FormControl(null),
   });
 
   constructor(private readonly messageDialog: MessageDialog) {
@@ -26,6 +28,7 @@ export class SearchFormComponent {
       query: '',
       domains: [...this.domainChoices],
       entityTypes: [...this.entityTypeChoices],
+      organism: '',
     });
   }
 
@@ -36,6 +39,7 @@ export class SearchFormComponent {
         query: params.query,
         domains: params.domains != null ? params.domains : [...this.domainChoices],
         entityTypes: params.entityTypes != null ? params.entityTypes : [...this.entityTypeChoices],
+        organism: params.organism,
       });
     }
   }
@@ -54,5 +58,9 @@ export class SearchFormComponent {
 
   choiceLabel(choice) {
     return choice.name;
+  }
+
+  setOrganism(organism: OrganismAutocomplete | null) {
+    this.form.get('organism').setValue(organism ? organism.tax_id : null);
   }
 }
