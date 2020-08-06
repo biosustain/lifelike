@@ -47,25 +47,12 @@ class ProjectVersion(RDBMSBase):
     description = db.Column(db.Text)
     date_modified = db.Column(db.DateTime)
     graph = db.Column(db.JSON)
-    author = db.Column(db.String(240), nullable=False)
     public = db.Column(db.Boolean, default=False)
     user_id = db.Column(db.Integer, db.ForeignKey('appuser.id'), nullable=False)
     dir_id = db.Column(db.Integer, db.ForeignKey('directory.id'), nullable=False)
     hash_id = db.Column(db.String(50), unique=True)
     search_vector = db.Column(TSVectorType('label'))
     creation_date = db.Column(db.DateTime)
-    version_name = db.Column(db.String(250))
-    version_hash_id = db.Column(db.String(50), unique=True)
-
-    def set_version_hash_id(self):
-        """ Assign hash based on project id with salt
-        """
-        salt = "i am man"
-
-        h = hashlib.md5(
-            "{} {}".format(self.id, salt).encode()
-        )
-        self.version_hash_id = h.hexdigest()
 
 
 class ProjectSchema(ma.ModelSchema):  # type: ignore
