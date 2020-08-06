@@ -10,11 +10,7 @@ from neo4japp.data_transfer_objects.user_file_import import (
     NodePropertiesRequest,
     UploadFileRequest,
 )
-from neo4japp.exceptions import (
-    KgImportException
-)
 from neo4japp.models import (
-    FileContent,
     Worksheet
 )
 from neo4japp.util import CamelDictMixin, SuccessResponse, jsonify_with_class
@@ -73,35 +69,13 @@ def upload_node_mapping(req: Neo4jColumnMapping):
 @bp.route('/import-genes', methods=['POST'])
 @jsonify_with_class(ImportGenesRequest, has_file=True)
 def import_genes(req: ImportGenesRequest):
-    try:
-        import_service = get_user_file_import_service()
-        worksheet_node_id = import_service.import_gene_relationships(
-            file_name=req.file_name,
-            sheet_name=req.sheet_name,
-            worksheet_node_name=req.worksheet_node_name,
-            relationships=req.relationships,
-        )
-    except Exception:
-        raise KgImportException(
-            'An unexpected error occurred while trying to import your \n' +
-            'relationships into the knowledge graph. Please try again later.'
-        )
+    import_service = get_user_file_import_service()
+    result = import_service.import_worksheet(
+        file_name=req.file_name,
+        sheet_name=req.sheet_name,
+        worksheet=req.file_input,
+        worksheet_node_name=req.worksheet_node_name,
+        relationships=req.relationships,
+    )
 
-    try:
-        import_service.upload_worksheet_to_pg_db(
-            req.file_name,
-            req.sheet_name,
-            req.file_input,
-            worksheet_node_id
-        )
-    except Exception:
-        # If _any_ error is thrown after importing nodes, we should discard what was imported
-        # to make sure the KG and Postgres don't get out of sync.
-        import_service.detach_and_delete_worksheet(worksheet_node_id)
-        raise KgImportException(
-            'Nodes were successfully imported, but an unexpected error occurred ' +
-            'while saving your worksheet to the database. The imported nodes have been ' +
-            'discarded. Please try importing again.'
-        )
-
-    return SuccessResponse(result=[], status_code=200)
+    return SuccessResponse(result=result, status_code=200)
