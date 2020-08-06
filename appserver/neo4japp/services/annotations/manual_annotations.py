@@ -103,7 +103,7 @@ class ManualAnnotationsService:
     @staticmethod
     def remove_inclusions(project_id, file_id, uuid, remove_all):
         """ Removes custom annotation from a given file.
-        If remove_all is True, removes all custom annotations with matching term.
+        If remove_all is True, removes all custom annotations with matching term and entity type.
 
         Returns uuids of the removed inclusions.
         """
@@ -122,10 +122,12 @@ class ManualAnnotationsService:
 
         if remove_all:
             term = annotation_to_remove['meta']['allText']
+            entity_type = annotation_to_remove['meta']['type']
             removed_annotation_uuids = [
                 annotation['uuid']
                 for annotation in file.custom_annotations
-                if annotation['meta']['allText'] == term
+                if annotation['meta']['allText'] == term and
+                annotation['meta']['type'] == entity_type
             ]
         else:
             removed_annotation_uuids = [uuid]
