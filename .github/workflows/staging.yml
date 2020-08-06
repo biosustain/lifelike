@@ -6,6 +6,7 @@ on:
       - master
 
 env:
+    ELASTIC_HOST: ${{ secrets.ELASTICSEARCH_HOSTS }}
     POSTGRES_HOST: ${{ secrets.STAGING_POSTGRES_HOST }}
     POSTGRES_PORT: ${{ secrets.STAGING_POSTGRES_PORT }}
     POSTGRES_USER: ${{ secrets.STAGING_POSTGRES_USER }}
@@ -97,6 +98,7 @@ jobs:
 
             - name: Deploy Setup
               run: |-
+                echo "ELASTIC_HOST=$ELASTIC_HOST" >> staging.env
                 echo "POSTGRES_HOST=$POSTGRES_HOST" >> staging.env
                 echo "POSTGRES_PORT=$POSTGRES_PORT" >> staging.env
                 echo "POSTGRES_USER=$POSTGRES_USER" >> staging.env
