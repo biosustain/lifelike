@@ -1,3 +1,4 @@
+import json
 import re
 
 from copy import deepcopy
@@ -371,25 +372,17 @@ class AnnotationsPDFParser:
                 continue
         return words_with_char_idx
 
-    def extract_tokens(
+    def _combine_sequential_words(
         self,
-        parsed_chars: PDFParsedCharacters,
-    ) -> PDFTokenPositionsList:
-        """Extract word tokens from the parsed characters.
-
-        Returns a token list of sequentially concatentated
-        words up to the @self.max_word_length. Each token object
-        in the list will contain the keyword, and the index of
-        each char in the keyword.
+        words_with_char_idx,
+        min_idx_in_page,
+    ):
+        """Generator that combines a list of words into sequentially increment words.
 
         E.g ['A', 'B', 'C', 'D', 'E'] -> ['A', 'A B', 'A B C', 'B', 'B C', ...]
             - NOTE: each character here represents a word
         """
-        keyword_tokens: List[PDFTokenPositions] = []
         processed_tokens: Set[str] = set()
-
-        # first combine the chars into words
-        words_with_char_idx = self.combine_chars_into_words(parsed_chars=parsed_chars)
 
         compiled_regex = re.compile(self.regex_for_floats)
         end_idx = curr_max_words = 1
@@ -420,7 +413,7 @@ class AnnotationsPDFParser:
                     # keyword could've been all punctuation
                     if curr_keyword:
                         page_idx = -1
-                        for min_page_idx in list(parsed_chars.min_idx_in_page):
+                        for min_page_idx in list(min_idx_in_page):
                             if last_char_idx_in_curr_keyword <= min_page_idx:
                                 # reminder: can break here because dict in python 3.8+ are
                                 # insertion order
@@ -441,29 +434,43 @@ class AnnotationsPDFParser:
                             curr_keyword not in digits):  # noqa
 
                             token = PDFTokenPositions(
-                                page_number=parsed_chars.min_idx_in_page[page_idx],
+                                page_number=min_idx_in_page[page_idx],
                                 keyword=curr_keyword,
                                 char_positions=curr_char_idx_mappings,
                             )
+                            uid = f'{str(token.page_number)}{token.keyword}{json.dumps(token.char_positions)}'  # noqa
                             # need to do this check because
                             # could potentially have duplicates due to
                             # removing punctuation
                             # because punctuation could've been a separated word
-                            # TODO: to_dict_hash() is a bottleneck if
-                            # the keyword_tokens list is large
-                            # but can't be helped atm
-                            hashval = token.to_dict_hash()
-                            if hashval not in processed_tokens:
-                                keyword_tokens.append(token)
-                                processed_tokens.add(hashval)
+                            if uid not in processed_tokens:
+                                processed_tokens.add(uid)
+                                yield token
 
                 curr_max_words += 1
                 end_idx += 1
             curr_max_words = 1
             end_idx = i + 2
 
+    def extract_tokens(
+        self,
+        parsed_chars: PDFParsedCharacters,
+    ) -> PDFTokenPositionsList:
+        """Extract word tokens from the parsed characters.
+
+        Returns a token list of sequentially concatentated
+        words up to the @self.max_word_length. Each token object
+        in the list will contain the keyword, and the index of
+        each char in the keyword.
+        """
+        # first combine the chars into words
+        words_with_char_idx = self.combine_chars_into_words(parsed_chars=parsed_chars)
+
         return PDFTokenPositionsList(
-            token_positions=keyword_tokens,
+            token_positions=self._combine_sequential_words(
+                words_with_char_idx=words_with_char_idx,
+                min_idx_in_page=parsed_chars.min_idx_in_page,
+            ),
             char_coord_objs_in_pdf=parsed_chars.char_coord_objs_in_pdf,
             cropbox_in_pdf=parsed_chars.cropbox_in_pdf,
             min_idx_in_page=parsed_chars.min_idx_in_page,
