@@ -53,18 +53,22 @@
                 [entry2Type]="snippet.reference.data.entry2Type.slice(0, 1).toUpperCase() + snippet.reference.data.entry2Type.slice(1)"
                 [legend]="legend"
               ></app-highlight-snippet>
-              <div>
-                <span
-                  *ngIf="snippet.publication.data.pmid; else unknownPmid"
-                  class="mt-1 d-flex justify-content-between align-items-center">
-                  <strong>Pubtator PMID: </strong>
-                  <a
-                    class="ml-1 pubtator-link"
-                    [href]="'https://www.ncbi.nlm.nih.gov/research/pubtator/?view=docsum&query=' + snippet.publication.data.pmid"
-                    target="_blank">{{ snippet.publication.data.pmid }}</a>
-                  <i class="fas fa-fw fa-external-link-alt"></i>
-                </span>
-                <ng-template #unknownPmid>Unknown</ng-template>
+              <div class="mt-2 w-100">
+                <div class="d-flex justify-content-start w-100">
+                  <label class="m-0 mr-1 font-weight-bold">Pubtator PMID:</label>
+                  <p *ngIf="snippet.publication.data.pmid; else unknownPmid" class="m-0">
+                    <a
+                      class="pubtator-link"
+                      [href]="'https://www.ncbi.nlm.nih.gov/research/pubtator/?view=docsum&query=' + snippet.publication.data.pmid"
+                      target="_blank">{{ snippet.publication.data.pmid }}</a>
+                    <i class="fas fa-fw fa-external-link-alt"></i>
+                  </p>
+                  <ng-template #unknownPmid>Unknown</ng-template>
+                </div>
+                <div class="snippet-confidence-score-container d-flex justify-content-start w-100">
+                  <label class="m-0 mr-1 font-weight-bold">Snippet Confidence Score:</label>
+                  <p class="m-0">{{ snippet.normalizedScore.toFixed(3) }}</p>
+                </div>
               </div>
             </div>
           </ng-template>

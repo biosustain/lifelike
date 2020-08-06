@@ -52,6 +52,7 @@ from neo4japp.request_schemas.annotations import (
     AnnotationRemovalSchema,
     AnnotationExclusionSchema,
 )
+from neo4japp.services.indexing import index_pdf
 from neo4japp.utils.network import read_url
 from neo4japp.services.annotations.constants import AnnotationMethod
 from neo4japp.util import jsonify_with_class, SuccessResponse
@@ -78,8 +79,9 @@ def annotate(
     bioc_service = get_bioc_document_service()
     try:
         parsed_pdf_chars = pdf_parser.parse_pdf(pdf=pdf_fp)
-    except AnnotationError:
-        raise AnnotationError('Your file could not be imported. Please check if it is a valid PDF.')
+    except AnnotationError as exc:
+        raise AnnotationError(
+            'Your file could not be imported. Please check if it is a valid PDF.', [str(exc)])
 
     try:
         tokens = pdf_parser.extract_tokens(parsed_chars=parsed_pdf_chars)
@@ -102,8 +104,8 @@ def annotate(
             raise AnnotationError('Your file could not be annotated.')  # noqa
         bioc = bioc_service.read(text=pdf_text, file_uri=filename)
         return bioc_service.generate_bioc_json(annotations=annotations, bioc=bioc)
-    except AnnotationError:
-        raise AnnotationError('Your file could not be annotated.')
+    except AnnotationError as exc:
+        raise AnnotationError('Your file could not be annotated.', [str(exc)])
 
 
 def extract_doi(pdf_content: bytes, file_id: str = None, filename: str = None) -> Optional[str]:
@@ -241,6 +243,7 @@ def upload_pdf(request, project_name: str):
 
     current_app.logger.info(
         f'User uploaded file: <{g.current_user.email}:{file.filename}>')
+    index_pdf.main(current_app.config)
 
     yield SuccessResponse(
         result={
