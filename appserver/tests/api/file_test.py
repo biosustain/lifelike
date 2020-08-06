@@ -197,10 +197,33 @@ def test_can_get_pdf_annotations(
     assert resp.status_code == 200
 
 
-CUSTOM_ANNOTATION = {
+CUSTOM_ANNOTATION_1 = {
     'pageNumber': 1,
     'keywords': ['gyrA'],
     'rects': [[0.1, 0.2, 0.3, 0.4]],
+    'meta': {
+        'type': 'gene',
+        'color': 'green',
+        'id': '',
+        'idType': '',
+        'idHyperlink': '',
+        'isCustom': True,
+        'allText': 'gyrA',
+        'links': {
+            'ncbi': '',
+            'uniprot': '',
+            'wikipedia': '',
+            'google': ''
+        },
+        'primaryLink': '',
+        'includeGlobally': False
+    },
+}
+
+CUSTOM_ANNOTATION_2 = {
+    'pageNumber': 1,
+    'keywords': ['gyrA'],
+    'rects': [[0.5, 0.6, 0.7, 0.8]],
     'meta': {
         'type': 'gene',
         'color': 'green',
@@ -230,7 +253,7 @@ def test_user_can_add_custom_annotation(client, test_user, test_user_with_pdf, f
         f'/projects/{fix_project.project_name}/files/{file_id}/annotations/add',
         headers=headers,
         data=json.dumps({
-            'annotation': CUSTOM_ANNOTATION,
+            'annotation': CUSTOM_ANNOTATION_1,
             'annotateAll': False
         }),
         content_type='application/json',
@@ -249,7 +272,7 @@ def test_user_can_remove_custom_annotation(client, test_user, test_user_with_pdf
         f'/projects/{fix_project.project_name}/files/{file_id}/annotations/add',
         headers=headers,
         data=json.dumps({
-            'annotation': CUSTOM_ANNOTATION,
+            'annotation': CUSTOM_ANNOTATION_1,
             'annotateAll': False
         }),
         content_type='application/json',
@@ -281,7 +304,7 @@ def test_user_can_remove_matching_custom_annotations(
         f'/projects/{fix_project.project_name}/files/{file_id}/annotations/add',
         headers=headers,
         data=json.dumps({
-            'annotation': CUSTOM_ANNOTATION,
+            'annotation': CUSTOM_ANNOTATION_1,
             'annotateAll': False
         }),
         content_type='application/json',
@@ -293,7 +316,7 @@ def test_user_can_remove_matching_custom_annotations(
         f'/projects/{fix_project.project_name}/files/{file_id}/annotations/add',
         headers=headers,
         data=json.dumps({
-            'annotation': CUSTOM_ANNOTATION,
+            'annotation': CUSTOM_ANNOTATION_2,
             'annotateAll': False
         }),
         content_type='application/json',
