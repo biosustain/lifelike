@@ -4,7 +4,7 @@
 </ng-template>
 
 <div class="input-group">
-  <input type="text" class="form-control" placeholder="Filter by organism"
+  <input type="text" class="form-control"
     [class.is-invalid]="fetchFailed" [(ngModel)]="model"
     [editable]='false' [inputFormatter]="formatter" [ngbTypeahead]="searcher" [resultTemplate]="rt"
     (selectItem)="notifySelection($event)"
