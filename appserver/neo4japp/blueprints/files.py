@@ -434,7 +434,7 @@ def get_annotations(id: str, project_name: str):
     # Add additional information for annotations that were excluded
     for annotation in annotations:
         for exclusion in file.excluded_annotations:
-            if (exclusion['type'] == annotation['meta']['type'] and
+            if (exclusion.get('type') == annotation['meta']['type'] and
                     exclusion.get('text', True) == annotation.get('textInDocument', False)):
                 annotation['meta']['isExcluded'] = True
                 annotation['meta']['exclusionReason'] = exclusion['reason']
