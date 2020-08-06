@@ -4,8 +4,6 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
-import { GeneImportRelationship } from 'app/interfaces/kg-import.interface';
-
 @Injectable({
   providedIn: '***ARANGO_USERNAME***'
 })
