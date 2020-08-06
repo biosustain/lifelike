@@ -5,6 +5,7 @@ export interface UniversalEntityData {
   source?: string;
   search?: Hyperlink[];
   subtype?: string;
+  sources?: Hyperlink[];
 }
 
 export interface UniversalNodeStyle {
@@ -102,6 +103,7 @@ export interface Meta {
   exclusionReason?: string;
   exclusionComment?: string;
   primaryLink?: string;
+  includeGlobally?: boolean;
 }
 
 export interface Rect {
@@ -165,6 +167,7 @@ export interface AddedAnnotationExclsuion {
   comment: string;
   rects: Rect[];
   pageNumber: number;
+  excludeGlobally: boolean;
 }
 
 export const MAP_TYPE_ID = 'LifelikeKnowledgeMap/1';

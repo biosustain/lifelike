@@ -12,7 +12,7 @@ def generate_headers(jwt_token):
 def test_user_can_delete_own_pdf(client, fix_project, test_user_with_pdf, test_user):
     login_resp = client.login_as_user(test_user.email, 'password')
     headers = generate_headers(login_resp['access_jwt'])
-    file_id = test_user_with_pdf.id
+    file_id = test_user_with_pdf.file_id
     delete_resp = client.delete(
         f'/projects/{fix_project.project_name}/files',
         data=json.dumps({file_id: file_id}),
@@ -59,10 +59,10 @@ def test_can_upload_pdf(monkeypatch, client, test_user, fix_project, fix_directo
     login_resp = client.login_as_user(test_user.email, 'password')
     headers = generate_headers(login_resp['access_jwt'])
 
-    def mockannotate(filename, pdf, annotation_method):
+    def mockannotate(filename, pdf_fp, custom_annotations, annotation_method):
         """ Mocks out the 'annotate' function in the module
         since we don't care about the annotation process """
-        return dict()
+        return {}
 
     def mock_extract_doi(pdf_content, file_id, filename):
         """ Mocks out the extract doi function in the module """
@@ -70,7 +70,7 @@ def test_can_upload_pdf(monkeypatch, client, test_user, fix_project, fix_directo
 
     monkeypatch.setattr(files, 'annotate', mockannotate)
     monkeypatch.setattr(files, 'extract_doi', mock_extract_doi)
-    mock_pdf = BytesIO(json.dumps(dict()).encode('utf-8'))
+    mock_pdf = BytesIO(json.dumps({}).encode('utf-8'))
 
     resp = client.post(
         f'/projects/{fix_project.project_name}/files',
@@ -94,13 +94,13 @@ def test_cannot_upload_if_no_write_permission(
     login_resp = client.login_as_user(test_user_2.email, 'password')
     headers = generate_headers(login_resp['access_jwt'])
 
-    def mockannotate(filename, pdf, annotation_method):
+    def mockannotate(filename, pdf_fp, custom_annotations, annotation_method):
         """ Mocks out the 'annotate' function in the module
         since we don't care about the annotation process """
-        return dict()
+        return {}
 
     monkeypatch.setattr(files, 'annotate', mockannotate)
-    mock_pdf = BytesIO(json.dumps(dict()).encode('utf-8'))
+    mock_pdf = BytesIO(json.dumps({}).encode('utf-8'))
 
     resp = client.post(
         f'/projects/{fix_project.project_name}/files',
@@ -123,10 +123,10 @@ def test_can_view_all_files_in_project(monkeypatch, client, test_user, fix_proje
     login_resp = client.login_as_user(test_user.email, 'password')
     headers = generate_headers(login_resp['access_jwt'])
 
-    def mockannotate(filename, pdf, annotation_method):
+    def mockannotate(filename, pdf_fp, custom_annotations, annotation_method):
         """ Mocks out the 'annotate' function in the module
         since we don't care about the annotation process """
-        return dict()
+        return {}
 
     def mock_extract_doi(pdf_content, file_id, filename):
         """ Mocks out the extract doi function in the module """
@@ -134,7 +134,7 @@ def test_can_view_all_files_in_project(monkeypatch, client, test_user, fix_proje
 
     monkeypatch.setattr(files, 'annotate', mockannotate)
     monkeypatch.setattr(files, 'extract_doi', mock_extract_doi)
-    mock_pdf = BytesIO(json.dumps(dict()).encode('utf-8'))
+    mock_pdf = BytesIO(json.dumps({}).encode('utf-8'))
 
     resp = client.post(
         f'/projects/{fix_project.project_name}/files',
@@ -215,7 +215,8 @@ CUSTOM_ANNOTATION = {
             'wikipedia': '',
             'google': ''
         },
-        'primaryLink': ''
+        'primaryLink': '',
+        'includeGlobally': False
     },
 }
 
@@ -346,6 +347,7 @@ def test_user_can_remove_annotation_exclusion(client, test_user, test_user_with_
             'pageNumber': 1,
             'reason': 'reason',
             'comment': 'comment',
+            'excludeGlobally': False
         }),
         content_type='application/json',
     )
