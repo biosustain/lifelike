@@ -1,0 +1,6 @@
+filebeat.inputs:
+- type: docker
+  containers.ids: '*'
+
+output.logstash:
+    hosts: ["{{ elk_server_host }}"]
