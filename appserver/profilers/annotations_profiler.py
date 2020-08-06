@@ -51,6 +51,7 @@ def create_annotations(
         parsed = pdf_parser.parse_pdf(pdf=pdf)
         annotations = annotations_service.create_rules_based_annotations(
             tokens=pdf_parser.extract_tokens(parsed_chars=parsed),
+            custom_annotations=[],
         )
         print('Done')
 

@@ -1,0 +1,84 @@
+- name: Create Nginx Directory
+  file:
+    path: "{{ nginx_conf_dir }}"
+    state: directory
+
+- name: Check if TLS certificate exists
+  stat:
+    path: "{{ certbot_conf_dir }}/live/{{ elk_server_name }}"
+  register: certbot_certs
+
+- name: Copy nginx certbot config
+  template:
+    src: templates/nginx-certbot.conf
+    dest: "{{ nginx_conf_dir }}/{{ elk_server_name }}.conf"
+  when: not certbot_certs.stat.exists
+
+- name: Start nginx container
+  docker_container:
+    name: ng01
+    image: "{{ nginx_image }}"
+    ports:
+        - 80:80
+    volumes:
+        - "{{ nginx_conf_dir }}/:/etc/nginx/conf.d/:ro"
+        - "{{ certbot_conf_dir }}/:/etc/letsencrypt/"
+        - "{{ certbot_conf_dir }}/www/:/var/www/certbot/"
+    log_driver: "{{ log_driver }}"
+    log_options:
+        max-size: "{{ log_max_size }}"
+        max-file: "{{ log_max_file }}"
+  when: not certbot_certs.stat.exists
+
+- name: Wait for nginx container
+  pause:
+    seconds: 3
+  when: not certbot_certs.stat.exists
+
+- name: Issue certificate with certbot command
+  docker_container:
+    name: "{{ certbot_hostname }}"
+    image: "{{ certbot_image }}"
+    volumes:
+        - "{{ certbot_conf_dir }}/:/etc/letsencrypt/"
+        - "{{ certbot_conf_dir }}/www/:/var/www/certbot/"
+    command: certonly --webroot --email {{ certbot_email }} --agree-tos --webroot-path=/var/www/certbot/ -d {{ elk_server_name }}
+  when: not certbot_certs.stat.exists
+
+- name: Wait for certificate request
+  pause:
+    seconds: 3
+  when: not certbot_certs.stat.exists
+
+- name: Copy nginx ssl config
+  template:
+    src: templates/nginx-ssl.conf
+    dest: "{{ nginx_conf_dir }}/{{ elk_server_name }}.conf"
+  notify: restart nginx container
+
+# - name: Copy nginx ssl param config
+#   copy:
+#     src: "{{ item }}"
+#     dest: "{{ certbot_conf_dir }}/"
+#   with_items:
+#     - files/options-ssl-nginx.conf
+#     - files/ssl-dhparams.pem
+
+- name: Start nginx container
+  docker_container:
+    name: ng01
+    image: "{{ nginx_image }}"
+    ports:
+        - 9200:9200
+        - 80:80
+        - 443:443
+    volumes:
+        - "{{ nginx_conf_dir }}/:/etc/nginx/conf.d/:ro"
+        - "{{ certbot_conf_dir }}/:/etc/letsencrypt"
+        - "{{ certbot_conf_dir }}/www/:/var/www/certbot"
+    networks:
+        - name: "{{ network_name }}"
+    log_driver: "{{ log_driver }}"
+    log_options:
+        max-size: "{{ log_max_size }}"
+        max-file: "{{ log_max_file }}"
