@@ -131,10 +131,8 @@ export class NodeFormComponent {
   /**
    * Bring user to original source of node information
    */
-  goToSource(): void {
-    if (this.node.data.source) {
-      this.sourceOpen.next(this.node.data.source);
-    }
+  goToSource(url): void {
+    this.sourceOpen.next(url);
   }
 
   mayShowDetailText() {
