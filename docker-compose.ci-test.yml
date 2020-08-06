@@ -69,6 +69,28 @@ services:
             - ./db/logs:/logs
             - ./db/plugins:/plugins
 
+    elasticsearch:
+        container_name: elasticsearch
+        build:
+            dockerfile: Dockerfile
+            context: elasticsearch
+        environment:
+            - discovery.type=single-node
+            - http.max_content_length=200mb  #allow 200mb of content to be sent for indexing
+            - bootstrap.memory_lock=true
+            - xpack.graph.enabled=false
+            - xpack.watcher.enabled=false
+            - xpack.license.self_generated.type=basic
+        ulimits:
+            memlock:
+                soft: -1
+                hard: -1
+        ports:
+            - "9200:9200"
+            - "9300:9300"
+        networks:
+            - backend
+
 networks:
     frontend:
     backend:
