@@ -489,7 +489,7 @@ class UserFileImportService(HybridDBDao):
         node_propnames2: List[str],
         rel_label: str,
         rel_propnames: List[str],
-        relationship_direction: RelationshipDirection,
+        relationship_direction: str,
     ):
         node_props1 = self.get_props_str_from_propnames_and_varname('tuple[0]', node_propnames1)
         node_props2 = self.get_props_str_from_propnames_and_varname('tuple[1]', node_propnames2)
@@ -518,8 +518,8 @@ class UserFileImportService(HybridDBDao):
         node_propnames1: List[str],
         rel_label: str,
         rel_propnames: List[str],
-        gene_matching_property: GeneMatchingProperty,
-        relationship_direction: RelationshipDirection,
+        gene_matching_property: str,
+        relationship_direction: str,
     ):
         node_props1 = self.get_props_str_from_propnames_and_varname('tuple[0]', node_propnames1)
         rel_props = self.get_props_str_from_propnames_and_varname('tuple[1]', rel_propnames)
