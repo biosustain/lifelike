@@ -65,6 +65,12 @@ export class MapService extends AbstractService {
     );
   }
 
+  getMapVersion(projectName: string, versionId: number): Observable<{version: KnowledgeMap}> {
+    return this.http.get<{version: KnowledgeMap}>(
+      `${this.PROJECTS_BASE_URL}/${encodeURIComponent(projectName)}/map/${encodeURIComponent(versionId)}`, this.getHttpOptions(true),
+      );
+  }
+
   // ========================================
   // Export
   // ========================================
