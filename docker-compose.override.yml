@@ -53,6 +53,8 @@ services:
             - POSTGRES_USER=postgres
             - POSTGRES_PASSWORD=postgres
             - POSTGRES_DB=postgres
+            # ElasticSearch
+            - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
             # Neo4j
             - NEO4J_HOST=n4j-database
             - NEO4J_AUTH=neo4j/password

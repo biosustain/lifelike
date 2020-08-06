@@ -47,6 +47,7 @@ def seed():
 
     with open("fixtures/seed.json", "r") as f:
         fixtures = json.load(f)
+
         for fixture in fixtures:
             module_name, class_name = fixture['model'].rsplit('.', 1)
             module = importlib.import_module(module_name)

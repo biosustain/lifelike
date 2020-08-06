@@ -1528,7 +1528,7 @@ class AnnotationsService:
 
         for page, page_text in text_in_page:
             try:
-                req = requests.post(NLP_ENDPOINT, json={'text': page_text})
+                req = requests.post(NLP_ENDPOINT, json={'text': page_text}, timeout=30)
                 nlp_resp = req.json()
 
                 for predicted in nlp_resp:
