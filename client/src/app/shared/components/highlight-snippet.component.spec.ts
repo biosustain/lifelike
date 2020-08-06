@@ -12,8 +12,9 @@ describe('HighlightSnippetComponent', () => {
     let mockSnippet: string;
     let mockEntry1Text: string;
     let mockEntry2Text: string;
-    let mockEntry1Colors: string[];
-    let mockEntry2Colors: string[];
+    let mockEntry1Type: string;
+    let mockEntry2Type: string;
+    let mockLegend: Map<string, string[]>;
 
     configureTestSuite( () => {
         TestBed.configureTestingModule({
@@ -29,8 +30,12 @@ describe('HighlightSnippetComponent', () => {
         mockSnippet = 'The quick brown fox jumped over the lazy dog';
         mockEntry1Text = 'fox';
         mockEntry2Text = 'dog';
-        mockEntry1Colors = ['#CD5D67', '#410B13'],
-        mockEntry2Colors = ['#8FA6CB', '#7D84B2'],
+        mockEntry1Type = 'Hunter';
+        mockEntry2Type = 'Prey';
+        mockLegend = new Map<string, string[]>([
+            ['Hunter', ['#CD5D67', '#410B13']],
+            ['Prey', ['#8FA6CB', '#7D84B2']]
+        ]);
 
         fixture = TestBed.createComponent(HighlightSnippetComponent);
         instance = fixture.componentInstance;
@@ -38,8 +43,9 @@ describe('HighlightSnippetComponent', () => {
         instance.snippet = mockSnippet;
         instance.entry1Text = mockEntry1Text;
         instance.entry2Text = mockEntry2Text;
-        instance.entry1Colors = mockEntry1Colors;
-        instance.entry2Colors = mockEntry2Colors;
+        instance.entry1Type = mockEntry1Type;
+        instance.entry2Type = mockEntry2Type;
+        instance.legend = mockLegend;
 
         // Seems like ngOnChanges doesn't get called when we assign the inputs above, so call it manually
         instance.ngOnChanges();
