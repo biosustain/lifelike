@@ -1,23 +1,22 @@
-import click
-import jwt
+import importlib
 import json
+import logging
 import os
-from flask import render_template
-from sqlalchemy.sql.expression import text
-from neo4japp.factory import create_app
-from neo4japp.database import db, get_account_service
 
+import click
+from sqlalchemy import MetaData, inspect, Table
+from sqlalchemy.sql.expression import text
+
+from neo4japp.database import db, get_account_service
+from neo4japp.factory import create_app
 from neo4japp.models import (
-    AppRole,
     AppUser,
-    Project,
-    Directory,
-    Projects,
     OrganismGeneMatch,
 )
 
 app_config = os.environ['FLASK_APP_CONFIG']
 app = create_app(config=f'config.{app_config}')
+logger = logging.getLogger(__name__)
 
 
 @app.route('/')
@@ -27,72 +26,58 @@ def home():
 
 @app.cli.command("seed")
 def seed():
-    """
-        Seed the postgres db for development
-    """
-    account_service = get_account_service()
-    with open("fixtures/seed.json", "r") as f:
+    logger.info("Clearing database of data...")
+    meta = MetaData(bind=db.engine, reflect=True)
+    con = db.engine.connect()
+    trans = con.begin()
+    for table in meta.sorted_tables:
+        con.execute(f'ALTER TABLE "{table.name}" DISABLE TRIGGER ALL;')
+        con.execute(f'TRUNCATE TABLE "{table.name}" RESTART IDENTITY CASCADE;')
+        con.execute(f'ALTER TABLE "{table.name}" ENABLE TRIGGER ALL;')
+    trans.commit()
 
+    def find_existing_row(model, value):
+        if isinstance(value, dict):
+            f = value
+        else:
+            f = {
+                model.primary_key[0].name: value,
+            }
+        return db.session.query(model).filter_by(**f).one()
+
+    with open("fixtures/seed.json", "r") as f:
         fixtures = json.load(f)
 
-        for fix in fixtures:
+        for fixture in fixtures:
+            module_name, class_name = fixture['model'].rsplit('.', 1)
+            module = importlib.import_module(module_name)
+            model = getattr(module, class_name)
 
-            if fix["table"] == "appuser":
-                for r in fix["records"]:
-                    account_service.create_user(
-                        username=r["username"],
-                        email=r["email"],
-                        password=r["password_hash"],
-                        roles=["admin"],
-                        first_name=r["first_name"],
-                        last_name=r["last_name"]
-                    )
+            if isinstance(model, Table):
+                db.session.execute(model.insert(), fixture['records'])
+            else:
+                model_meta = inspect(model)
+                relationships = model_meta.relationships
+                logger.info(f"Creating fixtures for {class_name}...")
 
-            elif fix["table"] == "projects":
-                for r in fix["records"]:
-                    proj = Projects(
-                        project_name=r["project_name"],
-                        description=r["description"],
-                        users=r["users"],
-                    )
+                for record in fixture['records']:
+                    instance = model()
+                    for key in record:
+                        if key in relationships:
+                            fk_model = relationships[key].mapper
+                            if isinstance(record[key], list):
+                                for value in record[key]:
+                                    getattr(instance, key).append(
+                                        find_existing_row(fk_model, value)
+                                    )
+                            else:
+                                setattr(instance, key, find_existing_row(fk_model, record[key]))
+                        else:
+                            setattr(instance, key, record[key])
+                    db.session.add(instance)
 
-                    db.session.add(proj)
-                    db.session.flush()
-
-                    directory = Directory(
-                        name='home',
-                        user_id=1,
-                        projects_id=proj.id,
-                    )
-
-                    db.session.add(directory)
-                    db.session.flush()
-
-                    db.session.commit()
-
-            elif fix["table"] == "project":
-                for idx, r in enumerate(fix["records"]):
-                    r = fix["records"][idx]
-
-                    draw_proj = Project(
-                        label=r["label"],
-                        description=r["description"],
-                        date_modified=r["date_modified"],
-                        graph=r["graph"],
-                        public=r["public"],
-                        author=r["author"],
-                        # temporary fix
-                        user_id=idx+1,
-                        dir_id=db.session.query(Directory).first().id,
-                    )
-
-                    db.session.add(draw_proj)
-                    db.session.flush()
-
-                    # Assign hash_id to map
-                    draw_proj.set_hash_id()
-
-                    db.session.commit()
+            db.session.flush()
+            db.session.commit()
 
 
 @app.cli.command("init-neo4j")
@@ -115,7 +100,7 @@ def drop_all_tables_and_enums():
             "WHERE table_schema='public' AND table_name NOT LIKE 'pg_%%'"
         )
         for table in [
-            name for (name, ) in db.engine.execute(text(table_sql))
+            name for (name,) in db.engine.execute(text(table_sql))
         ]:
             db.engine.execute(text('DROP TABLE "%s" CASCADE' % table))
 
@@ -126,7 +111,7 @@ def drop_all_tables_and_enums():
             "JOIN pg_catalog.pg_enum e ON t.oid = e.enumtypid"
         )
         for enum in [
-            name for (name, ) in db.engine.execute(text(enum_sql))
+            name for (name,) in db.engine.execute(text(enum_sql))
         ]:
             db.engine.execute(text('DROP TYPE IF EXISTS "%s" CASCADE' % enum))
 
