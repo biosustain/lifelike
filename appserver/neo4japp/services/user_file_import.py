@@ -24,7 +24,6 @@ from py2neo import (
     cypher_repr
 )
 
-from neo4japp.factory import cache
 from neo4japp.data_transfer_objects.user_file_import import (
     FileNameAndSheets,
     GraphCreationMapping,
@@ -36,6 +35,10 @@ from neo4japp.data_transfer_objects.user_file_import import (
     Properties,
     RelationshipDirection,
 )
+from neo4japp.exceptions import (
+    KgImportException
+)
+from neo4japp.factory import cache
 from neo4japp.models import (
     FileContent,
     Worksheet
@@ -557,8 +560,10 @@ class UserFileImportService(HybridDBDao):
         return """
             MATCH (w:Worksheet)<-[:IMPORTED_FROM]-(n)
             WHERE ID(w)=$worksheet_node_id
-            DETACH DELETE n
             DETACH DELETE w
+            WITH n
+            MATCH (n) WHERE NOT (n)-[:IMPORTED_FROM]->()
+            DETACH DELETE n
         """
 
     def get_import_batches(
@@ -794,3 +799,43 @@ class UserFileImportService(HybridDBDao):
         )
         self.session.add(new_worksheet)
         self.session.commit()
+
+    def import_worksheet(
+        self,
+        file_name: str,
+        sheet_name: str,
+        worksheet: FileStorage,
+        worksheet_node_name: str,
+        relationships: List[GeneImportRelationship],
+    ):
+        try:
+            worksheet_node_id = self.import_gene_relationships(
+                file_name=file_name,
+                sheet_name=sheet_name,
+                worksheet_node_name=worksheet_node_name,
+                relationships=relationships,
+            )
+        except Exception:
+            raise KgImportException(
+                'An unexpected error occurred while trying to import your \n' +
+                'relationships into the knowledge graph. Please try again later.'
+            )
+
+        try:
+            self.upload_worksheet_to_pg_db(
+                file_name,
+                sheet_name,
+                worksheet,
+                worksheet_node_id
+            )
+        except Exception:
+            # If _any_ error is thrown after importing nodes, we should discard what was imported
+            # to make sure the KG and Postgres don't get out of sync.
+            self.detach_and_delete_worksheet(worksheet_node_id)
+            raise KgImportException(
+                'Nodes were successfully imported, but an unexpected error occurred ' +
+                'while saving your worksheet to the database. The imported nodes have been ' +
+                'discarded. Please try importing again.'
+            )
+
+        return worksheet_node_id
