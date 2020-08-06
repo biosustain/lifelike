@@ -1,21 +1,25 @@
 <div *ngIf="dataLoaded && snippets && legend; else loadingSpinner">
-  <div id="num-snippets-container" class="mb-1 d-flex justify-content-between align-items-center">
-    <span *ngIf="totalResults === 0; else nonZeroResults">Showing 0 - 0 of 0 snippets</span>
-    <ng-template #nonZeroResults>
-      <span *ngIf="pageLimit * (page) > totalResults; else multiPageResults">Showing {{ pageLimit * (page - 1) + 1 }} - {{ totalResults }} of {{ totalResults }}</span>
-      <ng-template #multiPageResults>
-        <span>Showing {{ pageLimit * (page - 1) + 1 }} - {{ pageLimit * (page) }} of {{ totalResults }}</span>
+  <div id="num-snippets-container" class="row align-items-center mb-2">
+    <div class="col">
+      <span *ngIf="totalResults === 0; else nonZeroResults">Showing 0 - 0 of 0 snippets</span>
+      <ng-template #nonZeroResults>
+        <span *ngIf="pageLimit * (page) > totalResults; else multiPageResults">Showing {{ pageLimit * (page - 1) + 1 }} - {{ totalResults }} of {{ totalResults }}</span>
+        <ng-template #multiPageResults>
+          <span>Showing {{ pageLimit * (page - 1) + 1 }} - {{ pageLimit * (page) }} of {{ totalResults }}</span>
+        </ng-template>
       </ng-template>
-    </ng-template>
+    </div>
 
-    <div class="form-group" *ngIf="totalResults !== 0">
-      <label>Page Limit</label>
-      <select class="custom-select" [ngModel]="pageLimit" (change)="onLimitChange($event)">
-        <option type="number" *ngFor="let limit of pageLimitList" [value]="limit">{{ limit }}</option>
-      </select>
+    <div class="col">
+      <div class="d-flex justify-content-end align-items-center" *ngIf="totalResults !== 0">
+        <label class="mr-1 mb-0">Page Limit</label>
+        <select id="page-limit-select" class="custom-select" [ngModel]="pageLimit" (change)="onLimitChange($event)">
+          <option type="number" *ngFor="let limit of pageLimitList" [value]="limit">{{ limit }}</option>
+        </select>
+      </div>
     </div>
   </div>
-  <div *ngFor="let result of snippets">
+  <div class="snippet-result" *ngFor="let result of snippets">
     <app-node-relationship
       [leftNodeName]="result.from.displayName"
       [leftNodeLabel]="result.from.primaryLabel"
@@ -39,25 +43,32 @@
           </ng-template>
           <ng-template ngbPanelContent>
             <div class="d-flex flex-column justify-content-between align-items-start">
+              <!-- Need to slightly edit the snippet entry type strings here because the keys on the legend match the
+              labels in the KG, which have uppercase first characters -->
               <app-highlight-snippet
                 [snippet]="snippet.reference.data.sentence"
                 [entry1Text]="snippet.reference.data.entry1Text"
                 [entry2Text]="snippet.reference.data.entry2Text"
-                [entry1Colors]="legend.get(result.from.primaryLabel)"
-                [entry2Colors]="legend.get(result.to.primaryLabel)"
+                [entry1Type]="snippet.reference.data.entry1Type.slice(0, 1).toUpperCase() + snippet.reference.data.entry1Type.slice(1)"
+                [entry2Type]="snippet.reference.data.entry2Type.slice(0, 1).toUpperCase() + snippet.reference.data.entry2Type.slice(1)"
+                [legend]="legend"
               ></app-highlight-snippet>
-              <div>
-                <span
-                  *ngIf="snippet.publication.data.pmid; else unknownPmid"
-                  class="mt-1 d-flex justify-content-between align-items-center">
-                  <strong>Pubtator PMID: </strong>
-                  <a
-                    class="ml-1 pubtator-link"
-                    [href]="'https://www.ncbi.nlm.nih.gov/research/pubtator/?view=docsum&query=' + snippet.publication.data.pmid"
-                    target="_blank">{{ snippet.publication.data.pmid }}</a>
-                  <i class="fas fa-fw fa-external-link-alt"></i>
-                </span>
-                <ng-template #unknownPmid>Unknown</ng-template>
+              <div class="mt-2 w-100">
+                <div class="d-flex justify-content-start w-100">
+                  <label class="m-0 mr-1 font-weight-bold">Pubtator PMID:</label>
+                  <p *ngIf="snippet.publication.data.pmid; else unknownPmid" class="m-0">
+                    <a
+                      class="pubtator-link"
+                      [href]="'https://www.ncbi.nlm.nih.gov/research/pubtator/?view=docsum&query=' + snippet.publication.data.pmid"
+                      target="_blank">{{ snippet.publication.data.pmid }}</a>
+                    <i class="fas fa-fw fa-external-link-alt"></i>
+                  </p>
+                  <ng-template #unknownPmid>Unknown</ng-template>
+                </div>
+                <div class="snippet-confidence-score-container d-flex justify-content-start w-100">
+                  <label class="m-0 mr-1 font-weight-bold">Snippet Confidence Score:</label>
+                  <p class="m-0">{{ snippet.normalizedScore.toFixed(3) }}</p>
+                </div>
               </div>
             </div>
           </ng-template>

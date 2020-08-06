@@ -42,6 +42,7 @@ import { ResultsSummaryComponent } from './components/results-summary.component'
 import { QuickSearchComponent } from './components/quick-search.component';
 import { CollapsibleWindowComponent } from './components/collapsible-window.component';
 import { GenericFileUploadComponent } from './components/generic-file-upload/generic-file-upload.component';
+import { SourcesComponent } from './components/sources/sources.component';
 
 const components = [
   MessageDialogComponent,
@@ -66,7 +67,8 @@ const components = [
   ResultsSummaryComponent,
   QuickSearchComponent,
   CollapsibleWindowComponent,
-  GenericFileUploadComponent
+  GenericFileUploadComponent,
+  SourcesComponent
 ];
 
 @NgModule({

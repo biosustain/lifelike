@@ -12,8 +12,9 @@ export class HighlightSnippetComponent implements OnChanges {
     @Input() snippet = '';
     @Input() entry1Text = '';
     @Input() entry2Text = '';
-    @Input() entry1Colors: string[];
-    @Input() entry2Colors: string[];
+    @Input() entry1Type = '';
+    @Input() entry2Type = '';
+    @Input() legend: Map<string, string[]> = new Map<string, string[]>();
 
     highlightedSnippet = '';
 
@@ -24,7 +25,7 @@ export class HighlightSnippetComponent implements OnChanges {
     ) { }
 
     ngOnChanges() {
-        const entry1BackgroundColor = this.entry1Colors[0];
+        const entry1BackgroundColor = this.legend.get(this.entry1Type)[0];
 
         const entry1StyleString = `
             background-color: ${hexToRGBA(entry1BackgroundColor, 0.3)};
@@ -34,7 +35,7 @@ export class HighlightSnippetComponent implements OnChanges {
             vertical-align: middle;
         `;
 
-        const entry2BackgroundColor = this.entry2Colors[0];
+        const entry2BackgroundColor = this.legend.get(this.entry2Type)[0];
         const entry2StyleString = `
             background-color: ${hexToRGBA(entry2BackgroundColor, 0.3)};
             display: inline-block;

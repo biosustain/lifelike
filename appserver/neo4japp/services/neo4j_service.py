@@ -276,7 +276,9 @@ class Neo4JService(GraphBaseDao):
                             reference['publication'],
                             display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label_from_node(reference['publication'])]),  # type: ignore  # noqa
                             primary_label_fn=get_first_known_label_from_node,
-                        )
+                        ),
+                        raw_score=reference['raw_score'],
+                        normalized_score=reference['normalized_score']
                     )
                 )
 
@@ -331,7 +333,9 @@ class Neo4JService(GraphBaseDao):
                         reference['publication'],
                         display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label_from_node(reference['publication'])]),  # type: ignore  # noqa
                         primary_label_fn=get_first_known_label_from_node,
-                    )
+                    ),
+                    raw_score=reference['raw_score'],
+                    normalized_score=reference['normalized_score']
                 ) for reference in row['references']]
             ) for row in data
         ]
@@ -371,6 +375,12 @@ class Neo4JService(GraphBaseDao):
                 gene_to_organism_map[gene_name] = {organism_id: gene_id}
 
         return gene_to_organism_map
+
+    def get_organisms_from_ids(self, tax_ids: List[str]) -> List[str]:
+        query = self.get_taxonomy_from_synonyms()
+        result = self.graph.run(query, {'ids': tax_ids}).data()
+
+        return [row['organism_id'] for row in result]
 
     def load_reaction_graph(self, biocyc_id: str):
         query = self.get_reaction_query(biocyc_id)
@@ -620,10 +630,15 @@ class Neo4JService(GraphBaseDao):
                 ID(f) as from_id,
                 ID(t) as to_id,
                 a.description as description
-            MATCH (association)<-[:PREDICTS]-(s:Snippet)-[:IN_PUB]-(p:Publication)
+            MATCH (association)<-[r:PREDICTS]-(s:Snippet)-[:IN_PUB]-(p:Publication)
             WITH
                 COUNT(s) as snippet_count,
-                collect({snippet:s, publication:p}) as references,
+                collect({
+                    snippet:s,
+                    publication:p,
+                    raw_score:r.raw_score,
+                    normalized_score:r.normalized_score
+                }) as references,
                 max(p.pub_year) as max_pub_year,
                 from_id,
                 to_id,
@@ -693,6 +708,14 @@ class Neo4JService(GraphBaseDao):
             WITH s, g MATCH (g)-[:HAS_TAXONOMY]-(t:Taxonomy)-[:HAS_PARENT*0..2]->(p)
             WHERE p.id IN $organisms
             RETURN s.name AS gene, collect(g.id) AS gene_ids, p.id AS organism_id
+        """
+        return query
+
+    def get_taxonomy_from_synonyms(self):
+        """Retrieves a list of all taxonomy with a given taxonomy id.
+        """
+        query = """
+            MATCH (t:Taxonomy) WHERE t.id IN $ids RETURN t.id as organism_id
         """
         return query
 
