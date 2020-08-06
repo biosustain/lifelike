@@ -57,7 +57,7 @@ jobs:
                 password: ${{ secrets.GCE_SA_KEY }}
                 registry: gcr.io
                 image_name: ${{ secrets.GCE_PROJECT }}/kg-appserver-demo
-                image_tag: ${{ github.sha }}, latest
+                image_tag: ${{ github.sha }},latest
                 context: ./appserver
                 dockerfile: ./Dockerfile.prod
 
@@ -68,7 +68,7 @@ jobs:
                 password: ${{ secrets.GCE_SA_KEY }}
                 registry: gcr.io
                 image_name: ${{ secrets.GCE_PROJECT }}/kg-webserver-demo
-                image_tag: ${{ github.sha }}, latest
+                image_tag: ${{ github.sha }},latest
                 context: ./client
                 dockerfile: ./Dockerfile.demo
 
@@ -79,7 +79,7 @@ jobs:
                 password: ${{ secrets.GCE_SA_KEY }}
                 registry: gcr.io
                 image_name: ${{ secrets.GCE_PROJECT }}/kg-cache-service-demo
-                image_tag: ${{ github.sha }}, latest
+                image_tag: ${{ github.sha }},latest
                 context: ./cache-invalidator
                 dockerfile: ./Dockerfile
 
@@ -90,7 +90,7 @@ jobs:
                 password: ${{ secrets.GCE_SA_KEY }}
                 registry: gcr.io
                 repository: ${{ secrets.GCE_PROJECT }}/kg-nlpapi-demo
-                tags: ${{ github.sha }}, latest
+                tags: ${{ github.sha }},latest
                 path: ./nlp
                 dockerfile: ./nlp/Dockerfile
 
