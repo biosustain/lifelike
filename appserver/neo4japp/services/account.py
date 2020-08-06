@@ -62,8 +62,11 @@ class AccountService(RDBMSBaseDao):
         self.session.delete(user)
         self.commit_or_flush(commit_now)
 
-    def get_user_list(self) -> Sequence[AppUser]:
-        return AppUser.query.order_by(AppUser.username).all()
+    def get_user_list(self, username = "") -> Sequence[AppUser]:
+        if len(username) > 0:
+            return AppUser.query.filter(AppUser.username.contains(username)).order_by(AppUser.username).limit(10).all()
+        else:
+            return AppUser.query.order_by(AppUser.username).all()
 
     def update_user(self, user: AppUser, changes: UserUpdateRequest, commit_now=True) -> AppUser:
         # TODO: 'user roll' updates will have to be handled separately
