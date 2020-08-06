@@ -55,22 +55,26 @@ class ManualAnnotationsService:
             term = custom_annotation['meta']['allText']
             matches = annotator.get_matching_manual_annotations(keyword=term, tokens=tokens)
 
+            def is_match(coords, new_coords):
+                # is a match if center point of existing annotation
+                # is in the rectangle coordinates of new annotation
+                center_x = (coords[0] + coords[2]) / 2
+                center_y = (coords[1] + coords[3]) / 2
+                new_x1, new_y1, new_x2, new_y2 = new_coords
+                return new_x1 <= center_x <= new_x2 and new_y1 <= center_y <= new_y2
+
             def annotation_exists(new_annotation):
                 for annotation in file.custom_annotations:
                     if annotation['meta']['allText'] == term and \
                             len(annotation['rects']) == len(new_annotation['rects']):
                         # coordinates can have a small difference depending on
                         # where they come from: annotator or pdf viewer
-                        for coords, new_coords in zip(annotation['rects'], new_annotation['rects']):
-                            center_x = (coords[0] + coords[2]) / 2
-                            center_y = (coords[1] + coords[3]) / 2
-                            new_x1, new_y1, new_x2, new_y2 = new_coords
-                            # not a match if center point of existing annotation
-                            # is not in the rectangle coordinates of the new annotation
-                            if center_x < new_x1 or center_x > new_x2 or \
-                                    center_y < new_y1 or center_y > new_y2:
-                                return False
-                return True
+                        all_rects_match = all(list(map(
+                            is_match, annotation['rects'], new_annotation['rects']
+                        )))
+                        if all_rects_match:
+                            return True
+                return False
 
             def add_annotation(new_annotation):
                 return {
