@@ -89,13 +89,6 @@ def get_authorization_service():
     return g.authorization_service
 
 
-def get_organism_gene_match_service():
-    if 'organism_gene_match_service' not in g:
-        from neo4japp.services import OrganismGeneMatchService
-        g.organism_gene_match_service = OrganismGeneMatchService(session=db.session)
-    return g.organism_gene_match_service
-
-
 def get_account_service():
     if 'account_service' not in g:
         from neo4japp.services import AccountService
@@ -123,9 +116,23 @@ def close_lmdb(e=None):
         lmdb_dao.close_envs()
 
 
+def get_annotation_neo4j():
+    if 'annotation_neo4j' not in g:
+        from neo4japp.services.annotations import AnnotationsNeo4jService
+        neo4j = get_neo4j_service_dao()
+        g.annotation_neo4j = AnnotationsNeo4jService(
+            session=db.session,
+            neo4j_service=neo4j,
+        )
+    return g.annotation_neo4j
+
+
 def get_annotations_service(lmdb_dao):
     from neo4japp.services.annotations import AnnotationsService
-    return AnnotationsService(lmdb_session=lmdb_dao)
+    return AnnotationsService(
+        lmdb_session=lmdb_dao,
+        annotation_neo4j=get_annotation_neo4j(),
+    )
 
 
 def get_annotations_pdf_parser():
@@ -136,11 +143,6 @@ def get_annotations_pdf_parser():
 def get_bioc_document_service():
     from neo4japp.services.annotations import BiocDocumentService
     return BiocDocumentService()
-
-
-def get_hybrid_neo4j_postgres_service():
-    from neo4japp.higher_order_services import HybridNeo4jPostgresService
-    return HybridNeo4jPostgresService()
 
 
 def get_excel_export_service():

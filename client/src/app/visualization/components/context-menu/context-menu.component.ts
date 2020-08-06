@@ -5,6 +5,7 @@ import {
     OnChanges,
     OnDestroy,
     Output,
+    AfterViewInit,
 } from '@angular/core';
 
 import { createPopper, Instance } from '@popperjs/core';
@@ -27,7 +28,7 @@ import { ContextMenuControlService } from '../../services/context-menu-control.s
     templateUrl: './context-menu.component.html',
     styleUrls: ['./context-menu.component.scss'],
 })
-export class ContextMenuComponent extends TooltipComponent implements OnDestroy, OnChanges {
+export class ContextMenuComponent extends TooltipComponent implements AfterViewInit, OnDestroy, OnChanges {
     @Input() selectedNodeIds: IdType[];
     @Input() selectedEdgeIds: IdType[];
     @Input() selectedClusterNodeData: VisNode[];
@@ -86,6 +87,14 @@ export class ContextMenuComponent extends TooltipComponent implements OnDestroy,
         this.exactlyOneSelectedEdge = false;
         this.singleSelection = false;
         this.clusterSelected = false;
+    }
+
+    ngAfterViewInit() {
+        super.ngAfterViewInit();
+
+        // Because tooltips have unique identifiers, can't set them to "display: none" in the stylesheet,
+        // so instead do it here.
+        this.hideTooltip();
     }
 
     ngOnChanges() {

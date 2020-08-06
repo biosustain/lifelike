@@ -1,11 +1,12 @@
 #network-viz {
     background-color: #F5F5F5;
-    border: 1px solid #C0C0C0;
 }
 
 #sidenav-container {
     height: 80vh;
+    min-width: 400px;
     padding: 10px 15px;
+    white-space: nowrap;
 }
 
 #sidenav-panel-btns-container {

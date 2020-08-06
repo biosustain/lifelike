@@ -1,0 +1,5 @@
+- hosts: "{{ webserver | default('demo') }}"
+  become: true
+  roles:
+    - role: filebeat
+      tags: ["filebeat"]

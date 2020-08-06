@@ -2,18 +2,6 @@
 @import '~bootstrap/scss/variables';
 @import 'src/scss/variables';
 
-#***ARANGO_USERNAME***-menu {
-    display: none;
-}
-
-#single-node-selection-group-1-submenu {
-    display: none;
-}
-
-#pull-out-node-from-cluster-submenu {
-    display: none;
-}
-
 .context-menu {
     background: $primary;
     border-radius: 0.25rem;
