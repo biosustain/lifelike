@@ -93,7 +93,7 @@ jobs:
                 image_name: ${{ secrets.GCE_PROJECT }}/kg-nlpapi-staging
                 image_tag: ${{ github.sha }},latest
                 context: ./nlp
-                dockerfile: ./nlp/Dockerfile
+                dockerfile: ./Dockerfile
 
             - name: Deploy Setup
               run: |-

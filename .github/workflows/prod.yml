@@ -59,7 +59,7 @@ jobs:
                 image_name: ${{ secrets.GCE_PROJECT }}/kg-appserver-prod
                 image_tag: ${{ github.sha }},latest
                 context: ./appserver
-                dockerfile: ./appserver/Dockerfile.prod
+                dockerfile: ./Dockerfile.prod
 
             - name: Build Client and Nginx Image
               uses: whoan/docker-build-with-cache-action@v5
@@ -70,7 +70,7 @@ jobs:
                 image_name: ${{ secrets.GCE_PROJECT }}/kg-webserver-prod
                 image_tag: ${{ github.sha }},latest
                 context: ./client
-                dockerfile: ./client/Dockerfile.prod
+                dockerfile: ./Dockerfile.prod
 
             - name: Build Redis
               uses: whoan/docker-build-with-cache-action@v5
@@ -81,7 +81,7 @@ jobs:
                 image_name: ${{ secrets.GCE_PROJECT }}/kg-cache-service-prod
                 image_tag: ${{ github.sha }},latest
                 context: ./cache-invalidator
-                dockerfile: ./cache-invalidator/Dockerfile
+                dockerfile: ./Dockerfile
 
             - name: Build NLP
               uses: whoan/docker-build-with-cache-action@v5
@@ -92,7 +92,7 @@ jobs:
                 image_name: ${{ secrets.GCE_PROJECT }}/kg-nlpapi-prod
                 image_tag: ${{ github.sha }},latest
                 context: ./nlp
-                dockerfile: ./nlp/Dockerfile
+                dockerfile: ./Dockerfile
 
             - name: Deploy Setup
               run: |-
