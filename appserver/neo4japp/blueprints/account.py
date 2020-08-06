@@ -43,7 +43,7 @@ def create_user(req: UserRequest):
 @bp.route('/', methods=['GET'])
 @bp.route('/<username>', methods=['GET'])
 @auth.login_required
-def list_users(username = ""):
+def list_users(username=""):
     account_dao = get_account_service()
     users = [user.to_dict() for user in account_dao.get_user_list(username)]
     return jsonify(result=users, status_code=200)
