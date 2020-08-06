@@ -8,8 +8,8 @@ import { PdfAnnotationsService } from '../../drawing-tool/services';
 import { cloneDeep } from 'lodash';
 import {
   Annotation,
-  AnnotationExclusion,
-  StoredAnnotationExclusion,
+  RemovedAnnotationExclusion,
+  AddedAnnotationExclsuion,
   Location,
   Meta,
   UniversalGraphNode,
@@ -87,11 +87,11 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
   sortedEntityTypeEntries: EntityTypeEntry[] = [];
   entityTypeVisibilityChanged = false;
   modulePropertiesChange = new EventEmitter<ModuleProperties>();
-  addedAnnotationExclusion: AnnotationExclusion;
+  addedAnnotationExclusion: AddedAnnotationExclsuion;
   addAnnotationExclusionSub: Subscription;
   showExcludedAnnotations = false;
   removeAnnotationExclusionSub: Subscription;
-  removedAnnotationExclusion: AnnotationExclusion;
+  removedAnnotationExclusion: RemovedAnnotationExclusion;
   projectName: string;
 
   // search
@@ -254,7 +254,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
       ...annotation,
       meta: {
         ...annotation.meta,
-        id,
+        id: annotation.meta.id || id,
         idType,
         links: {
           ncbi: annotation.meta.links.ncbi || this.buildUrl(SearchLink.Ncbi, annotation.meta.allText),
@@ -316,14 +316,14 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
     });
   }
 
-  annotationExclusionAdded(exclusionData: StoredAnnotationExclusion) {
+  annotationExclusionAdded(exclusionData: AddedAnnotationExclsuion) {
     this.addAnnotationExclusionSub = this.pdfAnnService.addAnnotationExclusion(
       this.currentFileId, exclusionData, this.projectName,
     )
       .pipe(this.errorHandler.create())
       .subscribe(
         response => {
-          this.addedAnnotationExclusion = (({ id, text, reason, comment }) => ({ id, text, reason, comment }))(exclusionData);
+          this.addedAnnotationExclusion = exclusionData;
           this.snackBar.open('Annotation has been excluded', 'Close', {duration: 5000});
         },
         err => {
@@ -332,12 +332,12 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
       );
   }
 
-  annotationExclusionRemoved({id, text}) {
-    this.removeAnnotationExclusionSub = this.pdfAnnService.removeAnnotationExclusion(this.currentFileId, id, text, this.projectName)
+  annotationExclusionRemoved({type, text}) {
+    this.removeAnnotationExclusionSub = this.pdfAnnService.removeAnnotationExclusion(this.currentFileId, type, text, this.projectName)
       .pipe(this.errorHandler.create())
       .subscribe(
         response => {
-          this.removedAnnotationExclusion = {id, text, reason: '', comment: ''};
+          this.removedAnnotationExclusion = {type, text};
           this.snackBar.open('Unmarked successfully', 'Close', {duration: 5000});
         },
         err => {
@@ -365,7 +365,27 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
       + `/files/${encodeURIComponent(this.currentFileId)}`
       + `#page=${loc.pageNumber}&coords=${loc.rect[0]},${loc.rect[1]},${loc.rect[2]},${loc.rect[3]}`;
 
+    const sources = [{
+      domain: 'File Source',
+      url: source
+    }];
+
+    if (this.pdfFile.doi) {
+      sources.push({
+        domain: 'DOI',
+        url: this.pdfFile.doi
+      });
+    }
+
+    if (this.pdfFile.upload_url) {
+      sources.push({
+        domain: 'Upload URL',
+        url: this.pdfFile.upload_url
+      });
+    }
+
     const hyperlink = meta.idHyperlink || meta.primaryLink || '';
+
     const search = Object.keys(meta.links || []).map(k => {
       return {
         domain: k,
@@ -382,7 +402,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
       label: meta.type.toLowerCase(),
       sub_labels: [],
       data: {
-        source,
+        sources,
         search,
         hyperlink,
         detail: meta.type === 'Link' ? meta.allText : '',

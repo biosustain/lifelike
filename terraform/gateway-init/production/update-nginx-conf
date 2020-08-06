@@ -1,5 +1,0 @@
-#!/usr/bin/env bash
-
-echo "Pushing new .conf changes to kg-nginx proxy"
-# Get the latest production.conf for kg-nginx
-gcloud compute scp nginx.conf root@kg-nginx:/docker/letsencrypt-docker-nginx/src/production/production.conf --zone us-central1-c
