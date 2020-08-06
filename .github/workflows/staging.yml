@@ -58,7 +58,7 @@ jobs:
                 password: ${{ secrets.GCE_SA_KEY }}
                 registry: gcr.io
                 image_name: ${{ secrets.GCE_PROJECT }}/kg-appserver-staging
-                image_tag: ${{ github.sha }}, latest
+                image_tag: ${{ github.sha }},latest
                 context: ./appserver
                 dockerfile: ./Dockerfile.prod
 
@@ -69,7 +69,7 @@ jobs:
                 password: ${{ secrets.GCE_SA_KEY }}
                 registry: gcr.io
                 image_name: ${{ secrets.GCE_PROJECT }}/kg-webserver-staging
-                image_tag: ${{ github.sha }}, latest
+                image_tag: ${{ github.sha }},latest
                 context: ./client
                 dockerfile: ./Dockerfile.staging
 
@@ -80,19 +80,19 @@ jobs:
                 password: ${{ secrets.GCE_SA_KEY }}
                 registry: gcr.io
                 image_name: ${{ secrets.GCE_PROJECT }}/kg-cache-service-staging
-                image_tag: ${{ github.sha }}, latest
+                image_tag: ${{ github.sha }},latest
                 context: ./cache-invalidator
                 dockerfile: ./Dockerfile
 
             - name: Build NLP
-              uses: docker/build-push-action@v1
+              uses: whoan/docker-build-with-cache-action@v5
               with:
                 username: _json_key
                 password: ${{ secrets.GCE_SA_KEY }}
                 registry: gcr.io
-                repository: ${{ secrets.GCE_PROJECT }}/kg-nlpapi-staging
-                tags: ${{ github.sha }}, latest
-                path: ./nlp
+                image_name: ${{ secrets.GCE_PROJECT }}/kg-nlpapi-staging
+                image_tag: ${{ github.sha }},latest
+                context: ./nlp
                 dockerfile: ./nlp/Dockerfile
 
             - name: Deploy Setup
