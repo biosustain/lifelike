@@ -6,7 +6,7 @@
   <div *ngFor="let relationshipGroup of relationshipFormGroupArray; let i = index" class="row align-items-center no-gutters mb-2">
     <div class="col">
       <button
-        *ngIf="relationshipGroup.get('relationshipDirection').value === 'To'; else fromRelationship"
+        *ngIf="relationshipGroup.get('relationshipDirection').value === relationshipDirectionEnum.TO; else fromRelationship"
         class="btn btn-outline-primary w-100"
         disabled>
         <app-node-relationship
@@ -110,7 +110,7 @@
       </div>
     </div>
 
-    <div *ngIf="indexToColumn.get(columnIndex2.value) !== 'KG Gene'" class="row">
+    <div *ngIf="indexToColumn.get(columnIndex2.value) !== kgGeneLabel" class="row">
       <div class="col">
         <button class="btn btn-primary btn-sm mt-2"
           (click)="addProperty('nodeProperties2')"
@@ -133,7 +133,7 @@
     </div>
   </div>
 
-  <div *ngIf="indexToColumn.get(columnIndex2.value) === 'KG Gene'">
+  <div *ngIf="indexToColumn.get(columnIndex2.value) === kgGeneLabel">
     <div class="form-group">
       <label>Does your first chosen column represent gene name, or ID?</label>
       <div class="custom-control custom-radio">
