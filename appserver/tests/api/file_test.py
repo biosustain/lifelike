@@ -117,7 +117,7 @@ def test_cannot_upload_if_no_write_permission(
     assert resp.status_code == 400
 
 
-@pytest.mark.skip(reason="Session is failing after file endpoint refactor")  #TODO
+@pytest.mark.skip(reason="Session is failing after file endpoint refactor")
 def test_can_view_all_files_in_project(monkeypatch, client, test_user, fix_project, fix_directory):
     from neo4japp.blueprints import files
 
