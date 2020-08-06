@@ -24,8 +24,8 @@ export class GeneImportConfigComponent {
                 this.indexToColumn.set(index.toString(), Object.keys(column)[0]);
             });
             // 'KG Gene' should always be the last element of the list
-            this.columns.push('KG Gene');
-            this.indexToColumn.set(worksheetData.sheetColumnNames.length.toString(), 'KG Gene');
+            this.columns.push(this.kgGeneLabel);
+            this.indexToColumn.set(worksheetData.sheetColumnNames.length.toString(), this.kgGeneLabel);
         }
     }
 
@@ -59,6 +59,7 @@ export class GeneImportConfigComponent {
 
     readonly geneMatchingPropertyEnum = GeneMatchingPropertyType;
     readonly relationshipDirectionEnum = RelationshipDirection;
+    readonly kgGeneLabel: string = 'KG Gene';
 
     labelColors: Map<string, string>;
     columnLabels: Map<string, string>;
@@ -190,7 +191,7 @@ export class GeneImportConfigComponent {
         const nodeLabel2Control = this.activeFormGroup.get('nodeLabel2');
         const columnIndex2Control = this.activeFormGroup.get('columnIndex2');
 
-        if (this.indexToColumn.get(this.columnIndex2.value) === 'KG Gene') {
+        if (this.indexToColumn.get(this.columnIndex2.value) === this.kgGeneLabel) {
             nodeLabel2Control.setValue('Gene');
             nodeLabel2Control.disable();
 
@@ -209,7 +210,7 @@ export class GeneImportConfigComponent {
             return;
         }
 
-        if (this.prevColumn2Selection === 'KG Gene') {
+        if (this.prevColumn2Selection === this.kgGeneLabel) {
             nodeLabel2Control.enable();
             nodeLabel2Control.setValue('');
 

@@ -130,16 +130,33 @@ class ImportRelationship(CamelDictMixin):
     node_properties1: List[Properties] = attr.ib()
     node_properties2: List[Properties] = attr.ib()
     relationship_label: str = attr.ib()
-    # Should map to any of the values in the RelationshipDirection enum
-    relationship_direction: RelationshipDirection = attr.ib()
     relationship_properties: List[Properties] = attr.ib()
+    relationship_direction: str = attr.ib()
+    @relationship_direction.validator
+    def validate(self, attribute, value):
+        relationship_direction_enum_vals = [data.value for data in RelationshipDirection]
+        if value not in relationship_direction_enum_vals:
+            raise ValueError(
+                'ImportRelationship.relationship_direction should equal a value of the ' +
+                'RelationshipDirection enum!'
+            )
 
 
 @attr.s(frozen=True)
 class GeneImportRelationship(ImportRelationship):
     species_selection: Optional[str] = attr.ib()
-    # Should map to any of the values in the GeneMatchingProperty enum
-    gene_matching_property: Optional[GeneMatchingProperty] = attr.ib()
+    gene_matching_property: Optional[str] = attr.ib()
+    @gene_matching_property.validator
+    def validate(self, attribute, value):
+        if value is None:
+            return
+
+        gene_matching_property_enum_vals = [data.value for data in GeneMatchingProperty]
+        if value not in gene_matching_property_enum_vals:
+            raise ValueError(
+                'GeneImportRelationship.gene_matching_property should equal a value of the ' +
+                'GeneMatchingProperty enum!'
+            )
 
 
 @attr.s(frozen=True)

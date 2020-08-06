@@ -600,7 +600,19 @@ class UserFileImportService(HybridDBDao):
 
         # Setup hash maps
         for relationship in relationships:
-            rel_hash = compute_hash(relationship.to_dict())
+            # TODO: One problem with this approach is that it's difficult to
+            # maintain, e.g. when we add/remove a property from the GeneImportRelationship
+            rel_hash = f'{relationship.column_index1}-' + \
+                f'{relationship.column_index2}-' + \
+                f'{relationship.node_label1}-' + \
+                f'{relationship.node_label2}-' + \
+                f'{relationship.node_properties1}-' + \
+                f'{relationship.node_properties2}-' + \
+                f'{relationship.relationship_label}-' + \
+                f'{relationship.relationship_direction}-' + \
+                f'{relationship.relationship_properties}-' + \
+                f'{relationship.species_selection}-' + \
+                f'{relationship.gene_matching_property}'
             relationship_hashes.append(rel_hash)
 
             rel_hash_map[rel_hash] = relationship
@@ -657,73 +669,80 @@ class UserFileImportService(HybridDBDao):
             curr_row += 1
 
         tx = self.graph.begin()
+        try:
+            # Merge (get or create) the worksheet node, and get the ID of the merged node
+            merge_worksheet_query = self.get_merge_worksheet_node_query()
+            worksheet_node_id = tx.run(
+                merge_worksheet_query,
+                {
+                    'worksheet_node_name': worksheet_node_name
+                }
+            ).evaluate()
 
-        # Merge (get or create) the worksheet node, and get the ID of the merged node
-        merge_worksheet_query = self.get_merge_worksheet_node_query()
-        worksheet_node_id = tx.run(
-            merge_worksheet_query,
-            {
-                'worksheet_node_name': worksheet_node_name
-            }
-        ).evaluate()
+            for rel_hash in relationship_hashes:
+                relationship = rel_hash_map[rel_hash]
+                relationship_label = relationship.relationship_label
+                relationship_propnames = [
+                    prop.property_name for prop in relationship.relationship_properties
+                ]
+                relationship_direction = relationship.relationship_direction
+                node_label1 = relationship.node_label1
+                node_label2 = relationship.node_label2
 
-        for rel_hash in relationship_hashes:
-            relationship = rel_hash_map[rel_hash]
-            relationship_label = relationship.relationship_label
-            relationship_propnames = [
-                prop.property_name for prop in relationship.relationship_properties
-            ]
-            relationship_direction = relationship.relationship_direction
-            node_label1 = relationship.node_label1
-            node_label2 = relationship.node_label2
-
-            # If this relationship describes a column-to-column mapping, merge the two new nodes
-            # and map them to each other.
-            if relationship.species_selection is None or relationship.gene_matching_property is None:  # noqa
-                merge_col_match_query = self.get_merge_col_match_query(
-                    node_label1,
-                    node_label2,
-                    [prop.property_name for prop in relationship.node_properties1] + ['cell_value'],  # noqa
-                    [prop.property_name for prop in relationship.node_properties2] + ['cell_value'],  # noqa
-                    relationship_label,
-                    relationship_propnames,
-                    relationship_direction
-                )
-
-                # Running the merges in batches gives a noticeable performance increase
-                batches = self.get_import_batches(col_match_prop_tuples[rel_hash])
-                for batch in batches:
-                    tx.run(
-                        merge_col_match_query,
-                        {
-                            'col_match_prop_tuples': batch,
-                            'worksheet_node_id': worksheet_node_id
-                        }
+                # If this relationship describes a column-to-column mapping, merge the two new nodes
+                # and map them to each other.
+                if relationship.species_selection is None or relationship.gene_matching_property is None:  # noqa
+                    merge_col_match_query = self.get_merge_col_match_query(
+                        node_label1,
+                        node_label2,
+                        [prop.property_name for prop in relationship.node_properties1] + ['cell_value'],  # noqa
+                        [prop.property_name for prop in relationship.node_properties2] + ['cell_value'],  # noqa
+                        relationship_label,
+                        relationship_propnames,
+                        relationship_direction
                     )
-            # If this relationship describes a column-to-KG-gene mapping, merge the column node,
-            # and map it to the corresponding KG node.
-            else:
-                merge_gene_match_query = self.get_merge_gene_match_query(
-                    node_label1,
-                    [prop.property_name for prop in relationship.node_properties1] + ['cell_value'],  # noqa
-                    relationship_label,
-                    relationship_propnames,
-                    relationship.gene_matching_property,
-                    relationship_direction
-                )
 
-                # Running the merges in batches gives a noticeable performance increase
-                batches = self.get_import_batches(gene_match_prop_tuples[rel_hash])
-                for batch in batches:
-                    tx.run(
-                        merge_gene_match_query,
-                        {
-                            'gene_match_prop_tuples': batch,
-                            'tax_id': int(relationship.species_selection),
-                            'worksheet_node_id': worksheet_node_id
-                        }
+                    # Running the merges in batches gives a noticeable performance increase
+                    batches = self.get_import_batches(col_match_prop_tuples[rel_hash])
+                    for batch in batches:
+                        tx.run(
+                            merge_col_match_query,
+                            {
+                                'col_match_prop_tuples': batch,
+                                'worksheet_node_id': worksheet_node_id
+                            }
+                        )
+                # If this relationship describes a column-to-KG-gene mapping, merge the column node,
+                # and map it to the corresponding KG node.
+                else:
+                    merge_gene_match_query = self.get_merge_gene_match_query(
+                        node_label1,
+                        [prop.property_name for prop in relationship.node_properties1] + ['cell_value'],  # noqa
+                        relationship_label,
+                        relationship_propnames,
+                        relationship.gene_matching_property,
+                        relationship_direction
                     )
-        tx.commit()
+
+                    # Running the merges in batches gives a noticeable performance increase
+                    batches = self.get_import_batches(gene_match_prop_tuples[rel_hash])
+                    for batch in batches:
+                        tx.run(
+                            merge_gene_match_query,
+                            {
+                                'gene_match_prop_tuples': batch,
+                                'tax_id': int(relationship.species_selection),
+                                'worksheet_node_id': worksheet_node_id
+                            }
+                        )
+        except Exception:
+            # TODO: Not sure what the most common practice is for terminating open py2neo
+            # transactions, haven't found any advice for this topic in the docs. Just to
+            # be safe, we rollback the transaction here.
+            tx.rollback()
+            raise
+        else:
+            tx.commit()
 
         return worksheet_node_id
 

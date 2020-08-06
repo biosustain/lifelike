@@ -70,7 +70,6 @@ def upload_node_mapping(req: Neo4jColumnMapping):
     return SuccessResponse(result='', status_code=200)
 
 
-# TODO: Needs error handling
 @bp.route('/import-genes', methods=['POST'])
 @jsonify_with_class(ImportGenesRequest, has_file=True)
 def import_genes(req: ImportGenesRequest):
