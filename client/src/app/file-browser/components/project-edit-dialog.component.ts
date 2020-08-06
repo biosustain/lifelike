@@ -2,24 +2,18 @@ import { Component, OnInit, Input, OnDestroy } from '@angular/core';
 import { ProjectSpaceService, Collaborator, Project } from '../services/project-space.service';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { FormArray, FormGroup, FormControl } from '@angular/forms';
-import { Subscription, combineLatest, Observable } from 'rxjs';
+import { Subscription, combineLatest, Observable, of } from 'rxjs';
 import { CommonFormDialogComponent } from 'app/shared/components/dialog/common-form-dialog.component';
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { MatSnackBar } from '@angular/material';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { AuthenticationService } from 'app/auth/services/authentication.service';
-import { isNullOrUndefined } from 'util';
+import { isNullOrUndefined, isArray } from 'util';
 import { HttpErrorResponse } from '@angular/common/http';
 import { AppUser } from 'app/interfaces';
 import { AccountService } from 'app/users/services/account.service';
-import { startWith, map } from 'rxjs/operators';
+import { startWith, map, filter, debounceTime, distinctUntilChanged, switchMap, flatMap } from 'rxjs/operators';
 
-export const _filter = (opt: string[], value: string): string[] => {
-  // Normaize string value
-  const filterValue = value.toLowerCase();
-  // Filter value against list of real values with normalized strings
-  return opt.filter(item => item.toLowerCase().indexOf(filterValue) === 0);
-};
 
 @Component({
   selector: 'app-edit-project-dialog',
@@ -27,12 +21,8 @@ export const _filter = (opt: string[], value: string): string[] => {
   styleUrls: ['./project-edit-dialog.component.scss']
 })
 export class ProjectEditDialogComponent extends CommonFormDialogComponent implements OnInit, OnDestroy {
-  // TODO - pull smaller list of users to lookup instead of whole list
-  loadTask: BackgroundTask<string, [Collaborator[], AppUser[]]> = new BackgroundTask(
-    (projectName) => combineLatest(
-      this.projSpace.getCollaborators(projectName),
-      this.acc.listOfUsers()
-    )
+  loadTask: BackgroundTask<string, Collaborator[]> = new BackgroundTask(
+    (projectName) => this.projSpace.getCollaborators(projectName)
   );
 
   loadTaskSubscription: Subscription;
@@ -78,7 +68,7 @@ export class ProjectEditDialogComponent extends CommonFormDialogComponent implem
   });
 
   listOfUsers: string[] = [];
-  userOptions: Observable<string[]>;
+  userOptions: string[];
 
   get currentCollabs(): FormArray {
     return this.form.get('currentCollabs') as FormArray;
@@ -112,13 +102,23 @@ export class ProjectEditDialogComponent extends CommonFormDialogComponent implem
   }
 
   ngOnInit() {
-    this.userOptions = this.form.get('username').valueChanges
+    this.form.get('username').valueChanges
       .pipe(
         // Make sure a value is being pushed
         startWith(''),
-        // Return an observable list of states that made the cut
-        map(value => this._filterGroup(value))
-      );
+        filter(val => val.length >= 1),
+        // make sure not submitting duplicate request
+        distinctUntilChanged(),
+        // 500 ms between each input refresh
+        debounceTime(500),
+        flatMap(val => this.acc.listOfUsers(val))
+      ).subscribe(users => {
+        if (isArray(users)) {
+          this.userOptions = users.map(u => u.username);
+        } else {
+          this.userOptions = [(users as AppUser).username];
+        }
+      });
 
     this.formSubscription = this.form
       .valueChanges
@@ -130,11 +130,9 @@ export class ProjectEditDialogComponent extends CommonFormDialogComponent implem
 
     this.loadTaskSubscription = this.loadTask.results$.subscribe(
       ({
-        result: [collabs, users]
+        result: collabs
       }) => {
         const userId = this.auth.whoAmI();
-
-        this.listOfUsers = users.map(u => u.username);
 
         this.userCollab = collabs.filter(c => userId === c.id)[0];
         this.collabs = collabs.filter(c => userId !== c.id);
@@ -280,18 +278,6 @@ export class ProjectEditDialogComponent extends CommonFormDialogComponent implem
           duration: 2000,
         });
       });
-    }
-  }
-
-  /**
-   *
-   * @param value - username to search against
-   */
-  private _filterGroup(value: string): string[] {
-    if (value) {
-      return  _filter(this.listOfUsers, value);
-    } else {
-      return [];
     }
   }
 }

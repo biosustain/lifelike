@@ -103,8 +103,8 @@
     </app-modal-footer>
   </div>
   <mat-autocomplete #autoUsers="matAutocomplete">
-    <mat-option *ngFor="let name of userOptions | async" [value]="name">
-      {{name}}
+    <mat-option *ngFor="let user of userOptions" [value]="user">
+      {{user}}
     </mat-option>
   </mat-autocomplete>
 <form>
