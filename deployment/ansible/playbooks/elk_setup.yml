@@ -1,4 +1,4 @@
-- hosts: "{{ elkhost | default('prod') }}"
+- hosts: "{{ elkhost | default('elk') }}"
   become: true
   roles:
     - role: docker
