@@ -21,8 +21,8 @@ from .constants import (
     EntityType,
     OrganismCategory,
     # exclusion lists
-    CHEMICAL_EXCLUSION,
-    COMPOUND_EXCLUSION,
+    # CHEMICAL_EXCLUSION,
+    # COMPOUND_EXCLUSION,
     SPECIES_EXCLUSION,
     # end exclusion lists
     ENTITY_HYPERLINKS,
@@ -49,6 +49,7 @@ from neo4japp.data_transfer_objects import (
     PDFTokenPositionsList,
 )
 from neo4japp.exceptions import AnnotationError
+from neo4japp.models import AnnotationStopWords
 
 
 class AnnotationsService:
@@ -80,6 +81,14 @@ class AnnotationsService:
         self.organism_frequency: Dict[str, int] = {}
         self.organism_locations: Dict[str, List[Tuple[int, int]]] = {}
         self.organism_categories: Dict[str, str] = {}
+
+        # TODO: could potentially put into a cache if these words will not be updated
+        # often. But future feature will allow users to upload and add
+        # to this list, so that means would have to recache.
+        # leave as is for now?
+        self.exclusion_words = set(
+            result.word for result in self.annotation_neo4j.session.query(
+                AnnotationStopWords).all())
 
     @property
     def custom_species(self):
@@ -120,10 +129,10 @@ class AnnotationsService:
         if len(lookup_key) > 2:
             # check chemical
             if nlp_predicted_type:
-                if nlp_predicted_type == EntityType.Chemical.value and lowered_word not in CHEMICAL_EXCLUSION:  # noqa
+                if nlp_predicted_type == EntityType.Chemical.value and lowered_word not in self.exclusion_words:  # noqa
                     chem_val = self.lmdb_session.chemicals_txn.get(lookup_key)
             else:
-                if lowered_word not in CHEMICAL_EXCLUSION:
+                if lowered_word not in self.exclusion_words:
                     chem_val = self.lmdb_session.chemicals_txn.get(lookup_key)
 
             if chem_val:
@@ -165,10 +174,10 @@ class AnnotationsService:
         if len(lookup_key) > 2:
             # check compound
             if nlp_predicted_type:
-                if nlp_predicted_type == EntityType.Compound.value and lowered_word not in CHEMICAL_EXCLUSION:  # noqa
+                if nlp_predicted_type == EntityType.Compound.value and lowered_word not in self.exclusion_words:  # noqa
                     comp_val = self.lmdb_session.compounds_txn.get(lookup_key)
             else:
-                if lowered_word not in CHEMICAL_EXCLUSION:
+                if lowered_word not in self.exclusion_words:
                     comp_val = self.lmdb_session.compounds_txn.get(lookup_key)
 
             if comp_val:
@@ -210,10 +219,11 @@ class AnnotationsService:
         if len(lookup_key) > 2:
             # check disease
             if nlp_predicted_type:
-                if nlp_predicted_type == EntityType.Disease.value:
+                if nlp_predicted_type == EntityType.Disease.value and lowered_word not in self.exclusion_words:  # noqa
                     diseases_val = self.lmdb_session.diseases_txn.get(lookup_key)
             else:
-                diseases_val = self.lmdb_session.diseases_txn.get(lookup_key)
+                if lowered_word not in self.exclusion_words:
+                    diseases_val = self.lmdb_session.diseases_txn.get(lookup_key)
 
             if diseases_val:
                 if token.keyword in self.matched_diseases:
@@ -254,10 +264,11 @@ class AnnotationsService:
         if len(lookup_key) > 2:
             # check gene
             if nlp_predicted_type:
-                if nlp_predicted_type == EntityType.Gene.value:
+                if nlp_predicted_type == EntityType.Gene.value and lowered_word not in self.exclusion_words:  # noqa
                     gene_val = self.lmdb_session.genes_txn.get(lookup_key)
             else:
-                gene_val = self.lmdb_session.genes_txn.get(lookup_key)
+                if lowered_word not in self.exclusion_words:
+                    gene_val = self.lmdb_session.genes_txn.get(lookup_key)
 
             if gene_val:
                 if token.keyword in self.matched_genes:
@@ -298,10 +309,11 @@ class AnnotationsService:
         if len(lookup_key) > 2:
             # check phenotype
             if nlp_predicted_type:
-                if nlp_predicted_type == EntityType.Phenotype.value:
+                if nlp_predicted_type == EntityType.Phenotype.value and lowered_word not in self.exclusion_words:  # noqa
                     phenotype_val = self.lmdb_session.phenotypes_txn.get(lookup_key)
             else:
-                phenotype_val = self.lmdb_session.phenotypes_txn.get(lookup_key)
+                if lowered_word not in self.exclusion_words:
+                    phenotype_val = self.lmdb_session.phenotypes_txn.get(lookup_key)
 
             if phenotype_val:
                 if token.keyword in self.matched_phenotypes:
@@ -342,10 +354,11 @@ class AnnotationsService:
         if len(lookup_key) > 2:
             # check protein
             if nlp_predicted_type:
-                if nlp_predicted_type == EntityType.Protein.value:
+                if nlp_predicted_type == EntityType.Protein.value and lowered_word not in self.exclusion_words:  # noqa
                     protein_val = self.lmdb_session.proteins_txn.get(lookup_key)
             else:
-                protein_val = self.lmdb_session.proteins_txn.get(lookup_key)
+                if lowered_word not in self.exclusion_words:
+                    protein_val = self.lmdb_session.proteins_txn.get(lookup_key)
 
             if protein_val:
                 if token.keyword in self.matched_proteins:
@@ -1149,6 +1162,25 @@ class AnnotationsService:
             cropbox_in_pdf=cropbox_in_pdf,
         )
 
+        def has_center_point(
+            custom_rect_coords: List[float],
+            rect_coords: List[float],
+        ) -> bool:
+            x1 = rect_coords[0]
+            y1 = rect_coords[1]
+            x2 = rect_coords[2]
+            y2 = rect_coords[3]
+
+            center_x = (x1 + x2)/2
+            center_y = (y1 + y2)/2
+
+            rect_x1 = custom_rect_coords[0]
+            rect_y1 = custom_rect_coords[1]
+            rect_x2 = custom_rect_coords[2]
+            rect_y2 = custom_rect_coords[3]
+
+            return rect_x1 <= center_x <= rect_x2 and rect_y1 <= center_y <= rect_y2
+
         # we only want the annotations with correct coordinates
         # because it is possible for a word to only have one
         # of its occurrences annotated as a custom annotation
@@ -1156,40 +1188,12 @@ class AnnotationsService:
         for custom in organisms_from_custom_annotations:
             for custom_anno in custom_species_annotations:
                 if len(custom['rects']) == len(custom_anno.rects):
-                    results: List[bool] = []
-                    for custom_rects, custom_anno_rects in zip(custom['rects'], custom_anno.rects):
-                        x1 = custom_anno_rects[0]
-                        y1 = custom_anno_rects[1]
-                        x2 = custom_anno_rects[2]
-                        y2 = custom_anno_rects[3]
-
-                        center_x = (x1 + x2)/2
-                        center_y = (y1 + y2)/2
-
-                        custom_rect_x1 = custom_rects[0]
-                        custom_rect_y1 = custom_rects[1]
-                        custom_rect_x2 = custom_rects[2]
-                        custom_rect_y2 = custom_rects[3]
-
-                        # check if center point for each rect in custom_anno.rects
-                        # is in the corresponding rectangle from custom annotations
-                        has_center_point = custom_rect_x1 <= center_x <= custom_rect_x2 and custom_rect_y1 <= center_y <= custom_rect_y2  # noqa
-                        results.append(has_center_point)
-
-                    if len(results) != len(custom_anno.rects):
-                        # unexpected length of rects
-                        raise AnnotationError(
-                            'Received unexpected length in rects in custom annotation')
+                    # check if center point for each rect in custom_anno.rects
+                    # is in the corresponding rectangle from custom annotations
+                    valid = all(list(map(has_center_point, custom['rects'], custom_anno.rects)))
 
                     # if center point is in custom annotation rectangle
                     # then add it to list
-                    valid = None
-                    while results:
-                        if valid is None:
-                            valid = results.pop()
-                        else:
-                            valid = valid and results.pop()
-
                     if valid:
                         filtered_custom_species_annotations.append(custom_anno)
 
