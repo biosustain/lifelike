@@ -84,29 +84,26 @@ def annotate(
         raise AnnotationError(
             'Your file could not be imported. Please check if it is a valid PDF.', [str(exc)])
 
-    try:
-        tokens = pdf_parser.extract_tokens(parsed_chars=parsed_pdf_chars)
-        pdf_text = pdf_parser.combine_all_chars(parsed_chars=parsed_pdf_chars)
+    tokens = pdf_parser.extract_tokens(parsed_chars=parsed_pdf_chars)
+    pdf_text = pdf_parser.combine_all_chars(parsed_chars=parsed_pdf_chars)
 
-        if annotation_method == AnnotationMethod.Rules.value:
-            annotations = annotator.create_rules_based_annotations(
-                tokens=tokens,
-                custom_annotations=custom_annotations,
-            )
-        elif annotation_method == AnnotationMethod.NLP.value:
-            # NLP
-            annotations = annotator.create_nlp_annotations(
-                page_index=parsed_pdf_chars.min_idx_in_page,
-                text=pdf_text,
-                tokens=tokens,
-                custom_annotations=custom_annotations,
-            )
-        else:
-            raise AnnotationError('Your file could not be annotated.')  # noqa
-        bioc = bioc_service.read(text=pdf_text, file_uri=filename)
-        return bioc_service.generate_bioc_json(annotations=annotations, bioc=bioc)
-    except AnnotationError as exc:
-        raise AnnotationError('Your file could not be annotated.', [str(exc)])
+    if annotation_method == AnnotationMethod.Rules.value:
+        annotations = annotator.create_rules_based_annotations(
+            tokens=tokens,
+            custom_annotations=custom_annotations,
+        )
+    elif annotation_method == AnnotationMethod.NLP.value:
+        # NLP
+        annotations = annotator.create_nlp_annotations(
+            page_index=parsed_pdf_chars.min_idx_in_page,
+            text=pdf_text,
+            tokens=tokens,
+            custom_annotations=custom_annotations,
+        )
+    else:
+        raise AnnotationError('Your file could not be annotated.')  # noqa
+    bioc = bioc_service.read(text=pdf_text, file_uri=filename)
+    return bioc_service.generate_bioc_json(annotations=annotations, bioc=bioc)
 
 
 def extract_doi(pdf_content: bytes, file_id: str = None, filename: str = None) -> Optional[str]:
