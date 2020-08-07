@@ -1,4 +1,4 @@
-"""empty message
+"""Insert stop words into new stop words table.
 
 Revision ID: 0d8dc6eed4c1
 Revises: e89e52d63fca
@@ -9,15 +9,15 @@ from alembic import context
 from alembic import op
 import sqlalchemy as sa
 from sqlalchemy.orm.session import Session
+from sqlalchemy.sql import table, column
+from sqlalchemy.dialects import postgresql
 
 from os import path
-
-from neo4japp.models import AnnotationStopWords
 
 
 # revision identifiers, used by Alembic.
 revision = '0d8dc6eed4c1'
-down_revision = 'e89e52d63fca'
+down_revision = '10c15d47e7c6'
 branch_labels = None
 depends_on = None
 
@@ -57,10 +57,13 @@ def data_upgrades():
 
     session = Session(op.get_bind())
 
+    _table = table('annotation_stop_words', column('word', sa.String))
+
+    inserts= []
     with open(stop_words_file, 'r') as f:
         for line in f:
-            stop_word = AnnotationStopWords(word=line.rstrip())
-            session.add(stop_word)
+            inserts.append({'word': line.rstrip()})
+    session.execute(_table.insert(), inserts)
     session.commit()
 
 
