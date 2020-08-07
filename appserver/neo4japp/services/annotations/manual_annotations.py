@@ -202,7 +202,7 @@ class ManualAnnotationsService:
 
         def isExcluded(exclusions, annotation):
             for exclusion in exclusions:
-                if annotation['meta']['keywordType'] == exclusion['type'] and \
+                if annotation['meta']['type'] == exclusion['type'] and \
                         annotation['textInDocument'] == exclusion['text']:
                     return True
             return False
