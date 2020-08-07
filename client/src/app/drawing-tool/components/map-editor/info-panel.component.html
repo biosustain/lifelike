@@ -1,12 +1,12 @@
 <div>
   <app-node-form *ngIf="isSelectionNode()"
-                 [node]="selected.entity"
+                 [entity]="selected.entity"
                  (save)="save($event)"
                  (delete)="deleteNode(selected.entity)"
                  (sourceOpen)="openSource($event)"></app-node-form>
 
   <app-edge-form *ngIf="isSelectionEdge()"
-                 [edge]="selected.entity"
+                 [entity]="selected.entity"
                  (save)="save($event)"
                  (delete)="deleteEdge(selected.entity)"
                  (sourceOpen)="openSource($event)"></app-edge-form>

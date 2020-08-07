@@ -1,13 +1,13 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 
 import { cloneDeep } from 'lodash';
-import { UniversalGraphEdge, UniversalGraphNode } from '../../services/interfaces';
+import { UniversalGraphEdge, UniversalGraphNode, UniversalGraphEntity } from '../../services/interfaces';
 import { LINE_HEAD_TYPES } from '../../services/line-head-types';
 import { LINE_TYPES } from '../../services/line-types';
 import { RecursivePartial } from '../../../graph-viewer/utils/types';
 import { openLink } from '../../../shared/utils/browser';
 import { PALETTE_COLORS } from '../../services/palette';
-import { annotationTypesMap } from 'app/shared/annotation-styles';
+import { annotationTypesMap, annotationTypes } from 'app/shared/annotation-styles';
 import { isNullOrUndefined } from 'util';
 
 
@@ -20,24 +20,24 @@ export class EntityForm {
   ];
   paletteChoices = [...PALETTE_COLORS];
 
-  originalEntity: UniversalGraphNode|UniversalGraphEdge;
-  updatedEntity: UniversalGraphNode|UniversalGraphEdge;
+  originalEntity: UniversalGraphEntity;
+  updatedEntity: UniversalGraphEntity;
 
   @Output() save = new EventEmitter<{
-    originalData: RecursivePartial<UniversalGraphNode|UniversalGraphEdge>,
-    updatedData: RecursivePartial<UniversalGraphNode|UniversalGraphEdge>,
+    originalData: RecursivePartial<UniversalGraphEntity>,
+    updatedData: RecursivePartial<UniversalGraphEntity>,
   }>();
   @Output() delete = new EventEmitter<object>();
   @Output() sourceOpen = new EventEmitter<string>();
 
   activeTab: string;
 
-  get entity(): UniversalGraphNode|UniversalGraphEdge {
+  get entity(): UniversalGraphEntity {
     return this.updatedEntity;
   }
 
   @Input()
-  set entity(entity: UniversalGraphNode|UniversalGraphEdge) {
+  set entity(entity: UniversalGraphEntity) {
     this.originalEntity = cloneDeep(entity);
     this.originalEntity.data = this.originalEntity.data || {}; // This was only in edge-form
     this.originalEntity.style = this.originalEntity.style || {};
@@ -101,7 +101,7 @@ export class EntityForm {
 
 @Component({
   selector: 'app-edge-form',
-  templateUrl: './entity-form.component.html',
+  templateUrl: './edge-form.component.html',
 })
 export class EdgeFormComponent extends EntityForm {
 
@@ -153,9 +153,11 @@ export class EdgeFormComponent extends EntityForm {
 
 @Component({
   selector: 'app-node-form',
-  templateUrl: './entity-form.component.html',
+  templateUrl: './node-form.component.html',
 })
 export class NodeFormComponent extends EntityForm {
+
+  nodeTypeChoices = annotationTypes;
 
   get nodeSubtypeChoices() {
     const type = annotationTypesMap.get(this.entity.label);
