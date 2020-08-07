@@ -13,17 +13,15 @@ from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
 from pdfminer.pdfpage import PDFPage
 from pdfminer.pdfparser import PDFParser
 
-from neo4japp.database import db
 from neo4japp.data_transfer_objects import (
     PDFParsedCharacters,
     PDFTokenPositions,
     PDFTokenPositionsList,
 )
 from neo4japp.exceptions import AnnotationError
-from neo4japp.models import AnnotationStopWords
 
 from .constants import (
-    # COMMON_WORDS,
+    COMMON_WORDS,
     LIGATURES,
     MISC_SYMBOLS_AND_CHARS,
     PDF_CHARACTER_SPACING_THRESHOLD,
@@ -37,13 +35,6 @@ class AnnotationsPDFParser:
         # TODO: go into constants.py if used by other classes
         self.max_word_length = 6
         self.regex_for_floats = r'^-?\d+(?:\.\d+)?$'
-
-        # TODO: could potentially put into a cache if these words will not be updated
-        # often. But future feature will allow users to upload and add
-        # to this list, so that means would have to recache.
-        # leave as is for now?
-        self.COMMON_WORDS = set(
-            result.word for result in db.session.query(AnnotationStopWords).all())
 
     def _get_lt_char(
         self,
@@ -437,7 +428,7 @@ class AnnotationsPDFParser:
                         # be separated word
                         curr_keyword = curr_keyword.strip()
 
-                        if (curr_keyword.lower() not in self.COMMON_WORDS and
+                        if (curr_keyword.lower() not in COMMON_WORDS and
                             not re.match(compiled_regex, curr_keyword) and
                             curr_keyword not in ascii_letters and
                             curr_keyword not in digits):  # noqa
