@@ -14,6 +14,7 @@
   - [How do I run unit tests for Angular?](#how-do-i-run-unit-tests-for-angular)
   - [How do I run linting checks?](#how-do-i-run-linting-checks)
   - [How do I create a postgres schema diagram?](#how-do-i-create-a-postgres-schema-diagram)
+  - [How can I seed a local database with data from sql dump files?](#how-can-i-seed-a-local-database-with-data-from-sql-dump-files)
   - [Where can I find common design patterns?](#where-can-i-find-common-design-patterns)
 
 ## How do I set up my developer environment?
@@ -171,6 +172,35 @@ eralchemy -i 'postgresql+psycopg2://postgres:postgres@localhost:5431/postgres' -
 
 4. (Optional) Commit the schema update to the repository
 
+## How can I seed a local database with data from sql dump files?
+### With production database
+1. Be sure to have the correct build tag that is used with the corresponding database backup. 
+2. Modify the `docker-compose.override.yml` file to include a local volume where the database backup will reside:
+```
+services:
+    pgdatabase:
+        container_name: pg-database
+        image: postgres:11
+        command: postgres -c max_wal_size=2GB -c log_statement='all'
+        environment:
+            - POSTGRES_PASSWORD=postgres
+        ports:
+            - "5431:5432"
+        networks:
+            - backend
+        volumes:
+          - ../path/to/local:/var/backups <---
+```
+3. Download a SQL dump from the Google Cloud Console
+4. Move the downloaded file into the local path specified in step 2 when modifying the `docker-compose.override.yml` file
+5. Initialize the application by running `docker-compose up -d`
+6. Access postgres via `docker-compose exec pgdatabase psql -U postgres -h database -d postgres`
+7. Drop the current schema using these commands in psql:
+```
+DROP SCHEMA public CASCADE;
+CREATE SCHEMA public;
+```
+8. Run `docker-compose exec pgdatabase psql -v ON_ERROR_STOP=1 -U postgres -d postgres -f ./backups/<dumpfilename>.sqldump`
 
 ## Where can I find common design patterns?
 https://github.com/SBRG/kg-prototypes/wiki
