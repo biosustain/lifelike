@@ -24,7 +24,7 @@ export class MapService extends AbstractService {
   getCommunityMaps(): Observable<KnowledgeMap[]> {
     return this.http.get<KnowledgeMap[]>(
       `/api/drawing-tool/community`,
-      this.getHttpOptions(true),
+      this.getHttpOptions(true)
     );
   }
 
@@ -32,55 +32,97 @@ export class MapService extends AbstractService {
   // CRUD
   // ========================================
 
-  createMap(projectName: string, directoryId: number, label: string, description: string, publicMap = false): Observable<any> {
+  createMap(
+    projectName: string,
+    directoryId: number,
+    label: string,
+    description: string,
+    publicMap = false
+  ): Observable<any> {
     return this.http.post<any>(
-      `${this.PROJECTS_BASE_URL}/${encodeURIComponent(projectName)}/map`, {
+      `${this.PROJECTS_BASE_URL}/${encodeURIComponent(projectName)}/map`,
+      {
         label,
         description,
         directoryId,
         public: publicMap,
-      }, this.getHttpOptions(true),
+      },
+      this.getHttpOptions(true)
     );
   }
 
   getMap(projectName: string, hashId: string) {
     return this.http.get(
-      `${this.PROJECTS_BASE_URL}/${encodeURIComponent(projectName)}/map/${encodeURIComponent(hashId)}`,
-      this.getHttpOptions(true),
+      `${this.PROJECTS_BASE_URL}/${encodeURIComponent(
+        projectName
+      )}/map/${encodeURIComponent(hashId)}`,
+      this.getHttpOptions(true)
     );
   }
 
   updateMap(projectName: string, map: KnowledgeMap): Observable<any> {
     return this.http.patch(
-      `${this.PROJECTS_BASE_URL}/${encodeURIComponent(projectName)}/map/${encodeURIComponent(map.hash_id)}`,
+      `${this.PROJECTS_BASE_URL}/${encodeURIComponent(
+        projectName
+      )}/map/${encodeURIComponent(map.hash_id)}`,
       map,
-      this.getHttpOptions(true),
+      this.getHttpOptions(true)
     );
   }
 
   deleteMap(projectName: string, hashId: string): Observable<any> {
     return this.http.delete(
-      `${this.PROJECTS_BASE_URL}/${encodeURIComponent(projectName)}/map/${encodeURIComponent(hashId)}`,
-      this.getHttpOptions(true),
+      `${this.PROJECTS_BASE_URL}/${encodeURIComponent(
+        projectName
+      )}/map/${encodeURIComponent(hashId)}`,
+      this.getHttpOptions(true)
     );
   }
 
-  getMapVersion(projectName: string, versionId: number): Observable<{version: KnowledgeMap}> {
-    return this.http.get<{version: KnowledgeMap}>(
-      `${this.PROJECTS_BASE_URL}/${encodeURIComponent(projectName)}/map/${encodeURIComponent(versionId)}`, this.getHttpOptions(true),
-      );
+  getMapVersion(
+    projectName: string,
+    hashId: string,
+    versionId: number
+  ): Observable<{ version: KnowledgeMap }> {
+    return this.http.get<{ version: KnowledgeMap }>(
+      `${this.PROJECTS_BASE_URL}/${encodeURIComponent(
+        projectName
+      )}/map/${encodeURIComponent(hashId)}/${encodeURIComponent(versionId)}`,
+      this.getHttpOptions(true)
+    );
+  }
+
+  updateMapVersion(
+    projectName: string,
+    newMap: KnowledgeMap,
+    versionId: number
+  ): Observable<any> {
+    return this.http.patch(
+      `${this.PROJECTS_BASE_URL}/${encodeURIComponent(
+        projectName
+      )}/map/${encodeURIComponent(newMap.hash_id)}/${encodeURIComponent(versionId)}`,
+      newMap,
+      this.getHttpOptions(true)
+    );
   }
 
   // ========================================
   // Export
   // ========================================
 
-  generateExport(projectName: string, hashId: string, format: 'pdf' | 'svg' | 'png'): Observable<any> {
+  generateExport(
+    projectName: string,
+    hashId: string,
+    format: 'pdf' | 'svg' | 'png'
+  ): Observable<any> {
     return this.http.get(
-      `${this.PROJECTS_BASE_URL}/${encodeURIComponent(projectName)}/map/${encodeURIComponent(hashId)}/${encodeURIComponent(format)}`, {
+      `${this.PROJECTS_BASE_URL}/${encodeURIComponent(
+        projectName
+      )}/map/${encodeURIComponent(hashId)}/${encodeURIComponent(format)}`,
+      {
         ...this.getHttpOptions(true),
         responseType: 'blob',
-      },
+      }
     );
   }
 
@@ -112,26 +154,28 @@ export class MapService extends AbstractService {
   getBackup(projectName: string, hashId: string): Observable<any> {
     return this.http.get(
       `${this.MAPS_BASE_URL}/map/${encodeURIComponent(hashId)}/backup`,
-      this.getHttpOptions(true),
+      this.getHttpOptions(true)
     );
   }
 
-  createOrUpdateBackup(projectName: string, map: KnowledgeMap): Observable<any> {
-    map.description = map.description && map.description.length ?
-      map.description :
-      '';
+  createOrUpdateBackup(
+    projectName: string,
+    map: KnowledgeMap
+  ): Observable<any> {
+    map.description =
+      map.description && map.description.length ? map.description : '';
 
     return this.http.post(
       `${this.MAPS_BASE_URL}/map/${encodeURIComponent(map.hash_id)}/backup`,
       map,
-      this.getHttpOptions(true),
+      this.getHttpOptions(true)
     );
   }
 
   deleteBackup(projectName: string, hashId: string): Observable<any> {
     return this.http.delete(
       `${this.MAPS_BASE_URL}/map/${encodeURIComponent(hashId)}/backup`,
-      this.getHttpOptions(true),
+      this.getHttpOptions(true)
     );
   }
 
@@ -142,7 +186,7 @@ export class MapService extends AbstractService {
   isEditableByUser(projectName: string, hashId: string): Observable<any> {
     return this.http.get(
       `${this.MAPS_BASE_URL}/map/${encodeURIComponent(hashId)}/meta`,
-      this.getHttpOptions(true),
+      this.getHttpOptions(true)
     );
   }
 }
