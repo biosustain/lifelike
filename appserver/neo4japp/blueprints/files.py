@@ -103,14 +103,14 @@ def annotate(
             )
         else:
             raise AnnotationError(
-                'Your file could not be annotated, but the file was successfully uploaded. \
-                    Please try re-uploading as a new file or re-annotate.')
+                'Your file could not be annotated, but the file was successfully uploaded.'
+                ' Please try re-uploading as a new file or re-annotate.')
         bioc = bioc_service.read(text=pdf_text, file_uri=filename)
         return bioc_service.generate_bioc_json(annotations=annotations, bioc=bioc)
     except AnnotationError as exc:
         raise AnnotationError(
-            'Your file could not be annotated, but the file was successfully uploaded. \
-                    Please try re-uploading as a new file or re-annotate.', [str(exc)])
+                'Your file could not be annotated, but the file was successfully uploaded.'
+                ' Please try re-uploading as a new file or re-annotate.', [str(exc)])
 
 
 def extract_doi(pdf_content: bytes, file_id: str = None, filename: str = None) -> Optional[str]:
@@ -171,9 +171,9 @@ def upload_pdf(request, project_name: str):
             data = read_url(req, max_length=URL_FETCH_MAX_LENGTH,
                             timeout=URL_FETCH_TIMEOUT).getvalue()
         except (ValueError, URLError):
-            raise FileUploadError("Your file could not be downloaded, either because it is "
-                                  "inaccessible or another problem occurred. Please double "
-                                  "check the spelling of the URL.")
+            raise FileUploadError('Your file could not be downloaded, either because it is '
+                                  'inaccessible or another problem occurred. Please double '
+                                  'check the spelling of the URL.')
         pdf = FileStorage(io.BytesIO(data), filename)
     else:
         pdf = request.file_input
