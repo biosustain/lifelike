@@ -30,6 +30,7 @@ from neo4japp.models import (
     AccessActionType,
     Project,
     ProjectVersion,
+    ProjectVersionSchema,
     ProjectSchema,
     Projects,
     Directory,
@@ -318,7 +319,7 @@ def delete_project(hash_id: str, projects_name: str):
     yield jsonify({'status': 'success'}), 200
 
 
-@newbp.route('/<string:projects_name>/map/<string:hash_id>/<string:version_string', methods=['GET'])
+@newbp.route('/<string:projects_name>/map/<string:hash_id>/<string:version_string>', methods=['GET'])
 @auth.login_required
 @requires_project_permission(AccessActionType.READ)
 def get_version(hash_id: str, projects_name: str, version_string: str):
@@ -344,12 +345,12 @@ def get_version(hash_id: str, projects_name: str, version_string: str):
     except NoResultFound:
         raise RecordNotFoundException('not found :-( ')
 
-    project_schema = ProjectSchema()
+    project_schema = ProjectVersionSchema()
 
     yield jsonify({'version': project_schema.dump(project_version)})
 
 
-@newbp.route('/<string:projects_name>/map/<string:hash_id>/<string:version_string', methods=['PATCH'])
+@newbp.route('/<string:projects_name>/map/<string:hash_id>/<string:version_string>', methods=['PATCH'])
 @auth.login_required
 @requires_project_permission(AccessActionType.WRITE)
 def update_version(hash_id: str, projects_name: str, version_string: str):
