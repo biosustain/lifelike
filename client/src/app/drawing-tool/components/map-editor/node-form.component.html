@@ -4,20 +4,18 @@
       <label for="label">
         Node Label:
       </label>
-      <input [(ngModel)]="node.display_name" class="form-control" (change)="doSave()" id="label"
-             maxlength="2000">
+      <input [(ngModel)]="entity.display_name" class="form-control" (change)="doSave()" id="label" maxlength="2000">
     </div>
 
     <div class="form-group">
       <label for="detail">Detail:</label>
-      <textarea [(ngModel)]="node.data.detail" class="form-control" (change)="doSave()" id="detail"
-                rows="5" maxlength="5000"></textarea>
+      <textarea [(ngModel)]="entity.data.detail" class="form-control" (change)="doSave()" id="detail" rows="5" maxlength="5000"></textarea>
     </div>
 
     <div class="form-group" *ngIf="mayShowDetailText()">
       <div class="custom-control custom-checkbox">
         <input class="custom-control-input" type="checkbox" id="show-detail" value="1"
-               [(ngModel)]="node.style.showDetail" (change)="doSave()">
+               [(ngModel)]="entity.style.showDetail" (change)="doSave()">
         <label class="custom-control-label" for="show-detail">
           Show detail text instead of the label
         </label>
@@ -29,7 +27,7 @@
         Type:
       </label>
       <div class="d-flex flex-column flex-fill">
-        <select [(ngModel)]="node.label" (change)="doSave()" class="custom-select w-100" id="type"
+        <select [(ngModel)]="entity.label" (change)="doSave()" class="custom-select w-100" id="type"
                 (ngModelChange)="checkSubtype()">
           <option *ngFor="let choice of nodeTypeChoices" [value]="choice.label">
             {{choice.label | titlecase}}
@@ -39,16 +37,16 @@
           <label for="subtype" ngbTooltip="Node subtype">
             Type:
           </label>
-          <select [(ngModel)]="node.data.subtype" (change)="doSave()" class="custom-select flex-fill" id="subtype">
+          <select [(ngModel)]="entity.data.subtype" (change)="doSave()" class="custom-select flex-fill" id="subtype">
             <option *ngFor="let choice of nodeSubtypeChoices" [value]="choice">
               {{choice | titlecase}}
             </option>
           </select>
         </div>
-        <div class="mt-1" *ngIf="node.data?.source && node.label !== 'link'">
+        <div class="mt-1" *ngIf="entity.data?.source && entity.label !== 'link'">
           <button type="button" class="btn btn-secondary btn-block"
                   ngbTooltip="Make this node show as a note with a link back to the source"
-                  (click)="node.label = 'link'; doSave()">
+                  (click)="entity.label = 'link'; doSave()">
             Change to Link
           </button>
         </div>
@@ -66,7 +64,7 @@
             <i class="fa fa-external-link-alt"></i>
           </button>
         </div>
-        <input [(ngModel)]="node.data.hyperlinks[i].url" (change)='doSave()' placeholder="URL" type="text" class="form-control" aria-label="Text input with segmented dropdown button">
+        <input [(ngModel)]="entity.data.hyperlinks[i].url" (change)='doSave()' placeholder="URL" type="text" class="form-control" aria-label="Text input with segmented dropdown button">
         <div class="input-group-append">
           <button (click)='removeHyperlink(i)' class="btn btn-outline-danger btn-sm" type="button">
             <i class="fa fa-trash"></i>
@@ -76,15 +74,15 @@
     </div>
 
     <fieldset class="fieldset-properties mt-4"
-              *ngIf="(node.display_name != null && node.display_name.length) || node.data?.search">
+              *ngIf="(entity.display_name != null && entity.display_name.length) || entity.data?.search">
       <legend>Quick Search <i class="fas fa-external-link-alt ml-1"></i></legend>
 
-      <app-quick-search [query]="node.display_name" [links]="node.data?.search"></app-quick-search>
+      <app-quick-search [query]="entity.display_name" [links]="entity.data?.search"></app-quick-search>
     </fieldset>
 
     <div class="mt-4">
-      <div *ngIf="node.data.source" class="mb-2">
-        <button *ngIf="node.data.source" type="button" class="btn btn-secondary btn-block"
+      <div *ngIf="entity.data.source" class="mb-2">
+        <button *ngIf="entity.data.source" type="button" class="btn btn-secondary btn-block"
                 (click)="goToSource()">
           Go to Source
         </button>
@@ -107,7 +105,7 @@
           <i class="fa fa-fw fa-text-height"></i>
         </label>
         <app-percent-input min="20" max="1000" step="20" class="mr-1"
-                           [(value)]="node.style.fontSizeScale" (change)="doSave()" default="100" inputId="font-size"
+                           [(value)]="entity.style.fontSizeScale" (change)="doSave()" default="100" inputId="font-size"
                            [style.width]="'6rem'"></app-percent-input>
         %
       </div>
@@ -118,7 +116,7 @@
         </label>
         <app-color-chooser-component
           id="fill-color" [palette]="paletteChoices"
-          [(color)]="node.style.fillColor" emptyLabel="Default"
+          [(color)]="entity.style.fillColor" emptyLabel="Default"
           (colorChange)="doSave()"></app-color-chooser-component>
       </div>
     </fieldset>
@@ -132,7 +130,7 @@
         </label>
         <app-color-chooser-component
           id="stroke-color" [palette]="paletteChoices"
-          [(color)]="node.style.strokeColor" emptyLabel="Default"
+          [(color)]="entity.style.strokeColor" emptyLabel="Default"
           (colorChange)="doSave()"></app-color-chooser-component>
       </div>
 
@@ -140,7 +138,7 @@
         <label for="line-type" class="my-0 mr-2" ngbTooltip="Border line type">
           <i class="fa fa-fw fa-border-style"></i>
         </label>
-        <select [(ngModel)]="node.style.lineType" (change)="doSave()" class="custom-select" id="line-type">
+        <select [(ngModel)]="entity.style.lineType" (change)="doSave()" class="custom-select" id="line-type">
           <option *ngFor="let choice of lineTypeChoices" [value]="choice[0]">
             {{choice[1].name}}
           </option>
@@ -152,7 +150,7 @@
           <i class="fa fa-fw fa-window-minimize"></i>
         </label>
         <app-percent-input min="20" max="1000" step="20" class="mr-1"
-                           [(value)]="node.style.lineWidthScale" (change)="doSave()" default="100"
+                           [(value)]="entity.style.lineWidthScale" (change)="doSave()" default="100"
                            inputId="line-width-scale"
                            [style.width]="'6rem'"></app-percent-input>
         %
