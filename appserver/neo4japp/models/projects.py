@@ -53,7 +53,8 @@ class Projects(RDBMSBase):  # type: ignore
     def project_name(self):
         return self._project_name
 
-    @project_name.setter
+    # mypy issue: https://github.com/python/mypy/issues/4430
+    @project_name.setter  # type: ignore
     def project_name(self, value):
         if not re.match('^[A-Za-z0-9-]$', value):
             raise ValueError('incorrect project name format')
