@@ -11,7 +11,7 @@ import { annotationTypesMap, annotationTypes } from 'app/shared/annotation-style
 import { isNullOrUndefined } from 'util';
 
 
-export class EntityForm {
+abstract class EntityForm {
   lineTypeChoices = [
     [null, {
       name: '(Default)',
@@ -104,6 +104,20 @@ export class EntityForm {
   templateUrl: './edge-form.component.html',
 })
 export class EdgeFormComponent extends EntityForm {
+  get entity(): UniversalGraphEdge {
+    return this.updatedEntity as UniversalGraphEdge;
+  }
+
+  @Input()
+  set entity(entity: UniversalGraphEdge) {
+    this.originalEntity = cloneDeep(entity);
+    this.originalEntity.data = this.originalEntity.data || {}; // This was only in edge-form
+    this.originalEntity.style = this.originalEntity.style || {};
+
+    this.updatedEntity = cloneDeep(entity);
+    this.updatedEntity.data = this.updatedEntity.data || {}; // This was only in edge-form
+    this.updatedEntity.style = this.updatedEntity.style || {};
+  }
 
   lineHeadTypeChoices = [
     [null, {
@@ -156,6 +170,18 @@ export class EdgeFormComponent extends EntityForm {
   templateUrl: './node-form.component.html',
 })
 export class NodeFormComponent extends EntityForm {
+  get entity(): UniversalGraphNode {
+    return this.updatedEntity as UniversalGraphNode;
+  }
+
+  @Input()
+  set entity(entity: UniversalGraphNode) {
+    this.originalEntity = cloneDeep(entity);
+    this.originalEntity.style = this.originalEntity.style || {};
+
+    this.updatedEntity = cloneDeep(entity);
+    this.updatedEntity.style = this.updatedEntity.style || {};
+  }
 
   nodeTypeChoices = annotationTypes;
 
