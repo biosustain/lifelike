@@ -441,7 +441,7 @@ def get_child_directories(current_dir_id: int, project_name: str):
                 'description': f.description,
                 'data': CasePreservedDict(
                     f.to_dict(exclude=[
-                        'annotations', 'annotations_date', 'custom_annotations',
+                        'annotations', 'custom_annotations',
                         'excluded_annotations'], keyfn=lambda x: x)),
             } for (f, username) in files],
             *[{

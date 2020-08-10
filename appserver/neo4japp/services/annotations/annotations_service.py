@@ -1573,8 +1573,15 @@ class AnnotationsService:
                         offset_predicted['low_index'] += offset
 
                         cumm_nlp_resp.append(offset_predicted)
+            except requests.exceptions.ConnectTimeout:
+                raise AnnotationError(
+                    'The request timed out while trying to connect to the NLP service.')
+            except requests.exceptions.Timeout:
+                raise AnnotationError(
+                    'The request to the NLP service timed out.')
             except requests.exceptions.RequestException:
-                raise AnnotationError('An error occurred with the NLP service.')
+                raise AnnotationError(
+                    'An unexpected error occurred with the NLP service.')
 
         print(f'NLP Response Output: {json.dumps(cumm_nlp_resp)}')
 
