@@ -68,16 +68,38 @@
                 [collectionSize]="collectionSize"></app-results-summary>
             </div>
 
-            <div class="search-results">
-              <div class="search-results-item"
-                   *ngFor="let n of results; let i = index"
-                   [ngSwitch]="n.node.label">
-                <app-search-record-relationships [node]="n" *ngSwitchCase="'Snippet'" [params]="params">
-                </app-search-record-relationships>
-                <app-search-record-node [node]="n" [legend]="legend" [params]="params" *ngSwitchDefault>
-                </app-search-record-node>
-              </div>
-            </div>
+            <ul ngbNav #nav="ngbNav" [(activeId)]="activeTab" class="nav-pills" >
+              <li ngbNavItem="kg-results">
+                <a ngbNavLink>KG results</a>
+                <ng-template ngbNavContent>
+                  <div class="search-results">
+                    <div class="search-results-item"
+                         *ngFor="let n of results; let i = index"
+                         [ngSwitch]="n.node.label">
+                      <app-search-record-relationships [node]="n" *ngSwitchCase="'Snippet'" [params]="params">
+                      </app-search-record-relationships>
+                      <app-search-record-node [node]="n" [legend]="legend" [params]="params" *ngSwitchDefault>
+                      </app-search-record-node>
+                    </div>
+                  </div>
+                </ng-template>
+              </li>
+              <li ngbNavItem="file-results">
+                <a ngbNavLink>File results</a>
+                <ng-template ngbNavContent>
+                  <div class="search-results">
+                    <div class="search-results-item"
+                         *ngFor="let n of results; let i = index"
+                         [ngSwitch]="n.node.label">
+                      <app-file-records>
+                      </app-file-records>
+                    </div>
+                  </div>
+                  </ng-template>
+              </li>
+            </ul>
+
+            <div [ngbNavOutlet]="nav" class="mt-4"></div>
 
             <div class="mt-4">
               <ngb-pagination
