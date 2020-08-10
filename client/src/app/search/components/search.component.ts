@@ -1,16 +1,16 @@
-import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import {Component, ElementRef, OnDestroy, OnInit, ViewChild} from '@angular/core';
+import {ActivatedRoute} from '@angular/router';
 
-import { Subscription } from 'rxjs';
+import {Subscription} from 'rxjs';
 
-import { Domain, EntityType, FTSQueryRecord, FTSResult, SearchParameters } from 'app/interfaces';
-import { LegendService } from 'app/shared/services/legend.service';
-import { WorkspaceManager } from 'app/shared/workspace-manager';
+import {Domain, EntityType, FTSQueryRecord, FTSResult, SearchParameters} from 'app/interfaces';
+import {LegendService} from 'app/shared/services/legend.service';
+import {WorkspaceManager} from 'app/shared/workspace-manager';
 
-import { SearchService } from '../services/search.service';
-import { BackgroundTask } from '../../shared/rxjs/background-task';
-import { tap } from 'rxjs/operators';
-import { createSearchParamsFromQuery, getQueryParams } from '../utils/search';
+import {SearchService} from '../services/search.service';
+import {BackgroundTask} from '../../shared/rxjs/background-task';
+import {tap} from 'rxjs/operators';
+import {createSearchParamsFromQuery, getQueryParams} from '../utils/search';
 
 @Component({
   selector: 'app-search',
@@ -28,6 +28,7 @@ export class SearchComponent implements OnInit, OnDestroy {
     );
   });
 
+  activeTab: 'kg-results' | 'file-results';
   params: SearchParameters | undefined;
   collectionSize = 0;
   results: FTSQueryRecord[] = [];
