@@ -1,6 +1,8 @@
 import enum
+import re
 from neo4japp.database import db
 from sqlalchemy import event
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm.query import Query
 from .common import RDBMSBase
 
@@ -40,12 +42,22 @@ projects_collaborator_role = db.Table(
 class Projects(RDBMSBase):  # type: ignore
     __tablename__ = 'projects'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    project_name = db.Column(db.String(250), unique=True, nullable=False)
+    _project_name = db.Column(db.String(250), unique=True, nullable=False)
     description = db.Column(db.Text)
     creation_date = db.Column(db.DateTime, default=db.func.now())
     users = db.Column(db.ARRAY(db.Integer), nullable=False)
 
     directories = db.relationship('Directory')
+
+    @hybrid_property
+    def project_name(self):
+        return self._project_name
+
+    @project_name.setter
+    def project_name(self, value):
+        if not re.match('^[A-Za-z0-9-]$', value):
+            raise ValueError('incorrect project name format')
+        self._project_name = value
 
     @classmethod
     def query_project_roles(cls, user_id: int, project_id: int) -> Query:
