@@ -76,6 +76,7 @@ export class SearchComponent implements OnInit, OnDestroy {
         if (params.q != null) {
           this.params = createSearchParamsFromQuery(params);
           this.loadTask.update(this.params);
+          this.searchInFiles(this.params);
         } else {
           this.params = null;
           this.results = [];
