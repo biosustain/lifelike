@@ -55,7 +55,7 @@ def data_upgrades():
 
     pat = re.compile(r'[^A-Za-z0-9-]')
     for pid, name in projects:
-        conn.execute(t_projects.update().where(t_projects.c.id == pid)).values(re.sub(pat, '-', name))
+        conn.execute(t_projects.update().where(t_projects.c.id == pid)).values(project_name=re.sub(pat, '-', name))
 
 def data_downgrades():
     """Add optional data downgrade migrations here"""
