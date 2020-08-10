@@ -96,7 +96,6 @@ export class SearchComponent implements OnInit, OnDestroy {
 
   refresh() {
     this.loadTask.update(this.params);
-    this.searchInFiles(this.params);
   }
 
   search(params: SearchParameters) {
@@ -106,7 +105,6 @@ export class SearchComponent implements OnInit, OnDestroy {
         t: new Date().getTime(), // Hack so if the person press search without changing anything, we still refresh
       },
     });
-    this.searchInFiles(params);
   }
 
   goToPage(page: number) {
