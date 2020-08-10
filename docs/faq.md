@@ -181,7 +181,12 @@ eralchemy -i 'postgresql+psycopg2://postgres:postgres@localhost:5431/postgres' -
 DROP SCHEMA public CASCADE;
 CREATE SCHEMA public;
 ```
-3. Load the sql dump:
+3. Move the sql dump file to the top-level of the app, i.e.:
+```
+- kg-visualizer
+  |-- your_dump_file.sql
+```
+4. Load the sql dump:
 
 `docker-compose exec -T pgdatabase psql -U postgres < <dump file.sql>`
 
