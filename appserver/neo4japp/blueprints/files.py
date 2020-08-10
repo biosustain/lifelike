@@ -6,7 +6,7 @@ import re
 import urllib.request
 import uuid
 
-from datetime import datetime, timezone
+from datetime import datetime
 from enum import Enum
 from typing import Dict, List, Optional
 from urllib.error import URLError
@@ -221,28 +221,9 @@ def upload_pdf(request, project_name: str):
 
         current_app.logger.info(
             f'User uploaded file: <{g.current_user.email}:{file.filename}>')
-        index_pdf.main(current_app.config)
+        # index_pdf.main(current_app.config)  # TODO: FIX THIS
     except Exception:
         raise FileUploadError('Your file could not be saved. Please try uploading again.')
-
-    try:
-        annotations = annotate(
-            filename=filename,
-            pdf_fp=pdf,
-            custom_annotations=file.custom_annotations or [],
-            annotation_method=request.annotation_method,
-        )
-        annotations_date = datetime.now(TIMEZONE)
-
-        file.annotations = annotations
-        file.annotations_date = annotations_date
-        db.session.add(file)
-    except AnnotationError:
-        # do nothing if annotations fail
-        # file should still be uploaded
-        # due to LL-1371
-        raise  # bubble up the exception
-    db.session.commit()
 
     yield SuccessResponse(
         result={
@@ -533,7 +514,7 @@ def reannotate(project_name: str):
                 {
                     'id': f.id,
                     'annotations': annotations,
-                    'annotations_date': datetime.now(timezone.utc),
+                    'annotations_date': datetime.now(TIMEZONE),
                 }
             )
             current_app.logger.debug(

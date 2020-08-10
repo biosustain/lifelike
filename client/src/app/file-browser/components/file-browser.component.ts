@@ -2,6 +2,7 @@ import { Component, EventEmitter, OnDestroy, OnInit, Output } from '@angular/cor
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { BehaviorSubject, combineLatest, from, Observable, Subscription, throwError } from 'rxjs';
+import { flatMap, map } from 'rxjs/operators';
 import { PdfFile, UploadPayload, UploadType } from 'app/interfaces/pdf-files.interface';
 import { PdfFilesService } from 'app/shared/services/pdf-files.service';
 import { HttpErrorResponse, HttpEventType } from '@angular/common/http';
@@ -29,7 +30,6 @@ import { ModuleProperties } from '../../shared/modules';
 import { KnowledgeMap, UniversalGraphNode } from '../../drawing-tool/services/interfaces';
 import { catchError } from 'rxjs/operators';
 import { ObjectDeletionResultDialogComponent } from './object-deletion-result-dialog.component';
-import { getLink } from '../../search/utils/records';
 
 interface PathLocator {
   projectName?: string;
@@ -308,6 +308,11 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
       this.directory.id,
       data,
     )
+      .pipe(
+        map(res => res.file_id),
+        flatMap(fileId => this.filesService.annotateFile(
+          this.locator.projectName, fileId, data.annotationMethod))
+      )
       .pipe(this.errorHandler.create())
       .subscribe(event => {
           if (event.type === HttpEventType.UploadProgress) {
@@ -333,8 +338,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
         },
         err => {
           progressDialogRef.close();
-          this.refresh();  // update the list annotations could fail but upload could succeed
-          // TODO: refactor this so annotations gets called after upload
+          this.refresh();
           return throwError(err);
         },
       );
@@ -453,8 +457,8 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
         const file = object.data as PdfFile;
         return ['/projects', this.locator.projectName, 'files', file.file_id];
       case 'map':
-        const map = object.data as KnowledgeMap;
-        return ['/projects', this.locator.projectName, 'maps', map.hash_id, 'edit'];
+        const _map = object.data as KnowledgeMap;
+        return ['/projects', this.locator.projectName, 'maps', _map.hash_id, 'edit'];
       default:
         throw new Error(`unknown directory object type: ${object.type}`);
     }
