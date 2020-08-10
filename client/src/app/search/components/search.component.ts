@@ -3,7 +3,15 @@ import {ActivatedRoute} from '@angular/router';
 
 import {Subscription} from 'rxjs';
 
-import {Domain, EntityType, FTSQueryRecord, FTSResult, SearchParameters} from 'app/interfaces';
+import {
+  Domain,
+  EntityType,
+  FTSQueryRecord,
+  FTSResult,
+  PDFResult,
+  PDFSnippets,
+  SearchParameters
+} from 'app/interfaces';
 import {LegendService} from 'app/shared/services/legend.service';
 import {WorkspaceManager} from 'app/shared/workspace-manager';
 
@@ -27,11 +35,11 @@ export class SearchComponent implements OnInit, OnDestroy {
       this.createFilterQuery(params.domains, params.entityTypes),
     );
   });
-
   activeTab: 'kg-results' | 'file-results';
   params: SearchParameters | undefined;
   collectionSize = 0;
   results: FTSQueryRecord[] = [];
+  fileResults: PDFResult = {hits: [{} as PDFSnippets], maxScore: 0, total: 0};
 
   legend: Map<string, string> = new Map();
 
@@ -87,6 +95,7 @@ export class SearchComponent implements OnInit, OnDestroy {
 
   refresh() {
     this.loadTask.update(this.params);
+    this.searchInFiles(this.params);
   }
 
   search(params: SearchParameters) {
@@ -96,6 +105,7 @@ export class SearchComponent implements OnInit, OnDestroy {
         t: new Date().getTime(), // Hack so if the person press search without changing anything, we still refresh
       },
     });
+    this.searchInFiles(params);
   }
 
   goToPage(page: number) {
@@ -103,6 +113,11 @@ export class SearchComponent implements OnInit, OnDestroy {
       ...this.params,
       page,
     });
+  }
+
+  private searchInFiles(params) {
+    this.searchService.pdfFullTextSearch(params.query)
+      .subscribe(results => this.fileResults = results as PDFResult);
   }
 
   private createFilterQuery(domains?: Domain[], entityTypes?: EntityType[]): string {
