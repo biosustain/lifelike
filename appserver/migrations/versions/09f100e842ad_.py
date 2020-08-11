@@ -1,7 +1,7 @@
 """Create table for saving user imported worksheets
 
 Revision ID: 09f100e842ad
-Revises: e89e52d63fca
+Revises: 10c15d47e7c6
 Create Date: 2020-07-29 22:41:17.703489
 
 """
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = '09f100e842ad'
-down_revision = 'e89e52d63fca'
+down_revision = '10c15d47e7c6'
 branch_labels = None
 depends_on = None
 
