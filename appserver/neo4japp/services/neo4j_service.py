@@ -696,7 +696,7 @@ class Neo4JService(GraphBaseDao):
                 to_id,
                 from_labels,
                 to_labels
-            ORDER BY snippet_count DESC, max_pub_year DESC
+            ORDER BY snippet_count DESC, coalesce(max_pub_year, -1) DESC
             RETURN from_id, to_id, from_labels, to_labels, snippet_count as count
         """
         return query
