@@ -1,1100 +1,1172 @@
 [
-    {
-        "table": "appuser",
-        "records": [
-            {
-                "username": "user",
-                "email": "user@gmail.com",
-                "password_hash": "hai_password",
-                "first_name": "Petty",
-                "last_name": "Annoying"
-            },
-            {
-              "username": "user2",
-              "email": "user2@hotmail.com",
-              "password_hash": "hai_password",
-              "first_name": "Jim",
-              "last_name": "Meloncholy"
-          },
+  {
+    "model": "neo4japp.models.AppRole",
+    "records": [
+      {
+        "id": 1,
+        "name": "admin"
+      },
+      {
+        "id": 2,
+        "name": "project-read"
+      },
+      {
+        "id": 3,
+        "name": "project-write"
+      },
+      {
+        "id": 4,
+        "name": "project-admin"
+      }
+    ]
+  },
+  {
+    "model": "neo4japp.models.AppUser",
+    "records": [
+      {
+        "id": 1,
+        "username": "admin",
+        "email": "admin@example.com",
+        "password": "password",
+        "first_name": "John",
+        "last_name": "Doe",
+        "roles": [
           {
-              "username": "user3",
-              "email": "user3@yahoo.com",
-              "password_hash": "hai_password",
-              "first_name": "Ditch",
-              "last_name": "Lasanga"
+            "name": "admin"
           }
         ]
-    },
-    {
-        "table": "projects",
-        "records": [
-          {
-            "project_name": "beta-project-2",
-            "description": "beta project-2",
-            "users": []
-          }
-        ]
-    },
-    {
-        "table": "project",
-        "records": [
+      },
+      {
+        "id": 2,
+        "username": "user",
+        "email": "user@example.com",
+        "password": "password",
+        "first_name": "Michelle",
+        "last_name": "Doe",
+        "roles": []
+      }
+    ]
+  },
+  {
+    "model": "neo4japp.models.Projects",
+    "records": [
+      {
+        "id": 1,
+        "project_name": "Example",
+        "description": "This is an example project.",
+        "users": []
+      },
+      {
+        "id": 2,
+        "project_name": "COVID-19",
+        "description": "This is an example project.",
+        "users": []
+      },
+      {
+        "id": 3,
+        "project_name": "Waterways",
+        "description": "This is an example project.",
+        "users": []
+      }
+    ]
+  },
+  {
+    "model": "neo4japp.models.projects_collaborator_role",
+    "records": [
+      {
+        "appuser_id": 1,
+        "app_role_id": 4,
+        "projects_id": 1
+      },
+      {
+        "appuser_id": 1,
+        "app_role_id": 4,
+        "projects_id": 2
+      },
+      {
+        "appuser_id": 1,
+        "app_role_id": 4,
+        "projects_id": 3
+      }
+    ]
+  },
+  {
+    "model": "neo4japp.models.Directory",
+    "records": [
+      {
+        "id": 1,
+        "name": "/",
+        "directory_parent_id": null,
+        "projects_id": 1,
+        "user_id": 1
+      },
+      {
+        "id": 2,
+        "name": "/",
+        "directory_parent_id": null,
+        "projects_id": 2,
+        "user_id": 1
+      },
+      {
+        "id": 3,
+        "name": "/",
+        "directory_parent_id": null,
+        "projects_id": 3,
+        "user_id": 1
+      }
+    ]
+  },
+  {
+    "model": "neo4japp.models.Project",
+    "records": [
+      {
+        "hash_id": "155e2ee31eb60052be1607a124176fac",
+        "author": "Pretty Annoying",
+        "label": "Microbiome affect on weight",
+        "user_id": 1,
+        "dir_id": 1,
+        "public": false,
+        "description": "A multi-omics approach to unraveling the Microbiome Mediated effects of Arabinoxylan Oligosaccharides in overweight humans.",
+        "graph": {
+          "edges": [
             {
-                "public": false,
-                "author": "Petty Annoying",
-                "label": "Microbiome affect on weight",
-                "description": "A multi-omics approach to unraveling the Microbiome Mediated effects of Arabinoxylan Oligosaccharides in overweight humans.",
-                "graph": {
-                  "edges": [
-                      {
-                          "data": {},
-                          "from": "0d01be61-efbc-47a6-bc39-273269de902a",
-                          "label": "",
-                          "to": "963b0aa0-dca4-40dd-8623-7a7ed64e94de"
-                      },
-                      {
-                          "data": {},
-                          "from": "963b0aa0-dca4-40dd-8623-7a7ed64e94de",
-                          "label": "includes",
-                          "to": "b43588ba-563b-42ab-85bd-3df47f78e3ea"
-                      },
-                      {
-                          "data": {},
-                          "from": "963b0aa0-dca4-40dd-8623-7a7ed64e94de",
-                          "label": "includes",
-                          "to": "bcaca798-c4b5-47ea-a391-efa9077d69af"
-                      },
-                      {
-                          "data": {},
-                          "from": "0d01be61-efbc-47a6-bc39-273269de902a",
-                          "label": "related to",
-                          "to": "f740c032-ed5c-413a-8bf2-309729e6cdd5"
-                      },
-                      {
-                          "data": {},
-                          "from": "0d01be61-efbc-47a6-bc39-273269de902a",
-                          "label": "",
-                          "to": "a462bc16-bd4a-47c8-a637-8a1fefda8610"
-                      },
-                      {
-                          "data": {},
-                          "from": "a462bc16-bd4a-47c8-a637-8a1fefda8610",
-                          "label": "",
-                          "to": "1ddf5447-bae2-400e-9e91-18c914deef49"
-                      },
-                      {
-                          "data": {},
-                          "from": "a462bc16-bd4a-47c8-a637-8a1fefda8610",
-                          "label": "",
-                          "to": "62b651c7-fc95-44c6-a7c6-dafe7850395a"
-                      },
-                      {
-                          "data": {},
-                          "from": "1ddf5447-bae2-400e-9e91-18c914deef49",
-                          "label": "function",
-                          "to": "7a33bc48-f9dc-4ab2-9c67-79556d9fad03"
-                      },
-                      {
-                          "data": {},
-                          "from": "1ddf5447-bae2-400e-9e91-18c914deef49",
-                          "label": "function",
-                          "to": "5d35c8eb-8df8-4e45-ac26-5c1858382677"
-                      },
-                      {
-                          "data": {},
-                          "from": "a83cd7d3-78e6-4063-b4b6-f6fcba4750a4",
-                          "label": "activates",
-                          "to": "1ddf5447-bae2-400e-9e91-18c914deef49"
-                      },
-                      {
-                          "data": {},
-                          "from": "62b651c7-fc95-44c6-a7c6-dafe7850395a",
-                          "label": "reference",
-                          "to": "7b455ea9-1644-4739-a2b0-b8cd2ec3d622"
-                      },
-                      {
-                          "data": {},
-                          "from": "1ddf5447-bae2-400e-9e91-18c914deef49",
-                          "label": "reference",
-                          "to": "6e8f09ac-6537-487c-b44d-a9ee3221fb45"
-                      },
-                      {
-                          "data": {},
-                          "from": "a83cd7d3-78e6-4063-b4b6-f6fcba4750a4",
-                          "label": "reference",
-                          "to": "b2efa908-bf7e-4ad2-933a-39b369ebd847"
-                      },
-                      {
-                          "data": {},
-                          "from": "1ddf5447-bae2-400e-9e91-18c914deef49",
-                          "label": "reference",
-                          "to": "0325f2b6-84af-4ecd-86f5-299cb9e60d97"
-                      },
-                      {
-                          "data": {},
-                          "from": "46a9d31e-0dc9-4a9e-b36d-2bbc31d624f2",
-                          "label": "downstream",
-                          "to": "98492bec-5f32-4ada-b553-79f33272dfea"
-                      },
-                      {
-                          "data": {},
-                          "from": "a814dc46-92f0-43ca-ae85-f1dc5ce494cf",
-                          "label": "downstream",
-                          "to": "8c217510-ed53-468e-9df6-6b8cfddb5198"
-                      },
-                      {
-                          "data": {},
-                          "from": "8c217510-ed53-468e-9df6-6b8cfddb5198",
-                          "label": "downstream",
-                          "to": "46a9d31e-0dc9-4a9e-b36d-2bbc31d624f2"
-                      },
-                      {
-                          "data": {},
-                          "from": "a814dc46-92f0-43ca-ae85-f1dc5ce494cf",
-                          "label": "represses",
-                          "to": "566e44cd-aedf-4a5b-9e0c-24c86c342eae"
-                      },
-                      {
-                          "data": {},
-                          "from": "98492bec-5f32-4ada-b553-79f33272dfea",
-                          "label": "",
-                          "to": "9700e70b-c694-4296-a96f-70829a10ad0d"
-                      },
-                      {
-                          "data": {},
-                          "from": "520be21c-fdf3-4304-a7e8-a317d747eabb",
-                          "label": "",
-                          "to": "8147a89d-d739-4dbb-bc39-d91161d9f0f6"
-                      },
-                      {
-                          "data": {},
-                          "from": "569eea34-4f0a-485a-8bbe-572570ba018f",
-                          "label": "",
-                          "to": "8147a89d-d739-4dbb-bc39-d91161d9f0f6"
-                      },
-                      {
-                          "data": {},
-                          "from": "8147a89d-d739-4dbb-bc39-d91161d9f0f6",
-                          "label": "",
-                          "to": "3fb70980-a2bd-4b96-8742-0a57ddf5cbf0"
-                      },
-                      {
-                          "data": {},
-                          "from": "15057255-f6a6-4102-925e-07074be9d864",
-                          "label": "",
-                          "to": "8147a89d-d739-4dbb-bc39-d91161d9f0f6"
-                      },
-                      {
-                          "data": {},
-                          "from": "3fb70980-a2bd-4b96-8742-0a57ddf5cbf0",
-                          "label": "",
-                          "to": "74eba3db-9663-481a-a999-a2965530cb69"
-                      },
-                      {
-                          "data": {},
-                          "from": "9700e70b-c694-4296-a96f-70829a10ad0d",
-                          "label": "",
-                          "to": "74eba3db-9663-481a-a999-a2965530cb69"
-                      },
-                      {
-                          "data": {},
-                          "from": "caa80e4f-4371-425c-bf54-c1aad8020a99",
-                          "label": "",
-                          "to": "90df5f76-2dc3-4442-840d-7f066b78f8de"
-                      },
-                      {
-                          "data": {},
-                          "from": "90df5f76-2dc3-4442-840d-7f066b78f8de",
-                          "label": "",
-                          "to": "520be21c-fdf3-4304-a7e8-a317d747eabb"
-                      },
-                      {
-                          "data": {},
-                          "from": "43e5784d-166f-4b25-a531-c185c4c71114",
-                          "label": "",
-                          "to": "3fb70980-a2bd-4b96-8742-0a57ddf5cbf0"
-                      },
-                      {
-                          "data": {},
-                          "from": "b6b51a8c-6eb7-4fa7-8737-92c256c3f955",
-                          "label": "",
-                          "to": "3fb70980-a2bd-4b96-8742-0a57ddf5cbf0"
-                      },
-                      {
-                          "data": {},
-                          "from": "c19e87ed-1946-4ac7-85ca-8169bba01297",
-                          "label": "",
-                          "to": "3fb70980-a2bd-4b96-8742-0a57ddf5cbf0"
-                      }
-                  ],
-                  "nodes": [
-                      {
-                          "data": {
-                              "detail": "",
-                              "hyperlink": "",
-                              "hyperlinks": [],
-                              "source": "",
-                              "x": 135,
-                              "y": -740
-                          },
-                          "display_name": "Synthesis of the novel transporter YdhC, is regulated by the YdhB transcription factor controlling adenosine and adenine uptake.",
-                          "hash": "75e858fd-7a61-4622-97c1-01fb234dfaa8",
-                          "icon": null,
-                          "label": "study",
-                          "shape": "box",
-                          "sub_labels": []
-                      },
-                      {
-                          "data": {
-                              "detail": "",
-                              "hyperlink": "https://drive.google.com/open?id=1jm--aqGL505rLrVdNMH7YDvXYnl1hbKA",
-                              "hyperlinks": [],
-                              "source": "",
-                              "x": 208,
-                              "y": -534
-                          },
-                          "display_name": "PurR modulon",
-                          "hash": "0d01be61-efbc-47a6-bc39-273269de902a",
-                          "icon": null,
-                          "label": "entity",
-                          "shape": "box",
-                          "sub_labels": []
-                      },
-                      {
-                          "data": {
-                              "detail": "adenine",
-                              "hyperlink": "http://test.lifelike.bio/dt/link/f6693a0b-2c66-465a-89f8-b20e937acec5/4/240.78000000000003/174.908/278.112/186.908",
-                              "hyperlinks": [],
-                              "source": "",
-                              "x": -207,
-                              "y": -647
-                          },
-                          "display_name": "adenine",
-                          "hash": "b43588ba-563b-42ab-85bd-3df47f78e3ea",
-                          "icon": null,
-                          "label": "chemical",
-                          "shape": "box",
-                          "sub_labels": []
-                      },
-                      {
-                          "data": {
-                              "detail": "",
-                              "hyperlink": "",
-                              "hyperlinks": [],
-                              "source": "",
-                              "x": 58,
-                              "y": -631
-                          },
-                          "display_name": "growth media",
-                          "hash": "963b0aa0-dca4-40dd-8623-7a7ed64e94de",
-                          "icon": null,
-                          "label": "entity",
-                          "shape": "box",
-                          "sub_labels": []
-                      },
-                      {
-                          "data": {
-                              "detail": "purine",
-                              "hyperlink": "http://test.lifelike.bio/dt/link/f6693a0b-2c66-465a-89f8-b20e937acec5/4/424.99/154.148/455.758/166.148",
-                              "hyperlinks": [],
-                              "source": "",
-                              "x": -205,
-                              "y": -570
-                          },
-                          "display_name": "purine",
-                          "hash": "bcaca798-c4b5-47ea-a391-efa9077d69af",
-                          "icon": null,
-                          "label": "chemical",
-                          "shape": "box",
-                          "sub_labels": []
-                      },
-                      {
-                          "data": {
-                              "detail": "",
-                              "hyperlink": "",
-                              "hyperlinks": [],
-                              "source": "",
-                              "x": 346,
-                              "y": -660
-                          },
-                          "display_name": "purine biosynthesis",
-                          "hash": "f740c032-ed5c-413a-8bf2-309729e6cdd5",
-                          "icon": null,
-                          "label": "entity",
-                          "shape": "box",
-                          "sub_labels": []
-                      },
-                      {
-                          "data": {
-                              "detail": "",
-                              "hyperlink": "",
-                              "hyperlinks": [],
-                              "source": "",
-                              "x": 100,
-                              "y": -429
-                          },
-                          "display_name": "inverse regulation",
-                          "hash": "a462bc16-bd4a-47c8-a637-8a1fefda8610",
-                          "icon": null,
-                          "label": "entity",
-                          "shape": "box",
-                          "sub_labels": []
-                      },
-                      {
-                          "data": {
-                              "detail": "",
-                              "hyperlink": "https://www.ncbi.nlm.nih.gov/gene/946077",
-                              "hyperlinks": [],
-                              "source": "",
-                              "x": 136,
-                              "y": -273
-                          },
-                          "display_name": "ydhC",
-                          "hash": "1ddf5447-bae2-400e-9e91-18c914deef49",
-                          "icon": null,
-                          "label": "gene",
-                          "shape": "box",
-                          "sub_labels": []
-                      },
-                      {
-                          "data": {
-                              "detail": "adenosine deaminase",
-                              "hyperlink": "https://www.ncbi.nlm.nih.gov/gene/945851",
-                              "hyperlinks": [],
-                              "source": "",
-                              "x": 7,
-                              "y": -292
-                          },
-                          "display_name": "add",
-                          "hash": "62b651c7-fc95-44c6-a7c6-dafe7850395a",
-                          "icon": null,
-                          "label": "gene",
-                          "shape": "box",
-                          "sub_labels": []
-                      },
-                      {
-                          "data": {
-                              "detail": "",
-                              "hyperlink": "http://amigo.geneontology.org/amigo/term/GO:0032238",
-                              "hyperlinks": [],
-                              "source": "",
-                              "x": 585,
-                              "y": -277
-                          },
-                          "display_name": "adenosine transport",
-                          "hash": "7a33bc48-f9dc-4ab2-9c67-79556d9fad03",
-                          "icon": null,
-                          "label": "entity",
-                          "shape": "box",
-                          "sub_labels": []
-                      },
-                      {
-                          "data": {
-                              "detail": "",
-                              "hyperlink": "http://amigo.geneontology.org/amigo/term/GO:0015853",
-                              "hyperlinks": [],
-                              "source": "",
-                              "x": 580,
-                              "y": -219
-                          },
-                          "display_name": "adenine transport",
-                          "hash": "5d35c8eb-8df8-4e45-ac26-5c1858382677",
-                          "icon": null,
-                          "label": "entity",
-                          "shape": "box",
-                          "sub_labels": []
-                      },
-                      {
-                          "data": {
-                              "detail": "",
-                              "hyperlink": "https://uniprot.org/uniprot/P0ACR2",
-                              "hyperlinks": [],
-                              "source": "",
-                              "x": 218,
-                              "y": -79
-                          },
-                          "display_name": "YdhB",
-                          "hash": "a83cd7d3-78e6-4063-b4b6-f6fcba4750a4",
-                          "icon": null,
-                          "label": "protein",
-                          "shape": "box",
-                          "sub_labels": []
-                      },
-                      {
-                          "data": {
-                              "detail": "",
-                              "hyperlink": "https://string-db.org/cgi/network.pl?taskId=WGwFzylgFoLH",
-                              "hyperlinks": [],
-                              "source": "",
-                              "x": -161,
-                              "y": -224
-                          },
-                          "display_name": "String DB",
-                          "hash": "7b455ea9-1644-4739-a2b0-b8cd2ec3d622",
-                          "icon": null,
-                          "label": "study",
-                          "shape": "box",
-                          "sub_labels": []
-                      },
-                      {
-                          "data": {
-                              "detail": "",
-                              "hyperlink": "https://string-db.org/cgi/network.pl?taskId=FvNzOjit6xLH",
-                              "hyperlinks": [],
-                              "source": "",
-                              "x": 357,
-                              "y": -387
-                          },
-                          "display_name": "String DB ",
-                          "hash": "6e8f09ac-6537-487c-b44d-a9ee3221fb45",
-                          "icon": null,
-                          "label": "study",
-                          "shape": "box",
-                          "sub_labels": []
-                      },
-                      {
-                          "data": {
-                              "detail": "",
-                              "hyperlink": "https://string-db.org/cgi/network.pl?taskId=OqdZzMroZYFp",
-                              "hyperlinks": [],
-                              "source": "",
-                              "x": 575,
-                              "y": -39
-                          },
-                          "display_name": "String DB",
-                          "hash": "b2efa908-bf7e-4ad2-933a-39b369ebd847",
-                          "icon": null,
-                          "label": "study",
-                          "shape": "box",
-                          "sub_labels": []
-                      },
-                      {
-                          "data": {
-                              "detail": "",
-                              "hyperlink": "https://string-db.org/cgi/cooccurrence.pl?taskId=FvNzOjit6xLH&node1=15200768&node2=15200767",
-                              "hyperlinks": [],
-                              "source": "",
-                              "x": 274,
-                              "y": -164
-                          },
-                          "display_name": "gene co-occurence",
-                          "hash": "bacc8bdc-4e7b-4449-b49b-8ff10b159f7f",
-                          "icon": null,
-                          "label": "entity",
-                          "shape": "box",
-                          "sub_labels": []
-                      },
-                      {
-                          "data": {
-                              "detail": "",
-                              "hyperlink": "https://drive.google.com/open?id=1jm--aqGL505rLrVdNMH7YDvXYnl1hbKA",
-                              "hyperlinks": [],
-                              "source": "",
-                              "x": 722,
-                              "y": -738
-                          },
-                          "display_name": "Presentation on Google Drive",
-                          "hash": "942aede2-95d4-41ac-81e3-9d7941af833a",
-                          "icon": null,
-                          "label": "entity",
-                          "shape": "box",
-                          "sub_labels": []
-                      },
-                      {
-                          "data": {
-                              "detail": "",
-                              "hyperlink": "http://test.lifelike.bio/dt/map/7694d5f64713e5c6c967f88099cedd3f",
-                              "hyperlinks": [],
-                              "source": "",
-                              "x": 724,
-                              "y": -678
-                          },
-                          "display_name": "PurR modulon detailed map",
-                          "hash": "bf4900b0-6c55-4db8-888e-fa91b210cd4b",
-                          "icon": null,
-                          "label": "map",
-                          "shape": "box",
-                          "sub_labels": []
-                      },
-                      {
-                          "data": {
-                              "detail": "A key regulatory step is the production of 5-phospho-α-D-ribosyl 1-pyrophosphate",
-                              "hyperlink": "",
-                              "hyperlinks": [],
-                              "source": "",
-                              "x": 445,
-                              "y": -577
-                          },
-                          "display_name": "",
-                          "hash": "69e86228-1511-43a7-b0d5-9dbfa16b9b70",
-                          "icon": {
-                              "code": "",
-                              "color": "#669999",
-                              "face": "FontAwesome",
-                              "size": 50,
-                              "weight": "bold"
-                          },
-                          "label": "link",
-                          "shape": "icon",
-                          "sub_labels": []
-                      },
-                      {
-                          "data": {
-                              "detail": "",
-                              "hyperlink": "https://drive.google.com/open?id=1w8LktlSNuJqZykYDODT5IH8NPogEpMZ5",
-                              "hyperlinks": [],
-                              "source": "",
-                              "x": 716,
-                              "y": -604
-                          },
-                          "display_name": "Functional enrichment",
-                          "hash": "dc86f1e6-e1e0-4e26-9c8a-1abc733163d3",
-                          "icon": null,
-                          "label": "entity",
-                          "shape": "box",
-                          "sub_labels": []
-                      },
-                      {
-                          "data": {
-                              "detail": "",
-                              "hyperlink": "mailto:evetra@biosustain.dtu.dk",
-                              "hyperlinks": [],
-                              "source": "",
-                              "x": 443,
-                              "y": -525
-                          },
-                          "display_name": "email author",
-                          "hash": "8c47a42d-11bc-49c4-9097-2fdd084762d0",
-                          "icon": null,
-                          "label": "entity",
-                          "shape": "box",
-                          "sub_labels": []
-                      },
-                      {
-                          "data": {
-                              "detail": "YdhC is an uncharacterized member of the Drug:H+ Antiporter (DHA) Family within the Major Facilitator Superfamily (MFS) of transporters [Marger93, Saier16]. YdhC has been implicated in arabinose efflux [Koita12].",
-                              "hyperlink": "https://biocyc.org/gene?orgid=ECOLI&id=EG12141",
-                              "hyperlinks": [],
-                              "source": "",
-                              "x": 243,
-                              "y": -425
-                          },
-                          "display_name": "EcoCyc",
-                          "hash": "0325f2b6-84af-4ecd-86f5-299cb9e60d97",
-                          "icon": null,
-                          "label": "study",
-                          "shape": "box",
-                          "sub_labels": []
-                      },
-                      {
-                          "data": {
-                              "detail": "",
-                              "hyperlink": "",
-                              "hyperlinks": [],
-                              "source": "",
-                              "x": 72,
-                              "y": 567
-                          },
-                          "display_name": "s-adenosyl-l-methionine",
-                          "hash": "3fb70980-a2bd-4b96-8742-0a57ddf5cbf0",
-                          "icon": null,
-                          "label": "chemical",
-                          "shape": "box",
-                          "sub_labels": []
-                      },
-                      {
-                          "data": {
-                              "detail": "",
-                              "hyperlink": "",
-                              "hyperlinks": [
-                                  {
-                                      "domain": "google",
-                                      "url": "https://www.google.com/search?q=adenosine"
-                                  },
-                                  {
-                                      "domain": "ncbi",
-                                      "url": "https://ncbi.nlm.nih.gov/gene/?term=adenosine"
-                                  },
-                                  {
-                                      "domain": "uniprot",
-                                      "url": "https://uniprot.org/uniprot/?query=adenosine"
-                                  },
-                                  {
-                                      "domain": "wikipedia",
-                                      "url": "https://www.google.com/search?q=site:+wikipedia.org+adenosine"
-                                  }
-                              ],
-                              "source": "/dt/pdf/de1000da-d83d-4bac-af7e-5fca76c9a8fc/1/289.25/674.05264/356.85656/690.01264",
-                              "x": -580,
-                              "y": 608
-                          },
-                          "display_name": "adenosine",
-                          "hash": "caa80e4f-4371-425c-bf54-c1aad8020a99",
-                          "label": "chemical",
-                          "shape": "box",
-                          "sub_labels": []
-                      },
-                      {
-                          "data": {
-                              "detail": "",
-                              "hyperlink": "",
-                              "hyperlinks": [],
-                              "source": "",
-                              "x": -355,
-                              "y": 460
-                          },
-                          "display_name": "methionine",
-                          "hash": "569eea34-4f0a-485a-8bbe-572570ba018f",
-                          "icon": null,
-                          "label": "chemical",
-                          "shape": "box",
-                          "sub_labels": []
-                      },
-                      {
-                          "data": {
-                              "detail": "",
-                              "hyperlink": "",
-                              "hyperlinks": [],
-                              "source": "",
-                              "x": -347,
-                              "y": 610
-                          },
-                          "display_name": "adenosine triphosphate (ATP)",
-                          "hash": "520be21c-fdf3-4304-a7e8-a317d747eabb",
-                          "icon": null,
-                          "label": "chemical",
-                          "shape": "box",
-                          "sub_labels": []
-                      },
-                      {
-                          "data": {
-                              "detail": "",
-                              "hyperlink": "",
-                              "hyperlinks": [],
-                              "source": "",
-                              "x": 195,
-                              "y": 361
-                          },
-                          "display_name": "cfa",
-                          "hash": "98492bec-5f32-4ada-b553-79f33272dfea",
-                          "icon": null,
-                          "label": "gene",
-                          "shape": "box",
-                          "sub_labels": []
-                      },
-                      {
-                          "data": {
-                              "detail": "",
-                              "hyperlink": "",
-                              "hyperlinks": [
-                                  {
-                                      "domain": "google",
-                                      "url": "https://www.google.com/search?q=ydhC"
-                                  },
-                                  {
-                                      "domain": "ncbi",
-                                      "url": "https://ncbi.nlm.nih.gov/gene/?term=ydhC"
-                                  },
-                                  {
-                                      "domain": "uniprot",
-                                      "url": "https://uniprot.org/uniprot/?query=ydhC"
-                                  },
-                                  {
-                                      "domain": "wikipedia",
-                                      "url": "https://www.google.com/search?q=site:+wikipedia.org+ydhC"
-                                  }
-                              ],
-                              "source": "/dt/pdf/609080ea-fdce-4da2-bccc-7db4c33f7311/1/242.45/361.946/267.05/373.946",
-                              "x": 11,
-                              "y": 357
-                          },
-                          "display_name": "ydhC",
-                          "hash": "46a9d31e-0dc9-4a9e-b36d-2bbc31d624f2",
-                          "label": "gene",
-                          "shape": "box",
-                          "sub_labels": []
-                      },
-                      {
-                          "data": {
-                              "detail": "",
-                              "hyperlink": "",
-                              "hyperlinks": [],
-                              "source": "",
-                              "x": -177,
-                              "y": 360
-                          },
-                          "display_name": "YdhB (-)",
-                          "hash": "8c217510-ed53-468e-9df6-6b8cfddb5198",
-                          "icon": null,
-                          "label": "gene",
-                          "shape": "box",
-                          "sub_labels": []
-                      },
-                      {
-                          "data": {
-                              "detail": "",
-                              "hyperlink": "",
-                              "hyperlinks": [
-                                  {
-                                      "domain": "google",
-                                      "url": "https://www.google.com/search?q=PurR"
-                                  },
-                                  {
-                                      "domain": "ncbi",
-                                      "url": "https://ncbi.nlm.nih.gov/gene/?term=PurR"
-                                  },
-                                  {
-                                      "domain": "uniprot",
-                                      "url": "https://uniprot.org/uniprot/?query=PurR"
-                                  },
-                                  {
-                                      "domain": "wikipedia",
-                                      "url": "https://www.google.com/search?q=site:+wikipedia.org+PurR"
-                                  }
-                              ],
-                              "source": "/dt/pdf/609080ea-fdce-4da2-bccc-7db4c33f7311/3/222.41/706.248/247.118/718.248",
-                              "x": -388,
-                              "y": 361
-                          },
-                          "display_name": "PurR",
-                          "hash": "a814dc46-92f0-43ca-ae85-f1dc5ce494cf",
-                          "label": "gene",
-                          "shape": "box",
-                          "sub_labels": []
-                      },
-                      {
-                          "data": {
-                              "detail": "",
-                              "hyperlink": "",
-                              "hyperlinks": [],
-                              "source": "",
-                              "x": -388,
-                              "y": 246
-                          },
-                          "display_name": "purine nucleotide synthesis",
-                          "hash": "566e44cd-aedf-4a5b-9e0c-24c86c342eae",
-                          "icon": null,
-                          "label": "entity",
-                          "shape": "box",
-                          "sub_labels": []
-                      },
-                      {
-                          "data": {
-                              "detail": "",
-                              "hyperlink": "",
-                              "hyperlinks": [],
-                              "source": "",
-                              "x": 292,
-                              "y": 475
-                          },
-                          "display_name": "protein-Cyclopropane-fatty-acyl-phospholipid synthase;Cw1",
-                          "hash": "9700e70b-c694-4296-a96f-70829a10ad0d",
-                          "icon": null,
-                          "label": "protein",
-                          "shape": "box",
-                          "sub_labels": []
-                      },
-                      {
-                          "data": {
-                              "detail": "",
-                              "hyperlink": "",
-                              "hyperlinks": [],
-                              "source": "",
-                              "x": -130,
-                              "y": 571
-                          },
-                          "display_name": "2.5.1.6",
-                          "hash": "8147a89d-d739-4dbb-bc39-d91161d9f0f6",
-                          "icon": null,
-                          "label": "entity",
-                          "shape": "box",
-                          "sub_labels": []
-                      },
-                      {
-                          "data": {
-                              "detail": "",
-                              "hyperlink": "",
-                              "hyperlinks": [],
-                              "source": "",
-                              "x": -128,
-                              "y": 473
-                          },
-                          "display_name": "metK",
-                          "hash": "15057255-f6a6-4102-925e-07074be9d864",
-                          "icon": null,
-                          "label": "gene",
-                          "shape": "box",
-                          "sub_labels": []
-                      },
-                      {
-                          "data": {
-                              "detail": "",
-                              "hyperlink": "",
-                              "hyperlinks": [],
-                              "source": "",
-                              "x": 296,
-                              "y": 570
-                          },
-                          "display_name": "2.1.1.79",
-                          "hash": "74eba3db-9663-481a-a999-a2965530cb69",
-                          "icon": null,
-                          "label": "entity",
-                          "shape": "box",
-                          "sub_labels": []
-                      },
-                      {
-                          "data": {
-                              "detail": "",
-                              "hyperlink": "",
-                              "hyperlinks": [],
-                              "source": "",
-                              "x": -500,
-                              "y": 545
-                          },
-                          "display_name": "enzyme",
-                          "hash": "90df5f76-2dc3-4442-840d-7f066b78f8de",
-                          "icon": null,
-                          "label": "entity",
-                          "shape": "box",
-                          "sub_labels": []
-                      },
-                      {
-                          "data": {
-                              "detail": "",
-                              "hyperlink": "",
-                              "hyperlinks": [],
-                              "source": "",
-                              "x": -36,
-                              "y": 728
-                          },
-                          "display_name": "entity-jY4",
-                          "hash": "43e5784d-166f-4b25-a531-c185c4c71114",
-                          "label": "entity",
-                          "shape": "box",
-                          "sub_labels": []
-                      },
-                      {
-                          "data": {
-                              "detail": "",
-                              "hyperlink": "",
-                              "hyperlinks": [],
-                              "source": "",
-                              "x": 68,
-                              "y": 723
-                          },
-                          "display_name": "entity-L5w",
-                          "hash": "b6b51a8c-6eb7-4fa7-8737-92c256c3f955",
-                          "label": "entity",
-                          "shape": "box",
-                          "sub_labels": []
-                      },
-                      {
-                          "data": {
-                              "detail": "",
-                              "hyperlink": "",
-                              "hyperlinks": [],
-                              "source": "",
-                              "x": 203,
-                              "y": 709
-                          },
-                          "display_name": "entity-QzU",
-                          "hash": "c19e87ed-1946-4ac7-85ca-8169bba01297",
-                          "label": "entity",
-                          "shape": "box",
-                          "sub_labels": []
-                      },
-                      {
-                          "data": {
-                              "detail": "",
-                              "hyperlink": "https://www.genome.jp/kegg-bin/show_pathway?map=map00230&show_description=show",
-                              "hyperlinks": [],
-                              "source": "",
-                              "x": -398,
-                              "y": 204
-                          },
-                          "display_name": "Kegg",
-                          "hash": "534a4e5a-48fc-43f5-a88a-4b2eea4e672a",
-                          "icon": null,
-                          "label": "entity",
-                          "shape": "box",
-                          "sub_labels": []
-                      }
-                  ]
-              },
-                "date_modified": "2020-01-30T23:48:32.794Z"
+              "data": {},
+              "from": "0d01be61-efbc-47a6-bc39-273269de902a",
+              "label": "",
+              "to": "963b0aa0-dca4-40dd-8623-7a7ed64e94de"
             },
             {
-                "public": true,
-                "author": "Jim Meloncholy",
-                "label":"COVID-19 Vaccine Blueprint",
-                "description":"This illustrate the potential solutions that exists out there in treating the coronavirus currently plaguing our reality.",
-                "date_modified": "2020-01-30T23:48:32.794Z",
-                "graph":{
-                "edges":[
-                   {
-                      "label":"causes",
-                      "from":"309d0c97-956f-406f-b06b-96a964ef1ee6",
-                      "to":"8b7de754-47b9-4c1b-a5c1-0bcec76d4a94",
-                      "data":{
-          
-                      }
-                   },
-                   {
-                      "label":"genetically similar to",
-                      "from":"309d0c97-956f-406f-b06b-96a964ef1ee6",
-                      "to":"d744a35c-47ea-4842-8a7b-e259a38d140c",
-                      "data":{
-          
-                      }
-                   },
-                   {
-                      "label":"potential_treatment",
-                      "from":"8b7de754-47b9-4c1b-a5c1-0bcec76d4a94",
-                      "to":"bbe805a9-ded4-4131-ab1b-a0f9b2a6c0b0",
-                      "data":{
-          
-                      }
-                   },
-                   {
-                      "label":"potential_treatment",
-                      "from":"8b7de754-47b9-4c1b-a5c1-0bcec76d4a94",
-                      "to":"9a07d024-1911-438f-963d-db87132a37ae",
-                      "data":{
-          
-                      }
-                   },
-                   {
-                      "label":"",
-                      "from":"9a07d024-1911-438f-963d-db87132a37ae",
-                      "to":"07bffb28-262b-4bc0-8728-05cdc0d43d6c",
-                      "data":{
-          
-                      }
-                   },
-                   {
-                      "label":"infect",
-                      "from":"309d0c97-956f-406f-b06b-96a964ef1ee6",
-                      "to":"1a3b7f23-b8b3-49b3-ac06-9bc11ae6ae99",
-                      "data":{
-          
-                      }
-                   },
-                   {
-                      "label":"strong_binding",
-                      "from":"1a3b7f23-b8b3-49b3-ac06-9bc11ae6ae99",
-                      "to":"0d53c6c6-5527-4bba-a7b0-3ca3f9b5aa5d",
-                      "data":{
-          
-                      }
-                   }
-                ],
-                "nodes":[
-                   {
-                      "data":{
-                         "x":-404,
-                         "y":-248,
-                         "hyperlink":""
-                      },
-                      "display_name":"COVID-19",
-                      "hash":"8b7de754-47b9-4c1b-a5c1-0bcec76d4a94",
-                      "label":"disease",
-                      "sub_labels":[
-          
-                      ]
-                   },
-                   {
-                      "data":{
-                         "x":-139,
-                         "y":-336,
-                         "hyperlink":""
-                      },
-                      "display_name":"SARS-CoV-2",
-                      "hash":"309d0c97-956f-406f-b06b-96a964ef1ee6",
-                      "label":"species",
-                      "sub_labels":[
-          
-                      ]
-                   },
-                   {
-                      "data":{
-                         "x":-152,
-                         "y":2,
-                         "hyperlink":""
-                      },
-                      "display_name":"mRNA-1273",
-                      "hash":"9a07d024-1911-438f-963d-db87132a37ae",
-                      "label":"chemical",
-                      "sub_labels":[
-          
-                      ]
-                   },
-                   {
-                      "data":{
-                         "x":-40,
-                         "y":-143,
-                         "hyperlink":"https://clinicaltrials.gov/ct2/show/NCT04283461"
-                      },
-                      "display_name":"mRNA-1273 Clinical Trials",
-                      "hash":"07bffb28-262b-4bc0-8728-05cdc0d43d6c",
-                      "label":"study",
-                      "sub_labels":[
-          
-                      ]
-                   },
-                   {
-                      "data":{
-                         "x":-456,
-                         "y":20,
-                         "hyperlink":"https://www.jci.org/articles/view/138003"
-                      },
-                      "display_name":"convalescent serum",
-                      "hash":"bbe805a9-ded4-4131-ab1b-a0f9b2a6c0b0",
-                      "label":"chemical",
-                      "sub_labels":[
-          
-                      ]
-                   },
-                   {
-                      "data":{
-                         "x":-398,
-                         "y":-459,
-                         "hyperlink":"https://link.springer.com/article/10.1007/s00134-020-05985-9"
-                      },
-                      "display_name":"ACE2 Receptor",
-                      "hash":"0d53c6c6-5527-4bba-a7b0-3ca3f9b5aa5d",
-                      "label":"entity",
-                      "sub_labels":[
-          
-                      ]
-                   },
-                   {
-                      "data":{
-                         "x":164,
-                         "y":-213,
-                         "hyperlink":""
-                      },
-                      "display_name":"MERS-CoV",
-                      "hash":"d744a35c-47ea-4842-8a7b-e259a38d140c",
-                      "label":"species",
-                      "sub_labels":[
-          
-                      ]
-                   },
-                   {
-                      "data":{
-                         "x":29,
-                         "y":-451,
-                         "hyperlink":""
-                      },
-                      "display_name":"Homosapien",
-                      "hash":"1a3b7f23-b8b3-49b3-ac06-9bc11ae6ae99",
-                      "label":"species",
-                      "sub_labels":[
-          
-                      ]
-                   }
-                ]
-                }
+              "data": {},
+              "from": "963b0aa0-dca4-40dd-8623-7a7ed64e94de",
+              "label": "includes",
+              "to": "b43588ba-563b-42ab-85bd-3df47f78e3ea"
+            },
+            {
+              "data": {},
+              "from": "963b0aa0-dca4-40dd-8623-7a7ed64e94de",
+              "label": "includes",
+              "to": "bcaca798-c4b5-47ea-a391-efa9077d69af"
+            },
+            {
+              "data": {},
+              "from": "0d01be61-efbc-47a6-bc39-273269de902a",
+              "label": "related to",
+              "to": "f740c032-ed5c-413a-8bf2-309729e6cdd5"
+            },
+            {
+              "data": {},
+              "from": "0d01be61-efbc-47a6-bc39-273269de902a",
+              "label": "",
+              "to": "a462bc16-bd4a-47c8-a637-8a1fefda8610"
+            },
+            {
+              "data": {},
+              "from": "a462bc16-bd4a-47c8-a637-8a1fefda8610",
+              "label": "",
+              "to": "1ddf5447-bae2-400e-9e91-18c914deef49"
+            },
+            {
+              "data": {},
+              "from": "a462bc16-bd4a-47c8-a637-8a1fefda8610",
+              "label": "",
+              "to": "62b651c7-fc95-44c6-a7c6-dafe7850395a"
+            },
+            {
+              "data": {},
+              "from": "1ddf5447-bae2-400e-9e91-18c914deef49",
+              "label": "function",
+              "to": "7a33bc48-f9dc-4ab2-9c67-79556d9fad03"
+            },
+            {
+              "data": {},
+              "from": "1ddf5447-bae2-400e-9e91-18c914deef49",
+              "label": "function",
+              "to": "5d35c8eb-8df8-4e45-ac26-5c1858382677"
+            },
+            {
+              "data": {},
+              "from": "a83cd7d3-78e6-4063-b4b6-f6fcba4750a4",
+              "label": "activates",
+              "to": "1ddf5447-bae2-400e-9e91-18c914deef49"
+            },
+            {
+              "data": {},
+              "from": "62b651c7-fc95-44c6-a7c6-dafe7850395a",
+              "label": "reference",
+              "to": "7b455ea9-1644-4739-a2b0-b8cd2ec3d622"
+            },
+            {
+              "data": {},
+              "from": "1ddf5447-bae2-400e-9e91-18c914deef49",
+              "label": "reference",
+              "to": "6e8f09ac-6537-487c-b44d-a9ee3221fb45"
+            },
+            {
+              "data": {},
+              "from": "a83cd7d3-78e6-4063-b4b6-f6fcba4750a4",
+              "label": "reference",
+              "to": "b2efa908-bf7e-4ad2-933a-39b369ebd847"
+            },
+            {
+              "data": {},
+              "from": "1ddf5447-bae2-400e-9e91-18c914deef49",
+              "label": "reference",
+              "to": "0325f2b6-84af-4ecd-86f5-299cb9e60d97"
+            },
+            {
+              "data": {},
+              "from": "46a9d31e-0dc9-4a9e-b36d-2bbc31d624f2",
+              "label": "downstream",
+              "to": "98492bec-5f32-4ada-b553-79f33272dfea"
+            },
+            {
+              "data": {},
+              "from": "a814dc46-92f0-43ca-ae85-f1dc5ce494cf",
+              "label": "downstream",
+              "to": "8c217510-ed53-468e-9df6-6b8cfddb5198"
+            },
+            {
+              "data": {},
+              "from": "8c217510-ed53-468e-9df6-6b8cfddb5198",
+              "label": "downstream",
+              "to": "46a9d31e-0dc9-4a9e-b36d-2bbc31d624f2"
+            },
+            {
+              "data": {},
+              "from": "a814dc46-92f0-43ca-ae85-f1dc5ce494cf",
+              "label": "represses",
+              "to": "566e44cd-aedf-4a5b-9e0c-24c86c342eae"
+            },
+            {
+              "data": {},
+              "from": "98492bec-5f32-4ada-b553-79f33272dfea",
+              "label": "",
+              "to": "9700e70b-c694-4296-a96f-70829a10ad0d"
+            },
+            {
+              "data": {},
+              "from": "520be21c-fdf3-4304-a7e8-a317d747eabb",
+              "label": "",
+              "to": "8147a89d-d739-4dbb-bc39-d91161d9f0f6"
+            },
+            {
+              "data": {},
+              "from": "569eea34-4f0a-485a-8bbe-572570ba018f",
+              "label": "",
+              "to": "8147a89d-d739-4dbb-bc39-d91161d9f0f6"
+            },
+            {
+              "data": {},
+              "from": "8147a89d-d739-4dbb-bc39-d91161d9f0f6",
+              "label": "",
+              "to": "3fb70980-a2bd-4b96-8742-0a57ddf5cbf0"
+            },
+            {
+              "data": {},
+              "from": "15057255-f6a6-4102-925e-07074be9d864",
+              "label": "",
+              "to": "8147a89d-d739-4dbb-bc39-d91161d9f0f6"
+            },
+            {
+              "data": {},
+              "from": "3fb70980-a2bd-4b96-8742-0a57ddf5cbf0",
+              "label": "",
+              "to": "74eba3db-9663-481a-a999-a2965530cb69"
+            },
+            {
+              "data": {},
+              "from": "9700e70b-c694-4296-a96f-70829a10ad0d",
+              "label": "",
+              "to": "74eba3db-9663-481a-a999-a2965530cb69"
+            },
+            {
+              "data": {},
+              "from": "caa80e4f-4371-425c-bf54-c1aad8020a99",
+              "label": "",
+              "to": "90df5f76-2dc3-4442-840d-7f066b78f8de"
+            },
+            {
+              "data": {},
+              "from": "90df5f76-2dc3-4442-840d-7f066b78f8de",
+              "label": "",
+              "to": "520be21c-fdf3-4304-a7e8-a317d747eabb"
+            },
+            {
+              "data": {},
+              "from": "43e5784d-166f-4b25-a531-c185c4c71114",
+              "label": "",
+              "to": "3fb70980-a2bd-4b96-8742-0a57ddf5cbf0"
+            },
+            {
+              "data": {},
+              "from": "b6b51a8c-6eb7-4fa7-8737-92c256c3f955",
+              "label": "",
+              "to": "3fb70980-a2bd-4b96-8742-0a57ddf5cbf0"
+            },
+            {
+              "data": {},
+              "from": "c19e87ed-1946-4ac7-85ca-8169bba01297",
+              "label": "",
+              "to": "3fb70980-a2bd-4b96-8742-0a57ddf5cbf0"
             }
-        ]
-    }
+          ],
+          "nodes": [
+            {
+              "data": {
+                "detail": "",
+                "hyperlink": "",
+                "hyperlinks": [],
+                "source": "",
+                "x": 135,
+                "y": -740
+              },
+              "display_name": "Synthesis of the novel transporter YdhC, is regulated by the YdhB transcription factor controlling adenosine and adenine uptake.",
+              "hash": "75e858fd-7a61-4622-97c1-01fb234dfaa8",
+              "icon": null,
+              "label": "study",
+              "shape": "box",
+              "sub_labels": []
+            },
+            {
+              "data": {
+                "detail": "",
+                "hyperlink": "https://drive.google.com/open?id=1jm--aqGL505rLrVdNMH7YDvXYnl1hbKA",
+                "hyperlinks": [],
+                "source": "",
+                "x": 208,
+                "y": -534
+              },
+              "display_name": "PurR modulon",
+              "hash": "0d01be61-efbc-47a6-bc39-273269de902a",
+              "icon": null,
+              "label": "entity",
+              "shape": "box",
+              "sub_labels": []
+            },
+            {
+              "data": {
+                "detail": "adenine",
+                "hyperlink": "http://test.lifelike.bio/dt/link/f6693a0b-2c66-465a-89f8-b20e937acec5/4/240.78000000000003/174.908/278.112/186.908",
+                "hyperlinks": [],
+                "source": "",
+                "x": -207,
+                "y": -647
+              },
+              "display_name": "adenine",
+              "hash": "b43588ba-563b-42ab-85bd-3df47f78e3ea",
+              "icon": null,
+              "label": "chemical",
+              "shape": "box",
+              "sub_labels": []
+            },
+            {
+              "data": {
+                "detail": "",
+                "hyperlink": "",
+                "hyperlinks": [],
+                "source": "",
+                "x": 58,
+                "y": -631
+              },
+              "display_name": "growth media",
+              "hash": "963b0aa0-dca4-40dd-8623-7a7ed64e94de",
+              "icon": null,
+              "label": "entity",
+              "shape": "box",
+              "sub_labels": []
+            },
+            {
+              "data": {
+                "detail": "purine",
+                "hyperlink": "http://test.lifelike.bio/dt/link/f6693a0b-2c66-465a-89f8-b20e937acec5/4/424.99/154.148/455.758/166.148",
+                "hyperlinks": [],
+                "source": "",
+                "x": -205,
+                "y": -570
+              },
+              "display_name": "purine",
+              "hash": "bcaca798-c4b5-47ea-a391-efa9077d69af",
+              "icon": null,
+              "label": "chemical",
+              "shape": "box",
+              "sub_labels": []
+            },
+            {
+              "data": {
+                "detail": "",
+                "hyperlink": "",
+                "hyperlinks": [],
+                "source": "",
+                "x": 346,
+                "y": -660
+              },
+              "display_name": "purine biosynthesis",
+              "hash": "f740c032-ed5c-413a-8bf2-309729e6cdd5",
+              "icon": null,
+              "label": "entity",
+              "shape": "box",
+              "sub_labels": []
+            },
+            {
+              "data": {
+                "detail": "",
+                "hyperlink": "",
+                "hyperlinks": [],
+                "source": "",
+                "x": 100,
+                "y": -429
+              },
+              "display_name": "inverse regulation",
+              "hash": "a462bc16-bd4a-47c8-a637-8a1fefda8610",
+              "icon": null,
+              "label": "entity",
+              "shape": "box",
+              "sub_labels": []
+            },
+            {
+              "data": {
+                "detail": "",
+                "hyperlink": "https://www.ncbi.nlm.nih.gov/gene/946077",
+                "hyperlinks": [],
+                "source": "",
+                "x": 136,
+                "y": -273
+              },
+              "display_name": "ydhC",
+              "hash": "1ddf5447-bae2-400e-9e91-18c914deef49",
+              "icon": null,
+              "label": "gene",
+              "shape": "box",
+              "sub_labels": []
+            },
+            {
+              "data": {
+                "detail": "adenosine deaminase",
+                "hyperlink": "https://www.ncbi.nlm.nih.gov/gene/945851",
+                "hyperlinks": [],
+                "source": "",
+                "x": 7,
+                "y": -292
+              },
+              "display_name": "add",
+              "hash": "62b651c7-fc95-44c6-a7c6-dafe7850395a",
+              "icon": null,
+              "label": "gene",
+              "shape": "box",
+              "sub_labels": []
+            },
+            {
+              "data": {
+                "detail": "",
+                "hyperlink": "http://amigo.geneontology.org/amigo/term/GO:0032238",
+                "hyperlinks": [],
+                "source": "",
+                "x": 585,
+                "y": -277
+              },
+              "display_name": "adenosine transport",
+              "hash": "7a33bc48-f9dc-4ab2-9c67-79556d9fad03",
+              "icon": null,
+              "label": "entity",
+              "shape": "box",
+              "sub_labels": []
+            },
+            {
+              "data": {
+                "detail": "",
+                "hyperlink": "http://amigo.geneontology.org/amigo/term/GO:0015853",
+                "hyperlinks": [],
+                "source": "",
+                "x": 580,
+                "y": -219
+              },
+              "display_name": "adenine transport",
+              "hash": "5d35c8eb-8df8-4e45-ac26-5c1858382677",
+              "icon": null,
+              "label": "entity",
+              "shape": "box",
+              "sub_labels": []
+            },
+            {
+              "data": {
+                "detail": "",
+                "hyperlink": "https://uniprot.org/uniprot/P0ACR2",
+                "hyperlinks": [],
+                "source": "",
+                "x": 218,
+                "y": -79
+              },
+              "display_name": "YdhB",
+              "hash": "a83cd7d3-78e6-4063-b4b6-f6fcba4750a4",
+              "icon": null,
+              "label": "protein",
+              "shape": "box",
+              "sub_labels": []
+            },
+            {
+              "data": {
+                "detail": "",
+                "hyperlink": "https://string-db.org/cgi/network.pl?taskId=WGwFzylgFoLH",
+                "hyperlinks": [],
+                "source": "",
+                "x": -161,
+                "y": -224
+              },
+              "display_name": "String DB",
+              "hash": "7b455ea9-1644-4739-a2b0-b8cd2ec3d622",
+              "icon": null,
+              "label": "study",
+              "shape": "box",
+              "sub_labels": []
+            },
+            {
+              "data": {
+                "detail": "",
+                "hyperlink": "https://string-db.org/cgi/network.pl?taskId=FvNzOjit6xLH",
+                "hyperlinks": [],
+                "source": "",
+                "x": 357,
+                "y": -387
+              },
+              "display_name": "String DB ",
+              "hash": "6e8f09ac-6537-487c-b44d-a9ee3221fb45",
+              "icon": null,
+              "label": "study",
+              "shape": "box",
+              "sub_labels": []
+            },
+            {
+              "data": {
+                "detail": "",
+                "hyperlink": "https://string-db.org/cgi/network.pl?taskId=OqdZzMroZYFp",
+                "hyperlinks": [],
+                "source": "",
+                "x": 575,
+                "y": -39
+              },
+              "display_name": "String DB",
+              "hash": "b2efa908-bf7e-4ad2-933a-39b369ebd847",
+              "icon": null,
+              "label": "study",
+              "shape": "box",
+              "sub_labels": []
+            },
+            {
+              "data": {
+                "detail": "",
+                "hyperlink": "https://string-db.org/cgi/cooccurrence.pl?taskId=FvNzOjit6xLH&node1=15200768&node2=15200767",
+                "hyperlinks": [],
+                "source": "",
+                "x": 274,
+                "y": -164
+              },
+              "display_name": "gene co-occurence",
+              "hash": "bacc8bdc-4e7b-4449-b49b-8ff10b159f7f",
+              "icon": null,
+              "label": "entity",
+              "shape": "box",
+              "sub_labels": []
+            },
+            {
+              "data": {
+                "detail": "",
+                "hyperlink": "https://drive.google.com/open?id=1jm--aqGL505rLrVdNMH7YDvXYnl1hbKA",
+                "hyperlinks": [],
+                "source": "",
+                "x": 722,
+                "y": -738
+              },
+              "display_name": "Presentation on Google Drive",
+              "hash": "942aede2-95d4-41ac-81e3-9d7941af833a",
+              "icon": null,
+              "label": "entity",
+              "shape": "box",
+              "sub_labels": []
+            },
+            {
+              "data": {
+                "detail": "",
+                "hyperlink": "http://test.lifelike.bio/dt/map/7694d5f64713e5c6c967f88099cedd3f",
+                "hyperlinks": [],
+                "source": "",
+                "x": 724,
+                "y": -678
+              },
+              "display_name": "PurR modulon detailed map",
+              "hash": "bf4900b0-6c55-4db8-888e-fa91b210cd4b",
+              "icon": null,
+              "label": "map",
+              "shape": "box",
+              "sub_labels": []
+            },
+            {
+              "data": {
+                "detail": "A key regulatory step is the production of 5-phospho-α-D-ribosyl 1-pyrophosphate",
+                "hyperlink": "",
+                "hyperlinks": [],
+                "source": "",
+                "x": 445,
+                "y": -577
+              },
+              "display_name": "",
+              "hash": "69e86228-1511-43a7-b0d5-9dbfa16b9b70",
+              "icon": {
+                "code": "",
+                "color": "#669999",
+                "face": "FontAwesome",
+                "size": 50,
+                "weight": "bold"
+              },
+              "label": "link",
+              "shape": "icon",
+              "sub_labels": []
+            },
+            {
+              "data": {
+                "detail": "",
+                "hyperlink": "https://drive.google.com/open?id=1w8LktlSNuJqZykYDODT5IH8NPogEpMZ5",
+                "hyperlinks": [],
+                "source": "",
+                "x": 716,
+                "y": -604
+              },
+              "display_name": "Functional enrichment",
+              "hash": "dc86f1e6-e1e0-4e26-9c8a-1abc733163d3",
+              "icon": null,
+              "label": "entity",
+              "shape": "box",
+              "sub_labels": []
+            },
+            {
+              "data": {
+                "detail": "",
+                "hyperlink": "mailto:evetra@biosustain.dtu.dk",
+                "hyperlinks": [],
+                "source": "",
+                "x": 443,
+                "y": -525
+              },
+              "display_name": "email author",
+              "hash": "8c47a42d-11bc-49c4-9097-2fdd084762d0",
+              "icon": null,
+              "label": "entity",
+              "shape": "box",
+              "sub_labels": []
+            },
+            {
+              "data": {
+                "detail": "YdhC is an uncharacterized member of the Drug:H+ Antiporter (DHA) Family within the Major Facilitator Superfamily (MFS) of transporters [Marger93, Saier16]. YdhC has been implicated in arabinose efflux [Koita12].",
+                "hyperlink": "https://biocyc.org/gene?orgid=ECOLI&id=EG12141",
+                "hyperlinks": [],
+                "source": "",
+                "x": 243,
+                "y": -425
+              },
+              "display_name": "EcoCyc",
+              "hash": "0325f2b6-84af-4ecd-86f5-299cb9e60d97",
+              "icon": null,
+              "label": "study",
+              "shape": "box",
+              "sub_labels": []
+            },
+            {
+              "data": {
+                "detail": "",
+                "hyperlink": "",
+                "hyperlinks": [],
+                "source": "",
+                "x": 72,
+                "y": 567
+              },
+              "display_name": "s-adenosyl-l-methionine",
+              "hash": "3fb70980-a2bd-4b96-8742-0a57ddf5cbf0",
+              "icon": null,
+              "label": "chemical",
+              "shape": "box",
+              "sub_labels": []
+            },
+            {
+              "data": {
+                "detail": "",
+                "hyperlink": "",
+                "hyperlinks": [
+                  {
+                    "domain": "google",
+                    "url": "https://www.google.com/search?q=adenosine"
+                  },
+                  {
+                    "domain": "ncbi",
+                    "url": "https://ncbi.nlm.nih.gov/gene/?term=adenosine"
+                  },
+                  {
+                    "domain": "uniprot",
+                    "url": "https://uniprot.org/uniprot/?query=adenosine"
+                  },
+                  {
+                    "domain": "wikipedia",
+                    "url": "https://www.google.com/search?q=site:+wikipedia.org+adenosine"
+                  }
+                ],
+                "source": "/dt/pdf/de1000da-d83d-4bac-af7e-5fca76c9a8fc/1/289.25/674.05264/356.85656/690.01264",
+                "x": -580,
+                "y": 608
+              },
+              "display_name": "adenosine",
+              "hash": "caa80e4f-4371-425c-bf54-c1aad8020a99",
+              "label": "chemical",
+              "shape": "box",
+              "sub_labels": []
+            },
+            {
+              "data": {
+                "detail": "",
+                "hyperlink": "",
+                "hyperlinks": [],
+                "source": "",
+                "x": -355,
+                "y": 460
+              },
+              "display_name": "methionine",
+              "hash": "569eea34-4f0a-485a-8bbe-572570ba018f",
+              "icon": null,
+              "label": "chemical",
+              "shape": "box",
+              "sub_labels": []
+            },
+            {
+              "data": {
+                "detail": "",
+                "hyperlink": "",
+                "hyperlinks": [],
+                "source": "",
+                "x": -347,
+                "y": 610
+              },
+              "display_name": "adenosine triphosphate (ATP)",
+              "hash": "520be21c-fdf3-4304-a7e8-a317d747eabb",
+              "icon": null,
+              "label": "chemical",
+              "shape": "box",
+              "sub_labels": []
+            },
+            {
+              "data": {
+                "detail": "",
+                "hyperlink": "",
+                "hyperlinks": [],
+                "source": "",
+                "x": 195,
+                "y": 361
+              },
+              "display_name": "cfa",
+              "hash": "98492bec-5f32-4ada-b553-79f33272dfea",
+              "icon": null,
+              "label": "gene",
+              "shape": "box",
+              "sub_labels": []
+            },
+            {
+              "data": {
+                "detail": "",
+                "hyperlink": "",
+                "hyperlinks": [
+                  {
+                    "domain": "google",
+                    "url": "https://www.google.com/search?q=ydhC"
+                  },
+                  {
+                    "domain": "ncbi",
+                    "url": "https://ncbi.nlm.nih.gov/gene/?term=ydhC"
+                  },
+                  {
+                    "domain": "uniprot",
+                    "url": "https://uniprot.org/uniprot/?query=ydhC"
+                  },
+                  {
+                    "domain": "wikipedia",
+                    "url": "https://www.google.com/search?q=site:+wikipedia.org+ydhC"
+                  }
+                ],
+                "source": "/dt/pdf/609080ea-fdce-4da2-bccc-7db4c33f7311/1/242.45/361.946/267.05/373.946",
+                "x": 11,
+                "y": 357
+              },
+              "display_name": "ydhC",
+              "hash": "46a9d31e-0dc9-4a9e-b36d-2bbc31d624f2",
+              "label": "gene",
+              "shape": "box",
+              "sub_labels": []
+            },
+            {
+              "data": {
+                "detail": "",
+                "hyperlink": "",
+                "hyperlinks": [],
+                "source": "",
+                "x": -177,
+                "y": 360
+              },
+              "display_name": "YdhB (-)",
+              "hash": "8c217510-ed53-468e-9df6-6b8cfddb5198",
+              "icon": null,
+              "label": "gene",
+              "shape": "box",
+              "sub_labels": []
+            },
+            {
+              "data": {
+                "detail": "",
+                "hyperlink": "",
+                "hyperlinks": [
+                  {
+                    "domain": "google",
+                    "url": "https://www.google.com/search?q=PurR"
+                  },
+                  {
+                    "domain": "ncbi",
+                    "url": "https://ncbi.nlm.nih.gov/gene/?term=PurR"
+                  },
+                  {
+                    "domain": "uniprot",
+                    "url": "https://uniprot.org/uniprot/?query=PurR"
+                  },
+                  {
+                    "domain": "wikipedia",
+                    "url": "https://www.google.com/search?q=site:+wikipedia.org+PurR"
+                  }
+                ],
+                "source": "/dt/pdf/609080ea-fdce-4da2-bccc-7db4c33f7311/3/222.41/706.248/247.118/718.248",
+                "x": -388,
+                "y": 361
+              },
+              "display_name": "PurR",
+              "hash": "a814dc46-92f0-43ca-ae85-f1dc5ce494cf",
+              "label": "gene",
+              "shape": "box",
+              "sub_labels": []
+            },
+            {
+              "data": {
+                "detail": "",
+                "hyperlink": "",
+                "hyperlinks": [],
+                "source": "",
+                "x": -388,
+                "y": 246
+              },
+              "display_name": "purine nucleotide synthesis",
+              "hash": "566e44cd-aedf-4a5b-9e0c-24c86c342eae",
+              "icon": null,
+              "label": "entity",
+              "shape": "box",
+              "sub_labels": []
+            },
+            {
+              "data": {
+                "detail": "",
+                "hyperlink": "",
+                "hyperlinks": [],
+                "source": "",
+                "x": 292,
+                "y": 475
+              },
+              "display_name": "protein-Cyclopropane-fatty-acyl-phospholipid synthase;Cw1",
+              "hash": "9700e70b-c694-4296-a96f-70829a10ad0d",
+              "icon": null,
+              "label": "protein",
+              "shape": "box",
+              "sub_labels": []
+            },
+            {
+              "data": {
+                "detail": "",
+                "hyperlink": "",
+                "hyperlinks": [],
+                "source": "",
+                "x": -130,
+                "y": 571
+              },
+              "display_name": "2.5.1.6",
+              "hash": "8147a89d-d739-4dbb-bc39-d91161d9f0f6",
+              "icon": null,
+              "label": "entity",
+              "shape": "box",
+              "sub_labels": []
+            },
+            {
+              "data": {
+                "detail": "",
+                "hyperlink": "",
+                "hyperlinks": [],
+                "source": "",
+                "x": -128,
+                "y": 473
+              },
+              "display_name": "metK",
+              "hash": "15057255-f6a6-4102-925e-07074be9d864",
+              "icon": null,
+              "label": "gene",
+              "shape": "box",
+              "sub_labels": []
+            },
+            {
+              "data": {
+                "detail": "",
+                "hyperlink": "",
+                "hyperlinks": [],
+                "source": "",
+                "x": 296,
+                "y": 570
+              },
+              "display_name": "2.1.1.79",
+              "hash": "74eba3db-9663-481a-a999-a2965530cb69",
+              "icon": null,
+              "label": "entity",
+              "shape": "box",
+              "sub_labels": []
+            },
+            {
+              "data": {
+                "detail": "",
+                "hyperlink": "",
+                "hyperlinks": [],
+                "source": "",
+                "x": -500,
+                "y": 545
+              },
+              "display_name": "enzyme",
+              "hash": "90df5f76-2dc3-4442-840d-7f066b78f8de",
+              "icon": null,
+              "label": "entity",
+              "shape": "box",
+              "sub_labels": []
+            },
+            {
+              "data": {
+                "detail": "",
+                "hyperlink": "",
+                "hyperlinks": [],
+                "source": "",
+                "x": -36,
+                "y": 728
+              },
+              "display_name": "entity-jY4",
+              "hash": "43e5784d-166f-4b25-a531-c185c4c71114",
+              "label": "entity",
+              "shape": "box",
+              "sub_labels": []
+            },
+            {
+              "data": {
+                "detail": "",
+                "hyperlink": "",
+                "hyperlinks": [],
+                "source": "",
+                "x": 68,
+                "y": 723
+              },
+              "display_name": "entity-L5w",
+              "hash": "b6b51a8c-6eb7-4fa7-8737-92c256c3f955",
+              "label": "entity",
+              "shape": "box",
+              "sub_labels": []
+            },
+            {
+              "data": {
+                "detail": "",
+                "hyperlink": "",
+                "hyperlinks": [],
+                "source": "",
+                "x": 203,
+                "y": 709
+              },
+              "display_name": "entity-QzU",
+              "hash": "c19e87ed-1946-4ac7-85ca-8169bba01297",
+              "label": "entity",
+              "shape": "box",
+              "sub_labels": []
+            },
+            {
+              "data": {
+                "detail": "",
+                "hyperlink": "https://www.genome.jp/kegg-bin/show_pathway?map=map00230&show_description=show",
+                "hyperlinks": [],
+                "source": "",
+                "x": -398,
+                "y": 204
+              },
+              "display_name": "Kegg",
+              "hash": "534a4e5a-48fc-43f5-a88a-4b2eea4e672a",
+              "icon": null,
+              "label": "entity",
+              "shape": "box",
+              "sub_labels": []
+            }
+          ]
+        },
+        "date_modified": "2020-01-30T23:48:32.794Z"
+      },
+      {
+        "hash_id": "c04d0ae7508d1f05a7365d31476898ef",
+        "label": "COVID-19 Vaccine Blueprint",
+        "author": "Jim Meloncholy",
+        "user_id": 1,
+        "dir_id": 1,
+        "description": "This illustrate the potential solutions that exists out there in treating the coronavirus currently plaguing our reality.",
+        "public": true,
+        "date_modified": "2020-01-30T23:48:32.794Z",
+        "graph": {
+          "edges": [
+            {
+              "label": "causes",
+              "from": "309d0c97-956f-406f-b06b-96a964ef1ee6",
+              "to": "8b7de754-47b9-4c1b-a5c1-0bcec76d4a94",
+              "data": {
+              }
+            },
+            {
+              "label": "genetically similar to",
+              "from": "309d0c97-956f-406f-b06b-96a964ef1ee6",
+              "to": "d744a35c-47ea-4842-8a7b-e259a38d140c",
+              "data": {
+              }
+            },
+            {
+              "label": "potential_treatment",
+              "from": "8b7de754-47b9-4c1b-a5c1-0bcec76d4a94",
+              "to": "bbe805a9-ded4-4131-ab1b-a0f9b2a6c0b0",
+              "data": {
+              }
+            },
+            {
+              "label": "potential_treatment",
+              "from": "8b7de754-47b9-4c1b-a5c1-0bcec76d4a94",
+              "to": "9a07d024-1911-438f-963d-db87132a37ae",
+              "data": {
+              }
+            },
+            {
+              "label": "",
+              "from": "9a07d024-1911-438f-963d-db87132a37ae",
+              "to": "07bffb28-262b-4bc0-8728-05cdc0d43d6c",
+              "data": {
+              }
+            },
+            {
+              "label": "infect",
+              "from": "309d0c97-956f-406f-b06b-96a964ef1ee6",
+              "to": "1a3b7f23-b8b3-49b3-ac06-9bc11ae6ae99",
+              "data": {
+              }
+            },
+            {
+              "label": "strong_binding",
+              "from": "1a3b7f23-b8b3-49b3-ac06-9bc11ae6ae99",
+              "to": "0d53c6c6-5527-4bba-a7b0-3ca3f9b5aa5d",
+              "data": {
+              }
+            }
+          ],
+          "nodes": [
+            {
+              "data": {
+                "x": -404,
+                "y": -248,
+                "hyperlink": ""
+              },
+              "display_name": "COVID-19",
+              "hash": "8b7de754-47b9-4c1b-a5c1-0bcec76d4a94",
+              "label": "disease",
+              "sub_labels": [
+              ]
+            },
+            {
+              "data": {
+                "x": -139,
+                "y": -336,
+                "hyperlink": ""
+              },
+              "display_name": "SARS-CoV-2",
+              "hash": "309d0c97-956f-406f-b06b-96a964ef1ee6",
+              "label": "species",
+              "sub_labels": [
+              ]
+            },
+            {
+              "data": {
+                "x": -152,
+                "y": 2,
+                "hyperlink": ""
+              },
+              "display_name": "mRNA-1273",
+              "hash": "9a07d024-1911-438f-963d-db87132a37ae",
+              "label": "chemical",
+              "sub_labels": [
+              ]
+            },
+            {
+              "data": {
+                "x": -40,
+                "y": -143,
+                "hyperlink": "https://clinicaltrials.gov/ct2/show/NCT04283461"
+              },
+              "display_name": "mRNA-1273 Clinical Trials",
+              "hash": "07bffb28-262b-4bc0-8728-05cdc0d43d6c",
+              "label": "study",
+              "sub_labels": [
+              ]
+            },
+            {
+              "data": {
+                "x": -456,
+                "y": 20,
+                "hyperlink": "https://www.jci.org/articles/view/138003"
+              },
+              "display_name": "convalescent serum",
+              "hash": "bbe805a9-ded4-4131-ab1b-a0f9b2a6c0b0",
+              "label": "chemical",
+              "sub_labels": [
+              ]
+            },
+            {
+              "data": {
+                "x": -398,
+                "y": -459,
+                "hyperlink": "https://link.springer.com/article/10.1007/s00134-020-05985-9"
+              },
+              "display_name": "ACE2 Receptor",
+              "hash": "0d53c6c6-5527-4bba-a7b0-3ca3f9b5aa5d",
+              "label": "entity",
+              "sub_labels": [
+              ]
+            },
+            {
+              "data": {
+                "x": 164,
+                "y": -213,
+                "hyperlink": ""
+              },
+              "display_name": "MERS-CoV",
+              "hash": "d744a35c-47ea-4842-8a7b-e259a38d140c",
+              "label": "species",
+              "sub_labels": [
+              ]
+            },
+            {
+              "data": {
+                "x": 29,
+                "y": -451,
+                "hyperlink": ""
+              },
+              "display_name": "Homosapien",
+              "hash": "1a3b7f23-b8b3-49b3-ac06-9bc11ae6ae99",
+              "label": "species",
+              "sub_labels": [
+              ]
+            }
+          ]
+        }
+      }
+    ]
+  }
 ]

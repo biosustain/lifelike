@@ -80,14 +80,14 @@
       <app-quick-search [query]="entity.display_name" [links]="entity.data?.search"></app-quick-search>
     </fieldset>
 
-    <div class="mt-4">
-      <div *ngIf="entity.data.source" class="mb-2">
-        <button *ngIf="entity.data.source" type="button" class="btn btn-secondary btn-block"
-                (click)="goToSource()">
-          Go to Source
-        </button>
-      </div>
+    <fieldset class="fieldset-properties mt-4"
+          *ngIf="entity.data?.sources">
+      <legend>Sources <i class="fas fa-external-link-alt ml-1"></i></legend>
 
+      <app-sources (executeFileSource)="goToSource($event)" [links]="entity.data?.sources"></app-sources>
+    </fieldset>
+
+    <div class="mt-4">
       <button (click)="doDelete()" type="button" class="btn btn-danger btn-block">
         Delete
       </button>

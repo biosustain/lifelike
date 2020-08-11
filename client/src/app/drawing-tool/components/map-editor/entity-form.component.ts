@@ -91,10 +91,8 @@ abstract class EntityForm {
   /**
    * Bring user to original source of node information
    */
-  goToSource(): void {
-    if (this.entity.data.source) {
-      this.sourceOpen.next(this.entity.data.source);
-    }
+  goToSource(url): void {
+    this.sourceOpen.next(url);
   }
 }
 

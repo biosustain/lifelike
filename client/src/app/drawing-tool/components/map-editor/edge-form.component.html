@@ -43,7 +43,7 @@
       <div class="mt-4">
         <div *ngIf="entity.data.source" class="mb-2">
           <button *ngIf="entity.data.source" type="button" class="btn btn-outline-secondary btn-block"
-                  (click)="goToSource()">
+                  (click)="goToSource(entity.data.source)">
             Go to Source
           </button>
         </div>
