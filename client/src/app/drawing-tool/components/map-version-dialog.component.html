@@ -1,0 +1,33 @@
+<form [formGroup]="form" (ngSubmit)="submit()">
+  <app-modal-header (cancel)="cancel()">
+    '{{ map.label }}' Version History
+  </app-modal-header>
+
+  <app-modal-body>
+    <app-form-row
+      for="version"
+      label="Version History"
+      [control]="form.get('version')"
+    >
+      <ng-container *ngIf="loadTask.status$ | async as status">
+        <select
+          id="version"
+          [appFormInput]="form.get('version')"
+          formControlName="version"
+        >
+          <option *ngFor="let item of versionChoices">{{
+            item
+          }}</option></select
+        >
+        <span id="project-spinner" *ngIf="status.loading">
+          <i class="fa fa-spinner fa-spin"></i> Version History Loading...
+        </span>
+      </ng-container>
+    </app-form-row>
+  </app-modal-body>
+
+  <app-modal-footer>
+    <button type="button" class="btn btn-secondary mr-2" (click)="cancel()">Cancel</button>
+    <button type="submit" class="btn btn-primary">Restore this Version</button>
+  </app-modal-footer>
+</form>

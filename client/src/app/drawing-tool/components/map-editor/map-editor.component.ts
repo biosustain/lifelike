@@ -21,6 +21,7 @@ import { MapRestoreDialogComponent } from '../map-restore-dialog.component';
 import { MapEditDialogComponent } from '../map-edit-dialog.component';
 import { GraphAction, GraphActionReceiver } from '../../../graph-viewer/actions/actions';
 import { mergeDeep } from '../../../graph-viewer/utils/objects';
+import { MapVersionDialogComponent } from '../map-version-dialog.component';
 
 @Component({
   selector: 'app-drawing-tool',
@@ -116,6 +117,16 @@ export class MapEditorComponent extends MapViewComponent<KnowledgeMap> implement
         },
       ));
       this.unsavedChanges$.next(true);
+    }, () => {
+    });
+  }
+  
+  mapVersionDialog(event) {
+    const dialogRef = this.modalService.open(MapVersionDialogComponent);
+    dialogRef.componentInstance.map = cloneDeep(this.map);
+    dialogRef.componentInstance.projectName = this.locator.projectName;
+    dialogRef.result.then((newMap: KnowledgeMap) => {
+      this.graphCanvas.setGraph(newMap.graph);
     }, () => {
     });
   }
