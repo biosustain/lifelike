@@ -50,7 +50,6 @@ export class PdfFilesService extends AbstractService {
 
     formData.append('filename', data.filename.substring(0, this.FILENAME_MAX_LENGTH));
     formData.append('directoryId', parentDir);
-    formData.append('annotationMethod', data.annotationMethod);
     formData.append('description', data.description ? data.description.substring(0, this.DESCRIPTION_MAX_LENGTH) : '');
 
     switch (data.type) {
