@@ -94,8 +94,10 @@ export class PdfFilesService extends AbstractService {
     );
   }
 
-  reannotateFiles(projectName: string, ids: string[]): Observable<object> {
-    return this.http.post(`${this.PROJECTS_BASE_URL}/${encodeURIComponent(projectName)}/files/reannotate`, ids, this.getHttpOptions(true));
+  reannotateFiles(projectName: string, fileIds: string[], annotationMethod: string = 'Rules Based'): Observable<object> {
+    return this.http.post(
+      `${this.ANNOTATIONS_BASE_URL}/${projectName}/reannotate`,
+      {annotationMethod, fileIds}, this.getHttpOptions(true));
   }
 
   deleteFile(projectName, fileId): Observable<any> {

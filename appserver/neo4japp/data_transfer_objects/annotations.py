@@ -10,6 +10,7 @@ from neo4japp.util import CamelDictMixin
 @attr.s(frozen=True)
 class AnnotationRequest(CamelDictMixin):
     annotation_method: str = attr.ib()
+    file_ids: List[str] = attr.ib(default=attr.Factory(list))
 
 
 @attr.s(frozen=True)
