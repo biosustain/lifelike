@@ -73,6 +73,11 @@
                 </div>
               </div>
 
+              <button class="btn btn-primary ml-2"
+                      (click)="displayUploadDialog()">
+                <i class="fa fa-fw fa-upload"></i> Upload
+              </button>
+
               <button class="btn btn-secondary ml-2"
                       [disabled]="results.selection.length === 0"
                       (click)="reannotate(results.selection)" ngbTooltip="Re-annotate document"
