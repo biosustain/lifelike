@@ -469,65 +469,6 @@ def remove_custom_annotation(file_id, uuid, removeAll, project_name):
     yield jsonify(removed_annotation_uuids)
 
 
-class AnnotationOutcome(Enum):
-    ANNOTATED = 'Annotated'
-    NOT_ANNOTATED = 'Not annotated'
-    NOT_FOUND = 'Not found'
-
-
-@newbp.route('/<string:project_name>/files/reannotate', methods=['POST'])
-@auth.login_required
-@requires_project_permission(AccessActionType.WRITE)
-def reannotate(project_name: str):
-    user = g.current_user
-    projects = Projects.query.filter(Projects.project_name == project_name).one_or_none()
-
-    if projects is None:
-        raise RecordNotFoundException(f'Project {project_name} not found')
-
-    yield user, projects
-
-    ids = set(request.get_json())
-    outcome: Dict[str, str] = {}  # file id to annotation outcome
-    files = files_queries.get_all_files_and_content_by_id(file_ids=ids, project_id=projects.id)
-
-    files_not_found = ids - set(f.file_id for f in files)
-    for not_found in files_not_found:
-        outcome[not_found] = AnnotationOutcome.NOT_FOUND.value
-
-    updated_files: List[dict] = []
-
-    for f in files:
-        fp = FileStorage(io.BytesIO(f.raw_file), f.filename)
-        try:
-            annotations = annotate(
-                filename=f.filename,
-                pdf_fp=fp,
-                custom_annotations=f.custom_annotations,
-            )
-        except AnnotationError as e:
-            current_app.logger.error(
-                'Could not reannotate file: %s, %s, %s', f.file_id, f.filename, e)
-            outcome[f.file_id] = AnnotationOutcome.NOT_ANNOTATED.value
-        else:
-            updated_files.append(
-                {
-                    'id': f.id,
-                    'annotations': annotations,
-                    'annotations_date': datetime.now(TIMEZONE),
-                }
-            )
-            current_app.logger.debug(
-                'File successfully reannotated: %s, %s', f.file_id, f.filename)
-            outcome[f.file_id] = AnnotationOutcome.ANNOTATED.value
-        fp.close()
-
-    # low level fast bulk operation
-    db.session.bulk_update_mappings(Files, updated_files)
-    db.session.commit()
-    yield jsonify(outcome)
-
-
 class DeletionOutcome(Enum):
     DELETED = 'Deleted'
     NOT_OWNER = 'Not an owner'
