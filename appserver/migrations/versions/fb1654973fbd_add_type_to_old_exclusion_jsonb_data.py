@@ -7,19 +7,28 @@ i
 """
 from alembic import context
 from alembic import op
-from sqlalchemy.dialects.postgresql import JSONB
+
+import sqlalchemy as sa
+from sqlalchemy.dialects import postgresql
 from sqlalchemy.orm.session import Session
 from sqlalchemy.sql import table, column
 from sqlalchemy.sql.expression import not_
 
 from neo4japp.database import db
-from neo4japp.models import Files
 
 # revision identifiers, used by Alembic.
 revision = 'fb1654973fbd'
 down_revision = '10c15d47e7c6'
 branch_labels = None
 depends_on = None
+
+t_files = sa.Table(
+    'files',
+    sa.MetaData(),
+    sa.Column('id', sa.Integer, primary_key=True, autoincrement=True),
+    sa.Column('annotations', postgresql.JSONB, nullable=False),
+    sa.Column('excluded_annotations', postgresql.JSONB, nullable=False),
+)
 
 
 def upgrade():
@@ -40,12 +49,12 @@ def data_upgrades():
     """Add optional data upgrade migrations here"""
     session = Session(op.get_bind())
 
-    val = db.column('value', type_=JSONB)
+    val = db.column('value', type_=postgresql.JSONB)
     files = session.query(
-        Files,
+        t_files,
     ).select_from(
-        Files,
-        db.func.jsonb_array_elements(Files.excluded_annotations).alias()
+        t_files,
+        db.func.jsonb_array_elements(t_files.c.excluded_annotations).alias()
     ).filter(
         not_(val.has_key('type'))  # noqa
     ).distinct().all()
@@ -77,7 +86,9 @@ def data_upgrades():
                     'type': id_type_map.get(exclusion['id'], 'Unknown')
                 })
 
-            file.excluded_annotations = [*updated_exclusions, *exclusions_to_keep]
+            session.execute(
+                t_files.update().where(
+                    t_files.c.id == file.id).values(excluded_annotations=[*updated_exclusions, *exclusions_to_keep]))  # noqa
 
         session.commit()
     except Exception:
