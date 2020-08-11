@@ -27,8 +27,8 @@ describe('HighlightSnippetComponent', () => {
 
     beforeEach(() => {
         // Reset mock data before each test
-        mockSnippet = 'The quick brown fox jumped over the lazy_dog';
-        mockEntry1Text = 'fox';
+        mockSnippet = 'The quick_brown_fox jumped over the lazy_dog';
+        mockEntry1Text = 'quick brown fox';
         mockEntry2Text = 'lazy dog';
         mockEntry1Type = 'Prey';
         mockEntry2Type = 'Hunter';
@@ -65,7 +65,7 @@ describe('HighlightSnippetComponent', () => {
         const keyTerm1Span = keyTermSpans[0];
         const keyTerm2Span = keyTermSpans[1];
 
-        expect(keyTerm1Span.innerText).toEqual('fox');
+        expect(keyTerm1Span.innerText).toEqual('quick brown fox');
         expect(keyTerm2Span.innerText).toEqual('lazy dog');
     });
 
