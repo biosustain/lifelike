@@ -24,6 +24,7 @@ import { WorkspaceOutletComponent } from './workspace-outlet.component';
 import { WorkspaceManager } from './shared/workspace-manager';
 import { UnloadConfirmationGuard } from './shared/guards/UnloadConfirmation.guard';
 import { DashboardComponent } from './dashboard.component';
+import { KgImportModule } from './kg-import/kg-import.module';
 
 @NgModule({
   declarations: [
@@ -43,6 +44,7 @@ import { DashboardComponent } from './dashboard.component';
     FileBrowserModule,
     VisualizationModule,
     UserModule,
+    KgImportModule,
     // ngrx
     RootStoreModule,
     SearchModule,

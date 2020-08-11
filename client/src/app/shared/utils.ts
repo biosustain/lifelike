@@ -1,5 +1,16 @@
 import { OperatingSystems } from 'app/interfaces/shared.interface';
 
+export function getRandomColor() {
+    const letters = '0123456789ABCDEF';
+    let color = '#';
+
+    [...Array(6).keys()].forEach(
+        _ => color += letters[Math.floor(Math.random() * 16)]
+    );
+
+    return color;
+}
+
 /**
  * Converts a string to hex.
  * TODO: Consider a better way to encode data (e.g. base64/32)
