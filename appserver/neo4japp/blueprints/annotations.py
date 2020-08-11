@@ -2,6 +2,8 @@ import io
 import os
 
 from datetime import datetime
+from enum import Enum
+from typing import Dict, List
 
 from flask import Blueprint, current_app, g, make_response
 from werkzeug.datastructures import FileStorage
@@ -33,15 +35,62 @@ from neo4japp.util import jsonify_with_class, SuccessResponse
 bp = Blueprint('annotations', __name__, url_prefix='/annotations')
 
 
+def annotate(
+    doc: Files,
+    annotation_method: str = AnnotationMethod.Rules.value,  # default to Rules Based
+):
+    lmdb_dao = get_lmdb_dao()
+    pdf_parser = get_annotations_pdf_parser()
+    annotator = get_annotations_service(lmdb_dao=lmdb_dao)
+    bioc_service = get_bioc_document_service()
+
+    fp = FileStorage(io.BytesIO(doc.raw_file), doc.filename)
+
+    try:
+        parsed_pdf_chars = pdf_parser.parse_pdf(pdf=fp)
+        fp.close()
+    except AnnotationError:
+        raise AnnotationError(
+            'Your file could not be imported. Please check if it is a valid PDF.'
+            'If it is a valid PDF, please try uploading again.')
+
+    tokens = pdf_parser.extract_tokens(parsed_chars=parsed_pdf_chars)
+    pdf_text = pdf_parser.combine_all_chars(parsed_chars=parsed_pdf_chars)
+
+    if annotation_method == AnnotationMethod.Rules.value:
+        annotations = annotator.create_rules_based_annotations(
+            tokens=tokens,
+            custom_annotations=doc.custom_annotations,
+        )
+    elif annotation_method == AnnotationMethod.NLP.value:
+        # NLP
+        annotations = annotator.create_nlp_annotations(
+            page_index=parsed_pdf_chars.min_idx_in_page,
+            text=pdf_text,
+            tokens=tokens,
+            custom_annotations=doc.custom_annotations,
+        )
+    else:
+        raise AnnotationError(f'Your file {doc.filename} could not be annotated.')
+    bioc = bioc_service.read(text=pdf_text, file_uri=doc.filename)
+    annotations_json = bioc_service.generate_bioc_json(
+        annotations=annotations, bioc=bioc)
+
+    current_app.logger.debug(
+        f'File successfully annotated: {doc.file_id}, {doc.filename}')
+
+    return {
+        'id': doc.id,
+        'annotations': annotations_json,
+        'annotations_date': datetime.now(TIMEZONE),
+    }
+
+
 @bp.route('/<string:project_name>/<string:file_id>', methods=['POST'])
 @auth.login_required
 @jsonify_with_class(AnnotationRequest)
 @requires_project_permission(AccessActionType.WRITE)
-def annotate_file(
-    req: AnnotationRequest,
-    project_name: str,
-    file_id: str,
-):
+def annotate_file(req: AnnotationRequest, project_name: str, file_id: str):
     project = Projects.query.filter(Projects.project_name == project_name).one_or_none()
 
     if project is None:
@@ -55,63 +104,73 @@ def annotate_file(
     if len(docs) == 0:
         raise RecordNotFoundException(f'File with file id {file_id} not found.')
 
-    lmdb_dao = get_lmdb_dao()
-    pdf_parser = get_annotations_pdf_parser()
-    annotator = get_annotations_service(lmdb_dao=lmdb_dao)
-    bioc_service = get_bioc_document_service()
-
-    annotated = []
-    filename = None
+    annotated: List[dict] = []
+    filenames: List[str] = []
     for doc in docs:
-        fp = FileStorage(io.BytesIO(doc.raw_file), doc.filename)
-
-        try:
-            parsed_pdf_chars = pdf_parser.parse_pdf(pdf=fp)
-            fp.close()
-        except AnnotationError:
-            raise AnnotationError(
-                'Your file could not be imported. Please check if it is a valid PDF.'
-                'If it is a valid PDF, please try uploading again.')
-
-        tokens = pdf_parser.extract_tokens(parsed_chars=parsed_pdf_chars)
-        pdf_text = pdf_parser.combine_all_chars(parsed_chars=parsed_pdf_chars)
-
-        if req.annotation_method == AnnotationMethod.Rules.value:
-            annotations = annotator.create_rules_based_annotations(
-                tokens=tokens,
-                custom_annotations=doc.custom_annotations,
-            )
-        elif req.annotation_method == AnnotationMethod.NLP.value:
-            # NLP
-            annotations = annotator.create_nlp_annotations(
-                page_index=parsed_pdf_chars.min_idx_in_page,
-                text=pdf_text,
-                tokens=tokens,
-                custom_annotations=doc.custom_annotations,
-            )
-        else:
-            raise AnnotationError('Your file could not be annotated.')  # noqa
-        bioc = bioc_service.read(text=pdf_text, file_uri=doc.filename)
-        annotations_json = bioc_service.generate_bioc_json(annotations=annotations, bioc=bioc)
-        filename = doc.filename
-
         annotated.append(
-            {
-                'id': doc.id,
-                'annotations': annotations_json,
-                'annotations_date': datetime.now(TIMEZONE),
-            }
+            annotate(
+                doc=doc,
+                annotation_method=req.annotation_method,
+            )
         )
-        current_app.logger.debug(
-            f'File successfully annotated: {doc.file_id}, {doc.filename}')
+        filenames.append(doc.filename)
+
     db.session.bulk_update_mappings(Files, annotated)
     db.session.commit()
     yield SuccessResponse(
         result={
-            'filename': filename,
+            'filenames': filenames,
             'status': 'Successfully annotated.'
         },
         status_code=200)
+
+
+class AnnotationOutcome(Enum):
+    ANNOTATED = 'Annotated'
+    NOT_ANNOTATED = 'Not annotated'
+    NOT_FOUND = 'Not found'
+
+
+@bp.route('/<string:project_name>/reannotate', methods=['POST'])
+@auth.login_required
+@jsonify_with_class(AnnotationRequest)
+@requires_project_permission(AccessActionType.WRITE)
+def reannotate(req: AnnotationRequest, project_name: str):
+    user = g.current_user
+    projects = Projects.query.filter(Projects.project_name == project_name).one_or_none()
+
+    if projects is None:
+        raise RecordNotFoundException(f'Project {project_name} not found')
+
+    yield user, projects
+
+    ids = set(req.file_ids)
+    outcome: Dict[str, str] = {}  # file id to annotation outcome
+    files = files_queries.get_all_files_and_content_by_id(file_ids=ids, project_id=projects.id)
+
+    files_not_found = ids - set(f.file_id for f in files)
+    for not_found in files_not_found:
+        outcome[not_found] = AnnotationOutcome.NOT_FOUND.value
+
+    updated_files: List[dict] = []
+
+    for f in files:
+        try:
+            annotations = annotate(doc=f)
+        except AnnotationError as e:
+            current_app.logger.error(
+                'Could not reannotate file: %s, %s, %s', f.file_id, f.filename, e)
+            outcome[f.file_id] = AnnotationOutcome.NOT_ANNOTATED.value
+        else:
+            updated_files.append(annotations)
+            current_app.logger.debug(
+                'File successfully reannotated: %s, %s', f.file_id, f.filename)
+            outcome[f.file_id] = AnnotationOutcome.ANNOTATED.value
+
+    # low level fast bulk operation
+    db.session.bulk_update_mappings(Files, updated_files)
+    db.session.commit()
+    yield SuccessResponse(result=outcome, status_code=200)
 
 
 @bp.route('/global-list/inclusions')
