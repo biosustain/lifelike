@@ -26,14 +26,21 @@
 }
 
 .workspace-split-pane-placeholder {
-  display: block;
+  display: flex;
   position: relative;
-  background: $gray-400;
+  background: $gray-200;
+  color: $text-muted;
+  border-left: 4px solid $gray-300;
   vertical-align: top;
   width: 20px;
+  padding: 0.75rem;
   cursor: pointer;
+  align-items: center;
+  justify-content: center;
 
   &:hover {
     background: $link-color;
+    color: $white;
+    border-color: $link-color;
   }
 }

@@ -1,13 +1,16 @@
-<div class="module module-centered">
-  <div class="module-header-container">
-    <div class="module-header">
-      <div class="module-title">
-        Browser
-      </div>
+<div class="module" appContainerBreakpoints>
+  <!-- Header -->
+  <div class="module-header">
+    <!-- Title bar -->
+    <div class="module-titlebar">
+      <h1 class="module-title">
+        File Browser
+      </h1>
     </div>
   </div>
 
-  <div class="module-body">
+  <!-- Body -->
+  <div class="module-body flex-fill overflow-auto">
     <app-browser-community-list></app-browser-community-list>
     <app-browser-project-list></app-browser-project-list>
   </div>

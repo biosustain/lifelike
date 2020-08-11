@@ -47,7 +47,6 @@ export class MapViewComponent<ExtraResult = void> implements OnDestroy, AfterVie
   hasEditPermission = false;
   _map: KnowledgeMap | undefined;
   pendingInitialize = false;
-  infoPinned = true;
 
   graphCanvas: CanvasGraphView;
 
@@ -75,9 +74,7 @@ export class MapViewComponent<ExtraResult = void> implements OnDestroy, AfterVie
           // TODO: This line is from the existing code and should be properly typed
         ),
         this.getExtraSource(),
-      ]).pipe(
-        this.errorHandler.create(),
-      );
+      ]);
     });
 
     this.loadSubscription = this.loadTask.results$.subscribe(({result: [result, extra], value}) => {

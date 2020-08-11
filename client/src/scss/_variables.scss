@@ -31,6 +31,7 @@ $warning: $yellow;
 $danger: $red;
 $light: $gray-100;
 $dark: $gray-800;
+$highlight: #FFF7E0;
 
 $theme-colors: ();
 // stylelint-disable-next-line scss/dollar-variable-default
@@ -49,14 +50,45 @@ $theme-colors: map-merge(
     $theme-colors
 );
 
-@import '~bootstrap/scss/variables';
+$spacer: 0.75rem;
+$spacers: ();
+// stylelint-disable-next-line scss/dollar-variable-default
+$spacers: map-merge(
+    (
+      0: 0,
+      1: ($spacer * .25),
+      2: ($spacer * .5),
+      3: $spacer,
+      4: ($spacer * 1.5),
+      5: ($spacer * 3)
+    ),
+    $spacers
+);
+
+$table-cell-padding: .45rem;
+$table-cell-padding-sm: .2rem;
 
 $font-family-sans-serif: Roboto, "Helvetica Neue", Arial, Helvetica, sans-serif;
 $font-family-base: $font-family-sans-serif;
 
+$font-size-base: 0.9rem;
+$font-size-lg: $font-size-base * 1.25;
+$font-size-sm: $font-size-base * .875;
+
 $form-group-margin-bottom: 0.5rem;
 
-$window-spacer: 0.75rem; // Spacing between the edge of container and the window
+$modal-md: 600px;
+
+// Add table-column for <col>
+$displays: none, inline, inline-block, block, table, table-row, table-cell, flex, inline-flex, table-column;
+
+@import '~bootstrap/scss/variables';
+
+$table-border-color: $gray-200;
+$table-row-active-bg: rgba($component-active-bg, .1);
+$table-row-focus-box-shadow: inset 0 0 0 $input-btn-focus-width $input-btn-focus-color;
+
+$window-spacer: 1.2rem; // Spacing between the edge of container and the window
 $window-background: $white;
 $window-border-color: $gray-300;
 $window-border-radius: $border-radius;
@@ -65,11 +97,35 @@ $window-header-selectable-hover-bg: $gray-300;
 $window-title-font-size: $font-size-sm;
 $window-title-font-weight: bold;
 
+$module-header-border-width: 1px;
+$module-header-border-color: $gray-300;
+$module-header-box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+$module-header-padding-y: 0.75rem;
+$module-header-padding-x: $window-spacer;
+$module-header-padding-y-lg: 0.75rem * 2;
+$module-header-padding-x-lg: $window-spacer * 2;
+$module-body-padding-x: $window-spacer;
+$module-body-padding-x-lg: $window-spacer * 2;
+$module-title-font-size: $font-size-base * 1.3;
+$module-title-font-size-lg: $module-title-font-size * 1.6;
+$module-title-font-weight: bold;
+$module-title-line-height: 1.5;
+$module-section-margin-bottom: $spacer * 1.5;
+$module-section-margin-bottom-lg: $spacer * 2.5;
+$module-section-header-margin-bottom: $spacer * 1.25;
+$module-section-header-margin-bottom-lg: $spacer * 1.3;
+$module-section-title-font-size: $font-size-base * 1.2;
+$module-section-title-font-size-lg: $font-size-base * 1.5;
+$module-section-title-font-weight: bold;
+$module-section-title-font-weight-lg: bold;
+$module-section-title-color: $gray-700;
+$module-back-button-padding: 0.15rem;
+
 $toolbar-padding: $window-spacer;
 $toolbar-border-width: 1px;
-$toolbar-border-color: $gray-400;
+$toolbar-border-color: $gray-300;
 $toolbar-bg: $white;
-$toolbar-box-shadow: none;
+$toolbar-box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
 $toolbar-font-size: $font-size-base;
 
 $floating-toolbar-padding: $spacer / 2;
@@ -77,8 +133,4 @@ $floating-toolbar-border-color: $gray-400;
 $floating-toolbar-bg: $gray-400;
 $floating-toolbar-border-radius: $border-radius;
 
-$table-row-active-bg: rgba($component-active-bg, .1);
-$table-row-focus-box-shadow: inset 0 0 0 $input-btn-focus-width $input-btn-focus-color;
-
-
-$modal-md: 600px;
+$dropdown-menu-box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
