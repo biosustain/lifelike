@@ -1,7 +1,7 @@
 """Insert stop words into new stop words table.
 
 Revision ID: 0d8dc6eed4c1
-Revises: e89e52d63fca
+Revises: 9118d3b6dba2
 Create Date: 2020-08-04 21:18:22.308992
 
 """
