@@ -13,7 +13,7 @@ PDF_MAPPING = '/home/n4j/neo4japp/services/indexing/mappings/pdf_snippets.json'
 ATTACHMENT_PIPELINE = '/home/n4j/neo4japp/services/indexing/pipelines/attachments_pipeline.json'
 ATTACHMENT_PIPELINE_NAME = 'attachment'
 
-elastic_client = Elasticsearch(hosts=[os.environ.get('ELASTICSEARCH_HOSTS')])
+elastic_client = Elasticsearch(timeout=180, hosts=[os.environ.get('ELASTICSEARCH_HOSTS')])
 
 
 def create_ingest_pipeline():
