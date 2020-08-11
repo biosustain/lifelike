@@ -61,6 +61,12 @@ class InvalidCredentialsException(BaseException):
         super().__init__('Invalid credentials', message, additional_msgs)
 
 
+class KgImportException(BaseException):
+    """Signals something went wrong during import into the knowledge graph"""
+    def __init__(self, message, additional_msgs=[]):
+        super().__init__('Knowledge graph import error', message, additional_msgs)
+
+
 class NotAuthorizedException(BaseException):
     """Signals that the client does not sufficient privilege"""
     def __init__(self, message, additional_msgs=[]):
