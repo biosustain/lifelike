@@ -430,6 +430,9 @@ def get_child_directories(current_dir_id: int, project_name: str):
                     'id': c.user_id,
                     'name': username
                 },
+                'annotation_date': None,
+                'creation_date': None,
+                'modification_date': None,
                 'data': c.to_dict(),
             } for (c, username) in child_dirs],
             *[{
@@ -440,14 +443,20 @@ def get_child_directories(current_dir_id: int, project_name: str):
                     'name': username
                 },
                 'description': f.description,
+                'annotation_date': f.annotations_date,
+                'creation_date': f.creation_date,
+                'modification_date': None,
                 'data': CasePreservedDict(
                     f.to_dict(exclude=[
-                        'annotations', 'annotations_date', 'custom_annotations',
+                        'annotations', 'custom_annotations',
                         'excluded_annotations'], keyfn=lambda x: x)),
             } for (f, username) in files],
             *[{
                 'type': 'map',
                 'name': m.label,
+                'annotation_date': None,
+                'creation_date': None,
+                'modification_date': m.date_modified,
                 'creator': {
                     'id': m.user_id,
                     'name': username

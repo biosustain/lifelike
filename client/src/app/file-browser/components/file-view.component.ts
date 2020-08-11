@@ -1,5 +1,5 @@
 import { Component, EventEmitter, OnDestroy, Output, ViewChild } from '@angular/core';
-import { combineLatest, Subject, Subscription } from 'rxjs';
+import { combineLatest, from, Subject, Subscription, throwError } from 'rxjs';
 import { PdfFilesService } from 'app/shared/services/pdf-files.service';
 import { Hyperlink, SearchLink } from 'app/shared/constants';
 
@@ -7,11 +7,11 @@ import { PdfAnnotationsService } from '../../drawing-tool/services';
 
 import { cloneDeep } from 'lodash';
 import {
-  Annotation,
-  RemovedAnnotationExclusion,
   AddedAnnotationExclsuion,
+  Annotation,
   Location,
   Meta,
+  RemovedAnnotationExclusion,
   UniversalGraphNode,
 } from '../../drawing-tool/services/interfaces';
 
@@ -26,6 +26,10 @@ import { ConfirmDialogComponent } from '../../shared/components/dialog/confirm-d
 import { NgbDropdown, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ErrorHandler } from '../../shared/services/error-handler.service';
 import { FileEditDialogComponent } from './file-edit-dialog.component';
+import { catchError } from 'rxjs/operators';
+import { error } from 'util';
+import { HttpErrorResponse } from '@angular/common/http';
+import { UserError } from '../../shared/exceptions';
 
 class DummyFile implements PdfFile {
   constructor(
@@ -114,8 +118,20 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
       return combineLatest(
         this.pdf.getFileMeta(file.file_id, this.projectName),
         this.pdf.getFile(file.file_id, this.projectName),
-        this.pdfAnnService.getFileAnnotations(file.file_id, this.projectName),
-      ).pipe(errorHandler.create());
+        this.pdfAnnService.getFileAnnotations(file.file_id, this.projectName).pipe(
+          catchError(err => {
+            // There have been so many issues with annotations that let's explicitly mention
+            // a problem with annotation loading
+            return throwError(new UserError(
+              'Annotation Data Failed to Load',
+              'This document cannot be loaded because the annotation data for this file has a problem. ' +
+              'You may try to re-annotate this file or re-upload it.',
+              null,
+              err,
+            ));
+          }),
+        ),
+      );
     });
 
     this.paramsSubscription = this.route.queryParams.subscribe(params => {

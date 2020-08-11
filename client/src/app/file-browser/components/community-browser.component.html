@@ -1,210 +1,248 @@
-<div class="module module-centered" *ngIf="(loadTask.status$ | async) as status">
-  <div class="module-header-container">
-    <div class="module-header">
-      <div class="module-title">
-        Community Content
-      </div>
+<ng-container *ngIf="(loadTask.status$ | async) as status">
+  <app-module-error *ngIf="status.failedErrorShown; else noError" class="p-4" [error]="status.error">
+    <button class="btn btn-primary" type="button" (click)="refresh()">Retry</button>
+  </app-module-error>
 
-      <div class="module-toolbar" *ngIf="!status.failedErrorShown">
-      </div>
-    </div>
-  </div>
+  <ng-template #noError>
+    <div class="module" appContainerBreakpoints>
+      <!-- Header -->
+      <div class="module-header">
+        <!-- Breadcrumbs -->
+        <div class="module-breadcrumb-bar mb-1">
+          <ol class="breadcrumb mb-3" *ngIf="status.resultsShown">
+            <li class="breadcrumb-item">
+              <a appLink="/projects">File Browser</a>
+            </li>
+            <ng-container *ngIf="locator.q; else noQuery">
+              <li class="breadcrumb-item">
+                <a appLink="/community">Community Content</a>
+              </li>
+              <li class="breadcrumb-item">
+              </li>
+            </ng-container>
+            <ng-template #noQuery>
+              <li class="breadcrumb-item">
+              </li>
+            </ng-template>
+          </ol>
 
-  <div class="module-body">
-    <ng-container *ngIf="!status.failedErrorShown; else errorShown">
-      <app-background-task-progress
-        [status]="status" (refresh)="this.refresh()" childClass="mb-2"></app-background-task-progress>
+          <ol class="breadcrumb mb-3" *ngIf="status.placeholdersShown">
+            <li class="breadcrumb-item">
+              <a appLink="/projects">File Browser</a>
+            </li>
+            <li class="breadcrumb-item">
+              <span class="placeholder-box">Loading</span>
+            </li>
+          </ol>
+        </div>
 
-      <ol class="breadcrumb mb-3" *ngIf="status.resultsShown">
-        <li class="breadcrumb-item">
-          <a appLink="/projects">Projects</a>
-        </li>
-        <ng-container *ngIf="locator.q; else noQuery">
-          <li class="breadcrumb-item">
-            <a appLink="/community">Community Content</a>
-          </li>
-          <li class="breadcrumb-item">
-            Search for "{{ locator.q }}"
-          </li>
-        </ng-container>
-        <ng-template #noQuery>
-          <li class="breadcrumb-item">
-            Community Content
-          </li>
-        </ng-template>
-      </ol>
+        <!-- Title bar -->
+        <div class="module-title-bar">
+          <button type="button" class="module-title-bar-back mr-2" appLink="/projects">
+            <i class="fa fa-fw fa-arrow-left"></i>
+          </button>
 
-      <ol class="breadcrumb mb-3" *ngIf="status.placeholdersShown">
-        <li class="breadcrumb-item">
-          <a appLink="/projects">Projects</a>
-        </li>
-        <li class="breadcrumb-item">
-          <span class="placeholder-box">Loading</span>
-        </li>
-      </ol>
+          <div class="module-title">
+            <ng-container *ngIf="locator.q; else noQuery">
+              Results for "{{ locator.q }}"
+            </ng-container>
+            <ng-template #noQuery>
+              Community Content
+            </ng-template>
+          </div>
+        </div>
 
-      <div class="mb-3 d-flex align-items-center">
-        <form [formGroup]="filterForm" (ngSubmit)="search()" class="d-flex align-items-center ml-auto">
-          <div class="input-group flex-fill">
-            <div class="input-group-prepend">
-              <div class="input-group-text bg-transparent border-right-0">
-                <i class="fa fa-search"></i>
+        <!-- Toolbar -->
+        <div class="module-toolbar mt-2">
+          <form [formGroup]="filterForm" (ngSubmit)="search()" class="d-flex align-items-center">
+            <div class="input-group flex-fill">
+              <div class="input-group-prepend">
+                <div class="input-group-text bg-transparent border-right-0">
+                  <i class="fa fa-search"></i>
+                </div>
               </div>
+
+              <input class="form-control py-2 pl-0 border-left-0 border"
+                     formControlName="q"
+                     placeholder="Search" maxlength="40">
             </div>
 
-            <input class="form-control py-2 pl-0 border-left-0 border"
-                   formControlName="q"
-                   placeholder="Search content..." maxlength="40">
+            <button class="btn btn-primary ml-2">
+              Search
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Body -->
+      <div class="flex-fill overflow-auto">
+        <div class="d-flex module-body-split">
+          <div class="module-body-split-main">
+            <table class="table module-body-table" [class.table-selectable]="status.resultsShown"
+                   style="table-layout: fixed">
+              <colgroup>
+                <col>
+                <col style="width: 35%" class="d-none d-cbp-md-table-column"> <!-- Description -->
+                <col style="width: 120px"> <!-- Author -->
+                <col style="width: 80px"> <!-- Dropdown -->
+              </colgroup>
+              <thead>
+              <tr>
+                <th class="text-truncate">
+                  <div class="custom-control custom-checkbox">
+                    <input type="checkbox" class="custom-control-input" id="select-all"
+                           [checked]="results.isAllSelected()"
+                           (change)="results.toggleAll()">
+                    <label class="custom-control-label" for="select-all">Name</label>
+                  </div>
+                </th>
+                <th class="text-truncate d-none d-cbp-md-table-cell">Description</th>
+                <th class="text-truncate">Author</th>
+                <th></th>
+              </tr>
+              </thead>
+
+              <tbody *ngIf="status.placeholdersShown">
+              <tr>
+                <td class="align-middle text-nowrap text-truncate">
+                  <span class="placeholder-box">Loading loading</span>
+                </td>
+                <td class="align-middle text-nowrap text-truncate d-cbp-md-table-cell">
+                  <span class="placeholder-box">Loading loading</span>
+                </td>
+                <td class="align-middle text-nowrap text-truncate">
+                  <span class="placeholder-box">Loading loading</span>
+                </td>
+                <td>
+                  <div class="d-flex align-items-end">
+                    <div ngbDropdown class="d-inline-block ml-auto">
+                      <button class="btn btn-sm" ngbDropdownToggle>
+                        <span class="placeholder-box"><i class="fas fa-cog fa-fw"></i></span>
+                      </button>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td class="align-middle text-nowrap text-truncate">
+                  <span class="placeholder-box">Loading loading loading</span>
+                </td>
+                <td class="align-middle text-nowrap text-truncate d-cbp-md-table-cell">
+                  <span class="placeholder-box">Loading loading</span>
+                </td>
+                <td class="align-middle text-nowrap text-truncate">
+                  <span class="placeholder-box">Loading loading</span>
+                </td>
+                <td>
+                  <div class="d-flex align-items-end">
+                    <div ngbDropdown class="d-inline-block ml-auto">
+                      <button class="btn btn-sm" ngbDropdownToggle>
+                        <span class="placeholder-box"><i class="fas fa-cog fa-fw"></i></span>
+                      </button>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+              </tbody>
+
+              <tbody *ngIf="status.resultsShown">
+              <tr *ngFor="let object of results.view; index as objectIndex" tabindex="0"
+                  [class.active]="this.results.isSelected(object)">
+                <td class="align-middle text-nowrap text-truncate"
+                    (click)="results.toggle(object)">
+                  <div class="custom-control custom-checkbox text-truncate">
+                    <input type="checkbox" class="custom-control-input" id="object-{{ objectIndex }}"
+                           (change)="results.toggle(object)"
+                           [checked]="results.isSelected(object)">
+                    <label class="custom-control-label d-block" for="object-{{ objectIndex }}">
+                      <div class="d-flex align-items-center text-truncate">
+                        <div class="d-inline-block mr-1">
+                          <i class="fa fa-fw fa-project-diagram text-muted"></i>
+                        </div>
+
+                        <div class="d-inline-block text-truncate">
+                          <a [appLink]="getObjectCommands(object)" [queryParams]="getObjectQueryParams()"
+                             [newTab]="true">
+                            {{ object.map.label }}
+                          </a>
+                        </div>
+                      </div>
+                    </label>
+                  </div>
+                </td>
+
+                <td class="align-middle text-truncate d-none d-cbp-md-table-cell"
+                    (click)="results.toggle(object)"
+                    popoverTitle="Description" container="body" triggers="mouseenter:mouseleave" placement="right"
+                    [ngbPopover]="object.map.description">
+                  {{ object.map.description }}
+                </td>
+
+                <td class="align-middle text-nowrap text-truncate" (click)="results.toggle(object)">
+                  <ng-container *ngIf="object.user">
+                    {{ object.user.username }}
+                  </ng-container>
+                </td>
+
+                <td>
+                  <div class="d-flex align-items-end">
+                    <div ngbDropdown class="d-inline-block ml-auto" placement="bottom-right">
+                      <button class="btn btn-sm" ngbDropdownToggle>
+                        <i class="fas fa-cog fa-fw"></i>
+                      </button>
+                      <div ngbDropdownMenu>
+                        <button ngbDropdownItem [appLink]="getObjectCommands(object)"
+                                [queryParams]="getObjectQueryParams()">
+                          Open
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+              </tbody>
+            </table>
+
+            <div class="module-body">
+              <div *ngIf="status.emptyResultsShown && results.viewLength === 0" class="text-center">
+                There are no matching community maps to show.
+              </div>
+
+              <div *ngIf="status.resultsShown && results.length">
+                <ngb-pagination
+                  [page]="locator.page"
+                  [pageSize]="locator.limit"
+                  [collectionSize]="collectionSize"
+                  (pageChange)="goToPage($event)"></ngb-pagination>
+              </div>
+            </div>
           </div>
 
-          <button class="btn btn-light ml-2">
-            <i class="fa fa-fw fa-search"></i>
-          </button>
-        </form>
-      </div>
-
-      <table class="table" [class.table-selectable]="status.resultsShown" style="table-layout: fixed">
-        <colgroup>
-          <col style="width: 70%">
-          <col>
-          <col style="width: 60px">
-        </colgroup>
-        <thead>
-        <tr>
-          <th class="text-truncate">
-            <div class="custom-control custom-checkbox">
-              <input type="checkbox" class="custom-control-input" id="select-all" [checked]="results.isAllSelected()"
-                     (change)="results.toggleAll()">
-              <label class="custom-control-label" for="select-all">Name</label>
-            </div>
-          </th>
-          <th class="text-truncate">Creator</th>
-          <th></th>
-        </tr>
-        </thead>
-
-        <tbody *ngIf="status.placeholdersShown">
-        <tr>
-          <td class="align-middle text-nowrap text-truncate">
-            <span class="placeholder-box">Loading loading</span>
-          </td>
-          <td class="align-middle text-nowrap text-truncate">
-            <span class="placeholder-box">Loading loading</span>
-          </td>
-          <td>
-            <div class="d-flex align-items-end">
-              <div ngbDropdown class="d-inline-block ml-auto">
-                <button class="btn btn-sm" ngbDropdownToggle>
-                  <span class="placeholder-box"><i class="fas fa-cog fa-fw"></i></span>
-                </button>
-              </div>
-            </div>
-          </td>
-        </tr>
-        <tr>
-          <td class="align-middle text-nowrap text-truncate">
-            <span class="placeholder-box">Loading loading loading</span>
-          </td>
-          <td class="align-middle text-nowrap text-truncate">
-            <span class="placeholder-box">Loading loading</span>
-          </td>
-          <td>
-            <div class="d-flex align-items-end">
-              <div ngbDropdown class="d-inline-block ml-auto">
-                <button class="btn btn-sm" ngbDropdownToggle>
-                  <span class="placeholder-box"><i class="fas fa-cog fa-fw"></i></span>
-                </button>
-              </div>
-            </div>
-          </td>
-        </tr>
-        </tbody>
-
-        <tbody *ngIf="status.resultsShown">
-        <tr *ngFor="let object of results.view; index as objectIndex" tabindex="0"
-            [class.active]="this.results.isSelected(object)">
-          <td class="align-middle text-nowrap text-truncate"
-              (click)="results.toggle(object)">
-            <div class="custom-control custom-checkbox text-truncate">
-              <input type="checkbox" class="custom-control-input" id="object-{{ objectIndex }}"
-                     (change)="results.toggle(object)"
-                     [checked]="results.isSelected(object)">
-              <label class="custom-control-label d-block" for="object-{{ objectIndex }}">
-                <div class="d-flex align-items-center text-truncate">
-                  <div class="d-inline-block mr-1">
-                    <i class="fa fa-fw fa-project-diagram text-muted"></i>
-                  </div>
-
-                  <div class="d-inline-block text-truncate">
-                    <a [appLink]="getObjectCommands(object)" [queryParams]="getObjectQueryParams()"
-                       [newTab]="true">
-                      {{ object.map.label }}
-                    </a>
-                  </div>
+          <div class="flex-fill d-none d-cbp-lg-block module-body-split-sidebar">
+            <div class="module-body-split-sidebar-body">
+              <ng-container *ngIf="results.selection.length">
+                <div class="mb-3 text-muted">
+                  <div><i class="fa fa-fw fa-project-diagram text-icon"></i> Map</div>
                 </div>
-                <div *ngIf="object.map.description" class="text-truncate text-muted"
-                     popoverTitle="Description" container="body" triggers="mouseenter:mouseleave" placement="right"
-                     [ngbPopover]="object.map.description">
-                  {{ object.map.description }}
+
+                <h5>{{ results.lastSelection.map.label }}</h5>
+
+                <div class="mt-3" *ngIf="results.lastSelection.map.description">
+                  {{ results.lastSelection.map.description }}
                 </div>
-              </label>
+
+                <hr class="my-3">
+
+                <ul class="list-unstyled mt-3">
+                  <li *ngIf="results.lastSelection.user">
+                    <strong>Author:</strong> {{ results.lastSelection.user.username }}
+                  </li>
+                </ul>
+              </ng-container>
             </div>
-          </td>
-
-          <td class="align-middle text-nowrap text-truncate" (click)="results.toggle(object)">
-            <ng-container *ngIf="object.user">
-              {{ object.user.username }}
-            </ng-container>
-          </td>
-
-          <td>
-            <div class="d-flex align-items-end">
-              <div ngbDropdown class="d-inline-block ml-auto" placement="bottom-right">
-                <button class="btn btn-sm" ngbDropdownToggle>
-                  <i class="fas fa-cog fa-fw"></i>
-                </button>
-                <div ngbDropdownMenu>
-                  <button ngbDropdownItem [appLink]="getObjectCommands(object)" [queryParams]="getObjectQueryParams()">
-                    Open
-                  </button>
-                </div>
-              </div>
-            </div>
-          </td>
-        </tr>
-        </tbody>
-      </table>
-
-      <div *ngIf="status.emptyResultsShown && results.viewLength === 0" class="text-center my-4">
-        There are no matching community maps to show.
-      </div>
-
-      <div class="mt-3" *ngIf="status.resultsShown && results.length">
-        <ngb-pagination
-          [page]="locator.page"
-          [pageSize]="locator.limit"
-          [collectionSize]="collectionSize"
-          (pageChange)="goToPage($event)"></ngb-pagination>
-      </div>
-    </ng-container>
-
-    <ng-template #errorShown>
-      <div class="text-center text-secondary">
-        <div>
-          <i class="fa fa-exclamation-circle fa-4x"></i>
-        </div>
-
-        <div class="mt-4">
-          This folder could not be loaded.
-        </div>
-
-        <div class="mt-4">
-          <a appLink="/projects" class="btn btn-primary">
-            View Projects
-          </a>
+          </div>
         </div>
       </div>
-    </ng-template>
-  </div>
-
-</div>
+    </div>
+  </ng-template>
+</ng-container>

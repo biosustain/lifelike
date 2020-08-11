@@ -14,38 +14,56 @@ export class ErrorHandler {
   constructor(private readonly messageDialog: MessageDialog) {
   }
 
+  createUserError(error: any): UserError {
+    let title = 'Problem Encountered';
+    let message = 'The server encountered a problem. No further details are currently available.';
+    let detail = null;
+
+    if (error instanceof HttpErrorResponse) {
+      const res = error as HttpErrorResponse;
+
+      if (res.status === 404) {
+        title = 'Not Found';
+        message = 'The page that you are looking for does not exist. You may have followed a broken link ' +
+          'or the page may have been removed.';
+      } else if (res.status === 413) {
+        title = 'Too Large';
+        message = 'The server could not process your upload because it was too large.';
+      } else if (res.status === 500) {
+        title = 'Unexpected Application Problem';
+        message = 'Lifelike has encountered some unexpected problems. Please try again later.';
+      } else if (res.error && res.error.message) {
+        message = res.error.message;
+      }
+
+      if (res.error && res.error.detail) {
+        detail = res.error.detail;
+      }
+    } else if (error instanceof UserError) {
+      const userError = error as UserError;
+
+      title = userError.title;
+      message = userError.message;
+      detail = userError.detail;
+
+      if (error.cause != null) {
+        const causeUserError = this.createUserError(error.cause);
+        if (causeUserError.detail != null) {
+          if (detail != null) {
+            detail = detail + '\n\n------------------------------\n\n' + causeUserError.detail;
+          } else {
+            detail = causeUserError.detail;
+          }
+        }
+      }
+    }
+
+    return new UserError(title, message, detail, error);
+  }
+
   create<T>(): UnaryFunction<Observable<T>, Observable<T>> {
     return pipe(catchError(error => {
-      let title = 'Problem Encountered';
-      let message = 'The server encountered a problem. No further details are currently available.';
-      let detail = null;
-
-      if (error instanceof HttpErrorResponse) {
-        const res = error as HttpErrorResponse;
-
-        if (res.status === 404) {
-          title = 'Not Found';
-          message = 'The document that you are looking for does not exist. You may have followed a broken link ' +
-            'or the document may have been removed.';
-        } else if (res.status === 413) {
-          title = 'Too Large';
-          message = 'The server could not process your upload because it was too large.';
-        } else if (res.status === 500) {
-          title = 'Unexpected Application Problem';
-          message = 'Lifelike has encountered some unexpected problems. Please try again later.';
-        } else if (res.error && res.error.message) {
-          message = res.error.message;
-        }
-
-        if (res.error && res.error.detail) {
-          detail = res.error.detail;
-        }
-      } else if (error instanceof UserError) {
-        const userError = error as UserError;
-
-        title = userError.title;
-        message = userError.message;
-      }
+      const {title, message, detail} = this.createUserError(error);
 
       this.messageDialog.display({
         title,

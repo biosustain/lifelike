@@ -41,6 +41,8 @@ import { SelectComponent } from './components/form/select.component';
 import { ResultsSummaryComponent } from './components/results-summary.component';
 import { QuickSearchComponent } from './components/quick-search.component';
 import { CollapsibleWindowComponent } from './components/collapsible-window.component';
+import { ModuleErrorComponent } from './components/module-error.component';
+import { ModuleProgressComponent } from './components/module-progress.component';
 
 const components = [
   MessageDialogComponent,
@@ -65,6 +67,8 @@ const components = [
   ResultsSummaryComponent,
   QuickSearchComponent,
   CollapsibleWindowComponent,
+  ModuleErrorComponent,
+  ModuleProgressComponent,
 ];
 
 @NgModule({

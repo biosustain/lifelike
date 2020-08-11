@@ -93,7 +93,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
       (locator: PathLocator) => this.projectPageService.getDirectory(
         locator.projectName,
         locator.directoryId,
-      ).pipe(this.errorHandler.create()),
+      ),
     );
 
     this.loadTaskSubscription = this.loadTask.results$.subscribe(({result}) => {
@@ -480,6 +480,22 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
         source: this.getObjectCommands(object).join('/'),
       },
     } as Partial<UniversalGraphNode>));
+  }
+
+  goUp() {
+    if (this.path != null) {
+      if (this.path.length > 2) {
+        this.workspaceManager.navigate(
+          ['/projects', this.locator.projectName, 'folders', this.path[this.path.length - 2].id]
+        );
+      } else if (this.path.length === 2) {
+          this.workspaceManager.navigate(
+            ['/projects', this.locator.projectName]
+          );
+      } else {
+        this.workspaceManager.navigate(['/projects']);
+      }
+    }
   }
 }
 

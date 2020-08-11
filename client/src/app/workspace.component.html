@@ -43,10 +43,10 @@
                     </button>
                     <div ngbDropdownMenu class="dropdown-menu">
                       <a class="dropdown-item" (click)="addTab(pane, '/projects')">
-                        Project Browser
+                        File Browser
                       </a>
                       <a class="dropdown-item" (click)="addTab(pane, '/kg-visualizer')">
-                        Knowledge Graph Search
+                        Visualizer
                       </a>
                     </div>
                   </div>
@@ -63,33 +63,35 @@
                                       [active]="pane.activeTab === tab"></app-workspace-outlet>
               </div>
               <ng-container *ngIf="!pane.tabs.length">
-                <div class="w-100 h-100 d-flex align-items-center justify-content-center">
-                  <div class="m-4 text-center text-muted" [style.max-width]="'400px'">
-                    <ng-container *ngIf="panes.length === 1">
-                      <div>
-                        Use the <i class="fa fa-plus"></i>
-                        button at the top to open a new tab in this area.
-                      </div>
-                    </ng-container>
-                    <ng-container *ngIf="panes.length > 1 && pane.id === 'left'">
-                      <div>
-                        Use the <i class="fa fa-plus"></i>
-                        button at the top to open a new tab in this area.
-                      </div>
-                    </ng-container>
-                    <ng-container *ngIf="panes.length > 1 && pane.id === 'right'">
-                      <div>
-                        Use the <i class="fa fa-plus"></i>
-                        button at the top to open a new tab in this area.
-                      </div>
-
-                      <div class="mt-3">
-                        <button type="button" (click)="closeRightPane()" class="btn btn-secondary"
-                                ngbTooltip="You can re-open this pane later." container="body">
-                          Close this Pane <i class="fa fa-fw fa-chevron-right"></i>
-                        </button>
-                      </div>
-                    </ng-container>
+                <div class="w-100 h-100 d-flex align-items-center">
+                  <div class="d-flex align-items-center justify-content-center m-auto">
+                    <div class="m-4 text-center text-muted" [style.max-width]="'400px'">
+                      <ng-container *ngIf="panes.length === 1">
+                        <div>
+                          Use the <i class="fa fa-plus"></i>
+                          button at the top to open a new tab in this area.
+                        </div>
+                      </ng-container>
+                      <ng-container *ngIf="panes.length > 1 && pane.id === 'left'">
+                        <div>
+                          Use the <i class="fa fa-plus"></i>
+                          button at the top to open a new tab in this area.
+                        </div>
+                      </ng-container>
+                      <ng-container *ngIf="panes.length > 1 && pane.id === 'right'">
+                        <div>
+                          Use the <i class="fa fa-plus"></i>
+                          button at the top to open a new tab in this area.
+                        </div>
+                      </ng-container>
+                    </div>
+                  </div>
+                  <div class="mx-2">
+                    <button type="button" class="btn btn-secondary" (click)="closeRightPane()"
+                            ngbTooltip="Collapse this pane">
+                      <i class="fa fa-caret-right"></i><br>
+                      <i class="fa fa-caret-right"></i>
+                    </button>
                   </div>
                 </div>
               </ng-container>
@@ -99,7 +101,15 @@
       </as-split>
     </div>
     <div *ngIf="canAddPane()" class="workspace-split-pane-placeholder" (click)="addPane()"
-         ngbTooltip="Add a side-by-side view" placement="left-top">
+         ngbTooltip="Open side pane" placement="left">
+      <div>
+        <div>
+          <i class="fa fa-caret-left"></i>
+        </div>
+        <div>
+          <i class="fa fa-caret-left"></i>
+        </div>
+      </div>
     </div>
   </ng-container>
 </div>
