@@ -260,6 +260,19 @@ def update_project(hash_id: str, projects_name: str):
 
     current_app.logger.info(f'User updated map: <{g.current_user.email}:{project.label}>')
 
+    # Create new project version
+    project_version = ProjectVersion(
+        label=project.label,
+        description=project.description,
+        date_modified=datetime.now(),
+        public=project.public,
+        graph=project.graph,
+        user_id=user.id,
+        dir_id=project.dir_id,
+        creation_date=datetime.now(),
+        project_id=project.id,
+    )
+
     # Update project's attributes
     project.description = data.get("description", "")
     project.label = data.get("label", "")
@@ -267,21 +280,13 @@ def update_project(hash_id: str, projects_name: str):
     project.date_modified = datetime.now()
     project.public = data.get("public", False)
 
-    # Create new project
-    project_version = ProjectVersion(
-        label=data.get("label", ""),
-        description=data.get("description", ""),
-        date_modified=datetime.now(),
-        public=data.get("public", False),
-        graph=data.get("graph", {"edges": [], "nodes": []}),
-        user_id=user.id,
-        dir_id=project.dir_id,
-        creation_date=datetime.now(),
-    )
-
     # Commit to db
     db.session.add(project)
     db.session.add(project_version)
+    db.session.flush()
+    
+    project_version.set_hash_id()
+
     db.session.commit()
 
     yield jsonify({'status': 'success'}), 200
@@ -319,26 +324,24 @@ def delete_project(hash_id: str, projects_name: str):
     yield jsonify({'status': 'success'}), 200
 
 
-@newbp.route('/<string:projects_name>/map/<string:hash_id>/<string:version_string>', methods=['GET'])
+@newbp.route('/<string:projects_name>/map/<string:hash_id>/ver/<string:version_hash>', methods=['GET'])
 @auth.login_required
 @requires_project_permission(AccessActionType.READ)
-def get_version(hash_id: str, projects_name: str, version_string: str):
+def get_version_by_hash(hash_id: str, projects_name: str, version_hash: str):
     """ Get map version by version id lookup """
-    user = g.current_user
-
-    version_id = int(version_string)
 
     projects = Projects.query.filter(Projects.project_name == projects_name).one()
+    targetMap = Project.query.filter(Project.hash_id == hash_id).one()
 
-    yield user, projects
+    yield targetMap, projects
 
     # Pull up map by hash_id
     try:
         project_version = ProjectVersion.query.filter(
-            ProjectVersion.id == version_id and ProjectVersion.hash_id == hash_id
+            ProjectVersion.project_id == targetMap.id and ProjectVersion.hash_id == version_hash,
         ).join(
             Directory,
-            Directory.id == Project.dir_id,
+            Directory.id == ProjectVersion.dir_id,
         ).filter(
             Directory.projects_id == projects.id,
         ).one()
@@ -348,6 +351,35 @@ def get_version(hash_id: str, projects_name: str, version_string: str):
     project_schema = ProjectVersionSchema()
 
     yield jsonify({'version': project_schema.dump(project_version)})
+
+
+@bp.route('/<string:projects_name>/map/<string:hash_id>/version/', methods=['GET'])
+@auth.login_required
+@requires_project_permission(AccessActionType.READ)
+def get_versions(projects_name: str, hash_id: str):
+    """ Return a list of all map versions underneath map """
+    user = g.current_user
+
+    projects = Projects.query.filter(Projects.project_name == projects_name).one()
+    targetMap = Project.query.filter(Project.hash_id == hash_id).one()
+
+    yield user, projects
+
+    try:
+        project_versions = ProjectVersion.query.filter(
+            ProjectVersion.project_id == targetMap.id
+        ).join(
+            Directory,
+            Directory.id == ProjectVersion.dir_id,
+        ).filter(
+            Directory.projects_id == projects.id,
+        ).all()
+    except NoResultFound:
+        raise RecordNotFoundException('not found :-( ')
+
+    version_schema = ProjectVersionSchema(many=True)
+
+    yield {'versions': version_schema.dump(project_versions)}, 200
 
 
 @newbp.route('/<string:projects_name>/map/<string:hash_id>/<string:version_string>', methods=['PATCH'])
