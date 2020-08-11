@@ -20,6 +20,7 @@ import { NodeFormComponent } from './components/map-editor/node-form.component';
 import { MapEditDialogComponent } from './components/map-edit-dialog.component';
 import { ConfirmDialogComponent } from 'app/shared/components/dialog/confirm-dialog.component';
 import { MapRestoreDialogComponent } from './components/map-restore-dialog.component';
+import { MapVersionDialogComponent } from './components/map-version-dialog.component';
 
 @NgModule({
   declarations: [
@@ -27,6 +28,7 @@ import { MapRestoreDialogComponent } from './components/map-restore-dialog.compo
     MapDeleteDialogComponent,
     MapCloneDialogComponent,
     MapUploadDialogComponent,
+    MapVersionDialogComponent,
     MapEditorComponent,
     PaletteComponent,
     InfoPanelComponent,
@@ -43,6 +45,7 @@ import { MapRestoreDialogComponent } from './components/map-restore-dialog.compo
     MapCloneDialogComponent,
     MapUploadDialogComponent,
     MapEditDialogComponent,
+    MapVersionDialogComponent,
     MapExportDialogComponent,
     ConfirmDialogComponent,
     MapRestoreDialogComponent,

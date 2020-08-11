@@ -5,6 +5,8 @@ import { HttpClient } from '@angular/common/http';
 import { KnowledgeMap } from './interfaces';
 import { AbstractService } from '../../shared/services/abstract-service';
 import { AuthenticationService } from '../../auth/services/authentication.service';
+import { AppUser } from 'app/interfaces';
+import { Project } from 'app/file-browser/services/project-space.service';
 
 @Injectable({
   providedIn: '***ARANGO_USERNAME***',
@@ -82,12 +84,24 @@ export class MapService extends AbstractService {
   getMapVersion(
     projectName: string,
     hashId: string,
-    versionId: number
+    versionHash: string
   ): Observable<{ version: KnowledgeMap }> {
     return this.http.get<{ version: KnowledgeMap }>(
       `${this.PROJECTS_BASE_URL}/${encodeURIComponent(
         projectName
-      )}/map/${encodeURIComponent(hashId)}/${encodeURIComponent(versionId)}`,
+      )}/map/${encodeURIComponent(hashId)}/${encodeURIComponent(versionHash)}`,
+      this.getHttpOptions(true)
+    );
+  }
+
+  getMapVersions(
+    projectName: string,
+    hashId: string,
+  ): Observable<any>{
+    return this.http.get(
+      `${this.MAPS_BASE_URL}/${encodeURIComponent(
+        projectName
+      )}/map/${encodeURIComponent(hashId)}/version/`,
       this.getHttpOptions(true)
     );
   }
