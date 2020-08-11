@@ -84,29 +84,26 @@ def annotate(
         raise AnnotationError(
             'Your file could not be imported. Please check if it is a valid PDF.', [str(exc)])
 
-    try:
-        tokens = pdf_parser.extract_tokens(parsed_chars=parsed_pdf_chars)
-        pdf_text = pdf_parser.combine_all_chars(parsed_chars=parsed_pdf_chars)
+    tokens = pdf_parser.extract_tokens(parsed_chars=parsed_pdf_chars)
+    pdf_text = pdf_parser.combine_all_chars(parsed_chars=parsed_pdf_chars)
 
-        if annotation_method == AnnotationMethod.Rules.value:
-            annotations = annotator.create_rules_based_annotations(
-                tokens=tokens,
-                custom_annotations=custom_annotations,
-            )
-        elif annotation_method == AnnotationMethod.NLP.value:
-            # NLP
-            annotations = annotator.create_nlp_annotations(
-                page_index=parsed_pdf_chars.min_idx_in_page,
-                text=pdf_text,
-                tokens=tokens,
-                custom_annotations=custom_annotations,
-            )
-        else:
-            raise AnnotationError('Your file could not be annotated.')  # noqa
-        bioc = bioc_service.read(text=pdf_text, file_uri=filename)
-        return bioc_service.generate_bioc_json(annotations=annotations, bioc=bioc)
-    except AnnotationError as exc:
-        raise AnnotationError('Your file could not be annotated.', [str(exc)])
+    if annotation_method == AnnotationMethod.Rules.value:
+        annotations = annotator.create_rules_based_annotations(
+            tokens=tokens,
+            custom_annotations=custom_annotations,
+        )
+    elif annotation_method == AnnotationMethod.NLP.value:
+        # NLP
+        annotations = annotator.create_nlp_annotations(
+            page_index=parsed_pdf_chars.min_idx_in_page,
+            text=pdf_text,
+            tokens=tokens,
+            custom_annotations=custom_annotations,
+        )
+    else:
+        raise AnnotationError('Your file could not be annotated.')  # noqa
+    bioc = bioc_service.read(text=pdf_text, file_uri=filename)
+    return bioc_service.generate_bioc_json(annotations=annotations, bioc=bioc)
 
 
 def extract_doi(pdf_content: bytes, file_id: str = None, filename: str = None) -> Optional[str]:
@@ -167,60 +164,67 @@ def upload_pdf(request, project_name: str):
             data = read_url(req, max_length=URL_FETCH_MAX_LENGTH,
                             timeout=URL_FETCH_TIMEOUT).getvalue()
         except (ValueError, URLError):
-            raise FileUploadError("Your file could not be downloaded, either because it is "
-                                  "inaccessible or another problem occurred. Please double "
-                                  "check the spelling of the URL.")
+            raise FileUploadError('Your file could not be downloaded, either because it is '
+                                  'inaccessible or another problem occurred. Please double '
+                                  'check the spelling of the URL.')
         pdf = FileStorage(io.BytesIO(data), filename)
     else:
         pdf = request.file_input
 
-    pdf_content = pdf.read()  # TODO: don't work with whole file in memory
-    pdf.stream.seek(0)
-
-    checksum_sha256 = hashlib.sha256(pdf_content).digest()
-
-    # TODO: Should `pdf.filename` be in sync with the final filename?
-    # Make sure that the filename is not longer than the DB column permits
-    max_filename_length = Files.filename.property.columns[0].type.length
-    if len(filename) > max_filename_length:
-        name, extension = os.path.splitext(filename)
-        if len(extension) > max_filename_length:
-            extension = ".dat"
-        filename = name[:max(0, max_filename_length - len(extension))] + extension
-    file_id = str(uuid.uuid4())
-
     try:
-        # First look for an existing copy of this file
-        file_content = db.session.query(FileContent.id) \
-            .filter(FileContent.checksum_sha256 == checksum_sha256) \
-            .one()
-    except NoResultFound:
-        # Otherwise, let's add the file content to the database
-        file_content = FileContent(
-            raw_file=pdf_content,
-            checksum_sha256=checksum_sha256
+        pdf_content = pdf.read()  # TODO: don't work with whole file in memory
+        pdf.stream.seek(0)
+
+        checksum_sha256 = hashlib.sha256(pdf_content).digest()
+
+        # TODO: Should `pdf.filename` be in sync with the final filename?
+        # Make sure that the filename is not longer than the DB column permits
+        max_filename_length = Files.filename.property.columns[0].type.length
+        if len(filename) > max_filename_length:
+            name, extension = os.path.splitext(filename)
+            if len(extension) > max_filename_length:
+                extension = ".dat"
+            filename = name[:max(0, max_filename_length - len(extension))] + extension
+        file_id = str(uuid.uuid4())
+
+        try:
+            # First look for an existing copy of this file
+            file_content = db.session.query(FileContent.id) \
+                .filter(FileContent.checksum_sha256 == checksum_sha256) \
+                .one()
+        except NoResultFound:
+            # Otherwise, let's add the file content to the database
+            file_content = FileContent(
+                raw_file=pdf_content,
+                checksum_sha256=checksum_sha256
+            )
+            db.session.add(file_content)
+            db.session.flush()
+
+        description = request.description
+        doi = extract_doi(pdf_content, file_id, filename)
+        upload_url = request.url
+
+        file = Files(
+            file_id=file_id,
+            filename=filename,
+            description=description,
+            content_id=file_content.id,
+            user_id=user.id,
+            project=projects.id,
+            dir_id=directory.id,
+            doi=doi,
+            upload_url=upload_url,
         )
-        db.session.add(file_content)
+
+        db.session.add(file)
         db.session.commit()
 
-    description = request.description
-    doi = extract_doi(pdf_content, file_id, filename)
-    upload_url = request.url
-
-    file = Files(
-        file_id=file_id,
-        filename=filename,
-        description=description,
-        content_id=file_content.id,
-        user_id=user.id,
-        project=projects.id,
-        dir_id=directory.id,
-        doi=doi,
-        upload_url=upload_url,
-    )
-
-    db.session.add(file)
-    db.session.commit()
+        current_app.logger.info(
+            f'User uploaded file: <{g.current_user.email}:{file.filename}>')
+        index_pdf.main(current_app.config)
+    except Exception:
+        raise FileUploadError('Your file could not be saved. Please try uploading again.')
 
     try:
         annotations = annotate(
@@ -233,18 +237,13 @@ def upload_pdf(request, project_name: str):
 
         file.annotations = annotations
         file.annotations_date = annotations_date
+        db.session.add(file)
     except AnnotationError:
-        db.session.delete(file)
-        # TODO: delete from FileContent too?
-        # if it's the first upload then yes,
-        # but no if not because the content could be used by
-        # other files
+        # do nothing if annotations fail
+        # file should still be uploaded
+        # due to LL-1371
         raise  # bubble up the exception
     db.session.commit()
-
-    current_app.logger.info(
-        f'User uploaded file: <{g.current_user.email}:{file.filename}>')
-    index_pdf.main(current_app.config)
 
     yield SuccessResponse(
         result={
@@ -430,16 +429,19 @@ def get_annotations(id: str, project_name: str):
     if not file:
         raise RecordNotFoundException('File does not exist')
 
-    annotations = file.annotations['documents'][0]['passages'][0]['annotations']
+    if file.annotations:
+        annotations = file.annotations['documents'][0]['passages'][0]['annotations']
 
-    # Add additional information for annotations that were excluded
-    for annotation in annotations:
-        for exclusion in file.excluded_annotations:
-            if (exclusion['type'] == annotation['meta']['type'] and
-                    exclusion.get('text', True) == annotation.get('textInDocument', False)):
-                annotation['meta']['isExcluded'] = True
-                annotation['meta']['exclusionReason'] = exclusion['reason']
-                annotation['meta']['exclusionComment'] = exclusion['comment']
+        # Add additional information for annotations that were excluded
+        for annotation in annotations:
+            for exclusion in file.excluded_annotations:
+                if (exclusion['type'] == annotation['meta']['type'] and
+                        exclusion.get('text', True) == annotation.get('textInDocument', False)):
+                    annotation['meta']['isExcluded'] = True
+                    annotation['meta']['exclusionReason'] = exclusion['reason']
+                    annotation['meta']['exclusionComment'] = exclusion['comment']
+    else:
+        annotations = []
 
     yield jsonify(annotations + file.custom_annotations)
 

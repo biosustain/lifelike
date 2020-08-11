@@ -198,7 +198,7 @@
                 <ng-container *ngIf="object.annotationsTooltipContent && object.annotationsTooltipContent.length">
                   <i class="fas fa-exclamation-triangle fa-fw mr-1"></i>
                 </ng-container>
-                {{ object.data.annotations_date | date: 'short' }}
+                {{ (object.data.annotations_date | date: 'short') || 'No annotations'}}
               </div>
             </ng-container>
           </td>
