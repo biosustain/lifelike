@@ -12,6 +12,8 @@ import {
 export interface AssociationSnippet {
     reference: Reference;
     publication: Publication;
+    rawScore: number;
+    normalizedScore: number;
 }
 
 export interface ClusterData {
