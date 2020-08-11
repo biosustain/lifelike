@@ -55,6 +55,10 @@ dictConfig({
 
 logger = logging.getLogger(__name__)
 
+for log in ['pdfminer', 'graphviz', 'flask_caching', 'urllib3', 'alembic', 'webargs']:
+    logging.getLogger(log).setLevel(logging.WARNING)
+
+
 # Commit Hash (Version) of Application
 GITHUB_HASH = os.environ.get('GITHUB_HASH', 'unspecified')
 
@@ -71,8 +75,8 @@ def create_app(name='neo4japp', config='config.Development'):
 
     if config == 'config.Staging' or config == 'config.Production':
         sentry_logging = LoggingIntegration(
-            level=logging.INFO,
-            event_level=logging.INFO,
+            level=logging.ERROR,
+            event_level=logging.ERROR,
         )
         sentry_sdk.init(
             dsn=os.environ.get('SENTRY_KEY'),
