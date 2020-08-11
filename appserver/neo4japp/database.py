@@ -59,7 +59,7 @@ def get_neo4j():
 
 
 def get_neo4j_service_dao():
-    if 'neo4j_dao' not in g:
+    if 'neo4j_service_dao' not in g:
         from neo4japp.services import Neo4JService
         graph = _connect_to_neo4j()
         g.neo4j_service_dao = Neo4JService(graph=graph)
@@ -157,13 +157,14 @@ def reset_dao():
     handy for production later.
     """
     for dao in [
-        'neo4j_dao',
+        'neo4j_service_dao',
         'user_file_import_service',
         'search_dao',
         'authorization_service',
         'account_service',
         'projects_service',
         'lmdb_dao',
+        'annotation_neo4j',
     ]:
         if dao in g:
             g.pop(dao)

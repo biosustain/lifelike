@@ -1,4 +1,5 @@
 from .common import NEO4JBase, RDBMSBase, ModelConverter
+from .annotations import AnnotationStopWords
 from .auth import (
     AccessActionType,
     AccessControlPolicy,
