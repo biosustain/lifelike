@@ -51,7 +51,7 @@ abstract class EntityForm {
     return isNullOrUndefined(this.entity.data.hyperlinks) ? [] : this.entity.data.hyperlinks;
   }
 
-  doSave() {}
+  abstract doSave(): void;
 
   /**
    * Delete the current node.
