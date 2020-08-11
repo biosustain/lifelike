@@ -2,7 +2,7 @@ import { Component, EventEmitter, OnDestroy, OnInit, Output } from '@angular/cor
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { BehaviorSubject, combineLatest, from, Observable, Subscription, throwError } from 'rxjs';
-import { flatMap, map } from 'rxjs/operators';
+import { mergeMap, map } from 'rxjs/operators';
 import { PdfFile, UploadPayload, UploadType } from 'app/interfaces/pdf-files.interface';
 import { PdfFilesService } from 'app/shared/services/pdf-files.service';
 import { HttpErrorResponse, HttpEventType } from '@angular/common/http';
@@ -310,7 +310,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
     )
       .pipe(
         map(res => res.file_id),
-        flatMap(fileId => this.filesService.annotateFile(
+        mergeMap(fileId => this.filesService.annotateFile(
           this.locator.projectName, fileId, data.annotationMethod))
       )
       .pipe(this.errorHandler.create())

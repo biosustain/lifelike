@@ -21,16 +21,9 @@ from neo4japp.blueprints.permissions import requires_project_permission, require
 # TODO: LL-415 Migrate the code to the projects folder once GUI is complete and API refactored
 from neo4japp.blueprints.projects import bp as newbp
 from neo4japp.constants import TIMEZONE
-from neo4japp.database import (
-    db,
-    get_annotations_service,
-    get_annotations_pdf_parser,
-    get_bioc_document_service,
-    get_lmdb_dao,
-)
+from neo4japp.database import db
 from neo4japp.data_transfer_objects import FileUpload
 from neo4japp.exceptions import (
-    AnnotationError,
     FileUploadError,
     RecordNotFoundException,
     NotAuthorizedException,
@@ -53,7 +46,6 @@ from neo4japp.request_schemas.annotations import (
 )
 from neo4japp.services.indexing import index_pdf
 from neo4japp.utils.network import read_url
-from neo4japp.services.annotations.constants import AnnotationMethod
 from neo4japp.services.annotations.manual_annotations import ManualAnnotationsService
 from neo4japp.util import jsonify_with_class, SuccessResponse
 from flask_apispec import use_kwargs, marshal_with
@@ -65,44 +57,6 @@ DOWNLOAD_USER_AGENT = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML
                       'Chrome/51.0.2704.103 Safari/537.36 Lifelike'
 
 bp = Blueprint('files', __name__, url_prefix='/files')
-
-
-def annotate(
-    filename: str,
-    pdf_fp: FileStorage,
-    custom_annotations: List[dict],
-    annotation_method: str = AnnotationMethod.Rules.value,  # default to Rules Based
-) -> dict:
-    lmdb_dao = get_lmdb_dao()
-    pdf_parser = get_annotations_pdf_parser()
-    annotator = get_annotations_service(lmdb_dao=lmdb_dao)
-    bioc_service = get_bioc_document_service()
-    try:
-        parsed_pdf_chars = pdf_parser.parse_pdf(pdf=pdf_fp)
-    except AnnotationError as exc:
-        raise AnnotationError(
-            'Your file could not be imported. Please check if it is a valid PDF.', [str(exc)])
-
-    tokens = pdf_parser.extract_tokens(parsed_chars=parsed_pdf_chars)
-    pdf_text = pdf_parser.combine_all_chars(parsed_chars=parsed_pdf_chars)
-
-    if annotation_method == AnnotationMethod.Rules.value:
-        annotations = annotator.create_rules_based_annotations(
-            tokens=tokens,
-            custom_annotations=custom_annotations,
-        )
-    elif annotation_method == AnnotationMethod.NLP.value:
-        # NLP
-        annotations = annotator.create_nlp_annotations(
-            page_index=parsed_pdf_chars.min_idx_in_page,
-            text=pdf_text,
-            tokens=tokens,
-            custom_annotations=custom_annotations,
-        )
-    else:
-        raise AnnotationError('Your file could not be annotated.')  # noqa
-    bioc = bioc_service.read(text=pdf_text, file_uri=filename)
-    return bioc_service.generate_bioc_json(annotations=annotations, bioc=bioc)
 
 
 def extract_doi(pdf_content: bytes, file_id: str = None, filename: str = None) -> Optional[str]:
