@@ -14,6 +14,7 @@
   - [How do I run unit tests for Angular?](#how-do-i-run-unit-tests-for-angular)
   - [How do I run linting checks?](#how-do-i-run-linting-checks)
   - [How do I create a postgres schema diagram?](#how-do-i-create-a-postgres-schema-diagram)
+  - [How can I seed a local database with data from sql dump files?](#how-can-i-seed-a-local-database-with-data-from-sql-dump-files)
   - [Where can I find common design patterns?](#where-can-i-find-common-design-patterns)
 
 ## How do I set up my developer environment?
@@ -171,6 +172,23 @@ eralchemy -i 'postgresql+psycopg2://postgres:postgres@localhost:5431/postgres' -
 
 4. (Optional) Commit the schema update to the repository
 
+## How can I seed a local database with data from sql dump files?
+### With production database
+1. Access postgres:
+`docker-compose exec pgdatabase psql -U postgres -h database -d postgres`
+2. Drop the current schema using these commands in psql:
+```sql
+DROP SCHEMA public CASCADE;
+CREATE SCHEMA public;
+```
+3. Move the sql dump file to the top-level of the app, i.e.:
+```
+- kg-visualizer
+  |-- your_dump_file.sql
+```
+4. Load the sql dump:
+
+`docker-compose exec -T pgdatabase psql -U postgres < <dump file.sql>`
 
 ## Where can I find common design patterns?
 https://github.com/SBRG/kg-prototypes/wiki
