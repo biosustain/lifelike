@@ -1,4 +1,12 @@
-from typing import Dict, List
+import hashlib
+from math import floor
+
+from typing import (
+    Any,
+    Dict,
+    List,
+    Tuple
+)
 
 from werkzeug.datastructures import FileStorage
 
@@ -6,26 +14,42 @@ from openpyxl import load_workbook
 from openpyxl import Workbook
 from openpyxl.worksheet.worksheet import Worksheet
 
+from sqlalchemy.orm.exc import NoResultFound
+
 from py2neo import (
     Node,
     Transaction,
     Relationship,
+    cypher_escape,
+    cypher_repr
 )
 
-from neo4japp.factory import cache
 from neo4japp.data_transfer_objects.user_file_import import (
-    Neo4jColumnMapping,
     FileNameAndSheets,
     GraphCreationMapping,
+    GeneImportRelationship,
     GraphNodeCreationMapping,
+    GeneMatchingProperty,
     GraphRelationshipCreationMapping,
+    Neo4jColumnMapping,
+    Properties,
+    RelationshipDirection,
 )
-from neo4japp.services.common import GraphBaseDao
+from neo4japp.exceptions import (
+    KgImportException
+)
+from neo4japp.factory import cache
+from neo4japp.models import (
+    FileContent,
+    Worksheet
+)
+from neo4japp.services.common import HybridDBDao
+from neo4japp.util import compute_hash
 
 
-class UserFileImportService(GraphBaseDao):
-    def __init__(self, graph):
-        super().__init__(graph)
+class UserFileImportService(HybridDBDao):
+    def __init__(self, graph, session):
+        super().__init__(graph=graph, session=session)
 
     # def strip_leading_and_trailing_spaces(self, current_ws: Worksheet) -> Worksheet:
     #     # remove leading and trailing space
@@ -105,7 +129,7 @@ class UserFileImportService(GraphBaseDao):
 
             for row in current_ws.iter_rows(
                 min_row=2,
-                max_row=8,
+                max_row=5,
                 max_col=len(list(current_ws.columns)),
                 values_only=True,
             ):
@@ -113,7 +137,7 @@ class UserFileImportService(GraphBaseDao):
                     col_row_mapping = {}
                     for i, cell in enumerate(row):
                         if cell:
-                            if counter_for_ellipse == 8:  # max_row
+                            if counter_for_ellipse == 5:  # max_row
                                 col_row_mapping[col_name_map[i]] = '...'
                             else:
                                 col_row_mapping[col_name_map[i]] = cell
@@ -424,3 +448,394 @@ class UserFileImportService(GraphBaseDao):
                     tx.create(Relationship(source_node, edge_label, target_node, **{}))
         tx.commit()
         print('Done creating relationships between new nodes')
+
+    def get_props_str_from_propnames_and_varname(self, varname: str, propnames: List[str]):
+        if (len(propnames) == 0):
+            return '{}'
+
+        retval = '{'
+        for propname in propnames:
+            retval += f'{propname}: {varname}.{propname}, '
+
+        return retval[0:-2] + '}'  # remove trailing ' ,' and add closing curly bracket
+
+    def get_props_obj_from_worksheet(
+        self,
+        worksheet: Worksheet,
+        props: List[Properties],
+        row: int
+    ):
+        props_obj = {}
+
+        for prop in props:
+            props_obj[prop.property_name] = worksheet.cell(
+                row=row,
+                column=int(prop.column) + 1
+            ).value or ''
+
+        return props_obj
+
+    def get_merge_worksheet_node_query(self):
+        return """
+            MERGE (w:Worksheet {name: $worksheet_node_name})
+            RETURN ID(w) as worksheet_node_id
+        """
+
+    def get_merge_col_match_query(
+        self,
+        node_label1: str,
+        node_label2: str,
+        node_propnames1: List[str],
+        node_propnames2: List[str],
+        rel_label: str,
+        rel_propnames: List[str],
+        relationship_direction: str,
+    ):
+        node_props1 = self.get_props_str_from_propnames_and_varname('tuple[0]', node_propnames1)
+        node_props2 = self.get_props_str_from_propnames_and_varname('tuple[1]', node_propnames2)
+        rel_props = self.get_props_str_from_propnames_and_varname('tuple[2]', rel_propnames)
+
+        if relationship_direction == RelationshipDirection.TO.value:
+            merge_rel_string = f'MERGE (n)-[r:{rel_label} {rel_props}]->(m)'
+        else:
+            merge_rel_string = f'MERGE (n)<-[r:{rel_label} {rel_props}]-(m)'
+
+        return f"""
+        MATCH (w:Worksheet)
+        WHERE ID(w)=$worksheet_node_id
+        WITH w
+        UNWIND $col_match_prop_tuples AS tuple
+        MERGE (n:{node_label1}:UserData {node_props1})
+        MERGE (m:{node_label2}:UserData {node_props2})
+        {merge_rel_string}
+        MERGE (m)-[:IMPORTED_FROM]->(w)
+        MERGE (n)-[:IMPORTED_FROM]->(w)
+        """
+
+    def get_merge_gene_match_query(
+        self,
+        node_label1: str,
+        node_propnames1: List[str],
+        rel_label: str,
+        rel_propnames: List[str],
+        gene_matching_property: str,
+        relationship_direction: str,
+    ):
+        node_props1 = self.get_props_str_from_propnames_and_varname('tuple[0]', node_propnames1)
+        rel_props = self.get_props_str_from_propnames_and_varname('tuple[1]', rel_propnames)
+
+        if relationship_direction == RelationshipDirection.TO.value:
+            merge_rel_string = f'MERGE (n)-[r:{rel_label} {rel_props}]->(g)'
+        else:
+            merge_rel_string = f'MERGE (n)<-[r:{rel_label} {rel_props}]-(g)'
+
+        if gene_matching_property == GeneMatchingProperty.NAME.value:
+            return f"""
+            MATCH (w:Worksheet)
+            WHERE ID(w)=$worksheet_node_id
+            WITH w
+            UNWIND $gene_match_prop_tuples AS tuple
+            MERGE (n:{node_label1}:UserData {node_props1})
+            MERGE (n)-[:IMPORTED_FROM]->(w)
+            WITH n
+            MATCH (g:Gene)-[:HAS_TAXONOMY]->(t:Taxonomy)
+            WHERE g.name=n.cell_value AND ID(t)=$tax_id
+            {merge_rel_string}
+            """
+        else:
+            return f"""
+            MATCH (w:Worksheet)
+            WHERE ID(w)=$worksheet_node_id
+            WITH w
+            UNWIND $gene_match_prop_tuples AS tuple
+            MERGE (n:{node_label1}:UserData {node_props1})
+            MERGE (n)-[:IMPORTED_FROM]->(w)
+            WITH n
+            MATCH (g:Gene)-[:HAS_TAXONOMY]->(t:Taxonomy)
+            WHERE g.id=n.cell_value AND ID(t)=$tax_id
+            {merge_rel_string}
+            """
+
+    def get_detach_and_delete_worksheet_query(self):
+        return """
+            MATCH (w:Worksheet)<-[:IMPORTED_FROM]-(n)
+            WHERE ID(w)=$worksheet_node_id
+            DETACH DELETE w
+            WITH n
+            MATCH (n) WHERE NOT (n)-[:IMPORTED_FROM]->()
+            DETACH DELETE n
+        """
+
+    def get_import_batches(
+        self,
+        data: List[Any],
+    ):
+        num_batches = floor((len(data) / 512)) + 1
+        batches = []
+        for i in range(0, num_batches):
+            batch = data[i * 512:(i + 1) * 512]
+            batches.append(batch)
+        return batches
+
+    def get_worksheet(self, file_name: str, sheet_name: str):
+        workbook = cache.get(file_name)
+
+        for i, name in enumerate(workbook.sheetnames):
+            if name == sheet_name:
+                workbook.active = i
+                break
+
+        return workbook.active
+
+    def import_gene_relationships(
+        self,
+        file_name: str,
+        sheet_name: str,
+        worksheet_node_name: str,
+        relationships: List[GeneImportRelationship],
+    ):
+        worksheet = self.get_worksheet(file_name, sheet_name)
+        max_row = len(list(worksheet.rows))
+        curr_row = 2  # start at the second row because we don't want to include headers
+
+        relationship_hashes = []
+        rel_hash_map: Dict[str, Relationship] = {}
+        col_match_prop_tuples: Dict[str, List[Tuple[Dict, Dict, Dict]]] = {}
+        gene_match_prop_tuples: Dict[str, List[Tuple[Dict, Dict]]] = {}
+
+        # Setup hash maps
+        for relationship in relationships:
+            # TODO: One problem with this approach is that it's difficult to
+            # maintain, e.g. when we add/remove a property from the GeneImportRelationship
+            rel_hash = f'{relationship.column_index1}-' + \
+                f'{relationship.column_index2}-' + \
+                f'{relationship.node_label1}-' + \
+                f'{relationship.node_label2}-' + \
+                f'{relationship.node_properties1}-' + \
+                f'{relationship.node_properties2}-' + \
+                f'{relationship.relationship_label}-' + \
+                f'{relationship.relationship_direction}-' + \
+                f'{relationship.relationship_properties}-' + \
+                f'{relationship.species_selection}-' + \
+                f'{relationship.gene_matching_property}'
+            relationship_hashes.append(rel_hash)
+
+            rel_hash_map[rel_hash] = relationship
+
+            if col_match_prop_tuples.get(rel_hash, None) is None:
+                col_match_prop_tuples[rel_hash] = []
+            if gene_match_prop_tuples.get(rel_hash, None) is None:
+                gene_match_prop_tuples[rel_hash] = []
+
+        # Setup lists of property tuples by reading data from the spreadsheet.
+        while curr_row <= max_row:
+            for rel_hash in relationship_hashes:
+                relationship = rel_hash_map[rel_hash]
+                relationship_props = self.get_props_obj_from_worksheet(
+                    worksheet=worksheet,
+                    props=relationship.relationship_properties,
+                    row=curr_row,
+                )
+
+                # openpyxl is 1-based, so add 1 to the column_index
+                node1_val = worksheet.cell(row=curr_row, column=int(relationship.column_index1)+1).value  # noqa
+                node_props1 = {
+                    'cell_value': node1_val or '',
+                }
+                node_props1.update(
+                    self.get_props_obj_from_worksheet(
+                        worksheet=worksheet,
+                        props=relationship.node_properties1,
+                        row=curr_row,
+                    )
+                )
+
+                # If either species_selection or gene_matching_property are null, then this
+                # relationship is a column-to-column relationship.
+                if relationship.species_selection is None or relationship.gene_matching_property is None:  # noqa
+                    node2_val = worksheet.cell(row=curr_row, column=int(relationship.column_index2)+1).value  # noqa
+                    node_props2 = {
+                        'cell_value': node2_val or '',
+                    }
+                    node_props2.update(
+                        self.get_props_obj_from_worksheet(
+                            worksheet=worksheet,
+                            props=relationship.node_properties2,
+                            row=curr_row,
+                        )
+                    )
+                    col_match_prop_tuples[rel_hash].append(
+                        (node_props1, node_props2, relationship_props)
+                    )
+                else:
+                    gene_match_prop_tuples[rel_hash].append(
+                        (node_props1, relationship_props)
+                    )
+            curr_row += 1
+
+        tx = self.graph.begin()
+        try:
+            # Merge (get or create) the worksheet node, and get the ID of the merged node
+            merge_worksheet_query = self.get_merge_worksheet_node_query()
+            worksheet_node_id = tx.run(
+                merge_worksheet_query,
+                {
+                    'worksheet_node_name': worksheet_node_name
+                }
+            ).evaluate()
+
+            for rel_hash in relationship_hashes:
+                relationship = rel_hash_map[rel_hash]
+                relationship_label = relationship.relationship_label
+                relationship_propnames = [
+                    prop.property_name for prop in relationship.relationship_properties
+                ]
+                relationship_direction = relationship.relationship_direction
+                node_label1 = relationship.node_label1
+                node_label2 = relationship.node_label2
+
+                # If this relationship describes a column-to-column mapping, merge the two new nodes
+                # and map them to each other.
+                if relationship.species_selection is None or relationship.gene_matching_property is None:  # noqa
+                    merge_col_match_query = self.get_merge_col_match_query(
+                        node_label1,
+                        node_label2,
+                        [prop.property_name for prop in relationship.node_properties1] + ['cell_value'],  # noqa
+                        [prop.property_name for prop in relationship.node_properties2] + ['cell_value'],  # noqa
+                        relationship_label,
+                        relationship_propnames,
+                        relationship_direction
+                    )
+
+                    # Running the merges in batches gives a noticeable performance increase
+                    batches = self.get_import_batches(col_match_prop_tuples[rel_hash])
+                    for batch in batches:
+                        tx.run(
+                            merge_col_match_query,
+                            {
+                                'col_match_prop_tuples': batch,
+                                'worksheet_node_id': worksheet_node_id
+                            }
+                        )
+                # If this relationship describes a column-to-KG-gene mapping, merge the column node,
+                # and map it to the corresponding KG node.
+                else:
+                    merge_gene_match_query = self.get_merge_gene_match_query(
+                        node_label1,
+                        [prop.property_name for prop in relationship.node_properties1] + ['cell_value'],  # noqa
+                        relationship_label,
+                        relationship_propnames,
+                        relationship.gene_matching_property,
+                        relationship_direction
+                    )
+
+                    # Running the merges in batches gives a noticeable performance increase
+                    batches = self.get_import_batches(gene_match_prop_tuples[rel_hash])
+                    for batch in batches:
+                        tx.run(
+                            merge_gene_match_query,
+                            {
+                                'gene_match_prop_tuples': batch,
+                                'tax_id': int(relationship.species_selection),
+                                'worksheet_node_id': worksheet_node_id
+                            }
+                        )
+        except Exception:
+            # TODO: Not sure what the most common practice is for terminating open py2neo
+            # transactions, haven't found any advice for this topic in the docs. Just to
+            # be safe, we rollback the transaction here.
+            tx.rollback()
+            raise
+        else:
+            tx.commit()
+
+        return worksheet_node_id
+
+    def detach_and_delete_worksheet(self, worksheet_node_id: int):
+        detach_and_delete_worksheet_query = self.get_detach_and_delete_worksheet_query()
+
+        tx = self.graph.begin()
+        tx.run(
+            detach_and_delete_worksheet_query,
+            {
+                'worksheet_node_id': worksheet_node_id
+            }
+        )
+        tx.commit()
+
+    def upload_worksheet_to_pg_db(
+        self,
+        file_name: str,
+        sheet_name: str,
+        worksheet: FileStorage,
+        worksheet_node_id: int
+    ):
+        worksheet_content = worksheet.read()
+        worksheet.stream.seek(0)
+
+        checksum_sha256 = hashlib.sha256(worksheet_content).digest()
+
+        try:
+            # First look for an existing copy of this file
+            file_content = self.session.query(
+                FileContent.id
+            ).filter(
+                FileContent.checksum_sha256 == checksum_sha256
+            ).one()
+        except NoResultFound:
+            # Otherwise, let's add the file content to the database
+            file_content = FileContent(
+                raw_file=worksheet_content,
+                checksum_sha256=checksum_sha256
+            )
+            self.session.add(file_content)
+            self.session.flush()
+
+        new_worksheet = Worksheet(
+            filename=file_name,
+            sheetname=sheet_name,
+            neo4j_node_id=worksheet_node_id,
+            content_id=file_content.id
+        )
+        self.session.add(new_worksheet)
+        self.session.commit()
+
+    def import_worksheet(
+        self,
+        file_name: str,
+        sheet_name: str,
+        worksheet: FileStorage,
+        worksheet_node_name: str,
+        relationships: List[GeneImportRelationship],
+    ):
+        try:
+            worksheet_node_id = self.import_gene_relationships(
+                file_name=file_name,
+                sheet_name=sheet_name,
+                worksheet_node_name=worksheet_node_name,
+                relationships=relationships,
+            )
+        except Exception:
+            raise KgImportException(
+                'An unexpected error occurred while trying to import your \n' +
+                'relationships into the knowledge graph. Please try again later.'
+            )
+
+        try:
+            self.upload_worksheet_to_pg_db(
+                file_name,
+                sheet_name,
+                worksheet,
+                worksheet_node_id
+            )
+        except Exception:
+            # If _any_ error is thrown after importing nodes, we should discard what was imported
+            # to make sure the KG and Postgres don't get out of sync.
+            self.detach_and_delete_worksheet(worksheet_node_id)
+            raise KgImportException(
+                'Nodes were successfully imported, but an unexpected error occurred ' +
+                'while saving your worksheet to the database. The imported nodes have been ' +
+                'discarded. Please try importing again.'
+            )
+
+        return worksheet_node_id
