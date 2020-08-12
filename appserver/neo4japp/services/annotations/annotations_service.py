@@ -5,6 +5,7 @@ import requests
 from collections import deque
 from math import inf
 from typing import cast, Dict, List, Optional, Set, Tuple, Union
+from uuid import uuid4
 
 from pdfminer.layout import LTAnno, LTChar
 
@@ -12,6 +13,7 @@ from .annotation_interval_tree import (
     AnnotationInterval,
     AnnotationIntervalTree,
 )
+from .annotations_neo4j_service import AnnotationsNeo4jService
 from .constants import (
     DatabaseType,
     EntityColor,
@@ -19,8 +21,8 @@ from .constants import (
     EntityType,
     OrganismCategory,
     # exclusion lists
-    CHEMICAL_EXCLUSION,
-    COMPOUND_EXCLUSION,
+    # CHEMICAL_EXCLUSION,
+    # COMPOUND_EXCLUSION,
     SPECIES_EXCLUSION,
     # end exclusion lists
     ENTITY_HYPERLINKS,
@@ -46,33 +48,55 @@ from neo4japp.data_transfer_objects import (
     PDFTokenPositions,
     PDFTokenPositionsList,
 )
-from neo4japp.database import get_hybrid_neo4j_postgres_service
 from neo4japp.exceptions import AnnotationError
+from neo4japp.models import AnnotationStopWords
 
 
 class AnnotationsService:
     def __init__(
         self,
         lmdb_session: LMDBDao,
+        annotation_neo4j: AnnotationsNeo4jService,
     ) -> None:
         self.lmdb_session = lmdb_session
-
-        self.hybrid_neo4j_postgres_service = get_hybrid_neo4j_postgres_service()
+        self.annotation_neo4j = annotation_neo4j
 
         # for word tokens that are typos
         self.correct_spellings: Dict[str, str] = {}
+
+        # custom annotations, including inclusion and exclusions
+        # use in memory dict because they should be small
+        # should be init when needed
+        self._custom_species = None
 
         self.matched_genes: Dict[str, List[PDFTokenPositions]] = {}
         self.matched_chemicals: Dict[str, List[PDFTokenPositions]] = {}
         self.matched_compounds: Dict[str, List[PDFTokenPositions]] = {}
         self.matched_proteins: Dict[str, List[PDFTokenPositions]] = {}
         self.matched_species: Dict[str, List[PDFTokenPositions]] = {}
+        self.matched_custom_species: Dict[str, List[PDFTokenPositions]] = {}
         self.matched_diseases: Dict[str, List[PDFTokenPositions]] = {}
         self.matched_phenotypes: Dict[str, List[PDFTokenPositions]] = {}
 
         self.organism_frequency: Dict[str, int] = {}
         self.organism_locations: Dict[str, List[Tuple[int, int]]] = {}
         self.organism_categories: Dict[str, str] = {}
+
+        # TODO: could potentially put into a cache if these words will not be updated
+        # often. But future feature will allow users to upload and add
+        # to this list, so that means would have to recache.
+        # leave as is for now?
+        self.exclusion_words = set(
+            result.word for result in self.annotation_neo4j.session.query(
+                AnnotationStopWords).all())
+
+    @property
+    def custom_species(self):
+        return self._custom_species
+
+    @custom_species.setter
+    def custom_species(self, value):
+        self._custom_species = value
 
     def validate_chemicals_lmdb(
         self,
@@ -105,10 +129,10 @@ class AnnotationsService:
         if len(lookup_key) > 2:
             # check chemical
             if nlp_predicted_type:
-                if nlp_predicted_type == EntityType.Chemical.value and lowered_word not in CHEMICAL_EXCLUSION:  # noqa
+                if nlp_predicted_type == EntityType.Chemical.value and lowered_word not in self.exclusion_words:  # noqa
                     chem_val = self.lmdb_session.chemicals_txn.get(lookup_key)
             else:
-                if lowered_word not in CHEMICAL_EXCLUSION:
+                if lowered_word not in self.exclusion_words:
                     chem_val = self.lmdb_session.chemicals_txn.get(lookup_key)
 
             if chem_val:
@@ -150,10 +174,10 @@ class AnnotationsService:
         if len(lookup_key) > 2:
             # check compound
             if nlp_predicted_type:
-                if nlp_predicted_type == EntityType.Compound.value and lowered_word not in CHEMICAL_EXCLUSION:  # noqa
+                if nlp_predicted_type == EntityType.Compound.value and lowered_word not in self.exclusion_words:  # noqa
                     comp_val = self.lmdb_session.compounds_txn.get(lookup_key)
             else:
-                if lowered_word not in CHEMICAL_EXCLUSION:
+                if lowered_word not in self.exclusion_words:
                     comp_val = self.lmdb_session.compounds_txn.get(lookup_key)
 
             if comp_val:
@@ -195,10 +219,11 @@ class AnnotationsService:
         if len(lookup_key) > 2:
             # check disease
             if nlp_predicted_type:
-                if nlp_predicted_type == EntityType.Disease.value:
+                if nlp_predicted_type == EntityType.Disease.value and lowered_word not in self.exclusion_words:  # noqa
                     diseases_val = self.lmdb_session.diseases_txn.get(lookup_key)
             else:
-                diseases_val = self.lmdb_session.diseases_txn.get(lookup_key)
+                if lowered_word not in self.exclusion_words:
+                    diseases_val = self.lmdb_session.diseases_txn.get(lookup_key)
 
             if diseases_val:
                 if token.keyword in self.matched_diseases:
@@ -239,10 +264,11 @@ class AnnotationsService:
         if len(lookup_key) > 2:
             # check gene
             if nlp_predicted_type:
-                if nlp_predicted_type == EntityType.Gene.value:
+                if nlp_predicted_type == EntityType.Gene.value and lowered_word not in self.exclusion_words:  # noqa
                     gene_val = self.lmdb_session.genes_txn.get(lookup_key)
             else:
-                gene_val = self.lmdb_session.genes_txn.get(lookup_key)
+                if lowered_word not in self.exclusion_words:
+                    gene_val = self.lmdb_session.genes_txn.get(lookup_key)
 
             if gene_val:
                 if token.keyword in self.matched_genes:
@@ -283,10 +309,11 @@ class AnnotationsService:
         if len(lookup_key) > 2:
             # check phenotype
             if nlp_predicted_type:
-                if nlp_predicted_type == EntityType.Phenotype.value:
+                if nlp_predicted_type == EntityType.Phenotype.value and lowered_word not in self.exclusion_words:  # noqa
                     phenotype_val = self.lmdb_session.phenotypes_txn.get(lookup_key)
             else:
-                phenotype_val = self.lmdb_session.phenotypes_txn.get(lookup_key)
+                if lowered_word not in self.exclusion_words:
+                    phenotype_val = self.lmdb_session.phenotypes_txn.get(lookup_key)
 
             if phenotype_val:
                 if token.keyword in self.matched_phenotypes:
@@ -327,10 +354,11 @@ class AnnotationsService:
         if len(lookup_key) > 2:
             # check protein
             if nlp_predicted_type:
-                if nlp_predicted_type == EntityType.Protein.value:
+                if nlp_predicted_type == EntityType.Protein.value and lowered_word not in self.exclusion_words:  # noqa
                     protein_val = self.lmdb_session.proteins_txn.get(lookup_key)
             else:
-                protein_val = self.lmdb_session.proteins_txn.get(lookup_key)
+                if lowered_word not in self.exclusion_words:
+                    protein_val = self.lmdb_session.proteins_txn.get(lookup_key)
 
             if protein_val:
                 if token.keyword in self.matched_proteins:
@@ -346,7 +374,7 @@ class AnnotationsService:
         synonym: Optional[str] = None,
     ):
         """Validate the lookup key exists in species LMDB. If it
-        does, then add it as a match.
+        does, then add it as a match. Also validate in custom species.
 
         A key could have multiple values, but just need to check
         if one value exists because just validating if in lmdb.
@@ -386,8 +414,36 @@ class AnnotationsService:
                     self.matched_species[token.keyword].append(token)
                 else:
                     self.matched_species[token.keyword] = [token]
+            else:
+                if self.custom_species and lowered_word not in SPECIES_EXCLUSION and token.keyword in self.custom_species:  # noqa
+                    if token.keyword in self.matched_custom_species:
+                        self.matched_custom_species[token.keyword].append(token)
+                    else:
+                        self.matched_custom_species[token.keyword] = [token]
 
             return species_val
+
+    def _find_lmdb_match(self, token: PDFTokenPositions, check_entities: Dict[str, bool]) -> None:
+        if check_entities[EntityType.Chemical.value]:
+            self._find_chemical_match(token)
+
+        if check_entities[EntityType.Compound.value]:
+            self._find_compound_match(token)
+
+        if check_entities[EntityType.Disease.value]:
+            self._find_disease_match(token)
+
+        if check_entities[EntityType.Gene.value]:
+            self._find_gene_match(token)
+
+        if check_entities[EntityType.Phenotype.value]:
+            self._find_phenotype_match(token)
+
+        if check_entities[EntityType.Protein.value]:
+            self._find_protein_match(token)
+
+        if check_entities[EntityType.Species.value]:
+            self._find_species_match(token)
 
     def _find_chemical_match(self, token: PDFTokenPositions) -> None:
         word = token.keyword
@@ -556,7 +612,7 @@ class AnnotationsService:
             pos_idx: int,
         ) -> int:
             i = pos_idx
-            while isinstance(curr_page_coor_obj[i], LTAnno) and i >= 0:
+            while i >= 0 and isinstance(curr_page_coor_obj[i], LTAnno):
                 i -= 1
             return i
 
@@ -567,38 +623,47 @@ class AnnotationsService:
 
         keyword = ''
         for i, pos_idx in enumerate(indexes):
-            if isinstance(curr_page_coor_obj[pos_idx], LTChar):
-                lower_x, lower_y, upper_x, upper_y = curr_page_coor_obj[pos_idx].bbox  # noqa
+            try:
+                if isinstance(curr_page_coor_obj[pos_idx], LTChar):
+                    lower_x, lower_y, upper_x, upper_y = curr_page_coor_obj[pos_idx].bbox  # noqa
 
-                if (start_lower_x is None and
-                        start_lower_y is None and
-                        end_upper_x is None and
-                        end_upper_y is None):
-                    start_lower_x = lower_x
-                    start_lower_y = lower_y
-                    end_upper_x = upper_x
-                    end_upper_y = upper_y
+                    if (start_lower_x is None and
+                            start_lower_y is None and
+                            end_upper_x is None and
+                            end_upper_y is None):
+                        start_lower_x = lower_x
+                        start_lower_y = lower_y
+                        end_upper_x = upper_x
+                        end_upper_y = upper_y
 
-                    keyword += curr_page_coor_obj[pos_idx].get_text()
-                else:
-                    if lower_y != start_lower_y:
-                        diff = abs(lower_y - start_lower_y)
-                        prev_idx = _skip_lt_anno(
-                            curr_page_coor_obj=curr_page_coor_obj,
-                            pos_idx=pos_idx-1,
-                        )
-                        height = curr_page_coor_obj[prev_idx].height
-
-                        # if diff is greater than height ratio
-                        # then part of keyword is on a new line
-                        if diff > height * PDF_NEW_LINE_THRESHOLD:
-                            self._create_keyword_objects(
+                        keyword += curr_page_coor_obj[pos_idx].get_text()
+                    else:
+                        if lower_y != start_lower_y:
+                            diff = abs(lower_y - start_lower_y)
+                            prev_idx = _skip_lt_anno(
                                 curr_page_coor_obj=curr_page_coor_obj,
-                                indexes=indexes[i:],
-                                keyword_positions=keyword_positions,
-                                cropbox=cropbox,
+                                pos_idx=pos_idx-1,
                             )
-                            break
+                            height = curr_page_coor_obj[prev_idx].height
+
+                            # if diff is greater than height ratio
+                            # then part of keyword is on a new line
+                            if diff > height * PDF_NEW_LINE_THRESHOLD:
+                                self._create_keyword_objects(
+                                    curr_page_coor_obj=curr_page_coor_obj,
+                                    indexes=indexes[i:],
+                                    keyword_positions=keyword_positions,
+                                    cropbox=cropbox,
+                                )
+                                break
+                            else:
+                                if upper_y > end_upper_y:
+                                    end_upper_y = upper_y
+
+                                if upper_x > end_upper_x:
+                                    end_upper_x = upper_x
+
+                                keyword += curr_page_coor_obj[pos_idx].get_text()
                         else:
                             if upper_y > end_upper_y:
                                 end_upper_y = upper_y
@@ -607,14 +672,9 @@ class AnnotationsService:
                                 end_upper_x = upper_x
 
                             keyword += curr_page_coor_obj[pos_idx].get_text()
-                    else:
-                        if upper_y > end_upper_y:
-                            end_upper_y = upper_y
-
-                        if upper_x > end_upper_x:
-                            end_upper_x = upper_x
-
-                        keyword += curr_page_coor_obj[pos_idx].get_text()
+            except Exception as exc:
+                raise AnnotationError(
+                    'Unexpected error when creating annotation keyword objects', [str(exc)])
 
         start_lower_x += cropbox[0]  # type: ignore
         end_upper_x += cropbox[0]  # type: ignore
@@ -671,7 +731,7 @@ class AnnotationsService:
         if token_type == EntityType.Species.value:
             organism_meta = OrganismAnnotation.OrganismMeta(
                 category=entity_category or '',
-                keyword_type=token_type,
+                type=token_type,
                 color=color,
                 id=entity_id,
                 id_type=entity['id_type'],
@@ -698,11 +758,12 @@ class AnnotationsService:
                 lo_location_offset=keyword_starting_idx,
                 hi_location_offset=keyword_ending_idx,
                 meta=organism_meta,
+                uuid=str(uuid4()),
             )
         elif token_type == EntityType.Gene.value:
             gene_meta = GeneAnnotation.GeneMeta(
                 category=entity_category or '',
-                keyword_type=token_type,
+                type=token_type,
                 color=color,
                 id=entity_id,
                 id_type=entity['id_type'],
@@ -725,10 +786,11 @@ class AnnotationsService:
                 lo_location_offset=keyword_starting_idx,
                 hi_location_offset=keyword_ending_idx,
                 meta=gene_meta,
+                uuid=str(uuid4()),
             )
         else:
             meta = Annotation.Meta(
-                keyword_type=token_type,
+                type=token_type,
                 color=color,
                 id=entity_id,
                 id_type=entity['id_type'],
@@ -751,6 +813,7 @@ class AnnotationsService:
                 lo_location_offset=keyword_starting_idx,
                 hi_location_offset=keyword_ending_idx,
                 meta=meta,
+                uuid=str(uuid4()),
             )
         return annotation
 
@@ -905,6 +968,7 @@ class AnnotationsService:
         entity_id_str: str,
         char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
         cropbox_in_pdf: Tuple[int, int],
+        organisms_from_custom_annotations: Set[str],
     ) -> List[Annotation]:
         """Gene specific annotation. Nearly identical to `_get_annotation`,
         except that we check genes against the matched organisms found in the
@@ -944,38 +1008,35 @@ class AnnotationsService:
                 entities = self.lmdb_session.get_lmdb_values(
                     txn=transaction, key=lookup_key, token_type=EntityType.Gene.value)
 
-                for entity in entities:
+                # for genes we can be more strict and check for exact match
+                # if there are exact matches we want those and ignore the others
+                entities_to_use = [entity for entity in entities if entity['synonym'] == word]
+
+                if len(entities_to_use) == 0:
+                    entities_to_use = entities
+
+                for entity in entities_to_use:
                     entity_synonym = entity['synonym']
                     gene_names.add(entity_synonym)
 
                     entity_tokenpos_pairs.append((entity, token_positions))
 
+        organism_ids_from_custom_annotations = self.annotation_neo4j.get_organisms_from_ids(
+            tax_ids=list(organisms_from_custom_annotations))
+
+        organism_ids_to_query = organism_ids_from_custom_annotations + list(self.organism_frequency.keys())  # noqa
+
         gene_organism_matches = \
-            self.hybrid_neo4j_postgres_service.get_gene_to_organism_match_result(
+            self.annotation_neo4j.get_gene_to_organism_match_result(
                 genes=list(gene_names),
-                matched_organism_ids=list(self.organism_frequency.keys()),
+                matched_organism_ids=organism_ids_to_query,
             )
-
-        fixed_gene_organism_matches: Dict[str, Dict[str, str]] = {}
-
-        # some genes have identical spelling except for captialization
-        # this can cause some important genes that we want
-        # to identify to be lost when we fix conflicting intervals
-        # so lowercase since it shouldn't matter at this point
-        # after we already have the results from the KG
-        for k, v in gene_organism_matches.items():
-            key = k.lower()
-            if key in fixed_gene_organism_matches:
-                existing_dict = fixed_gene_organism_matches[key]
-                fixed_gene_organism_matches[key] = {**existing_dict, **v}
-            else:
-                fixed_gene_organism_matches[key] = v
 
         for entity, token_positions in entity_tokenpos_pairs:
             if entity['name'] in gene_organism_matches:
                 gene_id, organism_id = self._get_closest_gene_organism_pair(
                     gene_position=token_positions,
-                    organism_matches=fixed_gene_organism_matches[entity['name'].lower()]
+                    organism_matches=gene_organism_matches[entity['name']]
                 )
 
                 category = self.organism_categories[organism_id]
@@ -1045,11 +1106,44 @@ class AnnotationsService:
             cropbox_in_pdf=cropbox_in_pdf,
         )
 
+    def _annotate_custom_species(
+        self,
+        entity_id_str: str,
+        char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
+        cropbox_in_pdf: Tuple[int, int],
+    ) -> List[Annotation]:
+        tokens = self.matched_custom_species
+
+        custom_annotations: List[Annotation] = []
+
+        for word, token_list in tokens.items():
+            for token_positions in token_list:
+                # only care about entity id type for these custom
+                # species annotations
+                # as won't be keeping them as they're only used
+                # to help with gene organism matching
+                entity = {'synonym': word, 'id_type': DatabaseType.Ncbi.value}
+                annotation = self._create_annotation_object(
+                    char_coord_objs_in_pdf=char_coord_objs_in_pdf,
+                    cropbox_in_pdf=cropbox_in_pdf,
+                    token_positions=token_positions,
+                    token_type=EntityType.Species.value,
+                    entity=entity,
+                    entity_id=self.custom_species[word],
+                    entity_category=entity.get('category', None),
+                    color=EntityColor.Species.value,
+                    correct_spellings=self.correct_spellings,
+                )
+
+                custom_annotations.append(annotation)
+        return custom_annotations
+
     def _annotate_species(
         self,
         entity_id_str: str,
         char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
         cropbox_in_pdf: Tuple[int, int],
+        organisms_from_custom_annotations: List[dict],
     ) -> List[Annotation]:
         species_annotations = self._get_annotation(
             tokens=self.matched_species,
@@ -1062,11 +1156,53 @@ class AnnotationsService:
             cropbox_in_pdf=cropbox_in_pdf,
         )
 
+        custom_species_annotations = self._annotate_custom_species(
+            entity_id_str=entity_id_str,
+            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
+            cropbox_in_pdf=cropbox_in_pdf,
+        )
+
+        def has_center_point(
+            custom_rect_coords: List[float],
+            rect_coords: List[float],
+        ) -> bool:
+            x1 = rect_coords[0]
+            y1 = rect_coords[1]
+            x2 = rect_coords[2]
+            y2 = rect_coords[3]
+
+            center_x = (x1 + x2)/2
+            center_y = (y1 + y2)/2
+
+            rect_x1 = custom_rect_coords[0]
+            rect_y1 = custom_rect_coords[1]
+            rect_x2 = custom_rect_coords[2]
+            rect_y2 = custom_rect_coords[3]
+
+            return rect_x1 <= center_x <= rect_x2 and rect_y1 <= center_y <= rect_y2
+
+        # we only want the annotations with correct coordinates
+        # because it is possible for a word to only have one
+        # of its occurrences annotated as a custom annotation
+        filtered_custom_species_annotations: List[Annotation] = []
+        for custom in organisms_from_custom_annotations:
+            for custom_anno in custom_species_annotations:
+                if len(custom['rects']) == len(custom_anno.rects):
+                    # check if center point for each rect in custom_anno.rects
+                    # is in the corresponding rectangle from custom annotations
+                    valid = all(list(map(has_center_point, custom['rects'], custom_anno.rects)))
+
+                    # if center point is in custom annotation rectangle
+                    # then add it to list
+                    if valid:
+                        filtered_custom_species_annotations.append(custom_anno)
+
         self.organism_frequency, self.organism_locations, self.organism_categories = \
             self._get_entity_frequency_location_and_category(
-                annotations=species_annotations,
+                annotations=species_annotations + filtered_custom_species_annotations,
             )
 
+        # don't return the custom annotations because they should stay as custom
         return species_annotations
 
     def _annotate_diseases(
@@ -1109,6 +1245,7 @@ class AnnotationsService:
         entity_id_str: str,
         char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
         cropbox_in_pdf: Tuple[int, int],
+        organisms_from_custom_annotations: List[dict],
     ) -> List[Annotation]:
         funcs = {
             EntityType.Chemical.value: self._annotate_chemicals,
@@ -1121,11 +1258,27 @@ class AnnotationsService:
         }
 
         annotate_entities = funcs[annotation_type]
-        return annotate_entities(
-            entity_id_str=entity_id_str,
-            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
-            cropbox_in_pdf=cropbox_in_pdf,
-        )
+        if annotation_type == EntityType.Gene.value:
+            return annotate_entities(
+                entity_id_str=entity_id_str,
+                char_coord_objs_in_pdf=char_coord_objs_in_pdf,
+                cropbox_in_pdf=cropbox_in_pdf,
+                organisms_from_custom_annotations={
+                    organism['meta']['id'] for organism in organisms_from_custom_annotations},
+            )  # type: ignore
+        elif annotation_type == EntityType.Species.value:
+            return annotate_entities(
+                entity_id_str=entity_id_str,
+                char_coord_objs_in_pdf=char_coord_objs_in_pdf,
+                cropbox_in_pdf=cropbox_in_pdf,
+                organisms_from_custom_annotations=organisms_from_custom_annotations,
+            )  # type: ignore
+        else:
+            return annotate_entities(
+                entity_id_str=entity_id_str,
+                char_coord_objs_in_pdf=char_coord_objs_in_pdf,
+                cropbox_in_pdf=cropbox_in_pdf,
+            )  # type: ignore
 
     def _update_entity_frequency_map(
         self,
@@ -1270,8 +1423,9 @@ class AnnotationsService:
         tokens: List[PDFTokenPositions],
         char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
         cropbox_in_pdf: Tuple[int, int],
-        lmdbs_to_validate,
+        check_entities_in_lmdb: Dict[str, bool],
         types_to_annotate: List[Tuple[str, str]],
+        organisms_from_custom_annotations: List[dict],
     ) -> List[Annotation]:
         """Create annotations.
 
@@ -1279,17 +1433,12 @@ class AnnotationsService:
             tokens: list of PDFTokenPositions
             char_coord_objs_in_pdf: list of char objects from pdfminer
             cropbox_in_pdf: the mediabox/cropbox offset from pdfminer
-            lmdbs_to_validate: the list of functions to be called
-                - e.g [
-                    self._find_chemical_match,
-                    self._find_compound_match,
-                    self._find_disease_match,
-                    self._find_gene_match,
-                    ...
-                ]
+            check_entities_in_lmdb: a dictionary of entity types and boolean
+                - boolean determines whether to check lmdb for that entity
             types_to_annotate: list of entity types to create annotations of
-                - NOTE: IMPORTANT: should always match with `lmdbs_to_validate`
+                - NOTE: IMPORTANT: should always match with `check_entities_in_lmdb`
                 - NOTE: IMPORTANT: Species should always be before Genes
+                    - because species is used to do gene organism matching
                 - e.g [
                     (EntityType.Species.value, EntityIdStr.Species.value),
                     (EntityType.Chemical.value, EntityIdStr.Chemical.value),
@@ -1297,8 +1446,8 @@ class AnnotationsService:
                 ]
         """
         # find matches in lmdb
-        for func in lmdbs_to_validate:
-            deque(map(func, tokens), maxlen=0)
+        from functools import partial
+        deque(map(partial(self._find_lmdb_match, check_entities=check_entities_in_lmdb), tokens), maxlen=0)  # noqa
 
         unified_annotations: List[Annotation] = []
 
@@ -1308,6 +1457,7 @@ class AnnotationsService:
                 entity_id_str=entity_id_str,
                 char_coord_objs_in_pdf=char_coord_objs_in_pdf,
                 cropbox_in_pdf=cropbox_in_pdf,
+                organisms_from_custom_annotations=organisms_from_custom_annotations,
             )
             unified_annotations.extend(annotations)
 
@@ -1316,6 +1466,7 @@ class AnnotationsService:
     def create_rules_based_annotations(
         self,
         tokens: PDFTokenPositionsList,
+        custom_annotations: List[dict],
     ) -> List[Annotation]:
         entity_type_and_id_pairs = [
             # Order is IMPORTANT here, Species should always be annotated before Genes
@@ -1327,21 +1478,30 @@ class AnnotationsService:
             (EntityType.Phenotype.value, EntityIdStr.Phenotype.value),
             (EntityType.Gene.value, EntityIdStr.Gene.value),
         ]
-        lmdbs_to_validate = [
-            self._find_chemical_match,
-            self._find_compound_match,
-            self._find_disease_match,
-            self._find_phenotype_match,
-            self._find_protein_match,
-            self._find_species_match,
-            self._find_gene_match,
-        ]
+
+        # TODO: hard coding for now until UI is done
+        entities_to_check = {
+            EntityType.Chemical.value: True,
+            EntityType.Compound.value: True,
+            EntityType.Disease.value: True,
+            EntityType.Gene.value: True,
+            EntityType.Phenotype.value: True,
+            EntityType.Protein.value: True,
+            EntityType.Species.value: True,
+        }
+
+        self.custom_species = {
+            custom['meta']['allText']: custom['meta']['id'] for custom in custom_annotations
+            if custom['meta']['type'] == EntityType.Species.value
+        }
+
         annotations = self._create_annotations(
             tokens=tokens.token_positions,
             char_coord_objs_in_pdf=tokens.char_coord_objs_in_pdf,
             cropbox_in_pdf=tokens.cropbox_in_pdf,
-            lmdbs_to_validate=lmdbs_to_validate,
+            check_entities_in_lmdb=entities_to_check,
             types_to_annotate=entity_type_and_id_pairs,
+            organisms_from_custom_annotations=custom_annotations,
         )
         return self._clean_annotations(annotations=annotations)
 
@@ -1350,6 +1510,7 @@ class AnnotationsService:
         page_index: Dict[int, int],
         text: str,
         tokens: PDFTokenPositionsList,
+        custom_annotations: List[dict]
     ) -> List[Annotation]:
         cumm_nlp_resp = []
         nlp_tokens: List[PDFTokenPositions] = []
@@ -1361,7 +1522,7 @@ class AnnotationsService:
         # TODO: Breaking the request into pages
         # because doing the entire PDF seem to cause
         # the NLP service container to crash with no
-        # errors and exit code of 247...
+        # errors and exit code of 247... (memory related)
         length = len(pages) - 1
         for i, page in enumerate(pages):
             if i == length:
@@ -1371,7 +1532,7 @@ class AnnotationsService:
 
         for page, page_text in text_in_page:
             try:
-                req = requests.post(NLP_ENDPOINT, json={'text': page_text})
+                req = requests.post(NLP_ENDPOINT, json={'text': page_text}, timeout=30)
                 nlp_resp = req.json()
 
                 for predicted in nlp_resp:
@@ -1412,8 +1573,15 @@ class AnnotationsService:
                         offset_predicted['low_index'] += offset
 
                         cumm_nlp_resp.append(offset_predicted)
+            except requests.exceptions.ConnectTimeout:
+                raise AnnotationError(
+                    'The request timed out while trying to connect to the NLP service.')
+            except requests.exceptions.Timeout:
+                raise AnnotationError(
+                    'The request to the NLP service timed out.')
             except requests.exceptions.RequestException:
-                raise AnnotationError('An error occurred with the NLP service.')
+                raise AnnotationError(
+                    'An unexpected error occurred with the NLP service.')
 
         print(f'NLP Response Output: {json.dumps(cumm_nlp_resp)}')
 
@@ -1425,14 +1593,30 @@ class AnnotationsService:
         entity_type_and_id_pairs = [
             (EntityType.Species.value, EntityIdStr.Species.value),
         ]
-        lmdbs_to_validate = [self._find_species_match]
+
+        # TODO: hard coding for now until UI is done
+        entities_to_check = {
+            EntityType.Chemical.value: False,
+            EntityType.Compound.value: False,
+            EntityType.Disease.value: False,
+            EntityType.Gene.value: False,
+            EntityType.Phenotype.value: False,
+            EntityType.Protein.value: False,
+            EntityType.Species.value: True,
+        }
+
+        self.custom_species = {
+            custom['meta']['allText']: custom['meta']['id'] for custom in custom_annotations
+            if custom['meta']['type'] == EntityType.Species.value
+        }
 
         species_annotations = self._create_annotations(
             tokens=tokens.token_positions,
             char_coord_objs_in_pdf=tokens.char_coord_objs_in_pdf,
             cropbox_in_pdf=tokens.cropbox_in_pdf,
-            lmdbs_to_validate=lmdbs_to_validate,
+            check_entities_in_lmdb=entities_to_check,
             types_to_annotate=entity_type_and_id_pairs,
+            organisms_from_custom_annotations=custom_annotations,
         )
 
         # now annotate what nlp found
@@ -1444,21 +1628,25 @@ class AnnotationsService:
             (EntityType.Phenotype.value, EntityIdStr.Phenotype.value),
             (EntityType.Gene.value, EntityIdStr.Gene.value),
         ]
-        lmdbs_to_validate = [
-            self._find_chemical_match,
-            self._find_compound_match,
-            self._find_disease_match,
-            self._find_gene_match,
-            self._find_phenotype_match,
-            self._find_protein_match,
-        ]
+
+        # TODO: hard coding for now until UI is done
+        entities_to_check = {
+            EntityType.Chemical.value: True,
+            EntityType.Compound.value: True,
+            EntityType.Disease.value: True,
+            EntityType.Gene.value: True,
+            EntityType.Phenotype.value: True,
+            EntityType.Protein.value: True,
+            EntityType.Species.value: False,
+        }
 
         nlp_annotations = self._create_annotations(
             tokens=nlp_tokens,
             char_coord_objs_in_pdf=tokens.char_coord_objs_in_pdf,
             cropbox_in_pdf=tokens.cropbox_in_pdf,
-            lmdbs_to_validate=lmdbs_to_validate,
+            check_entities_in_lmdb=entities_to_check,
             types_to_annotate=entity_type_and_id_pairs,
+            organisms_from_custom_annotations=custom_annotations,
         )
 
         unified_annotations = species_annotations + nlp_annotations
@@ -1474,10 +1662,10 @@ class AnnotationsService:
 
         for anno in unified_annotations:
             # TODO: temp for now as NLP only use Bacteria
-            if anno.meta.keyword_type == 'Species':
+            if anno.meta.type == 'Species':
                 keyword_type = 'Bacteria'
             else:
-                keyword_type = anno.meta.keyword_type
+                keyword_type = anno.meta.type
             hashstr = f'{anno.text_in_document},{keyword_type}'
             matched.add(hashstr)
 
@@ -1558,20 +1746,20 @@ class AnnotationsService:
         anno1: Annotation,
         anno2: Annotation,
     ) -> Annotation:
-        key1 = ENTITY_TYPE_PRECEDENCE[anno1.meta.keyword_type]
-        key2 = ENTITY_TYPE_PRECEDENCE[anno2.meta.keyword_type]
+        key1 = ENTITY_TYPE_PRECEDENCE[anno1.meta.type]
+        key2 = ENTITY_TYPE_PRECEDENCE[anno2.meta.type]
 
         # only do special gene vs protein comparison if they have
         # exact intervals
         # because that means the same normalized text was matched
         # to both
-        if ((anno1.meta.keyword_type == EntityType.Protein.value or
-                anno1.meta.keyword_type == EntityType.Gene.value) and
-            (anno2.meta.keyword_type == EntityType.Protein.value or
-                anno2.meta.keyword_type == EntityType.Gene.value) and
+        if ((anno1.meta.type == EntityType.Protein.value or
+                anno1.meta.type == EntityType.Gene.value) and
+            (anno2.meta.type == EntityType.Protein.value or
+                anno2.meta.type == EntityType.Gene.value) and
             (anno1.lo_location_offset == anno2.lo_location_offset and
                 anno1.hi_location_offset == anno2.hi_location_offset)):  # noqa
-            if anno1.meta.keyword_type != anno2.meta.keyword_type:
+            if anno1.meta.type != anno2.meta.type:
                 # protein vs gene
                 # protein has capital first letter: CysB
                 # gene has lowercase: cysB

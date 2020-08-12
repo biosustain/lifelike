@@ -20,6 +20,12 @@
           "internal_link": {
             "type": "text"
           },
+          "email": {
+            "type": "text"
+          },
+          "external_link": {
+            "type": "text"
+          },
           "doi": {
             "type": "text"
           },
