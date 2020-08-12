@@ -5,7 +5,13 @@ from flask import Blueprint, g, make_response
 from neo4japp.blueprints.auth import auth
 from neo4japp.blueprints.permissions import requires_role
 from neo4japp.database import db, get_excel_export_service
-from neo4japp.models import AppUser, Files, GlobalList, Projects
+from neo4japp.models import (
+    AppUser,
+    Files,
+    GlobalList,
+    InclusionExclusionType,
+    Projects
+)
 
 bp = Blueprint('annotations', __name__, url_prefix='/annotations')
 
@@ -16,7 +22,10 @@ bp = Blueprint('annotations', __name__, url_prefix='/annotations')
 def export_global_inclusions():
     yield g.current_user
 
-    inclusions = GlobalList.query.filter_by(type='inclusion', reviewed=False).all()
+    inclusions = GlobalList.query.filter_by(
+        type=InclusionExclusionType.INCLUSION.value,
+        reviewed=False
+    ).all()
 
     def get_inclusion_for_review(inclusion):
         user = AppUser.query.filter_by(id=inclusion.annotation['user_id']).one_or_none()
@@ -55,7 +64,10 @@ def export_global_inclusions():
 def export_global_exclusions():
     yield g.current_user
 
-    exclusions = GlobalList.query.filter_by(type='exclusion', reviewed=False).all()
+    exclusions = GlobalList.query.filter_by(
+        type=InclusionExclusionType.EXCLUSION.value,
+        reviewed=False,
+    ).all()
 
     def get_exclusion_for_review(exclusion):
         user = AppUser.query.filter_by(id=exclusion.annotation['user_id']).one_or_none()
