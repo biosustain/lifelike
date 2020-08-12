@@ -1,1 +1,38 @@
-<p>file-records works!</p>
+<ngb-accordion [destroyOnHide]='true' *ngFor="let snippet of results.hits">
+  <ngb-panel>
+    <ng-template ngbPanelHeader>
+      <div class="d-flex align-items-center justify-content-between">
+        <button ngbPanelToggle
+                class="btn btn-link snippet-panel-header">{{ (snippet.filename || 'Unknown') | truncate:['240'] }}</button>
+
+        <i class="snippet-panel-pub-data"><a href="mailto:{{snippet.email}}">{{snippet.email}}</a>
+          ({{ snippet.uploaded_date | date: 'fullDate'}}) </i>
+      </div>
+      <h6 class="font-italic font-bold description-title">- Description</h6>
+      <span class="description font-italic d-inline-block">{{ snippet.description }}</span>
+    </ng-template>
+    <ng-template ngbPanelContent>
+      <div class="d-flex flex-column justify-content-between align-items-start">
+        <!-- Need to slightly edit the snippet entry type strings here because the keys on the legend match the
+        labels in the KG, which have uppercase first characters -->
+        <!--        <div class="mt-2 w-100">-->
+        <!--          <div class="d-flex justify-content-start w-100">-->
+        <!--            <label class="m-0 mr-1 font-weight-bold">Pubtator PMID:</label>-->
+        <!--            <p *ngIf="snippet.publication.data.pmid; else unknownPmid" class="m-0">-->
+        <!--              <a-->
+        <!--                class="pubtator-link"-->
+        <!--                [href]="'https://www.ncbi.nlm.nih.gov/research/pubtator/?view=docsum&query=' + snippet.publication.data.pmid"-->
+        <!--                target="_blank">{{ snippet.publication.data.pmid }}</a>-->
+        <!--              <i class="fas fa-fw fa-external-link-alt"></i>-->
+        <!--            </p>-->
+        <!--            <ng-template #unknownPmid>Unknown</ng-template>-->
+        <!--          </div>-->
+        <!--          <div class="snippet-confidence-score-container d-flex justify-content-start w-100">-->
+        <!--            <label class="m-0 mr-1 font-weight-bold">Snippet Confidence Score:</label>-->
+        <!--            <p class="m-0">{{ snippet.normalizedScore.toFixed(3) }}</p>-->
+        <!--          </div>-->
+        <!--        </div>-->
+      </div>
+    </ng-template>
+  </ngb-panel>
+</ngb-accordion>
