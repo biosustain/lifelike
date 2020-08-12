@@ -118,7 +118,6 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
       this.modulePropertiesChange.emit({
         title: this.locator.projectName,
         fontAwesomeIcon: 'layer-group',
-        loading: true,
       });
 
       this.loadTask.update(this.locator);
