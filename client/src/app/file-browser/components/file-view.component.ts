@@ -438,6 +438,16 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
     this.pdfViewerLib.incrementZoom(-0.1);
   }
 
+  zoomActualSize() {
+    this.pdfViewerLib.setZoom(1);
+    this.pdfViewerLib.originalSize = true;
+  }
+
+  fitToPage() {
+    this.pdfViewerLib.setZoom(1);
+    this.pdfViewerLib.originalSize = false;
+  }
+
   /**
    * Open pdf by file_id along with location to scroll to
    * @param file - represent the pdf to open
@@ -573,5 +583,4 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
       fontAwesomeIcon: 'file-pdf',
     });
   }
-
 }
