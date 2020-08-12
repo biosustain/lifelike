@@ -1,4 +1,5 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, Input, OnInit} from '@angular/core';
+import {PDFResult} from "../../interfaces";
 
 @Component({
   selector: 'app-file-records',
@@ -6,6 +7,8 @@ import {Component, OnInit} from '@angular/core';
   styleUrls: ['./file-records.component.scss']
 })
 export class FileRecordsComponent implements OnInit {
+
+  @Input() results: PDFResult;
 
   constructor() {
   }
