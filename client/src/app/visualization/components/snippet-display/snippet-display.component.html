@@ -31,49 +31,42 @@
     ></app-node-relationship>
 
     <div class="mt-1" *ngIf="result.snippets.length > 0; else noSnippets">
-      <!-- TODO: Setting 'destroyOnHide' to 'true' for now, because there are still some lingering
-      issues with animating the open/close of the panels (see stylesheet). -->
-      <ngb-accordion [destroyOnHide]='true' *ngFor="let snippet of result.snippets">
-        <ngb-panel>
-          <ng-template ngbPanelHeader>
-            <div class="d-flex align-items-center justify-content-between">
-              <button ngbPanelToggle class="btn btn-link snippet-panel-header">{{ (snippet.publication.data.title || 'Unknown') | truncate:['240'] }}</button>
-              <i class="snippet-panel-pub-data">{{ (snippet.publication.data.journal || 'Unknown') | truncate:['100'] }} ({{ snippet.publication.data.pubYear || 'Unknown' }})</i>
+      <mat-expansion-panel class="association-snippet-panel border shadow-none my-2" *ngFor="let snippet of result.snippets">
+        <mat-expansion-panel-header class="snippet-panel-header  border-bottom h-100 w-100 px-3 py-2">
+          <mat-panel-title class="snippet-panel-title d-flex align-items-center text-primary">{{ (snippet.publication.data.title || 'Unknown') | truncate:['240'] }}</mat-panel-title>
+          <mat-panel-description class="snippet-panel-pub-data">
+            <i>{{ (snippet.publication.data.journal || 'Unknown') | truncate:['100'] }} ({{ snippet.publication.data.pubYear || 'Unknown' }})</i>
+          </mat-panel-description>
+        </mat-expansion-panel-header>
+
+        <div class="d-flex flex-column justify-content-between align-items-start px-3 py-2">
+          <app-highlight-snippet
+            [snippet]="snippet.reference.data.sentence"
+            [entry1Text]="snippet.reference.data.entry1Text"
+            [entry2Text]="snippet.reference.data.entry2Text"
+            [entry1Type]="snippet.reference.data.entry1Type.slice(0, 1).toUpperCase() + snippet.reference.data.entry1Type.slice(1)"
+            [entry2Type]="snippet.reference.data.entry2Type.slice(0, 1).toUpperCase() + snippet.reference.data.entry2Type.slice(1)"
+            [legend]="legend"
+          ></app-highlight-snippet>
+          <div class="mt-2 w-100">
+            <div class="d-flex justify-content-start w-100">
+              <label class="m-0 mr-1 font-weight-bold">Pubtator PMID:</label>
+              <p *ngIf="snippet.publication.data.pmid; else unknownPmid" class="m-0">
+                <a
+                  class="pubtator-link"
+                  [href]="'https://www.ncbi.nlm.nih.gov/research/pubtator/?view=docsum&query=' + snippet.publication.data.pmid"
+                  target="_blank">{{ snippet.publication.data.pmid }}</a>
+                <i class="fas fa-fw fa-external-link-alt"></i>
+              </p>
+              <ng-template #unknownPmid>Unknown</ng-template>
             </div>
-          </ng-template>
-          <ng-template ngbPanelContent>
-            <div class="d-flex flex-column justify-content-between align-items-start">
-              <!-- Need to slightly edit the snippet entry type strings here because the keys on the legend match the
-              labels in the KG, which have uppercase first characters -->
-              <app-highlight-snippet
-                [snippet]="snippet.reference.data.sentence"
-                [entry1Text]="snippet.reference.data.entry1Text"
-                [entry2Text]="snippet.reference.data.entry2Text"
-                [entry1Type]="snippet.reference.data.entry1Type.slice(0, 1).toUpperCase() + snippet.reference.data.entry1Type.slice(1)"
-                [entry2Type]="snippet.reference.data.entry2Type.slice(0, 1).toUpperCase() + snippet.reference.data.entry2Type.slice(1)"
-                [legend]="legend"
-              ></app-highlight-snippet>
-              <div class="mt-2 w-100">
-                <div class="d-flex justify-content-start w-100">
-                  <label class="m-0 mr-1 font-weight-bold">Pubtator PMID:</label>
-                  <p *ngIf="snippet.publication.data.pmid; else unknownPmid" class="m-0">
-                    <a
-                      class="pubtator-link"
-                      [href]="'https://www.ncbi.nlm.nih.gov/research/pubtator/?view=docsum&query=' + snippet.publication.data.pmid"
-                      target="_blank">{{ snippet.publication.data.pmid }}</a>
-                    <i class="fas fa-fw fa-external-link-alt"></i>
-                  </p>
-                  <ng-template #unknownPmid>Unknown</ng-template>
-                </div>
-                <div class="snippet-confidence-score-container d-flex justify-content-start w-100">
-                  <label class="m-0 mr-1 font-weight-bold">Snippet Confidence Score:</label>
-                  <p class="m-0">{{ snippet.normalizedScore.toFixed(3) }}</p>
-                </div>
-              </div>
+            <div class="snippet-confidence-score-container d-flex justify-content-start w-100">
+              <label class="m-0 mr-1 font-weight-bold">Snippet Confidence Score:</label>
+              <p class="m-0">{{ snippet.normalizedScore.toFixed(3) }}</p>
             </div>
-          </ng-template>
-        </ngb-panel>
-      </ngb-accordion>
+          </div>
+        </div>
+      </mat-expansion-panel>
     </div>
     <ng-template #noSnippets>No Association Snippets Found!</ng-template>
   </div>
