@@ -86,7 +86,7 @@
                       </ng-container>
                     </div>
                   </div>
-                  <div class="mx-2">
+                  <div class="mx-2" *ngIf="pane.id === 'right'">
                     <button type="button" class="btn btn-secondary" (click)="closeRightPane()"
                             ngbTooltip="Collapse this pane">
                       <i class="fa fa-caret-right"></i><br>
