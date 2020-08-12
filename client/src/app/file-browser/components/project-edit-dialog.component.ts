@@ -105,13 +105,10 @@ export class ProjectEditDialogComponent extends CommonFormDialogComponent implem
     this.form.get('username').valueChanges
       .pipe(
         // Make sure a value is being pushed
-        startWith(''),
         filter(val => val.length >= 1),
-        // make sure not submitting duplicate request
-        distinctUntilChanged(),
-        // 500 ms between each input refresh
-        debounceTime(500),
-        flatMap(val => this.acc.listOfUsers(val))
+        // 750 ms between each input refresh
+        debounceTime(750),
+        switchMap(val => this.acc.listOfUsers(val))
       ).subscribe(users => {
         if (isArray(users)) {
           this.userOptions = users.map(u => u.username);
@@ -155,8 +152,6 @@ export class ProjectEditDialogComponent extends CommonFormDialogComponent implem
         this.collabFormSubscription.forEach(
           (sub: Subscription) => sub.unsubscribe()
         );
-
-        console.log(this.form);
 
         this.collabFormSubscription = listOfFormGroups.map(
           (fg: FormGroup) => {
