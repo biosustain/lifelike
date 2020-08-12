@@ -22,16 +22,29 @@
             {{ pdfFile?.filename }}
           </h1>
 
-          <div class="btn-group ml-auto mr-2">
-            <button type="button" class="btn btn-secondary"
-                    [disabled]="!ready" (click)="zoomIn()" ngbTooltip="Zoom in"
-                    placement="bottom">
-              <i class="fa fa-fw fa-search-plus"></i>
-            </button>
+          <div class="btn-group ml-auto mr-2 d-flex align-items-stretch">
+            <div ngbDropdown container="body" class="d-flex align-items-stretch">
+              <button type="button" class="btn btn-secondary btn-sm" ngbDropdownToggle>
+                <i class="fa fa-fw fa-search"></i>
+              </button>
+              <div ngbDropdownMenu class="dropdown-menu">
+                <button class="dropdown-item" (click)="zoomActualSize()">
+                  Actual Size
+                </button>
+                <button class="dropdown-item" (click)="fitToPage()">
+                  Fit to Page
+                </button>
+              </div>
+            </div>
             <button type="button" class="btn btn-secondary"
                     [disabled]="!ready" (click)="zoomOut()" ngbTooltip="Zoom out"
                     placement="bottom">
               <i class="fa fa-fw fa-search-minus"></i>
+            </button>
+            <button type="button" class="btn btn-secondary"
+                    [disabled]="!ready" (click)="zoomIn()" ngbTooltip="Zoom in"
+                    placement="bottom">
+              <i class="fa fa-fw fa-search-plus"></i>
             </button>
           </div>
 

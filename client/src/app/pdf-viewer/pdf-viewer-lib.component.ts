@@ -708,6 +708,10 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
     this.zoom += amount;
   }
 
+  setZoom(amount: number) {
+    this.zoom = amount;
+  }
+
   rotate(angle: number) {
     this.rotation += angle;
   }
