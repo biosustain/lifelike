@@ -22,12 +22,11 @@ down_revision = '0d8dc6eed4c1'
 branch_labels = None
 depends_on = None
 
-t_files = sa.Table(
+t_files = table(
     'files',
-    sa.MetaData(),
-    sa.Column('id', sa.Integer, primary_key=True, autoincrement=True),
-    sa.Column('annotations', postgresql.JSONB, nullable=False),
-    sa.Column('excluded_annotations', postgresql.JSONB, nullable=False),
+    column('id', sa.Integer),
+    column('annotations', postgresql.JSONB),
+    column('excluded_annotations', postgresql.JSONB)
 )
 
 
