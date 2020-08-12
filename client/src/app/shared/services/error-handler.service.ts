@@ -1,11 +1,13 @@
 import { Observable, pipe, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
-import { MessageType } from '../../interfaces/message-dialog.interface';
 import { HttpErrorResponse } from '@angular/common/http';
 import { MessageDialog } from './message-dialog.service';
 import { Injectable } from '@angular/core';
 import { UnaryFunction } from 'rxjs/src/internal/types';
 import { UserError } from '../exceptions';
+
+import { MessageType } from 'app/interfaces/message-dialog.interface';
+import { ServerError } from 'app/interfaces/error.interface';
 
 @Injectable({
   providedIn: 'root',
@@ -32,8 +34,8 @@ export class ErrorHandler {
       } else if (res.status === 500) {
         title = 'Unexpected Application Problem';
         message = 'Lifelike has encountered some unexpected problems. Please try again later.';
-      } else if (res.error && res.error.message) {
-        message = res.error.message;
+      } else if (res.error) {
+        message = (res.error as ServerError).apiHttpError.message;
       }
 
       if (res.error && res.error.detail) {
