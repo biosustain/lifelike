@@ -1,17 +1,9 @@
-import {Component, ElementRef, OnDestroy, OnInit, ViewChild} from '@angular/core';
+import {Component, ElementRef, OnDestroy, OnInit, ViewChild, ViewEncapsulation} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
 
 import {Subscription} from 'rxjs';
 
-import {
-  Domain,
-  EntityType,
-  FTSQueryRecord,
-  FTSResult,
-  PDFResult,
-  PDFSnippets,
-  SearchParameters
-} from 'app/interfaces';
+import {Domain, EntityType, FTSQueryRecord, FTSResult, PDFResult, PDFSnippets, SearchParameters} from 'app/interfaces';
 import {LegendService} from 'app/shared/services/legend.service';
 import {WorkspaceManager} from 'app/shared/workspace-manager';
 
