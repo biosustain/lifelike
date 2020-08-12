@@ -3,11 +3,14 @@
     <ng-template ngbPanelHeader let-opened="opened">
       <div class="d-flex align-items-center justify-content-between">
         <span class="snippet-panel-header">
-          {{ (snippet.filename || 'Unknown') | truncate:['240'] }}
+          {{ (snippet.filename) | truncate:['240'] }}
         </span>
-        <i class="snippet-panel-pub-data"><a href="mailto:{{snippet.email}}">{{snippet.email}}</a>
+        <i class="snippet-panel-pub-data"><a href="mailto:{{snippet.email}}">{{snippet.email}}</a><br/>
           ({{ snippet.uploaded_date | date: 'fullDate'}}) </i>
-        <button ngbPanelToggle type="button" class="btn btn-default" >
+        <button ngbPanelToggle
+                type="button"
+                class="{{opened ?
+                'btn btn-default panel-button open-panel' : 'btn btn-default panel-button'}}">
           <span class="{{ opened ? 'fas fa-angle-down' : 'fas fa-angle-up' }}" aria-hidden="true"></span>
         </button>
       </div>
@@ -16,23 +19,23 @@
     </ng-template>
     <ng-template ngbPanelContent>
       <div class="d-flex flex-column justify-content-between align-items-start">
-        <p class= "snippet-paragraph" [innerHTML]="snippet.preview_text"></p>
+        <p class="snippet-paragraph" [innerHTML]="snippet.preview_text"></p>
       </div>
       <div class="d-flex align-items-center justify-content-end" style="margin-top: 20px">
         <a
-            class="snippet-link"
-            routerLink="/pdf-viewer/{{snippet.file_id}}"
-            target="_blank"> Internal Link</a>
+          class="snippet-link"
+          routerLink="/pdf-viewer/{{snippet.file_id}}"
+          target="_blank"> Internal Link</a>
         <a
-            *ngIf="snippet.doi"
-            class="snippet-link"
-            [href]="snippet.doi"
-            target="_blank"> DOI Link</a>
+          *ngIf="snippet.doi"
+          class="snippet-link"
+          [href]="snippet.doi"
+          target="_blank"> DOI Link</a>
         <a
-            *ngIf="snippet.external_url"
-            class="snippet-link"
-            [href]="snippet.doi"
-            target="_blank"> External Link</a>
+          *ngIf="snippet.external_url"
+          class="snippet-link"
+          [href]="snippet.doi"
+          target="_blank"> External Link</a>
       </div>
     </ng-template>
   </ngb-panel>
