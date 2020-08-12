@@ -568,7 +568,8 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
         )
           .pipe(this.errorHandler.create())
           .subscribe(() => {
-            this.pdfFile = newFile;
+            this.pdfFile.filename = newFile.filename;
+            this.pdfFile.description = newFile.description;
             this.emitModuleProperties();
             this.snackBar.open(`File details updated`, 'Close', {duration: 5000});
           });
