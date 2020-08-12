@@ -17,6 +17,7 @@ from neo4japp.models import (
     Files,
     FileContent,
     GlobalList,
+    InclusionExclusionType,
 )
 
 
@@ -97,7 +98,11 @@ class ManualAnnotationsService:
                 raise DuplicateRecord('Annotation already exists.')
 
         if annotation_to_add['meta']['includeGlobally']:
-            ManualAnnotationsService.add_to_global_list(annotation_to_add, 'inclusion', file.id)
+            ManualAnnotationsService.add_to_global_list(
+                annotation_to_add,
+                InclusionExclusionType.INCLUSION.value,
+                file.id
+            )
 
         file.custom_annotations = [*inclusions, *file.custom_annotations]
         db.session.commit()
@@ -161,7 +166,11 @@ class ManualAnnotationsService:
         }
 
         if excluded_annotation['excludeGlobally']:
-            ManualAnnotationsService.add_to_global_list(excluded_annotation, 'exclusion', file.id)
+            ManualAnnotationsService.add_to_global_list(
+                excluded_annotation,
+                InclusionExclusionType.EXCLUSION.value,
+                file.id
+            )
 
         file.excluded_annotations = [excluded_annotation, *file.excluded_annotations]
         db.session.commit()
