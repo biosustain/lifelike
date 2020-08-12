@@ -101,7 +101,7 @@ def annotate_file(req: AnnotationRequest, project_name: str, file_id: str):
     docs = files_queries.get_all_files_and_content_by_id(
         file_ids=set([file_id]), project_id=project.id)
 
-    if len(docs) == 0:
+    if not docs:
         raise RecordNotFoundException(f'File with file id {file_id} not found.')
 
     annotated: List[dict] = []
