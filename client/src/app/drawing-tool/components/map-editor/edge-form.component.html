@@ -4,38 +4,46 @@
       <label for="label">
         Label:
       </label>
-      <input [(ngModel)]="edge.label" class="form-control" (change)="doSave()" id="label">
+      <input [(ngModel)]="entity.label" class="form-control" (change)="doSave()" id="label">
     </div>
 
     <div class="form-group">
       <label for="detail">Detail:</label>
-      <textarea [(ngModel)]="edge.data.detail" class="form-control" (change)="doSave()" id="detail"></textarea>
+      <textarea [(ngModel)]="entity.data.detail" class="form-control" (change)="doSave()" id="detail"></textarea>
     </div>
 
-    <div class="form-group d-flex align-items-center">
-      <label for="url" class="my-0 mr-2" ngbTooltip="Link">
-        <i class="fa fa-fw fa-link"></i>
-      </label>
-      <input [(ngModel)]="edge.data.hyperlink" class="form-control flex-fill" (change)="doSave()" id="url"
-             [style.width]="0">
-      <button type="button" class="btn btn-secondary btn-sm ml-1" (click)="goToLink()"
-              ngbTooltip="Open link" placement="left" container="left">
-        <i class="fa fa-external-link-alt"></i>
-      </button>
+    <label class='d-table w-100'>
+      <span class='d-table-cell' style="width: inherit;">Hyperlinks:</span>
+      <span (click)='addHyperlink()' class='d-tabble-cell badge badge-primary'><i class="fa fa-plus"></i></span>
+    </label>
+    <div *ngFor='let h of hyperlinks; let i = index;'>
+      <div class="input-group mb-2">
+        <div class="input-group-prepend">
+          <button (click)='goToLink(h.url)' class="btn btn-secondary btn-sm" type="button">
+            <i class="fa fa-external-link-alt"></i>
+          </button>
+        </div>
+        <input [(ngModel)]="entity.data.hyperlinks[i].url" (change)='doSave()' placeholder="URL" type="text" class="form-control" aria-label="Text input with segmented dropdown button">
+        <div class="input-group-append">
+          <button (click)='removeHyperlink(i)' class="btn btn-outline-danger btn-sm" type="button">
+            <i class="fa fa-trash"></i>
+          </button>
+        </div>
+      </div>
     </div>
 
     <div class="mt-4">
       <fieldset class="fieldset-properties"
-                *ngIf="(edge.label != null && edge.label.length) || edge.data?.search">
+                *ngIf="(entity.label != null && entity.label.length) || entity.data?.search">
         <legend>Quick Search <i class="fas fa-external-link-alt ml-1"></i></legend>
 
-        <app-quick-search [query]="edge.label" [links]="edge.data?.search"></app-quick-search>
+        <app-quick-search [query]="entity.label" [links]="entity.data?.search"></app-quick-search>
       </fieldset>
 
       <div class="mt-4">
-        <div *ngIf="edge.data.source" class="mb-2">
-          <button *ngIf="edge.data.source" type="button" class="btn btn-outline-secondary btn-block"
-                  (click)="goToSource()">
+        <div *ngIf="entity.data.source" class="mb-2">
+          <button *ngIf="entity.data.source" type="button" class="btn btn-outline-secondary btn-block"
+                  (click)="goToSource(entity.data.source)">
             Go to Source
           </button>
         </div>
@@ -58,7 +66,7 @@
           <i class="fa fa-fw fa-text-height"></i>
         </label>
         <app-percent-input min="20" max="1000" step="20" class="mr-1"
-                           [(value)]="edge.style.fontSizeScale" (change)="doSave()" default="100" inputId="font-size"
+                           [(value)]="entity.style.fontSizeScale" (change)="doSave()" default="100" inputId="font-size"
                            [style.width]="'6rem'"></app-percent-input>
         %
       </div>
@@ -74,7 +82,7 @@
         </label>
         <app-color-chooser-component
           id="stroke-color" [palette]="paletteChoices"
-          [(color)]="edge.style.strokeColor" emptyLabel="Default"
+          [(color)]="entity.style.strokeColor" emptyLabel="Default"
           (colorChange)="doSave()"></app-color-chooser-component>
       </div>
 
@@ -82,7 +90,7 @@
         <label for="line-type" class="my-0 mr-2">
           <i class="fa fa-fw fa-border-style"></i>
         </label>
-        <select [(ngModel)]="edge.style.lineType" (change)="doSave()" class="custom-select" id="line-type">
+        <select [(ngModel)]="entity.style.lineType" (change)="doSave()" class="custom-select" id="line-type">
           <option *ngFor="let choice of lineTypeChoices" [value]="choice[0]">
             {{choice[1].name}}
           </option>
@@ -94,7 +102,7 @@
           <i class="fa fa-fw fa-window-minimize"></i>
         </label>
         <app-percent-input min="20" max="1000" step="20" class="mr-1"
-                           [(value)]="edge.style.lineWidthScale" (change)="doSave()" default="100"
+                           [(value)]="entity.style.lineWidthScale" (change)="doSave()" default="100"
                            inputId="line-width-scale"
                            [style.width]="'6rem'"></app-percent-input>
         %
@@ -108,7 +116,7 @@
         <label for="target-edge-type">
           To:
         </label>
-        <select [(ngModel)]="edge.style.targetHeadType" (change)="doSave()" class="custom-select"
+        <select [(ngModel)]="entity.style.targetHeadType" (change)="doSave()" class="custom-select"
                 id="target-edge-type">
           <option *ngFor="let choice of lineHeadTypeChoices" [value]="choice[0]">
             {{choice[1].name}}
@@ -120,7 +128,7 @@
         <label for="source-edge-type">
           From:
         </label>
-        <select [(ngModel)]="edge.style.sourceHeadType" (change)="doSave()" class="custom-select"
+        <select [(ngModel)]="entity.style.sourceHeadType" (change)="doSave()" class="custom-select"
                 id="source-edge-type">
           <option *ngFor="let choice of lineHeadTypeChoices" [value]="choice[0]">
             {{choice[1].name}}

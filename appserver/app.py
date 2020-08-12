@@ -31,9 +31,13 @@ def seed():
     con = db.engine.connect()
     trans = con.begin()
     for table in meta.sorted_tables:
-        con.execute(f'ALTER TABLE "{table.name}" DISABLE TRIGGER ALL;')
-        con.execute(f'TRUNCATE TABLE "{table.name}" RESTART IDENTITY CASCADE;')
-        con.execute(f'ALTER TABLE "{table.name}" ENABLE TRIGGER ALL;')
+        # don't want to truncate annotation stop words table
+        # because data was inserted in migration
+        # since it's needed on server when deployed
+        if table.name != 'annotation_stop_words' and table.name != 'alembic_version':
+            con.execute(f'ALTER TABLE "{table.name}" DISABLE TRIGGER ALL;')
+            con.execute(f'TRUNCATE TABLE "{table.name}" RESTART IDENTITY CASCADE;')
+            con.execute(f'ALTER TABLE "{table.name}" ENABLE TRIGGER ALL;')
     trans.commit()
 
     def find_existing_row(model, value):
