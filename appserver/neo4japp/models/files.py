@@ -26,7 +26,10 @@ class Files(RDBMSBase):  # type: ignore
                            db.ForeignKey('files_content.id', ondelete='CASCADE'),
                            index=True,
                            nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('appuser.id', ondelete='CASCADE'), index=True, nullable=False)
+    user_id = db.Column(db.Integer,
+                        db.ForeignKey('appuser.id', ondelete='CASCADE'),
+                        index=True,
+                        nullable=False)
     creation_date = db.Column(db.DateTime, default=db.func.now())
     annotations = db.Column(postgresql.JSONB, nullable=True, server_default='[]')
     annotations_date = db.Column(TIMESTAMP(timezone=True), nullable=True)
