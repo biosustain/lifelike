@@ -22,6 +22,8 @@ import { MapEditorComponent } from './drawing-tool/components/map-editor/map-edi
 import { MapViewComponent } from './drawing-tool/components/map-view.component';
 import { CommunityBrowserComponent } from './file-browser/components/community-browser.component';
 import { BrowserComponent } from './file-browser/components/browser/browser.component';
+import { KgImportWizardComponent } from './kg-import/containers/kg-import-wizard/kg-import-wizard.component';
+import { GeneImportWizardComponent } from './kg-import/containers/gene-import-wizard/gene-import-wizard.component';
 
 // TODO: Add an unprotected home page
 const routes: Routes = [
@@ -179,6 +181,14 @@ const routes: Routes = [
       title: 'Map Editor',
       fontAwesomeIcon: 'project-diagram',
     },
+  },
+  {
+    path: 'kg-import',
+    canActivate: [AuthGuard],
+    children: [
+        { path: '', component: KgImportWizardComponent },
+        { path: 'genes', component: GeneImportWizardComponent}
+    ]
   },
   {
     path: 'kg-statistics',

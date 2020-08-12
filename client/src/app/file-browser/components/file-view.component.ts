@@ -1,5 +1,5 @@
 import { Component, EventEmitter, OnDestroy, Output, ViewChild } from '@angular/core';
-import { combineLatest, from, Subject, Subscription, throwError } from 'rxjs';
+import { combineLatest, from, throwError, Subject, Subscription, BehaviorSubject } from 'rxjs';
 import { PdfFilesService } from 'app/shared/services/pdf-files.service';
 import { Hyperlink, SearchLink } from 'app/shared/constants';
 
@@ -26,6 +26,8 @@ import { ConfirmDialogComponent } from '../../shared/components/dialog/confirm-d
 import { NgbDropdown, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ErrorHandler } from '../../shared/services/error-handler.service';
 import { FileEditDialogComponent } from './file-edit-dialog.component';
+import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
+import { Progress } from 'app/interfaces/common-dialog.interface';
 import { catchError } from 'rxjs/operators';
 import { error } from 'util';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -111,6 +113,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
     private readonly modalService: NgbModal,
     private route: ActivatedRoute,
     private readonly errorHandler: ErrorHandler,
+    private readonly progressDialog: ProgressDialog,
   ) {
     this.projectName = this.route.snapshot.params.project_name || '';
 
@@ -286,14 +289,23 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
     const dialogRef = this.modalService.open(ConfirmDialogComponent);
     dialogRef.componentInstance.message = 'Do you want to annotate the rest of the document with this term as well?';
     dialogRef.result.then((annotateAll: boolean) => {
+      const progressDialogRef = this.progressDialog.display({
+        title: `Adding Annotations`,
+        progressObservable: new BehaviorSubject<Progress>(new Progress({
+          status: 'Adding annotations to the file...',
+        })),
+      });
+
       this.addAnnotationSub = this.pdfAnnService.addCustomAnnotation(this.currentFileId, annotationToAdd, annotateAll, this.projectName)
         .pipe(this.errorHandler.create())
         .subscribe(
           (annotations: Annotation[]) => {
+            progressDialogRef.close();
             this.addedAnnotations = annotations;
             this.snackBar.open('Annotation has been added', 'Close', {duration: 5000});
           },
           err => {
+            progressDialogRef.close();
             this.snackBar.open(`Error: failed to add annotation`, 'Close', {duration: 10000});
           },
         );
@@ -313,16 +325,8 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
         .pipe(this.errorHandler.create())
         .subscribe(
           response => {
-            this.removedAnnotationIds = [];
-            let msg = 'Removal completed';
-            for (const [id, status] of Object.entries(response)) {
-              if (status === 'Removed') {
-                this.removedAnnotationIds.push(id);
-              } else {
-                msg = `${msg}, but one or more annotations could not be removed because you are not the owner`;
-              }
-            }
-            this.snackBar.open(msg, 'Close', {duration: 10000});
+            this.removedAnnotationIds = response;
+            this.snackBar.open('Removal completed', 'Close', {duration: 10000});
           },
           err => {
             this.snackBar.open(`Error: removal failed`, 'Close', {duration: 10000});
@@ -381,7 +385,27 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
       + `/files/${encodeURIComponent(this.currentFileId)}`
       + `#page=${loc.pageNumber}&coords=${loc.rect[0]},${loc.rect[1]},${loc.rect[2]},${loc.rect[3]}`;
 
+    const sources = [{
+      domain: 'File Source',
+      url: source
+    }];
+
+    if (this.pdfFile.doi) {
+      sources.push({
+        domain: 'DOI',
+        url: this.pdfFile.doi
+      });
+    }
+
+    if (this.pdfFile.upload_url) {
+      sources.push({
+        domain: 'Upload URL',
+        url: this.pdfFile.upload_url
+      });
+    }
+
     const hyperlink = meta.idHyperlink || meta.primaryLink || '';
+
     const search = Object.keys(meta.links || []).map(k => {
       return {
         domain: k,
@@ -398,7 +422,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
       label: meta.type.toLowerCase(),
       sub_labels: [],
       data: {
-        source,
+        sources,
         search,
         hyperlink,
         detail: meta.type === 'Link' ? meta.allText : '',
