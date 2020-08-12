@@ -333,6 +333,8 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
         },
         err => {
           progressDialogRef.close();
+          this.refresh();  // update the list annotations could fail but upload could succeed
+          // TODO: refactor this so annotations gets called after upload
           return throwError(err);
         },
       );
