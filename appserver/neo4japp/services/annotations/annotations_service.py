@@ -979,17 +979,20 @@ class AnnotationsService:
             min_organism_dist = inf
 
             # Get the closest instance of this organism
-            for organism_pos in self.organism_locations[organism]:
-                organism_location_lo = organism_pos[0]
-                organism_location_hi = organism_pos[1]
+            if self.organism_locations.get(organism, None):
+                for organism_pos in self.organism_locations[organism]:
+                    organism_location_lo = organism_pos[0]
+                    organism_location_hi = organism_pos[1]
 
-                if gene_location_lo > organism_location_hi:
-                    new_organism_dist = gene_location_lo - organism_location_hi
-                else:
-                    new_organism_dist = organism_location_lo - gene_location_hi
+                    if gene_location_lo > organism_location_hi:
+                        new_organism_dist = gene_location_lo - organism_location_hi
+                    else:
+                        new_organism_dist = organism_location_lo - gene_location_hi
 
-                if new_organism_dist < min_organism_dist:
-                    min_organism_dist = new_organism_dist
+                    if new_organism_dist < min_organism_dist:
+                        min_organism_dist = new_organism_dist
+            else:
+                print(f'Organism ID {organism} in organism_matches not found in: {self.organism_locations}.')  # noqa
 
             # If this organism is closer than the current closest, update
             if min_organism_dist < closest_dist:

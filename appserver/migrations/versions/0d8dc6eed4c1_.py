@@ -1,7 +1,7 @@
 """Insert stop words into new stop words table.
 
 Revision ID: 0d8dc6eed4c1
-Revises: 9118d3b6dba2
+Revises: 09f100e842ad
 Create Date: 2020-08-04 21:18:22.308992
 
 """
@@ -17,7 +17,7 @@ from os import path
 
 # revision identifiers, used by Alembic.
 revision = '0d8dc6eed4c1'
-down_revision = '9118d3b6dba2'
+down_revision = '09f100e842ad'
 branch_labels = None
 depends_on = None
 
