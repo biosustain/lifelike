@@ -21,18 +21,21 @@ projects_collaborator_role = db.Table(
         db.Integer,
         db.ForeignKey('appuser.id', ondelete='CASCADE'),
         primary_key=True,
+        index=True
     ),
     db.Column(
         'app_role_id',
         db.Integer,
         db.ForeignKey('app_role.id', ondelete='CASCADE'),
         primary_key=True,
+        index=True
     ),
     db.Column(
         'projects_id',
         db.Integer,
         db.ForeignKey('projects.id', ondelete='CASCADE'),
         primary_key=True,
+        index=True
     )
 )
 
