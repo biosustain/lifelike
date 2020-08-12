@@ -95,6 +95,8 @@ class ReferenceTableRow(CamelDictMixin):
 class Snippet(CamelDictMixin):
     reference: GraphNode = attr.ib()
     publication: GraphNode = attr.ib()
+    raw_score: int = attr.ib()
+    normalized_score: float = attr.ib()
 
 
 @attr.s(frozen=True)
