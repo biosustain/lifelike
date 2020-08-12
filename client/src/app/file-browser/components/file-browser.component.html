@@ -1,5 +1,5 @@
 <ng-container *ngIf="(loadTask.status$ | async) as status">
-  <app-module-error *ngIf="status.failedErrorShown; else noError" [error]="status.error" class="p-4">
+  <app-module-error *ngIf="status.failedErrorShown; else noError" [error]="status.error" class="d-block p-4">
     <a appLink="/projects">Go to Projects <i class="fa fa-fw fa-arrow-right"></i></a>
   </app-module-error>
 
