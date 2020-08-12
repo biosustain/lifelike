@@ -1,7 +1,14 @@
+from enum import Enum
+
 from sqlalchemy.dialects import postgresql
 
 from neo4japp.database import db
 from neo4japp.models.common import RDBMSBase
+
+
+class InclusionExclusionType(Enum):
+    INCLUSION = 'inclusion'
+    EXCLUSION = 'exclusion'
 
 
 class GlobalList(RDBMSBase):

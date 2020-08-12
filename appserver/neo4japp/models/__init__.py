@@ -1,5 +1,4 @@
 from .common import NEO4JBase, RDBMSBase, ModelConverter
-from .annotations import AnnotationStopWords
 from .auth import (
     AccessActionType,
     AccessControlPolicy,
@@ -16,4 +15,4 @@ from .projects import projects_collaborator_role
 from .neo4j import GraphNode
 from .neo4j import GraphRelationship
 from .organism_match import OrganismGeneMatch
-from .annotations import GlobalList
+from .annotations import AnnotationStopWords, GlobalList, InclusionExclusionType
