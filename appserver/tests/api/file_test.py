@@ -53,7 +53,7 @@ def test_admin_can_delete_pdf_without_permission(
     assert 'Not an owner' not in resp_json
 
 
-def test_can_upload_pdf(monkeypatch, client, test_user, fix_project, fix_directory):
+def test_can_upload_pdf(monkeypatch, client, test_user, fix_project, fix_directory, elasticindexes):
     from neo4japp.blueprints import files
 
     login_resp = client.login_as_user(test_user.email, 'password')
