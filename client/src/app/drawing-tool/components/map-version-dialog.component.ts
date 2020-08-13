@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, OnDestroy } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy, NgZone, ViewChild } from '@angular/core';
 import {
   FormGroup, FormControl, Validators
 } from '@angular/forms';
@@ -12,14 +12,22 @@ import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { Project } from 'app/file-browser/services/project-space.service';
 import { Subscription } from 'rxjs';
 import { MapService } from '../services/map.service';
+import { CanvasGraphView } from 'app/graph-viewer/renderers/canvas/canvas-graph-view';
+import { KnowledgeMapStyle } from 'app/graph-viewer/styles/knowledge-map-style';
 
 @Component({
   selector: 'app-map-version-dialog',
   templateUrl: './map-version-dialog.component.html',
+    styleUrls: [
+    './map-view.component.scss',
+  ],
 })
 export class MapVersionDialogComponent extends CommonFormDialogComponent implements OnInit, OnDestroy{
   @Input() currentMap: KnowledgeMap;
   @Input() projectName: string;
+
+  @ViewChild('canvas', {static: true}) canvasChild;
+
 
   readonly form: FormGroup = new FormGroup({
     version: new FormControl('', Validators.required),
@@ -30,11 +38,14 @@ export class MapVersionDialogComponent extends CommonFormDialogComponent impleme
     {versions: KnowledgeMap[]}
   > = new BackgroundTask(() => this.mapService.getMapVersions(this.projectName, this.currentMap.hash_id));
   private loadTaskSubscription: Subscription;
-  private versionChoices: string[];
-  private versionMaps: KnowledgeMap[]
+  versionChoices: string[];
+  private versionMaps: KnowledgeMap[];
+  mapToPreview: KnowledgeMap;
+  graphCanvas: CanvasGraphView;
   errorHandler: any;
 
-  constructor(modal: NgbActiveModal, messageDialog: MessageDialog, private readonly mapService: MapService
+  constructor(modal: NgbActiveModal, messageDialog: MessageDialog, private readonly mapService: MapService,
+    readonly ngZone: NgZone,
     ) {
     super(modal, messageDialog);
   }
@@ -48,10 +59,21 @@ export class MapVersionDialogComponent extends CommonFormDialogComponent impleme
       }
     );
     this.loadTask.update();
+    const style = new KnowledgeMapStyle();
+    this.graphCanvas = new CanvasGraphView(this.canvasChild.nativeElement as HTMLCanvasElement, {
+      nodeRenderStyle: style,
+      edgeRenderStyle: style,
+    });
+    this.graphCanvas.startParentFillResizeListener();
+    this.ngZone.runOutsideAngular(() => {
+        this.graphCanvas.startAnimationLoop();
+      });
+
   }
 
   ngOnDestroy() {
     this.loadTaskSubscription.unsubscribe();
+    this.graphCanvas.destroy();
   }
 
   get map() {
@@ -66,7 +88,18 @@ export class MapVersionDialogComponent extends CommonFormDialogComponent impleme
     });
   }
 
+  preview(){
+    this.mapToPreview = this.findMap();
+    this.graphCanvas.setGraph(this.mapToPreview.graph);
+    this.graphCanvas.zoomToFit(0);
+    console.log(this.graphCanvas);
+  }
+
   getValue(): KnowledgeMap {
+    return this.findMap();
+  }
+  
+  findMap(): KnowledgeMap {
     const date = this.form.value.version.substring(15);
     return this.versionMaps.filter((version) => version.date_modified == date)[0];
   }

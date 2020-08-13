@@ -24,10 +24,18 @@
         </span>
       </ng-container>
     </app-form-row>
+    <div><div class="graph-container">
+      <canvas #canvas class="graph-view"></canvas>
+    </div></div>
   </app-modal-body>
 
   <app-modal-footer>
-    <button type="button" class="btn btn-secondary mr-2" (click)="cancel()">Cancel</button>
+    <button type="button" class="btn btn-secondary mr-2" (click)="cancel()">
+      Cancel
+    </button>
+    <button type="button" class="btn btn-secondary mr-2" (click)="preview()">
+      Preview
+    </button>
     <button type="submit" class="btn btn-primary">Restore this Version</button>
   </app-modal-footer>
 </form>

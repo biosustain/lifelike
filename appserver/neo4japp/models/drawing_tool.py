@@ -28,6 +28,7 @@ class Project(RDBMSBase):
     hash_id = db.Column(db.String(50), unique=True)
     search_vector = db.Column(TSVectorType('label'))
     creation_date = db.Column(db.DateTime, default=datetime.now)
+    versions = db.relationship('ProjectVersion', backref='project', lazy=True)
 
     def set_hash_id(self):
         """ Assign hash based on project id with salt
@@ -55,17 +56,6 @@ class ProjectVersion(RDBMSBase):
     project_id = db.Column(db.Integer, db.ForeignKey('project.id'), nullable=False)
     search_vector = db.Column(TSVectorType('label'))
     creation_date = db.Column(db.DateTime, default=datetime.now)
-    hash_id = db.Column(db.String(50), unique=True)
-
-    def set_hash_id(self):
-        """ Assign hash based on project version id with salt
-        """
-        salt = "i am man"
-
-        h = hashlib.md5(
-            "{} {}".format(self.id, salt).encode()
-        )
-        self.hash_id = h.hexdigest()
 
 
 class ProjectSchema(ma.ModelSchema):  # type: ignore
