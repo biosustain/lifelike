@@ -205,6 +205,20 @@ def default_lmdb_setup(app, request):
         name='Wasabi receptor toxin',
         synonym='Wasabi receptor toxin',
     )
+    ns2a = lmdb_protein_factory(
+        protein_id='NS2A_CVBM',
+        id_type=DatabaseType.Uniprot.value,
+        name='ns2a',
+        synonym='ns2a',
+    )
+
+    NS2A = lmdb_protein_factory(
+        protein_id='POLG_ZIKVK',
+        id_type=DatabaseType.Uniprot.value,
+        name='NS2A',
+        synonym='NS2A',
+    )
+
     serpina1_protein = lmdb_protein_factory(
         protein_id='A1AT_PONAB',
         id_type=DatabaseType.Uniprot.value,
@@ -287,7 +301,7 @@ def default_lmdb_setup(app, request):
         (DISEASES_MESH_LMDB, 'diseases', [cold_sore]),
         (GENES_NCBI_LMDB, 'genes', [bola3, hyp27_gene, serpina1_gene, serpina1_gene2]),
         (PHENOTYPES_MESH_LMDB, 'phenotypes', [whey_protein]),
-        (PROTEINS_UNIPROT_LMDB, 'proteins', [hyp27_protein, serpina1_protein, wasabi]),
+        (PROTEINS_UNIPROT_LMDB, 'proteins', [hyp27_protein, serpina1_protein, wasabi, ns2a, NS2A]),
         (SPECIES_NCBI_LMDB, 'species', [human, moniliophthora_roreri, rat]),
     ]
     for db_name, entity, data in entities:
