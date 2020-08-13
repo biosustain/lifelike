@@ -49,6 +49,7 @@ def populate_single_index(fid: int):
             'doi': fi.doi
         }
     elastic_client.create('pdf', id=fi.file_id, body=document, pipeline=ATTACHMENT_PIPELINE_NAME)
+    elastic_client.indices.refresh('pdf')
 
 
 def populate_all_indexes():
