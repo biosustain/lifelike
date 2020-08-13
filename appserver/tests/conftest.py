@@ -31,6 +31,7 @@ from neo4japp.services import (
     Neo4JService,
     SearchService,
 )
+from neo4japp.services.indexing import index_pdf
 from neo4japp.util import (
     get_first_known_label_from_node,
 )
@@ -69,6 +70,13 @@ def session(app, request):
 
     request.addfinalizer(teardown)
     return session
+
+
+@pytest.fixture(scope='function')
+def elasticindexes():
+    """ Sets up the elastic indexes and pipelines """
+    index_pdf.create_ingest_pipeline()
+    index_pdf.create_index_and_mappings()
 
 
 @pytest.fixture(scope='function')
