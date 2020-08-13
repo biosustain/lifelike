@@ -4,7 +4,7 @@ import pytest
 
 from os import path, remove, walk
 
-from neo4japp.services.annotations import prepare_databases, AnnotationsNeo4jService
+from neo4japp.services.annotations import AnnotationsService, AnnotationsNeo4jService, LMDBDao
 from neo4japp.services.annotations.constants import (
     DatabaseType,
     OrganismCategory,
@@ -100,6 +100,13 @@ def lmdb_species_factory(
         'synonym': synonym,
     }
 # End LMDB Data Helpers
+
+
+def create_empty_lmdb(path_to_folder: str, db_name: str):
+    map_size = 1099511627776
+    env = lmdb.open(path.join(directory, path_to_folder), map_size=map_size, max_dbs=2)
+    db = env.open_db(db_name.encode('utf-8'), dupsort=True)
+    env.close()
 
 
 def create_entity_lmdb(path_to_folder: str, db_name: str, entity_objs=[]):
@@ -580,3 +587,61 @@ def mock_get_gene_to_organism_match_result_for_escherichia_coli_pdf(monkeypatch)
 @pytest.fixture(scope='function')
 def annotations_setup(app):
     pass
+
+
+@pytest.fixture(scope='function')
+def get_annotation_n4j(neo4j_service_dao, session):
+    return AnnotationsNeo4jService(
+        neo4j_service=neo4j_service_dao, session=session)
+
+
+@pytest.fixture(scope='function')
+def get_lmdb():
+    for db_name, entity in [
+        (CHEMICALS_CHEBI_LMDB, 'chemicals'),
+        (COMPOUNDS_BIOCYC_LMDB, 'compounds'),
+        (GENES_NCBI_LMDB, 'genes'),
+        (DISEASES_MESH_LMDB, 'diseases'),
+        (PROTEINS_UNIPROT_LMDB, 'proteins'),
+        (PHENOTYPES_MESH_LMDB, 'phenotypes'),
+        (SPECIES_NCBI_LMDB, 'species'),
+    ]:
+        create_empty_lmdb(f'lmdb/{entity}', db_name)
+
+    genes_lmdb_path = path.join(directory, 'lmdb/genes')
+    chemicals_lmdb_path = path.join(directory, 'lmdb/chemicals')
+    compounds_lmdb_path = path.join(directory, 'lmdb/compounds')
+    proteins_lmdb_path = path.join(directory, 'lmdb/proteins')
+    species_lmdb_path = path.join(directory, 'lmdb/species')
+    diseases_lmdb_path = path.join(directory, 'lmdb/diseases')
+    phenotypes_lmdb_path = path.join(directory, 'lmdb/phenotypes')
+
+    return LMDBDao(
+        genes_lmdb_path=genes_lmdb_path,
+        chemicals_lmdb_path=chemicals_lmdb_path,
+        compounds_lmdb_path=compounds_lmdb_path,
+        proteins_lmdb_path=proteins_lmdb_path,
+        species_lmdb_path=species_lmdb_path,
+        diseases_lmdb_path=diseases_lmdb_path,
+        phenotypes_lmdb_path=phenotypes_lmdb_path,
+    )
+
+
+@pytest.fixture(scope='function')
+def get_annotations_service(
+    get_annotation_n4j,
+    get_lmdb,
+    request
+):
+    def teardown():
+        for parent, subfolders, filenames in walk(path.join(directory, 'lmdb/')):
+            for fn in filenames:
+                if fn.lower().endswith('.mdb'):
+                    remove(path.join(parent, fn))
+
+    request.addfinalizer(teardown)
+
+    return AnnotationsService(
+        lmdb_session=get_lmdb,
+        annotation_neo4j=get_annotation_n4j,
+    )
