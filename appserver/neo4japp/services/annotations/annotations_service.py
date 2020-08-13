@@ -913,6 +913,14 @@ class AnnotationsService:
                 lookup_key = normalize_str(lookup_key)
                 entities = self.lmdb_session.get_lmdb_values(
                     txn=transaction, key=lookup_key, token_type=token_type)
+
+                if token_type == EntityType.Protein.value:
+                    # for proteins we can be more strict and check for exact match
+                    # if there are exact matches we want those and ignore the others
+                    entities_to_use = [entity for entity in entities if entity['synonym'] == word]
+                    if entities_to_use:
+                        entities = entities_to_use
+
                 synonym_common_names_dict: Dict[str, Set[str]] = {}
 
                 for entity in entities:
