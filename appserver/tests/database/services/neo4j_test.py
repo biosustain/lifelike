@@ -48,9 +48,11 @@ def test_get_reference_table_data(
 
     reference_table_rows = get_reference_table_data_result.reference_table_rows
 
-    assert len(reference_table_rows) == 1
-    assert reference_table_rows[0].node_display_name == 'Penicillins'
+    assert len(reference_table_rows) == 2
+    assert reference_table_rows[0].node_display_name == 'Oxygen'
     assert reference_table_rows[0].snippet_count == 2
+    assert reference_table_rows[1].node_display_name == 'Penicillins'
+    assert reference_table_rows[1].snippet_count == 2
 
 
 def test_get_snippets_for_edge(
