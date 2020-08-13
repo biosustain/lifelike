@@ -40,7 +40,7 @@
         "id": 2,
         "username": "user",
         "email": "user@example.com",
-        "password_hash": "password",
+        "password": "password",
         "first_name": "Michelle",
         "last_name": "Doe",
         "roles": []
