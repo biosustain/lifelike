@@ -1,6 +1,7 @@
 import io
 import json
 import os
+import re
 from datetime import datetime
 
 import graphviz as gv
@@ -28,7 +29,7 @@ from neo4japp.blueprints.projects import bp as newbp
 from neo4japp.constants import ANNOTATION_STYLES_DICT
 from neo4japp.data_transfer_objects import PublicMap
 from neo4japp.data_transfer_objects.common import ResultList, PaginatedRequest
-from neo4japp.database import db
+from neo4japp.database import db, get_authorization_service, get_projects_service
 from neo4japp.exceptions import (
     InvalidFileNameException, RecordNotFoundException, NotAuthorizedException
 )
@@ -345,61 +346,66 @@ def delete_project(hash_id: str, projects_name: str):
 
 @newbp.route('/<string:projects_name>/map/<string:hash_id>/pdf', methods=['GET'])
 @auth.login_required
-@requires_project_permission(AccessActionType.READ)
 def get_project_pdf(projects_name: str, hash_id: str):
     """ Gets a PDF file from the project drawing """
 
-    unprocessed = []
-    processed = {}
-    processed_ids = []
-    references = []
-
     user = g.current_user
+    auth_service = get_authorization_service()
+    project_service = get_projects_service()
+    is_superuser = auth_service.has_role(user, 'admin')
 
-    projects = Projects.query.filter(Projects.project_name == projects_name).one_or_none()
-    if projects is None:
-        raise RecordNotFoundException(f'Project {projects_name} not found')
+    hash_id_queue = [hash_id]
+    seen_hash_ids = set()
+    map_pdfs = {}
+    pdf_map_links = []
 
-    yield user, projects
+    while len(hash_id_queue):
+        current_hash_id = hash_id_queue.pop(0)
 
-    try:
-        project = Project.query.filter(
-            Project.hash_id == hash_id,
-        ).join(
-            Directory,
-            Directory.id == Project.dir_id,
-        ).filter(
-            Directory.projects_id == projects.id,
-        ).one()
-    except NoResultFound:
-        raise RecordNotFoundException('not found :-( ')
+        try:
+            project = Project.query \
+                .options(joinedload(Project.user),
+                         joinedload(Project.dir),
+                         joinedload(Project.dir, Directory.project)) \
+                .filter(Project.hash_id == current_hash_id) \
+                .one()
 
-    unprocessed.append(project.hash_id)
+            # Check permission
+            if not is_superuser:
+                role = project_service.has_role(user, project.dir.project)
+                if role is None or not auth_service.is_allowed(role, AccessActionType.READ, project.dir.project):
+                    raise NotAuthorizedException('No permission to read linked map')
 
-    while len(unprocessed):
-        item = unprocessed.pop(0)
-        project = Project.query.filter_by(hash_id=item).one_or_none()
-        if not project:
-            raise RecordNotFoundException('No record found')
-        pdf_data = process(project)
-        pdf_object = PdfFileReader(io.BytesIO(pdf_data))
-        processed[item] = pdf_object
-        processed_ids.append(item)
-        unprocessed_, references_ = get_references(pdf_object)
-        unprocessed.extend([x for x in unprocessed_ if x not in unprocessed])
-        references.extend(references_)
+            pdf_data = process(project)
+            pdf_object = PdfFileReader(io.BytesIO(pdf_data), strict=False)
+            map_pdfs[current_hash_id] = pdf_object
 
-    for annot, hash_id in references:
-        annot[NameObject('/Dest')] = ArrayObject([processed[hash_id].getPage(0).indirectRef,
-                                                  NameObject('/Fit')])
-        del (annot['/A'])
+            # Search through map links in the PDF and find related maps we should add to the PDF
+            unprocessed_, references_ = get_references(pdf_object)
+            pdf_map_links.extend(references_)
+            
+            hash_id_queue.extend([x for x in unprocessed_ if x not in seen_hash_ids])
+            seen_hash_ids.update([x for x in unprocessed_ if x not in seen_hash_ids])
+        except (NoResultFound, NotAuthorizedException):
+            if current_hash_id == hash_id:
+                # If it's the root map requested, we need to fail early
+                raise RecordNotFoundException('Requested map not found or cannot be read')
+            else:
+                # If it's a linked map and we can't load it, just don't add it to the PDF
+                continue
 
-    yield merge_pdfs(processed, processed_ids)
+    for object, hash_id in pdf_map_links:
+        if hash_id in map_pdfs:
+            object[NameObject('/Dest')] = ArrayObject([map_pdfs[hash_id].getPage(0).indirectRef,
+                                                       NameObject('/Fit')])
+            del (object['/A'])
+
+    return merge_pdfs(map_pdfs)
 
 
-def merge_pdfs(processed, pdf_list):
+def merge_pdfs(processed):
     final = PdfFileWriter()
-    for pdf_id in pdf_list:
+    for pdf_id in processed:
         final.addPage(processed[pdf_id].getPage(0))
     output = io.BytesIO()
     final.write(output)
@@ -410,8 +416,13 @@ def merge_pdfs(processed, pdf_list):
 def get_references(pdf_object):
     unprocessed = []
     references = []
+    map_link_pattern = re.compile("^/projects/([^/]+)/maps/([^/]+)")
     for x in pdf_object.getPage(0).get('/Annots', []):
         x = x.getObject()
+        m = map_link_pattern.search(x['/A']['/URI'])
+        if m:
+            unprocessed.append(m.group(2))
+            references.append((x, m.group(2)))
         if 'dt/map/' in x['/A']['/URI']:
             id = x['/A']['/URI'].split('map/')[-1]
             unprocessed.append(id)
