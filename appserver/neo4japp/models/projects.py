@@ -51,7 +51,7 @@ class Projects(RDBMSBase):  # type: ignore
 
     @validates('project_name')
     def validate_project_name(self, key, name):
-        if not re.match('^[A-Za-z0-9-]{1,}$', name):
+        if not re.match('^[A-Za-z0-9-]+$', name):
             raise ValueError('incorrect project name format')
         return name
 
