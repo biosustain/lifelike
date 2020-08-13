@@ -269,7 +269,6 @@ def update_project(hash_id: str, projects_name: str):
         graph=project.graph,
         user_id=user.id,
         dir_id=project.dir_id,
-        creation_date=datetime.now(),
         project_id=project.id,
     )
 
@@ -285,8 +284,6 @@ def update_project(hash_id: str, projects_name: str):
     db.session.add(project_version)
     db.session.flush()
     
-    project_version.set_hash_id()
-
     db.session.commit()
 
     yield jsonify({'status': 'success'}), 200
@@ -324,35 +321,6 @@ def delete_project(hash_id: str, projects_name: str):
     yield jsonify({'status': 'success'}), 200
 
 
-@newbp.route('/<string:projects_name>/map/<string:hash_id>/ver/<string:version_hash>', methods=['GET'])
-@auth.login_required
-@requires_project_permission(AccessActionType.READ)
-def get_version_by_hash(hash_id: str, projects_name: str, version_hash: str):
-    """ Get map version by version id lookup """
-
-    projects = Projects.query.filter(Projects.project_name == projects_name).one()
-    targetMap = Project.query.filter(Project.hash_id == hash_id).one()
-
-    yield targetMap, projects
-
-    # Pull up map by hash_id
-    try:
-        project_version = ProjectVersion.query.filter(
-            ProjectVersion.project_id == targetMap.id and ProjectVersion.hash_id == version_hash,
-        ).join(
-            Directory,
-            Directory.id == ProjectVersion.dir_id,
-        ).filter(
-            Directory.projects_id == projects.id,
-        ).one()
-    except NoResultFound:
-        raise RecordNotFoundException('not found :-( ')
-
-    project_schema = ProjectVersionSchema()
-
-    yield jsonify({'version': project_schema.dump(project_version)})
-
-
 @bp.route('/<string:projects_name>/map/<string:hash_id>/version/', methods=['GET'])
 @auth.login_required
 @requires_project_permission(AccessActionType.READ)
@@ -361,13 +329,13 @@ def get_versions(projects_name: str, hash_id: str):
     user = g.current_user
 
     projects = Projects.query.filter(Projects.project_name == projects_name).one()
-    targetMap = Project.query.filter(Project.hash_id == hash_id).one()
+    target_map = Project.query.filter(Project.hash_id == hash_id).one()
 
     yield user, projects
 
     try:
         project_versions = ProjectVersion.query.filter(
-            ProjectVersion.project_id == targetMap.id
+            ProjectVersion.project_id == target_map.id
         ).join(
             Directory,
             Directory.id == ProjectVersion.dir_id,
