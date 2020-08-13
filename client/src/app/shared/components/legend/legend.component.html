@@ -1,9 +1,0 @@
-<div id="legend">
-  Legend
-  <div id="node-colors-container" fxLayout="column" fxLayoutAlign="start start">
-    <div *ngFor="let nodeType of legend | keyvalue" class="node-label-and-color" fxLayout="row" fxLayoutAlign="start center">
-      <div [ngStyle]="{'margin-right': '5px', 'height': '10px', 'width': '10px', 'background': nodeType.value[0], 'border': 'thin solid', 'border-color': nodeType.value[1]}"></div>
-      <div>{{nodeType.key}}</div>
-    </div>
-  </div>
-</div>

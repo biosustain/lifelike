@@ -1,20 +1,20 @@
-<form [formGroup]="form" class="w-100 vh-100 flex flex-column justify-center items-center">
-    <div class="w-50 pa2 flex flex-column justify-center items-center">
-        <mat-form-field appearance="outline" class="w-100">
-            <input matInput required placeholder="Email Address" formControlName="email">
-            <mat-error>E-mail cannot be empty.</mat-error>
-        </mat-form-field>
-        <mat-form-field appearance="outline" class="w-100">
-            <input matInput required placeholder="Password" formControlName="password" type="password">
-            <mat-error>Password cannot be empty.</mat-error>
-        </mat-form-field>
-        <button
-            (click)="submit()"
-            [disabled]="form.invalid"
-            class="w-100"
-            mat-raised-button color="primary"
-        >
-            Login
-        </button>
-    </div>
-</form>
+<div class="card m-auto" style="width: 500px">
+  <div class="card-header">
+    Login to Lifelike
+  </div>
+  <div class="card-body">
+    <form [formGroup]="form" (ngSubmit)="submit()">
+      <app-form-row for="email" label="Email" [control]="form.get('email')">
+        <input type="email" formControlName="email" id="email" [appFormInput]="form.get('email')" appAutoFocus>
+      </app-form-row>
+
+      <app-form-row for="password" label="Password" [control]="form.get('label')">
+        <input type="password" formControlName="password" id="password" [appFormInput]="form.get('password')">
+      </app-form-row>
+
+      <button type="submit" class="btn btn-primary">
+        Login
+      </button>
+    </form>
+  </div>
+</div>

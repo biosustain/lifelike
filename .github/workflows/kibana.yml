@@ -1,0 +1,72 @@
+name: Kibana Deployment
+
+on:
+  push:
+    tags: [annotations-kibana]
+
+env:
+  PROJECT_ID: ${{ secrets.GCE_PROJECT }}
+  GCE_INSTANCE: kg-kibana-annotations
+  GCE_INSTANCE_ZONE: us-central1-a
+  GCE_SERVICE_ACCOUNT: ${{ secrets.GCE_SA_KEY }}
+  POSTGRES_HOST: ${{ secrets.STAGING_POSTGRES_HOST }}
+  POSTGRES_PORT: ${{ secrets.STAGING_POSTGRES_PORT }}
+  POSTGRES_USER: ${{ secrets.STAGING_POSTGRES_USER }}
+  POSTGRES_PASSWORD: ${{ secrets.STAGING_POSTGRES_PASSWORD }}
+  POSTGRES_DB: ${{ secrets.STAGING_POSTGRES_DB }}
+  NEO4J_HOST: ${{ secrets.STAGING_NEO4J_HOST }}
+  NEO4J_AUTH: ${{ secrets.STAGING_NEO4J_AUTH }}
+  FLASK_APP: ${{ secrets.STAGING_FLASK_APP }}
+  FLASK_APP_CONFIG: ${{ secrets.STAGING_FLASK_APP_CONFIG }}
+  FLASK_ENV: ${{ secrets.STAGING_FLASK_ENV }}
+
+jobs:
+
+    setup-build-publish-deploy:
+
+        name: Setup and Deploy
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v2
+
+            # Setup gcloud CLI
+            # https://github.com/GoogleCloudPlatform/github-actions
+            - uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
+              with:
+                version: '286.0.0'
+                service_account_key: ${{ secrets.GCE_SA_KEY }}
+                project_id: ${{ secrets.GCE_PROJECT }}
+
+            # Configure Docker to use gcloud command line tool
+            - run: |-
+                gcloud --quiet auth configure-docker
+
+            - name: Deploy Setup
+              run: |-
+                echo "DOCKER_USER=_json_key" >> kibana.env
+                echo "PROJECT_ID=$PROJECT_ID" >> kibana.env
+                echo "POSTGRES_HOST=$POSTGRES_HOST" >> kibana.env
+                echo "POSTGRES_PORT=$POSTGRES_PORT" >> kibana.env
+                echo "POSTGRES_USER=$POSTGRES_USER" >> kibana.env
+                echo "POSTGRES_PASSWORD=$POSTGRES_PASSWORD" >> kibana.env
+                echo "POSTGRES_DB=$POSTGRES_DB" >> kibana.env
+                echo "NEO4J_HOST=$NEO4J_HOST" >> kibana.env
+                echo "NEO4J_AUTH=$NEO4J_AUTH" >> kibana.env
+                echo "FLASK_APP=$FLASK_APP" >> kibana.env
+                echo "FLASK_APP_CONFIG=$FLASK_APP_CONFIG" >> kibana.env
+                echo "FLASK_ENV=$FLASK_ENV" >> kibana.env
+                echo "$GCE_SERVICE_ACCOUNT" >> keyfile.json
+                gsutil cp kibana.env gs://kg-secrets
+                gcloud compute ssh $GCE_INSTANCE --zone $GCE_INSTANCE_ZONE --command='sudo chown -R runner /srv';
+                gcloud compute scp kibana.env $GCE_INSTANCE:/srv/.env --zone $GCE_INSTANCE_ZONE
+                gcloud compute scp keyfile.json $GCE_INSTANCE:/srv --zone $GCE_INSTANCE_ZONE
+                gcloud compute scp docker-compose.kibana.yml $GCE_INSTANCE:/srv --zone $GCE_INSTANCE_ZONE
+                gcloud compute scp ./deployment/bin/kibana.sh $GCE_INSTANCE:/srv --zone $GCE_INSTANCE_ZONE
+                gcloud compute ssh $GCE_INSTANCE --zone $GCE_INSTANCE_ZONE --command='sudo chmod a+x /srv/kibana.sh';
+
+            - name: Deploy
+              run: |-
+                gcloud compute ssh $GCE_INSTANCE --zone $GCE_INSTANCE_ZONE --command='sudo /srv/kibana.sh';
+

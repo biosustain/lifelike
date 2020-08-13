@@ -7,7 +7,7 @@ $dark-blue: #3177B8;
   -webkit-user-select: none;  /* Chrome all / Safari all */
   -moz-user-select: none;     /* Firefox all */
   -ms-user-select: none;      /* IE 10+ */
-  user-select: none; 
+  user-select: none;
 }
 
 @mixin overlay {
@@ -44,3 +44,6 @@ router-outlet + * {
 .tooltip-newlines {
   white-space: pre-line;
 }
+
+/* Importing Bootstrap SCSS file. */
+@import '~bootstrap/scss/bootstrap';

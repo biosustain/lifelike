@@ -1,5 +1,4 @@
 .ng2-pdf-viewer-container {
-  overflow-x: auto;
   position: relative;
   height: 100%;
 }
@@ -43,14 +42,14 @@
       }
 
       &.selected {
-        background-color: rgb(220, 12, 15);
+        border: 2px solid red;
       }
     }
 
     ::-moz-selection {
       background: rgb(0, 0, 255);
     }
-    
+
     ::selection {
       background: rgb(0, 0, 255);
     }
@@ -367,7 +366,7 @@
       margin: 0px auto 10px auto;
       border: none;
     }
-    
+
     padding-bottom: 10px;
     &.removePageBorders {
       padding-bottom: 0;

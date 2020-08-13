@@ -5,6 +5,7 @@ on:
     tags: [demo]
 
 env:
+    ELASTICSEARCH_HOSTS: ${{ secrets.ELASTICSEARCH_HOSTS }}
     POSTGRES_HOST: ${{ secrets.DEMO_POSTGRES_HOST }}
     POSTGRES_PORT: ${{ secrets.DEMO_POSTGRES_PORT }}
     POSTGRES_USER: ${{ secrets.DEMO_POSTGRES_USER }}
@@ -25,6 +26,7 @@ env:
     SENTRY_KEY: ${{ secrets.SENTRY_KEY }}
     REDIS_HOST: ${{ secrets.REDIS_HOST }}
     REDIS_PORT: ${{ secrets.REDIS_PORT }}
+    DOMAIN: http://demo.lifelike.bio
 
 jobs:
 
@@ -56,7 +58,7 @@ jobs:
                 password: ${{ secrets.GCE_SA_KEY }}
                 registry: gcr.io
                 image_name: ${{ secrets.GCE_PROJECT }}/kg-appserver-demo
-                image_tag: ${{ github.sha }}, latest
+                image_tag: ${{ github.sha }},latest
                 context: ./appserver
                 dockerfile: ./Dockerfile.prod
 
@@ -67,7 +69,7 @@ jobs:
                 password: ${{ secrets.GCE_SA_KEY }}
                 registry: gcr.io
                 image_name: ${{ secrets.GCE_PROJECT }}/kg-webserver-demo
-                image_tag: ${{ github.sha }}, latest
+                image_tag: ${{ github.sha }},latest
                 context: ./client
                 dockerfile: ./Dockerfile.demo
 
@@ -78,12 +80,24 @@ jobs:
                 password: ${{ secrets.GCE_SA_KEY }}
                 registry: gcr.io
                 image_name: ${{ secrets.GCE_PROJECT }}/kg-cache-service-demo
-                image_tag: ${{ github.sha }}, latest
+                image_tag: ${{ github.sha }},latest
                 context: ./cache-invalidator
                 dockerfile: ./Dockerfile
 
+            - name: Build NLP
+              uses: docker/build-push-action@v1
+              with:
+                username: _json_key
+                password: ${{ secrets.GCE_SA_KEY }}
+                registry: gcr.io
+                repository: ${{ secrets.GCE_PROJECT }}/kg-nlpapi-demo
+                tags: ${{ github.sha }},latest
+                path: ./nlp
+                dockerfile: ./nlp/Dockerfile
+
             - name: Deploy Setup
               run: |-
+                echo "ELASTICSEARCH_HOSTS=$ELASTICSEARCH_HOSTS" >> demo.env
                 echo "POSTGRES_HOST=$POSTGRES_HOST" >> demo.env
                 echo "POSTGRES_PORT=$POSTGRES_PORT" >> demo.env
                 echo "POSTGRES_USER=$POSTGRES_USER" >> demo.env

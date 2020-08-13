@@ -1,29 +1,51 @@
 import { Component, Input } from '@angular/core';
-import { FTSQueryRecord } from 'app/interfaces';
+import { FTSQueryRecord, SearchParameters } from 'app/interfaces';
 import { stringToHex } from 'app/shared/utils';
+import { UniversalGraphNode } from '../../drawing-tool/services/interfaces';
+import { getLink } from '../utils/records';
+import { getQueryParams } from '../utils/search';
 
 @Component({
-    selector: 'app-search-record-node',
-    templateUrl: 'search-record-node.component.html',
-    styleUrls: ['./search-record.component.scss']
+  selector: 'app-search-record-node',
+  templateUrl: 'search-record-node.component.html',
+  styleUrls: ['./search-record-node.component.scss'],
 })
 export class SearchRecordNodeComponent {
 
-    // TODO: We should come up with a consistent way to mark variables as private without using '_', or
-    // just disable that check for tslint.
-    private prvNode: FTSQueryRecord;
-    nodeURL: string;
+  private currentNode: FTSQueryRecord;
+  nodeURL: string;
 
-    @Input() legend: Map<string, string>;
-    @Input()
-    set node(n: FTSQueryRecord) {
-        this.prvNode = n;
-        this.nodeURL = stringToHex(n.node.id.toString());
-    }
+  @Input() params: SearchParameters;
 
-    get node(): FTSQueryRecord {
-        return this.prvNode;
-    }
+  @Input() legend: Map<string, string>;
 
-    constructor() {}
+  @Input()
+  set node(value: FTSQueryRecord) {
+    this.currentNode = value;
+    this.nodeURL = stringToHex(value.node.id.toString());
+  }
+
+  get node(): FTSQueryRecord {
+    return this.currentNode;
+  }
+
+  dragStarted(event: DragEvent) {
+    const dataTransfer: DataTransfer = event.dataTransfer;
+    dataTransfer.setData('text/plain', this.node.node.displayName);
+    dataTransfer.setData('application/lifelike-node', JSON.stringify({
+      display_name: this.node.node.displayName,
+      label: this.node.node.label.toLowerCase(),
+      sub_labels: [],
+      data: {
+        hyperlink: getLink(this.node),
+      },
+    } as Partial<UniversalGraphNode>));
+  }
+
+  getVisualizerQueryParams(params) {
+    return {
+      ...getQueryParams(this.params),
+      ...params,
+    };
+  }
 }

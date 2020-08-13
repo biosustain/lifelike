@@ -32,7 +32,7 @@ from neo4japp.services import (
     SearchService,
 )
 from neo4japp.util import (
-    get_first_known_label,
+    get_first_known_label_from_node,
 )
 
 
@@ -348,19 +348,23 @@ def gas_gangrene_with_associations_and_references(
 
     # Association <- Snippet Relationships
     penicillins_alleviates_reduces_association_to_snippet_edge = Relationship(
-        penicillins_to_gas_gangrene_snippet_node1, 'PREDICTS', penicillins_to_gas_gangrene_association_node1  # noqa
+        penicillins_to_gas_gangrene_snippet_node1, 'PREDICTS', penicillins_to_gas_gangrene_association_node1,  # noqa
+        raw_score=2, normalized_score=0.385
     )
 
     penicillins_alleviates_reduces_association_to_snippet_edge2 = Relationship(
-        penicillins_to_gas_gangrene_snippet_node3, 'PREDICTS', penicillins_to_gas_gangrene_association_node1  # noqa
+        penicillins_to_gas_gangrene_snippet_node3, 'PREDICTS', penicillins_to_gas_gangrene_association_node1,  # noqa
+        raw_score=5, normalized_score=0.693
     )
 
     penicillins_treatment_association_to_snippet_edge = Relationship(
         penicillins_to_gas_gangrene_snippet_node2, 'PREDICTS', penicillins_to_gas_gangrene_association_node2,   # noqa
+        raw_score=1, normalized_score=0.222
     )
 
     penicillins_treatment_association_to_snippet_edge2 = Relationship(
         penicillins_to_gas_gangrene_snippet_node4, 'PREDICTS', penicillins_to_gas_gangrene_association_node2,   # noqa
+        raw_score=3, normalized_score=0.456
     )
 
     tx.create(penicillins_alleviates_reduces_association_to_snippet_edge)
@@ -509,7 +513,7 @@ def gas_gangrene_vis_node(gas_gangrene):
     node_as_graph_node = GraphNode.from_py2neo(
         gas_gangrene,
         # TODO: Should change the way label is retrieved here...
-        display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label(gas_gangrene)])
+        display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label_from_node(gas_gangrene)])
     )
 
     gas_gangrene_vis_node = VisNode(
@@ -531,7 +535,7 @@ def gas_gangrene_duplicate_vis_node(gas_gangrene):
     """Creates a DuplicateVisNode from gas gangrene"""
     node_as_graph_node = GraphNode.from_py2neo(
         gas_gangrene,
-        display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label(gas_gangrene)])
+        display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label_from_node(gas_gangrene)])
     )
 
     gas_gangrene_duplicate_vis_node = DuplicateVisNode(
@@ -554,7 +558,7 @@ def penicillins_vis_node(penicillins):
     """Creates a VisNode from penicillins"""
     node_as_graph_node = GraphNode.from_py2neo(
         penicillins,
-        display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label(penicillins)])
+        display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label_from_node(penicillins)])
     )
 
     penicillins_vis_node = VisNode(
@@ -576,7 +580,7 @@ def penicillins_duplicate_vis_node(penicillins):
     """Creates a DuplicateVisNode from penicillins"""
     node_as_graph_node = GraphNode.from_py2neo(
         penicillins,
-        display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label(penicillins)])
+        display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label_from_node(penicillins)])
     )
 
     penicillins_duplicate_vis_node = DuplicateVisNode(
@@ -599,7 +603,7 @@ def pomc_vis_node(pomc):
     """Creates a VisNode from pomc"""
     node_as_graph_node = GraphNode.from_py2neo(
         pomc,
-        display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label(pomc)])
+        display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label_from_node(pomc)])
     )
 
     pomc_vis_node = VisNode(
@@ -621,7 +625,7 @@ def pomc_duplicate_vis_node(pomc):
     """Creates a DuplicateVisNode from pomc"""
     node_as_graph_node = GraphNode.from_py2neo(
         pomc,
-        display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label(pomc)])
+        display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label_from_node(pomc)])
     )
 
     pomc_duplicate_vis_node = DuplicateVisNode(
@@ -803,7 +807,8 @@ def gas_gangrene_treatment_cluster_node_edge_pairs(
         ReferenceTablePair(
             node=ReferenceTablePair.NodeData(
                 id=penicillins_duplicate_vis_node.id,
-                display_name=penicillins_duplicate_vis_node.display_name
+                display_name=penicillins_duplicate_vis_node.display_name,
+                label=penicillins_duplicate_vis_node.primary_label
             ),
             edge=ReferenceTablePair.EdgeData(
                 original_from=penicillins_to_gas_gangrene_treatment_as_duplicate_vis_edge.original_from,  # noqa
