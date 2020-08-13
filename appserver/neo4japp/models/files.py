@@ -6,7 +6,6 @@ from sqlalchemy.types import TIMESTAMP
 
 from neo4japp.database import db
 from neo4japp.models.common import RDBMSBase
-from neo4japp.models.drawing_tool import Project
 
 
 class FileContent(RDBMSBase):
@@ -82,3 +81,18 @@ class Directory(RDBMSBase):
             )
         )
         return query
+
+
+# TODO: Adding the _bare minimum_ columns to this table for now. I imagine that eventually
+# we will want to manage permissions on worksheets, just as we do for pdf files. However,
+# we also don't currently have a home in the UI for managing these worksheets.
+class Worksheet(RDBMSBase):  # type: ignore
+    __tablename__ = 'worksheets'
+    id = db.Column(db.Integer(), primary_key=True, autoincrement=True)
+    filename = db.Column(db.String(200), nullable=False)
+    sheetname = db.Column(db.String(200), nullable=False)
+    neo4j_node_id = db.Column(db.Integer, nullable=False)
+    creation_date = db.Column(db.DateTime, default=db.func.now())
+    content_id = db.Column(db.Integer,
+                           db.ForeignKey('files_content.id', ondelete='CASCADE'),
+                           nullable=False)
