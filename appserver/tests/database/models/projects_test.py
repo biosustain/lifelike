@@ -11,6 +11,20 @@ from neo4japp.models.projects import (
 
 
 @pytest.mark.parametrize('project_name', [
+    ('!nva!d'),
+    ('i3cr3e@m'),
+    ('s t y l e'),
+])
+def test_flag_invalid_projects_name(session, project_name):
+    with pytest.raises(ValueError):
+        project = Projects(
+            project_name=project_name,
+            description='description',
+            users=[]
+        )
+
+
+@pytest.mark.parametrize('project_name', [
     ('test-project'),
     ('project1'),
 ])
