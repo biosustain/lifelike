@@ -1,15 +1,15 @@
 from flask import Blueprint, request
 
 from neo4japp.blueprints.auth import auth
-from neo4japp.models import AnnotationStyle, DomainULRsMap
+from neo4japp.models import AnnotationStyle, DomainURLsMap
 
-bp = Blueprint('annotations', __name__, url_prefix='/annotations')
+bp = Blueprint('entity-resources', __name__, url_prefix='/annotations')
 
 
-@bp.route('/style/<string:annotation>', methods=['GET'])
+@bp.route('/style/<string:annotation_label>', methods=['GET'])
 @auth.login_required
-def get_style(annotation):
-    style = AnnotationStyle.query.filter_by(label=annotation)[0]
+def get_style(annotation_label):
+    style = AnnotationStyle.query.filter_by(label=annotation_label)[0]
     return style.get_as_json()
 
 
@@ -35,7 +35,7 @@ def get_uri():
     """
     payload = request.json
 
-    uri = DomainULRsMap.query.filter_by(domain=payload['domain'])[0]
+    uri = DomainURLsMap.query.filter_by(domain=payload['domain'])[0]
     return {'uri': uri.base_URL.format(payload['term'])}
 
 
@@ -65,7 +65,7 @@ def get_uri_batch():
     uris = []
     payload = request.json
     for entry in payload['batch']:
-        uri = DomainULRsMap.query.filter_by(domain=entry['domain'])[0]
+        uri = DomainURLsMap.query.filter_by(domain=entry['domain'])[0]
         uris.append({'uri': uri.base_URL.format(entry['term'])})
 
     return {'batch': uris}
