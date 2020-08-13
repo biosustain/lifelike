@@ -1,6 +1,8 @@
 import enum
+import re
 from neo4japp.database import db
 from sqlalchemy import event
+from sqlalchemy.orm import validates
 from sqlalchemy.orm.query import Query
 from .common import RDBMSBase
 
@@ -49,6 +51,12 @@ class Projects(RDBMSBase):  # type: ignore
     users = db.Column(db.ARRAY(db.Integer), nullable=False)
 
     directories = db.relationship('Directory')
+
+    @validates('project_name')
+    def validate_project_name(self, key, name):
+        if not re.match('^[A-Za-z0-9-]+$', name):
+            raise ValueError('incorrect project name format')
+        return name
 
     @classmethod
     def query_project_roles(cls, user_id: int, project_id: int) -> Query:
