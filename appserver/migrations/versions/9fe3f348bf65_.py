@@ -1,7 +1,7 @@
 """Add indexes to foreign key columns on every table
 
 Revision ID: 9fe3f348bf65
-Revises: 0d8dc6eed4c1
+Revises: 140e61179d07
 Create Date: 2020-08-12 22:27:18.565424
 
 """
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = '9fe3f348bf65'
-down_revision = '0d8dc6eed4c1'
+down_revision = '140e61179d07'
 branch_labels = None
 depends_on = None
 
