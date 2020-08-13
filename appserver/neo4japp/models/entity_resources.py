@@ -2,7 +2,7 @@ from neo4japp.database import db
 from neo4japp.models.common import RDBMSBase
 
 
-class DomainULRsMap(RDBMSBase):
+class DomainURLsMap(RDBMSBase):
     """
     This model stores the relation between knowledge domains and its base URLs
     """
