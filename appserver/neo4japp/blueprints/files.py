@@ -222,7 +222,7 @@ def upload_pdf(request, project_name: str):
 
         current_app.logger.info(
             f'User uploaded file: <{g.current_user.email}:{file.filename}>')
-        index_pdf.main(current_app.config)
+        index_pdf.populate_single_index(file.id)
     except Exception:
         raise FileUploadError('Your file could not be saved. Please try uploading again.')
 
