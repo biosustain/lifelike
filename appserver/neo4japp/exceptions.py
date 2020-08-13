@@ -32,6 +32,12 @@ class DatabaseError(BaseException):
         super().__init__('Database Error', message, additional_msgs)
 
 
+class DirectoryError(BaseException):
+    """An error occured in directory operation"""
+    def __init__(self, message, additional_msgs=[]) -> None:
+        super().__init__('Directory Error', message, additional_msgs)
+
+
 class DuplicateRecord(BaseException):
     def __init__(self, message, additional_msgs=[]):
         super().__init__('Duplicate record', message, additional_msgs)
@@ -43,10 +49,22 @@ class InvalidFileNameException(BaseException):
         super().__init__('File has incorrect filename', message, additional_msgs)
 
 
+class InvalidDirectoryNameException(BaseException):
+    """Signals invalid directory name"""
+    def __init__(self, message, additional_msgs=[]):
+        super().__init__('Directory has incorrect directory name', message, additional_msgs)
+
+
 class InvalidCredentialsException(BaseException):
     """Signals invalid credentials used"""
     def __init__(self, message, additional_msgs=[]):
         super().__init__('Invalid credentials', message, additional_msgs)
+
+
+class KgImportException(BaseException):
+    """Signals something went wrong during import into the knowledge graph"""
+    def __init__(self, message, additional_msgs=[]):
+        super().__init__('Knowledge graph import error', message, additional_msgs)
 
 
 class NotAuthorizedException(BaseException):
@@ -84,3 +102,9 @@ class DataNotAvailableException(BaseException):
     """Signals that the requested data is not available in a storage."""
     def __init__(self, message):
         super().__init__('Data Not Available Error', message)
+
+
+class NameUnavailableError(BaseException):
+    """Raised when a name has been taken."""
+    def __init__(self, message):
+        super().__init__('Name Unavailable Error', message)

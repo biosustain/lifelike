@@ -22,6 +22,8 @@ export interface Meta {
   isExcluded?: boolean;
   exclusionReason?: string;
   exclusionComment?: string;
+  primaryLink?: string;
+  includeGlobally?: boolean;
 }
 
 export type Rect = number[];
@@ -32,10 +34,21 @@ export interface Annotation {
   rects: Rect[];
   meta: Meta;
   uuid?: string;
+  textInDocument?: string;
 }
 
-export interface AnnotationExclusionData {
+export interface RemovedAnnotationExclsuion {
+  type: string;
+  text: string;
+}
+
+export interface AddedAnnotationExclsuion {
+  type: string;
+  text: string;
   id: string;
+  idHyperlink: string;
   reason: string;
   comment: string;
+  rects: Rect[];
+  pageNumber: number;
 }

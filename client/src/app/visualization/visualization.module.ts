@@ -4,8 +4,6 @@ import { SearchModule } from 'app/search/search.module';
 import { SharedModule } from 'app/shared/shared.module';
 
 import { ContextMenuComponent } from './components/context-menu/context-menu.component';
-import { LoadingClustersDialogComponent } from './components/loading-clusters-dialog/loading-clusters-dialog.component';
-import { NoResultsFromExpandDialogComponent } from './components/no-results-from-expand-dialog/no-results-from-expand-dialog.component';
 import { SidenavClusterViewComponent } from './components/sidenav-cluster-view/sidenav-cluster-view.component';
 import { SidenavEdgeViewComponent } from './components/sidenav-edge-view/sidenav-edge-view.component';
 import { SidenavNodeViewComponent } from './components/sidenav-node-view/sidenav-node-view.component';
@@ -17,28 +15,23 @@ import { VisualizationSettingsComponent } from './components/visualization-setti
 import { VisualizationComponent } from './containers/visualization/visualization.component';
 
 const components = [
-    ContextMenuComponent,
-    LoadingClustersDialogComponent,
-    NoResultsFromExpandDialogComponent,
-    SidenavClusterViewComponent,
-    SidenavEdgeViewComponent,
-    SidenavNodeViewComponent,
-    SnippetDisplayComponent,
-    VisualizationComponent,
-    VisualizationCanvasComponent,
-    VisualizationQuickbarComponent,
-    VisualizationSettingsComponent,
+  ContextMenuComponent,
+  SidenavClusterViewComponent,
+  SidenavEdgeViewComponent,
+  SidenavNodeViewComponent,
+  SnippetDisplayComponent,
+  VisualizationComponent,
+  VisualizationCanvasComponent,
+  VisualizationQuickbarComponent,
+  VisualizationSettingsComponent,
 ];
 
 @NgModule({
-    imports: [SearchModule, SharedModule],
-    declarations: components,
-    providers: [VisualizationService],
-    exports: components,
-    // Need to add the cluster dialog because it is dynamically loaded by type in the VisualizationComponent
-    entryComponents: [
-        LoadingClustersDialogComponent,
-        NoResultsFromExpandDialogComponent,
-    ],
+  imports: [SearchModule, SharedModule],
+  declarations: components,
+  providers: [VisualizationService],
+  exports: components,
+  // Need to add the cluster dialog because it is dynamically loaded by type in the VisualizationComponent
 })
-export class VisualizationModule {}
+export class VisualizationModule {
+}

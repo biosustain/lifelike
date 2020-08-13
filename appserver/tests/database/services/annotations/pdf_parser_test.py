@@ -1,7 +1,13 @@
 import pytest
 
+from os import path
+
 from neo4japp.database import get_annotations_pdf_parser
 from neo4japp.data_transfer_objects import PDFParsedCharacters
+
+
+# reference to this directory
+directory = path.realpath(path.dirname(__file__))
 
 
 @pytest.mark.skip
@@ -12,55 +18,55 @@ from neo4japp.data_transfer_objects import PDFParsedCharacters
             char_coord_objs_in_pdf=None,
             chars_in_pdf=['I', ' ', 'a', 'm', ' ', 'a', ' ', 's', 'e', 'n', 't', 'e', 'n', 'c', 'e', '\n'],  # noqa
             cropbox_in_pdf=(9, 9),
-            max_idx_in_page={50: 1},
+            min_idx_in_page={50: 1},
         )),
         (2, PDFParsedCharacters(
             char_coord_objs_in_pdf=None,
             chars_in_pdf=['E', '.', ' ', '\n', 'C', 'o', 'l', 'i'],
             cropbox_in_pdf=(9, 9),
-            max_idx_in_page={50: 1},
+            min_idx_in_page={50: 1},
         )),
         (3, PDFParsedCharacters(
             char_coord_objs_in_pdf=None,
             chars_in_pdf=['T', 'y', 'p', 'h', '-', 'i', 'm', 'u', 'r', 'i', 'u', 'm'],
             cropbox_in_pdf=(9, 9),
-            max_idx_in_page={50: 1},
+            min_idx_in_page={50: 1},
         )),
         (4, PDFParsedCharacters(
             char_coord_objs_in_pdf=None,
             chars_in_pdf=['I', ' ', 'H', 'a', 'v', 'e', 'c', 'o', 'm', 'm', 'a', ','],
             cropbox_in_pdf=(9, 9),
-            max_idx_in_page={50: 1},
+            min_idx_in_page={50: 1},
         )),
         (5, PDFParsedCharacters(
             char_coord_objs_in_pdf=None,
             chars_in_pdf=['I', ' ', 'H', 'a', 'v', 'e', ')'],
             cropbox_in_pdf=(9, 9),
-            max_idx_in_page={50: 1},
+            min_idx_in_page={50: 1},
         )),
         (6, PDFParsedCharacters(
             char_coord_objs_in_pdf=None,
             chars_in_pdf=['I', ' ', 'H', 'a', 'v', 'e', '.'],
             cropbox_in_pdf=(9, 9),
-            max_idx_in_page={50: 1},
+            min_idx_in_page={50: 1},
         )),
         (7, PDFParsedCharacters(
             char_coord_objs_in_pdf=None,
             chars_in_pdf=['I', ' ', 'H', 'a', 'v', 'e', '.', ')', ','],
             cropbox_in_pdf=(9, 9),
-            max_idx_in_page={50: 1},
+            min_idx_in_page={50: 1},
         )),
         (8, PDFParsedCharacters(
             char_coord_objs_in_pdf=None,
             chars_in_pdf=['(', ',', 'I', ' ', 'H', 'a', 'v', 'e', '.', ')', ','],
             cropbox_in_pdf=(9, 9),
-            max_idx_in_page={50: 1},
+            min_idx_in_page={50: 1},
         )),
         (9, PDFParsedCharacters(
             char_coord_objs_in_pdf=None,
             chars_in_pdf=['-', '*', 'I', ' ', 'H', 'a', 'v', 'e', '-', ' '],
             cropbox_in_pdf=(9, 9),
-            max_idx_in_page={50: 1},
+            min_idx_in_page={50: 1},
         )),
     ],
 )
@@ -109,31 +115,31 @@ def test_extract_tokens(annotations_setup, index, text):
             char_coord_objs_in_pdf=None,
             chars_in_pdf=['I', ' ', 'a', 'm', ' ', 'a', ' ', 's', 'e', 'n', 't', 'e', 'n', 'c', 'e', '\n'],  # noqa
             cropbox_in_pdf=(9, 9),
-            max_idx_in_page={50: 1},
+            min_idx_in_page={50: 1},
         )),
         (2, PDFParsedCharacters(
             char_coord_objs_in_pdf=None,
             chars_in_pdf=['E', '.', ' ', '\n', 'C', 'o', 'l', 'i'],
             cropbox_in_pdf=(9, 9),
-            max_idx_in_page={50: 1},
+            min_idx_in_page={50: 1},
         )),
         (3, PDFParsedCharacters(
             char_coord_objs_in_pdf=None,
             chars_in_pdf=['T', 'y', 'p', 'h', '-', 'i', 'm', 'u', 'r', 'i', 'u', 'm'],  # noqa
             cropbox_in_pdf=(9, 9),
-            max_idx_in_page={50: 1},
+            min_idx_in_page={50: 1},
         )),
         (4, PDFParsedCharacters(
             char_coord_objs_in_pdf=None,
             chars_in_pdf=['Ti', '©', 'p', 'h', '-', 'i', 'm', 'u', 'r', 'i', 'u', 'm'],  # noqa
             cropbox_in_pdf=(9, 9),
-            max_idx_in_page={50: 1},
+            min_idx_in_page={50: 1},
         )),
         (5, PDFParsedCharacters(
             char_coord_objs_in_pdf=None,
             chars_in_pdf=['J', 'u', 's', 't', ' ', 's', 'a', 'y', 'i', 'n', 'g', '…'],  # noqa
             cropbox_in_pdf=(9, 9),
-            max_idx_in_page={50: 1},
+            min_idx_in_page={50: 1},
         )),
     ],
 )
@@ -180,3 +186,16 @@ def test_combine_char_into_word(annotations_setup, index, chars):
             ('saying…', {5: 's', 6: 'a', 7: 'y', 8: 'i', 9: 'n', 10: 'g', 11: '…'}),
         ]
         assert combined == words
+
+
+def test_expand_ligatures(annotations_setup):
+    pdf_parser = get_annotations_pdf_parser()
+    pdf = path.join(directory, 'pdf_samples/ligatures.pdf')
+    parsed_pdf_chars = []
+
+    with open(pdf, 'rb') as f:
+        parsed_pdf_chars = pdf_parser.parse_pdf(pdf=f)
+
+    # every character should have a LT object
+    # ligatures should be expanded
+    assert len(parsed_pdf_chars.char_coord_objs_in_pdf) == 59

@@ -104,7 +104,7 @@ def create_annotations(
     parsed = pdf_parser.parse_pdf(pdf=pdf)
     pdf_text_list = pdf_parser.combine_chars_into_words(parsed)
     pdf_text = ' '.join([text for text, _ in pdf_text_list])
-    annotations = annotations_service.create_annotations(
+    annotations = annotations_service.create_rules_based_annotations(
         tokens=pdf_parser.extract_tokens(parsed_chars=parsed),
     )
 

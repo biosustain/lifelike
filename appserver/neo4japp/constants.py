@@ -48,6 +48,8 @@ DISPLAY_NAME_MAP = {
     TYPE_GENE: 'name',
     TYPE_PUBLICATION: 'title',  # NOTE: These tend to be long, might want to use a different attribute or consider truncating on the client  # noqa
     TYPE_SNIPPET: 'sentence',  # NOTE: Same here
+    TYPE_TAXONOMY: 'name',
+    TYPE_PROTEIN: 'name',
 }
 
 # Start Text Mining Dataset

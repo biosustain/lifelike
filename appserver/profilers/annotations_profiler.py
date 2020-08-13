@@ -49,8 +49,9 @@ def create_annotations(
 ):
     with cprofiled():
         parsed = pdf_parser.parse_pdf(pdf=pdf)
-        annotations = annotations_service.create_annotations(
+        annotations = annotations_service.create_rules_based_annotations(
             tokens=pdf_parser.extract_tokens(parsed_chars=parsed),
+            custom_annotations=[],
         )
         print('Done')
 
@@ -63,7 +64,7 @@ def main():
 
         pdf = os.path.join(
             directory,
-            '../tests/database/services/annotations/pdf_samples/dysregulation-of-the-IFN-y-stat1.pdf')  # noqa
+            '../tests/database/services/annotations/pdf_samples/Environmental Concerns and Sustainable Development.pdf')  # noqa
 
         with open(pdf, 'rb') as f:
             create_annotations(

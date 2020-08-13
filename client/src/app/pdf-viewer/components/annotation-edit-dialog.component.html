@@ -1,0 +1,58 @@
+<form [formGroup]="form" (ngSubmit)="submit()">
+  <app-modal-header (cancel)="cancel()">
+    Edit Annotation
+  </app-modal-header>
+
+  <app-modal-body>
+    <app-form-row for="text" label="Text">
+      <input type="text" class="form-control" id="text" [value]="allText" disabled>
+    </app-form-row>
+
+    <app-form-row for="entity-type" label="Type" [control]="form.get('entityType')">
+      <select formControlName="entityType" class="custom-select w-100" id="entity-type" appAutoFocus>
+        <option *ngFor="let choice of entityTypeChoices" [value]="choice.name">
+          {{choice.name | titlecase}}
+        </option>
+      </select>
+    </app-form-row>
+
+    <app-form-row for="id" label="Id" [control]="form.get('id')">
+      <input type="text" formControlName="id" class="form-control" id="id">
+    </app-form-row>
+
+    <fieldset class="fieldset-properties mt-4">
+      <legend>Search Links</legend>
+
+      <div class="text-muted mb-3">
+        <i class="fas fa-info-circle"></i> Enter manually sourced links below if desired.
+      </div>
+
+      <ng-container formArrayName="links">
+        <div class="form-group row"
+             *ngFor="let link of links.controls; index as i">
+          <label [for]="'annotation-link-' + i" class="col-form-label col-sm-3">
+            <a [href]="substituteLink(linkTemplates[i].url, allText)"
+               target="_blank" class="mt-1 text-truncate"
+               ngbTooltip="Open default search link">{{ linkTemplates[i].domain }}</a>:
+          </label>
+          <div class="col-sm-9">
+            <input type="text" [formControl]="link" class="form-control" [id]="'annotation-link-' + i"
+                   [placeholder]="substituteLink(linkTemplates[i].url, allText)">
+            <app-form-input-feedback [control]="link" [errors]="errors"></app-form-input-feedback>
+          </div>
+        </div>
+      </ng-container>
+    </fieldset>
+
+    <div class="custom-control custom-checkbox mt-4">
+      <input type="checkbox" class="custom-control-input" id="include-globally"
+             formControlName="includeGlobally" (change)="toggleIdFieldValidity()">
+      <label class="custom-control-label" for="include-globally">Add this annotation to a global list</label>
+    </div>
+  </app-modal-body>
+
+  <app-modal-footer>
+    <button type="button" class="btn btn-secondary mr-2" (click)="cancel()">Cancel</button>
+    <button type="submit" class="btn btn-primary">Create</button>
+  </app-modal-footer>
+</form>

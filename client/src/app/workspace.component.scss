@@ -1,0 +1,39 @@
+// WARNING: Encapsulation disabled
+
+@import "src/scss/variables";
+
+.workspace-tab-content-container {
+  position: relative;
+}
+
+.workspace-tab-content-inner-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.workspace-hidden-tab-content {
+  position: absolute;
+  left: -10000px;
+  top: -10000px;
+
+  .modal, .modal-backdrop {
+    visibility: hidden;
+    pointer-events: none;
+  }
+}
+
+.workspace-split-pane-placeholder {
+  display: block;
+  position: relative;
+  background: $gray-400;
+  vertical-align: top;
+  width: 20px;
+  cursor: pointer;
+
+  &:hover {
+    background: $link-color;
+  }
+}
