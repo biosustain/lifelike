@@ -1,21 +1,25 @@
 <div *ngIf="dataLoaded && snippets && legend; else loadingSpinner">
-  <div id="num-snippets-container" fxLayout="row" fxLayoutAlign="space-between center">
-    <span *ngIf="totalResults === 0; else nonZeroResults">Showing 0 - 0 of 0 snippets</span>
-    <ng-template #nonZeroResults>
-      <span *ngIf="pageLimit * (page) > totalResults; else multiPageResults">Showing {{ pageLimit * (page - 1) + 1 }} - {{ totalResults }} of {{ totalResults }}</span>
-      <ng-template #multiPageResults>
-        <span>Showing {{ pageLimit * (page - 1) + 1 }} - {{ pageLimit * (page) }} of {{ totalResults }}</span>
+  <div id="num-snippets-container" class="row align-items-center mb-2">
+    <div class="col">
+      <span *ngIf="totalResults === 0; else nonZeroResults">Showing 0 - 0 of 0 snippets</span>
+      <ng-template #nonZeroResults>
+        <span *ngIf="pageLimit * (page) > totalResults; else multiPageResults">Showing {{ pageLimit * (page - 1) + 1 }} - {{ totalResults }} of {{ totalResults }}</span>
+        <ng-template #multiPageResults>
+          <span>Showing {{ pageLimit * (page - 1) + 1 }} - {{ pageLimit * (page) }} of {{ totalResults }}</span>
+        </ng-template>
       </ng-template>
-    </ng-template>
+    </div>
 
-    <mat-form-field *ngIf="totalResults !== 0">
-      <mat-label>Page Limit</mat-label>
-      <mat-select [(ngModel)]="pageLimit" (selectionChange)="onLimitChange()">
-        <mat-option *ngFor="let limit of pageLimitList" [value]="limit">{{ limit }}</mat-option>
-      </mat-select>
-    </mat-form-field>
+    <div class="col">
+      <div class="d-flex justify-content-end align-items-center" *ngIf="totalResults !== 0">
+        <label class="mr-1 mb-0">Page Limit</label>
+        <select id="page-limit-select" class="custom-select" [ngModel]="pageLimit" (change)="onLimitChange($event)">
+          <option type="number" *ngFor="let limit of pageLimitList" [value]="limit">{{ limit }}</option>
+        </select>
+      </div>
+    </div>
   </div>
-  <div *ngFor="let result of snippets">
+  <div class="snippet-result" *ngFor="let result of snippets">
     <app-node-relationship
       [leftNodeName]="result.from.displayName"
       [leftNodeLabel]="result.from.primaryLabel"
@@ -26,80 +30,98 @@
       [edge]="result.association"
     ></app-node-relationship>
 
-    <div id="association-snippet-container" *ngIf="result.snippets.length > 0; else noSnippets">
-      <mat-expansion-panel class="association-snippet-panel" *ngFor="let snippet of result.snippets">
-        <mat-expansion-panel-header [collapsedHeight]="'80px'" [expandedHeight]="'80px'">
-          <mat-panel-title class="association-snippet-title">{{ (snippet.publication.data.title || 'Unknown') | truncate:['240'] }}</mat-panel-title>
-          <mat-panel-description class="association-snippet-pub-data">
-            <i>{{ (snippet.publication.data.journal || 'Unknown') | truncate:['100'] }} ({{ snippet.publication.data.pubYear || 'Unknown' }})</i>
-          </mat-panel-description>
-        </mat-expansion-panel-header>
-
-        <div fxLayout="column" fxLayoutAlign="space-between start">
-          <app-highlight-snippet
-            [snippet]="snippet.reference.data.sentence"
-            [entry1Text]="snippet.reference.data.entry1Text"
-            [entry2Text]="snippet.reference.data.entry2Text"
-            [entry1Colors]="legend.get(result.from.primaryLabel)"
-            [entry2Colors]="legend.get(result.to.primaryLabel)"
-          ></app-highlight-snippet>
-          <div fxLayout="row" fxLayoutAlign="space-between center">
-            <h3>Pubtator PMID: </h3>
-            <div
-              *ngIf="snippet.publication.data.pmid; else unknownPmid"
-              fxLayout="row"
-              fxLayoutAlign="space-between center">
-              <a
-                class="pubmed-link"
-                [href]="'https://www.ncbi.nlm.nih.gov/research/pubtator/?view=docsum&query=' + snippet.publication.data.pmid"
-                target="_blank">{{ snippet.publication.data.pmid }}</a>
-              <mat-icon>launch</mat-icon>
+    <div class="mt-1" *ngIf="result.snippets.length > 0; else noSnippets">
+      <!-- TODO: Setting 'destroyOnHide' to 'true' for now, because there are still some lingering
+      issues with animating the open/close of the panels (see stylesheet). -->
+      <ngb-accordion [destroyOnHide]='true' *ngFor="let snippet of result.snippets">
+        <ngb-panel>
+          <ng-template ngbPanelHeader>
+            <div class="d-flex align-items-center justify-content-between">
+              <button ngbPanelToggle class="btn btn-link snippet-panel-header">{{ (snippet.publication.data.title || 'Unknown') | truncate:['240'] }}</button>
+              <i class="snippet-panel-pub-data">{{ (snippet.publication.data.journal || 'Unknown') | truncate:['100'] }} ({{ snippet.publication.data.pubYear || 'Unknown' }})</i>
             </div>
-            <ng-template #unknownPmid>Unknown</ng-template>
-          </div>
-        </div>
-
-      </mat-expansion-panel>
+          </ng-template>
+          <ng-template ngbPanelContent>
+            <div class="d-flex flex-column justify-content-between align-items-start">
+              <!-- Need to slightly edit the snippet entry type strings here because the keys on the legend match the
+              labels in the KG, which have uppercase first characters -->
+              <app-highlight-snippet
+                [snippet]="snippet.reference.data.sentence"
+                [entry1Text]="snippet.reference.data.entry1Text"
+                [entry2Text]="snippet.reference.data.entry2Text"
+                [entry1Type]="snippet.reference.data.entry1Type.slice(0, 1).toUpperCase() + snippet.reference.data.entry1Type.slice(1)"
+                [entry2Type]="snippet.reference.data.entry2Type.slice(0, 1).toUpperCase() + snippet.reference.data.entry2Type.slice(1)"
+                [legend]="legend"
+              ></app-highlight-snippet>
+              <div class="mt-2 w-100">
+                <div class="d-flex justify-content-start w-100">
+                  <label class="m-0 mr-1 font-weight-bold">Pubtator PMID:</label>
+                  <p *ngIf="snippet.publication.data.pmid; else unknownPmid" class="m-0">
+                    <a
+                      class="pubtator-link"
+                      [href]="'https://www.ncbi.nlm.nih.gov/research/pubtator/?view=docsum&query=' + snippet.publication.data.pmid"
+                      target="_blank">{{ snippet.publication.data.pmid }}</a>
+                    <i class="fas fa-fw fa-external-link-alt"></i>
+                  </p>
+                  <ng-template #unknownPmid>Unknown</ng-template>
+                </div>
+                <div class="snippet-confidence-score-container d-flex justify-content-start w-100">
+                  <label class="m-0 mr-1 font-weight-bold">Snippet Confidence Score:</label>
+                  <p class="m-0">{{ snippet.normalizedScore.toFixed(3) }}</p>
+                </div>
+              </div>
+            </div>
+          </ng-template>
+        </ngb-panel>
+      </ngb-accordion>
     </div>
     <ng-template #noSnippets>No Association Snippets Found!</ng-template>
   </div>
 
-  <!-- Show pagination buttons if there is more than one page -->
-  <div *ngIf="maxPages > 1" id="pagination-button-container" fxLayout="row" fxLayoutAlign="center center">
-    <!-- Only show the "Previous" button if the user is not on the first page -->
+  <div *ngIf="maxPages > 1" class="py-2 d-flex justify-content-center align-items-center">
     <div *ngIf="page !== 1">
-      <button class="pagination-button" (click)="previousPage()"><i class="material-icons">arrow_back</i> Previous</button>
+      <button
+        type="button"
+        class="btn btn-outline-secondary mx-1"
+        (click)="previousPage()"
+      ><i class="fa fa-fw fa-caret-left"></i> Previous</button>
     </div>
 
-    <!-- Always show the button for the first page -->
-    <div fxLayout="row" fxLayoutAlign="center center">
+    <div class="d-flex justify-content-center align-items-center">
       <button
-        [class]="page === 1 ? 'current-page pagination-button' : 'pagination-button'"
+        type="button"
+        [class]="(page === 1 ? 'btn btn-outline-primary' : 'btn btn-outline-secondary') + ' mx-1'"
         (click)="goToPage(1)">1</button>
       <div *ngIf="page - 2 > 1">...</div>
     </div>
 
     <button
       *ngFor="let button of pageButtons"
-      [class]="page === button ? 'current-page pagination-button' : 'pagination-button'"
+      type="button"
+      [class]="(page === button ? 'btn btn-outline-primary' : 'btn btn-outline-secondary') + ' mx-1'"
       (click)="goToPage(button)">{{ button }}</button>
 
-    <!-- Always show the button for the last page -->
-    <div *ngIf="maxPages !== 1" fxLayout="row" fxLayoutAlign="center center">
+    <div *ngIf="maxPages !== 1" class="d-flex justify-content-center align-items-center">
       <div *ngIf="page + 2 < maxPages">...</div>
       <button
-        [class]="page === maxPages ? 'current-page pagination-button' : 'pagination-button'"
+        type="button"
+        [class]="(page === maxPages ? 'btn btn-outline-primary' : 'btn btn-outline-secondary') + ' mx-1'"
         (click)="goToPage(maxPages)">{{ maxPages }}</button>
     </div>
 
-    <!-- Only show the "Next" button if the user is not on the last page -->
     <div *ngIf="page !== maxPages">
-      <button class="pagination-button" (click)="nextPage()">Next <i class="material-icons">arrow_forward</i></button>
+      <button
+        type="button"
+        class="btn btn-outline-secondary mx-1"
+        (click)="nextPage()"
+      >Next <i class="fa fa-fw fa-caret-right"></i></button>
     </div>
   </div>
 </div>
 <ng-template #loadingSpinner>
-  <div id="loading-spinner-container" fxLayout="row" fxLayoutAlign="center center">
-    <mat-spinner></mat-spinner>
+  <div id="loading-spinner-container" class="d-flex justify-content-center align-items-center">
+    <div class="spinner-border text-primary" role="status">
+      <span class="sr-only">Loading...</span>
+    </div>
   </div>
 </ng-template>

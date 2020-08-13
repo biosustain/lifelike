@@ -18,9 +18,10 @@ from werkzeug.utils import (
     import_string,
 )
 
-from neo4japp.database import db, ma, migrate
+from neo4japp.database import db, ma, migrate, close_lmdb
 from neo4japp.encoders import CustomJSONEncoder
 from neo4japp.exceptions import (
+    AnnotationError,
     BaseException,
     JWTAuthTokenException,
     JWTTokenException,
@@ -86,6 +87,7 @@ def create_app(name='neo4japp', config='config.Development'):
 
     app = Flask(name)
     app.config.from_object(config)
+    app.teardown_appcontext_funcs = [close_lmdb]
 
     cors.init_app(app)
     db.init_app(app)
@@ -108,6 +110,7 @@ def create_app(name='neo4japp', config='config.Development'):
 
     app.json_encoder = CustomJSONEncoder
 
+    app.register_error_handler(AnnotationError, partial(handle_error, 400))
     app.register_error_handler(RecordNotFoundException, partial(handle_error, 404))
     app.register_error_handler(JWTAuthTokenException, partial(handle_error, 401))
     app.register_error_handler(JWTTokenException, partial(handle_error, 401))
@@ -127,7 +130,7 @@ def register_blueprints(app, pkgname):
 
 def handle_error(code: int, ex: BaseException):
     reterr = {'apiHttpError': ex.to_dict()}
-    logger.error('Request caused BaseException error', exc_info=ex)
+    logger.error(f'Request caused {type(ex)} error', exc_info=ex)
     reterr['version'] = GITHUB_HASH
     if current_app.debug:
         reterr['detail'] = "".join(traceback.format_exception(

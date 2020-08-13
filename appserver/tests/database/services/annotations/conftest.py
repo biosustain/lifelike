@@ -4,8 +4,7 @@ import pytest
 
 from os import path, remove, walk
 
-from neo4japp.higher_order_services import HybridNeo4jPostgresService
-from neo4japp.services.annotations import prepare_databases
+from neo4japp.services.annotations import AnnotationsService, AnnotationsNeo4jService, LMDBDao
 from neo4japp.services.annotations.constants import (
     DatabaseType,
     OrganismCategory,
@@ -26,6 +25,20 @@ directory = path.realpath(path.dirname(__file__))
 
 
 # Start LMDB Data Helpers
+def lmdb_chemical_factory(
+    chemical_id: str,
+    id_type: str,
+    name: str,
+    synonym: str,
+):
+    return {
+        'chemical_id': chemical_id,
+        'id_type': id_type,
+        'name': name,
+        'synonym': synonym,
+    }
+
+
 def lmdb_disease_factory(
     disease_id: str,
     id_type: str,
@@ -89,6 +102,13 @@ def lmdb_species_factory(
 # End LMDB Data Helpers
 
 
+def create_empty_lmdb(path_to_folder: str, db_name: str):
+    map_size = 1099511627776
+    env = lmdb.open(path.join(directory, path_to_folder), map_size=map_size, max_dbs=2)
+    db = env.open_db(db_name.encode('utf-8'), dupsort=True)
+    env.close()
+
+
 def create_entity_lmdb(path_to_folder: str, db_name: str, entity_objs=[]):
     map_size = 1099511627776
     env = lmdb.open(path.join(directory, path_to_folder), map_size=map_size, max_dbs=2)
@@ -103,6 +123,14 @@ def create_entity_lmdb(path_to_folder: str, db_name: str, entity_objs=[]):
 @pytest.fixture(scope='function')
 def default_lmdb_setup(app, request):
     # Create gene data
+    bola3 = lmdb_gene_factory(
+        gene_id='388962',
+        id_type=DatabaseType.Ncbi.value,
+        name='BOLA3',
+        synonym='BOLA3',
+        category=OrganismCategory.Eukaryota.value,
+    )
+
     hyp27_gene = lmdb_gene_factory(
         gene_id='2846957',
         id_type=DatabaseType.Ncbi.value,
@@ -135,6 +163,20 @@ def default_lmdb_setup(app, request):
         synonym='Hyp27',
     )
 
+    ns2a = lmdb_protein_factory(
+        protein_id='NS2A_CVBM',
+        id_type=DatabaseType.Uniprot.value,
+        name='ns2a',
+        synonym='ns2a',
+    )
+
+    NS2A = lmdb_protein_factory(
+        protein_id='POLG_ZIKVK',
+        id_type=DatabaseType.Uniprot.value,
+        name='NS2A',
+        synonym='NS2A',
+    )
+
     serpina1_protein = lmdb_protein_factory(
         protein_id='A1AT_PONAB',
         id_type=DatabaseType.Uniprot.value,
@@ -159,13 +201,34 @@ def default_lmdb_setup(app, request):
         synonym='Moniliophthora roreri',
     )
 
+    arginine = lmdb_chemical_factory(
+        chemical_id='CHEBI:29952',
+        id_type=DatabaseType.Chebi.value,
+        name='L-arginine residue',
+        synonym='Arg',
+    )
+
+    hypofluorite = lmdb_chemical_factory(
+        chemical_id='CHEBI:30244',
+        id_type=DatabaseType.Chebi.value,
+        name='hypofluorite',
+        synonym='FO(-)',
+    )
+
+    histidine = lmdb_chemical_factory(
+        chemical_id='CHEBI:29979',
+        id_type=DatabaseType.Chebi.value,
+        name='L-histidine residue',
+        synonym='H',
+    )
+
     entities = [
-        (CHEMICALS_CHEBI_LMDB, 'chemicals', []),  # TODO: Create test chemical data
+        (CHEMICALS_CHEBI_LMDB, 'chemicals', [arginine, hypofluorite, histidine]),
         (COMPOUNDS_BIOCYC_LMDB, 'compounds', []),  # TODO: Create test compound data
         (DISEASES_MESH_LMDB, 'diseases', []),  # TODO: Create test disease data
-        (GENES_NCBI_LMDB, 'genes', [hyp27_gene, serpina1_gene, serpina1_gene2]),
+        (GENES_NCBI_LMDB, 'genes', [bola3, hyp27_gene, serpina1_gene, serpina1_gene2]),
         (PHENOTYPES_MESH_LMDB, 'phenotypes', []),  # TODO: Create test phenotype data
-        (PROTEINS_UNIPROT_LMDB, 'proteins', [hyp27_protein, serpina1_protein]),
+        (PROTEINS_UNIPROT_LMDB, 'proteins', [hyp27_protein, serpina1_protein, ns2a, NS2A]),
         (SPECIES_NCBI_LMDB, 'species', [human, moniliophthora_roreri]),
     ]
     for db_name, entity, data in entities:
@@ -421,13 +484,37 @@ def fish_gene_lmdb_setup(app, request):
 # doc on how to monkeypatch: https://docs.pytest.org/en/latest/monkeypatch.html
 ###############################################################################
 @pytest.fixture(scope='function')
+def mock_empty_gene_to_organism(monkeypatch):
+    def get_match_result(*args, **kwargs):
+        return {}
+
+    monkeypatch.setattr(
+        AnnotationsNeo4jService,
+        'get_gene_to_organism_match_result',
+        get_match_result,
+    )
+
+
+@pytest.fixture(scope='function')
+def mock_general_human_genes(monkeypatch):
+    def get_match_result(*args, **kwargs):
+        return {'BOLA3': {'9606': '388962'}}
+
+    monkeypatch.setattr(
+        AnnotationsNeo4jService,
+        'get_gene_to_organism_match_result',
+        get_match_result,
+    )
+
+
+@pytest.fixture(scope='function')
 def mock_get_gene_to_organism_match_result(monkeypatch):
     def get_match_result(*args, **kwargs):
         # match to 'Moniliophthora roreri' in create_species_lmdb()
         return {'hyp27': {'221103': '2846957'}}
 
     monkeypatch.setattr(
-        HybridNeo4jPostgresService,
+        AnnotationsNeo4jService,
         'get_gene_to_organism_match_result',
         get_match_result,
     )
@@ -439,7 +526,7 @@ def mock_get_gene_to_organism_serpina1_match_result(monkeypatch):
         return {'serpina1': {'9606': '5265'}}
 
     monkeypatch.setattr(
-        HybridNeo4jPostgresService,
+        AnnotationsNeo4jService,
         'get_gene_to_organism_match_result',
         get_match_result,
     )
@@ -451,7 +538,7 @@ def mock_get_gene_to_organism_serpina1_match_result_all_caps(monkeypatch):
         return {'SERPINA1': {'9606': '5265'}}
 
     monkeypatch.setattr(
-        HybridNeo4jPostgresService,
+        AnnotationsNeo4jService,
         'get_gene_to_organism_match_result',
         get_match_result,
     )
@@ -463,7 +550,7 @@ def mock_get_gene_to_organism_match_result_for_fish_gene(monkeypatch):
         return {'IL7': {'7897': '102353780'}, 'il-7': {'31033': '99999'}}
 
     monkeypatch.setattr(
-        HybridNeo4jPostgresService,
+        AnnotationsNeo4jService,
         'get_gene_to_organism_match_result',
         get_match_result,
     )
@@ -475,7 +562,7 @@ def mock_get_gene_to_organism_match_result_for_human_gene_pdf(monkeypatch):
         return {'ACE2': {'9606': '59272'}}
 
     monkeypatch.setattr(
-        HybridNeo4jPostgresService,
+        AnnotationsNeo4jService,
         'get_gene_to_organism_match_result',
         get_match_result,
     )
@@ -487,7 +574,7 @@ def mock_get_gene_to_organism_match_result_for_human_rat_gene(monkeypatch):
         return {'EDEM3': {'9606': '80267'}, 'Edem3': {'10116': '289085'}}
 
     monkeypatch.setattr(
-        HybridNeo4jPostgresService,
+        AnnotationsNeo4jService,
         'get_gene_to_organism_match_result',
         get_match_result,
     )
@@ -505,7 +592,7 @@ def mock_get_gene_to_organism_match_result_for_escherichia_coli_pdf(monkeypatch)
         }
 
     monkeypatch.setattr(
-        HybridNeo4jPostgresService,
+        AnnotationsNeo4jService,
         'get_gene_to_organism_match_result',
         get_match_result,
     )
@@ -514,3 +601,61 @@ def mock_get_gene_to_organism_match_result_for_escherichia_coli_pdf(monkeypatch)
 @pytest.fixture(scope='function')
 def annotations_setup(app):
     pass
+
+
+@pytest.fixture(scope='function')
+def get_annotation_n4j(neo4j_service_dao, session):
+    return AnnotationsNeo4jService(
+        neo4j_service=neo4j_service_dao, session=session)
+
+
+@pytest.fixture(scope='function')
+def get_lmdb():
+    for db_name, entity in [
+        (CHEMICALS_CHEBI_LMDB, 'chemicals'),
+        (COMPOUNDS_BIOCYC_LMDB, 'compounds'),
+        (GENES_NCBI_LMDB, 'genes'),
+        (DISEASES_MESH_LMDB, 'diseases'),
+        (PROTEINS_UNIPROT_LMDB, 'proteins'),
+        (PHENOTYPES_MESH_LMDB, 'phenotypes'),
+        (SPECIES_NCBI_LMDB, 'species'),
+    ]:
+        create_empty_lmdb(f'lmdb/{entity}', db_name)
+
+    genes_lmdb_path = path.join(directory, 'lmdb/genes')
+    chemicals_lmdb_path = path.join(directory, 'lmdb/chemicals')
+    compounds_lmdb_path = path.join(directory, 'lmdb/compounds')
+    proteins_lmdb_path = path.join(directory, 'lmdb/proteins')
+    species_lmdb_path = path.join(directory, 'lmdb/species')
+    diseases_lmdb_path = path.join(directory, 'lmdb/diseases')
+    phenotypes_lmdb_path = path.join(directory, 'lmdb/phenotypes')
+
+    return LMDBDao(
+        genes_lmdb_path=genes_lmdb_path,
+        chemicals_lmdb_path=chemicals_lmdb_path,
+        compounds_lmdb_path=compounds_lmdb_path,
+        proteins_lmdb_path=proteins_lmdb_path,
+        species_lmdb_path=species_lmdb_path,
+        diseases_lmdb_path=diseases_lmdb_path,
+        phenotypes_lmdb_path=phenotypes_lmdb_path,
+    )
+
+
+@pytest.fixture(scope='function')
+def get_annotations_service(
+    get_annotation_n4j,
+    get_lmdb,
+    request
+):
+    def teardown():
+        for parent, subfolders, filenames in walk(path.join(directory, 'lmdb/')):
+            for fn in filenames:
+                if fn.lower().endswith('.mdb'):
+                    remove(path.join(parent, fn))
+
+    request.addfinalizer(teardown)
+
+    return AnnotationsService(
+        lmdb_session=get_lmdb,
+        annotation_neo4j=get_annotation_n4j,
+    )

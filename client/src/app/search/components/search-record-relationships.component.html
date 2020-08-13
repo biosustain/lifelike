@@ -1,38 +1,40 @@
-<mat-card class="mat-elevation-z1">
-    <mat-card-title>
-        <a class='node-url'
-            [routerLink]="['/neo4j-visualizer']"
-            [queryParams]="{ data: nodeURL }"
-        >
-            Snippet: {{ node.node.displayName }}
+<div draggable="true" (dragstart)="dragStarted($event)">
+  <div class="search-results-item-header">
+    <h5>
+      <a
+        href='/kg-visualizer/graph'
+        [appLink]="['/kg-visualizer/graph']"
+        [queryParams]="getVisualizerQueryParams({ data: nodeURL })"
+      >Snippet: {{ node.node.displayName }}</a>
+    </h5>
+
+    <h6 class="mt-1 text-muted">ID: {{ node.node.data.id }}</h6>
+  </div>
+
+  <div class="search-results-item-body">
+    <div class="pub-snippet-title">{{ node.node.displayName }}</div>
+    <i *ngIf="node.chemical || node.disease">This snippet generated the following relationship</i>
+    <app-node-relationship
+      [leftNodeName]="chemicalDisplayName"
+      [leftNodeLabel]="chemicalLabel"
+      [leftNodeColor]="'rgb(143, 166, 203)'"
+      [rightNodeColor]="'rgb(205, 93, 103)'"
+      [rightNodeName]="diseaseDisplayName"
+      [rightNodeLabel]="diseaseLabel"
+      [edge]="node.relationship"
+    ></app-node-relationship>
+    <div class="publication-container">
+      <div>
+        <span class="pub-data-header">Publication:</span>
+        <a target="_blank" href="{{ PUBMEDURL }}/{{ node.publicationId }}">
+          <span>{{ node.publicationTitle }}</span>
+          <span *ngIf="node.publicationYear">({{ node.publicationYear }})</span>
         </a>
-    </mat-card-title>
-    <mat-card-subtitle>ID: {{ node.node.data.id }}</mat-card-subtitle>
-    <mat-card-content>
-        <div id="pub-snippet-title">{{ node.node.displayName }}</div>
-        <i *ngIf="node.chemical || node.disease">This snippet genarated the following relationship</i>
-        <app-node-relationship
-            [leftNodeName]="chemicalDisplayName"
-            [leftNodeLabel]="chemicalLabel"
-            [leftNodeColor]="'rgb(143, 166, 203)'"
-            [rightNodeColor]="'rgb(205, 93, 103)'"
-            [rightNodeName]="diseaseDisplayName"
-            [rightNodeLabel]="diseaseLabel"
-            [edge]="node.relationship"
-        >
-        </app-node-relationship>
-        <div id="publication-container">
-            <div>
-                <span id="pub-data-header">Publication:</span>
-                <a target="_blank" href="{{ PUBMEDURL }}/{{ node.publicationId }}">
-                    <span>{{ node.publicationTitle }}</span>
-                    <span *ngIf="node.publicationYear">({{ node.publicationYear }})</span>
-                </a>
-                <span id="pubid-data-header">PubMed ID:</span>
-                <a target="_blank" href="{{ PUBMEDURL }}/{{ node.publicationId }}">
-                    <span>{{ node.publicationId }}</span>
-                </a>
-            </div>
-        </div>
-    </mat-card-content>
-</mat-card>
+        <span class="pubid-data-header">PubMed ID:</span>
+        <a target="_blank" href="{{ PUBMEDURL }}/{{ node.publicationId }}">
+          <span>{{ node.publicationId }}</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>

@@ -96,8 +96,10 @@ export interface FTSResult {
   limit: number;
 }
 
-export interface SearchQuery {
+export interface SearchParameters {
   query: string;
+  domains?: Domain[];
+  entityTypes?: EntityType[];
   page: number;
   limit: number;
 }
@@ -108,4 +110,16 @@ export interface SearchRecord {
   subLabels: Array<string>;
   data: string;
   dataId: string;
+}
+
+export interface Domain {
+  id: string;
+  name: string;
+  label: string;
+}
+
+export interface EntityType {
+  id: string;
+  name: string;
+  label: string;
 }

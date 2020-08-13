@@ -59,10 +59,10 @@ def get_neo4j():
 
 
 def get_neo4j_service_dao():
-    if 'neo4j_dao' not in g:
+    if 'neo4j_service_dao' not in g:
         from neo4japp.services import Neo4JService
         graph = _connect_to_neo4j()
-        g.neo4j_service_dao = Neo4JService(graph)
+        g.neo4j_service_dao = Neo4JService(graph=graph)
     return g.neo4j_service_dao
 
 
@@ -70,7 +70,7 @@ def get_user_file_import_service():
     if 'user_file_import_service' not in g:
         from neo4japp.services import UserFileImportService
         graph = _connect_to_neo4j()
-        g.current_user_file_import_service = UserFileImportService(graph)
+        g.current_user_file_import_service = UserFileImportService(graph=graph, session=db.session)
     return g.current_user_file_import_service
 
 
@@ -78,29 +78,29 @@ def get_search_service_dao():
     if 'search_dao' not in g:
         from neo4japp.services import SearchService
         graph = _connect_to_neo4j()
-        g.search_service_dao = SearchService(graph)
+        g.search_service_dao = SearchService(graph=graph)
     return g.search_service_dao
 
 
 def get_authorization_service():
     if 'authorization_service' not in g:
         from neo4japp.services import AuthService
-        g.authorization_service = AuthService(db.session)
+        g.authorization_service = AuthService(session=db.session)
     return g.authorization_service
-
-
-def get_organism_gene_match_service():
-    if 'organism_gene_match_service' not in g:
-        from neo4japp.services import OrganismGeneMatchService
-        g.organism_gene_match_service = OrganismGeneMatchService(db.session)
-    return g.organism_gene_match_service
 
 
 def get_account_service():
     if 'account_service' not in g:
         from neo4japp.services import AccountService
-        g.account_service = AccountService(db.session)
+        g.account_service = AccountService(session=db.session)
     return g.account_service
+
+
+def get_projects_service():
+    if 'projects_service' not in g:
+        from neo4japp.services import ProjectsService
+        g.projects_service = ProjectsService(session=db.session)
+    return g.projects_service
 
 
 def get_lmdb_dao():
@@ -110,9 +110,29 @@ def get_lmdb_dao():
     return g.lmdb_dao
 
 
+def close_lmdb(e=None):
+    lmdb_dao = g.pop('lmdb_dao', None)
+    if lmdb_dao:
+        lmdb_dao.close_envs()
+
+
+def get_annotation_neo4j():
+    if 'annotation_neo4j' not in g:
+        from neo4japp.services.annotations import AnnotationsNeo4jService
+        neo4j = get_neo4j_service_dao()
+        g.annotation_neo4j = AnnotationsNeo4jService(
+            session=db.session,
+            neo4j_service=neo4j,
+        )
+    return g.annotation_neo4j
+
+
 def get_annotations_service(lmdb_dao):
     from neo4japp.services.annotations import AnnotationsService
-    return AnnotationsService(lmdb_session=lmdb_dao)
+    return AnnotationsService(
+        lmdb_session=lmdb_dao,
+        annotation_neo4j=get_annotation_neo4j(),
+    )
 
 
 def get_annotations_pdf_parser():
@@ -125,9 +145,9 @@ def get_bioc_document_service():
     return BiocDocumentService()
 
 
-def get_hybrid_neo4j_postgres_service():
-    from neo4japp.higher_order_services import HybridNeo4jPostgresService
-    return HybridNeo4jPostgresService()
+def get_excel_export_service():
+    from neo4japp.services.export import ExcelExportService
+    return ExcelExportService()
 
 
 def reset_dao():
@@ -137,12 +157,14 @@ def reset_dao():
     handy for production later.
     """
     for dao in [
-        'neo4j_dao',
+        'neo4j_service_dao',
         'user_file_import_service',
         'search_dao',
         'authorization_service',
         'account_service',
+        'projects_service',
         'lmdb_dao',
+        'annotation_neo4j',
     ]:
         if dao in g:
             g.pop(dao)

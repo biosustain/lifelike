@@ -1,0 +1,42 @@
+<form [formGroup]='form' (submit)="submit(); $event.preventDefault()">
+  <app-modal-header (cancel)="cancel()">
+    Create Project
+  </app-modal-header>
+
+  <app-modal-body>
+    <app-form-row [control]="form.get('projectName')" [errors]='errors'>
+      <label for="project-name">Name:</label>
+      <input
+        formControlName="projectName"
+        class='form-control'
+        id="project-name"
+        [appFormInput]="form.get('projectName')"
+        autocomplete="off"
+        maxlength="50"
+        placeholder="Example-Project"
+        type="text" appAutoFocus>
+    </app-form-row>
+    <div class="mt-2" *ngIf="transformedName.length">
+      Your project link will be:<br>
+      <strong>/projects/<span class="text-primary">{{ transformedName }}</span></strong>
+    </div>
+    <div class="mt-4">
+      <app-form-row [control]="form.get('description')">
+        <label for="descriptionInput">Description:</label>
+        <textarea
+          formControlName='description'
+          class="form-control"
+          id="descriptionInput"
+          [appFormInput]="form.get('description')"
+          rows="3"
+          placeholder="">
+      </textarea>
+      </app-form-row>
+    </div>
+  </app-modal-body>
+
+  <app-modal-footer>
+    <button type="button" class="btn btn-secondary mr-2" (click)="cancel()">Cancel</button>
+    <button type="submit" class="btn btn-primary">Create</button>
+  </app-modal-footer>
+</form>

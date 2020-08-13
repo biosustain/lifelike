@@ -3,8 +3,8 @@ version: '3.8'
 services:
     appserver:
         image: ${REGISTRY:-gcr.io/able-goods-221820}/kg-appserver-staging:${GITHUB_HASH:-latest}
-        expose:
-            - "5000"
+        ports:
+            - "5000:5000"
         env_file:
             - ./.env
         volumes:
@@ -31,10 +31,26 @@ services:
         networks:
             - frontend
 
+    nlpapi:
+        image: ${REGISTRY:-gcr.io/able-goods-221820}/kg-nlpapi-staging:${GITHUB_HASH:-latest}
+        expose:
+            - 5001
+        env_file:
+            - ./.env
+        volumes:
+            - /srv/models:/models
+        networks:
+            - backend
+
     cache-invalidator:
         image: ${REGISTRY:-gcr.io/able-goods-221820}/kg-cache-service-staging:${GITHUB_HASH:-latest}
         env_file:
             - ./.env
+        networks:
+            - backend
+
+    redis:
+        image: redis:6.0.3-alpine
         networks:
             - backend
 

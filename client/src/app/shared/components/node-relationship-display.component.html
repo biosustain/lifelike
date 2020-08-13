@@ -1,0 +1,29 @@
+<div id="node-relationship-container">
+    <div class="node-detail" id="left-node-container" *ngIf="leftNodeName && leftNodeLabel">
+        <div
+            class="node-detail-container"
+            matTooltip="{{ leftNodeLabel }}"
+            [matTooltipPosition]="tooltipPosition"
+        >
+            <i class="fas fa-fw fa-circle" [ngStyle]="{'color': leftNodeColor}"></i>
+            {{ leftNodeName }}
+        </div>
+    </div>
+    <div id="relationship-container" *ngIf="edge">
+        <div class="mx-1">
+          &mdash;
+        </div>
+        <div>{{ edge }}</div>
+        <div *ngIf="rightNodeName"><i class="fa fa-fw fa-caret-right"></i></div>
+    </div>
+    <div class="node-detail" id="right-node-container" *ngIf="rightNodeName && rightNodeLabel">
+        <div
+            class="node-detail-container"
+            matTooltip="{{ rightNodeLabel }}"
+            [matTooltipPosition]="tooltipPosition"
+        >
+            <i class="fas fa-fw fa-circle" [ngStyle]="{'color': rightNodeColor}"></i>
+            {{ rightNodeName }}
+        </div>
+    </div>
+</div>

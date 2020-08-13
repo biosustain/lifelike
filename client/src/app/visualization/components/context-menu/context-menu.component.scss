@@ -1,38 +1,30 @@
-#***ARANGO_USERNAME***-menu {
-    display: none;
-}
-
-#single-node-selection-group-1-submenu {
-    display: none;
-}
-
-#pull-out-node-from-cluster-submenu {
-  display: none;
-}
+@import '~bootstrap/scss/functions';
+@import '~bootstrap/scss/variables';
+@import 'src/scss/variables';
 
 .context-menu {
-    background: #D4E2F4;
-    border-radius: 2px;
-    border: thin solid #C9CACC;
+    background: $primary;
+    border-radius: 0.25rem;
+    border: thin solid $floating-toolbar-border-color;
+    border-bottom: none;
+    opacity: .95;
 }
 
 .context-menu-group {
-    border-bottom: thin solid #C9CACC;
-    color: #5B6A80;
-    font-size: 13px;
+    border-bottom: thin solid $floating-toolbar-border-color;
+    color: #FFFFFF;
+    font-size: 14px;
     font-weight: bold;
     padding: 5px 0;
     width: 100%;
 }
 
 .context-menu-item {
-    height: 15px;
-    padding: 0 8px 0 20px;
-    text-align: left;
-    vertical-align: middle;
+    height: 22px;
+    padding: 2px 8px 2px 20px;
 }
 .context-menu-item:hover {
-    background: #C5C6C7;
+    background: #6c757d;
 }
 
 .fade-out {
