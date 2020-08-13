@@ -1159,3 +1159,44 @@ def test_ignore_terms_length_two_or_less(
 
     assert len(annotations) == 1
     assert annotations[0].keyword == tokens[0].keyword
+
+
+@pytest.mark.parametrize(
+    'index, tokens',
+    [
+        (1, [
+                PDFTokenPositions(
+                    page_number=1,
+                    keyword='NS2A',
+                    char_positions={0: 'N', 1: 'S', 2: '2', 3: 'A'},
+                ),
+        ]),
+    ],
+)
+def test_lmdb_match_protein_by_exact_case_if_multiple_matches(
+    default_lmdb_setup,
+    index,
+    tokens,
+    get_annotations_service
+):
+    annotation_service = get_annotations_service
+
+    char_coord_objs_in_pdf = []
+    for t in tokens:
+        for c in t.keyword:
+            char_coord_objs_in_pdf.append(get_dummy_LTChar(text=c))
+        char_coord_objs_in_pdf.append(get_dummy_LTChar(text=' '))
+
+    annotations = annotation_service.create_rules_based_annotations(
+        tokens=PDFTokenPositionsList(
+            token_positions=tokens,
+            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
+            cropbox_in_pdf=(5, 5),
+            min_idx_in_page=[1, 5, 10],
+        ),
+        custom_annotations=[],
+    )
+
+    assert len(annotations) == 1
+    # both ns2a and NS2A are in LMDB
+    assert annotations[0].keyword == 'NS2A'
