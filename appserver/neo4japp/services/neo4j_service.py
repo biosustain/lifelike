@@ -672,7 +672,7 @@ class Neo4JService(GraphBaseDao):
         """
 
     def get_individual_snippet_count_from_edges_query(self):
-        query = f"""
+        query = """
             MATCH (f)-[:HAS_ASSOCIATION]->(a:Association)-[:HAS_ASSOCIATION]->(t)
             WHERE
                 ID(f) IN $from_ids AND
@@ -684,8 +684,20 @@ class Neo4JService(GraphBaseDao):
                 ID(t) as to_id,
                 labels(f) as from_labels,
                 labels(t) as to_labels
-            OPTIONAL MATCH (association)<-[:PREDICTS]-(s:Snippet)
-            RETURN from_id, to_id, from_labels, to_labels, COUNT(s) as count
+            OPTIONAL MATCH (association)<-[:PREDICTS]-(s:Snippet)-[:IN_PUB]-(p:Publication)
+            WITH
+                COUNT(s) as snippet_count,
+                collect({
+                    snippet:s,
+                    publication:p
+                }) as references,
+                max(p.pub_year) as max_pub_year,
+                from_id,
+                to_id,
+                from_labels,
+                to_labels
+            ORDER BY snippet_count DESC, coalesce(max_pub_year, -1) DESC
+            RETURN from_id, to_id, from_labels, to_labels, snippet_count as count
         """
         return query
 

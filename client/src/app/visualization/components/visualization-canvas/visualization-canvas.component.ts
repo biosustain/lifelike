@@ -504,7 +504,6 @@ export class VisualizationCanvasComponent implements OnInit, AfterViewInit {
     }
 
     createClusterSvg(referenceTableRows: ReferenceTableRow[]) {
-        referenceTableRows.sort((a, b) => b.snippetCount - a.snippetCount);
         const maxSnippetCount = referenceTableRows[0].snippetCount;
         const maxRowsToShow = this.settingsFormValues.maxClusterShownRows.value;
         const numRowsToShow = referenceTableRows.length > maxRowsToShow ? maxRowsToShow : referenceTableRows.length;
