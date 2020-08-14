@@ -24,10 +24,14 @@
         </span>
       </ng-container>
     </app-form-row>
-    <div><div class="graph-container">
-      <canvas #canvas class="graph-view"></canvas>
-    </div></div>
   </app-modal-body>
+
+  <div class="view-container" [ngStyle]="{'visibility': isMapVisible ? 'visible' : 'hidden'}">
+    <label>Version Preview</label>
+    <div class="graph-container">
+      <canvas #canvas class="graph-view"></canvas>
+    </div> 
+  </div>
 
   <app-modal-footer>
     <button type="button" class="btn btn-secondary mr-2" (click)="cancel()">

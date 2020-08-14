@@ -19,7 +19,7 @@ import { KnowledgeMapStyle } from 'app/graph-viewer/styles/knowledge-map-style';
   selector: 'app-map-version-dialog',
   templateUrl: './map-version-dialog.component.html',
     styleUrls: [
-    './map-view.component.scss',
+    './map-version-dialog.component.scss',
   ],
 })
 export class MapVersionDialogComponent extends CommonFormDialogComponent implements OnInit, OnDestroy{
@@ -42,6 +42,7 @@ export class MapVersionDialogComponent extends CommonFormDialogComponent impleme
   private versionMaps: KnowledgeMap[];
   mapToPreview: KnowledgeMap;
   graphCanvas: CanvasGraphView;
+  isMapVisible: boolean = false;
   errorHandler: any;
 
   constructor(modal: NgbActiveModal, messageDialog: MessageDialog, private readonly mapService: MapService,
@@ -73,7 +74,6 @@ export class MapVersionDialogComponent extends CommonFormDialogComponent impleme
 
   ngOnDestroy() {
     this.loadTaskSubscription.unsubscribe();
-    this.graphCanvas.destroy();
   }
 
   get map() {
@@ -89,10 +89,12 @@ export class MapVersionDialogComponent extends CommonFormDialogComponent impleme
   }
 
   preview(){
+    this.isMapVisible = true;
+    console.log(this.isMapVisible);
+    
     this.mapToPreview = this.findMap();
     this.graphCanvas.setGraph(this.mapToPreview.graph);
     this.graphCanvas.zoomToFit(0);
-    console.log(this.graphCanvas);
   }
 
   getValue(): KnowledgeMap {
