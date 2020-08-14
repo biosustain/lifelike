@@ -350,50 +350,6 @@ def get_versions(projects_name: str, hash_id: str):
     yield {'versions': version_schema.dump(project_versions)}, 200
 
 
-@newbp.route('/<string:projects_name>/map/<string:hash_id>/<string:version_string>', methods=['PATCH'])
-@auth.login_required
-@requires_project_permission(AccessActionType.WRITE)
-def update_version(hash_id: str, projects_name: str, version_string: str):
-    """ Update the project's content and its metadata. """
-    user = g.current_user
-    data = request.get_json()
-
-    version_id = int(version_string)
-
-    projects = Projects.query.filter(Projects.project_name == projects_name).one_or_none()
-    if projects is None:
-        raise RecordNotFoundException(f'Project {projects_name} not found')
-
-    yield user, projects
-
-    try:
-        project_version = ProjectVersion.query.filter(
-            ProjectVersion.id == version_id and ProjectVersion.hash_id == hash_id
-        ).join(
-            Directory,
-            Directory.id == Project.dir_id,
-        ).filter(
-            Directory.projects_id == projects.id,
-        ).one()
-    except NoResultFound:
-        raise RecordNotFoundException('not found :-( ')
-
-    current_app.logger.info(f'User updated version: <{g.current_user.email}:{project_version.label}>')
-
-    # Update project's attributes
-    project_version.description = data.get("description", "")
-    project_version.label = data.get("label", "")
-    project_version.graph = data.get("graph", {"edges": [], "nodes": []})
-    project_version.date_modified = datetime.now()
-    project_version.public = data.get("public", False)
-
-    # Commit to db
-    db.session.add(project_version)
-    db.session.commit()
-
-    yield jsonify({'status': 'success'}), 200
-
-
 @newbp.route('/<string:projects_name>/map/<string:hash_id>/pdf', methods=['GET'])
 @auth.login_required
 @requires_project_permission(AccessActionType.READ)
