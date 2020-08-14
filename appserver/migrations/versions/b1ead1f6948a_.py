@@ -1,4 +1,4 @@
-"""empty message
+"""Adds tables for entity resources (styles and uris)
 
 Revision ID: b1ead1f6948a
 Revises: 9fe3f348bf65
