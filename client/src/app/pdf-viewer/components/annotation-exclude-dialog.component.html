@@ -1,0 +1,30 @@
+<form [formGroup]="form" (ngSubmit)="submit()">
+  <app-modal-header (cancel)="cancel()">
+    Exclude Annotation
+  </app-modal-header>
+
+  <app-modal-body>
+    <app-form-row for="reason" label="Reason" [control]="form.get('reason')">
+      <div class="custom-control custom-radio" *ngFor="let choice of reasonChoices; index as i">
+        <input type="radio" id="reason-{{ i }}" name="reason" class="custom-control-input"
+               (change)="chooseReason(choice, $event.target.checked)"
+               [checked]="form.get('reason').value === choice">
+        <label class="custom-control-label" for="reason-{{ i }}">{{ choice }}</label>
+      </div>
+    </app-form-row>
+
+    <app-form-row for="comment" label="Comment">
+      <input type="text" class="form-control" id="comment" formControlName="comment">
+    </app-form-row>
+
+    <div class="custom-control custom-checkbox mt-4">
+      <input type="checkbox" class="custom-control-input" id="exclude-globally" formControlName="excludeGlobally">
+      <label class="custom-control-label" for="exclude-globally">Exclude this annotation from a global list</label>
+    </div>
+  </app-modal-body>
+
+  <app-modal-footer>
+    <button type="button" class="btn btn-secondary mr-2" (click)="cancel()">Cancel</button>
+    <button type="submit" class="btn btn-primary">Create</button>
+  </app-modal-footer>
+</form>

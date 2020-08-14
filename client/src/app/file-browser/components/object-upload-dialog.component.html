@@ -1,0 +1,63 @@
+<form [formGroup]="form" (ngSubmit)="submit()">
+  <app-modal-header (cancel)="cancel()">
+    <h4 class="modal-title">Upload File</h4>
+  </app-modal-header>
+
+  <app-modal-body>
+    <ul ngbNav #nav="ngbNav" [(activeId)]="activeTab" class="nav-tabs" (activeIdChange)="activeTabChanged($event)">
+      <li [ngbNavItem]="uploadType.Files">
+        <a ngbNavLink>From Device</a>
+        <ng-template ngbNavContent>
+          <app-form-row for="file" label="File" [control]="form.get('files')">
+            <input type="file" id="file" (change)="fileChanged($event)" accept="application/pdf">
+          </app-form-row>
+        </ng-template>
+      </li>
+      <li [ngbNavItem]="uploadType.Url">
+        <a ngbNavLink>From URL</a>
+        <ng-template ngbNavContent>
+          <app-form-row for="url" label="URL" [control]="form.get('url')">
+            <input type="text" formControlName="url" id="url" [appFormInput]="form.get('url')"
+                   placeholder="https://www.example.com/file.pdf" (change)="urlChanged($event)">
+          </app-form-row>
+        </ng-template>
+      </li>
+    </ul>
+
+    <div [ngbNavOutlet]="nav" class="mt-4"></div>
+
+    <div class="mt-2">
+      <app-form-row for="filename" label="Filename" [control]="form.get('filename')">
+        <input type="text" formControlName="filename" id="filename" [appFormInput]="form.get('filename')">
+      </app-form-row>
+
+      <app-form-row for="description" label="Description" [control]="form.get('description')">
+      <textarea formControlName="description" id="description" [appFormInput]="form.get('description')"
+                rows="5" maxlength="2048"></textarea>
+      </app-form-row>
+    </div>
+
+    <div class="mt-2" *ngIf="(userRoles$ | async)?.includes('admin')">
+      <label>Select annotation method (Required)</label>
+      <app-form-row for="annotationMethod" label="Annotations" [control]="form.get('annotationMethod')">
+        <div *ngFor="let method of annotationMethods">
+          <div class="custom-control custom-checkbox">
+            <input type="checkbox" class="custom-control-input"
+                   id="annotation-type-{{method.replace(' ', '-') | lowercase}}"
+                   (change)="onAnnotationMethodPick(method, $event.target.checked)"
+                   [checked]="form.get('annotationMethod').value === method">
+            <label class="custom-control-label d-flex align-items-center"
+                   for="annotation-type-{{method.replace(' ', '-') | lowercase}}">
+              {{ method }}
+            </label>
+          </div>
+        </div>
+      </app-form-row>
+    </div>
+  </app-modal-body>
+
+  <app-modal-footer>
+    <button type="button" class="btn btn-secondary" (click)="cancel()">Cancel</button>
+    <button type="submit" class="btn btn-primary">Upload</button>
+  </app-modal-footer>
+</form>

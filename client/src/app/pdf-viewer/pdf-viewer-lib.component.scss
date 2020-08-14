@@ -1,3 +1,5 @@
+@import 'src/scss/variables';
+
 .pdf-viewer-container {
   position: relative;
 }
@@ -5,15 +7,7 @@
 // The box that says the PDF is loading
 .pdf-loading-box {
   position: absolute;
-  top: 1rem;
-  left: 1rem;
-  padding: 0.75rem 1rem;
+  top: $spacer;
+  left: $spacer;
   z-index: 100;
-  background: #fff;
-  border-radius: 0.5rem;
-}
-
-// Holds the actual PDF document
-.pdf-viewer-document {
-  overflow: auto;
 }

@@ -1,45 +1,19 @@
-<mat-card>
-  <mat-card-title>Change Password</mat-card-title>
-  <form #ngSecurityForm="ngForm" [formGroup]="securityForm" (ngSubmit)="changePassword()">
-    <mat-card-content>
-        <div class="container" fxLayout="column" fxLayoutAlign="start">
-          <mat-form-field appearance="fill">
-            <mat-label>Old password</mat-label>
-            <input matInput required type="password" formControlName="oldPassword">
-            <mat-error *ngIf="securityForm.hasError('required', 'oldPassword')">
-              You must include your original password
-            </mat-error>
-          </mat-form-field>
-          <mat-form-field appearance="fill">
-            <mat-label>New password</mat-label>
-            <input matInput required type="password" formControlName="password">
-            <mat-error *ngIf="securityForm.hasError('required', 'password')">
-              New password cannot be empty
-            </mat-error>
-          </mat-form-field>
-          <mat-form-field appearance="fill">
-            <mat-label>Confirm new password</mat-label>
-            <input
-              matInput
-              type="password"
-              formControlName="passwordConfirm"
-              [errorStateMatcher]="passwordMatcher"
-            >
-            <mat-error *ngIf="securityForm.hasError('notMatch', 'passwordConfirm')">
-              New passwords must match
-            </mat-error>
-          </mat-form-field>
-        </div>
-    </mat-card-content>
-    <mat-card-actions>
-      <button
-        type="submit"
-        mat-raised-button
-        color="primary"
-        [disabled]="securityForm.invalid"
-      >
-        Update password
-      </button>
-    </mat-card-actions>
-  </form>
-</mat-card>
+<form [formGroup]="form" (ngSubmit)="changePassword()">
+  <app-form-row for="old-password" label="Old Password" [control]="form.get('oldPassword')">
+    <input type="password" formControlName="oldPassword" id="old-password" [appFormInput]="form.get('oldPassword')" appAutoFocus>
+  </app-form-row>
+
+  <app-form-row for="password" label="Password" [control]="form.get('password')">
+    <input type="password" formControlName="password" id="password" [appFormInput]="form.get('password')">
+  </app-form-row>
+
+  <app-form-row for="confirm-password" label="Confirm Password" [control]="form.get('passwordConfirm')" [errors]="errors">
+    <input type="password" formControlName="passwordConfirm" id="confirm-password" [appFormInput]="form.get('passwordConfirm')">
+  </app-form-row>
+
+  <div class="mt-4">
+    <button type="submit" class="btn btn-primary">
+      Change Password
+    </button>
+  </div>
+</form>

@@ -58,7 +58,9 @@ describe('SnippetDisplayComponentComponent', () => {
             label: 'Mock Reference',
             data: {
                 entry1Text: 'Mock Entry 1',
+                entry1Type: 'mockNode1',
                 entry2Text: 'Mock Entry 2',
+                entry2Type: 'mockNode2',
                 id: 'mockReferenceId1',
                 score: 0,
                 sentence: 'Mock Sentence',
@@ -71,6 +73,8 @@ describe('SnippetDisplayComponentComponent', () => {
             {
                 publication: mockPublication,
                 reference: mockReference,
+                rawScore: 1,
+                normalizedScore: 1.0
             }
         ];
 
@@ -120,14 +124,14 @@ describe('SnippetDisplayComponentComponent', () => {
     });
 
     it('should load snippet panels', () => {
-        const snippetPanels = document.getElementsByClassName('association-snippet-panel');
+        const snippetPanels = document.getElementsByClassName('accordion');
 
         expect(snippetPanels.length).toEqual(1);
     });
 
     it('should show publication data on snippet panels', () => {
-        const snippetPanelTitles = document.getElementsByClassName('association-snippet-title');
-        const snippetPanelPubData = document.getElementsByClassName('association-snippet-pub-data');
+        const snippetPanelTitles = document.getElementsByClassName('snippet-panel-header');
+        const snippetPanelPubData = document.getElementsByClassName('snippet-panel-pub-data');
 
         expect(snippetPanelTitles.length).toEqual(1);
         expect(snippetPanelPubData.length).toEqual(1);
@@ -140,7 +144,12 @@ describe('SnippetDisplayComponentComponent', () => {
     });
 
     it('should link to pubtator', () => {
-        const pubmedLinks = document.getElementsByClassName('pubmed-link');
+        const snippetPanel = document.getElementsByClassName('snippet-panel-header')[0] as HTMLElement;
+        const pubmedLinks = document.getElementsByClassName('pubtator-link');
+
+        snippetPanel.click();
+
+        fixture.detectChanges();
 
         expect(pubmedLinks.length).toEqual(1);
 
@@ -148,6 +157,21 @@ describe('SnippetDisplayComponentComponent', () => {
 
         expect(link.getAttribute('href')).toEqual('https://www.ncbi.nlm.nih.gov/research/pubtator/?view=docsum&query=123456');
         expect(link.textContent).toEqual('123456');
+    });
+
+    it('should show the normalized confidence score for a snippet', () => {
+        const snippetPanel = document.getElementsByClassName('snippet-panel-header')[0] as HTMLElement;
+        snippetPanel.click();
+
+        fixture.detectChanges();
+
+        const confidenceScoreContainers = document.getElementsByClassName('snippet-confidence-score-container');
+
+        expect(confidenceScoreContainers.length).toEqual(1);
+
+        const confidenceScoreContainer = confidenceScoreContainers[0];
+
+        expect(confidenceScoreContainer.textContent).toEqual('Snippet Confidence Score:1.000');
     });
 
     it('should show "Showing 0 - 0" of 0" and no page limit selector if there are no results', () => {

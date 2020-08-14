@@ -1,7 +1,18 @@
 import { isNullOrUndefined } from 'util';
 
+// TODO - Create sub-types for mutation
+// - snp
+// - sub
+// - del
+// - ins
+// - mob
+// - amp
+// - con
+// - inv
+
 interface AnnotationStyle {
   // Mandatory fields
+
   label: string;
   color: string;
   // Optional fields
@@ -29,7 +40,7 @@ const PROTEIN = '#bcbd22';
 const PATHWAY = '#e377c2';
 const PHENOTYPE = '#edc949';
 
-const NOTE  = '#edc949';
+const NOTE = '#edc949';
 const MAP = '#0277bd';
 
 const ENTITY = '#7f7f7f';
@@ -43,24 +54,20 @@ const OBSERVATION = '#d7d9f8';
 const ASSOCIATION = '#d7d9f8';
 
 const annotationTypes: AnnotationStyle[] = [{
-    label: 'gene',
-    color: GENE,
-    subtypes: []
-  },
+  label: 'gene',
+  color: GENE,
+},
   {
     label: 'disease',
     color: DISEASE,
-    subtypes: []
   },
   {
     label: 'chemical',
     color: CHEMICAL,
-    subtypes: []
   },
   {
     label: 'compound',
     color: COMPOUND,
-    subtypes: []
   },
   {
     label: 'mutation',
@@ -74,60 +81,50 @@ const annotationTypes: AnnotationStyle[] = [{
       'AMP',
       'CON',
       'INV'
-    ]
+    ],
   },
   {
     label: 'species',
     color: SPECIES,
-    subtypes: []
   },
   {
     label: 'company',
     color: COMPANY,
-    subtypes: []
   },
   {
     label: 'study',
     color: STUDY,
-    subtypes: []
   },
   {
     label: 'protein',
     color: PROTEIN,
-    subtypes: []
   },
   {
     label: 'pathway',
     color: PATHWAY,
-    subtypes: []
   },
   {
     label: 'phenotype',
     color: PHENOTYPE,
-    subtypes: []
   },
   {
     label: 'link',
     color: LINK,
-    iconCode: '',
-    subtypes: []
+    iconCode: ''
   },
   {
     label: 'entity',
     color: ENTITY,
-    subtypes: []
   },
   {
     label: 'map',
     color: MAP,
-    iconCode: '\uf279',
-    subtypes: []
+    iconCode: '\uf279'
   },
   {
     label: 'note',
     color: NOTE,
-    iconCode: '\uf249',
-    subtypes: []
+    iconCode: '\uf249'
   },
   // Non-Entity types
   {
@@ -138,7 +135,6 @@ const annotationTypes: AnnotationStyle[] = [{
       background: CORRELATION,
       color: '#000'
     },
-    subtypes: []
   },
   {
     label: 'cause',
@@ -148,7 +144,6 @@ const annotationTypes: AnnotationStyle[] = [{
       background: CAUSE,
       color: '#000'
     },
-    subtypes: []
   },
   {
     label: 'effect',
@@ -158,7 +153,6 @@ const annotationTypes: AnnotationStyle[] = [{
       background: EFFECT,
       color: '#000'
     },
-    subtypes: []
   },
   {
     label: 'observation',
@@ -168,7 +162,6 @@ const annotationTypes: AnnotationStyle[] = [{
       background: OBSERVATION,
       color: '#000'
     },
-    subtypes: []
   },
   {
     label: 'association',
@@ -178,9 +171,13 @@ const annotationTypes: AnnotationStyle[] = [{
       background: ASSOCIATION,
       color: '#000'
     },
-    subtypes: []
   },
 ];
+
+const annotationTypesMap: Map<string, AnnotationStyle> = annotationTypes.reduce((map, item) => {
+  map.set(item.label, item);
+  return map;
+}, new Map());
 
 /**
  * Return group styling based on the annotation
@@ -218,18 +215,20 @@ function groupStyle(ann: AnnotationStyle) {
  * different group types for vis-js network library
  */
 function visJsGroupStyleFactory() {
-    const groupStyleDict = {};
+  const groupStyleDict = {};
 
-    annotationTypes.map(
-        ann => {
-            groupStyleDict[ann.label] = groupStyle(ann);
-        }
-    );
+  annotationTypes.map(
+    ann => {
+      groupStyleDict[ann.label] = groupStyle(ann);
+    }
+  );
 
-    return groupStyleDict;
+  return groupStyleDict;
 }
 
 export {
+  AnnotationStyle,
   annotationTypes,
+  annotationTypesMap,
   visJsGroupStyleFactory
 };

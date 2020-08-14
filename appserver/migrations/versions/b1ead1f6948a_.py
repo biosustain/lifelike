@@ -1,7 +1,7 @@
 """empty message
 
 Revision ID: b1ead1f6948a
-Revises: f71f7fc1e1c2
+Revises: 9fe3f348bf65
 Create Date: 2020-06-30 14:37:18.017051
 
 """
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = 'b1ead1f6948a'
-down_revision = 'f71f7fc1e1c2'
+down_revision = '9fe3f348bf65'
 branch_labels = None
 depends_on = None
 
@@ -24,9 +24,8 @@ def upgrade():
     sa.Column('label', sa.String(length=32), nullable=False),
     sa.Column('color', sa.String(length=9), nullable=False),
     sa.Column('icon_code', sa.String(length=32), nullable=True),
-    sa.Column('style_border', sa.String(length=9), nullable=True),
-    sa.Column('style_background', sa.String(length=9), nullable=True),
-    sa.Column('style_color', sa.String(length=9), nullable=True),
+    sa.Column('border_color', sa.String(length=9), nullable=True),
+    sa.Column('background_color', sa.String(length=9), nullable=True),
     sa.PrimaryKeyConstraint('id', name=op.f('pk_annotation_style'))
     )
     op.create_table('domain_urls_map',

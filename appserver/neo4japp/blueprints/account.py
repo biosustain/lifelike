@@ -1,8 +1,8 @@
 from flask import Blueprint, g, jsonify
 from sqlalchemy.orm.exc import NoResultFound
 from neo4japp.exceptions import NotAuthorizedException
-from neo4japp.database import get_account_service
-from neo4japp.models import AppUser
+from neo4japp.database import get_account_service, get_projects_service
+from neo4japp.models import AppRole, AppUser, Projects
 from neo4japp.data_transfer_objects import UserRequest, UserUpdateRequest
 from neo4japp.blueprints.auth import auth
 from neo4japp.blueprints.permissions import requires_role
@@ -17,6 +17,7 @@ bp = Blueprint('accounts', __name__, url_prefix='/accounts')
 @requires_role('admin')
 def create_user(req: UserRequest):
     account_dao = get_account_service()
+    proj_service = get_projects_service()
 
     yield g.current_user
 
@@ -28,6 +29,12 @@ def create_user(req: UserRequest):
         email=req.email,
         password=req.password,
     )
+
+    # TODO: Deprecate this once we have a GUI for adding users to projects
+    # Currently will add any new user to a global project with WRITE permission
+    default_projects = Projects.query.filter(Projects.project_name == 'beta-project').one()
+    write_role = AppRole.query.filter(AppRole.name == 'project-write').one()
+    proj_service.add_collaborator(new_user, write_role, default_projects)
 
     yield SuccessResponse(
         result=new_user.to_dict(), status_code=201)

@@ -8,22 +8,24 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Injectable()
 export class AdminGuard implements CanActivate {
-    constructor(private accountService: AccountService, public snackBar: MatSnackBar) {}
+  constructor(private readonly accountService: AccountService,
+              public readonly snackBar: MatSnackBar) {
+  }
 
-    canActivate(_: ActivatedRouteSnapshot): Observable<boolean> {
-        return this.accountService.currentUser().pipe(
-            map((user: AppUser) => {
-                const isAdmin = user.roles.includes('admin');
-                if (!isAdmin) {
-                    this.openSnackBar('Unauthorized', 'close');
-                }
-                return isAdmin;
-            }),
-            take(1),
-        );
-    }
+  canActivate(routeSnapshot: ActivatedRouteSnapshot): Observable<boolean> {
+    return this.accountService.currentUser().pipe(
+      map((user: AppUser) => {
+        const isAdmin = user.roles.includes('admin');
+        if (!isAdmin) {
+          this.openSnackBar('Unauthorized', 'close');
+        }
+        return isAdmin;
+      }),
+      take(1),
+    );
+  }
 
-    openSnackBar(message: string, action: string) {
-        this.snackBar.open(message, action, {duration: 5000});
-    }
+  openSnackBar(message: string, action: string) {
+    this.snackBar.open(message, action, {duration: 5000});
+  }
 }
