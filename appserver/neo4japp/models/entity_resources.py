@@ -20,6 +20,7 @@ class AnnotationStyle(RDBMSBase):
     label = db.Column(db.String(32), nullable=False)
     color = db.Column(db.String(9), nullable=False)
     icon_code = db.Column(db.String(32), nullable=True)
+    font_color = db.Column(db.String(9), nullable=True)
     border_color = db.Column(db.String(9), nullable=True)
     background_color = db.Column(db.String(9), nullable=True)
 
@@ -28,6 +29,9 @@ class AnnotationStyle(RDBMSBase):
             'label': self.label,
             'color': self.color,
             'icon_code': self.icon_code,
-            'border_color': self.border_color,
-            'background_color': self.background_color,
+            'style': {
+                'border': self.border_color,
+                'background': self.background_color,
+                'color': self.font_color
+            }
         }
