@@ -1492,31 +1492,36 @@
         "label": "correlation",
         "color": "#d7d9f8",
         "border_color": "#d7d9f8",
-        "background_color": "#d7d9f8"
+        "background_color": "#d7d9f8",
+        "font_color": "#000"
       },
       {
         "label": "cause",
         "color": "#d7d9f8",
         "border_color": "#d7d9f8",
-        "background_color": "#d7d9f8"
+        "background_color": "#d7d9f8",
+        "font_color": "#000"
       },
       {
         "label": "effect",
         "color": "#d7d9f8",
         "border_color": "#d7d9f8",
-        "background_color": "#d7d9f8"
+        "background_color": "#d7d9f8",
+        "font_color": "#000"
       },
       {
         "label": "observation",
         "color": "#d7d9f8",
         "border_color": "#d7d9f8",
-        "background_color": "#d7d9f8"
+        "background_color": "#d7d9f8",
+        "font_color": "#000"
       },
       {
         "label": "association",
         "color": "#d7d9f8",
         "border_color": "#d7d9f8",
-        "background_color": "#d7d9f8"
+        "background_color": "#d7d9f8",
+        "font_color": "#000"
       }
     ]
   }

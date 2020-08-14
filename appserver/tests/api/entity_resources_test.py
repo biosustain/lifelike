@@ -64,7 +64,7 @@ def test_user_can_get_uri(client, test_user, uri_fixture):
 
     post_response = client.post('/annotations/uri', headers=headers, json=post_payload)
     assert post_response.status_code == 200
-    assert post_response.json == {'uri': 'https://www.ebi.ac.uk/chebi/searchId.do?chebiId=CHEBI:27732'}
+    assert post_response.json == {'uri': 'https://www.ebi.ac.uk/chebi/searchId.do?chebiId=CHEBI:27732'}  # noqa
 
 
 def test_user_can_get_many_uris(client, test_user, uri_fixture):
@@ -91,4 +91,3 @@ def test_user_can_get_many_uris(client, test_user, uri_fixture):
             {'uri': 'https://www.ncbi.nlm.nih.gov/mesh/?term=68017594'}
         ]
     }
-

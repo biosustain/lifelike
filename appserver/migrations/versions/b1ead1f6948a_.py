@@ -24,6 +24,7 @@ def upgrade():
     sa.Column('label', sa.String(length=32), nullable=False),
     sa.Column('color', sa.String(length=9), nullable=False),
     sa.Column('icon_code', sa.String(length=32), nullable=True),
+    sa.Column('font_color', sa.String(length=9), nullable=True),
     sa.Column('border_color', sa.String(length=9), nullable=True),
     sa.Column('background_color', sa.String(length=9), nullable=True),
     sa.PrimaryKeyConstraint('id', name=op.f('pk_annotation_style'))
