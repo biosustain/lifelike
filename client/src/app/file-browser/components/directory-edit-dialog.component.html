@@ -1,0 +1,18 @@
+<form [formGroup]="form" (ngSubmit)="submit()">
+  <div>
+    <app-modal-header (cancel)="cancel()">
+      New Folder
+    </app-modal-header>
+
+    <app-modal-body>
+      <app-form-row for="name" label="Name" [control]="form.get('name')">
+        <input type="text" formControlName="name" id="username" [appFormInput]="form.get('name')" appAutoFocus>
+      </app-form-row>
+    </app-modal-body>
+
+    <app-modal-footer>
+      <button type="button" class="btn btn-secondary mr-2" (click)="cancel()">Cancel</button>
+      <button type="submit" class="btn btn-primary">{{ editing ? 'Save' : 'Create' }}</button>
+    </app-modal-footer>
+  </div>
+</form>

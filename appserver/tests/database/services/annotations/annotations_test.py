@@ -3,14 +3,12 @@ import json
 import pytest
 
 from os import path
+from uuid import uuid4
 
 from pdfminer.layout import LTChar
 
 from neo4japp.database import (
-    get_annotations_service,
-    get_bioc_document_service,
     get_annotations_pdf_parser,
-    get_lmdb_dao,
 )
 from neo4japp.data_transfer_objects import (
     Annotation,
@@ -19,35 +17,11 @@ from neo4japp.data_transfer_objects import (
     PDFTokenPositions,
     PDFTokenPositionsList,
 )
-from neo4japp.models import Files, FileContent
-from neo4japp.services.annotations import AnnotationsService, LMDBDao
 from neo4japp.services.annotations.constants import EntityType, OrganismCategory
 
 
 # reference to this directory
 directory = path.realpath(path.dirname(__file__))
-
-
-def get_test_annotations_service(
-    genes_lmdb_path='',
-    chemicals_lmdb_path='',
-    compounds_lmdb_path='',
-    proteins_lmdb_path='',
-    species_lmdb_path='',
-    diseases_lmdb_path='',
-    phenotypes_lmdb_path='',
-):
-    return AnnotationsService(
-        lmdb_session=LMDBDao(
-            genes_lmdb_path=genes_lmdb_path,
-            chemicals_lmdb_path=chemicals_lmdb_path,
-            compounds_lmdb_path=compounds_lmdb_path,
-            proteins_lmdb_path=proteins_lmdb_path,
-            species_lmdb_path=species_lmdb_path,
-            diseases_lmdb_path=diseases_lmdb_path,
-            phenotypes_lmdb_path=phenotypes_lmdb_path,
-        ),
-    )
 
 
 def get_dummy_LTChar(text):
@@ -89,13 +63,14 @@ def get_dummy_LTChar(text):
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    keyword_type=EntityType.Gene.value,
+                    type=EntityType.Gene.value,
                     color='',
                     id='',
                     id_type='',
                     id_hyperlink='',
                     links=Annotation.Meta.Links(),
                 ),
+                uuid='',
             ),
             Annotation(
                 page_number=1,
@@ -107,13 +82,14 @@ def get_dummy_LTChar(text):
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    keyword_type=EntityType.Gene.value,
+                    type=EntityType.Gene.value,
                     color='',
                     id='',
                     id_type='',
                     id_hyperlink='',
                     links=Annotation.Meta.Links(),
                 ),
+                uuid='',
             ),
         ]),
         (2, [
@@ -127,13 +103,14 @@ def get_dummy_LTChar(text):
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    keyword_type=EntityType.Gene.value,
+                    type=EntityType.Gene.value,
                     color='',
                     id='',
                     id_type='',
                     id_hyperlink='',
                     links=Annotation.Meta.Links(),
                 ),
+                uuid='',
             ),
             Annotation(
                 page_number=1,
@@ -145,13 +122,14 @@ def get_dummy_LTChar(text):
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    keyword_type=EntityType.Chemical.value,
+                    type=EntityType.Chemical.value,
                     color='',
                     id='',
                     id_type='',
                     id_hyperlink='',
                     links=Annotation.Meta.Links(),
                 ),
+                uuid='',
             ),
         ]),
         (3, [
@@ -165,13 +143,14 @@ def get_dummy_LTChar(text):
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    keyword_type=EntityType.Gene.value,
+                    type=EntityType.Gene.value,
                     color='',
                     id='',
                     id_type='',
                     id_hyperlink='',
                     links=Annotation.Meta.Links(),
                 ),
+                uuid='',
             ),
             Annotation(
                 page_number=1,
@@ -183,13 +162,14 @@ def get_dummy_LTChar(text):
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    keyword_type=EntityType.Chemical.value,
+                    type=EntityType.Chemical.value,
                     color='',
                     id='',
                     id_type='',
                     id_hyperlink='',
                     links=Annotation.Meta.Links(),
                 ),
+                uuid='',
             ),
         ]),
         (4, [
@@ -203,13 +183,14 @@ def get_dummy_LTChar(text):
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    keyword_type=EntityType.Gene.value,
+                    type=EntityType.Gene.value,
                     color='',
                     id='',
                     id_type='',
                     id_hyperlink='',
                     links=Annotation.Meta.Links(),
                 ),
+                uuid='',
             ),
             Annotation(
                 page_number=1,
@@ -221,13 +202,14 @@ def get_dummy_LTChar(text):
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    keyword_type=EntityType.Chemical.value,
+                    type=EntityType.Chemical.value,
                     color='',
                     id='',
                     id_type='',
                     id_hyperlink='',
                     links=Annotation.Meta.Links(),
                 ),
+                uuid='',
             ),
         ]),
         (5, [
@@ -241,13 +223,14 @@ def get_dummy_LTChar(text):
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    keyword_type=EntityType.Gene.value,
+                    type=EntityType.Gene.value,
                     color='',
                     id='',
                     id_type='',
                     id_hyperlink='',
                     links=Annotation.Meta.Links(),
                 ),
+                uuid='',
             ),
         ]),
         (6, [
@@ -261,13 +244,14 @@ def get_dummy_LTChar(text):
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    keyword_type=EntityType.Gene.value,
+                    type=EntityType.Gene.value,
                     color='',
                     id='',
                     id_type='',
                     id_hyperlink='',
                     links=Annotation.Meta.Links(),
                 ),
+                uuid='',
             ),
             Annotation(
                 page_number=1,
@@ -279,13 +263,14 @@ def get_dummy_LTChar(text):
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    keyword_type=EntityType.Chemical.value,
+                    type=EntityType.Chemical.value,
                     color='',
                     id='',
                     id_type='',
                     id_hyperlink='',
                     links=Annotation.Meta.Links(),
                 ),
+                uuid='',
             ),
             Annotation(
                 page_number=1,
@@ -297,13 +282,14 @@ def get_dummy_LTChar(text):
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    keyword_type=EntityType.Chemical.value,
+                    type=EntityType.Chemical.value,
                     color='',
                     id='',
                     id_type='',
                     id_hyperlink='',
                     links=Annotation.Meta.Links(),
                 ),
+                uuid='',
             ),
         ]),
         # adjacent intervals
@@ -318,13 +304,14 @@ def get_dummy_LTChar(text):
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    keyword_type=EntityType.Gene.value,
+                    type=EntityType.Gene.value,
                     color='',
                     id='',
                     id_type='',
                     id_hyperlink='',
                     links=Annotation.Meta.Links(),
                 ),
+                uuid='',
             ),
             Annotation(
                 page_number=1,
@@ -336,13 +323,14 @@ def get_dummy_LTChar(text):
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    keyword_type=EntityType.Chemical.value,
+                    type=EntityType.Chemical.value,
                     color='',
                     id='',
                     id_type='',
                     id_hyperlink='',
                     links=Annotation.Meta.Links(),
                 ),
+                uuid='',
             ),
         ]),
         # adjacent intervals
@@ -357,13 +345,14 @@ def get_dummy_LTChar(text):
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    keyword_type=EntityType.Chemical.value,
+                    type=EntityType.Chemical.value,
                     color='',
                     id='',
                     id_type='',
                     id_hyperlink='',
                     links=Annotation.Meta.Links(),
                 ),
+                uuid='',
             ),
             Annotation(
                 page_number=1,
@@ -375,77 +364,103 @@ def get_dummy_LTChar(text):
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    keyword_type=EntityType.Chemical.value,
+                    type=EntityType.Chemical.value,
                     color='',
                     id='',
                     id_type='',
                     id_hyperlink='',
                     links=Annotation.Meta.Links(),
                 ),
+                uuid='',
             ),
         ]),
     ],
 )
-def test_fix_conflicting_annotations(annotations_setup, index, annotations):
-    annotation_service = get_test_annotations_service()
+def test_fix_conflicting_annotations(
+    get_annotations_service,
+    index,
+    annotations,
+):
+    annotation_service = get_annotations_service
     fixed = annotation_service.fix_conflicting_annotations(
         unified_annotations=annotations,
     )
 
     if index == 1:
         assert len(fixed) == 1
-        assert fixed[0] == annotations[1]
+        # have to do asserts like this because the uuid will be different
+        assert fixed[0].keyword == annotations[1].keyword
+        assert fixed[0].lo_location_offset == annotations[1].lo_location_offset
+        assert fixed[0].hi_location_offset == annotations[1].hi_location_offset
+        assert fixed[0].meta.type == annotations[1].meta.type
     elif index == 2:
         assert len(fixed) == 1
-        assert fixed[0] == annotations[0]
+        # have to do asserts like this because the uuid will be different
+        assert fixed[0].keyword == annotations[0].keyword
+        assert fixed[0].lo_location_offset == annotations[0].lo_location_offset
+        assert fixed[0].hi_location_offset == annotations[0].hi_location_offset
+        assert fixed[0].meta.type == annotations[0].meta.type
     elif index == 3:
         assert len(fixed) == 2
-        assert annotations[0] in fixed
-        assert annotations[1] in fixed
+        matches = {f.keyword for f in fixed}
+        assert annotations[0].keyword in matches
+        assert annotations[1].keyword in matches
     elif index == 4:
         assert len(fixed) == 1
-        assert fixed[0] == annotations[0]
+        # have to do asserts like this because the uuid will be different
+        assert fixed[0].keyword == annotations[0].keyword
+        assert fixed[0].lo_location_offset == annotations[0].lo_location_offset
+        assert fixed[0].hi_location_offset == annotations[0].hi_location_offset
+        assert fixed[0].meta.type == annotations[0].meta.type
     elif index == 5:
         assert len(fixed) == 1
-        assert fixed[0] == annotations[0]
+        # have to do asserts like this because the uuid will be different
+        assert fixed[0].keyword == annotations[0].keyword
+        assert fixed[0].lo_location_offset == annotations[0].lo_location_offset
+        assert fixed[0].hi_location_offset == annotations[0].hi_location_offset
+        assert fixed[0].meta.type == annotations[0].meta.type
     elif index == 6:
         assert len(fixed) == 2
-        assert annotations[0] in fixed
-        assert annotations[1] not in fixed
-        assert annotations[2] in fixed
+        matches = {f.keyword for f in fixed}
+        assert annotations[0].keyword in matches
+        assert annotations[1].keyword not in matches
+        assert annotations[2].keyword in matches
     elif index == 7:
         # test adjacent intervals
         assert len(fixed) == 1
-        assert fixed[0] == annotations[0]
+        # have to do asserts like this because the uuid will be different
+        assert fixed[0].keyword == annotations[0].keyword
+        assert fixed[0].lo_location_offset == annotations[0].lo_location_offset
+        assert fixed[0].hi_location_offset == annotations[0].hi_location_offset
+        assert fixed[0].meta.type == annotations[0].meta.type
     elif index == 8:
         # test adjacent intervals
         assert len(fixed) == 1
-        assert fixed[0] == annotations[1]
+        # have to do asserts like this because the uuid will be different
+        assert fixed[0].keyword == annotations[1].keyword
+        assert fixed[0].lo_location_offset == annotations[1].lo_location_offset
+        assert fixed[0].hi_location_offset == annotations[1].hi_location_offset
+        assert fixed[0].meta.type == annotations[1].meta.type
 
 
 def test_escherichia_coli_pdf(
     escherichia_coli_pdf_lmdb_setup,
     mock_get_gene_to_organism_match_result_for_escherichia_coli_pdf,
+    get_annotations_service
 ):
-    annotation_service = get_test_annotations_service(
-        genes_lmdb_path=path.join(directory, 'lmdb/genes'),
-        chemicals_lmdb_path=path.join(directory, 'lmdb/chemicals'),
-        compounds_lmdb_path=path.join(directory, 'lmdb/compounds'),
-        proteins_lmdb_path=path.join(directory, 'lmdb/proteins'),
-        species_lmdb_path=path.join(directory, 'lmdb/species'),
-        diseases_lmdb_path=path.join(directory, 'lmdb/diseases'),
-        phenotypes_lmdb_path=path.join(directory, 'lmdb/phenotypes'),
-    )
+    annotation_service = get_annotations_service
     pdf_parser = get_annotations_pdf_parser()
 
     pdf = path.join(directory, f'pdf_samples/ecoli_gene_test.pdf')
 
     with open(pdf, 'rb') as f:
         pdf_text = pdf_parser.parse_pdf(pdf=f)
-        annotations = annotation_service.create_annotations(
-            tokens=pdf_parser.extract_tokens(parsed_chars=pdf_text))
+        annotations = annotation_service.create_rules_based_annotations(
+            tokens=pdf_parser.extract_tokens(parsed_chars=pdf_text),
+            custom_annotations=[],
+        )
 
-    keywords = {o.keyword: o.meta.keyword_type for o in annotations}
+    keywords = {o.keyword: o.meta.type for o in annotations}
 
     assert 'Escherichia coli' in keywords
     assert keywords['Escherichia coli'] == EntityType.Species.value
@@ -466,30 +481,72 @@ def test_escherichia_coli_pdf(
     assert keywords['purF'] == EntityType.Gene.value
 
 
+def test_custom_annotations_gene_organism_matching_has_match(
+    default_lmdb_setup,
+    mock_general_human_genes,
+    get_annotations_service
+):
+    annotation_service = get_annotations_service
+    pdf_parser = get_annotations_pdf_parser()
+
+    pdf = path.join(directory, f'pdf_samples/custom_annotations_gene_matching.pdf')
+
+    custom_annotation = {
+        'meta': {
+            'id': '9606',
+            'type': 'Species',
+            'color': '#3177b8',
+            'links': {
+                'ncbi': 'https://www.ncbi.nlm.nih.gov/gene/?query=hooman',
+                'google': 'https://www.google.com/search?q=hooman',
+                'uniprot': 'https://www.uniprot.org/uniprot/?sort=score&query=hooman',
+                'wikipedia': 'https://www.google.com/search?q=site:+wikipedia.org+hooman',
+            },
+            'idType': '',
+            'allText': 'hooman',
+            'isCustom': True,
+            'idHyperlink': '',
+            'primaryLink': '',
+            'includeGlobally': False,
+        },
+        'uuid': 'a66ec5d5-f65b-467d-b16e-b833161e07d1',
+        'rects': [[76.8953975, 706.52786608, 119.3537674652, 718.27682008]],
+        'user_id': 2,
+        'keywords': ['hooman'],
+        'pageNumber': 1,
+        'inclusion_date': '2020-08-03 23:00:09.728591+00:00',
+    }
+
+    with open(pdf, 'rb') as f:
+        pdf_text = pdf_parser.parse_pdf(pdf=f)
+        annotations = annotation_service.create_rules_based_annotations(
+            tokens=pdf_parser.extract_tokens(parsed_chars=pdf_text),
+            custom_annotations=[custom_annotation],
+        )
+
+    assert len(annotations) == 1
+    assert annotations[0].meta.id == '388962'  # human gene
+
+
 def test_human_gene_pdf(
     human_gene_pdf_lmdb_setup,
     human_gene_pdf_gene_and_organism_network,
     mock_get_gene_to_organism_match_result_for_human_gene_pdf,
+    get_annotations_service
 ):
-    annotation_service = get_test_annotations_service(
-        genes_lmdb_path=path.join(directory, 'lmdb/genes'),
-        chemicals_lmdb_path=path.join(directory, 'lmdb/chemicals'),
-        compounds_lmdb_path=path.join(directory, 'lmdb/compounds'),
-        proteins_lmdb_path=path.join(directory, 'lmdb/proteins'),
-        species_lmdb_path=path.join(directory, 'lmdb/species'),
-        diseases_lmdb_path=path.join(directory, 'lmdb/diseases'),
-        phenotypes_lmdb_path=path.join(directory, 'lmdb/phenotypes'),
-    )
+    annotation_service = get_annotations_service
     pdf_parser = get_annotations_pdf_parser()
 
     pdf = path.join(directory, f'pdf_samples/human_gene_test.pdf')
 
     with open(pdf, 'rb') as f:
         pdf_text = pdf_parser.parse_pdf(pdf=f)
-        annotations = annotation_service.create_annotations(
-            tokens=pdf_parser.extract_tokens(parsed_chars=pdf_text))
+        annotations = annotation_service.create_rules_based_annotations(
+            tokens=pdf_parser.extract_tokens(parsed_chars=pdf_text),
+            custom_annotations=[],
+        )
 
-    keywords = {o.keyword: o.meta.keyword_type for o in annotations}
+    keywords = {o.keyword: o.meta.type for o in annotations}
 
     assert 'COVID-19' in keywords
     assert keywords['COVID-19'] == EntityType.Disease.value
@@ -535,16 +592,9 @@ def test_tokens_gene_vs_protein(
     default_lmdb_setup,
     mock_get_gene_to_organism_match_result,
     tokens,
+    get_annotations_service
 ):
-    annotation_service = get_test_annotations_service(
-        genes_lmdb_path=path.join(directory, 'lmdb/genes'),
-        chemicals_lmdb_path=path.join(directory, 'lmdb/chemicals'),
-        compounds_lmdb_path=path.join(directory, 'lmdb/compounds'),
-        proteins_lmdb_path=path.join(directory, 'lmdb/proteins'),
-        species_lmdb_path=path.join(directory, 'lmdb/species'),
-        diseases_lmdb_path=path.join(directory, 'lmdb/diseases'),
-        phenotypes_lmdb_path=path.join(directory, 'lmdb/phenotypes'),
-    )
+    annotation_service = get_annotations_service
 
     char_coord_objs_in_pdf = []
     for t in tokens:
@@ -552,26 +602,28 @@ def test_tokens_gene_vs_protein(
             char_coord_objs_in_pdf.append(get_dummy_LTChar(text=c))
         char_coord_objs_in_pdf.append(get_dummy_LTChar(text=' '))
 
-    annotations = annotation_service.create_annotations(
+    annotations = annotation_service.create_rules_based_annotations(
         tokens=PDFTokenPositionsList(
             token_positions=tokens,
             char_coord_objs_in_pdf=char_coord_objs_in_pdf,
             cropbox_in_pdf=(5, 5),
+            min_idx_in_page=[1, 5, 10],
         ),
+        custom_annotations=[],
     )
 
     assert len(annotations) == 4
     assert annotations[0].keyword == 'hyp27'
-    assert annotations[0].meta.keyword_type == EntityType.Gene.value
+    assert annotations[0].meta.type == EntityType.Gene.value
 
     assert annotations[1].keyword == 'Moniliophthora roreri'
-    assert annotations[1].meta.keyword_type == EntityType.Species.value
+    assert annotations[1].meta.type == EntityType.Species.value
 
     assert annotations[2].keyword == 'Hyp27'
-    assert annotations[2].meta.keyword_type == EntityType.Protein.value
+    assert annotations[2].meta.type == EntityType.Protein.value
 
     assert annotations[3].keyword == 'human'
-    assert annotations[3].meta.keyword_type == EntityType.Species.value
+    assert annotations[3].meta.type == EntityType.Species.value
 
 
 @pytest.mark.parametrize(
@@ -638,16 +690,9 @@ def test_tokens_gene_vs_protein_serpina1_cases(
     mock_get_gene_to_organism_serpina1_match_result,
     index,
     tokens,
+    get_annotations_service
 ):
-    annotation_service = get_test_annotations_service(
-        genes_lmdb_path=path.join(directory, 'lmdb/genes'),
-        chemicals_lmdb_path=path.join(directory, 'lmdb/chemicals'),
-        compounds_lmdb_path=path.join(directory, 'lmdb/compounds'),
-        proteins_lmdb_path=path.join(directory, 'lmdb/proteins'),
-        species_lmdb_path=path.join(directory, 'lmdb/species'),
-        diseases_lmdb_path=path.join(directory, 'lmdb/diseases'),
-        phenotypes_lmdb_path=path.join(directory, 'lmdb/phenotypes'),
-    )
+    annotation_service = get_annotations_service
 
     char_coord_objs_in_pdf = []
     for t in tokens:
@@ -655,35 +700,37 @@ def test_tokens_gene_vs_protein_serpina1_cases(
             char_coord_objs_in_pdf.append(get_dummy_LTChar(text=c))
         char_coord_objs_in_pdf.append(get_dummy_LTChar(text=' '))
 
-    annotations = annotation_service.create_annotations(
+    annotations = annotation_service.create_rules_based_annotations(
         tokens=PDFTokenPositionsList(
             token_positions=tokens,
             char_coord_objs_in_pdf=char_coord_objs_in_pdf,
             cropbox_in_pdf=(5, 5),
+            min_idx_in_page=[1, 5, 10],
         ),
+        custom_annotations=[],
     )
 
     if index == 1:
         assert len(annotations) == 2
         assert annotations[0].keyword == 'serpina1'
-        assert annotations[0].meta.keyword_type == EntityType.Gene.value
+        assert annotations[0].meta.type == EntityType.Gene.value
 
         assert annotations[1].keyword == 'human'
-        assert annotations[1].meta.keyword_type == EntityType.Species.value
+        assert annotations[1].meta.type == EntityType.Species.value
     elif index == 2 or index == 4:
         assert len(annotations) == 2
         assert annotations[0].keyword == 'Serpin A1'
-        assert annotations[0].meta.keyword_type == EntityType.Protein.value
+        assert annotations[0].meta.type == EntityType.Protein.value
 
         assert annotations[1].keyword == 'human'
-        assert annotations[1].meta.keyword_type == EntityType.Species.value
+        assert annotations[1].meta.type == EntityType.Species.value
     elif index == 3:
         assert len(annotations) == 2
         assert annotations[0].keyword == 'Serpin A1'
-        assert annotations[0].meta.keyword_type == EntityType.Protein.value
+        assert annotations[0].meta.type == EntityType.Protein.value
 
         assert annotations[1].keyword == 'human'
-        assert annotations[1].meta.keyword_type == EntityType.Species.value
+        assert annotations[1].meta.type == EntityType.Species.value
 
 
 @pytest.mark.parametrize(
@@ -708,16 +755,9 @@ def test_tokens_gene_vs_protein_serpina1_case_all_caps_from_knowledge_graph(
     mock_get_gene_to_organism_serpina1_match_result_all_caps,
     index,
     tokens,
+    get_annotations_service
 ):
-    annotation_service = get_test_annotations_service(
-        genes_lmdb_path=path.join(directory, 'lmdb/genes'),
-        chemicals_lmdb_path=path.join(directory, 'lmdb/chemicals'),
-        compounds_lmdb_path=path.join(directory, 'lmdb/compounds'),
-        proteins_lmdb_path=path.join(directory, 'lmdb/proteins'),
-        species_lmdb_path=path.join(directory, 'lmdb/species'),
-        diseases_lmdb_path=path.join(directory, 'lmdb/diseases'),
-        phenotypes_lmdb_path=path.join(directory, 'lmdb/phenotypes'),
-    )
+    annotation_service = get_annotations_service
 
     char_coord_objs_in_pdf = []
     for t in tokens:
@@ -725,12 +765,14 @@ def test_tokens_gene_vs_protein_serpina1_case_all_caps_from_knowledge_graph(
             char_coord_objs_in_pdf.append(get_dummy_LTChar(text=c))
         char_coord_objs_in_pdf.append(get_dummy_LTChar(text=' '))
 
-    annotations = annotation_service.create_annotations(
+    annotations = annotation_service.create_rules_based_annotations(
         tokens=PDFTokenPositionsList(
             token_positions=tokens,
             char_coord_objs_in_pdf=char_coord_objs_in_pdf,
             cropbox_in_pdf=(5, 5),
+            min_idx_in_page=[1, 5, 10],
         ),
+        custom_annotations=[],
     )
 
     assert len(annotations) == 2
@@ -739,71 +781,10 @@ def test_tokens_gene_vs_protein_serpina1_case_all_caps_from_knowledge_graph(
     # annotated as a gene
     # because we assume gene names from KG are case sensitive
     assert annotations[0].keyword == 'Serpin A1'
-    assert annotations[0].meta.keyword_type == EntityType.Protein.value
+    assert annotations[0].meta.type == EntityType.Protein.value
 
     assert annotations[1].keyword == 'human'
-    assert annotations[1].meta.keyword_type == EntityType.Species.value
-
-
-def test_save_bioc_annotations_to_db(default_lmdb_setup, session):
-    annotator = get_test_annotations_service(
-        genes_lmdb_path=path.join(directory, 'lmdb/genes'),
-        chemicals_lmdb_path=path.join(directory, 'lmdb/chemicals'),
-        compounds_lmdb_path=path.join(directory, 'lmdb/compounds'),
-        proteins_lmdb_path=path.join(directory, 'lmdb/proteins'),
-        species_lmdb_path=path.join(directory, 'lmdb/species'),
-        diseases_lmdb_path=path.join(directory, 'lmdb/diseases'),
-        phenotypes_lmdb_path=path.join(directory, 'lmdb/phenotypes'),
-    )
-    pdf_parser = get_annotations_pdf_parser()
-    bioc_service = get_bioc_document_service()
-
-    pdf = path.join(directory, 'pdf_samples/Branched-Chain Amino Acid Metabolism.pdf')
-
-    with open(pdf, 'rb') as f:
-        parsed_pdf_chars = pdf_parser.parse_pdf(pdf=f)
-        tokens = pdf_parser.extract_tokens(parsed_chars=parsed_pdf_chars)
-        pdf_text_list = pdf_parser.combine_chars_into_words(parsed_pdf_chars)
-        pdf_text = ' '.join([text for text, _ in pdf_text_list])
-        annotations = annotator.create_annotations(tokens=tokens)
-
-    bioc = bioc_service.read(
-        text=pdf_text,
-        file_uri=path.join(directory, 'pdf_samples/Branched-Chain Amino Acid Metabolism.pdf'))
-    annotations_json = bioc_service.generate_bioc_json(annotations=annotations, bioc=bioc)
-
-    annotated_json_f = path.join(directory, 'pdf_samples/annotations-test.json')
-    with open(annotated_json_f, 'w') as a_f:
-        json.dump(annotations_json, a_f)
-
-    file_content = FileContent(
-        raw_file=b'',
-        checksum_sha256=b'checksum_sha256',
-    )
-
-    session.add(file_content)
-    session.flush()
-
-    f = Files(
-        file_id=123,
-        filename='filename',
-        description='description',
-        content_id=file_content.id,
-        user_id=1,
-        annotations=annotations_json,
-        annotations_date='1970-01-01 00:00:00',
-        project=1,
-        doi='doi',
-        upload_url='upload_url',
-    )
-
-    session.add(f)
-    session.commit()
-
-    pdf_file_model = session.query(Files).first()
-    assert pdf_file_model.filename == 'filename'
-    assert pdf_file_model.file_id == '123'
-    assert pdf_file_model.annotations == annotations_json
+    assert annotations[1].meta.type == EntityType.Species.value
 
 
 @pytest.mark.parametrize(
@@ -820,7 +801,7 @@ def test_save_bioc_annotations_to_db(default_lmdb_setup, session):
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=GeneAnnotation.GeneMeta(
-                    keyword_type=EntityType.Gene.value,
+                    type=EntityType.Gene.value,
                     color='',
                     id='',
                     id_type='',
@@ -828,6 +809,7 @@ def test_save_bioc_annotations_to_db(default_lmdb_setup, session):
                     links=Annotation.Meta.Links(),
                     category=OrganismCategory.Bacteria.value,
                 ),
+                uuid='',
             ),
         ]),
         (2, [
@@ -841,7 +823,7 @@ def test_save_bioc_annotations_to_db(default_lmdb_setup, session):
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=GeneAnnotation.GeneMeta(
-                    keyword_type=EntityType.Gene.value,
+                    type=EntityType.Gene.value,
                     color='',
                     id='',
                     id_type='',
@@ -849,12 +831,35 @@ def test_save_bioc_annotations_to_db(default_lmdb_setup, session):
                     links=Annotation.Meta.Links(),
                     category=OrganismCategory.Eukaryota.value,
                 ),
+                uuid='',
+            ),
+        ]),
+        (3, [
+            GeneAnnotation(
+                page_number=1,
+                keyword='CpxR',
+                lo_location_offset=5,
+                hi_location_offset=7,
+                keyword_length=3,
+                text_in_document='CpxR',
+                keywords=[''],
+                rects=[[1, 2]],
+                meta=GeneAnnotation.GeneMeta(
+                    type=EntityType.Gene.value,
+                    color='',
+                    id='',
+                    id_type='',
+                    id_hyperlink='',
+                    links=Annotation.Meta.Links(),
+                    category=OrganismCategory.Bacteria.value,
+                ),
+                uuid='',
             ),
         ]),
     ],
 )
-def test_fix_false_positive_gene_annotations(annotations_setup, index, annotations):
-    annotation_service = get_test_annotations_service()
+def test_fix_false_positive_gene_annotations(get_annotations_service, index, annotations):
+    annotation_service = get_annotations_service
     fixed = annotation_service._get_fixed_false_positive_unified_annotations(
         annotations_list=annotations,
     )
@@ -868,6 +873,10 @@ def test_fix_false_positive_gene_annotations(annotations_setup, index, annotatio
         # if correct gene synonym is all caps
         # but text in document is not
         # then remove the annotation
+        assert len(fixed) == 0
+    elif index == 3:
+        # bacteria gene should have three lowercase
+        # with one uppercase at the end
         assert len(fixed) == 0
 
 
@@ -885,7 +894,7 @@ def test_fix_false_positive_gene_annotations(annotations_setup, index, annotatio
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=GeneAnnotation.GeneMeta(
-                    keyword_type=EntityType.Gene.value,
+                    type=EntityType.Gene.value,
                     color='',
                     id='102353780',
                     id_type='',
@@ -893,6 +902,7 @@ def test_fix_false_positive_gene_annotations(annotations_setup, index, annotatio
                     links=Annotation.Meta.Links(),
                     category=OrganismCategory.Eukaryota.value,
                 ),
+                uuid='',
             ),
             Annotation(
                 page_number=1,
@@ -904,13 +914,14 @@ def test_fix_false_positive_gene_annotations(annotations_setup, index, annotatio
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    keyword_type=EntityType.Protein.value,
+                    type=EntityType.Protein.value,
                     color='',
                     id='12379999999',
                     id_type='',
                     id_hyperlink='',
                     links=Annotation.Meta.Links(),
                 ),
+                uuid='',
             ),
         ]),
         (2, [
@@ -924,7 +935,7 @@ def test_fix_false_positive_gene_annotations(annotations_setup, index, annotatio
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=GeneAnnotation.GeneMeta(
-                    keyword_type=EntityType.Gene.value,
+                    type=EntityType.Gene.value,
                     color='',
                     id='10235378012123',
                     id_type='',
@@ -932,6 +943,7 @@ def test_fix_false_positive_gene_annotations(annotations_setup, index, annotatio
                     links=Annotation.Meta.Links(),
                     category=OrganismCategory.Eukaryota.value,
                 ),
+                uuid='',
             ),
             Annotation(
                 page_number=1,
@@ -943,42 +955,43 @@ def test_fix_false_positive_gene_annotations(annotations_setup, index, annotatio
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    keyword_type=EntityType.Protein.value,
+                    type=EntityType.Protein.value,
                     color='',
                     id='12379999999',
                     id_type='',
                     id_hyperlink='',
                     links=Annotation.Meta.Links(),
                 ),
+                uuid='',
             ),
         ]),
     ],
 )
 def test_gene_vs_protein_annotations(
-    annotations_setup,
+    get_annotations_service,
     index,
     annotations,
     fish_gene_lmdb_setup,
 ):
-    annotation_service = get_test_annotations_service(
-        genes_lmdb_path=path.join(directory, 'lmdb/genes'),
-        chemicals_lmdb_path=path.join(directory, 'lmdb/chemicals'),
-        compounds_lmdb_path=path.join(directory, 'lmdb/compounds'),
-        proteins_lmdb_path=path.join(directory, 'lmdb/proteins'),
-        species_lmdb_path=path.join(directory, 'lmdb/species'),
-        diseases_lmdb_path=path.join(directory, 'lmdb/diseases'),
-        phenotypes_lmdb_path=path.join(directory, 'lmdb/phenotypes'),
-    )
+    annotation_service = get_annotations_service
     fixed = annotation_service.fix_conflicting_annotations(
         unified_annotations=annotations,
     )
 
     if index == 1:
         assert len(fixed) == 1
-        assert fixed[0] == annotations[1]
+        # have to do asserts like this because the uuid will be different
+        assert fixed[0].keyword == annotations[1].keyword
+        assert fixed[0].lo_location_offset == annotations[1].lo_location_offset
+        assert fixed[0].hi_location_offset == annotations[1].hi_location_offset
+        assert fixed[0].meta.type == annotations[1].meta.type
     elif index == 2:
         assert len(fixed) == 1
-        assert fixed[0] == annotations[0]
+        # have to do asserts like this because the uuid will be different
+        assert fixed[0].keyword == annotations[0].keyword
+        assert fixed[0].lo_location_offset == annotations[0].lo_location_offset
+        assert fixed[0].hi_location_offset == annotations[0].hi_location_offset
+        assert fixed[0].meta.type == annotations[0].meta.type
 
 
 @pytest.mark.parametrize(
@@ -1016,16 +1029,9 @@ def test_gene_annotation_uses_id_from_knowledge_graph(
     mock_get_gene_to_organism_match_result_for_fish_gene,
     index,
     tokens,
+    get_annotations_service
 ):
-    annotation_service = get_test_annotations_service(
-        genes_lmdb_path=path.join(directory, 'lmdb/genes'),
-        chemicals_lmdb_path=path.join(directory, 'lmdb/chemicals'),
-        compounds_lmdb_path=path.join(directory, 'lmdb/compounds'),
-        proteins_lmdb_path=path.join(directory, 'lmdb/proteins'),
-        species_lmdb_path=path.join(directory, 'lmdb/species'),
-        diseases_lmdb_path=path.join(directory, 'lmdb/diseases'),
-        phenotypes_lmdb_path=path.join(directory, 'lmdb/phenotypes'),
-    )
+    annotation_service = get_annotations_service
 
     char_coord_objs_in_pdf = []
     for t in tokens:
@@ -1033,12 +1039,14 @@ def test_gene_annotation_uses_id_from_knowledge_graph(
             char_coord_objs_in_pdf.append(get_dummy_LTChar(text=c))
         char_coord_objs_in_pdf.append(get_dummy_LTChar(text=' '))
 
-    annotations = annotation_service.create_annotations(
+    annotations = annotation_service.create_rules_based_annotations(
         tokens=PDFTokenPositionsList(
             token_positions=tokens,
             char_coord_objs_in_pdf=char_coord_objs_in_pdf,
             cropbox_in_pdf=(5, 5),
+            min_idx_in_page=[1, 5, 10],
         ),
+        custom_annotations=[],
     )
 
     if index == 1:
@@ -1074,16 +1082,9 @@ def test_gene_annotation_human_vs_rat(
     mock_get_gene_to_organism_match_result_for_human_rat_gene,
     index,
     tokens,
+    get_annotations_service
 ):
-    annotation_service = get_test_annotations_service(
-        genes_lmdb_path=path.join(directory, 'lmdb/genes'),
-        chemicals_lmdb_path=path.join(directory, 'lmdb/chemicals'),
-        compounds_lmdb_path=path.join(directory, 'lmdb/compounds'),
-        proteins_lmdb_path=path.join(directory, 'lmdb/proteins'),
-        species_lmdb_path=path.join(directory, 'lmdb/species'),
-        diseases_lmdb_path=path.join(directory, 'lmdb/diseases'),
-        phenotypes_lmdb_path=path.join(directory, 'lmdb/phenotypes'),
-    )
+    annotation_service = get_annotations_service
 
     char_coord_objs_in_pdf = []
     for t in tokens:
@@ -1091,12 +1092,14 @@ def test_gene_annotation_human_vs_rat(
             char_coord_objs_in_pdf.append(get_dummy_LTChar(text=c))
         char_coord_objs_in_pdf.append(get_dummy_LTChar(text=' '))
 
-    annotations = annotation_service.create_annotations(
+    annotations = annotation_service.create_rules_based_annotations(
         tokens=PDFTokenPositionsList(
             token_positions=tokens,
             char_coord_objs_in_pdf=char_coord_objs_in_pdf,
             cropbox_in_pdf=(5, 5),
+            min_idx_in_page=[1, 5, 10],
         ),
+        custom_annotations=[],
     )
 
     if index == 1:
@@ -1105,3 +1108,95 @@ def test_gene_annotation_human_vs_rat(
                 # id should change to match KG
                 # value from mock_get_gene_to_organism_match_result_for_human_rat_gene
                 assert annotations[1].meta.id == '80267'
+
+
+@pytest.mark.parametrize(
+    'index, tokens',
+    [
+        (1, [
+                PDFTokenPositions(
+                    page_number=1,
+                    keyword='human',
+                    char_positions={0: 'h', 1: 'u', 2: 'm', 3: 'a', 4: 'n'},
+                ),
+                PDFTokenPositions(
+                    page_number=1,
+                    keyword='FO(-)',
+                    char_positions={6: 'F', 7: 'O', 8: '(', 9: '-', 10: ')'},
+                ),
+                PDFTokenPositions(
+                    page_number=1,
+                    keyword='H',
+                    char_positions={12: 'H'},
+                ),
+        ]),
+    ],
+)
+def test_ignore_terms_length_two_or_less(
+    default_lmdb_setup,
+    mock_empty_gene_to_organism,
+    index,
+    tokens,
+    get_annotations_service
+):
+    annotation_service = get_annotations_service
+
+    char_coord_objs_in_pdf = []
+    for t in tokens:
+        for c in t.keyword:
+            char_coord_objs_in_pdf.append(get_dummy_LTChar(text=c))
+        char_coord_objs_in_pdf.append(get_dummy_LTChar(text=' '))
+
+    annotations = annotation_service.create_rules_based_annotations(
+        tokens=PDFTokenPositionsList(
+            token_positions=tokens,
+            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
+            cropbox_in_pdf=(5, 5),
+            min_idx_in_page=[1, 5, 10],
+        ),
+        custom_annotations=[],
+    )
+
+    assert len(annotations) == 1
+    assert annotations[0].keyword == tokens[0].keyword
+
+
+@pytest.mark.parametrize(
+    'index, tokens',
+    [
+        (1, [
+                PDFTokenPositions(
+                    page_number=1,
+                    keyword='NS2A',
+                    char_positions={0: 'N', 1: 'S', 2: '2', 3: 'A'},
+                ),
+        ]),
+    ],
+)
+def test_lmdb_match_protein_by_exact_case_if_multiple_matches(
+    default_lmdb_setup,
+    index,
+    tokens,
+    get_annotations_service
+):
+    annotation_service = get_annotations_service
+
+    char_coord_objs_in_pdf = []
+    for t in tokens:
+        for c in t.keyword:
+            char_coord_objs_in_pdf.append(get_dummy_LTChar(text=c))
+        char_coord_objs_in_pdf.append(get_dummy_LTChar(text=' '))
+
+    annotations = annotation_service.create_rules_based_annotations(
+        tokens=PDFTokenPositionsList(
+            token_positions=tokens,
+            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
+            cropbox_in_pdf=(5, 5),
+            min_idx_in_page=[1, 5, 10],
+        ),
+        custom_annotations=[],
+    )
+
+    assert len(annotations) == 1
+    # both ns2a and NS2A are in LMDB
+    assert annotations[0].keyword == 'NS2A'

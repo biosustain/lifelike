@@ -1,0 +1,49 @@
+- name: Create elastic volume
+  docker_volume:
+    name: elasticdata
+    driver: local
+
+- name: Create Elasticsearch Docker network
+  docker_network:
+    name: "{{ network_name }}"
+
+- name: Start Elastic
+  docker_container:
+    name: "{{ elasticsearch_hostname }}"
+    image: "{{ elasticsearch_image }}"
+    env:
+        discovery.type: "single-node"
+        ES_JAVA_OPTS: "-Xms2g -Xmx2g"
+        xpack.security.enabled: "true"
+        bootstrap.memory_lock: "true"
+        xpack.graph.enabled: "false"
+        xpack.license.self_generated.type: "basic"
+        xpack.monitoring.collection.enabled: "true"
+        http.max_content_length: "200mb"
+    volumes:
+        - "esdata:/usr/share/elasticsearch/data"
+    ulimits:
+        - nofile:65535:65535
+        - memlock:-1:-1
+    networks:
+        - name: "{{ network_name }}"
+    state: started
+    log_driver: "{{ log_driver }}"
+    log_options:
+        max-size: "{{ log_max_size }}"
+        max-file: "{{ log_max_file }}"
+
+- name: Install elastic ingest-attachment addon
+  shell: docker exec -i -t {{ elasticsearch_hostname }} /usr/share/elasticsearch/bin/elasticsearch-plugin install -b ingest-attachment
+  ignore_errors: yes
+
+- name: Restart container
+  docker_container:
+    name: "{{ elasticsearch_hostname }}"
+    restart: yes
+
+- debug:
+    msg: >
+        Users have to be configured manually. Enable and set the password for the default users with:
+        `docker exec -it {{ elasticsearch_hostname }} /bin/bash -c "elasticsearch-setup-passwords auto"`
+        Edit the `vault.yml` file and copy the password values to the respective variable.

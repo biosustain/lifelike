@@ -6,6 +6,7 @@ on:
 
 
 env:
+    ELASTICSEARCH_HOSTS: ${{ secrets.ELASTICSEARCH_HOSTS }}
     POSTGRES_HOST: ${{ secrets.PROD_POSTGRES_HOST }}
     POSTGRES_PORT: ${{ secrets.PROD_POSTGRES_PORT }}
     POSTGRES_USER: ${{ secrets.PROD_POSTGRES_USER }}
@@ -26,6 +27,7 @@ env:
     SENTRY_KEY: ${{ secrets.SENTRY_KEY }}
     REDIS_HOST: ${{ secrets.REDIS_HOST }}
     REDIS_PORT: ${{ secrets.REDIS_PORT }}
+    DOMAIN: https://kg.lifelike.bio
 
 jobs:
     setup-build-publish-deploy:
@@ -50,40 +52,52 @@ jobs:
                 gcloud --quiet auth configure-docker
 
             - name: Build Appserver Image
-              uses: docker/build-push-action@v1
+              uses: whoan/docker-build-with-cache-action@v5
               with:
                 username: _json_key
                 password: ${{ secrets.GCE_SA_KEY }}
                 registry: gcr.io
-                repository: ${{ secrets.GCE_PROJECT }}/kg-appserver-prod
-                tags: ${{ github.sha }}, latest
-                path: ./appserver
-                dockerfile: ./appserver/Dockerfile.prod
+                image_name: ${{ secrets.GCE_PROJECT }}/kg-appserver-prod
+                image_tag: ${{ github.sha }},latest
+                context: ./appserver
+                dockerfile: ./Dockerfile.prod
 
             - name: Build Client and Nginx Image
-              uses: docker/build-push-action@v1
+              uses: whoan/docker-build-with-cache-action@v5
               with:
                 username: _json_key
                 password: ${{ secrets.GCE_SA_KEY }}
                 registry: gcr.io
-                repository: ${{ secrets.GCE_PROJECT }}/kg-webserver-prod
-                tags: ${{ github.sha }}, latest
-                path: ./client
-                dockerfile: ./client/Dockerfile.prod
+                image_name: ${{ secrets.GCE_PROJECT }}/kg-webserver-prod
+                image_tag: ${{ github.sha }},latest
+                context: ./client
+                dockerfile: ./Dockerfile.prod
 
             - name: Build Redis
-              uses: docker/build-push-action@v1
+              uses: whoan/docker-build-with-cache-action@v5
               with:
                 username: _json_key
                 password: ${{ secrets.GCE_SA_KEY }}
                 registry: gcr.io
-                repository: ${{ secrets.GCE_PROJECT }}/kg-cache-service-prod
-                tags: ${{ github.sha }}, latest
-                path: ./cache-invalidator
-                dockerfile: ./cache-invalidator/Dockerfile
+                image_name: ${{ secrets.GCE_PROJECT }}/kg-cache-service-prod
+                image_tag: ${{ github.sha }},latest
+                context: ./cache-invalidator
+                dockerfile: ./Dockerfile
+
+            - name: Build NLP
+              uses: whoan/docker-build-with-cache-action@v5
+              with:
+                username: _json_key
+                password: ${{ secrets.GCE_SA_KEY }}
+                registry: gcr.io
+                image_name: ${{ secrets.GCE_PROJECT }}/kg-nlpapi-prod
+                image_tag: ${{ github.sha }},latest
+                context: ./nlp
+                dockerfile: ./Dockerfile
 
             - name: Deploy Setup
               run: |-
+                echo "ELASTICSEARCH_HOSTS=$ELASTICSEARCH_HOSTS" >> prod.env
                 echo "POSTGRES_HOST=$POSTGRES_HOST" >> prod.env
                 echo "POSTGRES_PORT=$POSTGRES_PORT" >> prod.env
                 echo "POSTGRES_USER=$POSTGRES_USER" >> prod.env
@@ -112,6 +126,7 @@ jobs:
                 gcloud compute scp docker-compose.prod.yml $GCE_INSTANCE:/srv --zone $GCE_INSTANCE_ZONE
                 gcloud compute scp ./deployment/bin/startup.sh root@$GCE_INSTANCE:/srv --zone $GCE_INSTANCE_ZONE
                 gcloud compute scp ./deployment/bin/migration-manager.sh root@$GCE_INSTANCE:/srv --zone $GCE_INSTANCE_ZONE
+                gcloud compute scp ./appserver/nlp/fetch-ai-models.sh $GCE_INSTANCE:/srv --zone $GCE_INSTANCE_ZONE
                 gcloud compute ssh root@$GCE_INSTANCE --zone $GCE_INSTANCE_ZONE --command='chmod a+x /srv/startup.sh';
                 gcloud compute ssh root@$GCE_INSTANCE --zone $GCE_INSTANCE_ZONE --command='chmod a+x /srv/migration-manager.sh';
 

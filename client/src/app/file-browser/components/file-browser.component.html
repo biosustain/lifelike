@@ -1,0 +1,265 @@
+<div class="module module-centered" *ngIf="(loadTask.status$ | async) as status">
+  <div class="module-header-container">
+    <div class="module-header">
+      <div class="module-title">
+        {{ locator.projectName }}
+      </div>
+
+      <div class="module-toolbar" *ngIf="!status.failedErrorShown">
+        <div class="input-group">
+        <span class="input-group-prepend">
+          <div class="input-group-text bg-transparent border-right-0">
+            <i class="fa fa-search"></i>
+          </div>
+        </span>
+          <input class="form-control py-2 pl-0 border-left-0 border"
+                 (keyup)="applyFilter($event.target.value)"
+                 placeholder="Search current list..." maxlength="40">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="module-body">
+    <ng-container *ngIf="!status.failedErrorShown; else errorShown">
+      <app-background-task-progress
+        [status]="status" (refresh)="this.refresh()" childClass="mb-2"></app-background-task-progress>
+
+      <ol class="breadcrumb mb-3" *ngIf="status.resultsShown">
+        <li class="breadcrumb-item">
+          <a appLink="/projects">Projects</a>
+        </li>
+
+        <li *ngFor="let element of path; index as i" class="breadcrumb-item"
+            [class.active]="i === path.length - 1">
+          <ng-container *ngIf="i !== path.length - 1; else nonLink">
+            <a
+              [appLink]="i === 0 ? ['/projects', locator.projectName] : ['/projects', locator.projectName, 'folders', element.id]">
+              {{ i === 0 ? locator.projectName : element.name }}
+            </a>
+          </ng-container>
+          <ng-template #nonLink>
+            {{ i === 0 ? locator.projectName : element.name }}
+          </ng-template>
+        </li>
+      </ol>
+
+      <ol class="breadcrumb mb-3" *ngIf="status.placeholdersShown">
+        <li class="breadcrumb-item">
+          <a appLink="/projects">Projects</a>
+        </li>
+        <li class="breadcrumb-item">
+          {{ locator.projectName }}
+        </li>
+        <li class="breadcrumb-item">
+          <span class="placeholder-box">Loading loading</span>
+        </li>
+        <li class="breadcrumb-item">
+          <span class="placeholder-box">Loading</span>
+        </li>
+        <li class="breadcrumb-item">
+          <span class="placeholder-box">Loading load</span>
+        </li>
+      </ol>
+
+      <div class="mb-4 d-flex">
+        <div>
+          <div ngbDropdown class="d-inline-block">
+            <button class="btn btn-primary" ngbDropdownToggle>
+              <i class="fa fa-fw fa-plus-circle"></i>
+              New
+            </button>
+            <div ngbDropdownMenu>
+              <button ngbDropdownItem (click)="displayMapCreateDialog()">New Map...</button>
+              <button ngbDropdownItem (click)="displayDirectoryCreateDialog()">New Folder...</button>
+              <div class="dropdown-divider"></div>
+              <button ngbDropdownItem (click)="displayUploadDialog()">Upload File...</button>
+            </div>
+          </div>
+
+          <button class="btn btn-secondary ml-2"
+                  [disabled]="results.selection.length === 0"
+                  (click)="reannotate(results.selection)">
+            Re-annotate
+          </button>
+
+          <button class="btn btn-secondary ml-2"
+                  [disabled]="results.selection.length === 0"
+                  (click)="displayDeleteDialog(results.selection)">
+            Delete
+          </button>
+
+        </div>
+      </div>
+
+      <table class="table" [class.table-selectable]="status.resultsShown" style="table-layout: fixed">
+        <colgroup>
+          <col style="width: 50%">
+          <col>
+          <col style="width: 20%">
+          <col style="width: 60px">
+        </colgroup>
+        <thead>
+        <tr>
+          <th class="text-truncate">
+            <div class="custom-control custom-checkbox">
+              <input type="checkbox" class="custom-control-input" id="select-all" [checked]="results.isAllSelected()"
+                     (change)="results.toggleAll()">
+              <label class="custom-control-label" for="select-all">Name</label>
+            </div>
+          </th>
+          <th class="text-truncate">Annotation Date</th>
+          <th class="text-truncate">Creator</th>
+          <th></th>
+        </tr>
+        </thead>
+
+        <tbody *ngIf="status.placeholdersShown">
+        <tr>
+          <td class="align-middle text-nowrap text-truncate">
+            <span class="placeholder-box">Loading loading</span>
+          </td>
+          <td class="align-middle text-nowrap text-truncate">
+            <span class="placeholder-box">Loading loading</span>
+          </td>
+          <td class="align-middle text-nowrap text-truncate">
+            <span class="placeholder-box">Loading loading</span>
+          </td>
+          <td>
+            <div class="d-flex align-items-end">
+              <div ngbDropdown class="d-inline-block ml-auto">
+                <button class="btn btn-sm" ngbDropdownToggle>
+                  <span class="placeholder-box"><i class="fas fa-cog fa-fw"></i></span>
+                </button>
+              </div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="align-middle text-nowrap text-truncate">
+            <span class="placeholder-box">Loading loading loading</span>
+          </td>
+          <td class="align-middle text-nowrap text-truncate">
+            <span class="placeholder-box">Loading loading</span>
+          </td>
+          <td class="align-middle text-nowrap text-truncate">
+            <span class="placeholder-box">Loading loading</span>
+          </td>
+          <td>
+            <div class="d-flex align-items-end">
+              <div ngbDropdown class="d-inline-block ml-auto">
+                <button class="btn btn-sm" ngbDropdownToggle>
+                  <span class="placeholder-box"><i class="fas fa-cog fa-fw"></i></span>
+                </button>
+              </div>
+            </div>
+          </td>
+        </tr>
+        </tbody>
+
+        <tbody *ngIf="status.resultsShown">
+        <tr *ngFor="let object of results.view; index as objectIndex" tabindex="0"
+            [class.active]="this.results.isSelected(object)" draggable="true"
+            (dragstart)="dragStarted($event, object)">
+          <td class="align-middle text-nowrap text-truncate"
+              (click)="results.toggle(object)">
+            <div class="custom-control custom-checkbox text-truncate">
+              <input type="checkbox" class="custom-control-input" id="object-{{ objectIndex }}"
+                     (change)="results.toggle(object)"
+                     [checked]="results.isSelected(object)">
+              <label class="custom-control-label d-block" for="object-{{ objectIndex }}">
+                <div class="d-flex align-items-center text-truncate">
+                  <div [ngSwitch]="object.type" class="d-inline-block mr-1">
+                    <i *ngSwitchCase="'dir'" class="fa fa-fw fa-folder text-primary"></i>
+                    <i *ngSwitchCase="'file'" class="fa fa-fw fa-file text-muted"></i>
+                    <i *ngSwitchCase="'map'" class="fa fa-fw fa-project-diagram text-muted"></i>
+                  </div>
+
+                  <div class="d-inline-block text-truncate">
+                    <a [appLink]="getObjectCommands(object)" [queryParams]="getObjectQueryParams()"
+                       [newTab]="object.type !== 'dir'">
+                      {{ object.name }}
+                    </a>
+                  </div>
+                </div>
+                <div *ngIf="object.description" class="text-truncate text-muted"
+                     popoverTitle="Description" container="body" triggers="mouseenter:mouseleave" placement="right"
+                     [ngbPopover]="object.description">
+                  {{ object.description }}
+                </div>
+              </label>
+            </div>
+          </td>
+
+          <td class="align-middle text-nowrap text-truncate" (click)="results.toggle(object)">
+            <ng-container *ngIf="object.type === 'file'">
+              <div popoverTitle="Annotation Status" [ngbPopover]="object.annotationsTooltipContent" container="body"
+                   placement="right" triggers="mouseenter:mouseleave" [disablePopover]="!object.annotationsTooltipContent">
+                <ng-container *ngIf="object.annotationsTooltipContent && object.annotationsTooltipContent.length">
+                  <i class="fas fa-exclamation-triangle fa-fw mr-1"></i>
+                </ng-container>
+                {{ (object.data.annotations_date | date: 'short') || 'No annotations'}}
+              </div>
+            </ng-container>
+          </td>
+
+          <td class="align-middle text-nowrap text-truncate" (click)="results.toggle(object)">
+            <ng-container *ngIf="object.creator">
+              {{ object.creator.name }}
+            </ng-container>
+          </td>
+
+          <td>
+            <div class="d-flex align-items-end">
+              <div ngbDropdown class="d-inline-block ml-auto" placement="bottom-right">
+                <button class="btn btn-sm" ngbDropdownToggle>
+                  <i class="fas fa-cog fa-fw"></i>
+                </button>
+                <div ngbDropdownMenu>
+                  <button ngbDropdownItem [appLink]="getObjectCommands(object)">
+                    Open
+                  </button>
+                  <button ngbDropdownItem (click)="displayEditDialog(object)">
+                    Edit...
+                  </button>
+                  <button ngbDropdownItem *ngIf="object.type === 'file'"
+                          (click)="reannotate([object])">
+                    Re-annotate
+                  </button>
+                  <div class="dropdown-divider"></div>
+                  <button ngbDropdownItem (click)="displayDeleteDialog([object])">
+                    Delete...
+                  </button>
+                </div>
+              </div>
+            </div>
+          </td>
+        </tr>
+        </tbody>
+      </table>
+
+      <div *ngIf="status.emptyResultsShown && results.viewLength === 0" class="text-center my-4">
+        There are no items to show.
+      </div>
+    </ng-container>
+
+    <ng-template #errorShown>
+      <div class="text-center text-muted">
+        <div>
+          <i class="fa fa-exclamation-circle fa-4x"></i>
+        </div>
+
+        <div class="mt-4">
+          This folder could not be loaded.
+        </div>
+
+        <div class="mt-4">
+          <a appLink="/projects" class="btn btn-primary">
+            View Projects
+          </a>
+        </div>
+      </div>
+    </ng-template>
+  </div>
+
+</div>

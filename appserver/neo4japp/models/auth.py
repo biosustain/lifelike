@@ -1,3 +1,5 @@
+from typing import Sequence
+
 import bcrypt
 import enum
 
@@ -7,8 +9,8 @@ from sqlalchemy import and_
 from sqlalchemy.orm.query import Query
 
 from neo4japp.database import db, ma
-from neo4japp.models.common import RDBMSBase
-from neo4japp.models.drawing_tool import Project
+
+from .common import RDBMSBase
 
 
 user_role = db.Table(
@@ -17,12 +19,14 @@ user_role = db.Table(
         'appuser_id',
         db.Integer,
         db.ForeignKey('appuser.id', ondelete='CASCADE'),
+        index=True,
         primary_key=True,
     ),
     db.Column(
         'app_role_id',
         db.Integer,
         db.ForeignKey('app_role.id', ondelete='CASCADE'),
+        index=True,
         primary_key=True,
     )
 )
@@ -55,6 +59,14 @@ class AppUser(RDBMSBase):
         # `users`, but don't load them
         backref=db.backref('users', lazy=True)
     )
+
+    @property
+    def password(self):
+        raise NotImplementedError('password is hashed and cannot be retrieved')
+
+    @password.setter
+    def password(self, password):
+        self.set_password(password)
 
     def set_password(self, password):
         pwhash = bcrypt.hashpw(password.encode('utf8'), bcrypt.gensalt())
@@ -101,7 +113,7 @@ class AccessActionType(enum.Enum):
 class AccessControlPolicy(RDBMSBase):
     """ Which user, group, etc have what access to protected resources """
     id = db.Column(db.Integer, primary_key=True)
-    action = db.Column(db.String(50), nullable=False)
+    action = db.Column(db.Enum(AccessActionType), nullable=False)
     asset_type = db.Column(db.String(200), nullable=False)
     asset_id = db.Column(db.Integer, nullable=True)
     principal_type = db.Column(db.String(50), nullable=False)
@@ -122,19 +134,14 @@ class AccessControlPolicy(RDBMSBase):
     )
 
     @classmethod
-    def query_by_user_and_project_id(
-        cls,
-        user_id: int,
-        project_id: int,
-        action: str,
-    ) -> Query:
-        return cls.query.filter(
+    def query_acp(cls, principal: RDBMSBase, asset: RDBMSBase, action: AccessActionType) -> Query:
+        return AccessControlPolicy.query.filter(
             and_(
+                cls.asset_id == asset.id,
+                cls.asset_type == asset.__tablename__,
+                cls.principal_id == principal.id,
+                cls.principal_type == principal.__tablename__,
                 cls.action == action,
-                cls.asset_type == Project.__tablename__,
-                cls.asset_id == project_id,
-                cls.principal_type == AppUser.__tablename__,
-                cls.principal_id == user_id,
             )
         )
 
