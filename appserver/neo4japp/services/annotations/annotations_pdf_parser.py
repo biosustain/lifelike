@@ -280,15 +280,6 @@ class AnnotationsPDFParser:
             min_idx_in_page=min_idx_in_page,
         )
 
-    def _isfloat(self, value: str) -> bool:
-        # not float
-        # better than using regex
-        try:
-            float(value)
-            return True
-        except ValueError:
-            return False
-
     def _is_whitespace(self, char: str) -> bool:
         return char in whitespace or char == '\xa0'
 
@@ -534,18 +525,17 @@ class AnnotationsPDFParser:
                     else:
                         page_idx = min_page_idx
 
-                if not self._isfloat(curr_keyword):
-                    if (curr_keyword.lower() not in COMMON_WORDS and
-                        not compiled_regex.match(curr_keyword) and
-                        curr_keyword not in ascii_letters and
-                        curr_keyword not in digits):  # noqa
+                if (curr_keyword.lower() not in COMMON_WORDS and
+                    not compiled_regex.match(curr_keyword) and
+                    curr_keyword not in ascii_letters and
+                    curr_keyword not in digits):  # noqa
 
-                        token = PDFTokenPositions(
-                            page_number=min_idx_in_page[page_idx],
-                            keyword=curr_keyword,
-                            char_positions=curr_char_idx_mappings,
-                        )
-                        yield token
+                    token = PDFTokenPositions(
+                        page_number=min_idx_in_page[page_idx],
+                        keyword=curr_keyword,
+                        char_positions=curr_char_idx_mappings,
+                    )
+                    yield token
 
                 curr_max_words += 1
                 end_idx += 1
