@@ -39,6 +39,20 @@ def lmdb_chemical_factory(
     }
 
 
+def lmdb_compound_factory(
+    compound_id: str,
+    id_type: str,
+    name: str,
+    synonym: str,
+):
+    return {
+        'compound_id': compound_id,
+        'id_type': id_type,
+        'name': name,
+        'synonym': synonym,
+    }
+
+
 def lmdb_disease_factory(
     disease_id: str,
     id_type: str,
@@ -66,6 +80,20 @@ def lmdb_gene_factory(
         'name': name,
         'synonym': synonym,
         'category': category,
+    }
+
+
+def lmdb_phenotype_factory(
+    phenotype_id: str,
+    id_type: str,
+    name: str,
+    synonym: str,
+):
+    return {
+        'phenotype_id': name,
+        'id_type': id_type,
+        'name': name,
+        'synonym': synonym,
     }
 
 
@@ -155,6 +183,14 @@ def default_lmdb_setup(app, request):
         category=OrganismCategory.Eukaryota.value,
     )
 
+    # Create phenotype data
+    whey_protein = lmdb_phenotype_factory(
+        phenotype_id='MESH:D000067816',
+        id_type=DatabaseType.Mesh.value,
+        name='Whey Proteins',
+        synonym='Whey Proteins',
+    )
+
     # Create protein data
     hyp27_protein = lmdb_protein_factory(
         protein_id='Y1954_CLOPE',
@@ -163,6 +199,12 @@ def default_lmdb_setup(app, request):
         synonym='Hyp27',
     )
 
+    wasabi = lmdb_protein_factory(
+        protein_id='KKX1U_UROMN',
+        id_type=DatabaseType.Uniprot.value,
+        name='Wasabi receptor toxin',
+        synonym='Wasabi receptor toxin',
+    )
     ns2a = lmdb_protein_factory(
         protein_id='NS2A_CVBM',
         id_type=DatabaseType.Uniprot.value,
@@ -193,6 +235,14 @@ def default_lmdb_setup(app, request):
         synonym='human',
     )
 
+    rat = lmdb_species_factory(
+        tax_id='10114',
+        category=OrganismCategory.Eukaryota.value,
+        id_type=DatabaseType.Ncbi.value,
+        name='rat',
+        synonym='rat',
+    )
+
     moniliophthora_roreri = lmdb_species_factory(
         tax_id='221103',
         category=OrganismCategory.Eukaryota.value,
@@ -201,6 +251,7 @@ def default_lmdb_setup(app, request):
         synonym='Moniliophthora roreri',
     )
 
+    # Create chemical data
     arginine = lmdb_chemical_factory(
         chemical_id='CHEBI:29952',
         id_type=DatabaseType.Chebi.value,
@@ -222,14 +273,36 @@ def default_lmdb_setup(app, request):
         synonym='H',
     )
 
+    adenosine = lmdb_chemical_factory(
+        chemical_id='CHEBI:16335',
+        id_type=DatabaseType.Chebi.value,
+        name='adenosine',
+        synonym='adenosine',
+    )
+
+    adenosine2 = lmdb_compound_factory(
+        compound_id='ADENOSINE',
+        id_type=DatabaseType.Biocyc.value,
+        name='adenosine',
+        synonym='adenosine',
+    )
+
+    # Create disease data
+    cold_sore = lmdb_compound_factory(
+        compound_id='MESH:D006560',
+        id_type=DatabaseType.Mesh.value,
+        name='cold sore',
+        synonym='cold sore',
+    )
+
     entities = [
-        (CHEMICALS_CHEBI_LMDB, 'chemicals', [arginine, hypofluorite, histidine]),
-        (COMPOUNDS_BIOCYC_LMDB, 'compounds', []),  # TODO: Create test compound data
-        (DISEASES_MESH_LMDB, 'diseases', []),  # TODO: Create test disease data
+        (CHEMICALS_CHEBI_LMDB, 'chemicals', [adenosine, arginine, hypofluorite, histidine]),
+        (COMPOUNDS_BIOCYC_LMDB, 'compounds', [adenosine2]),
+        (DISEASES_MESH_LMDB, 'diseases', [cold_sore]),
         (GENES_NCBI_LMDB, 'genes', [bola3, hyp27_gene, serpina1_gene, serpina1_gene2]),
-        (PHENOTYPES_MESH_LMDB, 'phenotypes', []),  # TODO: Create test phenotype data
-        (PROTEINS_UNIPROT_LMDB, 'proteins', [hyp27_protein, serpina1_protein, ns2a, NS2A]),
-        (SPECIES_NCBI_LMDB, 'species', [human, moniliophthora_roreri]),
+        (PHENOTYPES_MESH_LMDB, 'phenotypes', [whey_protein]),
+        (PROTEINS_UNIPROT_LMDB, 'proteins', [hyp27_protein, serpina1_protein, wasabi, ns2a, NS2A]),
+        (SPECIES_NCBI_LMDB, 'species', [human, moniliophthora_roreri, rat]),
     ]
     for db_name, entity, data in entities:
         create_entity_lmdb(f'lmdb/{entity}', db_name, data)
@@ -595,6 +668,90 @@ def mock_get_gene_to_organism_match_result_for_escherichia_coli_pdf(monkeypatch)
         AnnotationsNeo4jService,
         'get_gene_to_organism_match_result',
         get_match_result,
+    )
+
+
+@pytest.fixture(scope='function')
+def mock_global_compound_exclusion(monkeypatch):
+    def get_exclusions(*args, **kwargs):
+        return {'adenosine', 'hydrogen'}
+
+    monkeypatch.setattr(
+        AnnotationsService,
+        'get_compound_annotations_to_exclude',
+        get_exclusions,
+    )
+
+
+@pytest.fixture(scope='function')
+def mock_global_chemical_exclusion(monkeypatch):
+    def get_exclusions(*args, **kwargs):
+        return {'adenosine', 'hydrogen'}
+
+    monkeypatch.setattr(
+        AnnotationsService,
+        'get_chemical_annotations_to_exclude',
+        get_exclusions,
+    )
+
+
+@pytest.fixture(scope='function')
+def mock_global_disease_exclusion(monkeypatch):
+    def get_exclusions(*args, **kwargs):
+        return {'cold sore'}
+
+    monkeypatch.setattr(
+        AnnotationsService,
+        'get_disease_annotations_to_exclude',
+        get_exclusions,
+    )
+
+
+@pytest.fixture(scope='function')
+def mock_global_gene_exclusion(monkeypatch):
+    def get_exclusions(*args, **kwargs):
+        return {'BOLA3', 'rpoS'}
+
+    monkeypatch.setattr(
+        AnnotationsService,
+        'get_gene_annotations_to_exclude',
+        get_exclusions,
+    )
+
+
+@pytest.fixture(scope='function')
+def mock_global_phenotype_exclusion(monkeypatch):
+    def get_exclusions(*args, **kwargs):
+        return {'Whey Proteins'}
+
+    monkeypatch.setattr(
+        AnnotationsService,
+        'get_phenotype_annotations_to_exclude',
+        get_exclusions,
+    )
+
+
+@pytest.fixture(scope='function')
+def mock_global_protein_exclusion(monkeypatch):
+    def get_exclusions(*args, **kwargs):
+        return {'Wasabi receptor toxin'}
+
+    monkeypatch.setattr(
+        AnnotationsService,
+        'get_protein_annotations_to_exclude',
+        get_exclusions,
+    )
+
+
+@pytest.fixture(scope='function')
+def mock_global_species_exclusion(monkeypatch):
+    def get_exclusions(*args, **kwargs):
+        return {'human', 'dog'}
+
+    monkeypatch.setattr(
+        AnnotationsService,
+        'get_species_annotations_to_exclude',
+        get_exclusions,
     )
 
 

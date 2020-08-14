@@ -16,6 +16,7 @@ from neo4japp.exceptions import (
 from neo4japp.models import (
     Files,
     FileContent,
+    GlobalList,
 )
 
 
@@ -95,6 +96,9 @@ class ManualAnnotationsService:
             else:
                 raise DuplicateRecord('Annotation already exists.')
 
+        if annotation_to_add['meta']['includeGlobally']:
+            ManualAnnotationsService.add_to_global_list(annotation_to_add, 'inclusion', file.id)
+
         file.custom_annotations = [*inclusions, *file.custom_annotations]
         db.session.commit()
 
@@ -156,6 +160,9 @@ class ManualAnnotationsService:
             'exclusion_date': str(datetime.now(TIMEZONE))
         }
 
+        if excluded_annotation['excludeGlobally']:
+            ManualAnnotationsService.add_to_global_list(excluded_annotation, 'exclusion', file.id)
+
         file.excluded_annotations = [excluded_annotation, *file.excluded_annotations]
         db.session.commit()
 
@@ -195,7 +202,7 @@ class ManualAnnotationsService:
 
         def isExcluded(exclusions, annotation):
             for exclusion in exclusions:
-                if annotation['meta']['keywordType'] == exclusion['type'] and \
+                if annotation['meta']['type'] == exclusion['type'] and \
                         annotation['textInDocument'] == exclusion['text']:
                     return True
             return False
@@ -207,3 +214,16 @@ class ManualAnnotationsService:
         ]
 
         return filtered_annotations + file.custom_annotations
+
+    @staticmethod
+    def add_to_global_list(annotation, type, file_id):
+        """ Adds inclusion or exclusion to a global_list table
+        """
+        global_list_annotation = GlobalList(
+            annotation=annotation,
+            type=type,
+            file_id=file_id,
+        )
+
+        db.session.add(global_list_annotation)
+        db.session.commit()
