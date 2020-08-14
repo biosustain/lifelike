@@ -2,7 +2,7 @@
 manual inclusions and exclusions of annotations from all files
 
 Revision ID: 9118d3b6dba2
-Revises: 0d8dc6eed4c1
+Revises: 9fe3f348bf65
 Create Date: 2020-08-07 12:17:34.920981
 
 """
@@ -13,7 +13,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = '9118d3b6dba2'
-down_revision = '0d8dc6eed4c1'
+down_revision = '9fe3f348bf65'
 branch_labels = None
 depends_on = None
 
