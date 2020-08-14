@@ -234,9 +234,9 @@ def styles_fixture(client, session):
     style2 = AnnotationStyle(
         label="association",
         color="#d7d9f8",
-        style_border="#d7d9f8",
-        style_background="#d7d9f8",
-        style_color="#000"
+        font_color="#000",
+        border_color="#d7d9f8",
+        background_color="#d7d9f8",
     )
     session.add(style)
     session.add(style2)
@@ -247,7 +247,7 @@ def styles_fixture(client, session):
 
 @pytest.fixture(scope='function')
 def uri_fixture(client, session):
-    uri1 = DomainURLsMap(domain="CHEBI", base_URL="https://www.ebi.ac.uk/chebi/searchId.do?chebiId={}")
+    uri1 = DomainURLsMap(domain="CHEBI", base_URL="https://www.ebi.ac.uk/chebi/searchId.do?chebiId={}")  # noqa
     uri2 = DomainURLsMap(domain="MESH", base_URL="https://www.ncbi.nlm.nih.gov/mesh/?term={}")
 
     session.add(uri1)
