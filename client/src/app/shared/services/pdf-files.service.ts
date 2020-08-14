@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 import { AuthenticationService } from 'app/auth/services/authentication.service';
 import { PdfFile, PdfFileUpload, UploadPayload, UploadType } from 'app/interfaces/pdf-files.interface';
 import { AbstractService } from './abstract-service';
+import { map } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root',
@@ -11,6 +12,7 @@ import { AbstractService } from './abstract-service';
 export class PdfFilesService extends AbstractService {
   readonly PROJECTS_BASE_URL = '/api/projects';
   readonly FILES_BASE_URL = '/api/files';
+  readonly ANNOTATIONS_BASE_URL = '/api/annotations';
 
   // Length limits. Keep these in sync with the values in the backend code (/models folder)
   readonly FILENAME_MAX_LENGTH = 200;
@@ -43,12 +45,11 @@ export class PdfFilesService extends AbstractService {
   // CRUD
   // ========================================
 
-  uploadFile(projectName, parentDir, data: UploadPayload): Observable<HttpEvent<PdfFileUpload>> {
+  uploadFile(projectName, parentDir, data: UploadPayload): Observable<PdfFileUpload> {
     const formData: FormData = new FormData();
 
     formData.append('filename', data.filename.substring(0, this.FILENAME_MAX_LENGTH));
     formData.append('directoryId', parentDir);
-    formData.append('annotationMethod', data.annotationMethod);
     formData.append('description', data.description ? data.description.substring(0, this.DESCRIPTION_MAX_LENGTH) : '');
 
     switch (data.type) {
@@ -62,9 +63,17 @@ export class PdfFilesService extends AbstractService {
         throw new Error('unsupported upload type');
     }
 
-    return this.http.post<PdfFileUpload>(
+    return this.http.post<{result: PdfFileUpload}>(
       `${this.PROJECTS_BASE_URL}/${encodeURIComponent(projectName)}/files`,
       formData,
+      {...this.getHttpOptions(true)},
+    ).pipe(map(res => res.result));
+  }
+
+  annotateFile(projectName: string, fileId: string, annotationMethod: string): Observable<HttpEvent<object>> {
+    return this.http.post<object>(
+      `${this.ANNOTATIONS_BASE_URL}/${encodeURIComponent(projectName)}/${fileId}`,
+      {annotationMethod},
       {
         ...this.getHttpOptions(true),
         observe: 'events',
@@ -84,8 +93,10 @@ export class PdfFilesService extends AbstractService {
     );
   }
 
-  reannotateFiles(projectName: string, ids: string[]): Observable<object> {
-    return this.http.post(`${this.PROJECTS_BASE_URL}/${encodeURIComponent(projectName)}/files/reannotate`, ids, this.getHttpOptions(true));
+  reannotateFiles(projectName: string, fileIds: string[], annotationMethod: string = 'Rules Based'): Observable<object> {
+    return this.http.post(
+      `${this.ANNOTATIONS_BASE_URL}/${projectName}/reannotate`,
+      {annotationMethod, fileIds}, this.getHttpOptions(true));
   }
 
   deleteFile(projectName, fileId): Observable<any> {
