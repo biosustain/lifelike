@@ -68,7 +68,6 @@ export class MapViewComponent<ExtraResult = void> implements OnDestroy, AfterVie
     readonly workspaceManager: WorkspaceManager,
   ) {
     this.loadTask = new BackgroundTask((locator) => {
-      console.log(locator.hashId, locator.projectName);
       return combineLatest([
         this.mapService.getMap(locator.projectName, locator.hashId).pipe(
           // tslint:disable-next-line: no-string-literal
