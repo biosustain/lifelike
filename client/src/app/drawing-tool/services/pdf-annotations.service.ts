@@ -6,9 +6,7 @@ import {
 } from 'rxjs';
 
 import { ANNOTATIONS } from './mock_data';
-import {
-  Annotation
-} from './interfaces';
+import { Annotation, AddedAnnotationExclsuion } from './interfaces';
 
 @Injectable({
   providedIn: '***ARANGO_USERNAME***'
@@ -54,22 +52,25 @@ export class PdfAnnotationsService {
    * Retrieves the annotations of the given file.
    * @param fileId id of the file
    */
-  getFileAnnotations(fileId: string): Observable<any> {
-      return this.http.get(
-        this.baseUrl + `/get_annotations/${fileId}`,
-        this.createHttpOptions(true),
-      );
+  getFileAnnotations(fileId: string, projectName: string = 'beta-project'): Observable<any> {
+    const url = `/api/projects/${projectName}/files/${fileId}/annotations`;
+    return this.http.get(
+      url,
+      this.createHttpOptions(true),
+    );
   }
 
   /**
    * Adds custom annotation for the given file.
    * @param fileId id of the file
    * @param annotation annotation to add
+   * @param annotateAll indicates if the rest of the document should be annotated
    */
-  addCustomAnnotation(fileId: string, annotation: Annotation): Observable<any> {
+  addCustomAnnotation(fileId: string, annotation: Annotation, annotateAll: boolean, projectName: string = 'beta-project'): Observable<any> {
+    const url = `/api/projects/${projectName}/files/${fileId}/annotations/add`;
     return this.http.patch(
-      this.baseUrl + `/add_custom_annotation/${fileId}`,
-      annotation,
+      url,
+      { annotation, annotateAll },
       this.createHttpOptions(true)
     );
   }
@@ -80,9 +81,10 @@ export class PdfAnnotationsService {
    * @param uuid uuid of the annotation to be deleted
    * @param removeAll indicates if all the matching annotations should be removed
    */
-  removeCustomAnnotation(fileId: string, uuid: string, removeAll: boolean): Observable<any> {
+  removeCustomAnnotation(fileId: string, uuid: string, removeAll: boolean, projectName: string = 'beta-project'): Observable<any> {
+    const url = `/api/projects/${projectName}/files/${fileId}/annotations/remove`;
     return this.http.patch(
-      this.baseUrl + `/remove_custom_annotation/${fileId}`,
+      url,
       { uuid, removeAll },
       this.createHttpOptions(true)
     );
@@ -91,27 +93,26 @@ export class PdfAnnotationsService {
   /**
    * Excludes automatic annotation from the given file.
    * @param fileId id of the file that contains the annotation
-   * @param id id of the annotation to be excluded
-   * @param reason reason for an exclusion
-   * @param comment additional comment
+   * @param exclusionData data needed to exclude the annotation
    */
-  addAnnotationExclusion(fileId: string, id: string, reason: string, comment: string): Observable<any> {
+  addAnnotationExclusion(fileId: string, exclusionData: AddedAnnotationExclsuion, projectName: string): Observable<any> {
     return this.http.patch(
-      this.baseUrl + `/add_annotation_exclusion/${fileId}`,
-      { id, reason, comment },
-      this.createHttpOptions(true)
+      `/api/projects/${projectName}/files/${fileId}/annotations/add_annotation_exclusion`,
+      exclusionData,
+      this.createHttpOptions(true),
     );
   }
 
   /**
    * Removes the exclusion mark from the automatic annotation in the given file.
    * @param fileId id of the file that contains the annotation
-   * @param id id of the annotation
+   * @param type type of the annotation
+   * @param text annotated text
    */
-  removeAnnotationExclusion(fileId: string, id: string): Observable<any> {
+  removeAnnotationExclusion(fileId: string, type: string, text: string, projectName: string): Observable<any> {
     return this.http.patch(
-      this.baseUrl + `/remove_annotation_exclusion/${fileId}`,
-      { id },
+      `/api/projects/${projectName}/files/${fileId}/annotations/remove_annotation_exclusion`,
+      { type, text },
       this.createHttpOptions(true)
     );
   }

@@ -53,16 +53,22 @@ services:
             - POSTGRES_USER=postgres
             - POSTGRES_PASSWORD=postgres
             - POSTGRES_DB=postgres
+            # ElasticSearch
+            - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
             # Neo4j
             - NEO4J_HOST=n4j-database
             - NEO4J_AUTH=neo4j/password
             # Redis
             - REDIS_HOST=redis
             - REDIS_PORT=6379
+            # Other
+            - DOMAIN=http://localhost:4200
+        # Allow debugging w/ IPython or pdb
         stdin_open: true
+        tty: true
+        # End debugging section
         volumes:
             - ./appserver:/home/n4j
-        tty: true
         networks:
             - frontend
             - backend
@@ -70,6 +76,27 @@ services:
             - database
             - pgdatabase
             - redis
+
+    nlpapi:
+        container_name: nlpapi
+        build:
+            context: ./nlp
+            dockerfile: Dockerfile
+        environment:
+            - FLASK_DEBUG=1
+            - FLASK_APP_CONFIG=Development
+            - FLASK_ENV=development
+        # Allow debugging w/ IPython or pdb
+        stdin_open: true
+        tty: true
+        # End debugging section
+        ports:
+            - "5001:5001"
+        volumes:
+            - ./nlp:/home/nlp-api-user
+            - ./nlp/models:/models
+        networks:
+            - backend
 
     webserver:
         container_name: webservers

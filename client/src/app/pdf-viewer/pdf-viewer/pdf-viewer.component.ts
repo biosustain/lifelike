@@ -28,7 +28,7 @@ import * as viewerx from 'pdfjs-dist/web/pdf_viewer';
 
 declare var require: any;
 let PDFJS: any;
-let PDFJSViewer: any;
+let pdfjsViewer: any;
 
 function isSSR() {
   return typeof window === 'undefined';
@@ -36,7 +36,7 @@ function isSSR() {
 
 if (!isSSR()) {
   PDFJS = require('pdfjs-dist/build/pdf');
-  PDFJSViewer = viewerx;
+  pdfjsViewer = viewerx;
   // require('pdfjs-dist/web/pdf_viewer');
 
   PDFJS.verbosity = PDFJS.VerbosityLevel.ERRORS;
@@ -51,7 +51,7 @@ export enum RenderTextMode {
 @Component({
   selector: 'app-pdf-viewer-lib',
   template: `
-    <div #pdfViewerContainer class="ng2-pdf-viewer-container">
+    <div #pdfViewerContainer class="ng2-pdf-viewer-container h-100">
       <div class="pdfViewer"></div>
     </div>
   `,
@@ -438,7 +438,7 @@ export class PdfViewerComponent
 
     PdfViewerComponent.setExternalLinkTarget(this.internalExternalLinkTarget);
 
-    const eventBus = createEventBus(PDFJSViewer);
+    const eventBus = createEventBus(pdfjsViewer);
 
     eventBus.on('pagerendered', e => {
       this.pageRendered.emit(e);
@@ -459,8 +459,8 @@ export class PdfViewerComponent
       this.textLayerRendered.emit(e);
     });
 
-    this.pdfMultiPageLinkService = new PDFJSViewer.PDFLinkService({ eventBus });
-    this.pdfMultiPageFindController = new PDFJSViewer.PDFFindController({
+    this.pdfMultiPageLinkService = new pdfjsViewer.PDFLinkService({ eventBus });
+    this.pdfMultiPageFindController = new pdfjsViewer.PDFFindController({
       linkService: this.pdfMultiPageLinkService,
       eventBus
     });
@@ -476,7 +476,7 @@ export class PdfViewerComponent
       findController: this.pdfMultiPageFindController
     };
 
-    this.pdfMultiPageViewer = new PDFJSViewer.PDFViewer(pdfOptions);
+    this.pdfMultiPageViewer = new pdfjsViewer.PDFViewer(pdfOptions);
     this.pdfMultiPageLinkService.setViewer(this.pdfMultiPageViewer);
     this.pdfMultiPageFindController.setDocument(this.internalPdf);
   }
@@ -486,7 +486,7 @@ export class PdfViewerComponent
 
     PdfViewerComponent.setExternalLinkTarget(this.internalExternalLinkTarget);
 
-    const eventBus = createEventBus(PDFJSViewer);
+    const eventBus = createEventBus(pdfjsViewer);
 
     eventBus.on('pagechanging', e => {
       if (e.pageNumber !== this.internalPage) {
@@ -502,10 +502,10 @@ export class PdfViewerComponent
       this.textLayerRendered.emit(e);
     });
 
-    this.pdfSinglePageLinkService = new PDFJSViewer.PDFLinkService({
+    this.pdfSinglePageLinkService = new pdfjsViewer.PDFLinkService({
       eventBus
     });
-    this.pdfSinglePageFindController = new PDFJSViewer.PDFFindController({
+    this.pdfSinglePageFindController = new pdfjsViewer.PDFFindController({
       linkService: this.pdfSinglePageLinkService,
       eventBus
     });
@@ -521,7 +521,7 @@ export class PdfViewerComponent
       findController: this.pdfSinglePageFindController
     };
 
-    this.pdfSinglePageViewer = new PDFJSViewer.PDFSinglePageViewer(pdfOptions);
+    this.pdfSinglePageViewer = new pdfjsViewer.PDFSinglePageViewer(pdfOptions);
     this.pdfSinglePageLinkService.setViewer(this.pdfSinglePageViewer);
     this.pdfSinglePageFindController.setDocument(this.internalPdf);
 

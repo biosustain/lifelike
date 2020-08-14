@@ -1,14 +1,9 @@
 <as-split
   unit="pixel"
   direction="horizontal"
-  [disabled]="true"
-  [gutterSize]="15">
+  [gutterSize]="5">
   <as-split-area [order]="0">
-    <div id="viz-content-container">
-      <app-visualization-quickbar
-        (animationStatus)="toggleAnimation($event)"
-      ></app-visualization-quickbar>
-
+    <div class="h-100 position-relative">
       <app-legend [legend]="legend"></app-legend>
 
       <app-visualization-settings
@@ -16,11 +11,10 @@
         (settingsFormChanges)="updateSettings($event)"
       ></app-visualization-settings>
 
-      <div id="network-viz"></div>
+      <div [id]="networkContainerId" class="h-100"></div>
 
       <!-- This isn't visible unless the user has right-clicked to open the context menu -->
       <app-context-menu
-        [tooltipSelector]="contextMenuTooltipSelector"
         [tooltipOptions]="contextMenuTooltipOptions"
         [selectedNodeIds]="selectedNodes"
         [selectedEdgeIds]="selectedEdges"
@@ -39,9 +33,11 @@
     <div id="sidenav-container">
       <div id="sidenav-panel-btns-container">
         <button
+          type="button"
           id="sidenav-panel-close-btn"
+          class="btn btn-danger"
           (click)="closeSidenav()">
-        <mat-icon>clear</mat-icon>
+        <i class="fa fa-close"></i>
       </button>
       </div>
       <!-- Each switch case appears to be lazy loaded, so switching between two cases will destroy the old case, and create the new case. -->

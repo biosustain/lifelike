@@ -71,6 +71,7 @@ class ReferenceTablePair(CamelDictMixin):
     class NodeData(CamelDictMixin):
         id: str = attr.ib()
         display_name: str = attr.ib()
+        label: str = attr.ib()
 
     @attr.s(frozen=True)
     class EdgeData(CamelDictMixin):
@@ -87,12 +88,15 @@ class ReferenceTableRow(CamelDictMixin):
     node_id: str = attr.ib()
     node_display_name: str = attr.ib()
     snippet_count: int = attr.ib()
+    node_label: str = attr.ib()
 
 
 @attr.s(frozen=True)
 class Snippet(CamelDictMixin):
     reference: GraphNode = attr.ib()
     publication: GraphNode = attr.ib()
+    raw_score: int = attr.ib()
+    normalized_score: float = attr.ib()
 
 
 @attr.s(frozen=True)
