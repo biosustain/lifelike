@@ -1167,6 +1167,439 @@ def test_ignore_terms_length_two_or_less(
         (1, [
                 PDFTokenPositions(
                     page_number=1,
+                    keyword='adenosine',
+                    char_positions={
+                        0: 'a', 1: 'd', 2: 'e', 3: 'n', 4: 'o',
+                        5: 's', 6: 'i', 7: 'n', 8: 'e'},
+                ),
+                PDFTokenPositions(
+                    page_number=1,
+                    keyword='rat',
+                    char_positions={10: 'r', 11: 'a', 12: 't'},
+                ),
+                PDFTokenPositions(
+                    page_number=1,
+                    keyword='dog',
+                    char_positions={14: 'd', 15: 'o', 16: 'g'},
+                ),
+        ]),
+    ],
+)
+def text_global_excluded_chemical_annotations(
+    default_lmdb_setup,
+    mock_global_chemical_exclusion,
+    index,
+    tokens,
+    get_annotations_service
+):
+    annotation_service = get_annotations_service
+
+    char_coord_objs_in_pdf = []
+    for t in tokens:
+        for c in t.keyword:
+            char_coord_objs_in_pdf.append(get_dummy_LTChar(text=c))
+        char_coord_objs_in_pdf.append(get_dummy_LTChar(text=' '))
+
+    annotations = annotation_service.create_rules_based_annotations(
+        tokens=PDFTokenPositionsList(
+            token_positions=tokens,
+            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
+            cropbox_in_pdf=(5, 5),
+            min_idx_in_page=[1, 5, 10],
+        ),
+        custom_annotations=[],
+    )
+
+    assert len(annotations) == 2
+    assert tokens[0].keyword not in set([anno.keyword for anno in annotations])
+
+
+@pytest.mark.parametrize(
+    'index, tokens',
+    [
+        (1, [
+                PDFTokenPositions(
+                    page_number=1,
+                    keyword='adenosine',
+                    char_positions={
+                        0: 'a', 1: 'd', 2: 'e', 3: 'n', 4: 'o',
+                        5: 's', 6: 'i', 7: 'n', 8: 'e'},
+                ),
+                PDFTokenPositions(
+                    page_number=1,
+                    keyword='rat',
+                    char_positions={10: 'r', 11: 'a', 12: 't'},
+                ),
+                PDFTokenPositions(
+                    page_number=1,
+                    keyword='dog',
+                    char_positions={14: 'd', 15: 'o', 16: 'g'},
+                ),
+        ]),
+    ],
+)
+def text_global_excluded_compound_annotations(
+    default_lmdb_setup,
+    mock_global_compound_exclusion,
+    index,
+    tokens,
+    get_annotations_service
+):
+    annotation_service = get_annotations_service
+
+    char_coord_objs_in_pdf = []
+    for t in tokens:
+        for c in t.keyword:
+            char_coord_objs_in_pdf.append(get_dummy_LTChar(text=c))
+        char_coord_objs_in_pdf.append(get_dummy_LTChar(text=' '))
+
+    annotations = annotation_service.create_rules_based_annotations(
+        tokens=PDFTokenPositionsList(
+            token_positions=tokens,
+            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
+            cropbox_in_pdf=(5, 5),
+            min_idx_in_page=[1, 5, 10],
+        ),
+        custom_annotations=[],
+    )
+
+    assert len(annotations) == 2
+    assert tokens[0].keyword not in set([anno.keyword for anno in annotations])
+
+
+@pytest.mark.parametrize(
+    'index, tokens',
+    [
+        (1, [
+                PDFTokenPositions(
+                    page_number=1,
+                    keyword='adenosine',
+                    char_positions={
+                        0: 'a', 1: 'd', 2: 'e', 3: 'n', 4: 'o',
+                        5: 's', 6: 'i', 7: 'n', 8: 'e'},
+                ),
+                PDFTokenPositions(
+                    page_number=1,
+                    keyword='rat',
+                    char_positions={10: 'r', 11: 'a', 12: 't'},
+                ),
+                PDFTokenPositions(
+                    page_number=1,
+                    keyword='cold sore',
+                    char_positions={
+                        14: 'c', 15: 'o', 16: 'l', 17: 'd',
+                        19: 's', 20: 'o', 21: 'r', 22: 'e'},
+                ),
+        ]),
+    ],
+)
+def text_global_excluded_disease_annotations(
+    default_lmdb_setup,
+    mock_global_disease_exclusion,
+    index,
+    tokens,
+    get_annotations_service
+):
+    annotation_service = get_annotations_service
+
+    char_coord_objs_in_pdf = []
+    for t in tokens:
+        for c in t.keyword:
+            char_coord_objs_in_pdf.append(get_dummy_LTChar(text=c))
+        char_coord_objs_in_pdf.append(get_dummy_LTChar(text=' '))
+
+    annotations = annotation_service.create_rules_based_annotations(
+        tokens=PDFTokenPositionsList(
+            token_positions=tokens,
+            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
+            cropbox_in_pdf=(5, 5),
+            min_idx_in_page=[1, 5, 10],
+        ),
+        custom_annotations=[],
+    )
+
+    assert len(annotations) == 2
+    assert tokens[2].keyword not in set([anno.keyword for anno in annotations])
+
+
+@pytest.mark.parametrize(
+    'index, tokens',
+    [
+        (1, [
+                PDFTokenPositions(
+                    page_number=1,
+                    keyword='adenosine',
+                    char_positions={
+                        0: 'a', 1: 'd', 2: 'e', 3: 'n', 4: 'o',
+                        5: 's', 6: 'i', 7: 'n', 8: 'e'},
+                ),
+                PDFTokenPositions(
+                    page_number=1,
+                    keyword='rat',
+                    char_positions={10: 'r', 11: 'a', 12: 't'},
+                ),
+                PDFTokenPositions(
+                    page_number=1,
+                    keyword='BOLA3',
+                    char_positions={
+                        14: 'B', 15: 'O', 16: 'L', 17: 'A', 19: '3'},
+                ),
+        ]),
+    ],
+)
+def text_global_excluded_gene_annotations(
+    default_lmdb_setup,
+    mock_global_gene_exclusion,
+    index,
+    tokens,
+    get_annotations_service
+):
+    annotation_service = get_annotations_service
+
+    char_coord_objs_in_pdf = []
+    for t in tokens:
+        for c in t.keyword:
+            char_coord_objs_in_pdf.append(get_dummy_LTChar(text=c))
+        char_coord_objs_in_pdf.append(get_dummy_LTChar(text=' '))
+
+    annotations = annotation_service.create_rules_based_annotations(
+        tokens=PDFTokenPositionsList(
+            token_positions=tokens,
+            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
+            cropbox_in_pdf=(5, 5),
+            min_idx_in_page=[1, 5, 10],
+        ),
+        custom_annotations=[],
+    )
+
+    assert len(annotations) == 2
+    assert tokens[2].keyword not in set([anno.keyword for anno in annotations])
+
+
+@pytest.mark.parametrize(
+    'index, tokens',
+    [
+        (1, [
+                PDFTokenPositions(
+                    page_number=1,
+                    keyword='adenosine',
+                    char_positions={
+                        0: 'a', 1: 'd', 2: 'e', 3: 'n', 4: 'o',
+                        5: 's', 6: 'i', 7: 'n', 8: 'e'},
+                ),
+                PDFTokenPositions(
+                    page_number=1,
+                    keyword='rat',
+                    char_positions={10: 'r', 11: 'a', 12: 't'},
+                ),
+                PDFTokenPositions(
+                    page_number=1,
+                    keyword='Whey Proteins',
+                    char_positions={
+                        14: 'W', 15: 'h', 16: 'e', 17: 'y',
+                        19: 'P', 20: 'r', 21: 'o', 22: 't', 23: 'e', 24: 'i', 25: 'n', 26: 's'},
+                ),
+        ]),
+    ],
+)
+def text_global_excluded_phenotype_annotations(
+    default_lmdb_setup,
+    mock_global_phenotype_exclusion,
+    index,
+    tokens,
+    get_annotations_service
+):
+    annotation_service = get_annotations_service
+
+    char_coord_objs_in_pdf = []
+    for t in tokens:
+        for c in t.keyword:
+            char_coord_objs_in_pdf.append(get_dummy_LTChar(text=c))
+        char_coord_objs_in_pdf.append(get_dummy_LTChar(text=' '))
+
+    annotations = annotation_service.create_rules_based_annotations(
+        tokens=PDFTokenPositionsList(
+            token_positions=tokens,
+            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
+            cropbox_in_pdf=(5, 5),
+            min_idx_in_page=[1, 5, 10],
+        ),
+        custom_annotations=[],
+    )
+
+    assert len(annotations) == 2
+    assert tokens[2].keyword not in set([anno.keyword for anno in annotations])
+
+
+@pytest.mark.parametrize(
+    'index, tokens',
+    [
+        (1, [
+                PDFTokenPositions(
+                    page_number=1,
+                    keyword='adenosine',
+                    char_positions={
+                        0: 'a', 1: 'd', 2: 'e', 3: 'n', 4: 'o',
+                        5: 's', 6: 'i', 7: 'n', 8: 'e'},
+                ),
+                PDFTokenPositions(
+                    page_number=1,
+                    keyword='rat',
+                    char_positions={10: 'r', 11: 'a', 12: 't'},
+                ),
+                PDFTokenPositions(
+                    page_number=1,
+                    keyword='Wasabi receptor toxin',
+                    char_positions={
+                        14: 'W', 15: 'a', 16: 's', 17: 'a', 18: 'b', 19: 'i',
+                        21: 'r', 22: 'e', 23: 'c', 24: 'e', 25: 'p', 26: 't', 27: 'o', 28: 'r',
+                        30: 't', 31: 'o', 32: 'x', 33: 'i', 34: 'n'},
+                ),
+        ]),
+    ],
+)
+def text_global_excluded_protein_annotations(
+    default_lmdb_setup,
+    mock_global_protein_exclusion,
+    index,
+    tokens,
+    get_annotations_service
+):
+    annotation_service = get_annotations_service
+
+    char_coord_objs_in_pdf = []
+    for t in tokens:
+        for c in t.keyword:
+            char_coord_objs_in_pdf.append(get_dummy_LTChar(text=c))
+        char_coord_objs_in_pdf.append(get_dummy_LTChar(text=' '))
+
+    annotations = annotation_service.create_rules_based_annotations(
+        tokens=PDFTokenPositionsList(
+            token_positions=tokens,
+            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
+            cropbox_in_pdf=(5, 5),
+            min_idx_in_page=[1, 5, 10],
+        ),
+        custom_annotations=[],
+    )
+
+    assert len(annotations) == 2
+    assert tokens[2].keyword not in set([anno.keyword for anno in annotations])
+
+
+@pytest.mark.parametrize(
+    'index, tokens',
+    [
+        (1, [
+                PDFTokenPositions(
+                    page_number=1,
+                    keyword='human',
+                    char_positions={0: 'h', 1: 'u', 2: 'm', 3: 'a', 4: 'n'},
+                ),
+                PDFTokenPositions(
+                    page_number=1,
+                    keyword='rat',
+                    char_positions={6: 'r', 7: 'a', 8: 't'},
+                ),
+                PDFTokenPositions(
+                    page_number=1,
+                    keyword='dog',
+                    char_positions={9: 'd', 10: 'o', 11: 'g'},
+                ),
+        ]),
+    ],
+)
+def text_global_excluded_species_annotations(
+    default_lmdb_setup,
+    mock_global_species_exclusion,
+    index,
+    tokens,
+    get_annotations_service
+):
+    annotation_service = get_annotations_service
+
+    char_coord_objs_in_pdf = []
+    for t in tokens:
+        for c in t.keyword:
+            char_coord_objs_in_pdf.append(get_dummy_LTChar(text=c))
+        char_coord_objs_in_pdf.append(get_dummy_LTChar(text=' '))
+
+    annotations = annotation_service.create_rules_based_annotations(
+        tokens=PDFTokenPositionsList(
+            token_positions=tokens,
+            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
+            cropbox_in_pdf=(5, 5),
+            min_idx_in_page=[1, 5, 10],
+        ),
+        custom_annotations=[],
+    )
+
+    # dog is not in default_lmdb_setup
+    assert len(annotations) == 1
+    assert annotations[0].keyword == tokens[1].keyword
+
+
+@pytest.mark.parametrize(
+    'index, tokens',
+    [
+        (1, [
+                PDFTokenPositions(
+                    page_number=1,
+                    keyword='adenosine',
+                    char_positions={
+                        0: 'a', 1: 'd', 2: 'e', 3: 'n', 4: 'o',
+                        5: 's', 6: 'i', 7: 'n', 8: 'e'},
+                ),
+                PDFTokenPositions(
+                    page_number=1,
+                    keyword='rat',
+                    char_positions={10: 'r', 11: 'a', 12: 't'},
+                ),
+                PDFTokenPositions(
+                    page_number=1,
+                    keyword='dog',
+                    char_positions={14: 'd', 15: 'o', 16: 'g'},
+                ),
+        ]),
+    ],
+)
+def text_global_excluded_annotations_does_not_interfere_with_other_entities(
+    default_lmdb_setup,
+    mock_global_chemical_exclusion,
+    index,
+    tokens,
+    get_annotations_service
+):
+    annotation_service = get_annotations_service
+
+    char_coord_objs_in_pdf = []
+    for t in tokens:
+        for c in t.keyword:
+            char_coord_objs_in_pdf.append(get_dummy_LTChar(text=c))
+        char_coord_objs_in_pdf.append(get_dummy_LTChar(text=' '))
+
+    annotations = annotation_service.create_rules_based_annotations(
+        tokens=PDFTokenPositionsList(
+            token_positions=tokens,
+            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
+            cropbox_in_pdf=(5, 5),
+            min_idx_in_page=[1, 5, 10],
+        ),
+        custom_annotations=[],
+    )
+
+    assert len(annotations) == 2
+    assert tokens[2].keyword not in set([anno.keyword for anno in annotations])
+    assert annotations[0].keyword == 'adenosine'
+    assert annotations[0].meta.type == EntityType.Compound.value
+
+
+@pytest.mark.parametrize(
+    'index, tokens',
+    [
+        (1, [
+                PDFTokenPositions(
+                    page_number=1,
                     keyword='NS2A',
                     char_positions={0: 'N', 1: 'S', 2: '2', 3: 'A'},
                 ),
