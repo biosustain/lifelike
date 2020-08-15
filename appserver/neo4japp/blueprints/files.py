@@ -175,7 +175,7 @@ def upload_pdf(request, project_name: str):
 
         current_app.logger.info(
             f'User uploaded file: <{g.current_user.email}:{file.filename}>')
-        # index_pdf.main(current_app.config)  # TODO: FIX THIS
+        index_pdf.populate_single_index(file.id)
     except Exception:
         raise FileUploadError('Your file could not be saved. Please try uploading again.')
 
@@ -369,7 +369,7 @@ def get_annotations(id: str, project_name: str):
         # Add additional information for annotations that were excluded
         for annotation in annotations:
             for exclusion in file.excluded_annotations:
-                if (exclusion['type'] == annotation['meta']['type'] and
+                if (exclusion.get('type') == annotation['meta']['type'] and
                         exclusion.get('text', True) == annotation.get('textInDocument', False)):
                     annotation['meta']['isExcluded'] = True
                     annotation['meta']['exclusionReason'] = exclusion['reason']
