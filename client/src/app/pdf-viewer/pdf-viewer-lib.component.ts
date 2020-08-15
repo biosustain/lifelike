@@ -555,12 +555,79 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
     const mouseRectTop = Math.min(mouseMoveRectangular[1], mouseMoveRectangular[3]);
     const mouseRectHeight = Math.abs(mouseMoveRectangular[1] - mouseMoveRectangular[3]);
 
+    const fixedSelectedRects = [];
+    const newLineThreshold = .30;
+    function createCorrectRects(rects: DOMRectList) {
+      let startLowerX = null, startLowerY = null;
+
+      let currentRect = new DOMRect(0, 0, 0, 0);
+
+      for (let i = 0; i < rects.length; i++) {
+        const rect = rects[i];
+        const prevRect = i > 0 ? rects[i-1] : rect
+        // point of origin in browser is top left
+        const lowerX = rect.left;
+        const lowerY = rect.bottom;
+
+        currentRect.height = rect.height;
+
+        if (startLowerX === null && startLowerY === null) {
+          startLowerX = lowerX;
+          startLowerY = lowerY;
+        } else {
+          // if the lowerY of current rect is not equal to the
+          // lowerY of the very first word selection in the highlight
+          // it means potentially the current word selection rectangle
+          // is on a new line or just have larger font size
+          if (lowerY !== startLowerY) {
+            // calculate threshold and determine if new line
+            const diff = Math.abs(lowerY - startLowerY);
+            const prevHeight = prevRect.height;
+
+            if (diff > prevHeight * newLineThreshold) {
+              const rectsOnNewLine = []
+              for (let j = i; j < rects.length; j++) {
+                rectsOnNewLine.push(rects[j]);
+              }
+
+              const unprocessedDOMRects = {length: rectsOnNewLine.length} as DOMRectList;
+              rectsOnNewLine.forEach((r, i) => unprocessedDOMRects[i] = r);
+              createCorrectRects(unprocessedDOMRects);
+              // break because the recursion already calculated the
+              // correct currentRect.width before returning
+              break;
+            }
+          }
+        }
+
+        currentRect.x = startLowerX;
+        currentRect.y = startLowerY - rect.height;
+
+        if (currentRect.width === 0) {
+          currentRect.width = rect.width;
+        } else if (Math.round(rect.width) !== Math.round(prevRect.width)) {
+          currentRect.width += rect.width;
+        }
+      }
+
+      fixedSelectedRects.push(currentRect);
+    }
+
+    // We need to re-create the selection rectangles
+    // because the PDF could be in a weird format
+    // that causes the native browser API to create multiple
+    // DOM rectangles when it shouldn't have.
+    //
+    // Each section rectangle represent one selection,
+    // this means multiple words on the same line should
+    // create one selection rectangle
+    createCorrectRects(selectedRects);
 
     this.selectedTextCoords = [];
     const that = this;
     let avgHeight = 0;
     let rectHeights = [];
-    jQuery.each(selectedRects, (idx, r) => {
+    jQuery.each(fixedSelectedRects, (idx, r) => {
 
       const rect = viewport.convertToPdfPoint(r.left - pageRect.left, r.top - pageRect.top)
         .concat(viewport.convertToPdfPoint(r.right - pageRect.left, r.bottom - pageRect.top));
