@@ -56,10 +56,10 @@ export class MapService extends AbstractService {
     );
   }
 
-  updateMap(projectName: string, map: KnowledgeMap): Observable<any> {
+  updateMap(projectName: string, target: KnowledgeMap): Observable<any> {
     return this.http.patch(
-      `${this.PROJECTS_BASE_URL}/${encodeURIComponent(projectName)}/map/${encodeURIComponent(map.hash_id)}`,
-      map,
+      `${this.PROJECTS_BASE_URL}/${encodeURIComponent(projectName)}/map/${encodeURIComponent(target.hash_id)}`,
+      target,
       this.getHttpOptions(true),
     );
   }
@@ -84,27 +84,6 @@ export class MapService extends AbstractService {
     );
   }
 
-  /**
-   * @deprecated use {@link generateExport}
-   */
-  generatePDF(projectName: string, hashId: string): Observable<any> {
-    return this.generateExport(projectName, hashId, 'pdf');
-  }
-
-  /**
-   * @deprecated use {@link generateExport}
-   */
-  generateSVG(projectName: string, hashId: string): Observable<any> {
-    return this.generateExport(projectName, hashId, 'svg');
-  }
-
-  /**
-   * @deprecated use {@link generateExport}
-   */
-  generatePNG(projectName: string, hashId: string): Observable<any> {
-    return this.generateExport(projectName, hashId, 'png');
-  }
-
   // ========================================
   // Backup
   // ========================================
@@ -116,14 +95,14 @@ export class MapService extends AbstractService {
     );
   }
 
-  createOrUpdateBackup(projectName: string, map: KnowledgeMap): Observable<any> {
-    map.description = map.description && map.description.length ?
-      map.description :
+  createOrUpdateBackup(projectName: string, target: KnowledgeMap): Observable<any> {
+    target.description = target.description && target.description.length ?
+      target.description :
       '';
 
     return this.http.post(
-      `${this.MAPS_BASE_URL}/map/${encodeURIComponent(map.hash_id)}/backup`,
-      map,
+      `${this.MAPS_BASE_URL}/map/${encodeURIComponent(target.hash_id)}/backup`,
+      target,
       this.getHttpOptions(true),
     );
   }

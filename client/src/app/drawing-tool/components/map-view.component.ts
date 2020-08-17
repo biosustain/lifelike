@@ -295,7 +295,7 @@ export class MapViewComponent<ExtraResult = void> implements OnDestroy, AfterVie
    */
   downloadPDF() {
     this.requestDownload(
-      () => this.mapService.generatePDF(this.locator.projectName, this.locator.hashId),
+      () => this.mapService.generateExport(this.locator.projectName, this.locator.hashId, 'pdf'),
       'application/pdf',
       '.pdf',
     );
@@ -306,7 +306,7 @@ export class MapViewComponent<ExtraResult = void> implements OnDestroy, AfterVie
    */
   downloadSVG() {
     this.requestDownload(
-      () => this.mapService.generateSVG(this.locator.projectName, this.locator.hashId),
+      () => this.mapService.generateExport(this.locator.projectName, this.locator.hashId, 'svg'),
       'application/svg',
       '.svg',
     );
@@ -317,7 +317,7 @@ export class MapViewComponent<ExtraResult = void> implements OnDestroy, AfterVie
    */
   downloadPNG() {
     this.requestDownload(
-      () => this.mapService.generatePNG(this.locator.projectName, this.locator.hashId),
+      () => this.mapService.generateExport(this.locator.projectName, this.locator.hashId, 'png'),
       'application/png',
       '.png',
     );
