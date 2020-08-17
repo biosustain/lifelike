@@ -20,12 +20,14 @@ from neo4japp.database import (
     get_lmdb_dao,
 )
 from neo4japp.data_transfer_objects import AnnotationRequest
-from neo4japp.exceptions import AnnotationError, RecordNotFoundException
+from neo4japp.exceptions import AnnotationError, DatabaseError, RecordNotFoundException
 from neo4japp.models import (
     AccessActionType,
     AppUser,
     Files,
+    FileContent,
     GlobalList,
+    InclusionExclusionType,
     Projects,
 )
 import neo4japp.models.files_queries as files_queries
@@ -179,18 +181,29 @@ def reannotate(req: AnnotationRequest, project_name: str):
 def export_global_inclusions():
     yield g.current_user
 
-    inclusions = GlobalList.query.filter_by(type='inclusion', reviewed=False).all()
+    inclusions = GlobalList.query.filter_by(
+        type=InclusionExclusionType.INCLUSION.value,
+        reviewed=False
+    ).all()
 
     def get_inclusion_for_review(inclusion):
         user = AppUser.query.filter_by(id=inclusion.annotation['user_id']).one_or_none()
         username = f'{user.first_name} {user.last_name}' if user is not None else 'not found'
         hyperlink = 'not found'
-        file = Files.query.filter_by(id=inclusion.file_id).one_or_none()
-        if file is not None:
+
+        if inclusion.file_id is not None:
             domain = os.environ.get('DOMAIN')
-            project = Projects.query.filter_by(id=file.project).one_or_none()
-            hyperlink = f'{domain}/projects/{project.project_name}/files/{file.file_id}' \
-                if project is not None else 'not found'
+            hyperlink = f'{domain}/api/files/download/{inclusion.file_id}'
+
+        missing_data = any([
+            inclusion.annotation['meta'].get('id', None) is None,
+            inclusion.annotation['meta'].get('primaryLink', None) is None
+        ])
+
+        if missing_data:
+            current_app.logger.warning(
+                f'Found inclusion in the global list with missing data:\n{inclusion.to_dict()}'
+            )
 
         return {
             'id': inclusion.annotation['meta'].get('id', ''),
@@ -218,18 +231,30 @@ def export_global_inclusions():
 def export_global_exclusions():
     yield g.current_user
 
-    exclusions = GlobalList.query.filter_by(type='exclusion', reviewed=False).all()
+    exclusions = GlobalList.query.filter_by(
+        type=InclusionExclusionType.EXCLUSION.value,
+        reviewed=False,
+    ).all()
 
     def get_exclusion_for_review(exclusion):
         user = AppUser.query.filter_by(id=exclusion.annotation['user_id']).one_or_none()
         username = f'{user.first_name} {user.last_name}' if user is not None else 'not found'
         hyperlink = 'not found'
-        file = Files.query.filter_by(id=exclusion.file_id).one_or_none()
-        if file is not None:
+
+        if exclusion.file_id is not None:
             domain = os.environ.get('DOMAIN')
-            project = Projects.query.filter_by(id=file.project).one_or_none()
-            hyperlink = f'{domain}/projects/{project.project_name}/files/{file.file_id}' \
-                if project is not None else 'not found'
+            hyperlink = f'{domain}/api/files/download/{exclusion.file_id}'
+
+        missing_data = any([
+            exclusion.annotation.get('text', None) is None,
+            exclusion.annotation.get('type', None) is None,
+            exclusion.annotation.get('idHyperlink', None) is None
+        ])
+
+        if missing_data:
+            current_app.logger.warning(
+                f'Found exclusion in the global list with missing data:\n{exclusion.to_dict()}'
+            )
 
         return {
             'term': exclusion.annotation.get('text', ''),
