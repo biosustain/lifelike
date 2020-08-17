@@ -26,9 +26,8 @@ from neo4japp.database import (
     get_annotations_service,
     get_annotations_pdf_parser,
     get_bioc_document_service,
-    get_excel_export_service,
     get_lmdb_dao,
-    get_neo4j_service_dao,
+    get_manual_annotations_service,
 )
 from neo4japp.data_transfer_objects import FileUpload
 from neo4japp.exceptions import (
@@ -55,8 +54,7 @@ from neo4japp.request_schemas.annotations import (
 )
 from neo4japp.services.indexing import index_pdf
 from neo4japp.utils.network import read_url
-from neo4japp.services.annotations.constants import AnnotationMethod, EntityType
-from neo4japp.services.annotations.manual_annotations import ManualAnnotationsService
+from neo4japp.services.annotations.constants import AnnotationMethod
 from neo4japp.util import jsonify_with_class, SuccessResponse
 from flask_apispec import use_kwargs, marshal_with
 from pdfminer import high_level
@@ -256,6 +254,27 @@ def upload_pdf(request, project_name: str):
     )
 
 
+@bp.route('/download/<int:file_content_id>', methods=['GET'])
+@auth.login_required
+@requires_role('admin')
+def download(file_content_id: int):
+    yield g.current_user
+
+    try:
+        entry = db.session.query(
+            FileContent.raw_file
+        ).filter(
+            FileContent.id == file_content_id,
+        ).one()
+    except NoResultFound:
+        raise RecordNotFoundException('Requested PDF file not found.')
+
+    res = make_response(entry.raw_file)
+    res.headers['Content-Type'] = 'application/pdf'
+
+    yield res
+
+
 @newbp.route('/<string:project_name>/files', methods=['GET'])
 @auth.login_required
 @requires_project_permission(AccessActionType.READ)
@@ -453,6 +472,7 @@ def get_annotations(id: str, project_name: str):
 @auth.login_required
 @requires_project_permission(AccessActionType.WRITE)
 def add_custom_annotation(file_id, project_name, **payload):
+    manual_annotations_service = get_manual_annotations_service()
 
     project = Projects.query.filter(Projects.project_name == project_name).one_or_none()
     if project is None:
@@ -462,7 +482,7 @@ def add_custom_annotation(file_id, project_name, **payload):
 
     yield user, project
 
-    inclusions = ManualAnnotationsService.add_inclusions(
+    inclusions = manual_annotations_service.add_inclusions(
         project.id, file_id, user.id, payload['annotation'], payload['annotateAll']
     )
 
@@ -474,6 +494,7 @@ def add_custom_annotation(file_id, project_name, **payload):
 @use_kwargs(AnnotationRemovalSchema)
 @requires_project_permission(AccessActionType.WRITE)
 def remove_custom_annotation(file_id, uuid, removeAll, project_name):
+    manual_annotations_service = get_manual_annotations_service()
 
     project = Projects.query.filter(Projects.project_name == project_name).one_or_none()
     if project is None:
@@ -483,7 +504,7 @@ def remove_custom_annotation(file_id, uuid, removeAll, project_name):
 
     yield user, project
 
-    removed_annotation_uuids = ManualAnnotationsService.remove_inclusions(
+    removed_annotation_uuids = manual_annotations_service.remove_inclusions(
         project.id, file_id, uuid, removeAll
     )
 
@@ -606,6 +627,7 @@ def delete_files(project_name: str):
 @use_kwargs(AnnotationExclusionSchema)
 @requires_project_permission(AccessActionType.WRITE)
 def add_annotation_exclusion(project_name: str, file_id: str, **payload):
+    manual_annotations_service = get_manual_annotations_service()
 
     project = Projects.query.filter(Projects.project_name == project_name).one_or_none()
     if project is None:
@@ -615,7 +637,7 @@ def add_annotation_exclusion(project_name: str, file_id: str, **payload):
 
     yield user, project
 
-    ManualAnnotationsService.add_exclusion(project.id, file_id, user.id, payload)
+    manual_annotations_service.add_exclusion(project.id, file_id, user.id, payload)
 
     yield jsonify({'status': 'success'})
 
@@ -627,6 +649,7 @@ def add_annotation_exclusion(project_name: str, file_id: str, **payload):
 @use_kwargs(AnnotationExclusionSchema(only=('type', 'text')))
 @requires_project_permission(AccessActionType.WRITE)
 def remove_annotation_exclusion(project_name, file_id, type, text):
+    manual_annotations_service = get_manual_annotations_service()
 
     project = Projects.query.filter(Projects.project_name == project_name).one_or_none()
     if project is None:
@@ -636,7 +659,7 @@ def remove_annotation_exclusion(project_name, file_id, type, text):
 
     yield user, project
 
-    ManualAnnotationsService.remove_exclusion(project.id, file_id, user.id, type, text)
+    manual_annotations_service.remove_exclusion(project.id, file_id, user.id, type, text)
 
     yield jsonify({'status': 'success'})
 
@@ -646,126 +669,3 @@ def remove_annotation_exclusion(project_name, file_id, type, text):
 def get_lmdbs_dates():
     rows = LMDBsDates.query.all()
     return {row.name: row.date for row in rows}
-
-
-@bp.route('/global_exclusion_file')
-@auth.login_required
-@requires_role('admin')
-def export_excluded_annotations():
-    yield g.current_user
-
-    files = db.session.query(
-        Files.filename,
-        Files.file_id,
-        Files.project,
-        Files.excluded_annotations,
-    ).all()
-
-    def get_exclusion_for_review(filename, file_id, project_id, exclusion):
-        user = AppUser.query.filter_by(id=exclusion['user_id']).one_or_none()
-        project = Projects.query.filter_by(id=project_id).one_or_none()
-        domain = os.environ.get('DOMAIN')
-        return {
-            'id': exclusion['id'],
-            'text': exclusion.get('text', ''),
-            'type': exclusion.get('type', ''),
-            'reason': exclusion['reason'],
-            'comment': exclusion['comment'],
-            'exclusion_date': exclusion['exclusion_date'],
-            'user': f'{user.first_name} {user.last_name}' if user is not None else 'not found',
-            'filename': filename,
-            'hyperlink': f'{domain}/projects/{project.project_name}/files/{file_id}'
-                    if project is not None else 'not found'
-        }
-
-    data = [get_exclusion_for_review(filename, file_id, project_id, exclusion)
-            for filename, file_id, project_id, exclusions in files for exclusion in exclusions]
-
-    exporter = get_excel_export_service()
-    response = make_response(exporter.get_bytes(data), 200)
-    response.headers['Content-Type'] = exporter.mimetype
-    response.headers['Content-Disposition'] = \
-        f'attachment; filename={exporter.get_filename("excluded_annotations")}'
-    yield response
-
-
-@bp.route('/global_inclusion_file')
-@auth.login_required
-@requires_role('admin')
-def export_included_annotations():
-    yield g.current_user
-
-    files = db.session.query(
-        Files.filename,
-        Files.file_id,
-        Files.project,
-        Files.custom_annotations,
-    ).all()
-
-    def get_inclusion_for_review(filename, file_id, project_id, inclusion):
-        user = AppUser.query.filter_by(id=inclusion['user_id']).one_or_none()
-        project = Projects.query.filter_by(id=project_id).one_or_none()
-        domain = os.environ.get('DOMAIN')
-        return {
-            'text': inclusion['meta']['allText'],
-            'type': inclusion['meta']['type'],
-            'primary_link': inclusion['meta'].get('primaryLink', ''),
-            'inclusion_date': inclusion.get('inclusion_date', ''),
-            'user': f'{user.first_name} {user.last_name}' if user is not None else 'not found',
-            'filename': filename,
-            'hyperlink': f'{domain}/projects/{project.project_name}/files/{file_id}'
-                    if project is not None else 'not found'
-        }
-
-    data = [get_inclusion_for_review(filename, file_id, project_id, inclusion)
-            for filename, file_id, project_id, inclusions in files for inclusion in inclusions]
-
-    exporter = get_excel_export_service()
-    response = make_response(exporter.get_bytes(data), 200)
-    response.headers['Content-Type'] = exporter.mimetype
-    response.headers['Content-Disposition'] = \
-        f'attachment; filename={exporter.get_filename("included_annotations")}'
-    yield response
-
-
-@bp.route('/<string:project_name>/<string:file_id>/genes')
-@auth.login_required
-@requires_project_permission(AccessActionType.READ)
-def get_gene_list_from_file(project_name, file_id):
-    project = Projects.query.filter(Projects.project_name == project_name).one_or_none()
-    if project is None:
-        raise RecordNotFoundException(f'Project {project_name} not found')
-
-    user = g.current_user
-
-    # yield to requires_project_permission
-    yield user, project
-
-    file = Files.query.filter_by(file_id=file_id, project=project.id).one_or_none()
-    if not file:
-        raise RecordNotFoundException('File does not exist')
-
-    combined_annotations = ManualAnnotationsService.get_combined_annotations(project.id, file_id)
-    gene_ids = {}
-    for annotation in combined_annotations:
-        if annotation['meta']['type'] == EntityType.Gene.value:
-            gene_id = annotation['meta']['id']
-            if gene_ids.get(gene_id, None) is not None:
-                gene_ids[gene_id] += 1
-            else:
-                gene_ids[gene_id] = 1
-
-    neo4j = get_neo4j_service_dao()
-    gene_organism_pairs = neo4j.get_organisms_from_gene_ids(
-        gene_ids=list(gene_ids.keys())
-    )
-    sorted_pairs = sorted(gene_organism_pairs, key=lambda pair: gene_ids[pair['gene_id']], reverse=True)  # noqa
-
-    result = 'gene_id\tgene_name\torganism_id\torganism_name\tgene_annotation_count\n'
-    for pair in sorted_pairs:
-        result += f"{pair['gene_id']}\t{pair['gene_name']}\t{pair['taxonomy_id']}\t{pair['species_name']}\t{gene_ids[pair['gene_id']]}\n"  # noqa
-
-    response = make_response(result)
-    response.headers['Content-Type'] = 'text/csv'
-
-    yield response
