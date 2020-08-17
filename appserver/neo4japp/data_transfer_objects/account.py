@@ -23,7 +23,7 @@ class UserUpdateRequest(UserRequest):
 
 @attr.s(frozen=True)
 class UserData(CamelDictMixin):
-    id: id = attr.ib()
+    id: str = attr.ib()
     username: str = attr.ib()
 
     @classmethod
