@@ -27,6 +27,7 @@ from neo4japp.database import (
     get_annotations_pdf_parser,
     get_bioc_document_service,
     get_lmdb_dao,
+    get_manual_annotations_service,
 )
 from neo4japp.data_transfer_objects import FileUpload
 from neo4japp.exceptions import (
@@ -54,7 +55,6 @@ from neo4japp.request_schemas.annotations import (
 from neo4japp.services.indexing import index_pdf
 from neo4japp.utils.network import read_url
 from neo4japp.services.annotations.constants import AnnotationMethod
-from neo4japp.services.annotations.manual_annotations import ManualAnnotationsService
 from neo4japp.util import jsonify_with_class, SuccessResponse
 from flask_apispec import use_kwargs, marshal_with
 from pdfminer import high_level
@@ -472,6 +472,7 @@ def get_annotations(id: str, project_name: str):
 @auth.login_required
 @requires_project_permission(AccessActionType.WRITE)
 def add_custom_annotation(file_id, project_name, **payload):
+    manual_annotations_service = get_manual_annotations_service()
 
     project = Projects.query.filter(Projects.project_name == project_name).one_or_none()
     if project is None:
@@ -481,7 +482,7 @@ def add_custom_annotation(file_id, project_name, **payload):
 
     yield user, project
 
-    inclusions = ManualAnnotationsService.add_inclusions(
+    inclusions = manual_annotations_service.add_inclusions(
         project.id, file_id, user.id, payload['annotation'], payload['annotateAll']
     )
 
@@ -493,6 +494,7 @@ def add_custom_annotation(file_id, project_name, **payload):
 @use_kwargs(AnnotationRemovalSchema)
 @requires_project_permission(AccessActionType.WRITE)
 def remove_custom_annotation(file_id, uuid, removeAll, project_name):
+    manual_annotations_service = get_manual_annotations_service()
 
     project = Projects.query.filter(Projects.project_name == project_name).one_or_none()
     if project is None:
@@ -502,7 +504,7 @@ def remove_custom_annotation(file_id, uuid, removeAll, project_name):
 
     yield user, project
 
-    removed_annotation_uuids = ManualAnnotationsService.remove_inclusions(
+    removed_annotation_uuids = manual_annotations_service.remove_inclusions(
         project.id, file_id, uuid, removeAll
     )
 
@@ -625,6 +627,7 @@ def delete_files(project_name: str):
 @use_kwargs(AnnotationExclusionSchema)
 @requires_project_permission(AccessActionType.WRITE)
 def add_annotation_exclusion(project_name: str, file_id: str, **payload):
+    manual_annotations_service = get_manual_annotations_service()
 
     project = Projects.query.filter(Projects.project_name == project_name).one_or_none()
     if project is None:
@@ -634,7 +637,7 @@ def add_annotation_exclusion(project_name: str, file_id: str, **payload):
 
     yield user, project
 
-    ManualAnnotationsService.add_exclusion(project.id, file_id, user.id, payload)
+    manual_annotations_service.add_exclusion(project.id, file_id, user.id, payload)
 
     yield jsonify({'status': 'success'})
 
@@ -646,6 +649,7 @@ def add_annotation_exclusion(project_name: str, file_id: str, **payload):
 @use_kwargs(AnnotationExclusionSchema(only=('type', 'text')))
 @requires_project_permission(AccessActionType.WRITE)
 def remove_annotation_exclusion(project_name, file_id, type, text):
+    manual_annotations_service = get_manual_annotations_service()
 
     project = Projects.query.filter(Projects.project_name == project_name).one_or_none()
     if project is None:
@@ -655,7 +659,7 @@ def remove_annotation_exclusion(project_name, file_id, type, text):
 
     yield user, project
 
-    ManualAnnotationsService.remove_exclusion(project.id, file_id, user.id, type, text)
+    manual_annotations_service.remove_exclusion(project.id, file_id, user.id, type, text)
 
     yield jsonify({'status': 'success'})
 
