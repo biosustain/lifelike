@@ -15,7 +15,11 @@ from neo4japp.models import (
     projects_collaborator_role,
     FileContent,
     Files,
+    DomainURLsMap,
+    AnnotationStyle
 )
+
+from neo4japp.models import AnnotationStyle
 
 
 @pytest.fixture(scope='function')
@@ -218,3 +222,36 @@ def user_client(client, test_user):
     """ Returns an authenticated client as well as the JWT information """
     auth = client.login_as_user('test@lifelike.bio', 'password')
     return client, auth
+
+
+@pytest.fixture(scope='function')
+def styles_fixture(client, session):
+
+    style = AnnotationStyle(
+        label='gene',
+        color='#232323'
+    )
+    style2 = AnnotationStyle(
+        label="association",
+        color="#d7d9f8",
+        font_color="#000",
+        border_color="#d7d9f8",
+        background_color="#d7d9f8",
+    )
+    session.add(style)
+    session.add(style2)
+    session.flush()
+
+    return style
+
+
+@pytest.fixture(scope='function')
+def uri_fixture(client, session):
+    uri1 = DomainURLsMap(domain="CHEBI", base_URL="https://www.ebi.ac.uk/chebi/searchId.do?chebiId={}")  # noqa
+    uri2 = DomainURLsMap(domain="MESH", base_URL="https://www.ncbi.nlm.nih.gov/mesh/?term={}")
+
+    session.add(uri1)
+    session.add(uri2)
+    session.flush()
+
+    return uri1
