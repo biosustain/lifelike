@@ -135,6 +135,11 @@ def get_annotations_service(lmdb_dao):
     )
 
 
+def get_manual_annotations_service():
+    from neo4japp.services.annotations import ManualAnnotationsService
+    return ManualAnnotationsService()
+
+
 def get_annotations_pdf_parser():
     from neo4japp.services.annotations import AnnotationsPDFParser
     return AnnotationsPDFParser()
