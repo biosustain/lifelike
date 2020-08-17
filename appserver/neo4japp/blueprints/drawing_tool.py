@@ -156,7 +156,7 @@ def get_community_projects():
         .options(joinedload(Project.user),
                  joinedload(Project.dir),
                  joinedload(Project.dir, Directory.project)) \
-        .filter(Project.public == True)
+        .filter(Project.public is True)
 
     filter_query = request.args.get('q', '').strip()
     if len(filter_query):
@@ -373,7 +373,8 @@ def get_project_pdf(projects_name: str, hash_id: str):
             # Check permission
             if not is_superuser:
                 role = project_service.has_role(user, project.dir.project)
-                if role is None or not auth_service.is_allowed(role, AccessActionType.READ, project.dir.project):
+                if role is None or not auth_service.is_allowed(role, AccessActionType.READ,
+                                                               project.dir.project):
                     raise NotAuthorizedException('No permission to read linked map')
 
             pdf_data = process(project)
@@ -383,7 +384,7 @@ def get_project_pdf(projects_name: str, hash_id: str):
             # Search through map links in the PDF and find related maps we should add to the PDF
             unprocessed_, references_ = get_references(pdf_object)
             pdf_map_links.extend(references_)
-            
+
             hash_id_queue.extend([x for x in unprocessed_ if x not in seen_hash_ids])
             seen_hash_ids.update([x for x in unprocessed_ if x not in seen_hash_ids])
         except (NoResultFound, NotAuthorizedException):
