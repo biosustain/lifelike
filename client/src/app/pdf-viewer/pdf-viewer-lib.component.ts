@@ -605,14 +605,13 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
 
         if (currentRect.width === 0) {
           currentRect.width = rect.width;
-        } else if (Math.round(rect.width) !== Math.round(prevRect.width)) {
+        } else if (rect.width > prevRect.width || rect.width < prevRect.width) {
           currentRect.width += rect.width;
         }
       }
 
       fixedSelectedRects.push(currentRect);
     }
-
     // We need to re-create the selection rectangles
     // because the PDF could be in a weird format
     // that causes the native browser API to create multiple
