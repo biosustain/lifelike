@@ -62,7 +62,9 @@ class AccountService(RDBMSBaseDao):
         self.session.delete(user)
         self.commit_or_flush(commit_now)
 
-    def get_user_list(self, username="") -> Sequence[AppUser]:
+    def get_user_list(self, query_dict={}) -> Sequence[AppUser]:
+        username = query_dict.get("username", "")
+
         if len(username) > 0:
             return AppUser.query.filter(
                 AppUser.username.contains(username)

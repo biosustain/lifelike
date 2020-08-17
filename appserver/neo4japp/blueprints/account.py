@@ -43,9 +43,21 @@ def create_user(req: UserRequest):
 @bp.route('/', methods=['GET'])
 @auth.login_required
 def list_users():
-    username = request.args.get('filter', "")
+    """
+       Currently only support query around username
+       The paramters must be laid in order by how list
+       of fields and filters align into key, val pair
+    """
+
+    fields = request.args.getlist("fields")
+    fields = fields if len(fields) else ["username"]
+    filters = request.args.getlist("filters")
+    filters = filters if len(filters) else [""]
+
+    query_dict = dict(zip(fields, filters))
+
     account_dao = get_account_service()
-    users = [user.to_dict() for user in account_dao.get_user_list(username)]
+    users = [user.to_dict() for user in account_dao.get_user_list(query_dict)]
     return jsonify(result=users, status_code=200)
 
 

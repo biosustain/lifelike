@@ -56,9 +56,14 @@ export class AccountService implements OnDestroy {
         ).pipe(map(resp => resp.result));
     }
 
+    /**
+     * Return list of users
+     * @param username - optional val to query against list of users
+     */
     listOfUsers(username: string = ''): Observable<AppUser[]> {
+
         const hyperlink = username.length >= 1 ?
-          `${this.accountApi}/?filter=${username}` :
+          `${this.accountApi}/?fields=username&filters=${username}` :
           `${this.accountApi}/`;
 
         return this.http.get<{result: AppUser[]}>(
