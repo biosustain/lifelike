@@ -73,6 +73,7 @@ services:
             - frontend
             - backend
         depends_on:
+            - elasticsearch
             - database
             - pgdatabase
             - redis
