@@ -120,7 +120,7 @@ export class MapEditorComponent extends MapViewComponent<KnowledgeMap> implement
     }, () => {
     });
   }
-  
+
   mapVersionDialog() {
     const dialogRef = this.modalService.open(MapVersionDialogComponent);
     dialogRef.componentInstance.map = cloneDeep(this.map);

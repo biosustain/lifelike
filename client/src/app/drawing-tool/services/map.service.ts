@@ -97,7 +97,7 @@ export class MapService extends AbstractService {
   getMapVersions(
     projectName: string,
     hashId: string,
-  ): Observable<any>{
+  ): Observable<any> {
     return this.http.get(
       `${this.MAPS_BASE_URL}/${encodeURIComponent(
         projectName

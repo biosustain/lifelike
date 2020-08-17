@@ -22,7 +22,7 @@ import { KnowledgeMapStyle } from 'app/graph-viewer/styles/knowledge-map-style';
     './map-version-dialog.component.scss',
   ],
 })
-export class MapVersionDialogComponent extends CommonFormDialogComponent implements OnInit, OnDestroy{
+export class MapVersionDialogComponent extends CommonFormDialogComponent implements OnInit, OnDestroy {
   @Input() currentMap: KnowledgeMap;
   @Input() projectName: string;
 
@@ -32,7 +32,7 @@ export class MapVersionDialogComponent extends CommonFormDialogComponent impleme
   readonly form: FormGroup = new FormGroup({
     version: new FormControl('', Validators.required),
   });
-  
+
   public readonly loadTask: BackgroundTask<
     void,
     {versions: KnowledgeMap[]}
@@ -42,12 +42,15 @@ export class MapVersionDialogComponent extends CommonFormDialogComponent impleme
   private versionMaps: KnowledgeMap[];
   mapToPreview: KnowledgeMap;
   graphCanvas: CanvasGraphView;
-  isMapVisible: boolean = false;
+  isMapVisible = false;
   errorHandler: any;
 
-  constructor(modal: NgbActiveModal, messageDialog: MessageDialog, private readonly mapService: MapService,
+  constructor(
+    modal: NgbActiveModal,
+    messageDialog: MessageDialog,
+    private readonly mapService: MapService,
     readonly ngZone: NgZone,
-    ) {
+  ) {
     super(modal, messageDialog);
   }
 
@@ -88,10 +91,8 @@ export class MapVersionDialogComponent extends CommonFormDialogComponent impleme
     });
   }
 
-  preview(){
+  preview() {
     this.isMapVisible = true;
-    console.log(this.isMapVisible);
-    
     this.mapToPreview = this.findMap();
     this.graphCanvas.setGraph(this.mapToPreview.graph);
     this.graphCanvas.zoomToFit(0);
@@ -100,9 +101,9 @@ export class MapVersionDialogComponent extends CommonFormDialogComponent impleme
   getValue(): KnowledgeMap {
     return this.findMap();
   }
-  
+
   findMap(): KnowledgeMap {
     const date = this.form.value.version.substring(15);
-    return this.versionMaps.filter((version) => version.date_modified == date)[0];
+    return this.versionMaps.filter((version) => version.date_modified === date)[0];
   }
 }
