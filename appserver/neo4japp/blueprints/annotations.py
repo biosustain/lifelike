@@ -36,7 +36,7 @@ def export_global_inclusions():
 
         if inclusion.file_id is not None:
             domain = os.environ.get('DOMAIN')
-            hyperlink = f'{domain}:5000/files/download/{inclusion.file_id}'
+            hyperlink = f'{domain}/api/files/download/{inclusion.file_id}'
 
         missing_data = any([
             inclusion.annotation['meta'].get('id', None) is None,
@@ -45,9 +45,7 @@ def export_global_inclusions():
 
         if missing_data:
             current_app.logger.warning(
-                f'Found exclusion in the global list with missing data: \n' +
-                f'\tID: {inclusion.annotation["meta"].get("id", "")}\n' +
-                f'\tPrimary Link: {inclusion.annotation["meta"].get("primaryLink", "")}\n'
+                f'Found inclusion in the global list with missing data:\n{inclusion.to_dict()}'
             )
 
         return {
@@ -88,7 +86,7 @@ def export_global_exclusions():
 
         if exclusion.file_id is not None:
             domain = os.environ.get('DOMAIN')
-            hyperlink = f'{domain}:5000/files/download/{exclusion.file_id}'
+            hyperlink = f'{domain}/api/files/download/{exclusion.file_id}'
 
         missing_data = any([
             exclusion.annotation.get('text', None) is None,
@@ -98,10 +96,7 @@ def export_global_exclusions():
 
         if missing_data:
             current_app.logger.warning(
-                f'Found exclusion in the global list with missing data: \n' +
-                f'\tTerm: {exclusion.annotation.get("text", "")}\n' +
-                f'\tType: {exclusion.annotation.get("type", "")}\n' +
-                f'\tExclusion Date: {exclusion.annotation.get("exclusion_date", "")}\n'
+                f'Found exclusion in the global list with missing data:\n{exclusion.to_dict()}'
             )
 
         return {
