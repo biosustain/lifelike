@@ -4,7 +4,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { AdminPanelComponent } from 'app/admin/components/admin-panel.component';
 import { UserFileImportComponent } from 'app/user-file-import/components/user-file-import.component';
 import { VisualizationComponent } from 'app/visualization/containers/visualization/visualization.component';
-import { SearchComponent } from 'app/search/components/search.component';
+import { GraphSearchComponent } from 'app/search/components/graph-search.component';
 import { FileBrowserComponent } from 'app/file-browser/components/file-browser.component';
 import { LoginComponent } from 'app/auth/components/login.component';
 import { DashboardComponent } from 'app/dashboard.component';
@@ -70,8 +70,8 @@ const routes: Routes = [
     },
   },
   {
-    path: 'search',
-    component: SearchComponent,
+    path: 'search/graph',
+    component: GraphSearchComponent,
     data: {
       title: 'Knowledge Graph Search',
       fontAwesomeIcon: 'search',
@@ -205,6 +205,7 @@ const routes: Routes = [
   {path: 'dt/map/edit/:hash_id', redirectTo: 'projects/beta-project/maps/:hash_id/edit', pathMatch: 'full'},
   {path: 'neo4j-upload', redirectTo: 'kg-visualizer/upload', pathMatch: 'full'},
   {path: 'neo4j-visualizer', redirectTo: 'kg-visualizer', pathMatch: 'full'},
+  {path: 'search', redirectTo: 'search/graph', pathMatch: 'full'},
 ];
 
 @NgModule({
