@@ -26,8 +26,9 @@ from neo4japp.database import (
     get_annotations_service,
     get_annotations_pdf_parser,
     get_bioc_document_service,
-    get_lmdb_dao,
     get_excel_export_service,
+    get_lmdb_dao,
+    get_neo4j_service_dao,
 )
 from neo4japp.data_transfer_objects import FileUpload
 from neo4japp.exceptions import (
@@ -54,7 +55,7 @@ from neo4japp.request_schemas.annotations import (
 )
 from neo4japp.services.indexing import index_pdf
 from neo4japp.utils.network import read_url
-from neo4japp.services.annotations.constants import AnnotationMethod
+from neo4japp.services.annotations.constants import AnnotationMethod, EntityType
 from neo4japp.services.annotations.manual_annotations import ManualAnnotationsService
 from neo4japp.util import jsonify_with_class, SuccessResponse
 from flask_apispec import use_kwargs, marshal_with
@@ -724,4 +725,47 @@ def export_included_annotations():
     response.headers['Content-Type'] = exporter.mimetype
     response.headers['Content-Disposition'] = \
         f'attachment; filename={exporter.get_filename("included_annotations")}'
+    yield response
+
+
+@bp.route('/<string:project_name>/<string:file_id>/genes')
+@auth.login_required
+@requires_project_permission(AccessActionType.READ)
+def get_gene_list_from_file(project_name, file_id):
+    project = Projects.query.filter(Projects.project_name == project_name).one_or_none()
+    if project is None:
+        raise RecordNotFoundException(f'Project {project_name} not found')
+
+    user = g.current_user
+
+    # yield to requires_project_permission
+    yield user, project
+
+    file = Files.query.filter_by(file_id=file_id, project=project.id).one_or_none()
+    if not file:
+        raise RecordNotFoundException('File does not exist')
+
+    combined_annotations = ManualAnnotationsService.get_combined_annotations(project.id, file_id)
+    gene_ids = {}
+    for annotation in combined_annotations:
+        if annotation['meta']['type'] == EntityType.Gene.value:
+            gene_id = annotation['meta']['id']
+            if gene_ids.get(gene_id, None) is not None:
+                gene_ids[gene_id] += 1
+            else:
+                gene_ids[gene_id] = 1
+
+    neo4j = get_neo4j_service_dao()
+    gene_organism_pairs = neo4j.get_organisms_from_gene_ids(
+        gene_ids=list(gene_ids.keys())
+    )
+    sorted_pairs = sorted(gene_organism_pairs, key=lambda pair: gene_ids[pair['gene_id']], reverse=True)  # noqa
+
+    result = 'gene_id\tgene_name\torganism_id\torganism_name\tgene_annotation_count\n'
+    for pair in sorted_pairs:
+        result += f"{pair['gene_id']}\t{pair['gene_name']}\t{pair['taxonomy_id']}\t{pair['species_name']}\t{gene_ids[pair['gene_id']]}\n"  # noqa
+
+    response = make_response(result)
+    response.headers['Content-Type'] = 'text/csv'
+
     yield response
