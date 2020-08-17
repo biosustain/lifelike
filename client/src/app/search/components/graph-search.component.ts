@@ -13,10 +13,10 @@ import { tap } from 'rxjs/operators';
 import { createSearchParamsFromQuery, getQueryParams } from '../utils/search';
 
 @Component({
-  selector: 'app-search',
-  templateUrl: './search.component.html',
+  selector: 'app-graph-search',
+  templateUrl: './graph-search.component.html',
 })
-export class SearchComponent implements OnInit, OnDestroy {
+export class GraphSearchComponent implements OnInit, OnDestroy {
   @ViewChild('body', {static: false}) body: ElementRef;
 
   readonly loadTask: BackgroundTask<SearchParameters, FTSResult> = new BackgroundTask(params => {
