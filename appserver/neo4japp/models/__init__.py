@@ -16,3 +16,4 @@ from .projects import projects_collaborator_role
 from .neo4j import GraphNode
 from .neo4j import GraphRelationship
 from .organism_match import OrganismGeneMatch
+from .entity_resources import DomainURLsMap, AnnotationStyle
