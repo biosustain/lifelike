@@ -19,12 +19,14 @@ user_role = db.Table(
         'appuser_id',
         db.Integer,
         db.ForeignKey('appuser.id', ondelete='CASCADE'),
+        index=True,
         primary_key=True,
     ),
     db.Column(
         'app_role_id',
         db.Integer,
         db.ForeignKey('app_role.id', ondelete='CASCADE'),
+        index=True,
         primary_key=True,
     )
 )

@@ -160,6 +160,19 @@ def penicillins(graph):
 
 
 @pytest.fixture(scope='function')
+def oxygen(graph):
+    """Creates a chemical node and adds it to the graph."""
+    tx = graph.begin()
+
+    oxygen = Node('Chemical', name='Oxygen', id='MESH:D010100')
+
+    tx.create(oxygen)
+    tx.commit()
+
+    return oxygen
+
+
+@pytest.fixture(scope='function')
 def pomc(graph):
     """Creates a gene node and adds it to the graph."""
     tx = graph.begin()
@@ -225,6 +238,27 @@ def penicillins_to_gas_gangrene_alleviates_edge(
 
 
 @pytest.fixture(scope='function')
+def oxygen_to_gas_gangrene_treatment_edge(
+    graph,
+    gas_gangrene,
+    oxygen,
+):
+    """Creates an ASSOCIATED relationship from oxygen to gas
+    gangrene and adds it to the graph."""
+
+    tx = graph.begin()
+
+    oxygen_to_gas_gangrene_treatment_edge = Relationship(
+        oxygen, 'ASSOCIATED', gas_gangrene, assoc_type='Pa', description='treatment/therapy (including investigatory)',  # noqa
+    )
+
+    tx.create(oxygen_to_gas_gangrene_treatment_edge)
+    tx.commit()
+
+    return oxygen_to_gas_gangrene_treatment_edge
+
+
+@pytest.fixture(scope='function')
 def penicillins_to_gas_gangrene_treatment_edge(
     graph,
     gas_gangrene,
@@ -251,6 +285,8 @@ def penicillins_to_gas_gangrene_treatment_edge(
 def gas_gangrene_with_associations_and_references(
     graph,
     gas_gangrene,
+    oxygen,
+    oxygen_to_gas_gangrene_treatment_edge,
     penicillins,
     pomc,
     pomc_to_gas_gangrene_pathogenesis_edge,
@@ -260,6 +296,12 @@ def gas_gangrene_with_associations_and_references(
     tx = graph.begin()
 
     # Association Nodes
+    oxygen_to_gas_gangrene_association_node = Node(
+        'Association',
+        assoc_type='J',
+        description='treatment/therapy (including investigatory)',
+        id=1089126,
+    )
     pomc_to_gas_gangrene_association_node = Node(
         'Association',
         assoc_type='J',
@@ -280,6 +322,20 @@ def gas_gangrene_with_associations_and_references(
     )
 
     # Snippet Nodes
+    oxygen_to_gas_gangrene_snippet_node1 = Node(
+        'Snippet',
+        entry1_text='oxygen',
+        entry2_text='gas gangrene',
+        id=7430189,
+        sentence='In this study , we aimed to investigate the effect of HBO2...',
+    )
+    oxygen_to_gas_gangrene_snippet_node2 = Node(
+        'Snippet',
+        entry1_text='oxygen',
+        entry2_text='gas gangrene',
+        id=1890743,
+        sentence='Hyperbaric oxygen therapy has an adjunctive role...',
+    )
     penicillins_to_gas_gangrene_snippet_node1 = Node(
         'Snippet',
         entry1_text='penicillin',
@@ -310,6 +366,11 @@ def gas_gangrene_with_associations_and_references(
     )
 
     # Publication Nodes
+    oxygen_to_gas_gangrene_publication_node = Node(
+        'Publication',
+        id=3,
+        pub_year=2019,
+    )
     penicillins_to_gas_gangrene_publication_node1 = Node(
         'Publication',
         id=1,
@@ -321,6 +382,9 @@ def gas_gangrene_with_associations_and_references(
     )
 
     # Entity -> Association Relationships
+    oxygen_to_association_edge = Relationship(
+        oxygen, 'HAS_ASSOCIATION', oxygen_to_gas_gangrene_association_node,
+    )
     pomc_to_association_edge = Relationship(
         pomc, 'HAS_ASSOCIATION', pomc_to_gas_gangrene_association_node,
     )
@@ -333,11 +397,15 @@ def gas_gangrene_with_associations_and_references(
         penicillins, 'HAS_ASSOCIATION', penicillins_to_gas_gangrene_association_node2,
     )
 
+    tx.create(oxygen_to_association_edge)
     tx.create(pomc_to_association_edge)
     tx.create(penicillins_to_association_edge1)
     tx.create(penicillins_to_association_edge2)
 
     # Association -> Entity Relationships
+    oxygen_association_to_gas_gangrene_edge = Relationship(
+        oxygen_to_gas_gangrene_association_node, 'HAS_ASSOCIATION', gas_gangrene,
+    )
     pomc_association_to_gas_gangrene_edge = Relationship(
         pomc_to_gas_gangrene_association_node, 'HAS_ASSOCIATION', gas_gangrene,
     )
@@ -350,11 +418,18 @@ def gas_gangrene_with_associations_and_references(
         penicillins_to_gas_gangrene_association_node2, 'HAS_ASSOCIATION', gas_gangrene,
     )
 
+    tx.create(oxygen_association_to_gas_gangrene_edge)
     tx.create(pomc_association_to_gas_gangrene_edge)
     tx.create(penicillins_association_to_gas_gangrene_edge1)
     tx.create(penicillins_association_to_gas_gangrene_edge2)
 
     # Association <- Snippet Relationships
+    oxygen_treatment_association_to_snippet_edge1 = Relationship(
+        oxygen_to_gas_gangrene_snippet_node1, 'PREDICTS', oxygen_to_gas_gangrene_association_node,
+    )
+    oxygen_treatment_association_to_snippet_edge2 = Relationship(
+        oxygen_to_gas_gangrene_snippet_node2, 'PREDICTS', oxygen_to_gas_gangrene_association_node,
+    )
     penicillins_alleviates_reduces_association_to_snippet_edge = Relationship(
         penicillins_to_gas_gangrene_snippet_node1, 'PREDICTS', penicillins_to_gas_gangrene_association_node1,  # noqa
         raw_score=2, normalized_score=0.385
@@ -375,12 +450,20 @@ def gas_gangrene_with_associations_and_references(
         raw_score=3, normalized_score=0.456
     )
 
+    tx.create(oxygen_treatment_association_to_snippet_edge1)
+    tx.create(oxygen_treatment_association_to_snippet_edge2)
     tx.create(penicillins_alleviates_reduces_association_to_snippet_edge)
     tx.create(penicillins_alleviates_reduces_association_to_snippet_edge2)
     tx.create(penicillins_treatment_association_to_snippet_edge)
     tx.create(penicillins_treatment_association_to_snippet_edge2)
 
     # Snippet -> Publication Relationships
+    oxygen_treatment_snippet_to_publication_edge1 = Relationship(
+        oxygen_to_gas_gangrene_snippet_node1, 'IN_PUB', oxygen_to_gas_gangrene_publication_node
+    )
+    oxygen_treatment_snippet_to_publication_edge2 = Relationship(
+        oxygen_to_gas_gangrene_snippet_node2, 'IN_PUB', oxygen_to_gas_gangrene_publication_node
+    )
     penicillins_alleviates_reduces_snippet_to_publication_edge = Relationship(
         penicillins_to_gas_gangrene_snippet_node1, 'IN_PUB', penicillins_to_gas_gangrene_publication_node1  # noqa
     )
@@ -397,6 +480,8 @@ def gas_gangrene_with_associations_and_references(
         penicillins_to_gas_gangrene_snippet_node4, 'IN_PUB', penicillins_to_gas_gangrene_publication_node2  # noqa
     )
 
+    tx.create(oxygen_treatment_snippet_to_publication_edge1)
+    tx.create(oxygen_treatment_snippet_to_publication_edge2)
     tx.create(penicillins_alleviates_reduces_snippet_to_publication_edge)
     tx.create(penicillins_alleviates_reduces_snippet_to_publication_edge2)
     tx.create(penicillins_treatment_snippet_to_publication_edge)
@@ -562,6 +647,29 @@ def gas_gangrene_duplicate_vis_node(gas_gangrene):
 
 
 @pytest.fixture(scope='function')
+def oxygen_duplicate_vis_node(oxygen):
+    """Creates a DuplicateVisNode from oxygen"""
+    node_as_graph_node = GraphNode.from_py2neo(
+        oxygen,
+        display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label_from_node(oxygen)])
+    )
+
+    oxygen_duplicate_vis_node = DuplicateVisNode(
+        id=f'duplicateNode:{node_as_graph_node.id}',
+        label=node_as_graph_node.label,
+        data=node_as_graph_node.data,
+        sub_labels=node_as_graph_node.sub_labels,
+        display_name=node_as_graph_node.display_name,
+        primary_label=node_as_graph_node.sub_labels[0],
+        color=dict(),
+        expanded=False,
+        duplicate_of=node_as_graph_node.id
+    )
+
+    return oxygen_duplicate_vis_node
+
+
+@pytest.fixture(scope='function')
 def penicillins_vis_node(penicillins):
     """Creates a VisNode from penicillins"""
     node_as_graph_node = GraphNode.from_py2neo(
@@ -649,6 +757,33 @@ def pomc_duplicate_vis_node(pomc):
     )
 
     return pomc_duplicate_vis_node
+
+
+@pytest.fixture(scope='function')
+def oxygen_to_gas_gangrene_treatment_as_duplicate_vis_edge(
+    oxygen_to_gas_gangrene_treatment_edge,
+):
+    """Creates a DuplicateVisEdge from the oxygen to gas_gangrene
+    alleviates/reduces relationship."""
+    edge_as_graph_relationship = GraphRelationship.from_py2neo(
+        oxygen_to_gas_gangrene_treatment_edge,
+    )
+
+    oxygen_to_gas_gangrene_treatment_as_duplicate_vis_edge = DuplicateVisEdge(
+        id=edge_as_graph_relationship.id,
+        label=edge_as_graph_relationship.data['description'],
+        data=edge_as_graph_relationship.data,
+        to=f'duplicateNode:{edge_as_graph_relationship.to}',
+        from_=f'duplicateNode:{edge_as_graph_relationship._from}',
+        to_label='Disease',
+        from_label='Chemical',
+        arrows='to',
+        duplicate_of=edge_as_graph_relationship.id,
+        original_from=edge_as_graph_relationship._from,
+        original_to=edge_as_graph_relationship.to,
+    )
+
+    return oxygen_to_gas_gangrene_treatment_as_duplicate_vis_edge
 
 
 @pytest.fixture(scope='function')
@@ -806,12 +941,26 @@ def penicillins_to_gas_gangrene_treatment_as_duplicate_vis_edge(
 
 @pytest.fixture(scope='function')
 def gas_gangrene_treatment_cluster_node_edge_pairs(
+    oxygen_duplicate_vis_node,
+    oxygen_to_gas_gangrene_treatment_as_duplicate_vis_edge,
     penicillins_duplicate_vis_node,
     penicillins_to_gas_gangrene_treatment_as_duplicate_vis_edge
 ):
     """Creates a list of DuplicateNodeEdgePairs. Used for testing the
     reference table endpoints and services."""
     return [
+        ReferenceTablePair(
+            node=ReferenceTablePair.NodeData(
+                id=oxygen_duplicate_vis_node.id,
+                display_name=oxygen_duplicate_vis_node.display_name,
+                label=oxygen_duplicate_vis_node.primary_label
+            ),
+            edge=ReferenceTablePair.EdgeData(
+                original_from=oxygen_to_gas_gangrene_treatment_as_duplicate_vis_edge.original_from,  # noqa
+                original_to=oxygen_to_gas_gangrene_treatment_as_duplicate_vis_edge.original_to,
+                label=oxygen_to_gas_gangrene_treatment_as_duplicate_vis_edge.label,
+            ),
+        ),
         ReferenceTablePair(
             node=ReferenceTablePair.NodeData(
                 id=penicillins_duplicate_vis_node.id,
