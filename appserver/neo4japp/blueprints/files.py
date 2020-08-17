@@ -254,6 +254,27 @@ def upload_pdf(request, project_name: str):
     )
 
 
+@bp.route('/download/<int:file_content_id>', methods=['GET'])
+@auth.login_required
+@requires_role('admin')
+def download(file_content_id: int):
+    yield g.current_user
+
+    try:
+        entry = db.session.query(
+            FileContent.raw_file
+        ).filter(
+            FileContent.id == file_content_id,
+        ).one()
+    except NoResultFound:
+        raise RecordNotFoundException('Requested PDF file not found.')
+
+    res = make_response(entry.raw_file)
+    res.headers['Content-Type'] = 'application/pdf'
+
+    yield res
+
+
 @newbp.route('/<string:project_name>/files', methods=['GET'])
 @auth.login_required
 @requires_project_permission(AccessActionType.READ)
