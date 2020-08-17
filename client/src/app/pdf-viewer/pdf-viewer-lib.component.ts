@@ -495,7 +495,6 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
     }
   }
 
-  @HostListener('window:mouseup', ['$event'])
   mouseUp = event => {
     const targetTagName = event.target.tagName;
     if (targetTagName === 'INPUT') {
@@ -706,6 +705,10 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
 
   incrementZoom(amount: number) {
     this.zoom += amount;
+  }
+
+  setZoom(amount: number) {
+    this.zoom = amount;
   }
 
   rotate(angle: number) {

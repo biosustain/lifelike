@@ -6,16 +6,14 @@
         Create User
       </button>
       <div class="d-inline-block" ngbTooltip="Not yet implemented.">
-        <button class="btn btn-primary ml-2" [disabled]="true" ngbTooltip="Not yet implemented.">
+        <button class="btn btn-secondary ml-2" [disabled]="true" ngbTooltip="Not yet implemented.">
           <i class="fa fa-fw fa-pencil"></i> Edit
         </button>
-        <button class="btn btn-outline-secondary ml-2" [disabled]="true" ngbTooltip="Not yet implemented.">
-          Delete
+        <button class="btn btn-secondary ml-2" [disabled]="true" ngbTooltip="Not yet implemented.">
+          <i class="fa fa-fw fa-trash"></i>
         </button>
       </div>
-    </div>
-    <div class="ml-auto">
-      <button type="button" class="btn btn-outline-secondary ml-1" (click)="this.refresh()"
+      <button type="button" class="btn btn-secondary ml-2" (click)="this.refresh()"
               ngbTooltip="Refresh the results">
         <i class="fa fa-sync"></i>
       </button>
