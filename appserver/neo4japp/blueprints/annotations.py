@@ -1,6 +1,6 @@
 import os
 
-from flask import Blueprint, g, make_response
+from flask import Blueprint, current_app, g, make_response
 
 from neo4japp.blueprints.auth import auth
 from neo4japp.blueprints.permissions import requires_role
@@ -37,6 +37,18 @@ def export_global_inclusions():
         if inclusion.file_id is not None:
             domain = os.environ.get('DOMAIN')
             hyperlink = f'{domain}:5000/files/download/{inclusion.file_id}'
+
+        missing_data = any([
+            inclusion.annotation['meta'].get('id', None) is None,
+            inclusion.annotation['meta'].get('primaryLink', None) is None
+        ])
+
+        if missing_data:
+            current_app.logger.warning(
+                f'Found exclusion in the global list with missing data: \n' +
+                f'\tID: {inclusion.annotation["meta"].get("id", "")}\n' +
+                f'\tPrimary Link: {inclusion.annotation["meta"].get("primaryLink", "")}\n'
+            )
 
         return {
             'id': inclusion.annotation['meta'].get('id', ''),
@@ -77,6 +89,20 @@ def export_global_exclusions():
         if exclusion.file_id is not None:
             domain = os.environ.get('DOMAIN')
             hyperlink = f'{domain}:5000/files/download/{exclusion.file_id}'
+
+        missing_data = any([
+            exclusion.annotation.get('text', None) is None,
+            exclusion.annotation.get('type', None) is None,
+            exclusion.annotation.get('idHyperlink', None) is None
+        ])
+
+        if missing_data:
+            current_app.logger.warning(
+                f'Found exclusion in the global list with missing data: \n' +
+                f'\tTerm: {exclusion.annotation.get("text", "")}\n' +
+                f'\tType: {exclusion.annotation.get("type", "")}\n' +
+                f'\tExclusion Date: {exclusion.annotation.get("exclusion_date", "")}\n'
+            )
 
         return {
             'term': exclusion.annotation.get('text', ''),
