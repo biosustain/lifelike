@@ -7,7 +7,6 @@ def test_expand(client, gas_gangrene):
         '/neo4j/expand',
         data=json.dumps(dict(
             node_id=1,
-            limit=10,
             filter_labels=['Chemical', 'Disease', 'Gene'],
         )), content_type='application/json'
     )

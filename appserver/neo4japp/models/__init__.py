@@ -17,3 +17,4 @@ from .neo4j import GraphNode
 from .neo4j import GraphRelationship
 from .organism_match import OrganismGeneMatch
 from .annotations import GlobalList
+from .entity_resources import DomainURLsMap, AnnotationStyle
