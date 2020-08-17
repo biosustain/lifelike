@@ -34,7 +34,6 @@ from .constants import (
     COMMON_TYPOS,
     UNIPROT_LINK,
     WIKIPEDIA_LINK,
-    # LOWERCASE_FIRST_LETTER_UPPERCASE_LAST_LETTER_GENE_LENGTH,
     NLP_ENDPOINT,
 )
 from .lmdb_dao import LMDBDao
@@ -1410,14 +1409,11 @@ class AnnotationsService:
                 if annotation.keyword.isupper():
                     if text_in_document == annotation.keyword:
                         fixed_annotations.append(annotation)
-                # len(text_in_document) == LOWERCASE_FIRST_LETTER_UPPERCASE_LAST_LETTER_GENE_LENGTH
-                # does this only apply to genes with specific length?
                 elif isinstance(annotation.meta, GeneAnnotation.GeneMeta) and \
                         annotation.meta.category == OrganismCategory.Bacteria.value:
-                    # bacteria genes are in the from of cysB, algA, deaD, etc
-                    # there are also bacterial genes that do not end
-                    # with an uppercase, e.g apt - these will not be annotated
-                    if text_in_document[0].islower() and text_in_document[-1].isupper():  # noqa
+                    # do exact case matching for bacterial genes
+                    # TODO: make this a generic gene rule?
+                    if text_in_document == annotation.keyword:
                         fixed_annotations.append(annotation)
                 else:
                     fixed_annotations.append(annotation)
