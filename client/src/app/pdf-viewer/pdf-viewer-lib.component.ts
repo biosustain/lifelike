@@ -495,7 +495,6 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
     }
   }
 
-  @HostListener('window:mouseup', ['$event'])
   mouseUp = event => {
     const targetTagName = event.target.tagName;
     if (targetTagName === 'INPUT') {
