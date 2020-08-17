@@ -101,7 +101,7 @@ class ManualAnnotationsService:
             ManualAnnotationsService.add_to_global_list(
                 annotation_to_add,
                 InclusionExclusionType.INCLUSION.value,
-                file.id
+                file.content_id
             )
 
         file.custom_annotations = [*inclusions, *file.custom_annotations]
@@ -169,7 +169,7 @@ class ManualAnnotationsService:
             ManualAnnotationsService.add_to_global_list(
                 excluded_annotation,
                 InclusionExclusionType.EXCLUSION.value,
-                file.id
+                file.content_id
             )
 
         file.excluded_annotations = [excluded_annotation, *file.excluded_annotations]
