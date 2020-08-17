@@ -1,15 +1,15 @@
 <ng-container *ngIf="(currentUsers$ | async) as user">
-  <div class="module module-centered">
-    <div class="module-header-container">
-      <div class="module-header">
+  <div class="module" appContainerBreakpoints>
+    <div class="module-header">
+      <div class="module-title-bar">
         <div class="module-title">
           User Settings
         </div>
       </div>
     </div>
 
-    <div class="module-body-container">
-      <div class="module-body">
+    <div class="module-body flex-fill overflow-auto">
+      <div class="module-body-container">
         <ul ngbNav #nav="ngbNav" [(activeId)]="activeTab" class="nav-tabs">
           <li ngbNavItem="profile">
             <a ngbNavLink>Profile</a>

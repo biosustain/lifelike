@@ -1,11 +1,9 @@
-import { AbstractCanvasBehavior, BehaviorResult } from '../../behaviors';
+import { AbstractCanvasBehavior } from '../../behaviors';
 import { CanvasGraphView } from '../canvas-graph-view';
 import { NodeCreation } from '../../../actions/nodes';
-import { isCtrlOrMetaPressed } from 'app/shared/utils';
 import { makeid } from 'app/drawing-tool/services';
 import { GraphEntity, GraphEntityType, UniversalGraphNode } from '../../../../drawing-tool/services/interfaces';
 import { CompoundAction, GraphAction } from '../../../actions/actions';
-import { smartTruncate } from '../../../utils/strings';
 
 /**
  * We use this string to know that it's our own JSON.
@@ -49,8 +47,8 @@ export class PasteKeyboardShortcut extends AbstractCanvasBehavior {
                   ...node.data,
                   x: position.x,
                   y: position.y,
-                }
-              }, true
+                },
+              }, true,
             ));
           }
         }
@@ -63,7 +61,7 @@ export class PasteKeyboardShortcut extends AbstractCanvasBehavior {
 
     return new NodeCreation(
       `Paste content from clipboard`, {
-        display_name: smartTruncate(content, 20),
+        display_name: 'Note',
         hash: makeid(),
         label: 'note',
         sub_labels: [],
@@ -71,8 +69,8 @@ export class PasteKeyboardShortcut extends AbstractCanvasBehavior {
           x: position.x,
           y: position.y,
           detail: content,
-        }
-      }, true
+        },
+      }, true,
     );
   }
 
