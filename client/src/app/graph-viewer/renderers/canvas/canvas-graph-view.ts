@@ -402,6 +402,38 @@ export class CanvasGraphView extends GraphView {
     this.applyZoomToFit(duration, padding);
   }
 
+
+  private panToNode(node: UniversalGraphNode, duration: number = 1500, padding = 50) {
+    this.previousZoomToFitPadding = padding;
+
+    console.log('panning to node');
+
+    const canvasWidth = this.canvas.width;
+    const canvasHeight = this.canvas.height;
+
+    const {minX, minY, maxX, maxY} = this.getNodeBoundingBox(this.nodes, padding);
+
+    let select = d3.select(this.canvas);
+
+    // Calling transition() causes a delay even if duration = 0
+    if (duration > 0) {
+      select = select.transition().duration(duration);
+    }
+
+    select.call(
+      this.zoom.transform,
+      d3.zoomIdentity
+        // move to center of canvas
+        .translate(canvasWidth / 2, canvasHeight / 2)
+        .scale(40)
+        .translate(-minX - node.data.x, -minY - node.data.y),
+    );
+
+    this.invalidateAll();
+    this.requestRender();
+  }
+
+
   /**
    * The real zoom-to-fit.
    */
