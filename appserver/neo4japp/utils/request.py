@@ -49,7 +49,8 @@ def parse_limit(value: str, upper: int, default_value: int = 10):
         return min(upper, int(value))
 
 
-def paginate_from_args(query, args, columns: Dict[str, Column], default_sort: str, upper_limit: int):
+def paginate_from_args(query, args, columns: Dict[str, Column],
+                       default_sort: str, upper_limit: int):
     sort = parse_sort(args.get('sort'), columns, default_sort)
     page = parse_page(args.get('page'))
     limit = parse_limit(args.get('limit'), upper_limit)
