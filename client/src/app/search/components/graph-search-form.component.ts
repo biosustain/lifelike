@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { AbstractControl, FormControl, FormGroup, Validators } from '@angular/forms';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Domain, EntityType, SearchParameters } from '../../interfaces';
 import { DOMAINS, ENTITY_TYPES } from '../../shared/database';
 import { MessageType } from '../../interfaces/message-dialog.interface';
@@ -7,10 +7,10 @@ import { MessageDialog } from '../../shared/services/message-dialog.service';
 import { nonEmptyList } from '../../shared/validators';
 
 @Component({
-  selector: 'app-search-bar',
-  templateUrl: './search-form.component.html',
+  selector: 'app-graph-search-form',
+  templateUrl: './graph-search-form.component.html',
 })
-export class SearchFormComponent {
+export class GraphSearchFormComponent {
   domainChoices: Domain[] = DOMAINS.concat().sort((a, b) => a.name.localeCompare(b.name));
   entityTypeChoices: EntityType[] = ENTITY_TYPES.concat().sort((a, b) => a.name.localeCompare(b.name));
   @Output() search = new EventEmitter<SearchParameters>();
