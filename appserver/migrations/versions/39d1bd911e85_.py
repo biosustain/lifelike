@@ -1,4 +1,4 @@
-"""empty message
+"""Create project version column 
 
 Revision ID: 39d1bd911e85
 Revises: 7fb303ae343b
