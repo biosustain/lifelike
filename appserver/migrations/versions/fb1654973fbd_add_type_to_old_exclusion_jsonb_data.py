@@ -1,7 +1,7 @@
 """Add type to old exclusion JSONB data
 
 Revision ID: fb1654973fbd
-Revises: 0d8dc6eed4c1
+Revises: 9118d3b6dba2
 Create Date: 2020-08-07 20:55:46.926012
 i
 """
@@ -18,7 +18,7 @@ from neo4japp.database import db
 
 # revision identifiers, used by Alembic.
 revision = 'fb1654973fbd'
-down_revision = '0d8dc6eed4c1'
+down_revision = '9118d3b6dba2'
 branch_labels = None
 depends_on = None
 
