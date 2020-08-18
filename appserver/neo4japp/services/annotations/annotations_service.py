@@ -394,6 +394,7 @@ class AnnotationsService:
             lookup_key = normalize_str(token.keyword).encode('utf-8')
 
         lowered_word = token.keyword.lower()
+        no_spaces_word = token.keyword.replace(' ', '')
 
         if len(lookup_key) > 2:
             # check species
@@ -414,11 +415,14 @@ class AnnotationsService:
                 else:
                     self.matched_species[token.keyword] = [token]
             else:
-                if self.custom_species and lowered_word not in SPECIES_EXCLUSION and token.keyword in self.custom_species:  # noqa
+                if self.custom_species and lowered_word not in SPECIES_EXCLUSION and no_spaces_word in self.custom_species:  # noqa
+                    # remove any whitespaces to be consistent because the data
+                    # from the client browser could sometimes parse
+                    # the PDF text without spaces
                     if token.keyword in self.matched_custom_species:
-                        self.matched_custom_species[token.keyword].append(token)
+                        self.matched_custom_species[no_spaces_word].append(token)
                     else:
-                        self.matched_custom_species[token.keyword] = [token]
+                        self.matched_custom_species[no_spaces_word] = [token]
 
             return species_val
 
@@ -1403,19 +1407,7 @@ class AnnotationsService:
                         fixed_annotations.append(annotation)
             elif isinstance(annotation, GeneAnnotation):
                 text_in_document = text_in_document[0]  # type: ignore
-                # if the matched keyword from LMDB is all caps
-                # check if the text from document is also all caps
-                # e.g `impact` matching to `IMPACT`
-                if annotation.keyword.isupper():
-                    if text_in_document == annotation.keyword:
-                        fixed_annotations.append(annotation)
-                elif isinstance(annotation.meta, GeneAnnotation.GeneMeta) and \
-                        annotation.meta.category == OrganismCategory.Bacteria.value:
-                    # do exact case matching for bacterial genes
-                    # TODO: make this a generic gene rule?
-                    if text_in_document == annotation.keyword:
-                        fixed_annotations.append(annotation)
-                else:
+                if text_in_document == annotation.keyword:
                     fixed_annotations.append(annotation)
             else:
                 fixed_annotations.append(annotation)
@@ -1494,8 +1486,11 @@ class AnnotationsService:
             EntityType.Species.value: True,
         }
 
+        # remove any whitespaces to be consistent because the data
+        # from the client browser could sometimes parse
+        # the PDF text without spaces
         self.custom_species = {
-            custom['meta']['allText']: custom['meta']['id'] for custom in custom_annotations
+            custom['meta']['allText'].replace(' ', ''): custom['meta']['id'] for custom in custom_annotations  # noqa
             if custom['meta']['type'] == EntityType.Species.value
         }
 
