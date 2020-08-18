@@ -154,7 +154,7 @@ def data_upgrades():
         # Create personal project for that user
         projects_id = conn.execute(
             t_projects.insert().values(
-                project_name="{}'s Personal Project".format(username),
+                project_name="{}-Personal-Project".format(username),
                 description="Personal Project folder",
                 users=[user_id],
             )
