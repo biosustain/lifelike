@@ -283,7 +283,6 @@ def update_project(hash_id: str, projects_name: str):
     db.session.add(project)
     db.session.add(project_version)
     db.session.flush()
-    
     db.session.commit()
 
     yield jsonify({'status': 'success'}), 200
