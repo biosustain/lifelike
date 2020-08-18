@@ -194,20 +194,20 @@ def add_project(projects_name: str):
     yield user, projects
 
     date_modified = datetime.strptime(
-        data.get("date_modified", ""),
-        "%Y-%m-%dT%H:%M:%S.%fZ"
+        data.get('date_modified', ''),
+        '%Y-%m-%dT%H:%M:%S.%fZ'
     ) if data.get(
-        "date_modified"
+        'date_modified'
     ) is not None else datetime.now()
 
     # Create new project
     project = Project(
-        author=f"{user.first_name} {user.last_name}",
-        label=data.get("label", ""),
-        description=data.get("description", ""),
+        author=f'{user.first_name} {user.last_name}',
+        label=data.get('label', ''),
+        description=data.get('description', ''),
         date_modified=date_modified,
-        public=data.get("public", False),
-        graph=data.get("graph", dict(nodes=[], edges=[])),
+        public=data.get('public', False),
+        graph=data.get('graph', dict(nodes=[], edges=[])),
         user_id=user.id,
         dir_id=dir_id,
         creation_date=datetime.now(),
@@ -273,11 +273,11 @@ def update_project(hash_id: str, projects_name: str):
     )
 
     # Update project's attributes
-    project.description = data.get("description", "")
-    project.label = data.get("label", "")
-    project.graph = data.get("graph", {"edges": [], "nodes": []})
+    project.description = data.get('description', '')
+    project.label = data.get('label', '')
+    project.graph = data.get('graph', {'edges': [], 'nodes': []})
     project.date_modified = datetime.now()
-    project.public = data.get("public", False)
+    project.public = data.get('public', False)
 
     # Commit to db
     db.session.add(project)

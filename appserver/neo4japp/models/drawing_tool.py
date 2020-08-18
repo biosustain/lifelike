@@ -6,6 +6,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy_searchable import make_searchable
 from sqlalchemy_utils.types import TSVectorType
 from datetime import datetime
+from neo4japp.constants import TIMEZONE
 
 
 Base = declarative_base()
@@ -27,7 +28,7 @@ class Project(RDBMSBase):
     dir_id = db.Column(db.Integer, db.ForeignKey('directory.id'), nullable=False)
     hash_id = db.Column(db.String(50), unique=True)
     search_vector = db.Column(TSVectorType('label'))
-    creation_date = db.Column(db.DateTime, default=datetime.now)
+    creation_date = db.Column(db.DateTime, default=datetime.now(TIMEZONE))
     versions = db.relationship('ProjectVersion', backref='project', lazy=True)
 
     def set_hash_id(self):
@@ -55,7 +56,7 @@ class ProjectVersion(RDBMSBase):
     dir_id = db.Column(db.Integer, db.ForeignKey('directory.id'), nullable=False)
     project_id = db.Column(db.Integer, db.ForeignKey('project.id'), nullable=False)
     search_vector = db.Column(TSVectorType('label'))
-    creation_date = db.Column(db.DateTime, default=datetime.now)
+    creation_date = db.Column(db.DateTime, default=datetime.now(TIMEZONE))
 
 
 class ProjectSchema(ma.ModelSchema):  # type: ignore
