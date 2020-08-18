@@ -569,7 +569,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
         const lowerX = rect.left;
         const lowerY = rect.bottom;
 
-        currentRect.height = rect.height;
+        currentRect.height = rect.height > currentRect.height ? rect.height : currentRect.height;
 
         if (startLowerX === null && startLowerY === null) {
           startLowerX = lowerX;
@@ -601,11 +601,11 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
         }
 
         currentRect.x = startLowerX;
-        currentRect.y = startLowerY - rect.height;
+        currentRect.y = startLowerY - currentRect.height;
 
         if (currentRect.width === 0) {
           currentRect.width = rect.width;
-        } else if (rect.width > prevRect.width || rect.width < prevRect.width) {
+        } else if (rect.width !== prevRect.width) {
           currentRect.width += rect.width;
         }
       }
