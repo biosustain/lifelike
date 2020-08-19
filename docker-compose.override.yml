@@ -42,6 +42,8 @@ services:
         ports:
             - "5000:5000"
         environment:
+            # Log Services
+            - FORMAT_AS_JSON=false
             # Flask
             - FLASK_APP=app
             - FLASK_APP_CONFIG=Development
