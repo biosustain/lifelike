@@ -24,7 +24,7 @@
       <div class="d-flex align-items-center justify-content-end" style="margin-top: 20px">
         <a
           class="snippet-link"
-          routerLink="/pdf-viewer/{{snippet.file_id}}"
+          routerLink="/projects/{{snippet.project_directory}}/files/{{snippet.file_id}}"
           target="_blank"> Internal Link</a>
         <a
           *ngIf="snippet.doi"
