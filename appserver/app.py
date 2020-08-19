@@ -2,8 +2,8 @@ import importlib
 import json
 import logging
 import os
-
 import click
+
 from sqlalchemy import MetaData, inspect, Table
 from sqlalchemy.sql.expression import text
 
@@ -13,6 +13,7 @@ from neo4japp.models import (
     AppUser,
     OrganismGeneMatch,
 )
+from neo4japp.utils.logger import EventLog
 
 app_config = os.environ['FLASK_APP_CONFIG']
 app = create_app(config=f'config.{app_config}')
@@ -22,6 +23,12 @@ logger = logging.getLogger(__name__)
 @app.route('/')
 def home():
     return 'Ouch! You hit me.'
+
+
+@app.before_request
+def request_navigator_log():
+    app.logger.info(
+        EventLog(event_type='user navigate').to_dict())
 
 
 @app.cli.command("seed")

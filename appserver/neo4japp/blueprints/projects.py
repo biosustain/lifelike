@@ -37,6 +37,7 @@ from neo4japp.models import (
     projects_collaborator_role, ProjectSchema,
 )
 from neo4japp.util import jsonify_with_class, SuccessResponse, CasePreservedDict
+from neo4japp.utils.logger import UserEventLog
 
 bp = Blueprint('projects', __name__, url_prefix='/projects')
 
@@ -89,7 +90,9 @@ def add_projects():
     )
 
     current_app.logger.info(
-        f'User created projects: <{g.current_user.email}:{projects.project_name}>')
+        f'User created projects: <{projects.project_name}>',
+        extra=UserEventLog(
+            username=g.current_user.username, event_type='projects create').to_dict())
 
     proj_service = get_projects_service()
     try:
