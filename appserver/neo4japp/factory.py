@@ -2,7 +2,6 @@ import logging
 import os
 import traceback
 import sentry_sdk
-from datetime import datetime
 from functools import partial
 
 from pythonjsonlogger import jsonlogger
@@ -32,7 +31,6 @@ from neo4japp.exceptions import (
     RecordNotFoundException,
     DataNotAvailableException
 )
-from neo4japp.utils.logger import UserEventLog
 
 from werkzeug.exceptions import UnprocessableEntity
 from sentry_sdk.integrations.flask import FlaskIntegration

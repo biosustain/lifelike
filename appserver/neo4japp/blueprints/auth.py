@@ -1,6 +1,6 @@
 import jwt
 from datetime import datetime, timedelta
-from flask import current_app, request, Response, json, Blueprint, g, has_request_context
+from flask import current_app, request, Response, json, Blueprint, g
 from flask_httpauth import HTTPTokenAuth
 from sqlalchemy.orm.exc import NoResultFound
 
