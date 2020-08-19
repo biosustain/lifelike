@@ -36,6 +36,7 @@ def write_to_file(
     gene_pubtator,
     disease_pubtator,
     species_pubtator,
+    add_offset=True,
 ):
     compute_hash.update(str(time.time()).encode('utf-8'))
     identifier = int(compute_hash.hexdigest(), 16) % 10**8
@@ -56,15 +57,18 @@ def write_to_file(
 
     text = annotations.text
 
+    # (title length + 1)
+    offset_length = len(title) + 1 if add_offset else 0
+
     for f in [chemical_pubtator, gene_pubtator, disease_pubtator, species_pubtator]:
         print(f'{identifier}|t|{title}', file=f)
         print(f'{identifier}|a|{text}', file=f)
 
     for annotation in annotations.annotations:
-        lo_offset = annotation.lo_location_offset + 49  # (title length + 1)
-        hi_offset = annotation.hi_location_offset + 49
+        lo_offset = annotation.lo_location_offset + offset_length
+        hi_offset = annotation.hi_location_offset + offset_length
         keyword = annotation.text_in_document
-        keyword_type = annotation.meta.keyword_type
+        keyword_type = annotation.meta.type
         id = annotation.meta.id
 
         if keyword_type == EntityType.Chemical.value:
@@ -99,13 +103,20 @@ def create_annotations(
     bioc_service,
     filename,
     pdf_parser,
-    pdf,
+    doc,
+    method='pdf'
 ):
-    parsed = pdf_parser.parse_pdf(pdf=pdf)
+    if method == 'pdf':
+        parsed = pdf_parser.parse_pdf(pdf=doc)
+    else:
+        # pubtator
+        parsed = pdf_parser.parse_pubtator(pubtator=doc)
+
     pdf_text_list = pdf_parser.combine_chars_into_words(parsed)
     pdf_text = ' '.join([text for text, _ in pdf_text_list])
     annotations = annotations_service.create_rules_based_annotations(
         tokens=pdf_parser.extract_tokens(parsed_chars=parsed),
+        custom_annotations=[],
     )
 
     bioc = bioc_service.read(text=pdf_text, file_uri=filename)
@@ -117,12 +128,12 @@ def create_annotations(
     ), bioc_json
 
 
-def main():
-    chemical_pubtator = open(os.path.join(directory, 'chemical_pubtator.txt'), 'w+')
-    gene_pubtator = open(os.path.join(directory, 'gene_pubtator.txt'), 'w+')
-    disease_pubtator = open(os.path.join(directory, 'disease_pubtator.txt'), 'w+')
-    species_pubtator = open(os.path.join(directory, 'species_pubtator.txt'), 'w+')
-
+def pdf_to_pubtator(
+    chemical_pubtator,
+    gene_pubtator,
+    disease_pubtator,
+    species_pubtator,
+):
     for parent, subfolders, filenames in os.walk(os.path.join(directory, 'pdfs/')):
         for fn in filenames:
             app = create_app('Functional Test Flask App', config='config.Testing')
@@ -139,7 +150,7 @@ def main():
                                 bioc_service=bioc_service,
                                 filename=fn,
                                 pdf_parser=parser,
-                                pdf=f,
+                                doc=f,
                             )
                         except Exception as ex:
                             print(f'Failed to annotate PDF {fn}: {str(ex)}')
@@ -156,6 +167,70 @@ def main():
                         disease_pubtator=disease_pubtator,
                         species_pubtator=species_pubtator,
                     )
+
+
+def pubtator_to_pubtator(
+    chemical_pubtator,
+    gene_pubtator,
+    disease_pubtator,
+    species_pubtator,
+):
+    for parent, subfolders, filenames in os.walk(os.path.join(directory, 'abstracts/')):
+        for fn in filenames:
+            app = create_app('Functional Test Flask App', config='config.Testing')
+            with app.app_context():
+                bioc_service = get_bioc_document_service()
+                service = get_annotations_service(lmdb_dao=get_lmdb_dao())
+                parser = get_annotations_pdf_parser()
+
+                if fn.lower().endswith('.txt'):
+                    with open(os.path.join(parent, fn), 'r') as f:
+                        try:
+                            annotations, bioc_json = create_annotations(
+                                annotations_service=service,
+                                bioc_service=bioc_service,
+                                filename=fn,
+                                pdf_parser=parser,
+                                doc=f,
+                                method='pubtator',
+                            )
+                        except Exception as ex:
+                            print(f'Failed to annotate PDF {fn}: {str(ex)}')
+                            continue
+
+                    annotation_file = os.path.join(directory, f'annotations/{fn}.json')
+                    with open(annotation_file, 'w+') as a_f:
+                        json.dump(bioc_json, a_f)
+
+                    write_to_file(
+                        annotations=annotations,
+                        chemical_pubtator=chemical_pubtator,
+                        gene_pubtator=gene_pubtator,
+                        disease_pubtator=disease_pubtator,
+                        species_pubtator=species_pubtator,
+                        add_offset=False,
+                    )
+
+
+def main():
+    chemical_pubtator = open(os.path.join(directory, 'chemical_pubtator.txt'), 'w+')
+    gene_pubtator = open(os.path.join(directory, 'gene_pubtator.txt'), 'w+')
+    disease_pubtator = open(os.path.join(directory, 'disease_pubtator.txt'), 'w+')
+    species_pubtator = open(os.path.join(directory, 'species_pubtator.txt'), 'w+')
+
+    # pdf_to_pubtator(
+    #     chemical_pubtator=chemical_pubtator,
+    #     gene_pubtator=gene_pubtator,
+    #     disease_pubtator=disease_pubtator,
+    #     species_pubtator=species_pubtator,
+    # )
+
+    pubtator_to_pubtator(
+        chemical_pubtator=chemical_pubtator,
+        gene_pubtator=gene_pubtator,
+        disease_pubtator=disease_pubtator,
+        species_pubtator=species_pubtator,
+    )
 
     for f in [chemical_pubtator, gene_pubtator, disease_pubtator, species_pubtator]:
         f.close()
