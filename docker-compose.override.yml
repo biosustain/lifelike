@@ -64,7 +64,7 @@ services:
             - REDIS_HOST=redis
             - REDIS_PORT=6379
             # Other
-            - DOMAIN=http://localhost:4200
+            - DOMAIN=http://localhost
         # Allow debugging w/ IPython or pdb
         stdin_open: true
         tty: true
@@ -75,6 +75,7 @@ services:
             - frontend
             - backend
         depends_on:
+            - elasticsearch
             - database
             - pgdatabase
             - redis
