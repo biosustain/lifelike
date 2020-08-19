@@ -1167,25 +1167,26 @@ def test_ignore_terms_length_two_or_less(
         (1, [
                 PDFTokenPositions(
                     page_number=1,
-                    keyword='adenosine',
+                    keyword='hypofluorite',
                     char_positions={
-                        0: 'a', 1: 'd', 2: 'e', 3: 'n', 4: 'o',
-                        5: 's', 6: 'i', 7: 'n', 8: 'e'},
+                        0: 'a', 1: 'y', 2: 'p', 3: 'o', 4: 'f',
+                        5: 'l', 6: 'u', 7: 'o', 8: 'r', 9: 'i',
+                        10: 't', 11: 'e'},
                 ),
                 PDFTokenPositions(
                     page_number=1,
                     keyword='rat',
-                    char_positions={10: 'r', 11: 'a', 12: 't'},
+                    char_positions={12: 'r', 13: 'a', 14: 't'},
                 ),
                 PDFTokenPositions(
                     page_number=1,
                     keyword='dog',
-                    char_positions={14: 'd', 15: 'o', 16: 'g'},
+                    char_positions={16: 'd', 17: 'o', 18: 'g'},
                 ),
         ]),
     ],
 )
-def text_global_excluded_chemical_annotations(
+def test_global_excluded_chemical_annotations(
     default_lmdb_setup,
     mock_global_chemical_exclusion,
     index,
@@ -1210,7 +1211,7 @@ def text_global_excluded_chemical_annotations(
         custom_annotations=[],
     )
 
-    assert len(annotations) == 2
+    assert len(annotations) == 1
     assert tokens[0].keyword not in set([anno.keyword for anno in annotations])
 
 
@@ -1220,9 +1221,9 @@ def text_global_excluded_chemical_annotations(
         (1, [
                 PDFTokenPositions(
                     page_number=1,
-                    keyword='adenosine',
+                    keyword='guanosine',
                     char_positions={
-                        0: 'a', 1: 'd', 2: 'e', 3: 'n', 4: 'o',
+                        0: 'g', 1: 'u', 2: 'a', 3: 'n', 4: 'o',
                         5: 's', 6: 'i', 7: 'n', 8: 'e'},
                 ),
                 PDFTokenPositions(
@@ -1238,7 +1239,7 @@ def text_global_excluded_chemical_annotations(
         ]),
     ],
 )
-def text_global_excluded_compound_annotations(
+def test_global_excluded_compound_annotations(
     default_lmdb_setup,
     mock_global_compound_exclusion,
     index,
@@ -1263,7 +1264,7 @@ def text_global_excluded_compound_annotations(
         custom_annotations=[],
     )
 
-    assert len(annotations) == 2
+    assert len(annotations) == 1
     assert tokens[0].keyword not in set([anno.keyword for anno in annotations])
 
 
@@ -1293,7 +1294,7 @@ def text_global_excluded_compound_annotations(
         ]),
     ],
 )
-def text_global_excluded_disease_annotations(
+def test_global_excluded_disease_annotations(
     default_lmdb_setup,
     mock_global_disease_exclusion,
     index,
@@ -1347,7 +1348,7 @@ def text_global_excluded_disease_annotations(
         ]),
     ],
 )
-def text_global_excluded_gene_annotations(
+def test_global_excluded_gene_annotations(
     default_lmdb_setup,
     mock_global_gene_exclusion,
     index,
@@ -1402,7 +1403,7 @@ def text_global_excluded_gene_annotations(
         ]),
     ],
 )
-def text_global_excluded_phenotype_annotations(
+def test_global_excluded_phenotype_annotations(
     default_lmdb_setup,
     mock_global_phenotype_exclusion,
     index,
@@ -1458,7 +1459,7 @@ def text_global_excluded_phenotype_annotations(
         ]),
     ],
 )
-def text_global_excluded_protein_annotations(
+def test_global_excluded_protein_annotations(
     default_lmdb_setup,
     mock_global_protein_exclusion,
     index,
@@ -1509,7 +1510,7 @@ def text_global_excluded_protein_annotations(
         ]),
     ],
 )
-def text_global_excluded_species_annotations(
+def test_global_excluded_species_annotations(
     default_lmdb_setup,
     mock_global_species_exclusion,
     index,
@@ -1563,7 +1564,7 @@ def text_global_excluded_species_annotations(
         ]),
     ],
 )
-def text_global_excluded_annotations_does_not_interfere_with_other_entities(
+def test_global_excluded_annotations_does_not_interfere_with_other_entities(
     default_lmdb_setup,
     mock_global_chemical_exclusion,
     index,
