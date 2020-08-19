@@ -468,11 +468,13 @@ class AnnotationsService:
                         lowered_word not in SPECIES_EXCLUSION and
                         # TODO: this might not be needed once Jira LL-1505 is fixed
                         # see where self.custom_species is set and updated that too
+                        # change matched_custom_species[no_spaces_word] back to
+                        # matched_custom_species[token.keyword] once Jira LL-1505 is done
                         no_spaces_word in self.custom_species):  # noqa
                         if token.keyword in self.matched_custom_species:
-                            self.matched_custom_species[token.keyword].append(token)
+                            self.matched_custom_species[no_spaces_word].append(token)
                         else:
-                            self.matched_custom_species[token.keyword] = [token]
+                            self.matched_custom_species[no_spaces_word] = [token]
 
             return species_val
 
@@ -985,13 +987,17 @@ class AnnotationsService:
         closest_dist = inf
         curr_closest_organism = None
         for organism in organism_matches:
-            if curr_closest_organism is None:
-                curr_closest_organism = organism
+            # only check if organism id is in self.organism_frequency
+            # without this check can get key error
+            # because a user can potentially add custom species annotation
+            # that is a number, we don't include numbers in the tokens when parsing the PDF
+            if self.organism_frequency.get(organism, None):
+                if curr_closest_organism is None:
+                    curr_closest_organism = organism
 
-            min_organism_dist = inf
+                min_organism_dist = inf
 
-            # Get the closest instance of this organism
-            if self.organism_locations.get(organism, None):
+                # Get the closest instance of this organism
                 for organism_pos in self.organism_locations[organism]:
                     organism_location_lo = organism_pos[0]
                     organism_location_hi = organism_pos[1]
@@ -1003,23 +1009,23 @@ class AnnotationsService:
 
                     if new_organism_dist < min_organism_dist:
                         min_organism_dist = new_organism_dist
+
+                # If this organism is closer than the current closest, update
+                if min_organism_dist < closest_dist:
+                    curr_closest_organism = organism
+                    closest_dist = min_organism_dist
+                # If this organism is equidistant to the current closest, check frequency instead
+                elif min_organism_dist == closest_dist:
+                    # If the frequency of this organism is greater, update
+                    if self.organism_frequency[organism] > self.organism_frequency[curr_closest_organism]:  # noqa
+                        curr_closest_organism = organism
+                    elif self.organism_frequency[organism] == self.organism_frequency[curr_closest_organism]:  # noqa
+                        # If the organisms are equidistant and equal frequency,
+                        # check if the new organism is human, and if so update
+                        if organism == HOMO_SAPIENS_TAX_ID:
+                            curr_closest_organism = organism
             else:
                 print(f'Organism ID {organism} in organism_matches not found in: {self.organism_locations}.')  # noqa
-
-            # If this organism is closer than the current closest, update
-            if min_organism_dist < closest_dist:
-                curr_closest_organism = organism
-                closest_dist = min_organism_dist
-            # If this organism is equidistant to the current closest, check frequency instead
-            elif min_organism_dist == closest_dist:
-                # If the frequency of this organism is greater, update
-                if self.organism_frequency[organism] > self.organism_frequency[curr_closest_organism]:  # noqa
-                    curr_closest_organism = organism
-                elif self.organism_frequency[organism] == self.organism_frequency[curr_closest_organism]:  # noqa
-                    # If the organisms are equidistant and equal frequency,
-                    # check if the new organism is human, and if so update
-                    if organism == HOMO_SAPIENS_TAX_ID:
-                        curr_closest_organism = organism
 
         if curr_closest_organism is None:
             raise ValueError('Cannot get gene ID with empty organism match dict.')
