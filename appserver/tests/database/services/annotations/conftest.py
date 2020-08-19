@@ -287,9 +287,16 @@ def default_lmdb_setup(app, request):
         synonym='adenosine',
     )
 
+    guanosine = lmdb_compound_factory(
+        compound_id='GUANOSINE',
+        id_type=DatabaseType.Biocyc.value,
+        name='guanosine',
+        synonym='guanosine',
+    )
+
     # Create disease data
-    cold_sore = lmdb_compound_factory(
-        compound_id='MESH:D006560',
+    cold_sore = lmdb_disease_factory(
+        disease_id='MESH:D006560',
         id_type=DatabaseType.Mesh.value,
         name='cold sore',
         synonym='cold sore',
@@ -297,7 +304,7 @@ def default_lmdb_setup(app, request):
 
     entities = [
         (CHEMICALS_CHEBI_LMDB, 'chemicals', [adenosine, arginine, hypofluorite, histidine]),
-        (COMPOUNDS_BIOCYC_LMDB, 'compounds', [adenosine2]),
+        (COMPOUNDS_BIOCYC_LMDB, 'compounds', [adenosine2, guanosine]),
         (DISEASES_MESH_LMDB, 'diseases', [cold_sore]),
         (GENES_NCBI_LMDB, 'genes', [bola3, hyp27_gene, serpina1_gene, serpina1_gene2]),
         (PHENOTYPES_MESH_LMDB, 'phenotypes', [whey_protein]),
@@ -674,7 +681,7 @@ def mock_get_gene_to_organism_match_result_for_escherichia_coli_pdf(monkeypatch)
 @pytest.fixture(scope='function')
 def mock_global_compound_exclusion(monkeypatch):
     def get_exclusions(*args, **kwargs):
-        return {'adenosine', 'hydrogen'}
+        return {'guanosine', 'hydrogen'}
 
     monkeypatch.setattr(
         AnnotationsService,
@@ -686,7 +693,7 @@ def mock_global_compound_exclusion(monkeypatch):
 @pytest.fixture(scope='function')
 def mock_global_chemical_exclusion(monkeypatch):
     def get_exclusions(*args, **kwargs):
-        return {'adenosine', 'hydrogen'}
+        return {'hypofluorite', 'hydrogen', 'adenosine'}
 
     monkeypatch.setattr(
         AnnotationsService,
