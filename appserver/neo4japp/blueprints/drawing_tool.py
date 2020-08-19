@@ -39,6 +39,7 @@ from neo4japp.request_schemas.drawing_tool import ProjectBackupSchema
 
 # TODO: LL-415 Migrate the code to the projects folder once GUI is complete and API refactored
 from neo4japp.blueprints.projects import bp as newbp
+from neo4japp.utils.logger import UserEventLog
 
 bp = Blueprint('drawing_tool', __name__, url_prefix='/drawing-tool')
 
@@ -209,7 +210,9 @@ def add_project(projects_name: str):
         dir_id=dir_id,
     )
 
-    current_app.logger.info(f'User created map: <{g.current_user.email}:{project.label}>')
+    current_app.logger.info(
+        f'User created map: <{project.label}>',
+        extra=UserEventLog(username=g.current_user.username, event_type='map create').to_dict())
 
     # Flush it to database to that user
     db.session.add(project)
@@ -254,7 +257,9 @@ def update_project(hash_id: str, projects_name: str):
     except NoResultFound:
         raise RecordNotFoundException('not found :-( ')
 
-    current_app.logger.info(f'User updated map: <{g.current_user.email}:{project.label}>')
+    current_app.logger.info(
+        f'User updated map: <{project.label}>',
+        extra=UserEventLog(username=g.current_user.username, event_type='map update').to_dict())
 
     # Update project's attributes
     project.description = data.get("description", "")
@@ -506,7 +511,8 @@ def project_backup_get(hash_id):
     if backup is None:
         raise RecordNotFoundException('No backup found.')
     current_app.logger.info(
-        f'User getting a backup: <{g.current_user.email}:{backup.hash_id}>')
+        'User getting a backup',
+        extra=UserEventLog(username=g.current_user.username, event_type='map get backup').to_dict())
     return {
         'id': backup.project_id,
         'label': backup.label,
@@ -559,9 +565,9 @@ def project_backup_post(hash_id_, **data):
 
     db.session.add(backup)
     db.session.commit()
-
     current_app.logger.info(
-        f'User added a backup: <{g.current_user.email}:{backup.hash_id}>')
+        'User added a backup',
+        extra=UserEventLog(username=g.current_user.username, event_type='map add backup').to_dict())
     return ''
 
 
@@ -576,5 +582,7 @@ def project_backup_delete(hash_id):
         db.session.delete(backup)
         db.session.commit()
         current_app.logger.info(
-            f'User deleted a backup: <{g.current_user.email}:{backup.hash_id}>')
+            'User deleted a backup',
+            extra=UserEventLog(
+                username=g.current_user.username, event_type='map delete backup').to_dict())
     return ''
