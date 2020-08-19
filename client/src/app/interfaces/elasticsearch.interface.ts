@@ -15,4 +15,5 @@ export interface PDFSnippets {
   description: string;
   uploaded_date: string;
   preview_text: string;
+  project_directory: string;
 }

@@ -6,7 +6,7 @@ from elasticsearch import Elasticsearch
 from elasticsearch.helpers import parallel_bulk
 from neo4japp.database import db
 from neo4japp.factory import create_app
-from neo4japp.models import Files, FileContent, AppUser
+from neo4japp.models import Files, FileContent, AppUser, Projects
 
 FRAGMENT_SIZE = 2147483647
 PDF_MAPPING = '/home/n4j/neo4japp/services/indexing/mappings/pdf_snippets.json'
@@ -38,14 +38,16 @@ def populate_index():
     entries = db.session \
         .query(Files.filename, Files.description, Files.file_id,
                Files.doi, Files.creation_date, Files.upload_url,
-               Files.user_id, FileContent.raw_file) \
+               Files.user_id, FileContent.raw_file, Files.project) \
         .join(FileContent, FileContent.id == Files.content_id) \
         .all()
     for filename, description, file_id, doi, creation_date, \
-            uploaded_url, user_id, file in entries:
+            uploaded_url, user_id, file, project in entries:
         encoded_pdf = base64.b64encode(file)
         data = encoded_pdf.decode('utf-8')
         email = db.session.query(AppUser.email).filter(user_id == AppUser.id).one_or_none()
+        project_directory = db.session.query(Projects.project_name)\
+            .filter(project == Projects.id).one_or_none()
         document = {
             '_index': 'pdf',
             'pipeline': ATTACHMENT_PIPELINE_NAME,
@@ -59,7 +61,8 @@ def populate_index():
                 'uploaded_date': creation_date,
                 'external_link': uploaded_url,
                 'email': email.email,
-                'doi': doi
+                'doi': doi,
+                'project_directory': project_directory
             }
         }
         documents.append(document)
