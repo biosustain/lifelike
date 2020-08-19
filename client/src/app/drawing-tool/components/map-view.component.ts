@@ -3,7 +3,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { BehaviorSubject, combineLatest, Observable, Subscription } from 'rxjs';
 import { MapService } from '../services';
-import { KnowledgeMap, UniversalGraph, UniversalGraphEntity } from '../services/interfaces';
+import { KnowledgeMap, UniversalGraph, UniversalGraphEntity, UniversalGraphNode } from '../services/interfaces';
 
 import { MapExportDialogComponent } from './map-export-dialog.component';
 import { KnowledgeMapStyle } from 'app/graph-viewer/styles/knowledge-map-style';
@@ -145,9 +145,6 @@ export class MapViewComponent<ExtraResult = void> implements OnDestroy, AfterVie
   set map(value: KnowledgeMap | undefined) {
     this._map = value;
     this.initializeMap();
-
-    console.log(this._map);
-    console.log(this.graphCanvas);
   }
 
   get map() {
@@ -347,6 +344,40 @@ export class MapViewComponent<ExtraResult = void> implements OnDestroy, AfterVie
 
   redo() {
     this.graphCanvas.redo();
+  }
+
+  search() {
+    if (this.entitySearchTerm.length) {
+      this.entitySearchList = this.graphCanvas.nodes.filter(n => {
+        return n.display_name.toLowerCase().includes(this.entitySearchTerm.toLowerCase());
+      });
+      this.entitySearchListIdx = -1;
+    } else {
+      this.entitySearchList = [];
+      this.entitySearchListIdx = -1;
+    }
+  }
+
+  next() {
+    // we need rule ...
+    this.entitySearchListIdx++;
+    if (this.entitySearchListIdx >= this.entitySearchList.length) {
+      this.entitySearchListIdx = 0;
+    }
+    this.graphCanvas.panToNode(
+      this.entitySearchList[this.entitySearchListIdx] as UniversalGraphNode
+    );
+  }
+
+  previous() {
+    // we need rule ..
+    this.entitySearchListIdx--;
+    if (this.entitySearchListIdx <= -1) {
+      this.entitySearchListIdx = this.entitySearchList.length - 1;
+    }
+    this.graphCanvas.panToNode(
+      this.entitySearchList[this.entitySearchListIdx] as UniversalGraphNode
+    );
   }
 
   goToReturnUrl() {

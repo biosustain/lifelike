@@ -402,8 +402,13 @@ export class CanvasGraphView extends GraphView {
     this.applyZoomToFit(duration, padding);
   }
 
+  panToNode(node: UniversalGraphNode, duration: number = 1500, padding = 50) {
+    this.previousZoomToFitTime = window.performance.now();
+    this.applyPanToNode(node, duration, padding);
+  }
 
-  private panToNode(node: UniversalGraphNode, duration: number = 1500, padding = 50) {
+
+  private applyPanToNode(node: UniversalGraphNode, duration: number = 1500, padding = 50) {
     this.previousZoomToFitPadding = padding;
 
     const canvasWidth = this.canvas.width;
