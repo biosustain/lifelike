@@ -54,6 +54,7 @@ from neo4japp.request_schemas.annotations import (
 )
 from neo4japp.services.indexing import index_pdf
 from neo4japp.utils.network import read_url
+from neo4japp.utils.logger import UserEventLog
 from neo4japp.services.annotations.constants import AnnotationMethod
 from neo4japp.services.annotations.manual_annotations import ManualAnnotationsService
 from neo4japp.util import jsonify_with_class, SuccessResponse
@@ -119,8 +120,9 @@ def extract_doi(pdf_content: bytes, file_id: str = None, filename: str = None) -
     doi = search_doi(bytes(text, encoding='utf8'))
     if doi is not None:
         return doi
-
-    current_app.logger.warning('No DOI for file: %s, %s', file_id, filename)
+    current_app.logger.info(
+        'No DOI for file: %s, %s', file_id, filename,
+        extra=UserEventLog(username=g.current_user.username, event_type='missing DOI').to_dict())
     return None
 
 
@@ -240,7 +242,8 @@ def upload_pdf(request, project_name: str):
     db.session.commit()
 
     current_app.logger.info(
-        f'User uploaded file: <{g.current_user.email}:{file.filename}>')
+        f'User uploaded file: <{filename}>',
+        extra=UserEventLog(username=g.current_user.username, event_type='file upload').to_dict())
     index_pdf.main(current_app.config)
 
     yield SuccessResponse(
@@ -581,7 +584,10 @@ def delete_files(project_name: str):
             files_to_delete.append(f)
 
     for deleted in files_to_delete:
-        current_app.logger.info(f'User deleted file: <{g.current_user.email}:{deleted.filename}>')
+        current_app.logger.info(
+            'User deleted file: <{deleted.filename}>',
+            extra=UserEventLog(
+                username=g.current_user.username, event_type='file delete').to_dict())
         outcome[deleted.file_id] = DeletionOutcome.DELETED.value
 
     # low level fast bulk operation

@@ -2,21 +2,25 @@ import logging
 import os
 import traceback
 import sentry_sdk
+from datetime import datetime
 from functools import partial
 
+from pythonjsonlogger import jsonlogger
 from flask import (
     current_app,
     Flask,
     jsonify,
+    has_request_context,
+    request,
 )
 
-from logging.config import dictConfig
 from flask_caching import Cache
 from flask_cors import CORS
 from werkzeug.utils import (
     find_modules,
     import_string,
 )
+from flask.logging import wsgi_errors_stream
 
 from neo4japp.database import db, ma, migrate, close_lmdb
 from neo4japp.encoders import CustomJSONEncoder
@@ -28,6 +32,7 @@ from neo4japp.exceptions import (
     RecordNotFoundException,
     DataNotAvailableException
 )
+from neo4japp.utils.logger import UserEventLog
 
 from werkzeug.exceptions import UnprocessableEntity
 from sentry_sdk.integrations.flask import FlaskIntegration
@@ -35,29 +40,18 @@ from sentry_sdk.integrations.logging import LoggingIntegration
 from sentry_sdk.integrations.logging import ignore_logger
 from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 
+# Set the following modules to have a minimum of log level 'WARNING'
+module_logs = [
+    'pdfminer',
+    'graphviz',
+    'flask_caching',
+    'urllib3',
+    'alembic',
+    'webargs',
+]
 
-# Global configuration for logging
-dictConfig({
-    'version': 1,
-    'formatters': {'default': {
-        'format': '[%(asctime)s] %(levelname)s in %(module)s: %(message)s',
-    }},
-    'handlers': {'wsgi': {
-        'class': 'logging.StreamHandler',
-        'stream': 'ext://flask.logging.wsgi_errors_stream',
-        'formatter': 'default'
-    }},
-    'root': {
-        'level': 'INFO',
-        'handlers': ['wsgi']
-    }
-})
-
-logger = logging.getLogger(__name__)
-
-for log in ['pdfminer', 'graphviz', 'flask_caching', 'urllib3', 'alembic', 'webargs']:
-    logging.getLogger(log).setLevel(logging.WARNING)
-
+for mod in module_logs:
+    logging.getLogger(mod).setLevel(logging.WARNING)
 
 # Commit Hash (Version) of Application
 GITHUB_HASH = os.environ.get('GITHUB_HASH', 'unspecified')
@@ -71,9 +65,27 @@ cors = CORS()
 cache = Cache()
 
 
+class CustomJsonFormatter(jsonlogger.JsonFormatter):
+    """ Adds meta data about the request when available """
+    def add_fields(self, log_record, record, message_dict):
+        super(CustomJsonFormatter, self).add_fields(log_record, record, message_dict)
+        if has_request_context():
+            log_record['request_url'] = request.url
+            log_record['request_ip_addr'] = request.remote_addr
+
+
 def create_app(name='neo4japp', config='config.Development'):
 
+    app_logger = logging.getLogger(name)
+
     if config == 'config.Staging' or config == 'config.Production':
+
+        log_handler = logging.StreamHandler(stream=wsgi_errors_stream)
+        format_str = '%(message)%(levelname)%(asctime)%(module)'
+        formatter = CustomJsonFormatter(format_str)
+        log_handler.setFormatter(formatter)
+        app_logger.addHandler(log_handler)
+
         sentry_logging = LoggingIntegration(
             level=logging.ERROR,
             event_level=logging.ERROR,
@@ -88,6 +100,9 @@ def create_app(name='neo4japp', config='config.Development'):
             send_default_pii=True,
         )
         ignore_logger('werkzeug')
+        app_logger.setLevel(logging.INFO)
+    else:
+        app_logger.setLevel(logging.DEBUG)
 
     app = Flask(name)
     app.config.from_object(config)
@@ -134,7 +149,7 @@ def register_blueprints(app, pkgname):
 
 def handle_error(code: int, ex: BaseException):
     reterr = {'apiHttpError': ex.to_dict()}
-    logger.error(f'Request caused {type(ex)} error', exc_info=ex)
+    current_app.logger.error(f'Request caused {type(ex)} error', exc_info=ex)
     reterr['version'] = GITHUB_HASH
     if current_app.debug:
         reterr['detail'] = "".join(traceback.format_exception(
@@ -144,7 +159,7 @@ def handle_error(code: int, ex: BaseException):
 
 def handle_generic_error(code: int, ex: Exception):
     reterr = {'apiHttpError': str(ex)}
-    logger.error('Request caused unhandled exception', exc_info=ex)
+    current_app.logger.error('Request caused unhandled exception', exc_info=ex)
     reterr['version'] = GITHUB_HASH
     if current_app.debug:
         reterr['detail'] = "".join(traceback.format_exception(
@@ -155,7 +170,7 @@ def handle_generic_error(code: int, ex: Exception):
 # Ensure that response includes all error messages produced from the parser
 def handle_webargs_error(code, error):
     reterr = {'apiHttpError': error.data['messages']}
-    logger.error('Request caused UnprocessableEntity error', exc_info=error)
+    current_app.logger.error('Request caused UnprocessableEntity error', exc_info=error)
     reterr['version'] = GITHUB_HASH
     if current_app.debug:
         reterr['detail'] = "".join(traceback.format_exception(
