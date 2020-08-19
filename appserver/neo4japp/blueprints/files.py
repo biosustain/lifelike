@@ -21,7 +21,7 @@ from neo4japp.blueprints.permissions import requires_project_permission, require
 # TODO: LL-415 Migrate the code to the projects folder once GUI is complete and API refactored
 from neo4japp.blueprints.projects import bp as newbp
 from neo4japp.constants import TIMEZONE
-from neo4japp.database import db
+from neo4japp.database import db, get_manual_annotations_service
 from neo4japp.data_transfer_objects import FileUpload
 from neo4japp.exceptions import (
     FileUploadError,
@@ -46,7 +46,6 @@ from neo4japp.request_schemas.annotations import (
 )
 from neo4japp.services.indexing import index_pdf
 from neo4japp.utils.network import read_url
-from neo4japp.services.annotations.manual_annotations import ManualAnnotationsService
 from neo4japp.util import jsonify_with_class, SuccessResponse
 from flask_apispec import use_kwargs, marshal_with
 from pdfminer import high_level
@@ -187,6 +186,27 @@ def upload_pdf(request, project_name: str):
         },
         status_code=200
     )
+
+
+@bp.route('/download/<int:file_content_id>', methods=['GET'])
+@auth.login_required
+@requires_role('admin')
+def download(file_content_id: int):
+    yield g.current_user
+
+    try:
+        entry = db.session.query(
+            FileContent.raw_file
+        ).filter(
+            FileContent.id == file_content_id,
+        ).one()
+    except NoResultFound:
+        raise RecordNotFoundException('Requested PDF file not found.')
+
+    res = make_response(entry.raw_file)
+    res.headers['Content-Type'] = 'application/pdf'
+
+    yield res
 
 
 @newbp.route('/<string:project_name>/files', methods=['GET'])
@@ -386,6 +406,7 @@ def get_annotations(id: str, project_name: str):
 @auth.login_required
 @requires_project_permission(AccessActionType.WRITE)
 def add_custom_annotation(file_id, project_name, **payload):
+    manual_annotations_service = get_manual_annotations_service()
 
     project = Projects.query.filter(Projects.project_name == project_name).one_or_none()
     if project is None:
@@ -395,7 +416,7 @@ def add_custom_annotation(file_id, project_name, **payload):
 
     yield user, project
 
-    inclusions = ManualAnnotationsService.add_inclusions(
+    inclusions = manual_annotations_service.add_inclusions(
         project.id, file_id, user.id, payload['annotation'], payload['annotateAll']
     )
 
@@ -407,6 +428,7 @@ def add_custom_annotation(file_id, project_name, **payload):
 @use_kwargs(AnnotationRemovalSchema)
 @requires_project_permission(AccessActionType.WRITE)
 def remove_custom_annotation(file_id, uuid, removeAll, project_name):
+    manual_annotations_service = get_manual_annotations_service()
 
     project = Projects.query.filter(Projects.project_name == project_name).one_or_none()
     if project is None:
@@ -416,7 +438,7 @@ def remove_custom_annotation(file_id, uuid, removeAll, project_name):
 
     yield user, project
 
-    removed_annotation_uuids = ManualAnnotationsService.remove_inclusions(
+    removed_annotation_uuids = manual_annotations_service.remove_inclusions(
         project.id, file_id, uuid, removeAll
     )
 
@@ -480,6 +502,7 @@ def delete_files(project_name: str):
 @use_kwargs(AnnotationExclusionSchema)
 @requires_project_permission(AccessActionType.WRITE)
 def add_annotation_exclusion(project_name: str, file_id: str, **payload):
+    manual_annotations_service = get_manual_annotations_service()
 
     project = Projects.query.filter(Projects.project_name == project_name).one_or_none()
     if project is None:
@@ -489,7 +512,7 @@ def add_annotation_exclusion(project_name: str, file_id: str, **payload):
 
     yield user, project
 
-    ManualAnnotationsService.add_exclusion(project.id, file_id, user.id, payload)
+    manual_annotations_service.add_exclusion(project.id, file_id, user.id, payload)
 
     yield jsonify({'status': 'success'})
 
@@ -501,6 +524,7 @@ def add_annotation_exclusion(project_name: str, file_id: str, **payload):
 @use_kwargs(AnnotationExclusionSchema(only=('type', 'text')))
 @requires_project_permission(AccessActionType.WRITE)
 def remove_annotation_exclusion(project_name, file_id, type, text):
+    manual_annotations_service = get_manual_annotations_service()
 
     project = Projects.query.filter(Projects.project_name == project_name).one_or_none()
     if project is None:
@@ -510,7 +534,7 @@ def remove_annotation_exclusion(project_name, file_id, type, text):
 
     yield user, project
 
-    ManualAnnotationsService.remove_exclusion(project.id, file_id, user.id, type, text)
+    manual_annotations_service.remove_exclusion(project.id, file_id, user.id, type, text)
 
     yield jsonify({'status': 'success'})
 
