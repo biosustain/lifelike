@@ -100,28 +100,25 @@ def annotate_file(req: AnnotationRequest, project_name: str, file_id: str):
 
     yield g.current_user, project
 
-    docs = files_queries.get_all_files_and_content_by_id(
-        file_ids=set([file_id]), project_id=project.id)
+    doc = files_queries.get_all_files_and_content_by_id(
+        file_ids=set([file_id]), project_id=project.id).one_or_none()
 
-    if not docs:
+    if not doc:
         raise RecordNotFoundException(f'File with file id {file_id} not found.')
 
     annotated: List[dict] = []
-    filenames: List[str] = []
-    for doc in docs:
-        annotated.append(
-            annotate(
-                doc=doc,
-                annotation_method=req.annotation_method,
-            )
+    annotated.append(
+        annotate(
+            doc=doc,
+            annotation_method=req.annotation_method,
         )
-        filenames.append(doc.filename)
+    )
 
     db.session.bulk_update_mappings(Files, annotated)
     db.session.commit()
     yield SuccessResponse(
         result={
-            'filenames': filenames,
+            'filenames': doc.filename,
             'status': 'Successfully annotated.'
         },
         status_code=200)
@@ -148,7 +145,8 @@ def reannotate(req: AnnotationRequest, project_name: str):
 
     ids = set(req.file_ids)
     outcome: Dict[str, str] = {}  # file id to annotation outcome
-    files = files_queries.get_all_files_and_content_by_id(file_ids=ids, project_id=projects.id)
+    files = files_queries.get_all_files_and_content_by_id(
+        file_ids=ids, project_id=projects.id).all()
 
     files_not_found = ids - set(f.file_id for f in files)
     for not_found in files_not_found:
