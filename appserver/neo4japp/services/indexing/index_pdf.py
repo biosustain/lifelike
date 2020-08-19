@@ -36,7 +36,7 @@ def populate_single_index(fid: int):
     fi, fc = db.session.query(Files, FileContent).filter(Files.id == fid).join(FileContent).one()
     email = db.session.query(AppUser.email).filter(AppUser.id == fi.user_id).one()
     project_directory = db.session.query(Projects.project_name)\
-        .filter(Projects.project_name == fi.project)
+        .filter(fi.project == Projects.id).one()
     encoded_pdf = base64.b64encode(fc.raw_file)
     data = encoded_pdf.decode('utf-8')
     document = {
