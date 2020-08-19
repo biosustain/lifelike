@@ -176,7 +176,8 @@ def upload_pdf(request, project_name: str):
 
         current_app.logger.info(
             f'User uploaded file: <{filename}>',
-            extra=UserEventLog(username=g.current_user.username, event_type='file upload').to_dict())
+            extra=UserEventLog(
+                username=g.current_user.username, event_type='file upload').to_dict())
         index_pdf.populate_single_index(file.id)
     except Exception:
         raise FileUploadError('Your file could not be saved. Please try uploading again.')
