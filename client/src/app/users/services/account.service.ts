@@ -9,7 +9,7 @@ import {
     UpdateUserRequest,
 } from 'app/interfaces';
 import { map, takeUntil } from 'rxjs/operators';
-import { BehaviorSubject, Subject } from 'rxjs';
+import { BehaviorSubject, Subject, Observable } from 'rxjs';
 
 @Injectable({providedIn: 'root'})
 export class AccountService implements OnDestroy {
@@ -56,9 +56,18 @@ export class AccountService implements OnDestroy {
         ).pipe(map(resp => resp.result));
     }
 
-    listOfUsers() {
+    /**
+     * Return list of users
+     * @param username - optional val to query against list of users
+     */
+    listOfUsers(username: string = ''): Observable<AppUser[]> {
+
+        const hyperlink = username.length >= 1 ?
+          `${this.accountApi}/?fields=username&filters=${username}` :
+          `${this.accountApi}/`;
+
         return this.http.get<{result: AppUser[]}>(
-            `${this.accountApi}/`,
+            hyperlink,
             this.createHttpOptions(true),
         ).pipe(map(resp => resp.result));
     }

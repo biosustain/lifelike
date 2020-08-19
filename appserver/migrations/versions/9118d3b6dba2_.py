@@ -2,7 +2,7 @@
 manual inclusions and exclusions of annotations from all files
 
 Revision ID: 9118d3b6dba2
-Revises: 140e61179d07
+Revises: b1ead1f6948a
 Create Date: 2020-08-07 12:17:34.920981
 
 """
@@ -13,7 +13,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = '9118d3b6dba2'
-down_revision = '140e61179d07'
+down_revision = 'b1ead1f6948a'
 branch_labels = None
 depends_on = None
 
@@ -25,10 +25,10 @@ def upgrade():
         sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
         sa.Column('annotation', postgresql.JSON(astext_type=sa.Text()), nullable=False),
         sa.Column('type', sa.String(length=12), nullable=False),
-        sa.Column('file_id', sa.Integer(), nullable=False),
+        sa.Column('file_id', sa.Integer(), nullable=False, index=True),
         sa.Column('reviewed', sa.Boolean(), default=False),
         sa.Column('approved', sa.Boolean(), default=False),
-        sa.ForeignKeyConstraint(['file_id'], ['files.id'], name=op.f('fk_global_list_file_id_files')),
+        sa.ForeignKeyConstraint(['file_id'], ['files_content.id'], name=op.f('fk_global_list_file_id_files_content')),
         sa.PrimaryKeyConstraint('id', name=op.f('pk_global_list'))
     )
     # ### end Alembic commands ###
