@@ -6,7 +6,7 @@ import re
 import urllib.request
 import uuid
 
-from datetime import datetime, timezone
+from datetime import datetime
 from enum import Enum
 from typing import Dict, List, Optional
 from urllib.error import URLError
@@ -21,17 +21,9 @@ from neo4japp.blueprints.permissions import requires_project_permission, require
 # TODO: LL-415 Migrate the code to the projects folder once GUI is complete and API refactored
 from neo4japp.blueprints.projects import bp as newbp
 from neo4japp.constants import TIMEZONE
-from neo4japp.database import (
-    db,
-    get_annotations_service,
-    get_annotations_pdf_parser,
-    get_bioc_document_service,
-    get_lmdb_dao,
-    get_manual_annotations_service,
-)
+from neo4japp.database import db, get_manual_annotations_service
 from neo4japp.data_transfer_objects import FileUpload
 from neo4japp.exceptions import (
-    AnnotationError,
     FileUploadError,
     RecordNotFoundException,
     NotAuthorizedException,
@@ -54,9 +46,8 @@ from neo4japp.request_schemas.annotations import (
 )
 from neo4japp.services.indexing import index_pdf
 from neo4japp.utils.network import read_url
-from neo4japp.utils.logger import UserEventLog
-from neo4japp.services.annotations.constants import AnnotationMethod
 from neo4japp.util import jsonify_with_class, SuccessResponse
+from neo4japp.utils.logger import UserEventLog
 from flask_apispec import use_kwargs, marshal_with
 from pdfminer import high_level
 
@@ -66,44 +57,6 @@ DOWNLOAD_USER_AGENT = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML
                       'Chrome/51.0.2704.103 Safari/537.36 Lifelike'
 
 bp = Blueprint('files', __name__, url_prefix='/files')
-
-
-def annotate(
-    filename: str,
-    pdf_fp: FileStorage,
-    custom_annotations: List[dict],
-    annotation_method: str = AnnotationMethod.Rules.value,  # default to Rules Based
-) -> dict:
-    lmdb_dao = get_lmdb_dao()
-    pdf_parser = get_annotations_pdf_parser()
-    annotator = get_annotations_service(lmdb_dao=lmdb_dao)
-    bioc_service = get_bioc_document_service()
-    try:
-        parsed_pdf_chars = pdf_parser.parse_pdf(pdf=pdf_fp)
-    except AnnotationError as exc:
-        raise AnnotationError(
-            'Your file could not be imported. Please check if it is a valid PDF.', [str(exc)])
-
-    tokens = pdf_parser.extract_tokens(parsed_chars=parsed_pdf_chars)
-    pdf_text = pdf_parser.combine_all_chars(parsed_chars=parsed_pdf_chars)
-
-    if annotation_method == AnnotationMethod.Rules.value:
-        annotations = annotator.create_rules_based_annotations(
-            tokens=tokens,
-            custom_annotations=custom_annotations,
-        )
-    elif annotation_method == AnnotationMethod.NLP.value:
-        # NLP
-        annotations = annotator.create_nlp_annotations(
-            page_index=parsed_pdf_chars.min_idx_in_page,
-            text=pdf_text,
-            tokens=tokens,
-            custom_annotations=custom_annotations,
-        )
-    else:
-        raise AnnotationError('Your file could not be annotated.')  # noqa
-    bioc = bioc_service.read(text=pdf_text, file_uri=filename)
-    return bioc_service.generate_bioc_json(annotations=annotations, bioc=bioc)
 
 
 def extract_doi(pdf_content: bytes, file_id: str = None, filename: str = None) -> Optional[str]:
@@ -222,33 +175,11 @@ def upload_pdf(request, project_name: str):
         db.session.commit()
 
         current_app.logger.info(
-            f'User uploaded file: <{g.current_user.email}:{file.filename}>')
+            f'User uploaded file: <{filename}>',
+            extra=UserEventLog(username=g.current_user.username, event_type='file upload').to_dict())
         index_pdf.populate_single_index(file.id)
     except Exception:
         raise FileUploadError('Your file could not be saved. Please try uploading again.')
-
-    try:
-        annotations = annotate(
-            filename=filename,
-            pdf_fp=pdf,
-            custom_annotations=file.custom_annotations or [],
-            annotation_method=request.annotation_method,
-        )
-        annotations_date = datetime.now(TIMEZONE)
-
-        file.annotations = annotations
-        file.annotations_date = annotations_date
-        db.session.add(file)
-    except AnnotationError:
-        # do nothing if annotations fail
-        # file should still be uploaded
-        # due to LL-1371
-        raise  # bubble up the exception
-    db.session.commit()
-
-    current_app.logger.info(
-        f'User uploaded file: <{filename}>',
-        extra=UserEventLog(username=g.current_user.username, event_type='file upload').to_dict())
 
     yield SuccessResponse(
         result={
@@ -515,65 +446,6 @@ def remove_custom_annotation(file_id, uuid, removeAll, project_name):
     )
 
     yield jsonify(removed_annotation_uuids)
-
-
-class AnnotationOutcome(Enum):
-    ANNOTATED = 'Annotated'
-    NOT_ANNOTATED = 'Not annotated'
-    NOT_FOUND = 'Not found'
-
-
-@newbp.route('/<string:project_name>/files/reannotate', methods=['POST'])
-@auth.login_required
-@requires_project_permission(AccessActionType.WRITE)
-def reannotate(project_name: str):
-    user = g.current_user
-    projects = Projects.query.filter(Projects.project_name == project_name).one_or_none()
-
-    if projects is None:
-        raise RecordNotFoundException(f'Project {project_name} not found')
-
-    yield user, projects
-
-    ids = set(request.get_json())
-    outcome: Dict[str, str] = {}  # file id to annotation outcome
-    files = files_queries.get_all_files_and_content_by_id(file_ids=ids, project_id=projects.id)
-
-    files_not_found = ids - set(f.file_id for f in files)
-    for not_found in files_not_found:
-        outcome[not_found] = AnnotationOutcome.NOT_FOUND.value
-
-    updated_files: List[dict] = []
-
-    for f in files:
-        fp = FileStorage(io.BytesIO(f.raw_file), f.filename)
-        try:
-            annotations = annotate(
-                filename=f.filename,
-                pdf_fp=fp,
-                custom_annotations=f.custom_annotations,
-            )
-        except AnnotationError as e:
-            current_app.logger.error(
-                'Could not reannotate file: %s, %s, %s', f.file_id, f.filename, e)
-            outcome[f.file_id] = AnnotationOutcome.NOT_ANNOTATED.value
-        else:
-            updated_files.append(
-                {
-                    'id': f.id,
-                    'annotations': annotations,
-                    'annotations_date': datetime.now(timezone.utc),
-                }
-            )
-            current_app.logger.debug(
-                'File successfully reannotated: %s, %s', f.file_id, f.filename)
-            outcome[f.file_id] = AnnotationOutcome.ANNOTATED.value
-        fp.close()
-
-    # low level fast bulk operation
-    db.session.bulk_update_mappings(Files, updated_files)
-    db.session.commit()
-    yield jsonify(outcome)
 
 
 class DeletionOutcome(Enum):
