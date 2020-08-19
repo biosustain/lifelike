@@ -77,14 +77,13 @@ class CustomJsonFormatter(jsonlogger.JsonFormatter):
 def create_app(name='neo4japp', config='config.Development'):
 
     app_logger = logging.getLogger(name)
+    log_handler = logging.StreamHandler(stream=wsgi_errors_stream)
+    format_str = '%(message)%(levelname)%(asctime)%(module)'
+    formatter = CustomJsonFormatter(format_str)
+    log_handler.setFormatter(formatter)
+    app_logger.addHandler(log_handler)
 
     if config == 'config.Staging' or config == 'config.Production':
-
-        log_handler = logging.StreamHandler(stream=wsgi_errors_stream)
-        format_str = '%(message)%(levelname)%(asctime)%(module)'
-        formatter = CustomJsonFormatter(format_str)
-        log_handler.setFormatter(formatter)
-        app_logger.addHandler(log_handler)
 
         sentry_logging = LoggingIntegration(
             level=logging.ERROR,
@@ -102,6 +101,10 @@ def create_app(name='neo4japp', config='config.Development'):
         ignore_logger('werkzeug')
         app_logger.setLevel(logging.INFO)
     else:
+        # Set to 'true' for dev mode to have
+        # the same format as staging.
+        if os.environ.get('FORMAT_AS_JSON', 'false') == 'false':
+            app_logger.removeHandler(log_handler)
         app_logger.setLevel(logging.DEBUG)
 
     app = Flask(name)
