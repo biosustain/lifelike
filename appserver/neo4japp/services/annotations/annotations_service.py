@@ -8,6 +8,7 @@ from typing import cast, Dict, List, Optional, Set, Tuple, Union
 from uuid import uuid4
 
 from pdfminer.layout import LTAnno, LTChar
+from sqlalchemy import and_
 
 from .annotation_interval_tree import (
     AnnotationInterval,
@@ -48,7 +49,7 @@ from neo4japp.data_transfer_objects import (
     PDFTokenPositionsList,
 )
 from neo4japp.exceptions import AnnotationError
-from neo4japp.models import AnnotationStopWords
+from neo4japp.models import AnnotationStopWords, GlobalList
 
 
 class AnnotationsService:
@@ -63,9 +64,8 @@ class AnnotationsService:
         # for word tokens that are typos
         self.correct_spellings: Dict[str, str] = {}
 
-        # custom annotations, including inclusion and exclusions
-        # use in memory dict because they should be small
-        # should be init when needed
+        # custom annotations should be init when needed
+        # TODO: different entity types?
         self._custom_species = None
 
         self.matched_genes: Dict[str, List[PDFTokenPositions]] = {}
@@ -89,6 +89,17 @@ class AnnotationsService:
             result.word for result in self.annotation_neo4j.session.query(
                 AnnotationStopWords).all())
 
+        self.annotations_to_exclude = [
+            exclusion for exclusion, in self.annotation_neo4j.session.query(
+                GlobalList.annotation).filter(
+                    and_(
+                        GlobalList.type == 'exclusion',
+                        # TODO: Uncomment once feature to review is there
+                        # GlobalList.reviewed.is_(True),
+                    )
+                )
+            ]
+
     @property
     def custom_species(self):
         return self._custom_species
@@ -96,6 +107,41 @@ class AnnotationsService:
     @custom_species.setter
     def custom_species(self, value):
         self._custom_species = value
+
+    def get_chemical_annotations_to_exclude(self):
+        return set(
+            exclusion.get('text') for exclusion in self.annotations_to_exclude if
+                exclusion.get('type') == EntityType.Chemical.value and exclusion.get('text'))  # noqa
+
+    def get_compound_annotations_to_exclude(self):
+        return set(
+            exclusion.get('text') for exclusion in self.annotations_to_exclude if
+                exclusion.get('type') == EntityType.Compound.value and exclusion.get('text'))  # noqa
+
+    def get_disease_annotations_to_exclude(self):
+        return set(
+            exclusion.get('text') for exclusion in self.annotations_to_exclude if
+                exclusion.get('type') == EntityType.Disease.value and exclusion.get('text'))  # noqa
+
+    def get_gene_annotations_to_exclude(self):
+        return set(
+            exclusion.get('text') for exclusion in self.annotations_to_exclude if
+                exclusion.get('type') == EntityType.Gene.value and exclusion.get('text'))  # noqa
+
+    def get_phenotype_annotations_to_exclude(self):
+        return set(
+            exclusion.get('text') for exclusion in self.annotations_to_exclude if
+                exclusion.get('type') == EntityType.Phenotype.value and exclusion.get('text'))  # noqa
+
+    def get_protein_annotations_to_exclude(self):
+        return set(
+            exclusion.get('text') for exclusion in self.annotations_to_exclude if
+                exclusion.get('type') == EntityType.Protein.value and exclusion.get('text'))  # noqa
+
+    def get_species_annotations_to_exclude(self):
+        return set(
+            exclusion.get('text') for exclusion in self.annotations_to_exclude if
+                exclusion.get('type') == EntityType.Species.value and exclusion.get('text'))  # noqa
 
     def validate_chemicals_lmdb(
         self,
@@ -134,7 +180,7 @@ class AnnotationsService:
                 if lowered_word not in self.exclusion_words:
                     chem_val = self.lmdb_session.chemicals_txn.get(lookup_key)
 
-            if chem_val:
+            if chem_val and token.keyword not in self.get_chemical_annotations_to_exclude():  # noqa
                 if token.keyword in self.matched_chemicals:
                     self.matched_chemicals[token.keyword].append(token)
                 else:
@@ -179,7 +225,7 @@ class AnnotationsService:
                 if lowered_word not in self.exclusion_words:
                     comp_val = self.lmdb_session.compounds_txn.get(lookup_key)
 
-            if comp_val:
+            if comp_val and token.keyword not in self.get_compound_annotations_to_exclude():  # noqa
                 if token.keyword in self.matched_compounds:
                     self.matched_compounds[token.keyword].append(token)
                 else:
@@ -224,7 +270,7 @@ class AnnotationsService:
                 if lowered_word not in self.exclusion_words:
                     diseases_val = self.lmdb_session.diseases_txn.get(lookup_key)
 
-            if diseases_val:
+            if diseases_val and token.keyword not in self.get_disease_annotations_to_exclude():  # noqa
                 if token.keyword in self.matched_diseases:
                     self.matched_diseases[token.keyword].append(token)
                 else:
@@ -269,7 +315,7 @@ class AnnotationsService:
                 if lowered_word not in self.exclusion_words:
                     gene_val = self.lmdb_session.genes_txn.get(lookup_key)
 
-            if gene_val:
+            if gene_val and token.keyword not in self.get_gene_annotations_to_exclude():  # noqa
                 if token.keyword in self.matched_genes:
                     self.matched_genes[token.keyword].append(token)
                 else:
@@ -314,7 +360,7 @@ class AnnotationsService:
                 if lowered_word not in self.exclusion_words:
                     phenotype_val = self.lmdb_session.phenotypes_txn.get(lookup_key)
 
-            if phenotype_val:
+            if phenotype_val and token.keyword not in self.get_phenotype_annotations_to_exclude():  # noqa
                 if token.keyword in self.matched_phenotypes:
                     self.matched_phenotypes[token.keyword].append(token)
                 else:
@@ -359,7 +405,7 @@ class AnnotationsService:
                 if lowered_word not in self.exclusion_words:
                     protein_val = self.lmdb_session.proteins_txn.get(lookup_key)
 
-            if protein_val:
+            if protein_val and token.keyword not in self.get_protein_annotations_to_exclude():  # noqa
                 if token.keyword in self.matched_proteins:
                     self.matched_proteins[token.keyword].append(token)
                 else:
@@ -394,6 +440,7 @@ class AnnotationsService:
             lookup_key = normalize_str(token.keyword).encode('utf-8')
 
         lowered_word = token.keyword.lower()
+        # TODO: this might not be needed once Jira LL-1505 is fixed
         no_spaces_word = token.keyword.replace(' ', '')
 
         if len(lookup_key) > 2:
@@ -409,20 +456,23 @@ class AnnotationsService:
                 if lowered_word not in SPECIES_EXCLUSION:
                     species_val = self.lmdb_session.species_txn.get(lookup_key)
 
-            if species_val:
+            if species_val and token.keyword not in self.get_species_annotations_to_exclude():  # noqa
                 if token.keyword in self.matched_species:
                     self.matched_species[token.keyword].append(token)
                 else:
                     self.matched_species[token.keyword] = [token]
             else:
-                if self.custom_species and lowered_word not in SPECIES_EXCLUSION and no_spaces_word in self.custom_species:  # noqa
-                    # remove any whitespaces to be consistent because the data
-                    # from the client browser could sometimes parse
-                    # the PDF text without spaces
-                    if token.keyword in self.matched_custom_species:
-                        self.matched_custom_species[no_spaces_word].append(token)
-                    else:
-                        self.matched_custom_species[no_spaces_word] = [token]
+                # didn't find a match in LMDB so look in custom annotations
+                if token.keyword not in self.get_species_annotations_to_exclude():
+                    if (self.custom_species and
+                        lowered_word not in SPECIES_EXCLUSION and
+                        # TODO: this might not be needed once Jira LL-1505 is fixed
+                        # see where self.custom_species is set and updated that too
+                        no_spaces_word in self.custom_species):  # noqa
+                        if token.keyword in self.matched_custom_species:
+                            self.matched_custom_species[token.keyword].append(token)
+                        else:
+                            self.matched_custom_species[token.keyword] = [token]
 
             return species_val
 
@@ -941,17 +991,20 @@ class AnnotationsService:
             min_organism_dist = inf
 
             # Get the closest instance of this organism
-            for organism_pos in self.organism_locations[organism]:
-                organism_location_lo = organism_pos[0]
-                organism_location_hi = organism_pos[1]
+            if self.organism_locations.get(organism, None):
+                for organism_pos in self.organism_locations[organism]:
+                    organism_location_lo = organism_pos[0]
+                    organism_location_hi = organism_pos[1]
 
-                if gene_location_lo > organism_location_hi:
-                    new_organism_dist = gene_location_lo - organism_location_hi
-                else:
-                    new_organism_dist = organism_location_lo - gene_location_hi
+                    if gene_location_lo > organism_location_hi:
+                        new_organism_dist = gene_location_lo - organism_location_hi
+                    else:
+                        new_organism_dist = organism_location_lo - gene_location_hi
 
-                if new_organism_dist < min_organism_dist:
-                    min_organism_dist = new_organism_dist
+                    if new_organism_dist < min_organism_dist:
+                        min_organism_dist = new_organism_dist
+            else:
+                print(f'Organism ID {organism} in organism_matches not found in: {self.organism_locations}.')  # noqa
 
             # If this organism is closer than the current closest, update
             if min_organism_dist < closest_dist:

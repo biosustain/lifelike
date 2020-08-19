@@ -10,7 +10,6 @@ from neo4japp.data_transfer_objects import PDFParsedCharacters
 directory = path.realpath(path.dirname(__file__))
 
 
-@pytest.mark.skip
 @pytest.mark.parametrize(
     'index, text',
     [
@@ -18,55 +17,55 @@ directory = path.realpath(path.dirname(__file__))
             char_coord_objs_in_pdf=None,
             chars_in_pdf=['I', ' ', 'a', 'm', ' ', 'a', ' ', 's', 'e', 'n', 't', 'e', 'n', 'c', 'e', '\n'],  # noqa
             cropbox_in_pdf=(9, 9),
-            min_idx_in_page={50: 1},
+            min_idx_in_page={1: 1},
         )),
         (2, PDFParsedCharacters(
             char_coord_objs_in_pdf=None,
             chars_in_pdf=['E', '.', ' ', '\n', 'C', 'o', 'l', 'i'],
             cropbox_in_pdf=(9, 9),
-            min_idx_in_page={50: 1},
+            min_idx_in_page={1: 1},
         )),
         (3, PDFParsedCharacters(
             char_coord_objs_in_pdf=None,
             chars_in_pdf=['T', 'y', 'p', 'h', '-', 'i', 'm', 'u', 'r', 'i', 'u', 'm'],
             cropbox_in_pdf=(9, 9),
-            min_idx_in_page={50: 1},
+            min_idx_in_page={1: 1},
         )),
         (4, PDFParsedCharacters(
             char_coord_objs_in_pdf=None,
             chars_in_pdf=['I', ' ', 'H', 'a', 'v', 'e', 'c', 'o', 'm', 'm', 'a', ','],
             cropbox_in_pdf=(9, 9),
-            min_idx_in_page={50: 1},
+            min_idx_in_page={1: 1},
         )),
         (5, PDFParsedCharacters(
             char_coord_objs_in_pdf=None,
             chars_in_pdf=['I', ' ', 'H', 'a', 'v', 'e', ')'],
             cropbox_in_pdf=(9, 9),
-            min_idx_in_page={50: 1},
+            min_idx_in_page={1: 1},
         )),
         (6, PDFParsedCharacters(
             char_coord_objs_in_pdf=None,
             chars_in_pdf=['I', ' ', 'H', 'a', 'v', 'e', '.'],
             cropbox_in_pdf=(9, 9),
-            min_idx_in_page={50: 1},
+            min_idx_in_page={1: 1},
         )),
         (7, PDFParsedCharacters(
             char_coord_objs_in_pdf=None,
             chars_in_pdf=['I', ' ', 'H', 'a', 'v', 'e', '.', ')', ','],
             cropbox_in_pdf=(9, 9),
-            min_idx_in_page={50: 1},
+            min_idx_in_page={1: 1},
         )),
         (8, PDFParsedCharacters(
             char_coord_objs_in_pdf=None,
             chars_in_pdf=['(', ',', 'I', ' ', 'H', 'a', 'v', 'e', '.', ')', ','],
             cropbox_in_pdf=(9, 9),
-            min_idx_in_page={50: 1},
+            min_idx_in_page={1: 1},
         )),
         (9, PDFParsedCharacters(
             char_coord_objs_in_pdf=None,
             chars_in_pdf=['-', '*', 'I', ' ', 'H', 'a', 'v', 'e', '-', ' '],
             cropbox_in_pdf=(9, 9),
-            min_idx_in_page={50: 1},
+            min_idx_in_page={1: 1},
         )),
     ],
 )
@@ -75,24 +74,23 @@ def test_extract_tokens(annotations_setup, index, text):
     parsed_tokens = pdf_parser.extract_tokens(parsed_chars=text)
     tokens = {t.keyword for t in parsed_tokens.token_positions}
 
+    # NOTE: due to exclusion words/stop words
+    # those will not be in the resulting tokens
+
     if index == 1:
         verify = {
-            'I',
             'I am',
             'I am a',
             'I am a sentence',
-            'am',
             'am a',
             'am a sentence',
-            'a',
             'a sentence',
             'sentence',
         }
         assert verify == tokens
     elif index == 2:
         verify = {
-            'E',
-            'E. Coli',
+            'E Coli',
             'Coli',
         }
         assert verify == tokens
@@ -100,14 +98,16 @@ def test_extract_tokens(annotations_setup, index, text):
         verify = {'Typh-imurium'}
         assert verify == tokens
     elif index == 4:
-        verify = {'I Havecomma', 'Havecomma', 'I'}
+        verify = {'I Havecomma', 'Havecomma'}
         assert verify == tokens
-    elif index == 5 or index == 6 or index == 7 or index == 8 or index == 9:
-        verify = {'I Have', 'Have', 'I'}
+    elif index == 5 or index == 6 or index == 7 or index == 8:
+        verify = {'I Have'}
+        assert verify == tokens
+    elif index == 9:
+        verify = {'*I', '*I Have'}
         assert verify == tokens
 
 
-@pytest.mark.skip
 @pytest.mark.parametrize(
     'index, chars',
     [
@@ -115,31 +115,31 @@ def test_extract_tokens(annotations_setup, index, text):
             char_coord_objs_in_pdf=None,
             chars_in_pdf=['I', ' ', 'a', 'm', ' ', 'a', ' ', 's', 'e', 'n', 't', 'e', 'n', 'c', 'e', '\n'],  # noqa
             cropbox_in_pdf=(9, 9),
-            min_idx_in_page={50: 1},
+            min_idx_in_page={1: 1},
         )),
         (2, PDFParsedCharacters(
             char_coord_objs_in_pdf=None,
             chars_in_pdf=['E', '.', ' ', '\n', 'C', 'o', 'l', 'i'],
             cropbox_in_pdf=(9, 9),
-            min_idx_in_page={50: 1},
+            min_idx_in_page={1: 1},
         )),
         (3, PDFParsedCharacters(
             char_coord_objs_in_pdf=None,
             chars_in_pdf=['T', 'y', 'p', 'h', '-', 'i', 'm', 'u', 'r', 'i', 'u', 'm'],  # noqa
             cropbox_in_pdf=(9, 9),
-            min_idx_in_page={50: 1},
+            min_idx_in_page={1: 1},
         )),
         (4, PDFParsedCharacters(
             char_coord_objs_in_pdf=None,
             chars_in_pdf=['Ti', '©', 'p', 'h', '-', 'i', 'm', 'u', 'r', 'i', 'u', 'm'],  # noqa
             cropbox_in_pdf=(9, 9),
-            min_idx_in_page={50: 1},
+            min_idx_in_page={1: 1},
         )),
         (5, PDFParsedCharacters(
             char_coord_objs_in_pdf=None,
             chars_in_pdf=['J', 'u', 's', 't', ' ', 's', 'a', 'y', 'i', 'n', 'g', '…'],  # noqa
             cropbox_in_pdf=(9, 9),
-            min_idx_in_page={50: 1},
+            min_idx_in_page={1: 1},
         )),
     ],
 )
@@ -159,7 +159,7 @@ def test_combine_char_into_word(annotations_setup, index, chars):
         assert combined == words
     elif index == 2:
         combined = [
-            ('E.', {0: 'E', 1: '.'}),
+            ('E', {0: 'E'}),
             ('Coli', {4: 'C', 5: 'o', 6: 'l', 7: 'i'}),
         ]
         assert combined == words
