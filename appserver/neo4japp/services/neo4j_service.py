@@ -155,21 +155,20 @@ class Neo4JService(GraphBaseDao):
             return self._query_neo4j(query)
         return None
 
-    def get_connected_nodes(self, node_id: str, filter_labels: List[str], limit: int):
+    def get_connected_nodes(self, node_id: str, filter_labels: List[str]):
         query = self.get_connected_nodes_query(filter_labels)
 
         results = self.graph.run(
             query,
             {
                 'node_id': node_id,
-                'limit': limit
             }
         ).data()
 
         return [result['node_id'] for result in results]
 
-    def expand_graph(self, node_id: str, filter_labels: List[str], limit: int):
-        connected_node_ids = self.get_connected_nodes(node_id, filter_labels, limit)
+    def expand_graph(self, node_id: str, filter_labels: List[str]):
+        connected_node_ids = self.get_connected_nodes(node_id, filter_labels)
         query = self.get_expand_query(node_id, connected_node_ids)
         return self._query_neo4j(query)
 
@@ -581,7 +580,6 @@ class Neo4JService(GraphBaseDao):
                 MATCH (n)-[:ASSOCIATED]-(s)
                 WHERE ID(n) = $node_id
                 RETURN DISTINCT ID(s) as node_id
-                LIMIT $limit
             """
         else:
             label_filter_str = ''
@@ -593,7 +591,6 @@ class Neo4JService(GraphBaseDao):
                 MATCH (n)-[:ASSOCIATED]-(s)
                 WHERE ID(n) = $node_id AND ({})
                 RETURN DISTINCT ID(s) as node_id
-                LIMIT $limit
             """.format(label_filter_str)
         return query
 
@@ -672,7 +669,7 @@ class Neo4JService(GraphBaseDao):
         """
 
     def get_individual_snippet_count_from_edges_query(self):
-        query = f"""
+        query = """
             MATCH (f)-[:HAS_ASSOCIATION]->(a:Association)-[:HAS_ASSOCIATION]->(t)
             WHERE
                 ID(f) IN $from_ids AND
@@ -684,8 +681,20 @@ class Neo4JService(GraphBaseDao):
                 ID(t) as to_id,
                 labels(f) as from_labels,
                 labels(t) as to_labels
-            OPTIONAL MATCH (association)<-[:PREDICTS]-(s:Snippet)
-            RETURN from_id, to_id, from_labels, to_labels, COUNT(s) as count
+            OPTIONAL MATCH (association)<-[:PREDICTS]-(s:Snippet)-[:IN_PUB]-(p:Publication)
+            WITH
+                COUNT(s) as snippet_count,
+                collect({
+                    snippet:s,
+                    publication:p
+                }) as references,
+                max(p.pub_year) as max_pub_year,
+                from_id,
+                to_id,
+                from_labels,
+                to_labels
+            ORDER BY snippet_count DESC, coalesce(max_pub_year, -1) DESC
+            RETURN from_id, to_id, from_labels, to_labels, snippet_count as count
         """
         return query
 
