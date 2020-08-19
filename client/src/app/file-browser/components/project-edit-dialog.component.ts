@@ -2,14 +2,18 @@ import { Component, OnInit, Input, OnDestroy } from '@angular/core';
 import { ProjectSpaceService, Collaborator, Project } from '../services/project-space.service';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { FormArray, FormGroup, FormControl } from '@angular/forms';
-import { Subscription } from 'rxjs';
+import { Subscription, combineLatest, Observable, of } from 'rxjs';
 import { CommonFormDialogComponent } from 'app/shared/components/dialog/common-form-dialog.component';
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { MatSnackBar } from '@angular/material';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { AuthenticationService } from 'app/auth/services/authentication.service';
-import { isNullOrUndefined } from 'util';
+import { isNullOrUndefined, isArray } from 'util';
 import { HttpErrorResponse } from '@angular/common/http';
+import { AppUser } from 'app/interfaces';
+import { AccountService } from 'app/users/services/account.service';
+import { startWith, map, filter, debounceTime, distinctUntilChanged, switchMap, flatMap } from 'rxjs/operators';
+
 
 @Component({
   selector: 'app-edit-project-dialog',
@@ -63,6 +67,9 @@ export class ProjectEditDialogComponent extends CommonFormDialogComponent implem
     currentCollabs: new FormArray([])
   });
 
+  listOfUsers: string[] = [];
+  userOptions: string[];
+
   get currentCollabs(): FormArray {
     return this.form.get('currentCollabs') as FormArray;
   }
@@ -88,12 +95,28 @@ export class ProjectEditDialogComponent extends CommonFormDialogComponent implem
     messageDialog: MessageDialog,
     private projSpace: ProjectSpaceService,
     private readonly snackBar: MatSnackBar,
-    private auth: AuthenticationService
+    private auth: AuthenticationService,
+    private acc: AccountService
   ) {
     super(modal, messageDialog);
   }
 
   ngOnInit() {
+    this.form.get('username').valueChanges
+      .pipe(
+        // Make sure a value is being pushed
+        filter(val => val.length >= 1),
+        // 750 ms between each input refresh
+        debounceTime(750),
+        switchMap(val => this.acc.listOfUsers(val))
+      ).subscribe(users => {
+        if (isArray(users)) {
+          this.userOptions = users.map(u => u.username);
+        } else {
+          this.userOptions = [(users as AppUser).username];
+        }
+      });
+
     this.formSubscription = this.form
       .valueChanges
       .subscribe(
@@ -129,8 +152,6 @@ export class ProjectEditDialogComponent extends CommonFormDialogComponent implem
         this.collabFormSubscription.forEach(
           (sub: Subscription) => sub.unsubscribe()
         );
-
-        console.log(this.form);
 
         this.collabFormSubscription = listOfFormGroups.map(
           (fg: FormGroup) => {
