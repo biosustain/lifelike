@@ -1,7 +1,7 @@
 """Add project version attribute columns and creation date to project.
 
 Revision ID: 7fb303ae343b
-Revises: 10c15d47e7c6
+Revises: fb1654973fbd
 Create Date: 2020-08-10 19:08:24.679959
 
 """

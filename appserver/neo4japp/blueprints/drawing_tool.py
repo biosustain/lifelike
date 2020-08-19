@@ -2,6 +2,7 @@ import io
 import json
 import os
 from datetime import datetime
+from neo4japp.constants import TIMEZONE
 
 import graphviz as gv
 from PyPDF4 import PdfFileReader, PdfFileWriter
@@ -133,7 +134,7 @@ def upload_map(projects_name: str):
         graph=map_data,
         user_id=user.id,
         dir_id=dir_id,
-        creation_date=datetime.now(),
+        creation_date=datetime.now(TIMEZONE),
     )
 
     db.session.add(drawing_map)
