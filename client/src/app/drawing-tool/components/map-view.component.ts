@@ -3,7 +3,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { BehaviorSubject, combineLatest, Observable, Subscription } from 'rxjs';
 import { MapService } from '../services';
-import { KnowledgeMap } from '../services/interfaces';
+import { KnowledgeMap, UniversalGraph, UniversalGraphEntity } from '../services/interfaces';
 
 import { MapExportDialogComponent } from './map-export-dialog.component';
 import { KnowledgeMapStyle } from 'app/graph-viewer/styles/knowledge-map-style';
@@ -55,6 +55,10 @@ export class MapViewComponent<ExtraResult = void> implements OnDestroy, AfterVie
   unsavedChangesSubscription: Subscription;
 
   unsavedChanges$ = new BehaviorSubject<boolean>(false);
+
+  entitySearchTerm = '';
+  entitySearchList: UniversalGraphEntity[] = [];
+  entitySearchListIdx = -1;
 
   constructor(
     readonly mapService: MapService,
@@ -141,6 +145,9 @@ export class MapViewComponent<ExtraResult = void> implements OnDestroy, AfterVie
   set map(value: KnowledgeMap | undefined) {
     this._map = value;
     this.initializeMap();
+
+    console.log(this._map);
+    console.log(this.graphCanvas);
   }
 
   get map() {
