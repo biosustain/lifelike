@@ -27,7 +27,6 @@ class ReactionRequest(CamelDictMixin):
 class ExpandNodeRequest(CamelDictMixin):
     node_id: int = attr.ib()
     filter_labels: List[str] = attr.ib()
-    limit: int = attr.ib()
 
 
 @bp.route('/', methods=['POST'])
@@ -65,13 +64,12 @@ def load_regulatory_graph(req: GraphRequest):
         return SuccessResponse(result=result, status_code=200)
     return SuccessResponse(result='', status_code=200)
 
-# TODO: Should make sure that the results of expansion are balanced.
-# For example, if a node has 1000 Chemical neighbors, but only 1 Gene
+
 @bp.route('/expand', methods=['POST'])
 @jsonify_with_class(ExpandNodeRequest)
 def expand_graph_node(req: ExpandNodeRequest):
     neo4j = get_neo4j_service_dao()
-    node = neo4j.expand_graph(req.node_id, req.filter_labels, req.limit)
+    node = neo4j.expand_graph(req.node_id, req.filter_labels)
     return SuccessResponse(result=node, status_code=200)
 
 
