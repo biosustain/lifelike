@@ -187,3 +187,10 @@ def seed_organism_gene_match_table():
                 db.session.flush()
                 rows = []
     db.session.commit()
+
+
+@app.cli.command('seed-elastic')
+def seed_elasticsearch():
+    from neo4japp.services.indexing import index_pdf
+    print('Seeds elasticsearch with PDF indexes')
+    index_pdf.seed_elasticsearch()

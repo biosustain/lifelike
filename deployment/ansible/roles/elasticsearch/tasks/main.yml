@@ -13,13 +13,18 @@
     image: "{{ elasticsearch_image }}"
     env:
         discovery.type: "single-node"
-        ES_JAVA_OPTS: "-Xms512m -Xmx512m"
+        ES_JAVA_OPTS: "-Xms2g -Xmx2g"
         xpack.security.enabled: "true"
+        bootstrap.memory_lock: "true"
+        xpack.graph.enabled: "false"
+        xpack.license.self_generated.type: "basic"
         xpack.monitoring.collection.enabled: "true"
+        http.max_content_length: "200mb"
     volumes:
         - "esdata:/usr/share/elasticsearch/data"
     ulimits:
         - nofile:65535:65535
+        - memlock:-1:-1
     networks:
         - name: "{{ network_name }}"
     state: started
@@ -27,6 +32,15 @@
     log_options:
         max-size: "{{ log_max_size }}"
         max-file: "{{ log_max_file }}"
+
+- name: Install elastic ingest-attachment addon
+  shell: docker exec -i -t {{ elasticsearch_hostname }} /usr/share/elasticsearch/bin/elasticsearch-plugin install -b ingest-attachment
+  ignore_errors: yes
+
+- name: Restart container
+  docker_container:
+    name: "{{ elasticsearch_hostname }}"
+    restart: yes
 
 - debug:
     msg: >
