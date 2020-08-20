@@ -53,22 +53,16 @@ def test_admin_can_delete_pdf_without_permission(
     assert 'Not an owner' not in resp_json
 
 
-def test_can_upload_pdf(monkeypatch, client, test_user, fix_project, fix_directory):
+def test_can_upload_pdf(monkeypatch, client, test_user, fix_project, fix_directory, elasticindexes):
     from neo4japp.blueprints import files
 
     login_resp = client.login_as_user(test_user.email, 'password')
     headers = generate_headers(login_resp['access_jwt'])
 
-    def mockannotate(filename, pdf_fp, custom_annotations, annotation_method):
-        """ Mocks out the 'annotate' function in the module
-        since we don't care about the annotation process """
-        return {}
-
     def mock_extract_doi(pdf_content, file_id, filename):
         """ Mocks out the extract doi function in the module """
         return None
 
-    monkeypatch.setattr(files, 'annotate', mockannotate)
     monkeypatch.setattr(files, 'extract_doi', mock_extract_doi)
     mock_pdf = BytesIO(json.dumps({}).encode('utf-8'))
 
@@ -79,7 +73,6 @@ def test_can_upload_pdf(monkeypatch, client, test_user, fix_project, fix_directo
             'fileInput': (mock_pdf, 'mock.pdf'),
             'filename': 'mock.pdf',
             'directoryId': fix_directory.id,
-            'annotationMethod': 'Rules Based'
         },
         content_type='multipart/form-data'
     )
@@ -94,12 +87,6 @@ def test_cannot_upload_if_no_write_permission(
     login_resp = client.login_as_user(test_user_2.email, 'password')
     headers = generate_headers(login_resp['access_jwt'])
 
-    def mockannotate(filename, pdf_fp, custom_annotations, annotation_method):
-        """ Mocks out the 'annotate' function in the module
-        since we don't care about the annotation process """
-        return {}
-
-    monkeypatch.setattr(files, 'annotate', mockannotate)
     mock_pdf = BytesIO(json.dumps({}).encode('utf-8'))
 
     resp = client.post(
@@ -109,7 +96,6 @@ def test_cannot_upload_if_no_write_permission(
             'fileInput': (mock_pdf, 'mock.pdf'),
             'filename': 'mock.pdf',
             'directoryId': fix_directory.id,
-            'annotationMethod': 'Rules Based'
         },
         content_type='multipart/form-data'
     )
@@ -124,16 +110,10 @@ def test_can_view_all_files_in_project(monkeypatch, client, test_user, fix_proje
     login_resp = client.login_as_user(test_user.email, 'password')
     headers = generate_headers(login_resp['access_jwt'])
 
-    def mockannotate(filename, pdf_fp, custom_annotations, annotation_method):
-        """ Mocks out the 'annotate' function in the module
-        since we don't care about the annotation process """
-        return {}
-
     def mock_extract_doi(pdf_content, file_id, filename):
         """ Mocks out the extract doi function in the module """
         return None
 
-    monkeypatch.setattr(files, 'annotate', mockannotate)
     monkeypatch.setattr(files, 'extract_doi', mock_extract_doi)
     mock_pdf = BytesIO(json.dumps({}).encode('utf-8'))
 
@@ -144,7 +124,6 @@ def test_can_view_all_files_in_project(monkeypatch, client, test_user, fix_proje
             'fileInput': (mock_pdf, 'mock.pdf'),
             'filename': 'mock.pdf',
             'directoryId': fix_directory.id,
-            'annotationMethod': 'Rules Based'
         },
         content_type='multipart/form-data'
     )

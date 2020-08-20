@@ -11,7 +11,7 @@ from neo4japp.database import db
 
 
 def get_all_files_and_content_by_id(file_ids: Set[str], project_id: int):
-    files = db.session.query(
+    return db.session.query(
         Files.id,
         Files.annotations,
         Files.custom_annotations,
@@ -26,9 +26,7 @@ def get_all_files_and_content_by_id(file_ids: Set[str], project_id: int):
             Files.project == project_id,
             Files.file_id.in_(file_ids),
         ),
-    ).all()
-
-    return files
+    )
 
 
 def get_all_files_by_id(file_ids: Set[str], project_id: int):

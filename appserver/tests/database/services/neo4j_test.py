@@ -7,7 +7,6 @@ def test_expand_node_gets_no_results_for_node_with_no_relationships(
 ):
     expand_query_result = neo4j_service_dao.expand_graph(
         node_id=gas_gangrene.identity,
-        limit=1,
         filter_labels=['Chemical', 'Disease', 'Gene'],
     )
 
@@ -16,23 +15,6 @@ def test_expand_node_gets_no_results_for_node_with_no_relationships(
 
     assert expand_query_result['nodes'] == []
     assert expand_query_result['edges'] == []
-
-
-def test_expand_node_can_limit_results(
-    neo4j_service_dao,
-    gas_gangrene_with_associations_and_references,
-):
-    expand_query_result = neo4j_service_dao.expand_graph(
-        node_id=gas_gangrene_with_associations_and_references.identity,
-        limit=1,
-        filter_labels=['Chemical', 'Disease', 'Gene'],
-    )
-
-    assert expand_query_result.get('nodes', None) is not None
-    assert expand_query_result.get('nodes', None) is not None
-
-    assert len(expand_query_result['nodes']) == 2
-    assert len(expand_query_result['edges']) == 1
 
 
 def test_get_reference_table_data(
@@ -48,9 +30,11 @@ def test_get_reference_table_data(
 
     reference_table_rows = get_reference_table_data_result.reference_table_rows
 
-    assert len(reference_table_rows) == 1
-    assert reference_table_rows[0].node_display_name == 'Penicillins'
+    assert len(reference_table_rows) == 2
+    assert reference_table_rows[0].node_display_name == 'Oxygen'
     assert reference_table_rows[0].snippet_count == 2
+    assert reference_table_rows[1].node_display_name == 'Penicillins'
+    assert reference_table_rows[1].snippet_count == 2
 
 
 def test_get_snippets_for_edge(
