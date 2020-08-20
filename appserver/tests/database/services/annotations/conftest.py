@@ -603,19 +603,7 @@ def mock_get_gene_to_organism_match_result(monkeypatch):
 @pytest.fixture(scope='function')
 def mock_get_gene_to_organism_serpina1_match_result(monkeypatch):
     def get_match_result(*args, **kwargs):
-        return {'serpina1': {'9606': '5265'}}
-
-    monkeypatch.setattr(
-        AnnotationsNeo4jService,
-        'get_gene_to_organism_match_result',
-        get_match_result,
-    )
-
-
-@pytest.fixture(scope='function')
-def mock_get_gene_to_organism_serpina1_match_result_all_caps(monkeypatch):
-    def get_match_result(*args, **kwargs):
-        return {'SERPINA1': {'9606': '5265'}}
+        return {'serpina1': {'9606': '5265'}, 'SERPINA1': {'9606': '5265'}}
 
     monkeypatch.setattr(
         AnnotationsNeo4jService,
