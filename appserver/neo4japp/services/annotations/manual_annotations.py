@@ -211,8 +211,8 @@ class ManualAnnotationsService:
                     return True
             return False
 
-        if not len(file.annotations) > 0:
-            return [] + file.custom_annotations
+        if len(file.annotations) == 0:
+            return file.custom_annotations
 
         annotations = file.annotations['documents'][0]['passages'][0]['annotations']
         filtered_annotations = [
