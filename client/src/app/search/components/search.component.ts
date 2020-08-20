@@ -1,16 +1,14 @@
-import {Component, ElementRef, OnDestroy, OnInit, ViewChild, ViewEncapsulation} from '@angular/core';
+import {Component, ElementRef, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
-
 import {Subscription} from 'rxjs';
-
 import {Domain, EntityType, FTSQueryRecord, FTSResult, PDFResult, PDFSnippets, SearchParameters} from 'app/interfaces';
 import {LegendService} from 'app/shared/services/legend.service';
 import {WorkspaceManager} from 'app/shared/workspace-manager';
-
 import {SearchService} from '../services/search.service';
 import {BackgroundTask} from '../../shared/rxjs/background-task';
 import {tap} from 'rxjs/operators';
 import {createSearchParamsFromQuery, getQueryParams} from '../utils/search';
+import {ProjectSpaceService} from '../../file-browser/services/project-space.service';
 
 @Component({
   selector: 'app-search',
@@ -43,6 +41,7 @@ export class SearchComponent implements OnInit, OnDestroy {
     private searchService: SearchService,
     private legendService: LegendService,
     private workspaceManager: WorkspaceManager,
+    private projSpace: ProjectSpaceService
   ) {
   }
 
@@ -108,7 +107,17 @@ export class SearchComponent implements OnInit, OnDestroy {
 
   private searchInFiles(params) {
     this.searchService.pdfFullTextSearch(params.query)
-      .subscribe(results => this.fileResults = results as PDFResult);
+      .subscribe(results => {
+        results.hits.forEach((snippetResult, index) => {
+          this.projSpace.getCollaborators(snippetResult.project_directory)
+            .subscribe(result => {
+            }, error => {
+              results.hits.splice(index, 1);
+              results.total = results.hits.length;
+            });
+        });
+        this.fileResults = results as PDFResult;
+      });
   }
 
   private createFilterQuery(domains?: Domain[], entityTypes?: EntityType[]): string {
