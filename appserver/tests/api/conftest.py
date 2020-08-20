@@ -6,6 +6,7 @@ import types
 import hashlib
 import pytest
 from datetime import date, datetime
+
 from neo4japp.models import (
     AppRole,
     AppUser,
@@ -18,8 +19,9 @@ from neo4japp.models import (
     DomainURLsMap,
     AnnotationStyle
 )
-
-from neo4japp.models import AnnotationStyle
+from neo4japp.services import Neo4JService
+from neo4japp.services.annotations import ManualAnnotationsService
+from neo4japp.services.annotations.constants import EntityType
 
 
 @pytest.fixture(scope='function')
@@ -255,3 +257,52 @@ def uri_fixture(client, session):
     session.flush()
 
     return uri1
+
+
+# TODO: Need to create actual mock data for these
+
+
+@pytest.fixture(scope='function')
+def mock_get_combined_annotations_result(monkeypatch):
+    def get_combined_annotations_result(*args, **kwargs):
+        return [
+            {
+                'meta': {
+                    'type': EntityType.Gene.value,
+                    'id': '59272',
+                    'allText': 'ace2'
+                }
+            },
+            {
+                'meta': {
+                    'type': EntityType.Species.value,
+                    'id': '9606',
+                    'allText': 'human'
+                }
+            },
+        ]
+
+    monkeypatch.setattr(
+        ManualAnnotationsService,
+        'get_combined_annotations',
+        get_combined_annotations_result,
+    )
+
+
+@pytest.fixture(scope='function')
+def mock_get_organisms_from_gene_ids_result(monkeypatch):
+    def get_organisms_from_gene_ids_result(*args, **kwargs):
+        return [
+            {
+                'gene_id': '59272',
+                'gene_name': 'ACE2',
+                'taxonomy_id': '9606',
+                'species_name': 'Homo sapiens',
+            }
+        ]
+
+    monkeypatch.setattr(
+        Neo4JService,
+        'get_organisms_from_gene_ids',
+        get_organisms_from_gene_ids_result,
+    )
