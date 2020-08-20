@@ -3,40 +3,19 @@ def generate_headers(jwt_token):
     return {'Authorization': f'Bearer {jwt_token}'}
 
 
-def test_user_can_get_colors_and_styles(client, test_user, styles_fixture):
+def test_user_can_get_colors_and_styles(client, test_user):
     login_resp = client.login_as_user(test_user.email, 'password')
     headers = generate_headers(login_resp['access_jwt'])
 
-    get_response = client.get('/annotations/style', headers=headers)
+    response = client.get('/annotations/style', headers=headers)
+    styles = response.get_json()['styles']
 
-    assert get_response.status_code == 200
-    assert {
-               'styles': [
-                   {
-                       'color': '#232323',
-                       'icon_code': None,
-                       'label': 'gene',
-                       'style': {
-                           'background': None,
-                           'border': None,
-                           'color': None
-                       }
-                   },
-                   {
-                       "label": "association",
-                       "color": "#d7d9f8",
-                       "icon_code": None,
-                       "style": {
-                           "border": "#d7d9f8",
-                           "background": "#d7d9f8",
-                           "color": "#000"
-                       }
-                   }
-               ]
-           } == get_response.get_json()
+    assert response.status_code == 200
+    assert len(styles) > 0
+    assert styles[0]['label'] and styles[0]['color']
 
 
-def test_user_can_get_specific_color_and_style(client, test_user, styles_fixture):
+def test_user_can_get_specific_color_and_style(client, test_user):
     login_resp = client.login_as_user(test_user.email, 'password')
     headers = generate_headers(login_resp['access_jwt'])
 
