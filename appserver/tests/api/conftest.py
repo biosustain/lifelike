@@ -225,27 +225,6 @@ def user_client(client, test_user):
 
 
 @pytest.fixture(scope='function')
-def styles_fixture(client, session):
-
-    style = AnnotationStyle(
-        label='gene',
-        color='#232323'
-    )
-    style2 = AnnotationStyle(
-        label="association",
-        color="#d7d9f8",
-        font_color="#000",
-        border_color="#d7d9f8",
-        background_color="#d7d9f8",
-    )
-    session.add(style)
-    session.add(style2)
-    session.flush()
-
-    return style
-
-
-@pytest.fixture(scope='function')
 def uri_fixture(client, session):
     uri1 = DomainURLsMap(domain="CHEBI", base_URL="https://www.ebi.ac.uk/chebi/searchId.do?chebiId={}")  # noqa
     uri2 = DomainURLsMap(domain="MESH", base_URL="https://www.ncbi.nlm.nih.gov/mesh/?term={}")
