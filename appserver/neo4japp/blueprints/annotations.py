@@ -133,6 +133,55 @@ def export_global_exclusions():
     yield response
 
 
+@bp.route('/<string:project_name>/<string:file_id>')
+@auth.login_required
+@requires_project_permission(AccessActionType.READ)
+def get_all_annotations_from_file(project_name, file_id):
+    project = Projects.query.filter(Projects.project_name == project_name).one_or_none()
+    if project is None:
+        raise RecordNotFoundException(f'Project {project_name} not found')
+
+    user = g.current_user
+
+    # yield to requires_project_permission
+    yield user, project
+
+    file = Files.query.filter_by(file_id=file_id, project=project.id).one_or_none()
+    if not file:
+        raise RecordNotFoundException('File does not exist')
+
+    manual_annotations_service = get_manual_annotations_service()
+    combined_annotations = manual_annotations_service.get_combined_annotations(project.id, file_id)
+
+    distinct_annotations = {}
+    for annotation in combined_annotations:
+        annotation_data = (
+            annotation['meta']['id'],
+            annotation['meta']['type'],
+            annotation['meta']['allText'],
+        )
+
+        if distinct_annotations.get(annotation_data, None) is not None:
+            distinct_annotations[annotation_data] += 1
+        else:
+            distinct_annotations[annotation_data] = 1
+
+    sorted_distinct_annotations = sorted(
+        distinct_annotations,
+        key=lambda annotation: distinct_annotations[annotation],
+        reverse=True
+    )
+
+    result = 'entity_id\ttype\ttext\tcount\n'
+    for annotation_data in sorted_distinct_annotations:
+        result += f"{annotation_data[0]}\t{annotation_data[1]}\t{annotation_data[2]}\t{distinct_annotations[annotation_data]}\n"  # noqa
+
+    response = make_response(result)
+    response.headers['Content-Type'] = 'text/tsv'
+
+    yield response
+
+
 @bp.route('/<string:project_name>/<string:file_id>/genes')
 @auth.login_required
 @requires_project_permission(AccessActionType.READ)
@@ -172,6 +221,6 @@ def get_gene_list_from_file(project_name, file_id):
         result += f"{pair['gene_id']}\t{pair['gene_name']}\t{pair['taxonomy_id']}\t{pair['species_name']}\t{gene_ids[pair['gene_id']]}\n"  # noqa
 
     response = make_response(result)
-    response.headers['Content-Type'] = 'text/csv'
+    response.headers['Content-Type'] = 'text/tsv'
 
     yield response
