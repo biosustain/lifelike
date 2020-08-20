@@ -88,29 +88,30 @@
                       (pageChange)="goToPage($event)"></ngb-pagination>
                   </div>
                 </ng-container>
-
+                <div *ngIf="status.emptyResultsShown && results.length == 0"
+                     class="text-center my-4 px-4">
+                  No records match your current filters.
+                </div>
               </ng-template>
             </li>
             <li ngbNavItem="file-results">
               <a ngbNavLink>File results</a>
               <ng-template ngbNavContent>
                 <div class="search-results" *ngIf="fileResults.total > 0">
-                  <div class="search-results-item"
-                       *ngFor="let n of fileResults.hits; let i = index">
+                  <div class="search-results-item">
                     <app-file-records
                       [results]="fileResults">
                     </app-file-records>
                   </div>
                 </div>
+                <div *ngIf="fileResults.total === 0"
+                     class="text-center my-4 px-4">
+                  No files match your current search.
+                </div>
               </ng-template>
             </li>
           </ul>
-
           <div [ngbNavOutlet]="nav" class="mt-4"></div>
-          <div *ngIf="status.emptyResultsShown && results.length == 0"
-               class="text-center my-4 px-4">
-            No records match your current filters.
-          </div>
         </ng-container>
         <ng-template #noQueryResults>
           <div class="text-center my-4 px-4">
