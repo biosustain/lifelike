@@ -269,9 +269,17 @@ def mock_get_combined_annotations_result(monkeypatch):
             {
                 'meta': {
                     'type': EntityType.Gene.value,
-                    'id': '59272'
+                    'id': '59272',
+                    'allText': 'ace2'
                 }
-            }
+            },
+            {
+                'meta': {
+                    'type': EntityType.Species.value,
+                    'id': '9606',
+                    'allText': 'human'
+                }
+            },
         ]
 
     monkeypatch.setattr(
