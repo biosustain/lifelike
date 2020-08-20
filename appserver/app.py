@@ -2,8 +2,8 @@ import importlib
 import json
 import logging
 import os
-
 import click
+
 from sqlalchemy import MetaData, inspect, Table
 from sqlalchemy.sql.expression import text
 
@@ -13,6 +13,7 @@ from neo4japp.models import (
     AppUser,
     OrganismGeneMatch,
 )
+from neo4japp.utils.logger import EventLog
 
 app_config = os.environ['FLASK_APP_CONFIG']
 app = create_app(config=f'config.{app_config}')
@@ -24,22 +25,14 @@ def home():
     return 'Ouch! You hit me.'
 
 
+@app.before_request
+def request_navigator_log():
+    app.logger.info(
+        EventLog(event_type='user navigate').to_dict())
+
+
 @app.cli.command("seed")
 def seed():
-    logger.info("Clearing database of data...")
-    meta = MetaData(bind=db.engine, reflect=True)
-    con = db.engine.connect()
-    trans = con.begin()
-    for table in meta.sorted_tables:
-        # don't want to truncate annotation stop words table
-        # because data was inserted in migration
-        # since it's needed on server when deployed
-        if table.name != 'annotation_stop_words' and table.name != 'alembic_version':
-            con.execute(f'ALTER TABLE "{table.name}" DISABLE TRIGGER ALL;')
-            con.execute(f'TRUNCATE TABLE "{table.name}" RESTART IDENTITY CASCADE;')
-            con.execute(f'ALTER TABLE "{table.name}" ENABLE TRIGGER ALL;')
-    trans.commit()
-
     def find_existing_row(model, value):
         if isinstance(value, dict):
             f = value
@@ -51,6 +44,7 @@ def seed():
 
     with open("fixtures/seed.json", "r") as f:
         fixtures = json.load(f)
+        truncated_tables = []
 
         for fixture in fixtures:
             module_name, class_name = fixture['model'].rsplit('.', 1)
@@ -58,6 +52,30 @@ def seed():
             model = getattr(module, class_name)
 
             if isinstance(model, Table):
+                truncated_tables.append(model.name)
+            else:
+                model_meta = inspect(model)
+                for table in model_meta.tables:
+                    truncated_tables.append(table.name)
+
+        logger.info("Clearing database of data...")
+        conn = db.engine.connect()
+        trans = conn.begin()
+        for table in truncated_tables:
+            logger.info(f"Truncating {table}...")
+            conn.execute(f'ALTER TABLE "{table}" DISABLE TRIGGER ALL;')
+            conn.execute(f'TRUNCATE TABLE "{table}" RESTART IDENTITY CASCADE;')
+            conn.execute(f'ALTER TABLE "{table}" ENABLE TRIGGER ALL;')
+        trans.commit()
+
+        logger.info("Inserting fixtures...")
+        for fixture in fixtures:
+            module_name, class_name = fixture['model'].rsplit('.', 1)
+            module = importlib.import_module(module_name)
+            model = getattr(module, class_name)
+
+            if isinstance(model, Table):
+                logger.info(f"Creating fixtures for {class_name}...")
                 db.session.execute(model.insert(), fixture['records'])
             else:
                 model_meta = inspect(model)
@@ -82,6 +100,8 @@ def seed():
 
             db.session.flush()
             db.session.commit()
+
+        logger.info("Fixtures imported")
 
 
 @app.cli.command("init-neo4j")
@@ -174,3 +194,10 @@ def seed_organism_gene_match_table():
                 db.session.flush()
                 rows = []
     db.session.commit()
+
+
+@app.cli.command('seed-elastic')
+def seed_elasticsearch():
+    from neo4japp.services.indexing import index_pdf
+    print('Seeds elasticsearch with PDF indexes')
+    index_pdf.seed_elasticsearch()
