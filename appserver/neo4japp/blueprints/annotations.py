@@ -9,18 +9,27 @@ from flask import Blueprint, current_app, g, make_response
 from werkzeug.datastructures import FileStorage
 
 from neo4japp.blueprints.auth import auth
-from neo4japp.blueprints.permissions import requires_project_permission, requires_role
+from neo4japp.blueprints.permissions import (
+    requires_role,
+    requires_project_permission
+)
 from neo4japp.constants import TIMEZONE
 from neo4japp.database import (
     db,
-    get_excel_export_service,
     get_annotations_service,
     get_annotations_pdf_parser,
     get_bioc_document_service,
+    get_excel_export_service,
     get_lmdb_dao,
+    get_manual_annotations_service,
+    get_neo4j_service_dao,
 )
 from neo4japp.data_transfer_objects import AnnotationRequest
-from neo4japp.exceptions import AnnotationError, DatabaseError, RecordNotFoundException
+from neo4japp.exceptions import (
+    AnnotationError,
+    DatabaseError,
+    RecordNotFoundException
+)
 from neo4japp.models import (
     AccessActionType,
     AppUser,
@@ -31,7 +40,7 @@ from neo4japp.models import (
     Projects,
 )
 import neo4japp.models.files_queries as files_queries
-from neo4japp.services.annotations.constants import AnnotationMethod
+from neo4japp.services.annotations.constants import AnnotationMethod, EntityType
 from neo4japp.util import jsonify_with_class, SuccessResponse
 
 bp = Blueprint('annotations', __name__, url_prefix='/annotations')
@@ -272,4 +281,97 @@ def export_global_exclusions():
     response.headers['Content-Type'] = exporter.mimetype
     response.headers['Content-Disposition'] = \
         f'attachment; filename={exporter.get_filename("global_exclusions")}'
+    yield response
+
+
+@bp.route('/<string:project_name>/<string:file_id>')
+@auth.login_required
+@requires_project_permission(AccessActionType.READ)
+def get_all_annotations_from_file(project_name, file_id):
+    project = Projects.query.filter(Projects.project_name == project_name).one_or_none()
+    if project is None:
+        raise RecordNotFoundException(f'Project {project_name} not found')
+
+    user = g.current_user
+
+    # yield to requires_project_permission
+    yield user, project
+
+    file = Files.query.filter_by(file_id=file_id, project=project.id).one_or_none()
+    if not file:
+        raise RecordNotFoundException('File does not exist')
+
+    manual_annotations_service = get_manual_annotations_service()
+    combined_annotations = manual_annotations_service.get_combined_annotations(project.id, file_id)
+
+    distinct_annotations = {}
+    for annotation in combined_annotations:
+        annotation_data = (
+            annotation['meta']['id'],
+            annotation['meta']['type'],
+            annotation['meta']['allText'],
+        )
+
+        if distinct_annotations.get(annotation_data, None) is not None:
+            distinct_annotations[annotation_data] += 1
+        else:
+            distinct_annotations[annotation_data] = 1
+
+    sorted_distinct_annotations = sorted(
+        distinct_annotations,
+        key=lambda annotation: distinct_annotations[annotation],
+        reverse=True
+    )
+
+    result = 'entity_id\ttype\ttext\tcount\n'
+    for annotation_data in sorted_distinct_annotations:
+        result += f"{annotation_data[0]}\t{annotation_data[1]}\t{annotation_data[2]}\t{distinct_annotations[annotation_data]}\n"  # noqa
+
+    response = make_response(result)
+    response.headers['Content-Type'] = 'text/tsv'
+
+    yield response
+
+
+@bp.route('/<string:project_name>/<string:file_id>/genes')
+@auth.login_required
+@requires_project_permission(AccessActionType.READ)
+def get_gene_list_from_file(project_name, file_id):
+    project = Projects.query.filter(Projects.project_name == project_name).one_or_none()
+    if project is None:
+        raise RecordNotFoundException(f'Project {project_name} not found')
+
+    user = g.current_user
+
+    # yield to requires_project_permission
+    yield user, project
+
+    file = Files.query.filter_by(file_id=file_id, project=project.id).one_or_none()
+    if not file:
+        raise RecordNotFoundException('File does not exist')
+
+    manual_annotations_service = get_manual_annotations_service()
+    combined_annotations = manual_annotations_service.get_combined_annotations(project.id, file_id)
+    gene_ids = {}
+    for annotation in combined_annotations:
+        if annotation['meta']['type'] == EntityType.Gene.value:
+            gene_id = annotation['meta']['id']
+            if gene_ids.get(gene_id, None) is not None:
+                gene_ids[gene_id] += 1
+            else:
+                gene_ids[gene_id] = 1
+
+    neo4j = get_neo4j_service_dao()
+    gene_organism_pairs = neo4j.get_organisms_from_gene_ids(
+        gene_ids=list(gene_ids.keys())
+    )
+    sorted_pairs = sorted(gene_organism_pairs, key=lambda pair: gene_ids[pair['gene_id']], reverse=True)  # noqa
+
+    result = 'gene_id\tgene_name\torganism_id\torganism_name\tgene_annotation_count\n'
+    for pair in sorted_pairs:
+        result += f"{pair['gene_id']}\t{pair['gene_name']}\t{pair['taxonomy_id']}\t{pair['species_name']}\t{gene_ids[pair['gene_id']]}\n"  # noqa
+
+    response = make_response(result)
+    response.headers['Content-Type'] = 'text/tsv'
+
     yield response
