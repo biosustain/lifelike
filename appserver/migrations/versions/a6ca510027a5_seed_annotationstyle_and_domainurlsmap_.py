@@ -11,6 +11,7 @@ from alembic import context
 from alembic import op
 import sqlalchemy as sa
 from sqlalchemy.orm.session import Session
+from sqlalchemy.sql import table, column
 
 from neo4japp.models import AnnotationStyle, DomainURLsMap
 
@@ -20,6 +21,24 @@ revision = 'a6ca510027a5'
 down_revision = 'fb1654973fbd'
 branch_labels = None
 depends_on = None
+
+t_annotation_style = table(
+    'annotation_style',
+    column('id', sa.Integer),
+    column('label', sa.String),
+    column('color', sa.String),
+    column('icon_code', sa.String),
+    column('font_color', sa.String),
+    column('border_color', sa.String),
+    column('background_color', sa.String),
+)
+
+t_domain_urls_map = table(
+    'domain_urls_map',
+    column('id', sa.Integer),
+    column('domain', sa.String),
+    column('base_URL', sa.String),
+)
 
 
 def upgrade():
@@ -63,7 +82,7 @@ def data_upgrades():
                 'base_URL': row['base_URL']
             }
         )
-    session.bulk_insert_mappings(DomainURLsMap, domain_urls_map_data)
+    session.execute(t_domain_urls_map.insert(), domain_urls_map_data)
 
     annotation_style_data = []
     for row in annotation_style_json:
@@ -77,7 +96,7 @@ def data_upgrades():
                 'icon_code': row.get('icon_code', None),
             }
         )
-    session.bulk_insert_mappings(AnnotationStyle, annotation_style_data)
+    session.execute(t_annotation_style.insert(), annotation_style_data)
 
     session.commit()
 
