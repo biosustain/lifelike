@@ -32,7 +32,12 @@
 
     <div class="mt-1" *ngIf="result.snippets.length > 0; else noSnippets">
       <mat-expansion-panel class="association-snippet-panel border shadow-none my-2" *ngFor="let snippet of result.snippets">
-        <mat-expansion-panel-header class="snippet-panel-header  border-bottom h-100 w-100 px-4 py-3">
+        <!-- Setting the collapsed/expanded height inputs here seems to fix an issue in Safari where the bootstrap h-100 class is not respected. -->
+        <mat-expansion-panel-header
+            class="snippet-panel-header  border-bottom h-100 w-100 px-4 py-3"
+            [collapsedHeight]="'100%'"
+            [expandedHeight]="'100%'"
+        >
           <mat-panel-title class="snippet-panel-title d-flex align-items-center text-primary">{{ (snippet.publication.data.title || 'Unknown') | truncate:['240'] }}</mat-panel-title>
           <mat-panel-description class="snippet-panel-pub-data">
             <i>{{ (snippet.publication.data.journal || 'Unknown') | truncate:['100'] }} ({{ snippet.publication.data.pubYear || 'Unknown' }})</i>
