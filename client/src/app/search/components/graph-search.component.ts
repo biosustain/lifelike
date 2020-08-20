@@ -3,14 +3,15 @@ import { ActivatedRoute } from '@angular/router';
 
 import { Subscription } from 'rxjs';
 
-import { Domain, EntityType, FTSQueryRecord, FTSResult, SearchParameters } from 'app/interfaces';
+import { Domain, EntityType, FTSQueryRecord, FTSResult } from 'app/interfaces';
 import { LegendService } from 'app/shared/services/legend.service';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 
-import { SearchService } from '../services/search.service';
+import { GraphSearchService } from '../services/graph-search.service';
 import { BackgroundTask } from '../../shared/rxjs/background-task';
 import { tap } from 'rxjs/operators';
 import { createSearchParamsFromQuery, getQueryParams } from '../utils/search';
+import { GraphSearchParameters } from '../graph-search';
 
 @Component({
   selector: 'app-graph-search',
@@ -19,7 +20,7 @@ import { createSearchParamsFromQuery, getQueryParams } from '../utils/search';
 export class GraphSearchComponent implements OnInit, OnDestroy {
   @ViewChild('body', {static: false}) body: ElementRef;
 
-  readonly loadTask: BackgroundTask<SearchParameters, FTSResult> = new BackgroundTask(params => {
+  readonly loadTask: BackgroundTask<GraphSearchParameters, FTSResult> = new BackgroundTask(params => {
     return this.searchService.visualizerSearchTemp(
       params.query,
       params.page,
@@ -28,7 +29,7 @@ export class GraphSearchComponent implements OnInit, OnDestroy {
     );
   });
 
-  params: SearchParameters | undefined;
+  params: GraphSearchParameters | undefined;
   collectionSize = 0;
   results: FTSQueryRecord[] = [];
 
@@ -39,7 +40,7 @@ export class GraphSearchComponent implements OnInit, OnDestroy {
 
   constructor(
     private route: ActivatedRoute,
-    private searchService: SearchService,
+    private searchService: GraphSearchService,
     private legendService: LegendService,
     private workspaceManager: WorkspaceManager,
   ) {
@@ -88,7 +89,7 @@ export class GraphSearchComponent implements OnInit, OnDestroy {
     this.loadTask.update(this.params);
   }
 
-  search(params: SearchParameters) {
+  search(params: GraphSearchParameters) {
     this.workspaceManager.navigate(['/search'], {
       queryParams: {
         ...getQueryParams(params),

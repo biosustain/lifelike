@@ -96,14 +96,6 @@ export interface FTSResult {
   limit: number;
 }
 
-export interface SearchParameters {
-  query: string;
-  domains?: Domain[];
-  entityTypes?: EntityType[];
-  page: number;
-  limit: number;
-}
-
 export interface SearchRecord {
   nodeId: number;
   label: string;

@@ -24,6 +24,7 @@ import { CommunityBrowserComponent } from './file-browser/components/community-b
 import { BrowserComponent } from './file-browser/components/browser/browser.component';
 import { KgImportWizardComponent } from './kg-import/containers/kg-import-wizard/kg-import-wizard.component';
 import { GeneImportWizardComponent } from './kg-import/containers/gene-import-wizard/gene-import-wizard.component';
+import { ContentSearchComponent } from './search/components/content-search.component';
 
 // TODO: Add an unprotected home page
 const routes: Routes = [
@@ -73,7 +74,15 @@ const routes: Routes = [
     path: 'search/graph',
     component: GraphSearchComponent,
     data: {
-      title: 'Knowledge Graph Search',
+      title: 'Visualizer Search',
+      fontAwesomeIcon: 'search',
+    },
+  },
+  {
+    path: 'search/content',
+    component: ContentSearchComponent,
+    data: {
+      title: 'File Search',
       fontAwesomeIcon: 'search',
     },
   },
@@ -186,9 +195,9 @@ const routes: Routes = [
     path: 'kg-import',
     canActivate: [AuthGuard],
     children: [
-        { path: '', component: KgImportWizardComponent },
-        { path: 'genes', component: GeneImportWizardComponent}
-    ]
+      {path: '', component: KgImportWizardComponent},
+      {path: 'genes', component: GeneImportWizardComponent},
+    ],
   },
   {
     path: 'kg-statistics',

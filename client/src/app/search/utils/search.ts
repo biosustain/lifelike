@@ -1,8 +1,9 @@
-import { SearchParameters } from '../../interfaces';
 import { DOMAIN_MAP, ENTITY_TYPE_MAP } from '../../shared/database';
 import { VIZ_SEARCH_LIMIT } from '../../shared/constants';
+import { GraphSearchParameters } from '../graph-search';
+import { getChoicesFromQuery } from '../../shared/utils/params';
 
-export function getQueryParams(params: SearchParameters) {
+export function getQueryParams(params: GraphSearchParameters) {
   return {
     q: params.query,
     page: params.page,
@@ -11,7 +12,7 @@ export function getQueryParams(params: SearchParameters) {
   };
 }
 
-export function createSearchParamsFromQuery(params): SearchParameters {
+export function createSearchParamsFromQuery(params): GraphSearchParameters {
   return {
     query: params.q,
     domains: getChoicesFromQuery(params, 'domains', DOMAIN_MAP),
@@ -21,21 +22,3 @@ export function createSearchParamsFromQuery(params): SearchParameters {
   };
 }
 
-function getChoicesFromQuery<T>(params, key, choicesMap: Map<string, T>): T[] {
-  if (params.hasOwnProperty(key)) {
-    if (params[key] === '') {
-      return [];
-    } else {
-      const choices: T[] = [];
-      for (const id of params[key].split(';')) {
-        const choice = choicesMap.get(id);
-        if (choice != null) {
-          choices.push(choice);
-        }
-      }
-      return choices;
-    }
-  } else {
-    return null;
-  }
-}
