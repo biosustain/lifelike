@@ -1081,7 +1081,7 @@ class AnnotationsService:
 
                     entity_tokenpos_pairs.append((entity, token_positions))
 
-        organism_ids_from_custom_annotations = self.annotation_neo4j.get_organisms_from_ids(
+        organism_ids_from_custom_annotations = self.annotation_neo4j.get_organisms_from_tax_ids(
             tax_ids=list(organisms_from_custom_annotations))
 
         organism_ids_to_query = organism_ids_from_custom_annotations + list(self.organism_frequency.keys())  # noqa

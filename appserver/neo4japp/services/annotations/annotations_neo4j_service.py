@@ -71,5 +71,5 @@ class AnnotationsNeo4jService(RDBMSBaseDao):
 
         return postgres_result
 
-    def get_organisms_from_ids(self, tax_ids: List[str]) -> List[str]:
-        return self.neo4j.get_organisms_from_ids(tax_ids)
+    def get_organisms_from_tax_ids(self, tax_ids: List[str]) -> List[str]:
+        return self.neo4j.get_organisms_from_tax_ids(tax_ids)
