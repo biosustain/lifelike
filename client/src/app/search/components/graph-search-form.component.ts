@@ -1,10 +1,11 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { Domain, EntityType, SearchParameters } from '../../interfaces';
+import { Domain, EntityType } from '../../interfaces';
 import { DOMAINS, ENTITY_TYPES } from '../../shared/database';
 import { MessageType } from '../../interfaces/message-dialog.interface';
 import { MessageDialog } from '../../shared/services/message-dialog.service';
 import { nonEmptyList } from '../../shared/validators';
+import { GraphSearchParameters } from '../graph-search';
 
 @Component({
   selector: 'app-graph-search-form',
@@ -13,7 +14,7 @@ import { nonEmptyList } from '../../shared/validators';
 export class GraphSearchFormComponent {
   domainChoices: Domain[] = DOMAINS.concat().sort((a, b) => a.name.localeCompare(b.name));
   entityTypeChoices: EntityType[] = ENTITY_TYPES.concat().sort((a, b) => a.name.localeCompare(b.name));
-  @Output() search = new EventEmitter<SearchParameters>();
+  @Output() search = new EventEmitter<GraphSearchParameters>();
 
   form = new FormGroup({
     query: new FormControl('', Validators.required),
@@ -30,7 +31,7 @@ export class GraphSearchFormComponent {
   }
 
   @Input()
-  set params(params: SearchParameters) {
+  set params(params: GraphSearchParameters) {
     if (params) {
       this.form.patchValue({
         query: params.query,

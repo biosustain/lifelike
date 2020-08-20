@@ -2,12 +2,13 @@ import { Component, Input } from '@angular/core';
 
 import { isNullOrUndefined } from 'util';
 
-import { FTSReferenceRecord, GraphNode, SearchParameters } from 'app/interfaces';
+import { FTSReferenceRecord, GraphNode } from 'app/interfaces';
 import { PUBMEDURL } from 'app/shared/constants';
 import { stringToHex } from 'app/shared/utils';
 import { UniversalGraphNode } from '../../drawing-tool/services/interfaces';
 import { getLink } from '../utils/records';
 import { getQueryParams } from 'app/search/utils/search';
+import { GraphSearchParameters } from '../graph-search';
 
 @Component({
   selector: 'app-search-record-relationships',
@@ -29,7 +30,7 @@ export class SearchRecordRelationshipsComponent {
   diseaseDisplayName = '';
   diseaseLabel = '';
 
-  @Input() params: SearchParameters;
+  @Input() params: GraphSearchParameters;
 
   @Input()
   set node(n: FTSReferenceRecord) {

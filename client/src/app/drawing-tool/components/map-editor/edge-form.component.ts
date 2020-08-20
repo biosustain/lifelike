@@ -4,7 +4,7 @@ import { cloneDeep } from 'lodash';
 import { UniversalGraphEdge, UniversalGraphNode } from '../../services/interfaces';
 import { LINE_HEAD_TYPES } from '../../services/line-head-types';
 import { LINE_TYPES } from '../../services/line-types';
-import { RecursivePartial } from '../../../graph-viewer/utils/types';
+import { RecursivePartial } from '../../../shared/utils/types';
 import { openLink } from '../../../shared/utils/browser';
 import { PALETTE_COLORS } from '../../services/palette';
 import { isNullOrUndefined } from 'util';

@@ -11,7 +11,7 @@ import {
   PlacedNode,
   PlacementOptions,
 } from 'app/graph-viewer/styles/styles';
-import { nullCoalesce, nullIfEmpty } from 'app/graph-viewer/utils/types';
+import { nullCoalesce, nullIfEmpty } from 'app/shared/utils/types';
 import { RectangleNode } from 'app/graph-viewer/utils/canvas/graph-nodes/rectangle-node';
 import { TextAlignment, TextElement } from 'app/graph-viewer/utils/canvas/text-element';
 import { FontIconNode } from 'app/graph-viewer/utils/canvas/graph-nodes/font-icon-node';

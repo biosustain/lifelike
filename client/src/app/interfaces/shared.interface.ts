@@ -38,3 +38,8 @@ export interface ResultList<T> {
   total: number;
   results: T[];
 }
+
+export interface RankedItem<T> {
+  item: T;
+  rank: number;
+}

@@ -5,13 +5,18 @@ import { GraphSearchFormComponent } from './components/graph-search-form.compone
 import { GraphSearchComponent } from './components/graph-search.component';
 import { SearchRecordNodeComponent } from './components/search-record-node.component';
 import { SearchRecordRelationshipsComponent } from './components/search-record-relationships.component';
-import { SearchService } from './services/search.service';
+import { GraphSearchService } from './services/graph-search.service';
+import { ContentSearchComponent } from './components/content-search.component';
+import { ContentSearchFormComponent } from './components/content-search-form.component';
+import { ContentSearchService } from './services/content-search.service';
 
 const components = [
+  GraphSearchComponent,
   GraphSearchFormComponent,
   SearchRecordNodeComponent,
   SearchRecordRelationshipsComponent,
-  GraphSearchComponent,
+  ContentSearchComponent,
+  ContentSearchFormComponent,
 ];
 
 @NgModule({
@@ -19,7 +24,10 @@ const components = [
     SharedModule,
   ],
   declarations: components,
-  providers: [SearchService],
+  providers: [
+    GraphSearchService,
+    ContentSearchService,
+  ],
   exports: components,
 })
 export class SearchModule {

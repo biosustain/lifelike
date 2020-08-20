@@ -20,7 +20,7 @@ import {
   Neo4jResults,
   NewClusterSnippetsPageRequest,
   NewEdgeSnippetsPageRequest,
-  SearchParameters,
+  GraphSearchParameters,
   VisEdge,
   VisNode,
 } from 'app/interfaces';
@@ -41,7 +41,7 @@ import { Progress } from '../../../interfaces/common-dialog.interface';
 })
 export class VisualizationComponent implements OnInit, OnDestroy {
 
-  params: SearchParameters;
+  params: GraphSearchParameters;
 
   // Shows/Hide the component
   hideDisplay = false;
