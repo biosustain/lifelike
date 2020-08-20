@@ -7,7 +7,7 @@ def test_user_can_get_colors_and_styles(client, test_user):
     login_resp = client.login_as_user(test_user.email, 'password')
     headers = generate_headers(login_resp['access_jwt'])
 
-    response = client.get('/annotations/style', headers=headers)
+    response = client.get('/entity-resources/style', headers=headers)
     styles = response.get_json()['styles']
 
     assert response.status_code == 200
@@ -19,7 +19,7 @@ def test_user_can_get_specific_color_and_style(client, test_user):
     login_resp = client.login_as_user(test_user.email, 'password')
     headers = generate_headers(login_resp['access_jwt'])
 
-    get_response = client.get('/annotations/style/association', headers=headers)
+    get_response = client.get('/entity-resources/style/association', headers=headers)
 
     assert get_response.status_code == 200
     assert {
@@ -41,7 +41,7 @@ def test_user_can_get_uri(client, test_user, uri_fixture):
 
     post_payload = {'domain': 'CHEBI', 'term': 'CHEBI:27732'}
 
-    post_response = client.post('/annotations/uri', headers=headers, json=post_payload)
+    post_response = client.post('/entity-resources/uri', headers=headers, json=post_payload)
     assert post_response.status_code == 200
     assert post_response.json == {'uri': 'https://www.ebi.ac.uk/chebi/searchId.do?chebiId=CHEBI:27732'}  # noqa
 
@@ -59,7 +59,7 @@ def test_user_can_get_many_uris(client, test_user, uri_fixture):
         ]
     }
 
-    post_response = client.post('/annotations/uri/batch', headers=headers, json=post_payload)
+    post_response = client.post('/entity-resources/uri/batch', headers=headers, json=post_payload)
     assert post_response.status_code == 200
     assert len(post_response.json['batch']) == 4
     assert post_response.json == {

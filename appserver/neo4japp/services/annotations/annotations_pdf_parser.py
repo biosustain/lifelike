@@ -1,3 +1,4 @@
+import attr
 import json
 import re
 
@@ -34,7 +35,6 @@ class AnnotationsPDFParser:
     def __init__(self) -> None:
         # TODO: go into constants.py if used by other classes
         self.max_word_length = 6
-        self.regex_for_floats = r'^-?\d+(?:\.\d+)?$'
 
     def _get_lt_char(
         self,
@@ -177,6 +177,57 @@ class AnnotationsPDFParser:
     def parse_pdf_high_level(self, pdf) -> str:
         return high_level.extract_text(pdf)
 
+    def parse_pubtator(self, pubtator) -> PDFParsedCharacters:
+        """Parse a Pubtator file and produces similar results to
+        self.parse_pdf(). The only difference would be the LTChar
+        objects will not actual PDF coordinates.
+        """
+        @attr.s(frozen=True)
+        class Font():
+            fontname: str = attr.ib()
+
+            def is_vertical(self):
+                return False
+
+            def get_descent(self):
+                return 0
+
+        chars_in_abstract: List[str] = []
+        lt_chars: List[LTChar] = []
+        cropbox_in_pdf = (1, 1)
+        min_idx_in_page = {1: 1}
+
+        next(pubtator)
+        for line in pubtator:
+            abstract = line.split('|')[2]
+
+            for c in abstract:
+                # create a fake LTChar
+                lt_chars.append(
+                    LTChar(
+                        text=c,
+                        matrix=(0, 0, 0, 0, 0, 0),
+                        font=Font(fontname=''),
+                        fontsize=0,
+                        scaling=0,
+                        rise=0,
+                        textwidth=0,
+                        textdisp=None,
+                        ncs=None,
+                        graphicstate=None,
+                    )
+                )
+
+        for lt_char in lt_chars:
+            chars_in_abstract.append(lt_char.get_text())
+
+        return PDFParsedCharacters(
+            char_coord_objs_in_pdf=lt_chars,
+            chars_in_pdf=chars_in_abstract,
+            cropbox_in_pdf=cropbox_in_pdf,
+            min_idx_in_page=min_idx_in_page,
+        )
+
     def parse_pdf(self, pdf) -> PDFParsedCharacters:
         """Parse a PDF and create two dictionaries; one
         containing individual LTChar objects with coordinate
@@ -235,53 +286,104 @@ class AnnotationsPDFParser:
     def _not_whitespace(self, char: str) -> bool:
         return char not in whitespace and char != '\xa0'
 
-    def _not_all_whitespace_or_punctuation(self, text: str) -> bool:
-        for c in text:
-            if c in ascii_letters:
-                return True
-        return False
-
-    def _remove_leading_and_trailing_punctuation(
+    def remove_leading_trailing_punctuation(
         self,
-        keyword: str,
-        curr_char_idx_mappings: Dict[int, str],
-    ) -> Tuple[str, Dict[int, str]]:
-        """Check if keyword had leading and trailing punctuation. If keyword
-        is end of sentence, will remove period and punctuation before period.
-        Will only remove the first leading and trailing punctuation, because
-        don't know if other punctuation are part of keyword or not.
-
-        Returns updated keyword and index mapping.
+        word: str,
+        char_map: Dict[int, str],
+    ) -> Tuple[str, dict]:
+        """Only remove balanced opening and closing punctuation.
         """
-        leading_punctuation = punctuation
-        # exclude +, - for chemicals
-        trailing_punctuation = set(leading_punctuation) - {'+', '-'}
-        period = '.'
+        opening_punc = {'(', '[', '{'}
+        closing_punc = {')', ']', '}'}
+        leading_punc = set(punctuation) - opening_punc
+        trailing_punc = set(punctuation) - set.union(*[closing_punc, {'+', '-'}])  # type: ignore
+        ending_punc = {'.', ',', '?', '!'}
 
-        updated_word = keyword
-        updated_curr_char_idx_mappings = {k: v for k, v in curr_char_idx_mappings.items()}
+        char_map_copy = {k: v for k, v in char_map.items()}
+        word_copy = word
+        idx_keys = list(char_map_copy)
 
         try:
-            if keyword[0] in leading_punctuation:
-                updated_word = keyword[1:]
-                dict_keys = list(updated_curr_char_idx_mappings.keys())
-                remove = dict_keys[0]
-                updated_curr_char_idx_mappings.pop(remove)
+            # ending punctuation
+            while word_copy and word_copy[-1] in ending_punc:
+                word_copy = word_copy[:-1]
+                del char_map_copy[idx_keys[-1]]
+                idx_keys = list(char_map_copy)
 
-            if keyword[-1] == period and keyword[-2] in trailing_punctuation:
-                updated_word = updated_word[:-2]
-                dict_keys = list(updated_curr_char_idx_mappings.keys())
-                for remove in [dict_keys[-1], dict_keys[-2]]:
-                    updated_curr_char_idx_mappings.pop(remove)
-            elif keyword[-1] in trailing_punctuation:
-                updated_word = updated_word[:-1]
-                dict_keys = list(updated_curr_char_idx_mappings.keys())
-                remove = dict_keys[-1]
-                updated_curr_char_idx_mappings.pop(remove)
-        except KeyError:
-            raise AnnotationError('Index key error occurred when stripping leading and trailing punctuation.')  # noqa
+            if word_copy:
+                # now check for other punctuations
+                # e.g (circle).
+                # the period was removed in previous if block
+                while word_copy and (word_copy[0] in opening_punc and word_copy[-1] in closing_punc):  # noqa
+                    if word_copy[0] == '(' and word_copy[-1] == ')' or \
+                        word_copy[0] == '[' and word_copy[-1] == ']' or \
+                            word_copy[0] == '{' and word_copy[-1] == '}':
+                        word_copy = word_copy[1:-1]
+                        del char_map_copy[idx_keys[0]]
+                        del char_map_copy[idx_keys[-1]]
+                        idx_keys = list(char_map_copy)
+                    else:
+                        # did not match
+                        break
 
-        return updated_word, updated_curr_char_idx_mappings
+                if word_copy:
+                    if word_copy[0] in opening_punc:
+                        closing_idx = []
+                        for i, c in enumerate(word_copy[1:]):
+                            if c in closing_punc:
+                                if word_copy[0] == '(' and c == ')' or \
+                                    word_copy[0] == '[' and c == ']' or \
+                                        word_copy[0] == '{' and c == '}':
+                                    # can't assume any punctuation in
+                                    # middle of word in not part of word
+                                    # so just break if found one matching closing
+                                    closing_idx.append(i)
+                                    break
+
+                        if not closing_idx:
+                            # no matching closing punctuation found
+                            # so delete
+                            word_copy = word_copy[1:]
+                            del char_map_copy[idx_keys[0]]
+                            idx_keys = list(char_map_copy)
+
+                if word_copy:
+                    if word_copy[-1] in closing_punc:
+                        opening_idx = []
+                        for i, c in enumerate(reversed(word_copy[:-1])):
+                            if c in opening_punc:
+                                if word_copy[-1] == ')' and c == '(' or \
+                                    word_copy[-1] == ']' and c == '[' or \
+                                        word_copy[-1] == '}' and c == '{':
+                                    # can't assume any punctuation in
+                                    # middle of word in not part of word
+                                    # so just break if found one matching opening
+                                    opening_idx.append(i)
+                                    break
+
+                        if not opening_idx:
+                            # no matching opening punctuation found
+                            # so delete
+                            word_copy = word_copy[:-1]
+                            del char_map_copy[idx_keys[-1]]
+                            idx_keys = list(char_map_copy)
+
+                if word_copy:
+                    # strip the first leading and trailing only
+                    # because can't assume any others are not
+                    # part of word
+                    if word_copy[-1] in trailing_punc:
+                        word_copy = word_copy[:-1]
+                        del char_map_copy[idx_keys[-1]]
+                    if word_copy and word_copy[0] in leading_punc:
+                        word_copy = word_copy[1:]
+                        del char_map_copy[idx_keys[0]]
+
+        except IndexError:
+            raise AnnotationError(
+                'Index key error occurred when stripping leading and trailing punctuation.'
+                f' For word "{word}"')
+        return word_copy, char_map_copy
 
     def combine_all_chars(
         self,
@@ -324,10 +426,7 @@ class AnnotationsPDFParser:
 
         for i, char in enumerate(char_list):
             try:
-                # some characters can be a combination of two characters
-                # e.g `fi` this is a legit character related to the
-                # production of the document and OCR
-                if len(char) == 1 and ord(char) in MISC_SYMBOLS_AND_CHARS:
+                if ord(char) in MISC_SYMBOLS_AND_CHARS:
                     # need to clean because some times hyphens
                     # are parsed as a char that's represented by a
                     # unicode and doesn't match the string hyphen
@@ -335,26 +434,43 @@ class AnnotationsPDFParser:
                 else:
                     curr_char = char
 
-                if len(char_list[i-1]) == 1 and ord(char_list[i-1]) in MISC_SYMBOLS_AND_CHARS:
+                if ord(char_list[i-1]) in MISC_SYMBOLS_AND_CHARS:
                     prev_char = clean_char(char_list[i-1])
                 else:
                     prev_char = char_list[i-1]
 
                 if curr_char in whitespace and prev_char != '-':
                     if char_idx_map:
-                        words_with_char_idx.append((word, char_idx_map))
-                        char_idx_map = {}
-                        word = ''
+                        if word[0] in ascii_letters and word[-1] in ascii_letters:
+                            words_with_char_idx.append((word, char_idx_map))
+                            char_idx_map = {}
+                            word = ''
+                        else:
+                            word, char_idx_map = self.remove_leading_trailing_punctuation(
+                                word=word, char_map=char_idx_map,
+                            )
+
+                            if word and char_idx_map:
+                                words_with_char_idx.append((word, char_idx_map))
+                                char_idx_map = {}
+                                word = ''
                 else:
                     if i + 1 == max_length:
                         # reached end so add whatever is left
-                        word += curr_char
-                        char_idx_map[i] = curr_char
-                        words_with_char_idx.append((word, char_idx_map))
-                        char_idx_map = {}
-                        word = ''
+                        if curr_char not in whitespace:
+                            word += curr_char
+                            char_idx_map[i] = curr_char
+
+                        word, char_idx_map = self.remove_leading_trailing_punctuation(
+                            word=word, char_map=char_idx_map,
+                        )
+
+                        if word and char_idx_map:
+                            words_with_char_idx.append((word, char_idx_map))
+                            char_idx_map = {}
+                            word = ''
                     else:
-                        if len(char_list[i+1]) == 1 and ord(char_list[i+1]) in MISC_SYMBOLS_AND_CHARS:  # noqa
+                        if ord(char_list[i+1]) in MISC_SYMBOLS_AND_CHARS:  # noqa
                             next_char = clean_char(char_list[i+1])
                         else:
                             next_char = char_list[i+1]
@@ -370,12 +486,14 @@ class AnnotationsPDFParser:
             except TypeError:
                 # checking ord() failed
                 continue
+
         return words_with_char_idx
 
     def _combine_sequential_words(
         self,
         words_with_char_idx,
         min_idx_in_page,
+        compiled_regex,
     ):
         """Generator that combines a list of words into sequentially increment words.
 
@@ -384,7 +502,6 @@ class AnnotationsPDFParser:
         """
         processed_tokens: Set[str] = set()
 
-        compiled_regex = re.compile(self.regex_for_floats)
         end_idx = curr_max_words = 1
         max_length = len(words_with_char_idx)
 
@@ -393,59 +510,32 @@ class AnnotationsPDFParser:
             while curr_max_words <= self.max_word_length and end_idx <= max_length:  # noqa
                 word_char_idx_map_pairing = words_with_char_idx[i:end_idx]
                 words = [word for word, _ in word_char_idx_map_pairing]
-                char_idx_maps = [char_idx_map for _, char_idx_map in word_char_idx_map_pairing]  # noqa
+                curr_char_idx_mappings = {k: v for _, d in word_char_idx_map_pairing for k, v in d.items()}  # noqa
 
                 curr_keyword = ' '.join(words)
 
-                if self._not_all_whitespace_or_punctuation(curr_keyword):  # noqa
-                    curr_char_idx_mappings: Dict[int, str] = {}
+                last_char_idx_in_curr_keyword = list(curr_char_idx_mappings)[-1]
 
-                    # need to keep order here so can't unpack (?)
-                    last_char_idx_in_curr_keyword = -1
-                    for char_map in char_idx_maps:
-                        for k, v in char_map.items():
-                            curr_char_idx_mappings[k] = v
-                            last_char_idx_in_curr_keyword = k
+                page_idx = -1
+                for min_page_idx in list(min_idx_in_page):
+                    if last_char_idx_in_curr_keyword <= min_page_idx:
+                        # reminder: can break here because dict in python 3.8+ are
+                        # insertion order
+                        break
+                    else:
+                        page_idx = min_page_idx
 
-                    curr_keyword, curr_char_idx_mappings = self._remove_leading_and_trailing_punctuation(  # noqa
-                        keyword=curr_keyword, curr_char_idx_mappings=curr_char_idx_mappings)
+                if (curr_keyword.lower() not in COMMON_WORDS and
+                    not compiled_regex.match(curr_keyword) and
+                    curr_keyword not in ascii_letters and
+                    curr_keyword not in digits):  # noqa
 
-                    # keyword could've been all punctuation
-                    if curr_keyword:
-                        page_idx = -1
-                        for min_page_idx in list(min_idx_in_page):
-                            if last_char_idx_in_curr_keyword <= min_page_idx:
-                                # reminder: can break here because dict in python 3.8+ are
-                                # insertion order
-                                break
-                            else:
-                                page_idx = min_page_idx
-
-                        # whitespaces don't exist in curr_char_idx_mappings
-                        # they were added to separate words
-                        # and might've been left behind after stripping out
-                        # unwanted punctuation since they can
-                        # be separated word
-                        curr_keyword = curr_keyword.strip()
-
-                        if (curr_keyword.lower() not in COMMON_WORDS and
-                            not re.match(compiled_regex, curr_keyword) and
-                            curr_keyword not in ascii_letters and
-                            curr_keyword not in digits):  # noqa
-
-                            token = PDFTokenPositions(
-                                page_number=min_idx_in_page[page_idx],
-                                keyword=curr_keyword,
-                                char_positions=curr_char_idx_mappings,
-                            )
-                            uid = f'{str(token.page_number)}{token.keyword}{json.dumps(token.char_positions)}'  # noqa
-                            # need to do this check because
-                            # could potentially have duplicates due to
-                            # removing punctuation
-                            # because punctuation could've been a separated word
-                            if uid not in processed_tokens:
-                                processed_tokens.add(uid)
-                                yield token
+                    token = PDFTokenPositions(
+                        page_number=min_idx_in_page[page_idx],
+                        keyword=curr_keyword,
+                        char_positions=curr_char_idx_mappings,
+                    )
+                    yield token
 
                 curr_max_words += 1
                 end_idx += 1
@@ -466,10 +556,14 @@ class AnnotationsPDFParser:
         # first combine the chars into words
         words_with_char_idx = self.combine_chars_into_words(parsed_chars=parsed_chars)
 
+        # regex to check for digits with punctuation
+        compiled_regex = re.compile(r'[\d{}]+$'.format(re.escape(punctuation)))
+
         return PDFTokenPositionsList(
             token_positions=self._combine_sequential_words(
                 words_with_char_idx=words_with_char_idx,
                 min_idx_in_page=parsed_chars.min_idx_in_page,
+                compiled_regex=compiled_regex,
             ),
             char_coord_objs_in_pdf=parsed_chars.char_coord_objs_in_pdf,
             cropbox_in_pdf=parsed_chars.cropbox_in_pdf,
