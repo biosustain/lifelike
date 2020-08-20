@@ -16,9 +16,19 @@
       <a routerLink="/kg-import" placement="right" ngbTooltip="Knowledge Graph Import">
         <i class="fa fa-cloud-upload"></i>
       </a>
-      <a routerLink="/kg-visualizer" placement="right" ngbTooltip="Visualizer">
-        <i class="fa fa-search"></i>
-      </a>
+      <div ngbDropdown container="body">
+        <a id="search-menu" ngbDropdownToggle ngbTooltip="Search" container="body">
+          <i class="fa fa-search"></i>
+        </a>
+        <div ngbDropdownMenu aria-labelledby="search-menu" class="dropdown-menu">
+          <a class="dropdown-item" routerLink="/search/graph">
+            Visualizer Search
+          </a>
+          <a class="dropdown-item" routerLink="/search/content">
+            File Search
+          </a>
+        </div>
+      </div>
       <a routerLink="kg-statistics" placement="right" ngbTooltip="Knowledge Graph Statistics">
         <i class="fa fa-tachometer-alt"></i>
       </a>

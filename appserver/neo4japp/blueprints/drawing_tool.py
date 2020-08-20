@@ -493,33 +493,6 @@ def process(data_source, format='pdf'):
     return graph.pipe()
 
 
-@bp.route('/search', methods=['POST'])
-@auth.login_required
-def find_maps():
-    # TODO: LL-415, what do we do with this now that we have projects?
-    user = g.current_user
-    data = request.get_json()
-    query = search(Project.query, data['term'], sort=True)
-    conditions = []
-
-    filters = data.get('filters', {
-        'personal': True,
-        'community': True,
-    })
-    if filters.get('personal', True):
-        conditions.append(Project.user_id == user.id)
-    if filters.get('community', True):
-        conditions.append(Project.public)
-
-    if len(conditions):
-        projects = query.filter(or_(*conditions)).all()
-        project_schema = ProjectSchema(many=True)
-
-        return {'projects': project_schema.dump(projects)}, 200
-    else:
-        return {'projects': []}, 200
-
-
 @newbp.route('/<string:projects_name>/map/<string:hash_id>/<string:format>', methods=['GET'])
 @auth.login_required
 @requires_project_permission(AccessActionType.READ)
