@@ -2,7 +2,7 @@
 UUID field.
 
 Revision ID: a6f4dec3a2d6
-Revises: fb1654973fbd
+Revises: a6ca510027a5
 Create Date: 2020-08-20 17:53:35.156357
 
 """
@@ -18,7 +18,7 @@ from uuid import uuid4
 
 # revision identifiers, used by Alembic.
 revision = 'a6f4dec3a2d6'
-down_revision = 'fb1654973fbd'
+down_revision = 'a6ca510027a5'
 branch_labels = None
 depends_on = None
 
