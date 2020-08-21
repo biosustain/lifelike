@@ -3,21 +3,22 @@ from sqlalchemy.sql.expression import and_
 
 from typing import Dict, List
 
-from neo4japp.services.common import RDBMSBaseDao
+from py2neo import Graph
+
+from neo4japp.services.common import HybridDBDao
 from neo4japp.models import OrganismGeneMatch
 
 
-class AnnotationsNeo4jService(RDBMSBaseDao):
+class AnnotationsNeo4jService(HybridDBDao):
     """Allows access to the main Neo4jService. Separated due
     to being specific for annotations.
     """
     def __init__(
         self,
         session: Session,
-        neo4j_service,
+        graph: Graph,
     ):
-        super().__init__(session)
-        self.neo4j = neo4j_service
+        super().__init__(session=session, graph=graph)
 
     def get_genes(
         self,
@@ -64,12 +65,65 @@ class AnnotationsNeo4jService(RDBMSBaseDao):
         # Collect all the genes that were not matched to an organism in the table, and search
         # the Neo4j database for them
         second_round_genes = [gene for gene in genes if gene not in postgres_result.keys()]
-        neo4j_result = self.neo4j.get_genes_to_organisms(second_round_genes, matched_organism_ids)
+        neo4j_result = self.get_genes_to_organisms(second_round_genes, matched_organism_ids)
 
         # Join the results of the two queries
         postgres_result.update(neo4j_result)
 
         return postgres_result
 
+    def get_genes_to_organisms(
+        self,
+        genes: List[str],
+        organisms: List[str],
+    ) -> Dict[str, Dict[str, str]]:
+        gene_to_organism_map: Dict[str, Dict[str, str]] = dict()
+
+        query = self.get_gene_to_organism_query()
+        result = self.graph.run(
+            query,
+            {
+                'genes': genes,
+                'organisms': organisms,
+            }
+        ).data()
+
+        for row in result:
+            gene_name: str = row['gene']
+            organism_id: str = row['organism_id']
+            # For now just get the first gene in the list of matches, no way for us to infer which
+            # to use
+            gene_id: str = row['gene_ids'][0]
+
+            if gene_to_organism_map.get(gene_name, None) is not None:
+                gene_to_organism_map[gene_name][organism_id] = gene_id
+            else:
+                gene_to_organism_map[gene_name] = {organism_id: gene_id}
+
+        return gene_to_organism_map
+
     def get_organisms_from_tax_ids(self, tax_ids: List[str]) -> List[str]:
-        return self.neo4j.get_organisms_from_tax_ids(tax_ids)
+        query = self.get_taxonomy_from_synonyms_query()
+        result = self.graph.run(query, {'ids': tax_ids}).data()
+
+        return [row['organism_id'] for row in result]
+
+    def get_gene_to_organism_query(self):
+        """Retrieves a list of all the genes with a given name
+        in a particular organism."""
+        query = """
+            MATCH (s:Synonym)-[]-(g:Gene)
+            WHERE s.name IN $genes
+            WITH s, g MATCH (g)-[:HAS_TAXONOMY]-(t:Taxonomy)-[:HAS_PARENT*0..2]->(p)
+            WHERE p.id IN $organisms
+            RETURN s.name AS gene, collect(g.id) AS gene_ids, p.id AS organism_id
+        """
+        return query
+
+    def get_taxonomy_from_synonyms_query(self):
+        """Retrieves a list of all taxonomy with a given taxonomy id.
+        """
+        query = """
+            MATCH (t:Taxonomy) WHERE t.id IN $ids RETURN t.id as organism_id
+        """
+        return query
