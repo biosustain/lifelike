@@ -171,16 +171,14 @@ class AnnotationsService:
 
         lowered_word = token.keyword.lower()
 
-        if len(lookup_key) > 2:
+        if len(lookup_key) > 2 and lowered_word not in self.exclusion_words and token.keyword not in self.get_chemical_annotations_to_exclude():  # noqa:
             # check chemical
-            if nlp_predicted_type:
-                if nlp_predicted_type == EntityType.Chemical.value and lowered_word not in self.exclusion_words:  # noqa
-                    chem_val = self.lmdb_session.chemicals_txn.get(lookup_key)
+            if nlp_predicted_type == EntityType.Chemical.value:
+                chem_val = self.lmdb_session.chemicals_txn.get(lookup_key)
             else:
-                if lowered_word not in self.exclusion_words:
-                    chem_val = self.lmdb_session.chemicals_txn.get(lookup_key)
+                chem_val = self.lmdb_session.chemicals_txn.get(lookup_key)
 
-            if chem_val and token.keyword not in self.get_chemical_annotations_to_exclude():  # noqa
+            if chem_val:
                 if token.keyword in self.matched_chemicals:
                     self.matched_chemicals[token.keyword].append(token)
                 else:
@@ -216,16 +214,14 @@ class AnnotationsService:
 
         lowered_word = token.keyword.lower()
 
-        if len(lookup_key) > 2:
+        if len(lookup_key) > 2 and lowered_word not in self.exclusion_words and token.keyword not in self.get_compound_annotations_to_exclude():  # noqa:
             # check compound
-            if nlp_predicted_type:
-                if nlp_predicted_type == EntityType.Compound.value and lowered_word not in self.exclusion_words:  # noqa
-                    comp_val = self.lmdb_session.compounds_txn.get(lookup_key)
+            if nlp_predicted_type == EntityType.Compound.value:
+                comp_val = self.lmdb_session.compounds_txn.get(lookup_key)
             else:
-                if lowered_word not in self.exclusion_words:
-                    comp_val = self.lmdb_session.compounds_txn.get(lookup_key)
+                comp_val = self.lmdb_session.compounds_txn.get(lookup_key)
 
-            if comp_val and token.keyword not in self.get_compound_annotations_to_exclude():  # noqa
+            if comp_val:
                 if token.keyword in self.matched_compounds:
                     self.matched_compounds[token.keyword].append(token)
                 else:
@@ -261,16 +257,14 @@ class AnnotationsService:
 
         lowered_word = token.keyword.lower()
 
-        if len(lookup_key) > 2:
+        if len(lookup_key) > 2 and lowered_word not in self.exclusion_words and token.keyword not in self.get_disease_annotations_to_exclude():  # noqa
             # check disease
-            if nlp_predicted_type:
-                if nlp_predicted_type == EntityType.Disease.value and lowered_word not in self.exclusion_words:  # noqa
-                    diseases_val = self.lmdb_session.diseases_txn.get(lookup_key)
+            if nlp_predicted_type == EntityType.Disease.value:
+                diseases_val = self.lmdb_session.diseases_txn.get(lookup_key)
             else:
-                if lowered_word not in self.exclusion_words:
-                    diseases_val = self.lmdb_session.diseases_txn.get(lookup_key)
+                diseases_val = self.lmdb_session.diseases_txn.get(lookup_key)
 
-            if diseases_val and token.keyword not in self.get_disease_annotations_to_exclude():  # noqa
+            if diseases_val:
                 if token.keyword in self.matched_diseases:
                     self.matched_diseases[token.keyword].append(token)
                 else:
@@ -306,16 +300,14 @@ class AnnotationsService:
 
         lowered_word = token.keyword.lower()
 
-        if len(lookup_key) > 2:
+        if len(lookup_key) > 2 and lowered_word not in self.exclusion_words and token.keyword not in self.get_gene_annotations_to_exclude():  # noqa
             # check gene
-            if nlp_predicted_type:
-                if nlp_predicted_type == EntityType.Gene.value and lowered_word not in self.exclusion_words:  # noqa
-                    gene_val = self.lmdb_session.genes_txn.get(lookup_key)
+            if nlp_predicted_type == EntityType.Gene.value:
+                gene_val = self.lmdb_session.genes_txn.get(lookup_key)
             else:
-                if lowered_word not in self.exclusion_words:
-                    gene_val = self.lmdb_session.genes_txn.get(lookup_key)
+                gene_val = self.lmdb_session.genes_txn.get(lookup_key)
 
-            if gene_val and token.keyword not in self.get_gene_annotations_to_exclude():  # noqa
+            if gene_val:
                 if token.keyword in self.matched_genes:
                     self.matched_genes[token.keyword].append(token)
                 else:
@@ -351,16 +343,14 @@ class AnnotationsService:
 
         lowered_word = token.keyword.lower()
 
-        if len(lookup_key) > 2:
+        if len(lookup_key) > 2 and lowered_word not in self.exclusion_words and token.keyword not in self.get_phenotype_annotations_to_exclude():  # noqa
             # check phenotype
-            if nlp_predicted_type:
-                if nlp_predicted_type == EntityType.Phenotype.value and lowered_word not in self.exclusion_words:  # noqa
-                    phenotype_val = self.lmdb_session.phenotypes_txn.get(lookup_key)
+            if nlp_predicted_type == EntityType.Phenotype.value:
+                phenotype_val = self.lmdb_session.phenotypes_txn.get(lookup_key)
             else:
-                if lowered_word not in self.exclusion_words:
-                    phenotype_val = self.lmdb_session.phenotypes_txn.get(lookup_key)
+                phenotype_val = self.lmdb_session.phenotypes_txn.get(lookup_key)
 
-            if phenotype_val and token.keyword not in self.get_phenotype_annotations_to_exclude():  # noqa
+            if phenotype_val:
                 if token.keyword in self.matched_phenotypes:
                     self.matched_phenotypes[token.keyword].append(token)
                 else:
@@ -396,16 +386,14 @@ class AnnotationsService:
 
         lowered_word = token.keyword.lower()
 
-        if len(lookup_key) > 2:
+        if len(lookup_key) > 2 and lowered_word not in self.exclusion_words and token.keyword not in self.get_protein_annotations_to_exclude():  # noqa
             # check protein
-            if nlp_predicted_type:
-                if nlp_predicted_type == EntityType.Protein.value and lowered_word not in self.exclusion_words:  # noqa
-                    protein_val = self.lmdb_session.proteins_txn.get(lookup_key)
+            if nlp_predicted_type == EntityType.Protein.value:
+                protein_val = self.lmdb_session.proteins_txn.get(lookup_key)
             else:
-                if lowered_word not in self.exclusion_words:
-                    protein_val = self.lmdb_session.proteins_txn.get(lookup_key)
+                protein_val = self.lmdb_session.proteins_txn.get(lookup_key)
 
-            if protein_val and token.keyword not in self.get_protein_annotations_to_exclude():  # noqa
+            if protein_val:
                 if token.keyword in self.matched_proteins:
                     self.matched_proteins[token.keyword].append(token)
                 else:
@@ -440,41 +428,28 @@ class AnnotationsService:
             lookup_key = normalize_str(token.keyword).encode('utf-8')
 
         lowered_word = token.keyword.lower()
-        # TODO: this might not be needed once Jira LL-1505 is fixed
-        no_spaces_word = token.keyword.replace(' ', '')
 
-        if len(lookup_key) > 2:
+        if len(lookup_key) > 2 and lowered_word not in SPECIES_EXCLUSION and token.keyword not in self.get_species_annotations_to_exclude():  # noqa
             # check species
-            if nlp_predicted_type:
-                # TODO: Bacteria because for now NLP has that instead of
-                # generic `Species`
-                if ((nlp_predicted_type == EntityType.Species.value or
-                    nlp_predicted_type == 'Bacteria') and
-                        lowered_word not in SPECIES_EXCLUSION):  # noqa
-                    species_val = self.lmdb_session.species_txn.get(lookup_key)
+            # TODO: Bacteria because for now NLP has that instead of
+            # generic `Species`
+            if nlp_predicted_type == EntityType.Species.value or nlp_predicted_type == 'Bacteria':  # noqa
+                species_val = self.lmdb_session.species_txn.get(lookup_key)
             else:
-                if lowered_word not in SPECIES_EXCLUSION:
-                    species_val = self.lmdb_session.species_txn.get(lookup_key)
+                species_val = self.lmdb_session.species_txn.get(lookup_key)
 
-            if species_val and token.keyword not in self.get_species_annotations_to_exclude():  # noqa
+            if species_val:
                 if token.keyword in self.matched_species:
                     self.matched_species[token.keyword].append(token)
                 else:
                     self.matched_species[token.keyword] = [token]
             else:
                 # didn't find a match in LMDB so look in custom annotations
-                if token.keyword not in self.get_species_annotations_to_exclude():
-                    if (self.custom_species and
-                        lowered_word not in SPECIES_EXCLUSION and
-                        # TODO: this might not be needed once Jira LL-1505 is fixed
-                        # see where self.custom_species is set and updated that too
-                        # change matched_custom_species[no_spaces_word] back to
-                        # matched_custom_species[token.keyword] once Jira LL-1505 is done
-                        no_spaces_word in self.custom_species):  # noqa
-                        if token.keyword in self.matched_custom_species:
-                            self.matched_custom_species[no_spaces_word].append(token)
-                        else:
-                            self.matched_custom_species[no_spaces_word] = [token]
+                if self.custom_species and token.keyword in self.custom_species:
+                    if token.keyword in self.matched_custom_species:
+                        self.matched_custom_species[token.keyword].append(token)
+                    else:
+                        self.matched_custom_species[token.keyword] = [token]
 
             return species_val
 
@@ -1549,7 +1524,7 @@ class AnnotationsService:
         # from the client browser could sometimes parse
         # the PDF text without spaces
         self.custom_species = {
-            custom['meta']['allText'].replace(' ', ''): custom['meta']['id'] for custom in custom_annotations  # noqa
+            custom['meta']['allText']: custom['meta']['id'] for custom in custom_annotations  # noqa
             if custom['meta']['type'] == EntityType.Species.value
         }
 
