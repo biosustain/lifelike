@@ -124,10 +124,10 @@ def close_lmdb(e=None):
 def get_annotation_neo4j():
     if 'annotation_neo4j' not in g:
         from neo4japp.services.annotations import AnnotationsNeo4jService
-        neo4j = get_neo4j_service_dao()
+        graph = _connect_to_neo4j()
         g.annotation_neo4j = AnnotationsNeo4jService(
             session=db.session,
-            neo4j_service=neo4j,
+            graph=graph,
         )
     return g.annotation_neo4j
 
