@@ -66,7 +66,7 @@ class AnnotationsService:
 
         # custom annotations should be init when needed
         # TODO: different entity types?
-        self._custom_species = None
+        self.local_species_inclusion: Dict[str, List[dict]] = {}
 
         self.matched_genes: Dict[str, List[PDFTokenPositions]] = {}
         self.matched_chemicals: Dict[str, List[PDFTokenPositions]] = {}
@@ -99,14 +99,6 @@ class AnnotationsService:
                     )
                 )
             ]
-
-    @property
-    def custom_species(self):
-        return self._custom_species
-
-    @custom_species.setter
-    def custom_species(self, value):
-        self._custom_species = value
 
     def get_chemical_annotations_to_exclude(self):
         return set(
@@ -142,6 +134,45 @@ class AnnotationsService:
         return set(
             exclusion.get('text') for exclusion in self.annotations_to_exclude if
                 exclusion.get('type') == EntityType.Species.value and exclusion.get('text'))  # noqa
+
+    def _set_local_species_inclusion(self, custom_annotations: List[dict]) -> None:
+        """Creates a dictionary structured very similar to LMDB.
+        Used for local species custom annotation lookups.
+        """
+        for custom in custom_annotations:
+            if custom.get('meta', None):
+                if custom['meta'].get('type', None) == EntityType.Species.value:
+                    species_id = custom['meta'].get('id', None)
+                    species_name = custom['meta'].get('allText', None)
+
+                    if species_id and species_name:
+                        if species_name in self.local_species_inclusion:
+                            unique = all(
+                                [
+                                    entity['tax_id'] != species_id for
+                                    entity in self.local_species_inclusion[species_name]
+                                ]
+                            )
+                            # need to check unique because a custom annotation
+                            # can have multiple of the same entity
+                            if unique:
+                                self.local_species_inclusion[species_name].append(
+                                    {
+                                        'tax_id': species_id,
+                                        'id_type': DatabaseType.Ncbi.value,
+                                        'name': species_name,
+                                        'synonym': species_name,
+                                    }
+                                )
+                        else:
+                            self.local_species_inclusion[species_name] = [
+                                {
+                                    'tax_id': species_id,
+                                    'id_type': DatabaseType.Ncbi.value,
+                                    'name': species_name,
+                                    'synonym': species_name,
+                                }
+                            ]
 
     def validate_chemicals_lmdb(
         self,
@@ -445,7 +476,7 @@ class AnnotationsService:
                     self.matched_species[token.keyword] = [token]
             else:
                 # didn't find a match in LMDB so look in custom annotations
-                if self.custom_species and token.keyword in self.custom_species:
+                if self.local_species_inclusion and token.keyword in self.local_species_inclusion:
                     if token.keyword in self.matched_custom_species:
                         self.matched_custom_species[token.keyword].append(token)
                     else:
@@ -1013,7 +1044,6 @@ class AnnotationsService:
         entity_id_str: str,
         char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
         cropbox_in_pdf: Tuple[int, int],
-        organisms_from_custom_annotations: Set[str],
     ) -> List[Annotation]:
         """Gene specific annotation. Nearly identical to `_get_annotation`,
         except that we check genes against the matched organisms found in the
@@ -1066,15 +1096,10 @@ class AnnotationsService:
 
                     entity_tokenpos_pairs.append((entity, token_positions))
 
-        organism_ids_from_custom_annotations = self.annotation_neo4j.get_organisms_from_ids(
-            tax_ids=list(organisms_from_custom_annotations))
-
-        organism_ids_to_query = organism_ids_from_custom_annotations + list(self.organism_frequency.keys())  # noqa
-
         gene_organism_matches = \
             self.annotation_neo4j.get_gene_to_organism_match_result(
                 genes=list(gene_names),
-                matched_organism_ids=organism_ids_to_query,
+                matched_organism_ids=list(self.organism_frequency.keys()),
             )
 
         for entity, token_positions in entity_tokenpos_pairs:
@@ -1157,30 +1182,35 @@ class AnnotationsService:
         char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
         cropbox_in_pdf: Tuple[int, int],
     ) -> List[Annotation]:
+        """Similar to self._get_annotation() but for creating
+        annotations of custom species.
+
+        However, does not check if a synonym is used by multiple
+        common names that all appear in the document, as assume
+        user wants these custom species annotations to be
+        annotated.
+        """
         tokens = self.matched_custom_species
 
         custom_annotations: List[Annotation] = []
 
         for word, token_list in tokens.items():
             for token_positions in token_list:
-                # only care about entity id type for these custom
-                # species annotations
-                # as won't be keeping them as they're only used
-                # to help with gene organism matching
-                entity = {'synonym': word, 'id_type': DatabaseType.Ncbi.value}
-                annotation = self._create_annotation_object(
-                    char_coord_objs_in_pdf=char_coord_objs_in_pdf,
-                    cropbox_in_pdf=cropbox_in_pdf,
-                    token_positions=token_positions,
-                    token_type=EntityType.Species.value,
-                    entity=entity,
-                    entity_id=self.custom_species[word],
-                    entity_category=entity.get('category', None),
-                    color=EntityColor.Species.value,
-                    correct_spellings=self.correct_spellings,
-                )
+                entities = self.local_species_inclusion[word]
+                for entity in entities:
+                    annotation = self._create_annotation_object(
+                        char_coord_objs_in_pdf=char_coord_objs_in_pdf,
+                        cropbox_in_pdf=cropbox_in_pdf,
+                        token_positions=token_positions,
+                        token_type=EntityType.Species.value,
+                        entity=entity,
+                        entity_id=entity[EntityIdStr.Species.value],
+                        entity_category=entity.get('category', None),
+                        color=EntityColor.Species.value,
+                        correct_spellings=self.correct_spellings,
+                    )
 
-                custom_annotations.append(annotation)
+                    custom_annotations.append(annotation)
         return custom_annotations
 
     def _annotate_species(
@@ -1303,15 +1333,7 @@ class AnnotationsService:
         }
 
         annotate_entities = funcs[annotation_type]
-        if annotation_type == EntityType.Gene.value:
-            return annotate_entities(
-                entity_id_str=entity_id_str,
-                char_coord_objs_in_pdf=char_coord_objs_in_pdf,
-                cropbox_in_pdf=cropbox_in_pdf,
-                organisms_from_custom_annotations={
-                    organism['meta']['id'] for organism in organisms_from_custom_annotations},
-            )  # type: ignore
-        elif annotation_type == EntityType.Species.value:
+        if annotation_type == EntityType.Species.value:
             return annotate_entities(
                 entity_id_str=entity_id_str,
                 char_coord_objs_in_pdf=char_coord_objs_in_pdf,
@@ -1520,13 +1542,7 @@ class AnnotationsService:
             EntityType.Species.value: True,
         }
 
-        # remove any whitespaces to be consistent because the data
-        # from the client browser could sometimes parse
-        # the PDF text without spaces
-        self.custom_species = {
-            custom['meta']['allText']: custom['meta']['id'] for custom in custom_annotations  # noqa
-            if custom['meta']['type'] == EntityType.Species.value
-        }
+        self._set_local_species_inclusion(custom_annotations)
 
         annotations = self._create_annotations(
             tokens=tokens.token_positions,
@@ -1638,10 +1654,7 @@ class AnnotationsService:
             EntityType.Species.value: True,
         }
 
-        self.custom_species = {
-            custom['meta']['allText']: custom['meta']['id'] for custom in custom_annotations
-            if custom['meta']['type'] == EntityType.Species.value
-        }
+        self._set_local_species_inclusion(custom_annotations)
 
         species_annotations = self._create_annotations(
             tokens=tokens.token_positions,
