@@ -345,42 +345,6 @@ class Neo4JService(GraphBaseDao):
             query_data=edges,
         )
 
-    def get_genes_to_organisms(
-        self,
-        genes: List[str],
-        organisms: List[str],
-    ) -> Dict[str, Dict[str, str]]:
-        gene_to_organism_map: Dict[str, Dict[str, str]] = dict()
-
-        query = self.get_gene_to_organism_query()
-        result = self.graph.run(
-            query,
-            {
-                'genes': genes,
-                'organisms': organisms,
-            }
-        ).data()
-
-        for row in result:
-            gene_name: str = row['gene']
-            organism_id: str = row['organism_id']
-            # For now just get the first gene in the list of matches, no way for us to infer which
-            # to use
-            gene_id: str = row['gene_ids'][0]
-
-            if gene_to_organism_map.get(gene_name, None) is not None:
-                gene_to_organism_map[gene_name][organism_id] = gene_id
-            else:
-                gene_to_organism_map[gene_name] = {organism_id: gene_id}
-
-        return gene_to_organism_map
-
-    def get_organisms_from_tax_ids(self, tax_ids: List[str]) -> List[str]:
-        query = self.get_taxonomy_from_synonyms()
-        result = self.graph.run(query, {'ids': tax_ids}).data()
-
-        return [row['organism_id'] for row in result]
-
     def get_organisms_from_gene_ids(self, gene_ids: List[str]):
         query = self.get_organisms_from_gene_ids_query()
         result = self.graph.run(
@@ -717,18 +681,6 @@ class Neo4JService(GraphBaseDao):
         """.format(biocyc_id)
         return query
 
-    def get_gene_to_organism_query(self):
-        """Retrieves a list of all the genes with a given name
-        in a particular organism."""
-        query = """
-            MATCH (s:Synonym)-[]-(g:Gene)
-            WHERE s.name IN $genes
-            WITH s, g MATCH (g)-[:HAS_TAXONOMY]-(t:Taxonomy)-[:HAS_PARENT*0..2]->(p)
-            WHERE p.id IN $organisms
-            RETURN s.name AS gene, collect(g.id) AS gene_ids, p.id AS organism_id
-        """
-        return query
-
     def get_organisms_from_gene_ids_query(self):
         """Retrieves a list of gene and corresponding organism data
         from a given list of genes."""
@@ -737,14 +689,6 @@ class Neo4JService(GraphBaseDao):
             WITH g
             MATCH (g)-[:HAS_TAXONOMY]-(t:Taxonomy)
             RETURN g.id AS gene_id, g.name as gene_name, t.id as taxonomy_id, t.name as species_name
-        """
-        return query
-
-    def get_taxonomy_from_synonyms(self):
-        """Retrieves a list of all taxonomy with a given taxonomy id.
-        """
-        query = """
-            MATCH (t:Taxonomy) WHERE t.id IN $ids RETURN t.id as organism_id
         """
         return query
 
