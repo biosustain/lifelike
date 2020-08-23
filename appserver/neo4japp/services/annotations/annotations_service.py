@@ -144,19 +144,20 @@ class AnnotationsService:
                 if custom['meta'].get('type', None) == EntityType.Species.value:
                     species_id = custom['meta'].get('id', None)
                     species_name = custom['meta'].get('allText', None)
+                    normalized_species_name = normalize_str(species_name)
 
                     if species_id and species_name:
-                        if species_name in self.local_species_inclusion:
+                        if normalized_species_name in self.local_species_inclusion:
                             unique = all(
                                 [
                                     entity['tax_id'] != species_id for
-                                    entity in self.local_species_inclusion[species_name]
+                                    entity in self.local_species_inclusion[normalized_species_name]
                                 ]
                             )
                             # need to check unique because a custom annotation
                             # can have multiple of the same entity
                             if unique:
-                                self.local_species_inclusion[species_name].append(
+                                self.local_species_inclusion[normalized_species_name].append(
                                     {
                                         'tax_id': species_id,
                                         'id_type': DatabaseType.Ncbi.value,
@@ -165,7 +166,7 @@ class AnnotationsService:
                                     }
                                 )
                         else:
-                            self.local_species_inclusion[species_name] = [
+                            self.local_species_inclusion[normalized_species_name] = [
                                 {
                                     'tax_id': species_id,
                                     'id_type': DatabaseType.Ncbi.value,
@@ -476,7 +477,7 @@ class AnnotationsService:
                     self.matched_species[token.keyword] = [token]
             else:
                 # didn't find a match in LMDB so look in custom annotations
-                if self.local_species_inclusion and token.keyword in self.local_species_inclusion:
+                if self.local_species_inclusion and lookup_key.decode('utf-8') in self.local_species_inclusion:  # noqa
                     if token.keyword in self.matched_custom_species:
                         self.matched_custom_species[token.keyword].append(token)
                     else:
@@ -1189,7 +1190,7 @@ class AnnotationsService:
 
         for word, token_list in tokens.items():
             for token_positions in token_list:
-                entities = self.local_species_inclusion.get(word, None) or []
+                entities = self.local_species_inclusion.get(normalize_str(word), None) or []
                 for entity in entities:
                     annotation = self._create_annotation_object(
                         char_coord_objs_in_pdf=char_coord_objs_in_pdf,
