@@ -77,9 +77,11 @@ def data_upgrades():
                             files_table.c.id == f.id).values(annotations=f.annotations)
                     )
         session.commit()
-    except Exception:
+    except Exception as exc:
         session.rollback()
         session.close()
+        # need to raise otherwise migration will still succeed
+        raise Exception(exc)
 
 
 def data_downgrades():
