@@ -2,32 +2,15 @@ import attr
 from flask import Blueprint
 from neo4japp.blueprints.auth import auth
 from neo4japp.database import get_search_service_dao
+from neo4japp.data_transfer_objects.search import (
+    PDFSearchRequest,
+    SearchRequest,
+    SimpleSearchRequest
+)
 from neo4japp.services.pdf_search import PDFSearch, PDFSearchResult
 from neo4japp.util import CamelDictMixin, jsonify_with_class, SuccessResponse
 
 bp = Blueprint('search', __name__, url_prefix='/search')
-
-
-@attr.s(frozen=True)
-class SearchRequest(CamelDictMixin):
-    query: str = attr.ib()
-    page: int = attr.ib()
-    limit: int = attr.ib()
-
-
-@attr.s(frozen=True)
-class SimpleSearchRequest(CamelDictMixin):
-    query: str = attr.ib()
-    page: int = attr.ib()
-    limit: int = attr.ib()
-    filter: str = attr.ib()
-
-
-@attr.s(frozen=True)
-class PDFSearchRequest(CamelDictMixin):
-    query: str = attr.ib()
-    offset: int = attr.ib()
-    limit: int = attr.ib()
 
 
 @bp.route('/search', methods=['POST'])
