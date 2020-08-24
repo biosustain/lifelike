@@ -20,6 +20,7 @@ from .constants import (
     EntityColor,
     EntityIdStr,
     EntityType,
+    ManualAnnotationType,
     OrganismCategory,
     # exclusion lists
     # CHEMICAL_EXCLUSION,
@@ -38,7 +39,16 @@ from .constants import (
     NLP_ENDPOINT,
 )
 from .lmdb_dao import LMDBDao
-from .util import normalize_str
+from .util import (
+    create_chemical_for_ner,
+    create_compound_for_ner,
+    create_disease_for_ner,
+    create_gene_for_ner,
+    create_phenotype_for_ner,
+    create_protein_for_ner,
+    create_species_for_ner,
+    normalize_str,
+)
 
 from neo4japp.data_transfer_objects import (
     Annotation,
@@ -64,18 +74,19 @@ class AnnotationsService:
         # for word tokens that are typos
         self.correct_spellings: Dict[str, str] = {}
 
-        # custom annotations should be init when needed
-        # TODO: different entity types?
+        # for the global and local, structured the same as LMDB
         self.local_species_inclusion: Dict[str, List[dict]] = {}
+        self.global_chemical_inclusion: Dict[str, List[dict]] = {}
 
         self.matched_genes: Dict[str, List[PDFTokenPositions]] = {}
         self.matched_chemicals: Dict[str, List[PDFTokenPositions]] = {}
         self.matched_compounds: Dict[str, List[PDFTokenPositions]] = {}
         self.matched_proteins: Dict[str, List[PDFTokenPositions]] = {}
         self.matched_species: Dict[str, List[PDFTokenPositions]] = {}
-        self.matched_custom_species: Dict[str, List[PDFTokenPositions]] = {}
         self.matched_diseases: Dict[str, List[PDFTokenPositions]] = {}
         self.matched_phenotypes: Dict[str, List[PDFTokenPositions]] = {}
+
+        self.matched_local_species_inclusion: Dict[str, List[PDFTokenPositions]] = {}
 
         self.organism_frequency: Dict[str, int] = {}
         self.organism_locations: Dict[str, List[Tuple[int, int]]] = {}
@@ -89,50 +100,61 @@ class AnnotationsService:
             result.word for result in self.annotation_neo4j.session.query(
                 AnnotationStopWords).all())
 
-        self.annotations_to_exclude = [
+        self.global_annotations_to_exclude = [
             exclusion for exclusion, in self.annotation_neo4j.session.query(
                 GlobalList.annotation).filter(
                     and_(
-                        GlobalList.type == 'exclusion',
+                        GlobalList.type == ManualAnnotationType.Exclusion.value,
                         # TODO: Uncomment once feature to review is there
                         # GlobalList.reviewed.is_(True),
                     )
                 )
             ]
 
-    def get_chemical_annotations_to_exclude(self):
+        self.global_annotations_to_include = [
+            inclusion for inclusion, in self.annotation_neo4j.session.query(
+                GlobalList.annotation).filter(
+                    and_(
+                        GlobalList.type == ManualAnnotationType.Inclusion.value,
+                        # TODO: Uncomment once feature to review is there
+                        # GlobalList.reviewed.is_(True),
+                    )
+                )
+            ]
+
+    def _get_chemical_annotations_to_exclude(self):
         return set(
-            exclusion.get('text') for exclusion in self.annotations_to_exclude if
+            exclusion.get('text') for exclusion in self.global_annotations_to_exclude if
                 exclusion.get('type') == EntityType.Chemical.value and exclusion.get('text'))  # noqa
 
-    def get_compound_annotations_to_exclude(self):
+    def _get_compound_annotations_to_exclude(self):
         return set(
-            exclusion.get('text') for exclusion in self.annotations_to_exclude if
+            exclusion.get('text') for exclusion in self.global_annotations_to_exclude if
                 exclusion.get('type') == EntityType.Compound.value and exclusion.get('text'))  # noqa
 
-    def get_disease_annotations_to_exclude(self):
+    def _get_disease_annotations_to_exclude(self):
         return set(
-            exclusion.get('text') for exclusion in self.annotations_to_exclude if
+            exclusion.get('text') for exclusion in self.global_annotations_to_exclude if
                 exclusion.get('type') == EntityType.Disease.value and exclusion.get('text'))  # noqa
 
-    def get_gene_annotations_to_exclude(self):
+    def _get_gene_annotations_to_exclude(self):
         return set(
-            exclusion.get('text') for exclusion in self.annotations_to_exclude if
+            exclusion.get('text') for exclusion in self.global_annotations_to_exclude if
                 exclusion.get('type') == EntityType.Gene.value and exclusion.get('text'))  # noqa
 
-    def get_phenotype_annotations_to_exclude(self):
+    def _get_phenotype_annotations_to_exclude(self):
         return set(
-            exclusion.get('text') for exclusion in self.annotations_to_exclude if
+            exclusion.get('text') for exclusion in self.global_annotations_to_exclude if
                 exclusion.get('type') == EntityType.Phenotype.value and exclusion.get('text'))  # noqa
 
-    def get_protein_annotations_to_exclude(self):
+    def _get_protein_annotations_to_exclude(self):
         return set(
-            exclusion.get('text') for exclusion in self.annotations_to_exclude if
+            exclusion.get('text') for exclusion in self.global_annotations_to_exclude if
                 exclusion.get('type') == EntityType.Protein.value and exclusion.get('text'))  # noqa
 
-    def get_species_annotations_to_exclude(self):
+    def _get_species_annotations_to_exclude(self):
         return set(
-            exclusion.get('text') for exclusion in self.annotations_to_exclude if
+            exclusion.get('text') for exclusion in self.global_annotations_to_exclude if
                 exclusion.get('type') == EntityType.Species.value and exclusion.get('text'))  # noqa
 
     def _set_local_species_inclusion(self, custom_annotations: List[dict]) -> None:
@@ -158,21 +180,57 @@ class AnnotationsService:
                             # can have multiple of the same entity
                             if unique:
                                 self.local_species_inclusion[normalized_species_name].append(
-                                    {
-                                        'tax_id': species_id,
-                                        'id_type': DatabaseType.Ncbi.value,
-                                        'name': species_name,
-                                        'synonym': species_name,
-                                    }
+                                    create_species_for_ner(
+                                        species_id=species_id,
+                                        name=species_name,
+                                        synonym=species_name,
+                                    )
                                 )
                         else:
                             self.local_species_inclusion[normalized_species_name] = [
-                                {
-                                    'tax_id': species_id,
-                                    'id_type': DatabaseType.Ncbi.value,
-                                    'name': species_name,
-                                    'synonym': species_name,
-                                }
+                                create_species_for_ner(
+                                    species_id=species_id,
+                                    name=species_name,
+                                    synonym=species_name,
+                                )
+                            ]
+
+    def _set_global_chemical_inclusions(self):
+        """Creates a dictionary structured very similar to LMDB.
+        Used for global chemical custom annotation lookups.
+        """
+        for inclusion in self.global_annotations_to_include:
+            if inclusion.get('meta', None):
+                if inclusion['meta'].get('type', None) == EntityType.Chemical.value:
+                    chemical_id = inclusion['meta'].get('id', None)
+                    chemical_name = inclusion['meta'].get('allText', None)
+                    normalized_chemical_name = normalize_str(chemical_name)
+
+                    if chemical_id and chemical_name:
+                        if normalized_chemical_name in self.global_chemical_inclusion:
+                            unique = all(
+                                [
+                                    entity['chemical_id'] != chemical_id for
+                                    entity in self.global_chemical_inclusion[normalized_chemical_name]  # noqa
+                                ]
+                            )
+                            # need to check unique because a custom annotation
+                            # can have multiple of the same entity
+                            if unique:
+                                self.global_chemical_inclusion[normalized_chemical_name].append(
+                                    create_chemical_for_ner(
+                                        chemical_id=chemical_id,
+                                        name=chemical_name,
+                                        synonym=chemical_name,
+                                    )
+                                )
+                        else:
+                            self.global_chemical_inclusion[normalized_chemical_name] = [
+                                create_chemical_for_ner(
+                                    chemical_id=chemical_id,
+                                    name=chemical_name,
+                                    synonym=chemical_name,
+                                )
                             ]
 
     def validate_chemicals_lmdb(
@@ -203,11 +261,11 @@ class AnnotationsService:
 
         lowered_word = token.keyword.lower()
 
-        if len(lookup_key) > 2 and lowered_word not in self.exclusion_words and token.keyword not in self.get_chemical_annotations_to_exclude():  # noqa:
+        if len(lookup_key) > 2 and lowered_word not in self.exclusion_words and token.keyword not in self._get_chemical_annotations_to_exclude():  # noqa:
             # check chemical
             if nlp_predicted_type == EntityType.Chemical.value:
                 chem_val = self.lmdb_session.chemicals_txn.get(lookup_key)
-            else:
+            elif nlp_predicted_type is None:
                 chem_val = self.lmdb_session.chemicals_txn.get(lookup_key)
 
             if chem_val:
@@ -215,6 +273,15 @@ class AnnotationsService:
                     self.matched_chemicals[token.keyword].append(token)
                 else:
                     self.matched_chemicals[token.keyword] = [token]
+            else:
+                # didn't find in LMDB so look in global chemical inclusion
+                # for global inclusions, add to same dict as LMDB matches
+                # for local inclusions add to separate dict
+                if self.global_chemical_inclusion and lookup_key.decode('utf-8') in self.global_chemical_inclusion:  # noqa
+                    if token.keyword in self.matched_chemicals:
+                        self.matched_chemicals[token.keyword].append(token)
+                    else:
+                        self.matched_chemicals[token.keyword] = [token]
 
             return chem_val
 
@@ -246,11 +313,11 @@ class AnnotationsService:
 
         lowered_word = token.keyword.lower()
 
-        if len(lookup_key) > 2 and lowered_word not in self.exclusion_words and token.keyword not in self.get_compound_annotations_to_exclude():  # noqa:
+        if len(lookup_key) > 2 and lowered_word not in self.exclusion_words and token.keyword not in self._get_compound_annotations_to_exclude():  # noqa:
             # check compound
             if nlp_predicted_type == EntityType.Compound.value:
                 comp_val = self.lmdb_session.compounds_txn.get(lookup_key)
-            else:
+            elif nlp_predicted_type is None:
                 comp_val = self.lmdb_session.compounds_txn.get(lookup_key)
 
             if comp_val:
@@ -289,11 +356,11 @@ class AnnotationsService:
 
         lowered_word = token.keyword.lower()
 
-        if len(lookup_key) > 2 and lowered_word not in self.exclusion_words and token.keyword not in self.get_disease_annotations_to_exclude():  # noqa
+        if len(lookup_key) > 2 and lowered_word not in self.exclusion_words and token.keyword not in self._get_disease_annotations_to_exclude():  # noqa
             # check disease
             if nlp_predicted_type == EntityType.Disease.value:
                 diseases_val = self.lmdb_session.diseases_txn.get(lookup_key)
-            else:
+            elif nlp_predicted_type is None:
                 diseases_val = self.lmdb_session.diseases_txn.get(lookup_key)
 
             if diseases_val:
@@ -332,11 +399,11 @@ class AnnotationsService:
 
         lowered_word = token.keyword.lower()
 
-        if len(lookup_key) > 2 and lowered_word not in self.exclusion_words and token.keyword not in self.get_gene_annotations_to_exclude():  # noqa
+        if len(lookup_key) > 2 and lowered_word not in self.exclusion_words and token.keyword not in self._get_gene_annotations_to_exclude():  # noqa
             # check gene
             if nlp_predicted_type == EntityType.Gene.value:
                 gene_val = self.lmdb_session.genes_txn.get(lookup_key)
-            else:
+            elif nlp_predicted_type is None:
                 gene_val = self.lmdb_session.genes_txn.get(lookup_key)
 
             if gene_val:
@@ -375,11 +442,11 @@ class AnnotationsService:
 
         lowered_word = token.keyword.lower()
 
-        if len(lookup_key) > 2 and lowered_word not in self.exclusion_words and token.keyword not in self.get_phenotype_annotations_to_exclude():  # noqa
+        if len(lookup_key) > 2 and lowered_word not in self.exclusion_words and token.keyword not in self._get_phenotype_annotations_to_exclude():  # noqa
             # check phenotype
             if nlp_predicted_type == EntityType.Phenotype.value:
                 phenotype_val = self.lmdb_session.phenotypes_txn.get(lookup_key)
-            else:
+            elif nlp_predicted_type is None:
                 phenotype_val = self.lmdb_session.phenotypes_txn.get(lookup_key)
 
             if phenotype_val:
@@ -418,11 +485,11 @@ class AnnotationsService:
 
         lowered_word = token.keyword.lower()
 
-        if len(lookup_key) > 2 and lowered_word not in self.exclusion_words and token.keyword not in self.get_protein_annotations_to_exclude():  # noqa
+        if len(lookup_key) > 2 and lowered_word not in self.exclusion_words and token.keyword not in self._get_protein_annotations_to_exclude():  # noqa
             # check protein
             if nlp_predicted_type == EntityType.Protein.value:
                 protein_val = self.lmdb_session.proteins_txn.get(lookup_key)
-            else:
+            elif nlp_predicted_type is None:
                 protein_val = self.lmdb_session.proteins_txn.get(lookup_key)
 
             if protein_val:
@@ -461,13 +528,13 @@ class AnnotationsService:
 
         lowered_word = token.keyword.lower()
 
-        if len(lookup_key) > 2 and lowered_word not in SPECIES_EXCLUSION and token.keyword not in self.get_species_annotations_to_exclude():  # noqa
+        if len(lookup_key) > 2 and lowered_word not in SPECIES_EXCLUSION and token.keyword not in self._get_species_annotations_to_exclude():  # noqa
             # check species
             # TODO: Bacteria because for now NLP has that instead of
             # generic `Species`
             if nlp_predicted_type == EntityType.Species.value or nlp_predicted_type == 'Bacteria':  # noqa
                 species_val = self.lmdb_session.species_txn.get(lookup_key)
-            else:
+            elif nlp_predicted_type is None:
                 species_val = self.lmdb_session.species_txn.get(lookup_key)
 
             if species_val:
@@ -477,11 +544,13 @@ class AnnotationsService:
                     self.matched_species[token.keyword] = [token]
             else:
                 # didn't find a match in LMDB so look in custom annotations
+                # for local inclusions add to separate dict than the
+                # matched LMDB one
                 if self.local_species_inclusion and lookup_key.decode('utf-8') in self.local_species_inclusion:  # noqa
-                    if token.keyword in self.matched_custom_species:
-                        self.matched_custom_species[token.keyword].append(token)
+                    if token.keyword in self.matched_local_species_inclusion:
+                        self.matched_local_species_inclusion[token.keyword].append(token)
                     else:
-                        self.matched_custom_species[token.keyword] = [token]
+                        self.matched_local_species_inclusion[token.keyword] = [token]
 
             return species_val
 
@@ -934,6 +1003,15 @@ class AnnotationsService:
                     if entities_to_use:
                         entities = entities_to_use
 
+                if not entities:
+                    # did not find a match in LMDB
+                    # check global inclusions
+                    dispatch_table = {
+                        EntityType.Chemical.value: self.global_chemical_inclusion
+                    }
+
+                    entities = dispatch_table[token_type].get(normalize_str(word), None) or []
+
                 synonym_common_names_dict: Dict[str, Set[str]] = {}
 
                 for entity in entities:
@@ -993,7 +1071,11 @@ class AnnotationsService:
 
         closest_dist = inf
         curr_closest_organism = None
+
         for organism in organism_matches:
+            if self.organism_locations.get(organism, None) is None and self.organism_frequency.get(organism, None) is None:  # noqa
+                raise AnnotationError(f'Organism ID {organism} does not exist, potential key error.')  # noqa
+
             if curr_closest_organism is None:
                 curr_closest_organism = organism
 
@@ -1170,9 +1252,8 @@ class AnnotationsService:
             cropbox_in_pdf=cropbox_in_pdf,
         )
 
-    def _annotate_custom_species(
+    def _annotate_local_species_inclusions(
         self,
-        entity_id_str: str,
         char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
         cropbox_in_pdf: Tuple[int, int],
     ) -> List[Annotation]:
@@ -1184,7 +1265,7 @@ class AnnotationsService:
         user wants these custom species annotations to be
         annotated.
         """
-        tokens = self.matched_custom_species
+        tokens = self.matched_local_species_inclusion
 
         custom_annotations: List[Annotation] = []
 
@@ -1225,8 +1306,7 @@ class AnnotationsService:
             cropbox_in_pdf=cropbox_in_pdf,
         )
 
-        custom_species_annotations = self._annotate_custom_species(
-            entity_id_str=entity_id_str,
+        species_inclusions = self._annotate_local_species_inclusions(
             char_coord_objs_in_pdf=char_coord_objs_in_pdf,
             cropbox_in_pdf=cropbox_in_pdf,
         )
@@ -1255,7 +1335,7 @@ class AnnotationsService:
         # of its occurrences annotated as a custom annotation
         filtered_custom_species_annotations: List[Annotation] = []
         for custom in organisms_from_custom_annotations:
-            for custom_anno in custom_species_annotations:
+            for custom_anno in species_inclusions:
                 if len(custom['rects']) == len(custom_anno.rects):
                     # check if center point for each rect in custom_anno.rects
                     # is in the corresponding rectangle from custom annotations
@@ -1537,6 +1617,7 @@ class AnnotationsService:
         }
 
         self._set_local_species_inclusion(custom_annotations)
+        self._set_global_chemical_inclusions()
 
         annotations = self._create_annotations(
             tokens=tokens.token_positions,
@@ -1649,6 +1730,7 @@ class AnnotationsService:
         }
 
         self._set_local_species_inclusion(custom_annotations)
+        self._set_global_chemical_inclusions()
 
         species_annotations = self._create_annotations(
             tokens=tokens.token_positions,
