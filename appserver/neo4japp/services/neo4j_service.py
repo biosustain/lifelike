@@ -41,33 +41,27 @@ class Neo4JService(GraphBaseDao):
     def __init__(self, graph):
         super().__init__(graph)
 
-    # TODO LL-1143: Would make more sense to refactor this to take the nodes/relationships as input,
-    # and return the GraphNode and GraphRelationship objects
-    def _query_neo4j(self, query: str):
+    def _neo4j_objs_to_graph_objs(self, nodes: List[Node], relationships: List[Relationship]):
         # TODO: Can possibly use a dispatch method/injection
         # of sorts to use custom labeling methods for
         # different type of nodes/edges being converted.
         # The default does not always set an appropriate label
         # name.
-        records = self.graph.run(query).data()
-        if not records:
-            return None
         node_dict = dict()
         rel_dict = dict()
-        for record in records:
-            nodes = record['nodes']
-            rels = record['relationships']
-            for node in nodes:
-                graph_node = GraphNode.from_py2neo(
-                    node,
-                    display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label_from_node(node)]),  # type: ignore  # noqa
-                    # TODO LL-1143: need to add URL here!
-                    primary_label_fn=get_first_known_label_from_node,
-                )
-                node_dict[graph_node.id] = graph_node
-            for rel in rels:
-                graph_rel = GraphRelationship.from_py2neo(rel)
-                rel_dict[graph_rel.id] = graph_rel
+
+        for node in nodes:
+            graph_node = GraphNode.from_py2neo(
+                node,
+                display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label_from_node(x)]),  # type: ignore  # noqa
+                # TODO LL-1143: need to add URL here!
+                primary_label_fn=get_first_known_label_from_node,
+            )
+            node_dict[graph_node.id] = graph_node
+
+        for rel in relationships:
+            graph_rel = GraphRelationship.from_py2neo(rel)
+            rel_dict[graph_rel.id] = graph_rel
         return dict(nodes=[n.to_dict() for n in node_dict.values()],
                     edges=[r.to_dict() for r in rel_dict.values()])
 
@@ -89,52 +83,35 @@ class Neo4JService(GraphBaseDao):
         split_data_query = data_query.split('&')
 
         if len(split_data_query) == 1 and split_data_query[0].find(',') == -1:
-            cypher_query = '''
-            MATCH (n) WHERE ID(n)={nid} RETURN n AS nodeA
-            '''.format(nid=int(split_data_query.pop()))
-            node = self.graph.evaluate(cypher_query)
-            graph_node = GraphNode.from_py2neo(
-                node,
-                display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label_from_node(node)]),  # type: ignore  # noqa
-                primary_label_fn=get_first_known_label_from_node,
+            query = """
+                MATCH (n) WHERE ID(n)=$node_id RETURN n AS nodeA
+            """
+            node = self.graph.evaluate(
+                query,
+                {
+                    'node_id': int(split_data_query.pop())
+                }
             )
-            return dict(nodes=[graph_node.to_dict()], edges=[])
+            return self._neo4j_objs_to_graph_objs([node], [])
         else:
             data = [x.split(',') for x in split_data_query]
-            query_generator = [
-                'MATCH (nodeA)-[relationship]->(nodeB) WHERE id(nodeA)={from_} '
-                'AND id(nodeB)={to} RETURN *'.format(
-                    from_=int(from_),
-                    to=int(to),
-                ) for from_, to in data]
-            cypher_query = ' UNION '.join(query_generator)
-            records = self.graph.run(cypher_query).data()
-            if not records:
-                return None
-            node_dict = dict()
-            rel_dict = dict()
-            for row in records:
-                nodeA = row['nodeA']
-                nodeB = row['nodeB']
-                relationship = row['relationship']
-                graph_nodeA = GraphNode.from_py2neo(
-                    nodeA,
-                    display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label_from_node(nodeA)]),  # type: ignore  # noqa
-                    primary_label_fn=get_first_known_label_from_node,
-                )
-                graph_nodeB = GraphNode.from_py2neo(
-                    nodeB,
-                    display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label_from_node(nodeB)]),  # type: ignore  # noqa
-                    primary_label_fn=get_first_known_label_from_node,
-                )
-                rel = GraphRelationship.from_py2neo(relationship)
-                node_dict[graph_nodeA.id] = graph_nodeA
-                node_dict[graph_nodeB.id] = graph_nodeB
-                rel_dict[rel.id] = rel
-            return dict(
-                nodes=[n.to_dict() for n in node_dict.values()],
-                edges=[r.to_dict() for r in rel_dict.values()],
-            )
+            query = """
+                UNWIND $data as node_pair
+                WITH node_pair[0] as from_id, node_pair[1] as to_id
+                MATCH (a)-[relationship]->(b)
+                WHERE ID(a)=from_id AND ID(b)=to_id
+                RETURN
+                    apoc.convert.toSet(collect(a) + collect(b)) as nodes,
+                    apoc.convert.toSet(collect(relationship)) as relationships
+            """
+            records = self.graph.run(
+                query,
+                {
+                    'data': data
+                }
+            ).data()[0]
+
+            return self._neo4j_objs_to_graph_objs(records['nodes'], records['relationships'])
 
     def get_db_labels(self) -> List[str]:
         """Get all labels from database."""
@@ -154,22 +131,18 @@ class Neo4JService(GraphBaseDao):
     # TODO LL-1143: Everything beyond this line probably belongs in its own service!
     # They are feature-specific!
 
-    def get_connected_nodes(self, node_id: str, filter_labels: List[str]):
-        query = self.get_connected_nodes_query(filter_labels)
+    def expand_graph(self, node_id: str, filter_labels: List[str]):
+        query = self.get_expand_query()
 
-        results = self.graph.run(
+        result = self.graph.run(
             query,
             {
                 'node_id': node_id,
+                'labels': filter_labels
             }
-        ).data()
+        ).data()[0]
 
-        return [result['node_id'] for result in results]
-
-    def expand_graph(self, node_id: str, filter_labels: List[str]):
-        connected_node_ids = self.get_connected_nodes(node_id, filter_labels)
-        query = self.get_expand_query(node_id, connected_node_ids)
-        return self._query_neo4j(query)
+        return self._neo4j_objs_to_graph_objs(result['nodes'], result['relationships'])
 
     def get_snippets_from_edges(
         self,
@@ -354,34 +327,16 @@ class Neo4JService(GraphBaseDao):
         ).data()
         return result
 
-    def get_connected_nodes_query(self, filter_labels: List[str]):
-        if len(filter_labels) == 0:
-            query = """
-                MATCH (n)-[:ASSOCIATED]-(s)
-                WHERE ID(n) = $node_id
-                RETURN DISTINCT ID(s) as node_id
-            """
-        else:
-            label_filter_str = ''
-            for label in filter_labels[:-1]:
-                label_filter_str += f's:{label} OR '
-            label_filter_str += f's:{filter_labels[-1]}'
-
-            query = """
-                MATCH (n)-[:ASSOCIATED]-(s)
-                WHERE ID(n) = $node_id AND ({})
-                RETURN DISTINCT ID(s) as node_id
-            """.format(label_filter_str)
-        return query
-
-    def get_expand_query(self, node_id: str, connected_node_ids: List[str]):
+    def get_expand_query(self):
         query = """
-                MATCH (n)-[l:ASSOCIATED]-(s)
-                WHERE ID(n) = {} AND ID(s) IN {}
-                WITH n, s, l
-                return collect(n) + collect(s) as nodes, collect(l) as relationships
-            """.format(node_id, connected_node_ids)
-
+                MATCH (n)
+                WHERE ID(n)=$node_id
+                MATCH (n)-[l:ASSOCIATED]-(m)
+                WHERE any(x IN $labels WHERE x IN labels(m))
+                RETURN
+                    apoc.convert.toSet([n] + collect(m)) AS nodes,
+                    apoc.convert.toSet(collect(l)) AS relationships
+            """
         return query
 
     def get_snippets_from_edge_query(self, from_label: str, to_label: str):
