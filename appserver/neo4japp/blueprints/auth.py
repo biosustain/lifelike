@@ -37,7 +37,7 @@ def verify_token(token):
         else:
             raise NotAuthorizedException('no access found')
     except RecordNotFoundException:
-        raise JWTAuthTokenException('auth token has expired')
+        raise JWTAuthTokenException('auth token is invalid')
     except jwt.exceptions.ExpiredSignatureError:
         # Signature has expired
         raise JWTAuthTokenException('auth token has expired')
