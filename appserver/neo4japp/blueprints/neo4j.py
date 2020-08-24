@@ -29,14 +29,6 @@ class ExpandNodeRequest(CamelDictMixin):
     filter_labels: List[str] = attr.ib()
 
 
-@bp.route('/', methods=['POST'])
-@jsonify_with_class(GraphRequest)
-def load_gpr_graph(req: GraphRequest):
-    neo4j = get_neo4j_service_dao()
-    graph = neo4j.get_graph(req)
-    return SuccessResponse(result=graph, status_code=200)
-
-
 @bp.route('/batch', methods=['GET'])
 @jsonify_with_class()
 def get_batch():
@@ -53,16 +45,6 @@ def get_batch():
         return SuccessResponse(result='No results found', status_code=200)
     result = neo4j.query_batch(decoded_query)
     return SuccessResponse(result=result, status_code=200)
-
-# TODO: Is this in use by anything?
-@bp.route('/regulatory', methods=['POST'])
-@jsonify_with_class(GraphRequest)
-def load_regulatory_graph(req: GraphRequest):
-    neo4j = get_neo4j_service_dao()
-    if req.is_gene():
-        result = neo4j.load_gpr_graph(req)
-        return SuccessResponse(result=result, status_code=200)
-    return SuccessResponse(result='', status_code=200)
 
 
 @bp.route('/expand', methods=['POST'])
@@ -105,15 +87,6 @@ def get_cluster_snippet_data(req: GetSnippetsForClusterRequest):
         edges=req.edges,
     )
     return SuccessResponse(cluster_snippets_result, status_code=200)
-
-
-# TODO: Is this in use by anything?
-@bp.route('/reaction', methods=['POST'])
-@jsonify_with_class(ReactionRequest)
-def load_reaction_graph(req: ReactionRequest):
-    neo4j = get_neo4j_service_dao()
-    result = neo4j.load_reaction_graph(req.biocyc_id)
-    return SuccessResponse(result=result, status_code=200)
 
 
 @bp.route('/get-annotation-legend', methods=['GET'])
