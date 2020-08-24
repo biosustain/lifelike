@@ -140,6 +140,11 @@ class AnnotationMethod(Enum):
     Rules = 'Rules Based'
 
 
+class ManualAnnotationType(Enum):
+    Inclusion = 'inclusion'
+    Exclusion = 'exclusion'
+
+
 # these links are used in annotations and custom annotations
 # first are search links
 # then entity hyperlinks

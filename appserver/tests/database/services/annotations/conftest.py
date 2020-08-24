@@ -673,7 +673,7 @@ def mock_global_compound_exclusion(monkeypatch):
 
     monkeypatch.setattr(
         AnnotationsService,
-        'get_compound_annotations_to_exclude',
+        '_get_compound_annotations_to_exclude',
         get_exclusions,
     )
 
@@ -685,7 +685,7 @@ def mock_global_chemical_exclusion(monkeypatch):
 
     monkeypatch.setattr(
         AnnotationsService,
-        'get_chemical_annotations_to_exclude',
+        '_get_chemical_annotations_to_exclude',
         get_exclusions,
     )
 
@@ -697,7 +697,7 @@ def mock_global_disease_exclusion(monkeypatch):
 
     monkeypatch.setattr(
         AnnotationsService,
-        'get_disease_annotations_to_exclude',
+        '_get_disease_annotations_to_exclude',
         get_exclusions,
     )
 
@@ -709,7 +709,7 @@ def mock_global_gene_exclusion(monkeypatch):
 
     monkeypatch.setattr(
         AnnotationsService,
-        'get_gene_annotations_to_exclude',
+        '_get_gene_annotations_to_exclude',
         get_exclusions,
     )
 
@@ -721,7 +721,7 @@ def mock_global_phenotype_exclusion(monkeypatch):
 
     monkeypatch.setattr(
         AnnotationsService,
-        'get_phenotype_annotations_to_exclude',
+        '_get_phenotype_annotations_to_exclude',
         get_exclusions,
     )
 
@@ -733,7 +733,7 @@ def mock_global_protein_exclusion(monkeypatch):
 
     monkeypatch.setattr(
         AnnotationsService,
-        'get_protein_annotations_to_exclude',
+        '_get_protein_annotations_to_exclude',
         get_exclusions,
     )
 
@@ -745,7 +745,7 @@ def mock_global_species_exclusion(monkeypatch):
 
     monkeypatch.setattr(
         AnnotationsService,
-        'get_species_annotations_to_exclude',
+        '_get_species_annotations_to_exclude',
         get_exclusions,
     )
 

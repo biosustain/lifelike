@@ -6,11 +6,6 @@ from neo4japp.database import db
 from neo4japp.models.common import RDBMSBase
 
 
-class InclusionExclusionType(Enum):
-    INCLUSION = 'inclusion'
-    EXCLUSION = 'exclusion'
-
-
 class GlobalList(RDBMSBase):
     __tablename__ = 'global_list'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
