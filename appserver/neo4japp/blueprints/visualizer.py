@@ -4,7 +4,6 @@ from flask import Blueprint, request
 
 from typing import List
 
-from neo4japp.blueprints import GraphRequest
 from neo4japp.constants import ANNOTATION_STYLES_DICT
 from neo4japp.database import get_visualizer_service
 
