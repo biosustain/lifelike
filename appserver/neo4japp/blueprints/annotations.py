@@ -16,13 +16,14 @@ from neo4japp.blueprints.permissions import (
 from neo4japp.constants import TIMEZONE
 from neo4japp.database import (
     db,
+    get_annotation_neo4j,
     get_annotations_service,
     get_annotations_pdf_parser,
     get_bioc_document_service,
     get_excel_export_service,
     get_lmdb_dao,
     get_manual_annotations_service,
-    get_neo4j_service_dao,
+    get_kg_service,
 )
 from neo4japp.data_transfer_objects import AnnotationRequest
 from neo4japp.exceptions import (
@@ -361,8 +362,8 @@ def get_gene_list_from_file(project_name, file_id):
             else:
                 gene_ids[gene_id] = 1
 
-    neo4j = get_neo4j_service_dao()
-    gene_organism_pairs = neo4j.get_organisms_from_gene_ids(
+    annotation_neo4j_service = get_annotation_neo4j()
+    gene_organism_pairs = annotation_neo4j_service.get_organisms_from_gene_ids(
         gene_ids=list(gene_ids.keys())
     )
     sorted_pairs = sorted(gene_organism_pairs, key=lambda pair: gene_ids[pair['gene_id']], reverse=True)  # noqa
