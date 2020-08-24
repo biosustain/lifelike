@@ -164,10 +164,12 @@ export class VisualizationCanvasComponent implements OnInit, AfterViewInit {
                         to: {
                             primaryLabel: toNode.primaryLabel,
                             displayName: toNode.displayName,
+                            url: toNode.entityUrl,
                         } as NodeDisplayInfo,
                         from: {
                             primaryLabel: fromNode.primaryLabel,
                             displayName: fromNode.displayName,
+                            url: fromNode.entityUrl,
                         } as NodeDisplayInfo,
                         association: result.snippetData.association,
                         snippets: result.snippetData.snippets,
@@ -196,10 +198,12 @@ export class VisualizationCanvasComponent implements OnInit, AfterViewInit {
                         to: {
                             primaryLabel: toNode.primaryLabel,
                             displayName: toNode.displayName,
+                            url: toNode.entityUrl,
                         } as NodeDisplayInfo,
                         from: {
                             primaryLabel: fromNode.primaryLabel,
                             displayName: fromNode.displayName,
+                            url: fromNode.entityUrl,
                         } as NodeDisplayInfo,
                         association: snippetResult.association,
                         snippets: snippetResult.snippets,
