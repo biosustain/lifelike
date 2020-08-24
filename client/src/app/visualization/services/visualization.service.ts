@@ -13,7 +13,6 @@ import {
     NewEdgeSnippetsPageRequest,
     ReferenceTableDataRequest,
 } from 'app/interfaces';
-import { NODE_EXPANSION_LIMIT } from 'app/shared/constants';
 
 @Injectable()
 export class VisualizationService {
