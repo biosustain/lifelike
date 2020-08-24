@@ -260,6 +260,11 @@ class ProjectsService(RDBMSBaseDao):
         """
         dirs = self.session.query(
             Directory,
+            Directory.id,
+            Directory.name,
+            Directory.directory_parent_id,
+            Directory.projects_id,
+            Directory.user_id,
             AppUser.username,
         ).join(
             AppUser, Directory.user_id == AppUser.id
@@ -268,7 +273,18 @@ class ProjectsService(RDBMSBaseDao):
         ).all()
 
         files = self.session.query(
-            Files,
+            Files.id,
+            Files.file_id,
+            Files.filename,
+            Files.description,
+            Files.content_id,
+            Files.user_id,
+            Files.creation_date,
+            Files.annotations_date,
+            Files.project,
+            Files.dir_id,
+            Files.doi,
+            Files.upload_url,
             AppUser.username,
         ).join(
             AppUser, Files.user_id == AppUser.id
@@ -277,12 +293,24 @@ class ProjectsService(RDBMSBaseDao):
         ).all()
 
         maps = self.session.query(
-            Project,
-            AppUser.username,
+            Project.id,
+            Project.label,
+            Project.description,
+            Project.date_modified,
+            Project.author,
+            Project.public,
+            Project.user_id,
+            Project.dir_id,
+            Project.hash_id,
+            AppUser.username
         ).join(
             AppUser, Project.user_id == AppUser.id
         ).filter(
             Project.dir_id == current_dir.id
         ).all()
+
+        print(dirs)
+        print(files)
+        print(maps)
 
         return dirs, files, maps
